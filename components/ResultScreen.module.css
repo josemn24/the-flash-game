@@ -117,6 +117,14 @@
 .resultStatWrong {
   color: var(--coral);
 }
+.resultStatPartial {
+  color: var(--cyan);
+}
+.approximationMark {
+  font-family: var(--font-mono);
+  font-size: 1.25rem !important;
+  font-weight: 900 !important;
+}
 .timeCard {
   display: flex;
   align-items: center;

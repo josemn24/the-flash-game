@@ -5,7 +5,8 @@ export type QuestionType =
   | "image-choice"
   | "ordering"
   | "classification"
-  | "logic-code";
+  | "logic-code"
+  | "estimation";
 
 export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
 
@@ -89,6 +90,22 @@ export type LogicCodeQuestion = BaseQuestion & {
   correctOrder?: never;
 };
 
+export type EstimationQuestion = BaseQuestion & {
+  type: "estimation";
+  correctAnswer: number;
+  min: number;
+  max: number;
+  step: number;
+  initialValue: number;
+  tolerance: number;
+  unit: string;
+  media?: QuestionMedia;
+  options?: never;
+  acceptedAnswers?: never;
+  items?: never;
+  correctOrder?: never;
+};
+
 export type OrderingQuestion = BaseQuestion & {
   type: "ordering";
   items: string[];
@@ -122,7 +139,8 @@ export type Question =
   | ShortTextQuestion
   | OrderingQuestion
   | ClassificationQuestion
-  | LogicCodeQuestion;
+  | LogicCodeQuestion
+  | EstimationQuestion;
 
 export type Stage = {
   id: string;
@@ -135,9 +153,9 @@ export type Stage = {
 
 export type ClassificationAnswer = Record<string, string>;
 
-export type AnswerValue = string | boolean | string[] | ClassificationAnswer;
+export type AnswerValue = string | number | boolean | string[] | ClassificationAnswer;
 
-export type AnswerStatus = "correct" | "incorrect" | "unanswered";
+export type AnswerStatus = "correct" | "partial" | "incorrect" | "unanswered";
 
 export type AnswerResult = {
   questionId: string;
@@ -148,6 +166,8 @@ export type AnswerResult = {
   timeUsed: number;
   submittedCodes?: string[];
   incorrectAttempts?: number;
+  difference?: number;
+  proximity?: number;
 };
 
 export type GameScreen = "start" | "intro" | "playing" | "transition" | "results" | "review";

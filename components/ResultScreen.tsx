@@ -36,9 +36,14 @@ export function ResultScreen({
   onReplay: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
+  const partial = results.filter((result) => result.status === "partial").length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
-  const accuracy = Math.round((correct / stage.questions.length) * 100);
+  const accuracyContribution = results.reduce(
+    (total, result) => total + (result.status === "correct" ? 1 : result.proximity ?? 0),
+    0,
+  );
+  const accuracy = Math.round((accuracyContribution / stage.questions.length) * 100);
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
   const maxScore = stage.questions.reduce((total, question) => total + question.points, 0);
   const message =
@@ -124,7 +129,9 @@ export function ResultScreen({
             <div>
               <p className={`${styles.eyebrow} text-white/40`}>Precisión</p>
               <p className="mt-2 text-sm text-white/45">
-                Has acertado {correct} de {stage.questions.length}
+                {partial > 0
+                  ? `${correct} correctas · ${partial} aproximada${partial === 1 ? "" : "s"}`
+                  : `Has acertado ${correct} de ${stage.questions.length}`}
               </p>
             </div>
             <div
@@ -135,7 +142,7 @@ export function ResultScreen({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className={`grid gap-2.5 ${partial > 0 ? "grid-cols-4" : "grid-cols-3"}`}>
             <div className={`${styles.resultStatCard} ${styles.resultStatCorrect}`}>
               <CheckIcon className="h-5 w-5" />
               <strong>{correct}</strong>
@@ -146,6 +153,13 @@ export function ResultScreen({
               <strong>{incorrect}</strong>
               <span>Falladas</span>
             </div>
+            {partial > 0 && (
+              <div className={`${styles.resultStatCard} ${styles.resultStatPartial}`}>
+                <span className={styles.approximationMark}>≈</span>
+                <strong>{partial}</strong>
+                <span>Aproximadas</span>
+              </div>
+            )}
             <div className={styles.resultStatCard}>
               <ClockIcon className="h-5 w-5" />
               <strong>{unanswered}</strong>

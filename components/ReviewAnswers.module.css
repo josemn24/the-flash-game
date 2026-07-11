@@ -28,6 +28,9 @@
 .reviewWrong {
   border-left-color: var(--coral);
 }
+.reviewPartial {
+  border-left-color: var(--cyan);
+}
 .reviewUnanswered {
   border-left-color: #6f7580;
 }
@@ -73,6 +76,10 @@
 .statusWrong {
   color: #ff858a;
   background: rgba(255, 93, 100, 0.08);
+}
+.statusPartial {
+  color: var(--cyan);
+  background: rgba(53, 232, 255, 0.08);
 }
 .statusUnanswered {
   color: #a1a5ad;

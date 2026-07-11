@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { FormEvent, useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
+import { EstimationQuestion } from "@/components/EstimationQuestion";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -195,6 +196,18 @@ export function QuestionScreen({
             locked={locked}
             attemptCount={codeAttemptCount}
             onAttempt={onCodeAttempt}
+          />
+        )}
+
+        {question.type === "estimation" && (
+          <EstimationQuestion
+            min={question.min}
+            max={question.max}
+            step={question.step}
+            initialValue={question.initialValue}
+            unit={question.unit}
+            locked={locked}
+            onSubmit={onSubmit}
           />
         )}
 

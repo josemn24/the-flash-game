@@ -8,4 +8,5 @@ export const QUESTION_FORMAT_LABELS = {
   ordering: "Ordenar",
   classification: "Clasificar",
   "logic-code": "Código lógico",
+  estimation: "Estimación",
 } satisfies Record<QuestionType, string>;

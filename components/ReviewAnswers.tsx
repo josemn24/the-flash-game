@@ -24,6 +24,7 @@ function categoryLabel(category: string | undefined) {
 
 function statusLabel(result: AnswerResult) {
   if (result.status === "correct") return "Correcta";
+  if (result.status === "partial") return "Aproximada";
   if (result.status === "incorrect") return "Incorrecta";
   return "Sin contestar";
 }
@@ -76,6 +77,7 @@ export function ReviewAnswers({
           const result = results.find((item) => item.questionId === question.id);
           if (!result) return null;
           const correct = result.status === "correct";
+          const partial = result.status === "partial";
           const unanswered = result.status === "unanswered";
           const classificationAnswer =
             question.type === "classification" && isClassificationAnswer(result.answer)
@@ -85,7 +87,7 @@ export function ReviewAnswers({
           return (
             <motion.details
               key={question.id}
-              className={`${styles.reviewCard} ${correct ? styles.reviewCorrect : unanswered ? styles.reviewUnanswered : styles.reviewWrong}`}
+              className={`${styles.reviewCard} ${correct ? styles.reviewCorrect : partial ? styles.reviewPartial : unanswered ? styles.reviewUnanswered : styles.reviewWrong}`}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(index * 0.035, 0.3) }}
@@ -101,9 +103,9 @@ export function ReviewAnswers({
                   </span>
                 </span>
                 <span
-                  className={`${styles.reviewStatus} ${correct ? styles.statusCorrect : unanswered ? styles.statusUnanswered : styles.statusWrong}`}
+                  className={`${styles.reviewStatus} ${correct ? styles.statusCorrect : partial ? styles.statusPartial : unanswered ? styles.statusUnanswered : styles.statusWrong}`}
                 >
-                  {correct ? (
+                  {correct || partial ? (
                     <CheckIcon className="h-4 w-4" />
                   ) : unanswered ? (
                     <ClockIcon className="h-4 w-4" />
@@ -116,7 +118,32 @@ export function ReviewAnswers({
               </summary>
 
               <div className={styles.reviewContent}>
-                {question.type === "logic-code" ? (
+                {question.type === "estimation" ? (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className={styles.answerBox}>
+                      <span>Tu estimación</span>
+                      <strong>
+                        {typeof result.answer === "number"
+                          ? `${result.answer} ${question.unit}`
+                          : "Sin respuesta"}
+                      </strong>
+                    </div>
+                    <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+                      <span>Valor real</span>
+                      <strong>{question.correctAnswer} {question.unit}</strong>
+                    </div>
+                    <div className={styles.answerBox}>
+                      <span>Diferencia</span>
+                      <strong>
+                        {typeof result.answer !== "number" || result.difference === undefined
+                          ? "—"
+                          : result.difference === 0
+                            ? "Exacta"
+                            : `${result.difference} ${question.unit} ${result.answer > question.correctAnswer ? "por encima" : "por debajo"}`}
+                      </strong>
+                    </div>
+                  </div>
+                ) : question.type === "logic-code" ? (
                   <div>
                     <div className={styles.logicReviewClues}>
                       {question.clues.map((clue) => (
@@ -211,6 +238,11 @@ export function ReviewAnswers({
                   {question.type === "logic-code" && (
                     <span className="text-white/35">
                       Intentos: {result.submittedCodes?.length ?? 0}
+                    </span>
+                  )}
+                  {question.type === "estimation" && result.proximity !== undefined && (
+                    <span className="text-[var(--cyan)]">
+                      Cercanía: {Math.round(result.proximity * 100)}%
                     </span>
                   )}
                   <span

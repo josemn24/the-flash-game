@@ -10,7 +10,12 @@ import { SpeedBackground } from "@/components/SpeedBackground";
 import { StageIntro } from "@/components/StageIntro";
 import { StartScreen } from "@/components/StartScreen";
 import { stages } from "@/data/stages";
-import { calculateAnswerScore, calculateTotalScore, isAnswerCorrect } from "@/lib/scoring";
+import {
+  calculateAnswerScore,
+  calculateEstimationMetrics,
+  calculateTotalScore,
+  isAnswerCorrect,
+} from "@/lib/scoring";
 import type { AnswerResult, AnswerValue, GameScreen, Stage } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
@@ -84,6 +89,18 @@ export function GameApp() {
         answer === null || timedOut
           ? 0
           : calculateAnswerScore(question, answer, timeUsed, incorrectAttempts);
+      const estimationMetrics =
+        question.type === "estimation" && typeof answer === "number"
+          ? calculateEstimationMetrics(question, answer)
+          : undefined;
+      const status =
+        answer === null
+          ? "unanswered"
+          : question.type === "estimation" && !isCorrect
+            ? "partial"
+            : isCorrect
+              ? "correct"
+              : "incorrect";
 
       setResults((current) => [
         ...current,
@@ -91,12 +108,13 @@ export function GameApp() {
           questionId: question.id,
           answer,
           isCorrect,
-          status: answer === null ? "unanswered" : isCorrect ? "correct" : "incorrect",
+          status,
           points,
           timeUsed,
           ...(question.type === "logic-code"
             ? { submittedCodes: submittedCodes ?? [], incorrectAttempts }
             : {}),
+          ...(estimationMetrics ?? {}),
         },
       ]);
       setLastTimedOut(timedOut);

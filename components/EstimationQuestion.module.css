@@ -1,0 +1,193 @@
+.challenge {
+  margin-top: 1rem;
+  border: 1px solid rgba(215, 255, 24, 0.18);
+  border-radius: 1.1rem;
+  padding: 1rem;
+  background: rgba(10, 11, 14, 0.78);
+  backdrop-filter: blur(16px);
+}
+
+.valueDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.valueDisplay > span {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.valueDisplay strong {
+  color: var(--electric);
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.valueDisplay small {
+  margin-left: 0.3rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) 3.5rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.adjustButton {
+  display: flex;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.85rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.adjustButton span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 0.8;
+}
+
+.adjustButton small {
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+}
+
+.adjustButton:focus-visible,
+.range:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.adjustButton:disabled {
+  opacity: 0.25;
+}
+
+.rangeWrap {
+  min-width: 0;
+}
+
+.range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 2.75rem;
+  margin: 0;
+  cursor: pointer;
+  background: transparent;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--electric) var(--range-progress), rgba(255, 255, 255, 0.1) var(--range-progress));
+}
+
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 2rem;
+  height: 2rem;
+  margin-top: -0.72rem;
+  border: 4px solid #111419;
+  border-radius: 999px;
+  background: var(--electric);
+  box-shadow: 0 0 0 2px rgba(215, 255, 24, 0.42), 0 0 24px rgba(215, 255, 24, 0.25);
+}
+
+.range::-moz-range-track {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.range::-moz-range-progress {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--electric);
+}
+
+.range::-moz-range-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 4px solid #111419;
+  border-radius: 999px;
+  background: var(--electric);
+  box-shadow: 0 0 0 2px rgba(215, 255, 24, 0.42);
+}
+
+.limits {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 800;
+}
+
+.hint {
+  margin-top: 0.9rem;
+  color: rgba(255, 255, 255, 0.36);
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1.1rem;
+  text-align: center;
+}
+
+.submitButton {
+  display: flex;
+  width: 100%;
+  min-height: 3.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+  border-radius: 0.8rem;
+  color: var(--ink);
+  background: var(--electric);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.submitButton:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.submitButton:disabled {
+  opacity: 0.25;
+}
+
+@media (min-width: 640px) {
+  .challenge {
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .controls {
+    grid-template-columns: 4rem minmax(0, 1fr) 4rem;
+    gap: 1rem;
+  }
+
+  .adjustButton {
+    min-width: 4rem;
+    min-height: 4rem;
+  }
+}

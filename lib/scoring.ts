@@ -6,6 +6,10 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
 }
 
 export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
+  if (question.type === "estimation") {
+    return typeof answer === "number" && answer === question.correctAnswer;
+  }
+
   if (question.type === "classification") {
     return (
       isClassificationAnswer(answer) &&
@@ -41,6 +45,14 @@ export function calculateAnswerScore(
   timeUsed: number,
   incorrectAttempts = 0,
 ): number {
+  if (question.type === "estimation") {
+    if (typeof answer !== "number") return 0;
+    const { proximity } = calculateEstimationMetrics(question, answer);
+    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
+    const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
+    return Math.max(0, Math.round(question.points * proximity * speedMultiplier));
+  }
+
   if (question.type === "logic-code") {
     if (!isAnswerCorrect(question, answer)) return 0;
     const speedScore = calculateQuestionScore(question, true, timeUsed);
@@ -61,6 +73,15 @@ export function calculateAnswerScore(
   }
 
   return calculateQuestionScore(question, isAnswerCorrect(question, answer), timeUsed);
+}
+
+export function calculateEstimationMetrics(
+  question: Extract<Question, { type: "estimation" }>,
+  answer: number,
+) {
+  const difference = Math.abs(answer - question.correctAnswer);
+  const proximity = Math.min(1, Math.max(0, 1 - difference / question.tolerance));
+  return { difference, proximity };
 }
 
 export function calculateQuestionScore(
