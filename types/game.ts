@@ -4,7 +4,21 @@ export type QuestionType =
   | "short-text"
   | "image-choice";
 
-export type QuestionVisual = "japan-flag" | "saturn";
+export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
+
+export type QuestionMedia =
+  | {
+      type: "illustration";
+      id: QuestionIllustration;
+      alt: string;
+    }
+  | {
+      type: "image";
+      src: string;
+      alt: string;
+      fit?: "cover" | "contain";
+      position?: string;
+    };
 
 export type Question = {
   id: string;
@@ -14,9 +28,7 @@ export type Question = {
   options?: string[];
   correctAnswer: string | boolean;
   acceptedAnswers?: string[];
-  imageUrl?: string;
-  imageAlt?: string;
-  visual?: QuestionVisual;
+  media?: QuestionMedia;
   timeLimit: number;
   points: number;
   explanation: string;
@@ -24,6 +36,7 @@ export type Question = {
 
 export type Stage = {
   id: string;
+  number: number;
   title: string;
   subtitle: string;
   description: string;

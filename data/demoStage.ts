@@ -2,6 +2,7 @@ import type { Stage } from "@/types/game";
 
 export const demoStage: Stage = {
   id: "demo-stage",
+  number: 1,
   title: "Etapa Demo",
   subtitle: "Sprint de prueba",
   description: "Diez retos rápidos para medir reflejos, memoria y sangre fría.",
@@ -48,8 +49,11 @@ export const demoStage: Stage = {
       question: "¿A qué país pertenece esta bandera?",
       options: ["Japón", "Bangladés", "Corea del Sur", "Indonesia"],
       correctAnswer: "Japón",
-      visual: "japan-flag",
-      imageAlt: "Bandera blanca con un círculo rojo en el centro",
+      media: {
+        type: "illustration",
+        id: "japan-flag",
+        alt: "Bandera blanca con un círculo rojo en el centro",
+      },
       timeLimit: 11,
       points: 100,
       explanation:
@@ -86,8 +90,11 @@ export const demoStage: Stage = {
       question: "¿Qué planeta estás viendo?",
       options: ["Júpiter", "Saturno", "Urano", "Neptuno"],
       correctAnswer: "Saturno",
-      visual: "saturn",
-      imageAlt: "Ilustración de un planeta dorado rodeado por grandes anillos",
+      media: {
+        type: "illustration",
+        id: "saturn",
+        alt: "Ilustración de un planeta dorado rodeado por grandes anillos",
+      },
       timeLimit: 12,
       points: 110,
       explanation:

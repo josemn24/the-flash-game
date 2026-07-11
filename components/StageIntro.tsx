@@ -34,7 +34,7 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
                 <h1 className="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">{stage.title}</h1>
                 <p className="mt-2 text-base font-bold text-white/45">{stage.subtitle}</p>
               </div>
-              <div className="stage-number">01</div>
+              <div className="stage-number">{String(stage.number).padStart(2, "0")}</div>
             </div>
 
             <p className="max-w-xl text-sm leading-6 text-white/55 sm:text-base">{stage.description}</p>

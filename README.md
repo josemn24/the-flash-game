@@ -1,10 +1,10 @@
 # The Flash PoC
 
-The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. Esta prueba de concepto permite jugar una etapa completa de diez preguntas, consultar el resultado detallado y volver a intentarlo.
+The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. Esta prueba de concepto permite elegir entre dos etapas de diez preguntas, consultar el resultado detallado y volver a intentarlo.
 
 ## Qué incluye
 
-- Una etapa demo con diez preguntas de cultura general.
+- Dos etapas locales de diez preguntas: una demo de cultura general y otra de conexiones rápidas.
 - Elección múltiple, verdadero o falso, respuesta corta y preguntas visuales.
 - Temporizador individual y avance automático al agotarse el tiempo.
 - Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
@@ -64,4 +64,4 @@ docs/         Especificación funcional del PoC
 
 ## Alcance
 
-Esta versión está centrada exclusivamente en validar la experiencia de una etapa individual. No incluye usuarios, salas, multijugador, rankings, panel de administración, persistencia ni gestión de imágenes.
+Esta versión está centrada exclusivamente en validar la experiencia individual con etapas locales. No incluye usuarios, salas, multijugador, rankings, panel de administración, persistencia ni gestión de imágenes.

@@ -5,7 +5,7 @@ import { FormEvent, useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
-import { QuestionVisual } from "@/components/QuestionVisual";
+import { QuestionMedia } from "@/components/QuestionMedia";
 import { Timer } from "@/components/Timer";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +15,7 @@ import type { AnswerValue, Question } from "@/types/game";
 
 type QuestionScreenProps = {
   question: Question;
+  stageTitle: string;
   questionNumber: number;
   totalQuestions: number;
   locked: boolean;
@@ -24,6 +25,7 @@ type QuestionScreenProps = {
 
 export function QuestionScreen({
   question,
+  stageTitle,
   questionNumber,
   totalQuestions,
   locked,
@@ -57,7 +59,7 @@ export function QuestionScreen({
               <span className="brand-mark brand-mark-small">
                 <BoltIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="eyebrow text-white/55">Etapa Demo</p>
+              <p className="eyebrow text-white/55">{stageTitle}</p>
             </div>
             <p className="font-mono text-sm font-bold tracking-wide text-white">
               Pregunta {questionNumber}
@@ -80,9 +82,9 @@ export function QuestionScreen({
 
         <h1 className="question-title">{question.question}</h1>
 
-        {question.visual && question.imageAlt && (
+        {question.media && (
           <div className="mt-5 sm:mt-6">
-            <QuestionVisual visual={question.visual} alt={question.imageAlt} />
+            <QuestionMedia media={question.media} />
           </div>
         )}
 

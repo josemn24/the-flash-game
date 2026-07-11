@@ -9,14 +9,15 @@ import { ReviewAnswers } from "@/components/ReviewAnswers";
 import { SpeedBackground } from "@/components/SpeedBackground";
 import { StageIntro } from "@/components/StageIntro";
 import { StartScreen } from "@/components/StartScreen";
-import { demoStage } from "@/data/demoStage";
+import { stages } from "@/data/stages";
 import { calculateQuestionScore, calculateTotalScore, isAnswerCorrect } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, GameScreen } from "@/types/game";
+import type { AnswerResult, AnswerValue, GameScreen, Stage } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
 
 export function GameApp() {
   const [screen, setScreen] = useState<GameScreen>("start");
+  const [selectedStage, setSelectedStage] = useState<Stage>(stages[0]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [results, setResults] = useState<AnswerResult[]>([]);
   const [locked, setLocked] = useState(false);
@@ -25,7 +26,7 @@ export function GameApp() {
   const answerLock = useRef(false);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const question = demoStage.questions[questionIndex];
+  const question = selectedStage.questions[questionIndex];
   const score = useMemo(() => calculateTotalScore(results.map((result) => result.points)), [results]);
 
   useEffect(() => {
@@ -39,6 +40,11 @@ export function GameApp() {
     answerLock.current = false;
     questionStartedAt.current = performance.now();
     setScreen("playing");
+  };
+
+  const selectStage = (stage: Stage) => {
+    setSelectedStage(stage);
+    setScreen("intro");
   };
 
   const replay = () => {
@@ -71,7 +77,7 @@ export function GameApp() {
     setLastTimedOut(timedOut);
     setScreen("transition");
 
-    const lastQuestion = questionIndex === demoStage.questions.length - 1;
+    const lastQuestion = questionIndex === selectedStage.questions.length - 1;
     advanceTimeout.current = setTimeout(() => {
       if (lastQuestion) {
         setScreen("results");
@@ -84,7 +90,7 @@ export function GameApp() {
       questionStartedAt.current = performance.now();
       setScreen("playing");
     }, TRANSITION_DURATION);
-  }, [question, questionIndex]);
+  }, [question, questionIndex, selectedStage.questions.length]);
 
   const handleTimeUp = useCallback(() => submitAnswer(null, true), [submitAnswer]);
 
@@ -93,27 +99,28 @@ export function GameApp() {
       <SpeedBackground />
       <div className="relative z-10">
         <AnimatePresence mode="wait">
-          {screen === "start" && <StartScreen key="start" onPlay={() => setScreen("intro")} />}
-          {screen === "intro" && <StageIntro key="intro" stage={demoStage} onStart={beginStage} />}
+          {screen === "start" && <StartScreen key="start" stages={stages} onSelectStage={selectStage} />}
+          {screen === "intro" && <StageIntro key={`intro-${selectedStage.id}`} stage={selectedStage} onStart={beginStage} />}
           {screen === "playing" && question && (
             <QuestionScreen
               key={question.id}
               question={question}
+              stageTitle={selectedStage.title}
               questionNumber={questionIndex + 1}
-              totalQuestions={demoStage.questions.length}
+              totalQuestions={selectedStage.questions.length}
               locked={locked}
               onSubmit={(answer) => submitAnswer(answer)}
               onTimeUp={handleTimeUp}
             />
           )}
           {screen === "transition" && (
-            <QuestionTransition key={`transition-${questionIndex}`} timedOut={lastTimedOut} isLast={questionIndex === demoStage.questions.length - 1} />
+            <QuestionTransition key={`transition-${questionIndex}`} timedOut={lastTimedOut} isLast={questionIndex === selectedStage.questions.length - 1} />
           )}
           {screen === "results" && (
-            <ResultScreen key="results" stage={demoStage} results={results} score={score} onReview={() => setScreen("review")} onReplay={replay} />
+            <ResultScreen key="results" stage={selectedStage} results={results} score={score} onReview={() => setScreen("review")} onReplay={replay} />
           )}
           {screen === "review" && (
-            <ReviewAnswers key="review" stage={demoStage} results={results} onBack={() => setScreen("results")} onReplay={replay} />
+            <ReviewAnswers key="review" stage={selectedStage} results={results} onBack={() => setScreen("results")} onReplay={replay} />
           )}
         </AnimatePresence>
       </div>
