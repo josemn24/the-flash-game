@@ -14,6 +14,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question } from "@/types/game";
 
 type QuestionScreenProps = {
@@ -63,10 +64,10 @@ export function QuestionScreen({
         left={(
           <div>
             <div className="mb-2.5 flex items-center gap-2">
-              <span className="brand-mark brand-mark-small">
+              <span className={styles.brandMarkSmall}>
                 <BoltIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="eyebrow text-white/55">{stageTitle}</p>
+              <p className={`${styles.eyebrow} text-white/55`}>{stageTitle}</p>
             </div>
             <p className="font-mono text-sm font-bold tracking-wide text-white">
               Pregunta {questionNumber}
@@ -87,7 +88,7 @@ export function QuestionScreen({
           </span>
         </div>
 
-        <h1 className={`question-title ${question.type === "ordering" || question.type === "logic-code" ? "question-title-ordering" : ""}`}>
+        <h1 className={`${styles.questionTitle} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}>
           {question.question}
         </h1>
 
@@ -116,7 +117,7 @@ export function QuestionScreen({
           <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-4">
             <motion.button
               type="button"
-              className="truth-button truth-button-true"
+              className={`${styles.truthButton} ${styles.truthButtonTrue}`}
               disabled={locked}
               onClick={() => onSubmit(true)}
               whileTap={{ scale: 0.97 }}
@@ -126,7 +127,7 @@ export function QuestionScreen({
             </motion.button>
             <motion.button
               type="button"
-              className="truth-button truth-button-false"
+              className={`${styles.truthButton} ${styles.truthButtonFalse}`}
               disabled={locked}
               onClick={() => onSubmit(false)}
               whileTap={{ scale: 0.97 }}
@@ -142,10 +143,10 @@ export function QuestionScreen({
             <label className="mb-2.5 block text-sm font-bold text-white/65" htmlFor={`answer-${question.id}`}>
               Escribe tu respuesta
             </label>
-            <div className="text-answer-row">
+            <div className={styles.textAnswerRow}>
               <input
                 id={`answer-${question.id}`}
-                className="text-answer-input"
+                className={styles.textAnswerInput}
                 type="text"
                 value={textAnswer}
                 onChange={(event) => setTextAnswer(event.target.value)}
@@ -155,7 +156,7 @@ export function QuestionScreen({
                 autoFocus
               />
               <motion.button
-                className="text-submit-button"
+                className={styles.textSubmitButton}
                 type="submit"
                 disabled={locked || !textAnswer.trim()}
                 whileTap={{ scale: 0.96 }}

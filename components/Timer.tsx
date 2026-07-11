@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import styles from "@/components/Timer.module.css";
 
 type TimerProps = {
   duration: number;
@@ -54,16 +55,16 @@ export function Timer({ duration, active, onTimeUp, onTick }: TimerProps) {
 
   return (
     <motion.div
-      className={`timer-shell ${urgent ? "timer-urgent" : ""}`}
+      className={`${styles.shell} ${urgent ? styles.urgent : ""}`}
       animate={urgent ? { scale: [1, 1.035, 1] } : { scale: 1 }}
       transition={urgent ? { duration: 0.65, repeat: Infinity } : undefined}
       aria-label={`${display} segundos restantes`}
       role="timer"
     >
       <svg className="h-[68px] w-[68px] -rotate-90" viewBox="0 0 64 64" aria-hidden="true">
-        <circle className="timer-track" cx="32" cy="32" r="27" />
+        <circle className={styles.track} cx="32" cy="32" r="27" />
         <circle
-          className="timer-progress"
+          className={styles.progress}
           cx="32"
           cy="32"
           r="27"

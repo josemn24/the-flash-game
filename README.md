@@ -62,6 +62,14 @@ types/        Tipos del juego
 docs/         Especificación funcional del PoC
 ```
 
+## Convenciones de estilos
+
+- `app/globals.css` contiene únicamente Tailwind, tokens del tema, reset, estilos base y preferencias globales de accesibilidad.
+- Tailwind se utiliza para layout, espaciado, responsive y ajustes visuales sencillos directamente en los componentes.
+- El CSS personalizado de un componente se mantiene en su archivo `*.module.css` adyacente, especialmente para estados, pseudoelementos, ilustraciones y efectos complejos.
+- Los módulos consumen variables globales, pero no dependen de otros módulos ni exponen selectores globales.
+- Una nueva primitiva visual compartida solo se extrae cuando al menos dos componentes comparten también estructura y comportamiento.
+
 ## Alcance
 
 Esta versión está centrada exclusivamente en validar la experiencia individual con etapas locales. No incluye usuarios, salas, multijugador, rankings, panel de administración, persistencia ni gestión de imágenes.

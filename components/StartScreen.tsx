@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { ArrowIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import styles from "@/components/StartScreen.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import type { Stage } from "@/types/game";
@@ -40,14 +41,14 @@ export function StartScreen({
           </motion.div>
 
           <motion.h1
-            className="hero-title"
+            className={styles.heroTitle}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
             <span>PIENSA.</span>
             <span>RESPONDE.</span>
-            <span className="hero-title-accent">VUELA.</span>
+            <span className={styles.heroTitleAccent}>VUELA.</span>
           </motion.h1>
 
           <motion.p
@@ -61,7 +62,7 @@ export function StartScreen({
         </div>
 
         <motion.div
-          className="stage-selector mt-9"
+          className={`${styles.stageSelector} mt-9`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.34, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -69,12 +70,12 @@ export function StartScreen({
           {stages.map((stage) => (
             <button
               key={stage.id}
-              className="stage-select-card"
+              className={styles.stageSelectCard}
               type="button"
               onClick={() => onSelectStage(stage)}
             >
-              <span className="stage-select-number">{String(stage.number).padStart(2, "0")}</span>
-              <span className="stage-select-content">
+              <span className={styles.stageSelectNumber}>{String(stage.number).padStart(2, "0")}</span>
+              <span className={styles.stageSelectContent}>
                 <span className="flex items-center justify-between gap-3">
                   <Badge>Etapa {String(stage.number).padStart(2, "0")}</Badge>
                   <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
@@ -82,8 +83,8 @@ export function StartScreen({
                   </span>
                 </span>
                 <strong>{stage.title}</strong>
-                <span className="stage-select-subtitle">{stage.subtitle}</span>
-                <span className="stage-select-action">
+                <span className={styles.stageSelectSubtitle}>{stage.subtitle}</span>
+                <span className={styles.stageSelectAction}>
                   Jugar etapa
                   <ArrowIcon className="h-4 w-4" />
                 </span>

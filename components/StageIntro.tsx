@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import styles from "@/components/StageIntro.module.css";
 import type { Stage } from "@/types/game";
 
 export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => void }) {
@@ -25,30 +26,30 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
       <AppHeader left={<Logo />} />
 
       <div className="flex flex-1 items-center py-8 sm:py-12">
-        <div className="stage-card w-full">
-          <div className="stage-card-stripe" />
+        <div className={`${styles.stageCard} w-full`}>
+          <div className={styles.stageCardStripe} />
           <div className="relative z-10 p-5 sm:p-8 md:p-10">
             <div className="mb-7 flex items-start justify-between gap-4">
               <div>
-                <p className="eyebrow mb-3 text-[var(--electric)]">Siguiente carrera</p>
+                <p className={`${styles.eyebrow} mb-3 text-[var(--electric)]`}>Siguiente carrera</p>
                 <h1 className="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">{stage.title}</h1>
                 <p className="mt-2 text-base font-bold text-white/45">{stage.subtitle}</p>
               </div>
-              <div className="stage-number">{String(stage.number).padStart(2, "0")}</div>
+              <div className={styles.stageNumber}>{String(stage.number).padStart(2, "0")}</div>
             </div>
 
             <p className="max-w-xl text-sm leading-6 text-white/55 sm:text-base">{stage.description}</p>
 
             <div className="my-7 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/9 bg-black/20 sm:my-8">
-              <div className="stage-stat">
+              <div className={styles.stageStat}>
                 <strong>{stage.questions.length}</strong>
                 <span>Preguntas</span>
               </div>
-              <div className="stage-stat border-x border-white/9">
+              <div className={`${styles.stageStat} border-x border-white/9`}>
                 <strong>≈ 2</strong>
                 <span>Minutos</span>
               </div>
-              <div className="stage-stat">
+              <div className={styles.stageStat}>
                 <strong>{formats.length}</strong>
                 <span>Formatos</span>
               </div>
@@ -64,8 +65,8 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="rule-card">
-                <div className="rule-icon bg-[var(--electric)] text-black">
+              <div className={styles.ruleCard}>
+                <div className={`${styles.ruleIcon} bg-[var(--electric)] text-black`}>
                   <BoltIcon className="h-5 w-5" />
                 </div>
                 <div>
@@ -73,8 +74,8 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
                   <p className="mt-1 text-xs leading-5 text-white/40">Después, responde rápido para sumar más.</p>
                 </div>
               </div>
-              <div className="rule-card">
-                <div className="rule-icon bg-white/10 text-white">
+              <div className={styles.ruleCard}>
+                <div className={`${styles.ruleIcon} bg-white/10 text-white`}>
                   <ClockIcon className="h-5 w-5" />
                 </div>
                 <div>

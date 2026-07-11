@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { BoltIcon, CheckIcon, ClockIcon } from "@/components/icons";
+import styles from "@/components/QuestionTransition.module.css";
 
 export function QuestionTransition({
   timedOut,
@@ -21,7 +22,7 @@ export function QuestionTransition({
     >
       <div>
         <motion.div
-          className={`transition-icon ${timedOut ? "transition-icon-time" : ""}`}
+          className={`${styles.icon} ${timedOut ? styles.iconTime : ""}`}
           initial={{ scale: 0.5, rotate: -15 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 340, damping: 18 }}

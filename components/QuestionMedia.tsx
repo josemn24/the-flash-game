@@ -1,11 +1,12 @@
 import Image from "next/image";
+import styles from "@/components/QuestionMedia.module.css";
 import type { QuestionIllustration, QuestionMedia as QuestionMediaType } from "@/types/game";
 
 function Illustration({ id }: { id: QuestionIllustration }) {
   if (id === "japan-flag") {
     return (
-      <div className="japan-flag">
-        <div className="japan-sun" />
+      <div className={styles.japanFlag}>
+        <div className={styles.japanSun} />
       </div>
     );
   }
@@ -26,13 +27,13 @@ function Illustration({ id }: { id: QuestionIllustration }) {
 
   return (
     <>
-      <div className="star star-one" />
-      <div className="star star-two" />
-      <div className="star star-three" />
-      <div className="saturn">
-        <div className="saturn-ring saturn-ring-back" />
-        <div className="saturn-planet" />
-        <div className="saturn-ring saturn-ring-front" />
+      <div className={`${styles.star} ${styles.starOne}`} />
+      <div className={`${styles.star} ${styles.starTwo}`} />
+      <div className={`${styles.star} ${styles.starThree}`} />
+      <div className={styles.saturn}>
+        <div className={`${styles.saturnRing} ${styles.saturnRingBack}`} />
+        <div className={styles.saturnPlanet} />
+        <div className={`${styles.saturnRing} ${styles.saturnRingFront}`} />
       </div>
     </>
   );
@@ -43,7 +44,7 @@ export function QuestionMedia({ media }: { media: QuestionMediaType }) {
     const isSvg = media.src.endsWith(".svg");
 
     return (
-      <div className="visual-stage">
+      <div className={styles.visualStage}>
         <Image
           src={media.src}
           alt={media.alt}
@@ -53,19 +54,19 @@ export function QuestionMedia({ media }: { media: QuestionMediaType }) {
           className={media.fit === "contain" ? "object-contain" : "object-cover"}
           style={{ objectPosition: media.position }}
         />
-        <div className="visual-scanline" aria-hidden="true" />
+        <div className={styles.visualScanline} aria-hidden="true" />
       </div>
     );
   }
 
   return (
     <div
-      className={`visual-stage${media.id === "saturn" ? " visual-space" : ""}`}
+      className={`${styles.visualStage} ${media.id === "saturn" ? styles.visualSpace : ""}`}
       role="img"
       aria-label={media.alt}
     >
       <Illustration id={media.id} />
-      <div className="visual-scanline" aria-hidden="true" />
+      <div className={styles.visualScanline} aria-hidden="true" />
     </div>
   );
 }

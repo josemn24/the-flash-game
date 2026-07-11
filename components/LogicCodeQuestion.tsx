@@ -70,17 +70,17 @@ export function LogicCodeQuestion({
   };
 
   return (
-    <div className="logic-code-challenge">
-      <div className="logic-clues" aria-label="Pistas del código">
+    <div className={styles.challenge}>
+      <div className={styles.clues} aria-label="Pistas del código">
         {clues.map((clue) => (
-          <div className="logic-clue" key={clue.code}>
+          <div className={styles.clue} key={clue.code}>
             <strong>{clue.code}</strong>
             <span>{clue.hint}</span>
           </div>
         ))}
       </div>
 
-      <div className="logic-entry-panel">
+      <div className={styles.entryPanel}>
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-bold text-white/65">Introduce el código</span>
           <span className="font-mono text-[10px] font-bold tracking-wider text-white/35 uppercase">
@@ -111,7 +111,7 @@ export function LogicCodeQuestion({
           ))}
         </div>
 
-        <p className="logic-feedback" role="status" aria-live="polite">
+        <p className={styles.feedback} role="status" aria-live="polite">
           {feedback || "Cada fallo resta 15 puntos. El reloj sigue corriendo."}
         </p>
 

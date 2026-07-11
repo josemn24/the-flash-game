@@ -1,0 +1,23 @@
+.eyebrow { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.19em; text-transform: uppercase; }
+.resultsGrid { display: grid; gap: 1rem; }
+.scorePanel, .accuracyCard, .timeCard, .tipCard { border: 1px solid var(--border-subtle); background: var(--surface-panel); backdrop-filter: blur(18px); }
+.scorePanel { overflow: hidden; border-radius: 1.5rem; padding: 1.4rem; }
+.scoreDisplay { position: relative; display: flex; min-height: 12rem; flex-direction: column; align-items: center; justify-content: center; }
+.scoreDisplay span { position: relative; z-index: 2; font-family: var(--font-display); font-size: clamp(4.7rem, 21vw, 7.5rem); font-weight: 950; letter-spacing: -0.08em; line-height: 0.85; }
+.scoreDisplay small { position: relative; z-index: 2; margin-top: 0.6rem; color: rgba(255, 255, 255, 0.35); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.scoreGlow { position: absolute; width: 12rem; height: 7rem; border-radius: 999px; background: rgba(215, 255, 24, 0.1); filter: blur(45px); }
+.resultsStats { display: flex; flex-direction: column; gap: 0.75rem; }
+.accuracyCard { display: flex; min-height: 8rem; align-items: center; justify-content: space-between; border-radius: 1.25rem; padding: 1.2rem; }
+.accuracyRing { --accuracy: 0deg; display: grid; width: 5.3rem; height: 5.3rem; flex: 0 0 auto; place-items: center; border-radius: 999px; background: radial-gradient(circle at center, #121418 61%, transparent 63%), conic-gradient(var(--electric) var(--accuracy), rgba(255, 255, 255, 0.07) 0); }
+.accuracyRing span { font-family: var(--font-display); font-size: 1.3rem; font-weight: 950; }
+.resultStatCard { display: flex; min-height: 7.2rem; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1rem; color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.025); }
+.resultStatCard strong { margin-top: 0.4rem; color: white; font-family: var(--font-display); font-size: 1.7rem; font-weight: 950; }
+.resultStatCard span { margin-top: 0.1rem; font-size: 0.58rem; font-weight: 700; }
+.resultStatCorrect { color: var(--electric); }
+.resultStatWrong { color: var(--coral); }
+.timeCard { display: flex; align-items: center; gap: 0.85rem; border-radius: 1.1rem; padding: 1rem; }
+.tipCard { border-radius: 1.1rem; padding: 1.1rem; }
+.ruleIcon { display: grid; width: 2.6rem; height: 2.6rem; flex: 0 0 auto; place-items: center; border-radius: 0.75rem; }
+@media (min-width: 640px) { .scorePanel { padding: 2rem; } }
+@media (min-width: 850px) { .resultsGrid { grid-template-columns: 1.02fr 0.98fr; gap: 1.25rem; align-items: stretch; } .scorePanel { display: flex; min-height: calc(100dvh - 7rem); flex-direction: column; } .scoreDisplay { flex: 1; min-height: 13rem; } .resultsStats { min-height: calc(100dvh - 7rem); } .accuracyCard, .tipCard { flex: 1; } }
+@media (max-height: 720px) and (min-width: 850px) { .scoreDisplay { min-height: 8rem; } .scoreDisplay span { font-size: 5rem; } .accuracyCard { min-height: 6rem; } .resultStatCard { min-height: 5.5rem; } }

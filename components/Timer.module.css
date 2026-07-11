@@ -1,0 +1,5 @@
+.shell { position: relative; flex: 0 0 auto; color: var(--electric); filter: drop-shadow(0 0 8px rgba(215, 255, 24, 0.12)); }
+.track, .progress { fill: none; stroke-width: 4; }
+.track { stroke: rgba(255, 255, 255, 0.08); }
+.progress { stroke: currentColor; stroke-linecap: round; transition: stroke-dashoffset 100ms linear; }
+.urgent { color: var(--coral); filter: drop-shadow(0 0 9px rgba(255, 93, 100, 0.32)); }
