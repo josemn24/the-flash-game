@@ -21,13 +21,15 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
     );
   }
 
-  if (typeof question.correctAnswer === "boolean") {
+  if (question.type === "true-false") {
     return answer === question.correctAnswer;
   }
 
   if (typeof answer !== "string") return false;
 
-  const accepted = question.acceptedAnswers ?? [question.correctAnswer];
+  const accepted = question.type === "short-text"
+    ? question.acceptedAnswers ?? [question.correctAnswer]
+    : [question.correctAnswer];
   const normalizedAnswer = normalizeAnswer(answer);
 
   return accepted.some((candidate) => normalizeAnswer(candidate) === normalizedAnswer);

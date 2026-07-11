@@ -32,12 +32,42 @@ type BaseQuestion = {
   explanation: string;
 };
 
-type StandardQuestion = BaseQuestion & {
-  type: Exclude<QuestionType, "ordering" | "classification" | "logic-code">;
-  options?: string[];
-  correctAnswer: string | boolean;
+export type MultipleChoiceQuestion = BaseQuestion & {
+  type: "multiple-choice";
+  options: string[];
+  correctAnswer: string;
+  acceptedAnswers?: never;
+  media?: never;
+  items?: never;
+  correctOrder?: never;
+};
+
+export type ImageChoiceQuestion = BaseQuestion & {
+  type: "image-choice";
+  options: string[];
+  correctAnswer: string;
+  media: QuestionMedia;
+  acceptedAnswers?: never;
+  items?: never;
+  correctOrder?: never;
+};
+
+export type TrueFalseQuestion = BaseQuestion & {
+  type: "true-false";
+  correctAnswer: boolean;
+  options?: never;
+  acceptedAnswers?: never;
+  media?: never;
+  items?: never;
+  correctOrder?: never;
+};
+
+export type ShortTextQuestion = BaseQuestion & {
+  type: "short-text";
+  correctAnswer: string;
   acceptedAnswers?: string[];
-  media?: QuestionMedia;
+  options?: never;
+  media?: never;
   items?: never;
   correctOrder?: never;
 };
@@ -86,7 +116,13 @@ export type ClassificationQuestion = BaseQuestion & {
 };
 
 export type Question =
-  StandardQuestion | OrderingQuestion | ClassificationQuestion | LogicCodeQuestion;
+  | MultipleChoiceQuestion
+  | ImageChoiceQuestion
+  | TrueFalseQuestion
+  | ShortTextQuestion
+  | OrderingQuestion
+  | ClassificationQuestion
+  | LogicCodeQuestion;
 
 export type Stage = {
   id: string;

@@ -1,6 +1,6 @@
 import type { Stage } from "@/types/game";
 
-export const connectionsStage: Stage = {
+export const connectionsStage = {
   id: "connections-stage",
   number: 2,
   title: "Conexiones rápidas",
@@ -150,4 +150,4 @@ export const connectionsStage: Stage = {
         "Delfines, murciélagos y ballenas son mamíferos; águilas y pingüinos son aves; cocodrilos y tortugas son reptiles.",
     },
   ],
-};
+} satisfies Stage;

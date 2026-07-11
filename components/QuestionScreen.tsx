@@ -99,7 +99,7 @@ export function QuestionScreen({
           </div>
         )}
 
-        {isChoice && question.options && (
+        {isChoice && (
           <div className="mt-7 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3">
             {question.options.map((option, index) => (
               <AnswerOption

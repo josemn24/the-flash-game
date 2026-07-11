@@ -1,6 +1,6 @@
 import type { Stage } from "@/types/game";
 
-export const demoStage: Stage = {
+export const demoStage = {
   id: "demo-stage",
   number: 1,
   title: "Etapa Demo",
@@ -133,4 +133,4 @@ export const demoStage: Stage = {
       explanation: "Cada número es el doble del anterior, así que 16 x 2 = 32.",
     },
   ],
-};
+} satisfies Stage;
