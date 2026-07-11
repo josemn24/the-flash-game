@@ -27,7 +27,14 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
     <motion.section className="mx-auto min-h-[100dvh] w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
       <header className="mb-9 flex items-center justify-between">
         <Logo />
-        <button type="button" className="text-button" onClick={onBack}>Volver al resultado</button>
+        <motion.button
+          type="button"
+          className="text-button"
+          onClick={onBack}
+          whileTap={{ scale: 0.98 }}
+        >
+          Volver al resultado
+        </motion.button>
       </header>
 
       <div className="mb-7 sm:mb-9">
@@ -77,8 +84,23 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
       </div>
 
       <div className="mt-7 grid gap-3 sm:grid-cols-2">
-        <button type="button" className="secondary-button" onClick={onBack}>Volver al resultado</button>
-        <button type="button" className="primary-button" onClick={onReplay}><RotateIcon className="h-5 w-5" />Volver a jugar</button>
+        <motion.button
+          type="button"
+          className="secondary-button"
+          onClick={onBack}
+          whileTap={{ scale: 0.98 }}
+        >
+          Volver al resultado
+        </motion.button>
+        <motion.button
+          type="button"
+          className="primary-button"
+          onClick={onReplay}
+          whileTap={{ scale: 0.98 }}
+        >
+          <RotateIcon className="h-5 w-5" />
+          Volver a jugar
+        </motion.button>
       </div>
     </motion.section>
   );

@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Flash PoC
 
-## Getting Started
+The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. Esta prueba de concepto permite jugar una etapa completa de diez preguntas, consultar el resultado detallado y volver a intentarlo.
 
-First, run the development server:
+## Qué incluye
+
+- Una etapa demo con diez preguntas de cultura general.
+- Elección múltiple, verdadero o falso, respuesta corta y preguntas visuales.
+- Temporizador individual y avance automático al agotarse el tiempo.
+- Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
+- Resultados con precisión, aciertos, fallos, preguntas sin contestar y tiempo total.
+- Revisión completa de respuestas y opción de repetición.
+- Diseño responsive, accesible y completamente en español.
+
+## Tecnologías
+
+- Next.js 16 con App Router.
+- React 19 y TypeScript.
+- Tailwind CSS 4.
+- Motion para transiciones y microinteracciones.
+
+La aplicación es 100 % frontend. No utiliza backend, base de datos, autenticación ni servicios externos.
+
+## Requisitos
+
+- Node.js 20.9 o superior.
+- npm.
+
+## Instalación y ejecución
+
+Instala las dependencias:
+
+```bash
+npm install
+```
+
+Inicia el entorno de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es necesario configurar ninguna variable de entorno ni servicio adicional.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comandos disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | Descripción |
+| --- | --- |
+| `npm run dev` | Inicia el servidor de desarrollo. |
+| `npm run lint` | Comprueba la calidad estática del código. |
+| `npm run build` | Genera la compilación optimizada de producción. |
+| `npm run start` | Sirve localmente una compilación de producción. |
 
-## Learn More
+## Estructura principal
 
-To learn more about Next.js, take a look at the following resources:
+```text
+app/          Página, layout y estilos globales
+components/   Pantallas y componentes interactivos
+data/         Etapa demo y preguntas locales
+lib/          Puntuación, validación y utilidades
+types/        Tipos del juego
+docs/         Especificación funcional del PoC
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Alcance
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Esta versión está centrada exclusivamente en validar la experiencia de una etapa individual. No incluye usuarios, salas, multijugador, rankings, panel de administración, persistencia ni gestión de imágenes.

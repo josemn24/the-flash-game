@@ -126,7 +126,7 @@ export const demoStage: Stage = {
       timeLimit: 10,
       points: 130,
       explanation:
-        "Cada número es el doble del anterior, así que 16 × 2 = 32.",
+        "Cada número es el doble del anterior, así que 16 x 2 = 32.",
     },
   ],
 };

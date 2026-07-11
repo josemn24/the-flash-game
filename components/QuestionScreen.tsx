@@ -7,6 +7,7 @@ import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionVisual } from "@/components/QuestionVisual";
 import { Timer } from "@/components/Timer";
+import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { AnswerValue, Question } from "@/types/game";
 
 type QuestionScreenProps = {
@@ -67,7 +68,7 @@ export function QuestionScreen({
         <div className="mb-4 flex items-center justify-between">
           <span className="category-chip">{question.category}</span>
           <span className="font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
-            {question.points} pts máx.
+            {QUESTION_FORMAT_LABELS[question.type]}
           </span>
         </div>
 

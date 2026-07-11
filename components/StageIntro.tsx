@@ -3,9 +3,14 @@
 import { motion } from "motion/react";
 import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { Stage } from "@/types/game";
 
 export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => void }) {
+  const formats = Array.from(
+    new Set(stage.questions.map((question) => QUESTION_FORMAT_LABELS[question.type])),
+  );
+
   return (
     <motion.section
       className="mx-auto flex min-h-[100dvh] w-full max-w-4xl flex-col px-4 py-5 sm:px-6 sm:py-7"
@@ -43,9 +48,20 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
                 <span>Minutos</span>
               </div>
               <div className="stage-stat">
-                <strong>4</strong>
+                <strong>{formats.length}</strong>
                 <span>Formatos</span>
               </div>
+            </div>
+
+            <div className="mb-7 flex flex-wrap items-center gap-2" aria-label="Formatos incluidos">
+              <span className="mr-1 font-mono text-[10px] font-bold tracking-[0.14em] text-white/30 uppercase">
+                Incluye
+              </span>
+              {formats.map((format) => (
+                <span key={format} className="category-chip">
+                  {format}
+                </span>
+              ))}
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
