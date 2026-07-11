@@ -115,52 +115,11 @@ button:disabled {
 
 .brand-mark-small { width: 1.65rem; height: 1.65rem; border-radius: 0.45rem; }
 
-.status-pill,
-.category-chip {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  background: rgba(255, 255, 255, 0.035);
-  backdrop-filter: blur(12px);
-}
-
-.status-pill {
-  gap: 0.55rem;
-  border-radius: 999px;
-  padding: 0.55rem 0.75rem;
-  color: rgba(255, 255, 255, 0.48);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.status-dot {
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 999px;
-  background: var(--electric);
-  box-shadow: 0 0 10px var(--electric);
-}
-
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.19em;
-  text-transform: uppercase;
-}
-
-.category-chip {
-  width: fit-content;
-  border-radius: 999px;
-  padding: 0.42rem 0.7rem;
-  color: rgba(255, 255, 255, 0.66);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -182,40 +141,6 @@ button:disabled {
   text-shadow: 0 0 45px rgba(215, 255, 24, 0.2);
   transform: skewX(-4deg);
 }
-
-.primary-button,
-.secondary-button {
-  display: flex;
-  min-height: 3.65rem;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  border-radius: 1rem;
-  padding: 0.9rem 1.25rem;
-  font-size: 0.92rem;
-  font-weight: 900;
-  transition: border-color 160ms, background 160ms, color 160ms, opacity 160ms;
-}
-
-.primary-button {
-  border: 1px solid var(--electric);
-  color: #080a05;
-  background: var(--electric);
-  box-shadow: 0 12px 38px rgba(215, 255, 24, 0.12);
-}
-
-.primary-button:hover:not(:disabled) { background: #e3ff5b; }
-.primary-button:disabled { opacity: 0.25; box-shadow: none; }
-.primary-button-hero { min-height: 4rem; padding-inline: 1.6rem; }
-
-.secondary-button {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.secondary-button:hover { border-color: rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.07); }
 
 .sprint-card {
   position: relative;
@@ -363,7 +288,6 @@ button:disabled {
 .answer-box span { color: rgba(255, 255, 255, 0.3); font-size: 0.62rem; font-weight: 700; }.answer-box strong { margin-top: 0.3rem; font-size: 0.84rem; }.answer-box-correct strong { color: var(--electric); }
 
 @media (min-width: 640px) {
-  .primary-button-hero { width: auto; min-width: 15.5rem; }
   .stage-stat { min-height: 6rem; }
   .stage-stat strong { font-size: 2rem; }
   .truth-button { min-height: 10rem; }

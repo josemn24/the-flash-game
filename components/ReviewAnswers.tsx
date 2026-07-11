@@ -3,6 +3,8 @@
 import { motion } from "motion/react";
 import { CheckIcon, ChevronIcon, ClockIcon, CrossIcon, RotateIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { Button } from "@/components/ui/Button";
 import type { AnswerResult, AnswerValue, Stage } from "@/types/game";
 
 function answerLabel(value: AnswerValue | null) {
@@ -25,17 +27,20 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
 }) {
   return (
     <motion.section className="mx-auto min-h-[100dvh] w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-      <header className="mb-9 flex items-center justify-between">
-        <Logo />
-        <motion.button
+      <AppHeader
+        className="mb-9"
+        left={<Logo />}
+        right={(
+          <motion.button
           type="button"
           className="text-button"
           onClick={onBack}
           whileTap={{ scale: 0.98 }}
         >
           Volver al resultado
-        </motion.button>
-      </header>
+          </motion.button>
+        )}
+      />
 
       <div className="mb-7 sm:mb-9">
         <p className="eyebrow text-[var(--electric)]">Análisis de carrera</p>
@@ -84,23 +89,20 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
       </div>
 
       <div className="mt-7 grid gap-3 sm:grid-cols-2">
-        <motion.button
-          type="button"
-          className="secondary-button"
+        <Button
+          variant="secondary"
           onClick={onBack}
           whileTap={{ scale: 0.98 }}
         >
           Volver al resultado
-        </motion.button>
-        <motion.button
-          type="button"
-          className="primary-button"
+        </Button>
+        <Button
           onClick={onReplay}
           whileTap={{ scale: 0.98 }}
         >
           <RotateIcon className="h-5 w-5" />
           Volver a jugar
-        </motion.button>
+        </Button>
       </div>
     </motion.section>
   );

@@ -7,6 +7,9 @@ import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionVisual } from "@/components/QuestionVisual";
 import { Timer } from "@/components/Timer";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { AnswerValue, Question } from "@/types/game";
 
@@ -46,27 +49,30 @@ export function QuestionScreen({
       exit={{ opacity: 0, x: -34 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
-      <header className="mb-5 flex items-center justify-between gap-4 sm:mb-7">
-        <div>
-          <div className="mb-2.5 flex items-center gap-2">
-            <span className="brand-mark brand-mark-small">
-              <BoltIcon className="h-3.5 w-3.5" />
-            </span>
-            <p className="eyebrow text-white/55">Etapa Demo</p>
+      <AppHeader
+        className="mb-5 gap-4 sm:mb-7"
+        left={(
+          <div>
+            <div className="mb-2.5 flex items-center gap-2">
+              <span className="brand-mark brand-mark-small">
+                <BoltIcon className="h-3.5 w-3.5" />
+              </span>
+              <p className="eyebrow text-white/55">Etapa Demo</p>
+            </div>
+            <p className="font-mono text-sm font-bold tracking-wide text-white">
+              Pregunta {questionNumber}
+              <span className="text-white/35"> / {totalQuestions}</span>
+            </p>
           </div>
-          <p className="font-mono text-sm font-bold tracking-wide text-white">
-            Pregunta {questionNumber}
-            <span className="text-white/35"> / {totalQuestions}</span>
-          </p>
-        </div>
-        <Timer duration={question.timeLimit} active={!locked} onTimeUp={onTimeUp} />
-      </header>
+        )}
+        right={<Timer duration={question.timeLimit} active={!locked} onTimeUp={onTimeUp} />}
+      />
 
       <ProgressBar current={questionNumber} total={totalQuestions} />
 
       <div className="flex flex-1 flex-col pt-6 sm:pt-9">
         <div className="mb-4 flex items-center justify-between">
-          <span className="category-chip">{question.category}</span>
+          <Badge>{question.category}</Badge>
           <span className="font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
             {QUESTION_FORMAT_LABELS[question.type]}
           </span>
@@ -154,16 +160,15 @@ export function QuestionScreen({
         )}
 
         {isChoice && (
-          <motion.button
-            type="button"
-            className="primary-button mt-auto sm:mt-8"
+          <Button
+            className="mt-auto sm:mt-8"
             disabled={!selected || locked}
             onClick={() => selected && onSubmit(selected)}
             whileTap={{ scale: 0.985 }}
           >
             Confirmar respuesta
             <ArrowIcon className="h-5 w-5" />
-          </motion.button>
+          </Button>
         )}
       </div>
     </motion.section>

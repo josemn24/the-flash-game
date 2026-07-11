@@ -3,6 +3,9 @@
 import { motion } from "motion/react";
 import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { Stage } from "@/types/game";
 
@@ -19,9 +22,7 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <header>
-        <Logo />
-      </header>
+      <AppHeader left={<Logo />} />
 
       <div className="flex flex-1 items-center py-8 sm:py-12">
         <div className="stage-card w-full">
@@ -58,9 +59,7 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
                 Incluye
               </span>
               {formats.map((format) => (
-                <span key={format} className="category-chip">
-                  {format}
-                </span>
+                <Badge key={format}>{format}</Badge>
               ))}
             </div>
 
@@ -85,16 +84,15 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
               </div>
             </div>
 
-            <motion.button
-              type="button"
-              className="primary-button mt-7 sm:mt-8"
+            <Button
+              className="mt-7 sm:mt-8"
               onClick={onStart}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
             >
               Empezar etapa
               <ArrowIcon className="h-5 w-5" />
-            </motion.button>
+            </Button>
           </div>
         </div>
       </div>

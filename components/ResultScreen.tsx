@@ -3,6 +3,9 @@
 import { motion } from "motion/react";
 import { ArrowIcon, CheckIcon, ClockIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import type { AnswerResult, Stage } from "@/types/game";
 
 function formatTime(seconds: number) {
@@ -32,10 +35,7 @@ export function ResultScreen({ stage, results, score, onReview, onReplay }: {
 
   return (
     <motion.section className="mx-auto min-h-[100dvh] w-full max-w-5xl px-4 py-5 sm:px-6 sm:py-7" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <header className="mb-7 flex items-center justify-between">
-        <Logo />
-        <span className="category-chip">Meta cruzada</span>
-      </header>
+      <AppHeader className="mb-7" left={<Logo />} right={<Badge>Meta cruzada</Badge>} />
 
       <div className="results-grid">
         <motion.div className="score-panel" initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
@@ -60,15 +60,15 @@ export function ResultScreen({ stage, results, score, onReview, onReplay }: {
             </div>
           </div>
 
-          <motion.button type="button" className="primary-button" onClick={onReplay} whileTap={{ scale: 0.98 }}>
+          <Button onClick={onReplay} whileTap={{ scale: 0.98 }}>
             <RotateIcon className="h-5 w-5" />
             Volver a jugar
-          </motion.button>
-          <motion.button type="button" className="secondary-button mt-3" onClick={onReview} whileTap={{ scale: 0.98 }}>
+          </Button>
+          <Button variant="secondary" className="mt-3" onClick={onReview} whileTap={{ scale: 0.98 }}>
             <EyeIcon className="h-5 w-5" />
             Ver respuestas
             <ArrowIcon className="ml-auto h-5 w-5" />
-          </motion.button>
+          </Button>
         </motion.div>
 
         <motion.div className="results-stats" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.12, duration: 0.45 }}>

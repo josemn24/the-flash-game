@@ -3,6 +3,9 @@
 import { motion } from "motion/react";
 import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 
 export function StartScreen({ onPlay }: { onPlay: () => void }) {
   return (
@@ -13,13 +16,10 @@ export function StartScreen({ onPlay }: { onPlay: () => void }) {
       exit={{ opacity: 0, scale: 1.02 }}
       transition={{ duration: 0.3 }}
     >
-      <header className="flex items-center justify-between">
-        <Logo />
-        <div className="status-pill">
-          <span className="status-dot" />
-          Demo en solitario
-        </div>
-      </header>
+      <AppHeader
+        left={<Logo />}
+        right={<Badge variant="status" dot>Demo en solitario</Badge>}
+      />
 
       <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1.08fr_.92fr] lg:py-10">
         <div className="relative z-10">
@@ -59,16 +59,15 @@ export function StartScreen({ onPlay }: { onPlay: () => void }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.38 }}
           >
-            <motion.button
-              type="button"
-              className="primary-button primary-button-hero"
+            <Button
+              size="hero"
               onClick={onPlay}
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
             >
               Jugar etapa demo
               <ArrowIcon className="h-5 w-5" />
-            </motion.button>
+            </Button>
             <div className="flex items-center justify-center gap-2 px-3 text-sm text-white/40 sm:justify-start">
               <ClockIcon className="h-4 w-4" />
               Menos de 3 minutos
@@ -85,7 +84,7 @@ export function StartScreen({ onPlay }: { onPlay: () => void }) {
           <div className="sprint-card sprint-card-back" />
           <div className="sprint-card">
             <div className="flex items-center justify-between">
-              <span className="category-chip">Cultura general</span>
+              <Badge>Cultura general</Badge>
               <span className="font-mono text-xs font-bold text-white/40">01 / 10</span>
             </div>
             <div className="start-timer-graphic">
