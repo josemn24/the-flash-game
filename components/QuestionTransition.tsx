@@ -4,13 +4,7 @@ import { motion } from "motion/react";
 import { BoltIcon, CheckIcon, ClockIcon } from "@/components/icons";
 import styles from "@/components/QuestionTransition.module.css";
 
-export function QuestionTransition({
-  timedOut,
-  isLast,
-}: {
-  timedOut: boolean;
-  isLast: boolean;
-}) {
+export function QuestionTransition({ timedOut, isLast }: { timedOut: boolean; isLast: boolean }) {
   return (
     <motion.section
       className="grid min-h-[100dvh] place-items-center px-5 text-center"
@@ -38,7 +32,11 @@ export function QuestionTransition({
           {timedOut ? "Tiempo agotado" : "Respuesta enviada"}
         </motion.h1>
         <p className="mt-2 text-sm font-bold text-white/40">
-          {isLast ? "Calculando tu resultado…" : timedOut ? "No pares. Sigue el sprint." : "Siguiente pregunta en marcha."}
+          {isLast
+            ? "Calculando tu resultado…"
+            : timedOut
+              ? "No pares. Sigue el sprint."
+              : "Siguiente pregunta en marcha."}
         </p>
         <div className="mt-7 flex justify-center gap-1" aria-hidden="true">
           {[0, 1, 2].map((item) => (
@@ -52,7 +50,10 @@ export function QuestionTransition({
           ))}
         </div>
       </div>
-      <BoltIcon className="absolute bottom-6 right-6 h-12 w-12 text-white/[0.03]" aria-hidden="true" />
+      <BoltIcon
+        className="absolute bottom-6 right-6 h-12 w-12 text-white/[0.03]"
+        aria-hidden="true"
+      />
     </motion.section>
   );
 }

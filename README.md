@@ -44,10 +44,10 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 
 ## Comandos disponibles
 
-| Comando | Descripción |
-| --- | --- |
-| `npm run dev` | Inicia el servidor de desarrollo. |
-| `npm run lint` | Comprueba la calidad estática del código. |
+| Comando         | Descripción                                     |
+| --------------- | ----------------------------------------------- |
+| `npm run dev`   | Inicia el servidor de desarrollo.               |
+| `npm run lint`  | Comprueba la calidad estática del código.       |
 | `npm run build` | Genera la compilación optimizada de producción. |
 | `npm run start` | Sirve localmente una compilación de producción. |
 

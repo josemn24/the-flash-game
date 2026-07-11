@@ -37,7 +37,9 @@ export function ClassificationQuestion({
     <div className={styles.root}>
       <div className={styles.progressHeader}>
         <span>Clasificación</span>
-        <span>{answeredCount} de {items.length} clasificados</span>
+        <span>
+          {answeredCount} de {items.length} clasificados
+        </span>
       </div>
       <div
         className={styles.progressTrack}
@@ -91,7 +93,11 @@ export function ClassificationQuestion({
                     whileTap={locked ? undefined : { scale: 0.92 }}
                   >
                     {selected ? (
-                      <motion.span initial={{ scale: 0.5 }} animate={{ scale: 1 }} aria-hidden="true">
+                      <motion.span
+                        initial={{ scale: 0.5 }}
+                        animate={{ scale: 1 }}
+                        aria-hidden="true"
+                      >
                         <CheckIcon className={styles.checkIcon} />
                       </motion.span>
                     ) : (

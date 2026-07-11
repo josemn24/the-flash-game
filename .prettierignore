@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/
+
+# Build and test output
+.next/
+out/
+build/
+coverage/
+
+# Generated files
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment and deployment files
+.env*
+.vercel/
+
+# Binary and public assets
+public/
+app/favicon.ico

@@ -80,8 +80,7 @@ export const demoStage: Stage = {
       acceptedAnswers: ["James Cameron", "Cameron"],
       timeLimit: 15,
       points: 120,
-      explanation:
-        "James Cameron escribió y dirigió Avatar, estrenada en 2009.",
+      explanation: "James Cameron escribió y dirigió Avatar, estrenada en 2009.",
     },
     {
       id: "saturn-rings",
@@ -120,8 +119,7 @@ export const demoStage: Stage = {
       correctAnswer: "Queen",
       timeLimit: 11,
       points: 100,
-      explanation:
-        "Queen lanzó «Bohemian Rhapsody» en 1975 dentro del álbum A Night at the Opera.",
+      explanation: "Queen lanzó «Bohemian Rhapsody» en 1975 dentro del álbum A Night at the Opera.",
     },
     {
       id: "sequence",
@@ -132,8 +130,7 @@ export const demoStage: Stage = {
       correctAnswer: "32",
       timeLimit: 10,
       points: 130,
-      explanation:
-        "Cada número es el doble del anterior, así que 16 x 2 = 32.",
+      explanation: "Cada número es el doble del anterior, así que 16 x 2 = 32.",
     },
   ],
 };

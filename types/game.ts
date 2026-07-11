@@ -85,7 +85,8 @@ export type ClassificationQuestion = BaseQuestion & {
   media?: never;
 };
 
-export type Question = StandardQuestion | OrderingQuestion | ClassificationQuestion | LogicCodeQuestion;
+export type Question =
+  StandardQuestion | OrderingQuestion | ClassificationQuestion | LogicCodeQuestion;
 
 export type Stage = {
   id: string;
@@ -113,10 +114,4 @@ export type AnswerResult = {
   incorrectAttempts?: number;
 };
 
-export type GameScreen =
-  | "start"
-  | "intro"
-  | "playing"
-  | "transition"
-  | "results"
-  | "review";
+export type GameScreen = "start" | "intro" | "playing" | "transition" | "results" | "review";

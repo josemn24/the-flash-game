@@ -9,7 +9,11 @@
   padding: 0.9rem 1.25rem;
   font-size: 0.92rem;
   font-weight: 900;
-  transition: border-color 160ms, background 160ms, color 160ms, opacity 160ms;
+  transition:
+    border-color 160ms,
+    background 160ms,
+    color 160ms,
+    opacity 160ms;
 }
 
 .primary {

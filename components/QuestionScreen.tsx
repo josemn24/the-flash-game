@@ -42,8 +42,7 @@ export function QuestionScreen({
 }: QuestionScreenProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [textAnswer, setTextAnswer] = useState("");
-  const isChoice =
-    question.type === "multiple-choice" || question.type === "image-choice";
+  const isChoice = question.type === "multiple-choice" || question.type === "image-choice";
 
   const submitText = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,7 +60,7 @@ export function QuestionScreen({
     >
       <AppHeader
         className="mb-5 gap-4 sm:mb-7"
-        left={(
+        left={
           <div>
             <div className="mb-2.5 flex items-center gap-2">
               <span className={styles.brandMarkSmall}>
@@ -74,7 +73,7 @@ export function QuestionScreen({
               <span className="text-white/35"> / {totalQuestions}</span>
             </p>
           </div>
-        )}
+        }
         right={<Timer duration={question.timeLimit} active={!locked} onTimeUp={onTimeUp} />}
       />
 
@@ -88,7 +87,9 @@ export function QuestionScreen({
           </span>
         </div>
 
-        <h1 className={`${styles.questionTitle} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}>
+        <h1
+          className={`${styles.questionTitle} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}
+        >
           {question.question}
         </h1>
 
@@ -140,7 +141,10 @@ export function QuestionScreen({
 
         {question.type === "short-text" && (
           <form className="mt-8" onSubmit={submitText}>
-            <label className="mb-2.5 block text-sm font-bold text-white/65" htmlFor={`answer-${question.id}`}>
+            <label
+              className="mb-2.5 block text-sm font-bold text-white/65"
+              htmlFor={`answer-${question.id}`}
+            >
               Escribe tu respuesta
             </label>
             <div className={styles.textAnswerRow}>
@@ -172,11 +176,7 @@ export function QuestionScreen({
         )}
 
         {question.type === "ordering" && (
-          <OrderingQuestion
-            items={question.items}
-            locked={locked}
-            onSubmit={onSubmit}
-          />
+          <OrderingQuestion items={question.items} locked={locked} onSubmit={onSubmit} />
         )}
 
         {question.type === "classification" && (

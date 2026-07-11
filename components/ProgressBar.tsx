@@ -1,12 +1,6 @@
 import { motion } from "motion/react";
 
-export function ProgressBar({
-  current,
-  total,
-}: {
-  current: number;
-  total: number;
-}) {
+export function ProgressBar({ current, total }: { current: number; total: number }) {
   const percentage = (current / total) * 100;
 
   return (

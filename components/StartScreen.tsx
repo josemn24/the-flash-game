@@ -25,7 +25,11 @@ export function StartScreen({
     >
       <AppHeader
         left={<Logo />}
-        right={<Badge variant="status" dot>Demo en solitario</Badge>}
+        right={
+          <Badge variant="status" dot>
+            Demo en solitario
+          </Badge>
+        }
       />
 
       <div className="flex flex-1 flex-col justify-center py-10 sm:py-12">
@@ -74,7 +78,9 @@ export function StartScreen({
               type="button"
               onClick={() => onSelectStage(stage)}
             >
-              <span className={styles.stageSelectNumber}>{String(stage.number).padStart(2, "0")}</span>
+              <span className={styles.stageSelectNumber}>
+                {String(stage.number).padStart(2, "0")}
+              </span>
               <span className={styles.stageSelectContent}>
                 <span className="flex items-center justify-between gap-3">
                   <Badge>Etapa {String(stage.number).padStart(2, "0")}</Badge>

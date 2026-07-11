@@ -161,12 +161,12 @@ El jugador forma una silueta con piezas geométricas: tangram clásico, bloques,
 
 ## Priorización por objetivo
 
-| Objetivo | Mecánicas prioritarias | Motivo |
-| --- | --- | --- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, ordenar elementos, secuencias, anagramas, estimación | Amplían el juego con riesgo técnico contenido. |
-| Diferenciar The Flash de una trivia | Memoria relámpago, imagen progresiva, código lógico, objetos ocultos, mini-nonogramas | Introducen habilidades e interacciones que van más allá de responder preguntas. |
-| Pruebas especiales | Código lógico, mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas, tangram | Admiten retos ocasionales de uno a cinco minutos. |
-| Competición por tiempo | Ordenar, clasificación rápida, emparejar, diferencias visuales, imagen progresiva, laberinto, rompecabezas | Una ejecución correcta terminada antes representa una mejora clara. |
+| Objetivo                                   | Mecánicas prioritarias                                                                                     | Motivo                                                                          |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Equilibrio entre diversión y coste técnico | Encontrar el intruso, ordenar elementos, secuencias, anagramas, estimación                                 | Amplían el juego con riesgo técnico contenido.                                  |
+| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva, código lógico, objetos ocultos, mini-nonogramas                      | Introducen habilidades e interacciones que van más allá de responder preguntas. |
+| Pruebas especiales                         | Código lógico, mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas, tangram                  | Admiten retos ocasionales de uno a cinco minutos.                               |
+| Competición por tiempo                     | Ordenar, clasificación rápida, emparejar, diferencias visuales, imagen progresiva, laberinto, rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.             |
 
 ## Implicaciones para el futuro multijugador
 

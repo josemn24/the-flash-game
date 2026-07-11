@@ -12,19 +12,19 @@ Create a fully functional frontend application focused on a single playable stag
 
 Create a **UX proof of concept** for The Flash:
 
-* Single player.
-* 100% frontend.
-* No backend.
-* No database.
-* No authentication.
-* No rooms.
-* No multiple players.
-* No global ranking.
-* No admin panel.
-* No unnecessary complex logic.
-* Mock questions defined directly in the code.
-* One complete playable stage from beginning to end.
-* Strong focus on visual experience, buttons, timer, transitions, and the feeling of speed.
+- Single player.
+- 100% frontend.
+- No backend.
+- No database.
+- No authentication.
+- No rooms.
+- No multiple players.
+- No global ranking.
+- No admin panel.
+- No unnecessary complex logic.
+- Mock questions defined directly in the code.
+- One complete playable stage from beginning to end.
+- Strong focus on visual experience, buttons, timer, transitions, and the feeling of speed.
 
 The question this PoC must answer is:
 
@@ -36,18 +36,18 @@ The question this PoC must answer is:
 
 Use this stack:
 
-* Next.js with App Router.
-* React.
-* TypeScript.
-* Tailwind CSS.
-* Framer Motion for transitions and microinteractions.
-* Do not use a backend.
-* Do not use Supabase.
-* Do not use Firebase.
-* Do not use API routes unless absolutely necessary, but preferably do not use them.
-* Do not use a database.
-* Do not use authentication.
-* Do not install heavy unnecessary libraries.
+- Next.js with App Router.
+- React.
+- TypeScript.
+- Tailwind CSS.
+- Framer Motion for transitions and microinteractions.
+- Do not use a backend.
+- Do not use Supabase.
+- Do not use Firebase.
+- Do not use API routes unless absolutely necessary, but preferably do not use them.
+- Do not use a database.
+- Do not use authentication.
+- Do not install heavy unnecessary libraries.
 
 The app must be runnable with:
 
@@ -64,33 +64,33 @@ The final application must be completely in **Spanish**.
 
 This includes:
 
-* screen titles;
-* subtitles;
-* buttons;
-* labels;
-* timers;
-* progress text;
-* result messages;
-* questions;
-* answers;
-* explanations;
-* empty states;
-* feedback messages;
-* accessibility labels when visible or relevant;
-* any user-facing text.
+- screen titles;
+- subtitles;
+- buttons;
+- labels;
+- timers;
+- progress text;
+- result messages;
+- questions;
+- answers;
+- explanations;
+- empty states;
+- feedback messages;
+- accessibility labels when visible or relevant;
+- any user-facing text.
 
 Use natural Spanish from Spain, with a casual but polished tone.
 
 Examples:
 
-* “Jugar etapa demo”
-* “Empezar etapa”
-* “Pregunta 3/10”
-* “Respuesta enviada”
-* “Etapa completada”
-* “Ver respuestas”
-* “Volver a jugar”
-* “Primero importa acertar. Después, responder rápido.”
+- “Jugar etapa demo”
+- “Empezar etapa”
+- “Pregunta 3/10”
+- “Respuesta enviada”
+- “Etapa completada”
+- “Ver respuestas”
+- “Volver a jugar”
+- “Primero importa acertar. Después, responder rápido.”
 
 Do not leave any visible English text in the app.
 
@@ -100,23 +100,23 @@ Do not leave any visible English text in the app.
 
 The Flash should feel like a mix between:
 
-* a fast trivia game;
-* a race against the clock;
-* a final sprint;
-* a visual competition;
-* a short mobile-first challenge.
+- a fast trivia game;
+- a race against the clock;
+- a final sprint;
+- a visual competition;
+- a short mobile-first challenge.
 
 It must not feel like a boring quiz form.
 
 The identity should communicate:
 
-* speed;
-* tension;
-* clarity;
-* competition;
-* energy;
-* modernity;
-* a social game feeling, even though this PoC is single player.
+- speed;
+- tension;
+- clarity;
+- competition;
+- energy;
+- modernity;
+- a social game feeling, even though this PoC is single player.
 
 The experience must be designed mobile-first, while still looking good on desktop.
 
@@ -130,24 +130,27 @@ The PoC must include these states or screens:
 
 Initial screen with:
 
-* App name: **The Flash**.
-* A short subtitle, for example:
+- App name: **The Flash**.
+- A short subtitle, for example:
 
-  * “10 preguntas. Poco tiempo. Cero excusas.”
-  * or a similar competitive Spanish phrase.
-* A short description:
+  - “10 preguntas. Poco tiempo. Cero excusas.”
+  - or a similar competitive Spanish phrase.
 
-  * “Juega una etapa demo y responde antes de que se acabe el tiempo.”
-* Primary button:
+- A short description:
 
-  * “Jugar etapa demo”
-* Strong visual design:
+  - “Juega una etapa demo y responde antes de que se acabe el tiempo.”
 
-  * dark or gradient background;
-  * feeling of speed;
-  * visual elements inspired by flashes, sprint, energy, or countdown;
-  * good contrast;
-  * modern look.
+- Primary button:
+
+  - “Jugar etapa demo”
+
+- Strong visual design:
+
+  - dark or gradient background;
+  - feeling of speed;
+  - visual elements inspired by flashes, sprint, energy, or countdown;
+  - good contrast;
+  - modern look.
 
 When the user clicks the button, move to the stage intro screen.
 
@@ -157,20 +160,22 @@ When the user clicks the button, move to the stage intro screen.
 
 Show a card or screen with information about the demo stage:
 
-* Title: “Etapa Demo”
-* Subtitle: “Sprint de prueba”
-* Number of questions.
-* Estimated duration.
-* Question types included.
-* Main rule:
+- Title: “Etapa Demo”
+- Subtitle: “Sprint de prueba”
+- Number of questions.
+- Estimated duration.
+- Question types included.
+- Main rule:
 
-  * “Primero importa acertar. Después, responder rápido.”
-* Warning:
+  - “Primero importa acertar. Después, responder rápido.”
 
-  * “Una vez empieces, el temporizador no se detiene.”
-* Primary button:
+- Warning:
 
-  * “Empezar etapa”
+  - “Una vez empieces, el temporizador no se detiene.”
+
+- Primary button:
+
+  - “Empezar etapa”
 
 This screen should build tension before starting.
 
@@ -186,34 +191,35 @@ Show one question at a time.
 
 Visible elements:
 
-* Question category.
-* Current question number and total.
+- Question category.
+- Current question number and total.
 
-  * Example: “Pregunta 3/10”
-* Stage progress bar.
-* Visible timer.
-* Question text.
-* Answer options or input, depending on the question type.
-* Submit button when needed.
-* Visual state for selected answer.
+  - Example: “Pregunta 3/10”
+
+- Stage progress bar.
+- Visible timer.
+- Question text.
+- Answer options or input, depending on the question type.
+- Submit button when needed.
+- Visual state for selected answer.
 
 During a question:
 
-* The user can answer only once.
-* Once answered, the answer is locked.
-* After a short transition, the app automatically moves to the next question.
-* Do not show whether the answer was correct or incorrect during the stage.
-* Do not show points during the stage.
-* Do not show solutions during the stage.
+- The user can answer only once.
+- Once answered, the answer is locked.
+- After a short transition, the app automatically moves to the next question.
+- Do not show whether the answer was correct or incorrect during the stage.
+- Do not show points during the stage.
+- Do not show solutions during the stage.
 
 The experience should feel:
 
-* fast;
-* clear;
-* distraction-free;
-* with large buttons;
-* easy to use on mobile;
-* fluid.
+- fast;
+- clear;
+- distraction-free;
+- with large buttons;
+- easy to use on mobile;
+- fluid.
 
 ---
 
@@ -223,9 +229,9 @@ After answering a question, show a brief transition for a few tenths of a second
 
 It may show Spanish text such as:
 
-* “Respuesta enviada”
-* “Siguiente pregunta”
-* “Sigue el sprint”
+- “Respuesta enviada”
+- “Siguiente pregunta”
+- “Sigue el sprint”
 
 Do not show whether the user was correct or wrong.
 
@@ -237,11 +243,11 @@ The transition should be quick, not slow or annoying.
 
 If the timer reaches zero:
 
-* The question is marked as unanswered.
-* It is saved as missed or unanswered.
-* The app automatically moves to the next question after a short transition.
-* The whole stage must not be blocked.
-* The game must not restart.
+- The question is marked as unanswered.
+- It is saved as missed or unanswered.
+- The app automatically moves to the next question after a short transition.
+- The whole stage must not be blocked.
+- The game must not restart.
 
 ---
 
@@ -251,26 +257,29 @@ After all questions are completed, show an attractive final screen.
 
 It must include:
 
-* Title:
+- Title:
 
-  * “Etapa completada”
-* Total score.
-* Number of correct answers.
-* Number of wrong answers.
-* Number of unanswered questions.
-* Total time used.
-* Accuracy percentage.
-* Dynamic Spanish message depending on performance:
+  - “Etapa completada”
 
-  * If the user did very well: “Sprint brutal.”
-  * If the user did okay: “Buen ritmo, pero puedes apretar más.”
-  * If the user did poorly: “Etapa dura. Vuelve a intentarlo.”
-* Button:
+- Total score.
+- Number of correct answers.
+- Number of wrong answers.
+- Number of unanswered questions.
+- Total time used.
+- Accuracy percentage.
+- Dynamic Spanish message depending on performance:
 
-  * “Volver a jugar”
-* Secondary button:
+  - If the user did very well: “Sprint brutal.”
+  - If the user did okay: “Buen ritmo, pero puedes apretar más.”
+  - If the user did poorly: “Etapa dura. Vuelve a intentarlo.”
 
-  * “Ver respuestas”
+- Button:
+
+  - “Volver a jugar”
+
+- Secondary button:
+
+  - “Ver respuestas”
 
 In this PoC, since it is single player, solutions can be shown after finishing.
 
@@ -282,15 +291,15 @@ When the user clicks “Ver respuestas”, show a question-by-question summary.
 
 For each question, show:
 
-* Question number.
-* Category.
-* Question text.
-* User answer.
-* Correct answer.
-* Whether it was correct, incorrect, or unanswered.
-* Points earned.
-* Time used.
-* Short explanation.
+- Question number.
+- Category.
+- Question text.
+- User answer.
+- Correct answer.
+- Whether it was correct, incorrect, or unanswered.
+- Points earned.
+- Time used.
+- Short explanation.
 
 This section can be displayed below the final screen or as a separate view within the same frontend app.
 
@@ -308,16 +317,17 @@ The question shows several options, usually 4.
 
 Example:
 
-* Question: “¿Cuál es la capital de Canadá?”
-* Options:
+- Question: “¿Cuál es la capital de Canadá?”
+- Options:
 
-  * Toronto
-  * Ottawa
-  * Vancouver
-  * Montreal
-* Correct answer:
+  - Toronto
+  - Ottawa
+  - Vancouver
+  - Montreal
 
-  * Ottawa
+- Correct answer:
+
+  - Ottawa
 
 The user taps an option and can submit it, or the option can be submitted automatically after tapping it. For this PoC, use selection first and then show a “Confirmar respuesta” button, to avoid accidental mistakes.
 
@@ -327,8 +337,8 @@ The user taps an option and can submit it, or the option can be submitted automa
 
 The question shows two large buttons:
 
-* “Verdadero”
-* “Falso”
+- “Verdadero”
+- “Falso”
 
 This should be very fast to answer.
 
@@ -342,30 +352,30 @@ The question shows a text input and a submit button.
 
 The correction must be flexible:
 
-* ignore uppercase/lowercase;
-* ignore accents;
-* ignore extra spaces;
-* allow equivalent answers configured in an array.
+- ignore uppercase/lowercase;
+- ignore accents;
+- ignore extra spaces;
+- allow equivalent answers configured in an array.
 
 Example:
 
 Question:
 
-* “¿En qué año terminó la Segunda Guerra Mundial?”
+- “¿En qué año terminó la Segunda Guerra Mundial?”
 
 Accepted answers:
 
-* “1945”
+- “1945”
 
 Another example:
 
-* Configured correct answer: “Cristóbal Colón”
-* These should be accepted:
+- Configured correct answer: “Cristóbal Colón”
+- These should be accepted:
 
-  * “cristobal colon”
-  * “Cristobal Colon”
-  * “CRISTÓBAL COLÓN”
-  * “cristóbalcolon”
+  - “cristobal colon”
+  - “Cristobal Colon”
+  - “CRISTÓBAL COLÓN”
+  - “cristóbalcolon”
 
 ---
 
@@ -377,18 +387,19 @@ To avoid complicated external assets, you may use stable remote images or visual
 
 Example:
 
-* Category: “Geografía”
-* Image: Japanese flag or visual representation.
-* Question: “¿A qué país pertenece esta bandera?”
-* Options:
+- Category: “Geografía”
+- Image: Japanese flag or visual representation.
+- Question: “¿A qué país pertenece esta bandera?”
+- Options:
 
-  * Japón
-  * Corea del Sur
-  * China
-  * Vietnam
-* Correct answer:
+  - Japón
+  - Corea del Sur
+  - China
+  - Vietnam
 
-  * Japón
+- Correct answer:
+
+  - Japón
 
 The image must look good on mobile.
 
@@ -449,9 +460,9 @@ Implement a simple but realistic scoring logic.
 
 Each question has:
 
-* Maximum value: `V`
-* Time limit: `T`
-* Time used by the user: `t`
+- Maximum value: `V`
+- Time limit: `T`
+- Time used by the user: `t`
 
 If the answer is correct:
 
@@ -461,25 +472,25 @@ points = V × (1 - 0.5 × (t / T))
 
 Rules:
 
-* The maximum score is V.
-* The minimum score for a correct answer is 50% of V.
-* Round to the nearest integer.
-* Ensure it never goes below 50% of the maximum value, rounded up.
+- The maximum score is V.
+- The minimum score for a correct answer is 50% of V.
+- Round to the nearest integer.
+- Ensure it never goes below 50% of the maximum value, rounded up.
 
 Example:
 
 Question worth 10 points with a 20-second limit:
 
-* answer in 0s: 10 points;
-* answer in 10s: about 8 points;
-* answer in 20s: 5 points.
+- answer in 0s: 10 points;
+- answer in 10s: about 8 points;
+- answer in 20s: 5 points.
 
 If the answer is incorrect:
 
-* Multiple choice: penalty of 20% of the maximum value.
-* Image with multiple choice: penalty of 20% of the maximum value.
-* True/False: penalty of 40% of the maximum value.
-* Short text answer: 0 points, no penalty.
+- Multiple choice: penalty of 20% of the maximum value.
+- Image with multiple choice: penalty of 20% of the maximum value.
+- True/False: penalty of 40% of the maximum value.
+- Short text answer: 0 points, no penalty.
 
 For this PoC, the final total score cannot go below 0.
 
@@ -503,23 +514,24 @@ Create a reusable timer component, for example:
 
 Requirements:
 
-* Receives `duration`.
-* Receives callbacks:
+- Receives `duration`.
+- Receives callbacks:
 
-  * `onTimeUp`.
-  * optionally `onTick`.
-* Shows remaining seconds.
-* Shows visual progress, such as a circular bar, horizontal bar, or both.
-* Changes visually when little time remains.
-* Must be clear and visible.
-* Must not produce bugs if the user answers right when the timer reaches zero.
-* When moving to the next question, the timer must reset with the new question duration.
+  - `onTimeUp`.
+  - optionally `onTick`.
+
+- Shows remaining seconds.
+- Shows visual progress, such as a circular bar, horizontal bar, or both.
+- Changes visually when little time remains.
+- Must be clear and visible.
+- Must not produce bugs if the user answers right when the timer reaches zero.
+- When moving to the next question, the timer must reset with the new question duration.
 
 Important:
 
-* Avoid multiple active intervals.
-* Clean intervals properly.
-* Do not allow a question to be answered twice.
+- Avoid multiple active intervals.
+- Clean intervals properly.
+- Do not allow a question to be answered twice.
 
 ---
 
@@ -529,16 +541,16 @@ The app must have its own visual identity.
 
 Recommended visual direction:
 
-* Dark background with gradients.
-* Electric accents.
-* Feeling of speed.
-* Rounded cards.
-* Large buttons.
-* Clear typography.
-* Microanimations.
-* Visible progress.
-* Hover/tap states.
-* Mobile-first design.
+- Dark background with gradients.
+- Electric accents.
+- Feeling of speed.
+- Rounded cards.
+- Large buttons.
+- Clear typography.
+- Microanimations.
+- Visible progress.
+- Hover/tap states.
+- Mobile-first design.
 
 The interface must feel like a modern app, not a basic HTML page.
 
@@ -546,12 +558,12 @@ Use Tailwind CSS for styles.
 
 Use Framer Motion for:
 
-* screen entrance animations;
-* transitions between questions;
-* button animations;
-* final screen animation;
-* progress bar animations;
-* visual feedback for selected answers.
+- screen entrance animations;
+- transitions between questions;
+- button animations;
+- final screen animation;
+- progress bar animations;
+- visual feedback for selected answers.
 
 Do not overuse animations. They should improve the experience, not slow it down.
 
@@ -596,15 +608,15 @@ You may adjust the structure if needed, but keep the code clean and understandab
 
 The app must control local state for:
 
-* current screen;
-* current question index;
-* user answers;
-* start time of each question;
-* time used per question;
-* whether the answer was correct;
-* points earned;
-* whether the question was unanswered;
-* final result.
+- current screen;
+- current question index;
+- user answers;
+- start time of each question;
+- time used per question;
+- whether the answer was correct;
+- points earned;
+- whether the question was unanswered;
+- final result.
 
 Do not use Redux or unnecessary global state libraries.
 
@@ -624,12 +636,12 @@ type GameStatus = "start" | "intro" | "playing" | "transition" | "finished" | "r
 
 Expected behavior:
 
-* `start`: start screen.
-* `intro`: stage intro.
-* `playing`: active question.
-* `transition`: answer submitted / next question.
-* `finished`: final results.
-* `review`: answer review.
+- `start`: start screen.
+- `intro`: stage intro.
+- `playing`: active question.
+- `transition`: answer submitted / next question.
+- `finished`: final results.
+- `review`: answer review.
 
 ---
 
@@ -637,14 +649,14 @@ Expected behavior:
 
 During the stage:
 
-* Do not show whether an answer is correct.
-* Do not show explanations.
-* Do not show partial score.
-* Do not allow going back.
-* Do not allow changing a submitted answer.
-* Do not pause the timer.
-* If time runs out, automatically move forward.
-* After the last question, go to results.
+- Do not show whether an answer is correct.
+- Do not show explanations.
+- Do not show partial score.
+- Do not allow going back.
+- Do not allow changing a submitted answer.
+- Do not pause the timer.
+- If time runs out, automatically move forward.
+- After the last question, go to results.
 
 ---
 
@@ -652,17 +664,18 @@ During the stage:
 
 Pay special attention to:
 
-* Large, easy-to-tap buttons.
-* Good contrast.
-* Readable text on mobile.
-* Visible focus states.
-* Do not rely only on color to indicate selection.
-* Inputs with clear labels or placeholders.
-* Basic keyboard support:
+- Large, easy-to-tap buttons.
+- Good contrast.
+- Readable text on mobile.
+- Visible focus states.
+- Do not rely only on color to indicate selection.
+- Inputs with clear labels or placeholders.
+- Basic keyboard support:
 
-  * Enter to submit short text answers.
-  * Tab navigation.
-* Avoid elements that are too small.
+  - Enter to submit short text answers.
+  - Tab navigation.
+
+- Avoid elements that are too small.
 
 ---
 
@@ -672,17 +685,17 @@ The app must be optimized for mobile.
 
 On mobile:
 
-* Content should use the screen well.
-* Buttons must be large.
-* The timer must always be visible.
-* There should be no unnecessary scrolling during a normal question.
-* The question and options must be comfortable to read.
+- Content should use the screen well.
+- Buttons must be large.
+- The timer must always be visible.
+- There should be no unnecessary scrolling during a normal question.
+- The question and options must be comfortable to read.
 
 On desktop:
 
-* Center the experience in a card or max-width container.
-* Do not stretch the content too much.
-* Keep the app-like feel.
+- Center the experience in a card or max-width container.
+- Do not stretch the content too much.
+- Keep the app-like feel.
 
 ---
 
@@ -705,12 +718,12 @@ Example mix:
 
 Make sure every question has:
 
-* category;
-* question text;
-* time limit;
-* points;
-* correct answer;
-* explanation.
+- category;
+- question text;
+- time limit;
+- points;
+- correct answer;
+- explanation.
 
 All example content must be written in Spanish.
 
@@ -739,13 +752,13 @@ It must be fully functional without configuring any external service.
 
 The code must be:
 
-* clean;
-* typed;
-* easy to read;
-* organized by components;
-* free of unnecessary duplication;
-* ready to evolve later into an app with backend;
-* but without building any backend now.
+- clean;
+- typed;
+- easy to read;
+- organized by components;
+- free of unnecessary duplication;
+- ready to evolve later into an app with backend;
+- but without building any backend now.
 
 Do not create excessive abstractions.
 
@@ -759,27 +772,27 @@ Prioritize making the demo playable, beautiful, and fluid.
 
 Do not implement:
 
-* login;
-* registration;
-* real users;
-* rooms;
-* invitation codes;
-* multiplayer;
-* rankings between players;
-* real general leaderboard;
-* admin panel;
-* database;
-* backend;
-* Supabase;
-* Firebase;
-* notifications;
-* Telegram;
-* payments;
-* exports;
-* complex offline mode;
-* audit logs;
-* real image management;
-* file uploads.
+- login;
+- registration;
+- real users;
+- rooms;
+- invitation codes;
+- multiplayer;
+- rankings between players;
+- real general leaderboard;
+- admin panel;
+- database;
+- backend;
+- Supabase;
+- Firebase;
+- notifications;
+- Telegram;
+- payments;
+- exports;
+- complex offline mode;
+- audit logs;
+- real image management;
+- file uploads.
 
 If any of these things seem necessary, simulate them visually or ignore them.
 
@@ -789,15 +802,15 @@ If any of these things seem necessary, simulate them visually or ignore them.
 
 Pay special attention to:
 
-* every button press should give immediate visual feedback;
-* selected options must be clearly distinguishable;
-* there should be no abrupt layout jumps;
-* the timer should not flicker annoyingly;
-* movement between questions should be quick;
-* the final screen should feel rewarding;
-* the experience should feel like a game, not a questionnaire;
-* there should be a clear “sprint” feeling;
-* the user should want to play again.
+- every button press should give immediate visual feedback;
+- selected options must be clearly distinguishable;
+- there should be no abrupt layout jumps;
+- the timer should not flicker annoyingly;
+- movement between questions should be quick;
+- the final screen should feel rewarding;
+- the experience should feel like a game, not a questionnaire;
+- there should be a clear “sprint” feeling;
+- the user should want to play again.
 
 ---
 
@@ -807,15 +820,15 @@ Return the complete project with all necessary files.
 
 Include:
 
-* folder structure;
-* components;
-* types;
-* mock data;
-* scoring logic;
-* timer;
-* screens;
-* styles;
-* instructions to run.
+- folder structure;
+- components;
+- types;
+- mock data;
+- scoring logic;
+- timer;
+- screens;
+- styles;
+- instructions to run.
 
 Do not overexplain: build the app.
 

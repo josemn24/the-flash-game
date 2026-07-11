@@ -5,7 +5,8 @@ export const connectionsStage: Stage = {
   number: 2,
   title: "Conexiones rápidas",
   subtitle: "Patrones, imágenes y cultura bajo presión",
-  description: "Diez retos para enlazar ideas, detectar patrones y reconocer pistas antes de que se escape el tiempo.",
+  description:
+    "Diez retos para enlazar ideas, detectar patrones y reconocer pistas antes de que se escape el tiempo.",
   questions: [
     {
       id: "letter-pattern",
@@ -16,7 +17,8 @@ export const connectionsStage: Stage = {
       correctAnswer: "O",
       timeLimit: 10,
       points: 120,
-      explanation: "Los saltos crecen de uno en uno: +2, +3, +4 y +5. Desde J, cinco letras después está la O.",
+      explanation:
+        "Los saltos crecen de uno en uno: +2, +3, +4 y +5. Desde J, cinco letras después está la O.",
     },
     {
       id: "australia-capital",
@@ -64,7 +66,8 @@ export const connectionsStage: Stage = {
       correctOrder: ["Imprenta", "Máquina de vapor", "Teléfono", "Internet"],
       timeLimit: 16,
       points: 140,
-      explanation: "La imprenta surgió en el siglo XV, la máquina de vapor se desarrolló en los siglos XVII y XVIII, el teléfono se patentó en el XIX e Internet nació en el XX.",
+      explanation:
+        "La imprenta surgió en el siglo XV, la máquina de vapor se desarrolló en los siglos XVII y XVIII, el teléfono se patentó en el XIX e Internet nació en el XX.",
     },
     {
       id: "byte-bits",
@@ -74,7 +77,8 @@ export const connectionsStage: Stage = {
       correctAnswer: true,
       timeLimit: 7,
       points: 100,
-      explanation: "Un byte es una unidad de información formada, de manera habitual, por ocho bits.",
+      explanation:
+        "Un byte es una unidad de información formada, de manera habitual, por ocho bits.",
     },
     {
       id: "red-planet",
@@ -103,7 +107,8 @@ export const connectionsStage: Stage = {
       },
       timeLimit: 9,
       points: 110,
-      explanation: "La torre Eiffel está en París y fue construida para la Exposición Universal de 1889.",
+      explanation:
+        "La torre Eiffel está en París y fue construida para la Exposición Universal de 1889.",
     },
     {
       id: "logic-connection",
@@ -121,7 +126,8 @@ export const connectionsStage: Stage = {
       correctAnswer: "042",
       timeLimit: 25,
       points: 150,
-      explanation: "738 descarta 7, 3 y 8. En 780, el 0 es correcto pero no va al final; en 206, el 0 y el 2 son correctos pero están mal colocados. Así, el 0 ocupa la primera posición y el 2 la tercera. La pista 614 confirma que el 4 es correcto pero no va en la tercera posición: el código es 042.",
+      explanation:
+        "738 descarta 7, 3 y 8. En 780, el 0 es correcto pero no va al final; en 206, el 0 y el 2 son correctos pero están mal colocados. Así, el 0 ocupa la primera posición y el 2 la tercera. La pista 614 confirma que el 4 es correcto pero no va en la tercera posición: el código es 042.",
     },
     {
       id: "living-things-classification",
@@ -140,7 +146,8 @@ export const connectionsStage: Stage = {
       ],
       timeLimit: 20,
       points: 160,
-      explanation: "Delfines, murciélagos y ballenas son mamíferos; águilas y pingüinos son aves; cocodrilos y tortugas son reptiles.",
+      explanation:
+        "Delfines, murciélagos y ballenas son mamíferos; águilas y pingüinos son aves; cocodrilos y tortugas son reptiles.",
     },
   ],
 };

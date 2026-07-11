@@ -29,14 +29,19 @@ export function LogicCodeQuestion({
   const updateDigit = (index: number, event: ChangeEvent<HTMLInputElement>) => {
     const incoming = event.target.value.replace(/\D/g, "");
     if (!incoming) {
-      setDigits((current) => current.map((digit, digitIndex) => digitIndex === index ? "" : digit));
+      setDigits((current) =>
+        current.map((digit, digitIndex) => (digitIndex === index ? "" : digit)),
+      );
       return;
     }
 
     const nextDigits = [...digits];
-    incoming.slice(0, codeLength - index).split("").forEach((digit, offset) => {
-      nextDigits[index + offset] = digit;
-    });
+    incoming
+      .slice(0, codeLength - index)
+      .split("")
+      .forEach((digit, offset) => {
+        nextDigits[index + offset] = digit;
+      });
     setFeedback("");
     setDigits(nextDigits);
     const nextIndex = Math.min(index + incoming.length, codeLength - 1);
@@ -61,7 +66,9 @@ export function LogicCodeQuestion({
     } else if (event.key === "Backspace" && !digits[index] && index > 0) {
       event.preventDefault();
       inputRefs.current[index - 1]?.focus();
-      setDigits((current) => current.map((digit, digitIndex) => digitIndex === index - 1 ? "" : digit));
+      setDigits((current) =>
+        current.map((digit, digitIndex) => (digitIndex === index - 1 ? "" : digit)),
+      );
     } else if (event.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     } else if (event.key === "ArrowRight" && index < codeLength - 1) {
@@ -92,7 +99,9 @@ export function LogicCodeQuestion({
           {digits.map((digit, index) => (
             <input
               key={index}
-              ref={(element) => { inputRefs.current[index] = element; }}
+              ref={(element) => {
+                inputRefs.current[index] = element;
+              }}
               className={`${styles.digitInput} ${digit ? styles.filled : ""}`}
               type="text"
               inputMode="numeric"

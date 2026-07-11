@@ -1,26 +1,24 @@
 import type { AnswerValue, ClassificationAnswer, Question } from "@/types/game";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 
-export function isClassificationAnswer(
-  answer: AnswerValue | null,
-): answer is ClassificationAnswer {
+export function isClassificationAnswer(answer: AnswerValue | null): answer is ClassificationAnswer {
   return answer !== null && typeof answer === "object" && !Array.isArray(answer);
 }
 
-export function isAnswerCorrect(
-  question: Question,
-  answer: AnswerValue,
-): boolean {
+export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
   if (question.type === "classification") {
-    return isClassificationAnswer(answer) && question.items.every(
-      (item) => answer[item.label] === item.correctCategory,
+    return (
+      isClassificationAnswer(answer) &&
+      question.items.every((item) => answer[item.label] === item.correctCategory)
     );
   }
 
   if (question.type === "ordering") {
-    return Array.isArray(answer) &&
+    return (
+      Array.isArray(answer) &&
       answer.length === question.correctOrder.length &&
-      answer.every((item, index) => item === question.correctOrder[index]);
+      answer.every((item, index) => item === question.correctOrder[index])
+    );
   }
 
   if (typeof question.correctAnswer === "boolean") {
@@ -32,9 +30,7 @@ export function isAnswerCorrect(
   const accepted = question.acceptedAnswers ?? [question.correctAnswer];
   const normalizedAnswer = normalizeAnswer(answer);
 
-  return accepted.some(
-    (candidate) => normalizeAnswer(candidate) === normalizedAnswer,
-  );
+  return accepted.some((candidate) => normalizeAnswer(candidate) === normalizedAnswer);
 }
 
 export function calculateAnswerScore(
@@ -59,16 +55,10 @@ export function calculateAnswerScore(
     const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
     const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
 
-    return Math.round(
-      question.points * (correctCount / question.items.length) * speedMultiplier,
-    );
+    return Math.round(question.points * (correctCount / question.items.length) * speedMultiplier);
   }
 
-  return calculateQuestionScore(
-    question,
-    isAnswerCorrect(question, answer),
-    timeUsed,
-  );
+  return calculateQuestionScore(question, isAnswerCorrect(question, answer), timeUsed);
 }
 
 export function calculateQuestionScore(
@@ -78,9 +68,7 @@ export function calculateQuestionScore(
 ): number {
   if (correct) {
     const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-    const score = Math.round(
-      question.points * (1 - 0.5 * (safeTime / question.timeLimit)),
-    );
+    const score = Math.round(question.points * (1 - 0.5 * (safeTime / question.timeLimit)));
     return Math.max(score, Math.ceil(question.points * 0.5));
   }
 
@@ -100,5 +88,8 @@ export function calculateQuestionScore(
 }
 
 export function calculateTotalScore(scores: number[]): number {
-  return Math.max(0, scores.reduce((total, score) => total + score, 0));
+  return Math.max(
+    0,
+    scores.reduce((total, score) => total + score, 0),
+  );
 }

@@ -32,13 +32,17 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
             <div className="mb-7 flex items-start justify-between gap-4">
               <div>
                 <p className={`${styles.eyebrow} mb-3 text-[var(--electric)]`}>Siguiente carrera</p>
-                <h1 className="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">{stage.title}</h1>
+                <h1 className="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
+                  {stage.title}
+                </h1>
                 <p className="mt-2 text-base font-bold text-white/45">{stage.subtitle}</p>
               </div>
               <div className={styles.stageNumber}>{String(stage.number).padStart(2, "0")}</div>
             </div>
 
-            <p className="max-w-xl text-sm leading-6 text-white/55 sm:text-base">{stage.description}</p>
+            <p className="max-w-xl text-sm leading-6 text-white/55 sm:text-base">
+              {stage.description}
+            </p>
 
             <div className="my-7 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/9 bg-black/20 sm:my-8">
               <div className={styles.stageStat}>
@@ -71,7 +75,9 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
                 </div>
                 <div>
                   <p className="text-sm font-black text-white">Primero, acierta</p>
-                  <p className="mt-1 text-xs leading-5 text-white/40">Después, responde rápido para sumar más.</p>
+                  <p className="mt-1 text-xs leading-5 text-white/40">
+                    Después, responde rápido para sumar más.
+                  </p>
                 </div>
               </div>
               <div className={styles.ruleCard}>
@@ -80,7 +86,9 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
                 </div>
                 <div>
                   <p className="text-sm font-black text-white">Sin pausas</p>
-                  <p className="mt-1 text-xs leading-5 text-white/40">Una vez empieces, el temporizador no se detiene.</p>
+                  <p className="mt-1 text-xs leading-5 text-white/40">
+                    Una vez empieces, el temporizador no se detiene.
+                  </p>
                 </div>
               </div>
             </div>

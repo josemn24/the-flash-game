@@ -18,11 +18,7 @@ type LastMove = {
   sequence: number;
 };
 
-export function OrderingQuestion({
-  items,
-  locked,
-  onSubmit,
-}: OrderingQuestionProps) {
+export function OrderingQuestion({ items, locked, onSubmit }: OrderingQuestionProps) {
   const [orderedItems, setOrderedItems] = useState(() => [...items]);
   const [lastMove, setLastMove] = useState<LastMove | null>(null);
 
@@ -54,10 +50,7 @@ export function OrderingQuestion({
           <ArrowUpIcon className={styles.directionIcon} />
         </div>
 
-        <ol
-          className={styles.sequence}
-          aria-label="Orden actual de los elementos"
-        >
+        <ol className={styles.sequence} aria-label="Orden actual de los elementos">
           {orderedItems.map((item, index) => (
             <motion.li
               layout
@@ -79,9 +72,7 @@ export function OrderingQuestion({
               <span className={styles.position} aria-hidden="true">
                 {index + 1}
               </span>
-              <span className={styles.itemLabel}>
-                {item}
-              </span>
+              <span className={styles.itemLabel}>{item}</span>
               <span className={styles.controls}>
                 <motion.button
                   type="button"
@@ -98,7 +89,9 @@ export function OrderingQuestion({
                   className={styles.control}
                   disabled={locked || index === orderedItems.length - 1}
                   onClick={() => moveItem(index, 1)}
-                  whileTap={locked || index === orderedItems.length - 1 ? undefined : { scale: 0.92 }}
+                  whileTap={
+                    locked || index === orderedItems.length - 1 ? undefined : { scale: 0.92 }
+                  }
                   aria-label={`Mover ${item} abajo`}
                 >
                   <ArrowDownIcon className={styles.controlIcon} />
@@ -108,7 +101,10 @@ export function OrderingQuestion({
           ))}
         </ol>
 
-        <div className={`${styles.directionLabel} ${styles.directionLabelBottom}`} aria-hidden="true">
+        <div
+          className={`${styles.directionLabel} ${styles.directionLabelBottom}`}
+          aria-hidden="true"
+        >
           <ArrowDownIcon className={styles.directionIcon} />
           <span>Más reciente</span>
         </div>

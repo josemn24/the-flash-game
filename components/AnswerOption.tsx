@@ -10,13 +10,7 @@ type AnswerOptionProps = {
   onSelect: () => void;
 };
 
-export function AnswerOption({
-  label,
-  selected,
-  disabled,
-  index,
-  onSelect,
-}: AnswerOptionProps) {
+export function AnswerOption({ label, selected, disabled, index, onSelect }: AnswerOptionProps) {
   const shortcut = String.fromCharCode(65 + index);
 
   return (

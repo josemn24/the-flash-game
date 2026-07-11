@@ -8,9 +8,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
         <BoltIcon className="h-4 w-4" />
       </span>
       {!compact && (
-        <span className="text-sm font-black tracking-[0.18em] text-white uppercase">
-          The Flash
-        </span>
+        <span className="text-sm font-black tracking-[0.18em] text-white uppercase">The Flash</span>
       )}
     </div>
   );

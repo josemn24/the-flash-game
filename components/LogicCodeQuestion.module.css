@@ -4,12 +4,47 @@
   gap: 1rem;
 }
 
-.clues { display: grid; gap: 0.45rem; }
-.clue { display: grid; grid-template-columns: 3.7rem 1fr; align-items: center; gap: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.075); border-radius: 0.8rem; padding: 0.55rem 0.7rem; background: rgba(255, 255, 255, 0.025); }
-.clue strong { font-family: var(--font-mono); font-size: 1.05rem; letter-spacing: 0.14em; color: var(--electric); }
-.clue span { font-size: 0.72rem; font-weight: 650; line-height: 1.25rem; color: rgba(255, 255, 255, 0.56); }
-.entryPanel { border: 1px solid rgba(215, 255, 24, 0.16); border-radius: 1rem; padding: 0.9rem; background: rgba(10, 11, 14, 0.72); }
-.feedback { min-height: 2.25rem; padding-top: 0.55rem; text-align: center; font-size: 0.68rem; font-weight: 700; line-height: 1.1rem; color: rgba(255, 255, 255, 0.38); }
+.clues {
+  display: grid;
+  gap: 0.45rem;
+}
+.clue {
+  display: grid;
+  grid-template-columns: 3.7rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.7rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+.clue strong {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+  color: var(--electric);
+}
+.clue span {
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.25rem;
+  color: rgba(255, 255, 255, 0.56);
+}
+.entryPanel {
+  border: 1px solid rgba(215, 255, 24, 0.16);
+  border-radius: 1rem;
+  padding: 0.9rem;
+  background: rgba(10, 11, 14, 0.72);
+}
+.feedback {
+  min-height: 2.25rem;
+  padding-top: 0.55rem;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  color: rgba(255, 255, 255, 0.38);
+}
 
 .codeDisplay {
   display: flex;
@@ -19,9 +54,18 @@
 }
 
 @media (min-width: 640px) {
-  .challenge { margin-top: 1.5rem; grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr); align-items: start; gap: 1.25rem; }
-  .clue { padding: 0.7rem 0.8rem; }
-  .entryPanel { padding: 1rem; }
+  .challenge {
+    margin-top: 1.5rem;
+    grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
+    align-items: start;
+    gap: 1.25rem;
+  }
+  .clue {
+    padding: 0.7rem 0.8rem;
+  }
+  .entryPanel {
+    padding: 1rem;
+  }
 }
 
 .digitInput {
@@ -72,7 +116,9 @@
   background: var(--electric);
   font-size: 0.8rem;
   font-weight: 900;
-  transition: background 150ms, opacity 150ms;
+  transition:
+    background 150ms,
+    opacity 150ms;
 }
 
 .submitButton:hover:not(:disabled),
