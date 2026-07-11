@@ -308,6 +308,10 @@ button:disabled {
   .review-content { padding: 1.2rem; }
 }
 
+@media (max-width: 639px) {
+  .question-title-ordering { font-size: clamp(1.72rem, 7.5vw, 2.2rem); line-height: 1.02; }
+}
+
 @media (min-width: 850px) {
   .results-grid { grid-template-columns: 1.02fr 0.98fr; gap: 1.25rem; align-items: stretch; }
   .score-panel { display: flex; min-height: calc(100dvh - 7rem); flex-direction: column; }

@@ -6,6 +6,7 @@ import { AnswerOption } from "@/components/AnswerOption";
 import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
+import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { Timer } from "@/components/Timer";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -80,7 +81,9 @@ export function QuestionScreen({
           </span>
         </div>
 
-        <h1 className="question-title">{question.question}</h1>
+        <h1 className={`question-title ${question.type === "ordering" ? "question-title-ordering" : ""}`}>
+          {question.question}
+        </h1>
 
         {question.media && (
           <div className="mt-5 sm:mt-6">
@@ -159,6 +162,15 @@ export function QuestionScreen({
               No importan las mayúsculas, las tildes ni los espacios.
             </p>
           </form>
+        )}
+
+        {question.type === "ordering" && (
+          <OrderingQuestion
+            items={question.items}
+            instruction={question.instruction}
+            locked={locked}
+            onSubmit={onSubmit}
+          />
         )}
 
         {isChoice && (

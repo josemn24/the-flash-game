@@ -2,7 +2,8 @@ export type QuestionType =
   | "multiple-choice"
   | "true-false"
   | "short-text"
-  | "image-choice";
+  | "image-choice"
+  | "ordering";
 
 export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
 
@@ -20,19 +21,37 @@ export type QuestionMedia =
       position?: string;
     };
 
-export type Question = {
+type BaseQuestion = {
   id: string;
-  type: QuestionType;
   category: string;
   question: string;
-  options?: string[];
-  correctAnswer: string | boolean;
-  acceptedAnswers?: string[];
-  media?: QuestionMedia;
   timeLimit: number;
   points: number;
   explanation: string;
 };
+
+type StandardQuestion = BaseQuestion & {
+  type: Exclude<QuestionType, "ordering">;
+  options?: string[];
+  correctAnswer: string | boolean;
+  acceptedAnswers?: string[];
+  media?: QuestionMedia;
+  items?: never;
+  correctOrder?: never;
+};
+
+export type OrderingQuestion = BaseQuestion & {
+  type: "ordering";
+  items: string[];
+  correctOrder: string[];
+  instruction?: string;
+  options?: never;
+  correctAnswer?: never;
+  acceptedAnswers?: never;
+  media?: never;
+};
+
+export type Question = StandardQuestion | OrderingQuestion;
 
 export type Stage = {
   id: string;
@@ -43,7 +62,7 @@ export type Stage = {
   questions: Question[];
 };
 
-export type AnswerValue = string | boolean;
+export type AnswerValue = string | boolean | string[];
 
 export type AnswerStatus = "correct" | "incorrect" | "unanswered";
 

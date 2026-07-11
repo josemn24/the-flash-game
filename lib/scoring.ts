@@ -5,6 +5,12 @@ export function isAnswerCorrect(
   question: Question,
   answer: AnswerValue,
 ): boolean {
+  if (question.type === "ordering") {
+    return Array.isArray(answer) &&
+      answer.length === question.correctOrder.length &&
+      answer.every((item, index) => item === question.correctOrder[index]);
+  }
+
   if (typeof question.correctAnswer === "boolean") {
     return answer === question.correctAnswer;
   }
@@ -38,7 +44,8 @@ export function calculateQuestionScore(
 
   if (
     question.type === "multiple-choice" ||
-    question.type === "image-choice"
+    question.type === "image-choice" ||
+    question.type === "ordering"
   ) {
     return -Math.round(question.points * 0.2);
   }

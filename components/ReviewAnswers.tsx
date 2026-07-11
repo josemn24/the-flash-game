@@ -9,6 +9,7 @@ import type { AnswerResult, AnswerValue, Stage } from "@/types/game";
 
 function answerLabel(value: AnswerValue | null) {
   if (value === null) return "Sin respuesta";
+  if (Array.isArray(value)) return value.join(" → ");
   if (typeof value === "boolean") return value ? "Verdadero" : "Falso";
   return value;
 }
@@ -54,6 +55,9 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
           if (!result) return null;
           const correct = result.status === "correct";
           const unanswered = result.status === "unanswered";
+          const correctAnswer = question.type === "ordering"
+            ? question.correctOrder
+            : question.correctAnswer;
 
           return (
             <motion.details key={question.id} className={`review-card ${correct ? "review-correct" : unanswered ? "review-unanswered" : "review-wrong"}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index * 0.035, 0.3) }}>
@@ -73,7 +77,7 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
               <div className="review-content">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="answer-box"><span>Tu respuesta</span><strong>{answerLabel(result.answer)}</strong></div>
-                  <div className="answer-box answer-box-correct"><span>Respuesta correcta</span><strong>{answerLabel(question.correctAnswer)}</strong></div>
+                  <div className="answer-box answer-box-correct"><span>Respuesta correcta</span><strong>{answerLabel(correctAnswer)}</strong></div>
                 </div>
                 <div className="mt-3 rounded-xl bg-white/[0.035] p-4"><p className="text-sm leading-6 text-white/55">{question.explanation}</p></div>
                 <div className="mt-3 flex items-center gap-4 font-mono text-[10px] font-bold tracking-wide uppercase">
