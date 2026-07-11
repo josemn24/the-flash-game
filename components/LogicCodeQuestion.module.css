@@ -1,0 +1,69 @@
+.codeDisplay {
+  display: flex;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.digitInput {
+  appearance: none;
+  display: block;
+  flex: 0 0 3.4rem;
+  width: 3.4rem;
+  min-width: 3.4rem;
+  max-width: 3.4rem;
+  height: 3.4rem;
+  min-height: 3.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 0.75rem;
+  padding: 0;
+  color: white;
+  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 1.65rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  caret-color: var(--electric);
+}
+
+.digitInput:focus-visible {
+  border-color: rgba(215, 255, 24, 0.65);
+  outline: 2px solid rgba(215, 255, 24, 0.18);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(215, 255, 24, 0.06);
+}
+
+.digitInput.filled {
+  border-color: rgba(215, 255, 24, 0.5);
+  color: var(--electric);
+  background: rgba(215, 255, 24, 0.055);
+}
+
+.submitButton {
+  display: flex;
+  min-height: 3.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: 0;
+  border-radius: 0.75rem;
+  color: var(--ink);
+  background: var(--electric);
+  font-size: 0.8rem;
+  font-weight: 900;
+  transition: background 150ms, opacity 150ms;
+}
+
+.submitButton:hover:not(:disabled),
+.submitButton:focus-visible {
+  background: #e4ff58;
+  outline: 2px solid rgba(215, 255, 24, 0.35);
+  outline-offset: 2px;
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.24;
+}

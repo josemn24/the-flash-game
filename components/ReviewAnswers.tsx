@@ -82,7 +82,39 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
               </summary>
 
               <div className="review-content">
-                {question.type === "classification" ? (
+                {question.type === "logic-code" ? (
+                  <div>
+                    <div className="logic-review-clues">
+                      {question.clues.map((clue) => (
+                        <div key={clue.code}>
+                          <strong>{clue.code}</strong>
+                          <span>{clue.hint}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="answer-box">
+                        <span>Códigos enviados</span>
+                        {result.submittedCodes?.length ? (
+                          <div className="logic-review-attempts">
+                            {result.submittedCodes.map((code, attemptIndex) => (
+                              <b
+                                key={`${code}-${attemptIndex}`}
+                                className={attemptIndex === result.submittedCodes!.length - 1 ? "logic-review-last" : ""}
+                              >
+                                {code}
+                              </b>
+                            ))}
+                          </div>
+                        ) : <strong>Sin respuesta</strong>}
+                      </div>
+                      <div className="answer-box answer-box-correct">
+                        <span>Solución</span>
+                        <strong>{question.correctAnswer}</strong>
+                      </div>
+                    </div>
+                  </div>
+                ) : question.type === "classification" ? (
                   <div className="classification-review-list">
                     {question.items.map((item) => {
                       const chosenCategory = classificationAnswer?.[item.label];
@@ -119,6 +151,11 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
                 <div className="mt-3 rounded-xl bg-white/[0.035] p-4"><p className="text-sm leading-6 text-white/55">{question.explanation}</p></div>
                 <div className="mt-3 flex items-center gap-4 font-mono text-[10px] font-bold tracking-wide uppercase">
                   <span className="text-white/35">Tiempo: {result.timeUsed.toFixed(1)} s</span>
+                  {question.type === "logic-code" && (
+                    <span className="text-white/35">
+                      Intentos: {result.submittedCodes?.length ?? 0}
+                    </span>
+                  )}
                   <span className={result.points > 0 ? "text-[var(--electric)]" : result.points < 0 ? "text-[var(--coral)]" : "text-white/35"}>
                     {result.points > 0 ? "+" : ""}{result.points} pts
                   </span>

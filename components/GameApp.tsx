@@ -22,8 +22,10 @@ export function GameApp() {
   const [results, setResults] = useState<AnswerResult[]>([]);
   const [locked, setLocked] = useState(false);
   const [lastTimedOut, setLastTimedOut] = useState(false);
+  const [codeAttempts, setCodeAttempts] = useState<string[]>([]);
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
+  const codeAttemptsRef = useRef<string[]>([]);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const question = selectedStage.questions[questionIndex];
@@ -37,6 +39,8 @@ export function GameApp() {
     setQuestionIndex(0);
     setResults([]);
     setLocked(false);
+    setCodeAttempts([]);
+    codeAttemptsRef.current = [];
     answerLock.current = false;
     questionStartedAt.current = performance.now();
     setScreen("playing");
@@ -52,11 +56,13 @@ export function GameApp() {
     setResults([]);
     setQuestionIndex(0);
     setLocked(false);
+    setCodeAttempts([]);
+    codeAttemptsRef.current = [];
     answerLock.current = false;
     setScreen("intro");
   };
 
-  const submitAnswer = useCallback((answer: AnswerValue | null, timedOut = false) => {
+  const submitAnswer = useCallback((answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
     if (answerLock.current || !question) return;
     answerLock.current = true;
     setLocked(true);
@@ -64,7 +70,12 @@ export function GameApp() {
     const rawTime = timedOut ? question.timeLimit : (performance.now() - questionStartedAt.current) / 1000;
     const timeUsed = Math.min(Math.max(rawTime, 0), question.timeLimit);
     const isCorrect = answer !== null && isAnswerCorrect(question, answer);
-    const points = answer === null ? 0 : calculateAnswerScore(question, answer, timeUsed);
+    const incorrectAttempts = question.type === "logic-code"
+      ? Math.max(0, (submittedCodes?.length ?? 0) - (isCorrect ? 1 : 0))
+      : undefined;
+    const points = answer === null || timedOut
+      ? 0
+      : calculateAnswerScore(question, answer, timeUsed, incorrectAttempts);
 
     setResults((current) => [...current, {
       questionId: question.id,
@@ -73,6 +84,7 @@ export function GameApp() {
       status: answer === null ? "unanswered" : isCorrect ? "correct" : "incorrect",
       points,
       timeUsed,
+      ...(question.type === "logic-code" ? { submittedCodes: submittedCodes ?? [], incorrectAttempts } : {}),
     }]);
     setLastTimedOut(timedOut);
     setScreen("transition");
@@ -87,12 +99,32 @@ export function GameApp() {
       setQuestionIndex((current) => current + 1);
       answerLock.current = false;
       setLocked(false);
+      setCodeAttempts([]);
+      codeAttemptsRef.current = [];
       questionStartedAt.current = performance.now();
       setScreen("playing");
     }, TRANSITION_DURATION);
   }, [question, questionIndex, selectedStage.questions.length]);
 
-  const handleTimeUp = useCallback(() => submitAnswer(null, true), [submitAnswer]);
+  const handleCodeAttempt = useCallback((code: string) => {
+    if (answerLock.current || question?.type !== "logic-code") return false;
+    const nextAttempts = [...codeAttemptsRef.current, code];
+    codeAttemptsRef.current = nextAttempts;
+    setCodeAttempts(nextAttempts);
+
+    const correct = isAnswerCorrect(question, code);
+    if (correct) submitAnswer(code, false, nextAttempts);
+    return correct;
+  }, [question, submitAnswer]);
+
+  const handleTimeUp = useCallback(() => {
+    if (question?.type === "logic-code") {
+      const attempts = codeAttemptsRef.current;
+      submitAnswer(attempts.at(-1) ?? null, true, attempts);
+      return;
+    }
+    submitAnswer(null, true);
+  }, [question, submitAnswer]);
 
   return (
     <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ink)] text-white selection:bg-[var(--electric)] selection:text-black">
@@ -111,6 +143,8 @@ export function GameApp() {
               locked={locked}
               onSubmit={(answer) => submitAnswer(answer)}
               onTimeUp={handleTimeUp}
+              codeAttemptCount={codeAttempts.length}
+              onCodeAttempt={handleCodeAttempt}
             />
           )}
           {screen === "transition" && (

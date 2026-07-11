@@ -4,7 +4,8 @@ export type QuestionType =
   | "short-text"
   | "image-choice"
   | "ordering"
-  | "classification";
+  | "classification"
+  | "logic-code";
 
 export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
 
@@ -32,11 +33,28 @@ type BaseQuestion = {
 };
 
 type StandardQuestion = BaseQuestion & {
-  type: Exclude<QuestionType, "ordering" | "classification">;
+  type: Exclude<QuestionType, "ordering" | "classification" | "logic-code">;
   options?: string[];
   correctAnswer: string | boolean;
   acceptedAnswers?: string[];
   media?: QuestionMedia;
+  items?: never;
+  correctOrder?: never;
+};
+
+export type LogicCodeClue = {
+  code: string;
+  hint: string;
+};
+
+export type LogicCodeQuestion = BaseQuestion & {
+  type: "logic-code";
+  clues: LogicCodeClue[];
+  codeLength: number;
+  correctAnswer: string;
+  options?: never;
+  acceptedAnswers?: never;
+  media?: never;
   items?: never;
   correctOrder?: never;
 };
@@ -67,7 +85,7 @@ export type ClassificationQuestion = BaseQuestion & {
   media?: never;
 };
 
-export type Question = StandardQuestion | OrderingQuestion | ClassificationQuestion;
+export type Question = StandardQuestion | OrderingQuestion | ClassificationQuestion | LogicCodeQuestion;
 
 export type Stage = {
   id: string;
@@ -91,6 +109,8 @@ export type AnswerResult = {
   isCorrect: boolean;
   points: number;
   timeUsed: number;
+  submittedCodes?: string[];
+  incorrectAttempts?: number;
 };
 
 export type GameScreen =

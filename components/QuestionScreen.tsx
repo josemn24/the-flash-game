@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { FormEvent, useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
+import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
@@ -23,6 +24,8 @@ type QuestionScreenProps = {
   locked: boolean;
   onSubmit: (answer: AnswerValue) => void;
   onTimeUp: () => void;
+  codeAttemptCount: number;
+  onCodeAttempt: (code: string) => boolean;
 };
 
 export function QuestionScreen({
@@ -33,6 +36,8 @@ export function QuestionScreen({
   locked,
   onSubmit,
   onTimeUp,
+  codeAttemptCount,
+  onCodeAttempt,
 }: QuestionScreenProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [textAnswer, setTextAnswer] = useState("");
@@ -82,7 +87,7 @@ export function QuestionScreen({
           </span>
         </div>
 
-        <h1 className={`question-title ${question.type === "ordering" ? "question-title-ordering" : ""}`}>
+        <h1 className={`question-title ${question.type === "ordering" || question.type === "logic-code" ? "question-title-ordering" : ""}`}>
           {question.question}
         </h1>
 
@@ -179,6 +184,16 @@ export function QuestionScreen({
             categories={question.categories}
             locked={locked}
             onSubmit={onSubmit}
+          />
+        )}
+
+        {question.type === "logic-code" && (
+          <LogicCodeQuestion
+            clues={question.clues}
+            codeLength={question.codeLength}
+            locked={locked}
+            attemptCount={codeAttemptCount}
+            onAttempt={onCodeAttempt}
           />
         )}
 

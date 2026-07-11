@@ -1,0 +1,131 @@
+"use client";
+
+import { motion } from "motion/react";
+import { ChangeEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
+import { ArrowIcon } from "@/components/icons";
+import styles from "@/components/LogicCodeQuestion.module.css";
+import type { LogicCodeClue } from "@/types/game";
+
+type LogicCodeQuestionProps = {
+  clues: LogicCodeClue[];
+  codeLength: number;
+  locked: boolean;
+  attemptCount: number;
+  onAttempt: (code: string) => boolean;
+};
+
+export function LogicCodeQuestion({
+  clues,
+  codeLength,
+  locked,
+  attemptCount,
+  onAttempt,
+}: LogicCodeQuestionProps) {
+  const [digits, setDigits] = useState<string[]>(() => Array(codeLength).fill(""));
+  const [feedback, setFeedback] = useState("");
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const code = useMemo(() => digits.join(""), [digits]);
+
+  const updateDigit = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const incoming = event.target.value.replace(/\D/g, "");
+    if (!incoming) {
+      setDigits((current) => current.map((digit, digitIndex) => digitIndex === index ? "" : digit));
+      return;
+    }
+
+    const nextDigits = [...digits];
+    incoming.slice(0, codeLength - index).split("").forEach((digit, offset) => {
+      nextDigits[index + offset] = digit;
+    });
+    setFeedback("");
+    setDigits(nextDigits);
+    const nextIndex = Math.min(index + incoming.length, codeLength - 1);
+    inputRefs.current[nextIndex]?.focus();
+    inputRefs.current[nextIndex]?.select();
+  };
+
+  const submit = () => {
+    if (locked || code.length !== codeLength) return;
+    const correct = onAttempt(code);
+    if (!correct) {
+      setDigits(Array(codeLength).fill(""));
+      setFeedback("Código incorrecto. Prueba otra combinación.");
+      inputRefs.current[0]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submit();
+    } else if (event.key === "Backspace" && !digits[index] && index > 0) {
+      event.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+      setDigits((current) => current.map((digit, digitIndex) => digitIndex === index - 1 ? "" : digit));
+    } else if (event.key === "ArrowLeft" && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (event.key === "ArrowRight" && index < codeLength - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  return (
+    <div className="logic-code-challenge">
+      <div className="logic-clues" aria-label="Pistas del código">
+        {clues.map((clue) => (
+          <div className="logic-clue" key={clue.code}>
+            <strong>{clue.code}</strong>
+            <span>{clue.hint}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="logic-entry-panel">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-bold text-white/65">Introduce el código</span>
+          <span className="font-mono text-[10px] font-bold tracking-wider text-white/35 uppercase">
+            {attemptCount} {attemptCount === 1 ? "fallo" : "fallos"}
+          </span>
+        </div>
+
+        <div className={styles.codeDisplay} role="group" aria-label="Introduce el código numérico">
+          {digits.map((digit, index) => (
+            <input
+              key={index}
+              ref={(element) => { inputRefs.current[index] = element; }}
+              className={`${styles.digitInput} ${digit ? styles.filled : ""}`}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              enterKeyHint={index === codeLength - 1 ? "go" : "next"}
+              autoComplete="off"
+              autoFocus={index === 0}
+              maxLength={index === 0 ? codeLength : 1}
+              value={digit}
+              disabled={locked}
+              onFocus={(event) => event.currentTarget.select()}
+              onChange={(event) => updateDigit(index, event)}
+              onKeyDown={(event) => handleKeyDown(index, event)}
+              aria-label={`Cifra ${index + 1} de ${codeLength}`}
+            />
+          ))}
+        </div>
+
+        <p className="logic-feedback" role="status" aria-live="polite">
+          {feedback || "Cada fallo resta 15 puntos. El reloj sigue corriendo."}
+        </p>
+
+        <motion.button
+          type="button"
+          className={styles.submitButton}
+          disabled={locked || code.length !== codeLength}
+          onClick={submit}
+          whileTap={{ scale: 0.97 }}
+        >
+          Enviar código
+          <ArrowIcon className="h-5 w-5" />
+        </motion.button>
+      </div>
+    </div>
+  );
+}

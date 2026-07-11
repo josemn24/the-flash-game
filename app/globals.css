@@ -244,6 +244,22 @@ button:disabled {
 .text-answer-input { min-width: 0; flex: 1; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; padding: 0.95rem 1rem; color: white; background: rgba(255, 255, 255, 0.04); font-size: 1rem; font-weight: 700; transition: border-color 160ms, background 160ms; }
 .text-answer-input::placeholder { color: rgba(255, 255, 255, 0.2); }
 .text-answer-input:focus { border-color: rgba(215, 255, 24, 0.65); background: rgba(255, 255, 255, 0.055); }
+
+.logic-code-challenge { margin-top: 1.25rem; display: grid; gap: 1rem; }
+.logic-clues { display: grid; gap: 0.45rem; }
+.logic-clue { display: grid; grid-template-columns: 3.7rem 1fr; align-items: center; gap: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.075); border-radius: 0.8rem; padding: 0.55rem 0.7rem; background: rgba(255, 255, 255, 0.025); }
+.logic-clue strong { font-family: var(--font-mono); font-size: 1.05rem; letter-spacing: 0.14em; color: var(--electric); }
+.logic-clue span { font-size: 0.72rem; font-weight: 650; line-height: 1.25rem; color: rgba(255, 255, 255, 0.56); }
+.logic-entry-panel { border: 1px solid rgba(215, 255, 24, 0.16); border-radius: 1rem; padding: 0.9rem; background: rgba(10, 11, 14, 0.72); }
+.logic-feedback { min-height: 2.25rem; padding-top: 0.55rem; text-align: center; font-size: 0.68rem; font-weight: 700; line-height: 1.1rem; color: rgba(255, 255, 255, 0.38); }
+
+.logic-review-clues { display: grid; gap: 0.4rem; }
+.logic-review-clues > div { display: grid; grid-template-columns: 3.5rem 1fr; align-items: center; gap: 0.65rem; border-radius: 0.65rem; padding: 0.5rem 0.65rem; background: rgba(255, 255, 255, 0.03); }
+.logic-review-clues strong { font-family: var(--font-mono); letter-spacing: 0.12em; color: var(--electric); }
+.logic-review-clues span { font-size: 0.72rem; line-height: 1.15rem; color: rgba(255, 255, 255, 0.5); }
+.logic-review-attempts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.logic-review-attempts b { border-radius: 0.4rem; padding: 0.25rem 0.45rem; background: rgba(255, 255, 255, 0.07); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.6); }
+.logic-review-attempts .logic-review-last { outline: 1px solid rgba(215, 255, 24, 0.5); color: var(--electric); }
 .text-submit-button { display: grid; width: 3.7rem; flex: 0 0 auto; place-items: center; border-radius: 1rem; color: #080a05; background: var(--electric); }
 .text-submit-button:disabled { opacity: 0.24; }
 
@@ -310,6 +326,9 @@ button:disabled {
   .stage-stat { min-height: 6rem; }
   .stage-stat strong { font-size: 2rem; }
   .truth-button { min-height: 10rem; }
+  .logic-code-challenge { margin-top: 1.5rem; grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr); align-items: start; gap: 1.25rem; }
+  .logic-clue { padding: 0.7rem 0.8rem; }
+  .logic-entry-panel { padding: 1rem; }
   .score-panel { padding: 2rem; }
   .review-card summary { gap: 1rem; padding: 1rem 1.2rem; }
   .review-content { padding: 1.2rem; }

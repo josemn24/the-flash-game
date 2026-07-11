@@ -41,7 +41,15 @@ export function calculateAnswerScore(
   question: Question,
   answer: AnswerValue,
   timeUsed: number,
+  incorrectAttempts = 0,
 ): number {
+  if (question.type === "logic-code") {
+    if (!isAnswerCorrect(question, answer)) return 0;
+    const speedScore = calculateQuestionScore(question, true, timeUsed);
+    const attemptPenalty = Math.round(question.points * 0.1) * incorrectAttempts;
+    return Math.max(0, speedScore - attemptPenalty);
+  }
+
   if (question.type === "classification") {
     if (!isClassificationAnswer(answer)) return 0;
 
