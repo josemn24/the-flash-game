@@ -295,6 +295,13 @@ button:disabled {
 .review-content { border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 1rem; }
 .answer-box { display: flex; min-height: 4.3rem; flex-direction: column; justify-content: center; border-radius: 0.8rem; padding: 0.8rem; background: rgba(255, 255, 255, 0.035); }
 .answer-box span { color: rgba(255, 255, 255, 0.3); font-size: 0.62rem; font-weight: 700; }.answer-box strong { margin-top: 0.3rem; font-size: 0.84rem; }.answer-box-correct strong { color: var(--electric); }
+.classification-review-list { display: grid; gap: 0.55rem; }
+.classification-review-row { display: grid; grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr)); align-items: center; gap: 0.65rem; border-radius: 0.8rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.035); }
+.classification-review-row > strong { min-width: 0; overflow-wrap: anywhere; font-size: 0.8rem; }
+.classification-review-row > span { display: flex; min-width: 0; flex-direction: column; gap: 0.2rem; }
+.classification-review-row small { color: rgba(255, 255, 255, 0.3); font-size: 0.55rem; font-weight: 700; text-transform: uppercase; }
+.classification-review-row b { min-width: 0; overflow-wrap: anywhere; font-size: 0.72rem; }
+.classification-value-correct { color: var(--electric); }.classification-value-wrong { color: #ff858a; }
 
 @media (min-width: 640px) {
   .stage-selector { grid-template-columns: repeat(2, minmax(0, 1fr)); }

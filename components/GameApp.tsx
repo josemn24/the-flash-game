@@ -10,7 +10,7 @@ import { SpeedBackground } from "@/components/SpeedBackground";
 import { StageIntro } from "@/components/StageIntro";
 import { StartScreen } from "@/components/StartScreen";
 import { stages } from "@/data/stages";
-import { calculateQuestionScore, calculateTotalScore, isAnswerCorrect } from "@/lib/scoring";
+import { calculateAnswerScore, calculateTotalScore, isAnswerCorrect } from "@/lib/scoring";
 import type { AnswerResult, AnswerValue, GameScreen, Stage } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
@@ -64,7 +64,7 @@ export function GameApp() {
     const rawTime = timedOut ? question.timeLimit : (performance.now() - questionStartedAt.current) / 1000;
     const timeUsed = Math.min(Math.max(rawTime, 0), question.timeLimit);
     const isCorrect = answer !== null && isAnswerCorrect(question, answer);
-    const points = answer === null ? 0 : calculateQuestionScore(question, isCorrect, timeUsed);
+    const points = answer === null ? 0 : calculateAnswerScore(question, answer, timeUsed);
 
     setResults((current) => [...current, {
       questionId: question.id,

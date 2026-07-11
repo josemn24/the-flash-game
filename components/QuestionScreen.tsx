@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { FormEvent, useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
+import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
@@ -167,7 +168,15 @@ export function QuestionScreen({
         {question.type === "ordering" && (
           <OrderingQuestion
             items={question.items}
-            instruction={question.instruction}
+            locked={locked}
+            onSubmit={onSubmit}
+          />
+        )}
+
+        {question.type === "classification" && (
+          <ClassificationQuestion
+            items={question.items}
+            categories={question.categories}
             locked={locked}
             onSubmit={onSubmit}
           />

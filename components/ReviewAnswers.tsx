@@ -5,13 +5,20 @@ import { CheckIcon, ChevronIcon, ClockIcon, CrossIcon, RotateIcon } from "@/comp
 import { Logo } from "@/components/Logo";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
+import { isClassificationAnswer } from "@/lib/scoring";
 import type { AnswerResult, AnswerValue, Stage } from "@/types/game";
 
 function answerLabel(value: AnswerValue | null) {
   if (value === null) return "Sin respuesta";
   if (Array.isArray(value)) return value.join(" → ");
   if (typeof value === "boolean") return value ? "Verdadero" : "Falso";
+  if (typeof value === "object") return "Clasificación completada";
   return value;
+}
+
+function categoryLabel(category: string | undefined) {
+  if (!category) return "Sin respuesta";
+  return category.charAt(0).toLocaleUpperCase("es") + category.slice(1);
 }
 
 function statusLabel(result: AnswerResult) {
@@ -55,9 +62,9 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
           if (!result) return null;
           const correct = result.status === "correct";
           const unanswered = result.status === "unanswered";
-          const correctAnswer = question.type === "ordering"
-            ? question.correctOrder
-            : question.correctAnswer;
+          const classificationAnswer = question.type === "classification" && isClassificationAnswer(result.answer)
+            ? result.answer
+            : null;
 
           return (
             <motion.details key={question.id} className={`review-card ${correct ? "review-correct" : unanswered ? "review-unanswered" : "review-wrong"}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index * 0.035, 0.3) }}>
@@ -75,10 +82,40 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
               </summary>
 
               <div className="review-content">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="answer-box"><span>Tu respuesta</span><strong>{answerLabel(result.answer)}</strong></div>
-                  <div className="answer-box answer-box-correct"><span>Respuesta correcta</span><strong>{answerLabel(correctAnswer)}</strong></div>
-                </div>
+                {question.type === "classification" ? (
+                  <div className="classification-review-list">
+                    {question.items.map((item) => {
+                      const chosenCategory = classificationAnswer?.[item.label];
+                      const itemCorrect = chosenCategory === item.correctCategory;
+
+                      return (
+                        <div key={item.label} className="classification-review-row">
+                          <strong>{item.label}</strong>
+                          <span>
+                            <small>Elegida</small>
+                            <b className={itemCorrect ? "classification-value-correct" : "classification-value-wrong"}>
+                              {categoryLabel(chosenCategory)}
+                            </b>
+                          </span>
+                          <span>
+                            <small>Correcta</small>
+                            <b className="classification-value-correct">
+                              {categoryLabel(item.correctCategory)}
+                            </b>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="answer-box"><span>Tu respuesta</span><strong>{answerLabel(result.answer)}</strong></div>
+                    <div className="answer-box answer-box-correct">
+                      <span>Respuesta correcta</span>
+                      <strong>{answerLabel(question.type === "ordering" ? question.correctOrder : question.correctAnswer)}</strong>
+                    </div>
+                  </div>
+                )}
                 <div className="mt-3 rounded-xl bg-white/[0.035] p-4"><p className="text-sm leading-6 text-white/55">{question.explanation}</p></div>
                 <div className="mt-3 flex items-center gap-4 font-mono text-[10px] font-bold tracking-wide uppercase">
                   <span className="text-white/35">Tiempo: {result.timeUsed.toFixed(1)} s</span>

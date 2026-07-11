@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import styles from "@/components/OrderingQuestion.module.css";
 
 type OrderingQuestionProps = {
   items: string[];
-  instruction?: string;
   locked: boolean;
   onSubmit: (items: string[]) => void;
 };
@@ -21,11 +20,9 @@ type LastMove = {
 
 export function OrderingQuestion({
   items,
-  instruction = "Coloca los elementos en el orden correcto.",
   locked,
   onSubmit,
 }: OrderingQuestionProps) {
-  const instructionId = useId();
   const [orderedItems, setOrderedItems] = useState(() => [...items]);
   const [lastMove, setLastMove] = useState<LastMove | null>(null);
 
@@ -51,20 +48,15 @@ export function OrderingQuestion({
 
   return (
     <div className={styles.root}>
-      <p id={instructionId} className={styles.instruction}>
-        {instruction}
-      </p>
-
       <div className={styles.shell}>
         <div className={styles.directionLabel} aria-hidden="true">
           <span>Más antiguo</span>
-          <ArrowDownIcon className={styles.directionIcon} />
+          <ArrowUpIcon className={styles.directionIcon} />
         </div>
 
         <ol
           className={styles.sequence}
           aria-label="Orden actual de los elementos"
-          aria-describedby={instructionId}
         >
           {orderedItems.map((item, index) => (
             <motion.li

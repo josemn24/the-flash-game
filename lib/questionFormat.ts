@@ -6,4 +6,5 @@ export const QUESTION_FORMAT_LABELS = {
   "short-text": "Texto",
   "image-choice": "Imagen",
   ordering: "Ordenar",
+  classification: "Clasificar",
 } satisfies Record<QuestionType, string>;

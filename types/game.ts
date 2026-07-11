@@ -3,7 +3,8 @@ export type QuestionType =
   | "true-false"
   | "short-text"
   | "image-choice"
-  | "ordering";
+  | "ordering"
+  | "classification";
 
 export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
 
@@ -31,7 +32,7 @@ type BaseQuestion = {
 };
 
 type StandardQuestion = BaseQuestion & {
-  type: Exclude<QuestionType, "ordering">;
+  type: Exclude<QuestionType, "ordering" | "classification">;
   options?: string[];
   correctAnswer: string | boolean;
   acceptedAnswers?: string[];
@@ -44,14 +45,29 @@ export type OrderingQuestion = BaseQuestion & {
   type: "ordering";
   items: string[];
   correctOrder: string[];
-  instruction?: string;
   options?: never;
   correctAnswer?: never;
   acceptedAnswers?: never;
   media?: never;
 };
 
-export type Question = StandardQuestion | OrderingQuestion;
+export type ClassificationItem = {
+  label: string;
+  correctCategory: string;
+};
+
+export type ClassificationQuestion = BaseQuestion & {
+  type: "classification";
+  items: ClassificationItem[];
+  categories: string[];
+  options?: never;
+  correctAnswer?: never;
+  acceptedAnswers?: never;
+  correctOrder?: never;
+  media?: never;
+};
+
+export type Question = StandardQuestion | OrderingQuestion | ClassificationQuestion;
 
 export type Stage = {
   id: string;
@@ -62,7 +78,9 @@ export type Stage = {
   questions: Question[];
 };
 
-export type AnswerValue = string | boolean | string[];
+export type ClassificationAnswer = Record<string, string>;
+
+export type AnswerValue = string | boolean | string[] | ClassificationAnswer;
 
 export type AnswerStatus = "correct" | "incorrect" | "unanswered";
 
