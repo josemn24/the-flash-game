@@ -1,0 +1,170 @@
+"use client";
+
+import { motion } from "motion/react";
+import { FormEvent, useState } from "react";
+import { AnswerOption } from "@/components/AnswerOption";
+import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
+import { ProgressBar } from "@/components/ProgressBar";
+import { QuestionVisual } from "@/components/QuestionVisual";
+import { Timer } from "@/components/Timer";
+import type { AnswerValue, Question } from "@/types/game";
+
+type QuestionScreenProps = {
+  question: Question;
+  questionNumber: number;
+  totalQuestions: number;
+  locked: boolean;
+  onSubmit: (answer: AnswerValue) => void;
+  onTimeUp: () => void;
+};
+
+export function QuestionScreen({
+  question,
+  questionNumber,
+  totalQuestions,
+  locked,
+  onSubmit,
+  onTimeUp,
+}: QuestionScreenProps) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [textAnswer, setTextAnswer] = useState("");
+  const isChoice =
+    question.type === "multiple-choice" || question.type === "image-choice";
+
+  const submitText = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const value = textAnswer.trim();
+    if (value && !locked) onSubmit(value);
+  };
+
+  return (
+    <motion.section
+      className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"
+      initial={{ opacity: 0, x: 34 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -34 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <header className="mb-5 flex items-center justify-between gap-4 sm:mb-7">
+        <div>
+          <div className="mb-2.5 flex items-center gap-2">
+            <span className="brand-mark brand-mark-small">
+              <BoltIcon className="h-3.5 w-3.5" />
+            </span>
+            <p className="eyebrow text-white/55">Etapa Demo</p>
+          </div>
+          <p className="font-mono text-sm font-bold tracking-wide text-white">
+            Pregunta {questionNumber}
+            <span className="text-white/35"> / {totalQuestions}</span>
+          </p>
+        </div>
+        <Timer duration={question.timeLimit} active={!locked} onTimeUp={onTimeUp} />
+      </header>
+
+      <ProgressBar current={questionNumber} total={totalQuestions} />
+
+      <div className="flex flex-1 flex-col pt-6 sm:pt-9">
+        <div className="mb-4 flex items-center justify-between">
+          <span className="category-chip">{question.category}</span>
+          <span className="font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
+            {question.points} pts máx.
+          </span>
+        </div>
+
+        <h1 className="question-title">{question.question}</h1>
+
+        {question.visual && question.imageAlt && (
+          <div className="mt-5 sm:mt-6">
+            <QuestionVisual visual={question.visual} alt={question.imageAlt} />
+          </div>
+        )}
+
+        {isChoice && question.options && (
+          <div className="mt-7 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3">
+            {question.options.map((option, index) => (
+              <AnswerOption
+                key={option}
+                label={option}
+                index={index}
+                selected={selected === option}
+                disabled={locked}
+                onSelect={() => setSelected(option)}
+              />
+            ))}
+          </div>
+        )}
+
+        {question.type === "true-false" && (
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-4">
+            <motion.button
+              type="button"
+              className="truth-button truth-button-true"
+              disabled={locked}
+              onClick={() => onSubmit(true)}
+              whileTap={{ scale: 0.97 }}
+            >
+              <CheckIcon className="h-7 w-7" />
+              <span>Verdadero</span>
+            </motion.button>
+            <motion.button
+              type="button"
+              className="truth-button truth-button-false"
+              disabled={locked}
+              onClick={() => onSubmit(false)}
+              whileTap={{ scale: 0.97 }}
+            >
+              <CrossIcon className="h-7 w-7" />
+              <span>Falso</span>
+            </motion.button>
+          </div>
+        )}
+
+        {question.type === "short-text" && (
+          <form className="mt-8" onSubmit={submitText}>
+            <label className="mb-2.5 block text-sm font-bold text-white/65" htmlFor={`answer-${question.id}`}>
+              Escribe tu respuesta
+            </label>
+            <div className="text-answer-row">
+              <input
+                id={`answer-${question.id}`}
+                className="text-answer-input"
+                type="text"
+                value={textAnswer}
+                onChange={(event) => setTextAnswer(event.target.value)}
+                placeholder="Tu respuesta…"
+                disabled={locked}
+                autoComplete="off"
+                autoFocus
+              />
+              <motion.button
+                className="text-submit-button"
+                type="submit"
+                disabled={locked || !textAnswer.trim()}
+                whileTap={{ scale: 0.96 }}
+                aria-label="Enviar respuesta"
+              >
+                <ArrowIcon className="h-6 w-6" />
+              </motion.button>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-white/35">
+              No importan las mayúsculas, las tildes ni los espacios.
+            </p>
+          </form>
+        )}
+
+        {isChoice && (
+          <motion.button
+            type="button"
+            className="primary-button mt-auto sm:mt-8"
+            disabled={!selected || locked}
+            onClick={() => selected && onSubmit(selected)}
+            whileTap={{ scale: 0.985 }}
+          >
+            Confirmar respuesta
+            <ArrowIcon className="h-5 w-5" />
+          </motion.button>
+        )}
+      </div>
+    </motion.section>
+  );
+}

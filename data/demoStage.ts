@@ -1,0 +1,132 @@
+import type { Stage } from "@/types/game";
+
+export const demoStage: Stage = {
+  id: "demo-stage",
+  title: "Etapa Demo",
+  subtitle: "Sprint de prueba",
+  description: "Diez retos rápidos para medir reflejos, memoria y sangre fría.",
+  questions: [
+    {
+      id: "capital-canada",
+      type: "multiple-choice",
+      category: "Geografía",
+      question: "¿Cuál es la capital de Canadá?",
+      options: ["Toronto", "Ottawa", "Vancouver", "Montreal"],
+      correctAnswer: "Ottawa",
+      timeLimit: 12,
+      points: 100,
+      explanation:
+        "Ottawa es la capital de Canadá desde 1857, cuando fue elegida por la reina Victoria.",
+    },
+    {
+      id: "sound-space",
+      type: "true-false",
+      category: "Ciencia",
+      question: "El sonido puede viajar por el vacío del espacio.",
+      correctAnswer: false,
+      timeLimit: 9,
+      points: 100,
+      explanation:
+        "El sonido necesita un medio material por el que propagarse; en el vacío no puede viajar.",
+    },
+    {
+      id: "war-year",
+      type: "short-text",
+      category: "Historia",
+      question: "¿En qué año terminó la Segunda Guerra Mundial?",
+      correctAnswer: "1945",
+      acceptedAnswers: ["1945", "mil novecientos cuarenta y cinco"],
+      timeLimit: 13,
+      points: 120,
+      explanation:
+        "La Segunda Guerra Mundial terminó en 1945, tras la rendición de Alemania y Japón.",
+    },
+    {
+      id: "japan-flag",
+      type: "image-choice",
+      category: "Banderas",
+      question: "¿A qué país pertenece esta bandera?",
+      options: ["Japón", "Bangladés", "Corea del Sur", "Indonesia"],
+      correctAnswer: "Japón",
+      visual: "japan-flag",
+      imageAlt: "Bandera blanca con un círculo rojo en el centro",
+      timeLimit: 11,
+      points: 100,
+      explanation:
+        "El círculo rojo representa el sol. Japón es conocido como el país del sol naciente.",
+    },
+    {
+      id: "olympic-rings",
+      type: "multiple-choice",
+      category: "Deporte",
+      question: "¿Cuántos anillos tiene el símbolo olímpico?",
+      options: ["Cuatro", "Cinco", "Seis", "Siete"],
+      correctAnswer: "Cinco",
+      timeLimit: 10,
+      points: 100,
+      explanation:
+        "El emblema olímpico está formado por cinco anillos entrelazados de distintos colores.",
+    },
+    {
+      id: "avatar-director",
+      type: "short-text",
+      category: "Cine",
+      question: "¿Qué director llevó Avatar a la gran pantalla?",
+      correctAnswer: "James Cameron",
+      acceptedAnswers: ["James Cameron", "Cameron"],
+      timeLimit: 15,
+      points: 120,
+      explanation:
+        "James Cameron escribió y dirigió Avatar, estrenada en 2009.",
+    },
+    {
+      id: "saturn-rings",
+      type: "image-choice",
+      category: "Astronomía",
+      question: "¿Qué planeta estás viendo?",
+      options: ["Júpiter", "Saturno", "Urano", "Neptuno"],
+      correctAnswer: "Saturno",
+      visual: "saturn",
+      imageAlt: "Ilustración de un planeta dorado rodeado por grandes anillos",
+      timeLimit: 12,
+      points: 110,
+      explanation:
+        "Saturno destaca por su amplio sistema de anillos, compuesto sobre todo por hielo y roca.",
+    },
+    {
+      id: "mercury-hot",
+      type: "true-false",
+      category: "Espacio",
+      question: "Mercurio es el planeta más caliente del sistema solar.",
+      correctAnswer: false,
+      timeLimit: 8,
+      points: 100,
+      explanation:
+        "Venus es el más caliente debido a su densa atmósfera y a un intenso efecto invernadero.",
+    },
+    {
+      id: "queen-song",
+      type: "multiple-choice",
+      category: "Música",
+      question: "¿Qué grupo publicó «Bohemian Rhapsody»?",
+      options: ["The Beatles", "Queen", "ABBA", "The Rolling Stones"],
+      correctAnswer: "Queen",
+      timeLimit: 11,
+      points: 100,
+      explanation:
+        "Queen lanzó «Bohemian Rhapsody» en 1975 dentro del álbum A Night at the Opera.",
+    },
+    {
+      id: "sequence",
+      type: "multiple-choice",
+      category: "Lógica",
+      question: "Completa la secuencia: 2, 4, 8, 16, …",
+      options: ["18", "24", "30", "32"],
+      correctAnswer: "32",
+      timeLimit: 10,
+      points: 130,
+      explanation:
+        "Cada número es el doble del anterior, así que 16 × 2 = 32.",
+    },
+  ],
+};
