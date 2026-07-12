@@ -44,7 +44,7 @@ export const demoStage = {
     },
     {
       id: "japan-flag",
-      type: "image-choice",
+      type: "multiple-choice",
       category: "Banderas",
       question: "¿A qué país pertenece esta bandera?",
       options: ["Japón", "Bangladés", "Corea del Sur", "Indonesia"],
@@ -84,7 +84,7 @@ export const demoStage = {
     },
     {
       id: "saturn-rings",
-      type: "image-choice",
+      type: "multiple-choice",
       category: "Astronomía",
       question: "¿Qué planeta estás viendo?",
       options: ["Júpiter", "Saturno", "Urano", "Neptuno"],

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Link from "next/link";
 import {
   ArrowIcon,
   CheckIcon,
@@ -40,7 +41,13 @@ export function ResultScreen({
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
   const accuracyContribution = results.reduce(
-    (total, result) => total + (result.status === "correct" ? 1 : result.proximity ?? 0),
+    (total, result) =>
+      total +
+      (result.status === "correct"
+        ? 1
+        : result.details?.type === "estimation"
+          ? result.details.proximity
+          : 0),
     0,
   );
   const accuracy = Math.round((accuracyContribution / stage.questions.length) * 100);
@@ -60,7 +67,15 @@ export function ResultScreen({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <AppHeader className="mb-7" left={<Logo />} right={<Badge>Meta cruzada</Badge>} />
+      <AppHeader
+        className="mb-7"
+        left={
+          <Link href="/" aria-label="Volver a las etapas">
+            <Logo />
+          </Link>
+        }
+        right={<Badge>Meta cruzada</Badge>}
+      />
 
       <div className={styles.resultsGrid}>
         <motion.div

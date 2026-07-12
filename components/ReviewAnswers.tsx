@@ -3,24 +3,11 @@
 import { motion } from "motion/react";
 import { CheckIcon, ChevronIcon, ClockIcon, CrossIcon, RotateIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import styles from "@/components/ReviewAnswers.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
-import styles from "@/components/ReviewAnswers.module.css";
-import { isClassificationAnswer } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, Stage } from "@/types/game";
-
-function answerLabel(value: AnswerValue | null) {
-  if (value === null) return "Sin respuesta";
-  if (Array.isArray(value)) return value.join(" → ");
-  if (typeof value === "boolean") return value ? "Verdadero" : "Falso";
-  if (typeof value === "object") return "Clasificación completada";
-  return value;
-}
-
-function categoryLabel(category: string | undefined) {
-  if (!category) return "Sin respuesta";
-  return category.charAt(0).toLocaleUpperCase("es") + category.slice(1);
-}
+import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
+import type { AnswerResult, Stage } from "@/types/game";
 
 function statusLabel(result: AnswerResult) {
   if (result.status === "correct") return "Correcta";
@@ -79,10 +66,9 @@ export function ReviewAnswers({
           const correct = result.status === "correct";
           const partial = result.status === "partial";
           const unanswered = result.status === "unanswered";
-          const classificationAnswer =
-            question.type === "classification" && isClassificationAnswer(result.answer)
-              ? result.answer
-              : null;
+          const logicDetails = result.details?.type === "logic-code" ? result.details : undefined;
+          const estimationDetails =
+            result.details?.type === "estimation" ? result.details : undefined;
 
           return (
             <motion.details
@@ -118,131 +104,20 @@ export function ReviewAnswers({
               </summary>
 
               <div className={styles.reviewContent}>
-                {question.type === "estimation" ? (
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className={styles.answerBox}>
-                      <span>Tu estimación</span>
-                      <strong>
-                        {typeof result.answer === "number"
-                          ? `${result.answer} ${question.unit}`
-                          : "Sin respuesta"}
-                      </strong>
-                    </div>
-                    <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
-                      <span>Valor real</span>
-                      <strong>{question.correctAnswer} {question.unit}</strong>
-                    </div>
-                    <div className={styles.answerBox}>
-                      <span>Diferencia</span>
-                      <strong>
-                        {typeof result.answer !== "number" || result.difference === undefined
-                          ? "—"
-                          : result.difference === 0
-                            ? "Exacta"
-                            : `${result.difference} ${question.unit} ${result.answer > question.correctAnswer ? "por encima" : "por debajo"}`}
-                      </strong>
-                    </div>
-                  </div>
-                ) : question.type === "logic-code" ? (
-                  <div>
-                    <div className={styles.logicReviewClues}>
-                      {question.clues.map((clue) => (
-                        <div key={clue.code}>
-                          <strong>{clue.code}</strong>
-                          <span>{clue.hint}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <div className={styles.answerBox}>
-                        <span>Códigos enviados</span>
-                        {result.submittedCodes?.length ? (
-                          <div className={styles.logicReviewAttempts}>
-                            {result.submittedCodes.map((code, attemptIndex) => (
-                              <b
-                                key={`${code}-${attemptIndex}`}
-                                className={
-                                  attemptIndex === result.submittedCodes!.length - 1
-                                    ? styles.logicReviewLast
-                                    : ""
-                                }
-                              >
-                                {code}
-                              </b>
-                            ))}
-                          </div>
-                        ) : (
-                          <strong>Sin respuesta</strong>
-                        )}
-                      </div>
-                      <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
-                        <span>Solución</span>
-                        <strong>{question.correctAnswer}</strong>
-                      </div>
-                    </div>
-                  </div>
-                ) : question.type === "classification" ? (
-                  <div className={styles.classificationReviewList}>
-                    {question.items.map((item) => {
-                      const chosenCategory = classificationAnswer?.[item.label];
-                      const itemCorrect = chosenCategory === item.correctCategory;
-
-                      return (
-                        <div key={item.label} className={styles.classificationReviewRow}>
-                          <strong>{item.label}</strong>
-                          <span>
-                            <small>Elegida</small>
-                            <b
-                              className={
-                                itemCorrect
-                                  ? styles.classificationValueCorrect
-                                  : styles.classificationValueWrong
-                              }
-                            >
-                              {categoryLabel(chosenCategory)}
-                            </b>
-                          </span>
-                          <span>
-                            <small>Correcta</small>
-                            <b className={styles.classificationValueCorrect}>
-                              {categoryLabel(item.correctCategory)}
-                            </b>
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className={styles.answerBox}>
-                      <span>Tu respuesta</span>
-                      <strong>{answerLabel(result.answer)}</strong>
-                    </div>
-                    <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
-                      <span>Respuesta correcta</span>
-                      <strong>
-                        {answerLabel(
-                          question.type === "ordering"
-                            ? question.correctOrder
-                            : question.correctAnswer,
-                        )}
-                      </strong>
-                    </div>
-                  </div>
-                )}
+                <QuestionReviewContent question={question} result={result} />
                 <div className="mt-3 rounded-xl bg-white/[0.035] p-4">
                   <p className="text-sm leading-6 text-white/55">{question.explanation}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-4 font-mono text-[10px] font-bold tracking-wide uppercase">
                   <span className="text-white/35">Tiempo: {result.timeUsed.toFixed(1)} s</span>
-                  {question.type === "logic-code" && (
+                  {logicDetails && (
                     <span className="text-white/35">
-                      Intentos: {result.submittedCodes?.length ?? 0}
+                      Intentos: {logicDetails.submittedCodes.length}
                     </span>
                   )}
-                  {question.type === "estimation" && result.proximity !== undefined && (
+                  {estimationDetails && (
                     <span className="text-[var(--cyan)]">
-                      Cercanía: {Math.round(result.proximity * 100)}%
+                      Cercanía: {Math.round(estimationDetails.proximity * 100)}%
                     </span>
                   )}
                   <span

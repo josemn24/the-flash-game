@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Link from "next/link";
 import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -23,7 +24,21 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <AppHeader left={<Logo />} />
+      <AppHeader
+        left={
+          <Link href="/" aria-label="Volver a las etapas">
+            <Logo />
+          </Link>
+        }
+        right={
+          <Link
+            className="font-mono text-[10px] font-black tracking-[0.12em] text-white/40 uppercase transition-colors hover:text-white"
+            href="/"
+          >
+            Volver a etapas
+          </Link>
+        }
+      />
 
       <div className="flex flex-1 items-center py-8 sm:py-12">
         <div className={`${styles.stageCard} w-full`}>

@@ -1,220 +1,64 @@
 "use client";
 
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuestionScreen } from "@/components/QuestionScreen";
 import { QuestionTransition } from "@/components/QuestionTransition";
 import { ResultScreen } from "@/components/ResultScreen";
 import { ReviewAnswers } from "@/components/ReviewAnswers";
 import { SpeedBackground } from "@/components/SpeedBackground";
 import { StageIntro } from "@/components/StageIntro";
-import { StartScreen } from "@/components/StartScreen";
-import { stages } from "@/data/stages";
-import {
-  calculateAnswerScore,
-  calculateEstimationMetrics,
-  calculateTotalScore,
-  isAnswerCorrect,
-} from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, GameScreen, Stage } from "@/types/game";
+import { useGameSession } from "@/features/game/useGameSession";
+import type { Stage } from "@/types/game";
 
-const TRANSITION_DURATION = 650;
-
-export function GameApp() {
-  const [screen, setScreen] = useState<GameScreen>("start");
-  const [selectedStage, setSelectedStage] = useState<Stage>(stages[0]);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [results, setResults] = useState<AnswerResult[]>([]);
-  const [locked, setLocked] = useState(false);
-  const [lastTimedOut, setLastTimedOut] = useState(false);
-  const [codeAttempts, setCodeAttempts] = useState<string[]>([]);
-  const questionStartedAt = useRef(0);
-  const answerLock = useRef(false);
-  const codeAttemptsRef = useRef<string[]>([]);
-  const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const question = selectedStage.questions[questionIndex];
-  const score = useMemo(
-    () => calculateTotalScore(results.map((result) => result.points)),
-    [results],
-  );
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [screen, questionIndex]);
-
-  const beginStage = () => {
-    setQuestionIndex(0);
-    setResults([]);
-    setLocked(false);
-    setCodeAttempts([]);
-    codeAttemptsRef.current = [];
-    answerLock.current = false;
-    questionStartedAt.current = performance.now();
-    setScreen("playing");
-  };
-
-  const selectStage = (stage: Stage) => {
-    setSelectedStage(stage);
-    setScreen("intro");
-  };
-
-  const replay = () => {
-    if (advanceTimeout.current) clearTimeout(advanceTimeout.current);
-    setResults([]);
-    setQuestionIndex(0);
-    setLocked(false);
-    setCodeAttempts([]);
-    codeAttemptsRef.current = [];
-    answerLock.current = false;
-    setScreen("intro");
-  };
-
-  const submitAnswer = useCallback(
-    (answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
-      if (answerLock.current || !question) return;
-      answerLock.current = true;
-      setLocked(true);
-
-      const rawTime = timedOut
-        ? question.timeLimit
-        : (performance.now() - questionStartedAt.current) / 1000;
-      const timeUsed = Math.min(Math.max(rawTime, 0), question.timeLimit);
-      const isCorrect = answer !== null && isAnswerCorrect(question, answer);
-      const incorrectAttempts =
-        question.type === "logic-code"
-          ? Math.max(0, (submittedCodes?.length ?? 0) - (isCorrect ? 1 : 0))
-          : undefined;
-      const points =
-        answer === null || timedOut
-          ? 0
-          : calculateAnswerScore(question, answer, timeUsed, incorrectAttempts);
-      const estimationMetrics =
-        question.type === "estimation" && typeof answer === "number"
-          ? calculateEstimationMetrics(question, answer)
-          : undefined;
-      const status =
-        answer === null
-          ? "unanswered"
-          : question.type === "estimation" && !isCorrect
-            ? "partial"
-            : isCorrect
-              ? "correct"
-              : "incorrect";
-
-      setResults((current) => [
-        ...current,
-        {
-          questionId: question.id,
-          answer,
-          isCorrect,
-          status,
-          points,
-          timeUsed,
-          ...(question.type === "logic-code"
-            ? { submittedCodes: submittedCodes ?? [], incorrectAttempts }
-            : {}),
-          ...(estimationMetrics ?? {}),
-        },
-      ]);
-      setLastTimedOut(timedOut);
-      setScreen("transition");
-
-      const lastQuestion = questionIndex === selectedStage.questions.length - 1;
-      advanceTimeout.current = setTimeout(() => {
-        if (lastQuestion) {
-          setScreen("results");
-          return;
-        }
-
-        setQuestionIndex((current) => current + 1);
-        answerLock.current = false;
-        setLocked(false);
-        setCodeAttempts([]);
-        codeAttemptsRef.current = [];
-        questionStartedAt.current = performance.now();
-        setScreen("playing");
-      }, TRANSITION_DURATION);
-    },
-    [question, questionIndex, selectedStage.questions.length],
-  );
-
-  const handleCodeAttempt = useCallback(
-    (code: string) => {
-      if (answerLock.current || question?.type !== "logic-code") return false;
-      const nextAttempts = [...codeAttemptsRef.current, code];
-      codeAttemptsRef.current = nextAttempts;
-      setCodeAttempts(nextAttempts);
-
-      const correct = isAnswerCorrect(question, code);
-      if (correct) submitAnswer(code, false, nextAttempts);
-      return correct;
-    },
-    [question, submitAnswer],
-  );
-
-  const handleTimeUp = useCallback(() => {
-    if (question?.type === "logic-code") {
-      const attempts = codeAttemptsRef.current;
-      submitAnswer(attempts.at(-1) ?? null, true, attempts);
-      return;
-    }
-    submitAnswer(null, true);
-  }, [question, submitAnswer]);
+export function GameApp({ stage }: { stage: Stage }) {
+  const session = useGameSession(stage);
 
   return (
     <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ink)] text-white selection:bg-[var(--electric)] selection:text-black">
       <SpeedBackground />
       <div className="relative z-10">
         <AnimatePresence mode="wait">
-          {screen === "start" && (
-            <StartScreen key="start" stages={stages} onSelectStage={selectStage} />
+          {session.phase === "intro" && (
+            <StageIntro key={`intro-${stage.id}`} stage={stage} onStart={session.start} />
           )}
-          {screen === "intro" && (
-            <StageIntro
-              key={`intro-${selectedStage.id}`}
-              stage={selectedStage}
-              onStart={beginStage}
-            />
-          )}
-          {screen === "playing" && question && (
+          {session.phase === "playing" && session.question && (
             <QuestionScreen
-              key={question.id}
-              question={question}
-              stageTitle={selectedStage.title}
-              questionNumber={questionIndex + 1}
-              totalQuestions={selectedStage.questions.length}
-              locked={locked}
-              onSubmit={(answer) => submitAnswer(answer)}
-              onTimeUp={handleTimeUp}
-              codeAttemptCount={codeAttempts.length}
-              onCodeAttempt={handleCodeAttempt}
+              key={session.question.id}
+              question={session.question}
+              stageTitle={stage.title}
+              questionNumber={session.questionIndex + 1}
+              totalQuestions={stage.questions.length}
+              locked={session.locked}
+              onSubmit={(answer) => session.submitAnswer(answer)}
+              onTimeUp={session.handleTimeUp}
+              codeAttemptCount={session.codeAttempts.length}
+              onCodeAttempt={session.handleCodeAttempt}
             />
           )}
-          {screen === "transition" && (
+          {session.phase === "transition" && (
             <QuestionTransition
-              key={`transition-${questionIndex}`}
-              timedOut={lastTimedOut}
-              isLast={questionIndex === selectedStage.questions.length - 1}
+              key={`transition-${session.questionIndex}`}
+              timedOut={session.lastTimedOut}
+              isLast={session.questionIndex === stage.questions.length - 1}
             />
           )}
-          {screen === "results" && (
+          {session.phase === "results" && (
             <ResultScreen
               key="results"
-              stage={selectedStage}
-              results={results}
-              score={score}
-              onReview={() => setScreen("review")}
-              onReplay={replay}
+              stage={stage}
+              results={session.results}
+              score={session.score}
+              onReview={session.showReview}
+              onReplay={session.replay}
             />
           )}
-          {screen === "review" && (
+          {session.phase === "review" && (
             <ReviewAnswers
               key="review"
-              stage={selectedStage}
-              results={results}
-              onBack={() => setScreen("results")}
-              onReplay={replay}
+              stage={stage}
+              results={session.results}
+              onBack={session.showResults}
+              onReplay={session.replay}
             />
           )}
         </AnimatePresence>

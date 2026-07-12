@@ -1,0 +1,179 @@
+"use client";
+
+import type { ComponentType } from "react";
+import styles from "@/components/ReviewAnswers.module.css";
+import { isClassificationAnswer } from "@/lib/scoring";
+import type {
+  AnswerResult,
+  AnswerValue,
+  Question,
+  QuestionOfType,
+  QuestionType,
+} from "@/types/game";
+
+type ReviewProps<T extends Question = Question> = { question: T; result: AnswerResult };
+
+function answerLabel(value: AnswerValue | null) {
+  if (value === null) return "Sin respuesta";
+  if (Array.isArray(value)) return value.join(" → ");
+  if (typeof value === "boolean") return value ? "Verdadero" : "Falso";
+  if (typeof value === "object") return "Clasificación completada";
+  return value;
+}
+
+function categoryLabel(category: string | undefined) {
+  if (!category) return "Sin respuesta";
+  return category.charAt(0).toLocaleUpperCase("es") + category.slice(1);
+}
+
+function AnswerPair({ answer, correct }: { answer: AnswerValue | null; correct: AnswerValue }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className={styles.answerBox}>
+        <span>Tu respuesta</span>
+        <strong>{answerLabel(answer)}</strong>
+      </div>
+      <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+        <span>Respuesta correcta</span>
+        <strong>{answerLabel(correct)}</strong>
+      </div>
+    </div>
+  );
+}
+
+function ChoiceReview({ question, result }: ReviewProps<QuestionOfType<"multiple-choice">>) {
+  return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
+}
+
+function TrueFalseReview({ question, result }: ReviewProps<QuestionOfType<"true-false">>) {
+  return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
+}
+
+function ShortTextReview({ question, result }: ReviewProps<QuestionOfType<"short-text">>) {
+  return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
+}
+
+function OrderingReview({ question, result }: ReviewProps<QuestionOfType<"ordering">>) {
+  return <AnswerPair answer={result.answer} correct={question.correctOrder} />;
+}
+
+function EstimationReview({ question, result }: ReviewProps<QuestionOfType<"estimation">>) {
+  const details = result.details?.type === "estimation" ? result.details : undefined;
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      <div className={styles.answerBox}>
+        <span>Tu estimación</span>
+        <strong>
+          {typeof result.answer === "number"
+            ? `${result.answer} ${question.unit}`
+            : "Sin respuesta"}
+        </strong>
+      </div>
+      <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+        <span>Valor real</span>
+        <strong>
+          {question.correctAnswer} {question.unit}
+        </strong>
+      </div>
+      <div className={styles.answerBox}>
+        <span>Diferencia</span>
+        <strong>
+          {typeof result.answer !== "number" || !details
+            ? "—"
+            : details.difference === 0
+              ? "Exacta"
+              : `${details.difference} ${question.unit} ${result.answer > question.correctAnswer ? "por encima" : "por debajo"}`}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
+function LogicCodeReview({ question, result }: ReviewProps<QuestionOfType<"logic-code">>) {
+  const details = result.details?.type === "logic-code" ? result.details : undefined;
+  return (
+    <div>
+      <div className={styles.logicReviewClues}>
+        {question.clues.map((clue) => (
+          <div key={clue.code}>
+            <strong>{clue.code}</strong>
+            <span>{clue.hint}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Códigos enviados</span>
+          {details?.submittedCodes.length ? (
+            <div className={styles.logicReviewAttempts}>
+              {details.submittedCodes.map((code, index) => (
+                <b
+                  key={`${code}-${index}`}
+                  className={
+                    index === details.submittedCodes.length - 1 ? styles.logicReviewLast : ""
+                  }
+                >
+                  {code}
+                </b>
+              ))}
+            </div>
+          ) : (
+            <strong>Sin respuesta</strong>
+          )}
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Solución</span>
+          <strong>{question.correctAnswer}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClassificationReview({ question, result }: ReviewProps<QuestionOfType<"classification">>) {
+  const answer = isClassificationAnswer(result.answer) ? result.answer : null;
+  return (
+    <div className={styles.classificationReviewList}>
+      {question.items.map((item) => {
+        const chosenCategory = answer?.[item.label];
+        const correct = chosenCategory === item.correctCategory;
+        return (
+          <div key={item.label} className={styles.classificationReviewRow}>
+            <strong>{item.label}</strong>
+            <span>
+              <small>Elegida</small>
+              <b
+                className={
+                  correct ? styles.classificationValueCorrect : styles.classificationValueWrong
+                }
+              >
+                {categoryLabel(chosenCategory)}
+              </b>
+            </span>
+            <span>
+              <small>Correcta</small>
+              <b className={styles.classificationValueCorrect}>
+                {categoryLabel(item.correctCategory)}
+              </b>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export const QUESTION_REVIEW_RENDERERS = {
+  "multiple-choice": ChoiceReview,
+  "true-false": TrueFalseReview,
+  "short-text": ShortTextReview,
+  ordering: OrderingReview,
+  classification: ClassificationReview,
+  "logic-code": LogicCodeReview,
+  estimation: EstimationReview,
+} satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };
+
+export function QuestionReviewContent(props: ReviewProps) {
+  const Renderer = QUESTION_REVIEW_RENDERERS[props.question.type] as ComponentType<ReviewProps>;
+  return <Renderer {...props} />;
+}

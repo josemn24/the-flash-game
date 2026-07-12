@@ -1,19 +1,13 @@
 "use client";
 
 import { motion } from "motion/react";
-import { FormEvent, useState } from "react";
-import { AnswerOption } from "@/components/AnswerOption";
-import { ClassificationQuestion } from "@/components/ClassificationQuestion";
-import { EstimationQuestion } from "@/components/EstimationQuestion";
-import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
-import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
+import { BoltIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
-import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { Timer } from "@/components/Timer";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question } from "@/types/game";
@@ -41,16 +35,6 @@ export function QuestionScreen({
   codeAttemptCount,
   onCodeAttempt,
 }: QuestionScreenProps) {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [textAnswer, setTextAnswer] = useState("");
-  const isChoice = question.type === "multiple-choice" || question.type === "image-choice";
-
-  const submitText = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const value = textAnswer.trim();
-    if (value && !locked) onSubmit(value);
-  };
-
   return (
     <motion.section
       className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"
@@ -94,134 +78,19 @@ export function QuestionScreen({
           {question.question}
         </h1>
 
-        {question.media && (
+        {"media" in question && question.media && (
           <div className="mt-5 sm:mt-6">
             <QuestionMedia media={question.media} />
           </div>
         )}
 
-        {isChoice && (
-          <div className="mt-7 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3">
-            {question.options.map((option, index) => (
-              <AnswerOption
-                key={option}
-                label={option}
-                index={index}
-                selected={selected === option}
-                disabled={locked}
-                onSelect={() => setSelected(option)}
-              />
-            ))}
-          </div>
-        )}
-
-        {question.type === "true-false" && (
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-4">
-            <motion.button
-              type="button"
-              className={`${styles.truthButton} ${styles.truthButtonTrue}`}
-              disabled={locked}
-              onClick={() => onSubmit(true)}
-              whileTap={{ scale: 0.97 }}
-            >
-              <CheckIcon className="h-7 w-7" />
-              <span>Verdadero</span>
-            </motion.button>
-            <motion.button
-              type="button"
-              className={`${styles.truthButton} ${styles.truthButtonFalse}`}
-              disabled={locked}
-              onClick={() => onSubmit(false)}
-              whileTap={{ scale: 0.97 }}
-            >
-              <CrossIcon className="h-7 w-7" />
-              <span>Falso</span>
-            </motion.button>
-          </div>
-        )}
-
-        {question.type === "short-text" && (
-          <form className="mt-8" onSubmit={submitText}>
-            <label
-              className="mb-2.5 block text-sm font-bold text-white/65"
-              htmlFor={`answer-${question.id}`}
-            >
-              Escribe tu respuesta
-            </label>
-            <div className={styles.textAnswerRow}>
-              <input
-                id={`answer-${question.id}`}
-                className={styles.textAnswerInput}
-                type="text"
-                value={textAnswer}
-                onChange={(event) => setTextAnswer(event.target.value)}
-                placeholder="Tu respuesta…"
-                disabled={locked}
-                autoComplete="off"
-                autoFocus
-              />
-              <motion.button
-                className={styles.textSubmitButton}
-                type="submit"
-                disabled={locked || !textAnswer.trim()}
-                whileTap={{ scale: 0.96 }}
-                aria-label="Enviar respuesta"
-              >
-                <ArrowIcon className="h-6 w-6" />
-              </motion.button>
-            </div>
-            <p className="mt-3 text-xs leading-5 text-white/35">
-              No importan las mayúsculas, las tildes ni los espacios.
-            </p>
-          </form>
-        )}
-
-        {question.type === "ordering" && (
-          <OrderingQuestion items={question.items} locked={locked} onSubmit={onSubmit} />
-        )}
-
-        {question.type === "classification" && (
-          <ClassificationQuestion
-            items={question.items}
-            categories={question.categories}
-            locked={locked}
-            onSubmit={onSubmit}
-          />
-        )}
-
-        {question.type === "logic-code" && (
-          <LogicCodeQuestion
-            clues={question.clues}
-            codeLength={question.codeLength}
-            locked={locked}
-            attemptCount={codeAttemptCount}
-            onAttempt={onCodeAttempt}
-          />
-        )}
-
-        {question.type === "estimation" && (
-          <EstimationQuestion
-            min={question.min}
-            max={question.max}
-            step={question.step}
-            initialValue={question.initialValue}
-            unit={question.unit}
-            locked={locked}
-            onSubmit={onSubmit}
-          />
-        )}
-
-        {isChoice && (
-          <Button
-            className="mt-auto sm:mt-8"
-            disabled={!selected || locked}
-            onClick={() => selected && onSubmit(selected)}
-            whileTap={{ scale: 0.985 }}
-          >
-            Confirmar respuesta
-            <ArrowIcon className="h-5 w-5" />
-          </Button>
-        )}
+        <QuestionInput
+          question={question}
+          locked={locked}
+          onSubmit={onSubmit}
+          codeAttemptCount={codeAttemptCount}
+          onCodeAttempt={onCodeAttempt}
+        />
       </div>
     </motion.section>
   );

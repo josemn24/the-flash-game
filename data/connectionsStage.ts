@@ -43,7 +43,7 @@ export const connectionsStage = {
     },
     {
       id: "italy-flag",
-      type: "image-choice",
+      type: "multiple-choice",
       category: "Banderas",
       question: "¿A qué país pertenece esta bandera?",
       options: ["Italia", "Irlanda", "México", "Hungría"],

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Link from "next/link";
 import { ArrowIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import styles from "@/components/StartScreen.module.css";
@@ -8,13 +9,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import type { Stage } from "@/types/game";
 
-export function StartScreen({
-  stages,
-  onSelectStage,
-}: {
-  stages: Stage[];
-  onSelectStage: (stage: Stage) => void;
-}) {
+export function StartScreen({ stages }: { stages: Stage[] }) {
   return (
     <motion.section
       className="relative mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10"
@@ -69,20 +64,15 @@ export function StartScreen({
           className={`${styles.stageSelector} mt-9`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.34, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.34, duration: 0.45 }}
         >
           {stages.map((stage) => (
-            <button
-              key={stage.id}
-              className={styles.stageSelectCard}
-              type="button"
-              onClick={() => onSelectStage(stage)}
-            >
+            <Link key={stage.id} className={styles.stageSelectCard} href={`/etapas/${stage.id}`}>
               <span className={styles.stageSelectNumber}>
                 {String(stage.number).padStart(2, "0")}
               </span>
               <span className={styles.stageSelectContent}>
-                <span className="flex items-center justify-between gap-3">
+                <span className="flex w-full items-center justify-between gap-3">
                   <Badge>Etapa {String(stage.number).padStart(2, "0")}</Badge>
                   <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
                     {stage.questions.length} retos
@@ -91,12 +81,31 @@ export function StartScreen({
                 <strong>{stage.title}</strong>
                 <span className={styles.stageSelectSubtitle}>{stage.subtitle}</span>
                 <span className={styles.stageSelectAction}>
-                  Jugar etapa
-                  <ArrowIcon className="h-4 w-4" />
+                  Jugar etapa <ArrowIcon className="h-4 w-4" />
                 </span>
               </span>
-            </button>
+            </Link>
           ))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.44 }}
+        >
+          <Link className={styles.libraryCard} href="/formatos">
+            <span>
+              <small>Manual de juego</small>
+              <strong>Biblioteca de formatos</strong>
+              <p>
+                Descubre las reglas, la puntuación y las mejores prácticas de los siete tipos de
+                pregunta.
+              </p>
+            </span>
+            <span className={styles.libraryAction}>
+              Explorar formatos <ArrowIcon className="h-5 w-5" />
+            </span>
+          </Link>
         </motion.div>
 
         <div className="mt-5 flex items-center gap-2 text-sm text-white/40">
@@ -107,7 +116,7 @@ export function StartScreen({
 
       <footer className="flex items-center justify-between border-t border-white/8 pt-4 font-mono text-[10px] font-bold tracking-[0.16em] text-white/25 uppercase">
         <span>Velocidad + precisión</span>
-        <span>Versión 01</span>
+        <span>Versión 02</span>
       </footer>
     </motion.section>
   );

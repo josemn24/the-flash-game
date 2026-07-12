@@ -32,11 +32,72 @@
   border-radius: 1.35rem;
   padding: 0;
   text-align: left;
+  text-decoration: none;
   background: linear-gradient(120deg, rgba(24, 27, 31, 0.96), rgba(11, 12, 15, 0.98));
   transition:
     border-color 180ms,
     transform 180ms,
     background 180ms;
+}
+.libraryCard {
+  display: flex;
+  max-width: 58rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 0.9rem;
+  border: 1px solid rgba(53, 232, 255, 0.22);
+  border-radius: 1.35rem;
+  padding: 1.25rem 1.4rem;
+  color: white;
+  text-decoration: none;
+  background: linear-gradient(120deg, rgba(53, 232, 255, 0.08), rgba(16, 18, 22, 0.96));
+  transition:
+    border-color 180ms,
+    transform 180ms;
+}
+.libraryCard:hover {
+  border-color: rgba(53, 232, 255, 0.55);
+  transform: translateY(-2px);
+}
+.libraryCard small {
+  display: block;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.libraryCard strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 950;
+  letter-spacing: -0.045em;
+}
+.libraryCard p {
+  max-width: 37rem;
+  margin: 0.35rem 0 0;
+  color: rgba(255, 255, 255, 0.43);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.libraryAction {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--cyan);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+@media (max-width: 639px) {
+  .libraryCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 .stageSelectCard:hover {
   border-color: rgba(215, 255, 24, 0.48);
