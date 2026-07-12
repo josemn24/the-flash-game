@@ -39,12 +39,20 @@ function Illustration({ id }: { id: QuestionIllustration }) {
   );
 }
 
-export function QuestionMedia({ media }: { media: QuestionMediaType }) {
+export function QuestionMedia({
+  media,
+  compact = false,
+}: {
+  media: QuestionMediaType;
+  compact?: boolean;
+}) {
+  const stageClassName = `${styles.visualStage} ${compact ? styles.visualStageCompact : ""}`;
+
   if (media.type === "image") {
     const isSvg = media.src.endsWith(".svg");
 
     return (
-      <div className={styles.visualStage}>
+      <div className={stageClassName}>
         <Image
           src={media.src}
           alt={media.alt}
@@ -61,7 +69,7 @@ export function QuestionMedia({ media }: { media: QuestionMediaType }) {
 
   return (
     <div
-      className={`${styles.visualStage} ${media.id === "saturn" ? styles.visualSpace : ""}`}
+      className={`${stageClassName} ${media.id === "saturn" ? styles.visualSpace : ""}`}
       role="img"
       aria-label={media.alt}
     >

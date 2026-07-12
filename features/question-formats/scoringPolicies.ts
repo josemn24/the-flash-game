@@ -18,6 +18,14 @@ export const SCORING_POLICIES = {
     incorrectPenalty: true,
     speedBonus: true,
   },
+  "odd-one-out": {
+    id: "binary-speed",
+    label: "Acierto y velocidad",
+    summary: "Un acierto conserva entre el 50 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    partialCredit: false,
+    incorrectPenalty: true,
+    speedBonus: true,
+  },
   "true-false": {
     id: "binary-speed",
     label: "Riesgo alto",

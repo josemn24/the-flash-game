@@ -9,6 +9,7 @@ import { EstimationQuestion } from "@/components/EstimationQuestion";
 import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
+import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
@@ -81,6 +82,14 @@ function TrueFalseInput({ locked, onSubmit }: QuestionInputProps<QuestionOfType<
       </motion.button>
     </div>
   );
+}
+
+function OddOneOutInput({
+  question,
+  locked,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"odd-one-out">>) {
+  return <OddOneOutQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
 }
 
 function ShortTextInput({
@@ -192,6 +201,7 @@ function EstimationInput({
 
 export const QUESTION_INPUT_RENDERERS = {
   "multiple-choice": MultipleChoiceInput,
+  "odd-one-out": OddOneOutInput,
   "true-false": TrueFalseInput,
   "short-text": ShortTextInput,
   ordering: OrderingInput,

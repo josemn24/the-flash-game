@@ -30,6 +30,18 @@ export type MultipleChoiceQuestion = BaseQuestion & {
   media?: QuestionMedia;
 };
 
+export type OddOneOutItem = {
+  id: string;
+  label: string;
+  media?: QuestionMedia;
+};
+
+export type OddOneOutQuestion = BaseQuestion & {
+  type: "odd-one-out";
+  items: OddOneOutItem[];
+  correctAnswer: string;
+};
+
 export type TrueFalseQuestion = BaseQuestion & {
   type: "true-false";
   correctAnswer: boolean;
@@ -84,6 +96,7 @@ export type ClassificationQuestion = BaseQuestion & {
 
 export type Question =
   | MultipleChoiceQuestion
+  | OddOneOutQuestion
   | TrueFalseQuestion
   | ShortTextQuestion
   | OrderingQuestion

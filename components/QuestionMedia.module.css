@@ -8,6 +8,14 @@
   border-radius: 1.25rem;
   background: radial-gradient(circle at 50% 20%, #272b31, #0c0d10 72%);
 }
+.visualStageCompact {
+  height: 7rem;
+  border: 0;
+  border-radius: 0.9rem 0.9rem 0 0;
+}
+.visualStageCompact .saturn {
+  transform: rotate(-9deg) scale(0.72);
+}
 .visualScanline {
   position: absolute;
   inset: 0;

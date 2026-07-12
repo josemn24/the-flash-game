@@ -1,0 +1,46 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+.card {
+  min-height: 4.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  color: rgba(255, 255, 255, 0.86);
+  background: var(--surface-subtle);
+  transition:
+    border-color 160ms,
+    color 160ms,
+    background 160ms;
+}
+.card:hover:not(:disabled) {
+  border-color: rgba(215, 255, 24, 0.65);
+  color: white;
+  background: rgba(215, 255, 24, 0.06);
+}
+.card:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 3px;
+}
+.card:disabled {
+  cursor: default;
+}
+.label {
+  display: grid;
+  min-height: 4.5rem;
+  place-items: center;
+  padding: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-align: center;
+}
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+}

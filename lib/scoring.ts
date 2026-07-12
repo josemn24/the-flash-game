@@ -62,7 +62,11 @@ export function calculateQuestionScore(question: Question, correct: boolean, tim
   }
 
   if (question.type === "true-false") return -Math.round(question.points * 0.4);
-  if (question.type === "multiple-choice" || question.type === "ordering") {
+  if (
+    question.type === "multiple-choice" ||
+    question.type === "odd-one-out" ||
+    question.type === "ordering"
+  ) {
     return -Math.round(question.points * 0.2);
   }
   return 0;

@@ -43,6 +43,20 @@ function ChoiceReview({ question, result }: ReviewProps<QuestionOfType<"multiple
   return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
 }
 
+function OddOneOutReview({ question, result }: ReviewProps<QuestionOfType<"odd-one-out">>) {
+  const labelFor = (id: AnswerValue | null) =>
+    typeof id === "string"
+      ? (question.items.find((item) => item.id === id)?.label ?? "Respuesta no válida")
+      : null;
+
+  return (
+    <AnswerPair
+      answer={labelFor(result.answer)}
+      correct={labelFor(question.correctAnswer) ?? question.correctAnswer}
+    />
+  );
+}
+
 function TrueFalseReview({ question, result }: ReviewProps<QuestionOfType<"true-false">>) {
   return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
 }
@@ -163,6 +177,7 @@ function ClassificationReview({ question, result }: ReviewProps<QuestionOfType<"
 
 export const QUESTION_REVIEW_RENDERERS = {
   "multiple-choice": ChoiceReview,
+  "odd-one-out": OddOneOutReview,
   "true-false": TrueFalseReview,
   "short-text": ShortTextReview,
   ordering: OrderingReview,

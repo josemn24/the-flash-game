@@ -12,7 +12,7 @@ La pregunta de producto sigue siendo:
 
 - Un único jugador y estado de sesión en memoria.
 - Dos etapas locales de diez preguntas cada una.
-- Siete formatos de pregunta con reglas y puntuación propias.
+- Ocho formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
 - Transición automática después de responder o agotar el tiempo.
@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, salas, multijugador
 | ------------------- | ------------------------------------------------------------- |
 | `/`                 | Presentación, selector de etapas y acceso a la biblioteca.    |
 | `/etapas/[stageId]` | Validación de la etapa y sesión jugable completa.             |
-| `/formatos`         | Catálogo de los siete formatos disponibles.                   |
+| `/formatos`         | Catálogo de los ocho formatos disponibles.                    |
 | `/formatos/[slug]`  | Reglas, puntuación, autoría, accesibilidad y ejemplo jugable. |
 
 Una etapa recorre estos estados:
@@ -58,18 +58,20 @@ Durante la etapa no se muestran aciertos, soluciones ni puntos parciales. La res
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
 Ambas etapas se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
+Cada una conserva diez preguntas y todavía no utiliza el formato «Encontrar el intruso».
 
 ## Formatos implementados
 
-| Formato           | Interacción                                                   | Evaluación                                                                    |
-| ----------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Elección múltiple | Seleccionar una opción y confirmar. Puede incluir media.      | Acierto exacto; un fallo resta el 20 %.                                       |
-| Verdadero o falso | Envío inmediato al pulsar una opción.                         | Acierto exacto; un fallo resta el 40 %.                                       |
-| Respuesta corta   | Campo de texto y envío por botón o teclado.                   | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |
-| Ordenar           | Controles para subir y bajar elementos y confirmación final.  | La secuencia completa debe coincidir; un fallo resta el 20 %.                 |
-| Clasificar        | Asignar una categoría a cada elemento.                        | Crédito parcial por elemento correctamente clasificado.                       |
-| Código lógico     | Introducir un código a partir de pistas, con varios intentos. | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base. |
-| Estimación        | Ajustar un valor dentro de un rango configurable.             | Crédito por proximidad al valor real.                                         |
+| Formato              | Interacción                                                         | Evaluación                                                                    |
+| -------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Elección múltiple    | Seleccionar una opción y confirmar. Puede incluir media.            | Acierto exacto; un fallo resta el 20 %.                                       |
+| Encontrar el intruso | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                       |
+| Verdadero o falso    | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                       |
+| Respuesta corta      | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |
+| Ordenar              | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                 |
+| Clasificar           | Asignar una categoría a cada elemento.                              | Crédito parcial por elemento correctamente clasificado.                       |
+| Código lógico        | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base. |
+| Estimación           | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                         |
 
 En todos los formatos la velocidad ajusta la puntuación. Para un acierto binario de valor `V`, límite `T` y tiempo usado `t`:
 
@@ -149,7 +151,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las siete fichas de formato.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las ocho fichas de formato, incluida `/formatos/encontrar-el-intruso`.
 
 ## Evolución pendiente
 

@@ -17,6 +17,27 @@ describe("question evaluation", () => {
     expect(calculateAnswerScore(trueFalse, true, 0)).toBe(-40);
   });
 
+  it("evaluates odd-one-out answers and applies its incorrect penalty", () => {
+    const question = QUESTION_FORMAT_CATALOG["odd-one-out"].example;
+    expect(evaluateAnswer({ question, answer: "luna", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 100,
+    });
+    expect(evaluateAnswer({ question, answer: "venus", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: -20,
+    });
+    expect(evaluateAnswer({ question, answer: "desconocido", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: -20,
+    });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: question.timeLimit,
+    });
+  });
+
   it("awards partial classification points", () => {
     const question = QUESTION_FORMAT_CATALOG.classification.example;
     const result = evaluateAnswer({

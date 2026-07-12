@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, siete formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, ocho formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -17,6 +17,7 @@ La aplicación soporta de forma nativa:
 - clasificación con crédito parcial;
 - código lógico con varios intentos;
 - estimación con puntuación por proximidad.
+- encontrar el intruso con elementos de texto o imagen.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -45,12 +46,15 @@ El jugador coloca varios elementos en el orden correcto: acontecimientos histór
 - **Encaje:** intuitiva, competitiva y precisa para medir resultado y tiempo; sirve para cultura, lógica y lenguaje.
 - **Límite recomendado:** entre cuatro y seis elementos para evitar fricción en móvil.
 
-### 2. Encontrar el intruso — Futura
+### 2. Encontrar el intruso — Implementada
 
 Se muestran varios elementos y el jugador identifica cuál rompe una relación: una palabra de otra categoría, un número que no sigue la regla, una imagen distinta, un personaje ajeno a una saga o una bandera de otro continente.
 
 - **Encaje:** reglas inmediatas, rondas de segundos y dificultad escalable.
 - **Ventaja:** coste de producción e implementación bajo; contenido muy reutilizable.
+- **Interacción actual:** entre tres y seis tarjetas de texto o imagen; tocar una tarjeta envía inmediatamente la respuesta.
+- **Puntuación actual:** acierto exacto ajustado por velocidad; un fallo resta el 20 % y agotar el tiempo no puntúa.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 
 ### 3. Emparejar conceptos — Futura
 
@@ -293,18 +297,18 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 
 ## Priorización de mecánicas pendientes
 
-| Objetivo                                   | Mecánicas prioritarias                                                       | Motivo                                                                          |
-| ------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                        | Amplían el juego con riesgo técnico contenido.                                  |
-| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                       | Introducen habilidades e interacciones que van más allá de responder preguntas. |
-| Inducción y deducción                      | La regla secreta                                                             | Convierte la identificación de patrones en una clasificación activa.            |
-| Pensamiento crítico                        | El dato contaminado                                                          | Obliga a contrastar la información antes de utilizarla.                          |
-| Comprensión profunda                       | Reconstrucción del error                                                      | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados. |
-| Percepción y precisión                     | Mapa de calor, pregunta con interferencias y Eco                              | Incorporan localización, reconstrucción sensorial y memoria inmediata.           |
+| Objetivo                                   | Mecánicas prioritarias                                                                                          | Motivo                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                                                           | Amplían el juego con riesgo técnico contenido.                                     |
+| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                                                          | Introducen habilidades e interacciones que van más allá de responder preguntas.    |
+| Inducción y deducción                      | La regla secreta                                                                                                | Convierte la identificación de patrones en una clasificación activa.               |
+| Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                            |
+| Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.   |
+| Percepción y precisión                     | Mapa de calor, pregunta con interferencias y Eco                                                                | Incorporan localización, reconstrucción sensorial y memoria inmediata.             |
 | Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido. |
-| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                   | Permiten decidir cuánta información obtener antes de responder.                  |
-| Conocimiento menos inmediato               | La respuesta prohibida                                                        | Premia alternativas válidas más allá de las asociaciones más obvias.             |
-| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.             |
+| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                    |
+| Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.               |
+| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                |
 
 ## Implicaciones para el futuro multijugador
 

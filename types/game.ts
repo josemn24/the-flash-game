@@ -8,6 +8,8 @@ export type {
   LogicCodeClue,
   LogicCodeQuestion,
   MultipleChoiceQuestion,
+  OddOneOutItem,
+  OddOneOutQuestion,
   OrderingQuestion,
   Question,
   QuestionIllustration,
