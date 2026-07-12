@@ -70,8 +70,12 @@ export function EstimationQuestion({
             aria-valuetext={`${value} ${unit}`}
           />
           <div className={styles.limits} aria-hidden="true">
-            <span>{min} {unit}</span>
-            <span>{max} {unit}</span>
+            <span>
+              {min} {unit}
+            </span>
+            <span>
+              {max} {unit}
+            </span>
           </div>
         </div>
 
@@ -88,7 +92,9 @@ export function EstimationQuestion({
         </motion.button>
       </div>
 
-      <p className={styles.hint}>Acércate todo lo posible. Una estimación alejada nunca resta puntos.</p>
+      <p className={styles.hint}>
+        Acércate todo lo posible. Una estimación alejada nunca resta puntos.
+      </p>
 
       <motion.button
         type="button"

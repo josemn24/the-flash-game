@@ -2,9 +2,7 @@ import type { Question } from "@/types/game";
 
 type Assert<T extends true> = T;
 type IsAssignable<Source, Target> = Source extends Target ? true : false;
-type IsNotAssignable<Source, Target> = IsAssignable<Source, Target> extends false
-  ? true
-  : false;
+type IsNotAssignable<Source, Target> = IsAssignable<Source, Target> extends false ? true : false;
 
 type ValidMultipleChoice = {
   id: "valid-choice";
@@ -23,9 +21,7 @@ type TrueFalseWithStringAnswer = Omit<ValidMultipleChoice, "type" | "options"> &
   type: "true-false";
 };
 
-export type AcceptsValidMultipleChoice = Assert<
-  IsAssignable<ValidMultipleChoice, Question>
->;
+export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
   IsNotAssignable<MultipleChoiceWithoutOptions, Question>
 >;
