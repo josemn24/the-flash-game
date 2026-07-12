@@ -63,8 +63,8 @@ El jugador une elementos relacionados, como países y capitales, autores y obras
 
 - **Interacción actual:** elegir una tarjeta de cada columna; los aciertos quedan bloqueados y los errores se liberan para reintentarlos.
 - **Encaje:** convierte conocimiento en una acción activa y conserva reglas accesibles para ratón, teclado y pantallas táctiles.
-- **Contenido compatible:** texto e imágenes con etiqueta accesible obligatoria en ambas columnas.
-- **Puntuación actual:** crédito por cada pareja correcta ajustado por el tiempo total; los errores solo consumen tiempo y el progreso se conserva al agotarse el límite.
+- **Contenido compatible:** texto o imágenes; las tarjetas visuales muestran solo la imagen y conservan una etiqueta accesible.
+- **Puntuación actual:** crédito por cada pareja correcta ajustado por el tiempo total; cada intento incorrecto resta un 10 % de los puntos base, con un mínimo de cero, y el progreso se conserva al agotarse el límite.
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 
 ### 4. Secuencias y patrones — Disponible como contenido

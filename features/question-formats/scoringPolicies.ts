@@ -30,9 +30,9 @@ export const SCORING_POLICIES = {
     id: "partial-items",
     label: "Crédito por pareja",
     summary:
-      "Cada pareja correcta aporta su fracción de puntos, ajustada por el tiempo empleado; los errores solo consumen tiempo.",
+      "Cada pareja correcta aporta crédito ajustado por tiempo; cada intento incorrecto resta un 10 % de los puntos base.",
     partialCredit: true,
-    incorrectPenalty: false,
+    incorrectPenalty: true,
     speedBonus: true,
   },
   "true-false": {

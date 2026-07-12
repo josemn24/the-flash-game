@@ -158,6 +158,7 @@ export const QUESTION_FORMAT_CATALOG = {
     rules: [
       "Se selecciona una tarjeta de cada columna",
       "Las parejas correctas quedan bloqueadas y las incorrectas se liberan",
+      "Cada pareja incorrecta resta el 10 % de los puntos base",
       "Completar todas las parejas envía la respuesta automáticamente",
     ],
     authoringTips: [
@@ -166,7 +167,7 @@ export const QUESTION_FORMAT_CATALOG = {
       "Mantén longitud y presentación homogéneas para no dar pistas",
     ],
     accessibility: [
-      "Mantén etiquetas textuales aunque una tarjeta incluya imagen",
+      "Mantén una etiqueta accesible aunque la tarjeta muestre solo la imagen",
       "Anuncia cada acierto y error mediante una región en vivo",
       "Conserva un orden de teclado lógico entre ambas columnas",
     ],

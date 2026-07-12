@@ -28,6 +28,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
   const answerLockRef = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
   const draftAnswerRef = useRef<AnswerValue | null>(null);
+  const matchingIncorrectAttemptsRef = useRef(0);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<ExamplePhase>("ready");
   const [attempt, setAttempt] = useState(0);
@@ -47,6 +48,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
     answerLockRef.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
+    matchingIncorrectAttemptsRef.current = 0;
     setCodeAttemptCount(0);
     setResult(null);
     setPhase("ready");
@@ -71,6 +73,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
     answerLockRef.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
+    matchingIncorrectAttemptsRef.current = 0;
     setCodeAttemptCount(0);
     setResult(null);
     setAttempt((current) => current + 1);
@@ -94,6 +97,8 @@ export function PlayableFormatExample({ question }: { question: Question }) {
           timeUsed,
           timedOut,
           submittedCodes,
+          matchingIncorrectAttempts:
+            question.type === "matching" ? matchingIncorrectAttemptsRef.current : undefined,
         }),
       );
       setPhase("feedback");
@@ -217,6 +222,9 @@ export function PlayableFormatExample({ question }: { question: Question }) {
                 onCodeAttempt={handleCodeAttempt}
                 onProgress={(answer) => {
                   draftAnswerRef.current = answer;
+                }}
+                onMatchingIncorrectAttempt={() => {
+                  matchingIncorrectAttemptsRef.current += 1;
                 }}
               />
             </div>

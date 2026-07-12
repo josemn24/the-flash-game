@@ -89,6 +89,36 @@ describe("question evaluation", () => {
     });
   });
 
+  it("penalizes matching mistakes by ten percent without going below zero", () => {
+    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    const answer = { japon: "bandera-japon" };
+    expect(
+      evaluateAnswer({
+        question,
+        answer,
+        timeUsed: 0,
+        matchingIncorrectAttempts: 1,
+      }),
+    ).toMatchObject({
+      status: "partial",
+      points: 35,
+      details: {
+        type: "matching",
+        correctPairs: 1,
+        totalPairs: 3,
+        incorrectAttempts: 1,
+      },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer,
+        timeUsed: 0,
+        matchingIncorrectAttempts: 4,
+      }),
+    ).toMatchObject({ status: "partial", points: 0 });
+  });
+
   it("calculates estimation proximity", () => {
     const question = QUESTION_FORMAT_CATALOG.estimation.example;
     const result = evaluateAnswer({ question, answer: 430, timeUsed: 0 });

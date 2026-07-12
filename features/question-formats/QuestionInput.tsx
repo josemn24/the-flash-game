@@ -20,6 +20,7 @@ type CommonProps = {
   codeAttemptCount: number;
   onCodeAttempt: (code: string) => boolean;
   onProgress: (answer: AnswerValue) => void;
+  onMatchingIncorrectAttempt: () => void;
 };
 
 type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
@@ -83,6 +84,7 @@ function MatchingInput({
   question,
   locked,
   onProgress,
+  onMatchingIncorrectAttempt,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"matching">>) {
   return (
@@ -91,6 +93,7 @@ function MatchingInput({
       rightItems={question.rightItems}
       locked={locked}
       onProgress={onProgress}
+      onIncorrectAttempt={onMatchingIncorrectAttempt}
       onSubmit={onSubmit}
     />
   );

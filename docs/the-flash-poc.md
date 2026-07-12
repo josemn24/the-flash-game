@@ -66,7 +66,7 @@ Cada una conserva diez preguntas y todavía no utiliza los formatos «Encontrar 
 | -------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Elección múltiple    | Tocar una opción para enviarla inmediatamente. Puede incluir media. | Acierto exacto; un fallo resta el 20 %.                                       |
 | Encontrar el intruso | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                       |
-| Emparejar conceptos  | Seleccionar una tarjeta de cada columna; admite media por tarjeta.  | Crédito por pareja correcta ajustado por tiempo; los errores no restan.       |
+| Emparejar conceptos  | Seleccionar una tarjeta de cada columna; admite media por tarjeta.  | Crédito por pareja y velocidad; cada error resta un 10 % de los puntos base.  |
 | Verdadero o falso    | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                       |
 | Respuesta corta      | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |
 | Ordenar              | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                 |

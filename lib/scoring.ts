@@ -15,6 +15,7 @@ export type EvaluationInput = {
   timeUsed: number;
   timedOut?: boolean;
   submittedCodes?: string[];
+  matchingIncorrectAttempts?: number;
 };
 
 export function isClassificationAnswer(answer: AnswerValue | null): answer is ClassificationAnswer {
@@ -125,7 +126,10 @@ export function calculateAnswerScore(
     const { correctPairs, totalPairs } = calculateMatchingMetrics(question, answer);
     const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
     const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
-    return Math.round(question.points * (correctPairs / totalPairs) * speedMultiplier);
+    const partialScore = Math.round(
+      question.points * (correctPairs / totalPairs) * speedMultiplier,
+    );
+    return Math.max(0, partialScore - Math.round(question.points * 0.1) * incorrectAttempts);
   }
 
   return calculateQuestionScore(question, isAnswerCorrect(question, answer), timeUsed);
@@ -137,6 +141,7 @@ export function evaluateAnswer({
   timeUsed,
   timedOut = false,
   submittedCodes = [],
+  matchingIncorrectAttempts = 0,
 }: EvaluationInput): AnswerResult {
   const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
   const isCorrect = answer !== null && isAnswerCorrect(question, answer);
@@ -149,7 +154,12 @@ export function evaluateAnswer({
   const points =
     answer === null || (timedOut && question.type !== "matching")
       ? 0
-      : calculateAnswerScore(question, answer, safeTime, incorrectAttempts);
+      : calculateAnswerScore(
+          question,
+          answer,
+          safeTime,
+          question.type === "matching" ? matchingIncorrectAttempts : incorrectAttempts,
+        );
   const status =
     answer === null || (timedOut && question.type === "matching" && !matchingMetrics?.correctPairs)
       ? "unanswered"
@@ -178,7 +188,13 @@ export function evaluateAnswer({
             },
           }
         : question.type === "matching" && matchingMetrics
-          ? { details: { type: "matching" as const, ...matchingMetrics } }
+          ? {
+              details: {
+                type: "matching" as const,
+                ...matchingMetrics,
+                incorrectAttempts: matchingIncorrectAttempts,
+              },
+            }
           : {}),
   };
 }

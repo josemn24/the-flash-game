@@ -12,6 +12,7 @@ type MatchingQuestionProps = {
   rightItems: MatchingItem[];
   locked: boolean;
   onProgress: (answer: MatchingAnswer) => void;
+  onIncorrectAttempt: () => void;
   onSubmit: (answer: MatchingAnswer) => void;
 };
 
@@ -22,6 +23,7 @@ export function MatchingQuestion({
   rightItems,
   locked,
   onProgress,
+  onIncorrectAttempt,
   onSubmit,
 }: MatchingQuestionProps) {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -55,6 +57,7 @@ export function MatchingQuestion({
     }
 
     setInvalidPair({ leftId, rightId });
+    onIncorrectAttempt();
     setAnnouncement(`${leftItem.label} y ${rightItem.label} no forman una pareja.`);
     resetTimeoutRef.current = setTimeout(() => {
       setInvalidPair(null);
@@ -79,26 +82,6 @@ export function MatchingQuestion({
 
   return (
     <div className={styles.root}>
-      <div className={styles.progressHeader}>
-        <span>Emparejamientos</span>
-        <span>
-          {matchedCount} de {leftItems.length} completados
-        </span>
-      </div>
-      <div
-        className={styles.progressTrack}
-        role="progressbar"
-        aria-label="Progreso de los emparejamientos"
-        aria-valuemin={0}
-        aria-valuemax={leftItems.length}
-        aria-valuenow={matchedCount}
-      >
-        <motion.span
-          className={styles.progressValue}
-          animate={{ width: `${(matchedCount / leftItems.length) * 100}%` }}
-        />
-      </div>
-
       <div className={styles.columns}>
         <section className={styles.column} aria-labelledby="matching-left-heading">
           <h3 id="matching-left-heading">Conceptos</h3>
@@ -179,7 +162,7 @@ function MatchingCard({
   return (
     <motion.button
       type="button"
-      className={`${styles.card} ${selected ? styles.cardSelected : ""} ${matched ? styles.cardMatched : ""} ${invalid ? styles.cardInvalid : ""}`}
+      className={`${styles.card} ${item.media ? styles.cardMediaOnly : ""} ${selected ? styles.cardSelected : ""} ${matched ? styles.cardMatched : ""} ${invalid ? styles.cardInvalid : ""}`}
       disabled={disabled}
       aria-label={item.label}
       aria-pressed={selected}
@@ -187,7 +170,7 @@ function MatchingCard({
       whileTap={disabled ? undefined : { scale: 0.98 }}
     >
       {item.media && <QuestionMedia media={item.media} compact />}
-      <span className={styles.cardLabel}>{item.label}</span>
+      {!item.media && <span className={styles.cardLabel}>{item.label}</span>}
       {matched && <CheckIcon className={styles.stateIcon} aria-hidden="true" />}
       {invalid && <CrossIcon className={styles.stateIcon} aria-hidden="true" />}
     </motion.button>

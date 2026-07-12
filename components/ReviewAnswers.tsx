@@ -122,9 +122,14 @@ export function ReviewAnswers({
                     </span>
                   )}
                   {matchingDetails && (
-                    <span className="text-[var(--cyan)]">
-                      Parejas: {matchingDetails.correctPairs}/{matchingDetails.totalPairs}
-                    </span>
+                    <>
+                      <span className="text-[var(--cyan)]">
+                        Parejas: {matchingDetails.correctPairs}/{matchingDetails.totalPairs}
+                      </span>
+                      <span className="text-white/35">
+                        Fallos: {matchingDetails.incorrectAttempts}
+                      </span>
+                    </>
                   )}
                   <span
                     className={

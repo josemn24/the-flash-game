@@ -5,35 +5,10 @@
   flex-direction: column;
   margin-top: 1rem;
 }
-.progressHeader {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  color: rgba(255, 255, 255, 0.42);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.progressTrack {
-  height: 0.3rem;
-  overflow: hidden;
-  margin-top: 0.5rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-}
-.progressValue {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--electric), var(--cyan));
-}
 .columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
-  margin-top: 0.8rem;
 }
 .column {
   display: grid;
@@ -93,6 +68,9 @@
   line-height: 1.2;
   text-align: center;
 }
+.cardMediaOnly > div {
+  border-radius: 0.9rem;
+}
 .stateIcon {
   position: absolute;
   top: 0.45rem;
@@ -137,7 +115,6 @@
 @media (min-width: 640px) {
   .columns {
     gap: 1rem;
-    margin-top: 1rem;
   }
   .column {
     gap: 0.7rem;

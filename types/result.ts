@@ -17,6 +17,7 @@ export type AnswerResultDetails =
       type: "matching";
       correctPairs: number;
       totalPairs: number;
+      incorrectAttempts: number;
     };
 
 export type AnswerResult = {
