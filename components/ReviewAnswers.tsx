@@ -5,7 +5,7 @@ import { CheckIcon, ChevronIcon, ClockIcon, CrossIcon, RotateIcon } from "@/comp
 import { Logo } from "@/components/Logo";
 import styles from "@/components/ReviewAnswers.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { Button } from "@/components/ui/Button";
+import { MotionButton } from "@/components/ui/MotionButton.client";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import type { AnswerResult, Stage } from "@/types/game";
 
@@ -140,13 +140,13 @@ export function ReviewAnswers({
       </div>
 
       <div className="mt-7 grid gap-3 sm:grid-cols-2">
-        <Button variant="secondary" onClick={onBack} whileTap={{ scale: 0.98 }}>
+        <MotionButton variant="secondary" onClick={onBack} whileTap={{ scale: 0.98 }}>
           Volver al resultado
-        </Button>
-        <Button onClick={onReplay} whileTap={{ scale: 0.98 }}>
+        </MotionButton>
+        <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
           <RotateIcon className="h-5 w-5" />
           Volver a jugar
-        </Button>
+        </MotionButton>
       </div>
     </motion.section>
   );

@@ -8,3 +8,11 @@ export type Stage = {
   description: string;
   questions: Question[];
 };
+
+export type StageSummary = {
+  id: string;
+  number: number;
+  title: string;
+  subtitle: string;
+  questionCount: number;
+};

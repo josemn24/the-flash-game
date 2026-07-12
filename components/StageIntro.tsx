@@ -6,7 +6,7 @@ import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { MotionButton } from "@/components/ui/MotionButton.client";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/StageIntro.module.css";
 import type { Stage } from "@/types/game";
@@ -108,7 +108,7 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
               </div>
             </div>
 
-            <Button
+            <MotionButton
               className="mt-7 sm:mt-8"
               onClick={onStart}
               whileHover={{ scale: 1.01 }}
@@ -116,7 +116,7 @@ export function StageIntro({ stage, onStart }: { stage: Stage; onStart: () => vo
             >
               Empezar etapa
               <ArrowIcon className="h-5 w-5" />
-            </Button>
+            </MotionButton>
           </div>
         </div>
       </div>

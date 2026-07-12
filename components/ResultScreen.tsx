@@ -13,7 +13,7 @@ import {
 import { Logo } from "@/components/Logo";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { MotionButton } from "@/components/ui/MotionButton.client";
 import styles from "@/components/ResultScreen.module.css";
 import type { AnswerResult, Stage } from "@/types/game";
 
@@ -118,11 +118,11 @@ export function ResultScreen({
             </div>
           </div>
 
-          <Button onClick={onReplay} whileTap={{ scale: 0.98 }}>
+          <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
             <RotateIcon className="h-5 w-5" />
             Volver a jugar
-          </Button>
-          <Button
+          </MotionButton>
+          <MotionButton
             variant="secondary"
             className="mt-3"
             onClick={onReview}
@@ -131,7 +131,7 @@ export function ResultScreen({
             <EyeIcon className="h-5 w-5" />
             Ver respuestas
             <ArrowIcon className="ml-auto h-5 w-5" />
-          </Button>
+          </MotionButton>
         </motion.div>
 
         <motion.div

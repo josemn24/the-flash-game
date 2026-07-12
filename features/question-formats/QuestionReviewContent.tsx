@@ -1,5 +1,3 @@
-"use client";
-
 import type { ComponentType } from "react";
 import styles from "@/components/ReviewAnswers.module.css";
 import { isClassificationAnswer } from "@/lib/scoring";

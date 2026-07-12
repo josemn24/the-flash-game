@@ -10,7 +10,7 @@ import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import styles from "@/components/QuestionScreen.module.css";
-import { Button } from "@/components/ui/Button";
+import { MotionButton } from "@/components/ui/MotionButton.client";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
@@ -43,7 +43,7 @@ function MultipleChoiceInput({
           />
         ))}
       </div>
-      <Button
+      <MotionButton
         className="mt-auto sm:mt-8"
         disabled={!selected || locked}
         onClick={() => selected && onSubmit(selected)}
@@ -51,7 +51,7 @@ function MultipleChoiceInput({
       >
         Confirmar respuesta
         <ArrowIcon className="h-5 w-5" />
-      </Button>
+      </MotionButton>
     </>
   );
 }

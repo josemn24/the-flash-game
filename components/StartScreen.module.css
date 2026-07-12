@@ -1,3 +1,79 @@
+.homeEntrance {
+  animation: home-fade-in 300ms both;
+}
+.eyebrowEntrance {
+  animation: home-slide-from-left 300ms 120ms both;
+}
+.titleEntrance {
+  animation: home-slide-from-bottom 550ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.copyEntrance {
+  animation: home-copy-in 300ms 280ms both;
+}
+.stageSelectorEntrance {
+  animation: home-stage-list-in 450ms 340ms both;
+}
+.libraryEntrance {
+  animation: home-library-in 300ms 440ms both;
+}
+@keyframes home-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes home-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes home-slide-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes home-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes home-stage-list-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes home-library-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .heroTitle {
   display: flex;
   flex-direction: column;

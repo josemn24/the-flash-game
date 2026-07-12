@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/icons";
-import { Button } from "@/components/ui/Button";
+import { MotionButton } from "@/components/ui/MotionButton.client";
 import styles from "@/components/OrderingQuestion.module.css";
 
 type OrderingQuestionProps = {
@@ -114,14 +114,14 @@ export function OrderingQuestion({ items, locked, onSubmit }: OrderingQuestionPr
         {lastMove && `${lastMove.item}, posición ${lastMove.position} de ${orderedItems.length}.`}
       </p>
 
-      <Button
+      <MotionButton
         className={styles.confirmButton}
         disabled={locked}
         onClick={() => onSubmit([...orderedItems])}
         whileTap={{ scale: 0.985 }}
       >
         Confirmar orden
-      </Button>
+      </MotionButton>
     </div>
   );
 }

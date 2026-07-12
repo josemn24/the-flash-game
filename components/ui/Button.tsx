@@ -1,12 +1,7 @@
-"use client";
+import type { ComponentPropsWithoutRef } from "react";
+import { buttonClassName, type ButtonStyleProps } from "@/components/ui/buttonStyles";
 
-import { motion, type HTMLMotionProps } from "motion/react";
-import styles from "@/components/ui/Button.module.css";
-
-type ButtonProps = HTMLMotionProps<"button"> & {
-  variant?: "primary" | "secondary";
-  size?: "default" | "hero";
-};
+export type ButtonProps = ComponentPropsWithoutRef<"button"> & ButtonStyleProps;
 
 export function Button({
   variant = "primary",
@@ -16,10 +11,6 @@ export function Button({
   ...props
 }: ButtonProps) {
   return (
-    <motion.button
-      {...props}
-      type={type}
-      className={`${styles.button} ${styles[variant]} ${size === "hero" ? styles.hero : ""} ${className ?? ""}`}
-    />
+    <button {...props} type={type} className={buttonClassName({ variant, size, className })} />
   );
 }

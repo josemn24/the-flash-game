@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { CheckIcon } from "@/components/icons";
 import styles from "@/components/ClassificationQuestion.module.css";
-import { Button } from "@/components/ui/Button";
+import { MotionButton } from "@/components/ui/MotionButton.client";
 import type { ClassificationAnswer, ClassificationItem } from "@/types/game";
 
 type ClassificationQuestionProps = {
@@ -111,14 +111,14 @@ export function ClassificationQuestion({
         </div>
       </div>
 
-      <Button
+      <MotionButton
         className={styles.confirmButton}
         disabled={locked || !complete}
         onClick={() => onSubmit({ ...answers })}
         whileTap={{ scale: 0.985 }}
       >
         Confirmar clasificación
-      </Button>
+      </MotionButton>
     </div>
   );
 }
