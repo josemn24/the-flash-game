@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FormatExample } from "@/components/FormatExample";
 import styles from "@/components/FormatLibrary.module.css";
+import { PlayableFormatExample } from "@/components/PlayableFormatExample.client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SpeedBackground } from "@/components/SpeedBackground";
 import { getQuestionFormatBySlug, questionFormats } from "@/features/question-formats/catalog";
@@ -110,8 +110,8 @@ export default async function FormatDetailPage({ params }: Props) {
             </ul>
           </section>
           <section className={styles.wide}>
-            <p className={`${styles.eyebrow} mb-3`}>Ejemplo no jugable</p>
-            <FormatExample question={format.example} />
+            <p className={`${styles.eyebrow} mb-3`}>Ejemplo jugable</p>
+            <PlayableFormatExample question={format.example} />
           </section>
         </div>
 
