@@ -1,10 +1,30 @@
-# Modos de juego futuros
+# Modos de juego: estado y evolución
 
 ## Propósito
 
-The Flash nace como un sprint de preguntas individual, pero puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, siete formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
-Este documento recoge mecánicas candidatas para futuras etapas, eventos y modos competitivos. No amplía el alcance de la PoC actual ni define todavía su implementación técnica.
+Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
+
+## Estado actual
+
+La aplicación soporta de forma nativa:
+
+- elección múltiple, también con imagen o ilustración;
+- verdadero o falso;
+- respuesta corta con normalización y respuestas equivalentes;
+- ordenar elementos;
+- clasificación con crédito parcial;
+- código lógico con varios intentos;
+- estimación con puntuación por proximidad.
+
+Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
+
+En el catálogo siguiente se usan estos estados:
+
+- **Implementada:** existe como tipo de pregunta nativo y jugable.
+- **Disponible como contenido:** puede plantearse con un formato actual, pero no tiene interacción propia.
+- **Futura:** requiere un nuevo modelo, interfaz o reglas específicas.
 
 ## Principios de diseño
 
@@ -17,113 +37,117 @@ Este documento recoge mecánicas candidatas para futuras etapas, eventos y modos
 
 ## Catálogo de mecánicas
 
-### 1. Ordenar elementos
+### 1. Ordenar elementos — Implementada
 
 El jugador coloca varios elementos en el orden correcto: acontecimientos históricos, películas por fecha, países por población, pasos de un proceso, una frase o magnitudes.
 
-- **Interacción:** arrastrar tarjetas o pulsarlas en el orden correcto.
+- **Interacción actual:** controles accesibles para subir y bajar cada elemento; el orden completo se confirma antes de enviarse.
 - **Encaje:** intuitiva, competitiva y precisa para medir resultado y tiempo; sirve para cultura, lógica y lenguaje.
-- **Límite recomendado:** entre cuatro y siete elementos para evitar fricción en móvil.
+- **Límite recomendado:** entre cuatro y seis elementos para evitar fricción en móvil.
 
-### 2. Encontrar el intruso
+### 2. Encontrar el intruso — Futura
 
 Se muestran varios elementos y el jugador identifica cuál rompe una relación: una palabra de otra categoría, un número que no sigue la regla, una imagen distinta, un personaje ajeno a una saga o una bandera de otro continente.
 
 - **Encaje:** reglas inmediatas, rondas de segundos y dificultad escalable.
 - **Ventaja:** coste de producción e implementación bajo; contenido muy reutilizable.
 
-### 3. Emparejar conceptos
+### 3. Emparejar conceptos — Futura
 
 El jugador une elementos relacionados, como países y capitales, autores y obras, inventos e inventores, conceptos y definiciones o imágenes y nombres.
 
 - **Interacción:** elegir una tarjeta de cada columna o arrastrar conexiones.
 - **Encaje:** convierte conocimiento en una acción activa; los errores pueden penalizar tiempo, puntos o ambos.
 
-### 4. Secuencias y patrones
+### 4. Secuencias y patrones — Disponible como contenido
 
 El jugador descubre el siguiente elemento de una serie numérica, de símbolos, colores, letras, palabras o movimientos espaciales.
 
 - **Encaje:** introduce lógica pura y equilibra los formatos memorísticos.
-- **Formato:** elección múltiple rápida o desafío de construcción de respuesta.
+- **Estado actual:** puede resolverse mediante elección múltiple o respuesta corta; todavía no existe un constructor de secuencias específico.
 
-### 5. Clasificación rápida
+### 5. Clasificación rápida — Implementada
 
 Varias tarjetas deben repartirse entre categorías: mamífero, ave o reptil; país europeo, asiático o africano; real o ficticio; hecho o mito; sustantivo, adjetivo o verbo.
 
-- **Formato recomendado:** entre seis y doce elementos.
+- **Interacción actual:** matriz de categorías con selección explícita para cada elemento y confirmación final.
+- **Formato recomendado:** entre tres y ocho elementos.
 - **Encaje:** encadena decisiones rápidas y compara muy bien la velocidad de varios jugadores.
 
-### 6. Memoria relámpago
+### 6. Memoria relámpago — Futura
 
 Una composición se muestra durante unos segundos y después se oculta. El jugador debe recordar elementos, posiciones, un orden, relaciones entre nombres e imágenes o detalles de una escena.
 
 - **Encaje:** hace que el cronómetro forme parte real de la mecánica, tanto al memorizar como al responder.
 - **Valor:** permite dificultad alta con reglas simples.
 
-### 7. Diferencias visuales
+### 7. Diferencias visuales — Futura
 
 El jugador encuentra una o varias diferencias entre dos imágenes: una única diferencia, todas las diferencias, el elemento añadido o eliminado, o una zona concreta pulsable.
 
 - **Encaje:** formato reconocido, visual y accesible.
 - **Riesgo:** las imágenes y zonas pulsables deben prepararse y escalarse cuidadosamente para cada pantalla.
 
-### 8. Pregunta de estimación
+### 8. Pregunta de estimación — Implementada
 
 El jugador responde un valor aproximado; una respuesta más cercana obtiene mejor puntuación. Puede estimar una distancia, año, altura, cantidad de personas o porcentaje.
 
-- **Interacción:** campo numérico, rueda, control deslizante o botones de incremento.
+- **Interacción actual:** valor visible y botones de incremento o decremento dentro de un rango y paso configurables.
 - **Encaje:** evita el acierto binario y produce comparativas interesantes aun cuando nadie acierte exactamente.
+- **Puntuación actual:** proximidad al valor real ajustada por el tiempo empleado.
 
-### 9. Imagen progresivamente revelada
+### 9. Imagen progresivamente revelada — Futura
 
 Una imagen comienza borrosa, pixelada, ampliada o cubierta y se revela con el tiempo. El jugador debe identificar personajes, lugares, banderas, películas, animales, obras de arte o logotipos cuanto antes.
 
 - **Encaje:** premia directamente la rapidez, pero mantiene un riesgo al responder antes.
 - **Identidad:** es una de las mecánicas que mejor representa el nombre y el espíritu de The Flash.
 
-### 10. Anagramas y palabras desordenadas
+### 10. Anagramas y palabras desordenadas — Futura
 
 El jugador reordena letras, sílabas o fragmentos para formar una palabra o frase; también puede resolver una palabra a partir de una pista o crear el mayor número posible de palabras.
 
 - **Interacción:** entrada escrita o fichas directas.
 - **Encaje:** sencillo de entender, barato de producir y eficaz bajo presión.
 
-### 11. Objetos ocultos
+### 11. Objetos ocultos — Futura
 
 El jugador encuentra uno o varios elementos dentro de una escena: un objeto concreto, todos los símbolos de un tipo, un personaje, una cantidad de elementos o el único objeto que cumple una condición.
 
 - **Encaje:** atractivo visual y apropiado como desafío especial de uno o varios minutos.
 - **Riesgo:** exige ilustraciones o imágenes diseñadas para el reto.
 
-### 12. Código o combinación lógica
+### 12. Código o combinación lógica — Implementada
 
 El jugador deduce un código a partir de pistas. Por ejemplo, las combinaciones `682`, `614` y `206` indican cifras correctas y su posición. El mismo formato puede usar colores, símbolos, palabras, interruptores, posiciones u operaciones.
 
 - **Encaje:** prueba estrella con tensión, estrategia y recorrido más largo.
-- **Uso recomendado:** final de etapa o evento especial.
+- **Interacción actual:** campos por cifra, pistas siempre visibles e intentos repetidos hasta acertar o agotar el tiempo.
+- **Puntuación actual:** velocidad con una reducción del 10 % de los puntos base por intento fallido.
+- **Uso actual:** una de las preguntas de cierre de la etapa «Conexiones rápidas» y ejemplo jugable en su ficha.
 
-### 13. Mini-Wordle
+### 13. Mini-Wordle — Futura
 
 El jugador descubre una palabra en pocos intentos. La adaptación puede usar palabras de cuatro o cinco letras, menos intentos, tiempo total limitado, pistas temáticas, puntos por eficiencia y penalización por letras incorrectas.
 
 - **Encaje:** conocido y fácil de entender.
 - **Uso recomendado:** desafío especial, por su duración mayor que una pregunta normal.
 
-### 14. Simon o repetición de secuencias
+### 14. Simon o repetición de secuencias — Futura
 
 Se reproduce una secuencia de colores, sonidos, símbolos, posiciones o ritmos y el jugador la repite. Puede crecer en longitud, exigir repetición inversa o pedir que se detecte un elemento incorrecto.
 
 - **Encaje:** combina memoria, reflejos y precisión.
 - **Consideración competitiva:** el jugador debe esperar la reproducción, por lo que ese tiempo debe normalizarse o excluirse al comparar resultados.
 
-### 15. Matrices lógicas
+### 15. Matrices lógicas — Futura
 
 Una cuadrícula de símbolos o imágenes contiene una casilla vacía; el jugador elige la opción que completa el patrón.
 
 - **Encaje:** aporta razonamiento abstracto y escala de niveles sencillos a exigentes.
 - **Uso recomendado:** etapas de lógica o preguntas especiales.
 
-### 16. Mini-nonograma
+### 16. Mini-nonograma — Futura
 
 El jugador completa una cuadrícula a partir de pistas numéricas.
 
@@ -131,42 +155,42 @@ El jugador completa una cuadrícula a partir de pistas numéricas.
 - **Encaje:** diferenciador y más profundo que una pregunta convencional.
 - **Riesgo:** necesita interfaz, tutorial y generación de puzles cuidadosa.
 
-### 17. Laberinto contrarreloj
+### 17. Laberinto contrarreloj — Futura
 
 El jugador guía un elemento desde la entrada a la salida mediante arrastre, botones direccionales, cruces sucesivos o elección de caminos. Una variante accesible pregunta qué laberinto tiene salida.
 
 - **Encaje:** mide con claridad tiempo y precisión.
 - **Riesgo:** un control táctil impreciso mediría frustración, no habilidad.
 
-### 18. Mini-sudoku
+### 18. Mini-sudoku — Futura
 
 Adaptación del sudoku tradicional: cuadrícula 4 × 4, completar casillas críticas, detectar un número erróneo, elegir la cuadrícula válida o resolver una región.
 
 - **Encaje:** conocido, objetivo y competitivo.
 - **Uso recomendado:** desafío especial o etapa temática de lógica, no formato frecuente.
 
-### 19. Rompecabezas deslizante
+### 19. Rompecabezas deslizante — Futura
 
 Una imagen, números, letras o un mapa se divide en piezas que el jugador reconstruye desplazando fichas.
 
 - **Encaje:** visual y fácilmente medible por tiempo.
 - **Riesgo:** la interacción táctil, animaciones, validación y generación requieren más trabajo que una pregunta tradicional.
 
-### 20. Tangram o construcción de figura
+### 20. Tangram o construcción de figura — Futura
 
 El jugador forma una silueta con piezas geométricas: tangram clásico, bloques, piezas encajables o copia de una composición mostrada antes.
 
 - **Encaje:** desafío especial memorable y muy diferenciador.
 - **Riesgo:** exige arrastre, rotación, colisiones, ajuste de piezas y validación tolerante; es una de las mecánicas más complejas de implementar correctamente.
 
-## Priorización por objetivo
+## Priorización de mecánicas pendientes
 
-| Objetivo                                   | Mecánicas prioritarias                                                                                     | Motivo                                                                          |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, ordenar elementos, secuencias, anagramas, estimación                                 | Amplían el juego con riesgo técnico contenido.                                  |
-| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva, código lógico, objetos ocultos, mini-nonogramas                      | Introducen habilidades e interacciones que van más allá de responder preguntas. |
-| Pruebas especiales                         | Código lógico, mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas, tangram                  | Admiten retos ocasionales de uno a cinco minutos.                               |
-| Competición por tiempo                     | Ordenar, clasificación rápida, emparejar, diferencias visuales, imagen progresiva, laberinto, rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.             |
+| Objetivo                                   | Mecánicas prioritarias                                                       | Motivo                                                                          |
+| ------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                        | Amplían el juego con riesgo técnico contenido.                                  |
+| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                       | Introducen habilidades e interacciones que van más allá de responder preguntas. |
+| Pruebas especiales                         | Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram  | Admiten retos ocasionales de uno a cinco minutos.                               |
+| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.             |
 
 ## Implicaciones para el futuro multijugador
 
@@ -179,4 +203,4 @@ Para que los resultados sean comparables en una partida online, cada formato deb
 - la protección frente a latencia y diferencias de dispositivo;
 - la estrategia de contenido: datos estructurados, activos visuales y validación de calidad.
 
-Como siguiente paso de producto, las cinco mecánicas de mejor equilibrio permiten validar variedad sin introducir interfaces complejas. Las pruebas especiales deberían llegar después, acompañadas de prototipos específicos de interacción móvil y reglas de puntuación explícitas.
+Como siguiente paso de producto, encontrar el intruso, emparejar conceptos y anagramas ofrecen el mejor equilibrio entre variedad y coste técnico. Las pruebas especiales deberían llegar después, acompañadas de prototipos específicos de interacción móvil, contenido validado y reglas de puntuación explícitas.

@@ -63,7 +63,7 @@ Client Components will be identified with `"use client"` and used when a compone
 - client-side contexts.
 
 ```tsx
-// features/game/GameApp.client.tsx
+// components/GameApp.client.tsx
 "use client";
 
 export function GameApp({ stage }: { stage: Stage }) {
@@ -153,9 +153,9 @@ Do not pass:
 - large objects when the interface only uses a summary;
 - entire content modules for convenience.
 
-### Home page DTO
+### Home page view model
 
-The home page does not need the questions from every stage. It should receive a summary:
+The home page does not need the questions from every stage. Although both the page and `StartScreen` are Server Components, the page maps each stage to a summary to keep the home view decoupled from playable question data:
 
 ```ts
 export type StageSummary = {
@@ -167,11 +167,12 @@ export type StageSummary = {
 };
 ```
 
-The complete stage only crosses the boundary when entering the playable route, where `GameApp` actually needs it.
+The complete stage only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends only its single example question to the playable-example island.
 
 ```text
-HomePage (server) ──StageSummary[]──▶ home page
+HomePage (server) ──StageSummary[]──▶ StartScreen (server)
 StagePage (server) ──Stage──────────▶ GameApp (client)
+FormatDetailPage (server) ──Question──▶ PlayableFormatExample (client)
 ```
 
 ## Using Motion
@@ -247,10 +248,9 @@ The home page primarily contains content and navigation.
 
 ```text
 app/page.tsx                   Server Component
-└── HomeView                   Server Component
-    ├── Hero                   server or CSS
-    ├── StageList              Server Component
-    └── AnimatedAccent         optional Client Component
+└── StartScreen                Server Component
+    ├── Hero                   Server Component with CSS animation
+    └── StageList              Server Component
 ```
 
 Requirements:
@@ -262,17 +262,22 @@ Requirements:
 
 ### Format library
 
-The format library and its detail pages contain static content and navigation. They must be Server Components.
+The format library and its detail pages contain server-rendered editorial content and navigation. Each detail page includes one explicit client island for its playable example.
 
 ```text
 app/formatos/page.tsx          Server Component
 app/formatos/[slug]/page.tsx   Server Component
-├── FormatList                 Server Component
-├── FormatDetail               Server Component
-└── FormatExample              Server Component
+└── PlayableFormatExample      Client Component
+    ├── dialog and attempt state
+    ├── Timer and QuestionInput
+    └── evaluation and feedback
 ```
 
-Only add a client island when a real interaction appears, such as local search, complex dynamic filters, or a playable demonstration.
+`PlayableFormatExample.client.tsx` receives one serializable `Question`, opens a native dialog, and reuses the same input renderers and scoring functions as a stage. Its local phases are `ready`, `playing`, and `feedback`; closing or retrying resets the attempt without changing the route.
+
+The correct answer is included in this client DTO because the example is evaluated locally and has no persistent or competitive value. It must never contain secrets or privileged server data.
+
+Only add another client island when a real interaction appears, such as local search or complex dynamic filters.
 
 A filter based on URL parameters should still preferably be resolved on the server.
 
@@ -282,7 +287,7 @@ Gameplay must prioritize minimal latency, continuity, and immediate responses.
 
 ```text
 app/etapas/[stageId]/page.tsx  Server Component
-└── GameApp                    Client Component
+└── GameApp.client             Client Component
     ├── useGameSession
     ├── QuestionScreen
     ├── Timer

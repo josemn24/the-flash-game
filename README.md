@@ -1,15 +1,18 @@
-# The Flash PoC
+# The Flash
 
-The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. Esta prueba de concepto permite elegir entre dos etapas de diez preguntas, consultar el resultado detallado y volver a intentarlo.
+The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. La versión actual permite elegir entre dos etapas de diez preguntas, consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva de formatos.
 
 ## Qué incluye
 
 - Dos etapas locales de diez preguntas: una demo de cultura general y otra de conexiones rápidas.
-- Elección múltiple, verdadero o falso, respuesta corta y preguntas visuales.
+- Siete formatos: elección múltiple, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico y estimación.
+- Preguntas con imágenes o ilustraciones integradas en elección múltiple y estimación.
 - Temporizador individual y avance automático al agotarse el tiempo.
 - Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
 - Resultados con precisión, aciertos, fallos, preguntas sin contestar y tiempo total.
 - Revisión completa de respuestas y opción de repetición.
+- Biblioteca con reglas, recomendaciones, accesibilidad y puntuación de cada formato.
+- Un ejemplo jugable y cronometrado desde cada ficha de formato.
 - Diseño responsive, accesible y completamente en español.
 
 ## Tecnologías
@@ -44,22 +47,25 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 
 ## Comandos disponibles
 
-| Comando         | Descripción                                     |
-| --------------- | ----------------------------------------------- |
-| `npm run dev`   | Inicia el servidor de desarrollo.               |
-| `npm run lint`  | Comprueba la calidad estática del código.       |
-| `npm run build` | Genera la compilación optimizada de producción. |
-| `npm run start` | Sirve localmente una compilación de producción. |
+| Comando                | Descripción                                     |
+| ---------------------- | ----------------------------------------------- |
+| `npm run dev`          | Inicia el servidor de desarrollo.               |
+| `npm run lint`         | Comprueba la calidad estática del código.       |
+| `npm test`             | Ejecuta los tests unitarios con Vitest.         |
+| `npm run build`        | Genera la compilación optimizada de producción. |
+| `npm run start`        | Sirve localmente una compilación de producción. |
+| `npm run format:check` | Comprueba el formato con Prettier.              |
 
 ## Estructura principal
 
 ```text
-app/          Página, layout y estilos globales
-components/   Pantallas y componentes interactivos
-data/         Etapa demo y preguntas locales
+app/          Rutas, layout, metadata y estilos globales
+components/   Pantallas, UI universal e islas interactivas
+data/         Etapas y preguntas locales
+features/     Sesión de juego y catálogo de formatos
 lib/          Puntuación, validación y utilidades
-types/        Tipos del juego
-docs/         Especificación funcional del PoC
+types/        Tipos del dominio
+docs/         Estado funcional, evolución y arquitectura
 ```
 
 ## Convenciones de estilos
@@ -72,4 +78,4 @@ docs/         Especificación funcional del PoC
 
 ## Alcance
 
-Esta versión está centrada exclusivamente en validar la experiencia individual con etapas locales. No incluye usuarios, salas, multijugador, rankings, panel de administración, persistencia ni gestión de imágenes.
+Esta versión está centrada exclusivamente en validar la experiencia individual con etapas locales y ejemplos jugables. No incluye usuarios, salas, multijugador, rankings, panel de administración, backend, base de datos ni persistencia.
