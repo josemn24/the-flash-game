@@ -22,6 +22,7 @@ type QuestionScreenProps = {
   onTimeUp: () => void;
   codeAttemptCount: number;
   onCodeAttempt: (code: string) => boolean;
+  onProgress: (answer: AnswerValue) => void;
 };
 
 export function QuestionScreen({
@@ -34,6 +35,7 @@ export function QuestionScreen({
   onTimeUp,
   codeAttemptCount,
   onCodeAttempt,
+  onProgress,
 }: QuestionScreenProps) {
   return (
     <motion.section
@@ -90,6 +92,7 @@ export function QuestionScreen({
           onSubmit={onSubmit}
           codeAttemptCount={codeAttemptCount}
           onCodeAttempt={onCodeAttempt}
+          onProgress={onProgress}
         />
       </div>
     </motion.section>

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, ocho formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, nueve formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -16,8 +16,9 @@ La aplicación soporta de forma nativa:
 - ordenar elementos;
 - clasificación con crédito parcial;
 - código lógico con varios intentos;
-- estimación con puntuación por proximidad.
+- estimación con puntuación por proximidad;
 - encontrar el intruso con elementos de texto o imagen.
+- emparejar conceptos con validación inmediata y crédito por pareja.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -56,12 +57,15 @@ Se muestran varios elementos y el jugador identifica cuál rompe una relación: 
 - **Puntuación actual:** acierto exacto ajustado por velocidad; un fallo resta el 20 % y agotar el tiempo no puntúa.
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 
-### 3. Emparejar conceptos — Futura
+### 3. Emparejar conceptos — Implementada
 
 El jugador une elementos relacionados, como países y capitales, autores y obras, inventos e inventores, conceptos y definiciones o imágenes y nombres.
 
-- **Interacción:** elegir una tarjeta de cada columna o arrastrar conexiones.
-- **Encaje:** convierte conocimiento en una acción activa; los errores pueden penalizar tiempo, puntos o ambos.
+- **Interacción actual:** elegir una tarjeta de cada columna; los aciertos quedan bloqueados y los errores se liberan para reintentarlos.
+- **Encaje:** convierte conocimiento en una acción activa y conserva reglas accesibles para ratón, teclado y pantallas táctiles.
+- **Contenido compatible:** texto e imágenes con etiqueta accesible obligatoria en ambas columnas.
+- **Puntuación actual:** crédito por cada pareja correcta ajustado por el tiempo total; los errores solo consumen tiempo y el progreso se conserva al agotarse el límite.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 
 ### 4. Secuencias y patrones — Disponible como contenido
 

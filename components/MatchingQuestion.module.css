@@ -1,0 +1,148 @@
+.root {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.42);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.progressTrack {
+  height: 0.3rem;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.progressValue {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--electric), var(--cyan));
+}
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+}
+.column {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+}
+.column h3 {
+  padding-inline: 0.25rem;
+  color: rgba(255, 255, 255, 0.38);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.card {
+  position: relative;
+  min-height: 4.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  color: rgba(255, 255, 255, 0.86);
+  background: var(--surface-subtle);
+  transition:
+    border-color 150ms,
+    color 150ms,
+    background 150ms,
+    opacity 150ms;
+}
+.card:hover:not(:disabled),
+.cardSelected {
+  border-color: rgba(215, 255, 24, 0.72);
+  color: white;
+  background: rgba(215, 255, 24, 0.075);
+}
+.card:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 2px;
+}
+.cardMatched {
+  border-color: rgba(67, 222, 183, 0.55);
+  color: white;
+  background: rgba(67, 222, 183, 0.09);
+  opacity: 0.68;
+}
+.cardInvalid {
+  border-color: rgba(255, 99, 112, 0.8);
+  background: rgba(255, 99, 112, 0.12);
+}
+.cardLabel {
+  display: grid;
+  min-height: 4.5rem;
+  place-items: center;
+  padding: 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+.stateIcon {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0.18rem;
+  border-radius: 999px;
+  color: #080b0b;
+  background: var(--electric);
+}
+.cardMatched .stateIcon {
+  color: #080b0b;
+  background: var(--electric);
+}
+.cardInvalid .stateIcon {
+  color: white;
+  background: var(--coral);
+}
+.completedList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+.completedList span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+.completedList svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--electric);
+}
+@media (min-width: 640px) {
+  .columns {
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .column {
+    gap: 0.7rem;
+  }
+  .cardLabel {
+    font-size: 0.92rem;
+  }
+}

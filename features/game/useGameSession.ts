@@ -73,6 +73,7 @@ export function useGameSession(stage: Stage) {
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
+  const draftAnswerRef = useRef<AnswerValue | null>(null);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearAdvanceTimeout = useCallback(() => {
@@ -92,6 +93,7 @@ export function useGameSession(stage: Stage) {
     clearAdvanceTimeout();
     answerLock.current = false;
     codeAttemptsRef.current = [];
+    draftAnswerRef.current = null;
     questionStartedAt.current = performance.now();
     dispatch({ type: "start" });
   }, [clearAdvanceTimeout]);
@@ -100,6 +102,7 @@ export function useGameSession(stage: Stage) {
     clearAdvanceTimeout();
     answerLock.current = false;
     codeAttemptsRef.current = [];
+    draftAnswerRef.current = null;
     dispatch({ type: "replay" });
   }, [clearAdvanceTimeout]);
 
@@ -128,6 +131,7 @@ export function useGameSession(stage: Stage) {
         }
         answerLock.current = false;
         codeAttemptsRef.current = [];
+        draftAnswerRef.current = null;
         questionStartedAt.current = performance.now();
         dispatch({ type: "advance" });
       }, TRANSITION_DURATION);
@@ -154,8 +158,16 @@ export function useGameSession(stage: Stage) {
       submitAnswer(attempts.at(-1) ?? null, true, attempts);
       return;
     }
+    if (question?.type === "matching") {
+      submitAnswer(draftAnswerRef.current, true);
+      return;
+    }
     submitAnswer(null, true);
   }, [question, submitAnswer]);
+
+  const handleAnswerProgress = useCallback((answer: AnswerValue) => {
+    draftAnswerRef.current = answer;
+  }, []);
 
   const score = useMemo(
     () => calculateTotalScore(state.results.map((result) => result.points)),
@@ -171,6 +183,7 @@ export function useGameSession(stage: Stage) {
     submitAnswer,
     handleCodeAttempt,
     handleTimeUp,
+    handleAnswerProgress,
     showReview: () => dispatch({ type: "show-review" }),
     showResults: () => dispatch({ type: "show-results" }),
   };

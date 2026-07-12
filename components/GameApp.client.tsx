@@ -34,6 +34,7 @@ export function GameApp({ stage }: { stage: Stage }) {
                 onTimeUp={session.handleTimeUp}
                 codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
+                onProgress={session.handleAnswerProgress}
               />
             )}
             {session.phase === "transition" && (

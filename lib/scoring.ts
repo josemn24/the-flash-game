@@ -4,6 +4,8 @@ import type {
   AnswerValue,
   ClassificationAnswer,
   EstimationQuestion,
+  MatchingAnswer,
+  MatchingQuestion,
   Question,
 } from "@/types/game";
 
@@ -19,6 +21,17 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
   return answer !== null && typeof answer === "object" && !Array.isArray(answer);
 }
 
+export function isMatchingAnswer(answer: AnswerValue | null): answer is MatchingAnswer {
+  return answer !== null && typeof answer === "object" && !Array.isArray(answer);
+}
+
+export function calculateMatchingMetrics(question: MatchingQuestion, answer: MatchingAnswer) {
+  const correctPairs = question.leftItems.filter(
+    (item) => answer[item.id] === item.correctMatchId,
+  ).length;
+  return { correctPairs, totalPairs: question.leftItems.length };
+}
+
 export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
   switch (question.type) {
     case "estimation":
@@ -27,6 +40,11 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
       return (
         isClassificationAnswer(answer) &&
         question.items.every((item) => answer[item.label] === item.correctCategory)
+      );
+    case "matching":
+      return (
+        isMatchingAnswer(answer) &&
+        calculateMatchingMetrics(question, answer).correctPairs === question.leftItems.length
       );
     case "ordering":
       return (
@@ -102,6 +120,14 @@ export function calculateAnswerScore(
     return Math.round(question.points * (correctCount / question.items.length) * speedMultiplier);
   }
 
+  if (question.type === "matching") {
+    if (!isMatchingAnswer(answer)) return 0;
+    const { correctPairs, totalPairs } = calculateMatchingMetrics(question, answer);
+    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
+    const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
+    return Math.round(question.points * (correctPairs / totalPairs) * speedMultiplier);
+  }
+
   return calculateQuestionScore(question, isAnswerCorrect(question, answer), timeUsed);
 }
 
@@ -114,20 +140,26 @@ export function evaluateAnswer({
 }: EvaluationInput): AnswerResult {
   const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
   const isCorrect = answer !== null && isAnswerCorrect(question, answer);
+  const matchingMetrics =
+    question.type === "matching" && isMatchingAnswer(answer)
+      ? calculateMatchingMetrics(question, answer)
+      : undefined;
   const incorrectAttempts =
     question.type === "logic-code" ? Math.max(0, submittedCodes.length - (isCorrect ? 1 : 0)) : 0;
   const points =
-    answer === null || timedOut
+    answer === null || (timedOut && question.type !== "matching")
       ? 0
       : calculateAnswerScore(question, answer, safeTime, incorrectAttempts);
   const status =
-    answer === null
+    answer === null || (timedOut && question.type === "matching" && !matchingMetrics?.correctPairs)
       ? "unanswered"
       : question.type === "estimation" && !isCorrect
         ? "partial"
-        : isCorrect
-          ? "correct"
-          : "incorrect";
+        : question.type === "matching" && !isCorrect && Boolean(matchingMetrics?.correctPairs)
+          ? "partial"
+          : isCorrect
+            ? "correct"
+            : "incorrect";
 
   return {
     questionId: question.id,
@@ -145,7 +177,9 @@ export function evaluateAnswer({
               ...calculateEstimationMetrics(question, answer),
             },
           }
-        : {}),
+        : question.type === "matching" && matchingMetrics
+          ? { details: { type: "matching" as const, ...matchingMetrics } }
+          : {}),
   };
 }
 

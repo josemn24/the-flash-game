@@ -69,6 +69,7 @@ export function ReviewAnswers({
           const logicDetails = result.details?.type === "logic-code" ? result.details : undefined;
           const estimationDetails =
             result.details?.type === "estimation" ? result.details : undefined;
+          const matchingDetails = result.details?.type === "matching" ? result.details : undefined;
 
           return (
             <motion.details
@@ -118,6 +119,11 @@ export function ReviewAnswers({
                   {estimationDetails && (
                     <span className="text-[var(--cyan)]">
                       Cercanía: {Math.round(estimationDetails.proximity * 100)}%
+                    </span>
+                  )}
+                  {matchingDetails && (
+                    <span className="text-[var(--cyan)]">
+                      Parejas: {matchingDetails.correctPairs}/{matchingDetails.totalPairs}
                     </span>
                   )}
                   <span

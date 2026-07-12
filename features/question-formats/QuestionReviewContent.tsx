@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import styles from "@/components/ReviewAnswers.module.css";
-import { isClassificationAnswer } from "@/lib/scoring";
+import { isClassificationAnswer, isMatchingAnswer } from "@/lib/scoring";
 import type {
   AnswerResult,
   AnswerValue,
@@ -54,6 +54,41 @@ function OddOneOutReview({ question, result }: ReviewProps<QuestionOfType<"odd-o
       answer={labelFor(result.answer)}
       correct={labelFor(question.correctAnswer) ?? question.correctAnswer}
     />
+  );
+}
+
+function MatchingReview({ question, result }: ReviewProps<QuestionOfType<"matching">>) {
+  const answer = isMatchingAnswer(result.answer) ? result.answer : null;
+  return (
+    <div className={styles.classificationReviewList}>
+      {question.leftItems.map((item) => {
+        const chosenId = answer?.[item.id];
+        const chosenLabel = question.rightItems.find((right) => right.id === chosenId)?.label;
+        const correctLabel = question.rightItems.find(
+          (right) => right.id === item.correctMatchId,
+        )?.label;
+        const correct = chosenId === item.correctMatchId;
+        return (
+          <div key={item.id} className={styles.classificationReviewRow}>
+            <strong>{item.label}</strong>
+            <span>
+              <small>Emparejada</small>
+              <b
+                className={
+                  correct ? styles.classificationValueCorrect : styles.classificationValueWrong
+                }
+              >
+                {chosenLabel ?? "Sin emparejar"}
+              </b>
+            </span>
+            <span>
+              <small>Correcta</small>
+              <b className={styles.classificationValueCorrect}>{correctLabel}</b>
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -178,6 +213,7 @@ function ClassificationReview({ question, result }: ReviewProps<QuestionOfType<"
 export const QUESTION_REVIEW_RENDERERS = {
   "multiple-choice": ChoiceReview,
   "odd-one-out": OddOneOutReview,
+  matching: MatchingReview,
   "true-false": TrueFalseReview,
   "short-text": ShortTextReview,
   ordering: OrderingReview,

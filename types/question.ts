@@ -1,4 +1,4 @@
-export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
+export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag" | "france-flag";
 
 export type QuestionMedia =
   | {
@@ -40,6 +40,22 @@ export type OddOneOutQuestion = BaseQuestion & {
   type: "odd-one-out";
   items: OddOneOutItem[];
   correctAnswer: string;
+};
+
+export type MatchingItem = {
+  id: string;
+  label: string;
+  media?: QuestionMedia;
+};
+
+export type MatchingLeftItem = MatchingItem & {
+  correctMatchId: string;
+};
+
+export type MatchingQuestion = BaseQuestion & {
+  type: "matching";
+  leftItems: MatchingLeftItem[];
+  rightItems: MatchingItem[];
 };
 
 export type TrueFalseQuestion = BaseQuestion & {
@@ -97,6 +113,7 @@ export type ClassificationQuestion = BaseQuestion & {
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
+  | MatchingQuestion
   | TrueFalseQuestion
   | ShortTextQuestion
   | OrderingQuestion
@@ -108,4 +125,6 @@ export type QuestionType = Question["type"];
 export type QuestionOfType<T extends QuestionType> = Extract<Question, { type: T }>;
 
 export type ClassificationAnswer = Record<string, string>;
-export type AnswerValue = string | number | boolean | string[] | ClassificationAnswer;
+export type MatchingAnswer = Record<string, string>;
+export type AnswerValue =
+  string | number | boolean | string[] | ClassificationAnswer | MatchingAnswer;

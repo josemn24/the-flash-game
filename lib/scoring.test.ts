@@ -49,6 +49,46 @@ describe("question evaluation", () => {
     expect(result.points).toBe(107);
   });
 
+  it("awards matching credit per correct pair and adjusts it by speed", () => {
+    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    const complete = {
+      japon: "bandera-japon",
+      italia: "bandera-italia",
+      francia: "bandera-francia",
+    };
+    expect(evaluateAnswer({ question, answer: complete, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 150,
+      details: { type: "matching", correctPairs: 3, totalPairs: 3 },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { japon: "bandera-japon", italia: "bandera-italia" },
+        timeUsed: 10,
+      }),
+    ).toMatchObject({ status: "partial", points: 75 });
+  });
+
+  it("preserves matching progress on timeout without rewarding wrong pairs", () => {
+    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { japon: "bandera-japon" },
+        timeUsed: 20,
+        timedOut: true,
+      }),
+    ).toMatchObject({ status: "partial", points: 25 });
+    expect(
+      evaluateAnswer({ question, answer: { japon: "bandera-italia" }, timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 20, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+    });
+  });
+
   it("calculates estimation proximity", () => {
     const question = QUESTION_FORMAT_CATALOG.estimation.example;
     const result = evaluateAnswer({ question, answer: 430, timeUsed: 0 });

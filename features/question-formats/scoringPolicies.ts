@@ -26,6 +26,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: true,
     speedBonus: true,
   },
+  matching: {
+    id: "partial-items",
+    label: "Crédito por pareja",
+    summary:
+      "Cada pareja correcta aporta su fracción de puntos, ajustada por el tiempo empleado; los errores solo consumen tiempo.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "true-false": {
     id: "binary-speed",
     label: "Riesgo alto",

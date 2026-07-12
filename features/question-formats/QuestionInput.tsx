@@ -8,6 +8,7 @@ import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
 import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
+import { MatchingQuestion } from "@/components/MatchingQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import styles from "@/components/QuestionScreen.module.css";
@@ -18,6 +19,7 @@ type CommonProps = {
   onSubmit: (answer: AnswerValue) => void;
   codeAttemptCount: number;
   onCodeAttempt: (code: string) => boolean;
+  onProgress: (answer: AnswerValue) => void;
 };
 
 type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
@@ -75,6 +77,23 @@ function OddOneOutInput({
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"odd-one-out">>) {
   return <OddOneOutQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
+}
+
+function MatchingInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"matching">>) {
+  return (
+    <MatchingQuestion
+      leftItems={question.leftItems}
+      rightItems={question.rightItems}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
 }
 
 function ShortTextInput({
@@ -187,6 +206,7 @@ function EstimationInput({
 export const QUESTION_INPUT_RENDERERS = {
   "multiple-choice": MultipleChoiceInput,
   "odd-one-out": OddOneOutInput,
+  matching: MatchingInput,
   "true-false": TrueFalseInput,
   "short-text": ShortTextInput,
   ordering: OrderingInput,

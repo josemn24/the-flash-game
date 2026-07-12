@@ -17,7 +17,7 @@ type ExamplePhase = "ready" | "playing" | "feedback";
 
 const RESULT_LABELS = {
   correct: "Respuesta correcta",
-  partial: "Respuesta aproximada",
+  partial: "Crédito parcial",
   incorrect: "Respuesta incorrecta",
   unanswered: "Tiempo agotado",
 } as const;
@@ -27,6 +27,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
   const startedAtRef = useRef(0);
   const answerLockRef = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
+  const draftAnswerRef = useRef<AnswerValue | null>(null);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<ExamplePhase>("ready");
   const [attempt, setAttempt] = useState(0);
@@ -45,6 +46,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
   const resetAttempt = useCallback(() => {
     answerLockRef.current = false;
     codeAttemptsRef.current = [];
+    draftAnswerRef.current = null;
     setCodeAttemptCount(0);
     setResult(null);
     setPhase("ready");
@@ -68,6 +70,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
   const startAttempt = () => {
     answerLockRef.current = false;
     codeAttemptsRef.current = [];
+    draftAnswerRef.current = null;
     setCodeAttemptCount(0);
     setResult(null);
     setAttempt((current) => current + 1);
@@ -118,6 +121,10 @@ export function PlayableFormatExample({ question }: { question: Question }) {
     if (question.type === "logic-code") {
       const attempts = codeAttemptsRef.current;
       submitAnswer(attempts.at(-1) ?? null, true, attempts);
+      return;
+    }
+    if (question.type === "matching") {
+      submitAnswer(draftAnswerRef.current, true);
       return;
     }
     submitAnswer(null, true);
@@ -208,6 +215,9 @@ export function PlayableFormatExample({ question }: { question: Question }) {
                 onSubmit={submitAnswer}
                 codeAttemptCount={codeAttemptCount}
                 onCodeAttempt={handleCodeAttempt}
+                onProgress={(answer) => {
+                  draftAnswerRef.current = answer;
+                }}
               />
             </div>
           )}

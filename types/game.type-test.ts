@@ -41,6 +41,38 @@ type OddOneOutWithNumericAnswer = Omit<ValidOddOneOut, "correctAnswer"> & {
   correctAnswer: 3;
 };
 
+type ValidMatching = {
+  id: "valid-matching";
+  type: "matching";
+  category: "Test";
+  question: "Match each item";
+  leftItems: [
+    { id: "left-a"; label: "A"; correctMatchId: "right-a" },
+    { id: "left-b"; label: "B"; correctMatchId: "right-b" },
+    { id: "left-c"; label: "C"; correctMatchId: "right-c" },
+  ];
+  rightItems: [
+    { id: "right-b"; label: "B pair" },
+    {
+      id: "right-c";
+      label: "C pair";
+      media: { type: "illustration"; id: "france-flag"; alt: "France flag" };
+    },
+    { id: "right-a"; label: "A pair" },
+  ];
+  timeLimit: 20;
+  points: 150;
+  explanation: "Each item has one pair";
+};
+
+type MatchingWithoutReferences = Omit<ValidMatching, "leftItems"> & {
+  leftItems: [{ id: "left-a"; label: "A" }];
+};
+
+type MatchingWithInvalidMedia = Omit<ValidMatching, "rightItems"> & {
+  rightItems: [{ id: "right-a"; label: "A"; media: { type: "video"; src: "/a.mp4" } }];
+};
+
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
   IsNotAssignable<MultipleChoiceWithoutOptions, Question>
@@ -54,4 +86,11 @@ export type RejectsOddOneOutWithoutLabels = Assert<
 >;
 export type RejectsOddOneOutWithNumericAnswer = Assert<
   IsNotAssignable<OddOneOutWithNumericAnswer, Question>
+>;
+export type AcceptsValidMatching = Assert<IsAssignable<ValidMatching, Question>>;
+export type RejectsMatchingWithoutReferences = Assert<
+  IsNotAssignable<MatchingWithoutReferences, Question>
+>;
+export type RejectsMatchingWithInvalidMedia = Assert<
+  IsNotAssignable<MatchingWithInvalidMedia, Question>
 >;

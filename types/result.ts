@@ -12,6 +12,11 @@ export type AnswerResultDetails =
       type: "estimation";
       difference: number;
       proximity: number;
+    }
+  | {
+      type: "matching";
+      correctPairs: number;
+      totalPairs: number;
     };
 
 export type AnswerResult = {

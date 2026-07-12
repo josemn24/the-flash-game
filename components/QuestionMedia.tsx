@@ -25,6 +25,20 @@ function Illustration({ id }: { id: QuestionIllustration }) {
     );
   }
 
+  if (id === "france-flag") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 300 200"
+        className="h-auto w-[min(63%,18rem)] rounded-[0.3rem] shadow-2xl"
+      >
+        <rect width="100" height="200" fill="#1b3f8b" />
+        <rect x="100" width="100" height="200" fill="#f2f0e8" />
+        <rect x="200" width="100" height="200" fill="#d43c4c" />
+      </svg>
+    );
+  }
+
   return (
     <>
       <div className={`${styles.star} ${styles.starOne}`} />
