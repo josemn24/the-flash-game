@@ -64,7 +64,7 @@ Cada una conserva diez preguntas y todavía no utiliza el formato «Encontrar el
 
 | Formato              | Interacción                                                         | Evaluación                                                                    |
 | -------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Elección múltiple    | Seleccionar una opción y confirmar. Puede incluir media.            | Acierto exacto; un fallo resta el 20 %.                                       |
+| Elección múltiple    | Tocar una opción para enviarla inmediatamente. Puede incluir media. | Acierto exacto; un fallo resta el 20 %.                                       |
 | Encontrar el intruso | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                       |
 | Verdadero o falso    | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                       |
 | Respuesta corta      | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |

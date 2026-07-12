@@ -31,7 +31,7 @@ export const QUESTION_FORMAT_CATALOG = {
     shortName: "Elección",
     summary: "Elegir una respuesta correcta entre varias alternativas, con apoyo visual opcional.",
     description: [
-      "El jugador compara varias opciones y confirma una única respuesta. Es un formato rápido, familiar y muy versátil.",
+      "El jugador compara varias opciones y toca una para responder inmediatamente. Es un formato rápido, familiar y muy versátil.",
       "Puede incorporar una imagen sin convertirse en otra mecánica: el medio aporta contexto, pero las reglas no cambian.",
     ],
     recommendations: [
@@ -45,7 +45,7 @@ export const QUESTION_FORMAT_CATALOG = {
       "Las alternativas revelarían la solución",
     ],
     rules: [
-      "Solo se puede confirmar una opción",
+      "Tocar una opción envía la respuesta inmediatamente",
       "La respuesta queda bloqueada al enviarse",
       "Agotar el tiempo equivale a no responder",
     ],

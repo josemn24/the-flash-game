@@ -4,7 +4,7 @@ import styles from "@/components/AnswerOption.module.css";
 
 type AnswerOptionProps = {
   label: string;
-  selected: boolean;
+  selected?: boolean;
   disabled: boolean;
   index: number;
   onSelect: () => void;

@@ -11,7 +11,6 @@ import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import styles from "@/components/QuestionScreen.module.css";
-import { MotionButton } from "@/components/ui/MotionButton.client";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
@@ -28,32 +27,18 @@ function MultipleChoiceInput({
   locked,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"multiple-choice">>) {
-  const [selected, setSelected] = useState<string | null>(null);
-
   return (
-    <>
-      <div className="mt-7 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3">
-        {question.options.map((option, index) => (
-          <AnswerOption
-            key={option}
-            label={option}
-            index={index}
-            selected={selected === option}
-            disabled={locked}
-            onSelect={() => setSelected(option)}
-          />
-        ))}
-      </div>
-      <MotionButton
-        className="mt-auto sm:mt-8"
-        disabled={!selected || locked}
-        onClick={() => selected && onSubmit(selected)}
-        whileTap={{ scale: 0.985 }}
-      >
-        Confirmar respuesta
-        <ArrowIcon className="h-5 w-5" />
-      </MotionButton>
-    </>
+    <div className="mt-7 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3">
+      {question.options.map((option, index) => (
+        <AnswerOption
+          key={option}
+          label={option}
+          index={index}
+          disabled={locked}
+          onSelect={() => onSubmit(option)}
+        />
+      ))}
+    </div>
   );
 }
 
