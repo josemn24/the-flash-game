@@ -1,12 +1,17 @@
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import type {
   AnswerResult,
+  AnswerResultDetails,
+  AnswerStatus,
   AnswerValue,
   ClassificationAnswer,
+  ClassificationQuestion,
   EstimationQuestion,
+  LogicCodeQuestion,
   MatchingAnswer,
   MatchingQuestion,
   Question,
+  QuestionType,
 } from "@/types/game";
 
 export type EvaluationInput = {
@@ -18,12 +23,70 @@ export type EvaluationInput = {
   matchingIncorrectAttempts?: number;
 };
 
-export function isClassificationAnswer(answer: AnswerValue | null): answer is ClassificationAnswer {
+export type ScoringPolicyId = "binary-speed" | "partial-items" | "attempt-penalty" | "proximity";
+
+export const QUESTION_SCORING_POLICY = {
+  "multiple-choice": "binary-speed",
+  "odd-one-out": "binary-speed",
+  matching: "partial-items",
+  "true-false": "binary-speed",
+  "short-text": "binary-speed",
+  ordering: "binary-speed",
+  classification: "partial-items",
+  "logic-code": "attempt-penalty",
+  estimation: "proximity",
+} as const satisfies Record<QuestionType, ScoringPolicyId>;
+
+type InternalEvaluation = {
+  isCorrect: boolean;
+  status: AnswerStatus;
+  points: number;
+  details?: AnswerResultDetails;
+};
+
+type EvaluationContext = {
+  question: Question;
+  answer: AnswerValue;
+  timeUsed: number;
+  submittedCodes: string[];
+  incorrectAttempts: number;
+};
+
+function isRecordAnswer(answer: AnswerValue | null): answer is Record<string, string> {
   return answer !== null && typeof answer === "object" && !Array.isArray(answer);
 }
 
+export function isClassificationAnswer(answer: AnswerValue | null): answer is ClassificationAnswer {
+  return isRecordAnswer(answer);
+}
+
 export function isMatchingAnswer(answer: AnswerValue | null): answer is MatchingAnswer {
-  return answer !== null && typeof answer === "object" && !Array.isArray(answer);
+  return isRecordAnswer(answer);
+}
+
+function clampTime(timeUsed: number, timeLimit: number) {
+  const safeLimit = Math.max(0, timeLimit);
+  return Math.min(Math.max(timeUsed, 0), safeLimit);
+}
+
+function calculateSpeedMultiplier(timeUsed: number, timeLimit: number) {
+  if (timeLimit <= 0) return 0.5;
+  return 1 - 0.5 * (clampTime(timeUsed, timeLimit) / timeLimit);
+}
+
+function calculateProportionalScore(
+  points: number,
+  correctItems: number,
+  totalItems: number,
+  speedMultiplier: number,
+) {
+  if (totalItems <= 0) return 0;
+  return Math.round(points * (correctItems / totalItems) * speedMultiplier);
+}
+
+function applyAttemptPenalty(score: number, points: number, incorrectAttempts: number) {
+  const penalty = Math.round(points * 0.1) * Math.max(0, incorrectAttempts);
+  return Math.max(0, score - penalty);
 }
 
 export function calculateMatchingMetrics(question: MatchingQuestion, answer: MatchingAnswer) {
@@ -69,14 +132,18 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
 
 export function calculateEstimationMetrics(question: EstimationQuestion, answer: number) {
   const difference = Math.abs(answer - question.correctAnswer);
-  const proximity = Math.min(1, Math.max(0, 1 - difference / question.tolerance));
+  const proximity =
+    question.tolerance <= 0
+      ? Number(difference === 0)
+      : Math.min(1, Math.max(0, 1 - difference / question.tolerance));
   return { difference, proximity };
 }
 
 export function calculateQuestionScore(question: Question, correct: boolean, timeUsed: number) {
   if (correct) {
-    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-    const score = Math.round(question.points * (1 - 0.5 * (safeTime / question.timeLimit)));
+    const score = Math.round(
+      question.points * calculateSpeedMultiplier(timeUsed, question.timeLimit),
+    );
     return Math.max(score, Math.ceil(question.points * 0.5));
   }
 
@@ -91,48 +158,155 @@ export function calculateQuestionScore(question: Question, correct: boolean, tim
   return 0;
 }
 
+function evaluateBinarySpeed({
+  question,
+  answer,
+  timeUsed,
+}: EvaluationContext): InternalEvaluation {
+  const isCorrect = isAnswerCorrect(question, answer);
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "incorrect",
+    points: calculateQuestionScore(question, isCorrect, timeUsed),
+  };
+}
+
+function evaluateClassification(
+  question: ClassificationQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  const isCorrect = isAnswerCorrect(question, answer);
+  if (!isClassificationAnswer(answer)) {
+    return { isCorrect, status: "incorrect", points: 0 };
+  }
+
+  const correctItems = question.items.filter(
+    (item) => answer[item.label] === item.correctCategory,
+  ).length;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "incorrect",
+    points: calculateProportionalScore(
+      question.points,
+      correctItems,
+      question.items.length,
+      calculateSpeedMultiplier(timeUsed, question.timeLimit),
+    ),
+  };
+}
+
+function evaluateMatching(
+  question: MatchingQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+  incorrectAttempts: number,
+): InternalEvaluation {
+  const isCorrect = isAnswerCorrect(question, answer);
+  if (!isMatchingAnswer(answer)) {
+    return { isCorrect, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateMatchingMetrics(question, answer);
+  const partialScore = calculateProportionalScore(
+    question.points,
+    metrics.correctPairs,
+    metrics.totalPairs,
+    calculateSpeedMultiplier(timeUsed, question.timeLimit),
+  );
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : metrics.correctPairs > 0 ? "partial" : "incorrect",
+    points: applyAttemptPenalty(partialScore, question.points, incorrectAttempts),
+    details: { type: "matching", ...metrics, incorrectAttempts },
+  };
+}
+
+function evaluateEstimation(
+  question: EstimationQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  const isCorrect = isAnswerCorrect(question, answer);
+  if (typeof answer !== "number") {
+    return { isCorrect, status: "partial", points: 0 };
+  }
+
+  const metrics = calculateEstimationMetrics(question, answer);
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "partial",
+    points: Math.max(
+      0,
+      Math.round(
+        question.points *
+          metrics.proximity *
+          calculateSpeedMultiplier(timeUsed, question.timeLimit),
+      ),
+    ),
+    details: { type: "estimation", ...metrics },
+  };
+}
+
+function evaluateLogicCode(
+  question: LogicCodeQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+  submittedCodes: string[],
+  incorrectAttempts: number,
+): InternalEvaluation {
+  const isCorrect = isAnswerCorrect(question, answer);
+  const speedScore = isCorrect ? calculateQuestionScore(question, true, timeUsed) : 0;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "incorrect",
+    points: applyAttemptPenalty(speedScore, question.points, incorrectAttempts),
+    details: { type: "logic-code", submittedCodes, incorrectAttempts },
+  };
+}
+
+function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
+  const { question, answer, timeUsed, submittedCodes, incorrectAttempts } = context;
+
+  switch (QUESTION_SCORING_POLICY[question.type]) {
+    case "binary-speed":
+      return evaluateBinarySpeed(context);
+    case "partial-items":
+      if (question.type === "classification") {
+        return evaluateClassification(question, answer, timeUsed);
+      }
+      if (question.type === "matching") {
+        return evaluateMatching(question, answer, timeUsed, incorrectAttempts);
+      }
+      throw new Error(`Unsupported partial-items question: ${question.type}`);
+    case "attempt-penalty": {
+      if (question.type !== "logic-code") {
+        throw new Error(`Unsupported attempt-penalty question: ${question.type}`);
+      }
+      return evaluateLogicCode(question, answer, timeUsed, submittedCodes, incorrectAttempts);
+    }
+    case "proximity": {
+      if (question.type !== "estimation") {
+        throw new Error(`Unsupported proximity question: ${question.type}`);
+      }
+      return evaluateEstimation(question, answer, timeUsed);
+    }
+  }
+}
+
 export function calculateAnswerScore(
   question: Question,
   answer: AnswerValue,
   timeUsed: number,
   incorrectAttempts = 0,
 ) {
-  if (question.type === "estimation") {
-    if (typeof answer !== "number") return 0;
-    const { proximity } = calculateEstimationMetrics(question, answer);
-    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-    const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
-    return Math.max(0, Math.round(question.points * proximity * speedMultiplier));
-  }
-
-  if (question.type === "logic-code") {
-    if (!isAnswerCorrect(question, answer)) return 0;
-    const speedScore = calculateQuestionScore(question, true, timeUsed);
-    return Math.max(0, speedScore - Math.round(question.points * 0.1) * incorrectAttempts);
-  }
-
-  if (question.type === "classification") {
-    if (!isClassificationAnswer(answer)) return 0;
-    const correctCount = question.items.filter(
-      (item) => answer[item.label] === item.correctCategory,
-    ).length;
-    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-    const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
-    return Math.round(question.points * (correctCount / question.items.length) * speedMultiplier);
-  }
-
-  if (question.type === "matching") {
-    if (!isMatchingAnswer(answer)) return 0;
-    const { correctPairs, totalPairs } = calculateMatchingMetrics(question, answer);
-    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-    const speedMultiplier = 1 - 0.5 * (safeTime / question.timeLimit);
-    const partialScore = Math.round(
-      question.points * (correctPairs / totalPairs) * speedMultiplier,
-    );
-    return Math.max(0, partialScore - Math.round(question.points * 0.1) * incorrectAttempts);
-  }
-
-  return calculateQuestionScore(question, isAnswerCorrect(question, answer), timeUsed);
+  return evaluateByPolicy({
+    question,
+    answer,
+    timeUsed: clampTime(timeUsed, question.timeLimit),
+    submittedCodes: [],
+    incorrectAttempts,
+  }).points;
 }
 
 export function evaluateAnswer({
@@ -143,59 +317,48 @@ export function evaluateAnswer({
   submittedCodes = [],
   matchingIncorrectAttempts = 0,
 }: EvaluationInput): AnswerResult {
-  const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-  const isCorrect = answer !== null && isAnswerCorrect(question, answer);
-  const matchingMetrics =
-    question.type === "matching" && isMatchingAnswer(answer)
-      ? calculateMatchingMetrics(question, answer)
-      : undefined;
+  const safeTime = clampTime(timeUsed, question.timeLimit);
+  if (answer === null) {
+    return {
+      questionId: question.id,
+      answer,
+      status: "unanswered",
+      isCorrect: false,
+      points: 0,
+      timeUsed: safeTime,
+      ...(question.type === "logic-code"
+        ? {
+            details: {
+              type: "logic-code" as const,
+              submittedCodes,
+              incorrectAttempts: submittedCodes.length,
+            },
+          }
+        : {}),
+    };
+  }
+
+  const isCorrect = isAnswerCorrect(question, answer);
   const incorrectAttempts =
     question.type === "logic-code" ? Math.max(0, submittedCodes.length - (isCorrect ? 1 : 0)) : 0;
-  const points =
-    answer === null || (timedOut && question.type !== "matching")
-      ? 0
-      : calculateAnswerScore(
-          question,
-          answer,
-          safeTime,
-          question.type === "matching" ? matchingIncorrectAttempts : incorrectAttempts,
-        );
-  const status =
-    answer === null || (timedOut && question.type === "matching" && !matchingMetrics?.correctPairs)
-      ? "unanswered"
-      : question.type === "estimation" && !isCorrect
-        ? "partial"
-        : question.type === "matching" && !isCorrect && Boolean(matchingMetrics?.correctPairs)
-          ? "partial"
-          : isCorrect
-            ? "correct"
-            : "incorrect";
+  const evaluation = evaluateByPolicy({
+    question,
+    answer,
+    timeUsed: safeTime,
+    submittedCodes,
+    incorrectAttempts: question.type === "matching" ? matchingIncorrectAttempts : incorrectAttempts,
+  });
+
+  const matchingWithoutProgress =
+    timedOut && evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0;
 
   return {
     questionId: question.id,
     answer,
-    status,
-    isCorrect,
-    points,
+    ...evaluation,
+    status: matchingWithoutProgress ? "unanswered" : evaluation.status,
+    points: timedOut && question.type !== "matching" ? 0 : evaluation.points,
     timeUsed: safeTime,
-    ...(question.type === "logic-code"
-      ? { details: { type: "logic-code" as const, submittedCodes, incorrectAttempts } }
-      : question.type === "estimation" && typeof answer === "number"
-        ? {
-            details: {
-              type: "estimation" as const,
-              ...calculateEstimationMetrics(question, answer),
-            },
-          }
-        : question.type === "matching" && matchingMetrics
-          ? {
-              details: {
-                type: "matching" as const,
-                ...matchingMetrics,
-                incorrectAttempts: matchingIncorrectAttempts,
-              },
-            }
-          : {}),
   };
 }
 

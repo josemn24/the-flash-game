@@ -1,8 +1,88 @@
 import { describe, expect, it } from "vitest";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
-import { calculateAnswerScore, evaluateAnswer, isAnswerCorrect } from "@/lib/scoring";
+import { SCORING_POLICIES } from "@/features/question-formats/scoringPolicies";
+import {
+  calculateAnswerScore,
+  calculateEstimationMetrics,
+  calculateTotalScore,
+  evaluateAnswer,
+  isAnswerCorrect,
+  QUESTION_SCORING_POLICY,
+} from "@/lib/scoring";
+import type { AnswerValue, QuestionType } from "@/types/game";
+
+const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ example }) => {
+  let correctAnswer: AnswerValue;
+  let incorrectAnswer: AnswerValue;
+  let incorrectPoints: number;
+
+  switch (example.type) {
+    case "matching":
+      correctAnswer = Object.fromEntries(
+        example.leftItems.map((item) => [item.id, item.correctMatchId]),
+      );
+      incorrectAnswer = {};
+      incorrectPoints = 0;
+      break;
+    case "classification":
+      correctAnswer = Object.fromEntries(
+        example.items.map((item) => [item.label, item.correctCategory]),
+      );
+      incorrectAnswer = {};
+      incorrectPoints = 0;
+      break;
+    case "ordering":
+      correctAnswer = example.correctOrder;
+      incorrectAnswer = [];
+      incorrectPoints = -Math.round(example.points * 0.2);
+      break;
+    case "true-false":
+      correctAnswer = example.correctAnswer;
+      incorrectAnswer = !example.correctAnswer;
+      incorrectPoints = -Math.round(example.points * 0.4);
+      break;
+    case "estimation":
+      correctAnswer = example.correctAnswer;
+      incorrectAnswer = example.correctAnswer + example.tolerance * 2;
+      incorrectPoints = 0;
+      break;
+    default:
+      correctAnswer = example.correctAnswer;
+      incorrectAnswer = "__incorrect__";
+      incorrectPoints =
+        example.type === "multiple-choice" || example.type === "odd-one-out"
+          ? -Math.round(example.points * 0.2)
+          : 0;
+  }
+
+  return {
+    type: example.type,
+    question: example,
+    correctAnswer,
+    incorrectAnswer,
+    incorrectPoints,
+  };
+});
 
 describe("question evaluation", () => {
+  it.each(formatCases)(
+    "scores $type answers at zero time and at the time limit",
+    ({ question, correctAnswer }) => {
+      expect(calculateAnswerScore(question, correctAnswer, 0)).toBe(question.points);
+      expect(calculateAnswerScore(question, correctAnswer, question.timeLimit)).toBe(
+        Math.round(question.points * 0.5),
+      );
+    },
+  );
+
+  it.each(formatCases)(
+    "applies the current incorrect-answer rule for $type",
+    ({ question, incorrectAnswer, incorrectPoints }) => {
+      expect(isAnswerCorrect(question, incorrectAnswer)).toBe(false);
+      expect(calculateAnswerScore(question, incorrectAnswer, 0)).toBe(incorrectPoints);
+    },
+  );
+
   it("normalizes accepted short answers", () => {
     const question = QUESTION_FORMAT_CATALOG["short-text"].example;
     expect(isAnswerCorrect(question, "Mil novecientos cuarenta y cinco")).toBe(true);
@@ -149,5 +229,55 @@ describe("question evaluation", () => {
     expect(result.status).toBe("unanswered");
     expect(result.points).toBe(0);
     expect(result.timeUsed).toBe(question.timeLimit);
+  });
+
+  it("clamps negative and excessive elapsed time", () => {
+    const question = QUESTION_FORMAT_CATALOG["multiple-choice"].example;
+    expect(calculateAnswerScore(question, question.correctAnswer, -10)).toBe(question.points);
+    expect(calculateAnswerScore(question, question.correctAnswer, question.timeLimit + 10)).toBe(
+      Math.round(question.points * 0.5),
+    );
+  });
+
+  it("floors the aggregate score at zero", () => {
+    expect(calculateTotalScore([100, -20, 50])).toBe(130);
+    expect(calculateTotalScore([-40, -20])).toBe(0);
+  });
+
+  it("handles non-positive scoring denominators deterministically", () => {
+    const choice = {
+      ...QUESTION_FORMAT_CATALOG["multiple-choice"].example,
+      timeLimit: 0,
+    };
+    const estimation = {
+      ...QUESTION_FORMAT_CATALOG.estimation.example,
+      tolerance: 0,
+    };
+    const classification = {
+      ...QUESTION_FORMAT_CATALOG.classification.example,
+      items: [],
+    };
+    const matching = {
+      ...QUESTION_FORMAT_CATALOG.matching.example,
+      leftItems: [],
+      rightItems: [],
+    };
+
+    expect(calculateAnswerScore(choice, choice.correctAnswer, 0)).toBe(
+      Math.round(choice.points * 0.5),
+    );
+    expect(calculateEstimationMetrics(estimation, estimation.correctAnswer).proximity).toBe(1);
+    expect(calculateEstimationMetrics(estimation, estimation.correctAnswer + 1).proximity).toBe(0);
+    expect(calculateAnswerScore(classification, {}, 0)).toBe(0);
+    expect(calculateAnswerScore(matching, {}, 0)).toBe(0);
+  });
+
+  it("uses the same scoring policy IDs for execution and format descriptions", () => {
+    expect(Object.keys(QUESTION_SCORING_POLICY).sort()).toEqual(
+      Object.keys(SCORING_POLICIES).sort(),
+    );
+    for (const type of Object.keys(QUESTION_SCORING_POLICY) as QuestionType[]) {
+      expect(SCORING_POLICIES[type].id).toBe(QUESTION_SCORING_POLICY[type]);
+    }
   });
 });
