@@ -183,13 +183,127 @@ El jugador forma una silueta con piezas geométricas: tangram clásico, bloques,
 - **Encaje:** desafío especial memorable y muy diferenciador.
 - **Riesgo:** exige arrastre, rotación, colisiones, ajuste de piezas y validación tolerante; es una de las mecánicas más complejas de implementar correctamente.
 
+### 21. La regla secreta — Futura
+
+Se muestran varios ejemplos aceptados y rechazados. El jugador debe descubrir qué regla los separa y después clasificar nuevos elementos conforme a ella.
+
+Por ejemplo:
+
+- **Aceptados:** Roma, Oslo y Lima.
+- **Rechazados:** Madrid, Berlín y París.
+- **Regla secreta:** capitales con cuatro letras.
+
+A partir de ahí:
+
+- **Interacción:** observar los ejemplos iniciales y asignar cada elemento nuevo a «aceptado» o «rechazado»; opcionalmente, elegir o escribir la regla al final.
+- **Encaje:** combina inducción, conocimiento y deducción, ofrece una variedad enorme y permite alcanzar dificultades muy altas sin complicar la interacción.
+- **Riesgo:** cada conjunto debe descartar interpretaciones alternativas razonables; los ejemplos iniciales y de validación han de demostrar la regla de forma inequívoca.
+
+### 22. El dato contaminado — Futura
+
+Se entrega una ficha con varios datos relacionados, pero uno de ellos es falso y altera la respuesta. El jugador debe detectar el dato manipulado, ignorarlo y resolver correctamente la pregunta con la información restante.
+
+Por ejemplo, una ficha sobre un país puede incluir su población, continente, capital y moneda, con uno de esos datos deliberadamente alterado.
+
+- **Interacción:** marcar primero el dato contaminado y responder después la pregunta derivada de la ficha.
+- **Encaje:** mide la capacidad de verificación interna, el pensamiento crítico y la resistencia a información engañosa.
+- **Puntuación:** puede separar la detección del dato falso y la resolución final para conceder crédito parcial.
+- **Riesgo:** la falsedad debe poder deducirse a partir de conocimientos razonables o de contradicciones internas; no debería depender de información oscura ni de datos sujetos a cambios frecuentes.
+
+### 23. Respuesta en cadena — Futura
+
+Cada respuesta correcta se convierte en la pista o punto de partida de la siguiente pregunta. La cadena puede combinar historia, cine, geografía, música y lenguaje para construir un recorrido temático.
+
+Por ejemplo:
+
+1. Capital de Italia → Roma.
+2. Personaje fundacional asociado a Roma → Rómulo.
+3. Hermano de Rómulo → Remo.
+4. Obra, canción o concepto relacionado con «Remo» → siguiente eslabón.
+
+- **Interacción:** resolver una sucesión breve de preguntas; cada respuesta desbloquea el siguiente eslabón.
+- **Encaje:** crea sensación de progreso y permite pruebas especiales con narrativa, giros temáticos y dificultad creciente.
+- **Puntuación:** puede combinar eslabones completados, errores y tiempo total; las ayudas evitarían que un fallo inicial bloquee toda la cadena, a cambio de una penalización.
+- **Riesgo:** las relaciones deben ser inequívocas y la dificultad de un eslabón no debería decidir por sí sola el resultado de toda la prueba.
+
+### 24. Adivinanzas por pistas — Futura
+
+El jugador intenta identificar un personaje, lugar, objeto, obra o concepto. Puede descubrir pistas sucesivas, pero cada una reduce la puntuación máxima disponible, por lo que debe decidir cuándo tiene suficiente información para responder.
+
+Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivamente su siglo, profesión, país, imagen e iniciales.
+
+- **Interacción:** solicitar una nueva pista o responder en cualquier momento; una respuesta incorrecta puede terminar la ronda o aplicar una penalización adicional.
+- **Encaje:** combina conocimiento, autoconfianza y gestión del riesgo con una regla fácil de comprender.
+- **Puntuación:** parte de un máximo visible que disminuye con cada pista revelada y, opcionalmente, con el tiempo empleado.
+- **Riesgo:** las primeras pistas deben ser difíciles pero útiles, y su orden debe calibrarse para que cada revelación reduzca de manera apreciable el espacio de respuestas posibles.
+
+### 25. Mapa de calor — Futura
+
+Se muestra una imagen, mapa, gráfico o escena y el jugador debe pulsar en la zona correcta. Puede localizar una ciudad, señalar una parte anatómica, marcar el lugar de un acontecimiento, identificar una zona dentro de una obra de arte o estimar el centro geográfico de un país.
+
+- **Interacción:** realizar una o varias pulsaciones sobre una superficie ampliable; el resultado puede mostrar el punto elegido, el objetivo y la distancia entre ambos.
+- **Encaje:** es visual e intuitivo y permite combinar precisión y velocidad en una misma puntuación.
+- **Puntuación:** proximidad al punto o zona ideal ajustada por el tiempo empleado, con tolerancias adaptadas al tamaño y la forma del objetivo.
+- **Riesgo:** la precisión no debe depender del tamaño de la pantalla ni de la destreza motriz; hacen falta coordenadas normalizadas, objetivos razonablemente amplios y alternativas accesibles.
+
+### 26. La respuesta prohibida — Futura
+
+Se formula una pregunta abierta, pero las respuestas más evidentes están expresamente prohibidas. Por ejemplo, nombrar un país de Sudamérica sin responder Brasil ni Argentina, o decir una palabra asociada al invierno sin usar «frío», «nieve» ni «Navidad».
+
+- **Interacción:** escribir o elegir una respuesta válida mientras las opciones prohibidas permanecen visibles.
+- **Encaje:** obliga a frenar respuestas automáticas y explorar conocimiento menos inmediato con muy poca complejidad de interacción.
+- **Puntuación:** puede valorar acierto y velocidad; en partidas grupales, las respuestas menos repetidas podrían recibir una bonificación si todos comparten condiciones equivalentes.
+- **Riesgo:** la validación de respuestas abiertas necesita un repertorio amplio de equivalencias y debe explicar con claridad por qué se rechaza una respuesta válida en apariencia.
+
+### 27. Reconstrucción del error — Futura
+
+Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en el que aparece el primer fallo, en lugar de resolver el problema desde cero. Puede aplicarse a una operación matemática, una cronología histórica, una clasificación científica, un razonamiento lógico, una traducción o un fragmento de código.
+
+- **Interacción:** seleccionar el paso erróneo y, opcionalmente, elegir o escribir su corrección.
+- **Encaje:** mide comprensión profunda, revisión crítica y conocimiento del proceso, no solo memorización del resultado.
+- **Puntuación:** puede conceder crédito parcial por localizar el error aunque la corrección posterior no sea exacta.
+- **Riesgo:** todos los pasos anteriores al señalado deben ser inequívocamente válidos; un error que se propaga no debería contabilizarse como varios fallos independientes.
+
+### 28. Pregunta con interferencias — Futura
+
+La información se presenta de forma incompleta o imperfecta: texto parcialmente borrado, audio con ruido, una imagen fragmentada, palabras mezcladas con caracteres irrelevantes o datos visibles durante intervalos muy breves. El jugador debe reconstruir información suficiente para responder.
+
+- **Interacción:** observar o reproducir el estímulo y responder mediante un formato existente; algunas variantes pueden permitir reducir la interferencia a cambio de puntos.
+- **Encaje:** incorpora percepción, reconstrucción y tolerancia a la incertidumbre a las pruebas de conocimiento.
+- **Accesibilidad:** la dificultad debe proceder de una regla controlada, no de barreras visuales, auditivas, cognitivas o motrices; cada reto necesita una variante equivalente cuando el canal utilizado no sea accesible.
+- **Riesgo:** el nivel de degradación debe calibrarse y verificarse en distintos dispositivos para que siempre quede información suficiente y la respuesta no dependa del azar.
+
+### 29. Eco — Futura
+
+Se reproduce una secuencia visual o sonora y después aparece una segunda casi idéntica. El jugador debe determinar si ambas son exactamente iguales o identificar la diferencia, que puede afectar al orden, duración, intensidad, posición o número de elementos.
+
+- **Interacción:** responder «igual» o «diferente» y, en variantes avanzadas, señalar el instante o elemento modificado.
+- **Encaje:** combina memoria inmediata, atención y percepción con rondas breves y reglas muy claras.
+- **Consideración competitiva:** el tiempo obligatorio de reproducción debe excluirse o normalizarse; solo el tiempo de decisión debería premiar la rapidez.
+- **Riesgo:** las diferencias de audio, brillo, rendimiento o latencia entre dispositivos no deben alterar la dificultad ni revelar accidentalmente la respuesta.
+
+### 30. Prueba espejo — Futura
+
+Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan al otro. Ordenar números a la izquierda puede mover letras a la derecha; corregir una secuencia visual puede alterar una operación; cada elemento descartado en un panel puede desaparecer también en el otro.
+
+- **Interacción:** manipular dos paneles vinculados y anticipar el efecto de cada acción antes de confirmar la solución conjunta.
+- **Encaje:** prueba especial de alta dificultad que combina planificación, atención dividida y razonamiento sobre sistemas relacionados.
+- **Uso recomendado:** retos excepcionales de uno a cinco minutos, con tutorial interactivo y dificultad progresiva.
+- **Riesgo:** la relación entre ambos paneles debe ser consistente y visible; una interfaz sobrecargada o efectos difíciles de anticipar convertirían la prueba en ensayo y error.
+
 ## Priorización de mecánicas pendientes
 
 | Objetivo                                   | Mecánicas prioritarias                                                       | Motivo                                                                          |
 | ------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                        | Amplían el juego con riesgo técnico contenido.                                  |
 | Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                       | Introducen habilidades e interacciones que van más allá de responder preguntas. |
-| Pruebas especiales                         | Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram  | Admiten retos ocasionales de uno a cinco minutos.                               |
+| Inducción y deducción                      | La regla secreta                                                             | Convierte la identificación de patrones en una clasificación activa.            |
+| Pensamiento crítico                        | El dato contaminado                                                          | Obliga a contrastar la información antes de utilizarla.                          |
+| Comprensión profunda                       | Reconstrucción del error                                                      | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados. |
+| Percepción y precisión                     | Mapa de calor, pregunta con interferencias y Eco                              | Incorporan localización, reconstrucción sensorial y memoria inmediata.           |
+| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido. |
+| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                   | Permiten decidir cuánta información obtener antes de responder.                  |
+| Conocimiento menos inmediato               | La respuesta prohibida                                                        | Premia alternativas válidas más allá de las asociaciones más obvias.             |
 | Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.             |
 
 ## Implicaciones para el futuro multijugador
