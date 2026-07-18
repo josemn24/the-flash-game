@@ -186,6 +186,20 @@ export type ClassificationQuestion = BaseQuestion & {
   categories: string[];
 };
 
+export type FlashMemoryItem = {
+  id: string;
+  label: string;
+  media?: QuestionMedia;
+  correctPosition: number;
+};
+
+export type FlashMemoryQuestion = BaseQuestion & {
+  type: "flash-memory";
+  revealDuration: number;
+  grid: { rows: number; columns: number };
+  items: FlashMemoryItem[];
+};
+
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
@@ -197,6 +211,7 @@ export type Question =
   | ImageLabelingQuestion
   | OrderingQuestion
   | ClassificationQuestion
+  | FlashMemoryQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
 
@@ -205,6 +220,7 @@ export type QuestionOfType<T extends QuestionType> = Extract<Question, { type: T
 
 export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
+export type FlashMemoryAnswer = Record<string, string>;
 export type AnswerValue =
   | string
   | number
@@ -212,5 +228,6 @@ export type AnswerValue =
   | string[]
   | ClassificationAnswer
   | MatchingAnswer
+  | FlashMemoryAnswer
   | HeatMapAnswer
   | ImageLabelingAnswer;

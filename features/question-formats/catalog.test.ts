@@ -3,9 +3,9 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 
 describe("question format catalog", () => {
-  it("contains exactly twelve formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(12);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(12);
+  it("contains exactly thirteen formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(13);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(13);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -19,6 +19,7 @@ describe("question format catalog", () => {
       "progressive-clues",
       "heat-map",
       "image-labeling",
+      "flash-memory",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>

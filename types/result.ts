@@ -20,6 +20,11 @@ export type AnswerResultDetails =
       incorrectAttempts: number;
     }
   | {
+      type: "flash-memory";
+      correctPlacements: number;
+      totalPlacements: number;
+    }
+  | {
       type: "progressive-clues";
       revealedClues: number;
       totalClues: number;

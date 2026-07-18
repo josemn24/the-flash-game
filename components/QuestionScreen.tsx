@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useState } from "react";
 import { BoltIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
@@ -25,6 +26,7 @@ type QuestionScreenProps = {
   onProgress: (answer: AnswerValue) => void;
   onMatchingIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
+  onTimedResponseStart: () => void;
 };
 
 export function QuestionScreen({
@@ -40,7 +42,15 @@ export function QuestionScreen({
   onProgress,
   onMatchingIncorrectAttempt,
   onProgressiveClueReveal,
+  onTimedResponseStart,
 }: QuestionScreenProps) {
+  const [timedResponseStarted, setTimedResponseStarted] = useState(
+    question.type !== "flash-memory",
+  );
+  const startTimedResponse = () => {
+    setTimedResponseStarted(true);
+    onTimedResponseStart();
+  };
   return (
     <motion.section
       className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"
@@ -65,7 +75,15 @@ export function QuestionScreen({
             </p>
           </div>
         }
-        right={<Timer duration={question.timeLimit} active={!locked} onTimeUp={onTimeUp} />}
+        right={
+          question.type !== "flash-memory" || timedResponseStarted ? (
+            <Timer
+              duration={question.timeLimit}
+              active={!locked && timedResponseStarted}
+              onTimeUp={onTimeUp}
+            />
+          ) : null
+        }
       />
 
       <ProgressBar current={questionNumber} total={totalQuestions} />
@@ -99,6 +117,7 @@ export function QuestionScreen({
           onProgress={onProgress}
           onMatchingIncorrectAttempt={onMatchingIncorrectAttempt}
           onProgressiveClueReveal={onProgressiveClueReveal}
+          onTimedResponseStart={startTimedResponse}
         />
       </div>
     </motion.section>

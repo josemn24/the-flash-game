@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, doce formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, trece formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -22,6 +22,7 @@ La aplicación soporta de forma nativa:
 - adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento;
 - mapa de calor con selección espacial y crédito por proximidad;
 - etiquetar imagen con asociación múltiple o identificación de una única zona.
+- memoria relámpago con reconstrucción espacial de una cuadrícula tras una exposición breve.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -85,12 +86,14 @@ Varias tarjetas deben repartirse entre categorías: mamífero, ave o reptil; pa�
 - **Formato recomendado:** entre tres y ocho elementos.
 - **Encaje:** encadena decisiones rápidas y compara muy bien la velocidad de varios jugadores.
 
-### 6. Memoria relámpago — Futura
+### 6. Memoria relámpago — Implementada
 
 Una composición se muestra durante unos segundos y después se oculta. El jugador debe recordar elementos, posiciones, un orden, relaciones entre nombres e imágenes o detalles de una escena.
 
-- **Encaje:** hace que el cronómetro forme parte real de la mecánica, tanto al memorizar como al responder.
+- **Encaje:** convierte la breve exposición y la reconstrucción contrarreloj en una misma mecánica de memoria.
 - **Valor:** permite dificultad alta con reglas simples.
+- **Interacción actual:** la primera variante muestra una cuadrícula completa 2 × 2 durante tres segundos. Después, el jugador selecciona cada ficha y la coloca en la posición que recuerda; puede retirar y recolocar fichas antes de confirmar.
+- **Puntuación actual:** el cronómetro comienza al iniciarse la reconstrucción, no durante la exposición. Cada posición correcta recibe crédito parcial ajustado por velocidad; no hay penalización por recolocar.
 
 ### 7. Diferencias visuales — Futura
 

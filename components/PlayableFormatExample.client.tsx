@@ -35,6 +35,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
   const [phase, setPhase] = useState<ExamplePhase>("ready");
   const [attempt, setAttempt] = useState(0);
   const [codeAttemptCount, setCodeAttemptCount] = useState(0);
+  const [timedResponseStarted, setTimedResponseStarted] = useState(false);
   const [result, setResult] = useState<AnswerResult | null>(null);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
     matchingIncorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     setCodeAttemptCount(0);
+    setTimedResponseStarted(false);
     setResult(null);
     setPhase("ready");
   }, []);
@@ -79,6 +81,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
     matchingIncorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     setCodeAttemptCount(0);
+    setTimedResponseStarted(false);
     setResult(null);
     setAttempt((current) => current + 1);
     startedAtRef.current = performance.now();
@@ -135,6 +138,10 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
       return;
     }
     if (question.type === "matching") {
+      submitAnswer(draftAnswerRef.current, true);
+      return;
+    }
+    if (question.type === "flash-memory") {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }
@@ -205,12 +212,14 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
             <div className={styles.playPanel} key={attempt}>
               <div className={styles.questionHeader}>
                 <Badge>{question.category}</Badge>
-                <Timer
-                  key={`timer-${attempt}`}
-                  duration={question.timeLimit}
-                  active
-                  onTimeUp={handleTimeUp}
-                />
+                {question.type !== "flash-memory" || timedResponseStarted ? (
+                  <Timer
+                    key={`timer-${attempt}`}
+                    duration={question.timeLimit}
+                    active={question.type !== "flash-memory" || timedResponseStarted}
+                    onTimeUp={handleTimeUp}
+                  />
+                ) : null}
               </div>
               <h2 id={titleId} className={styles.questionTitle}>
                 {question.question}
@@ -235,6 +244,10 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
                 }}
                 onProgressiveClueReveal={(revealedClues) => {
                   progressiveCluesRevealedRef.current = revealedClues;
+                }}
+                onTimedResponseStart={() => {
+                  startedAtRef.current = performance.now();
+                  setTimedResponseStarted(true);
                 }}
               />
             </div>

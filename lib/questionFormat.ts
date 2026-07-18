@@ -11,6 +11,7 @@ export const QUESTION_FORMAT_LABELS = {
   "image-labeling": "Etiquetas",
   ordering: "Ordenar",
   classification: "Clasificar",
+  "flash-memory": "Memoria",
   "logic-code": "Código lógico",
   estimation: "Estimación",
 } satisfies Record<QuestionType, string>;

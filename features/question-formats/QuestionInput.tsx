@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
+import { FlashMemoryQuestion } from "@/components/FlashMemoryQuestion";
 import { HeatMapQuestion } from "@/components/HeatMapQuestion";
 import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
 import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
@@ -25,6 +26,7 @@ type CommonProps = {
   onProgress: (answer: AnswerValue) => void;
   onMatchingIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
+  onTimedResponseStart: () => void;
 };
 
 type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
@@ -210,6 +212,26 @@ function ClassificationInput({
   );
 }
 
+function FlashMemoryInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+  onTimedResponseStart,
+}: QuestionInputProps<QuestionOfType<"flash-memory">>) {
+  return (
+    <FlashMemoryQuestion
+      items={question.items}
+      grid={question.grid}
+      revealDuration={question.revealDuration}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+      onTimedResponseStart={onTimedResponseStart}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -256,6 +278,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "image-labeling": ImageLabelingInput,
   ordering: OrderingInput,
   classification: ClassificationInput,
+  "flash-memory": FlashMemoryInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
 } satisfies {

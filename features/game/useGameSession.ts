@@ -174,6 +174,10 @@ export function useGameSession(stage: Stage) {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }
+    if (question?.type === "flash-memory") {
+      submitAnswer(draftAnswerRef.current, true);
+      return;
+    }
     submitAnswer(null, true);
   }, [question, submitAnswer]);
 
@@ -188,6 +192,12 @@ export function useGameSession(stage: Stage) {
   const handleProgressiveClueReveal = useCallback((revealedClues: number) => {
     progressiveCluesRevealedRef.current = revealedClues;
   }, []);
+
+  const handleTimedResponseStart = useCallback(() => {
+    if (question?.type === "flash-memory" && !answerLock.current) {
+      questionStartedAt.current = performance.now();
+    }
+  }, [question]);
 
   const score = useMemo(
     () => calculateTotalScore(state.results.map((result) => result.points)),
@@ -206,6 +216,7 @@ export function useGameSession(stage: Stage) {
     handleAnswerProgress,
     handleMatchingIncorrectAttempt,
     handleProgressiveClueReveal,
+    handleTimedResponseStart,
     showReview: () => dispatch({ type: "show-review" }),
     showResults: () => dispatch({ type: "show-results" }),
   };

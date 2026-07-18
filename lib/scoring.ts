@@ -8,6 +8,8 @@ import type {
   ClassificationAnswer,
   ClassificationQuestion,
   EstimationQuestion,
+  FlashMemoryAnswer,
+  FlashMemoryQuestion,
   HeatMapAnswer,
   HeatMapQuestion,
   ImageLabelingAnswer,
@@ -50,6 +52,7 @@ export const QUESTION_SCORING_POLICY = {
   "image-labeling": "image-labeling",
   ordering: "binary-speed",
   classification: "partial-items",
+  "flash-memory": "partial-items",
   "logic-code": "attempt-penalty",
   estimation: "proximity",
 } as const satisfies Record<QuestionType, ScoringPolicyId>;
@@ -84,6 +87,10 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
 }
 
 export function isMatchingAnswer(answer: AnswerValue | null): answer is MatchingAnswer {
+  return isRecordAnswer(answer);
+}
+
+export function isFlashMemoryAnswer(answer: AnswerValue | null): answer is FlashMemoryAnswer {
   return isRecordAnswer(answer);
 }
 
@@ -135,6 +142,57 @@ export function calculateMatchingMetrics(question: MatchingQuestion, answer: Mat
     (item) => answer[item.id] === item.correctMatchId,
   ).length;
   return { correctPairs, totalPairs: question.leftItems.length };
+}
+
+export function isValidFlashMemoryConfiguration(question: FlashMemoryQuestion) {
+  const { rows, columns } = question.grid;
+  const capacity = rows * columns;
+  const itemIds = question.items.map((item) => item.id);
+  const positions = question.items.map((item) => item.correctPosition);
+  return (
+    Number.isInteger(rows) &&
+    Number.isInteger(columns) &&
+    rows > 0 &&
+    columns > 0 &&
+    Number.isFinite(question.revealDuration) &&
+    question.revealDuration > 0 &&
+    question.items.length === capacity &&
+    new Set(itemIds).size === itemIds.length &&
+    new Set(positions).size === positions.length &&
+    question.items.every(
+      (item) =>
+        Boolean(item.id.trim()) &&
+        Boolean(item.label.trim()) &&
+        Number.isInteger(item.correctPosition) &&
+        item.correctPosition >= 0 &&
+        item.correctPosition < capacity,
+    )
+  );
+}
+
+export function calculateFlashMemoryMetrics(
+  question: FlashMemoryQuestion,
+  answer: FlashMemoryAnswer,
+) {
+  const capacity = question.grid.rows * question.grid.columns;
+  const validPositions = new Set(Array.from({ length: capacity }, (_, index) => String(index)));
+  const itemIds = new Set(question.items.map((item) => item.id));
+  const entries = Object.entries(answer);
+  const assignedItemIds = entries.map(([, itemId]) => itemId);
+  const valid =
+    isValidFlashMemoryConfiguration(question) &&
+    entries.length <= capacity &&
+    entries.every(([position, itemId]) => validPositions.has(position) && itemIds.has(itemId)) &&
+    new Set(assignedItemIds).size === assignedItemIds.length;
+  const correctPlacements = valid
+    ? question.items.filter((item) => answer[String(item.correctPosition)] === item.id).length
+    : 0;
+  return {
+    correctPlacements,
+    totalPlacements: capacity,
+    complete: entries.length === capacity,
+    valid,
+  };
 }
 
 function isNormalizedPoint(point: { x: number; y: number }) {
@@ -247,6 +305,13 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
         isMatchingAnswer(answer) &&
         calculateMatchingMetrics(question, answer).correctPairs === question.leftItems.length
       );
+    case "flash-memory": {
+      if (!isFlashMemoryAnswer(answer)) return false;
+      const metrics = calculateFlashMemoryMetrics(question, answer);
+      return (
+        metrics.valid && metrics.complete && metrics.correctPlacements === question.items.length
+      );
+    }
     case "ordering":
       return (
         Array.isArray(answer) &&
@@ -410,6 +475,34 @@ function evaluateMatching(
     status: isCorrect ? "correct" : metrics.correctPairs > 0 ? "partial" : "incorrect",
     points: applyAttemptPenalty(partialScore, question.points, incorrectAttempts),
     details: { type: "matching", ...metrics, incorrectAttempts },
+  };
+}
+
+function evaluateFlashMemory(
+  question: FlashMemoryQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isFlashMemoryAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateFlashMemoryMetrics(question, answer);
+  const isCorrect = metrics.valid && metrics.correctPlacements === metrics.totalPlacements;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : metrics.correctPlacements > 0 ? "partial" : "incorrect",
+    points: calculateProportionalScore(
+      question.points,
+      metrics.correctPlacements,
+      metrics.totalPlacements,
+      calculateSpeedMultiplier(timeUsed, question.timeLimit),
+    ),
+    details: {
+      type: "flash-memory",
+      correctPlacements: metrics.correctPlacements,
+      totalPlacements: metrics.totalPlacements,
+    },
   };
 }
 
@@ -582,6 +675,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       if (question.type === "matching") {
         return evaluateMatching(question, answer, timeUsed, incorrectAttempts);
       }
+      if (question.type === "flash-memory") {
+        return evaluateFlashMemory(question, answer, timeUsed);
+      }
       throw new Error(`Unsupported partial-items question: ${question.type}`);
     case "attempt-penalty": {
       if (question.type !== "logic-code") {
@@ -692,7 +788,10 @@ export function evaluateAnswer({
     answer,
     ...evaluation,
     status: matchingWithoutProgress || discardedSpatialDraft ? "unanswered" : evaluation.status,
-    points: timedOut && question.type !== "matching" ? 0 : evaluation.points,
+    points:
+      timedOut && question.type !== "matching" && question.type !== "flash-memory"
+        ? 0
+        : evaluation.points,
     timeUsed: safeTime,
   };
 }

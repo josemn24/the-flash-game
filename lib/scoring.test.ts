@@ -4,6 +4,7 @@ import { SCORING_POLICIES } from "@/features/question-formats/scoringPolicies";
 import {
   calculateAnswerScore,
   calculateEstimationMetrics,
+  calculateFlashMemoryMetrics,
   calculateHeatMapMetrics,
   calculateImageLabelingMetrics,
   calculateProgressiveCluesMetrics,
@@ -11,6 +12,7 @@ import {
   evaluateAnswer,
   isAnswerCorrect,
   isHeatMapAnswer,
+  isValidFlashMemoryConfiguration,
   isImageLabelingAnswer,
   isValidImageLabelingConfiguration,
   QUESTION_SCORING_POLICY,
@@ -58,6 +60,13 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "classification":
       correctAnswer = Object.fromEntries(
         example.items.map((item) => [item.label, item.correctCategory]),
+      );
+      incorrectAnswer = {};
+      incorrectPoints = 0;
+      break;
+    case "flash-memory":
+      correctAnswer = Object.fromEntries(
+        example.items.map((item) => [String(item.correctPosition), item.id]),
       );
       incorrectAnswer = {};
       incorrectPoints = 0;
@@ -509,6 +518,48 @@ describe("question evaluation", () => {
         timeUsed: 10,
       }),
     ).toMatchObject({ status: "partial", points: 75 });
+  });
+
+  it("awards flash-memory credit per correctly reconstructed position", () => {
+    const question = QUESTION_FORMAT_CATALOG["flash-memory"].examples[0].question;
+    const fullAnswer = Object.fromEntries(
+      question.items.map((item) => [String(item.correctPosition), item.id]),
+    );
+    const partialAnswer = { "0": "mercurio", "1": "tierra", "2": "venus", "3": "marte" };
+
+    expect(evaluateAnswer({ question, answer: fullAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 140,
+      details: { type: "flash-memory", correctPlacements: 4, totalPlacements: 4 },
+    });
+    expect(
+      evaluateAnswer({ question, answer: partialAnswer, timeUsed: question.timeLimit }),
+    ).toMatchObject({
+      status: "partial",
+      points: 35,
+      details: { type: "flash-memory", correctPlacements: 2, totalPlacements: 4 },
+    });
+  });
+
+  it("preserves flash-memory progress on timeout and rejects invalid configurations", () => {
+    const question = QUESTION_FORMAT_CATALOG["flash-memory"].examples[0].question;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { "0": "mercurio", "1": "tierra" },
+        timeUsed: 99,
+        timedOut: true,
+      }),
+    ).toMatchObject({
+      status: "partial",
+      points: 18,
+      timeUsed: question.timeLimit,
+      details: { type: "flash-memory", correctPlacements: 1, totalPlacements: 4 },
+    });
+
+    const invalid = { ...question, items: [...question.items, question.items[0]] };
+    expect(isValidFlashMemoryConfiguration(invalid)).toBe(false);
+    expect(calculateFlashMemoryMetrics(invalid, {}).correctPlacements).toBe(0);
   });
 
   it("preserves matching progress on timeout without rewarding wrong pairs", () => {

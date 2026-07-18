@@ -102,6 +102,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "flash-memory": {
+    id: QUESTION_SCORING_POLICY["flash-memory"],
+    label: "Crédito por posición",
+    summary:
+      "Cada ficha colocada en la posición correcta aporta su fracción de puntos, ajustada por el tiempo de reconstrucción.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "logic-code": {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",
