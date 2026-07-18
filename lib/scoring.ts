@@ -8,6 +8,8 @@ import type {
   ClassificationAnswer,
   ClassificationQuestion,
   EstimationQuestion,
+  ErrorReconstructionAnswer,
+  ErrorReconstructionQuestion,
   FlashMemoryAnswer,
   FlashMemoryQuestion,
   HeatMapAnswer,
@@ -48,7 +50,8 @@ export type ScoringPolicyId =
   | "proximity"
   | "clue-speed"
   | "spatial-proximity"
-  | "image-labeling";
+  | "image-labeling"
+  | "error-location-correction";
 
 export const QUESTION_SCORING_POLICY = {
   "multiple-choice": "binary-speed",
@@ -67,6 +70,7 @@ export const QUESTION_SCORING_POLICY = {
   "mini-sudoku": "partial-items",
   "mini-nonogram": "partial-items",
   "sliding-puzzle": "binary-speed",
+  "error-reconstruction": "error-location-correction",
   "logic-code": "attempt-penalty",
   estimation: "proximity",
 } as const satisfies Record<QuestionType, ScoringPolicyId>;
@@ -87,11 +91,18 @@ type EvaluationContext = {
   revealedClues: number;
 };
 
-function isRecordAnswer(answer: AnswerValue | null): answer is Record<string, string> {
+type StringRecordAnswer =
+  | ClassificationAnswer
+  | MatchingAnswer
+  | FlashMemoryAnswer
+  | ImageLabelingAnswer;
+
+function isRecordAnswer(answer: AnswerValue | null): answer is StringRecordAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
     !Array.isArray(answer) &&
+    !("stepId" in answer) &&
     Object.values(answer).every((value) => typeof value === "string")
   );
 }
@@ -166,6 +177,21 @@ export function isHeatMapAnswer(answer: AnswerValue | null): answer is HeatMapAn
 
 export function isImageLabelingAnswer(answer: AnswerValue | null): answer is ImageLabelingAnswer {
   return isRecordAnswer(answer);
+}
+
+export function isErrorReconstructionAnswer(
+  answer: AnswerValue | null,
+): answer is ErrorReconstructionAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    "stepId" in answer &&
+    typeof answer.stepId === "string" &&
+    ("correction" in answer
+      ? answer.correction === undefined || answer.correction === null || typeof answer.correction === "string"
+      : true)
+  );
 }
 
 function clampTime(timeUsed: number, timeLimit: number) {
@@ -535,8 +561,53 @@ export function calculateImageLabelingMetrics(
   return { correctLabels, totalLabels: question.anchors.length, valid };
 }
 
+export function isValidErrorReconstructionConfiguration(question: ErrorReconstructionQuestion) {
+  const stepIds = question.steps.map((step) => step.id);
+  if (
+    question.steps.length < 3 ||
+    question.steps.length > 7 ||
+    new Set(stepIds).size !== stepIds.length ||
+    !question.steps.every((step) => Boolean(step.id.trim()) && Boolean(step.text.trim())) ||
+    !stepIds.includes(question.firstErrorStepId)
+  ) {
+    return false;
+  }
+
+  if (!question.correction) return true;
+  const normalizedOptions = question.correction.options.map(normalizeAnswer);
+  return (
+    question.correction.options.length >= 2 &&
+    question.correction.options.length <= 4 &&
+    question.correction.options.every((option) => Boolean(option.trim())) &&
+    new Set(normalizedOptions).size === normalizedOptions.length &&
+    Boolean(question.correction.correctAnswer.trim()) &&
+    normalizedOptions.includes(normalizeAnswer(question.correction.correctAnswer))
+  );
+}
+
+export function calculateErrorReconstructionMetrics(
+  question: ErrorReconstructionQuestion,
+  answer: ErrorReconstructionAnswer,
+) {
+  const valid = isValidErrorReconstructionConfiguration(question);
+  const selectedStepId = answer.stepId;
+  const locationCorrect = valid && selectedStepId === question.firstErrorStepId;
+  const correctionRequired = Boolean(question.correction);
+  const correctionCorrect =
+    locationCorrect &&
+    (!question.correction ||
+      (typeof answer.correction === "string" &&
+        normalizeAnswer(answer.correction) === normalizeAnswer(question.correction.correctAnswer)));
+  return { selectedStepId, locationCorrect, correctionRequired, correctionCorrect, valid };
+}
+
 export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
   switch (question.type) {
+    case "error-reconstruction":
+      return (
+        isErrorReconstructionAnswer(answer) &&
+        calculateErrorReconstructionMetrics(question, answer).correctionCorrect
+      );
     case "heat-map":
       return isHeatMapAnswer(answer) && calculateHeatMapMetrics(question, answer).accuracy === 1;
     case "image-labeling":
@@ -1041,6 +1112,36 @@ function evaluateHeatMap(
   };
 }
 
+function evaluateErrorReconstruction(
+  question: ErrorReconstructionQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isErrorReconstructionAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateErrorReconstructionMetrics(question, answer);
+  if (!metrics.valid || !metrics.locationCorrect) {
+    return {
+      isCorrect: false,
+      status: "incorrect",
+      points: 0,
+      details: { type: "error-reconstruction", ...metrics },
+    };
+  }
+
+  const speedMultiplier = calculateSpeedMultiplier(timeUsed, question.timeLimit);
+  const fraction = question.correction ? (metrics.correctionCorrect ? 1 : 0.6) : 1;
+  const isCorrect = metrics.correctionCorrect;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "partial",
+    points: Math.round(question.points * fraction * speedMultiplier),
+    details: { type: "error-reconstruction", ...metrics },
+  };
+}
+
 function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
   const { question, answer, timeUsed, submittedCodes, incorrectAttempts, revealedClues } = context;
 
@@ -1100,6 +1201,12 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       }
       return evaluateImageLabeling(question, answer, timeUsed);
     }
+    case "error-location-correction": {
+      if (question.type !== "error-reconstruction") {
+        throw new Error(`Unsupported error-location-correction question: ${question.type}`);
+      }
+      return evaluateErrorReconstruction(question, answer, timeUsed);
+    }
   }
 }
 
@@ -1153,14 +1260,24 @@ export function evaluateAnswer({
                 ...calculateProgressiveCluesMetrics(question, progressiveCluesRevealed),
               },
             }
-          : question.type === "simon-sequence"
+            : question.type === "simon-sequence"
             ? {
                 details: {
                   type: "simon-sequence" as const,
                   submittedSteps: [],
                   firstMismatchIndex: null,
                 },
-              }
+                }
+            : question.type === "error-reconstruction"
+              ? {
+                  details: {
+                    type: "error-reconstruction" as const,
+                    selectedStepId: null,
+                    locationCorrect: false,
+                    correctionRequired: Boolean(question.correction),
+                    correctionCorrect: false,
+                  },
+                }
             : {}),
     };
   }
@@ -1192,7 +1309,8 @@ export function evaluateAnswer({
       question.type !== "matching" &&
       question.type !== "flash-memory" &&
       question.type !== "mini-sudoku" &&
-      question.type !== "mini-nonogram"
+      question.type !== "mini-nonogram" &&
+      question.type !== "error-reconstruction"
         ? 0
         : evaluation.points,
     timeUsed: safeTime,

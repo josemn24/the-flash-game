@@ -17,6 +17,7 @@ export const QUESTION_FORMAT_LABELS = {
   "mini-sudoku": "Sudoku",
   "mini-nonogram": "Nonograma",
   "sliding-puzzle": "Puzzle",
+  "error-reconstruction": "Reconstruir error",
   "logic-code": "Código lógico",
   estimation: "Estimación",
 } satisfies Record<QuestionType, string>;

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
+import { ErrorReconstructionQuestionInput } from "@/components/ErrorReconstructionQuestion";
 import { FlashMemoryQuestion } from "@/components/FlashMemoryQuestion";
 import { HeatMapQuestion } from "@/components/HeatMapQuestion";
 import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
@@ -353,6 +354,22 @@ function EstimationInput({
   );
 }
 
+function ErrorReconstructionInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"error-reconstruction">>) {
+  return (
+    <ErrorReconstructionQuestionInput
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 export const QUESTION_INPUT_RENDERERS = {
   "multiple-choice": MultipleChoiceInput,
   "odd-one-out": OddOneOutInput,
@@ -370,6 +387,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "mini-sudoku": MiniSudokuInput,
   "mini-nonogram": MiniNonogramInput,
   "sliding-puzzle": SlidingPuzzleInput,
+  "error-reconstruction": ErrorReconstructionInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
 } satisfies {

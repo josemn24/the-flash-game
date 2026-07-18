@@ -244,6 +244,23 @@ export type SlidingPuzzleQuestion = BaseQuestion & {
   solution: Array<number | null>;
 };
 
+export type ErrorReconstructionStep = {
+  id: string;
+  text: string;
+};
+
+export type ErrorReconstructionCorrection = {
+  options: string[];
+  correctAnswer: string;
+};
+
+export type ErrorReconstructionQuestion = BaseQuestion & {
+  type: "error-reconstruction";
+  steps: ErrorReconstructionStep[];
+  firstErrorStepId: string;
+  correction?: ErrorReconstructionCorrection;
+};
+
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
@@ -261,6 +278,7 @@ export type Question =
   | MiniSudokuQuestion
   | MiniNonogramQuestion
   | SlidingPuzzleQuestion
+  | ErrorReconstructionQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
 
@@ -274,6 +292,7 @@ export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
+export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
 export type AnswerValue =
   | string
   | number
@@ -285,5 +304,6 @@ export type AnswerValue =
   | MiniSudokuAnswer
   | MiniNonogramAnswer
   | SlidingPuzzleAnswer
+  | ErrorReconstructionAnswer
   | HeatMapAnswer
   | ImageLabelingAnswer;

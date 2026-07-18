@@ -67,6 +67,13 @@ export type AnswerResultDetails =
       type: "image-labeling";
       task: "identify-one";
       responseKind: "choice" | "text";
+    }
+  | {
+      type: "error-reconstruction";
+      selectedStepId: string | null;
+      locationCorrect: boolean;
+      correctionRequired: boolean;
+      correctionCorrect: boolean;
     };
 
 export type AnswerResult = {

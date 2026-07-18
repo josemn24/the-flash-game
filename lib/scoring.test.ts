@@ -4,6 +4,7 @@ import { SCORING_POLICIES } from "@/features/question-formats/scoringPolicies";
 import {
   calculateAnswerScore,
   calculateEstimationMetrics,
+  calculateErrorReconstructionMetrics,
   calculateFlashMemoryMetrics,
   calculateMiniNonogramMetrics,
   calculateMiniSudokuMetrics,
@@ -25,10 +26,12 @@ import {
   isValidFlashMemoryConfiguration,
   isValidSimonSequenceConfiguration,
   isImageLabelingAnswer,
+  isErrorReconstructionAnswer,
+  isValidErrorReconstructionConfiguration,
   isValidImageLabelingConfiguration,
   QUESTION_SCORING_POLICY,
 } from "@/lib/scoring";
-import type { AnswerValue, QuestionType } from "@/types/game";
+import type { AnswerValue, MiniNonogramAnswer, QuestionType } from "@/types/game";
 
 const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) => {
   const example = examples[0].question;
@@ -108,13 +111,21 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "mini-nonogram":
       correctAnswer = Object.fromEntries(
         example.solution.flatMap((isFilled, index) => (isFilled ? [[String(index), true]] : [])),
-      );
+      ) as MiniNonogramAnswer;
       incorrectAnswer = { "0": true };
       incorrectPoints = 0;
       break;
     case "sliding-puzzle":
       correctAnswer = { tiles: example.solution, moves: 2 };
       incorrectAnswer = { tiles: example.initialTiles, moves: 0 };
+      incorrectPoints = 0;
+      break;
+    case "error-reconstruction":
+      correctAnswer = {
+        stepId: example.firstErrorStepId,
+        ...(example.correction ? { correction: example.correction.correctAnswer } : {}),
+      };
+      incorrectAnswer = { stepId: example.steps.find((step) => step.id !== example.firstErrorStepId)!.id };
       incorrectPoints = 0;
       break;
     case "ordering":
@@ -178,6 +189,61 @@ describe("question evaluation", () => {
     const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(isAnswerCorrect(question, "  MARIE CURÍE ")).toBe(true);
     expect(isAnswerCorrect(question, "Maria Skłodowska-Curie")).toBe(true);
+  });
+
+  it("evaluates error reconstruction with full and partial credit", () => {
+    const question = QUESTION_FORMAT_CATALOG["error-reconstruction"].examples[0].question;
+    if (!question.correction) throw new Error("Expected a guided correction");
+    const correct = { stepId: question.firstErrorStepId, correction: question.correction.correctAnswer };
+    const locationOnly = { stepId: question.firstErrorStepId };
+
+    expect(isErrorReconstructionAnswer(correct)).toBe(true);
+    expect(calculateErrorReconstructionMetrics(question, correct)).toMatchObject({
+      locationCorrect: true,
+      correctionCorrect: true,
+    });
+    expect(evaluateAnswer({ question, answer: correct, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 100,
+      details: { type: "error-reconstruction", locationCorrect: true, correctionCorrect: true },
+    });
+    expect(evaluateAnswer({ question, answer: locationOnly, timeUsed: question.timeLimit })).toMatchObject({
+      status: "partial",
+      points: 30,
+      details: { type: "error-reconstruction", locationCorrect: true, correctionCorrect: false },
+    });
+  });
+
+  it("rejects invalid error reconstruction configurations", () => {
+    const question = QUESTION_FORMAT_CATALOG["error-reconstruction"].examples[0].question;
+    expect(isValidErrorReconstructionConfiguration(question)).toBe(true);
+    expect(
+      isValidErrorReconstructionConfiguration({
+        ...question,
+        firstErrorStepId: "missing",
+      }),
+    ).toBe(false);
+    expect(
+      isValidErrorReconstructionConfiguration({
+        ...question,
+        correction: { ...question.correction!, options: ["Igual", " igual "] },
+      }),
+    ).toBe(false);
+  });
+
+  it("scores an error reconstruction draft when its time expires", () => {
+    const question = QUESTION_FORMAT_CATALOG["error-reconstruction"].examples[0].question;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { stepId: question.firstErrorStepId },
+        timeUsed: question.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({ status: "partial", points: 30 });
+    expect(
+      evaluateAnswer({ question, answer: null, timeUsed: question.timeLimit, timedOut: true }),
+    ).toMatchObject({ status: "unanswered", points: 0 });
   });
 
   it("reduces progressive-clues points before applying the speed multiplier", () => {
@@ -798,11 +864,11 @@ describe("question evaluation", () => {
     const question = QUESTION_FORMAT_CATALOG["mini-nonogram"].examples[0].question;
     const completeAnswer = Object.fromEntries(
       question.solution.flatMap((isFilled, index) => (isFilled ? [[String(index), true]] : [])),
-    );
-    const partialAnswer = { "1": true, "2": true, "0": true };
+    ) as MiniNonogramAnswer;
+    const partialAnswer: MiniNonogramAnswer = { "1": true, "2": true, "0": true };
 
     expect(isMiniNonogramAnswer(completeAnswer)).toBe(true);
-    expect(isMiniNonogramAnswer({ "1": false })).toBe(false);
+    expect(isMiniNonogramAnswer({ "1": false } as unknown as AnswerValue)).toBe(false);
     expect(calculateMiniNonogramMetrics(question, partialAnswer)).toMatchObject({
       correctFilled: 2,
       incorrectFilled: 1,
@@ -843,7 +909,7 @@ describe("question evaluation", () => {
       isValidMiniNonogramConfiguration({ ...question, solution: question.solution.slice(0, 24) }),
     ).toBe(false);
     expect(
-      isValidMiniNonogramConfiguration({ ...question, solution: [...question.solution.slice(0, 1), 1, ...question.solution.slice(2)] }),
+      isValidMiniNonogramConfiguration({ ...question, solution: [...question.solution.slice(0, 1), 1, ...question.solution.slice(2)] as unknown as boolean[] }),
     ).toBe(false);
     expect(
       isValidMiniNonogramConfiguration({ ...question, rowClues: question.rowClues.slice(0, 4) }),

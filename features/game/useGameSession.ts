@@ -177,7 +177,8 @@ export function useGameSession(stage: Stage) {
     if (
       question?.type === "flash-memory" ||
       question?.type === "mini-sudoku" ||
-      question?.type === "mini-nonogram"
+      question?.type === "mini-nonogram" ||
+      question?.type === "error-reconstruction"
     ) {
       submitAnswer(draftAnswerRef.current, true);
       return;

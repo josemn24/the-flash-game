@@ -28,6 +28,7 @@ La aplicación soporta de forma nativa:
 - mini-sudoku 4 × 4 con edición previa a confirmar y crédito por casilla correcta.
 - mini-nonograma 5 × 5 con pistas de filas y columnas, edición reversible y crédito neto por relleno.
 - rompecabezas deslizante 3 × 3 con fichas numéricas y resolución automática.
+- reconstrucción del error con detección del primer paso inválido y corrección guiada opcional.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -290,13 +291,13 @@ Se formula una pregunta abierta, pero las respuestas más evidentes están expre
 - **Puntuación:** puede valorar acierto y velocidad; en partidas grupales, las respuestas menos repetidas podrían recibir una bonificación si todos comparten condiciones equivalentes.
 - **Riesgo:** la validación de respuestas abiertas necesita un repertorio amplio de equivalencias y debe explicar con claridad por qué se rechaza una respuesta válida en apariencia.
 
-### 28. Reconstrucción del error — Futura
+### 28. Reconstrucción del error — Implementada
 
 Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en el que aparece el primer fallo, en lugar de resolver el problema desde cero. Puede aplicarse a una operación matemática, una cronología histórica, una clasificación científica, un razonamiento lógico, una traducción o un fragmento de código.
 
-- **Interacción:** seleccionar el paso erróneo y, opcionalmente, elegir o escribir su corrección.
+- **Interacción actual:** seleccionar el primer paso erróneo, cambiar la selección antes de confirmar y, cuando existe, elegir una corrección guiada opcional.
 - **Encaje:** mide comprensión profunda, revisión crítica y conocimiento del proceso, no solo memorización del resultado.
-- **Puntuación:** puede conceder crédito parcial por localizar el error aunque la corrección posterior no sea exacta.
+- **Puntuación actual:** sin corrección, localizar el error recibe puntos por velocidad. Con corrección, localizarlo aporta el 60 % y corregirlo el 40 % restante; el timeout evalúa la selección ya realizada.
 - **Riesgo:** todos los pasos anteriores al señalado deben ser inequívocamente válidos; un error que se propaga no debería contabilizarse como varios fallos independientes.
 
 ### 29. Pregunta con interferencias — Futura
@@ -336,7 +337,7 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 | Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                             |
 | Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
 | Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco                                              | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
-| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, laberinto, mini-sudoku y tangram                               | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Pruebas especiales                         | Respuesta en cadena, Mini-Wordle, laberinto, mini-sudoku y tangram                                               | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
 | Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                     |
 | Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.                |
 | Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                 |

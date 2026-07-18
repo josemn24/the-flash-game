@@ -3,9 +3,9 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 
 describe("question format catalog", () => {
-  it("contains exactly eighteen formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(18);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(18);
+  it("contains exactly nineteen formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(19);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(19);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -25,6 +25,7 @@ describe("question format catalog", () => {
       "mini-sudoku",
       "mini-nonogram",
       "sliding-puzzle",
+      "error-reconstruction",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
@@ -32,6 +33,20 @@ describe("question format catalog", () => {
     );
     expect(new Set(exampleIds).size).toBe(exampleIds.length);
   });
+
+  it("keeps error-reconstruction examples internally consistent", () => {
+    const examples = QUESTION_FORMAT_CATALOG["error-reconstruction"].examples;
+    expect(examples).toHaveLength(2);
+    for (const question of examples.map((example) => example.question)) {
+      expect(question.steps.length).toBeGreaterThanOrEqual(3);
+      expect(question.steps.length).toBeLessThanOrEqual(7);
+      expect(question.steps.some((step) => step.id === question.firstErrorStepId)).toBe(true);
+      if (question.correction) {
+        expect(question.correction.options).toContain(question.correction.correctAnswer);
+      }
+    }
+  });
+
 
   it("keeps the heat-map example internally consistent", () => {
     const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;

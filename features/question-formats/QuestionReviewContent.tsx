@@ -8,6 +8,7 @@ import {
 import styles from "@/components/ReviewAnswers.module.css";
 import {
   isClassificationAnswer,
+  isErrorReconstructionAnswer,
   isFlashMemoryAnswer,
   isImageLabelingAnswer,
   isMatchingAnswer,
@@ -567,6 +568,47 @@ function SlidingPuzzleReview({ question, result }: ReviewProps<QuestionOfType<"s
   );
 }
 
+function ErrorReconstructionReview({
+  question,
+  result,
+}: ReviewProps<QuestionOfType<"error-reconstruction">>) {
+  const answer = isErrorReconstructionAnswer(result.answer) ? result.answer : null;
+  const details = result.details?.type === "error-reconstruction" ? result.details : undefined;
+  const selectedStep = question.steps.find((step) => step.id === answer?.stepId);
+  const correctStep = question.steps.find((step) => step.id === question.firstErrorStepId)!;
+
+  return (
+    <div className="grid gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Tu primer error</span>
+          <strong>{selectedStep?.text ?? "Sin respuesta"}</strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Primer error real</span>
+          <strong>{correctStep.text}</strong>
+        </div>
+      </div>
+      {question.correction && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className={styles.answerBox}>
+            <span>Tu corrección</span>
+            <strong>{answer?.correction ?? "Sin corrección"}</strong>
+          </div>
+          <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+            <span>Corrección esperada</span>
+            <strong>{question.correction.correctAnswer}</strong>
+          </div>
+        </div>
+      )}
+      <div className={styles.answerBox}>
+        <span>Resultado de la localización</span>
+        <strong>{details?.locationCorrect ? "Primer error localizado" : "Primer error no localizado"}</strong>
+      </div>
+    </div>
+  );
+}
+
 export const QUESTION_REVIEW_RENDERERS = {
   "multiple-choice": ChoiceReview,
   "odd-one-out": OddOneOutReview,
@@ -584,6 +626,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "mini-sudoku": MiniSudokuReview,
   "mini-nonogram": MiniNonogramReview,
   "sliding-puzzle": SlidingPuzzleReview,
+  "error-reconstruction": ErrorReconstructionReview,
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,
 } satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };

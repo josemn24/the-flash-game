@@ -155,6 +155,16 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "error-reconstruction": {
+    id: QUESTION_SCORING_POLICY["error-reconstruction"],
+    label: "Localización y corrección",
+    summary:
+      "Localizar el primer error aporta el 60 %; corregirlo exactamente completa el 100 %, con ajuste por velocidad.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+    partialCreditLabel: "60 % por localizar",
+  },
   "logic-code": {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",
