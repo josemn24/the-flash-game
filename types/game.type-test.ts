@@ -111,6 +111,47 @@ type ProgressiveImageWithoutSolutionAlt = Omit<ValidProgressiveImage, "solutionA
 type ProgressiveImageWithoutRevealDuration = Omit<ValidProgressiveImage, "revealDuration">;
 type ProgressiveImageWithoutAnswer = Omit<ValidProgressiveImage, "correctAnswer">;
 
+type ValidTimeMaze = {
+  id: "valid-time-maze";
+  type: "time-maze";
+  category: "Test";
+  question: "Reach the exit";
+  grid: { rows: 5; columns: 5 };
+  cells: [
+    "start",
+    "path",
+    "wall",
+    "wall",
+    "wall",
+    "wall",
+    "path",
+    "wall",
+    "wall",
+    "wall",
+    "wall",
+    "path",
+    "path",
+    "path",
+    "wall",
+    "wall",
+    "wall",
+    "wall",
+    "path",
+    "wall",
+    "wall",
+    "wall",
+    "wall",
+    "path",
+    "exit",
+  ];
+  timeLimit: 30;
+  points: 100;
+  explanation: "The route reaches the exit";
+};
+
+type TimeMazeWithoutGrid = Omit<ValidTimeMaze, "grid">;
+type TimeMazeWithoutCells = Omit<ValidTimeMaze, "cells">;
+
 type ValidHeatMap = {
   id: "valid-heat-map";
   type: "heat-map";
@@ -223,6 +264,9 @@ export type RejectsProgressiveImageWithoutRevealDuration = Assert<
 export type RejectsProgressiveImageWithoutAnswer = Assert<
   IsNotAssignable<ProgressiveImageWithoutAnswer, Question>
 >;
+export type AcceptsValidTimeMaze = Assert<IsAssignable<ValidTimeMaze, Question>>;
+export type RejectsTimeMazeWithoutGrid = Assert<IsNotAssignable<TimeMazeWithoutGrid, Question>>;
+export type RejectsTimeMazeWithoutCells = Assert<IsNotAssignable<TimeMazeWithoutCells, Question>>;
 export type AcceptsValidHeatMap = Assert<IsAssignable<ValidHeatMap, Question>>;
 export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithoutSurface, Question>>;
 export type RejectsHeatMapWithoutTarget = Assert<IsNotAssignable<HeatMapWithoutTarget, Question>>;

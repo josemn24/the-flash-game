@@ -43,6 +43,13 @@ import {
   calculateProgressiveImageReveal,
   isValidProgressiveImageConfiguration,
 } from "@/lib/progressiveImage";
+import {
+  findShortestTimeMazePath,
+  getTimeMazeExitIndex,
+  getTimeMazeStartIndex,
+  isValidTimeMazeConfiguration,
+  isValidTimeMazePath,
+} from "@/lib/timeMaze";
 import type {
   AnswerValue,
   MiniNonogramAnswer,
@@ -157,6 +164,13 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
       incorrectAnswer = { guesses: ["CUNA", "DUNA", "RUNA", "TUNA"] };
       incorrectPoints = 0;
       break;
+    case "time-maze": {
+      const shortestPath = findShortestTimeMazePath(example)!;
+      correctAnswer = { path: shortestPath };
+      incorrectAnswer = { path: shortestPath.slice(0, -1) };
+      incorrectPoints = 0;
+      break;
+    }
     case "ordering":
       correctAnswer = example.correctOrder;
       incorrectAnswer = [];
@@ -283,6 +297,104 @@ describe("question evaluation", () => {
       isValidProgressiveImageConfiguration({
         ...question,
         acceptedAnswers: ["Eiffel"],
+      }),
+    ).toBe(false);
+  });
+
+  it("finds and scores valid time-maze routes without penalizing extra moves", () => {
+    const question = QUESTION_FORMAT_CATALOG["time-maze"].examples[0].question;
+    const shortestPath = findShortestTimeMazePath(question)!;
+    const longerPath = [
+      shortestPath[0],
+      shortestPath[1],
+      shortestPath[0],
+      ...shortestPath.slice(1),
+    ];
+
+    expect(shortestPath[0]).toBe(getTimeMazeStartIndex(question));
+    expect(shortestPath.at(-1)).toBe(getTimeMazeExitIndex(question));
+    expect(isValidTimeMazePath(question, shortestPath)).toBe(true);
+    expect(isValidTimeMazePath(question, longerPath)).toBe(true);
+    expect(isAnswerCorrect(question, { path: shortestPath })).toBe(true);
+    expect(isAnswerCorrect(question, { path: longerPath })).toBe(true);
+
+    expect(evaluateAnswer({ question, answer: { path: shortestPath }, timeUsed: 0 })).toMatchObject(
+      {
+        status: "correct",
+        points: 150,
+        details: {
+          type: "time-maze",
+          moves: shortestPath.length - 1,
+          optimalMoves: shortestPath.length - 1,
+          reachedExit: true,
+        },
+      },
+    );
+    expect(
+      evaluateAnswer({ question, answer: { path: longerPath }, timeUsed: question.timeLimit }),
+    ).toMatchObject({
+      status: "correct",
+      points: 75,
+      details: { type: "time-maze", moves: longerPath.length - 1, reachedExit: true },
+    });
+  });
+
+  it("rejects invalid time-maze routes and preserves partial timeout progress", () => {
+    const question = QUESTION_FORMAT_CATALOG["time-maze"].examples[0].question;
+    const shortestPath = findShortestTimeMazePath(question)!;
+    const partialPath = shortestPath.slice(0, 6);
+
+    expect(isValidTimeMazePath(question, [shortestPath[0], shortestPath.at(-1)!])).toBe(false);
+    expect(isValidTimeMazePath(question, [shortestPath[0], 7])).toBe(false);
+    expect(isValidTimeMazePath(question, shortestPath.slice(1))).toBe(false);
+    expect(
+      evaluateAnswer({ question, answer: { path: partialPath }, timeUsed: 99, timedOut: true }),
+    ).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: question.timeLimit,
+      answer: { path: partialPath },
+      details: {
+        type: "time-maze",
+        moves: partialPath.length - 1,
+        reachedExit: false,
+      },
+    });
+  });
+
+  it("rejects malformed or unsolvable time-maze configurations", () => {
+    const question = QUESTION_FORMAT_CATALOG["time-maze"].examples[0].question;
+    const replaceCell = (index: number, value: (typeof question.cells)[number]) =>
+      question.cells.map((cell, cellIndex) => (cellIndex === index ? value : cell));
+
+    expect(isValidTimeMazeConfiguration(question)).toBe(true);
+    expect(isValidTimeMazeConfiguration({ ...question, grid: { rows: 4, columns: 7 } })).toBe(
+      false,
+    );
+    expect(isValidTimeMazeConfiguration({ ...question, grid: { rows: 10, columns: 7 } })).toBe(
+      false,
+    );
+    expect(isValidTimeMazeConfiguration({ ...question, cells: question.cells.slice(0, -1) })).toBe(
+      false,
+    );
+    expect(
+      isValidTimeMazeConfiguration({
+        ...question,
+        cells: replaceCell(getTimeMazeStartIndex(question), "path"),
+      }),
+    ).toBe(false);
+    expect(
+      isValidTimeMazeConfiguration({
+        ...question,
+        cells: replaceCell(getTimeMazeExitIndex(question), "start"),
+      }),
+    ).toBe(false);
+    expect(
+      isValidTimeMazeConfiguration({
+        ...question,
+        cells: Array.from({ length: 49 }, (_, index) =>
+          index === 0 ? "start" : index === 48 ? "exit" : "wall",
+        ),
       }),
     ).toBe(false);
   });

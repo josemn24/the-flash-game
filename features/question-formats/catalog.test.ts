@@ -3,11 +3,12 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
+import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-two formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(22);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(22);
+  it("contains exactly twenty-three formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(23);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(23);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -31,6 +32,7 @@ describe("question format catalog", () => {
       "anagram",
       "mini-wordle",
       "progressive-image",
+      "time-maze",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
@@ -82,6 +84,16 @@ describe("question format catalog", () => {
     expect(question.revealDuration).toBeGreaterThan(0);
     expect(question.revealDuration).toBeLessThan(question.timeLimit);
     expect(question.acceptedAnswers).toContain(question.correctAnswer);
+  });
+
+  it("keeps the time-maze example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["time-maze"].examples[0].question;
+    expect(question.grid).toEqual({ rows: 7, columns: 7 });
+    expect(question.cells).toHaveLength(49);
+    expect(question.cells.filter((cell) => cell === "start")).toHaveLength(1);
+    expect(question.cells.filter((cell) => cell === "exit")).toHaveLength(1);
+    expect(question.timeLimit).toBe(35);
+    expect(isValidTimeMazeConfiguration(question)).toBe(true);
   });
 
   it("keeps the heat-map example internally consistent", () => {

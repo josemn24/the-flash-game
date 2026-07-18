@@ -24,6 +24,7 @@ import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion"
 import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion";
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
+import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
@@ -340,6 +341,23 @@ function SlidingPuzzleInput({
   );
 }
 
+function TimeMazeInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"time-maze">>) {
+  return (
+    <TimeMazeQuestion
+      key={question.id}
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -443,6 +461,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "logic-matrix": LogicMatrixInput,
   "mini-sudoku": MiniSudokuInput,
   "mini-nonogram": MiniNonogramInput,
+  "time-maze": TimeMazeInput,
   "sliding-puzzle": SlidingPuzzleInput,
   "error-reconstruction": ErrorReconstructionInput,
   anagram: AnagramInput,

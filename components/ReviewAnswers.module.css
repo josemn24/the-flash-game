@@ -117,6 +117,32 @@
 .answerBoxCorrect strong {
   color: var(--electric);
 }
+.mazeLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1rem;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.mazeLegend span {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.mazeLegend i {
+  display: inline-block;
+  width: 2rem;
+  border-top-width: 3px;
+}
+.mazePlayerLine {
+  border-top-style: solid;
+  border-top-color: var(--electric);
+}
+.mazeOptimalLine {
+  border-top-style: dashed;
+  border-top-color: var(--cyan);
+}
 .sudokuReviewGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

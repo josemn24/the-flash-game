@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { HeatMapSurface } from "@/components/HeatMapQuestion";
 import { QuestionMedia } from "@/components/QuestionMedia";
+import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
 import {
   AssignAllImageLabelingReviewSurface,
   IdentifyOneImageLabelingReviewSurface,
@@ -17,9 +18,11 @@ import {
   isMiniWordleAnswer,
   isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
+  isTimeMazeAnswer,
 } from "@/lib/scoring";
 import { getMiniWordleFeedback } from "@/lib/miniWordle";
 import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
+import { findShortestTimeMazePath, getTimeMazeStartIndex } from "@/lib/timeMaze";
 import type {
   AnswerResult,
   AnswerValue,
@@ -629,6 +632,48 @@ function SlidingPuzzleReview({ question, result }: ReviewProps<QuestionOfType<"s
   );
 }
 
+function TimeMazeReview({ question, result }: ReviewProps<QuestionOfType<"time-maze">>) {
+  const answer = isTimeMazeAnswer(result.answer) ? result.answer : null;
+  const details = result.details?.type === "time-maze" ? result.details : undefined;
+  const path = answer?.path ?? [getTimeMazeStartIndex(question)];
+  const optimalPath = findShortestTimeMazePath(question) ?? undefined;
+
+  return (
+    <div className="grid gap-3">
+      <TimeMazeBoard
+        question={question}
+        path={path}
+        optimalPath={optimalPath}
+        label="Revisión del laberinto con recorrido realizado y ruta mínima."
+      />
+      <div className={styles.mazeLegend} aria-label="Leyenda de rutas">
+        <span>
+          <i className={styles.mazePlayerLine} /> Recorrido realizado
+        </span>
+        <span>
+          <i className={styles.mazeOptimalLine} /> Ruta mínima
+        </span>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={styles.answerBox}>
+          <span>Movimientos realizados</span>
+          <strong>{details?.moves ?? 0}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Ruta mínima</span>
+          <strong>{details?.optimalMoves ?? 0}</strong>
+        </div>
+        <div
+          className={`${styles.answerBox} ${details?.reachedExit ? styles.answerBoxCorrect : ""}`}
+        >
+          <span>Resultado</span>
+          <strong>{details?.reachedExit ? "Salida alcanzada" : "Salida no alcanzada"}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ErrorReconstructionReview({
   question,
   result,
@@ -740,6 +785,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "logic-matrix": LogicMatrixReview,
   "mini-sudoku": MiniSudokuReview,
   "mini-nonogram": MiniNonogramReview,
+  "time-maze": TimeMazeReview,
   "sliding-puzzle": SlidingPuzzleReview,
   "error-reconstruction": ErrorReconstructionReview,
   anagram: AnagramReview,

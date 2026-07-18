@@ -249,6 +249,14 @@ export type MiniNonogramQuestion = BaseQuestion & {
   columnClues: number[][];
 };
 
+export type MazeCell = "wall" | "path" | "start" | "exit";
+
+export type TimeMazeQuestion = BaseQuestion & {
+  type: "time-maze";
+  grid: { rows: number; columns: number };
+  cells: MazeCell[];
+};
+
 export type SlidingPuzzleQuestion = BaseQuestion & {
   type: "sliding-puzzle";
   initialTiles: Array<number | null>;
@@ -308,6 +316,7 @@ export type Question =
   | LogicMatrixQuestion
   | MiniSudokuQuestion
   | MiniNonogramQuestion
+  | TimeMazeQuestion
   | SlidingPuzzleQuestion
   | ErrorReconstructionQuestion
   | AnagramQuestion
@@ -324,6 +333,7 @@ export type FlashMemoryAnswer = Record<string, string>;
 export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
+export type TimeMazeAnswer = { path: number[] };
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
 export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
 export type MiniWordleAnswer = { guesses: string[] };
@@ -337,6 +347,7 @@ export type AnswerValue =
   | FlashMemoryAnswer
   | MiniSudokuAnswer
   | MiniNonogramAnswer
+  | TimeMazeAnswer
   | SlidingPuzzleAnswer
   | ErrorReconstructionAnswer
   | MiniWordleAnswer

@@ -154,6 +154,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
       question.type === "flash-memory" ||
       question.type === "mini-sudoku" ||
       question.type === "mini-nonogram" ||
+      question.type === "time-maze" ||
       question.type === "error-reconstruction" ||
       question.type === "mini-wordle"
     ) {

@@ -178,6 +178,7 @@ export function useGameSession(stage: Stage) {
       question?.type === "flash-memory" ||
       question?.type === "mini-sudoku" ||
       question?.type === "mini-nonogram" ||
+      question?.type === "time-maze" ||
       question?.type === "error-reconstruction" ||
       question?.type === "mini-wordle"
     ) {

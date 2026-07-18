@@ -155,6 +155,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "time-maze": {
+    id: QUESTION_SCORING_POLICY["time-maze"],
+    label: "Salida y velocidad",
+    summary:
+      "Llegar a la salida conserva entre el 50 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "sliding-puzzle": {
     id: QUESTION_SCORING_POLICY["sliding-puzzle"],
     label: "Resolución y velocidad",

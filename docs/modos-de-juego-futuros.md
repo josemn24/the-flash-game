@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veintidós formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veintitrés formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -32,6 +32,7 @@ La aplicación soporta de forma nativa:
 - anagramas de una palabra mediante fichas de letras, incluidas letras repetidas;
 - Mini-Wordle de cuatro letras y cuatro intentos con feedback por posición.
 - imagen progresivamente revelada con desenfoque automático y un único intento.
+- laberinto contrarreloj con movimiento ortogonal mediante cruceta o teclado.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -187,12 +188,15 @@ El jugador completa una cuadrícula 5 × 5 a partir de las pistas numéricas de 
 - **Puntuación actual:** los rellenos correctos suman crédito y los rellenos erróneos lo restan, con un mínimo de cero y ajuste por velocidad. El timeout evalúa el borrador.
 - **Encaje:** diferenciador y más profundo que una pregunta convencional.
 
-### 17. Laberinto contrarreloj — Futura
+### 17. Laberinto contrarreloj — Implementada
 
-El jugador guía un elemento desde la entrada a la salida mediante arrastre, botones direccionales, cruces sucesivos o elección de caminos. Una variante accesible pregunta qué laberinto tiene salida.
+El jugador guía un elemento desde la entrada a la salida mediante botones direccionales o flechas del teclado.
 
 - **Encaje:** mide con claridad tiempo y precisión.
-- **Riesgo:** un control táctil impreciso mediría frustración, no habilidad.
+- **Interacción actual:** cuadrícula ortogonal de 5 × 5 a 9 × 9, cruceta táctil, flechas, retroceso permitido y resolución automática al alcanzar la salida.
+- **Puntuación actual:** resolución binaria ajustada por velocidad; los movimientos adicionales no penalizan y el timeout conserva el recorrido con cero puntos.
+- **Accesibilidad:** la v1 evita el arrastre libre, deshabilita direcciones bloqueadas, mantiene el foco y anuncia posición, muros y movimientos.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 
 ### 18. Mini-sudoku — Implementada
 
@@ -347,10 +351,10 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 | Pensamiento crítico                        | El dato contaminado                                                | Obliga a contrastar la información antes de utilizarla.                             |
 | Comprensión profunda                       | Reconstrucción del error                                           | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
 | Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
-| Pruebas especiales                         | Respuesta en cadena, laberinto y tangram                           | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Pruebas especiales                         | Respuesta en cadena y tangram                                      | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
 | Gestión del riesgo                         | La respuesta prohibida y el dato contaminado                       | Obligan a decidir entre una respuesta inmediata y una estrategia más prudente.      |
 | Conocimiento menos inmediato               | La respuesta prohibida                                             | Premia alternativas válidas más allá de las asociaciones más obvias.                |
-| Competición por tiempo                     | Diferencias visuales, laberinto y tangram                          | Una ejecución correcta terminada antes representa una mejora clara.                 |
+| Competición por tiempo                     | Diferencias visuales y tangram                                     | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
 

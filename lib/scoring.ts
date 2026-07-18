@@ -27,6 +27,8 @@ import type {
   MiniSudokuQuestion,
   SlidingPuzzleAnswer,
   SlidingPuzzleQuestion,
+  TimeMazeAnswer,
+  TimeMazeQuestion,
   MatchingAnswer,
   MatchingQuestion,
   ProgressiveCluesQuestion,
@@ -36,6 +38,11 @@ import type {
   SimonSequenceQuestion,
 } from "@/types/game";
 import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
+import {
+  findShortestTimeMazePath,
+  getTimeMazeExitIndex,
+  isValidTimeMazePath,
+} from "@/lib/timeMaze";
 import {
   isValidMiniWordleWord,
   isValidMiniWordleConfiguration,
@@ -80,6 +87,7 @@ export const QUESTION_SCORING_POLICY = {
   "logic-matrix": "binary-speed",
   "mini-sudoku": "partial-items",
   "mini-nonogram": "partial-items",
+  "time-maze": "binary-speed",
   "sliding-puzzle": "binary-speed",
   "error-reconstruction": "error-location-correction",
   anagram: "binary-speed",
@@ -166,6 +174,18 @@ export function isSlidingPuzzleAnswer(answer: AnswerValue | null): answer is Sli
     typeof answer.moves === "number" &&
     Number.isInteger(answer.moves) &&
     answer.moves >= 0
+  );
+}
+
+export function isTimeMazeAnswer(answer: AnswerValue | null): answer is TimeMazeAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    "path" in answer &&
+    Array.isArray(answer.path) &&
+    answer.path.length > 0 &&
+    answer.path.every((position) => Number.isInteger(position))
   );
 }
 
@@ -752,6 +772,12 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
       if (!isMiniNonogramAnswer(answer)) return false;
       return calculateMiniNonogramMetrics(question, answer).exact;
     }
+    case "time-maze":
+      return (
+        isTimeMazeAnswer(answer) &&
+        isValidTimeMazePath(question, answer.path) &&
+        answer.path.at(-1) === getTimeMazeExitIndex(question)
+      );
     case "sliding-puzzle":
       return (
         isSlidingPuzzleAnswer(answer) &&
@@ -1045,6 +1071,26 @@ function evaluateSlidingPuzzle(
   };
 }
 
+function evaluateTimeMaze(
+  question: TimeMazeQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  const submittedAnswer = isTimeMazeAnswer(answer) ? answer : null;
+  const validPath = submittedAnswer ? isValidTimeMazePath(question, submittedAnswer.path) : false;
+  const reachedExit = validPath && submittedAnswer?.path.at(-1) === getTimeMazeExitIndex(question);
+  const optimalPath = findShortestTimeMazePath(question);
+  const moves = validPath && submittedAnswer ? submittedAnswer.path.length - 1 : 0;
+  const optimalMoves = optimalPath ? optimalPath.length - 1 : 0;
+
+  return {
+    isCorrect: reachedExit,
+    status: reachedExit ? "correct" : "incorrect",
+    points: reachedExit ? calculateQuestionScore(question, true, timeUsed) : 0,
+    details: { type: "time-maze", moves, optimalMoves, reachedExit },
+  };
+}
+
 function evaluateImageLabeling(
   question: ImageLabelingQuestion,
   answer: AnswerValue,
@@ -1274,6 +1320,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       if (question.type === "sliding-puzzle") {
         return evaluateSlidingPuzzle(question, answer, timeUsed);
       }
+      if (question.type === "time-maze") {
+        return evaluateTimeMaze(question, answer, timeUsed);
+      }
       return evaluateBinarySpeed(context);
     case "partial-items":
       if (question.type === "classification") {
@@ -1411,7 +1460,16 @@ export function evaluateAnswer({
                       solved: false,
                     },
                   }
-                : {}),
+                : question.type === "time-maze"
+                  ? {
+                      details: {
+                        type: "time-maze" as const,
+                        moves: 0,
+                        optimalMoves: (findShortestTimeMazePath(question)?.length ?? 1) - 1,
+                        reachedExit: false,
+                      },
+                    }
+                  : {}),
     };
   }
 
@@ -1432,13 +1490,14 @@ export function evaluateAnswer({
   const discardedSpatialDraft =
     timedOut && (question.type === "heat-map" || question.type === "image-labeling");
   const timedOutMiniWordle = timedOut && question.type === "mini-wordle";
+  const timedOutMaze = timedOut && question.type === "time-maze";
 
   return {
     questionId: question.id,
     answer,
     ...evaluation,
     status:
-      matchingWithoutProgress || discardedSpatialDraft || timedOutMiniWordle
+      matchingWithoutProgress || discardedSpatialDraft || timedOutMiniWordle || timedOutMaze
         ? "unanswered"
         : evaluation.status,
     points:

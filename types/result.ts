@@ -41,6 +41,12 @@ export type AnswerResultDetails =
       totalFilled: number;
     }
   | {
+      type: "time-maze";
+      moves: number;
+      optimalMoves: number;
+      reachedExit: boolean;
+    }
+  | {
       type: "sliding-puzzle";
       moves: number;
     }
