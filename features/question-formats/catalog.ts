@@ -964,6 +964,210 @@ export const QUESTION_FORMAT_CATALOG = {
       },
     ],
   },
+  "logic-matrix": {
+    id: "logic-matrix",
+    slug: "matrices-logicas",
+    name: "Matrices lógicas",
+    shortName: "Matriz",
+    summary: "Completar la pieza que falta en un patrón visual de tres por tres.",
+    description: [
+      "La matriz muestra ocho piezas y una casilla vacía. El jugador analiza las relaciones entre filas y columnas para elegir la pieza que completa el patrón.",
+      "La primera versión usa símbolos y etiquetas breves, de modo que la regla no depende únicamente del color.",
+    ],
+    recommendations: [
+      "Razonamiento abstracto",
+      "Patrones de rotación, alternancia o combinación",
+      "Preguntas especiales de lógica",
+    ],
+    avoidWhen: [
+      "La regla admite más de una continuación razonable",
+      "Las piezas necesitan texto largo para distinguirse",
+      "El patrón solo funciona por diferencias de color",
+    ],
+    rules: [
+      "La matriz tiene nueve celdas y exactamente una está vacía",
+      "Se elige una opción entre cuatro piezas",
+      "Tocar una opción envía la respuesta inmediatamente",
+      "Un fallo resta el 20 % y agotar el tiempo no puntúa",
+    ],
+    authoringTips: [
+      "Define una regla verificable por filas y columnas antes de crear las opciones",
+      "Incluye distractores plausibles sin introducir otra regla válida",
+      "Usa símbolos distinguibles y etiquetas cortas que describan cada pieza",
+    ],
+    accessibility: [
+      "Etiqueta cada celda con fila, columna y nombre de pieza",
+      "No uses el color como único rasgo diferenciador",
+      "Mantén las cuatro opciones como botones amplios y accesibles por teclado",
+    ],
+    mediaSupport: ["Símbolos o texto breve", "Etiquetas accesibles por pieza"],
+    timing: {
+      recommendedSeconds: "12–20 s",
+      notes: "Reserva más tiempo para reglas que combinen dos transformaciones simultáneas.",
+    },
+    scoring: SCORING_POLICIES["logic-matrix"],
+    examples: [
+      {
+        title: "Ciclo de símbolos",
+        question: {
+          id: "guide-logic-matrix",
+          type: "logic-matrix",
+          category: "Lógica",
+          question: "¿Qué símbolo completa la matriz?",
+          pieces: [
+            { id: "circle", symbol: "●", label: "Círculo" },
+            { id: "triangle", symbol: "▲", label: "Triángulo" },
+            { id: "square", symbol: "■", label: "Cuadrado" },
+            { id: "diamond", symbol: "◆", label: "Rombo" },
+          ],
+          cells: [
+            "circle",
+            "triangle",
+            "square",
+            "triangle",
+            "square",
+            "circle",
+            "square",
+            "circle",
+            null,
+          ],
+          optionIds: ["circle", "triangle", "square", "diamond"],
+          correctOptionId: "triangle",
+          timeLimit: 15,
+          points: 130,
+          explanation:
+            "Cada fila desplaza el ciclo círculo, triángulo y cuadrado una posición. La tercera fila debe terminar con un triángulo.",
+        },
+      },
+    ],
+  },
+  "mini-sudoku": {
+    id: "mini-sudoku",
+    slug: "mini-sudoku",
+    name: "Mini-sudoku 4 × 4",
+    shortName: "Sudoku",
+    summary: "Completar las casillas vacías de un sudoku 4 × 4 con números del 1 al 4.",
+    description: [
+      "La cuadrícula contiene pistas bloqueadas y tres o cuatro casillas vacías. El jugador puede seleccionar una casilla, escribir un número, reemplazarlo o borrarlo antes de confirmar.",
+      "La solución se corrige al final: cada casilla correcta concede crédito parcial y no hay penalización por corregir un valor durante la ronda.",
+    ],
+    recommendations: [
+      "Razonamiento numérico breve",
+      "Pausas entre preguntas de conocimiento",
+      "Retos táctiles que también funcionen con teclado",
+    ],
+    avoidWhen: [
+      "Se necesita evaluar una cuadrícula de más de cuatro por cuatro",
+      "La ronda requiere candidatos o validación de errores en vivo",
+      "Hay más de cuatro huecos que completar",
+    ],
+    rules: [
+      "Cada fila, columna y bloque de 2 × 2 contiene los números del 1 al 4 una vez",
+      "Solo se pueden editar las casillas vacías",
+      "La respuesta se confirma al completar todos los huecos",
+      "Al agotarse el tiempo se evalúan los valores ya escritos",
+    ],
+    authoringTips: [
+      "Comprueba que la solución cumpla filas, columnas y bloques antes de publicarla",
+      "Deja tres o cuatro huecos y mantén las pistas idénticas a la solución",
+      "Evita configuraciones que requieran ensayo y error para resolverse",
+    ],
+    accessibility: [
+      "Cada casilla editable es un botón con fila, columna y valor accesibles",
+      "El foco visible marca la casilla seleccionada",
+      "El teclado numérico incluye botones etiquetados y una acción de borrar",
+    ],
+    mediaSupport: ["Cuadrícula numérica 4 × 4", "Teclado táctil de números 1–4"],
+    timing: {
+      recommendedSeconds: "18–30 s",
+      notes: "El bonus de velocidad se aplica al tiempo hasta confirmar; corregir valores no tiene penalización.",
+    },
+    scoring: SCORING_POLICIES["mini-sudoku"],
+    examples: [
+      {
+        title: "Cuadrícula de números",
+        question: {
+          id: "guide-mini-sudoku",
+          type: "mini-sudoku",
+          category: "Lógica",
+          question: "Completa el mini-sudoku. Puedes corregir tus valores antes de confirmar.",
+          grid: [1, null, 3, 4, 3, 4, null, 2, 2, 1, 4, null, null, 3, 2, 1],
+          solution: [1, 2, 3, 4, 3, 4, 1, 2, 2, 1, 4, 3, 4, 3, 2, 1],
+          timeLimit: 24,
+          points: 160,
+          explanation:
+            "Las cuatro casillas vacías son 2, 1, 3 y 4. Cada valor correcto suma una cuarta parte de los puntos, ajustada por la velocidad.",
+        },
+      },
+    ],
+  },
+  "mini-nonogram": {
+    id: "mini-nonogram",
+    slug: "mini-nonograma",
+    name: "Mini-nonograma 5 × 5",
+    shortName: "Nonograma",
+    summary: "Resolver una cuadrícula de pistas marcando las celdas que forman el patrón oculto.",
+    description: [
+      "Las pistas de cada fila y columna indican los grupos consecutivos de celdas rellenas. El jugador puede seleccionar una celda, rellenarla o marcarla vacía y confirmar en cualquier momento.",
+      "Solo los rellenos aportan puntuación: los correctos suman crédito y los erróneos lo reducen, sin que el resultado final pueda ser negativo.",
+    ],
+    recommendations: [
+      "Razonamiento visual y deducción",
+      "Desafíos especiales de lógica",
+      "Pausas táctiles entre preguntas de conocimiento",
+    ],
+    avoidWhen: [
+      "Se necesita una ronda de menos de treinta segundos",
+      "El diseño depende de colores en lugar de pistas numéricas",
+      "Se requieren cuadrículas mayores de 5 × 5",
+    ],
+    rules: [
+      "Cada número indica la longitud de un grupo consecutivo de celdas rellenas",
+      "Dos grupos de una misma línea están separados por al menos una celda vacía",
+      "Rellenar y vaciar una celda son acciones reversibles antes de confirmar",
+      "El timeout evalúa los rellenos marcados hasta ese momento",
+    ],
+    authoringTips: [
+      "Deriva las pistas directamente de una solución booleana 5 × 5 válida",
+      "Usa patrones reconocibles y que no requieran ensayo y error",
+      "Comprueba la solución con filas y columnas antes de publicar el contenido",
+    ],
+    accessibility: [
+      "Etiqueta cada celda con su fila, columna y estado",
+      "Muestra las pistas como números, no solo como rasgos visuales",
+      "Incluye controles de rellenar y marcar vacía utilizables con teclado y foco visible",
+    ],
+    mediaSupport: ["Cuadrícula numérica 5 × 5", "Pistas de filas y columnas"],
+    timing: {
+      recommendedSeconds: "90 s",
+      notes: "El bonus de velocidad se aplica al tiempo hasta confirmar y el borrador se conserva al agotarse el tiempo.",
+    },
+    scoring: SCORING_POLICIES["mini-nonogram"],
+    examples: [
+      {
+        title: "Patrón en cruz",
+        question: {
+          id: "guide-mini-nonogram",
+          type: "mini-nonogram",
+          category: "Lógica",
+          question: "Usa las pistas de filas y columnas para completar el patrón.",
+          solution: [
+            false, true, true, true, false,
+            true, false, true, false, true,
+            true, true, true, true, true,
+            true, false, true, false, true,
+            false, true, true, true, false,
+          ],
+          rowClues: [[3], [1, 1, 1], [5], [1, 1, 1], [3]],
+          columnClues: [[3], [1, 1, 1], [5], [1, 1, 1], [3]],
+          timeLimit: 90,
+          points: 180,
+          explanation:
+            "Las pistas forman una cruz simétrica. Los rellenos correctos suman crédito y los erróneos lo reducen hasta un mínimo de cero.",
+        },
+      },
+    ],
+  },
 } satisfies QuestionFormatCatalog;
 
 export const questionFormats = Object.values(QUESTION_FORMAT_CATALOG);

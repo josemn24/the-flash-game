@@ -30,6 +30,17 @@ export type AnswerResultDetails =
       firstMismatchIndex: number | null;
     }
   | {
+      type: "mini-sudoku";
+      correctCells: number;
+      totalCells: number;
+    }
+  | {
+      type: "mini-nonogram";
+      correctFilled: number;
+      incorrectFilled: number;
+      totalFilled: number;
+    }
+  | {
       type: "progressive-clues";
       revealedClues: number;
       totalClues: number;

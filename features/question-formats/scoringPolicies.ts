@@ -120,6 +120,32 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "logic-matrix": {
+    id: QUESTION_SCORING_POLICY["logic-matrix"],
+    label: "Acierto y velocidad",
+    summary: "Un acierto conserva entre el 50 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    partialCredit: false,
+    incorrectPenalty: true,
+    speedBonus: true,
+  },
+  "mini-sudoku": {
+    id: QUESTION_SCORING_POLICY["mini-sudoku"],
+    label: "Crédito por casilla",
+    summary:
+      "Cada casilla vacía correcta aporta su fracción de puntos, ajustada por el tiempo empleado al completar el sudoku.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
+  "mini-nonogram": {
+    id: QUESTION_SCORING_POLICY["mini-nonogram"],
+    label: "Crédito neto por relleno",
+    summary:
+      "Cada relleno correcto suma y cada relleno erróneo resta crédito; el resultado nunca baja de cero y se ajusta por velocidad.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "logic-code": {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",

@@ -13,6 +13,9 @@ export const QUESTION_FORMAT_LABELS = {
   classification: "Clasificar",
   "flash-memory": "Memoria",
   "simon-sequence": "Simon",
+  "logic-matrix": "Matriz",
+  "mini-sudoku": "Sudoku",
+  "mini-nonogram": "Nonograma",
   "logic-code": "Código lógico",
   estimation: "Estimación",
 } satisfies Record<QuestionType, string>;

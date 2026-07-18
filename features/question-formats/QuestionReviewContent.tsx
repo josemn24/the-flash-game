@@ -11,11 +11,15 @@ import {
   isFlashMemoryAnswer,
   isImageLabelingAnswer,
   isMatchingAnswer,
+  isMiniNonogramAnswer,
+  isMiniSudokuAnswer,
   isSimonSequenceAnswer,
 } from "@/lib/scoring";
 import type {
   AnswerResult,
   AnswerValue,
+  MiniSudokuAnswer,
+  MiniNonogramAnswer,
   Question,
   QuestionOfType,
   QuestionType,
@@ -434,6 +438,104 @@ function SimonSequenceReview({ question, result }: ReviewProps<QuestionOfType<"s
   );
 }
 
+function LogicMatrixReview({ question, result }: ReviewProps<QuestionOfType<"logic-matrix">>) {
+  const piecesById = new Map(question.pieces.map((piece) => [piece.id, piece]));
+  const labelFor = (pieceId: string | null) =>
+    pieceId ? (piecesById.get(pieceId)?.label ?? pieceId) : "Casilla vacía";
+  const completedCells = question.cells.map((cell) => cell ?? question.correctOptionId);
+  const answer = typeof result.answer === "string" ? result.answer : null;
+  return (
+    <div className="grid gap-3">
+      <div className={styles.logicMatrixReviewGrid} aria-label="Matriz completada">
+        {completedCells.map((pieceId, index) => {
+          const piece = piecesById.get(pieceId);
+          return (
+            <div key={index} className={styles.logicMatrixReviewCell}>
+              <span aria-hidden="true">{piece?.symbol}</span>
+              <small>{labelFor(pieceId)}</small>
+            </div>
+          );
+        })}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Tu elección</span>
+          <strong>{labelFor(answer)}</strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Pieza correcta</span>
+          <strong>{labelFor(question.correctOptionId)}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniSudokuReview({ question, result }: ReviewProps<QuestionOfType<"mini-sudoku">>) {
+  const answer: MiniSudokuAnswer | null = isMiniSudokuAnswer(result.answer)
+    ? (result.answer as MiniSudokuAnswer)
+    : null;
+  const details = result.details?.type === "mini-sudoku" ? result.details : undefined;
+  return (
+    <div className="grid gap-3">
+      <div className={styles.sudokuReviewGrid} aria-label="Sudoku completado con la solución">
+        {question.solution.map((correctValue, index) => {
+          const isBlank = question.grid[index] === null;
+          const chosenValue = isBlank ? answer?.[String(index)] : question.grid[index];
+          const status = !isBlank
+            ? styles.sudokuGiven
+            : chosenValue === correctValue
+              ? styles.sudokuCorrect
+              : styles.sudokuWrong;
+          return (
+            <div key={index} className={`${styles.sudokuReviewCell} ${status}`}>
+              <span>{correctValue}</span>
+              {isBlank && <small>Tu valor: {chosenValue ?? "—"}</small>}
+            </div>
+          );
+        })}
+      </div>
+      <div className={styles.answerBox}>
+        <span>Casillas correctas</span>
+        <strong>{details ? `${details.correctCells} de ${details.totalCells}` : "Sin datos"}</strong>
+      </div>
+    </div>
+  );
+}
+
+function MiniNonogramReview({ question, result }: ReviewProps<QuestionOfType<"mini-nonogram">>) {
+  const answer: MiniNonogramAnswer | null = isMiniNonogramAnswer(result.answer)
+    ? (result.answer as MiniNonogramAnswer)
+    : null;
+  const details = result.details?.type === "mini-nonogram" ? result.details : undefined;
+  return (
+    <div className="grid gap-3">
+      <div className={styles.nonogramReviewGrid} aria-label="Solución del nonograma">
+        {question.solution.map((isFilled, index) => {
+          const selected = answer?.[String(index)] === true;
+          const status = selected
+            ? isFilled
+              ? styles.nonogramCorrect
+              : styles.nonogramWrong
+            : isFilled
+              ? styles.nonogramMissing
+              : styles.nonogramEmpty;
+          return (
+            <div key={index} className={`${styles.nonogramReviewCell} ${status}`}>
+              <span aria-hidden="true">{isFilled ? "●" : ""}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={styles.answerBox}><span>Rellenos correctos</span><strong>{details?.correctFilled ?? 0}</strong></div>
+        <div className={styles.answerBox}><span>Rellenos erróneos</span><strong>{details?.incorrectFilled ?? 0}</strong></div>
+        <div className={styles.answerBox}><span>Total objetivo</span><strong>{details?.totalFilled ?? 0}</strong></div>
+      </div>
+    </div>
+  );
+}
+
 export const QUESTION_REVIEW_RENDERERS = {
   "multiple-choice": ChoiceReview,
   "odd-one-out": OddOneOutReview,
@@ -447,6 +549,9 @@ export const QUESTION_REVIEW_RENDERERS = {
   classification: ClassificationReview,
   "flash-memory": FlashMemoryReview,
   "simon-sequence": SimonSequenceReview,
+  "logic-matrix": LogicMatrixReview,
+  "mini-sudoku": MiniSudokuReview,
+  "mini-nonogram": MiniNonogramReview,
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,
 } satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };

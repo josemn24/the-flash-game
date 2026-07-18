@@ -11,7 +11,10 @@ import { HeatMapQuestion } from "@/components/HeatMapQuestion";
 import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
 import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
+import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
+import { MiniNonogramQuestion } from "@/components/MiniNonogramQuestion";
+import { MiniSudokuQuestion } from "@/components/MiniSudokuQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
@@ -250,6 +253,55 @@ function SimonSequenceInput({
   );
 }
 
+function LogicMatrixInput({
+  question,
+  locked,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"logic-matrix">>) {
+  return (
+    <LogicMatrixQuestion
+      pieces={question.pieces}
+      cells={question.cells}
+      optionIds={question.optionIds}
+      locked={locked}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
+function MiniSudokuInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"mini-sudoku">>) {
+  return (
+    <MiniSudokuQuestion
+      grid={question.grid}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
+function MiniNonogramInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"mini-nonogram">>) {
+  return (
+    <MiniNonogramQuestion
+      rowClues={question.rowClues}
+      columnClues={question.columnClues}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -298,6 +350,9 @@ export const QUESTION_INPUT_RENDERERS = {
   classification: ClassificationInput,
   "flash-memory": FlashMemoryInput,
   "simon-sequence": SimonSequenceInput,
+  "logic-matrix": LogicMatrixInput,
+  "mini-sudoku": MiniSudokuInput,
+  "mini-nonogram": MiniNonogramInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
 } satisfies {

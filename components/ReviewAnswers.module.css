@@ -117,6 +117,28 @@
 .answerBoxCorrect strong {
   color: var(--electric);
 }
+.sudokuReviewGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 0.8rem;
+}
+.sudokuReviewCell {
+  display: grid;
+  min-height: 3.65rem;
+  place-items: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+.sudokuReviewCell:nth-child(4n + 2) { border-right: 2px solid rgba(255, 255, 255, 0.55); }
+.sudokuReviewCell:nth-child(n + 5):nth-child(-n + 8) { border-bottom: 2px solid rgba(255, 255, 255, 0.55); }
+.sudokuReviewCell small { color: rgba(255, 255, 255, 0.46); font-family: inherit; font-size: 0.58rem; font-weight: 700; }
+.sudokuGiven { color: rgba(255, 255, 255, 0.52); }
+.sudokuCorrect { color: var(--electric); }
+.sudokuWrong { color: #ff858a; }
 .logicReviewClues {
   display: grid;
   gap: 0.4rem;
@@ -239,6 +261,53 @@
 .memoryCell > div svg {
   max-height: 100%;
 }
+.logicMatrixReviewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  max-width: 24rem;
+}
+.logicMatrixReviewCell {
+  display: grid;
+  min-height: 4.25rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  padding: 0.35rem;
+  background: rgba(255, 255, 255, 0.035);
+  text-align: center;
+}
+.logicMatrixReviewCell > span {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.logicMatrixReviewCell small {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.55rem;
+  font-weight: 800;
+}
+.nonogramReviewGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  max-width: 20rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 0.7rem;
+}
+.nonogramReviewCell {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 1rem;
+}
+.nonogramCorrect { color: var(--electric); background: rgba(215, 255, 24, 0.16); }
+.nonogramWrong { color: #ff858a; background: rgba(255, 93, 100, 0.18); }
+.nonogramMissing { color: #ffcf66; background: rgba(255, 207, 102, 0.12); }
+.nonogramEmpty { color: rgba(255, 255, 255, 0.3); }
 @media (min-width: 640px) {
   .reviewCard summary {
     gap: 1rem;

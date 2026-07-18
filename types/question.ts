@@ -211,6 +211,33 @@ export type SimonSequenceQuestion = BaseQuestion & {
   sequence: string[];
 };
 
+export type LogicMatrixPiece = {
+  id: string;
+  symbol: string;
+  label: string;
+};
+
+export type LogicMatrixQuestion = BaseQuestion & {
+  type: "logic-matrix";
+  pieces: LogicMatrixPiece[];
+  cells: Array<string | null>;
+  optionIds: string[];
+  correctOptionId: string;
+};
+
+export type MiniSudokuQuestion = BaseQuestion & {
+  type: "mini-sudoku";
+  grid: Array<number | null>;
+  solution: number[];
+};
+
+export type MiniNonogramQuestion = BaseQuestion & {
+  type: "mini-nonogram";
+  solution: boolean[];
+  rowClues: number[][];
+  columnClues: number[][];
+};
+
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
@@ -224,6 +251,9 @@ export type Question =
   | ClassificationQuestion
   | FlashMemoryQuestion
   | SimonSequenceQuestion
+  | LogicMatrixQuestion
+  | MiniSudokuQuestion
+  | MiniNonogramQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
 
@@ -234,6 +264,8 @@ export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
 export type FlashMemoryAnswer = Record<string, string>;
 export type SimonSequenceAnswer = string[];
+export type MiniSudokuAnswer = Record<string, number>;
+export type MiniNonogramAnswer = Record<string, true>;
 export type AnswerValue =
   | string
   | number
@@ -242,5 +274,7 @@ export type AnswerValue =
   | ClassificationAnswer
   | MatchingAnswer
   | FlashMemoryAnswer
+  | MiniSudokuAnswer
+  | MiniNonogramAnswer
   | HeatMapAnswer
   | ImageLabelingAnswer;

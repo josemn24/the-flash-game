@@ -15,6 +15,11 @@ import type {
   ImageLabelingAnswer,
   ImageLabelingQuestion,
   LogicCodeQuestion,
+  LogicMatrixQuestion,
+  MiniNonogramAnswer,
+  MiniNonogramQuestion,
+  MiniSudokuAnswer,
+  MiniSudokuQuestion,
   MatchingAnswer,
   MatchingQuestion,
   ProgressiveCluesQuestion,
@@ -56,6 +61,9 @@ export const QUESTION_SCORING_POLICY = {
   classification: "partial-items",
   "flash-memory": "partial-items",
   "simon-sequence": "binary-speed",
+  "logic-matrix": "binary-speed",
+  "mini-sudoku": "partial-items",
+  "mini-nonogram": "partial-items",
   "logic-code": "attempt-penalty",
   estimation: "proximity",
 } as const satisfies Record<QuestionType, ScoringPolicyId>;
@@ -95,6 +103,28 @@ export function isMatchingAnswer(answer: AnswerValue | null): answer is Matching
 
 export function isFlashMemoryAnswer(answer: AnswerValue | null): answer is FlashMemoryAnswer {
   return isRecordAnswer(answer);
+}
+
+export function isMiniSudokuAnswer(answer: AnswerValue | null): answer is MiniSudokuAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    Object.entries(answer).every(
+      ([index, value]) => Number.isInteger(Number(index)) && Number.isInteger(value),
+    )
+  );
+}
+
+export function isMiniNonogramAnswer(answer: AnswerValue | null): answer is MiniNonogramAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    Object.entries(answer).every(
+      ([index, value]) => Number.isInteger(Number(index)) && value === true,
+    )
+  );
 }
 
 export function isSimonSequenceAnswer(answer: AnswerValue | null): answer is SimonSequenceAnswer {
@@ -213,6 +243,159 @@ export function isValidSimonSequenceConfiguration(question: SimonSequenceQuestio
     question.sequence.length <= 6 &&
     question.sequence.every((step) => padIdSet.has(step))
   );
+}
+
+export function isValidLogicMatrixConfiguration(question: LogicMatrixQuestion) {
+  const pieceIds = question.pieces.map((piece) => piece.id);
+  const pieceIdSet = new Set(pieceIds);
+  const emptyCells = question.cells.filter((cell) => cell === null).length;
+  return (
+    question.pieces.length > 0 &&
+    new Set(pieceIds).size === pieceIds.length &&
+    question.pieces.every(
+      (piece) =>
+        Boolean(piece.id.trim()) && Boolean(piece.symbol.trim()) && Boolean(piece.label.trim()),
+    ) &&
+    question.cells.length === 9 &&
+    emptyCells === 1 &&
+    question.cells.every((cell) => cell === null || pieceIdSet.has(cell)) &&
+    question.optionIds.length === 4 &&
+    new Set(question.optionIds).size === question.optionIds.length &&
+    question.optionIds.every((optionId) => pieceIdSet.has(optionId)) &&
+    pieceIdSet.has(question.correctOptionId) &&
+    question.optionIds.includes(question.correctOptionId)
+  );
+}
+
+function isValidMiniSudokuUnit(values: number[]) {
+  return (
+    values.length === 4 &&
+    values.every((value) => Number.isInteger(value) && value >= 1 && value <= 4) &&
+    new Set(values).size === 4
+  );
+}
+
+export function isValidMiniSudokuConfiguration(question: MiniSudokuQuestion) {
+  if (question.grid.length !== 16 || question.solution.length !== 16) return false;
+
+  const blanks = question.grid.filter((value) => value === null).length;
+  if (blanks < 3 || blanks > 4) return false;
+
+  const solutionIsValid = Array.from({ length: 4 }, (_, groupIndex) => {
+    const row = question.solution.slice(groupIndex * 4, groupIndex * 4 + 4);
+    const column = Array.from(
+      { length: 4 },
+      (_, rowIndex) => question.solution[rowIndex * 4 + groupIndex],
+    );
+    const blockRow = Math.floor(groupIndex / 2) * 2;
+    const blockColumn = (groupIndex % 2) * 2;
+    const block = Array.from(
+      { length: 4 },
+      (_, offset) =>
+        question.solution[
+          (blockRow + Math.floor(offset / 2)) * 4 + blockColumn + (offset % 2)
+        ],
+    );
+    return isValidMiniSudokuUnit(row) && isValidMiniSudokuUnit(column) && isValidMiniSudokuUnit(block);
+  }).every(Boolean);
+
+  return (
+    solutionIsValid &&
+    question.grid.every(
+      (value, index) =>
+        value === null ||
+        (Number.isInteger(value) && value >= 1 && value <= 4 && value === question.solution[index]),
+    )
+  );
+}
+
+export function calculateMiniSudokuMetrics(question: MiniSudokuQuestion, answer: MiniSudokuAnswer) {
+  const blankIndexes = question.grid.flatMap((value, index) => (value === null ? [index] : []));
+  const validIndexes = new Set(blankIndexes.map(String));
+  const entries = Object.entries(answer);
+  const valid =
+    isValidMiniSudokuConfiguration(question) &&
+    entries.length <= blankIndexes.length &&
+    entries.every(
+      ([index, value]) =>
+        validIndexes.has(index) && Number.isInteger(value) && value >= 1 && value <= 4,
+    );
+  const correctCells = valid
+    ? blankIndexes.filter((index) => answer[String(index)] === question.solution[index]).length
+    : 0;
+  return {
+    correctCells,
+    totalCells: blankIndexes.length,
+    complete: entries.length === blankIndexes.length,
+    valid,
+  };
+}
+
+function deriveNonogramClues(values: boolean[]) {
+  const clues: number[] = [];
+  let runLength = 0;
+  for (const value of values) {
+    if (value) {
+      runLength += 1;
+    } else if (runLength > 0) {
+      clues.push(runLength);
+      runLength = 0;
+    }
+  }
+  if (runLength > 0) clues.push(runLength);
+  return clues;
+}
+
+function sameNumberList(left: number[], right: number[]) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+export function isValidMiniNonogramConfiguration(question: MiniNonogramQuestion) {
+  if (
+    question.solution.length !== 25 ||
+    question.rowClues.length !== 5 ||
+    question.columnClues.length !== 5 ||
+    !question.solution.every((value) => typeof value === "boolean")
+  ) {
+    return false;
+  }
+
+  const cluesAreValid = [...question.rowClues, ...question.columnClues].every((clues) =>
+    clues.every((clue) => Number.isInteger(clue) && clue > 0),
+  );
+  if (!cluesAreValid) return false;
+
+  return (
+    question.rowClues.every((clues, row) =>
+      sameNumberList(clues, deriveNonogramClues(question.solution.slice(row * 5, row * 5 + 5))),
+    ) &&
+    question.columnClues.every((clues, column) =>
+      sameNumberList(
+        clues,
+        deriveNonogramClues(Array.from({ length: 5 }, (_, row) => question.solution[row * 5 + column])),
+      ),
+    )
+  );
+}
+
+export function calculateMiniNonogramMetrics(
+  question: MiniNonogramQuestion,
+  answer: MiniNonogramAnswer,
+) {
+  const entries = Object.entries(answer);
+  const validIndexes = new Set(Array.from({ length: 25 }, (_, index) => String(index)));
+  const valid =
+    isValidMiniNonogramConfiguration(question) &&
+    entries.every(([index, value]) => validIndexes.has(index) && value === true);
+  const filledIndexes = valid ? entries.map(([index]) => Number(index)) : [];
+  const correctFilled = filledIndexes.filter((index) => question.solution[index]).length;
+  const incorrectFilled = filledIndexes.length - correctFilled;
+  const totalFilled = question.solution.filter(Boolean).length;
+  const exact =
+    valid &&
+    filledIndexes.length === totalFilled &&
+    question.solution.every((filled, index) => filled === filledIndexes.includes(index));
+  return { correctFilled, incorrectFilled, totalFilled, exact, valid };
 }
 
 export function findSimonSequenceMismatch(sequence: string[], answer: SimonSequenceAnswer) {
@@ -347,6 +530,21 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
         answer.length === question.sequence.length &&
         findSimonSequenceMismatch(question.sequence, answer) === null
       );
+    case "logic-matrix":
+      return (
+        typeof answer === "string" &&
+        isValidLogicMatrixConfiguration(question) &&
+        answer === question.correctOptionId
+      );
+    case "mini-sudoku": {
+      if (!isMiniSudokuAnswer(answer)) return false;
+      const metrics = calculateMiniSudokuMetrics(question, answer);
+      return metrics.valid && metrics.complete && metrics.correctCells === metrics.totalCells;
+    }
+    case "mini-nonogram": {
+      if (!isMiniNonogramAnswer(answer)) return false;
+      return calculateMiniNonogramMetrics(question, answer).exact;
+    }
     case "ordering":
       return (
         Array.isArray(answer) &&
@@ -442,7 +640,8 @@ export function calculateQuestionScore(question: Question, correct: boolean, tim
   if (
     question.type === "multiple-choice" ||
     question.type === "odd-one-out" ||
-    question.type === "ordering"
+    question.type === "ordering" ||
+    question.type === "logic-matrix"
   ) {
     return -Math.round(question.points * 0.2);
   }
@@ -537,6 +736,63 @@ function evaluateFlashMemory(
       type: "flash-memory",
       correctPlacements: metrics.correctPlacements,
       totalPlacements: metrics.totalPlacements,
+    },
+  };
+}
+
+function evaluateMiniSudoku(
+  question: MiniSudokuQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isMiniSudokuAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateMiniSudokuMetrics(question, answer);
+  const isCorrect = metrics.valid && metrics.complete && metrics.correctCells === metrics.totalCells;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : metrics.correctCells > 0 ? "partial" : "incorrect",
+    points: calculateProportionalScore(
+      question.points,
+      metrics.correctCells,
+      metrics.totalCells,
+      calculateSpeedMultiplier(timeUsed, question.timeLimit),
+    ),
+    details: {
+      type: "mini-sudoku",
+      correctCells: metrics.correctCells,
+      totalCells: metrics.totalCells,
+    },
+  };
+}
+
+function evaluateMiniNonogram(
+  question: MiniNonogramQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isMiniNonogramAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateMiniNonogramMetrics(question, answer);
+  const netFilled = Math.max(0, metrics.correctFilled - metrics.incorrectFilled);
+  return {
+    isCorrect: metrics.exact,
+    status: metrics.exact ? "correct" : netFilled > 0 ? "partial" : "incorrect",
+    points: calculateProportionalScore(
+      question.points,
+      netFilled,
+      metrics.totalFilled,
+      calculateSpeedMultiplier(timeUsed, question.timeLimit),
+    ),
+    details: {
+      type: "mini-nonogram",
+      correctFilled: metrics.correctFilled,
+      incorrectFilled: metrics.incorrectFilled,
+      totalFilled: metrics.totalFilled,
     },
   };
 }
@@ -735,6 +991,12 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       if (question.type === "flash-memory") {
         return evaluateFlashMemory(question, answer, timeUsed);
       }
+      if (question.type === "mini-sudoku") {
+        return evaluateMiniSudoku(question, answer, timeUsed);
+      }
+      if (question.type === "mini-nonogram") {
+        return evaluateMiniNonogram(question, answer, timeUsed);
+      }
       throw new Error(`Unsupported partial-items question: ${question.type}`);
     case "attempt-penalty": {
       if (question.type !== "logic-code") {
@@ -854,7 +1116,11 @@ export function evaluateAnswer({
     ...evaluation,
     status: matchingWithoutProgress || discardedSpatialDraft ? "unanswered" : evaluation.status,
     points:
-      timedOut && question.type !== "matching" && question.type !== "flash-memory"
+      timedOut &&
+      question.type !== "matching" &&
+      question.type !== "flash-memory" &&
+      question.type !== "mini-sudoku" &&
+      question.type !== "mini-nonogram"
         ? 0
         : evaluation.points,
     timeUsed: safeTime,

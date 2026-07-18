@@ -145,7 +145,11 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
       submitAnswer(draftAnswerRef.current, true);
       return;
     }
-    if (question.type === "flash-memory") {
+    if (
+      question.type === "flash-memory" ||
+      question.type === "mini-sudoku" ||
+      question.type === "mini-nonogram"
+    ) {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }

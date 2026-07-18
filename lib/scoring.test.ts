@@ -5,6 +5,8 @@ import {
   calculateAnswerScore,
   calculateEstimationMetrics,
   calculateFlashMemoryMetrics,
+  calculateMiniNonogramMetrics,
+  calculateMiniSudokuMetrics,
   calculateHeatMapMetrics,
   calculateImageLabelingMetrics,
   calculateProgressiveCluesMetrics,
@@ -12,7 +14,12 @@ import {
   evaluateAnswer,
   isAnswerCorrect,
   isHeatMapAnswer,
+  isMiniNonogramAnswer,
+  isMiniSudokuAnswer,
   isSimonSequenceAnswer,
+  isValidLogicMatrixConfiguration,
+  isValidMiniNonogramConfiguration,
+  isValidMiniSudokuConfiguration,
   isValidFlashMemoryConfiguration,
   isValidSimonSequenceConfiguration,
   isImageLabelingAnswer,
@@ -76,6 +83,31 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "simon-sequence":
       correctAnswer = example.sequence;
       incorrectAnswer = [...example.sequence.slice(0, 2), "__incorrect__"];
+      incorrectPoints = 0;
+      break;
+    case "logic-matrix":
+      correctAnswer = example.correctOptionId;
+      incorrectAnswer = example.optionIds.find((optionId) => optionId !== example.correctOptionId)!;
+      incorrectPoints = -Math.round(example.points * 0.2);
+      break;
+    case "mini-sudoku":
+      correctAnswer = Object.fromEntries(
+        example.grid.flatMap((value, index) =>
+          value === null ? [[String(index), example.solution[index]]] : [],
+        ),
+      );
+      incorrectAnswer = Object.fromEntries(
+        example.grid.flatMap((value, index) =>
+          value === null ? [[String(index), (example.solution[index] % 4) + 1]] : [],
+        ),
+      );
+      incorrectPoints = 0;
+      break;
+    case "mini-nonogram":
+      correctAnswer = Object.fromEntries(
+        example.solution.flatMap((isFilled, index) => (isFilled ? [[String(index), true]] : [])),
+      );
+      incorrectAnswer = { "0": true };
       incorrectPoints = 0;
       break;
     case "ordering":
@@ -611,6 +643,68 @@ describe("question evaluation", () => {
     });
   });
 
+  it("scores logic-matrix answers and rejects malformed matrix configurations", () => {
+    const question = QUESTION_FORMAT_CATALOG["logic-matrix"].examples[0].question;
+    expect(
+      evaluateAnswer({ question, answer: question.correctOptionId, timeUsed: 0 }),
+    ).toMatchObject({
+      status: "correct",
+      points: 130,
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: question.correctOptionId,
+        timeUsed: question.timeLimit,
+      }),
+    ).toMatchObject({ status: "correct", points: 65 });
+    expect(evaluateAnswer({ question, answer: "circle", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: -26,
+    });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: question.timeLimit,
+    });
+
+    expect(isValidLogicMatrixConfiguration(question)).toBe(true);
+    expect(
+      isValidLogicMatrixConfiguration({ ...question, cells: question.cells.slice(0, 8) }),
+    ).toBe(false);
+    expect(
+      isValidLogicMatrixConfiguration({
+        ...question,
+        cells: question.cells.map((cell) => cell ?? "triangle"),
+      }),
+    ).toBe(false);
+    expect(
+      isValidLogicMatrixConfiguration({
+        ...question,
+        cells: question.cells.map((cell, index) => (index === 0 ? null : cell)),
+      }),
+    ).toBe(false);
+    expect(
+      isValidLogicMatrixConfiguration({
+        ...question,
+        cells: [...question.cells.slice(0, 8), "unknown"],
+      }),
+    ).toBe(false);
+    expect(
+      isValidLogicMatrixConfiguration({
+        ...question,
+        optionIds: ["circle", "circle", "square", "diamond"],
+      }),
+    ).toBe(false);
+    expect(
+      isValidLogicMatrixConfiguration({
+        ...question,
+        pieces: [...question.pieces, { id: "star", symbol: "★", label: "Estrella" }],
+        correctOptionId: "star",
+      }),
+    ).toBe(false);
+  });
+
   it("preserves matching progress on timeout without rewarding wrong pairs", () => {
     const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     expect(
@@ -627,6 +721,136 @@ describe("question evaluation", () => {
     expect(evaluateAnswer({ question, answer: null, timeUsed: 20, timedOut: true })).toMatchObject({
       status: "unanswered",
       points: 0,
+    });
+  });
+
+  it("scores mini-sudoku cells, keeps timeout drafts, and validates its solution", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-sudoku"].examples[0].question;
+    const completeAnswer = { "1": 2, "6": 1, "11": 3, "12": 4 };
+    const partialAnswer = { "1": 2, "6": 4, "11": 3, "12": 1 };
+
+    expect(isMiniSudokuAnswer(completeAnswer)).toBe(true);
+    expect(isMiniSudokuAnswer({ "1": "2" })).toBe(false);
+    expect(calculateMiniSudokuMetrics(question, completeAnswer)).toMatchObject({
+      correctCells: 4,
+      totalCells: 4,
+      complete: true,
+      valid: true,
+    });
+    expect(evaluateAnswer({ question, answer: completeAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 160,
+      details: { type: "mini-sudoku", correctCells: 4, totalCells: 4 },
+    });
+    expect(
+      evaluateAnswer({ question, answer: completeAnswer, timeUsed: question.timeLimit }),
+    ).toMatchObject({ status: "correct", points: 80 });
+    expect(evaluateAnswer({ question, answer: partialAnswer, timeUsed: question.timeLimit })).toMatchObject({
+      status: "partial",
+      points: 40,
+    });
+    expect(evaluateAnswer({ question, answer: { "1": 3 }, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(
+      evaluateAnswer({ question, answer: { "1": 2, "6": 4 }, timeUsed: 99, timedOut: true }),
+    ).toMatchObject({
+      status: "partial",
+      points: 20,
+      timeUsed: question.timeLimit,
+      details: { type: "mini-sudoku", correctCells: 1, totalCells: 4 },
+    });
+
+    expect(isValidMiniSudokuConfiguration(question)).toBe(true);
+    expect(isValidMiniSudokuConfiguration({ ...question, grid: question.grid.slice(0, 15) })).toBe(
+      false,
+    );
+    expect(
+      isValidMiniSudokuConfiguration({ ...question, solution: [...question.solution.slice(0, 1), 5, ...question.solution.slice(2)] }),
+    ).toBe(false);
+    expect(
+      isValidMiniSudokuConfiguration({ ...question, grid: question.solution }),
+    ).toBe(false);
+    expect(
+      isValidMiniSudokuConfiguration({ ...question, grid: [null, null, null, null, null, ...question.grid.slice(5)] }),
+    ).toBe(false);
+    expect(
+      isValidMiniSudokuConfiguration({ ...question, grid: [2, ...question.grid.slice(1)] }),
+    ).toBe(false);
+    expect(
+      isValidMiniSudokuConfiguration({ ...question, solution: [1, 1, ...question.solution.slice(2)] }),
+    ).toBe(false);
+    expect(calculateMiniSudokuMetrics(question, { "1": 5 })).toMatchObject({
+      correctCells: 0,
+      valid: false,
+    });
+  });
+
+  it("scores mini-nonogram net fills, preserves drafts, and validates clues", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-nonogram"].examples[0].question;
+    const completeAnswer = Object.fromEntries(
+      question.solution.flatMap((isFilled, index) => (isFilled ? [[String(index), true]] : [])),
+    );
+    const partialAnswer = { "1": true, "2": true, "0": true };
+
+    expect(isMiniNonogramAnswer(completeAnswer)).toBe(true);
+    expect(isMiniNonogramAnswer({ "1": false })).toBe(false);
+    expect(calculateMiniNonogramMetrics(question, partialAnswer)).toMatchObject({
+      correctFilled: 2,
+      incorrectFilled: 1,
+      totalFilled: 17,
+      valid: true,
+    });
+    expect(evaluateAnswer({ question, answer: completeAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 180,
+      details: { type: "mini-nonogram", correctFilled: 17, incorrectFilled: 0, totalFilled: 17 },
+    });
+    expect(
+      evaluateAnswer({ question, answer: completeAnswer, timeUsed: question.timeLimit }),
+    ).toMatchObject({ status: "correct", points: 90 });
+    expect(evaluateAnswer({ question, answer: partialAnswer, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 11,
+    });
+    expect(evaluateAnswer({ question, answer: { "0": true }, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question, answer: {}, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(
+      evaluateAnswer({ question, answer: partialAnswer, timeUsed: 99, timedOut: true }),
+    ).toMatchObject({
+      status: "partial",
+      points: 5,
+      timeUsed: question.timeLimit,
+      details: { type: "mini-nonogram", correctFilled: 2, incorrectFilled: 1, totalFilled: 17 },
+    });
+
+    expect(isValidMiniNonogramConfiguration(question)).toBe(true);
+    expect(
+      isValidMiniNonogramConfiguration({ ...question, solution: question.solution.slice(0, 24) }),
+    ).toBe(false);
+    expect(
+      isValidMiniNonogramConfiguration({ ...question, solution: [...question.solution.slice(0, 1), 1, ...question.solution.slice(2)] }),
+    ).toBe(false);
+    expect(
+      isValidMiniNonogramConfiguration({ ...question, rowClues: question.rowClues.slice(0, 4) }),
+    ).toBe(false);
+    expect(
+      isValidMiniNonogramConfiguration({ ...question, columnClues: [[0], ...question.columnClues.slice(1)] }),
+    ).toBe(false);
+    expect(
+      isValidMiniNonogramConfiguration({ ...question, rowClues: [[2], ...question.rowClues.slice(1)] }),
+    ).toBe(false);
+    expect(calculateMiniNonogramMetrics(question, { "25": true })).toMatchObject({
+      correctFilled: 0,
+      incorrectFilled: 0,
+      valid: false,
     });
   });
 

@@ -174,7 +174,11 @@ export function useGameSession(stage: Stage) {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }
-    if (question?.type === "flash-memory") {
+    if (
+      question?.type === "flash-memory" ||
+      question?.type === "mini-sudoku" ||
+      question?.type === "mini-nonogram"
+    ) {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }

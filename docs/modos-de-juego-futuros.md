@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, catorce formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, diecisiete formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -24,6 +24,9 @@ La aplicación soporta de forma nativa:
 - etiquetar imagen con asociación múltiple o identificación de una única zona.
 - memoria relámpago con reconstrucción espacial de una cuadrícula tras una exposición breve.
 - Simon con repetición visual de una secuencia fija de símbolos.
+- matrices lógicas con una pieza faltante y opciones de respuesta.
+- mini-sudoku 4 × 4 con edición previa a confirmar y crédito por casilla correcta.
+- mini-nonograma 5 × 5 con pistas de filas y columnas, edición reversible y crédito neto por relleno.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -156,20 +159,21 @@ Se reproduce una secuencia de colores, sonidos, símbolos, posiciones o ritmos y
 - **Interacción actual:** cuatro botones con símbolo, etiqueta y color se iluminan siguiendo una secuencia fija de cuatro a seis pasos. Al terminar, el jugador la repite; un error termina la ronda.
 - **Puntuación actual:** la reproducción no cuenta para el cronómetro. Un acierto exacto recibe puntos por velocidad durante la repetición; un error o timeout no puntúan.
 
-### 15. Matrices lógicas — Futura
+### 15. Matrices lógicas — Implementada
 
 Una cuadrícula de símbolos o imágenes contiene una casilla vacía; el jugador elige la opción que completa el patrón.
 
 - **Encaje:** aporta razonamiento abstracto y escala de niveles sencillos a exigentes.
-- **Uso recomendado:** etapas de lógica o preguntas especiales.
+- **Interacción actual:** una matriz 3 × 3 presenta ocho símbolos y una casilla vacía. El jugador elige, entre cuatro opciones, la pieza que completa el patrón.
+- **Puntuación actual:** un acierto exacto premia la velocidad; un fallo resta el 20 % y el timeout no puntúa.
 
-### 16. Mini-nonograma — Futura
+### 16. Mini-nonograma — Implementada
 
-El jugador completa una cuadrícula a partir de pistas numéricas.
+El jugador completa una cuadrícula 5 × 5 a partir de las pistas numéricas de sus filas y columnas.
 
-- **Formato recomendado:** cuadrículas de 5 × 5 o 7 × 7, diseños simples, uno a tres minutos y penalización por casillas incorrectas.
+- **Interacción actual:** el jugador selecciona celdas y puede rellenarlas o marcarlas vacías antes de confirmar; también puede enviar una solución incompleta.
+- **Puntuación actual:** los rellenos correctos suman crédito y los rellenos erróneos lo restan, con un mínimo de cero y ajuste por velocidad. El timeout evalúa el borrador.
 - **Encaje:** diferenciador y más profundo que una pregunta convencional.
-- **Riesgo:** necesita interfaz, tutorial y generación de puzles cuidadosa.
 
 ### 17. Laberinto contrarreloj — Futura
 
@@ -178,12 +182,13 @@ El jugador guía un elemento desde la entrada a la salida mediante arrastre, bot
 - **Encaje:** mide con claridad tiempo y precisión.
 - **Riesgo:** un control táctil impreciso mediría frustración, no habilidad.
 
-### 18. Mini-sudoku — Futura
+### 18. Mini-sudoku — Implementada
 
-Adaptación del sudoku tradicional: cuadrícula 4 × 4, completar casillas críticas, detectar un número erróneo, elegir la cuadrícula válida o resolver una región.
+Adaptación del sudoku tradicional en una cuadrícula 4 × 4: el jugador completa tres o cuatro casillas vacías usando números del 1 al 4.
 
 - **Encaje:** conocido, objetivo y competitivo.
-- **Uso recomendado:** desafío especial o etapa temática de lógica, no formato frecuente.
+- **Interacción actual:** las pistas quedan bloqueadas; se selecciona una casilla vacía y se escribe, reemplaza o borra un número antes de confirmar la cuadrícula completa.
+- **Puntuación actual:** cada casilla correcta recibe crédito parcial ajustado por velocidad. El timeout evalúa el borrador y no hay penalización por corregir valores.
 
 ### 19. Rompecabezas deslizante — Futura
 
@@ -329,7 +334,7 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 | Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                             |
 | Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
 | Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco                                              | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
-| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, laberinto, mini-sudoku, rompecabezas y tangram                 | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
 | Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                     |
 | Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.                |
 | Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                 |
