@@ -4,10 +4,14 @@ import { SCORING_POLICIES } from "@/features/question-formats/scoringPolicies";
 import {
   calculateAnswerScore,
   calculateEstimationMetrics,
+  calculateHeatMapMetrics,
+  calculateImageLabelingMetrics,
   calculateProgressiveCluesMetrics,
   calculateTotalScore,
   evaluateAnswer,
   isAnswerCorrect,
+  isHeatMapAnswer,
+  isImageLabelingAnswer,
   QUESTION_SCORING_POLICY,
 } from "@/lib/scoring";
 import type { AnswerValue, QuestionType } from "@/types/game";
@@ -18,6 +22,23 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ example }) => 
   let incorrectPoints: number;
 
   switch (example.type) {
+    case "heat-map":
+      correctAnswer = example.target;
+      incorrectAnswer = { x: 0, y: 0 };
+      incorrectPoints = 0;
+      break;
+    case "image-labeling":
+      correctAnswer = Object.fromEntries(
+        example.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
+      );
+      incorrectAnswer = Object.fromEntries(
+        example.anchors.map((anchor, index) => [
+          anchor.id,
+          example.labels[(index + 1) % example.labels.length].id,
+        ]),
+      );
+      incorrectPoints = 0;
+      break;
     case "matching":
       correctAnswer = Object.fromEntries(
         example.leftItems.map((item) => [item.id, item.correctMatchId]),
@@ -175,6 +196,159 @@ describe("question evaluation", () => {
       availablePoints: 70,
     });
     expect(calculateProgressiveCluesMetrics(question, Number.NaN).revealedClues).toBe(1);
+  });
+
+  it("awards full heat-map accuracy inside the target zone", () => {
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const center = question.target;
+    const nearEdge = {
+      x:
+        question.target.x +
+        question.fullCreditRadius * (question.surface.height / question.surface.width) * 0.95,
+      y: question.target.y,
+    };
+
+    expect(evaluateAnswer({ question, answer: center, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 140,
+      details: { type: "heat-map", accuracy: 1 },
+    });
+    expect(evaluateAnswer({ question, answer: nearEdge, timeUsed: 15 })).toMatchObject({
+      status: "correct",
+      points: 70,
+    });
+  });
+
+  it("applies linear heat-map falloff before the speed multiplier", () => {
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const midpointDistance = (question.fullCreditRadius + question.toleranceRadius) / 2;
+    const shortSide = Math.min(question.surface.width, question.surface.height);
+    const answer = {
+      x: question.target.x,
+      y: question.target.y + midpointDistance / (question.surface.height / shortSide),
+    };
+    const metrics = calculateHeatMapMetrics(question, answer);
+    expect(metrics.distance).toBeCloseTo(midpointDistance);
+    expect(metrics.accuracy).toBeCloseTo(0.5);
+    expect(evaluateAnswer({ question, answer, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 70,
+    });
+    expect(evaluateAnswer({ question, answer, timeUsed: question.timeLimit })).toMatchObject({
+      status: "partial",
+      points: 35,
+    });
+  });
+
+  it("normalizes heat-map distance across different surface aspect ratios", () => {
+    const base = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const landscape = {
+      ...base,
+      surface: { ...base.surface, width: 1000, height: 500 },
+      target: { x: 0.5, y: 0.5 },
+    };
+    const portrait = {
+      ...base,
+      surface: { ...base.surface, width: 500, height: 1000 },
+      target: { x: 0.5, y: 0.5 },
+    };
+    expect(calculateHeatMapMetrics(landscape, { x: 0.6, y: 0.5 }).distance).toBeCloseTo(0.2);
+    expect(calculateHeatMapMetrics(portrait, { x: 0.5, y: 0.6 }).distance).toBeCloseTo(0.2);
+  });
+
+  it("clamps heat-map coordinates and rejects malformed answers", () => {
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    expect(calculateHeatMapMetrics(question, { x: 2, y: -1 }).selectedPoint).toEqual({
+      x: 1,
+      y: 0,
+    });
+    expect(isHeatMapAnswer({ x: Number.NaN, y: 0.5 })).toBe(false);
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { x: Number.NaN, y: 0.5 },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+  });
+
+  it("discards timed-out heat-map drafts", () => {
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: question.target,
+        timeUsed: 0,
+        timedOut: true,
+      }),
+    ).toMatchObject({
+      status: "unanswered",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: 15,
+    });
+  });
+
+  it("scores complete image-labeling answers by correct association and speed", () => {
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const complete = Object.fromEntries(
+      question.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
+    );
+    const partial = { ...complete, head: "torso-label", torso: "head-label" };
+    expect(evaluateAnswer({ question, answer: complete, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 160,
+      details: { type: "image-labeling", correctLabels: 5, totalLabels: 5 },
+    });
+    expect(evaluateAnswer({ question, answer: complete, timeUsed: 25 })).toMatchObject({
+      status: "correct",
+      points: 80,
+    });
+    expect(evaluateAnswer({ question, answer: partial, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 96,
+      details: { correctLabels: 3, totalLabels: 5 },
+    });
+  });
+
+  it("rejects incomplete, unknown and duplicated image-labeling associations", () => {
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const incomplete = { head: "head-label" };
+    const unknown = Object.fromEntries(
+      question.anchors.map((anchor) => [
+        anchor.id,
+        anchor.id === "head" ? "unknown" : anchor.correctLabelId,
+      ]),
+    );
+    const duplicated = Object.fromEntries(
+      question.anchors.map((anchor) => [anchor.id, "head-label"]),
+    );
+    expect(isImageLabelingAnswer(incomplete)).toBe(true);
+    expect(calculateImageLabelingMetrics(question, incomplete).valid).toBe(false);
+    expect(evaluateAnswer({ question, answer: incomplete, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(calculateImageLabelingMetrics(question, unknown).valid).toBe(false);
+    expect(calculateImageLabelingMetrics(question, duplicated).valid).toBe(false);
+  });
+
+  it("discards timed-out image-labeling drafts", () => {
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const complete = Object.fromEntries(
+      question.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
+    );
+    expect(
+      evaluateAnswer({ question, answer: complete, timeUsed: 99, timedOut: true }),
+    ).toMatchObject({ status: "unanswered", points: 0, timeUsed: 25 });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: 25,
+    });
   });
 
   it("preserves the speed floor and incorrect penalties", () => {

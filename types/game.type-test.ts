@@ -91,6 +91,45 @@ type ProgressiveCluesWithoutClues = Omit<ValidProgressiveClues, "clues">;
 type ProgressiveCluesWithoutPenalty = Omit<ValidProgressiveClues, "cluePenalty">;
 type ProgressiveCluesWithoutAnswer = Omit<ValidProgressiveClues, "correctAnswer">;
 
+type ValidHeatMap = {
+  id: "valid-heat-map";
+  type: "heat-map";
+  category: "Test";
+  question: "Point to the target";
+  surface: { src: "/target.svg"; alt: "Target diagram"; width: 600; height: 720 };
+  target: { x: 0.5; y: 0.5 };
+  targetLabel: "Center";
+  fullCreditRadius: 0.1;
+  toleranceRadius: 0.25;
+  timeLimit: 15;
+  points: 100;
+  explanation: "The target is in the center";
+};
+
+type HeatMapWithoutSurface = Omit<ValidHeatMap, "surface">;
+type HeatMapWithoutTarget = Omit<ValidHeatMap, "target">;
+type HeatMapWithoutRadii = Omit<ValidHeatMap, "fullCreditRadius" | "toleranceRadius">;
+
+type ValidImageLabeling = {
+  id: "valid-image-labeling";
+  type: "image-labeling";
+  category: "Test";
+  question: "Label the image";
+  surface: { src: "/diagram.svg"; alt: "Diagram"; width: 600; height: 720 };
+  anchors: [{ id: "top"; point: { x: 0.5; y: 0.2 }; correctLabelId: "top-label" }];
+  labels: [{ id: "top-label"; label: "Top" }];
+  timeLimit: 20;
+  points: 100;
+  explanation: "The top label belongs at the top";
+};
+
+type ImageLabelingWithoutSurface = Omit<ValidImageLabeling, "surface">;
+type ImageLabelingWithoutAnchors = Omit<ValidImageLabeling, "anchors">;
+type ImageLabelingWithoutLabels = Omit<ValidImageLabeling, "labels">;
+type ImageLabelingWithoutCorrectReference = Omit<ValidImageLabeling, "anchors"> & {
+  anchors: [{ id: "top"; point: { x: 0.5; y: 0.2 } }];
+};
+
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
   IsNotAssignable<MultipleChoiceWithoutOptions, Question>
@@ -121,4 +160,21 @@ export type RejectsProgressiveCluesWithoutPenalty = Assert<
 >;
 export type RejectsProgressiveCluesWithoutAnswer = Assert<
   IsNotAssignable<ProgressiveCluesWithoutAnswer, Question>
+>;
+export type AcceptsValidHeatMap = Assert<IsAssignable<ValidHeatMap, Question>>;
+export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithoutSurface, Question>>;
+export type RejectsHeatMapWithoutTarget = Assert<IsNotAssignable<HeatMapWithoutTarget, Question>>;
+export type RejectsHeatMapWithoutRadii = Assert<IsNotAssignable<HeatMapWithoutRadii, Question>>;
+export type AcceptsValidImageLabeling = Assert<IsAssignable<ValidImageLabeling, Question>>;
+export type RejectsImageLabelingWithoutSurface = Assert<
+  IsNotAssignable<ImageLabelingWithoutSurface, Question>
+>;
+export type RejectsImageLabelingWithoutAnchors = Assert<
+  IsNotAssignable<ImageLabelingWithoutAnchors, Question>
+>;
+export type RejectsImageLabelingWithoutLabels = Assert<
+  IsNotAssignable<ImageLabelingWithoutLabels, Question>
+>;
+export type RejectsImageLabelingWithoutCorrectReference = Assert<
+  IsNotAssignable<ImageLabelingWithoutCorrectReference, Question>
 >;

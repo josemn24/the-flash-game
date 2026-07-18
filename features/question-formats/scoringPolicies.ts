@@ -62,6 +62,24 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "heat-map": {
+    id: QUESTION_SCORING_POLICY["heat-map"],
+    label: "Precisión espacial",
+    summary:
+      "La zona objetivo concede precisión completa; alrededor, los puntos disminuyen con la distancia y se ajustan por velocidad.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
+  "image-labeling": {
+    id: QUESTION_SCORING_POLICY["image-labeling"],
+    label: "Crédito por etiqueta",
+    summary:
+      "Cada zona correctamente etiquetada aporta su fracción de puntos, ajustada por el tiempo empleado.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   ordering: {
     id: QUESTION_SCORING_POLICY.ordering,
     label: "Secuencia exacta",

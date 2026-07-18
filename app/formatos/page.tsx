@@ -9,7 +9,7 @@ import { questionFormats } from "@/features/question-formats/catalog";
 export const metadata: Metadata = {
   title: "Biblioteca de formatos — The Flash",
   description:
-    "Reglas, puntuación y recomendaciones de los diez formatos de pregunta de The Flash.",
+    "Reglas, puntuación y recomendaciones de los doce formatos de pregunta de The Flash.",
 };
 
 export default function FormatsPage() {
@@ -19,7 +19,7 @@ export default function FormatsPage() {
       <div className={styles.page}>
         <SiteHeader />
         <header className="pt-16 sm:pt-24">
-          <p className={styles.eyebrow}>Manual de juego · 10 formatos</p>
+          <p className={styles.eyebrow}>Manual de juego · 12 formatos</p>
           <h1 className={styles.title}>Biblioteca de formatos</h1>
           <p className={styles.lead}>
             Una guía para entender cómo funciona cada tipo de pregunta, cuándo utilizarlo y cómo

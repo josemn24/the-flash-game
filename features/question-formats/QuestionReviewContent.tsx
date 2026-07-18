@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
+import { HeatMapSurface } from "@/components/HeatMapQuestion";
+import { ImageLabelingReviewSurface } from "@/components/ImageLabelingQuestion";
 import styles from "@/components/ReviewAnswers.module.css";
-import { isClassificationAnswer, isMatchingAnswer } from "@/lib/scoring";
+import { isClassificationAnswer, isImageLabelingAnswer, isMatchingAnswer } from "@/lib/scoring";
 import type {
   AnswerResult,
   AnswerValue,
@@ -124,6 +126,64 @@ function ProgressiveCluesReview({
   );
 }
 
+function HeatMapReview({ question, result }: ReviewProps<QuestionOfType<"heat-map">>) {
+  const details = result.details?.type === "heat-map" ? result.details : undefined;
+
+  return (
+    <div className="grid gap-3">
+      <HeatMapSurface
+        surface={question.surface}
+        selectedPoint={details?.selectedPoint}
+        targetPoint={question.target}
+        fullCreditRadius={question.fullCreditRadius}
+        toleranceRadius={question.toleranceRadius}
+      />
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={styles.answerBox}>
+          <span>Tu selección</span>
+          <strong>{details ? "Punto sobre la imagen" : "Sin respuesta"}</strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Zona objetivo</span>
+          <strong>{question.targetLabel}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Precisión</span>
+          <strong>{details ? `${Math.round(details.accuracy * 100)} %` : "—"}</strong>
+          {details && (
+            <small>Distancia: {(details.distance * 100).toFixed(1)} % del lado corto</small>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImageLabelingReview({ question, result }: ReviewProps<QuestionOfType<"image-labeling">>) {
+  const answer = isImageLabelingAnswer(result.answer) ? result.answer : null;
+  const details = result.details?.type === "image-labeling" ? result.details : undefined;
+
+  return (
+    <div className="grid gap-3">
+      <ImageLabelingReviewSurface question={question} answer={answer} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Etiquetas correctas</span>
+          <strong>
+            {details ? `${details.correctLabels} de ${details.totalLabels}` : "Sin respuesta"}
+          </strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Resultado</span>
+          <strong>
+            {details ? `${Math.round((details.correctLabels / details.totalLabels) * 100)} %` : "—"}
+          </strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OrderingReview({ question, result }: ReviewProps<QuestionOfType<"ordering">>) {
   return <AnswerPair answer={result.answer} correct={question.correctOrder} />;
 }
@@ -241,6 +301,8 @@ export const QUESTION_REVIEW_RENDERERS = {
   "true-false": TrueFalseReview,
   "short-text": ShortTextReview,
   "progressive-clues": ProgressiveCluesReview,
+  "heat-map": HeatMapReview,
+  "image-labeling": ImageLabelingReview,
   ordering: OrderingReview,
   classification: ClassificationReview,
   "logic-code": LogicCodeReview,

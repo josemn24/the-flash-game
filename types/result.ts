@@ -1,4 +1,4 @@
-import type { AnswerValue } from "@/types/question";
+import type { AnswerValue, NormalizedPoint } from "@/types/question";
 
 export type AnswerStatus = "correct" | "partial" | "incorrect" | "unanswered";
 
@@ -24,6 +24,18 @@ export type AnswerResultDetails =
       revealedClues: number;
       totalClues: number;
       availablePoints: number;
+    }
+  | {
+      type: "heat-map";
+      selectedPoint: NormalizedPoint;
+      targetPoint: NormalizedPoint;
+      distance: number;
+      accuracy: number;
+    }
+  | {
+      type: "image-labeling";
+      correctLabels: number;
+      totalLabels: number;
     };
 
 export type AnswerResult = {

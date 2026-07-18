@@ -77,6 +77,49 @@ export type ProgressiveCluesQuestion = BaseQuestion & {
   acceptedAnswers?: string[];
 };
 
+export type NormalizedPoint = {
+  x: number;
+  y: number;
+};
+
+export type ImageSurface = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
+
+export type HeatMapAnswer = NormalizedPoint;
+
+export type HeatMapQuestion = BaseQuestion & {
+  type: "heat-map";
+  surface: ImageSurface;
+  target: NormalizedPoint;
+  targetLabel: string;
+  fullCreditRadius: number;
+  toleranceRadius: number;
+};
+
+export type ImageLabelOption = {
+  id: string;
+  label: string;
+};
+
+export type ImageLabelAnchor = {
+  id: string;
+  point: NormalizedPoint;
+  correctLabelId: string;
+};
+
+export type ImageLabelingAnswer = Record<string, string>;
+
+export type ImageLabelingQuestion = BaseQuestion & {
+  type: "image-labeling";
+  surface: ImageSurface;
+  anchors: ImageLabelAnchor[];
+  labels: ImageLabelOption[];
+};
+
 export type LogicCodeClue = {
   code: string;
   hint: string;
@@ -125,6 +168,8 @@ export type Question =
   | TrueFalseQuestion
   | ShortTextQuestion
   | ProgressiveCluesQuestion
+  | HeatMapQuestion
+  | ImageLabelingQuestion
   | OrderingQuestion
   | ClassificationQuestion
   | LogicCodeQuestion
@@ -136,4 +181,11 @@ export type QuestionOfType<T extends QuestionType> = Extract<Question, { type: T
 export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
 export type AnswerValue =
-  string | number | boolean | string[] | ClassificationAnswer | MatchingAnswer;
+  | string
+  | number
+  | boolean
+  | string[]
+  | ClassificationAnswer
+  | MatchingAnswer
+  | HeatMapAnswer
+  | ImageLabelingAnswer;

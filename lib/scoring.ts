@@ -7,6 +7,10 @@ import type {
   ClassificationAnswer,
   ClassificationQuestion,
   EstimationQuestion,
+  HeatMapAnswer,
+  HeatMapQuestion,
+  ImageLabelingAnswer,
+  ImageLabelingQuestion,
   LogicCodeQuestion,
   MatchingAnswer,
   MatchingQuestion,
@@ -26,7 +30,12 @@ export type EvaluationInput = {
 };
 
 export type ScoringPolicyId =
-  "binary-speed" | "partial-items" | "attempt-penalty" | "proximity" | "clue-speed";
+  | "binary-speed"
+  | "partial-items"
+  | "attempt-penalty"
+  | "proximity"
+  | "clue-speed"
+  | "spatial-proximity";
 
 export const QUESTION_SCORING_POLICY = {
   "multiple-choice": "binary-speed",
@@ -35,6 +44,8 @@ export const QUESTION_SCORING_POLICY = {
   "true-false": "binary-speed",
   "short-text": "binary-speed",
   "progressive-clues": "clue-speed",
+  "heat-map": "spatial-proximity",
+  "image-labeling": "partial-items",
   ordering: "binary-speed",
   classification: "partial-items",
   "logic-code": "attempt-penalty",
@@ -58,7 +69,12 @@ type EvaluationContext = {
 };
 
 function isRecordAnswer(answer: AnswerValue | null): answer is Record<string, string> {
-  return answer !== null && typeof answer === "object" && !Array.isArray(answer);
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    Object.values(answer).every((value) => typeof value === "string")
+  );
 }
 
 export function isClassificationAnswer(answer: AnswerValue | null): answer is ClassificationAnswer {
@@ -66,6 +82,24 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
 }
 
 export function isMatchingAnswer(answer: AnswerValue | null): answer is MatchingAnswer {
+  return isRecordAnswer(answer);
+}
+
+export function isHeatMapAnswer(answer: AnswerValue | null): answer is HeatMapAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    "x" in answer &&
+    "y" in answer &&
+    typeof answer.x === "number" &&
+    Number.isFinite(answer.x) &&
+    typeof answer.y === "number" &&
+    Number.isFinite(answer.y)
+  );
+}
+
+export function isImageLabelingAnswer(answer: AnswerValue | null): answer is ImageLabelingAnswer {
   return isRecordAnswer(answer);
 }
 
@@ -101,8 +135,33 @@ export function calculateMatchingMetrics(question: MatchingQuestion, answer: Mat
   return { correctPairs, totalPairs: question.leftItems.length };
 }
 
+export function calculateImageLabelingMetrics(
+  question: ImageLabelingQuestion,
+  answer: ImageLabelingAnswer,
+) {
+  const anchorIds = new Set(question.anchors.map((anchor) => anchor.id));
+  const labelIds = new Set(question.labels.map((label) => label.id));
+  const entries = Object.entries(answer);
+  const assignedLabels = entries.map(([, labelId]) => labelId);
+  const valid =
+    question.anchors.length > 0 &&
+    entries.length === question.anchors.length &&
+    entries.every(([anchorId, labelId]) => anchorIds.has(anchorId) && labelIds.has(labelId)) &&
+    new Set(assignedLabels).size === assignedLabels.length;
+  const correctLabels = valid
+    ? question.anchors.filter((anchor) => answer[anchor.id] === anchor.correctLabelId).length
+    : 0;
+  return { correctLabels, totalLabels: question.anchors.length, valid };
+}
+
 export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
   switch (question.type) {
+    case "heat-map":
+      return isHeatMapAnswer(answer) && calculateHeatMapMetrics(question, answer).accuracy === 1;
+    case "image-labeling":
+      if (!isImageLabelingAnswer(answer)) return false;
+      const labelMetrics = calculateImageLabelingMetrics(question, answer);
+      return labelMetrics.valid && labelMetrics.correctLabels === labelMetrics.totalLabels;
     case "estimation":
       return typeof answer === "number" && answer === question.correctAnswer;
     case "classification":
@@ -133,6 +192,43 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
       return accepted.some((candidate) => normalizeAnswer(candidate) === normalizedAnswer);
     }
   }
+}
+
+function clampNormalizedCoordinate(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(1, Math.max(0, value));
+}
+
+function safeNonNegative(value: number) {
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+export function calculateHeatMapMetrics(question: HeatMapQuestion, answer: HeatMapAnswer) {
+  const selectedPoint = {
+    x: clampNormalizedCoordinate(answer.x),
+    y: clampNormalizedCoordinate(answer.y),
+  };
+  const targetPoint = {
+    x: clampNormalizedCoordinate(question.target.x),
+    y: clampNormalizedCoordinate(question.target.y),
+  };
+  const width = Math.max(1, safeNonNegative(Math.abs(question.surface.width)));
+  const height = Math.max(1, safeNonNegative(Math.abs(question.surface.height)));
+  const shortSide = Math.min(width, height);
+  const distance = Math.hypot(
+    (selectedPoint.x - targetPoint.x) * (width / shortSide),
+    (selectedPoint.y - targetPoint.y) * (height / shortSide),
+  );
+  const fullCreditRadius = safeNonNegative(question.fullCreditRadius);
+  const toleranceRadius = Math.max(fullCreditRadius, safeNonNegative(question.toleranceRadius));
+  const accuracy =
+    distance <= fullCreditRadius
+      ? 1
+      : toleranceRadius <= fullCreditRadius || distance >= toleranceRadius
+        ? 0
+        : 1 - (distance - fullCreditRadius) / (toleranceRadius - fullCreditRadius);
+
+  return { selectedPoint, targetPoint, distance, accuracy };
 }
 
 function clampRevealedClues(revealedClues: number, totalClues: number) {
@@ -244,6 +340,47 @@ function evaluateMatching(
   };
 }
 
+function evaluateImageLabeling(
+  question: ImageLabelingQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isImageLabelingAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateImageLabelingMetrics(question, answer);
+  if (!metrics.valid) {
+    return {
+      isCorrect: false,
+      status: "incorrect",
+      points: 0,
+      details: {
+        type: "image-labeling",
+        correctLabels: 0,
+        totalLabels: metrics.totalLabels,
+      },
+    };
+  }
+
+  const isCorrect = metrics.correctLabels === metrics.totalLabels;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : metrics.correctLabels > 0 ? "partial" : "incorrect",
+    points: calculateProportionalScore(
+      question.points,
+      metrics.correctLabels,
+      metrics.totalLabels,
+      calculateSpeedMultiplier(timeUsed, question.timeLimit),
+    ),
+    details: {
+      type: "image-labeling",
+      correctLabels: metrics.correctLabels,
+      totalLabels: metrics.totalLabels,
+    },
+  };
+}
+
 function evaluateEstimation(
   question: EstimationQuestion,
   answer: AnswerValue,
@@ -305,6 +442,33 @@ function evaluateProgressiveClues(
   };
 }
 
+function evaluateHeatMap(
+  question: HeatMapQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isHeatMapAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateHeatMapMetrics(question, answer);
+  const isCorrect = metrics.accuracy === 1;
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : metrics.accuracy > 0 ? "partial" : "incorrect",
+    points: Math.max(
+      0,
+      Math.round(
+        question.points * metrics.accuracy * calculateSpeedMultiplier(timeUsed, question.timeLimit),
+      ),
+    ),
+    details: {
+      type: "heat-map",
+      ...metrics,
+    },
+  };
+}
+
 function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
   const { question, answer, timeUsed, submittedCodes, incorrectAttempts, revealedClues } = context;
 
@@ -317,6 +481,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       }
       if (question.type === "matching") {
         return evaluateMatching(question, answer, timeUsed, incorrectAttempts);
+      }
+      if (question.type === "image-labeling") {
+        return evaluateImageLabeling(question, answer, timeUsed);
       }
       throw new Error(`Unsupported partial-items question: ${question.type}`);
     case "attempt-penalty": {
@@ -336,6 +503,12 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
         throw new Error(`Unsupported clue-speed question: ${question.type}`);
       }
       return evaluateProgressiveClues(question, answer, timeUsed, revealedClues);
+    }
+    case "spatial-proximity": {
+      if (question.type !== "heat-map") {
+        throw new Error(`Unsupported spatial-proximity question: ${question.type}`);
+      }
+      return evaluateHeatMap(question, answer, timeUsed);
     }
   }
 }
@@ -408,12 +581,14 @@ export function evaluateAnswer({
 
   const matchingWithoutProgress =
     timedOut && evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0;
+  const discardedSpatialDraft =
+    timedOut && (question.type === "heat-map" || question.type === "image-labeling");
 
   return {
     questionId: question.id,
     answer,
     ...evaluation,
-    status: matchingWithoutProgress ? "unanswered" : evaluation.status,
+    status: matchingWithoutProgress || discardedSpatialDraft ? "unanswered" : evaluation.status,
     points: timedOut && question.type !== "matching" ? 0 : evaluation.points,
     timeUsed: safeTime,
   };

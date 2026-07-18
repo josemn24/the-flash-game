@@ -12,7 +12,7 @@ La pregunta de producto sigue siendo:
 
 - Un único jugador y estado de sesión en memoria.
 - Dos etapas locales de diez preguntas cada una.
-- Diez formatos de pregunta con reglas y puntuación propias.
+- Doce formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
 - Transición automática después de responder o agotar el tiempo.
@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, salas, multijugador
 | ------------------- | ------------------------------------------------------------- |
 | `/`                 | Presentación, selector de etapas y acceso a la biblioteca.    |
 | `/etapas/[stageId]` | Validación de la etapa y sesión jugable completa.             |
-| `/formatos`         | Catálogo de los diez formatos disponibles.                    |
+| `/formatos`         | Catálogo de los doce formatos disponibles.                    |
 | `/formatos/[slug]`  | Reglas, puntuación, autoría, accesibilidad y ejemplo jugable. |
 
 Una etapa recorre estos estados:
@@ -58,7 +58,7 @@ Durante la etapa no se muestran aciertos, soluciones ni puntos parciales. La res
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
 Ambas etapas se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
-Cada una conserva diez preguntas y todavía no utiliza los formatos «Encontrar el intruso», «Emparejar conceptos» ni «Adivinanzas por pistas».
+Cada una conserva diez preguntas y todavía no utiliza los formatos «Encontrar el intruso», «Emparejar conceptos», «Adivinanzas por pistas», «Mapa de calor» ni «Etiquetar imagen».
 
 ## Formatos implementados
 
@@ -74,6 +74,8 @@ Cada una conserva diez preguntas y todavía no utiliza los formatos «Encontrar 
 | Código lógico          | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base. |
 | Estimación             | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                         |
 | Adivinanzas por pistas | Revelar pistas de texto o enviar una única respuesta abierta.       | Cada pista reduce el máximo; el acierto se ajusta por velocidad.              |
+| Mapa de calor          | Colocar, corregir y confirmar un marcador con puntero o teclado.    | Crédito espacial por zona y distancia, ajustado por velocidad.                |
+| Etiquetar imagen       | Asociar una etiqueta de texto a cada anclaje y confirmar el grupo.  | Crédito por cada asociación correcta, ajustado por velocidad.                 |
 
 En todos los formatos la velocidad ajusta la puntuación. Para un acierto binario de valor `V`, límite `T` y tiempo usado `t`:
 
@@ -84,6 +86,10 @@ points = V × (1 - 0.5 × (t / T))
 Un acierto conserva entre el 50 % y el 100 % de los puntos. El total final de una etapa nunca baja de cero.
 
 En «Adivinanzas por pistas», la primera pista es gratuita y cada revelación adicional descuenta una cantidad fija antes de aplicar el multiplicador de velocidad. Un fallo o el timeout puntúan cero.
+
+En «Mapa de calor», las coordenadas se normalizan respecto a la fuente original. La zona central conserva toda la precisión; entre esta y la tolerancia máxima el crédito cae linealmente antes de aplicar el multiplicador de velocidad.
+
+En «Etiquetar imagen», cada anclaje correcto aporta la misma fracción del valor base. Las etiquetas son únicas, todas las zonas deben completarse antes de confirmar y el resultado parcial se ajusta después por velocidad.
 
 ## Biblioteca de formatos
 
@@ -114,6 +120,8 @@ El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionRevie
 - La ruta de etapa valida el identificador y envía una única `Stage` a `GameApp.client.tsx`.
 - La sesión jugable mantiene reducer, tiempos, respuestas, resultados y transiciones en el cliente.
 - El número de pistas reveladas se conserva en la sesión o en el ejemplo jugable y se envía al evaluador junto con la respuesta.
+- El mapa de calor solo envía una coordenada confirmada; la revisión reutiliza la superficie para superponer selección, objetivo, tolerancia y distancia.
+- Etiquetar imagen conserva localmente el anclaje activo y las asociaciones en curso; solo envía el mapa completo de anclajes a etiquetas al confirmar. La revisión superpone la elección y la solución sobre la misma imagen y añade un resumen textual.
 - Los componentes universales como `Badge`, `Logo`, `AppHeader` y `Button` pueden utilizarse desde ambos grafos.
 - `MotionButton.client.tsx` contiene la mejora animada de la primitiva universal.
 - Motion respeta la preferencia del sistema mediante `MotionConfig reducedMotion="user"`; las decoraciones sencillas utilizan CSS.
@@ -156,7 +164,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las diez fichas de formato, incluida `/formatos/adivinanzas-por-pistas`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las doce fichas de formato, incluidas `/formatos/mapa-de-calor` y `/formatos/etiquetar-imagen`.
 
 ## Evolución pendiente
 

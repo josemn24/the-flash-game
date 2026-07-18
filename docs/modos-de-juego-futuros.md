@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, diez formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, doce formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -19,7 +19,9 @@ La aplicación soporta de forma nativa:
 - estimación con puntuación por proximidad;
 - encontrar el intruso con elementos de texto o imagen;
 - emparejar conceptos con validación inmediata y crédito por pareja;
-- adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento.
+- adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento;
+- mapa de calor con selección espacial y crédito por proximidad;
+- etiquetar imagen con varias asociaciones discretas y crédito parcial.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -247,16 +249,27 @@ Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivament
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 - **Riesgo:** las primeras pistas deben ser difíciles pero útiles, y su orden debe calibrarse para que cada revelación reduzca de manera apreciable el espacio de respuestas posibles.
 
-### 25. Mapa de calor — Futura
+### 25. Mapa de calor — Implementada
 
-Se muestra una imagen, mapa, gráfico o escena y el jugador debe pulsar en la zona correcta. Puede localizar una ciudad, señalar una parte anatómica, marcar el lugar de un acontecimiento, identificar una zona dentro de una obra de arte o estimar el centro geográfico de un país.
+Se muestra un mapa, gráfico o escena y el jugador debe señalar una ubicación. Puede localizar una ciudad, marcar el lugar de un acontecimiento o estimar el centro geográfico de un país.
 
-- **Interacción:** realizar una o varias pulsaciones sobre una superficie ampliable; el resultado puede mostrar el punto elegido, el objetivo y la distancia entre ambos.
+- **Interacción actual:** colocar y recolocar un único marcador sobre una superficie de proporción fija antes de confirmarlo. Con teclado se inicia en el centro y se mueve con las flechas.
 - **Encaje:** es visual e intuitivo y permite combinar precisión y velocidad en una misma puntuación.
-- **Puntuación:** proximidad al punto o zona ideal ajustada por el tiempo empleado, con tolerancias adaptadas al tamaño y la forma del objetivo.
-- **Riesgo:** la precisión no debe depender del tamaño de la pantalla ni de la destreza motriz; hacen falta coordenadas normalizadas, objetivos razonablemente amplios y alternativas accesibles.
+- **Puntuación actual:** la zona central concede precisión completa, alrededor hay crédito lineal decreciente y la velocidad ajusta el resultado. Las coordenadas y distancias son independientes del tamaño mostrado.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece zoom, polígonos ni múltiples objetivos.
+- **Riesgo:** la precisión no debe depender del tamaño de la pantalla ni de la destreza motriz; hacen falta coordenadas normalizadas, objetivos razonablemente amplios y controles equivalentes por teclado.
 
-### 26. La respuesta prohibida — Futura
+### 26. Etiquetar imagen — Implementada
+
+Se muestra una imagen o diagrama con varios anclajes y un banco de etiquetas. El jugador identifica cada parte asociando una etiqueta exacta a su zona, una mecánica adecuada para anatomía, componentes de objetos y diagramas educativos.
+
+- **Interacción actual:** seleccionar un anclaje y después una etiqueta textual; cada etiqueta es de un solo uso y todas las asociaciones pueden editarse o limpiarse antes de confirmar el conjunto.
+- **Encaje:** separa la identificación discreta de partes de la localización continua propia de Mapa de calor.
+- **Puntuación actual:** cada asociación correcta aporta la misma fracción de puntos y la velocidad ajusta el resultado; un timeout descarta el borrador.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
+- **Riesgo:** los anclajes y textos deben mantenerse legibles y sin solapamientos en móvil; la numeración, el foco y el resumen textual deben permitir completar el ejercicio sin depender solo de la posición o el color.
+
+### 27. La respuesta prohibida — Futura
 
 Se formula una pregunta abierta, pero las respuestas más evidentes están expresamente prohibidas. Por ejemplo, nombrar un país de Sudamérica sin responder Brasil ni Argentina, o decir una palabra asociada al invierno sin usar «frío», «nieve» ni «Navidad».
 
@@ -265,7 +278,7 @@ Se formula una pregunta abierta, pero las respuestas más evidentes están expre
 - **Puntuación:** puede valorar acierto y velocidad; en partidas grupales, las respuestas menos repetidas podrían recibir una bonificación si todos comparten condiciones equivalentes.
 - **Riesgo:** la validación de respuestas abiertas necesita un repertorio amplio de equivalencias y debe explicar con claridad por qué se rechaza una respuesta válida en apariencia.
 
-### 27. Reconstrucción del error — Futura
+### 28. Reconstrucción del error — Futura
 
 Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en el que aparece el primer fallo, en lugar de resolver el problema desde cero. Puede aplicarse a una operación matemática, una cronología histórica, una clasificación científica, un razonamiento lógico, una traducción o un fragmento de código.
 
@@ -274,7 +287,7 @@ Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en
 - **Puntuación:** puede conceder crédito parcial por localizar el error aunque la corrección posterior no sea exacta.
 - **Riesgo:** todos los pasos anteriores al señalado deben ser inequívocamente válidos; un error que se propaga no debería contabilizarse como varios fallos independientes.
 
-### 28. Pregunta con interferencias — Futura
+### 29. Pregunta con interferencias — Futura
 
 La información se presenta de forma incompleta o imperfecta: texto parcialmente borrado, audio con ruido, una imagen fragmentada, palabras mezcladas con caracteres irrelevantes o datos visibles durante intervalos muy breves. El jugador debe reconstruir información suficiente para responder.
 
@@ -283,7 +296,7 @@ La información se presenta de forma incompleta o imperfecta: texto parcialmente
 - **Accesibilidad:** la dificultad debe proceder de una regla controlada, no de barreras visuales, auditivas, cognitivas o motrices; cada reto necesita una variante equivalente cuando el canal utilizado no sea accesible.
 - **Riesgo:** el nivel de degradación debe calibrarse y verificarse en distintos dispositivos para que siempre quede información suficiente y la respuesta no dependa del azar.
 
-### 29. Eco — Futura
+### 30. Eco — Futura
 
 Se reproduce una secuencia visual o sonora y después aparece una segunda casi idéntica. El jugador debe determinar si ambas son exactamente iguales o identificar la diferencia, que puede afectar al orden, duración, intensidad, posición o número de elementos.
 
@@ -292,7 +305,7 @@ Se reproduce una secuencia visual o sonora y después aparece una segunda casi i
 - **Consideración competitiva:** el tiempo obligatorio de reproducción debe excluirse o normalizarse; solo el tiempo de decisión debería premiar la rapidez.
 - **Riesgo:** las diferencias de audio, brillo, rendimiento o latencia entre dispositivos no deben alterar la dificultad ni revelar accidentalmente la respuesta.
 
-### 30. Prueba espejo — Futura
+### 31. Prueba espejo — Futura
 
 Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan al otro. Ordenar números a la izquierda puede mover letras a la derecha; corregir una secuencia visual puede alterar una operación; cada elemento descartado en un panel puede desaparecer también en el otro.
 
@@ -303,18 +316,18 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 
 ## Priorización de mecánicas pendientes
 
-| Objetivo                                   | Mecánicas prioritarias                                                                                          | Motivo                                                                             |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                                                           | Amplían el juego con riesgo técnico contenido.                                     |
-| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                                                          | Introducen habilidades e interacciones que van más allá de responder preguntas.    |
-| Inducción y deducción                      | La regla secreta                                                                                                | Convierte la identificación de patrones en una clasificación activa.               |
-| Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                            |
-| Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.   |
-| Percepción y precisión                     | Mapa de calor, pregunta con interferencias y Eco                                                                | Incorporan localización, reconstrucción sensorial y memoria inmediata.             |
-| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido. |
-| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                    |
-| Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.               |
-| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                |
+| Objetivo                                   | Mecánicas prioritarias                                                                                          | Motivo                                                                              |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                                                           | Amplían el juego con riesgo técnico contenido.                                      |
+| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                                                          | Introducen habilidades e interacciones que van más allá de responder preguntas.     |
+| Inducción y deducción                      | La regla secreta                                                                                                | Convierte la identificación de patrones en una clasificación activa.                |
+| Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                             |
+| Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
+| Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco                                              | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
+| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas y tangram | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                     |
+| Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.                |
+| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
 

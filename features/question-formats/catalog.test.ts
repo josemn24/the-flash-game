@@ -3,9 +3,9 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 
 describe("question format catalog", () => {
-  it("contains exactly ten formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(10);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(10);
+  it("contains exactly twelve formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(12);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(12);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -17,7 +17,43 @@ describe("question format catalog", () => {
       "logic-code",
       "estimation",
       "progressive-clues",
+      "heat-map",
+      "image-labeling",
     ]);
+  });
+
+  it("keeps the heat-map example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    expect(question.surface.src).toBe("/visuals/heat-map/spain-map.svg");
+    expect(question.surface.width).toBeGreaterThan(0);
+    expect(question.surface.height).toBeGreaterThan(0);
+    expect(question.fullCreditRadius).toBeGreaterThan(0);
+    expect(question.toleranceRadius).toBeGreaterThan(question.fullCreditRadius);
+    expect(question.target.x).toBeGreaterThanOrEqual(0);
+    expect(question.target.x).toBeLessThanOrEqual(1);
+    expect(question.target.y).toBeGreaterThanOrEqual(0);
+    expect(question.target.y).toBeLessThanOrEqual(1);
+  });
+
+  it("keeps the image-labeling example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const anchorIds = question.anchors.map((anchor) => anchor.id);
+    const labelIds = question.labels.map((label) => label.id);
+    expect(question.surface.src).toBe("/visuals/heat-map/human-body.svg");
+    expect(question.surface.width).toBeGreaterThan(0);
+    expect(question.surface.height).toBeGreaterThan(0);
+    expect(question.anchors).toHaveLength(5);
+    expect(question.labels.length).toBeGreaterThanOrEqual(question.anchors.length);
+    expect(new Set(anchorIds).size).toBe(anchorIds.length);
+    expect(new Set(labelIds).size).toBe(labelIds.length);
+    expect(question.labels.every((label) => label.label.trim().length > 0)).toBe(true);
+    expect(question.anchors.every((anchor) => labelIds.includes(anchor.correctLabelId))).toBe(true);
+    expect(question.anchors.every((anchor) => anchor.point.x >= 0 && anchor.point.x <= 1)).toBe(
+      true,
+    );
+    expect(question.anchors.every((anchor) => anchor.point.y >= 0 && anchor.point.y <= 1)).toBe(
+      true,
+    );
   });
 
   it("keeps the progressive-clues example internally consistent", () => {

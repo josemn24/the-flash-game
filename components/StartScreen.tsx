@@ -71,7 +71,7 @@ export function StartScreen({ stages }: { stages: StageSummary[] }) {
               <small>Manual de juego</small>
               <strong>Biblioteca de formatos</strong>
               <p>
-                Descubre las reglas, la puntuación y las mejores prácticas de los diez tipos de
+                Descubre las reglas, la puntuación y las mejores prácticas de los doce tipos de
                 pregunta.
               </p>
             </span>

@@ -591,6 +591,150 @@ export const QUESTION_FORMAT_CATALOG = {
         "Marie Curie nació en Varsovia, desarrolló su carrera en Francia y recibió los premios Nobel de Física y Química por sus investigaciones sobre la radiactividad.",
     },
   },
+  "heat-map": {
+    id: "heat-map",
+    slug: "mapa-de-calor",
+    name: "Mapa de calor",
+    shortName: "Mapa",
+    summary: "Señalar una ubicación sobre una imagen y puntuar según precisión y velocidad.",
+    description: [
+      "El jugador coloca un marcador sobre una imagen, mapa, gráfico o escena. Puede corregir la posición antes de confirmarla para que una pulsación accidental no decida la ronda.",
+      "La distancia al objetivo se mide en coordenadas normalizadas, por lo que el resultado es equivalente en móvil y escritorio.",
+    ],
+    recommendations: [
+      "Geografía, mapas y localización visual continua",
+      "Imágenes con una proporción y un objetivo estables",
+      "Rondas donde la cercanía aporte información útil",
+    ],
+    avoidWhen: [
+      "El objetivo es demasiado pequeño para una pantalla táctil",
+      "La imagen necesita zoom para distinguir la zona",
+      "La respuesta correcta es una categoría o parte discreta de la imagen",
+    ],
+    rules: [
+      "Se coloca un único marcador y se confirma explícitamente",
+      "El marcador puede recolocarse antes de confirmar",
+      "La zona central concede precisión completa y alrededor hay crédito decreciente",
+      "Un marcador sin confirmar se descarta al agotarse el tiempo",
+    ],
+    authoringTips: [
+      "Usa coordenadas normalizadas entre cero y uno",
+      "Define una zona plena amplia y una tolerancia mayor",
+      "Mantén la proporción original de la superficie",
+      "Comprueba que el objetivo pueda alcanzarse con pasos de teclado",
+    ],
+    accessibility: [
+      "Incluye texto alternativo que describa la superficie sin revelar la respuesta",
+      "Permite iniciar el marcador y moverlo con flechas y pasos ampliados",
+      "Distingue marcador, objetivo y tolerancia mediante forma, etiqueta y color",
+    ],
+    mediaSupport: ["Imagen, mapa, gráfico o escena estática", "SVG o imagen local"],
+    timing: {
+      recommendedSeconds: "12–20 s",
+      notes:
+        "La superficie debe comprenderse y señalarse sin zoom; añade tiempo si contiene mucho detalle.",
+    },
+    scoring: SCORING_POLICIES["heat-map"],
+    example: {
+      id: "guide-heat-map",
+      type: "heat-map",
+      category: "Geografía",
+      question: "¿Dónde se encuentra Madrid?",
+      surface: {
+        src: "/visuals/heat-map/spain-map.svg",
+        alt: "Mapa esquemático de España peninsular con Portugal y el mar como referencias, sin ciudades señaladas.",
+        width: 720,
+        height: 520,
+      },
+      target: { x: 0.52, y: 0.46 },
+      targetLabel: "Madrid, en el centro de la península ibérica",
+      fullCreditRadius: 0.055,
+      toleranceRadius: 0.18,
+      timeLimit: 15,
+      points: 140,
+      explanation:
+        "Madrid se encuentra aproximadamente en el centro geográfico de la península ibérica, sobre la Meseta Central.",
+    },
+  },
+  "image-labeling": {
+    id: "image-labeling",
+    slug: "etiquetar-imagen",
+    name: "Etiquetar imagen",
+    shortName: "Etiquetas",
+    summary: "Asociar etiquetas de texto a varias zonas predeterminadas de una imagen.",
+    description: [
+      "El jugador selecciona un anclaje sobre una imagen y después una etiqueta. La asociación aparece en la propia zona y puede corregirse antes de confirmar el conjunto.",
+      "A diferencia de Mapa de calor, las respuestas son categorías discretas y cada zona tiene una asociación exacta.",
+    ],
+    recommendations: [
+      "Anatomía, diagramas y partes de objetos",
+      "Imágenes con varias zonas claramente separadas",
+      "Actividades donde cada etiqueta tenga un destino inequívoco",
+    ],
+    avoidWhen: [
+      "Las zonas se solapan o necesitan zoom",
+      "Una misma etiqueta debería utilizarse varias veces",
+      "La cercanía espacial importa más que la identificación exacta",
+    ],
+    rules: [
+      "Se selecciona primero una zona y después una etiqueta",
+      "Cada etiqueta solo puede utilizarse una vez",
+      "Las asociaciones pueden editarse o limpiarse antes de confirmar",
+      "Solo puede confirmarse cuando todas las zonas tienen etiqueta",
+    ],
+    authoringTips: [
+      "Sitúa los anclajes con coordenadas normalizadas entre cero y uno",
+      "Deja espacio suficiente para que las etiquetas no se solapen en móvil",
+      "Usa etiquetas breves, homogéneas y sin ambigüedad",
+      "Puedes añadir distractores, pero cada anclaje debe referenciar una etiqueta existente",
+    ],
+    accessibility: [
+      "Mantén anclajes y etiquetas como botones con foco visible",
+      "Numera las zonas y ofrece un resumen textual de todas las asociaciones",
+      "Anuncia cada selección y no dependas solo del color en la revisión",
+    ],
+    mediaSupport: ["Imagen o diagrama estático", "Etiquetas de texto"],
+    timing: {
+      recommendedSeconds: "20–35 s",
+      notes:
+        "El tiempo debe permitir recorrer la imagen, completar todas las asociaciones y revisarlas en móvil.",
+    },
+    scoring: SCORING_POLICIES["image-labeling"],
+    example: {
+      id: "guide-image-labeling",
+      type: "image-labeling",
+      category: "Anatomía",
+      question: "Etiqueta las principales regiones del cuerpo humano",
+      surface: {
+        src: "/visuals/heat-map/human-body.svg",
+        alt: "Diagrama frontal simplificado del esqueleto humano con cabeza, torso, brazos y piernas.",
+        width: 600,
+        height: 720,
+      },
+      anchors: [
+        { id: "head", point: { x: 0.5, y: 0.12 }, correctLabelId: "head-label" },
+        { id: "torso", point: { x: 0.5, y: 0.31 }, correctLabelId: "torso-label" },
+        { id: "arms", point: { x: 0.2, y: 0.43 }, correctLabelId: "arms-label" },
+        { id: "thighs", point: { x: 0.5, y: 0.6 }, correctLabelId: "thighs-label" },
+        {
+          id: "lower-legs",
+          point: { x: 0.5, y: 0.82 },
+          correctLabelId: "lower-legs-label",
+        },
+      ],
+      labels: [
+        { id: "head-label", label: "Cabeza" },
+        { id: "torso-label", label: "Torso" },
+        { id: "arms-label", label: "Brazos" },
+        { id: "thighs-label", label: "Muslos" },
+        { id: "lower-legs-label", label: "Piernas inferiores" },
+      ],
+      timeLimit: 25,
+      points: 160,
+      explanation:
+        "El cuerpo humano se organiza en cabeza, tronco y extremidades; en las piernas se distinguen los muslos de las regiones inferiores.",
+    },
+  },
 } satisfies QuestionFormatCatalog;
 
 export const questionFormats = Object.values(QUESTION_FORMAT_CATALOG);

@@ -6,6 +6,8 @@ import { useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
+import { HeatMapQuestion } from "@/components/HeatMapQuestion";
+import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
 import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
@@ -177,6 +179,22 @@ function ProgressiveCluesInput({
   );
 }
 
+function HeatMapInput({
+  question,
+  locked,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"heat-map">>) {
+  return <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />;
+}
+
+function ImageLabelingInput({
+  question,
+  locked,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"image-labeling">>) {
+  return <ImageLabelingQuestion question={question} locked={locked} onSubmit={onSubmit} />;
+}
+
 function ClassificationInput({
   question,
   locked,
@@ -234,6 +252,8 @@ export const QUESTION_INPUT_RENDERERS = {
   "true-false": TrueFalseInput,
   "short-text": ShortTextInput,
   "progressive-clues": ProgressiveCluesInput,
+  "heat-map": HeatMapInput,
+  "image-labeling": ImageLabelingInput,
   ordering: OrderingInput,
   classification: ClassificationInput,
   "logic-code": LogicCodeInput,
