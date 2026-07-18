@@ -26,7 +26,8 @@ function hasDelayedTimedResponse(question: Question) {
   return (
     question.type === "flash-memory" ||
     question.type === "simon-sequence" ||
-    question.type === "mini-wordle"
+    question.type === "mini-wordle" ||
+    question.type === "progressive-image"
   );
 }
 
@@ -217,6 +218,12 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
                   <>
                     Primero se cargará el diccionario. Tendrás{" "}
                     <strong>{question.timeLimit} segundos</strong> para responder cuando esté listo.
+                  </>
+                ) : question.type === "progressive-image" ? (
+                  <>
+                    Primero se cargará la imagen. Tendrás{" "}
+                    <strong>{question.timeLimit} segundos</strong> para identificarla cuando
+                    comience a revelarse.
                   </>
                 ) : hasDelayedTimedResponse(question) ? (
                   <>

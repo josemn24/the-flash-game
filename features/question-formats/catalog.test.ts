@@ -5,9 +5,9 @@ import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-one formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(21);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(21);
+  it("contains exactly twenty-two formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(22);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(22);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -30,6 +30,7 @@ describe("question format catalog", () => {
       "error-reconstruction",
       "anagram",
       "mini-wordle",
+      "progressive-image",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
@@ -69,6 +70,18 @@ describe("question format catalog", () => {
     expect(question.correctAnswer).toHaveLength(4);
     expect(dictionary.words).toContain(normalizeMiniWordleWord(question.correctAnswer));
     expect(question.additionalGuesses).toBeUndefined();
+  });
+
+  it("keeps the progressive-image example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-image"].examples[0].question;
+    expect(question.surface.src).toBe("/visuals/connections/eiffel-tower.png");
+    expect(question.surface.width).toBeGreaterThan(0);
+    expect(question.surface.height).toBeGreaterThan(0);
+    expect(question.surface.alt).not.toContain(question.correctAnswer);
+    expect(question.solutionAlt).toContain("Torre Eiffel");
+    expect(question.revealDuration).toBeGreaterThan(0);
+    expect(question.revealDuration).toBeLessThan(question.timeLimit);
+    expect(question.acceptedAnswers).toContain(question.correctAnswer);
   });
 
   it("keeps the heat-map example internally consistent", () => {

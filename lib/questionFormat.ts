@@ -7,6 +7,7 @@ export const QUESTION_FORMAT_LABELS = {
   "true-false": "V/F",
   "short-text": "Texto",
   "progressive-clues": "Pistas",
+  "progressive-image": "Imagen progresiva",
   "heat-map": "Mapa",
   "image-labeling": "Etiquetas",
   ordering: "Ordenar",

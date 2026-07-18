@@ -39,6 +39,10 @@ import {
   isValidMiniWordleConfiguration,
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
+import {
+  calculateProgressiveImageReveal,
+  isValidProgressiveImageConfiguration,
+} from "@/lib/progressiveImage";
 import type {
   AnswerValue,
   MiniNonogramAnswer,
@@ -214,6 +218,73 @@ describe("question evaluation", () => {
     const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(isAnswerCorrect(question, "  MARIE CURÍE ")).toBe(true);
     expect(isAnswerCorrect(question, "Maria Skłodowska-Curie")).toBe(true);
+  });
+
+  it("scores progressive-image recognition by speed and normalizes alternatives", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-image"].examples[0].question;
+
+    expect(isAnswerCorrect(question, "torre eíffel")).toBe(true);
+    expect(isAnswerCorrect(question, "LA TORRE EIFFEL")).toBe(true);
+    expect(isAnswerCorrect(question, "Arco del Triunfo")).toBe(false);
+    expect(evaluateAnswer({ question, answer: "Eiffel", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 160,
+    });
+    expect(
+      evaluateAnswer({ question, answer: "Torre Eiffel", timeUsed: question.timeLimit }),
+    ).toMatchObject({ status: "correct", points: 80 });
+    expect(evaluateAnswer({ question, answer: "Arco del Triunfo", timeUsed: 2 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: question.timeLimit,
+    });
+
+    expect(calculateProgressiveImageReveal(0, question.revealDuration)).toBe(0);
+    expect(calculateProgressiveImageReveal(6, question.revealDuration)).toBe(0.5);
+    expect(calculateProgressiveImageReveal(99, question.revealDuration)).toBe(1);
+    expect(calculateProgressiveImageReveal(-1, question.revealDuration)).toBe(0);
+  });
+
+  it("rejects inconsistent progressive-image configurations", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-image"].examples[0].question;
+
+    expect(isValidProgressiveImageConfiguration(question)).toBe(true);
+    expect(
+      isValidProgressiveImageConfiguration({
+        ...question,
+        surface: { ...question.surface, width: 0 },
+      }),
+    ).toBe(false);
+    expect(
+      isValidProgressiveImageConfiguration({
+        ...question,
+        surface: { ...question.surface, height: -1 },
+      }),
+    ).toBe(false);
+    expect(isValidProgressiveImageConfiguration({ ...question, revealDuration: 0 })).toBe(false);
+    expect(
+      isValidProgressiveImageConfiguration({
+        ...question,
+        revealDuration: question.timeLimit,
+      }),
+    ).toBe(false);
+    expect(isValidProgressiveImageConfiguration({ ...question, correctAnswer: " " })).toBe(false);
+    expect(
+      isValidProgressiveImageConfiguration({
+        ...question,
+        acceptedAnswers: ["Torre Eiffel", "Tórre Eiffél"],
+      }),
+    ).toBe(false);
+    expect(
+      isValidProgressiveImageConfiguration({
+        ...question,
+        acceptedAnswers: ["Eiffel"],
+      }),
+    ).toBe(false);
   });
 
   it("evaluates error reconstruction with full and partial credit", () => {

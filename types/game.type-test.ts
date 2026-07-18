@@ -91,6 +91,26 @@ type ProgressiveCluesWithoutClues = Omit<ValidProgressiveClues, "clues">;
 type ProgressiveCluesWithoutPenalty = Omit<ValidProgressiveClues, "cluePenalty">;
 type ProgressiveCluesWithoutAnswer = Omit<ValidProgressiveClues, "correctAnswer">;
 
+type ValidProgressiveImage = {
+  id: "valid-progressive-image";
+  type: "progressive-image";
+  category: "Test";
+  question: "What is shown?";
+  surface: { src: "/image.png"; alt: "Hidden subject"; width: 800; height: 600 };
+  solutionAlt: "The revealed subject";
+  revealDuration: 10;
+  correctAnswer: "Answer";
+  acceptedAnswers: ["Answer", "Alternative"];
+  timeLimit: 20;
+  points: 100;
+  explanation: "The subject is the answer";
+};
+
+type ProgressiveImageWithoutSurface = Omit<ValidProgressiveImage, "surface">;
+type ProgressiveImageWithoutSolutionAlt = Omit<ValidProgressiveImage, "solutionAlt">;
+type ProgressiveImageWithoutRevealDuration = Omit<ValidProgressiveImage, "revealDuration">;
+type ProgressiveImageWithoutAnswer = Omit<ValidProgressiveImage, "correctAnswer">;
+
 type ValidHeatMap = {
   id: "valid-heat-map";
   type: "heat-map";
@@ -189,6 +209,19 @@ export type RejectsProgressiveCluesWithoutPenalty = Assert<
 >;
 export type RejectsProgressiveCluesWithoutAnswer = Assert<
   IsNotAssignable<ProgressiveCluesWithoutAnswer, Question>
+>;
+export type AcceptsValidProgressiveImage = Assert<IsAssignable<ValidProgressiveImage, Question>>;
+export type RejectsProgressiveImageWithoutSurface = Assert<
+  IsNotAssignable<ProgressiveImageWithoutSurface, Question>
+>;
+export type RejectsProgressiveImageWithoutSolutionAlt = Assert<
+  IsNotAssignable<ProgressiveImageWithoutSolutionAlt, Question>
+>;
+export type RejectsProgressiveImageWithoutRevealDuration = Assert<
+  IsNotAssignable<ProgressiveImageWithoutRevealDuration, Question>
+>;
+export type RejectsProgressiveImageWithoutAnswer = Assert<
+  IsNotAssignable<ProgressiveImageWithoutAnswer, Question>
 >;
 export type AcceptsValidHeatMap = Assert<IsAssignable<ValidHeatMap, Question>>;
 export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithoutSurface, Question>>;

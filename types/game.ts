@@ -47,6 +47,7 @@ export type {
   OddOneOutQuestion,
   OrderingQuestion,
   ProgressiveCluesQuestion,
+  ProgressiveImageQuestion,
   Question,
   QuestionIllustration,
   QuestionMedia,

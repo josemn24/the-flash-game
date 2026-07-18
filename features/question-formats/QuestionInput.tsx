@@ -21,6 +21,7 @@ import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
+import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion";
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import styles from "@/components/QuestionScreen.module.css";
@@ -185,6 +186,24 @@ function ProgressiveCluesInput({
       locked={locked}
       onReveal={onProgressiveClueReveal}
       onSubmit={onSubmit}
+    />
+  );
+}
+
+function ProgressiveImageInput({
+  question,
+  locked,
+  onSubmit,
+  onTimedResponseStart,
+}: QuestionInputProps<QuestionOfType<"progressive-image">>) {
+  return (
+    <ProgressiveImageQuestion
+      key={question.id}
+      surface={question.surface}
+      revealDuration={question.revealDuration}
+      locked={locked}
+      onSubmit={onSubmit}
+      onTimedResponseStart={onTimedResponseStart}
     />
   );
 }
@@ -414,6 +433,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "true-false": TrueFalseInput,
   "short-text": ShortTextInput,
   "progressive-clues": ProgressiveCluesInput,
+  "progressive-image": ProgressiveImageInput,
   "heat-map": HeatMapInput,
   "image-labeling": ImageLabelingInput,
   ordering: OrderingInput,

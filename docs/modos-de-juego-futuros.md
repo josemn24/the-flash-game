@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veintiún formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veintidós formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -31,6 +31,7 @@ La aplicación soporta de forma nativa:
 - reconstrucción del error con detección del primer paso inválido y corrección guiada opcional;
 - anagramas de una palabra mediante fichas de letras, incluidas letras repetidas;
 - Mini-Wordle de cuatro letras y cuatro intentos con feedback por posición.
+- imagen progresivamente revelada con desenfoque automático y un único intento.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -118,12 +119,16 @@ El jugador responde un valor aproximado; una respuesta más cercana obtiene mejo
 - **Encaje:** evita el acierto binario y produce comparativas interesantes aun cuando nadie acierte exactamente.
 - **Puntuación actual:** proximidad al valor real ajustada por el tiempo empleado.
 
-### 9. Imagen progresivamente revelada — Futura
+### 9. Imagen progresivamente revelada — Implementada
 
-Una imagen comienza borrosa, pixelada, ampliada o cubierta y se revela con el tiempo. El jugador debe identificar personajes, lugares, banderas, películas, animales, obras de arte o logotipos cuanto antes.
+Una imagen comienza borrosa y se revela automáticamente con el tiempo. El jugador debe identificar personajes, lugares, banderas, películas, animales, obras de arte o logotipos cuanto antes.
 
 - **Encaje:** premia directamente la rapidez, pero mantiene un riesgo al responder antes.
 - **Identidad:** es una de las mecánicas que mejor representa el nombre y el espíritu de The Flash.
+- **Interacción actual:** la carga termina antes de iniciar el cronómetro; después, el desenfoque cae de 32 px a cero y se puede enviar una única respuesta de texto en cualquier momento.
+- **Puntuación actual:** acierto binario ajustado por velocidad; una respuesta incorrecta o el timeout conceden cero puntos.
+- **Accesibilidad:** se anuncian carga e hitos de revelado, el modo de movimiento reducido usa cuatro pasos y la revisión incorpora una descripción completa. Por su naturaleza, la prueba no ofrece una experiencia equivalente sin visión sin revelar la solución.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 
 ### 10. Anagramas y palabras desordenadas — Implementada
 
@@ -334,18 +339,18 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 
 ## Priorización de mecánicas pendientes
 
-| Objetivo                                   | Mecánicas prioritarias                                                       | Motivo                                                                              |
-| ------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                        | Amplían el juego con riesgo técnico contenido.                                      |
-| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                       | Introducen habilidades e interacciones que van más allá de responder preguntas.     |
-| Inducción y deducción                      | La regla secreta                                                             | Convierte la identificación de patrones en una clasificación activa.                |
-| Pensamiento crítico                        | El dato contaminado                                                          | Obliga a contrastar la información antes de utilizarla.                             |
-| Comprensión profunda                       | Reconstrucción del error                                                     | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
-| Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco           | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
-| Pruebas especiales                         | Respuesta en cadena, laberinto y tangram                                     | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
-| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                   | Permiten decidir cuánta información obtener antes de responder.                     |
-| Conocimiento menos inmediato               | La respuesta prohibida                                                       | Premia alternativas válidas más allá de las asociaciones más obvias.                |
-| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.                 |
+| Objetivo                                   | Mecánicas prioritarias                                             | Motivo                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas              | Amplían el juego con riesgo técnico contenido.                                      |
+| Diferenciar The Flash de una trivia        | Objetos ocultos y pregunta con interferencias                      | Introducen habilidades e interacciones que van más allá de responder preguntas.     |
+| Inducción y deducción                      | La regla secreta                                                   | Convierte la identificación de patrones en una clasificación activa.                |
+| Pensamiento crítico                        | El dato contaminado                                                | Obliga a contrastar la información antes de utilizarla.                             |
+| Comprensión profunda                       | Reconstrucción del error                                           | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
+| Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
+| Pruebas especiales                         | Respuesta en cadena, laberinto y tangram                           | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Gestión del riesgo                         | La respuesta prohibida y el dato contaminado                       | Obligan a decidir entre una respuesta inmediata y una estrategia más prudente.      |
+| Conocimiento menos inmediato               | La respuesta prohibida                                             | Premia alternativas válidas más allá de las asociaciones más obvias.                |
+| Competición por tiempo                     | Diferencias visuales, laberinto y tangram                          | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
 
@@ -358,4 +363,4 @@ Para que los resultados sean comparables en una partida online, cada formato deb
 - la protección frente a latencia y diferencias de dispositivo;
 - la estrategia de contenido: datos estructurados, activos visuales y validación de calidad.
 
-Como siguiente paso de producto, la imagen progresiva, las diferencias visuales y los objetos ocultos ofrecen variedad con una identidad visual fuerte. Las nuevas pruebas especiales deberían llegar acompañadas de prototipos específicos de interacción móvil, contenido validado y reglas de puntuación explícitas.
+Como siguiente paso de producto, las diferencias visuales y los objetos ocultos ofrecen variedad con una identidad visual fuerte. Las nuevas pruebas especiales deberían llegar acompañadas de prototipos específicos de interacción móvil, contenido validado y reglas de puntuación explícitas.

@@ -64,6 +64,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "progressive-image": {
+    id: QUESTION_SCORING_POLICY["progressive-image"],
+    label: "Reconocimiento y velocidad",
+    summary:
+      "Un acierto conserva entre el 50 % y el 100 % de los puntos; responder antes revela menos imagen y conserva más puntos.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "heat-map": {
     id: QUESTION_SCORING_POLICY["heat-map"],
     label: "Precisión espacial",

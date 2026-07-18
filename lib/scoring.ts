@@ -35,6 +35,7 @@ import type {
   SimonSequenceAnswer,
   SimonSequenceQuestion,
 } from "@/types/game";
+import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
 import {
   isValidMiniWordleWord,
   isValidMiniWordleConfiguration,
@@ -69,6 +70,7 @@ export const QUESTION_SCORING_POLICY = {
   "true-false": "binary-speed",
   "short-text": "binary-speed",
   "progressive-clues": "clue-speed",
+  "progressive-image": "binary-speed",
   "heat-map": "spatial-proximity",
   "image-labeling": "image-labeling",
   ordering: "binary-speed",
@@ -672,6 +674,15 @@ export function calculateErrorReconstructionMetrics(
 
 export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
   switch (question.type) {
+    case "progressive-image": {
+      if (typeof answer !== "string" || !isValidProgressiveImageConfiguration(question)) {
+        return false;
+      }
+      const normalizedAnswer = normalizeAnswer(answer);
+      return (question.acceptedAnswers ?? [question.correctAnswer]).some(
+        (candidate) => normalizeAnswer(candidate) === normalizedAnswer,
+      );
+    }
     case "mini-wordle":
       return isMiniWordleAnswer(answer) && calculateMiniWordleMetrics(question, answer).solved;
     case "anagram":

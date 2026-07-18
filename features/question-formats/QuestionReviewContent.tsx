@@ -19,6 +19,7 @@ import {
   isSimonSequenceAnswer,
 } from "@/lib/scoring";
 import { getMiniWordleFeedback } from "@/lib/miniWordle";
+import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
 import type {
   AnswerResult,
   AnswerValue,
@@ -140,6 +141,35 @@ function ProgressiveCluesReview({
           <span>Máximo disponible</span>
           <strong>{details ? `${details.availablePoints} pts` : "—"}</strong>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ProgressiveImageReview({
+  question,
+  result,
+}: ReviewProps<QuestionOfType<"progressive-image">>) {
+  const revealedPercentage = Math.round(
+    calculateProgressiveImageReveal(result.timeUsed, question.revealDuration) * 100,
+  );
+
+  return (
+    <div className="grid gap-3">
+      <QuestionMedia
+        compact
+        media={{
+          type: "image",
+          src: question.surface.src,
+          alt: question.solutionAlt,
+          fit: question.surface.fit,
+          position: question.surface.position,
+        }}
+      />
+      <AnswerPair answer={result.answer} correct={question.correctAnswer} />
+      <div className={styles.answerBox}>
+        <span>Imagen revelada al responder</span>
+        <strong>{result.answer === null ? "Sin respuesta" : `${revealedPercentage} %`}</strong>
       </div>
     </div>
   );
@@ -700,6 +730,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "true-false": TrueFalseReview,
   "short-text": ShortTextReview,
   "progressive-clues": ProgressiveCluesReview,
+  "progressive-image": ProgressiveImageReview,
   "heat-map": HeatMapReview,
   "image-labeling": ImageLabelingReview,
   ordering: OrderingReview,

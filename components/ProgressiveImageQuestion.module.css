@@ -1,0 +1,166 @@
+.root {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgb(255 255 255 / 55%);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.progressHeader strong {
+  color: var(--cyan);
+}
+
+.progressTrack {
+  height: 0.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cyan);
+  transition: width 100ms linear;
+}
+
+.imageFrame {
+  position: relative;
+  isolation: isolate;
+  min-height: 13rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 1.25rem;
+  background: #090b0e;
+}
+
+.imageFrame img {
+  transition:
+    filter 100ms linear,
+    transform 100ms linear;
+  will-change: filter, transform;
+}
+
+.imageCover {
+  object-fit: cover;
+}
+
+.imageContain {
+  object-fit: contain;
+}
+
+.loading,
+.errorPanel {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  margin: 0;
+  background: rgb(9 11 14 / 86%);
+  color: rgb(255 255 255 / 68%);
+  text-align: center;
+}
+
+.loading {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.errorPanel {
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+}
+
+.errorPanel strong {
+  color: white;
+}
+
+.errorPanel span {
+  margin-bottom: 0.5rem;
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.875rem;
+}
+
+.answerPanel {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.answerPanel label {
+  color: rgb(255 255 255 / 65%);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.answerRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+}
+
+.answerRow input {
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0.9rem;
+  outline: 0;
+  background: rgb(255 255 255 / 5%);
+  padding: 0.95rem 1rem;
+  color: white;
+  font: inherit;
+}
+
+.answerRow input:focus-visible {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgb(36 210 221 / 20%);
+}
+
+.answerRow input:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.answerRow button {
+  min-width: 3.5rem;
+}
+
+.answerPanel > p {
+  margin: 0;
+  color: rgb(255 255 255 / 35%);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .root {
+    margin-top: 1.25rem;
+  }
+
+  .imageFrame {
+    min-height: 10.5rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressTrack span,
+  .imageFrame img {
+    transition: none;
+  }
+}

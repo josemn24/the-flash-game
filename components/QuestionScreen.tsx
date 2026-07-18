@@ -47,7 +47,8 @@ export function QuestionScreen({
   const hasDelayedTimedResponse =
     question.type === "flash-memory" ||
     question.type === "simon-sequence" ||
-    question.type === "mini-wordle";
+    question.type === "mini-wordle" ||
+    question.type === "progressive-image";
   const [timedResponseStarted, setTimedResponseStarted] = useState(!hasDelayedTimedResponse);
   const startTimedResponse = () => {
     setTimedResponseStarted(true);

@@ -77,6 +77,15 @@ export type ProgressiveCluesQuestion = BaseQuestion & {
   acceptedAnswers?: string[];
 };
 
+export type ProgressiveImageQuestion = BaseQuestion & {
+  type: "progressive-image";
+  surface: ImageSurface;
+  solutionAlt: string;
+  revealDuration: number;
+  correctAnswer: string;
+  acceptedAnswers?: string[];
+};
+
 export type NormalizedPoint = {
   x: number;
   y: number;
@@ -87,6 +96,8 @@ export type ImageSurface = {
   alt: string;
   width: number;
   height: number;
+  fit?: "cover" | "contain";
+  position?: string;
 };
 
 export type HeatMapAnswer = NormalizedPoint;
@@ -287,6 +298,7 @@ export type Question =
   | TrueFalseQuestion
   | ShortTextQuestion
   | ProgressiveCluesQuestion
+  | ProgressiveImageQuestion
   | HeatMapQuestion
   | ImageLabelingQuestion
   | OrderingQuestion

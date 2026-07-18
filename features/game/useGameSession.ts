@@ -203,7 +203,8 @@ export function useGameSession(stage: Stage) {
     if (
       (question?.type === "flash-memory" ||
         question?.type === "simon-sequence" ||
-        question?.type === "mini-wordle") &&
+        question?.type === "mini-wordle" ||
+        question?.type === "progressive-image") &&
       !answerLock.current
     ) {
       questionStartedAt.current = performance.now();
