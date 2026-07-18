@@ -21,7 +21,7 @@ La aplicación soporta de forma nativa:
 - emparejar conceptos con validación inmediata y crédito por pareja;
 - adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento;
 - mapa de calor con selección espacial y crédito por proximidad;
-- etiquetar imagen con varias asociaciones discretas y crédito parcial.
+- etiquetar imagen con asociación múltiple o identificación de una única zona.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -261,12 +261,12 @@ Se muestra un mapa, gráfico o escena y el jugador debe señalar una ubicación.
 
 ### 26. Etiquetar imagen — Implementada
 
-Se muestra una imagen o diagrama con varios anclajes y un banco de etiquetas. El jugador identifica cada parte asociando una etiqueta exacta a su zona, una mecánica adecuada para anatomía, componentes de objetos y diagramas educativos.
+Se muestra una imagen o diagrama. El jugador puede asociar varias etiquetas a sus anclajes o identificar una única zona que ya aparece señalada, una mecánica adecuada para anatomía, componentes de objetos y diagramas educativos.
 
-- **Interacción actual:** seleccionar un anclaje y después una etiqueta textual; cada etiqueta es de un solo uso y todas las asociaciones pueden editarse o limpiarse antes de confirmar el conjunto.
+- **Interacción actual:** en `assign-all`, seleccionar un anclaje y después una etiqueta textual, editar las asociaciones y confirmar el conjunto. En `identify-one`, responder a una única señal mediante elección inmediata o texto enviado por botón o teclado.
 - **Encaje:** separa la identificación discreta de partes de la localización continua propia de Mapa de calor.
-- **Puntuación actual:** cada asociación correcta aporta la misma fracción de puntos y la velocidad ajusta el resultado; un timeout descarta el borrador.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
+- **Puntuación actual:** el etiquetado múltiple concede crédito por asociación; la identificación única es binaria y premia velocidad. Una elección incorrecta resta el 20 %, un texto incorrecto no penaliza y el timeout puntúa cero.
+- **Uso actual:** tipo nativo con dos ejemplos jugables —múltiple y único por elección— en la biblioteca; el contrato y la interfaz también admiten texto libre. Las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
 - **Riesgo:** los anclajes y textos deben mantenerse legibles y sin solapamientos en móvil; la numeración, el foco y el resumen textual deben permitir completar el ejercicio sin depender solo de la posición o el color.
 
 ### 27. La respuesta prohibida — Futura

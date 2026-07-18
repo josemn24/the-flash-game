@@ -34,8 +34,14 @@ export type AnswerResultDetails =
     }
   | {
       type: "image-labeling";
+      task: "assign-all";
       correctLabels: number;
       totalLabels: number;
+    }
+  | {
+      type: "image-labeling";
+      task: "identify-one";
+      responseKind: "choice" | "text";
     };
 
 export type AnswerResult = {

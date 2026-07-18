@@ -8,6 +8,8 @@ export type ScoringPolicy = {
   partialCredit: boolean;
   incorrectPenalty: boolean;
   speedBonus: boolean;
+  partialCreditLabel?: string;
+  incorrectPenaltyLabel?: string;
 };
 
 export const SCORING_POLICIES = {
@@ -75,10 +77,12 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["image-labeling"],
     label: "Crédito por etiqueta",
     summary:
-      "Cada zona correctamente etiquetada aporta su fracción de puntos, ajustada por el tiempo empleado.",
+      "El etiquetado múltiple concede crédito por zona; la identificación única es binaria y se ajusta por velocidad.",
     partialCredit: true,
-    incorrectPenalty: false,
+    incorrectPenalty: true,
     speedBonus: true,
+    partialCreditLabel: "Crédito parcial en múltiple",
+    incorrectPenaltyLabel: "Elección incorrecta −20 %",
   },
   ordering: {
     id: QUESTION_SCORING_POLICY.ordering,

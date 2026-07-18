@@ -113,6 +113,7 @@ type HeatMapWithoutRadii = Omit<ValidHeatMap, "fullCreditRadius" | "toleranceRad
 type ValidImageLabeling = {
   id: "valid-image-labeling";
   type: "image-labeling";
+  task: "assign-all";
   category: "Test";
   question: "Label the image";
   surface: { src: "/diagram.svg"; alt: "Diagram"; width: 600; height: 720 };
@@ -123,12 +124,40 @@ type ValidImageLabeling = {
   explanation: "The top label belongs at the top";
 };
 
+type ValidSingleChoiceImageLabeling = {
+  id: "valid-single-choice-image-labeling";
+  type: "image-labeling";
+  task: "identify-one";
+  category: "Test";
+  question: "Identify the target";
+  surface: { src: "/diagram.svg"; alt: "Diagram"; width: 600; height: 720 };
+  target: { x: 0.5; y: 0.2 };
+  response: { kind: "choice"; options: ["Top", "Bottom"]; correctAnswer: "Top" };
+  timeLimit: 12;
+  points: 100;
+  explanation: "The target is at the top";
+};
+
+type ValidSingleTextImageLabeling = Omit<ValidSingleChoiceImageLabeling, "id" | "response"> & {
+  id: "valid-single-text-image-labeling";
+  response: { kind: "text"; correctAnswer: "Top"; acceptedAnswers: ["Top", "Upper"] };
+};
+
+type SingleImageLabelingWithoutTarget = Omit<ValidSingleChoiceImageLabeling, "target">;
+type SingleImageLabelingWithoutOptions = Omit<ValidSingleChoiceImageLabeling, "response"> & {
+  response: { kind: "choice"; correctAnswer: "Top" };
+};
+type SingleImageLabelingWithoutAnswer = Omit<ValidSingleTextImageLabeling, "response"> & {
+  response: { kind: "text" };
+};
+
 type ImageLabelingWithoutSurface = Omit<ValidImageLabeling, "surface">;
 type ImageLabelingWithoutAnchors = Omit<ValidImageLabeling, "anchors">;
 type ImageLabelingWithoutLabels = Omit<ValidImageLabeling, "labels">;
 type ImageLabelingWithoutCorrectReference = Omit<ValidImageLabeling, "anchors"> & {
   anchors: [{ id: "top"; point: { x: 0.5; y: 0.2 } }];
 };
+type ImageLabelingWithoutTask = Omit<ValidImageLabeling, "task">;
 
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
@@ -166,6 +195,12 @@ export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithout
 export type RejectsHeatMapWithoutTarget = Assert<IsNotAssignable<HeatMapWithoutTarget, Question>>;
 export type RejectsHeatMapWithoutRadii = Assert<IsNotAssignable<HeatMapWithoutRadii, Question>>;
 export type AcceptsValidImageLabeling = Assert<IsAssignable<ValidImageLabeling, Question>>;
+export type AcceptsValidSingleChoiceImageLabeling = Assert<
+  IsAssignable<ValidSingleChoiceImageLabeling, Question>
+>;
+export type AcceptsValidSingleTextImageLabeling = Assert<
+  IsAssignable<ValidSingleTextImageLabeling, Question>
+>;
 export type RejectsImageLabelingWithoutSurface = Assert<
   IsNotAssignable<ImageLabelingWithoutSurface, Question>
 >;
@@ -177,4 +212,16 @@ export type RejectsImageLabelingWithoutLabels = Assert<
 >;
 export type RejectsImageLabelingWithoutCorrectReference = Assert<
   IsNotAssignable<ImageLabelingWithoutCorrectReference, Question>
+>;
+export type RejectsImageLabelingWithoutTask = Assert<
+  IsNotAssignable<ImageLabelingWithoutTask, Question>
+>;
+export type RejectsSingleImageLabelingWithoutTarget = Assert<
+  IsNotAssignable<SingleImageLabelingWithoutTarget, Question>
+>;
+export type RejectsSingleImageLabelingWithoutOptions = Assert<
+  IsNotAssignable<SingleImageLabelingWithoutOptions, Question>
+>;
+export type RejectsSingleImageLabelingWithoutAnswer = Assert<
+  IsNotAssignable<SingleImageLabelingWithoutAnswer, Question>
 >;

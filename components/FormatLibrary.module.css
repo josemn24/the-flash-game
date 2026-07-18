@@ -188,6 +188,10 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.examplesGrid {
+  display: grid;
+  gap: 1rem;
+}
 .pager {
   display: grid;
   gap: 0.7rem;
@@ -240,5 +244,8 @@
   }
   .wide {
     grid-column: 1 / -1;
+  }
+  .examplesGrid:has(> :nth-child(2)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -7,14 +7,14 @@ The Flash es un juego de preguntas en solitario diseñado como un sprint contra 
 - Dos etapas locales de diez preguntas: una demo de cultura general y otra de conexiones rápidas.
 - Doce formatos: elección múltiple, encontrar el intruso, emparejar conceptos, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor y etiquetar imagen.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
-- Etiquetado de imágenes mediante anclajes y etiquetas textuales de un solo uso, con edición previa, confirmación conjunta y crédito parcial.
+- Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
 - Preguntas con imágenes o ilustraciones integradas en elección múltiple, encontrar el intruso y estimación.
 - Temporizador individual y avance automático al agotarse el tiempo.
 - Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
 - Resultados con precisión, aciertos, fallos, preguntas sin contestar y tiempo total.
 - Revisión completa de respuestas y opción de repetición.
 - Biblioteca con reglas, recomendaciones, accesibilidad y puntuación de cada formato.
-- Un ejemplo jugable y cronometrado desde cada ficha de formato.
+- Uno o varios ejemplos jugables y cronometrados desde cada ficha de formato.
 - Diseño responsive, accesible y completamente en español.
 
 ## Tecnologías

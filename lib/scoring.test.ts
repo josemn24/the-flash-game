@@ -12,11 +12,13 @@ import {
   isAnswerCorrect,
   isHeatMapAnswer,
   isImageLabelingAnswer,
+  isValidImageLabelingConfiguration,
   QUESTION_SCORING_POLICY,
 } from "@/lib/scoring";
 import type { AnswerValue, QuestionType } from "@/types/game";
 
-const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ example }) => {
+const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) => {
+  const example = examples[0].question;
   let correctAnswer: AnswerValue;
   let incorrectAnswer: AnswerValue;
   let incorrectPoints: number;
@@ -28,16 +30,23 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ example }) => 
       incorrectPoints = 0;
       break;
     case "image-labeling":
-      correctAnswer = Object.fromEntries(
-        example.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
-      );
-      incorrectAnswer = Object.fromEntries(
-        example.anchors.map((anchor, index) => [
-          anchor.id,
-          example.labels[(index + 1) % example.labels.length].id,
-        ]),
-      );
-      incorrectPoints = 0;
+      if (example.task === "assign-all") {
+        correctAnswer = Object.fromEntries(
+          example.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
+        );
+        incorrectAnswer = Object.fromEntries(
+          example.anchors.map((anchor, index) => [
+            anchor.id,
+            example.labels[(index + 1) % example.labels.length].id,
+          ]),
+        );
+        incorrectPoints = 0;
+      } else {
+        correctAnswer = example.response.correctAnswer;
+        incorrectAnswer = "__incorrect__";
+        incorrectPoints =
+          example.response.kind === "choice" ? -Math.round(example.points * 0.2) : 0;
+      }
       break;
     case "matching":
       correctAnswer = Object.fromEntries(
@@ -106,18 +115,18 @@ describe("question evaluation", () => {
   );
 
   it("normalizes accepted short answers", () => {
-    const question = QUESTION_FORMAT_CATALOG["short-text"].example;
+    const question = QUESTION_FORMAT_CATALOG["short-text"].examples[0].question;
     expect(isAnswerCorrect(question, "Mil novecientos cuarenta y cinco")).toBe(true);
   });
 
   it("normalizes accepted progressive-clues answers", () => {
-    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(isAnswerCorrect(question, "  MARIE CURÍE ")).toBe(true);
     expect(isAnswerCorrect(question, "Maria Skłodowska-Curie")).toBe(true);
   });
 
   it("reduces progressive-clues points before applying the speed multiplier", () => {
-    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(
       evaluateAnswer({
         question,
@@ -153,7 +162,7 @@ describe("question evaluation", () => {
   });
 
   it("returns zero for failed or timed-out progressive-clues answers", () => {
-    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(
       evaluateAnswer({
         question,
@@ -184,7 +193,7 @@ describe("question evaluation", () => {
   });
 
   it("clamps progressive-clues metadata to the authored clue range", () => {
-    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(calculateProgressiveCluesMetrics(question, -10)).toEqual({
       revealedClues: 1,
       totalClues: 4,
@@ -199,7 +208,7 @@ describe("question evaluation", () => {
   });
 
   it("awards full heat-map accuracy inside the target zone", () => {
-    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
     const center = question.target;
     const nearEdge = {
       x:
@@ -220,7 +229,7 @@ describe("question evaluation", () => {
   });
 
   it("applies linear heat-map falloff before the speed multiplier", () => {
-    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
     const midpointDistance = (question.fullCreditRadius + question.toleranceRadius) / 2;
     const shortSide = Math.min(question.surface.width, question.surface.height);
     const answer = {
@@ -241,7 +250,7 @@ describe("question evaluation", () => {
   });
 
   it("normalizes heat-map distance across different surface aspect ratios", () => {
-    const base = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const base = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
     const landscape = {
       ...base,
       surface: { ...base.surface, width: 1000, height: 500 },
@@ -257,7 +266,7 @@ describe("question evaluation", () => {
   });
 
   it("clamps heat-map coordinates and rejects malformed answers", () => {
-    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
     expect(calculateHeatMapMetrics(question, { x: 2, y: -1 }).selectedPoint).toEqual({
       x: 1,
       y: 0,
@@ -273,7 +282,7 @@ describe("question evaluation", () => {
   });
 
   it("discards timed-out heat-map drafts", () => {
-    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
     expect(
       evaluateAnswer({
         question,
@@ -293,7 +302,8 @@ describe("question evaluation", () => {
   });
 
   it("scores complete image-labeling answers by correct association and speed", () => {
-    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].examples[0].question;
+    if (question.task !== "assign-all") throw new Error("Expected assign-all example");
     const complete = Object.fromEntries(
       question.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
     );
@@ -315,7 +325,8 @@ describe("question evaluation", () => {
   });
 
   it("rejects incomplete, unknown and duplicated image-labeling associations", () => {
-    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].examples[0].question;
+    if (question.task !== "assign-all") throw new Error("Expected assign-all example");
     const incomplete = { head: "head-label" };
     const unknown = Object.fromEntries(
       question.anchors.map((anchor) => [
@@ -337,7 +348,8 @@ describe("question evaluation", () => {
   });
 
   it("discards timed-out image-labeling drafts", () => {
-    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].examples[0].question;
+    if (question.task !== "assign-all") throw new Error("Expected assign-all example");
     const complete = Object.fromEntries(
       question.anchors.map((anchor) => [anchor.id, anchor.correctLabelId]),
     );
@@ -351,9 +363,95 @@ describe("question evaluation", () => {
     });
   });
 
+  it("scores single image-labeling choice answers as binary-speed", () => {
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].examples[1].question;
+    if (question.task !== "identify-one" || question.response.kind !== "choice") {
+      throw new Error("Expected identify-one choice example");
+    }
+    expect(evaluateAnswer({ question, answer: "Muslos", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 100,
+      details: {
+        type: "image-labeling",
+        task: "identify-one",
+        responseKind: "choice",
+      },
+    });
+    expect(evaluateAnswer({ question, answer: "Muslos", timeUsed: 12 })).toMatchObject({
+      status: "correct",
+      points: 50,
+    });
+    expect(evaluateAnswer({ question, answer: "Torso", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: -20,
+    });
+    expect(evaluateAnswer({ question, answer: 42, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+  });
+
+  it("normalizes single image-labeling text answers without penalizing failures", () => {
+    const base = QUESTION_FORMAT_CATALOG["image-labeling"].examples[1].question;
+    if (base.task !== "identify-one") throw new Error("Expected identify-one example");
+    const question = {
+      ...base,
+      id: "guide-image-labeling-single-text",
+      response: {
+        kind: "text" as const,
+        correctAnswer: "Músculo cuádriceps",
+        acceptedAnswers: ["Músculo cuádriceps", "Cuadriceps"],
+      },
+    };
+    expect(evaluateAnswer({ question, answer: "  CUADRÍCEPS ", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 100,
+      details: { task: "identify-one", responseKind: "text" },
+    });
+    expect(evaluateAnswer({ question, answer: "Gemelo", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+  });
+
+  it("discards timed-out single image-labeling answers", () => {
+    const question = QUESTION_FORMAT_CATALOG["image-labeling"].examples[1].question;
+    expect(
+      evaluateAnswer({ question, answer: "Muslos", timeUsed: 99, timedOut: true }),
+    ).toMatchObject({ status: "unanswered", points: 0, timeUsed: 12 });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: 12,
+    });
+  });
+
+  it("rejects malformed single image-labeling configurations defensively", () => {
+    const base = QUESTION_FORMAT_CATALOG["image-labeling"].examples[1].question;
+    if (base.task !== "identify-one" || base.response.kind !== "choice") {
+      throw new Error("Expected identify-one choice example");
+    }
+    const missingCorrectOption = {
+      ...base,
+      response: { ...base.response, options: ["Cabeza", "Torso"] },
+    };
+    const invalidTarget = { ...base, target: { x: Number.NaN, y: 0.6 } };
+    expect(isValidImageLabelingConfiguration(missingCorrectOption)).toBe(false);
+    expect(isValidImageLabelingConfiguration(invalidTarget)).toBe(false);
+    expect(
+      evaluateAnswer({ question: missingCorrectOption, answer: "Muslos", timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(
+      evaluateAnswer({ question: invalidTarget, answer: "Muslos", timeUsed: 0 }),
+    ).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+  });
+
   it("preserves the speed floor and incorrect penalties", () => {
-    const choice = QUESTION_FORMAT_CATALOG["multiple-choice"].example;
-    const trueFalse = QUESTION_FORMAT_CATALOG["true-false"].example;
+    const choice = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
+    const trueFalse = QUESTION_FORMAT_CATALOG["true-false"].examples[0].question;
     expect(calculateAnswerScore(choice, choice.correctAnswer, 0)).toBe(100);
     expect(calculateAnswerScore(choice, choice.correctAnswer, choice.timeLimit)).toBe(50);
     expect(calculateAnswerScore(choice, "Toronto", 0)).toBe(-20);
@@ -361,7 +459,7 @@ describe("question evaluation", () => {
   });
 
   it("evaluates odd-one-out answers and applies its incorrect penalty", () => {
-    const question = QUESTION_FORMAT_CATALOG["odd-one-out"].example;
+    const question = QUESTION_FORMAT_CATALOG["odd-one-out"].examples[0].question;
     expect(evaluateAnswer({ question, answer: "luna", timeUsed: 0 })).toMatchObject({
       status: "correct",
       points: 100,
@@ -382,7 +480,7 @@ describe("question evaluation", () => {
   });
 
   it("awards partial classification points", () => {
-    const question = QUESTION_FORMAT_CATALOG.classification.example;
+    const question = QUESTION_FORMAT_CATALOG.classification.examples[0].question;
     const result = evaluateAnswer({
       question,
       answer: { Delfín: "mamífero", Águila: "ave", Tortuga: "ave" },
@@ -393,7 +491,7 @@ describe("question evaluation", () => {
   });
 
   it("awards matching credit per correct pair and adjusts it by speed", () => {
-    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     const complete = {
       japon: "bandera-japon",
       italia: "bandera-italia",
@@ -414,7 +512,7 @@ describe("question evaluation", () => {
   });
 
   it("preserves matching progress on timeout without rewarding wrong pairs", () => {
-    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     expect(
       evaluateAnswer({
         question,
@@ -433,7 +531,7 @@ describe("question evaluation", () => {
   });
 
   it("penalizes matching mistakes by ten percent without going below zero", () => {
-    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     const answer = { japon: "bandera-japon" };
     expect(
       evaluateAnswer({
@@ -463,7 +561,7 @@ describe("question evaluation", () => {
   });
 
   it("calculates estimation proximity", () => {
-    const question = QUESTION_FORMAT_CATALOG.estimation.example;
+    const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
     const result = evaluateAnswer({ question, answer: 430, timeUsed: 0 });
     expect(result.status).toBe("partial");
     expect(result.points).toBe(70);
@@ -471,7 +569,7 @@ describe("question evaluation", () => {
   });
 
   it("penalizes failed code attempts", () => {
-    const question = QUESTION_FORMAT_CATALOG["logic-code"].example;
+    const question = QUESTION_FORMAT_CATALOG["logic-code"].examples[0].question;
     const result = evaluateAnswer({
       question,
       answer: "042",
@@ -487,7 +585,7 @@ describe("question evaluation", () => {
   });
 
   it("returns zero points after a timeout", () => {
-    const question = QUESTION_FORMAT_CATALOG["multiple-choice"].example;
+    const question = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
     const result = evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true });
     expect(result.status).toBe("unanswered");
     expect(result.points).toBe(0);
@@ -495,7 +593,7 @@ describe("question evaluation", () => {
   });
 
   it("clamps negative and excessive elapsed time", () => {
-    const question = QUESTION_FORMAT_CATALOG["multiple-choice"].example;
+    const question = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
     expect(calculateAnswerScore(question, question.correctAnswer, -10)).toBe(question.points);
     expect(calculateAnswerScore(question, question.correctAnswer, question.timeLimit + 10)).toBe(
       Math.round(question.points * 0.5),
@@ -509,19 +607,19 @@ describe("question evaluation", () => {
 
   it("handles non-positive scoring denominators deterministically", () => {
     const choice = {
-      ...QUESTION_FORMAT_CATALOG["multiple-choice"].example,
+      ...QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question,
       timeLimit: 0,
     };
     const estimation = {
-      ...QUESTION_FORMAT_CATALOG.estimation.example,
+      ...QUESTION_FORMAT_CATALOG.estimation.examples[0].question,
       tolerance: 0,
     };
     const classification = {
-      ...QUESTION_FORMAT_CATALOG.classification.example,
+      ...QUESTION_FORMAT_CATALOG.classification.examples[0].question,
       items: [],
     };
     const matching = {
-      ...QUESTION_FORMAT_CATALOG.matching.example,
+      ...QUESTION_FORMAT_CATALOG.matching.examples[0].question,
       leftItems: [],
       rightItems: [],
     };

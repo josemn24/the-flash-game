@@ -2,25 +2,30 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
+import type { FormEvent } from "react";
 import { useState } from "react";
-import { CheckIcon, CrossIcon } from "@/components/icons";
+import { AnswerOption } from "@/components/AnswerOption";
+import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import styles from "@/components/ImageLabelingQuestion.module.css";
+import questionStyles from "@/components/QuestionScreen.module.css";
 import type {
+  AssignAllImageLabelingQuestion,
   ImageLabelingAnswer,
   ImageLabelingQuestion as ImageLabelingQuestionType,
+  IdentifyOneImageLabelingQuestion,
 } from "@/types/game";
 
 type Props = {
   question: ImageLabelingQuestionType;
   locked: boolean;
-  onSubmit: (answer: ImageLabelingAnswer) => void;
+  onSubmit: (answer: ImageLabelingAnswer | string) => void;
 };
 
-export function ImageLabelingReviewSurface({
+export function AssignAllImageLabelingReviewSurface({
   question,
   answer,
 }: {
-  question: ImageLabelingQuestionType;
+  question: AssignAllImageLabelingQuestion;
   answer: ImageLabelingAnswer | null;
 }) {
   const labelFor = (labelId: string | undefined) =>
@@ -76,7 +81,86 @@ export function ImageLabelingReviewSurface({
   );
 }
 
-export function ImageLabelingQuestion({ question, locked, onSubmit }: Props) {
+export function IdentifyOneImageLabelingReviewSurface({
+  question,
+  answer,
+  isCorrect,
+}: {
+  question: IdentifyOneImageLabelingQuestion;
+  answer: string | null;
+  isCorrect: boolean;
+}) {
+  const correct = question.response.correctAnswer;
+  return (
+    <>
+      <div
+        className={styles.surface}
+        style={{ aspectRatio: `${question.surface.width} / ${question.surface.height}` }}
+        role="img"
+        aria-label={`${question.surface.alt} Zona señalada. Elegida: ${answer ?? "sin respuesta"}. Correcta: ${correct}.`}
+      >
+        <Image
+          src={question.surface.src}
+          alt=""
+          fill
+          sizes="(max-width: 768px) calc(100vw - 3rem), 30rem"
+          unoptimized={question.surface.src.endsWith(".svg")}
+          draggable={false}
+        />
+        <div className={styles.anchors} aria-hidden="true">
+          <div
+            className={`${styles.reviewAnchor} ${styles.singleReviewAnchor} ${isCorrect ? styles.reviewCorrect : styles.reviewWrong}`}
+            style={{ left: `${question.target.x * 100}%`, top: `${question.target.y * 100}%` }}
+          >
+            <strong>{isCorrect ? correct : `Tu: ${answer ?? "Sin respuesta"}`}</strong>
+            {!isCorrect && <small>Correcta: {correct}</small>}
+          </div>
+        </div>
+      </div>
+      <p className="sr-only">
+        Elegida: {answer ?? "sin respuesta"}. Correcta: {correct}.
+      </p>
+    </>
+  );
+}
+
+function IdentifyOneSurface({ question }: { question: IdentifyOneImageLabelingQuestion }) {
+  return (
+    <div
+      className={styles.surface}
+      style={{ aspectRatio: `${question.surface.width} / ${question.surface.height}` }}
+      role="img"
+      aria-label={`${question.surface.alt} Hay una única zona señalada para identificar.`}
+    >
+      <Image
+        src={question.surface.src}
+        alt=""
+        fill
+        sizes="(max-width: 768px) calc(100vw - 3rem), 30rem"
+        unoptimized={question.surface.src.endsWith(".svg")}
+        draggable={false}
+      />
+      <div className={styles.anchors} aria-hidden="true">
+        <div
+          className={styles.singleTarget}
+          style={{ left: `${question.target.x * 100}%`, top: `${question.target.y * 100}%` }}
+        >
+          ?
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AssignAllImageLabelingQuestion({
+  question,
+  locked,
+  onSubmit,
+}: {
+  question: AssignAllImageLabelingQuestion;
+  locked: boolean;
+  onSubmit: (answer: ImageLabelingAnswer) => void;
+}) {
   const [answer, setAnswer] = useState<ImageLabelingAnswer>({});
   const [selectedAnchorId, setSelectedAnchorId] = useState(question.anchors[0]?.id ?? null);
   const [announcement, setAnnouncement] = useState("Selecciona una zona y después una etiqueta.");
@@ -212,5 +296,84 @@ export function ImageLabelingQuestion({ question, locked, onSubmit }: Props) {
         Confirmar etiquetas
       </motion.button>
     </div>
+  );
+}
+
+function IdentifyOneImageLabelingQuestion({
+  question,
+  locked,
+  onSubmit,
+}: {
+  question: IdentifyOneImageLabelingQuestion;
+  locked: boolean;
+  onSubmit: (answer: string) => void;
+}) {
+  const [answer, setAnswer] = useState("");
+  const submitText = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const value = answer.trim();
+    if (value && !locked) onSubmit(value);
+  };
+
+  return (
+    <div className={styles.challenge}>
+      <IdentifyOneSurface question={question} />
+      {question.response.kind === "choice" ? (
+        <div className={styles.choiceGrid}>
+          {question.response.options.map((option, index) => (
+            <AnswerOption
+              key={option}
+              label={option}
+              index={index}
+              disabled={locked}
+              onSelect={() => onSubmit(option)}
+            />
+          ))}
+        </div>
+      ) : (
+        <form className={styles.textForm} onSubmit={submitText}>
+          <label htmlFor={`image-label-answer-${question.id}`}>Escribe tu respuesta</label>
+          <div className={questionStyles.textAnswerRow}>
+            <input
+              id={`image-label-answer-${question.id}`}
+              className={questionStyles.textAnswerInput}
+              type="text"
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              placeholder="Tu respuesta…"
+              disabled={locked}
+              autoComplete="off"
+              autoFocus
+            />
+            <motion.button
+              className={questionStyles.textSubmitButton}
+              type="submit"
+              disabled={locked || !answer.trim()}
+              whileTap={{ scale: 0.96 }}
+              aria-label="Enviar respuesta"
+            >
+              <ArrowIcon className="h-6 w-6" />
+            </motion.button>
+          </div>
+          <p>No importan las mayúsculas, las tildes ni los espacios.</p>
+        </form>
+      )}
+    </div>
+  );
+}
+
+export function ImageLabelingQuestion(props: Props) {
+  return props.question.task === "assign-all" ? (
+    <AssignAllImageLabelingQuestion
+      question={props.question}
+      locked={props.locked}
+      onSubmit={props.onSubmit}
+    />
+  ) : (
+    <IdentifyOneImageLabelingQuestion
+      question={props.question}
+      locked={props.locked}
+      onSubmit={props.onSubmit}
+    />
   );
 }

@@ -16,7 +16,7 @@ export type QuestionFormatGuide<T extends QuestionType = QuestionType> = {
   mediaSupport: string[];
   timing: { recommendedSeconds: string; notes: string };
   scoring: ScoringPolicy;
-  example: QuestionOfType<T>;
+  examples: Array<{ title: string; question: QuestionOfType<T> }>;
 };
 
 export type QuestionFormatCatalog = {
@@ -65,17 +65,22 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Añade tiempo si hay que interpretar una imagen o leer opciones extensas.",
     },
     scoring: SCORING_POLICIES["multiple-choice"],
-    example: {
-      id: "guide-choice",
-      type: "multiple-choice",
-      category: "Geografía",
-      question: "¿Cuál es la capital de Canadá?",
-      options: ["Toronto", "Ottawa", "Vancouver", "Montreal"],
-      correctAnswer: "Ottawa",
-      timeLimit: 12,
-      points: 100,
-      explanation: "Ottawa es la capital de Canadá.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-choice",
+          type: "multiple-choice",
+          category: "Geografía",
+          question: "¿Cuál es la capital de Canadá?",
+          options: ["Toronto", "Ottawa", "Vancouver", "Montreal"],
+          correctAnswer: "Ottawa",
+          timeLimit: 12,
+          points: 100,
+          explanation: "Ottawa es la capital de Canadá.",
+        },
+      },
+    ],
   },
   "odd-one-out": {
     id: "odd-one-out",
@@ -118,22 +123,27 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Añade tiempo cuando la relación exija inspeccionar imágenes o comparar datos.",
     },
     scoring: SCORING_POLICIES["odd-one-out"],
-    example: {
-      id: "guide-odd-one-out",
-      type: "odd-one-out",
-      category: "Lengua",
-      question: "¿Qué palabra no pertenece al mismo grupo que las demás?",
-      items: [
-        { id: "mercurio", label: "Mercurio" },
-        { id: "venus", label: "Venus" },
-        { id: "luna", label: "Luna" },
-        { id: "marte", label: "Marte" },
-      ],
-      correctAnswer: "luna",
-      timeLimit: 8,
-      points: 100,
-      explanation: "Mercurio, Venus y Marte son planetas; la Luna es un satélite natural.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-odd-one-out",
+          type: "odd-one-out",
+          category: "Lengua",
+          question: "¿Qué palabra no pertenece al mismo grupo que las demás?",
+          items: [
+            { id: "mercurio", label: "Mercurio" },
+            { id: "venus", label: "Venus" },
+            { id: "luna", label: "Luna" },
+            { id: "marte", label: "Marte" },
+          ],
+          correctAnswer: "luna",
+          timeLimit: 8,
+          points: 100,
+          explanation: "Mercurio, Venus y Marte son planetas; la Luna es un satélite natural.",
+        },
+      },
+    ],
   },
   matching: {
     id: "matching",
@@ -177,37 +187,43 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Ajusta el tiempo al número de parejas y a la carga visual de las tarjetas.",
     },
     scoring: SCORING_POLICIES.matching,
-    example: {
-      id: "guide-matching",
-      type: "matching",
-      category: "Geografía",
-      question: "Empareja cada país con su bandera.",
-      leftItems: [
-        { id: "japon", label: "Japón", correctMatchId: "bandera-japon" },
-        { id: "italia", label: "Italia", correctMatchId: "bandera-italia" },
-        { id: "francia", label: "Francia", correctMatchId: "bandera-francia" },
-      ],
-      rightItems: [
-        {
-          id: "bandera-italia",
-          label: "Bandera de Italia",
-          media: { type: "illustration", id: "italy-flag", alt: "Bandera de Italia" },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-matching",
+          type: "matching",
+          category: "Geografía",
+          question: "Empareja cada país con su bandera.",
+          leftItems: [
+            { id: "japon", label: "Japón", correctMatchId: "bandera-japon" },
+            { id: "italia", label: "Italia", correctMatchId: "bandera-italia" },
+            { id: "francia", label: "Francia", correctMatchId: "bandera-francia" },
+          ],
+          rightItems: [
+            {
+              id: "bandera-italia",
+              label: "Bandera de Italia",
+              media: { type: "illustration", id: "italy-flag", alt: "Bandera de Italia" },
+            },
+            {
+              id: "bandera-francia",
+              label: "Bandera de Francia",
+              media: { type: "illustration", id: "france-flag", alt: "Bandera de Francia" },
+            },
+            {
+              id: "bandera-japon",
+              label: "Bandera de Japón",
+              media: { type: "illustration", id: "japan-flag", alt: "Bandera de Japón" },
+            },
+          ],
+          timeLimit: 20,
+          points: 150,
+          explanation:
+            "Japón, Italia y Francia tienen banderas nacionales claramente diferenciadas.",
         },
-        {
-          id: "bandera-francia",
-          label: "Bandera de Francia",
-          media: { type: "illustration", id: "france-flag", alt: "Bandera de Francia" },
-        },
-        {
-          id: "bandera-japon",
-          label: "Bandera de Japón",
-          media: { type: "illustration", id: "japan-flag", alt: "Bandera de Japón" },
-        },
-      ],
-      timeLimit: 20,
-      points: 150,
-      explanation: "Japón, Italia y Francia tienen banderas nacionales claramente diferenciadas.",
-    },
+      },
+    ],
   },
   "true-false": {
     id: "true-false",
@@ -248,16 +264,21 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "La lectura debe ser breve; una afirmación larga desvirtúa el formato.",
     },
     scoring: SCORING_POLICIES["true-false"],
-    example: {
-      id: "guide-true-false",
-      type: "true-false",
-      category: "Ciencia",
-      question: "El sonido puede viajar por el vacío del espacio.",
-      correctAnswer: false,
-      timeLimit: 9,
-      points: 100,
-      explanation: "El sonido necesita un medio material por el que propagarse.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-true-false",
+          type: "true-false",
+          category: "Ciencia",
+          question: "El sonido puede viajar por el vacío del espacio.",
+          correctAnswer: false,
+          timeLimit: 9,
+          points: 100,
+          explanation: "El sonido necesita un medio material por el que propagarse.",
+        },
+      },
+    ],
   },
   "short-text": {
     id: "short-text",
@@ -299,17 +320,22 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Reserva tiempo adicional para escribir, especialmente en móvil.",
     },
     scoring: SCORING_POLICIES["short-text"],
-    example: {
-      id: "guide-short-text",
-      type: "short-text",
-      category: "Historia",
-      question: "¿En qué año terminó la Segunda Guerra Mundial?",
-      correctAnswer: "1945",
-      acceptedAnswers: ["1945", "mil novecientos cuarenta y cinco"],
-      timeLimit: 13,
-      points: 120,
-      explanation: "La Segunda Guerra Mundial terminó en 1945.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-short-text",
+          type: "short-text",
+          category: "Historia",
+          question: "¿En qué año terminó la Segunda Guerra Mundial?",
+          correctAnswer: "1945",
+          acceptedAnswers: ["1945", "mil novecientos cuarenta y cinco"],
+          timeLimit: 13,
+          points: 120,
+          explanation: "La Segunda Guerra Mundial terminó en 1945.",
+        },
+      },
+    ],
   },
   ordering: {
     id: "ordering",
@@ -347,17 +373,22 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "El tiempo crece con el número de elementos y la necesidad de compararlos.",
     },
     scoring: SCORING_POLICIES.ordering,
-    example: {
-      id: "guide-ordering",
-      type: "ordering",
-      category: "Historia",
-      question: "Ordena estos inventos del más antiguo al más reciente.",
-      items: ["Internet", "Imprenta", "Teléfono", "Máquina de vapor"],
-      correctOrder: ["Imprenta", "Máquina de vapor", "Teléfono", "Internet"],
-      timeLimit: 16,
-      points: 140,
-      explanation: "La imprenta precede a la máquina de vapor, el teléfono e Internet.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-ordering",
+          type: "ordering",
+          category: "Historia",
+          question: "Ordena estos inventos del más antiguo al más reciente.",
+          items: ["Internet", "Imprenta", "Teléfono", "Máquina de vapor"],
+          correctOrder: ["Imprenta", "Máquina de vapor", "Teléfono", "Internet"],
+          timeLimit: 16,
+          points: 140,
+          explanation: "La imprenta precede a la máquina de vapor, el teléfono e Internet.",
+        },
+      },
+    ],
   },
   classification: {
     id: "classification",
@@ -395,21 +426,26 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Ajusta el tiempo al número de elementos y categorías.",
     },
     scoring: SCORING_POLICIES.classification,
-    example: {
-      id: "guide-classification",
-      type: "classification",
-      category: "Biología",
-      question: "Clasifica cada ser vivo en su grupo.",
-      categories: ["mamífero", "ave", "reptil"],
-      items: [
-        { label: "Delfín", correctCategory: "mamífero" },
-        { label: "Águila", correctCategory: "ave" },
-        { label: "Tortuga", correctCategory: "reptil" },
-      ],
-      timeLimit: 20,
-      points: 160,
-      explanation: "Cada animal pertenece a una clase distinta.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-classification",
+          type: "classification",
+          category: "Biología",
+          question: "Clasifica cada ser vivo en su grupo.",
+          categories: ["mamífero", "ave", "reptil"],
+          items: [
+            { label: "Delfín", correctCategory: "mamífero" },
+            { label: "Águila", correctCategory: "ave" },
+            { label: "Tortuga", correctCategory: "reptil" },
+          ],
+          timeLimit: 20,
+          points: 160,
+          explanation: "Cada animal pertenece a una clase distinta.",
+        },
+      },
+    ],
   },
   "logic-code": {
     id: "logic-code",
@@ -447,27 +483,32 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Necesita más tiempo que una pregunta de recuerdo o reconocimiento.",
     },
     scoring: SCORING_POLICIES["logic-code"],
-    example: {
-      id: "guide-logic-code",
-      type: "logic-code",
-      category: "Lógica",
-      question: "Deduce el código secreto de tres cifras.",
-      clues: [
-        { code: "682", hint: "Una cifra es correcta y está bien colocada." },
-        { code: "614", hint: "Una cifra es correcta, pero está mal colocada." },
-        {
-          code: "206",
-          hint: "Dos cifras son correctas, pero están mal colocadas.",
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-logic-code",
+          type: "logic-code",
+          category: "Lógica",
+          question: "Deduce el código secreto de tres cifras.",
+          clues: [
+            { code: "682", hint: "Una cifra es correcta y está bien colocada." },
+            { code: "614", hint: "Una cifra es correcta, pero está mal colocada." },
+            {
+              code: "206",
+              hint: "Dos cifras son correctas, pero están mal colocadas.",
+            },
+            { code: "738", hint: "Ninguna cifra es correcta." },
+            { code: "780", hint: "Una cifra es correcta, pero está mal colocada." },
+          ],
+          codeLength: 3,
+          correctAnswer: "042",
+          timeLimit: 25,
+          points: 150,
+          explanation: "Las pistas permiten descartar cifras y posiciones hasta llegar a 042.",
         },
-        { code: "738", hint: "Ninguna cifra es correcta." },
-        { code: "780", hint: "Una cifra es correcta, pero está mal colocada." },
-      ],
-      codeLength: 3,
-      correctAnswer: "042",
-      timeLimit: 25,
-      points: 150,
-      explanation: "Las pistas permiten descartar cifras y posiciones hasta llegar a 042.",
-    },
+      },
+    ],
   },
   estimation: {
     id: "estimation",
@@ -509,22 +550,27 @@ export const QUESTION_FORMAT_CATALOG = {
       notes: "Da tiempo para comprender la escala y ajustar el valor.",
     },
     scoring: SCORING_POLICIES.estimation,
-    example: {
-      id: "guide-estimation",
-      type: "estimation",
-      category: "Lugares",
-      question: "¿Cuántos metros mide la Torre Eiffel?",
-      correctAnswer: 330,
-      min: 100,
-      max: 500,
-      step: 10,
-      initialValue: 300,
-      tolerance: 200,
-      unit: "m",
-      timeLimit: 15,
-      points: 140,
-      explanation: "La Torre Eiffel alcanza 330 metros contando su antena.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-estimation",
+          type: "estimation",
+          category: "Lugares",
+          question: "¿Cuántos metros mide la Torre Eiffel?",
+          correctAnswer: 330,
+          min: 100,
+          max: 500,
+          step: 10,
+          initialValue: 300,
+          tolerance: 200,
+          unit: "m",
+          timeLimit: 15,
+          points: 140,
+          explanation: "La Torre Eiffel alcanza 330 metros contando su antena.",
+        },
+      },
+    ],
   },
   "progressive-clues": {
     id: "progressive-clues",
@@ -571,25 +617,35 @@ export const QUESTION_FORMAT_CATALOG = {
         "El límite debe permitir leer todas las pistas y escribir una respuesta breve en móvil.",
     },
     scoring: SCORING_POLICIES["progressive-clues"],
-    example: {
-      id: "guide-progressive-clues",
-      type: "progressive-clues",
-      category: "Ciencia",
-      question: "¿Qué científica soy?",
-      clues: [
-        "Nací en Varsovia durante la segunda mitad del siglo XIX.",
-        "Desarrollé la mayor parte de mi carrera científica en Francia.",
-        "Investigué la radiactividad y participé en el descubrimiento del polonio y el radio.",
-        "Fui la primera persona en recibir dos premios Nobel en disciplinas científicas distintas.",
-      ],
-      cluePenalty: 30,
-      correctAnswer: "Marie Curie",
-      acceptedAnswers: ["Marie Curie", "Curie", "Maria Sklodowska-Curie", "Maria Skłodowska-Curie"],
-      timeLimit: 25,
-      points: 160,
-      explanation:
-        "Marie Curie nació en Varsovia, desarrolló su carrera en Francia y recibió los premios Nobel de Física y Química por sus investigaciones sobre la radiactividad.",
-    },
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-progressive-clues",
+          type: "progressive-clues",
+          category: "Ciencia",
+          question: "¿Qué científica soy?",
+          clues: [
+            "Nací en Varsovia durante la segunda mitad del siglo XIX.",
+            "Desarrollé la mayor parte de mi carrera científica en Francia.",
+            "Investigué la radiactividad y participé en el descubrimiento del polonio y el radio.",
+            "Fui la primera persona en recibir dos premios Nobel en disciplinas científicas distintas.",
+          ],
+          cluePenalty: 30,
+          correctAnswer: "Marie Curie",
+          acceptedAnswers: [
+            "Marie Curie",
+            "Curie",
+            "Maria Sklodowska-Curie",
+            "Maria Skłodowska-Curie",
+          ],
+          timeLimit: 25,
+          points: 160,
+          explanation:
+            "Marie Curie nació en Varsovia, desarrolló su carrera en Francia y recibió los premios Nobel de Física y Química por sus investigaciones sobre la radiactividad.",
+        },
+      },
+    ],
   },
   "heat-map": {
     id: "heat-map",
@@ -635,36 +691,41 @@ export const QUESTION_FORMAT_CATALOG = {
         "La superficie debe comprenderse y señalarse sin zoom; añade tiempo si contiene mucho detalle.",
     },
     scoring: SCORING_POLICIES["heat-map"],
-    example: {
-      id: "guide-heat-map",
-      type: "heat-map",
-      category: "Geografía",
-      question: "¿Dónde se encuentra Madrid?",
-      surface: {
-        src: "/visuals/heat-map/spain-map.svg",
-        alt: "Mapa esquemático de España peninsular con Portugal y el mar como referencias, sin ciudades señaladas.",
-        width: 720,
-        height: 520,
+    examples: [
+      {
+        title: "Ejemplo",
+        question: {
+          id: "guide-heat-map",
+          type: "heat-map",
+          category: "Geografía",
+          question: "¿Dónde se encuentra Madrid?",
+          surface: {
+            src: "/visuals/heat-map/spain-map.svg",
+            alt: "Mapa esquemático de España peninsular con Portugal y el mar como referencias, sin ciudades señaladas.",
+            width: 720,
+            height: 520,
+          },
+          target: { x: 0.52, y: 0.46 },
+          targetLabel: "Madrid, en el centro de la península ibérica",
+          fullCreditRadius: 0.055,
+          toleranceRadius: 0.18,
+          timeLimit: 15,
+          points: 140,
+          explanation:
+            "Madrid se encuentra aproximadamente en el centro geográfico de la península ibérica, sobre la Meseta Central.",
+        },
       },
-      target: { x: 0.52, y: 0.46 },
-      targetLabel: "Madrid, en el centro de la península ibérica",
-      fullCreditRadius: 0.055,
-      toleranceRadius: 0.18,
-      timeLimit: 15,
-      points: 140,
-      explanation:
-        "Madrid se encuentra aproximadamente en el centro geográfico de la península ibérica, sobre la Meseta Central.",
-    },
+    ],
   },
   "image-labeling": {
     id: "image-labeling",
     slug: "etiquetar-imagen",
     name: "Etiquetar imagen",
     shortName: "Etiquetas",
-    summary: "Asociar etiquetas de texto a varias zonas predeterminadas de una imagen.",
+    summary: "Etiquetar varias zonas o identificar una única parte señalada de una imagen.",
     description: [
       "El jugador selecciona un anclaje sobre una imagen y después una etiqueta. La asociación aparece en la propia zona y puede corregirse antes de confirmar el conjunto.",
-      "A diferencia de Mapa de calor, las respuestas son categorías discretas y cada zona tiene una asociación exacta.",
+      "En la variante simple, una única zona ya aparece señalada y se identifica mediante elección o respuesta de texto. A diferencia de Mapa de calor, las respuestas son categorías discretas.",
     ],
     recommendations: [
       "Anatomía, diagramas y partes de objetos",
@@ -681,59 +742,94 @@ export const QUESTION_FORMAT_CATALOG = {
       "Cada etiqueta solo puede utilizarse una vez",
       "Las asociaciones pueden editarse o limpiarse antes de confirmar",
       "Solo puede confirmarse cuando todas las zonas tienen etiqueta",
+      "La identificación única se envía al elegir una opción o al enviar el texto",
     ],
     authoringTips: [
       "Sitúa los anclajes con coordenadas normalizadas entre cero y uno",
       "Deja espacio suficiente para que las etiquetas no se solapen en móvil",
       "Usa etiquetas breves, homogéneas y sin ambigüedad",
       "Puedes añadir distractores, pero cada anclaje debe referenciar una etiqueta existente",
+      "En texto libre, incluye equivalencias normalizadas y una respuesta canónica",
     ],
     accessibility: [
       "Mantén anclajes y etiquetas como botones con foco visible",
       "Numera las zonas y ofrece un resumen textual de todas las asociaciones",
       "Anuncia cada selección y no dependas solo del color en la revisión",
+      "Describe la imagen y la existencia del objetivo único sin revelar su solución",
     ],
-    mediaSupport: ["Imagen o diagrama estático", "Etiquetas de texto"],
+    mediaSupport: ["Imagen o diagrama estático", "Etiquetas, opciones o respuesta de texto"],
     timing: {
-      recommendedSeconds: "20–35 s",
+      recommendedSeconds: "10–35 s",
       notes:
-        "El tiempo debe permitir recorrer la imagen, completar todas las asociaciones y revisarlas en móvil.",
+        "La identificación única debe ser breve; el etiquetado múltiple necesita tiempo para recorrer, completar y revisar todas las zonas.",
     },
     scoring: SCORING_POLICIES["image-labeling"],
-    example: {
-      id: "guide-image-labeling",
-      type: "image-labeling",
-      category: "Anatomía",
-      question: "Etiqueta las principales regiones del cuerpo humano",
-      surface: {
-        src: "/visuals/heat-map/human-body.svg",
-        alt: "Diagrama frontal simplificado del esqueleto humano con cabeza, torso, brazos y piernas.",
-        width: 600,
-        height: 720,
-      },
-      anchors: [
-        { id: "head", point: { x: 0.5, y: 0.12 }, correctLabelId: "head-label" },
-        { id: "torso", point: { x: 0.5, y: 0.31 }, correctLabelId: "torso-label" },
-        { id: "arms", point: { x: 0.2, y: 0.43 }, correctLabelId: "arms-label" },
-        { id: "thighs", point: { x: 0.5, y: 0.6 }, correctLabelId: "thighs-label" },
-        {
-          id: "lower-legs",
-          point: { x: 0.5, y: 0.82 },
-          correctLabelId: "lower-legs-label",
+    examples: [
+      {
+        title: "Etiquetado múltiple",
+        question: {
+          id: "guide-image-labeling",
+          type: "image-labeling",
+          task: "assign-all",
+          category: "Anatomía",
+          question: "Etiqueta las principales regiones del cuerpo humano",
+          surface: {
+            src: "/visuals/heat-map/human-body.svg",
+            alt: "Diagrama frontal simplificado del esqueleto humano con cabeza, torso, brazos y piernas.",
+            width: 600,
+            height: 720,
+          },
+          anchors: [
+            { id: "head", point: { x: 0.5, y: 0.12 }, correctLabelId: "head-label" },
+            { id: "torso", point: { x: 0.5, y: 0.31 }, correctLabelId: "torso-label" },
+            { id: "arms", point: { x: 0.2, y: 0.43 }, correctLabelId: "arms-label" },
+            { id: "thighs", point: { x: 0.5, y: 0.6 }, correctLabelId: "thighs-label" },
+            {
+              id: "lower-legs",
+              point: { x: 0.5, y: 0.82 },
+              correctLabelId: "lower-legs-label",
+            },
+          ],
+          labels: [
+            { id: "head-label", label: "Cabeza" },
+            { id: "torso-label", label: "Torso" },
+            { id: "arms-label", label: "Brazos" },
+            { id: "thighs-label", label: "Muslos" },
+            { id: "lower-legs-label", label: "Piernas inferiores" },
+          ],
+          timeLimit: 25,
+          points: 160,
+          explanation:
+            "El cuerpo humano se organiza en cabeza, tronco y extremidades; en las piernas se distinguen los muslos de las regiones inferiores.",
         },
-      ],
-      labels: [
-        { id: "head-label", label: "Cabeza" },
-        { id: "torso-label", label: "Torso" },
-        { id: "arms-label", label: "Brazos" },
-        { id: "thighs-label", label: "Muslos" },
-        { id: "lower-legs-label", label: "Piernas inferiores" },
-      ],
-      timeLimit: 25,
-      points: 160,
-      explanation:
-        "El cuerpo humano se organiza en cabeza, tronco y extremidades; en las piernas se distinguen los muslos de las regiones inferiores.",
-    },
+      },
+      {
+        title: "Etiquetado único",
+        question: {
+          id: "guide-image-labeling-single",
+          type: "image-labeling",
+          task: "identify-one",
+          category: "Anatomía",
+          question: "¿Qué región del cuerpo está señalada?",
+          surface: {
+            src: "/visuals/heat-map/human-body.svg",
+            alt: "Diagrama frontal simplificado del esqueleto humano con cabeza, torso, brazos y piernas.",
+            width: 600,
+            height: 720,
+          },
+          target: { x: 0.5, y: 0.6 },
+          response: {
+            kind: "choice",
+            options: ["Cabeza", "Torso", "Brazos", "Muslos", "Piernas inferiores"],
+            correctAnswer: "Muslos",
+          },
+          timeLimit: 12,
+          points: 100,
+          explanation:
+            "La zona señalada corresponde a los muslos, la región superior de las piernas entre la cadera y las rodillas.",
+        },
+      },
+    ],
   },
 } satisfies QuestionFormatCatalog;
 

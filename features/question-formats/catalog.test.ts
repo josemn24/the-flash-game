@@ -20,10 +20,15 @@ describe("question format catalog", () => {
       "heat-map",
       "image-labeling",
     ]);
+    expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
+    const exampleIds = questionFormats.flatMap((format) =>
+      format.examples.map((example) => example.question.id),
+    );
+    expect(new Set(exampleIds).size).toBe(exampleIds.length);
   });
 
   it("keeps the heat-map example internally consistent", () => {
-    const question = QUESTION_FORMAT_CATALOG["heat-map"].example;
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
     expect(question.surface.src).toBe("/visuals/heat-map/spain-map.svg");
     expect(question.surface.width).toBeGreaterThan(0);
     expect(question.surface.height).toBeGreaterThan(0);
@@ -35,8 +40,16 @@ describe("question format catalog", () => {
     expect(question.target.y).toBeLessThanOrEqual(1);
   });
 
-  it("keeps the image-labeling example internally consistent", () => {
-    const question = QUESTION_FORMAT_CATALOG["image-labeling"].example;
+  it("keeps both image-labeling examples internally consistent", () => {
+    const examples = QUESTION_FORMAT_CATALOG["image-labeling"].examples;
+    expect(examples).toHaveLength(2);
+    expect(examples.map((example) => example.title)).toEqual([
+      "Etiquetado múltiple",
+      "Etiquetado único",
+    ]);
+    const question = examples[0].question;
+    expect(question.task).toBe("assign-all");
+    if (question.task !== "assign-all") throw new Error("Expected assign-all example");
     const anchorIds = question.anchors.map((anchor) => anchor.id);
     const labelIds = question.labels.map((label) => label.id);
     expect(question.surface.src).toBe("/visuals/heat-map/human-body.svg");
@@ -54,10 +67,18 @@ describe("question format catalog", () => {
     expect(question.anchors.every((anchor) => anchor.point.y >= 0 && anchor.point.y <= 1)).toBe(
       true,
     );
+
+    const single = examples[1].question;
+    expect(single.task).toBe("identify-one");
+    if (single.task !== "identify-one") throw new Error("Expected identify-one example");
+    expect(single.response.kind).toBe("choice");
+    expect(single.target).toEqual({ x: 0.5, y: 0.6 });
+    if (single.response.kind !== "choice") throw new Error("Expected choice response");
+    expect(single.response.options).toContain(single.response.correctAnswer);
   });
 
   it("keeps the progressive-clues example internally consistent", () => {
-    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(question.clues.length).toBeGreaterThanOrEqual(2);
     expect(question.clues.every((clue) => clue.trim().length > 0)).toBe(true);
     expect(question.acceptedAnswers).toContain(question.correctAnswer);
@@ -66,7 +87,7 @@ describe("question format catalog", () => {
   });
 
   it("keeps the matching example internally consistent", () => {
-    const question = QUESTION_FORMAT_CATALOG.matching.example;
+    const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     const leftIds = question.leftItems.map((item) => item.id);
     const rightIds = question.rightItems.map((item) => item.id);
     expect(question.leftItems.length).toBeGreaterThanOrEqual(3);
@@ -80,7 +101,7 @@ describe("question format catalog", () => {
   });
 
   it("keeps the odd-one-out example internally consistent", () => {
-    const question = QUESTION_FORMAT_CATALOG["odd-one-out"].example;
+    const question = QUESTION_FORMAT_CATALOG["odd-one-out"].examples[0].question;
     expect(question.items).toHaveLength(4);
     expect(question.items.length).toBeGreaterThanOrEqual(3);
     expect(question.items.length).toBeLessThanOrEqual(6);

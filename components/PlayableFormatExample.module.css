@@ -5,6 +5,17 @@
   background: linear-gradient(145deg, rgba(53, 232, 255, 0.07), rgba(8, 10, 12, 0.95));
 }
 
+.launcherTitle {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .launcherMeta {
   display: flex;
   align-items: center;

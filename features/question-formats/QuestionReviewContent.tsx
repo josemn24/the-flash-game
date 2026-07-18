@@ -1,6 +1,9 @@
 import type { ComponentType } from "react";
 import { HeatMapSurface } from "@/components/HeatMapQuestion";
-import { ImageLabelingReviewSurface } from "@/components/ImageLabelingQuestion";
+import {
+  AssignAllImageLabelingReviewSurface,
+  IdentifyOneImageLabelingReviewSurface,
+} from "@/components/ImageLabelingQuestion";
 import styles from "@/components/ReviewAnswers.module.css";
 import { isClassificationAnswer, isImageLabelingAnswer, isMatchingAnswer } from "@/lib/scoring";
 import type {
@@ -160,12 +163,29 @@ function HeatMapReview({ question, result }: ReviewProps<QuestionOfType<"heat-ma
 }
 
 function ImageLabelingReview({ question, result }: ReviewProps<QuestionOfType<"image-labeling">>) {
+  if (question.task === "identify-one") {
+    const answer = typeof result.answer === "string" ? result.answer : null;
+    return (
+      <div className="grid gap-3">
+        <IdentifyOneImageLabelingReviewSurface
+          question={question}
+          answer={answer}
+          isCorrect={result.isCorrect}
+        />
+        <AnswerPair answer={answer} correct={question.response.correctAnswer} />
+      </div>
+    );
+  }
+
   const answer = isImageLabelingAnswer(result.answer) ? result.answer : null;
-  const details = result.details?.type === "image-labeling" ? result.details : undefined;
+  const details =
+    result.details?.type === "image-labeling" && result.details.task === "assign-all"
+      ? result.details
+      : undefined;
 
   return (
     <div className="grid gap-3">
-      <ImageLabelingReviewSurface question={question} answer={answer} />
+      <AssignAllImageLabelingReviewSurface question={question} answer={answer} />
       <div className="grid gap-3 sm:grid-cols-2">
         <div className={styles.answerBox}>
           <span>Etiquetas correctas</span>

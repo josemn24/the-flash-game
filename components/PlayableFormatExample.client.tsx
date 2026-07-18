@@ -1,7 +1,7 @@
 "use client";
 
 import { MotionConfig } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { CrossIcon, RotateIcon } from "@/components/icons";
 import styles from "@/components/PlayableFormatExample.module.css";
 import { QuestionMedia } from "@/components/QuestionMedia";
@@ -22,7 +22,8 @@ const RESULT_LABELS = {
   unanswered: "Tiempo agotado",
 } as const;
 
-export function PlayableFormatExample({ question }: { question: Question }) {
+export function PlayableFormatExample({ title, question }: { title: string; question: Question }) {
+  const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const startedAtRef = useRef(0);
   const answerLockRef = useRef(false);
@@ -143,6 +144,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
   return (
     <MotionConfig reducedMotion="user">
       <div className={styles.launcher}>
+        <span className={styles.launcherTitle}>{title}</span>
         <div className={styles.launcherMeta}>
           <Badge>{question.category}</Badge>
           <span>
@@ -163,7 +165,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
       <dialog
         ref={dialogRef}
         className={styles.dialog}
-        aria-labelledby="playable-example-title"
+        aria-labelledby={titleId}
         onClose={handleDialogClosed}
         onClick={(event) => {
           if (event.target === event.currentTarget) closeExample();
@@ -188,7 +190,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
           {phase === "ready" && (
             <div className={styles.readyPanel}>
               <Badge>{question.category}</Badge>
-              <h2 id="playable-example-title">{question.question}</h2>
+              <h2 id={titleId}>{question.question}</h2>
               <p>
                 Tendrás <strong>{question.timeLimit} segundos</strong>. El tiempo empezará cuando
                 pulses el botón.
@@ -210,7 +212,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
                   onTimeUp={handleTimeUp}
                 />
               </div>
-              <h2 id="playable-example-title" className={styles.questionTitle}>
+              <h2 id={titleId} className={styles.questionTitle}>
                 {question.question}
               </h2>
               {"media" in question && question.media && (
@@ -245,7 +247,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
                 <strong>{result.points > 0 ? `+${result.points}` : result.points} pts</strong>
                 <small>{result.timeUsed.toFixed(1)} s</small>
               </div>
-              <h2 id="playable-example-title">Resultado del ejemplo</h2>
+              <h2 id={titleId}>Resultado del ejemplo</h2>
               <QuestionReviewContent question={question} result={result} />
               <div className={styles.explanation}>
                 <span>Solución comentada</span>

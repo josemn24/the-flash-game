@@ -4,6 +4,7 @@ import type {
   AnswerResultDetails,
   AnswerStatus,
   AnswerValue,
+  AssignAllImageLabelingQuestion,
   ClassificationAnswer,
   ClassificationQuestion,
   EstimationQuestion,
@@ -35,7 +36,8 @@ export type ScoringPolicyId =
   | "attempt-penalty"
   | "proximity"
   | "clue-speed"
-  | "spatial-proximity";
+  | "spatial-proximity"
+  | "image-labeling";
 
 export const QUESTION_SCORING_POLICY = {
   "multiple-choice": "binary-speed",
@@ -45,7 +47,7 @@ export const QUESTION_SCORING_POLICY = {
   "short-text": "binary-speed",
   "progressive-clues": "clue-speed",
   "heat-map": "spatial-proximity",
-  "image-labeling": "partial-items",
+  "image-labeling": "image-labeling",
   ordering: "binary-speed",
   classification: "partial-items",
   "logic-code": "attempt-penalty",
@@ -135,8 +137,70 @@ export function calculateMatchingMetrics(question: MatchingQuestion, answer: Mat
   return { correctPairs, totalPairs: question.leftItems.length };
 }
 
+function isNormalizedPoint(point: { x: number; y: number }) {
+  return (
+    Number.isFinite(point.x) &&
+    Number.isFinite(point.y) &&
+    point.x >= 0 &&
+    point.x <= 1 &&
+    point.y >= 0 &&
+    point.y <= 1
+  );
+}
+
+export function isValidImageLabelingConfiguration(question: ImageLabelingQuestion) {
+  if (
+    !question.surface.src.trim() ||
+    !question.surface.alt.trim() ||
+    !Number.isFinite(question.surface.width) ||
+    question.surface.width <= 0 ||
+    !Number.isFinite(question.surface.height) ||
+    question.surface.height <= 0
+  ) {
+    return false;
+  }
+
+  if (question.task === "assign-all") {
+    const anchorIds = question.anchors.map((anchor) => anchor.id);
+    const labelIds = question.labels.map((label) => label.id);
+    const labelIdSet = new Set(labelIds);
+    return (
+      question.anchors.length > 0 &&
+      question.labels.length >= question.anchors.length &&
+      new Set(anchorIds).size === anchorIds.length &&
+      new Set(labelIds).size === labelIds.length &&
+      question.anchors.every(
+        (anchor) =>
+          Boolean(anchor.id.trim()) &&
+          isNormalizedPoint(anchor.point) &&
+          labelIdSet.has(anchor.correctLabelId),
+      ) &&
+      question.labels.every((label) => Boolean(label.id.trim()) && Boolean(label.label.trim()))
+    );
+  }
+
+  if (!isNormalizedPoint(question.target) || !question.response.correctAnswer.trim()) return false;
+  if (question.response.kind === "choice") {
+    const normalizedOptions = question.response.options.map(normalizeAnswer);
+    return (
+      question.response.options.length >= 2 &&
+      question.response.options.every((option) => Boolean(option.trim())) &&
+      new Set(normalizedOptions).size === normalizedOptions.length &&
+      normalizedOptions.includes(normalizeAnswer(question.response.correctAnswer))
+    );
+  }
+  if (question.response.acceptedAnswers === undefined) return true;
+  const normalizedAnswers = question.response.acceptedAnswers.map(normalizeAnswer);
+  return (
+    question.response.acceptedAnswers.length > 0 &&
+    question.response.acceptedAnswers.every((answer) => Boolean(answer.trim())) &&
+    new Set(normalizedAnswers).size === normalizedAnswers.length &&
+    normalizedAnswers.includes(normalizeAnswer(question.response.correctAnswer))
+  );
+}
+
 export function calculateImageLabelingMetrics(
-  question: ImageLabelingQuestion,
+  question: AssignAllImageLabelingQuestion,
   answer: ImageLabelingAnswer,
 ) {
   const anchorIds = new Set(question.anchors.map((anchor) => anchor.id));
@@ -144,7 +208,7 @@ export function calculateImageLabelingMetrics(
   const entries = Object.entries(answer);
   const assignedLabels = entries.map(([, labelId]) => labelId);
   const valid =
-    question.anchors.length > 0 &&
+    isValidImageLabelingConfiguration(question) &&
     entries.length === question.anchors.length &&
     entries.every(([anchorId, labelId]) => anchorIds.has(anchorId) && labelIds.has(labelId)) &&
     new Set(assignedLabels).size === assignedLabels.length;
@@ -159,9 +223,18 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
     case "heat-map":
       return isHeatMapAnswer(answer) && calculateHeatMapMetrics(question, answer).accuracy === 1;
     case "image-labeling":
-      if (!isImageLabelingAnswer(answer)) return false;
-      const labelMetrics = calculateImageLabelingMetrics(question, answer);
-      return labelMetrics.valid && labelMetrics.correctLabels === labelMetrics.totalLabels;
+      if (!isValidImageLabelingConfiguration(question)) return false;
+      if (question.task === "assign-all") {
+        if (!isImageLabelingAnswer(answer)) return false;
+        const labelMetrics = calculateImageLabelingMetrics(question, answer);
+        return labelMetrics.valid && labelMetrics.correctLabels === labelMetrics.totalLabels;
+      }
+      if (typeof answer !== "string") return false;
+      const accepted =
+        question.response.kind === "text"
+          ? (question.response.acceptedAnswers ?? [question.response.correctAnswer])
+          : [question.response.correctAnswer];
+      return accepted.some((candidate) => normalizeAnswer(candidate) === normalizeAnswer(answer));
     case "estimation":
       return typeof answer === "number" && answer === question.correctAnswer;
     case "classification":
@@ -345,6 +418,31 @@ function evaluateImageLabeling(
   answer: AnswerValue,
   timeUsed: number,
 ): InternalEvaluation {
+  if (!isValidImageLabelingConfiguration(question)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  if (question.task === "identify-one") {
+    if (typeof answer !== "string") {
+      return { isCorrect: false, status: "incorrect", points: 0 };
+    }
+    const isCorrect = isAnswerCorrect(question, answer);
+    return {
+      isCorrect,
+      status: isCorrect ? "correct" : "incorrect",
+      points: isCorrect
+        ? calculateQuestionScore(question, true, timeUsed)
+        : question.response.kind === "choice"
+          ? -Math.round(question.points * 0.2)
+          : 0,
+      details: {
+        type: "image-labeling",
+        task: "identify-one",
+        responseKind: question.response.kind,
+      },
+    };
+  }
+
   if (!isImageLabelingAnswer(answer)) {
     return { isCorrect: false, status: "incorrect", points: 0 };
   }
@@ -357,6 +455,7 @@ function evaluateImageLabeling(
       points: 0,
       details: {
         type: "image-labeling",
+        task: "assign-all",
         correctLabels: 0,
         totalLabels: metrics.totalLabels,
       },
@@ -375,6 +474,7 @@ function evaluateImageLabeling(
     ),
     details: {
       type: "image-labeling",
+      task: "assign-all",
       correctLabels: metrics.correctLabels,
       totalLabels: metrics.totalLabels,
     },
@@ -482,9 +582,6 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       if (question.type === "matching") {
         return evaluateMatching(question, answer, timeUsed, incorrectAttempts);
       }
-      if (question.type === "image-labeling") {
-        return evaluateImageLabeling(question, answer, timeUsed);
-      }
       throw new Error(`Unsupported partial-items question: ${question.type}`);
     case "attempt-penalty": {
       if (question.type !== "logic-code") {
@@ -509,6 +606,12 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
         throw new Error(`Unsupported spatial-proximity question: ${question.type}`);
       }
       return evaluateHeatMap(question, answer, timeUsed);
+    }
+    case "image-labeling": {
+      if (question.type !== "image-labeling") {
+        throw new Error(`Unsupported image-labeling question: ${question.type}`);
+      }
+      return evaluateImageLabeling(question, answer, timeUsed);
     }
   }
 }

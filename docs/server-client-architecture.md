@@ -167,7 +167,7 @@ export type StageSummary = {
 };
 ```
 
-The complete stage only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends only its single example question to the playable-example island.
+The complete stage only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends each example question separately to its own playable-example island.
 
 ```text
 HomePage (server) ──StageSummary[]──▶ StartScreen (server)
@@ -262,7 +262,7 @@ Requirements:
 
 ### Format library
 
-The format library and its detail pages contain server-rendered editorial content and navigation. Each detail page includes one explicit client island for its playable example.
+The format library and its detail pages contain server-rendered editorial content and navigation. Each detail page includes one explicit client island per playable example.
 
 ```text
 app/formatos/page.tsx          Server Component

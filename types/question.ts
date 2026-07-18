@@ -113,12 +113,37 @@ export type ImageLabelAnchor = {
 
 export type ImageLabelingAnswer = Record<string, string>;
 
-export type ImageLabelingQuestion = BaseQuestion & {
+type ImageLabelingBaseQuestion = BaseQuestion & {
   type: "image-labeling";
   surface: ImageSurface;
+};
+
+export type AssignAllImageLabelingQuestion = ImageLabelingBaseQuestion & {
+  task: "assign-all";
   anchors: ImageLabelAnchor[];
   labels: ImageLabelOption[];
 };
+
+export type ImageLabelingChoiceResponse = {
+  kind: "choice";
+  options: string[];
+  correctAnswer: string;
+};
+
+export type ImageLabelingTextResponse = {
+  kind: "text";
+  correctAnswer: string;
+  acceptedAnswers?: string[];
+};
+
+export type IdentifyOneImageLabelingQuestion = ImageLabelingBaseQuestion & {
+  task: "identify-one";
+  target: NormalizedPoint;
+  response: ImageLabelingChoiceResponse | ImageLabelingTextResponse;
+};
+
+export type ImageLabelingQuestion =
+  AssignAllImageLabelingQuestion | IdentifyOneImageLabelingQuestion;
 
 export type LogicCodeClue = {
   code: string;

@@ -85,10 +85,18 @@ export default async function FormatDetailPage({ params }: Props) {
             <h2>{format.scoring.label}</h2>
             <p>{format.scoring.summary}</p>
             <div className={styles.scoringFlags}>
-              <span>{format.scoring.partialCredit ? "Crédito parcial" : "Todo o nada"}</span>
+              <span>
+                {("partialCreditLabel" in format.scoring
+                  ? format.scoring.partialCreditLabel
+                  : undefined) ??
+                  (format.scoring.partialCredit ? "Crédito parcial" : "Todo o nada")}
+              </span>
               <span>{format.scoring.speedBonus ? "Premia velocidad" : "Sin bonus de tiempo"}</span>
               <span>
-                {format.scoring.incorrectPenalty ? "Penaliza fallos" : "Sin penalización"}
+                {("incorrectPenaltyLabel" in format.scoring
+                  ? format.scoring.incorrectPenaltyLabel
+                  : undefined) ??
+                  (format.scoring.incorrectPenalty ? "Penaliza fallos" : "Sin penalización")}
               </span>
             </div>
           </section>
@@ -110,8 +118,16 @@ export default async function FormatDetailPage({ params }: Props) {
             </ul>
           </section>
           <section className={styles.wide}>
-            <p className={`${styles.eyebrow} mb-3`}>Ejemplo jugable</p>
-            <PlayableFormatExample question={format.example} />
+            <p className={`${styles.eyebrow} mb-3`}>Ejemplos jugables</p>
+            <div className={styles.examplesGrid}>
+              {format.examples.map((example) => (
+                <PlayableFormatExample
+                  key={example.question.id}
+                  title={example.title}
+                  question={example.question}
+                />
+              ))}
+            </div>
           </section>
         </div>
 
