@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, dieciocho formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veintiún formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -21,14 +21,16 @@ La aplicación soporta de forma nativa:
 - emparejar conceptos con validación inmediata y crédito por pareja;
 - adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento;
 - mapa de calor con selección espacial y crédito por proximidad;
-- etiquetar imagen con asociación múltiple o identificación de una única zona.
-- memoria relámpago con reconstrucción espacial de una cuadrícula tras una exposición breve.
-- Simon con repetición visual de una secuencia fija de símbolos.
-- matrices lógicas con una pieza faltante y opciones de respuesta.
-- mini-sudoku 4 × 4 con edición previa a confirmar y crédito por casilla correcta.
-- mini-nonograma 5 × 5 con pistas de filas y columnas, edición reversible y crédito neto por relleno.
-- rompecabezas deslizante 3 × 3 con fichas numéricas y resolución automática.
-- reconstrucción del error con detección del primer paso inválido y corrección guiada opcional.
+- etiquetar imagen con asociación múltiple o identificación de una única zona;
+- memoria relámpago con reconstrucción espacial de una cuadrícula tras una exposición breve;
+- Simon con repetición visual de una secuencia fija de símbolos;
+- matrices lógicas con una pieza faltante y opciones de respuesta;
+- mini-sudoku 4 × 4 con edición previa a confirmar y crédito por casilla correcta;
+- mini-nonograma 5 × 5 con pistas de filas y columnas, edición reversible y crédito neto por relleno;
+- rompecabezas deslizante 3 × 3 con fichas numéricas y resolución automática;
+- reconstrucción del error con detección del primer paso inválido y corrección guiada opcional;
+- anagramas de una palabra mediante fichas de letras, incluidas letras repetidas;
+- Mini-Wordle de cuatro letras y cuatro intentos con feedback por posición.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -123,12 +125,13 @@ Una imagen comienza borrosa, pixelada, ampliada o cubierta y se revela con el ti
 - **Encaje:** premia directamente la rapidez, pero mantiene un riesgo al responder antes.
 - **Identidad:** es una de las mecánicas que mejor representa el nombre y el espíritu de The Flash.
 
-### 10. Anagramas y palabras desordenadas — Futura
+### 10. Anagramas y palabras desordenadas — Implementada
 
 El jugador reordena letras, sílabas o fragmentos para formar una palabra o frase; también puede resolver una palabra a partir de una pista o crear el mayor número posible de palabras.
 
-- **Interacción:** entrada escrita o fichas directas.
+- **Interacción actual:** seleccionar fichas de letras para construir una palabra, retirar la última ficha o reiniciar antes de enviarla. Un fallo termina la ronda.
 - **Encaje:** sencillo de entender, barato de producir y eficaz bajo presión.
+- **Puntuación actual:** formar la palabra exacta recibe puntos por velocidad; un fallo o timeout no puntúan.
 
 ### 11. Objetos ocultos — Futura
 
@@ -146,11 +149,13 @@ El jugador deduce un código a partir de pistas. Por ejemplo, las combinaciones 
 - **Puntuación actual:** velocidad con una reducción del 10 % de los puntos base por intento fallido.
 - **Uso actual:** una de las preguntas de cierre de la etapa «Conexiones rápidas» y ejemplo jugable en su ficha.
 
-### 13. Mini-Wordle — Futura
+### 13. Mini-Wordle — Implementada
 
-El jugador descubre una palabra en pocos intentos. La adaptación puede usar palabras de cuatro o cinco letras, menos intentos, tiempo total limitado, pistas temáticas, puntos por eficiencia y penalización por letras incorrectas.
+El jugador descubre una palabra de cuatro letras en un máximo de cuatro intentos. Cada palabra enviada indica qué letras están colocadas, desplazadas o ausentes; los recuentos evitan revelar coincidencias duplicadas que no existen en la solución.
 
 - **Encaje:** conocido y fácil de entender.
+- **Interacción actual:** campo de texto nativo con envío por botón o Enter y validación mediante un vocabulario español general generado offline. El diccionario se carga antes de iniciar el cronómetro; los intentos inválidos no consumen oportunidades.
+- **Puntuación actual:** resolver recibe crédito ajustado por velocidad y cada intento fallido previo resta el 10 % de los puntos base. Agotar intentos o tiempo no puntúa.
 - **Uso recomendado:** desafío especial, por su duración mayor que una pregunta normal.
 
 ### 14. Simon o repetición de secuencias — Implementada
@@ -329,18 +334,18 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 
 ## Priorización de mecánicas pendientes
 
-| Objetivo                                   | Mecánicas prioritarias                                                                                          | Motivo                                                                              |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                                                           | Amplían el juego con riesgo técnico contenido.                                      |
-| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                                                          | Introducen habilidades e interacciones que van más allá de responder preguntas.     |
-| Inducción y deducción                      | La regla secreta                                                                                                | Convierte la identificación de patrones en una clasificación activa.                |
-| Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                             |
-| Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
-| Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco                                              | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
-| Pruebas especiales                         | Respuesta en cadena, Mini-Wordle, laberinto, mini-sudoku y tangram                                               | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
-| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                     |
-| Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.                |
-| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                 |
+| Objetivo                                   | Mecánicas prioritarias                                                       | Motivo                                                                              |
+| ------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Equilibrio entre diversión y coste técnico | Encontrar el intruso, emparejar conceptos y anagramas                        | Amplían el juego con riesgo técnico contenido.                                      |
+| Diferenciar The Flash de una trivia        | Memoria relámpago, imagen progresiva y objetos ocultos                       | Introducen habilidades e interacciones que van más allá de responder preguntas.     |
+| Inducción y deducción                      | La regla secreta                                                             | Convierte la identificación de patrones en una clasificación activa.                |
+| Pensamiento crítico                        | El dato contaminado                                                          | Obliga a contrastar la información antes de utilizarla.                             |
+| Comprensión profunda                       | Reconstrucción del error                                                     | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
+| Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco           | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
+| Pruebas especiales                         | Respuesta en cadena, laberinto y tangram                                     | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                   | Permiten decidir cuánta información obtener antes de responder.                     |
+| Conocimiento menos inmediato               | La respuesta prohibida                                                       | Premia alternativas válidas más allá de las asociaciones más obvias.                |
+| Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
 
@@ -353,4 +358,4 @@ Para que los resultados sean comparables en una partida online, cada formato deb
 - la protección frente a latencia y diferencias de dispositivo;
 - la estrategia de contenido: datos estructurados, activos visuales y validación de calidad.
 
-Como siguiente paso de producto, encontrar el intruso, emparejar conceptos y anagramas ofrecen el mejor equilibrio entre variedad y coste técnico. Las pruebas especiales deberían llegar después, acompañadas de prototipos específicos de interacción móvil, contenido validado y reglas de puntuación explícitas.
+Como siguiente paso de producto, la imagen progresiva, las diferencias visuales y los objetos ocultos ofrecen variedad con una identidad visual fuerte. Las nuevas pruebas especiales deberían llegar acompañadas de prototipos específicos de interacción móvil, contenido validado y reglas de puntuación explícitas.

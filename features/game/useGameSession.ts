@@ -178,7 +178,8 @@ export function useGameSession(stage: Stage) {
       question?.type === "flash-memory" ||
       question?.type === "mini-sudoku" ||
       question?.type === "mini-nonogram" ||
-      question?.type === "error-reconstruction"
+      question?.type === "error-reconstruction" ||
+      question?.type === "mini-wordle"
     ) {
       submitAnswer(draftAnswerRef.current, true);
       return;
@@ -200,7 +201,9 @@ export function useGameSession(stage: Stage) {
 
   const handleTimedResponseStart = useCallback(() => {
     if (
-      (question?.type === "flash-memory" || question?.type === "simon-sequence") &&
+      (question?.type === "flash-memory" ||
+        question?.type === "simon-sequence" ||
+        question?.type === "mini-wordle") &&
       !answerLock.current
     ) {
       questionStartedAt.current = performance.now();

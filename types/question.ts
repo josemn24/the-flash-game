@@ -261,6 +261,25 @@ export type ErrorReconstructionQuestion = BaseQuestion & {
   correction?: ErrorReconstructionCorrection;
 };
 
+export type AnagramTile = {
+  id: string;
+  value: string;
+};
+
+export type AnagramQuestion = BaseQuestion & {
+  type: "anagram";
+  tiles: AnagramTile[];
+  correctAnswer: string;
+  hint?: string;
+};
+
+export type MiniWordleQuestion = BaseQuestion & {
+  type: "mini-wordle";
+  correctAnswer: string;
+  additionalGuesses?: string[];
+  hint?: string;
+};
+
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
@@ -279,6 +298,8 @@ export type Question =
   | MiniNonogramQuestion
   | SlidingPuzzleQuestion
   | ErrorReconstructionQuestion
+  | AnagramQuestion
+  | MiniWordleQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
 
@@ -293,6 +314,7 @@ export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
 export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
+export type MiniWordleAnswer = { guesses: string[] };
 export type AnswerValue =
   | string
   | number
@@ -305,5 +327,6 @@ export type AnswerValue =
   | MiniNonogramAnswer
   | SlidingPuzzleAnswer
   | ErrorReconstructionAnswer
+  | MiniWordleAnswer
   | HeatMapAnswer
   | ImageLabelingAnswer;

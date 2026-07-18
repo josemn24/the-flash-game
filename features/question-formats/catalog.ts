@@ -1080,7 +1080,8 @@ export const QUESTION_FORMAT_CATALOG = {
     mediaSupport: ["Cuadrícula numérica 4 × 4", "Teclado táctil de números 1–4"],
     timing: {
       recommendedSeconds: "18–30 s",
-      notes: "El bonus de velocidad se aplica al tiempo hasta confirmar; corregir valores no tiene penalización.",
+      notes:
+        "El bonus de velocidad se aplica al tiempo hasta confirmar; corregir valores no tiene penalización.",
     },
     scoring: SCORING_POLICIES["mini-sudoku"],
     examples: [
@@ -1140,7 +1141,8 @@ export const QUESTION_FORMAT_CATALOG = {
     mediaSupport: ["Cuadrícula numérica 5 × 5", "Pistas de filas y columnas"],
     timing: {
       recommendedSeconds: "90 s",
-      notes: "El bonus de velocidad se aplica al tiempo hasta confirmar y el borrador se conserva al agotarse el tiempo.",
+      notes:
+        "El bonus de velocidad se aplica al tiempo hasta confirmar y el borrador se conserva al agotarse el tiempo.",
     },
     scoring: SCORING_POLICIES["mini-nonogram"],
     examples: [
@@ -1152,11 +1154,31 @@ export const QUESTION_FORMAT_CATALOG = {
           category: "Lógica",
           question: "Usa las pistas de filas y columnas para completar el patrón.",
           solution: [
-            false, true, true, true, false,
-            true, false, true, false, true,
-            true, true, true, true, true,
-            true, false, true, false, true,
-            false, true, true, true, false,
+            false,
+            true,
+            true,
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            true,
+            true,
+            false,
           ],
           rowClues: [[3], [1, 1, 1], [5], [1, 1, 1], [3]],
           columnClues: [[3], [1, 1, 1], [5], [1, 1, 1], [3]],
@@ -1207,7 +1229,8 @@ export const QUESTION_FORMAT_CATALOG = {
     mediaSupport: ["Fichas numéricas 1–8", "Cuadrícula espacial 3 × 3"],
     timing: {
       recommendedSeconds: "60 s",
-      notes: "Los puntos se calculan por la rapidez de resolución; los movimientos se conservan solo para la revisión.",
+      notes:
+        "Los puntos se calculan por la rapidez de resolución; los movimientos se conservan solo para la revisión.",
     },
     scoring: SCORING_POLICIES["sliding-puzzle"],
     examples: [
@@ -1238,7 +1261,11 @@ export const QUESTION_FORMAT_CATALOG = {
       "El jugador revisa una secuencia de pasos y señala el primer punto exacto en el que el razonamiento deja de ser válido.",
       "Algunas rondas añaden una corrección guiada para distinguir entre localizar el fallo y saber repararlo.",
     ],
-    recommendations: ["Operaciones breves", "Cronologías", "Clasificaciones y razonamientos lógicos"],
+    recommendations: [
+      "Operaciones breves",
+      "Cronologías",
+      "Clasificaciones y razonamientos lógicos",
+    ],
     avoidWhen: [
       "Un paso previo admite una interpretación razonable que lo invalida",
       "Hay varios errores independientes",
@@ -1263,7 +1290,8 @@ export const QUESTION_FORMAT_CATALOG = {
     mediaSupport: ["Texto", "Notación matemática simple como texto"],
     timing: {
       recommendedSeconds: "15–30 s",
-      notes: "Reduce el número de pasos antes de ampliar el tiempo si la lectura no cabe con claridad en móvil.",
+      notes:
+        "Reduce el número de pasos antes de ampliar el tiempo si la lectura no cabe con claridad en móvil.",
     },
     scoring: SCORING_POLICIES["error-reconstruction"],
     examples: [
@@ -1308,6 +1336,153 @@ export const QUESTION_FORMAT_CATALOG = {
           points: 100,
           explanation:
             "Armstrong pisó la Luna el 21 de julio de 1969 UTC, no en 1971. Los pasos previos sitúan correctamente el despegue y el alunizaje.",
+        },
+      },
+    ],
+  },
+  anagram: {
+    id: "anagram",
+    slug: "anagramas",
+    name: "Anagramas",
+    shortName: "Anagramas",
+    summary: "Ordenar fichas de letras para formar una palabra antes de que se agote el tiempo.",
+    description: [
+      "El jugador construye una única palabra tocando las fichas de letras en el orden correcto, sin escribir con el teclado.",
+      "Cada ficha solo se puede usar una vez; las letras repetidas conservan fichas independientes para que la palabra se pueda reconstruir con precisión.",
+    ],
+    recommendations: [
+      "Vocabulario y ortografía",
+      "Conceptos temáticos breves",
+      "Rondas lingüísticas de alta velocidad",
+    ],
+    avoidWhen: [
+      "La solución tiene menos de tres o más de diez letras",
+      "Varias palabras válidas usan exactamente las mismas letras",
+      "La pista depende de un juego de palabras regional o ambiguo",
+    ],
+    rules: [
+      "Se construye una única palabra con todas las fichas",
+      "Cada ficha se usa una sola vez",
+      "Se puede quitar la última ficha o reiniciar antes de enviar",
+      "Un envío incorrecto termina la ronda",
+    ],
+    authoringTips: [
+      "Usa una pista suficiente para descartar anagramas alternativos",
+      "Mezcla el orden inicial de las fichas; no muestres la solución ya ordenada",
+      "Incluye letras repetidas solo cuando la pista haga inequívoca la respuesta",
+    ],
+    accessibility: [
+      "Cada letra es un botón nativo con etiqueta explícita",
+      "La palabra construida anuncia el progreso y el número de fichas usadas",
+      "No dependas de color, arrastre o precisión motriz para ordenar las fichas",
+    ],
+    mediaSupport: ["Texto", "Pista textual opcional"],
+    timing: {
+      recommendedSeconds: "10–20 s",
+      notes: "Aumenta el tiempo solo para palabras largas o pistas de lectura más exigente.",
+    },
+    scoring: SCORING_POLICIES.anagram,
+    examples: [
+      {
+        title: "Palabra con letras distintas",
+        question: {
+          id: "guide-anagram-mesa",
+          type: "anagram",
+          category: "Lengua",
+          question: "Forma la palabra que nombra un mueble para comer o trabajar.",
+          hint: "Suele tener patas y una superficie plana.",
+          tiles: [
+            { id: "s", value: "S" },
+            { id: "a", value: "A" },
+            { id: "m", value: "M" },
+            { id: "e", value: "E" },
+          ],
+          correctAnswer: "MESA",
+          timeLimit: 12,
+          points: 100,
+          explanation: "Las cuatro fichas se ordenan como M-E-S-A para formar «mesa».",
+        },
+      },
+      {
+        title: "Palabra con letras repetidas",
+        question: {
+          id: "guide-anagram-anana",
+          type: "anagram",
+          category: "Lengua",
+          question: "Forma el nombre de una fruta tropical.",
+          hint: "Tiene tres letras A y dos letras N.",
+          tiles: [
+            { id: "n-1", value: "N" },
+            { id: "a-1", value: "A" },
+            { id: "a-2", value: "A" },
+            { id: "n-2", value: "N" },
+            { id: "a-3", value: "A" },
+          ],
+          correctAnswer: "ANANA",
+          timeLimit: 15,
+          points: 120,
+          explanation: "La palabra «anana» alterna las fichas A y N: A-N-A-N-A.",
+        },
+      },
+    ],
+  },
+  "mini-wordle": {
+    id: "mini-wordle",
+    slug: "mini-wordle",
+    name: "Mini-Wordle",
+    shortName: "Wordle",
+    summary: "Descubrir una palabra de cuatro letras en un máximo de cuatro intentos.",
+    description: [
+      "El jugador escribe palabras válidas de cuatro letras. Después de cada intento, cada casilla indica si la letra está en la posición correcta, aparece en otra posición o no pertenece a la solución.",
+      "La ronda termina al resolver la palabra o consumir cuatro intentos. Un vocabulario español generado desde Hunspell se carga antes de iniciar el cronómetro y valida los intentos sin depender de servicios externos durante la partida.",
+    ],
+    recommendations: [
+      "Desafíos especiales de lenguaje",
+      "Vocabulario temático breve",
+      "Rondas donde importen deducción y eficiencia",
+    ],
+    avoidWhen: [
+      "La solución admite variantes ortográficas discutibles",
+      "La lista de intentos válidos es demasiado limitada",
+      "Se necesita una pregunta de respuesta inmediata",
+    ],
+    rules: [
+      "Cada intento debe ser una palabra válida de cuatro letras",
+      "Las casillas distinguen posición correcta, letra desplazada y letra ausente",
+      "Los intentos no válidos no consumen una oportunidad",
+      "Resolver o fallar el cuarto intento termina la ronda",
+    ],
+    authoringTips: [
+      "Comprueba que la solución pertenezca al vocabulario general o declárala como adición editorial",
+      "Evita soluciones regionales, abreviaturas y formas excesivamente raras",
+      "Usa la pista opcional para orientar el tema sin revelar directamente la respuesta",
+    ],
+    accessibility: [
+      "Acompaña cada color con un símbolo y una etiqueta textual",
+      "Permite enviar con Enter y conserva un campo de texto nativo para teclados móviles",
+      "Anuncia los errores de validación sin consumir intentos ni mover el foco",
+    ],
+    mediaSupport: ["Texto", "Pista temática opcional"],
+    timing: {
+      recommendedSeconds: "30–45 s",
+      notes:
+        "Es un desafío especial más largo que una pregunta convencional; cuatro intentos mantienen la ronda contenida.",
+    },
+    scoring: SCORING_POLICIES["mini-wordle"],
+    examples: [
+      {
+        title: "Palabra de astronomía",
+        question: {
+          id: "guide-mini-wordle-luna",
+          type: "mini-wordle",
+          category: "Lengua",
+          question: "Descubre una palabra relacionada con la astronomía.",
+          hint: "Puede verse en el cielo nocturno.",
+          correctAnswer: "LUNA",
+          timeLimit: 40,
+          points: 150,
+          explanation:
+            "La palabra es «LUNA». Cada intento revela qué letras están colocadas, desplazadas o ausentes.",
         },
       },
     ],

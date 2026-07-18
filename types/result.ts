@@ -74,6 +74,12 @@ export type AnswerResultDetails =
       locationCorrect: boolean;
       correctionRequired: boolean;
       correctionCorrect: boolean;
+    }
+  | {
+      type: "mini-wordle";
+      attemptsUsed: number;
+      incorrectAttempts: number;
+      solved: boolean;
     };
 
 export type AnswerResult = {

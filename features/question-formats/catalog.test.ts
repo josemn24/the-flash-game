@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
+import dictionary from "@/public/dictionaries/es-general-4.v1.json";
+import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 
 describe("question format catalog", () => {
-  it("contains exactly nineteen formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(19);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(19);
+  it("contains exactly twenty-one formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(21);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(21);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -26,6 +28,8 @@ describe("question format catalog", () => {
       "mini-nonogram",
       "sliding-puzzle",
       "error-reconstruction",
+      "anagram",
+      "mini-wordle",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
@@ -47,6 +51,25 @@ describe("question format catalog", () => {
     }
   });
 
+  it("keeps anagram examples internally consistent", () => {
+    const examples = QUESTION_FORMAT_CATALOG.anagram.examples;
+    expect(examples).toHaveLength(2);
+    for (const question of examples.map((example) => example.question)) {
+      expect(question.tiles.length).toBeGreaterThanOrEqual(3);
+      expect(question.tiles.length).toBeLessThanOrEqual(10);
+      expect(question.tiles.map((tile) => tile.value).sort()).toEqual(
+        Array.from(question.correctAnswer).sort(),
+      );
+      expect(question.tiles.map((tile) => tile.value).join("")).not.toBe(question.correctAnswer);
+    }
+  });
+
+  it("keeps the Mini-Wordle example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
+    expect(question.correctAnswer).toHaveLength(4);
+    expect(dictionary.words).toContain(normalizeMiniWordleWord(question.correctAnswer));
+    expect(question.additionalGuesses).toBeUndefined();
+  });
 
   it("keeps the heat-map example internally consistent", () => {
     const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;

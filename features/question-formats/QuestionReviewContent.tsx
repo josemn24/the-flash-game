@@ -14,9 +14,11 @@ import {
   isMatchingAnswer,
   isMiniNonogramAnswer,
   isMiniSudokuAnswer,
+  isMiniWordleAnswer,
   isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
 } from "@/lib/scoring";
+import { getMiniWordleFeedback } from "@/lib/miniWordle";
 import type {
   AnswerResult,
   AnswerValue,
@@ -500,7 +502,9 @@ function MiniSudokuReview({ question, result }: ReviewProps<QuestionOfType<"mini
       </div>
       <div className={styles.answerBox}>
         <span>Casillas correctas</span>
-        <strong>{details ? `${details.correctCells} de ${details.totalCells}` : "Sin datos"}</strong>
+        <strong>
+          {details ? `${details.correctCells} de ${details.totalCells}` : "Sin datos"}
+        </strong>
       </div>
     </div>
   );
@@ -531,9 +535,18 @@ function MiniNonogramReview({ question, result }: ReviewProps<QuestionOfType<"mi
         })}
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className={styles.answerBox}><span>Rellenos correctos</span><strong>{details?.correctFilled ?? 0}</strong></div>
-        <div className={styles.answerBox}><span>Rellenos erróneos</span><strong>{details?.incorrectFilled ?? 0}</strong></div>
-        <div className={styles.answerBox}><span>Total objetivo</span><strong>{details?.totalFilled ?? 0}</strong></div>
+        <div className={styles.answerBox}>
+          <span>Rellenos correctos</span>
+          <strong>{details?.correctFilled ?? 0}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Rellenos erróneos</span>
+          <strong>{details?.incorrectFilled ?? 0}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Total objetivo</span>
+          <strong>{details?.totalFilled ?? 0}</strong>
+        </div>
       </div>
     </div>
   );
@@ -543,7 +556,10 @@ function SlidingPuzzleBoard({ tiles, label }: { tiles: Array<number | null>; lab
   return (
     <div className={styles.puzzleReviewBoard} aria-label={label}>
       {tiles.map((tile, index) => (
-        <div key={`${tile ?? "blank"}-${index}`} className={tile === null ? styles.puzzleBlank : styles.puzzleTile}>
+        <div
+          key={`${tile ?? "blank"}-${index}`}
+          className={tile === null ? styles.puzzleBlank : styles.puzzleTile}
+        >
           {tile ?? ""}
         </div>
       ))}
@@ -559,11 +575,26 @@ function SlidingPuzzleReview({ question, result }: ReviewProps<QuestionOfType<"s
   return (
     <div className="grid gap-3">
       <div className={styles.puzzleReviewPair}>
-        <div><span className={styles.memoryGridLabel}>Inicio</span><SlidingPuzzleBoard tiles={question.initialTiles} label="Tablero inicial" /></div>
-        <div><span className={styles.memoryGridLabel}>Tu tablero</span><SlidingPuzzleBoard tiles={answer?.tiles ?? question.initialTiles} label="Tablero final" /></div>
-        <div><span className={styles.memoryGridLabel}>Solución</span><SlidingPuzzleBoard tiles={question.solution} label="Tablero resuelto" /></div>
+        <div>
+          <span className={styles.memoryGridLabel}>Inicio</span>
+          <SlidingPuzzleBoard tiles={question.initialTiles} label="Tablero inicial" />
+        </div>
+        <div>
+          <span className={styles.memoryGridLabel}>Tu tablero</span>
+          <SlidingPuzzleBoard
+            tiles={answer?.tiles ?? question.initialTiles}
+            label="Tablero final"
+          />
+        </div>
+        <div>
+          <span className={styles.memoryGridLabel}>Solución</span>
+          <SlidingPuzzleBoard tiles={question.solution} label="Tablero resuelto" />
+        </div>
       </div>
-      <div className={styles.answerBox}><span>Movimientos</span><strong>{details?.moves ?? 0}</strong></div>
+      <div className={styles.answerBox}>
+        <span>Movimientos</span>
+        <strong>{details?.moves ?? 0}</strong>
+      </div>
     </div>
   );
 }
@@ -603,7 +634,60 @@ function ErrorReconstructionReview({
       )}
       <div className={styles.answerBox}>
         <span>Resultado de la localización</span>
-        <strong>{details?.locationCorrect ? "Primer error localizado" : "Primer error no localizado"}</strong>
+        <strong>
+          {details?.locationCorrect ? "Primer error localizado" : "Primer error no localizado"}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
+function AnagramReview({ question, result }: ReviewProps<QuestionOfType<"anagram">>) {
+  return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
+}
+
+function MiniWordleReview({ question, result }: ReviewProps<QuestionOfType<"mini-wordle">>) {
+  const answer = isMiniWordleAnswer(result.answer) ? result.answer : null;
+  const details = result.details?.type === "mini-wordle" ? result.details : undefined;
+  return (
+    <div className="grid gap-3">
+      {answer?.guesses.length ? (
+        <div className={styles.wordleReview} aria-label="Intentos realizados">
+          {answer.guesses.map((guess, rowIndex) => (
+            <div key={`${guess}-${rowIndex}`} className={styles.wordleReviewRow}>
+              {getMiniWordleFeedback(guess, question.correctAnswer).map((item, index) => (
+                <span
+                  key={`${item.letter}-${index}`}
+                  className={`${styles.wordleReviewTile} ${styles[`wordle-${item.status}`]}`}
+                  aria-label={`${item.letter}: ${
+                    item.status === "correct"
+                      ? "posición correcta"
+                      : item.status === "present"
+                        ? "está en otra posición"
+                        : "no está en la palabra"
+                  }`}
+                >
+                  {item.letter}
+                  <small aria-hidden="true">
+                    {item.status === "correct" ? "✓" : item.status === "present" ? "↔" : "×"}
+                  </small>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.answerBox}>Sin intentos enviados</div>
+      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Intentos utilizados</span>
+          <strong>{details?.attemptsUsed ?? 0} de 4</strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Solución</span>
+          <strong>{question.correctAnswer}</strong>
+        </div>
       </div>
     </div>
   );
@@ -627,6 +711,8 @@ export const QUESTION_REVIEW_RENDERERS = {
   "mini-nonogram": MiniNonogramReview,
   "sliding-puzzle": SlidingPuzzleReview,
   "error-reconstruction": ErrorReconstructionReview,
+  anagram: AnagramReview,
+  "mini-wordle": MiniWordleReview,
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,
 } satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };

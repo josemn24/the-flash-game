@@ -15,8 +15,10 @@ type SlidingPuzzleQuestionProps = {
 
 function areAdjacent(firstIndex: number, secondIndex: number) {
   return (
-    Math.abs(firstIndex - secondIndex) === 1 && Math.floor(firstIndex / 3) === Math.floor(secondIndex / 3)
-  ) || Math.abs(firstIndex - secondIndex) === 3;
+    (Math.abs(firstIndex - secondIndex) === 1 &&
+      Math.floor(firstIndex / 3) === Math.floor(secondIndex / 3)) ||
+    Math.abs(firstIndex - secondIndex) === 3
+  );
 }
 
 export function SlidingPuzzleQuestion({
@@ -59,7 +61,8 @@ export function SlidingPuzzleQuestion({
   return (
     <section className={styles.root} aria-label="Rompecabezas deslizante de tres por tres">
       <p className={styles.instructions}>
-        Desliza las fichas junto al hueco hasta ordenarlas del 1 al 8. También puedes usar las flechas.
+        Desliza las fichas junto al hueco hasta ordenarlas del 1 al 8. También puedes usar las
+        flechas.
       </p>
       <div
         className={styles.grid}
@@ -96,7 +99,9 @@ export function SlidingPuzzleQuestion({
           );
         })}
       </div>
-      <p className={styles.moves} aria-live="polite">{moves} movimientos</p>
+      <p className={styles.moves} aria-live="polite">
+        {moves} movimientos
+      </p>
     </section>
   );
 }

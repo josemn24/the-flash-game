@@ -1,5 +1,7 @@
 export type {
   AnswerValue,
+  AnagramQuestion,
+  AnagramTile,
   AssignAllImageLabelingQuestion,
   BaseQuestion,
   ClassificationAnswer,
@@ -27,6 +29,8 @@ export type {
   LogicCodeQuestion,
   LogicMatrixPiece,
   LogicMatrixQuestion,
+  MiniWordleAnswer,
+  MiniWordleQuestion,
   MiniSudokuAnswer,
   MiniSudokuQuestion,
   MiniNonogramAnswer,

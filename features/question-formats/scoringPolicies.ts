@@ -165,6 +165,25 @@ export const SCORING_POLICIES = {
     speedBonus: true,
     partialCreditLabel: "60 % por localizar",
   },
+  anagram: {
+    id: QUESTION_SCORING_POLICY.anagram,
+    label: "Acierto y velocidad",
+    summary:
+      "Formar la palabra exacta conserva entre el 50 % y el 100 % de los puntos; un fallo o timeout no puntúa.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
+  "mini-wordle": {
+    id: QUESTION_SCORING_POLICY["mini-wordle"],
+    label: "Velocidad e intentos",
+    summary:
+      "Resolver conserva puntos según el tiempo; cada intento incorrecto previo resta un 10 % de los puntos base.",
+    partialCredit: false,
+    incorrectPenalty: true,
+    speedBonus: true,
+    incorrectPenaltyLabel: "Cada intento fallido −10 %",
+  },
   "logic-code": {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",

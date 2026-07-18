@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import type { ComponentType, FormEvent } from "react";
 import { useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
+import { AnagramQuestion } from "@/components/AnagramQuestion";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
 import { ErrorReconstructionQuestionInput } from "@/components/ErrorReconstructionQuestion";
@@ -16,6 +17,7 @@ import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
 import { MiniNonogramQuestion } from "@/components/MiniNonogramQuestion";
 import { MiniSudokuQuestion } from "@/components/MiniSudokuQuestion";
+import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
@@ -370,6 +372,41 @@ function ErrorReconstructionInput({
   );
 }
 
+function AnagramInput({
+  question,
+  locked,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"anagram">>) {
+  return (
+    <AnagramQuestion
+      tiles={question.tiles}
+      hint={question.hint}
+      locked={locked}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
+function MiniWordleInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+  onTimedResponseStart,
+}: QuestionInputProps<QuestionOfType<"mini-wordle">>) {
+  return (
+    <MiniWordleQuestion
+      correctAnswer={question.correctAnswer}
+      additionalGuesses={question.additionalGuesses}
+      hint={question.hint}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+      onTimedResponseStart={onTimedResponseStart}
+    />
+  );
+}
+
 export const QUESTION_INPUT_RENDERERS = {
   "multiple-choice": MultipleChoiceInput,
   "odd-one-out": OddOneOutInput,
@@ -388,6 +425,8 @@ export const QUESTION_INPUT_RENDERERS = {
   "mini-nonogram": MiniNonogramInput,
   "sliding-puzzle": SlidingPuzzleInput,
   "error-reconstruction": ErrorReconstructionInput,
+  anagram: AnagramInput,
+  "mini-wordle": MiniWordleInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
 } satisfies {

@@ -133,12 +133,27 @@
   font-family: var(--font-mono);
   font-weight: 800;
 }
-.sudokuReviewCell:nth-child(4n + 2) { border-right: 2px solid rgba(255, 255, 255, 0.55); }
-.sudokuReviewCell:nth-child(n + 5):nth-child(-n + 8) { border-bottom: 2px solid rgba(255, 255, 255, 0.55); }
-.sudokuReviewCell small { color: rgba(255, 255, 255, 0.46); font-family: inherit; font-size: 0.58rem; font-weight: 700; }
-.sudokuGiven { color: rgba(255, 255, 255, 0.52); }
-.sudokuCorrect { color: var(--electric); }
-.sudokuWrong { color: #ff858a; }
+.sudokuReviewCell:nth-child(4n + 2) {
+  border-right: 2px solid rgba(255, 255, 255, 0.55);
+}
+.sudokuReviewCell:nth-child(n + 5):nth-child(-n + 8) {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.55);
+}
+.sudokuReviewCell small {
+  color: rgba(255, 255, 255, 0.46);
+  font-family: inherit;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+.sudokuGiven {
+  color: rgba(255, 255, 255, 0.52);
+}
+.sudokuCorrect {
+  color: var(--electric);
+}
+.sudokuWrong {
+  color: #ff858a;
+}
 .logicReviewClues {
   display: grid;
   gap: 0.4rem;
@@ -304,15 +319,90 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 1rem;
 }
-.nonogramCorrect { color: var(--electric); background: rgba(215, 255, 24, 0.16); }
-.nonogramWrong { color: #ff858a; background: rgba(255, 93, 100, 0.18); }
-.nonogramMissing { color: #ffcf66; background: rgba(255, 207, 102, 0.12); }
-.nonogramEmpty { color: rgba(255, 255, 255, 0.3); }
-.puzzleReviewPair { display: grid; gap: 0.7rem; }
-.puzzleReviewBoard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.18rem; max-width: 8rem; padding: 0.18rem; border-radius: 0.55rem; background: rgba(255, 255, 255, 0.08); }
-.puzzleTile, .puzzleBlank { display: grid; aspect-ratio: 1; place-items: center; border-radius: 0.3rem; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 900; }
-.puzzleTile { color: #171717; background: #a5b4fc; }
-.puzzleBlank { border: 1px dashed rgba(255, 255, 255, 0.28); }
+.nonogramCorrect {
+  color: var(--electric);
+  background: rgba(215, 255, 24, 0.16);
+}
+.nonogramWrong {
+  color: #ff858a;
+  background: rgba(255, 93, 100, 0.18);
+}
+.nonogramMissing {
+  color: #ffcf66;
+  background: rgba(255, 207, 102, 0.12);
+}
+.nonogramEmpty {
+  color: rgba(255, 255, 255, 0.3);
+}
+.puzzleReviewPair {
+  display: grid;
+  gap: 0.7rem;
+}
+.puzzleReviewBoard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.18rem;
+  max-width: 8rem;
+  padding: 0.18rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+.puzzleTile,
+.puzzleBlank {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+.puzzleTile {
+  color: #171717;
+  background: #a5b4fc;
+}
+.puzzleBlank {
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+}
+.wordleReview {
+  display: grid;
+  justify-content: start;
+  gap: 0.35rem;
+}
+.wordleReviewRow {
+  display: grid;
+  grid-template-columns: repeat(4, 2.65rem);
+  gap: 0.35rem;
+}
+.wordleReviewTile {
+  position: relative;
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.55rem;
+  font-family: var(--font-display);
+  font-weight: 900;
+}
+.wordleReviewTile small {
+  position: absolute;
+  right: 0.2rem;
+  bottom: 0.12rem;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+}
+.wordle-correct {
+  color: #151908;
+  background: var(--electric);
+}
+.wordle-present {
+  color: #07191c;
+  background: var(--cyan);
+}
+.wordle-absent {
+  color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.09);
+}
 @media (min-width: 640px) {
   .reviewCard summary {
     gap: 1rem;
@@ -324,5 +414,7 @@
   .memoryGridPair {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .puzzleReviewPair { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .puzzleReviewPair {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

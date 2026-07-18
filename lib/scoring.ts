@@ -5,6 +5,7 @@ import type {
   AnswerStatus,
   AnswerValue,
   AssignAllImageLabelingQuestion,
+  AnagramQuestion,
   ClassificationAnswer,
   ClassificationQuestion,
   EstimationQuestion,
@@ -18,6 +19,8 @@ import type {
   ImageLabelingQuestion,
   LogicCodeQuestion,
   LogicMatrixQuestion,
+  MiniWordleAnswer,
+  MiniWordleQuestion,
   MiniNonogramAnswer,
   MiniNonogramQuestion,
   MiniSudokuAnswer,
@@ -32,6 +35,12 @@ import type {
   SimonSequenceAnswer,
   SimonSequenceQuestion,
 } from "@/types/game";
+import {
+  isValidMiniWordleWord,
+  isValidMiniWordleConfiguration,
+  MINI_WORDLE_MAX_ATTEMPTS,
+  normalizeMiniWordleWord,
+} from "@/lib/miniWordle";
 
 export type EvaluationInput = {
   question: Question;
@@ -71,6 +80,8 @@ export const QUESTION_SCORING_POLICY = {
   "mini-nonogram": "partial-items",
   "sliding-puzzle": "binary-speed",
   "error-reconstruction": "error-location-correction",
+  anagram: "binary-speed",
+  "mini-wordle": "attempt-penalty",
   "logic-code": "attempt-penalty",
   estimation: "proximity",
 } as const satisfies Record<QuestionType, ScoringPolicyId>;
@@ -92,10 +103,7 @@ type EvaluationContext = {
 };
 
 type StringRecordAnswer =
-  | ClassificationAnswer
-  | MatchingAnswer
-  | FlashMemoryAnswer
-  | ImageLabelingAnswer;
+  ClassificationAnswer | MatchingAnswer | FlashMemoryAnswer | ImageLabelingAnswer;
 
 function isRecordAnswer(answer: AnswerValue | null): answer is StringRecordAnswer {
   return (
@@ -150,7 +158,9 @@ export function isSlidingPuzzleAnswer(answer: AnswerValue | null): answer is Sli
     "moves" in answer &&
     Array.isArray(answer.tiles) &&
     answer.tiles.length === 9 &&
-    answer.tiles.every((tile) => tile === null || (Number.isInteger(tile) && tile >= 1 && tile <= 8)) &&
+    answer.tiles.every(
+      (tile) => tile === null || (Number.isInteger(tile) && tile >= 1 && tile <= 8),
+    ) &&
     typeof answer.moves === "number" &&
     Number.isInteger(answer.moves) &&
     answer.moves >= 0
@@ -189,8 +199,65 @@ export function isErrorReconstructionAnswer(
     "stepId" in answer &&
     typeof answer.stepId === "string" &&
     ("correction" in answer
-      ? answer.correction === undefined || answer.correction === null || typeof answer.correction === "string"
+      ? answer.correction === undefined ||
+        answer.correction === null ||
+        typeof answer.correction === "string"
       : true)
+  );
+}
+
+export function isMiniWordleAnswer(answer: AnswerValue | null): answer is MiniWordleAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    "guesses" in answer &&
+    Array.isArray(answer.guesses) &&
+    answer.guesses.every((guess) => typeof guess === "string")
+  );
+}
+
+export function calculateMiniWordleMetrics(question: MiniWordleQuestion, answer: MiniWordleAnswer) {
+  const normalizedGuesses = answer.guesses.map(normalizeMiniWordleWord);
+  const solution = normalizeMiniWordleWord(question.correctAnswer);
+  const solutionIndex = normalizedGuesses.indexOf(solution);
+  const valid =
+    isValidMiniWordleConfiguration(question) &&
+    normalizedGuesses.length > 0 &&
+    normalizedGuesses.length <= MINI_WORDLE_MAX_ATTEMPTS &&
+    answer.guesses.every(isValidMiniWordleWord) &&
+    (solutionIndex === -1 || solutionIndex === normalizedGuesses.length - 1);
+  const solved = valid && normalizedGuesses.at(-1) === solution;
+  const incorrectAttempts = solved ? normalizedGuesses.length - 1 : normalizedGuesses.length;
+  return {
+    valid,
+    solved,
+    attemptsUsed: valid ? normalizedGuesses.length : 0,
+    incorrectAttempts: valid ? incorrectAttempts : 0,
+  };
+}
+
+export function isValidAnagramConfiguration(question: AnagramQuestion) {
+  const tileIds = question.tiles.map((tile) => tile.id);
+  const solutionLetters = Array.from(question.correctAnswer.trim());
+  const tileLetters = question.tiles.map((tile) => tile.value);
+  const countLetters = (letters: string[]) =>
+    [...letters].sort((left, right) => left.localeCompare(right, "es")).join("");
+  return (
+    question.tiles.length >= 3 &&
+    question.tiles.length <= 10 &&
+    Boolean(question.correctAnswer.trim()) &&
+    !/\s/.test(question.correctAnswer) &&
+    solutionLetters.length === question.tiles.length &&
+    new Set(tileIds).size === tileIds.length &&
+    question.tiles.every(
+      (tile) =>
+        Boolean(tile.id.trim()) &&
+        Array.from(tile.value).length === 1 &&
+        Boolean(tile.value.trim()),
+    ) &&
+    countLetters(solutionLetters) === countLetters(tileLetters) &&
+    tileLetters.join("") !== question.correctAnswer
   );
 }
 
@@ -337,11 +404,11 @@ export function isValidMiniSudokuConfiguration(question: MiniSudokuQuestion) {
     const block = Array.from(
       { length: 4 },
       (_, offset) =>
-        question.solution[
-          (blockRow + Math.floor(offset / 2)) * 4 + blockColumn + (offset % 2)
-        ],
+        question.solution[(blockRow + Math.floor(offset / 2)) * 4 + blockColumn + (offset % 2)],
     );
-    return isValidMiniSudokuUnit(row) && isValidMiniSudokuUnit(column) && isValidMiniSudokuUnit(block);
+    return (
+      isValidMiniSudokuUnit(row) && isValidMiniSudokuUnit(column) && isValidMiniSudokuUnit(block)
+    );
   }).every(Boolean);
 
   return (
@@ -417,7 +484,9 @@ export function isValidMiniNonogramConfiguration(question: MiniNonogramQuestion)
     question.columnClues.every((clues, column) =>
       sameNumberList(
         clues,
-        deriveNonogramClues(Array.from({ length: 5 }, (_, row) => question.solution[row * 5 + column])),
+        deriveNonogramClues(
+          Array.from({ length: 5 }, (_, row) => question.solution[row * 5 + column]),
+        ),
       ),
     )
   );
@@ -603,6 +672,14 @@ export function calculateErrorReconstructionMetrics(
 
 export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
   switch (question.type) {
+    case "mini-wordle":
+      return isMiniWordleAnswer(answer) && calculateMiniWordleMetrics(question, answer).solved;
+    case "anagram":
+      return (
+        typeof answer === "string" &&
+        isValidAnagramConfiguration(question) &&
+        normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer)
+      );
     case "error-reconstruction":
       return (
         isErrorReconstructionAnswer(answer) &&
@@ -875,7 +952,8 @@ function evaluateMiniSudoku(
   }
 
   const metrics = calculateMiniSudokuMetrics(question, answer);
-  const isCorrect = metrics.valid && metrics.complete && metrics.correctCells === metrics.totalCells;
+  const isCorrect =
+    metrics.valid && metrics.complete && metrics.correctCells === metrics.totalCells;
   return {
     isCorrect,
     status: isCorrect ? "correct" : metrics.correctCells > 0 ? "partial" : "incorrect",
@@ -1142,6 +1220,38 @@ function evaluateErrorReconstruction(
   };
 }
 
+function evaluateMiniWordle(
+  question: MiniWordleQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isMiniWordleAnswer(answer) || !isValidMiniWordleConfiguration(question)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateMiniWordleMetrics(question, answer);
+  const details = {
+    type: "mini-wordle" as const,
+    attemptsUsed: metrics.attemptsUsed,
+    incorrectAttempts: metrics.incorrectAttempts,
+    solved: metrics.solved,
+  };
+
+  if (!metrics.solved) {
+    return { isCorrect: false, status: "incorrect", points: 0, details };
+  }
+
+  const speedScore = Math.round(
+    question.points * calculateSpeedMultiplier(timeUsed, question.timeLimit),
+  );
+  return {
+    isCorrect: true,
+    status: "correct",
+    points: applyAttemptPenalty(speedScore, question.points, metrics.incorrectAttempts),
+    details,
+  };
+}
+
 function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
   const { question, answer, timeUsed, submittedCodes, incorrectAttempts, revealedClues } = context;
 
@@ -1172,10 +1282,13 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       }
       throw new Error(`Unsupported partial-items question: ${question.type}`);
     case "attempt-penalty": {
-      if (question.type !== "logic-code") {
-        throw new Error(`Unsupported attempt-penalty question: ${question.type}`);
+      if (question.type === "logic-code") {
+        return evaluateLogicCode(question, answer, timeUsed, submittedCodes, incorrectAttempts);
       }
-      return evaluateLogicCode(question, answer, timeUsed, submittedCodes, incorrectAttempts);
+      if (question.type === "mini-wordle") {
+        return evaluateMiniWordle(question, answer, timeUsed);
+      }
+      throw new Error(`Unsupported attempt-penalty question: ${question.type}`);
     }
     case "proximity": {
       if (question.type !== "estimation") {
@@ -1260,14 +1373,14 @@ export function evaluateAnswer({
                 ...calculateProgressiveCluesMetrics(question, progressiveCluesRevealed),
               },
             }
-            : question.type === "simon-sequence"
+          : question.type === "simon-sequence"
             ? {
                 details: {
                   type: "simon-sequence" as const,
                   submittedSteps: [],
                   firstMismatchIndex: null,
                 },
-                }
+              }
             : question.type === "error-reconstruction"
               ? {
                   details: {
@@ -1278,7 +1391,16 @@ export function evaluateAnswer({
                     correctionCorrect: false,
                   },
                 }
-            : {}),
+              : question.type === "mini-wordle"
+                ? {
+                    details: {
+                      type: "mini-wordle" as const,
+                      attemptsUsed: 0,
+                      incorrectAttempts: 0,
+                      solved: false,
+                    },
+                  }
+                : {}),
     };
   }
 
@@ -1298,12 +1420,16 @@ export function evaluateAnswer({
     timedOut && evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0;
   const discardedSpatialDraft =
     timedOut && (question.type === "heat-map" || question.type === "image-labeling");
+  const timedOutMiniWordle = timedOut && question.type === "mini-wordle";
 
   return {
     questionId: question.id,
     answer,
     ...evaluation,
-    status: matchingWithoutProgress || discardedSpatialDraft ? "unanswered" : evaluation.status,
+    status:
+      matchingWithoutProgress || discardedSpatialDraft || timedOutMiniWordle
+        ? "unanswered"
+        : evaluation.status,
     points:
       timedOut &&
       question.type !== "matching" &&

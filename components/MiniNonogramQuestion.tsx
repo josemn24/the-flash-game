@@ -48,15 +48,27 @@ export function MiniNonogramQuestion({
         <div className={styles.corner} aria-hidden="true" />
         <div className={styles.columnClues} aria-label="Pistas de columnas">
           {columnClues.map((clues, index) => (
-            <div key={index} className={styles.clue} aria-label={`Columna ${index + 1}: ${clues.join(", ") || "ninguna"}`}>
-              {clues.map((clue, clueIndex) => <span key={clueIndex}>{clue}</span>)}
+            <div
+              key={index}
+              className={styles.clue}
+              aria-label={`Columna ${index + 1}: ${clues.join(", ") || "ninguna"}`}
+            >
+              {clues.map((clue, clueIndex) => (
+                <span key={clueIndex}>{clue}</span>
+              ))}
             </div>
           ))}
         </div>
         <div className={styles.rowClues} aria-label="Pistas de filas">
           {rowClues.map((clues, index) => (
-            <div key={index} className={styles.rowClue} aria-label={`Fila ${index + 1}: ${clues.join(", ") || "ninguna"}`}>
-              {clues.map((clue, clueIndex) => <span key={clueIndex}>{clue}</span>)}
+            <div
+              key={index}
+              className={styles.rowClue}
+              aria-label={`Fila ${index + 1}: ${clues.join(", ") || "ninguna"}`}
+            >
+              {clues.map((clue, clueIndex) => (
+                <span key={clueIndex}>{clue}</span>
+              ))}
             </div>
           ))}
         </div>
@@ -83,11 +95,18 @@ export function MiniNonogramQuestion({
         </div>
       </div>
 
-      <p className={styles.progress} aria-live="polite">{filledCount} celdas rellenadas</p>
-      <p className={styles.instructions}>
-        Selecciona una celda y marca si debe estar rellena o vacía. Puedes corregirla antes de confirmar.
+      <p className={styles.progress} aria-live="polite">
+        {filledCount} celdas rellenadas
       </p>
-      <div className={styles.controls} role="group" aria-label="Acciones para la celda seleccionada">
+      <p className={styles.instructions}>
+        Selecciona una celda y marca si debe estar rellena o vacía. Puedes corregirla antes de
+        confirmar.
+      </p>
+      <div
+        className={styles.controls}
+        role="group"
+        aria-label="Acciones para la celda seleccionada"
+      >
         <motion.button
           type="button"
           className={styles.fillButton}

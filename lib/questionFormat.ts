@@ -18,6 +18,8 @@ export const QUESTION_FORMAT_LABELS = {
   "mini-nonogram": "Nonograma",
   "sliding-puzzle": "Puzzle",
   "error-reconstruction": "Reconstruir error",
+  anagram: "Anagrama",
+  "mini-wordle": "Mini-Wordle",
   "logic-code": "Código lógico",
   estimation: "Estimación",
 } satisfies Record<QuestionType, string>;

@@ -23,7 +23,11 @@ const RESULT_LABELS = {
 } as const;
 
 function hasDelayedTimedResponse(question: Question) {
-  return question.type === "flash-memory" || question.type === "simon-sequence";
+  return (
+    question.type === "flash-memory" ||
+    question.type === "simon-sequence" ||
+    question.type === "mini-wordle"
+  );
 }
 
 export function PlayableFormatExample({ title, question }: { title: string; question: Question }) {
@@ -149,7 +153,8 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
       question.type === "flash-memory" ||
       question.type === "mini-sudoku" ||
       question.type === "mini-nonogram" ||
-      question.type === "error-reconstruction"
+      question.type === "error-reconstruction" ||
+      question.type === "mini-wordle"
     ) {
       submitAnswer(draftAnswerRef.current, true);
       return;
@@ -208,7 +213,12 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
               <Badge>{question.category}</Badge>
               <h2 id={titleId}>{question.question}</h2>
               <p>
-                {hasDelayedTimedResponse(question) ? (
+                {question.type === "mini-wordle" ? (
+                  <>
+                    Primero se cargará el diccionario. Tendrás{" "}
+                    <strong>{question.timeLimit} segundos</strong> para responder cuando esté listo.
+                  </>
+                ) : hasDelayedTimedResponse(question) ? (
                   <>
                     Primero se reproducirá la secuencia. Tendrás{" "}
                     <strong>{question.timeLimit} segundos</strong> para responder cuando termine.
@@ -230,15 +240,11 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
             <div className={styles.playPanel} key={attempt}>
               <div className={styles.questionHeader}>
                 <Badge>{question.category}</Badge>
-                {(question.type !== "flash-memory" && question.type !== "simon-sequence") ||
-                timedResponseStarted ? (
+                {!hasDelayedTimedResponse(question) || timedResponseStarted ? (
                   <Timer
                     key={`timer-${attempt}`}
                     duration={question.timeLimit}
-                    active={
-                      (question.type !== "flash-memory" && question.type !== "simon-sequence") ||
-                      timedResponseStarted
-                    }
+                    active={!hasDelayedTimedResponse(question) || timedResponseStarted}
                     onTimeUp={handleTimeUp}
                   />
                 ) : null}

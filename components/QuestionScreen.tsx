@@ -44,9 +44,11 @@ export function QuestionScreen({
   onProgressiveClueReveal,
   onTimedResponseStart,
 }: QuestionScreenProps) {
-  const [timedResponseStarted, setTimedResponseStarted] = useState(
-    question.type !== "flash-memory" && question.type !== "simon-sequence",
-  );
+  const hasDelayedTimedResponse =
+    question.type === "flash-memory" ||
+    question.type === "simon-sequence" ||
+    question.type === "mini-wordle";
+  const [timedResponseStarted, setTimedResponseStarted] = useState(!hasDelayedTimedResponse);
   const startTimedResponse = () => {
     setTimedResponseStarted(true);
     onTimedResponseStart();
@@ -76,8 +78,7 @@ export function QuestionScreen({
           </div>
         }
         right={
-          (question.type !== "flash-memory" && question.type !== "simon-sequence") ||
-          timedResponseStarted ? (
+          !hasDelayedTimedResponse || timedResponseStarted ? (
             <Timer
               duration={question.timeLimit}
               active={!locked && timedResponseStarted}

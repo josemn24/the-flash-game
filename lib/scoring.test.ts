@@ -8,6 +8,7 @@ import {
   calculateFlashMemoryMetrics,
   calculateMiniNonogramMetrics,
   calculateMiniSudokuMetrics,
+  calculateMiniWordleMetrics,
   calculateHeatMapMetrics,
   calculateImageLabelingMetrics,
   calculateProgressiveCluesMetrics,
@@ -28,10 +29,22 @@ import {
   isImageLabelingAnswer,
   isErrorReconstructionAnswer,
   isValidErrorReconstructionConfiguration,
+  isValidAnagramConfiguration,
+  isMiniWordleAnswer,
   isValidImageLabelingConfiguration,
   QUESTION_SCORING_POLICY,
 } from "@/lib/scoring";
-import type { AnswerValue, MiniNonogramAnswer, QuestionType } from "@/types/game";
+import {
+  getMiniWordleFeedback,
+  isValidMiniWordleConfiguration,
+  normalizeMiniWordleWord,
+} from "@/lib/miniWordle";
+import type {
+  AnswerValue,
+  MiniNonogramAnswer,
+  MiniWordleQuestion,
+  QuestionType,
+} from "@/types/game";
 
 const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) => {
   const example = examples[0].question;
@@ -125,7 +138,19 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
         stepId: example.firstErrorStepId,
         ...(example.correction ? { correction: example.correction.correctAnswer } : {}),
       };
-      incorrectAnswer = { stepId: example.steps.find((step) => step.id !== example.firstErrorStepId)!.id };
+      incorrectAnswer = {
+        stepId: example.steps.find((step) => step.id !== example.firstErrorStepId)!.id,
+      };
+      incorrectPoints = 0;
+      break;
+    case "anagram":
+      correctAnswer = example.correctAnswer;
+      incorrectAnswer = example.tiles.map((tile) => tile.value).join("");
+      incorrectPoints = 0;
+      break;
+    case "mini-wordle":
+      correctAnswer = { guesses: [example.correctAnswer] };
+      incorrectAnswer = { guesses: ["CUNA", "DUNA", "RUNA", "TUNA"] };
       incorrectPoints = 0;
       break;
     case "ordering":
@@ -194,7 +219,10 @@ describe("question evaluation", () => {
   it("evaluates error reconstruction with full and partial credit", () => {
     const question = QUESTION_FORMAT_CATALOG["error-reconstruction"].examples[0].question;
     if (!question.correction) throw new Error("Expected a guided correction");
-    const correct = { stepId: question.firstErrorStepId, correction: question.correction.correctAnswer };
+    const correct = {
+      stepId: question.firstErrorStepId,
+      correction: question.correction.correctAnswer,
+    };
     const locationOnly = { stepId: question.firstErrorStepId };
 
     expect(isErrorReconstructionAnswer(correct)).toBe(true);
@@ -207,7 +235,9 @@ describe("question evaluation", () => {
       points: 100,
       details: { type: "error-reconstruction", locationCorrect: true, correctionCorrect: true },
     });
-    expect(evaluateAnswer({ question, answer: locationOnly, timeUsed: question.timeLimit })).toMatchObject({
+    expect(
+      evaluateAnswer({ question, answer: locationOnly, timeUsed: question.timeLimit }),
+    ).toMatchObject({
       status: "partial",
       points: 30,
       details: { type: "error-reconstruction", locationCorrect: true, correctionCorrect: false },
@@ -244,6 +274,120 @@ describe("question evaluation", () => {
     expect(
       evaluateAnswer({ question, answer: null, timeUsed: question.timeLimit, timedOut: true }),
     ).toMatchObject({ status: "unanswered", points: 0 });
+  });
+
+  it("validates anagram tiles and accepts the exact constructed word", () => {
+    const question = QUESTION_FORMAT_CATALOG.anagram.examples[1].question;
+    expect(isValidAnagramConfiguration(question)).toBe(true);
+    expect(isAnswerCorrect(question, "NAANA")).toBe(false);
+    expect(isAnswerCorrect(question, "ANANA")).toBe(true);
+    expect(evaluateAnswer({ question, answer: "ANANA", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 120,
+    });
+    expect(
+      isValidAnagramConfiguration({
+        ...question,
+        tiles: [...question.tiles.slice(0, 4), { id: "a-4", value: "B" }],
+      }),
+    ).toBe(false);
+    expect(isValidAnagramConfiguration({ ...question, tiles: question.tiles.slice(0, 2) })).toBe(
+      false,
+    );
+    expect(
+      isValidAnagramConfiguration({
+        ...question,
+        tiles: [...question.tiles.slice(0, 4), { id: "n-1", value: "A" }],
+      }),
+    ).toBe(false);
+  });
+
+  it("does not score an incorrect or timed-out anagram", () => {
+    const question = QUESTION_FORMAT_CATALOG.anagram.examples[0].question;
+    expect(evaluateAnswer({ question, answer: "SAME", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(
+      evaluateAnswer({ question, answer: null, timeUsed: question.timeLimit, timedOut: true }),
+    ).toMatchObject({ status: "unanswered", points: 0 });
+  });
+
+  it("normalizes Mini-Wordle accents while preserving Ñ", () => {
+    expect(normalizeMiniWordleWord(" ágil ")).toBe("AGIL");
+    expect(normalizeMiniWordleWord("caña")).toBe("CAÑA");
+    expect(normalizeMiniWordleWord("cana")).not.toBe(normalizeMiniWordleWord("caña"));
+  });
+
+  it("evaluates repeated Mini-Wordle letters without exceeding solution counts", () => {
+    expect(getMiniWordleFeedback("NANA", "LUNA")).toEqual([
+      { letter: "N", status: "absent" },
+      { letter: "A", status: "absent" },
+      { letter: "N", status: "correct" },
+      { letter: "A", status: "correct" },
+    ]);
+  });
+
+  it("validates Mini-Wordle configuration and answer shapes", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
+    expect(isValidMiniWordleConfiguration(question)).toBe(true);
+    expect(isMiniWordleAnswer({ guesses: ["CUNA"] })).toBe(true);
+    expect(isMiniWordleAnswer({ guesses: [2] } as unknown as AnswerValue)).toBe(false);
+
+    const invalidCases: MiniWordleQuestion[] = [
+      { ...question, correctAnswer: "SOL" },
+      { ...question, additionalGuesses: ["LUNA"] },
+      { ...question, additionalGuesses: ["CANA", "cána"] },
+      { ...question, additionalGuesses: ["LU-NA"] },
+    ];
+    expect(invalidCases.every((candidate) => !isValidMiniWordleConfiguration(candidate))).toBe(
+      true,
+    );
+    expect(calculateMiniWordleMetrics(question, { guesses: ["CUNA", "LUNA", "DUNA"] })).toEqual({
+      valid: false,
+      solved: false,
+      attemptsUsed: 0,
+      incorrectAttempts: 0,
+    });
+    expect(isValidMiniWordleConfiguration({ ...question, additionalGuesses: ["XEMA"] })).toBe(true);
+  });
+
+  it("scores Mini-Wordle by speed and previous incorrect attempts", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
+    expect(evaluateAnswer({ question, answer: { guesses: ["LUNA"] }, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 150,
+      details: { type: "mini-wordle", attemptsUsed: 1, incorrectAttempts: 0, solved: true },
+    });
+    expect(
+      evaluateAnswer({ question, answer: { guesses: ["CUNA", "LUNA"] }, timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 135, details: { incorrectAttempts: 1 } });
+    expect(
+      evaluateAnswer({ question, answer: { guesses: ["LUNA"] }, timeUsed: question.timeLimit }),
+    ).toMatchObject({ status: "correct", points: 75 });
+  });
+
+  it("ends Mini-Wordle after four failures and preserves timeout history without points", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
+    const guesses = ["CUNA", "DUNA", "RUNA", "TUNA"];
+    expect(evaluateAnswer({ question, answer: { guesses }, timeUsed: 20 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+      details: { attemptsUsed: 4, incorrectAttempts: 4, solved: false },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { guesses: guesses.slice(0, 2) },
+        timeUsed: question.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      answer: { guesses: ["CUNA", "DUNA"] },
+      details: { attemptsUsed: 2, incorrectAttempts: 2, solved: false },
+    });
   });
 
   it("reduces progressive-clues points before applying the speed multiplier", () => {
@@ -818,7 +962,9 @@ describe("question evaluation", () => {
     expect(
       evaluateAnswer({ question, answer: completeAnswer, timeUsed: question.timeLimit }),
     ).toMatchObject({ status: "correct", points: 80 });
-    expect(evaluateAnswer({ question, answer: partialAnswer, timeUsed: question.timeLimit })).toMatchObject({
+    expect(
+      evaluateAnswer({ question, answer: partialAnswer, timeUsed: question.timeLimit }),
+    ).toMatchObject({
       status: "partial",
       points: 40,
     });
@@ -840,19 +986,26 @@ describe("question evaluation", () => {
       false,
     );
     expect(
-      isValidMiniSudokuConfiguration({ ...question, solution: [...question.solution.slice(0, 1), 5, ...question.solution.slice(2)] }),
+      isValidMiniSudokuConfiguration({
+        ...question,
+        solution: [...question.solution.slice(0, 1), 5, ...question.solution.slice(2)],
+      }),
     ).toBe(false);
+    expect(isValidMiniSudokuConfiguration({ ...question, grid: question.solution })).toBe(false);
     expect(
-      isValidMiniSudokuConfiguration({ ...question, grid: question.solution }),
-    ).toBe(false);
-    expect(
-      isValidMiniSudokuConfiguration({ ...question, grid: [null, null, null, null, null, ...question.grid.slice(5)] }),
+      isValidMiniSudokuConfiguration({
+        ...question,
+        grid: [null, null, null, null, null, ...question.grid.slice(5)],
+      }),
     ).toBe(false);
     expect(
       isValidMiniSudokuConfiguration({ ...question, grid: [2, ...question.grid.slice(1)] }),
     ).toBe(false);
     expect(
-      isValidMiniSudokuConfiguration({ ...question, solution: [1, 1, ...question.solution.slice(2)] }),
+      isValidMiniSudokuConfiguration({
+        ...question,
+        solution: [1, 1, ...question.solution.slice(2)],
+      }),
     ).toBe(false);
     expect(calculateMiniSudokuMetrics(question, { "1": 5 })).toMatchObject({
       correctCells: 0,
@@ -909,16 +1062,29 @@ describe("question evaluation", () => {
       isValidMiniNonogramConfiguration({ ...question, solution: question.solution.slice(0, 24) }),
     ).toBe(false);
     expect(
-      isValidMiniNonogramConfiguration({ ...question, solution: [...question.solution.slice(0, 1), 1, ...question.solution.slice(2)] as unknown as boolean[] }),
+      isValidMiniNonogramConfiguration({
+        ...question,
+        solution: [
+          ...question.solution.slice(0, 1),
+          1,
+          ...question.solution.slice(2),
+        ] as unknown as boolean[],
+      }),
     ).toBe(false);
     expect(
       isValidMiniNonogramConfiguration({ ...question, rowClues: question.rowClues.slice(0, 4) }),
     ).toBe(false);
     expect(
-      isValidMiniNonogramConfiguration({ ...question, columnClues: [[0], ...question.columnClues.slice(1)] }),
+      isValidMiniNonogramConfiguration({
+        ...question,
+        columnClues: [[0], ...question.columnClues.slice(1)],
+      }),
     ).toBe(false);
     expect(
-      isValidMiniNonogramConfiguration({ ...question, rowClues: [[2], ...question.rowClues.slice(1)] }),
+      isValidMiniNonogramConfiguration({
+        ...question,
+        rowClues: [[2], ...question.rowClues.slice(1)],
+      }),
     ).toBe(false);
     expect(calculateMiniNonogramMetrics(question, { "25": true })).toMatchObject({
       correctFilled: 0,
@@ -943,7 +1109,11 @@ describe("question evaluation", () => {
     ).toMatchObject({ status: "correct", points: 75 });
     expect(
       evaluateAnswer({ question, answer: { tiles: question.initialTiles, moves: 0 }, timeUsed: 0 }),
-    ).toMatchObject({ status: "incorrect", points: 0, details: { type: "sliding-puzzle", moves: 0 } });
+    ).toMatchObject({
+      status: "incorrect",
+      points: 0,
+      details: { type: "sliding-puzzle", moves: 0 },
+    });
     expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
       status: "unanswered",
       points: 0,
@@ -952,16 +1122,25 @@ describe("question evaluation", () => {
 
     expect(isValidSlidingPuzzleConfiguration(question)).toBe(true);
     expect(
-      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: question.initialTiles.slice(0, 8) }),
+      isValidSlidingPuzzleConfiguration({
+        ...question,
+        initialTiles: question.initialTiles.slice(0, 8),
+      }),
     ).toBe(false);
     expect(
-      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: [1, 2, 3, 4, 5, 6, 7, 7, null] }),
+      isValidSlidingPuzzleConfiguration({
+        ...question,
+        initialTiles: [1, 2, 3, 4, 5, 6, 7, 7, null],
+      }),
     ).toBe(false);
     expect(
       isValidSlidingPuzzleConfiguration({ ...question, initialTiles: question.solution }),
     ).toBe(false);
     expect(
-      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: [1, 2, 3, 4, 5, 6, 8, 7, null] }),
+      isValidSlidingPuzzleConfiguration({
+        ...question,
+        initialTiles: [1, 2, 3, 4, 5, 6, 8, 7, null],
+      }),
     ).toBe(false);
   });
 

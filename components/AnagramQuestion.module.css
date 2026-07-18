@@ -1,0 +1,88 @@
+.root {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+.hint {
+  border-left: 2px solid var(--cyan);
+  padding-left: 0.75rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+.answer {
+  display: grid;
+  gap: 0.7rem;
+  min-height: 7rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 1rem;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+.answerHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.48);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.answerTiles,
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.chosenTile,
+.tile {
+  display: grid;
+  width: 2.85rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+.chosenTile {
+  color: #171b0b;
+  background: var(--electric);
+  box-shadow: 0 0 18px rgba(215, 255, 24, 0.16);
+}
+.placeholder {
+  align-self: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.availableLabel {
+  margin-bottom: 0.6rem;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.tile {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  background: rgba(255, 255, 255, 0.07);
+  transition:
+    border-color 160ms,
+    background 160ms;
+}
+.tile:hover {
+  border-color: rgba(53, 232, 255, 0.6);
+  background: rgba(53, 232, 255, 0.12);
+}
+.tile:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
