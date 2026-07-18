@@ -29,6 +29,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
   const codeAttemptsRef = useRef<string[]>([]);
   const draftAnswerRef = useRef<AnswerValue | null>(null);
   const matchingIncorrectAttemptsRef = useRef(0);
+  const progressiveCluesRevealedRef = useRef(1);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<ExamplePhase>("ready");
   const [attempt, setAttempt] = useState(0);
@@ -49,6 +50,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
     matchingIncorrectAttemptsRef.current = 0;
+    progressiveCluesRevealedRef.current = 1;
     setCodeAttemptCount(0);
     setResult(null);
     setPhase("ready");
@@ -74,6 +76,7 @@ export function PlayableFormatExample({ question }: { question: Question }) {
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
     matchingIncorrectAttemptsRef.current = 0;
+    progressiveCluesRevealedRef.current = 1;
     setCodeAttemptCount(0);
     setResult(null);
     setAttempt((current) => current + 1);
@@ -99,6 +102,8 @@ export function PlayableFormatExample({ question }: { question: Question }) {
           submittedCodes,
           matchingIncorrectAttempts:
             question.type === "matching" ? matchingIncorrectAttemptsRef.current : undefined,
+          progressiveCluesRevealed:
+            question.type === "progressive-clues" ? progressiveCluesRevealedRef.current : undefined,
         }),
       );
       setPhase("feedback");
@@ -225,6 +230,9 @@ export function PlayableFormatExample({ question }: { question: Question }) {
                 }}
                 onMatchingIncorrectAttempt={() => {
                   matchingIncorrectAttemptsRef.current += 1;
+                }}
+                onProgressiveClueReveal={(revealedClues) => {
+                  progressiveCluesRevealedRef.current = revealedClues;
                 }}
               />
             </div>

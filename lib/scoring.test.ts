@@ -4,6 +4,7 @@ import { SCORING_POLICIES } from "@/features/question-formats/scoringPolicies";
 import {
   calculateAnswerScore,
   calculateEstimationMetrics,
+  calculateProgressiveCluesMetrics,
   calculateTotalScore,
   evaluateAnswer,
   isAnswerCorrect,
@@ -86,6 +87,94 @@ describe("question evaluation", () => {
   it("normalizes accepted short answers", () => {
     const question = QUESTION_FORMAT_CATALOG["short-text"].example;
     expect(isAnswerCorrect(question, "Mil novecientos cuarenta y cinco")).toBe(true);
+  });
+
+  it("normalizes accepted progressive-clues answers", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    expect(isAnswerCorrect(question, "  MARIE CURÍE ")).toBe(true);
+    expect(isAnswerCorrect(question, "Maria Skłodowska-Curie")).toBe(true);
+  });
+
+  it("reduces progressive-clues points before applying the speed multiplier", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: question.correctAnswer,
+        timeUsed: 0,
+        progressiveCluesRevealed: 1,
+      }),
+    ).toMatchObject({
+      status: "correct",
+      points: 160,
+      details: { type: "progressive-clues", revealedClues: 1, availablePoints: 160 },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: question.correctAnswer,
+        timeUsed: question.timeLimit,
+        progressiveCluesRevealed: 2,
+      }),
+    ).toMatchObject({
+      status: "correct",
+      points: 65,
+      details: { type: "progressive-clues", revealedClues: 2, availablePoints: 130 },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: question.correctAnswer,
+        timeUsed: 0,
+        progressiveCluesRevealed: question.clues.length,
+      }),
+    ).toMatchObject({ points: 70, details: { availablePoints: 70 } });
+  });
+
+  it("returns zero for failed or timed-out progressive-clues answers", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: "Ada Lovelace",
+        timeUsed: 3,
+        progressiveCluesRevealed: 2,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: null,
+        timeUsed: 99,
+        timedOut: true,
+        progressiveCluesRevealed: 3,
+      }),
+    ).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: 25,
+      details: {
+        type: "progressive-clues",
+        revealedClues: 3,
+        totalClues: 4,
+        availablePoints: 100,
+      },
+    });
+  });
+
+  it("clamps progressive-clues metadata to the authored clue range", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    expect(calculateProgressiveCluesMetrics(question, -10)).toEqual({
+      revealedClues: 1,
+      totalClues: 4,
+      availablePoints: 160,
+    });
+    expect(calculateProgressiveCluesMetrics(question, 99)).toEqual({
+      revealedClues: 4,
+      totalClues: 4,
+      availablePoints: 70,
+    });
+    expect(calculateProgressiveCluesMetrics(question, Number.NaN).revealedClues).toBe(1);
   });
 
   it("preserves the speed floor and incorrect penalties", () => {

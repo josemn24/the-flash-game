@@ -24,6 +24,7 @@ type QuestionScreenProps = {
   onCodeAttempt: (code: string) => boolean;
   onProgress: (answer: AnswerValue) => void;
   onMatchingIncorrectAttempt: () => void;
+  onProgressiveClueReveal: (revealedClues: number) => void;
 };
 
 export function QuestionScreen({
@@ -38,6 +39,7 @@ export function QuestionScreen({
   onCodeAttempt,
   onProgress,
   onMatchingIncorrectAttempt,
+  onProgressiveClueReveal,
 }: QuestionScreenProps) {
   return (
     <motion.section
@@ -96,6 +98,7 @@ export function QuestionScreen({
           onCodeAttempt={onCodeAttempt}
           onProgress={onProgress}
           onMatchingIncorrectAttempt={onMatchingIncorrectAttempt}
+          onProgressiveClueReveal={onProgressiveClueReveal}
         />
       </div>
     </motion.section>

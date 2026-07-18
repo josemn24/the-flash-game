@@ -3,9 +3,9 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 
 describe("question format catalog", () => {
-  it("contains exactly nine formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(9);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(9);
+  it("contains exactly ten formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(10);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(10);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -16,7 +16,17 @@ describe("question format catalog", () => {
       "classification",
       "logic-code",
       "estimation",
+      "progressive-clues",
     ]);
+  });
+
+  it("keeps the progressive-clues example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].example;
+    expect(question.clues.length).toBeGreaterThanOrEqual(2);
+    expect(question.clues.every((clue) => clue.trim().length > 0)).toBe(true);
+    expect(question.acceptedAnswers).toContain(question.correctAnswer);
+    expect(question.cluePenalty).toBeGreaterThan(0);
+    expect(question.cluePenalty * (question.clues.length - 1)).toBeLessThan(question.points);
   });
 
   it("keeps the matching example internally consistent", () => {

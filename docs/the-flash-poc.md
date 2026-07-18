@@ -12,7 +12,7 @@ La pregunta de producto sigue siendo:
 
 - Un único jugador y estado de sesión en memoria.
 - Dos etapas locales de diez preguntas cada una.
-- Nueve formatos de pregunta con reglas y puntuación propias.
+- Diez formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
 - Transición automática después de responder o agotar el tiempo.
@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, salas, multijugador
 | ------------------- | ------------------------------------------------------------- |
 | `/`                 | Presentación, selector de etapas y acceso a la biblioteca.    |
 | `/etapas/[stageId]` | Validación de la etapa y sesión jugable completa.             |
-| `/formatos`         | Catálogo de los nueve formatos disponibles.                   |
+| `/formatos`         | Catálogo de los diez formatos disponibles.                    |
 | `/formatos/[slug]`  | Reglas, puntuación, autoría, accesibilidad y ejemplo jugable. |
 
 Una etapa recorre estos estados:
@@ -58,21 +58,22 @@ Durante la etapa no se muestran aciertos, soluciones ni puntos parciales. La res
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
 Ambas etapas se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
-Cada una conserva diez preguntas y todavía no utiliza los formatos «Encontrar el intruso» ni «Emparejar conceptos».
+Cada una conserva diez preguntas y todavía no utiliza los formatos «Encontrar el intruso», «Emparejar conceptos» ni «Adivinanzas por pistas».
 
 ## Formatos implementados
 
-| Formato              | Interacción                                                         | Evaluación                                                                    |
-| -------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Elección múltiple    | Tocar una opción para enviarla inmediatamente. Puede incluir media. | Acierto exacto; un fallo resta el 20 %.                                       |
-| Encontrar el intruso | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                       |
-| Emparejar conceptos  | Seleccionar una tarjeta de cada columna; admite media por tarjeta.  | Crédito por pareja y velocidad; cada error resta un 10 % de los puntos base.  |
-| Verdadero o falso    | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                       |
-| Respuesta corta      | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |
-| Ordenar              | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                 |
-| Clasificar           | Asignar una categoría a cada elemento.                              | Crédito parcial por elemento correctamente clasificado.                       |
-| Código lógico        | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base. |
-| Estimación           | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                         |
+| Formato                | Interacción                                                         | Evaluación                                                                    |
+| ---------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Elección múltiple      | Tocar una opción para enviarla inmediatamente. Puede incluir media. | Acierto exacto; un fallo resta el 20 %.                                       |
+| Encontrar el intruso   | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                       |
+| Emparejar conceptos    | Seleccionar una tarjeta de cada columna; admite media por tarjeta.  | Crédito por pareja y velocidad; cada error resta un 10 % de los puntos base.  |
+| Verdadero o falso      | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                       |
+| Respuesta corta        | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |
+| Ordenar                | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                 |
+| Clasificar             | Asignar una categoría a cada elemento.                              | Crédito parcial por elemento correctamente clasificado.                       |
+| Código lógico          | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base. |
+| Estimación             | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                         |
+| Adivinanzas por pistas | Revelar pistas de texto o enviar una única respuesta abierta.       | Cada pista reduce el máximo; el acierto se ajusta por velocidad.              |
 
 En todos los formatos la velocidad ajusta la puntuación. Para un acierto binario de valor `V`, límite `T` y tiempo usado `t`:
 
@@ -81,6 +82,8 @@ points = V × (1 - 0.5 × (t / T))
 ```
 
 Un acierto conserva entre el 50 % y el 100 % de los puntos. El total final de una etapa nunca baja de cero.
+
+En «Adivinanzas por pistas», la primera pista es gratuita y cada revelación adicional descuenta una cantidad fija antes de aplicar el multiplicador de velocidad. Un fallo o el timeout puntúan cero.
 
 ## Biblioteca de formatos
 
@@ -110,6 +113,7 @@ El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionRevie
 - La portada recibe `StageSummary[]`; nunca necesita las preguntas completas.
 - La ruta de etapa valida el identificador y envía una única `Stage` a `GameApp.client.tsx`.
 - La sesión jugable mantiene reducer, tiempos, respuestas, resultados y transiciones en el cliente.
+- El número de pistas reveladas se conserva en la sesión o en el ejemplo jugable y se envía al evaluador junto con la respuesta.
 - Los componentes universales como `Badge`, `Logo`, `AppHeader` y `Button` pueden utilizarse desde ambos grafos.
 - `MotionButton.client.tsx` contiene la mejora animada de la primitiva universal.
 - Motion respeta la preferencia del sistema mediante `MotionConfig reducedMotion="user"`; las decoraciones sencillas utilizan CSS.
@@ -152,7 +156,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las nueve fichas de formato, incluidas `/formatos/encontrar-el-intruso` y `/formatos/emparejar-conceptos`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las diez fichas de formato, incluida `/formatos/adivinanzas-por-pistas`.
 
 ## Evolución pendiente
 

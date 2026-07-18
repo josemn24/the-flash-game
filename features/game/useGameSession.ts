@@ -75,6 +75,7 @@ export function useGameSession(stage: Stage) {
   const codeAttemptsRef = useRef<string[]>([]);
   const draftAnswerRef = useRef<AnswerValue | null>(null);
   const matchingIncorrectAttemptsRef = useRef(0);
+  const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearAdvanceTimeout = useCallback(() => {
@@ -96,6 +97,7 @@ export function useGameSession(stage: Stage) {
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
     matchingIncorrectAttemptsRef.current = 0;
+    progressiveCluesRevealedRef.current = 1;
     questionStartedAt.current = performance.now();
     dispatch({ type: "start" });
   }, [clearAdvanceTimeout]);
@@ -106,6 +108,7 @@ export function useGameSession(stage: Stage) {
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
     matchingIncorrectAttemptsRef.current = 0;
+    progressiveCluesRevealedRef.current = 1;
     dispatch({ type: "replay" });
   }, [clearAdvanceTimeout]);
 
@@ -125,6 +128,8 @@ export function useGameSession(stage: Stage) {
         submittedCodes,
         matchingIncorrectAttempts:
           question.type === "matching" ? matchingIncorrectAttemptsRef.current : undefined,
+        progressiveCluesRevealed:
+          question.type === "progressive-clues" ? progressiveCluesRevealedRef.current : undefined,
       });
 
       dispatch({ type: "answer", result, timedOut });
@@ -138,6 +143,7 @@ export function useGameSession(stage: Stage) {
         codeAttemptsRef.current = [];
         draftAnswerRef.current = null;
         matchingIncorrectAttemptsRef.current = 0;
+        progressiveCluesRevealedRef.current = 1;
         questionStartedAt.current = performance.now();
         dispatch({ type: "advance" });
       }, TRANSITION_DURATION);
@@ -179,6 +185,10 @@ export function useGameSession(stage: Stage) {
     matchingIncorrectAttemptsRef.current += 1;
   }, []);
 
+  const handleProgressiveClueReveal = useCallback((revealedClues: number) => {
+    progressiveCluesRevealedRef.current = revealedClues;
+  }, []);
+
   const score = useMemo(
     () => calculateTotalScore(state.results.map((result) => result.points)),
     [state.results],
@@ -195,6 +205,7 @@ export function useGameSession(stage: Stage) {
     handleTimeUp,
     handleAnswerProgress,
     handleMatchingIncorrectAttempt,
+    handleProgressiveClueReveal,
     showReview: () => dispatch({ type: "show-review" }),
     showResults: () => dispatch({ type: "show-results" }),
   };

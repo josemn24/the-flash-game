@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, nueve formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, diez formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -17,8 +17,9 @@ La aplicación soporta de forma nativa:
 - clasificación con crédito parcial;
 - código lógico con varios intentos;
 - estimación con puntuación por proximidad;
-- encontrar el intruso con elementos de texto o imagen.
-- emparejar conceptos con validación inmediata y crédito por pareja.
+- encontrar el intruso con elementos de texto o imagen;
+- emparejar conceptos con validación inmediata y crédito por pareja;
+- adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -234,15 +235,16 @@ Por ejemplo:
 - **Puntuación:** puede combinar eslabones completados, errores y tiempo total; las ayudas evitarían que un fallo inicial bloquee toda la cadena, a cambio de una penalización.
 - **Riesgo:** las relaciones deben ser inequívocas y la dificultad de un eslabón no debería decidir por sí sola el resultado de toda la prueba.
 
-### 24. Adivinanzas por pistas — Futura
+### 24. Adivinanzas por pistas — Implementada
 
 El jugador intenta identificar un personaje, lugar, objeto, obra o concepto. Puede descubrir pistas sucesivas, pero cada una reduce la puntuación máxima disponible, por lo que debe decidir cuándo tiene suficiente información para responder.
 
-Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivamente su siglo, profesión, país, imagen e iniciales.
+Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivamente su siglo, profesión, país, campo de investigación e iniciales.
 
-- **Interacción:** solicitar una nueva pista o responder en cualquier momento; una respuesta incorrecta puede terminar la ronda o aplicar una penalización adicional.
+- **Interacción actual:** la primera pista de texto aparece al comenzar; el jugador puede revelar las siguientes o enviar una única respuesta abierta en cualquier momento. Un fallo termina la ronda.
 - **Encaje:** combina conocimiento, autoconfianza y gestión del riesgo con una regla fácil de comprender.
-- **Puntuación:** parte de un máximo visible que disminuye con cada pista revelada y, opcionalmente, con el tiempo empleado.
+- **Puntuación actual:** cada pista adicional resta una cantidad fija del máximo visible y la velocidad ajusta después los puntos restantes; un fallo o el timeout no puntúan.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 - **Riesgo:** las primeras pistas deben ser difíciles pero útiles, y su orden debe calibrarse para que cada revelación reduzca de manera apreciable el espacio de respuestas posibles.
 
 ### 25. Mapa de calor — Futura

@@ -18,6 +18,12 @@ export type AnswerResultDetails =
       correctPairs: number;
       totalPairs: number;
       incorrectAttempts: number;
+    }
+  | {
+      type: "progressive-clues";
+      revealedClues: number;
+      totalClues: number;
+      availablePoints: number;
     };
 
 export type AnswerResult = {

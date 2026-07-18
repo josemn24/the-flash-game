@@ -10,6 +10,7 @@ import type {
   LogicCodeQuestion,
   MatchingAnswer,
   MatchingQuestion,
+  ProgressiveCluesQuestion,
   Question,
   QuestionType,
 } from "@/types/game";
@@ -21,9 +22,11 @@ export type EvaluationInput = {
   timedOut?: boolean;
   submittedCodes?: string[];
   matchingIncorrectAttempts?: number;
+  progressiveCluesRevealed?: number;
 };
 
-export type ScoringPolicyId = "binary-speed" | "partial-items" | "attempt-penalty" | "proximity";
+export type ScoringPolicyId =
+  "binary-speed" | "partial-items" | "attempt-penalty" | "proximity" | "clue-speed";
 
 export const QUESTION_SCORING_POLICY = {
   "multiple-choice": "binary-speed",
@@ -31,6 +34,7 @@ export const QUESTION_SCORING_POLICY = {
   matching: "partial-items",
   "true-false": "binary-speed",
   "short-text": "binary-speed",
+  "progressive-clues": "clue-speed",
   ordering: "binary-speed",
   classification: "partial-items",
   "logic-code": "attempt-penalty",
@@ -50,6 +54,7 @@ type EvaluationContext = {
   timeUsed: number;
   submittedCodes: string[];
   incorrectAttempts: number;
+  revealedClues: number;
 };
 
 function isRecordAnswer(answer: AnswerValue | null): answer is Record<string, string> {
@@ -121,13 +126,30 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
     default: {
       if (typeof answer !== "string") return false;
       const accepted =
-        question.type === "short-text"
+        question.type === "short-text" || question.type === "progressive-clues"
           ? (question.acceptedAnswers ?? [question.correctAnswer])
           : [question.correctAnswer];
       const normalizedAnswer = normalizeAnswer(answer);
       return accepted.some((candidate) => normalizeAnswer(candidate) === normalizedAnswer);
     }
   }
+}
+
+function clampRevealedClues(revealedClues: number, totalClues: number) {
+  if (totalClues <= 0) return 0;
+  const safeValue = Number.isFinite(revealedClues) ? Math.trunc(revealedClues) : 1;
+  return Math.min(Math.max(safeValue, 1), totalClues);
+}
+
+export function calculateProgressiveCluesMetrics(
+  question: ProgressiveCluesQuestion,
+  revealedClues: number,
+) {
+  const totalClues = question.clues.length;
+  const safeRevealedClues = clampRevealedClues(revealedClues, totalClues);
+  const additionalClues = Math.max(0, safeRevealedClues - 1);
+  const availablePoints = Math.max(0, question.points - question.cluePenalty * additionalClues);
+  return { revealedClues: safeRevealedClues, totalClues, availablePoints };
 }
 
 export function calculateEstimationMetrics(question: EstimationQuestion, answer: number) {
@@ -265,8 +287,26 @@ function evaluateLogicCode(
   };
 }
 
+function evaluateProgressiveClues(
+  question: ProgressiveCluesQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+  revealedClues: number,
+): InternalEvaluation {
+  const isCorrect = isAnswerCorrect(question, answer);
+  const metrics = calculateProgressiveCluesMetrics(question, revealedClues);
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "incorrect",
+    points: isCorrect
+      ? Math.round(metrics.availablePoints * calculateSpeedMultiplier(timeUsed, question.timeLimit))
+      : 0,
+    details: { type: "progressive-clues", ...metrics },
+  };
+}
+
 function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
-  const { question, answer, timeUsed, submittedCodes, incorrectAttempts } = context;
+  const { question, answer, timeUsed, submittedCodes, incorrectAttempts, revealedClues } = context;
 
   switch (QUESTION_SCORING_POLICY[question.type]) {
     case "binary-speed":
@@ -291,6 +331,12 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       }
       return evaluateEstimation(question, answer, timeUsed);
     }
+    case "clue-speed": {
+      if (question.type !== "progressive-clues") {
+        throw new Error(`Unsupported clue-speed question: ${question.type}`);
+      }
+      return evaluateProgressiveClues(question, answer, timeUsed, revealedClues);
+    }
   }
 }
 
@@ -299,6 +345,7 @@ export function calculateAnswerScore(
   answer: AnswerValue,
   timeUsed: number,
   incorrectAttempts = 0,
+  revealedClues = 1,
 ) {
   return evaluateByPolicy({
     question,
@@ -306,6 +353,7 @@ export function calculateAnswerScore(
     timeUsed: clampTime(timeUsed, question.timeLimit),
     submittedCodes: [],
     incorrectAttempts,
+    revealedClues,
   }).points;
 }
 
@@ -316,6 +364,7 @@ export function evaluateAnswer({
   timedOut = false,
   submittedCodes = [],
   matchingIncorrectAttempts = 0,
+  progressiveCluesRevealed = 1,
 }: EvaluationInput): AnswerResult {
   const safeTime = clampTime(timeUsed, question.timeLimit);
   if (answer === null) {
@@ -334,7 +383,14 @@ export function evaluateAnswer({
               incorrectAttempts: submittedCodes.length,
             },
           }
-        : {}),
+        : question.type === "progressive-clues"
+          ? {
+              details: {
+                type: "progressive-clues" as const,
+                ...calculateProgressiveCluesMetrics(question, progressiveCluesRevealed),
+              },
+            }
+          : {}),
     };
   }
 
@@ -347,6 +403,7 @@ export function evaluateAnswer({
     timeUsed: safeTime,
     submittedCodes,
     incorrectAttempts: question.type === "matching" ? matchingIncorrectAttempts : incorrectAttempts,
+    revealedClues: question.type === "progressive-clues" ? progressiveCluesRevealed : 1,
   });
 
   const matchingWithoutProgress =

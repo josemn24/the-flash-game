@@ -73,6 +73,24 @@ type MatchingWithInvalidMedia = Omit<ValidMatching, "rightItems"> & {
   rightItems: [{ id: "right-a"; label: "A"; media: { type: "video"; src: "/a.mp4" } }];
 };
 
+type ValidProgressiveClues = {
+  id: "valid-progressive-clues";
+  type: "progressive-clues";
+  category: "Test";
+  question: "Who am I?";
+  clues: ["First clue", "Second clue"];
+  cluePenalty: 20;
+  correctAnswer: "Answer";
+  acceptedAnswers: ["Answer", "Alternative"];
+  timeLimit: 20;
+  points: 100;
+  explanation: "The answer is correct";
+};
+
+type ProgressiveCluesWithoutClues = Omit<ValidProgressiveClues, "clues">;
+type ProgressiveCluesWithoutPenalty = Omit<ValidProgressiveClues, "cluePenalty">;
+type ProgressiveCluesWithoutAnswer = Omit<ValidProgressiveClues, "correctAnswer">;
+
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
   IsNotAssignable<MultipleChoiceWithoutOptions, Question>
@@ -93,4 +111,14 @@ export type RejectsMatchingWithoutReferences = Assert<
 >;
 export type RejectsMatchingWithInvalidMedia = Assert<
   IsNotAssignable<MatchingWithInvalidMedia, Question>
+>;
+export type AcceptsValidProgressiveClues = Assert<IsAssignable<ValidProgressiveClues, Question>>;
+export type RejectsProgressiveCluesWithoutClues = Assert<
+  IsNotAssignable<ProgressiveCluesWithoutClues, Question>
+>;
+export type RejectsProgressiveCluesWithoutPenalty = Assert<
+  IsNotAssignable<ProgressiveCluesWithoutPenalty, Question>
+>;
+export type RejectsProgressiveCluesWithoutAnswer = Assert<
+  IsNotAssignable<ProgressiveCluesWithoutAnswer, Question>
 >;

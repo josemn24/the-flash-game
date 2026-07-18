@@ -53,6 +53,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "progressive-clues": {
+    id: QUESTION_SCORING_POLICY["progressive-clues"],
+    label: "Pistas y velocidad",
+    summary:
+      "Cada pista adicional reduce el máximo disponible; una respuesta correcta conserva entre el 50 % y el 100 % de ese máximo según el tiempo.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   ordering: {
     id: QUESTION_SCORING_POLICY.ordering,
     label: "Secuencia exacta",

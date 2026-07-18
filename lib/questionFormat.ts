@@ -6,6 +6,7 @@ export const QUESTION_FORMAT_LABELS = {
   matching: "Emparejar",
   "true-false": "V/F",
   "short-text": "Texto",
+  "progressive-clues": "Pistas",
   ordering: "Ordenar",
   classification: "Clasificar",
   "logic-code": "Código lógico",

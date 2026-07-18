@@ -11,6 +11,7 @@ import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
+import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
@@ -21,6 +22,7 @@ type CommonProps = {
   onCodeAttempt: (code: string) => boolean;
   onProgress: (answer: AnswerValue) => void;
   onMatchingIncorrectAttempt: () => void;
+  onProgressiveClueReveal: (revealedClues: number) => void;
 };
 
 type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
@@ -156,6 +158,25 @@ function OrderingInput({
   return <OrderingQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
 }
 
+function ProgressiveCluesInput({
+  question,
+  locked,
+  onProgressiveClueReveal,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"progressive-clues">>) {
+  return (
+    <ProgressiveCluesQuestion
+      questionId={question.id}
+      clues={question.clues}
+      cluePenalty={question.cluePenalty}
+      points={question.points}
+      locked={locked}
+      onReveal={onProgressiveClueReveal}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function ClassificationInput({
   question,
   locked,
@@ -212,6 +233,7 @@ export const QUESTION_INPUT_RENDERERS = {
   matching: MatchingInput,
   "true-false": TrueFalseInput,
   "short-text": ShortTextInput,
+  "progressive-clues": ProgressiveCluesInput,
   ordering: OrderingInput,
   classification: ClassificationInput,
   "logic-code": LogicCodeInput,

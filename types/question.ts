@@ -69,6 +69,14 @@ export type ShortTextQuestion = BaseQuestion & {
   acceptedAnswers?: string[];
 };
 
+export type ProgressiveCluesQuestion = BaseQuestion & {
+  type: "progressive-clues";
+  clues: string[];
+  cluePenalty: number;
+  correctAnswer: string;
+  acceptedAnswers?: string[];
+};
+
 export type LogicCodeClue = {
   code: string;
   hint: string;
@@ -116,6 +124,7 @@ export type Question =
   | MatchingQuestion
   | TrueFalseQuestion
   | ShortTextQuestion
+  | ProgressiveCluesQuestion
   | OrderingQuestion
   | ClassificationQuestion
   | LogicCodeQuestion

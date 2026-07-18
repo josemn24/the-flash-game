@@ -100,6 +100,30 @@ function ShortTextReview({ question, result }: ReviewProps<QuestionOfType<"short
   return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
 }
 
+function ProgressiveCluesReview({
+  question,
+  result,
+}: ReviewProps<QuestionOfType<"progressive-clues">>) {
+  const details = result.details?.type === "progressive-clues" ? result.details : undefined;
+  return (
+    <div className="grid gap-3">
+      <AnswerPair answer={result.answer} correct={question.correctAnswer} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Pistas utilizadas</span>
+          <strong>
+            {details ? `${details.revealedClues} de ${details.totalClues}` : "Sin datos"}
+          </strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Máximo disponible</span>
+          <strong>{details ? `${details.availablePoints} pts` : "—"}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OrderingReview({ question, result }: ReviewProps<QuestionOfType<"ordering">>) {
   return <AnswerPair answer={result.answer} correct={question.correctOrder} />;
 }
@@ -216,6 +240,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   matching: MatchingReview,
   "true-false": TrueFalseReview,
   "short-text": ShortTextReview,
+  "progressive-clues": ProgressiveCluesReview,
   ordering: OrderingReview,
   classification: ClassificationReview,
   "logic-code": LogicCodeReview,

@@ -36,6 +36,7 @@ export function GameApp({ stage }: { stage: Stage }) {
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
                 onMatchingIncorrectAttempt={session.handleMatchingIncorrectAttempt}
+                onProgressiveClueReveal={session.handleProgressiveClueReveal}
               />
             )}
             {session.phase === "transition" && (
