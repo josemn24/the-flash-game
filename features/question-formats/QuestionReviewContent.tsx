@@ -11,6 +11,7 @@ import {
   isFlashMemoryAnswer,
   isImageLabelingAnswer,
   isMatchingAnswer,
+  isSimonSequenceAnswer,
 } from "@/lib/scoring";
 import type {
   AnswerResult,
@@ -404,6 +405,35 @@ function FlashMemoryReview({ question, result }: ReviewProps<QuestionOfType<"fla
   );
 }
 
+function SimonSequenceReview({ question, result }: ReviewProps<QuestionOfType<"simon-sequence">>) {
+  const submittedSteps = isSimonSequenceAnswer(result.answer) ? result.answer : [];
+  const details = result.details?.type === "simon-sequence" ? result.details : undefined;
+  const labelFor = (step: string) => question.pads.find((pad) => pad.id === step)?.label ?? step;
+  const mismatch = details?.firstMismatchIndex;
+  return (
+    <div className="grid gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Tu secuencia</span>
+          <strong>
+            {submittedSteps.length ? submittedSteps.map(labelFor).join(" → ") : "Sin respuesta"}
+          </strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Secuencia correcta</span>
+          <strong>{question.sequence.map(labelFor).join(" → ")}</strong>
+        </div>
+      </div>
+      {mismatch !== null && mismatch !== undefined && submittedSteps.length > 0 && (
+        <div className={styles.answerBox}>
+          <span>Primer paso divergente</span>
+          <strong>Paso {mismatch + 1}</strong>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const QUESTION_REVIEW_RENDERERS = {
   "multiple-choice": ChoiceReview,
   "odd-one-out": OddOneOutReview,
@@ -416,6 +446,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   ordering: OrderingReview,
   classification: ClassificationReview,
   "flash-memory": FlashMemoryReview,
+  "simon-sequence": SimonSequenceReview,
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,
 } satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };

@@ -45,7 +45,7 @@ export function QuestionScreen({
   onTimedResponseStart,
 }: QuestionScreenProps) {
   const [timedResponseStarted, setTimedResponseStarted] = useState(
-    question.type !== "flash-memory",
+    question.type !== "flash-memory" && question.type !== "simon-sequence",
   );
   const startTimedResponse = () => {
     setTimedResponseStarted(true);
@@ -76,7 +76,8 @@ export function QuestionScreen({
           </div>
         }
         right={
-          question.type !== "flash-memory" || timedResponseStarted ? (
+          (question.type !== "flash-memory" && question.type !== "simon-sequence") ||
+          timedResponseStarted ? (
             <Timer
               duration={question.timeLimit}
               active={!locked && timedResponseStarted}

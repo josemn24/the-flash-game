@@ -15,6 +15,7 @@ import { MatchingQuestion } from "@/components/MatchingQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
+import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
@@ -232,6 +233,23 @@ function FlashMemoryInput({
   );
 }
 
+function SimonSequenceInput({
+  question,
+  locked,
+  onSubmit,
+  onTimedResponseStart,
+}: QuestionInputProps<QuestionOfType<"simon-sequence">>) {
+  return (
+    <SimonSequenceQuestion
+      pads={question.pads}
+      sequence={question.sequence}
+      locked={locked}
+      onSubmit={onSubmit}
+      onTimedResponseStart={onTimedResponseStart}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -279,6 +297,7 @@ export const QUESTION_INPUT_RENDERERS = {
   ordering: OrderingInput,
   classification: ClassificationInput,
   "flash-memory": FlashMemoryInput,
+  "simon-sequence": SimonSequenceInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
 } satisfies {

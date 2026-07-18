@@ -37,6 +37,9 @@ export type {
   QuestionOfType,
   QuestionType,
   ShortTextQuestion,
+  SimonSequenceAnswer,
+  SimonSequencePad,
+  SimonSequenceQuestion,
   TrueFalseQuestion,
 } from "@/types/question";
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";

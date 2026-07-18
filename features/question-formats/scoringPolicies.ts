@@ -111,6 +111,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "simon-sequence": {
+    id: QUESTION_SCORING_POLICY["simon-sequence"],
+    label: "Secuencia y velocidad",
+    summary:
+      "La secuencia debe repetirse exactamente; un acierto conserva entre el 50 % y el 100 % de los puntos según el tiempo de respuesta.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "logic-code": {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",

@@ -22,6 +22,10 @@ const RESULT_LABELS = {
   unanswered: "Tiempo agotado",
 } as const;
 
+function hasDelayedTimedResponse(question: Question) {
+  return question.type === "flash-memory" || question.type === "simon-sequence";
+}
+
 export function PlayableFormatExample({ title, question }: { title: string; question: Question }) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -199,8 +203,17 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
               <Badge>{question.category}</Badge>
               <h2 id={titleId}>{question.question}</h2>
               <p>
-                Tendrás <strong>{question.timeLimit} segundos</strong>. El tiempo empezará cuando
-                pulses el botón.
+                {hasDelayedTimedResponse(question) ? (
+                  <>
+                    Primero se reproducirá la secuencia. Tendrás{" "}
+                    <strong>{question.timeLimit} segundos</strong> para responder cuando termine.
+                  </>
+                ) : (
+                  <>
+                    Tendrás <strong>{question.timeLimit} segundos</strong>. El tiempo empezará
+                    cuando pulses el botón.
+                  </>
+                )}
               </p>
               <MotionButton size="hero" onClick={startAttempt} whileTap={{ scale: 0.985 }}>
                 Empezar ejemplo
@@ -212,11 +225,15 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
             <div className={styles.playPanel} key={attempt}>
               <div className={styles.questionHeader}>
                 <Badge>{question.category}</Badge>
-                {question.type !== "flash-memory" || timedResponseStarted ? (
+                {(question.type !== "flash-memory" && question.type !== "simon-sequence") ||
+                timedResponseStarted ? (
                   <Timer
                     key={`timer-${attempt}`}
                     duration={question.timeLimit}
-                    active={question.type !== "flash-memory" || timedResponseStarted}
+                    active={
+                      (question.type !== "flash-memory" && question.type !== "simon-sequence") ||
+                      timedResponseStarted
+                    }
                     onTimeUp={handleTimeUp}
                   />
                 ) : null}

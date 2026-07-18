@@ -194,7 +194,10 @@ export function useGameSession(stage: Stage) {
   }, []);
 
   const handleTimedResponseStart = useCallback(() => {
-    if (question?.type === "flash-memory" && !answerLock.current) {
+    if (
+      (question?.type === "flash-memory" || question?.type === "simon-sequence") &&
+      !answerLock.current
+    ) {
       questionStartedAt.current = performance.now();
     }
   }, [question]);

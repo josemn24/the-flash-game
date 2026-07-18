@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, trece formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, catorce formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -23,6 +23,7 @@ La aplicación soporta de forma nativa:
 - mapa de calor con selección espacial y crédito por proximidad;
 - etiquetar imagen con asociación múltiple o identificación de una única zona.
 - memoria relámpago con reconstrucción espacial de una cuadrícula tras una exposición breve.
+- Simon con repetición visual de una secuencia fija de símbolos.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -147,12 +148,13 @@ El jugador descubre una palabra en pocos intentos. La adaptación puede usar pal
 - **Encaje:** conocido y fácil de entender.
 - **Uso recomendado:** desafío especial, por su duración mayor que una pregunta normal.
 
-### 14. Simon o repetición de secuencias — Futura
+### 14. Simon o repetición de secuencias — Implementada
 
 Se reproduce una secuencia de colores, sonidos, símbolos, posiciones o ritmos y el jugador la repite. Puede crecer en longitud, exigir repetición inversa o pedir que se detecte un elemento incorrecto.
 
 - **Encaje:** combina memoria, reflejos y precisión.
-- **Consideración competitiva:** el jugador debe esperar la reproducción, por lo que ese tiempo debe normalizarse o excluirse al comparar resultados.
+- **Interacción actual:** cuatro botones con símbolo, etiqueta y color se iluminan siguiendo una secuencia fija de cuatro a seis pasos. Al terminar, el jugador la repite; un error termina la ronda.
+- **Puntuación actual:** la reproducción no cuenta para el cronómetro. Un acierto exacto recibe puntos por velocidad durante la repetición; un error o timeout no puntúan.
 
 ### 15. Matrices lógicas — Futura
 

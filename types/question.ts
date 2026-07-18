@@ -200,6 +200,17 @@ export type FlashMemoryQuestion = BaseQuestion & {
   items: FlashMemoryItem[];
 };
 
+export type SimonSequencePad = {
+  id: string;
+  label: string;
+};
+
+export type SimonSequenceQuestion = BaseQuestion & {
+  type: "simon-sequence";
+  pads: SimonSequencePad[];
+  sequence: string[];
+};
+
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
@@ -212,6 +223,7 @@ export type Question =
   | OrderingQuestion
   | ClassificationQuestion
   | FlashMemoryQuestion
+  | SimonSequenceQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
 
@@ -221,6 +233,7 @@ export type QuestionOfType<T extends QuestionType> = Extract<Question, { type: T
 export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
 export type FlashMemoryAnswer = Record<string, string>;
+export type SimonSequenceAnswer = string[];
 export type AnswerValue =
   | string
   | number

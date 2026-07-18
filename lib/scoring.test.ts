@@ -12,7 +12,9 @@ import {
   evaluateAnswer,
   isAnswerCorrect,
   isHeatMapAnswer,
+  isSimonSequenceAnswer,
   isValidFlashMemoryConfiguration,
+  isValidSimonSequenceConfiguration,
   isImageLabelingAnswer,
   isValidImageLabelingConfiguration,
   QUESTION_SCORING_POLICY,
@@ -69,6 +71,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
         example.items.map((item) => [String(item.correctPosition), item.id]),
       );
       incorrectAnswer = {};
+      incorrectPoints = 0;
+      break;
+    case "simon-sequence":
+      correctAnswer = example.sequence;
+      incorrectAnswer = [...example.sequence.slice(0, 2), "__incorrect__"];
       incorrectPoints = 0;
       break;
     case "ordering":
@@ -560,6 +567,48 @@ describe("question evaluation", () => {
     const invalid = { ...question, items: [...question.items, question.items[0]] };
     expect(isValidFlashMemoryConfiguration(invalid)).toBe(false);
     expect(calculateFlashMemoryMetrics(invalid, {}).correctPlacements).toBe(0);
+  });
+
+  it("scores an exact Simon sequence by response speed and records its divergence", () => {
+    const question = QUESTION_FORMAT_CATALOG["simon-sequence"].examples[0].question;
+    expect(evaluateAnswer({ question, answer: question.sequence, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 140,
+      details: { type: "simon-sequence", firstMismatchIndex: null },
+    });
+    expect(
+      evaluateAnswer({ question, answer: question.sequence, timeUsed: question.timeLimit }),
+    ).toMatchObject({ status: "correct", points: 70 });
+    expect(evaluateAnswer({ question, answer: ["orbita", "luna"], timeUsed: 2 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+      details: { type: "simon-sequence", firstMismatchIndex: 1 },
+    });
+  });
+
+  it("rejects malformed Simon configurations and reports a timed-out sequence", () => {
+    const question = QUESTION_FORMAT_CATALOG["simon-sequence"].examples[0].question;
+    expect(isSimonSequenceAnswer(question.sequence)).toBe(true);
+    expect(isSimonSequenceAnswer(["orbita", 2] as AnswerValue)).toBe(false);
+    expect(isValidSimonSequenceConfiguration(question)).toBe(true);
+    expect(
+      isValidSimonSequenceConfiguration({
+        ...question,
+        pads: [...question.pads, question.pads[0]],
+      }),
+    ).toBe(false);
+    expect(isValidSimonSequenceConfiguration({ ...question, sequence: ["desconocido"] })).toBe(
+      false,
+    );
+    expect(
+      isValidSimonSequenceConfiguration({ ...question, sequence: question.sequence.slice(0, 3) }),
+    ).toBe(false);
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: question.timeLimit,
+      details: { type: "simon-sequence", submittedSteps: [], firstMismatchIndex: null },
+    });
   });
 
   it("preserves matching progress on timeout without rewarding wrong pairs", () => {

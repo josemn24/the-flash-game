@@ -20,6 +20,8 @@ import type {
   ProgressiveCluesQuestion,
   Question,
   QuestionType,
+  SimonSequenceAnswer,
+  SimonSequenceQuestion,
 } from "@/types/game";
 
 export type EvaluationInput = {
@@ -53,6 +55,7 @@ export const QUESTION_SCORING_POLICY = {
   ordering: "binary-speed",
   classification: "partial-items",
   "flash-memory": "partial-items",
+  "simon-sequence": "binary-speed",
   "logic-code": "attempt-penalty",
   estimation: "proximity",
 } as const satisfies Record<QuestionType, ScoringPolicyId>;
@@ -92,6 +95,10 @@ export function isMatchingAnswer(answer: AnswerValue | null): answer is Matching
 
 export function isFlashMemoryAnswer(answer: AnswerValue | null): answer is FlashMemoryAnswer {
   return isRecordAnswer(answer);
+}
+
+export function isSimonSequenceAnswer(answer: AnswerValue | null): answer is SimonSequenceAnswer {
+  return Array.isArray(answer) && answer.every((step) => typeof step === "string");
 }
 
 export function isHeatMapAnswer(answer: AnswerValue | null): answer is HeatMapAnswer {
@@ -193,6 +200,27 @@ export function calculateFlashMemoryMetrics(
     complete: entries.length === capacity,
     valid,
   };
+}
+
+export function isValidSimonSequenceConfiguration(question: SimonSequenceQuestion) {
+  const padIds = question.pads.map((pad) => pad.id);
+  const padIdSet = new Set(padIds);
+  return (
+    question.pads.length === 4 &&
+    new Set(padIds).size === padIds.length &&
+    question.pads.every((pad) => Boolean(pad.id.trim()) && Boolean(pad.label.trim())) &&
+    question.sequence.length >= 4 &&
+    question.sequence.length <= 6 &&
+    question.sequence.every((step) => padIdSet.has(step))
+  );
+}
+
+export function findSimonSequenceMismatch(sequence: string[], answer: SimonSequenceAnswer) {
+  const limit = Math.max(sequence.length, answer.length);
+  for (let index = 0; index < limit; index += 1) {
+    if (sequence[index] !== answer[index]) return index;
+  }
+  return null;
 }
 
 function isNormalizedPoint(point: { x: number; y: number }) {
@@ -312,6 +340,13 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
         metrics.valid && metrics.complete && metrics.correctPlacements === question.items.length
       );
     }
+    case "simon-sequence":
+      return (
+        isSimonSequenceAnswer(answer) &&
+        isValidSimonSequenceConfiguration(question) &&
+        answer.length === question.sequence.length &&
+        findSimonSequenceMismatch(question.sequence, answer) === null
+      );
     case "ordering":
       return (
         Array.isArray(answer) &&
@@ -506,6 +541,25 @@ function evaluateFlashMemory(
   };
 }
 
+function evaluateSimonSequence(
+  question: SimonSequenceQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  const submittedSteps = isSimonSequenceAnswer(answer) ? answer : [];
+  const isCorrect = isAnswerCorrect(question, answer);
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "incorrect",
+    points: isCorrect ? calculateQuestionScore(question, true, timeUsed) : 0,
+    details: {
+      type: "simon-sequence",
+      submittedSteps,
+      firstMismatchIndex: findSimonSequenceMismatch(question.sequence, submittedSteps),
+    },
+  };
+}
+
 function evaluateImageLabeling(
   question: ImageLabelingQuestion,
   answer: AnswerValue,
@@ -667,6 +721,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
 
   switch (QUESTION_SCORING_POLICY[question.type]) {
     case "binary-speed":
+      if (question.type === "simon-sequence") {
+        return evaluateSimonSequence(question, answer, timeUsed);
+      }
       return evaluateBinarySpeed(context);
     case "partial-items":
       if (question.type === "classification") {
@@ -762,7 +819,15 @@ export function evaluateAnswer({
                 ...calculateProgressiveCluesMetrics(question, progressiveCluesRevealed),
               },
             }
-          : {}),
+          : question.type === "simon-sequence"
+            ? {
+                details: {
+                  type: "simon-sequence" as const,
+                  submittedSteps: [],
+                  firstMismatchIndex: null,
+                },
+              }
+            : {}),
     };
   }
 

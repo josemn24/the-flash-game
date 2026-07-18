@@ -25,6 +25,11 @@ export type AnswerResultDetails =
       totalPlacements: number;
     }
   | {
+      type: "simon-sequence";
+      submittedSteps: string[];
+      firstMismatchIndex: number | null;
+    }
+  | {
       type: "progressive-clues";
       revealedClues: number;
       totalClues: number;
