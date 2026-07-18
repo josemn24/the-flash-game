@@ -16,10 +16,12 @@ import {
   isHeatMapAnswer,
   isMiniNonogramAnswer,
   isMiniSudokuAnswer,
+  isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
   isValidLogicMatrixConfiguration,
   isValidMiniNonogramConfiguration,
   isValidMiniSudokuConfiguration,
+  isValidSlidingPuzzleConfiguration,
   isValidFlashMemoryConfiguration,
   isValidSimonSequenceConfiguration,
   isImageLabelingAnswer,
@@ -108,6 +110,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
         example.solution.flatMap((isFilled, index) => (isFilled ? [[String(index), true]] : [])),
       );
       incorrectAnswer = { "0": true };
+      incorrectPoints = 0;
+      break;
+    case "sliding-puzzle":
+      correctAnswer = { tiles: example.solution, moves: 2 };
+      incorrectAnswer = { tiles: example.initialTiles, moves: 0 };
       incorrectPoints = 0;
       break;
     case "ordering":
@@ -852,6 +859,44 @@ describe("question evaluation", () => {
       incorrectFilled: 0,
       valid: false,
     });
+  });
+
+  it("scores sliding-puzzle resolution and rejects invalid or unsolvable boards", () => {
+    const question = QUESTION_FORMAT_CATALOG["sliding-puzzle"].examples[0].question;
+    const solvedAnswer = { tiles: question.solution, moves: 2 };
+
+    expect(isSlidingPuzzleAnswer(solvedAnswer)).toBe(true);
+    expect(isSlidingPuzzleAnswer({ tiles: question.solution, moves: -1 })).toBe(false);
+    expect(evaluateAnswer({ question, answer: solvedAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 150,
+      details: { type: "sliding-puzzle", moves: 2 },
+    });
+    expect(
+      evaluateAnswer({ question, answer: solvedAnswer, timeUsed: question.timeLimit }),
+    ).toMatchObject({ status: "correct", points: 75 });
+    expect(
+      evaluateAnswer({ question, answer: { tiles: question.initialTiles, moves: 0 }, timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0, details: { type: "sliding-puzzle", moves: 0 } });
+    expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
+      status: "unanswered",
+      points: 0,
+      timeUsed: question.timeLimit,
+    });
+
+    expect(isValidSlidingPuzzleConfiguration(question)).toBe(true);
+    expect(
+      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: question.initialTiles.slice(0, 8) }),
+    ).toBe(false);
+    expect(
+      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: [1, 2, 3, 4, 5, 6, 7, 7, null] }),
+    ).toBe(false);
+    expect(
+      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: question.solution }),
+    ).toBe(false);
+    expect(
+      isValidSlidingPuzzleConfiguration({ ...question, initialTiles: [1, 2, 3, 4, 5, 6, 8, 7, null] }),
+    ).toBe(false);
   });
 
   it("penalizes matching mistakes by ten percent without going below zero", () => {

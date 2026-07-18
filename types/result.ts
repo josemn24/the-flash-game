@@ -41,6 +41,10 @@ export type AnswerResultDetails =
       totalFilled: number;
     }
   | {
+      type: "sliding-puzzle";
+      moves: number;
+    }
+  | {
       type: "progressive-clues";
       revealedClues: number;
       totalClues: number;

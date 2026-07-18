@@ -19,6 +19,7 @@ import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
+import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
@@ -302,6 +303,21 @@ function MiniNonogramInput({
   );
 }
 
+function SlidingPuzzleInput({
+  question,
+  locked,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"sliding-puzzle">>) {
+  return (
+    <SlidingPuzzleQuestion
+      initialTiles={question.initialTiles}
+      solution={question.solution}
+      locked={locked}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -353,6 +369,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "logic-matrix": LogicMatrixInput,
   "mini-sudoku": MiniSudokuInput,
   "mini-nonogram": MiniNonogramInput,
+  "sliding-puzzle": SlidingPuzzleInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
 } satisfies {

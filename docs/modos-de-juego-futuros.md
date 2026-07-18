@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, diecisiete formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, dieciocho formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -27,6 +27,7 @@ La aplicación soporta de forma nativa:
 - matrices lógicas con una pieza faltante y opciones de respuesta.
 - mini-sudoku 4 × 4 con edición previa a confirmar y crédito por casilla correcta.
 - mini-nonograma 5 × 5 con pistas de filas y columnas, edición reversible y crédito neto por relleno.
+- rompecabezas deslizante 3 × 3 con fichas numéricas y resolución automática.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -190,12 +191,13 @@ Adaptación del sudoku tradicional en una cuadrícula 4 × 4: el jugador complet
 - **Interacción actual:** las pistas quedan bloqueadas; se selecciona una casilla vacía y se escribe, reemplaza o borra un número antes de confirmar la cuadrícula completa.
 - **Puntuación actual:** cada casilla correcta recibe crédito parcial ajustado por velocidad. El timeout evalúa el borrador y no hay penalización por corregir valores.
 
-### 19. Rompecabezas deslizante — Futura
+### 19. Rompecabezas deslizante — Implementada
 
-Una imagen, números, letras o un mapa se divide en piezas que el jugador reconstruye desplazando fichas.
+Una cuadrícula 3 × 3 de ocho fichas numeradas y un hueco debe reconstruirse desplazando únicamente las fichas adyacentes al espacio libre.
 
+- **Interacción actual:** tocar una ficha adyacente al hueco la desliza; las flechas ofrecen el mismo control por teclado. La ronda se envía automáticamente al completar el orden objetivo.
+- **Puntuación actual:** resolver el tablero recibe puntos por velocidad. Los movimientos se registran para revisión, pero no penalizan; un timeout no puntúa.
 - **Encaje:** visual y fácilmente medible por tiempo.
-- **Riesgo:** la interacción táctil, animaciones, validación y generación requieren más trabajo que una pregunta tradicional.
 
 ### 20. Tangram o construcción de figura — Futura
 
@@ -334,7 +336,7 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 | Pensamiento crítico                        | El dato contaminado                                                                                             | Obliga a contrastar la información antes de utilizarla.                             |
 | Comprensión profunda                       | Reconstrucción del error                                                                                        | Evalúa procesos y permite localizar fallos en lugar de recordar solo resultados.    |
 | Percepción y precisión                     | Mapa de calor, etiquetar imagen, pregunta con interferencias y Eco                                              | Incorporan localización, identificación visual, reconstrucción sensorial y memoria. |
-| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, laberinto, mini-sudoku, rompecabezas y tangram                 | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
+| Pruebas especiales                         | Respuesta en cadena, prueba espejo, Mini-Wordle, laberinto, mini-sudoku y tangram                               | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
 | Gestión del riesgo                         | Adivinanzas por pistas e imagen progresiva                                                                      | Permiten decidir cuánta información obtener antes de responder.                     |
 | Conocimiento menos inmediato               | La respuesta prohibida                                                                                          | Premia alternativas válidas más allá de las asociaciones más obvias.                |
 | Competición por tiempo                     | Emparejar, diferencias visuales, imagen progresiva, laberinto y rompecabezas                                    | Una ejecución correcta terminada antes representa una mejora clara.                 |

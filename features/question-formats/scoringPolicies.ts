@@ -146,6 +146,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "sliding-puzzle": {
+    id: QUESTION_SCORING_POLICY["sliding-puzzle"],
+    label: "Resolución y velocidad",
+    summary:
+      "Solo resolver el tablero concede entre el 50 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "logic-code": {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",

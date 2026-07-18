@@ -19,7 +19,7 @@ export default function FormatsPage() {
       <div className={styles.page}>
         <SiteHeader />
         <header className="pt-16 sm:pt-24">
-          <p className={styles.eyebrow}>Manual de juego · 17 formatos</p>
+          <p className={styles.eyebrow}>Manual de juego · 18 formatos</p>
           <h1 className={styles.title}>Biblioteca de formatos</h1>
           <p className={styles.lead}>
             Una guía para entender cómo funciona cada tipo de pregunta, cuándo utilizarlo y cómo

@@ -20,6 +20,8 @@ import type {
   MiniNonogramQuestion,
   MiniSudokuAnswer,
   MiniSudokuQuestion,
+  SlidingPuzzleAnswer,
+  SlidingPuzzleQuestion,
   MatchingAnswer,
   MatchingQuestion,
   ProgressiveCluesQuestion,
@@ -64,6 +66,7 @@ export const QUESTION_SCORING_POLICY = {
   "logic-matrix": "binary-speed",
   "mini-sudoku": "partial-items",
   "mini-nonogram": "partial-items",
+  "sliding-puzzle": "binary-speed",
   "logic-code": "attempt-penalty",
   estimation: "proximity",
 } as const satisfies Record<QuestionType, ScoringPolicyId>;
@@ -124,6 +127,22 @@ export function isMiniNonogramAnswer(answer: AnswerValue | null): answer is Mini
     Object.entries(answer).every(
       ([index, value]) => Number.isInteger(Number(index)) && value === true,
     )
+  );
+}
+
+export function isSlidingPuzzleAnswer(answer: AnswerValue | null): answer is SlidingPuzzleAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    "tiles" in answer &&
+    "moves" in answer &&
+    Array.isArray(answer.tiles) &&
+    answer.tiles.length === 9 &&
+    answer.tiles.every((tile) => tile === null || (Number.isInteger(tile) && tile >= 1 && tile <= 8)) &&
+    typeof answer.moves === "number" &&
+    Number.isInteger(answer.moves) &&
+    answer.moves >= 0
   );
 }
 
@@ -398,6 +417,35 @@ export function calculateMiniNonogramMetrics(
   return { correctFilled, incorrectFilled, totalFilled, exact, valid };
 }
 
+function hasSlidingPuzzleTiles(tiles: Array<number | null>) {
+  return (
+    tiles.length === 9 &&
+    tiles.filter((tile) => tile === null).length === 1 &&
+    new Set(tiles.filter((tile): tile is number => tile !== null)).size === 8 &&
+    tiles.every((tile) => tile === null || (Number.isInteger(tile) && tile >= 1 && tile <= 8))
+  );
+}
+
+function slidingPuzzleParity(tiles: Array<number | null>) {
+  const numberedTiles = tiles.filter((tile): tile is number => tile !== null);
+  let inversions = 0;
+  for (let left = 0; left < numberedTiles.length; left += 1) {
+    for (let right = left + 1; right < numberedTiles.length; right += 1) {
+      if (numberedTiles[left] > numberedTiles[right]) inversions += 1;
+    }
+  }
+  return inversions % 2;
+}
+
+export function isValidSlidingPuzzleConfiguration(question: SlidingPuzzleQuestion) {
+  return (
+    hasSlidingPuzzleTiles(question.initialTiles) &&
+    hasSlidingPuzzleTiles(question.solution) &&
+    !question.initialTiles.every((tile, index) => tile === question.solution[index]) &&
+    slidingPuzzleParity(question.initialTiles) === slidingPuzzleParity(question.solution)
+  );
+}
+
 export function findSimonSequenceMismatch(sequence: string[], answer: SimonSequenceAnswer) {
   const limit = Math.max(sequence.length, answer.length);
   for (let index = 0; index < limit; index += 1) {
@@ -545,6 +593,12 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
       if (!isMiniNonogramAnswer(answer)) return false;
       return calculateMiniNonogramMetrics(question, answer).exact;
     }
+    case "sliding-puzzle":
+      return (
+        isSlidingPuzzleAnswer(answer) &&
+        isValidSlidingPuzzleConfiguration(question) &&
+        answer.tiles.every((tile, index) => tile === question.solution[index])
+      );
     case "ordering":
       return (
         Array.isArray(answer) &&
@@ -816,6 +870,21 @@ function evaluateSimonSequence(
   };
 }
 
+function evaluateSlidingPuzzle(
+  question: SlidingPuzzleQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  const submittedAnswer = isSlidingPuzzleAnswer(answer) ? answer : null;
+  const isCorrect = isAnswerCorrect(question, answer);
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : "incorrect",
+    points: isCorrect ? calculateQuestionScore(question, true, timeUsed) : 0,
+    details: { type: "sliding-puzzle", moves: submittedAnswer?.moves ?? 0 },
+  };
+}
+
 function evaluateImageLabeling(
   question: ImageLabelingQuestion,
   answer: AnswerValue,
@@ -979,6 +1048,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
     case "binary-speed":
       if (question.type === "simon-sequence") {
         return evaluateSimonSequence(question, answer, timeUsed);
+      }
+      if (question.type === "sliding-puzzle") {
+        return evaluateSlidingPuzzle(question, answer, timeUsed);
       }
       return evaluateBinarySpeed(context);
     case "partial-items":

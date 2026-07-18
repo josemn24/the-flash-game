@@ -3,9 +3,9 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 
 describe("question format catalog", () => {
-  it("contains exactly seventeen formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(17);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(17);
+  it("contains exactly eighteen formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(18);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(18);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -24,6 +24,7 @@ describe("question format catalog", () => {
       "logic-matrix",
       "mini-sudoku",
       "mini-nonogram",
+      "sliding-puzzle",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>

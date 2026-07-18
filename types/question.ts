@@ -238,6 +238,12 @@ export type MiniNonogramQuestion = BaseQuestion & {
   columnClues: number[][];
 };
 
+export type SlidingPuzzleQuestion = BaseQuestion & {
+  type: "sliding-puzzle";
+  initialTiles: Array<number | null>;
+  solution: Array<number | null>;
+};
+
 export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
@@ -254,6 +260,7 @@ export type Question =
   | LogicMatrixQuestion
   | MiniSudokuQuestion
   | MiniNonogramQuestion
+  | SlidingPuzzleQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
 
@@ -266,6 +273,7 @@ export type FlashMemoryAnswer = Record<string, string>;
 export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
+export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
 export type AnswerValue =
   | string
   | number
@@ -276,5 +284,6 @@ export type AnswerValue =
   | FlashMemoryAnswer
   | MiniSudokuAnswer
   | MiniNonogramAnswer
+  | SlidingPuzzleAnswer
   | HeatMapAnswer
   | ImageLabelingAnswer;

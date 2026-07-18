@@ -27,6 +27,8 @@ export type {
   MiniSudokuQuestion,
   MiniNonogramAnswer,
   MiniNonogramQuestion,
+  SlidingPuzzleAnswer,
+  SlidingPuzzleQuestion,
   MatchingAnswer,
   MatchingItem,
   MatchingLeftItem,
