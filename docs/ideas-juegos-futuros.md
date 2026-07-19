@@ -276,6 +276,90 @@ Objetos aparecen de forma continua y el jugador debe enviarlos a zonas de destin
 - **Encaje:** mide atención, gestión de presión y coordinación sin requerir cultura general.
 - **Riesgo:** puede saturar la interfaz en móvil; el ritmo de aparición debe adaptarse al tamaño de pantalla y a la precisión táctil.
 
+## Microjuegos avanzados 2D y 3D
+
+Estas ideas asumen una capa de juego más ambiciosa, probablemente con Phaser para 2D o Three.js/React Three Fiber para 3D. Encajan mejor como desafíos especiales, eventos, finales de etapa o formatos premium de la biblioteca. La regla de producto debería mantenerse: partidas breves, objetivos obvios, puntuación comparable y simulaciones deterministas cuando haya física.
+
+### Carril de reflejos
+
+Un personaje, nave o marcador avanza automáticamente por varios carriles. El jugador cambia de carril para recoger señales válidas y evitar obstáculos o distractores.
+
+- **Motor sugerido:** Phaser o canvas 2D.
+- **Interacción:** deslizar, tocar carriles o usar izquierda/derecha; el avance no se detiene.
+- **Puntuación:** objetivos recogidos, obstáculos evitados, racha, colisiones y tiempo sobrevivido.
+- **Encaje:** simple, móvil, arcade y muy legible en sesiones de diez a treinta segundos.
+- **Riesgo:** la velocidad debe calibrarse para no convertir el reto en puro reflejo; los carriles necesitan objetivos grandes y estados visuales claros.
+
+### Carga y suelta
+
+El jugador mantiene pulsado para cargar potencia, ángulo o energía y suelta en el momento adecuado para lanzar un objeto a una diana, encajar una pieza o alcanzar una zona.
+
+- **Motor sugerido:** Phaser, canvas 2D o física determinista sencilla.
+- **Interacción:** mantener pulsado, observar la carga y soltar; puede combinarse con dirección fija o ajuste de ángulo.
+- **Puntuación:** distancia al objetivo, potencia usada, tiempo y número de intentos.
+- **Encaje:** precisión física inmediata, reglas comprensibles y mucha tensión en un solo gesto.
+- **Riesgo:** la simulación debe ser estable entre dispositivos; conviene empezar con trayectorias predecibles y tolerancias amplias.
+
+### Puzzle de gravedad
+
+El jugador rota el mundo, cambia la dirección de la gravedad o activa campos para que una bola llegue a una meta.
+
+- **Motor sugerido:** Phaser con física 2D discreta o simulación propia simplificada.
+- **Interacción:** rotar el tablero en pasos de 90 grados, activar gravedad o elegir entre pocas direcciones.
+- **Puntuación:** llegada a meta, movimientos usados, objetivos secundarios y velocidad.
+- **Encaje:** visual, fácil de entender y suficientemente diferente de un laberinto tradicional.
+- **Riesgo:** la física libre puede generar resultados difíciles de reproducir; las acciones discretas ayudan a mantener justicia competitiva.
+
+### Objeto rotado 3D
+
+Se muestra un objeto 3D desde una perspectiva durante unos segundos. Después, el jugador debe identificar la misma pieza entre varias siluetas, orientarla correctamente o elegir la vista equivalente.
+
+- **Motor sugerido:** Three.js o React Three Fiber.
+- **Interacción:** elegir una opción, rotar una pieza con controles limitados o confirmar una orientación.
+- **Puntuación:** acierto exacto, desviación angular y velocidad.
+- **Encaje:** usa el 3D con propósito real: memoria espacial, percepción y rotación mental.
+- **Riesgo:** hay que evitar modelos visualmente ambiguos; iluminación, cámara y escala deben mantenerse consistentes.
+
+### Cámara perdida
+
+El jugador ve una escena o composición desde un encuadre concreto y después debe mover la cámara hasta recuperar esa vista.
+
+- **Motor sugerido:** Three.js o React Three Fiber.
+- **Interacción:** rotar, acercar o desplazar la cámara dentro de límites claros; confirmar cuando el encuadre coincide.
+- **Puntuación:** proximidad de cámara, orientación, encuadre y tiempo.
+- **Encaje:** original, memorable y muy propio de un medio digital.
+- **Riesgo:** demasiada libertad de cámara puede frustrar; conviene usar controles guiados, pocas dimensiones de movimiento y tolerancias visibles.
+
+### Túnel de reflejos
+
+El jugador avanza por un túnel 3D y esquiva puertas, paredes u obstáculos desplazándose entre posiciones discretas.
+
+- **Motor sugerido:** Three.js, React Three Fiber o WebGL ligero.
+- **Interacción:** mover lateralmente, cambiar altura o rotar entre carriles; el avance es automático.
+- **Puntuación:** distancia recorrida, obstáculos evitados, objetos recogidos y colisiones.
+- **Encaje:** espectacular, rápido y controlable si se limita a pocos carriles.
+- **Riesgo:** puede ser costoso en rendimiento móvil; requiere pruebas de cámara, mareo visual, movimiento reducido y lectura clara de profundidad.
+
+### Láser 3D
+
+El jugador orienta espejos, prismas o nodos para guiar un rayo por una escena tridimensional hasta uno o varios objetivos.
+
+- **Motor sugerido:** Three.js o React Three Fiber.
+- **Interacción:** rotar piezas en pasos discretos, cambiar prismas o activar interruptores.
+- **Puntuación:** objetivos alcanzados, piezas correctas, acciones usadas y velocidad.
+- **Encaje:** muy diferencial y con identidad visual fuerte; puede ser un formato estrella de desafío especial.
+- **Riesgo:** más ambicioso que su versión 2D: necesita cámara comprensible, oclusiones controladas y una validación visual fácil de leer.
+
+### Jefe final de etapa
+
+Contenedor de microjuegos especiales que aparece al cierre de una etapa. No es una mecánica única, sino una forma de introducir retos arcade o 3D sin alterar todas las preguntas normales.
+
+- **Motor sugerido:** depende del jefe: Phaser para 2D, Three.js/React Three Fiber para 3D o componentes React si la mecánica es discreta.
+- **Interacción:** una prueba de treinta a sesenta segundos que resume una habilidad principal: reflejos, memoria, precisión, ritmo o percepción.
+- **Puntuación:** puntos propios del reto, bonus de etapa o multiplicador controlado para que no eclipse las preguntas anteriores.
+- **Encaje:** da cierre dramático, variedad y sensación de evento.
+- **Riesgo:** si pesa demasiado en la puntuación, puede invalidar el rendimiento previo; debe ser opcional por etapa o aparecer con expectativas claras.
+
 ## Priorización sugerida
 
 | Objetivo | Ideas prioritarias | Motivo |
@@ -288,6 +372,9 @@ Objetos aparecen de forma continua y el jugador debe enviarlos a zonas de destin
 | Reflejos y precisión | Timing perfecto, Línea limpia, Apilar bloques | Introducen ejecución física medible con reglas casi instantáneas. |
 | Percepción y memoria sensorial | Movimiento anómalo, Escena robada, Ritmo espejo | Amplían The Flash hacia observación, ritmo y memoria de corto plazo. |
 | Gestión de presión en tiempo real | Bandeja saturada | Permite retos de coordinación con dificultad escalable por ritmo. |
+| Microjuegos 2D accesibles | Carril de reflejos, Carga y suelta, Puzzle de gravedad | Añaden sensación arcade con reglas simples y alcance técnico razonable. |
+| Uso significativo de 3D | Objeto rotado 3D, Cámara perdida, Túnel de reflejos, Láser 3D | Justifican WebGL mediante profundidad, cámara, orientación o espectáculo visual. |
+| Eventos de etapa | Jefe final de etapa | Permite introducir formatos avanzados sin romper el ritmo de las preguntas base. |
 
 ## Shortlist inicial
 
@@ -309,3 +396,11 @@ Para una primera tanda de exploración, las candidatas más equilibradas serían
 14. **Apilar bloques**, por su progreso visible y potencial arcade.
 15. **Dibujo relámpago**, por creatividad controlada y revisión visual.
 16. **Bandeja saturada**, por medir atención dividida y presión en tiempo real.
+17. **Carril de reflejos**, por ser el microjuego 2D más simple, móvil y arcade.
+18. **Carga y suelta**, por precisión física inmediata con una sola acción.
+19. **Puzzle de gravedad**, por ser visual, claro y distinto del laberinto clásico.
+20. **Objeto rotado 3D**, por usar profundidad y orientación con propósito jugable.
+21. **Cámara perdida**, por su originalidad y potencial memorable.
+22. **Túnel de reflejos**, por ofrecer espectáculo 3D con controles discretos.
+23. **Láser 3D**, por ser más ambicioso pero muy diferencial.
+24. **Jefe final de etapa**, como contenedor para probar formatos avanzados sin cambiar toda la estructura.

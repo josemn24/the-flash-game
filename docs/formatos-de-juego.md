@@ -369,6 +369,29 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 - **Uso recomendado:** retos excepcionales de uno a cinco minutos, con tutorial interactivo y dificultad progresiva.
 - **Riesgo:** la relación entre ambos paneles debe ser consistente y visible; una interfaz sobrecargada o efectos difíciles de anticipar convertirían la prueba en ensayo y error.
 
+### 33. Cálculo relámpago — Disponible como contenido
+
+El jugador resuelve una operación matemática breve contra el reloj. Puede aparecer como una operación aislada, una igualdad incompleta, una cadena mental de pasos o una ronda de varias operaciones encadenadas.
+
+Por ejemplo:
+
+```text
+17 × 6 = ?
+```
+
+O también:
+
+```text
+144 ÷ 12 + 7 = ?
+```
+
+- **Estado actual:** puede plantearse mediante elección múltiple, con cuatro opciones y envío inmediato, o mediante respuesta corta con validación del resultado exacto. Todavía no existe un formato nativo con generador, rachas o dificultad progresiva.
+- **Interacción futura:** escoger rápidamente entre opciones, escribir un resultado en campo libre, completar una igualdad como `8 × ? = 56`, decidir si una operación es correcta o resolver una cadena de transformaciones del tipo `+7`, `×2`, `-5`.
+- **Encaje:** es una mecánica directa, arcade y muy alineada con el ritmo de The Flash. Mide cálculo mental, atención y velocidad sin depender de conocimiento cultural.
+- **Puntuación:** acierto exacto ajustado por velocidad; una versión nativa podría añadir bonus por racha, penalización por error, dificultad por número de pasos y crédito separado para operaciones encadenadas.
+- **Uso recomendado:** preguntas rápidas de cinco a veinte segundos o modo racha de treinta a sesenta segundos. Las operaciones deberían usar números pequeños, divisiones exactas y expresiones sin ambigüedad de precedencia.
+- **Riesgo:** un formato demasiado escolar o repetitivo puede romper la variedad. La dificultad debe calibrarse por edad, tamaño de números, número de pasos y tipo de operación; en campo libre conviene evitar respuestas decimales salvo que la tolerancia esté definida con claridad.
+
 ## Priorización de mecánicas pendientes
 
 | Objetivo                                   | Mecánicas prioritarias                                             | Motivo                                                                              |
@@ -383,6 +406,7 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 | Gestión del riesgo                         | La respuesta prohibida y el dato contaminado                       | Obligan a decidir entre una respuesta inmediata y una estrategia más prudente.      |
 | Conocimiento menos inmediato               | La respuesta prohibida                                             | Premia alternativas válidas más allá de las asociaciones más obvias.                |
 | Trivia reconstructiva                      | Titular incompleto y respuesta en cadena                           | Transforman el conocimiento en composición, descarte y progreso contextual.         |
+| Agilidad mental                            | Cálculo relámpago                                                  | Introduce cálculo rápido con reglas claras y coste técnico bajo en su primera fase. |
 | Competición por tiempo                     | Diferencias visuales y tangram                                     | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
