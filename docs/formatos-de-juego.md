@@ -305,7 +305,35 @@ Se formula una pregunta abierta, pero las respuestas más evidentes están expre
 - **Puntuación:** puede valorar acierto y velocidad; en partidas grupales, las respuestas menos repetidas podrían recibir una bonificación si todos comparten condiciones equivalentes.
 - **Riesgo:** la validación de respuestas abiertas necesita un repertorio amplio de equivalencias y debe explicar con claridad por qué se rechaza una respuesta válida en apariencia.
 
-### 28. Reconstrucción del error — Implementada
+### 28. Titular incompleto — Futura
+
+El jugador reconstruye un titular, enunciado o ficha breve con huecos a partir de fragmentos disponibles. Puede aplicarse a historia, ciencia, cultura, deporte, geografía, tecnología o acontecimientos estables. La prueba no pregunta directamente por un dato: obliga a recomponer una frase coherente donde cada pieza ocupa una posición concreta.
+
+Por ejemplo:
+
+```text
+En 1969, la misión ______ logró el primer ______ humano en la ______.
+```
+
+Fragmentos disponibles:
+
+```text
+Apolo 11 · alunizaje · Luna · Sputnik · vuelo · órbita
+```
+
+Solución:
+
+```text
+En 1969, la misión Apolo 11 logró el primer alunizaje humano en la Luna.
+```
+
+- **Interacción:** seleccionar un hueco y después una ficha de texto; las fichas usadas quedan bloqueadas y pueden retirarse antes de confirmar. Las rondas rápidas deberían usar entre dos y cinco huecos; los desafíos especiales podrían agrupar varios titulares o incluir más fragmentos.
+- **Encaje:** convierte trivia en reconstrucción activa, combina conocimiento con contexto lingüístico y descarte, y permite revisar la solución con una explicación breve del hecho.
+- **Puntuación:** crédito parcial por hueco correcto, bonus por completar todos los huecos y ajuste por velocidad. Las variantes con fragmento intruso pueden conceder un bonus adicional por dejarlo fuera; los errores podrían restar de forma suave para evitar rellenar al azar.
+- **Variantes:** titular histórico, descubrimiento científico, premio cultural, marcador deportivo, ficha biográfica, falso titular con una pieza incorrecta, titular contaminado que exige corregir una palabra ya colocada o titular relámpago mostrado unos segundos antes de reconstruirse de memoria.
+- **Riesgo:** el contenido debe basarse en hechos estables y formulaciones inequívocas. Las noticias recientes, datos sujetos a cambio o titulares con matices políticos pueden introducir ambigüedad editorial; los distractores deben ser plausibles sin convertir la prueba en una trampa lingüística.
+
+### 29. Reconstrucción del error — Implementada
 
 Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en el que aparece el primer fallo, en lugar de resolver el problema desde cero. Puede aplicarse a una operación matemática, una cronología histórica, una clasificación científica, un razonamiento lógico, una traducción o un fragmento de código.
 
@@ -314,7 +342,7 @@ Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en
 - **Puntuación actual:** sin corrección, localizar el error recibe puntos por velocidad. Con corrección, localizarlo aporta el 60 % y corregirlo el 40 % restante; el timeout evalúa la selección ya realizada.
 - **Riesgo:** todos los pasos anteriores al señalado deben ser inequívocamente válidos; un error que se propaga no debería contabilizarse como varios fallos independientes.
 
-### 29. Pregunta con interferencias — Futura
+### 30. Pregunta con interferencias — Futura
 
 La información se presenta de forma incompleta o imperfecta: texto parcialmente borrado, audio con ruido, una imagen fragmentada, palabras mezcladas con caracteres irrelevantes o datos visibles durante intervalos muy breves. El jugador debe reconstruir información suficiente para responder.
 
@@ -323,7 +351,7 @@ La información se presenta de forma incompleta o imperfecta: texto parcialmente
 - **Accesibilidad:** la dificultad debe proceder de una regla controlada, no de barreras visuales, auditivas, cognitivas o motrices; cada reto necesita una variante equivalente cuando el canal utilizado no sea accesible.
 - **Riesgo:** el nivel de degradación debe calibrarse y verificarse en distintos dispositivos para que siempre quede información suficiente y la respuesta no dependa del azar.
 
-### 30. Eco — Futura
+### 31. Eco — Futura
 
 Se reproduce una secuencia visual o sonora y después aparece una segunda casi idéntica. El jugador debe determinar si ambas son exactamente iguales o identificar la diferencia, que puede afectar al orden, duración, intensidad, posición o número de elementos.
 
@@ -332,7 +360,7 @@ Se reproduce una secuencia visual o sonora y después aparece una segunda casi i
 - **Consideración competitiva:** el tiempo obligatorio de reproducción debe excluirse o normalizarse; solo el tiempo de decisión debería premiar la rapidez.
 - **Riesgo:** las diferencias de audio, brillo, rendimiento o latencia entre dispositivos no deben alterar la dificultad ni revelar accidentalmente la respuesta.
 
-### 31. Prueba espejo — Futura
+### 32. Prueba espejo — Futura
 
 Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan al otro. Ordenar números a la izquierda puede mover letras a la derecha; corregir una secuencia visual puede alterar una operación; cada elemento descartado en un panel puede desaparecer también en el otro.
 
@@ -354,6 +382,7 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 | Pruebas especiales                         | Respuesta en cadena y tangram                                      | Admiten retos ocasionales de uno a cinco minutos con mayor sensación de recorrido.  |
 | Gestión del riesgo                         | La respuesta prohibida y el dato contaminado                       | Obligan a decidir entre una respuesta inmediata y una estrategia más prudente.      |
 | Conocimiento menos inmediato               | La respuesta prohibida                                             | Premia alternativas válidas más allá de las asociaciones más obvias.                |
+| Trivia reconstructiva                      | Titular incompleto y respuesta en cadena                           | Transforman el conocimiento en composición, descarte y progreso contextual.         |
 | Competición por tiempo                     | Diferencias visuales y tangram                                     | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
