@@ -214,14 +214,25 @@ Una cuadrícula 3 × 3 de ocho fichas numeradas y un hueco debe reconstruirse de
 - **Puntuación actual:** resolver el tablero recibe puntos por velocidad. Los movimientos se registran para revisión, pero no penalizan; un timeout no puntúa.
 - **Encaje:** visual y fácilmente medible por tiempo.
 
-### 20. Tangram o construcción de figura — Futura
+### 20. Conectar parejas — Futura
+
+El jugador une pares de puntos iguales dentro de una cuadrícula trazando caminos ortogonales. Es la familia de juegos conocida como Flow Free o Numberlink: cada color, símbolo o número debe conectar sus dos extremos, los caminos no pueden cruzarse ni compartir casillas, y en la variante completa se intenta cubrir toda la cuadrícula.
+
+- **Interacción:** seleccionar un extremo y arrastrar o construir el camino celda a celda hasta su pareja. Tocar una ruta existente puede recortarla, rehacerla o borrarla; en teclado, el jugador podría elegir un extremo y extender el camino con flechas.
+- **Encaje:** reglas visuales inmediatas, muy buen soporte táctil y tensión clara entre resolver rápido y evitar bloquear rutas futuras. Funciona como puzzle de cuadrícula más fluido que sudoku o nonograma.
+- **Puntuación:** parejas conectadas, porcentaje de cobertura, errores de cruce o rutas incompletas y velocidad. Una solución perfecta cubriría todos los pares y, si el reto lo exige, el 100 % del tablero; el timeout podría puntuar el progreso parcial.
+- **Uso recomendado:** tableros 5 × 5 o 6 × 6 para rondas rápidas, y tamaños mayores solo como desafío especial. Los retos deberían estar curados o generados con solución única y dificultad controlada por número de pares, distancia entre extremos y necesidad de cobertura completa.
+- **Accesibilidad:** no debe depender solo del color; cada pareja necesita símbolo, número o etiqueta equivalente. Las celdas deben ser grandes en móvil y las rutas deben poder editarse sin precisión milimétrica.
+- **Riesgo:** el arrastre libre puede ser frágil en pantallas pequeñas y la validación debe resolver solapamientos, retrocesos y caminos parciales de forma predecible. Si no se exige cobertura total, el objetivo debe indicarse con claridad para que el jugador no confunda conectar pares con completar toda la cuadrícula.
+
+### 21. Tangram o construcción de figura — Futura
 
 El jugador forma una silueta con piezas geométricas: tangram clásico, bloques, piezas encajables o copia de una composición mostrada antes.
 
 - **Encaje:** desafío especial memorable y muy diferenciador.
 - **Riesgo:** exige arrastre, rotación, colisiones, ajuste de piezas y validación tolerante; es una de las mecánicas más complejas de implementar correctamente.
 
-### 21. La regla secreta — Futura
+### 22. La regla secreta — Futura
 
 Se muestran varios ejemplos aceptados y rechazados. El jugador debe descubrir qué regla los separa y después clasificar nuevos elementos conforme a ella.
 
@@ -237,7 +248,7 @@ A partir de ahí:
 - **Encaje:** combina inducción, conocimiento y deducción, ofrece una variedad enorme y permite alcanzar dificultades muy altas sin complicar la interacción.
 - **Riesgo:** cada conjunto debe descartar interpretaciones alternativas razonables; los ejemplos iniciales y de validación han de demostrar la regla de forma inequívoca.
 
-### 22. El dato contaminado — Futura
+### 23. El dato contaminado — Futura
 
 Se entrega una ficha con varios datos relacionados, pero uno de ellos es falso y altera la respuesta. El jugador debe detectar el dato manipulado, ignorarlo y resolver correctamente la pregunta con la información restante.
 
@@ -248,7 +259,7 @@ Por ejemplo, una ficha sobre un país puede incluir su población, continente, c
 - **Puntuación:** puede separar la detección del dato falso y la resolución final para conceder crédito parcial.
 - **Riesgo:** la falsedad debe poder deducirse a partir de conocimientos razonables o de contradicciones internas; no debería depender de información oscura ni de datos sujetos a cambios frecuentes.
 
-### 23. Respuesta en cadena — Futura
+### 24. Respuesta en cadena — Futura
 
 Cada respuesta correcta se convierte en la pista o punto de partida de la siguiente pregunta. La cadena puede combinar historia, cine, geografía, música y lenguaje para construir un recorrido temático.
 
@@ -264,7 +275,7 @@ Por ejemplo:
 - **Puntuación:** puede combinar eslabones completados, errores y tiempo total; las ayudas evitarían que un fallo inicial bloquee toda la cadena, a cambio de una penalización.
 - **Riesgo:** las relaciones deben ser inequívocas y la dificultad de un eslabón no debería decidir por sí sola el resultado de toda la prueba.
 
-### 24. Adivinanzas por pistas — Implementada
+### 25. Adivinanzas por pistas — Implementada
 
 El jugador intenta identificar un personaje, lugar, objeto, obra o concepto. Puede descubrir pistas sucesivas, pero cada una reduce la puntuación máxima disponible, por lo que debe decidir cuándo tiene suficiente información para responder.
 
@@ -276,7 +287,7 @@ Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivament
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
 - **Riesgo:** las primeras pistas deben ser difíciles pero útiles, y su orden debe calibrarse para que cada revelación reduzca de manera apreciable el espacio de respuestas posibles.
 
-### 25. Mapa de calor — Implementada
+### 26. Mapa de calor — Implementada
 
 Se muestra un mapa, gráfico o escena y el jugador debe señalar una ubicación. Puede localizar una ciudad, marcar el lugar de un acontecimiento o estimar el centro geográfico de un país.
 
@@ -286,7 +297,7 @@ Se muestra un mapa, gráfico o escena y el jugador debe señalar una ubicación.
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece zoom, polígonos ni múltiples objetivos.
 - **Riesgo:** la precisión no debe depender del tamaño de la pantalla ni de la destreza motriz; hacen falta coordenadas normalizadas, objetivos razonablemente amplios y controles equivalentes por teclado.
 
-### 26. Etiquetar imagen — Implementada
+### 27. Etiquetar imagen — Implementada
 
 Se muestra una imagen o diagrama. El jugador puede asociar varias etiquetas a sus anclajes o identificar una única zona que ya aparece señalada, una mecánica adecuada para anatomía, componentes de objetos y diagramas educativos.
 
@@ -296,7 +307,7 @@ Se muestra una imagen o diagrama. El jugador puede asociar varias etiquetas a su
 - **Uso actual:** tipo nativo con dos ejemplos jugables —múltiple y único por elección— en la biblioteca; el contrato y la interfaz también admiten texto libre. Las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
 - **Riesgo:** los anclajes y textos deben mantenerse legibles y sin solapamientos en móvil; la numeración, el foco y el resumen textual deben permitir completar el ejercicio sin depender solo de la posición o el color.
 
-### 27. La respuesta prohibida — Futura
+### 28. La respuesta prohibida — Futura
 
 Se formula una pregunta abierta, pero las respuestas más evidentes están expresamente prohibidas. Por ejemplo, nombrar un país de Sudamérica sin responder Brasil ni Argentina, o decir una palabra asociada al invierno sin usar «frío», «nieve» ni «Navidad».
 
@@ -305,7 +316,7 @@ Se formula una pregunta abierta, pero las respuestas más evidentes están expre
 - **Puntuación:** puede valorar acierto y velocidad; en partidas grupales, las respuestas menos repetidas podrían recibir una bonificación si todos comparten condiciones equivalentes.
 - **Riesgo:** la validación de respuestas abiertas necesita un repertorio amplio de equivalencias y debe explicar con claridad por qué se rechaza una respuesta válida en apariencia.
 
-### 28. Titular incompleto — Futura
+### 29. Titular incompleto — Futura
 
 El jugador reconstruye un titular, enunciado o ficha breve con huecos a partir de fragmentos disponibles. Puede aplicarse a historia, ciencia, cultura, deporte, geografía, tecnología o acontecimientos estables. La prueba no pregunta directamente por un dato: obliga a recomponer una frase coherente donde cada pieza ocupa una posición concreta.
 
@@ -333,7 +344,7 @@ En 1969, la misión Apolo 11 logró el primer alunizaje humano en la Luna.
 - **Variantes:** titular histórico, descubrimiento científico, premio cultural, marcador deportivo, ficha biográfica, falso titular con una pieza incorrecta, titular contaminado que exige corregir una palabra ya colocada o titular relámpago mostrado unos segundos antes de reconstruirse de memoria.
 - **Riesgo:** el contenido debe basarse en hechos estables y formulaciones inequívocas. Las noticias recientes, datos sujetos a cambio o titulares con matices políticos pueden introducir ambigüedad editorial; los distractores deben ser plausibles sin convertir la prueba en una trampa lingüística.
 
-### 29. Reconstrucción del error — Implementada
+### 30. Reconstrucción del error — Implementada
 
 Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en el que aparece el primer fallo, en lugar de resolver el problema desde cero. Puede aplicarse a una operación matemática, una cronología histórica, una clasificación científica, un razonamiento lógico, una traducción o un fragmento de código.
 
@@ -342,7 +353,7 @@ Se muestra una solución incorrecta y el jugador debe detectar el paso exacto en
 - **Puntuación actual:** sin corrección, localizar el error recibe puntos por velocidad. Con corrección, localizarlo aporta el 60 % y corregirlo el 40 % restante; el timeout evalúa la selección ya realizada.
 - **Riesgo:** todos los pasos anteriores al señalado deben ser inequívocamente válidos; un error que se propaga no debería contabilizarse como varios fallos independientes.
 
-### 30. Pregunta con interferencias — Futura
+### 31. Pregunta con interferencias — Futura
 
 La información se presenta de forma incompleta o imperfecta: texto parcialmente borrado, audio con ruido, una imagen fragmentada, palabras mezcladas con caracteres irrelevantes o datos visibles durante intervalos muy breves. El jugador debe reconstruir información suficiente para responder.
 
@@ -351,7 +362,7 @@ La información se presenta de forma incompleta o imperfecta: texto parcialmente
 - **Accesibilidad:** la dificultad debe proceder de una regla controlada, no de barreras visuales, auditivas, cognitivas o motrices; cada reto necesita una variante equivalente cuando el canal utilizado no sea accesible.
 - **Riesgo:** el nivel de degradación debe calibrarse y verificarse en distintos dispositivos para que siempre quede información suficiente y la respuesta no dependa del azar.
 
-### 31. Eco — Futura
+### 32. Eco — Futura
 
 Se reproduce una secuencia visual o sonora y después aparece una segunda casi idéntica. El jugador debe determinar si ambas son exactamente iguales o identificar la diferencia, que puede afectar al orden, duración, intensidad, posición o número de elementos.
 
@@ -360,7 +371,7 @@ Se reproduce una secuencia visual o sonora y después aparece una segunda casi i
 - **Consideración competitiva:** el tiempo obligatorio de reproducción debe excluirse o normalizarse; solo el tiempo de decisión debería premiar la rapidez.
 - **Riesgo:** las diferencias de audio, brillo, rendimiento o latencia entre dispositivos no deben alterar la dificultad ni revelar accidentalmente la respuesta.
 
-### 32. Prueba espejo — Futura
+### 33. Prueba espejo — Futura
 
 Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan al otro. Ordenar números a la izquierda puede mover letras a la derecha; corregir una secuencia visual puede alterar una operación; cada elemento descartado en un panel puede desaparecer también en el otro.
 
@@ -369,7 +380,7 @@ Dos retos se presentan simultáneamente y las acciones realizadas en uno afectan
 - **Uso recomendado:** retos excepcionales de uno a cinco minutos, con tutorial interactivo y dificultad progresiva.
 - **Riesgo:** la relación entre ambos paneles debe ser consistente y visible; una interfaz sobrecargada o efectos difíciles de anticipar convertirían la prueba en ensayo y error.
 
-### 33. Cálculo relámpago — Disponible como contenido
+### 34. Cálculo relámpago — Disponible como contenido
 
 El jugador resuelve una operación matemática breve contra el reloj. Puede aparecer como una operación aislada, una igualdad incompleta, una cadena mental de pasos o una ronda de varias operaciones encadenadas.
 
@@ -407,6 +418,7 @@ O también:
 | Conocimiento menos inmediato               | La respuesta prohibida                                             | Premia alternativas válidas más allá de las asociaciones más obvias.                |
 | Trivia reconstructiva                      | Titular incompleto y respuesta en cadena                           | Transforman el conocimiento en composición, descarte y progreso contextual.         |
 | Agilidad mental                            | Cálculo relámpago                                                  | Introduce cálculo rápido con reglas claras y coste técnico bajo en su primera fase. |
+| Puzzle visual táctil                       | Conectar parejas                                                   | Aporta trazado de rutas, cobertura de cuadrícula y progreso parcial muy legible.    |
 | Competición por tiempo                     | Diferencias visuales y tangram                                     | Una ejecución correcta terminada antes representa una mejora clara.                 |
 
 ## Implicaciones para el futuro multijugador
