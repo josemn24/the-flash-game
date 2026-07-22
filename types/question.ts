@@ -58,6 +58,22 @@ export type MatchingQuestion = BaseQuestion & {
   rightItems: MatchingItem[];
 };
 
+export type ConnectPairsPair = {
+  id: string;
+  label: string;
+  symbol: string;
+  endpoints: [number, number];
+  color?: string;
+};
+
+export type ConnectPairsQuestion = BaseQuestion & {
+  type: "connect-pairs";
+  grid: { rows: 5; columns: 5 };
+  pairs: ConnectPairsPair[];
+  solutionPaths: Record<string, number[]>;
+  requireFullCoverage: true;
+};
+
 export type TrueFalseQuestion = BaseQuestion & {
   type: "true-false";
   correctAnswer: boolean;
@@ -303,6 +319,7 @@ export type Question =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
   | MatchingQuestion
+  | ConnectPairsQuestion
   | TrueFalseQuestion
   | ShortTextQuestion
   | ProgressiveCluesQuestion
@@ -329,6 +346,7 @@ export type QuestionOfType<T extends QuestionType> = Extract<Question, { type: T
 
 export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
+export type ConnectPairsAnswer = { paths: Record<string, number[]> };
 export type FlashMemoryAnswer = Record<string, string>;
 export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
@@ -344,6 +362,7 @@ export type AnswerValue =
   | string[]
   | ClassificationAnswer
   | MatchingAnswer
+  | ConnectPairsAnswer
   | FlashMemoryAnswer
   | MiniSudokuAnswer
   | MiniNonogramAnswer

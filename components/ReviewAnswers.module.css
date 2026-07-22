@@ -360,6 +360,39 @@
 .nonogramEmpty {
   color: rgba(255, 255, 255, 0.3);
 }
+.connectPairsReviewGrid {
+  display: grid;
+  width: min(100%, 18rem);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 0.75rem;
+  background: #07090c;
+}
+.connectPairsReviewCell {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 5%);
+  color: rgb(255 255 255 / 62%);
+  background: rgb(255 255 255 / 4%);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+.connectPairsReviewRoute {
+  color: var(--cyan);
+  background: rgb(53 232 255 / 12%);
+}
+.connectPairsReviewEndpoint {
+  color: #071011;
+  background: var(--electric);
+}
+.connectPairsReviewEndpointMissing {
+  color: rgb(255 255 255 / 58%);
+  background: rgb(255 255 255 / 8%);
+  outline: 1px dashed rgb(255 255 255 / 28%);
+  outline-offset: -0.25rem;
+}
 .puzzleReviewPair {
   display: grid;
   gap: 0.7rem;

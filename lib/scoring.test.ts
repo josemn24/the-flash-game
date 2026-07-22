@@ -44,6 +44,11 @@ import {
   isValidProgressiveImageConfiguration,
 } from "@/lib/progressiveImage";
 import {
+  applyConnectPairsCellSelection,
+  calculateConnectPairsMetrics,
+  isValidConnectPairsConfiguration,
+} from "@/lib/connectPairs";
+import {
   findShortestTimeMazePath,
   getTimeMazeExitIndex,
   getTimeMazeStartIndex,
@@ -93,6 +98,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
         example.leftItems.map((item) => [item.id, item.correctMatchId]),
       );
       incorrectAnswer = {};
+      incorrectPoints = 0;
+      break;
+    case "connect-pairs":
+      correctAnswer = { paths: example.solutionPaths };
+      incorrectAnswer = { paths: {} };
       incorrectPoints = 0;
       break;
     case "classification":
@@ -957,6 +967,158 @@ describe("question evaluation", () => {
         timeUsed: 10,
       }),
     ).toMatchObject({ status: "partial", points: 75 });
+  });
+
+  it("validates connect-pairs routes, endpoints, conflicts, and coverage", () => {
+    const question = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
+    const answer = { paths: question.solutionPaths };
+
+    expect(isValidConnectPairsConfiguration(question)).toBe(true);
+    expect(calculateConnectPairsMetrics(question, answer)).toMatchObject({
+      valid: true,
+      connectedPairs: 3,
+      coveredCells: 25,
+      conflicts: 0,
+      exact: true,
+    });
+    expect(
+      isValidConnectPairsConfiguration({
+        ...question,
+        pairs: [
+          { ...question.pairs[0], endpoints: [0, 1] },
+          { ...question.pairs[1], endpoints: [1, 24] },
+          question.pairs[2],
+        ],
+      }),
+    ).toBe(false);
+    expect(
+      calculateConnectPairsMetrics(question, { paths: { ...question.solutionPaths, a: [0, 6, 4] } })
+        .valid,
+    ).toBe(false);
+    expect(
+      calculateConnectPairsMetrics(question, { paths: { ...question.solutionPaths, a: [0, 2, 4] } })
+        .valid,
+    ).toBe(false);
+    expect(
+      calculateConnectPairsMetrics(question, { paths: { ...question.solutionPaths, a: [1, 2, 3] } })
+        .valid,
+    ).toBe(false);
+    expect(
+      calculateConnectPairsMetrics(question, {
+        paths: { ...question.solutionPaths, c: [6, 7, 8, 9, 14, 13, 12, 17, 18, 23, 24, 19] },
+      }).conflicts,
+    ).toBeGreaterThan(0);
+    expect(
+      isValidConnectPairsConfiguration({
+        ...question,
+        solutionPaths: { a: question.solutionPaths.a, b: question.solutionPaths.b, c: [6, 11] },
+      }),
+    ).toBe(false);
+    expect(calculateConnectPairsMetrics(question, { paths: { a: [0, 1, 2, 3] } })).toMatchObject({
+      valid: false,
+      connectedPairs: 0,
+      coveredCells: 4,
+    });
+    expect(calculateConnectPairsMetrics(question, { paths: { a: [0, 1, 2, 3, 4] } })).toMatchObject(
+      {
+        valid: true,
+        connectedPairs: 1,
+        coveredCells: 5,
+      },
+    );
+  });
+
+  it("closes connect-pairs paths when tapping the final endpoint", () => {
+    const question = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
+    let paths: Record<string, number[]> = {};
+    let activePairId = "a";
+
+    for (const cell of question.solutionPaths.a) {
+      const result = applyConnectPairsCellSelection(question, paths, activePairId, cell);
+      paths = result.paths;
+      activePairId = result.activePairId;
+    }
+
+    expect(paths.a).toEqual(question.solutionPaths.a);
+    expect(calculateConnectPairsMetrics(question, { paths })).toMatchObject({
+      connectedPairs: 1,
+      coveredCells: 5,
+      exact: false,
+    });
+
+    for (const cell of [...question.solutionPaths.b, ...question.solutionPaths.c]) {
+      const result = applyConnectPairsCellSelection(question, paths, activePairId, cell);
+      paths = result.paths;
+      activePairId = result.activePairId;
+    }
+
+    expect(calculateConnectPairsMetrics(question, { paths })).toMatchObject({
+      connectedPairs: 3,
+      coveredCells: 25,
+      exact: true,
+    });
+  });
+
+  it("rejects foreign endpoints and still allows trimming connect-pairs paths", () => {
+    const question = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
+    const paths = { a: [0, 1, 2, 3] };
+    const shortPath = { a: [0, 1, 2] };
+    const foreignEndpoint = applyConnectPairsCellSelection(question, paths, "a", 5);
+    const ownDistantEndpoint = applyConnectPairsCellSelection(question, shortPath, "a", 4);
+    const trimmed = applyConnectPairsCellSelection(question, paths, "a", 2);
+
+    expect(foreignEndpoint).toMatchObject({
+      paths,
+      activePairId: "a",
+      changed: false,
+    });
+    expect(ownDistantEndpoint).toMatchObject({
+      paths: shortPath,
+      activePairId: "a",
+      changed: false,
+    });
+    expect(trimmed).toMatchObject({
+      paths: { a: [0, 1, 2] },
+      activePairId: "a",
+      changed: true,
+    });
+  });
+
+  it("scores connect-pairs perfect, partial, invalid, and timeout answers", () => {
+    const question = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
+    const perfect = { paths: question.solutionPaths };
+    const partial = { paths: { a: question.solutionPaths.a } };
+
+    expect(evaluateAnswer({ question, answer: perfect, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 150,
+      details: { type: "connect-pairs", connectedPairs: 3, coveredCells: 25 },
+    });
+    expect(
+      evaluateAnswer({ question, answer: perfect, timeUsed: question.timeLimit }),
+    ).toMatchObject({
+      status: "correct",
+      points: 75,
+    });
+    expect(evaluateAnswer({ question, answer: partial, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 30,
+      details: { type: "connect-pairs", connectedPairs: 1, coveredCells: 5 },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: partial,
+        timeUsed: question.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({ status: "partial", points: 15 });
+    expect(
+      evaluateAnswer({ question, answer: { paths: {} }, timeUsed: 0, timedOut: true }),
+    ).toMatchObject({ status: "unanswered", points: 0 });
+    expect(
+      evaluateAnswer({ question, answer: { paths: { a: [0, 6, 24] } }, timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
   it("awards flash-memory credit per correctly reconstructed position", () => {

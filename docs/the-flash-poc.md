@@ -12,7 +12,7 @@ La pregunta de producto sigue siendo:
 
 - Un único jugador y estado de sesión en memoria.
 - Dos etapas locales de diez preguntas cada una.
-- Veintitrés formatos de pregunta con reglas y puntuación propias.
+- Veinticuatro formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
 - Transición automática después de responder o agotar el tiempo.
@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, salas, multijugador
 | ------------------- | --------------------------------------------------------------- |
 | `/`                 | Presentación, selector de etapas y acceso a la biblioteca.      |
 | `/etapas/[stageId]` | Validación de la etapa y sesión jugable completa.               |
-| `/formatos`         | Catálogo de los veintitrés formatos disponibles.                |
+| `/formatos`         | Catálogo de los veinticuatro formatos disponibles.              |
 | `/formatos/[slug]`  | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
 
 Una etapa recorre estos estados:
@@ -58,35 +58,36 @@ Durante la etapa no se muestran aciertos, soluciones ni puntos parciales. La res
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
 Ambas etapas se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
-Cada una conserva diez preguntas. Los formatos no incluidos en ellas, como Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
+Cada una conserva diez preguntas. Los formatos no incluidos en ellas, como Conectar parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados
 
-| Formato                  | Interacción                                                         | Evaluación                                                                    |
-| ------------------------ | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Elección múltiple        | Tocar una opción para enviarla inmediatamente. Puede incluir media. | Acierto exacto; un fallo resta el 20 %.                                       |
-| Encontrar el intruso     | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                       |
-| Emparejar conceptos      | Seleccionar una tarjeta de cada columna; admite media por tarjeta.  | Crédito por pareja y velocidad; cada error resta un 10 % de los puntos base.  |
-| Verdadero o falso        | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                       |
-| Respuesta corta          | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                   |
-| Ordenar                  | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                 |
-| Clasificar               | Asignar una categoría a cada elemento.                              | Crédito parcial por elemento correctamente clasificado.                       |
-| Código lógico            | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base. |
-| Estimación               | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                         |
-| Adivinanzas por pistas   | Revelar pistas de texto o enviar una única respuesta abierta.       | Cada pista reduce el máximo; el acierto se ajusta por velocidad.              |
-| Mapa de calor            | Colocar, corregir y confirmar un marcador con puntero o teclado.    | Crédito espacial por zona y distancia, ajustado por velocidad.                |
-| Etiquetar imagen         | Etiquetar todas las zonas o identificar una única zona señalada.    | Crédito parcial en múltiple; acierto binario en elección o texto.             |
-| Memoria relámpago        | Memorizar y reconstruir la posición de una cuadrícula.              | Crédito por posición correcta y velocidad durante la reconstrucción.          |
-| Simon                    | Observar y repetir una secuencia fija de símbolos.                  | Secuencia exacta y velocidad; un fallo termina la ronda.                      |
-| Matrices lógicas         | Elegir la pieza que completa una matriz 3 × 3.                      | Acierto exacto; un fallo resta el 20 %.                                       |
-| Mini-sudoku              | Completar tres o cuatro casillas de una cuadrícula 4 × 4.           | Crédito por casilla correcta y velocidad.                                     |
-| Mini-nonograma           | Completar una cuadrícula 5 × 5 a partir de pistas numéricas.        | Crédito neto por rellenos correctos y erróneos.                               |
-| Rompecabezas deslizante  | Desplazar fichas adyacentes hasta resolver un tablero 3 × 3.        | Resolución exacta y velocidad; los movimientos no penalizan.                  |
-| Reconstrucción del error | Localizar el primer paso inválido y, opcionalmente, corregirlo.     | 60 % por localizar y 40 % por corregir, ajustado por velocidad.               |
-| Anagramas                | Ordenar fichas de letras para formar una palabra.                   | Acierto exacto y velocidad; un fallo no puntúa.                               |
-| Mini-Wordle              | Descubrir una palabra de cuatro letras en cuatro intentos.          | Velocidad y penalización del 10 % por intento fallido previo.                 |
-| Imagen progresiva        | Identificar una imagen mientras desaparece su desenfoque.           | Acierto binario por velocidad; un fallo o timeout no puntúan.                 |
-| Laberinto contrarreloj   | Guiar una ficha por una cuadrícula mediante cruceta o flechas.      | Resolver puntúa por velocidad; los movimientos adicionales no penalizan.      |
+| Formato                  | Interacción                                                         | Evaluación                                                                       |
+| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Elección múltiple        | Tocar una opción para enviarla inmediatamente. Puede incluir media. | Acierto exacto; un fallo resta el 20 %.                                          |
+| Encontrar el intruso     | Tocar el elemento que rompe la relación; admite media por elemento. | Acierto exacto; un fallo resta el 20 %.                                          |
+| Emparejar conceptos      | Seleccionar una tarjeta de cada columna; admite media por tarjeta.  | Crédito por pareja y velocidad; cada error resta un 10 % de los puntos base.     |
+| Conectar parejas         | Trazar rutas ortogonales entre símbolos iguales en una cuadrícula.  | Crédito por parejas conectadas, cobertura y velocidad; los conflictos invalidan. |
+| Verdadero o falso        | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                          |
+| Respuesta corta          | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                      |
+| Ordenar                  | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                    |
+| Clasificar               | Asignar una categoría a cada elemento.                              | Crédito parcial por elemento correctamente clasificado.                          |
+| Código lógico            | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base.    |
+| Estimación               | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                            |
+| Adivinanzas por pistas   | Revelar pistas de texto o enviar una única respuesta abierta.       | Cada pista reduce el máximo; el acierto se ajusta por velocidad.                 |
+| Mapa de calor            | Colocar, corregir y confirmar un marcador con puntero o teclado.    | Crédito espacial por zona y distancia, ajustado por velocidad.                   |
+| Etiquetar imagen         | Etiquetar todas las zonas o identificar una única zona señalada.    | Crédito parcial en múltiple; acierto binario en elección o texto.                |
+| Memoria relámpago        | Memorizar y reconstruir la posición de una cuadrícula.              | Crédito por posición correcta y velocidad durante la reconstrucción.             |
+| Simon                    | Observar y repetir una secuencia fija de símbolos.                  | Secuencia exacta y velocidad; un fallo termina la ronda.                         |
+| Matrices lógicas         | Elegir la pieza que completa una matriz 3 × 3.                      | Acierto exacto; un fallo resta el 20 %.                                          |
+| Mini-sudoku              | Completar tres o cuatro casillas de una cuadrícula 4 × 4.           | Crédito por casilla correcta y velocidad.                                        |
+| Mini-nonograma           | Completar una cuadrícula 5 × 5 a partir de pistas numéricas.        | Crédito neto por rellenos correctos y erróneos.                                  |
+| Rompecabezas deslizante  | Desplazar fichas adyacentes hasta resolver un tablero 3 × 3.        | Resolución exacta y velocidad; los movimientos no penalizan.                     |
+| Reconstrucción del error | Localizar el primer paso inválido y, opcionalmente, corregirlo.     | 60 % por localizar y 40 % por corregir, ajustado por velocidad.                  |
+| Anagramas                | Ordenar fichas de letras para formar una palabra.                   | Acierto exacto y velocidad; un fallo no puntúa.                                  |
+| Mini-Wordle              | Descubrir una palabra de cuatro letras en cuatro intentos.          | Velocidad y penalización del 10 % por intento fallido previo.                    |
+| Imagen progresiva        | Identificar una imagen mientras desaparece su desenfoque.           | Acierto binario por velocidad; un fallo o timeout no puntúan.                    |
+| Laberinto contrarreloj   | Guiar una ficha por una cuadrícula mediante cruceta o flechas.      | Resolver puntúa por velocidad; los movimientos adicionales no penalizan.         |
 
 En todos los formatos la velocidad ajusta la puntuación. Para un acierto binario de valor `V`, límite `T` y tiempo usado `t`:
 
@@ -103,6 +104,8 @@ En «Mapa de calor», las coordenadas se normalizan respecto a la fuente origina
 En el etiquetado múltiple, cada anclaje correcto aporta la misma fracción del valor base; las etiquetas son únicas y todas las zonas deben completarse antes de confirmar. En la identificación única, una elección correcta o un texto equivalente puntúan de forma binaria y por velocidad: una elección incorrecta resta el 20 %, mientras que el texto incorrecto no penaliza.
 
 En Mini-Wordle, un vocabulario español general se genera offline desde Hunspell y se carga bajo demanda antes de iniciar el cronómetro. La comparación ignora mayúsculas y tildes, conserva la distinción entre `N` y `Ñ`, y gestiona letras repetidas mediante el recuento restante de la solución. Cada pregunta puede declarar adiciones editoriales; el timeout conserva los intentos para la revisión, pero no concede puntos.
+
+En «Conectar parejas», el tablero 5 × 5 exige rutas ortogonales sin cruces ni casillas compartidas. La respuesta correcta conecta todas las parejas y cubre las 25 casillas; el progreso válido puede puntuar parcialmente mediante `min(parejas conectadas, cobertura)` ajustado por velocidad. Un timeout conserva las rutas enviadas para la revisión y mantiene crédito parcial si hay progreso real.
 
 En «Imagen progresivamente revelada», el activo debe cargarse antes de iniciar el cronómetro. El desenfoque disminuye automáticamente durante una parte del límite y el jugador dispone de un único intento de texto normalizado. La revisión muestra la imagen nítida, una descripción completa y el porcentaje que se había revelado al responder.
 
@@ -182,7 +185,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las veintitrés fichas de formato, incluidas `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las veinticuatro fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
 
 ## Evolución pendiente
 

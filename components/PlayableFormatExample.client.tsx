@@ -146,7 +146,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
       submitAnswer(attempts.at(-1) ?? null, true, attempts);
       return;
     }
-    if (question.type === "matching") {
+    if (question.type === "matching" || question.type === "connect-pairs") {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }

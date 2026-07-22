@@ -20,6 +20,15 @@ export type AnswerResultDetails =
       incorrectAttempts: number;
     }
   | {
+      type: "connect-pairs";
+      connectedPairs: number;
+      totalPairs: number;
+      coveredCells: number;
+      totalCells: number;
+      coverage: number;
+      conflicts: number;
+    }
+  | {
       type: "flash-memory";
       correctPlacements: number;
       totalPlacements: number;

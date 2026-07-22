@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { HeatMapSurface } from "@/components/HeatMapQuestion";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
+import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
   IdentifyOneImageLabelingReviewSurface,
@@ -9,6 +10,7 @@ import {
 import styles from "@/components/ReviewAnswers.module.css";
 import {
   isClassificationAnswer,
+  isConnectPairsAnswer,
   isErrorReconstructionAnswer,
   isFlashMemoryAnswer,
   isImageLabelingAnswer,
@@ -113,6 +115,89 @@ function MatchingReview({ question, result }: ReviewProps<QuestionOfType<"matchi
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function ConnectPairsReview({ question, result }: ReviewProps<QuestionOfType<"connect-pairs">>) {
+  const answer = isConnectPairsAnswer(result.answer) ? result.answer : null;
+  const details = result.details?.type === "connect-pairs" ? result.details : undefined;
+  const cellOwner = new Map<
+    number,
+    { symbol: string; label: string; isEndpoint: boolean; inAnswer: boolean }
+  >();
+
+  question.pairs.forEach((pair) => {
+    pair.endpoints.forEach((endpoint) =>
+      cellOwner.set(endpoint, {
+        symbol: pair.symbol,
+        label: pair.label,
+        isEndpoint: true,
+        inAnswer: false,
+      }),
+    );
+    (answer?.paths[pair.id] ?? []).forEach((cell) => {
+      cellOwner.set(cell, {
+        symbol: pair.symbol,
+        label: pair.label,
+        isEndpoint: pair.endpoints.includes(cell),
+        inAnswer: true,
+      });
+    });
+  });
+
+  return (
+    <div className="grid gap-3">
+      <div
+        className={styles.connectPairsReviewGrid}
+        style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
+        aria-label="Rutas enviadas"
+      >
+        {Array.from({ length: question.grid.rows * question.grid.columns }, (_, cell) => {
+          const owner = cellOwner.get(cell);
+          return (
+            <span
+              key={cell}
+              className={`${styles.connectPairsReviewCell} ${
+                owner?.inAnswer ? styles.connectPairsReviewRoute : ""
+              } ${owner?.isEndpoint ? styles.connectPairsReviewEndpoint : ""} ${
+                owner?.isEndpoint && !owner.inAnswer ? styles.connectPairsReviewEndpointMissing : ""
+              }`}
+              aria-label={
+                owner
+                  ? `Casilla ${cell + 1}: ${
+                      owner.isEndpoint && !owner.inAnswer
+                        ? "extremo no incluido en la ruta enviada"
+                        : owner.isEndpoint
+                          ? "extremo incluido en la ruta enviada"
+                          : "ruta enviada"
+                    } de ${owner.label}`
+                  : `Casilla ${cell + 1}: vacía`
+              }
+            >
+              {owner?.isEndpoint ? owner.symbol : owner?.inAnswer ? "•" : ""}
+            </span>
+          );
+        })}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={styles.answerBox}>
+          <span>Parejas conectadas</span>
+          <strong>
+            {details?.connectedPairs ?? 0}/{details?.totalPairs ?? question.pairs.length}
+          </strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Cobertura</span>
+          <strong>{details ? `${Math.round(details.coverage * 100)} %` : "0 %"}</strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Solución</span>
+          <strong>
+            {question.requireFullCoverage ? "Cobertura completa" : "Parejas conectadas"}
+          </strong>
+        </div>
+      </div>
     </div>
   );
 }
@@ -772,6 +857,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "multiple-choice": ChoiceReview,
   "odd-one-out": OddOneOutReview,
   matching: MatchingReview,
+  "connect-pairs": ConnectPairsReview,
   "true-false": TrueFalseReview,
   "short-text": ShortTextReview,
   "progressive-clues": ProgressiveCluesReview,

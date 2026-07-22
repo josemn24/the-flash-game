@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AnswerOption } from "@/components/AnswerOption";
 import { AnagramQuestion } from "@/components/AnagramQuestion";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
+import { ConnectPairsQuestion } from "@/components/ConnectPairsQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
 import { ErrorReconstructionQuestionInput } from "@/components/ErrorReconstructionQuestion";
 import { FlashMemoryQuestion } from "@/components/FlashMemoryQuestion";
@@ -110,6 +111,23 @@ function MatchingInput({
       locked={locked}
       onProgress={onProgress}
       onIncorrectAttempt={onMatchingIncorrectAttempt}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
+function ConnectPairsInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"connect-pairs">>) {
+  return (
+    <ConnectPairsQuestion
+      key={question.id}
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
       onSubmit={onSubmit}
     />
   );
@@ -448,6 +466,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "multiple-choice": MultipleChoiceInput,
   "odd-one-out": OddOneOutInput,
   matching: MatchingInput,
+  "connect-pairs": ConnectPairsInput,
   "true-false": TrueFalseInput,
   "short-text": ShortTextInput,
   "progressive-clues": ProgressiveCluesInput,

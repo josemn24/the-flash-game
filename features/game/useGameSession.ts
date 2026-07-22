@@ -170,7 +170,7 @@ export function useGameSession(stage: Stage) {
       submitAnswer(attempts.at(-1) ?? null, true, attempts);
       return;
     }
-    if (question?.type === "matching") {
+    if (question?.type === "matching" || question?.type === "connect-pairs") {
       submitAnswer(draftAnswerRef.current, true);
       return;
     }

@@ -4,6 +4,7 @@ export const QUESTION_FORMAT_LABELS = {
   "multiple-choice": "Elección",
   "odd-one-out": "Intruso",
   matching: "Emparejar",
+  "connect-pairs": "Conectar",
   "true-false": "V/F",
   "short-text": "Texto",
   "progressive-clues": "Pistas",

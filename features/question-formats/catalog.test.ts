@@ -3,16 +3,18 @@ import { stages } from "@/data/stages";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
+import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-three formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(23);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(23);
+  it("contains exactly twenty-four formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(24);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(24);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
       "matching",
+      "connect-pairs",
       "true-false",
       "short-text",
       "ordering",
@@ -167,6 +169,29 @@ describe("question format catalog", () => {
     expect(question.leftItems.every((item) => rightIds.includes(item.correctMatchId))).toBe(true);
     expect(question.leftItems.every((item) => item.label.trim().length > 0)).toBe(true);
     expect(question.rightItems.every((item) => item.label.trim().length > 0)).toBe(true);
+  });
+
+  it("keeps the connect-pairs example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
+    const endpointCells = question.pairs.flatMap((pair) => pair.endpoints);
+    const metrics = calculateConnectPairsMetrics(question, { paths: question.solutionPaths });
+
+    expect(question.grid).toEqual({ rows: 5, columns: 5 });
+    expect(question.pairs).toHaveLength(3);
+    expect(question.requireFullCoverage).toBe(true);
+    expect(new Set(question.pairs.map((pair) => pair.id)).size).toBe(question.pairs.length);
+    expect(new Set(endpointCells).size).toBe(endpointCells.length);
+    expect(question.pairs.every((pair) => pair.symbol.trim().length > 0)).toBe(true);
+    expect(isValidConnectPairsConfiguration(question)).toBe(true);
+    expect(metrics).toMatchObject({
+      valid: true,
+      connectedPairs: 3,
+      totalPairs: 3,
+      coveredCells: 25,
+      totalCells: 25,
+      conflicts: 0,
+      exact: true,
+    });
   });
 
   it("keeps the odd-one-out example internally consistent", () => {

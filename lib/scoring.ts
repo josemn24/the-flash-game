@@ -8,6 +8,8 @@ import type {
   AnagramQuestion,
   ClassificationAnswer,
   ClassificationQuestion,
+  ConnectPairsAnswer,
+  ConnectPairsQuestion,
   EstimationQuestion,
   ErrorReconstructionAnswer,
   ErrorReconstructionQuestion,
@@ -37,6 +39,11 @@ import type {
   SimonSequenceAnswer,
   SimonSequenceQuestion,
 } from "@/types/game";
+import {
+  calculateConnectPairsMetrics,
+  isValidConnectPairsAnswer,
+  isValidConnectPairsConfiguration,
+} from "@/lib/connectPairs";
 import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
 import {
   findShortestTimeMazePath,
@@ -74,6 +81,7 @@ export const QUESTION_SCORING_POLICY = {
   "multiple-choice": "binary-speed",
   "odd-one-out": "binary-speed",
   matching: "partial-items",
+  "connect-pairs": "partial-items",
   "true-false": "binary-speed",
   "short-text": "binary-speed",
   "progressive-clues": "clue-speed",
@@ -131,6 +139,10 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
 
 export function isMatchingAnswer(answer: AnswerValue | null): answer is MatchingAnswer {
   return isRecordAnswer(answer);
+}
+
+export function isConnectPairsAnswer(answer: AnswerValue | null): answer is ConnectPairsAnswer {
+  return isValidConnectPairsAnswer(answer);
 }
 
 export function isFlashMemoryAnswer(answer: AnswerValue | null): answer is FlashMemoryAnswer {
@@ -743,6 +755,11 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
         isMatchingAnswer(answer) &&
         calculateMatchingMetrics(question, answer).correctPairs === question.leftItems.length
       );
+    case "connect-pairs": {
+      if (!isConnectPairsAnswer(answer)) return false;
+      const metrics = calculateConnectPairsMetrics(question, answer);
+      return metrics.valid && metrics.exact;
+    }
     case "flash-memory": {
       if (!isFlashMemoryAnswer(answer)) return false;
       const metrics = calculateFlashMemoryMetrics(question, answer);
@@ -948,6 +965,55 @@ function evaluateMatching(
     status: isCorrect ? "correct" : metrics.correctPairs > 0 ? "partial" : "incorrect",
     points: applyAttemptPenalty(partialScore, question.points, incorrectAttempts),
     details: { type: "matching", ...metrics, incorrectAttempts },
+  };
+}
+
+function evaluateConnectPairs(
+  question: ConnectPairsQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isConnectPairsAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateConnectPairsMetrics(question, answer);
+  if (!metrics.valid || !isValidConnectPairsConfiguration(question)) {
+    return {
+      isCorrect: false,
+      status: "incorrect",
+      points: 0,
+      details: {
+        type: "connect-pairs",
+        connectedPairs: 0,
+        totalPairs: metrics.totalPairs,
+        coveredCells: 0,
+        totalCells: metrics.totalCells,
+        coverage: 0,
+        conflicts: metrics.conflicts,
+      },
+    };
+  }
+
+  const points = Math.round(
+    question.points *
+      metrics.coverageScore *
+      calculateSpeedMultiplier(timeUsed, question.timeLimit),
+  );
+
+  return {
+    isCorrect: metrics.exact,
+    status: metrics.exact ? "correct" : metrics.coverageScore > 0 ? "partial" : "incorrect",
+    points,
+    details: {
+      type: "connect-pairs",
+      connectedPairs: metrics.connectedPairs,
+      totalPairs: metrics.totalPairs,
+      coveredCells: metrics.coveredCells,
+      totalCells: metrics.totalCells,
+      coverage: metrics.coverageRatio,
+      conflicts: metrics.conflicts,
+    },
   };
 }
 
@@ -1331,6 +1397,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       if (question.type === "matching") {
         return evaluateMatching(question, answer, timeUsed, incorrectAttempts);
       }
+      if (question.type === "connect-pairs") {
+        return evaluateConnectPairs(question, answer, timeUsed);
+      }
       if (question.type === "flash-memory") {
         return evaluateFlashMemory(question, answer, timeUsed);
       }
@@ -1460,16 +1529,28 @@ export function evaluateAnswer({
                       solved: false,
                     },
                   }
-                : question.type === "time-maze"
+                : question.type === "connect-pairs"
                   ? {
                       details: {
-                        type: "time-maze" as const,
-                        moves: 0,
-                        optimalMoves: (findShortestTimeMazePath(question)?.length ?? 1) - 1,
-                        reachedExit: false,
+                        type: "connect-pairs" as const,
+                        connectedPairs: 0,
+                        totalPairs: question.pairs.length,
+                        coveredCells: 0,
+                        totalCells: question.grid.rows * question.grid.columns,
+                        coverage: 0,
+                        conflicts: 0,
                       },
                     }
-                  : {}),
+                  : question.type === "time-maze"
+                    ? {
+                        details: {
+                          type: "time-maze" as const,
+                          moves: 0,
+                          optimalMoves: (findShortestTimeMazePath(question)?.length ?? 1) - 1,
+                          reachedExit: false,
+                        },
+                      }
+                    : {}),
     };
   }
 
@@ -1487,6 +1568,11 @@ export function evaluateAnswer({
 
   const matchingWithoutProgress =
     timedOut && evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0;
+  const connectPairsWithoutProgress =
+    timedOut &&
+    evaluation.details?.type === "connect-pairs" &&
+    evaluation.details.connectedPairs === 0 &&
+    evaluation.details.coveredCells === 0;
   const discardedSpatialDraft =
     timedOut && (question.type === "heat-map" || question.type === "image-labeling");
   const timedOutMiniWordle = timedOut && question.type === "mini-wordle";
@@ -1499,13 +1585,16 @@ export function evaluateAnswer({
     status:
       matchingWithoutProgress || discardedSpatialDraft || timedOutMiniWordle || timedOutMaze
         ? "unanswered"
-        : evaluation.status,
+        : connectPairsWithoutProgress
+          ? "unanswered"
+          : evaluation.status,
     points:
       timedOut &&
       question.type !== "matching" &&
       question.type !== "flash-memory" &&
       question.type !== "mini-sudoku" &&
       question.type !== "mini-nonogram" &&
+      question.type !== "connect-pairs" &&
       question.type !== "error-reconstruction"
         ? 0
         : evaluation.points,

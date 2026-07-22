@@ -73,6 +73,33 @@ type MatchingWithInvalidMedia = Omit<ValidMatching, "rightItems"> & {
   rightItems: [{ id: "right-a"; label: "A"; media: { type: "video"; src: "/a.mp4" } }];
 };
 
+type ValidConnectPairs = {
+  id: "valid-connect-pairs";
+  type: "connect-pairs";
+  category: "Test";
+  question: "Connect every pair";
+  grid: { rows: 5; columns: 5 };
+  pairs: [
+    { id: "a"; label: "A"; symbol: "A"; endpoints: [0, 4]; color: "#35e8ff" },
+    { id: "b"; label: "B"; symbol: "B"; endpoints: [5, 24] },
+    { id: "c"; label: "C"; symbol: "C"; endpoints: [6, 19] },
+  ];
+  solutionPaths: {
+    a: [0, 1, 2, 3, 4];
+    b: [5, 10, 15, 20, 21, 22, 23, 24];
+    c: [6, 7, 8, 9, 14, 13, 12, 11, 16, 17, 18, 19];
+  };
+  requireFullCoverage: true;
+  timeLimit: 35;
+  points: 150;
+  explanation: "The paths cover the board";
+};
+
+type ConnectPairsWithoutSolution = Omit<ValidConnectPairs, "solutionPaths">;
+type ConnectPairsWithLooseCoverage = Omit<ValidConnectPairs, "requireFullCoverage"> & {
+  requireFullCoverage: false;
+};
+
 type ValidProgressiveClues = {
   id: "valid-progressive-clues";
   type: "progressive-clues";
@@ -240,6 +267,13 @@ export type RejectsMatchingWithoutReferences = Assert<
 >;
 export type RejectsMatchingWithInvalidMedia = Assert<
   IsNotAssignable<MatchingWithInvalidMedia, Question>
+>;
+export type AcceptsValidConnectPairs = Assert<IsAssignable<ValidConnectPairs, Question>>;
+export type RejectsConnectPairsWithoutSolution = Assert<
+  IsNotAssignable<ConnectPairsWithoutSolution, Question>
+>;
+export type RejectsConnectPairsWithLooseCoverage = Assert<
+  IsNotAssignable<ConnectPairsWithLooseCoverage, Question>
 >;
 export type AcceptsValidProgressiveClues = Assert<IsAssignable<ValidProgressiveClues, Question>>;
 export type RejectsProgressiveCluesWithoutClues = Assert<

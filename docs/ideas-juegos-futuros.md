@@ -362,19 +362,19 @@ Contenedor de microjuegos especiales que aparece al cierre de una etapa. No es u
 
 ## Priorización sugerida
 
-| Objetivo | Ideas prioritarias | Motivo |
-| --- | --- | --- |
-| Implementación relativamente contenida | Mastermind visual, Buscaminas relámpago, Tuberías | Usan cuadrículas o fichas simples y reglas conocidas. |
-| Mayor diferenciación visual | Laser mirror, Rush Hour mini, Tangram simplificado | Se sienten como retos digitales, no como variantes de trivia. |
-| Continuidad con puzzles ya implementados | Kakuro mini, Akari, Battleship lógico | Amplían la línea de sudoku, nonograma, laberinto y rompecabezas. |
-| Retos especiales de más duración | Rush Hour mini, Hashiwokakero, Slitherlink, Nurikabe | Admiten sesiones de uno a cinco minutos con progreso visible. |
-| Creatividad temática | Firewall, Fábrica en cadena, ADN, Mercado flash | Permiten vestir la lógica con dominios variados y contenido propio. |
-| Reflejos y precisión | Timing perfecto, Línea limpia, Apilar bloques | Introducen ejecución física medible con reglas casi instantáneas. |
-| Percepción y memoria sensorial | Movimiento anómalo, Escena robada, Ritmo espejo | Amplían The Flash hacia observación, ritmo y memoria de corto plazo. |
-| Gestión de presión en tiempo real | Bandeja saturada | Permite retos de coordinación con dificultad escalable por ritmo. |
-| Microjuegos 2D accesibles | Carril de reflejos, Carga y suelta, Puzzle de gravedad | Añaden sensación arcade con reglas simples y alcance técnico razonable. |
-| Uso significativo de 3D | Objeto rotado 3D, Cámara perdida, Túnel de reflejos, Láser 3D | Justifican WebGL mediante profundidad, cámara, orientación o espectáculo visual. |
-| Eventos de etapa | Jefe final de etapa | Permite introducir formatos avanzados sin romper el ritmo de las preguntas base. |
+| Objetivo                                 | Ideas prioritarias                                            | Motivo                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Implementación relativamente contenida   | Mastermind visual, Buscaminas relámpago, Tuberías             | Usan cuadrículas o fichas simples y reglas conocidas.                            |
+| Mayor diferenciación visual              | Laser mirror, Rush Hour mini, Tangram simplificado            | Se sienten como retos digitales, no como variantes de trivia.                    |
+| Continuidad con puzzles ya implementados | Kakuro mini, Akari, Battleship lógico                         | Amplían la línea de sudoku, nonograma, laberinto y rompecabezas.                 |
+| Retos especiales de más duración         | Rush Hour mini, Hashiwokakero, Slitherlink, Nurikabe          | Admiten sesiones de uno a cinco minutos con progreso visible.                    |
+| Creatividad temática                     | Firewall, Fábrica en cadena, ADN, Mercado flash               | Permiten vestir la lógica con dominios variados y contenido propio.              |
+| Reflejos y precisión                     | Timing perfecto, Línea limpia, Apilar bloques                 | Introducen ejecución física medible con reglas casi instantáneas.                |
+| Percepción y memoria sensorial           | Movimiento anómalo, Escena robada, Ritmo espejo               | Amplían The Flash hacia observación, ritmo y memoria de corto plazo.             |
+| Gestión de presión en tiempo real        | Bandeja saturada                                              | Permite retos de coordinación con dificultad escalable por ritmo.                |
+| Microjuegos 2D accesibles                | Carril de reflejos, Carga y suelta, Puzzle de gravedad        | Añaden sensación arcade con reglas simples y alcance técnico razonable.          |
+| Uso significativo de 3D                  | Objeto rotado 3D, Cámara perdida, Túnel de reflejos, Láser 3D | Justifican WebGL mediante profundidad, cámara, orientación o espectáculo visual. |
+| Eventos de etapa                         | Jefe final de etapa                                           | Permite introducir formatos avanzados sin romper el ritmo de las preguntas base. |
 
 ## Shortlist inicial
 

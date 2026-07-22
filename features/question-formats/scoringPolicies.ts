@@ -38,6 +38,16 @@ export const SCORING_POLICIES = {
     incorrectPenalty: true,
     speedBonus: true,
   },
+  "connect-pairs": {
+    id: QUESTION_SCORING_POLICY["connect-pairs"],
+    label: "Conexión y cobertura",
+    summary:
+      "Puntúa el progreso válido por parejas conectadas y cobertura del tablero, ajustado por velocidad.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+    partialCreditLabel: "Progreso por cobertura",
+  },
   "true-false": {
     id: QUESTION_SCORING_POLICY["true-false"],
     label: "Riesgo alto",

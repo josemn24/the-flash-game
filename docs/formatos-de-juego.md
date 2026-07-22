@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veintitrés formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veinticuatro formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -19,6 +19,7 @@ La aplicación soporta de forma nativa:
 - estimación con puntuación por proximidad;
 - encontrar el intruso con elementos de texto o imagen;
 - emparejar conceptos con validación inmediata y crédito por pareja;
+- conectar parejas en cuadrícula 5 × 5 con rutas ortogonales y cobertura completa;
 - adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento;
 - mapa de calor con selección espacial y crédito por proximidad;
 - etiquetar imagen con asociación múltiple o identificación de una única zona;
@@ -214,16 +215,16 @@ Una cuadrícula 3 × 3 de ocho fichas numeradas y un hueco debe reconstruirse de
 - **Puntuación actual:** resolver el tablero recibe puntos por velocidad. Los movimientos se registran para revisión, pero no penalizan; un timeout no puntúa.
 - **Encaje:** visual y fácilmente medible por tiempo.
 
-### 20. Conectar parejas — Futura
+### 20. Conectar parejas — Implementada
 
 El jugador une pares de puntos iguales dentro de una cuadrícula trazando caminos ortogonales. Es la familia de juegos conocida como Flow Free o Numberlink: cada color, símbolo o número debe conectar sus dos extremos, los caminos no pueden cruzarse ni compartir casillas, y en la variante completa se intenta cubrir toda la cuadrícula.
 
-- **Interacción:** seleccionar un extremo y arrastrar o construir el camino celda a celda hasta su pareja. Tocar una ruta existente puede recortarla, rehacerla o borrarla; en teclado, el jugador podría elegir un extremo y extender el camino con flechas.
+- **Interacción actual:** seleccionar un extremo y construir el camino celda a celda hasta su pareja. Tocar una ruta existente puede recortarla, rehacerla o borrarla; en teclado, el jugador elige una pareja y extiende la ruta activa con flechas.
 - **Encaje:** reglas visuales inmediatas, muy buen soporte táctil y tensión clara entre resolver rápido y evitar bloquear rutas futuras. Funciona como puzzle de cuadrícula más fluido que sudoku o nonograma.
-- **Puntuación:** parejas conectadas, porcentaje de cobertura, errores de cruce o rutas incompletas y velocidad. Una solución perfecta cubriría todos los pares y, si el reto lo exige, el 100 % del tablero; el timeout podría puntuar el progreso parcial.
-- **Uso recomendado:** tableros 5 × 5 o 6 × 6 para rondas rápidas, y tamaños mayores solo como desafío especial. Los retos deberían estar curados o generados con solución única y dificultad controlada por número de pares, distancia entre extremos y necesidad de cobertura completa.
-- **Accesibilidad:** no debe depender solo del color; cada pareja necesita símbolo, número o etiqueta equivalente. Las celdas deben ser grandes en móvil y las rutas deben poder editarse sin precisión milimétrica.
-- **Riesgo:** el arrastre libre puede ser frágil en pantallas pequeñas y la validación debe resolver solapamientos, retrocesos y caminos parciales de forma predecible. Si no se exige cobertura total, el objetivo debe indicarse con claridad para que el jugador no confunda conectar pares con completar toda la cuadrícula.
+- **Puntuación actual:** crédito parcial por parejas conectadas y porcentaje de cobertura, ajustado por velocidad. La solución perfecta exige cubrir el 100 % del tablero; el timeout conserva rutas parciales y puntúa progreso válido.
+- **Uso recomendado:** tableros 5 × 5 con tres a cinco parejas para rondas rápidas, y tamaños mayores solo como desafío especial futuro. Los retos deben estar curados o generados con solución única y dificultad controlada por número de pares, distancia entre extremos y necesidad de cobertura completa.
+- **Accesibilidad actual:** no depende solo del color; cada pareja tiene símbolo, etiqueta accesible, foco visible y controles de teclado. Las rutas pueden recortarse o borrarse sin precisión milimétrica.
+- **Riesgo:** el arrastre libre queda fuera de la v1 para evitar fragilidad en pantallas pequeñas. La validación resuelve solapamientos, retrocesos y caminos parciales de forma determinista.
 
 ### 21. Tangram o construcción de figura — Futura
 
