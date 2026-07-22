@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veinticuatro formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veinticinco formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -24,6 +24,7 @@ La aplicación soporta de forma nativa:
 - mapa de calor con selección espacial y crédito por proximidad;
 - etiquetar imagen con asociación múltiple o identificación de una única zona;
 - memoria relámpago con reconstrucción espacial de una cuadrícula tras una exposición breve;
+- memoria de parejas con losetas ocultas, pausa en fallos y crédito por pareja encontrada;
 - Simon con repetición visual de una secuencia fija de símbolos;
 - matrices lógicas con una pieza faltante y opciones de respuesta;
 - mini-sudoku 4 × 4 con edición previa a confirmar y crédito por casilla correcta;
@@ -106,16 +107,16 @@ Una composición se muestra durante unos segundos y después se oculta. El jugad
 - **Interacción actual:** la primera variante muestra una cuadrícula completa 2 × 2 durante tres segundos. Después, el jugador selecciona cada ficha y la coloca en la posición que recuerda; puede retirar y recolocar fichas antes de confirmar.
 - **Puntuación actual:** el cronómetro comienza al iniciarse la reconstrucción, no durante la exposición. Cada posición correcta recibe crédito parcial ajustado por velocidad; no hay penalización por recolocar.
 
-### 7. Memoria de parejas — Futura
+### 7. Memoria de parejas — Implementada
 
 El jugador descubre losetas ocultas de una cuadrícula o mosaico irregular y debe encontrar parejas iguales recordando su posición. Es una adaptación del memory clásico, pero puede usar patrones, iconos, sonidos, colores, fragmentos de imagen o pequeñas ilustraciones en lugar de cartas rectangulares tradicionales.
 
-- **Interacción:** tocar una loseta para revelarla y después tocar otra. Si forman pareja, ambas quedan descubiertas; si no coinciden, se vuelven a ocultar tras una pausa breve. Las variantes avanzadas pueden incluir deshacer, pistas limitadas, losetas bloqueadas o una silueta irregular.
+- **Interacción actual:** tocar una loseta para revelarla y después tocar otra. Si forman pareja, ambas quedan descubiertas; si no coinciden, se vuelven a ocultar tras una pausa breve. Completar todas las parejas envía la respuesta automáticamente.
 - **Encaje:** aporta memoria visual pura con reglas universales y una tensión muy clara entre velocidad y precisión. Es más activo que memoria relámpago porque el jugador decide el orden de exploración y debe optimizar movimientos.
-- **Puntuación:** parejas encontradas, movimientos usados, errores, pistas consumidas y velocidad. Una versión simple podría puntuar solo al completar todas las parejas; una versión más tolerante podría conceder crédito parcial por cada pareja encontrada antes del timeout.
-- **Uso recomendado:** entre cuatro y diez parejas para rondas rápidas, con tableros compactos y patrones muy distinguibles. Los desafíos especiales pueden usar mosaicos irregulares, parejas temáticas o varias rondas con dificultad creciente.
-- **Accesibilidad:** las parejas no deben distinguirse solo por color; cada loseta necesita patrón, icono, etiqueta accesible o sonido equivalente. La pausa antes de ocultar una pareja fallida debe ser suficiente para percibir ambas losetas.
-- **Riesgo:** si hay demasiadas losetas, el formato se vuelve lento y repetitivo. Los patrones deben ser claramente diferenciables en móvil, y las pistas o el deshacer deben tener coste explícito para no romper la comparabilidad.
+- **Puntuación actual:** cada pareja encontrada aporta crédito parcial ajustado por velocidad; cada intento fallido resta un 10 % de los puntos base. El timeout conserva el historial de intentos y puede mantener crédito parcial si hay parejas encontradas.
+- **Uso recomendado:** entre cuatro y diez parejas para rondas rápidas, con tableros compactos y patrones muy distinguibles. Encaja especialmente como desafío especial de memoria visual dentro de la biblioteca.
+- **Accesibilidad:** las parejas no deben distinguirse solo por color; cada loseta necesita símbolo, emoji, patrón, icono, etiqueta accesible o sonido equivalente. La pausa antes de ocultar una pareja fallida debe ser suficiente para percibir ambas losetas.
+- **Evolución posible:** deshacer, pistas limitadas, losetas bloqueadas, siluetas irregulares, parejas temáticas o varias rondas con dificultad creciente.
 
 ### 8. Diferencias visuales — Futura
 

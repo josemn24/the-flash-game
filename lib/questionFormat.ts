@@ -14,6 +14,7 @@ export const QUESTION_FORMAT_LABELS = {
   ordering: "Ordenar",
   classification: "Clasificar",
   "flash-memory": "Memoria",
+  "memory-pairs": "Parejas",
   "simon-sequence": "Simon",
   "logic-matrix": "Matriz",
   "mini-sudoku": "Sudoku",

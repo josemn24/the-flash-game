@@ -176,6 +176,7 @@ export function useGameSession(stage: Stage) {
     }
     if (
       question?.type === "flash-memory" ||
+      question?.type === "memory-pairs" ||
       question?.type === "mini-sudoku" ||
       question?.type === "mini-nonogram" ||
       question?.type === "time-maze" ||

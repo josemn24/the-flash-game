@@ -6,6 +6,7 @@ import {
   calculateEstimationMetrics,
   calculateErrorReconstructionMetrics,
   calculateFlashMemoryMetrics,
+  calculateMemoryPairsMetrics,
   calculateMiniNonogramMetrics,
   calculateMiniSudokuMetrics,
   calculateMiniWordleMetrics,
@@ -17,6 +18,7 @@ import {
   isAnswerCorrect,
   isHeatMapAnswer,
   isMiniNonogramAnswer,
+  isMemoryPairsAnswer,
   isMiniSudokuAnswer,
   isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
@@ -25,6 +27,7 @@ import {
   isValidMiniSudokuConfiguration,
   isValidSlidingPuzzleConfiguration,
   isValidFlashMemoryConfiguration,
+  isValidMemoryPairsConfiguration,
   isValidSimonSequenceConfiguration,
   isImageLabelingAnswer,
   isErrorReconstructionAnswer,
@@ -119,6 +122,21 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
       incorrectAnswer = {};
       incorrectPoints = 0;
       break;
+    case "memory-pairs": {
+      const tilesByPair = example.tiles.reduce<Record<string, typeof example.tiles>>(
+        (groups, tile) => {
+          groups[tile.pairId] = [...(groups[tile.pairId] ?? []), tile];
+          return groups;
+        },
+        {},
+      );
+      correctAnswer = {
+        attempts: Object.values(tilesByPair).map((tiles) => [tiles[0].id, tiles[1].id]),
+      };
+      incorrectAnswer = { attempts: [] };
+      incorrectPoints = 0;
+      break;
+    }
     case "simon-sequence":
       correctAnswer = example.sequence;
       incorrectAnswer = [...example.sequence.slice(0, 2), "__incorrect__"];
@@ -1161,6 +1179,100 @@ describe("question evaluation", () => {
     const invalid = { ...question, items: [...question.items, question.items[0]] };
     expect(isValidFlashMemoryConfiguration(invalid)).toBe(false);
     expect(calculateFlashMemoryMetrics(invalid, {}).correctPlacements).toBe(0);
+  });
+
+  it("validates and scores memory-pairs attempts, fallbacks, and timeouts", () => {
+    const question = QUESTION_FORMAT_CATALOG["memory-pairs"].examples[0].question;
+    const perfect = {
+      attempts: [
+        ["sol-1", "sol-2"],
+        ["nube-1", "nube-2"],
+        ["luna-1", "luna-2"],
+        ["rayo-1", "rayo-2"],
+      ],
+    };
+    const partialWithFailure = {
+      attempts: [
+        ["sol-1", "nube-1"],
+        ["sol-1", "sol-2"],
+      ],
+    };
+
+    expect(isMemoryPairsAnswer(perfect)).toBe(true);
+    expect(isMemoryPairsAnswer({ attempts: [["sol-1"]] } as AnswerValue)).toBe(false);
+    expect(isValidMemoryPairsConfiguration(question)).toBe(true);
+    expect(calculateMemoryPairsMetrics(question, partialWithFailure)).toMatchObject({
+      valid: true,
+      matchedPairs: 1,
+      totalPairs: 4,
+      incorrectAttempts: 1,
+      totalAttempts: 2,
+    });
+    expect(evaluateAnswer({ question, answer: perfect, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 140,
+      details: { type: "memory-pairs", matchedPairs: 4, totalPairs: 4 },
+    });
+    expect(evaluateAnswer({ question, answer: partialWithFailure, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 21,
+      details: { type: "memory-pairs", matchedPairs: 1, incorrectAttempts: 1 },
+    });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: partialWithFailure,
+        timeUsed: question.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({
+      answer: partialWithFailure,
+      status: "partial",
+      points: 4,
+      details: { type: "memory-pairs", totalAttempts: 2 },
+    });
+    expect(
+      evaluateAnswer({ question, answer: { attempts: [] }, timeUsed: 99, timedOut: true }),
+    ).toMatchObject({ status: "unanswered", points: 0, timeUsed: question.timeLimit });
+    expect(
+      evaluateAnswer({ question, answer: { attempts: [["sol-1", "missing"]] }, timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(
+      evaluateAnswer({ question, answer: { attempts: [["sol-1", "sol-1"]] }, timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+  });
+
+  it("rejects inconsistent memory-pairs configurations", () => {
+    const question = QUESTION_FORMAT_CATALOG["memory-pairs"].examples[0].question;
+    expect(isValidMemoryPairsConfiguration({ ...question, grid: { rows: 2, columns: 3 } })).toBe(
+      false,
+    );
+    expect(
+      isValidMemoryPairsConfiguration({
+        ...question,
+        tiles: question.tiles.map((tile, index) =>
+          index === 1 ? { ...tile, pairId: "sol" } : tile,
+        ),
+      }),
+    ).toBe(false);
+    expect(
+      isValidMemoryPairsConfiguration({
+        ...question,
+        tiles: [{ ...question.tiles[0] }, ...question.tiles.slice(1)],
+      }),
+    ).toBe(true);
+    expect(
+      isValidMemoryPairsConfiguration({
+        ...question,
+        tiles: [{ ...question.tiles[0], id: question.tiles[1].id }, ...question.tiles.slice(1)],
+      }),
+    ).toBe(false);
+    expect(
+      isValidMemoryPairsConfiguration({
+        ...question,
+        mismatchRevealDuration: 0,
+      }),
+    ).toBe(false);
   });
 
   it("scores an exact Simon sequence by response speed and records its divergence", () => {

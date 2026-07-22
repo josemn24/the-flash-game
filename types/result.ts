@@ -34,6 +34,13 @@ export type AnswerResultDetails =
       totalPlacements: number;
     }
   | {
+      type: "memory-pairs";
+      matchedPairs: number;
+      totalPairs: number;
+      incorrectAttempts: number;
+      totalAttempts: number;
+    }
+  | {
       type: "simon-sequence";
       submittedSteps: string[];
       firstMismatchIndex: number | null;

@@ -247,6 +247,39 @@ type ImageLabelingWithoutCorrectReference = Omit<ValidImageLabeling, "anchors"> 
 };
 type ImageLabelingWithoutTask = Omit<ValidImageLabeling, "task">;
 
+type ValidMemoryPairs = {
+  id: "valid-memory-pairs";
+  type: "memory-pairs";
+  category: "Test";
+  question: "Find the pairs";
+  grid: { rows: 2; columns: 4 };
+  tiles: [
+    { id: "sun-a"; pairId: "sun"; label: "Sun"; symbol: "☀️" },
+    { id: "moon-a"; pairId: "moon"; label: "Moon" },
+    { id: "cloud-a"; pairId: "cloud"; label: "Cloud" },
+    { id: "bolt-a"; pairId: "bolt"; label: "Bolt" },
+    { id: "moon-b"; pairId: "moon"; label: "Moon" },
+    { id: "sun-b"; pairId: "sun"; label: "Sun" },
+    { id: "bolt-b"; pairId: "bolt"; label: "Bolt" },
+    {
+      id: "cloud-b";
+      pairId: "cloud";
+      label: "Cloud";
+      media: { type: "illustration"; id: "france-flag"; alt: "Cloud symbol" };
+    },
+  ];
+  mismatchRevealDuration: 0.65;
+  timeLimit: 18;
+  points: 140;
+  explanation: "Each pair appears twice";
+};
+
+type MemoryPairsWithoutGrid = Omit<ValidMemoryPairs, "grid">;
+type MemoryPairsWithoutTiles = Omit<ValidMemoryPairs, "tiles">;
+type MemoryPairsTileWithoutPair = Omit<ValidMemoryPairs, "tiles"> & {
+  tiles: [{ id: "sun-a"; label: "Sun" }];
+};
+
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
   IsNotAssignable<MultipleChoiceWithoutOptions, Question>
@@ -326,6 +359,16 @@ export type RejectsImageLabelingWithoutCorrectReference = Assert<
 >;
 export type RejectsImageLabelingWithoutTask = Assert<
   IsNotAssignable<ImageLabelingWithoutTask, Question>
+>;
+export type AcceptsValidMemoryPairs = Assert<IsAssignable<ValidMemoryPairs, Question>>;
+export type RejectsMemoryPairsWithoutGrid = Assert<
+  IsNotAssignable<MemoryPairsWithoutGrid, Question>
+>;
+export type RejectsMemoryPairsWithoutTiles = Assert<
+  IsNotAssignable<MemoryPairsWithoutTiles, Question>
+>;
+export type RejectsMemoryPairsTileWithoutPair = Assert<
+  IsNotAssignable<MemoryPairsTileWithoutPair, Question>
 >;
 export type RejectsSingleImageLabelingWithoutTarget = Assert<
   IsNotAssignable<SingleImageLabelingWithoutTarget, Question>

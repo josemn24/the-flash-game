@@ -227,6 +227,21 @@ export type FlashMemoryQuestion = BaseQuestion & {
   items: FlashMemoryItem[];
 };
 
+export type MemoryPairsTile = {
+  id: string;
+  pairId: string;
+  label: string;
+  symbol?: string;
+  media?: QuestionMedia;
+};
+
+export type MemoryPairsQuestion = BaseQuestion & {
+  type: "memory-pairs";
+  grid: { rows: number; columns: number };
+  tiles: MemoryPairsTile[];
+  mismatchRevealDuration?: number;
+};
+
 export type SimonSequencePad = {
   id: string;
   label: string;
@@ -329,6 +344,7 @@ export type Question =
   | OrderingQuestion
   | ClassificationQuestion
   | FlashMemoryQuestion
+  | MemoryPairsQuestion
   | SimonSequenceQuestion
   | LogicMatrixQuestion
   | MiniSudokuQuestion
@@ -348,6 +364,7 @@ export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
 export type ConnectPairsAnswer = { paths: Record<string, number[]> };
 export type FlashMemoryAnswer = Record<string, string>;
+export type MemoryPairsAnswer = { attempts: Array<[string, string]> };
 export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
@@ -364,6 +381,7 @@ export type AnswerValue =
   | MatchingAnswer
   | ConnectPairsAnswer
   | FlashMemoryAnswer
+  | MemoryPairsAnswer
   | MiniSudokuAnswer
   | MiniNonogramAnswer
   | TimeMazeAnswer

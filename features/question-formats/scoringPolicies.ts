@@ -130,6 +130,17 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "memory-pairs": {
+    id: QUESTION_SCORING_POLICY["memory-pairs"],
+    label: "Parejas, fallos y velocidad",
+    summary:
+      "Cada pareja encontrada aporta crédito ajustado por tiempo; cada intento fallido resta un 10 % de los puntos base.",
+    partialCredit: true,
+    incorrectPenalty: true,
+    speedBonus: true,
+    partialCreditLabel: "Crédito por pareja",
+    incorrectPenaltyLabel: "Cada fallo −10 %",
+  },
   "simon-sequence": {
     id: QUESTION_SCORING_POLICY["simon-sequence"],
     label: "Secuencia y velocidad",

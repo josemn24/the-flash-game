@@ -16,6 +16,7 @@ import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
+import { MemoryPairsQuestion } from "@/components/MemoryPairsQuestion";
 import { MiniNonogramQuestion } from "@/components/MiniNonogramQuestion";
 import { MiniSudokuQuestion } from "@/components/MiniSudokuQuestion";
 import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
@@ -278,6 +279,24 @@ function FlashMemoryInput({
   );
 }
 
+function MemoryPairsInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"memory-pairs">>) {
+  return (
+    <MemoryPairsQuestion
+      grid={question.grid}
+      tiles={question.tiles}
+      mismatchRevealDuration={question.mismatchRevealDuration}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function SimonSequenceInput({
   question,
   locked,
@@ -476,6 +495,7 @@ export const QUESTION_INPUT_RENDERERS = {
   ordering: OrderingInput,
   classification: ClassificationInput,
   "flash-memory": FlashMemoryInput,
+  "memory-pairs": MemoryPairsInput,
   "simon-sequence": SimonSequenceInput,
   "logic-matrix": LogicMatrixInput,
   "mini-sudoku": MiniSudokuInput,

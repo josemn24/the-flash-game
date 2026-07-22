@@ -12,7 +12,7 @@ La pregunta de producto sigue siendo:
 
 - Un único jugador y estado de sesión en memoria.
 - Dos etapas locales de diez preguntas cada una.
-- Veinticuatro formatos de pregunta con reglas y puntuación propias.
+- Veinticinco formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
 - Transición automática después de responder o agotar el tiempo.
@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, salas, multijugador
 | ------------------- | --------------------------------------------------------------- |
 | `/`                 | Presentación, selector de etapas y acceso a la biblioteca.      |
 | `/etapas/[stageId]` | Validación de la etapa y sesión jugable completa.               |
-| `/formatos`         | Catálogo de los veinticuatro formatos disponibles.              |
+| `/formatos`         | Catálogo de los veinticinco formatos disponibles.               |
 | `/formatos/[slug]`  | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
 
 Una etapa recorre estos estados:
@@ -58,7 +58,7 @@ Durante la etapa no se muestran aciertos, soluciones ni puntos parciales. La res
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
 Ambas etapas se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
-Cada una conserva diez preguntas. Los formatos no incluidos en ellas, como Conectar parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
+Cada una conserva diez preguntas. Los formatos no incluidos en ellas, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados
 
@@ -78,6 +78,7 @@ Cada una conserva diez preguntas. Los formatos no incluidos en ellas, como Conec
 | Mapa de calor            | Colocar, corregir y confirmar un marcador con puntero o teclado.    | Crédito espacial por zona y distancia, ajustado por velocidad.                   |
 | Etiquetar imagen         | Etiquetar todas las zonas o identificar una única zona señalada.    | Crédito parcial en múltiple; acierto binario en elección o texto.                |
 | Memoria relámpago        | Memorizar y reconstruir la posición de una cuadrícula.              | Crédito por posición correcta y velocidad durante la reconstrucción.             |
+| Memoria de parejas       | Revelar losetas ocultas y encontrar parejas recordando posiciones.  | Crédito por pareja encontrada; cada fallo resta el 10 % de los puntos base.      |
 | Simon                    | Observar y repetir una secuencia fija de símbolos.                  | Secuencia exacta y velocidad; un fallo termina la ronda.                         |
 | Matrices lógicas         | Elegir la pieza que completa una matriz 3 × 3.                      | Acierto exacto; un fallo resta el 20 %.                                          |
 | Mini-sudoku              | Completar tres o cuatro casillas de una cuadrícula 4 × 4.           | Crédito por casilla correcta y velocidad.                                        |
@@ -106,6 +107,8 @@ En el etiquetado múltiple, cada anclaje correcto aporta la misma fracción del 
 En Mini-Wordle, un vocabulario español general se genera offline desde Hunspell y se carga bajo demanda antes de iniciar el cronómetro. La comparación ignora mayúsculas y tildes, conserva la distinción entre `N` y `Ñ`, y gestiona letras repetidas mediante el recuento restante de la solución. Cada pregunta puede declarar adiciones editoriales; el timeout conserva los intentos para la revisión, pero no concede puntos.
 
 En «Conectar parejas», el tablero 5 × 5 exige rutas ortogonales sin cruces ni casillas compartidas. La respuesta correcta conecta todas las parejas y cubre las 25 casillas; el progreso válido puede puntuar parcialmente mediante `min(parejas conectadas, cobertura)` ajustado por velocidad. Un timeout conserva las rutas enviadas para la revisión y mantiene crédito parcial si hay progreso real.
+
+En «Memoria de parejas», cada intento revela dos losetas con símbolo, emoji o imagen y etiqueta accesible. Las parejas correctas permanecen visibles, los fallos se ocultan tras una pausa breve y el historial completo se conserva para revisión. El timeout con intentos puede puntuar parcialmente por parejas encontradas; sin intentos queda como sin respuesta.
 
 En «Imagen progresivamente revelada», el activo debe cargarse antes de iniciar el cronómetro. El desenfoque disminuye automáticamente durante una parte del límite y el jugador dispone de un único intento de texto normalizado. La revisión muestra la imagen nítida, una descripción completa y el porcentaje que se había revelado al responder.
 
@@ -185,7 +188,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las veinticuatro fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las veinticinco fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
 
 ## Evolución pendiente
 

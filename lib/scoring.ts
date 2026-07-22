@@ -21,6 +21,8 @@ import type {
   ImageLabelingQuestion,
   LogicCodeQuestion,
   LogicMatrixQuestion,
+  MemoryPairsAnswer,
+  MemoryPairsQuestion,
   MiniWordleAnswer,
   MiniWordleQuestion,
   MiniNonogramAnswer,
@@ -91,6 +93,7 @@ export const QUESTION_SCORING_POLICY = {
   ordering: "binary-speed",
   classification: "partial-items",
   "flash-memory": "partial-items",
+  "memory-pairs": "partial-items",
   "simon-sequence": "binary-speed",
   "logic-matrix": "binary-speed",
   "mini-sudoku": "partial-items",
@@ -147,6 +150,22 @@ export function isConnectPairsAnswer(answer: AnswerValue | null): answer is Conn
 
 export function isFlashMemoryAnswer(answer: AnswerValue | null): answer is FlashMemoryAnswer {
   return isRecordAnswer(answer);
+}
+
+export function isMemoryPairsAnswer(answer: AnswerValue | null): answer is MemoryPairsAnswer {
+  return (
+    answer !== null &&
+    typeof answer === "object" &&
+    !Array.isArray(answer) &&
+    "attempts" in answer &&
+    Array.isArray(answer.attempts) &&
+    answer.attempts.every(
+      (attempt) =>
+        Array.isArray(attempt) &&
+        attempt.length === 2 &&
+        attempt.every((tileId) => typeof tileId === "string"),
+    )
+  );
 }
 
 export function isMiniSudokuAnswer(answer: AnswerValue | null): answer is MiniSudokuAnswer {
@@ -375,6 +394,74 @@ export function calculateFlashMemoryMetrics(
     totalPlacements: capacity,
     complete: entries.length === capacity,
     valid,
+  };
+}
+
+export function isValidMemoryPairsConfiguration(question: MemoryPairsQuestion) {
+  const { rows, columns } = question.grid;
+  const capacity = rows * columns;
+  const tileIds = question.tiles.map((tile) => tile.id);
+  const pairCounts = question.tiles.reduce<Record<string, number>>((counts, tile) => {
+    counts[tile.pairId] = (counts[tile.pairId] ?? 0) + 1;
+    return counts;
+  }, {});
+  const totalPairs = Object.keys(pairCounts).length;
+
+  return (
+    Number.isInteger(rows) &&
+    Number.isInteger(columns) &&
+    rows > 0 &&
+    columns > 0 &&
+    capacity === question.tiles.length &&
+    totalPairs >= 4 &&
+    totalPairs <= 10 &&
+    question.tiles.length === totalPairs * 2 &&
+    new Set(tileIds).size === tileIds.length &&
+    question.tiles.every(
+      (tile) =>
+        Boolean(tile.id.trim()) &&
+        Boolean(tile.pairId.trim()) &&
+        Boolean(tile.label.trim()) &&
+        (tile.symbol === undefined || Boolean(tile.symbol.trim())),
+    ) &&
+    Object.values(pairCounts).every((count) => count === 2) &&
+    (question.mismatchRevealDuration === undefined ||
+      (Number.isFinite(question.mismatchRevealDuration) && question.mismatchRevealDuration > 0))
+  );
+}
+
+export function calculateMemoryPairsMetrics(
+  question: MemoryPairsQuestion,
+  answer: MemoryPairsAnswer,
+) {
+  const tileById = new Map(question.tiles.map((tile) => [tile.id, tile]));
+  const pairIds = new Set(question.tiles.map((tile) => tile.pairId));
+  const validAttempts = answer.attempts.filter(([firstId, secondId]) => {
+    const first = tileById.get(firstId);
+    const second = tileById.get(secondId);
+    return Boolean(first && second && firstId !== secondId);
+  });
+  const valid =
+    isValidMemoryPairsConfiguration(question) && validAttempts.length === answer.attempts.length;
+  const matchedPairIds = new Set(
+    validAttempts.flatMap(([firstId, secondId]) => {
+      const first = tileById.get(firstId);
+      const second = tileById.get(secondId);
+      return first && second && first.pairId === second.pairId ? [first.pairId] : [];
+    }),
+  );
+  const incorrectAttempts = validAttempts.filter(([firstId, secondId]) => {
+    const first = tileById.get(firstId);
+    const second = tileById.get(secondId);
+    return !first || !second || first.pairId !== second.pairId;
+  }).length;
+
+  return {
+    valid,
+    matchedPairs: valid ? matchedPairIds.size : 0,
+    totalPairs: pairIds.size,
+    incorrectAttempts: valid ? incorrectAttempts : 0,
+    totalAttempts: valid ? validAttempts.length : 0,
   };
 }
 
@@ -767,6 +854,11 @@ export function isAnswerCorrect(question: Question, answer: AnswerValue): boolea
         metrics.valid && metrics.complete && metrics.correctPlacements === question.items.length
       );
     }
+    case "memory-pairs": {
+      if (!isMemoryPairsAnswer(answer)) return false;
+      const metrics = calculateMemoryPairsMetrics(question, answer);
+      return metrics.valid && metrics.matchedPairs === metrics.totalPairs;
+    }
     case "simon-sequence":
       return (
         isSimonSequenceAnswer(answer) &&
@@ -1042,6 +1134,42 @@ function evaluateFlashMemory(
       correctPlacements: metrics.correctPlacements,
       totalPlacements: metrics.totalPlacements,
     },
+  };
+}
+
+function evaluateMemoryPairs(
+  question: MemoryPairsQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (!isMemoryPairsAnswer(answer)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const metrics = calculateMemoryPairsMetrics(question, answer);
+  if (!metrics.valid || metrics.totalAttempts === 0) {
+    return {
+      isCorrect: false,
+      status: answer.attempts.length === 0 ? "unanswered" : "incorrect",
+      points: 0,
+      details: { type: "memory-pairs", ...metrics },
+    };
+  }
+
+  const partialScore = calculateProportionalScore(
+    question.points,
+    metrics.matchedPairs,
+    metrics.totalPairs,
+    calculateSpeedMultiplier(timeUsed, question.timeLimit),
+  );
+  const points = applyAttemptPenalty(partialScore, question.points, metrics.incorrectAttempts);
+  const isCorrect = metrics.matchedPairs === metrics.totalPairs;
+
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : metrics.matchedPairs > 0 ? "partial" : "incorrect",
+    points,
+    details: { type: "memory-pairs", ...metrics },
   };
 }
 
@@ -1403,6 +1531,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       if (question.type === "flash-memory") {
         return evaluateFlashMemory(question, answer, timeUsed);
       }
+      if (question.type === "memory-pairs") {
+        return evaluateMemoryPairs(question, answer, timeUsed);
+      }
       if (question.type === "mini-sudoku") {
         return evaluateMiniSudoku(question, answer, timeUsed);
       }
@@ -1541,16 +1672,26 @@ export function evaluateAnswer({
                         conflicts: 0,
                       },
                     }
-                  : question.type === "time-maze"
+                  : question.type === "memory-pairs"
                     ? {
                         details: {
-                          type: "time-maze" as const,
-                          moves: 0,
-                          optimalMoves: (findShortestTimeMazePath(question)?.length ?? 1) - 1,
-                          reachedExit: false,
+                          type: "memory-pairs" as const,
+                          matchedPairs: 0,
+                          totalPairs: new Set(question.tiles.map((tile) => tile.pairId)).size,
+                          incorrectAttempts: 0,
+                          totalAttempts: 0,
                         },
                       }
-                    : {}),
+                    : question.type === "time-maze"
+                      ? {
+                          details: {
+                            type: "time-maze" as const,
+                            moves: 0,
+                            optimalMoves: (findShortestTimeMazePath(question)?.length ?? 1) - 1,
+                            reachedExit: false,
+                          },
+                        }
+                      : {}),
     };
   }
 
@@ -1592,6 +1733,7 @@ export function evaluateAnswer({
       timedOut &&
       question.type !== "matching" &&
       question.type !== "flash-memory" &&
+      question.type !== "memory-pairs" &&
       question.type !== "mini-sudoku" &&
       question.type !== "mini-nonogram" &&
       question.type !== "connect-pairs" &&

@@ -5,11 +5,12 @@ import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
+import { isValidMemoryPairsConfiguration } from "@/lib/scoring";
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-four formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(24);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(24);
+  it("contains exactly twenty-five formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(25);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(25);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -25,6 +26,7 @@ describe("question format catalog", () => {
       "heat-map",
       "image-labeling",
       "flash-memory",
+      "memory-pairs",
       "simon-sequence",
       "logic-matrix",
       "mini-sudoku",
@@ -169,6 +171,22 @@ describe("question format catalog", () => {
     expect(question.leftItems.every((item) => rightIds.includes(item.correctMatchId))).toBe(true);
     expect(question.leftItems.every((item) => item.label.trim().length > 0)).toBe(true);
     expect(question.rightItems.every((item) => item.label.trim().length > 0)).toBe(true);
+  });
+
+  it("keeps the memory-pairs example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["memory-pairs"].examples[0].question;
+    const pairCounts = question.tiles.reduce<Record<string, number>>((counts, tile) => {
+      counts[tile.pairId] = (counts[tile.pairId] ?? 0) + 1;
+      return counts;
+    }, {});
+
+    expect(question.grid.rows * question.grid.columns).toBe(question.tiles.length);
+    expect(Object.keys(pairCounts)).toHaveLength(4);
+    expect(Object.values(pairCounts).every((count) => count === 2)).toBe(true);
+    expect(new Set(question.tiles.map((tile) => tile.id)).size).toBe(question.tiles.length);
+    expect(question.tiles.every((tile) => tile.label.trim().length > 0)).toBe(true);
+    expect(question.tiles.every((tile) => tile.symbol && tile.symbol.trim().length > 0)).toBe(true);
+    expect(isValidMemoryPairsConfiguration(question)).toBe(true);
   });
 
   it("keeps the connect-pairs example internally consistent", () => {
