@@ -60,6 +60,7 @@ import {
 } from "@/lib/timeMaze";
 import type {
   AnswerValue,
+  MemoryPairsAnswer,
   MiniNonogramAnswer,
   MiniWordleQuestion,
   QuestionType,
@@ -1183,7 +1184,7 @@ describe("question evaluation", () => {
 
   it("validates and scores memory-pairs attempts, fallbacks, and timeouts", () => {
     const question = QUESTION_FORMAT_CATALOG["memory-pairs"].examples[0].question;
-    const perfect = {
+    const perfect: MemoryPairsAnswer = {
       attempts: [
         ["sol-1", "sol-2"],
         ["nube-1", "nube-2"],
@@ -1191,7 +1192,7 @@ describe("question evaluation", () => {
         ["rayo-1", "rayo-2"],
       ],
     };
-    const partialWithFailure = {
+    const partialWithFailure: MemoryPairsAnswer = {
       attempts: [
         ["sol-1", "nube-1"],
         ["sol-1", "sol-2"],
@@ -1199,7 +1200,7 @@ describe("question evaluation", () => {
     };
 
     expect(isMemoryPairsAnswer(perfect)).toBe(true);
-    expect(isMemoryPairsAnswer({ attempts: [["sol-1"]] } as AnswerValue)).toBe(false);
+    expect(isMemoryPairsAnswer({ attempts: [["sol-1"]] } as unknown as AnswerValue)).toBe(false);
     expect(isValidMemoryPairsConfiguration(question)).toBe(true);
     expect(calculateMemoryPairsMetrics(question, partialWithFailure)).toMatchObject({
       valid: true,

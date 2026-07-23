@@ -155,7 +155,7 @@ Do not pass:
 
 ### Home page view model
 
-The home page does not need the questions from every challenge. Although both the page and `StartScreen` are Server Components, the page reads the demo room, keeps room and active-season context as small strings, and maps each active-season challenge to a summary to keep the home view decoupled from playable question data:
+The home page does not need the questions from every challenge. Although both the page and `StartScreen` are Server Components, the page reads the demo room, keeps room and active-season context as small strings, and maps each active-season challenge to a summary to keep the home view decoupled from playable question data. Challenges resolve their ordered question IDs from the mock `questionsById` table before any UI boundary receives them:
 
 ```ts
 export type ChallengeSummary = {

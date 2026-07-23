@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { challenges } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
+import {
+  getQuestionsByIds,
+  questionGroups,
+  questionsById,
+  type QuestionId,
+} from "@/data/questions";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
@@ -76,7 +82,7 @@ describe("question format catalog", () => {
     const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
     expect(question.correctAnswer).toHaveLength(4);
     expect(dictionary.words).toContain(normalizeMiniWordleWord(question.correctAnswer));
-    expect(question.additionalGuesses).toBeUndefined();
+    expect("additionalGuesses" in question).toBe(false);
   });
 
   it("keeps the progressive-image example internally consistent", () => {
@@ -243,5 +249,20 @@ describe("question format catalog", () => {
         .flatMap((challenge) => challenge.questions)
         .some((question) => (question.type as string) === "image-choice"),
     ).toBe(false);
+  });
+
+  it("keeps the mock question table consistent", () => {
+    const questionIds = Object.keys(questionsById) as QuestionId[];
+    expect(questionIds).toHaveLength(20);
+    expect(new Set(questionIds).size).toBe(questionIds.length);
+    expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
+
+    const sampleIds = ["capital-canada", "sequence", "eiffel-tower"] satisfies QuestionId[];
+    expect(getQuestionsByIds(sampleIds).map((question) => question.id)).toEqual(sampleIds);
+    expect(
+      Object.values(questionGroups)
+        .flat()
+        .every((id) => id in questionsById),
+    ).toBe(true);
   });
 });

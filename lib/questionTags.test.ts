@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { connectionsChallenge } from "@/data/connectionsChallenge";
-import { demoChallenge } from "@/data/demoChallenge";
+import { questionsById } from "@/data/questions";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import {
   getQuestionDomainIds,
@@ -28,7 +27,7 @@ describe("question tags", () => {
       topics: ["missing_topic"],
       cognitiveSkills: ["logical_reasoning"],
       formatSkills: ["deduction"],
-    } as QuestionTags);
+    } as unknown as QuestionTags);
 
     expect(result.valid).toBe(false);
     expect(result.errors).toContain("unknown topic: missing_topic");
@@ -62,12 +61,12 @@ describe("question tags", () => {
   });
 
   it("keeps playable challenges and format examples valid", () => {
-    const challengeQuestions = [...demoChallenge.questions, ...connectionsChallenge.questions];
+    const tableQuestions = Object.values(questionsById);
     const catalogQuestions = Object.values(QUESTION_FORMAT_CATALOG).flatMap((format) =>
       format.examples.map((example) => example.question),
     );
 
-    for (const question of [...challengeQuestions, ...catalogQuestions]) {
+    for (const question of [...tableQuestions, ...catalogQuestions]) {
       expect(validateQuestionTags(question.tags), question.id).toEqual({ valid: true, errors: [] });
     }
   });

@@ -19,9 +19,12 @@ data/demoRoom.ts
    └─ activeSeason: Season
       └─ challenges: Challenge[]
          ├─ demoChallenge
-         │  └─ questions[]
+         │  └─ questions = getQuestionsByIds([...])
          └─ connectionsChallenge
-            └─ questions[]
+            └─ questions = getQuestionsByIds([...])
+
+data/questions/index.ts
+└─ questionsById: Record<QuestionId, Question>
 ```
 
 Los tipos principales son:
@@ -52,7 +55,7 @@ type Challenge = {
 };
 ```
 
-Esto permite validar una experiencia individual: elegir un desafío de la temporada activa, jugar sus preguntas y revisar resultados. La sala y la temporada son mocks locales, sin jugadores, ranking ni persistencia.
+Esto permite validar una experiencia individual: elegir un desafío de la temporada activa, jugar sus preguntas y revisar resultados. La sala y la temporada son mocks locales, sin jugadores, ranking ni persistencia. Las preguntas viven en una tabla mock central y los desafíos conservan `questions` resuelto por compatibilidad con la UI.
 
 ## Modelo objetivo
 
@@ -216,6 +219,30 @@ Sala Demo
 ```
 
 Esta fase se aplicó porque la portada ya muestra contexto mínimo de temporada.
+
+## Fase intermedia: Tabla mock de preguntas
+
+Estado: aplicada.
+
+Objetivo: acercar los mocks a una estructura de base de datos sin cambiar el contrato público de `Challenge`.
+
+Cambios aplicados:
+
+- Crear `data/questions/index.ts` como tabla mock `questionsById`.
+- Añadir `QuestionId`, `getQuestionsByIds` y `questionGroups` para autoría.
+- Hacer que cada desafío declare su lista ordenada de IDs y resuelva `questions`.
+- Mantener `Challenge.questions` como `Question[]` para no tocar UI, rutas, sesión ni scoring.
+
+Resultado:
+
+```text
+questionsById
+└─ Question[]
+
+Challenge
+└─ questionIds locales
+   └─ questions resueltas
+```
 
 ## Fase 4: Separar definición y publicación
 

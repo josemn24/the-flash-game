@@ -59,7 +59,7 @@ Durante el desafío no se muestran aciertos, soluciones ni puntos parciales. La 
 - Añade ordenar, estimación, código lógico y clasificación.
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
-Ambos desafíos cuelgan de `demoRoom.activeSeason.challenges` y se prerenderizan mediante `generateStaticParams`.
+Ambos desafíos cuelgan de `demoRoom.activeSeason.challenges`, resuelven sus preguntas desde `questionsById` y se prerenderizan mediante `generateStaticParams`.
 Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados
@@ -142,6 +142,7 @@ El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionRevie
 
 - Las páginas, metadata, parámetros, navegación y contenido editorial se resuelven en Server Components.
 - La portada lee `demoRoom`, muestra contexto mínimo de sala y temporada, y recibe `ChallengeSummary[]`; nunca necesita las preguntas completas.
+- Los desafíos declaran listas ordenadas de IDs y exponen `questions: Question[]` ya resuelto para la UI.
 - La ruta de desafío valida el identificador y envía un único `Challenge` a `GameApp.client.tsx`.
 - La sesión jugable mantiene reducer, tiempos, respuestas, resultados y transiciones en el cliente.
 - El número de pistas reveladas se conserva en la sesión o en el ejemplo jugable y se envía al evaluador junto con la respuesta.
@@ -160,6 +161,7 @@ types/result.ts     resultados y detalles específicos
 types/session.ts    fases de la partida
 types/challenge.ts  Challenge, ChallengeSummary y GameMode
 types/room.ts       Room, Season y SeasonStatus
+data/questions      tabla mock questionsById y agrupaciones editoriales
 types/game.ts       exportaciones públicas del dominio
 ```
 
