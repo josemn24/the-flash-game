@@ -48,6 +48,8 @@ Una sala contiene temporadas. Una temporada publica desafíos periódicos. Cada 
 | Habilidad cognitiva         | Cognitive Skill       | Capacidad mental ejercitada por una prueba, como memoria, razonamiento lógico, pensamiento crítico o resolución de problemas.            |
 | Habilidad práctica / social | Life Skill            | Habilidad aplicada a la vida cotidiana o social, como finanzas personales, comunicación, competencia digital o salud.                    |
 
+Las reglas editoriales para decidir dominios, temas y etiquetas se documentan en `reglas-etiquetado.md`.
+
 ## Convenciones de uso
 
 ### Modo vs formato
