@@ -1,8 +1,6 @@
-import { connectionsChallenge } from "@/data/connectionsChallenge";
-import { demoChallenge } from "@/data/demoChallenge";
-import type { Challenge } from "@/types/game";
+import { demoRoom } from "@/data/demoRoom";
 
-export const challenges: Challenge[] = [demoChallenge, connectionsChallenge];
+export const challenges = demoRoom.activeSeason.challenges;
 
 export function getChallengeById(id: string) {
   return challenges.find((challenge) => challenge.id === id);

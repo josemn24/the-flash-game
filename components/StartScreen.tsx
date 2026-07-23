@@ -4,9 +4,25 @@ import { Logo } from "@/components/Logo";
 import styles from "@/components/StartScreen.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
-import type { ChallengeSummary } from "@/types/game";
+import type { ChallengeSummary, SeasonStatus } from "@/types/game";
 
-export function StartScreen({ challenges }: { challenges: ChallengeSummary[] }) {
+type StartScreenProps = {
+  roomTitle: string;
+  seasonTitle: string;
+  seasonStatus: SeasonStatus;
+  challenges: ChallengeSummary[];
+};
+
+function formatSeasonStatus(status: SeasonStatus) {
+  return status === "active" ? "Activa" : "Finalizada";
+}
+
+export function StartScreen({
+  roomTitle,
+  seasonTitle,
+  seasonStatus,
+  challenges,
+}: StartScreenProps) {
   return (
     <section
       className={`${styles.homeEntrance} relative mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10`}
@@ -15,7 +31,7 @@ export function StartScreen({ challenges }: { challenges: ChallengeSummary[] }) 
         left={<Logo />}
         right={
           <Badge variant="status" dot>
-            Demo en solitario
+            {formatSeasonStatus(seasonStatus)}
           </Badge>
         }
       />
@@ -39,6 +55,9 @@ export function StartScreen({ challenges }: { challenges: ChallengeSummary[] }) 
             className={`${styles.copyEntrance} mt-6 max-w-xl text-base leading-7 text-white/55 sm:text-lg`}
           >
             Elige tu sprint. Diez preguntas, poco tiempo y cero excusas para quedarte quieto.
+          </p>
+          <p className="mt-4 font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
+            {roomTitle} · {seasonTitle}
           </p>
         </div>
 

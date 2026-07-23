@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { challenges } from "@/data/challenges";
+import { demoRoom } from "@/data/demoRoom";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
@@ -223,6 +224,9 @@ describe("question format catalog", () => {
   });
 
   it("keeps both ten-question challenges in flash mode and models image choice as a variant", () => {
+    expect(demoRoom.id).toBe("demo-room");
+    expect(demoRoom.activeSeason.status).toBe("active");
+    expect(challenges).toBe(demoRoom.activeSeason.challenges);
     expect(challenges).toHaveLength(2);
     expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
     expect(challenges.every((challenge) => challenge.questions.length === 10)).toBe(true);

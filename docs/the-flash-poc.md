@@ -11,7 +11,7 @@ La pregunta de producto sigue siendo:
 ## Alcance actual
 
 - Un único jugador y estado de sesión en memoria.
-- Dos desafíos locales de diez preguntas cada uno.
+- Una sala demo local con temporada activa y dos desafíos de diez preguntas cada uno.
 - Veinticinco formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
@@ -20,7 +20,7 @@ La pregunta de producto sigue siendo:
 - Biblioteca editorial de formatos con uno o varios ejemplos jugables por ficha.
 - Interfaz responsive, accesible y completamente en español.
 
-No existen backend, base de datos, autenticación, usuarios, salas, multijugador, rankings, panel de administración ni persistencia entre sesiones.
+No existen backend, base de datos, autenticación, usuarios, creación de salas, multijugador, rankings, panel de administración ni persistencia entre sesiones.
 
 ## Rutas y flujo
 
@@ -59,7 +59,7 @@ Durante el desafío no se muestran aciertos, soluciones ni puntos parciales. La 
 - Añade ordenar, estimación, código lógico y clasificación.
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
-Ambos desafíos se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
+Ambos desafíos cuelgan de `demoRoom.activeSeason.challenges` y se prerenderizan mediante `generateStaticParams`.
 Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados
@@ -141,7 +141,7 @@ El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionRevie
 ## Arquitectura y datos
 
 - Las páginas, metadata, parámetros, navegación y contenido editorial se resuelven en Server Components.
-- La portada recibe `ChallengeSummary[]`; nunca necesita las preguntas completas.
+- La portada lee `demoRoom`, muestra contexto mínimo de sala y temporada, y recibe `ChallengeSummary[]`; nunca necesita las preguntas completas.
 - La ruta de desafío valida el identificador y envía un único `Challenge` a `GameApp.client.tsx`.
 - La sesión jugable mantiene reducer, tiempos, respuestas, resultados y transiciones en el cliente.
 - El número de pistas reveladas se conserva en la sesión o en el ejemplo jugable y se envía al evaluador junto con la respuesta.
@@ -159,6 +159,7 @@ types/question.ts   preguntas, media y respuestas
 types/result.ts     resultados y detalles específicos
 types/session.ts    fases de la partida
 types/challenge.ts  Challenge, ChallengeSummary y GameMode
+types/room.ts       Room, Season y SeasonStatus
 types/game.ts       exportaciones públicas del dominio
 ```
 

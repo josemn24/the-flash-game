@@ -155,7 +155,7 @@ Do not pass:
 
 ### Home page view model
 
-The home page does not need the questions from every challenge. Although both the page and `StartScreen` are Server Components, the page maps each challenge to a summary to keep the home view decoupled from playable question data:
+The home page does not need the questions from every challenge. Although both the page and `StartScreen` are Server Components, the page reads the demo room, keeps room and active-season context as small strings, and maps each active-season challenge to a summary to keep the home view decoupled from playable question data:
 
 ```ts
 export type ChallengeSummary = {
@@ -171,7 +171,7 @@ export type ChallengeSummary = {
 The complete challenge only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends each example question separately to its own playable-example island.
 
 ```text
-HomePage (server) ──ChallengeSummary[]──▶ StartScreen (server)
+HomePage (server) ──Room/Season context + ChallengeSummary[]──▶ StartScreen (server)
 ChallengePage (server) ──Challenge──────▶ GameApp (client)
 FormatDetailPage (server) ──Question──▶ PlayableFormatExample (client)
 ```
@@ -256,7 +256,7 @@ app/page.tsx                   Server Component
 
 Requirements:
 
-- receive `ChallengeSummary[]`, not complete challenges;
+- receive room/season context and `ChallengeSummary[]`, not complete challenges;
 - use `Link` to open challenges and formats;
 - keep metadata and content on the server;
 - use CSS for decorative animations whenever it is sufficient.
