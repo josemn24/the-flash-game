@@ -1,3 +1,5 @@
+import type { QuestionTags } from "@/lib/questionTags";
+
 export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag" | "france-flag";
 
 export type QuestionMedia =
@@ -17,6 +19,7 @@ export type QuestionMedia =
 export type BaseQuestion = {
   id: string;
   category: string;
+  tags: QuestionTags;
   question: string;
   timeLimit: number;
   points: number;

@@ -72,6 +72,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-choice",
           type: "multiple-choice",
           category: "Geografía",
+          tags: {
+            domains: ["geography"],
+            topics: ["capitals"],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["recall"],
+          },
           question: "¿Cuál es la capital de Canadá?",
           options: ["Toronto", "Ottawa", "Vancouver", "Montreal"],
           correctAnswer: "Ottawa",
@@ -130,6 +136,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-odd-one-out",
           type: "odd-one-out",
           category: "Lengua",
+          tags: {
+            domains: ["language_communication", "natural_sciences"],
+            topics: ["word_groups", "astronomy_planets"],
+            cognitiveSkills: ["comprehension", "pattern_recognition"],
+            formatSkills: ["comparison", "classification"],
+          },
           question: "¿Qué palabra no pertenece al mismo grupo que las demás?",
           items: [
             { id: "mercurio", label: "Mercurio" },
@@ -194,6 +206,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-matching",
           type: "matching",
           category: "Geografía",
+          tags: {
+            domains: ["geography", "culture"],
+            topics: ["countries_flags"],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["comparison"],
+          },
           question: "Empareja cada país con su bandera.",
           leftItems: [
             { id: "japon", label: "Japón", correctMatchId: "bandera-japon" },
@@ -274,6 +292,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-connect-pairs",
           type: "connect-pairs",
           category: "Lógica espacial",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["spatial_logic_puzzles"],
+            cognitiveSkills: ["problem_solving"],
+            formatSkills: ["planning"],
+          },
           question: "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
           grid: { rows: 5, columns: 5 },
           pairs: [
@@ -341,6 +365,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-true-false",
           type: "true-false",
           category: "Ciencia",
+          tags: {
+            domains: ["natural_sciences"],
+            topics: ["sound_waves"],
+            cognitiveSkills: ["scientific_reasoning"],
+            formatSkills: ["interpretation"],
+          },
           question: "El sonido puede viajar por el vacío del espacio.",
           correctAnswer: false,
           timeLimit: 9,
@@ -397,6 +427,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-short-text",
           type: "short-text",
           category: "Historia",
+          tags: {
+            domains: ["history"],
+            topics: ["world_war_ii"],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["recall"],
+          },
           question: "¿En qué año terminó la Segunda Guerra Mundial?",
           correctAnswer: "1945",
           acceptedAnswers: ["1945", "mil novecientos cuarenta y cinco"],
@@ -450,6 +486,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-ordering",
           type: "ordering",
           category: "Historia",
+          tags: {
+            domains: ["history", "technology"],
+            topics: ["inventions"],
+            cognitiveSkills: ["memory", "logical_reasoning"],
+            formatSkills: ["ordering"],
+          },
           question: "Ordena estos inventos del más antiguo al más reciente.",
           items: ["Internet", "Imprenta", "Teléfono", "Máquina de vapor"],
           correctOrder: ["Imprenta", "Máquina de vapor", "Teléfono", "Internet"],
@@ -503,6 +545,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-classification",
           type: "classification",
           category: "Biología",
+          tags: {
+            domains: ["natural_sciences"],
+            topics: ["biology_taxonomy"],
+            cognitiveSkills: ["comprehension"],
+            formatSkills: ["classification"],
+          },
           question: "Clasifica cada ser vivo en su grupo.",
           categories: ["mamífero", "ave", "reptil"],
           items: [
@@ -560,6 +608,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-logic-code",
           type: "logic-code",
           category: "Lógica",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["logic_puzzles"],
+            cognitiveSkills: ["logical_reasoning", "problem_solving"],
+            formatSkills: ["deduction"],
+          },
           question: "Deduce el código secreto de tres cifras.",
           clues: [
             { code: "682", hint: "Una cifra es correcta y está bien colocada." },
@@ -627,6 +681,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-estimation",
           type: "estimation",
           category: "Lugares",
+          tags: {
+            domains: ["geography", "culture"],
+            topics: ["landmarks"],
+            cognitiveSkills: ["quantitative_reasoning"],
+            formatSkills: ["estimation"],
+          },
           question: "¿Cuántos metros mide la Torre Eiffel?",
           correctAnswer: 330,
           min: 100,
@@ -694,6 +754,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-progressive-clues",
           type: "progressive-clues",
           category: "Ciencia",
+          tags: {
+            domains: ["natural_sciences", "history"],
+            topics: ["scientists"],
+            cognitiveSkills: ["memory", "comprehension"],
+            formatSkills: ["deduction", "recall"],
+          },
           question: "¿Qué científica soy?",
           clues: [
             "Nací en Varsovia durante la segunda mitad del siglo XIX.",
@@ -768,6 +834,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-heat-map",
           type: "heat-map",
           category: "Geografía",
+          tags: {
+            domains: ["geography"],
+            topics: ["maps"],
+            cognitiveSkills: ["comprehension"],
+            formatSkills: ["interpretation"],
+          },
           question: "¿Dónde se encuentra Madrid?",
           surface: {
             src: "/visuals/heat-map/spain-map.svg",
@@ -842,6 +914,13 @@ export const QUESTION_FORMAT_CATALOG = {
           type: "image-labeling",
           task: "assign-all",
           category: "Anatomía",
+          tags: {
+            domains: ["natural_sciences"],
+            topics: ["human_anatomy"],
+            cognitiveSkills: ["comprehension"],
+            formatSkills: ["classification"],
+            lifeSkills: ["health_self_care"],
+          },
           question: "Etiqueta las principales regiones del cuerpo humano",
           surface: {
             src: "/visuals/heat-map/human-body.svg",
@@ -880,6 +959,13 @@ export const QUESTION_FORMAT_CATALOG = {
           type: "image-labeling",
           task: "identify-one",
           category: "Anatomía",
+          tags: {
+            domains: ["natural_sciences"],
+            topics: ["human_anatomy"],
+            cognitiveSkills: ["comprehension"],
+            formatSkills: ["recall", "interpretation"],
+            lifeSkills: ["health_self_care"],
+          },
           question: "¿Qué región del cuerpo está señalada?",
           surface: {
             src: "/visuals/heat-map/human-body.svg",
@@ -951,6 +1037,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-flash-memory",
           type: "flash-memory",
           category: "Espacio",
+          tags: {
+            domains: ["natural_sciences"],
+            topics: ["astronomy_planets"],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["recall"],
+          },
           question: "Memoriza las posiciones de los planetas y reconstruye la cuadrícula.",
           revealDuration: 3,
           grid: { rows: 2, columns: 2 },
@@ -1019,6 +1111,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-memory-pairs",
           type: "memory-pairs",
           category: "Memoria",
+          tags: {
+            domains: ["mathematics", "natural_sciences"],
+            topics: ["memory_training", "weather"],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["comparison"],
+          },
           question: "Encuentra las parejas de iconos del clima.",
           grid: { rows: 2, columns: 4 },
           mismatchRevealDuration: 0.65,
@@ -1090,6 +1188,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-simon-sequence",
           type: "simon-sequence",
           category: "Memoria",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["memory_training"],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["recall"],
+          },
           question: "Observa la secuencia y repítela cuando se activen los botones.",
           pads: [
             { id: "orbita", label: "Órbita" },
@@ -1155,6 +1259,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-logic-matrix",
           type: "logic-matrix",
           category: "Lógica",
+          tags: {
+            domains: ["mathematics", "art_design"],
+            topics: ["visual_patterns"],
+            cognitiveSkills: ["logical_reasoning", "pattern_recognition"],
+            formatSkills: ["deduction"],
+          },
           question: "¿Qué símbolo completa la matriz?",
           pieces: [
             { id: "circle", symbol: "●", label: "Círculo" },
@@ -1233,6 +1343,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-mini-sudoku",
           type: "mini-sudoku",
           category: "Lógica",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["logic_puzzles"],
+            cognitiveSkills: ["logical_reasoning", "problem_solving"],
+            formatSkills: ["deduction"],
+          },
           question: "Completa el mini-sudoku. Puedes corregir tus valores antes de confirmar.",
           grid: [1, null, 3, 4, 3, 4, null, 2, 2, 1, 4, null, null, 3, 2, 1],
           solution: [1, 2, 3, 4, 3, 4, 1, 2, 2, 1, 4, 3, 4, 3, 2, 1],
@@ -1294,6 +1410,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-mini-nonogram",
           type: "mini-nonogram",
           category: "Lógica",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["visual_patterns"],
+            cognitiveSkills: ["logical_reasoning", "pattern_recognition"],
+            formatSkills: ["deduction"],
+          },
           question: "Usa las pistas de filas y columnas para completar el patrón.",
           solution: [
             false,
@@ -1382,6 +1504,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-sliding-puzzle",
           type: "sliding-puzzle",
           category: "Lógica",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["spatial_logic_puzzles"],
+            cognitiveSkills: ["problem_solving"],
+            formatSkills: ["planning"],
+          },
           question: "Ordena las fichas del 1 al 8 dejando el hueco al final.",
           initialTiles: [1, 2, 3, 4, 5, 6, null, 7, 8],
           solution: [1, 2, 3, 4, 5, 6, 7, 8, null],
@@ -1443,6 +1571,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-error-reconstruction-math",
           type: "error-reconstruction",
           category: "Matemáticas",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["arithmetic"],
+            cognitiveSkills: ["critical_thinking", "logical_reasoning"],
+            formatSkills: ["error_detection", "calculation"],
+          },
           question: "Localiza el primer paso incorrecto al resolver 3 × (4 + 2).",
           steps: [
             { id: "expandir", text: "1. Primero resolvemos el paréntesis: 4 + 2 = 6." },
@@ -1466,6 +1600,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-error-reconstruction-history",
           type: "error-reconstruction",
           category: "Historia",
+          tags: {
+            domains: ["history", "natural_sciences", "technology"],
+            topics: ["space_exploration"],
+            cognitiveSkills: ["critical_thinking", "memory"],
+            formatSkills: ["error_detection", "ordering"],
+          },
           question: "Localiza el primer error de esta cronología de la llegada a la Luna.",
           steps: [
             { id: "lanzamiento", text: "1. Apollo 11 despegó en julio de 1969." },
@@ -1531,6 +1671,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-anagram-mesa",
           type: "anagram",
           category: "Lengua",
+          tags: {
+            domains: ["language_communication"],
+            topics: ["vocabulary", "spelling"],
+            cognitiveSkills: ["problem_solving"],
+            formatSkills: ["ordering"],
+          },
           question: "Forma la palabra que nombra un mueble para comer o trabajar.",
           hint: "Suele tener patas y una superficie plana.",
           tiles: [
@@ -1551,6 +1697,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-anagram-anana",
           type: "anagram",
           category: "Lengua",
+          tags: {
+            domains: ["language_communication", "culture"],
+            topics: ["vocabulary", "spelling"],
+            cognitiveSkills: ["problem_solving"],
+            formatSkills: ["ordering"],
+          },
           question: "Forma el nombre de una fruta tropical.",
           hint: "Tiene tres letras A y dos letras N.",
           tiles: [
@@ -1618,6 +1770,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-mini-wordle-luna",
           type: "mini-wordle",
           category: "Lengua",
+          tags: {
+            domains: ["language_communication", "natural_sciences"],
+            topics: ["vocabulary", "astronomy_planets"],
+            cognitiveSkills: ["logical_reasoning", "memory"],
+            formatSkills: ["deduction"],
+          },
           question: "Descubre una palabra relacionada con la astronomía.",
           hint: "Puede verse en el cielo nocturno.",
           correctAnswer: "LUNA",
@@ -1681,6 +1839,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-progressive-image-eiffel",
           type: "progressive-image",
           category: "Lugares",
+          tags: {
+            domains: ["geography", "culture"],
+            topics: ["landmarks"],
+            cognitiveSkills: ["memory", "comprehension"],
+            formatSkills: ["interpretation", "recall"],
+          },
           question: "¿Qué monumento aparece en la imagen?",
           surface: {
             src: "/visuals/connections/eiffel-tower.png",
@@ -1754,6 +1918,12 @@ export const QUESTION_FORMAT_CATALOG = {
           id: "guide-time-maze",
           type: "time-maze",
           category: "Orientación",
+          tags: {
+            domains: ["geography", "mathematics"],
+            topics: ["orientation", "spatial_logic_puzzles"],
+            cognitiveSkills: ["problem_solving"],
+            formatSkills: ["planning"],
+          },
           question: "Guía el rayo desde S hasta E antes de que se agote el tiempo.",
           grid: { rows: 7, columns: 7 },
           cells: [

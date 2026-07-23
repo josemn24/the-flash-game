@@ -1,4 +1,13 @@
 export type {
+  CognitiveSkillTagId,
+  DomainTagId,
+  FormatSkillTagId,
+  LifeSkillTagId,
+  QuestionTags,
+  TopicDefinition,
+  TopicTagId,
+} from "@/lib/questionTags";
+export type {
   AnswerValue,
   AnagramQuestion,
   AnagramTile,

@@ -3,11 +3,18 @@ import type { Question } from "@/types/game";
 type Assert<T extends true> = T;
 type IsAssignable<Source, Target> = Source extends Target ? true : false;
 type IsNotAssignable<Source, Target> = IsAssignable<Source, Target> extends false ? true : false;
+type TestQuestionTags = {
+  domains: ["mathematics"];
+  topics: ["logic_puzzles"];
+  cognitiveSkills: ["logical_reasoning"];
+  formatSkills: ["deduction"];
+};
 
 type ValidMultipleChoice = {
   id: "valid-choice";
   type: "multiple-choice";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Choose one";
   options: ["A", "B"];
   correctAnswer: "A";
@@ -25,6 +32,7 @@ type ValidOddOneOut = {
   id: "valid-odd-one-out";
   type: "odd-one-out";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Find the odd one out";
   items: [{ id: "a"; label: "A" }, { id: "b"; label: "B" }, { id: "c"; label: "C" }];
   correctAnswer: "c";
@@ -45,6 +53,7 @@ type ValidMatching = {
   id: "valid-matching";
   type: "matching";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Match each item";
   leftItems: [
     { id: "left-a"; label: "A"; correctMatchId: "right-a" },
@@ -77,6 +86,7 @@ type ValidConnectPairs = {
   id: "valid-connect-pairs";
   type: "connect-pairs";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Connect every pair";
   grid: { rows: 5; columns: 5 };
   pairs: [
@@ -104,6 +114,7 @@ type ValidProgressiveClues = {
   id: "valid-progressive-clues";
   type: "progressive-clues";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Who am I?";
   clues: ["First clue", "Second clue"];
   cluePenalty: 20;
@@ -122,6 +133,7 @@ type ValidProgressiveImage = {
   id: "valid-progressive-image";
   type: "progressive-image";
   category: "Test";
+  tags: TestQuestionTags;
   question: "What is shown?";
   surface: { src: "/image.png"; alt: "Hidden subject"; width: 800; height: 600 };
   solutionAlt: "The revealed subject";
@@ -142,6 +154,7 @@ type ValidTimeMaze = {
   id: "valid-time-maze";
   type: "time-maze";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Reach the exit";
   grid: { rows: 5; columns: 5 };
   cells: [
@@ -183,6 +196,7 @@ type ValidHeatMap = {
   id: "valid-heat-map";
   type: "heat-map";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Point to the target";
   surface: { src: "/target.svg"; alt: "Target diagram"; width: 600; height: 720 };
   target: { x: 0.5; y: 0.5 };
@@ -203,6 +217,7 @@ type ValidImageLabeling = {
   type: "image-labeling";
   task: "assign-all";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Label the image";
   surface: { src: "/diagram.svg"; alt: "Diagram"; width: 600; height: 720 };
   anchors: [{ id: "top"; point: { x: 0.5; y: 0.2 }; correctLabelId: "top-label" }];
@@ -217,6 +232,7 @@ type ValidSingleChoiceImageLabeling = {
   type: "image-labeling";
   task: "identify-one";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Identify the target";
   surface: { src: "/diagram.svg"; alt: "Diagram"; width: 600; height: 720 };
   target: { x: 0.5; y: 0.2 };
@@ -251,6 +267,7 @@ type ValidMemoryPairs = {
   id: "valid-memory-pairs";
   type: "memory-pairs";
   category: "Test";
+  tags: TestQuestionTags;
   question: "Find the pairs";
   grid: { rows: 2; columns: 4 };
   tiles: [
