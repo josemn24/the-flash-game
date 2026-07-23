@@ -257,6 +257,7 @@ app/page.tsx                   Server Component
 Requirements:
 
 - receive room/season context and `ChallengeSummary[]`, not complete challenges;
+- build summaries from resolved challenges, while room data stores scheduled challenge publications;
 - use `Link` to open challenges and formats;
 - keep metadata and content on the server;
 - use CSS for decorative animations whenever it is sufficient.
@@ -301,7 +302,7 @@ app/desafios/[challengeId]/page.tsx  Server Component
 The server route:
 
 - validates `challengeId`;
-- loads the challenge;
+- loads the resolved challenge by scheduled publication ID;
 - generates metadata;
 - returns a 404 when appropriate;
 - passes serializable configuration to `GameApp`.

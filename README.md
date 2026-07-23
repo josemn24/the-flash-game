@@ -4,7 +4,7 @@ The Flash es un juego de preguntas en solitario diseñado como un sprint contra 
 
 ## Qué incluye
 
-- Una sala demo local con temporada activa y dos desafíos de diez preguntas.
+- Una sala demo local con temporada activa, publicaciones de desafío y dos definiciones de diez preguntas.
 - Veinticinco formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, rompecabezas deslizante, reconstrucción del error, anagramas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
@@ -65,7 +65,7 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 ```text
 app/          Rutas, layout, metadata y estilos globales
 components/   Pantallas, UI universal e islas interactivas
-data/         Sala demo, temporada activa, desafíos y tabla mock de preguntas
+data/         Sala demo, temporada activa, publicaciones, definiciones y tabla mock de preguntas
 features/     Sesión de juego y catálogo de formatos
 lib/          Puntuación, validación y utilidades
 types/        Tipos del dominio
@@ -85,7 +85,7 @@ scripts/      Generadores deterministas de recursos versionados
 
 Esta versión está centrada exclusivamente en validar la experiencia individual dentro de una sala demo local con temporada activa y ejemplos jugables. No incluye usuarios, creación de salas, multijugador, rankings, panel de administración, backend, base de datos ni persistencia.
 
-Los dos desafíos conservan diez preguntas cada uno y resuelven su contenido desde una tabla mock `questionsById`. Los formatos que no aparecen en ellos, incluidos Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
+Los dos desafíos publicados conservan diez preguntas cada uno. La temporada apunta a publicaciones mock, cada publicación apunta a una definición reusable y cada definición resuelve su contenido desde `questionsById`. Los formatos que no aparecen en ellos, incluidos Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
 
 Mini-Wordle carga bajo demanda un vocabulario español de cuatro letras generado offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/mini-wordle-dictionary.md) para regeneración, métricas y licencia.
 

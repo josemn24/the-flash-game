@@ -1,4 +1,4 @@
-import type { Challenge } from "@/types/challenge";
+import type { ScheduledChallenge } from "@/types/challenge";
 
 export type SeasonStatus = "active" | "finished";
 
@@ -6,7 +6,7 @@ export type Season = {
   id: string;
   title: string;
   status: SeasonStatus;
-  challenges: Challenge[];
+  scheduledChallenges: ScheduledChallenge[];
 };
 
 export type Room = {

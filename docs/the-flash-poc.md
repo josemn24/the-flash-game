@@ -11,7 +11,7 @@ La pregunta de producto sigue siendo:
 ## Alcance actual
 
 - Un único jugador y estado de sesión en memoria.
-- Una sala demo local con temporada activa y dos desafíos de diez preguntas cada uno.
+- Una sala demo local con temporada activa y dos desafíos publicados de diez preguntas cada uno.
 - Veinticinco formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
@@ -59,7 +59,7 @@ Durante el desafío no se muestran aciertos, soluciones ni puntos parciales. La 
 - Añade ordenar, estimación, código lógico y clasificación.
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
-Ambos desafíos cuelgan de `demoRoom.activeSeason.challenges`, resuelven sus preguntas desde `questionsById` y se prerenderizan mediante `generateStaticParams`.
+Ambos desafíos se publican desde `demoRoom.activeSeason.scheduledChallenges`, apuntan a definiciones reutilizables y resuelven sus preguntas desde `questionsById`. La ruta `/desafios/[challengeId]` usa el ID de publicación, no el ID interno de definición, y se prerenderiza mediante `generateStaticParams`.
 Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados

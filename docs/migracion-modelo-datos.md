@@ -12,16 +12,16 @@ Actualmente los datos locales se organizan así:
 
 ```text
 data/challenges.ts
-└─ challenges = demoRoom.activeSeason.challenges
+└─ challenges = resolve(demoRoom.activeSeason.scheduledChallenges)
 
 data/demoRoom.ts
 └─ demoRoom: Room
    └─ activeSeason: Season
-      └─ challenges: Challenge[]
-         ├─ demoChallenge
-         │  └─ questions = getQuestionsByIds([...])
-         └─ connectionsChallenge
-            └─ questions = getQuestionsByIds([...])
+      └─ scheduledChallenges: ScheduledChallenge[]
+
+data/challengeDefinitions.ts
+└─ challengeDefinitions: Record<string, ChallengeDefinition>
+   └─ questionIds[]
 
 data/questions/index.ts
 └─ questionsById: Record<QuestionId, Question>
@@ -41,11 +41,30 @@ type Season = {
   id: string;
   title: string;
   status: "active" | "finished";
-  challenges: Challenge[];
+  scheduledChallenges: ScheduledChallenge[];
+};
+
+type ScheduledChallenge = {
+  id: string;
+  number: number;
+  seasonId: string;
+  challengeDefinitionId: string;
+  availableFrom: string;
+  availableUntil: string;
+};
+
+type ChallengeDefinition = {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  mode: GameMode;
+  questionIds: QuestionId[];
 };
 
 type Challenge = {
   id: string;
+  definitionId: string;
   number: number;
   title: string;
   subtitle: string;
@@ -55,7 +74,7 @@ type Challenge = {
 };
 ```
 
-Esto permite validar una experiencia individual: elegir un desafío de la temporada activa, jugar sus preguntas y revisar resultados. La sala y la temporada son mocks locales, sin jugadores, ranking ni persistencia. Las preguntas viven en una tabla mock central y los desafíos conservan `questions` resuelto por compatibilidad con la UI.
+Esto permite validar una experiencia individual: elegir un desafío publicado en la temporada activa, jugar sus preguntas y revisar resultados. La sala, la temporada y las publicaciones son mocks locales, sin jugadores, ranking ni persistencia. Las preguntas viven en una tabla mock central; las definiciones contienen `questionIds` y `data/challenges.ts` entrega `Challenge.questions` resuelto por compatibilidad con la UI.
 
 ## Modelo objetivo
 
@@ -165,7 +184,7 @@ Cambios aplicados:
 - Hacer que la portada lea desafíos desde una sala mock.
 - Mantener experiencia de un solo jugador.
 - Mantener ranking y jugadores fuera del modelo.
-- Derivar `data/challenges.ts` desde `demoRoom.activeSeason.challenges` como adaptador para rutas existentes.
+- Derivar `data/challenges.ts` desde la temporada activa como adaptador para rutas existentes.
 
 Resultado:
 
@@ -246,9 +265,11 @@ Challenge
 
 ## Fase 4: Separar definición y publicación
 
+Estado: aplicada.
+
 Objetivo: distinguir el contenido reusable del desafío publicado en una temporada.
 
-Modelo objetivo parcial:
+Modelo aplicado:
 
 ```ts
 type ChallengeDefinition = {
@@ -257,24 +278,27 @@ type ChallengeDefinition = {
   subtitle: string;
   description: string;
   mode: GameMode;
-  questions: Question[];
+  questionIds: QuestionId[];
 };
 
 type ScheduledChallenge = {
   id: string;
-  challengeDefinitionId: string;
+  number: number;
   seasonId: string;
+  challengeDefinitionId: string;
   availableFrom: string;
   availableUntil: string;
 };
 ```
 
-Cambios esperados:
+Cambios aplicados:
 
-- `ChallengeDefinition` contiene el contenido jugable.
+- `ChallengeDefinition` contiene el contenido jugable reusable.
 - `ScheduledChallenge` representa cuándo aparece ese desafío dentro de una temporada.
+- La ruta `/desafios/[challengeId]` usa `ScheduledChallenge.id`, conservando `demo-challenge` y `connections-challenge`.
+- `data/challenges.ts` resuelve publicaciones a `Challenge` para mantener estable la UI.
 - La misma definición podría reutilizarse en distintas temporadas o salas.
-- El calendario puede seguir siendo mock hasta que haya backend.
+- Las fechas existen como metadata mock, sin filtrar disponibilidad todavía.
 
 Resultado:
 
@@ -282,7 +306,8 @@ Resultado:
 Temporada
 └─ ScheduledChallenge[]
    └─ ChallengeDefinition
-      └─ questions[]
+      └─ questionIds[]
+         └─ questions resueltas
 ```
 
 Esta fase prepara el modelo de desafío diario o periódico.
@@ -351,23 +376,14 @@ Esta fase queda fuera de la migración mock inicial.
 
 ## Recomendación inmediata
 
-Las fases 1, 2 y 3 ya están aplicadas. La siguiente migración razonable sería:
-
-```text
-Challenge -> ChallengeDefinition
-demoRoom.activeSeason.challenges -> scheduled challenges mock
-mantener questions igual
-```
+Las fases 1, 2, 3, la tabla mock de preguntas y la fase 4 ya están aplicadas. La siguiente migración razonable sería preparar intentos y rankings mock solo cuando exista una noción clara de jugador.
 
 No introducir todavía:
 
-- `ScheduledChallenge`;
-- jugadores;
+- jugadores reales;
 - leaderboard;
-- disponibilidad por fecha;
+- filtrado por disponibilidad de fecha;
 - backend.
-
-La siguiente versión debería separar contenido reusable y publicación de desafío sin introducir todavía backend ni ranking.
 
 ## Compatibilidad y nombres
 

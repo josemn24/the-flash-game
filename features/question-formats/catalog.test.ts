@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { challenges } from "@/data/challenges";
+import { challengeDefinitions } from "@/data/challengeDefinitions";
+import { challenges, getChallengeById } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
 import {
   getQuestionsByIds,
@@ -232,10 +233,36 @@ describe("question format catalog", () => {
   it("keeps both ten-question challenges in flash mode and models image choice as a variant", () => {
     expect(demoRoom.id).toBe("demo-room");
     expect(demoRoom.activeSeason.status).toBe("active");
-    expect(challenges).toBe(demoRoom.activeSeason.challenges);
+    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(2);
+    expect(demoRoom.activeSeason.scheduledChallenges.map((challenge) => challenge.id)).toEqual([
+      "demo-challenge",
+      "connections-challenge",
+    ]);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges.every(
+        (challenge) => challenge.seasonId === demoRoom.activeSeason.id,
+      ),
+    ).toBe(true);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges.every(
+        (challenge) => challenge.challengeDefinitionId in challengeDefinitions,
+      ),
+    ).toBe(true);
     expect(challenges).toHaveLength(2);
     expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
     expect(challenges.every((challenge) => challenge.questions.length === 10)).toBe(true);
+    expect(challenges.map((challenge) => challenge.id)).toEqual([
+      "demo-challenge",
+      "connections-challenge",
+    ]);
+    expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
+      "demo-challenge-definition",
+      "connections-challenge-definition",
+    ]);
+    expect(getChallengeById("demo-challenge")?.definitionId).toBe("demo-challenge-definition");
+    expect(getChallengeById("connections-challenge")?.definitionId).toBe(
+      "connections-challenge-definition",
+    );
     expect(
       challenges
         .flatMap((challenge) => challenge.questions)
@@ -263,6 +290,19 @@ describe("question format catalog", () => {
       Object.values(questionGroups)
         .flat()
         .every((id) => id in questionsById),
+    ).toBe(true);
+  });
+
+  it("keeps challenge definitions connected to valid questions", () => {
+    const definitions = Object.values(challengeDefinitions);
+    expect(definitions).toHaveLength(2);
+    expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
+    expect(definitions.every((definition) => definition.mode === "flash")).toBe(true);
+    expect(definitions.every((definition) => definition.questionIds.length === 10)).toBe(true);
+    expect(
+      definitions.every((definition) =>
+        definition.questionIds.every((questionId) => questionId in questionsById),
+      ),
     ).toBe(true);
   });
 });

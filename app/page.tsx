@@ -1,11 +1,12 @@
 import { SpeedBackground } from "@/components/SpeedBackground";
 import { StartScreen } from "@/components/StartScreen";
+import { challenges } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
 import type { ChallengeSummary } from "@/types/game";
 
 export default function Home() {
   const activeSeason = demoRoom.activeSeason;
-  const challengeSummaries: ChallengeSummary[] = activeSeason.challenges.map((challenge) => ({
+  const challengeSummaries: ChallengeSummary[] = challenges.map((challenge) => ({
     id: challenge.id,
     number: challenge.number,
     title: challenge.title,

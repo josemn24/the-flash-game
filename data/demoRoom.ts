@@ -1,5 +1,4 @@
-import { connectionsChallenge } from "@/data/connectionsChallenge";
-import { demoChallenge } from "@/data/demoChallenge";
+import { demoSeasonScheduledChallenges } from "@/data/scheduledChallenges";
 import type { Room } from "@/types/game";
 
 export const demoRoom = {
@@ -10,6 +9,6 @@ export const demoRoom = {
     id: "demo-season",
     title: "Temporada Demo",
     status: "active",
-    challenges: [demoChallenge, connectionsChallenge],
+    scheduledChallenges: demoSeasonScheduledChallenges,
   },
 } satisfies Room;

@@ -79,5 +79,12 @@ export type {
 } from "@/types/question";
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";
 export type { GamePhase } from "@/types/session";
-export type { Challenge, ChallengeSummary, GameMode } from "@/types/challenge";
+export type {
+  Challenge,
+  ChallengeDefinition,
+  ChallengeDefinitionId,
+  ChallengeSummary,
+  GameMode,
+  ScheduledChallenge,
+} from "@/types/challenge";
 export type { Room, Season, SeasonStatus } from "@/types/room";
