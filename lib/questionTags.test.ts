@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { connectionsStage } from "@/data/connectionsStage";
-import { demoStage } from "@/data/demoStage";
+import { connectionsChallenge } from "@/data/connectionsChallenge";
+import { demoChallenge } from "@/data/demoChallenge";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import {
   getQuestionDomainIds,
@@ -61,13 +61,13 @@ describe("question tags", () => {
     ).toEqual(["economics", "mathematics"]);
   });
 
-  it("keeps playable stages and format examples valid", () => {
-    const stageQuestions = [...demoStage.questions, ...connectionsStage.questions];
+  it("keeps playable challenges and format examples valid", () => {
+    const challengeQuestions = [...demoChallenge.questions, ...connectionsChallenge.questions];
     const catalogQuestions = Object.values(QUESTION_FORMAT_CATALOG).flatMap((format) =>
       format.examples.map((example) => example.question),
     );
 
-    for (const question of [...stageQuestions, ...catalogQuestions]) {
+    for (const question of [...challengeQuestions, ...catalogQuestions]) {
       expect(validateQuestionTags(question.tags), question.id).toEqual({ valid: true, errors: [] });
     }
   });

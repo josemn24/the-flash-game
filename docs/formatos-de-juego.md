@@ -2,9 +2,9 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos etapas locales, veinticinco formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, veinticinco formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
-Este documento distingue las mecánicas ya disponibles de las candidatas para futuras etapas, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
+Este documento distingue las mecánicas ya disponibles de las candidatas para futuros desafíos, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
 ## Estado actual
 
@@ -36,7 +36,7 @@ La aplicación soporta de forma nativa:
 - imagen progresivamente revelada con desenfoque automático y un único intento.
 - laberinto contrarreloj con movimiento ortogonal mediante cruceta o teclado.
 
-Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que las etapas. La segunda etapa, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
+Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que los desafíos. El segundo desafío, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
 En el catálogo siguiente se usan estos estados:
 
@@ -71,7 +71,7 @@ Se muestran varios elementos y el jugador identifica cuál rompe una relación: 
 - **Ventaja:** coste de producción e implementación bajo; contenido muy reutilizable.
 - **Interacción actual:** entre tres y seis tarjetas de texto o imagen; tocar una tarjeta envía inmediatamente la respuesta.
 - **Puntuación actual:** acierto exacto ajustado por velocidad; un fallo resta el 20 % y agotar el tiempo no puntúa.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 
 ### 3. Emparejar conceptos — Implementada
 
@@ -81,7 +81,7 @@ El jugador une elementos relacionados, como países y capitales, autores y obras
 - **Encaje:** convierte conocimiento en una acción activa y conserva reglas accesibles para ratón, teclado y pantallas táctiles.
 - **Contenido compatible:** texto o imágenes; las tarjetas visuales muestran solo la imagen y conservan una etiqueta accesible.
 - **Puntuación actual:** crédito por cada pareja correcta ajustado por el tiempo total; cada intento incorrecto resta un 10 % de los puntos base, con un mínimo de cero, y el progreso se conserva al agotarse el límite.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 
 ### 4. Secuencias y patrones — Disponible como contenido
 
@@ -142,7 +142,7 @@ Una imagen comienza borrosa y se revela automáticamente con el tiempo. El jugad
 - **Interacción actual:** la carga termina antes de iniciar el cronómetro; después, el desenfoque cae de 32 px a cero y se puede enviar una única respuesta de texto en cualquier momento.
 - **Puntuación actual:** acierto binario ajustado por velocidad; una respuesta incorrecta o el timeout conceden cero puntos.
 - **Accesibilidad:** se anuncian carga e hitos de revelado, el modo de movimiento reducido usa cuatro pasos y la revisión incorpora una descripción completa. Por su naturaleza, la prueba no ofrece una experiencia equivalente sin visión sin revelar la solución.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 
 ### 11. Anagramas y palabras desordenadas — Implementada
 
@@ -166,7 +166,7 @@ El jugador deduce un código a partir de pistas. Por ejemplo, las combinaciones 
 - **Encaje:** prueba estrella con tensión, estrategia y recorrido más largo.
 - **Interacción actual:** campos por cifra, pistas siempre visibles e intentos repetidos hasta acertar o agotar el tiempo.
 - **Puntuación actual:** velocidad con una reducción del 10 % de los puntos base por intento fallido.
-- **Uso actual:** una de las preguntas de cierre de la etapa «Conexiones rápidas» y ejemplo jugable en su ficha.
+- **Uso actual:** una de las preguntas de cierre del desafío «Conexiones rápidas» y ejemplo jugable en su ficha.
 
 ### 14. Mini-Wordle — Implementada
 
@@ -209,7 +209,7 @@ El jugador guía un elemento desde la entrada a la salida mediante botones direc
 - **Interacción actual:** cuadrícula ortogonal de 5 × 5 a 9 × 9, cruceta táctil, flechas, retroceso permitido y resolución automática al alcanzar la salida.
 - **Puntuación actual:** resolución binaria ajustada por velocidad; los movimientos adicionales no penalizan y el timeout conserva el recorrido con cero puntos.
 - **Accesibilidad:** la v1 evita el arrastre libre, deshabilita direcciones bloqueadas, mantiene el foco y anuncia posición, muros y movimientos.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 
 ### 19. Mini-sudoku — Implementada
 
@@ -297,7 +297,7 @@ Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivament
 - **Interacción actual:** la primera pista de texto aparece al comenzar; el jugador puede revelar las siguientes o enviar una única respuesta abierta en cualquier momento. Un fallo termina la ronda.
 - **Encaje:** combina conocimiento, autoconfianza y gestión del riesgo con una regla fácil de comprender.
 - **Puntuación actual:** cada pista adicional resta una cantidad fija del máximo visible y la velocidad ajusta después los puntos restantes; un fallo o el timeout no puntúan.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 - **Riesgo:** las primeras pistas deben ser difíciles pero útiles, y su orden debe calibrarse para que cada revelación reduzca de manera apreciable el espacio de respuestas posibles.
 
 ### 27. Mapa de calor — Implementada
@@ -307,7 +307,7 @@ Se muestra un mapa, gráfico o escena y el jugador debe señalar una ubicación.
 - **Interacción actual:** colocar y recolocar un único marcador sobre una superficie de proporción fija antes de confirmarlo. Con teclado se inicia en el centro y se mueve con las flechas.
 - **Encaje:** es visual e intuitivo y permite combinar precisión y velocidad en una misma puntuación.
 - **Puntuación actual:** la zona central concede precisión completa, alrededor hay crédito lineal decreciente y la velocidad ajusta el resultado. Las coordenadas y distancias son independientes del tamaño mostrado.
-- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece zoom, polígonos ni múltiples objetivos.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen. La primera versión no ofrece zoom, polígonos ni múltiples objetivos.
 - **Riesgo:** la precisión no debe depender del tamaño de la pantalla ni de la destreza motriz; hacen falta coordenadas normalizadas, objetivos razonablemente amplios y controles equivalentes por teclado.
 
 ### 28. Etiquetar imagen — Implementada
@@ -317,7 +317,7 @@ Se muestra una imagen o diagrama. El jugador puede asociar varias etiquetas a su
 - **Interacción actual:** en `assign-all`, seleccionar un anclaje y después una etiqueta textual, editar las asociaciones y confirmar el conjunto. En `identify-one`, responder a una única señal mediante elección inmediata o texto enviado por botón o teclado.
 - **Encaje:** separa la identificación discreta de partes de la localización continua propia de Mapa de calor.
 - **Puntuación actual:** el etiquetado múltiple concede crédito por asociación; la identificación única es binaria y premia velocidad. Una elección incorrecta resta el 20 %, un texto incorrecto no penaliza y el timeout puntúa cero.
-- **Uso actual:** tipo nativo con dos ejemplos jugables —múltiple y único por elección— en la biblioteca; el contrato y la interfaz también admiten texto libre. Las dos etapas existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
+- **Uso actual:** tipo nativo con dos ejemplos jugables —múltiple y único por elección— en la biblioteca; el contrato y la interfaz también admiten texto libre. Los dos desafíos existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
 - **Riesgo:** los anclajes y textos deben mantenerse legibles y sin solapamientos en móvil; la numeración, el foco y el resumen textual deben permitir completar el ejercicio sin depender solo de la posición o el color.
 
 ### 29. La respuesta prohibida — Futura

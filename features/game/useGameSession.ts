@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { calculateTotalScore, evaluateAnswer, isAnswerCorrect } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, GamePhase, Stage } from "@/types/game";
+import type { AnswerResult, AnswerValue, Challenge, GamePhase } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
 
@@ -67,9 +67,9 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
   }
 }
 
-export function useGameSession(stage: Stage) {
+export function useGameSession(challenge: Challenge) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const question = stage.questions[state.questionIndex];
+  const question = challenge.questions[state.questionIndex];
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
@@ -133,7 +133,7 @@ export function useGameSession(stage: Stage) {
       });
 
       dispatch({ type: "answer", result, timedOut });
-      const lastQuestion = state.questionIndex === stage.questions.length - 1;
+      const lastQuestion = state.questionIndex === challenge.questions.length - 1;
       advanceTimeout.current = setTimeout(() => {
         if (lastQuestion) {
           dispatch({ type: "finish" });
@@ -148,7 +148,7 @@ export function useGameSession(stage: Stage) {
         dispatch({ type: "advance" });
       }, TRANSITION_DURATION);
     },
-    [question, stage.questions.length, state.questionIndex],
+    [question, challenge.questions.length, state.questionIndex],
   );
 
   const handleCodeAttempt = useCallback(

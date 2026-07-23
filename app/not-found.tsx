@@ -13,7 +13,7 @@ export default function NotFound() {
           Ruta fuera de pista
         </h1>
         <p className="mx-auto mt-4 max-w-md leading-7 text-white/45">
-          La etapa o el formato que buscas no existe en esta versión.
+          El desafío o el formato que buscas no existe en esta versión.
         </p>
         <Link
           className="mt-7 inline-flex rounded-full bg-[var(--electric)] px-6 py-3 text-sm font-black text-black"

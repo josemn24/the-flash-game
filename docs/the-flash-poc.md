@@ -2,16 +2,16 @@
 
 ## Propósito
 
-The Flash es una prueba de concepto frontend para validar una experiencia de preguntas rápida, visual y mobile-first. El jugador elige una etapa, responde contra un temporizador, consulta su resultado y puede revisar o repetir la partida.
+The Flash es una prueba de concepto frontend para validar una experiencia de preguntas rápida, visual y mobile-first. El jugador elige un desafío, responde contra un temporizador, consulta su resultado y puede revisar o repetir la partida.
 
 La pregunta de producto sigue siendo:
 
-> ¿Jugar una etapa de The Flash resulta divertido y fluido como experiencia de aplicación?
+> ¿Jugar un desafío de The Flash resulta divertido y fluido como experiencia de aplicación?
 
 ## Alcance actual
 
 - Un único jugador y estado de sesión en memoria.
-- Dos etapas locales de diez preguntas cada una.
+- Dos desafíos locales de diez preguntas cada uno.
 - Veinticinco formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
 - Temporizador independiente por pregunta.
@@ -24,14 +24,14 @@ No existen backend, base de datos, autenticación, usuarios, salas, multijugador
 
 ## Rutas y flujo
 
-| Ruta                | Responsabilidad                                                 |
-| ------------------- | --------------------------------------------------------------- |
-| `/`                 | Presentación, selector de etapas y acceso a la biblioteca.      |
-| `/etapas/[stageId]` | Validación de la etapa y sesión jugable completa.               |
-| `/formatos`         | Catálogo de los veinticinco formatos disponibles.               |
-| `/formatos/[slug]`  | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
+| Ruta                      | Responsabilidad                                                 |
+| ------------------------- | --------------------------------------------------------------- |
+| `/`                       | Presentación, selector de desafíos y acceso a la biblioteca.    |
+| `/desafios/[challengeId]` | Validación del desafío y sesión jugable completa.               |
+| `/formatos`               | Catálogo de los veinticinco formatos disponibles.               |
+| `/formatos/[slug]`        | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
 
-Una etapa recorre estos estados:
+Un desafío recorre estos estados:
 
 ```text
 intro → playing → transition → playing → results ⇄ review
@@ -39,26 +39,28 @@ intro → playing → transition → playing → results ⇄ review
   └──────────────────────── replay ────────────────┘
 ```
 
-Durante la etapa no se muestran aciertos, soluciones ni puntos parciales. La respuesta queda bloqueada al enviarse y el timeout avanza automáticamente. El resultado y la explicación solo aparecen al terminar o dentro de un ejemplo jugable de la biblioteca.
+Durante el desafío no se muestran aciertos, soluciones ni puntos parciales. La respuesta queda bloqueada al enviarse y el timeout avanza automáticamente. El resultado y la explicación solo aparecen al terminar o dentro de un ejemplo jugable de la biblioteca.
 
-## Etapas disponibles
+## Desafíos disponibles
 
-### Etapa Demo
+### Desafío Demo
 
-- Identificador: `demo-stage`.
+- Identificador: `demo-challenge`.
+- Modo: `flash`.
 - Diez preguntas de cultura general.
 - Usa elección múltiple, verdadero o falso y respuesta corta.
 - Incluye ilustraciones de banderas y astronomía.
 
 ### Conexiones rápidas
 
-- Identificador: `connections-stage`.
+- Identificador: `connections-challenge`.
+- Modo: `flash`.
 - Diez preguntas de patrones, cultura, imágenes y lógica.
 - Añade ordenar, estimación, código lógico y clasificación.
 - Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
 
-Ambas etapas se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
-Cada una conserva diez preguntas. Los formatos no incluidos en ellas, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
+Ambos desafíos se definen como datos TypeScript locales y se prerenderizan mediante `generateStaticParams`.
+Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados
 
@@ -96,7 +98,7 @@ En todos los formatos la velocidad ajusta la puntuación. Para un acierto binari
 points = V × (1 - 0.5 × (t / T))
 ```
 
-Un acierto conserva entre el 50 % y el 100 % de los puntos. El total final de una etapa nunca baja de cero.
+Un acierto conserva entre el 50 % y el 100 % de los puntos. El total final de un desafío nunca baja de cero.
 
 En «Adivinanzas por pistas», la primera pista es gratuita y cada revelación adicional descuenta una cantidad fija antes de aplicar el multiplicador de velocidad. Un fallo o el timeout puntúan cero.
 
@@ -134,13 +136,13 @@ ready → playing → feedback
           └── retry ─┘
 ```
 
-El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionReviewContent`, por lo que aplica las mismas interacciones y reglas que una etapa. La solución permanece oculta hasta responder o agotar el tiempo.
+El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionReviewContent`, por lo que aplica las mismas interacciones y reglas que un desafío. La solución permanece oculta hasta responder o agotar el tiempo.
 
 ## Arquitectura y datos
 
 - Las páginas, metadata, parámetros, navegación y contenido editorial se resuelven en Server Components.
-- La portada recibe `StageSummary[]`; nunca necesita las preguntas completas.
-- La ruta de etapa valida el identificador y envía una única `Stage` a `GameApp.client.tsx`.
+- La portada recibe `ChallengeSummary[]`; nunca necesita las preguntas completas.
+- La ruta de desafío valida el identificador y envía un único `Challenge` a `GameApp.client.tsx`.
 - La sesión jugable mantiene reducer, tiempos, respuestas, resultados y transiciones en el cliente.
 - El número de pistas reveladas se conserva en la sesión o en el ejemplo jugable y se envía al evaluador junto con la respuesta.
 - El mapa de calor solo envía una coordenada confirmada; la revisión reutiliza la superficie para superponer selección, objetivo, tolerancia y distancia.
@@ -156,7 +158,7 @@ Los tipos principales están separados por dominio:
 types/question.ts   preguntas, media y respuestas
 types/result.ts     resultados y detalles específicos
 types/session.ts    fases de la partida
-types/stage.ts      Stage y StageSummary
+types/challenge.ts  Challenge, ChallengeSummary y GameMode
 types/game.ts       exportaciones públicas del dominio
 ```
 
@@ -188,7 +190,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, las dos etapas y las veinticinco fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, los dos desafíos y las veinticinco fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
 
 ## Evolución pendiente
 

@@ -1,12 +1,13 @@
-import type { Stage } from "@/types/game";
+import type { Challenge } from "@/types/game";
 
-export const connectionsStage = {
-  id: "connections-stage",
+export const connectionsChallenge = {
+  id: "connections-challenge",
   number: 2,
   title: "Conexiones rápidas",
   subtitle: "Patrones, imágenes y cultura bajo presión",
   description:
     "Diez retos para enlazar ideas, detectar patrones y reconocer pistas antes de que se escape el tiempo.",
+  mode: "flash",
   questions: [
     {
       id: "letter-pattern",
@@ -216,4 +217,4 @@ export const connectionsStage = {
         "Delfines, murciélagos y ballenas son mamíferos; águilas y pingüinos son aves; cocodrilos y tortugas son reptiles.",
     },
   ],
-} satisfies Stage;
+} satisfies Challenge;

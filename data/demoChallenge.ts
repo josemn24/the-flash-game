@@ -1,11 +1,12 @@
-import type { Stage } from "@/types/game";
+import type { Challenge } from "@/types/game";
 
-export const demoStage = {
-  id: "demo-stage",
+export const demoChallenge = {
+  id: "demo-challenge",
   number: 1,
-  title: "Etapa Demo",
+  title: "Desafío Demo",
   subtitle: "Sprint de prueba",
   description: "Diez retos rápidos para medir reflejos, memoria y sangre fría.",
+  mode: "flash",
   questions: [
     {
       id: "capital-canada",
@@ -193,4 +194,4 @@ export const demoStage = {
       explanation: "Cada número es el doble del anterior, así que 16 x 2 = 32.",
     },
   ],
-} satisfies Stage;
+} satisfies Challenge;

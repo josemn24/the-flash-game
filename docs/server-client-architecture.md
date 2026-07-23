@@ -66,8 +66,8 @@ Client Components will be identified with `"use client"` and used when a compone
 // components/GameApp.client.tsx
 "use client";
 
-export function GameApp({ stage }: { stage: Stage }) {
-  const session = useGameSession(stage);
+export function GameApp({ challenge }: { challenge: Challenge }) {
+  const session = useGameSession(challenge);
   // Complete interactive game flow.
 }
 ```
@@ -155,23 +155,24 @@ Do not pass:
 
 ### Home page view model
 
-The home page does not need the questions from every stage. Although both the page and `StartScreen` are Server Components, the page maps each stage to a summary to keep the home view decoupled from playable question data:
+The home page does not need the questions from every challenge. Although both the page and `StartScreen` are Server Components, the page maps each challenge to a summary to keep the home view decoupled from playable question data:
 
 ```ts
-export type StageSummary = {
+export type ChallengeSummary = {
   id: string;
   number: number;
   title: string;
   subtitle: string;
+  mode: GameMode;
   questionCount: number;
 };
 ```
 
-The complete stage only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends each example question separately to its own playable-example island.
+The complete challenge only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends each example question separately to its own playable-example island.
 
 ```text
-HomePage (server) ──StageSummary[]──▶ StartScreen (server)
-StagePage (server) ──Stage──────────▶ GameApp (client)
+HomePage (server) ──ChallengeSummary[]──▶ StartScreen (server)
+ChallengePage (server) ──Challenge──────▶ GameApp (client)
 FormatDetailPage (server) ──Question──▶ PlayableFormatExample (client)
 ```
 
@@ -250,13 +251,13 @@ The home page primarily contains content and navigation.
 app/page.tsx                   Server Component
 └── StartScreen                Server Component
     ├── Hero                   Server Component with CSS animation
-    └── StageList              Server Component
+    └── ChallengeList          Server Component
 ```
 
 Requirements:
 
-- receive `StageSummary[]`, not complete stages;
-- use `Link` to open stages and formats;
+- receive `ChallengeSummary[]`, not complete challenges;
+- use `Link` to open challenges and formats;
 - keep metadata and content on the server;
 - use CSS for decorative animations whenever it is sufficient.
 
@@ -286,7 +287,7 @@ A filter based on URL parameters should still preferably be resolved on the serv
 Gameplay must prioritize minimal latency, continuity, and immediate responses.
 
 ```text
-app/etapas/[stageId]/page.tsx  Server Component
+app/desafios/[challengeId]/page.tsx  Server Component
 └── GameApp.client             Client Component
     ├── useGameSession
     ├── QuestionScreen
@@ -299,8 +300,8 @@ app/etapas/[stageId]/page.tsx  Server Component
 
 The server route:
 
-- validates `stageId`;
-- loads the stage;
+- validates `challengeId`;
+- loads the challenge;
 - generates metadata;
 - returns a 404 when appropriate;
 - passes serializable configuration to `GameApp`.
@@ -323,7 +324,7 @@ When the nature of a component is not obvious, use explicit suffixes:
 GameApp.client.tsx
 MotionButton.client.tsx
 AnimatedHero.client.tsx
-StagePage.tsx
+ChallengePage.tsx
 FormatDetail.tsx
 ```
 
@@ -348,10 +349,10 @@ Solution: keep the page on the server and use CSS or extract only the animated e
 ### Sending complete objects to a card
 
 ```tsx
-<StartScreen stages={stagesWithAllQuestions} />
+<StartScreen challenges={challengesWithAllQuestions} />
 ```
 
-Solution: map the data to `StageSummary[]` on the server.
+Solution: map the data to `ChallengeSummary[]` on the server.
 
 ### Creating a client island for every game element
 

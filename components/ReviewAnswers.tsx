@@ -7,7 +7,7 @@ import styles from "@/components/ReviewAnswers.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
-import type { AnswerResult, Stage } from "@/types/game";
+import type { AnswerResult, Challenge } from "@/types/game";
 
 function statusLabel(result: AnswerResult) {
   if (result.status === "correct") return "Correcta";
@@ -17,12 +17,12 @@ function statusLabel(result: AnswerResult) {
 }
 
 export function ReviewAnswers({
-  stage,
+  challenge,
   results,
   onBack,
   onReplay,
 }: {
-  stage: Stage;
+  challenge: Challenge;
   results: AnswerResult[];
   onBack: () => void;
   onReplay: () => void;
@@ -60,7 +60,7 @@ export function ReviewAnswers({
       </div>
 
       <div className="space-y-3">
-        {stage.questions.map((question, index) => {
+        {challenge.questions.map((question, index) => {
           const result = results.find((item) => item.questionId === question.id);
           if (!result) return null;
           const correct = result.status === "correct";

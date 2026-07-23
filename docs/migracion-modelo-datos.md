@@ -11,33 +11,29 @@ La PoC nació como una colección local de preguntas agrupadas por etapas. El pr
 Actualmente los datos locales se organizan así:
 
 ```text
-data/stages.ts
-└─ stages: Stage[]
-   ├─ demoStage
+data/challenges.ts
+└─ challenges: Challenge[]
+   ├─ demoChallenge
    │  └─ questions[]
-   └─ connectionsStage
+   └─ connectionsChallenge
       └─ questions[]
 ```
 
 El tipo principal es:
 
 ```ts
-type Stage = {
+type Challenge = {
   id: string;
   number: number;
   title: string;
   subtitle: string;
   description: string;
+  mode: GameMode;
   questions: Question[];
 };
 ```
 
-Esto fue suficiente para validar una experiencia individual: elegir una etapa, jugar sus preguntas y revisar resultados. Sin embargo, `Stage` mezcla dos ideas que ahora conviene separar:
-
-- una colección jugable de pruebas;
-- una unidad de progreso dentro de una estructura mayor.
-
-Según el glosario, el concepto de producto más cercano ya no es `Etapa`, sino `Desafío`.
+Esto permite validar una experiencia individual: elegir un desafío, jugar sus preguntas y revisar resultados. La primera fase de migración ya separó el concepto jugable principal de la antigua idea de etapa. Según el glosario, el concepto de producto actual es `Desafío`.
 
 ## Modelo objetivo
 
@@ -75,6 +71,8 @@ No conviene introducir temporadas, rankings o calendario real antes de tener un 
 
 ## Fase 1: Stage pasa a Challenge
 
+Estado: aplicada.
+
 Objetivo: alinear el lenguaje de datos con el glosario sin cambiar todavía el comportamiento.
 
 Modelo intermedio:
@@ -91,14 +89,15 @@ type Challenge = {
 };
 ```
 
-Cambios esperados:
+Cambios aplicados:
 
 - Crear tipos `Challenge` y `ChallengeSummary`.
 - Añadir `mode` al antiguo contenido de etapa.
-- Migrar gradualmente `demoStage` a `demoChallenge`.
-- Migrar gradualmente `connectionsStage` a `connectionsChallenge`.
+- Migrar `demoStage` a `demoChallenge`.
+- Migrar `connectionsStage` a `connectionsChallenge`.
 - Mantener `questions` como nombre técnico por compatibilidad con el modelo actual.
-- Cambiar textos de UI de "etapa" a "desafío" cuando el modelo ya lo soporte.
+- Cambiar textos de UI de "etapa" a "desafío".
+- Cambiar la ruta jugable de `/etapas/[stageId]` a `/desafios/[challengeId]`.
 
 Resultado:
 
@@ -299,12 +298,10 @@ Esta fase queda fuera de la migración mock inicial.
 
 ## Recomendación inmediata
 
-La siguiente migración razonable sería:
+La Fase 1 ya está aplicada. La siguiente migración razonable sería:
 
 ```text
-Stage -> Challenge
-stages -> demoRoom.challenges
-añadir mode
+challenges -> demoRoom.challenges
 mantener questions igual
 ```
 
@@ -317,35 +314,24 @@ No introducir todavía:
 - disponibilidad por fecha;
 - backend.
 
-La primera versión debería quedar como una sala demo local con desafíos jugables por un solo jugador. Eso alinea el lenguaje con el modelo objetivo sin aumentar innecesariamente la complejidad de la PoC.
+La siguiente versión debería quedar como una sala demo local con desafíos jugables por un solo jugador. Eso incorpora la estructura social mínima sin aumentar innecesariamente la complejidad de la PoC.
 
 ## Compatibilidad y nombres
 
-Durante la transición puede ser útil mantener adaptadores temporales:
+El lenguaje nuevo ya usa:
 
-```ts
-const stages = demoRoom.challenges;
-```
+- `Challenge`;
+- `ChallengeSummary`;
+- `challenges`;
+- `challengeId`;
+- "desafío" en UI;
+- `/desafios/[challengeId]`.
 
-O rutas heredadas:
-
-```text
-/etapas/[stageId] -> carga un Challenge
-```
-
-Pero el lenguaje nuevo debería tender a:
-
-- `Stage` -> `Challenge`;
-- `StageSummary` -> `ChallengeSummary`;
-- `stages` -> `challenges`;
-- `stageId` -> `challengeId`;
-- "etapa" en UI -> "desafío".
-
-El cambio de rutas puede esperar. Primero conviene estabilizar tipos y datos.
+No se mantiene ruta heredada ni adaptador temporal de `Stage`.
 
 ## Criterios de aceptación por fase
 
-- **Fase 1:** los datos se llaman desafío y cada desafío declara un modo.
+- **Fase 1:** aplicada; los datos se llaman desafío y cada desafío declara un modo.
 - **Fase 2:** existe una sala mock que contiene los desafíos actuales.
 - **Fase 3:** existe una temporada mock solo si la UI necesita mostrarla.
 - **Fase 4:** definición y publicación de desafío están separadas.

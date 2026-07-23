@@ -19,7 +19,7 @@ export function SiteHeader() {
             className="text-white/45 transition-colors hover:text-white focus-visible:text-white"
             href="/"
           >
-            Etapas
+            Desafíos
           </Link>
           <Link
             className="text-[var(--cyan)] transition-colors hover:text-white focus-visible:text-white"

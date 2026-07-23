@@ -15,7 +15,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import styles from "@/components/ResultScreen.module.css";
-import type { AnswerResult, Stage } from "@/types/game";
+import type { AnswerResult, Challenge } from "@/types/game";
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -24,13 +24,13 @@ function formatTime(seconds: number) {
 }
 
 export function ResultScreen({
-  stage,
+  challenge,
   results,
   score,
   onReview,
   onReplay,
 }: {
-  stage: Stage;
+  challenge: Challenge;
   results: AnswerResult[];
   score: number;
   onReview: () => void;
@@ -50,15 +50,15 @@ export function ResultScreen({
           : 0),
     0,
   );
-  const accuracy = Math.round((accuracyContribution / stage.questions.length) * 100);
+  const accuracy = Math.round((accuracyContribution / challenge.questions.length) * 100);
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
-  const maxScore = stage.questions.reduce((total, question) => total + question.points, 0);
+  const maxScore = challenge.questions.reduce((total, question) => total + question.points, 0);
   const message =
     accuracy >= 80
       ? "Sprint brutal."
       : accuracy >= 50
         ? "Buen ritmo, pero puedes apretar más."
-        : "Etapa dura. Vuelve a intentarlo.";
+        : "Desafío duro. Vuelve a intentarlo.";
 
   return (
     <motion.section
@@ -70,7 +70,7 @@ export function ResultScreen({
       <AppHeader
         className="mb-7"
         left={
-          <Link href="/" aria-label="Volver a las etapas">
+          <Link href="/" aria-label="Volver a los desafíos">
             <Logo />
           </Link>
         }
@@ -84,7 +84,7 @@ export function ResultScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className={`${styles.eyebrow} text-[var(--electric)]`}>Etapa completada</p>
+          <p className={`${styles.eyebrow} text-[var(--electric)]`}>Desafío completado</p>
           <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl">
             {message}
           </h1>
@@ -146,7 +146,7 @@ export function ResultScreen({
               <p className="mt-2 text-sm text-white/45">
                 {partial > 0
                   ? `${correct} correctas · ${partial} aproximada${partial === 1 ? "" : "s"}`
-                  : `Has acertado ${correct} de ${stage.questions.length}`}
+                  : `Has acertado ${correct} de ${challenge.questions.length}`}
               </p>
             </div>
             <div

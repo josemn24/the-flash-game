@@ -176,7 +176,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
           </span>
         </div>
         <h3>{question.question}</h3>
-        <p>Responde con las mismas reglas, tiempo y puntuación que en una etapa real.</p>
+        <p>Responde con las mismas reglas, tiempo y puntuación que en un desafío real.</p>
         <MotionButton
           className={styles.launchButton}
           onClick={openExample}

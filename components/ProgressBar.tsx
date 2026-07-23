@@ -7,7 +7,7 @@ export function ProgressBar({ current, total }: { current: number; total: number
     <div
       className="h-1.5 overflow-hidden rounded-full bg-white/10"
       role="progressbar"
-      aria-label="Progreso de la etapa"
+      aria-label="Progreso del desafío"
       aria-valuemin={0}
       aria-valuemax={total}
       aria-valuenow={current}

@@ -4,9 +4,9 @@ import { Logo } from "@/components/Logo";
 import styles from "@/components/StartScreen.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
-import type { StageSummary } from "@/types/game";
+import type { ChallengeSummary } from "@/types/game";
 
-export function StartScreen({ stages }: { stages: StageSummary[] }) {
+export function StartScreen({ challenges }: { challenges: ChallengeSummary[] }) {
   return (
     <section
       className={`${styles.homeEntrance} relative mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10`}
@@ -43,22 +43,26 @@ export function StartScreen({ stages }: { stages: StageSummary[] }) {
         </div>
 
         <div className={`${styles.stageSelector} ${styles.stageSelectorEntrance} mt-9`}>
-          {stages.map((stage) => (
-            <Link key={stage.id} className={styles.stageSelectCard} href={`/etapas/${stage.id}`}>
+          {challenges.map((challenge) => (
+            <Link
+              key={challenge.id}
+              className={styles.stageSelectCard}
+              href={`/desafios/${challenge.id}`}
+            >
               <span className={styles.stageSelectNumber}>
-                {String(stage.number).padStart(2, "0")}
+                {String(challenge.number).padStart(2, "0")}
               </span>
               <span className={styles.stageSelectContent}>
                 <span className="flex w-full items-center justify-between gap-3">
-                  <Badge>Etapa {String(stage.number).padStart(2, "0")}</Badge>
+                  <Badge>Desafío {String(challenge.number).padStart(2, "0")}</Badge>
                   <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
-                    {stage.questionCount} retos
+                    {challenge.questionCount} retos
                   </span>
                 </span>
-                <strong>{stage.title}</strong>
-                <span className={styles.stageSelectSubtitle}>{stage.subtitle}</span>
+                <strong>{challenge.title}</strong>
+                <span className={styles.stageSelectSubtitle}>{challenge.subtitle}</span>
                 <span className={styles.stageSelectAction}>
-                  Jugar etapa <ArrowIcon className="h-4 w-4" />
+                  Jugar desafío <ArrowIcon className="h-4 w-4" />
                 </span>
               </span>
             </Link>

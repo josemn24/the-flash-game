@@ -79,4 +79,4 @@ export type {
 } from "@/types/question";
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";
 export type { GamePhase } from "@/types/session";
-export type { Stage, StageSummary } from "@/types/stage";
+export type { Challenge, ChallengeSummary, GameMode } from "@/types/challenge";

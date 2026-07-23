@@ -15,7 +15,7 @@ import type { AnswerValue, Question } from "@/types/game";
 
 type QuestionScreenProps = {
   question: Question;
-  stageTitle: string;
+  challengeTitle: string;
   questionNumber: number;
   totalQuestions: number;
   locked: boolean;
@@ -31,7 +31,7 @@ type QuestionScreenProps = {
 
 export function QuestionScreen({
   question,
-  stageTitle,
+  challengeTitle,
   questionNumber,
   totalQuestions,
   locked,
@@ -70,7 +70,7 @@ export function QuestionScreen({
               <span className={styles.brandMarkSmall}>
                 <BoltIcon className="h-3.5 w-3.5" />
               </span>
-              <p className={`${styles.eyebrow} text-white/55`}>{stageTitle}</p>
+              <p className={`${styles.eyebrow} text-white/55`}>{challengeTitle}</p>
             </div>
             <p className="font-mono text-sm font-bold tracking-wide text-white">
               Pregunta {questionNumber}

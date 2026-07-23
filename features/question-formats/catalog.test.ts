@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stages } from "@/data/stages";
+import { challenges } from "@/data/challenges";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
@@ -222,20 +222,21 @@ describe("question format catalog", () => {
     expect(question.items.every((item) => item.label.trim().length > 0)).toBe(true);
   });
 
-  it("keeps both ten-question stages and models image choice as a variant", () => {
-    expect(stages).toHaveLength(2);
-    expect(stages.every((stage) => stage.questions.length === 10)).toBe(true);
+  it("keeps both ten-question challenges in flash mode and models image choice as a variant", () => {
+    expect(challenges).toHaveLength(2);
+    expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
+    expect(challenges.every((challenge) => challenge.questions.length === 10)).toBe(true);
     expect(
-      stages
-        .flatMap((stage) => stage.questions)
+      challenges
+        .flatMap((challenge) => challenge.questions)
         .some(
           (question) =>
             question.type === "multiple-choice" && "media" in question && question.media,
         ),
     ).toBe(true);
     expect(
-      stages
-        .flatMap((stage) => stage.questions)
+      challenges
+        .flatMap((challenge) => challenge.questions)
         .some((question) => (question.type as string) === "image-choice"),
     ).toBe(false);
   });
