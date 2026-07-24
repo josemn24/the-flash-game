@@ -291,7 +291,8 @@ describe("question format catalog", () => {
     ).toEqual(Array(9).fill(86_399_999));
     expect(challenges).toHaveLength(1);
     expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
-    expect(challenges.every((challenge) => challenge.questions.length === 10)).toBe(true);
+    expect(challenges.every((challenge) => challenge.questions.length === 20)).toBe(true);
+    expect(challenges[0].questions.every((question) => question.id.startsWith("sbr-"))).toBe(true);
     expect(challenges.map((challenge) => challenge.id)).toEqual(["tabarnia-flash-01"]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
@@ -301,10 +302,7 @@ describe("question format catalog", () => {
     expect(
       challenges
         .flatMap((challenge) => challenge.questions)
-        .some(
-          (question) =>
-            question.type === "multiple-choice" && "media" in question && question.media,
-        ),
+        .some((question) => question.type === "odd-one-out"),
     ).toBe(true);
     expect(
       challenges
@@ -315,7 +313,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(20);
+    expect(questionIds).toHaveLength(40);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -333,7 +331,13 @@ describe("question format catalog", () => {
     expect(definitions).toHaveLength(2);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
     expect(definitions.every((definition) => definition.mode === "flash")).toBe(true);
-    expect(definitions.every((definition) => definition.questionIds.length === 10)).toBe(true);
+    expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(20);
+    expect(
+      challengeDefinitions["demo-challenge-definition"].questionIds.every((questionId) =>
+        questionId.startsWith("sbr-"),
+      ),
+    ).toBe(true);
+    expect(challengeDefinitions["connections-challenge-definition"].questionIds).toHaveLength(10);
     expect(
       definitions.every((definition) =>
         definition.questionIds.every((questionId) => questionId in questionsById),
