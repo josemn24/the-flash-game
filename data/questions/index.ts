@@ -676,7 +676,6 @@ export const questionsById = {
       formatSkills: ["ordering"],
     },
     question: "Forma una palabra relacionada con el desafío.",
-    hint: "Letras: A C R R A E R",
     tiles: [
       { id: "a", value: "A" },
       { id: "c", value: "C" },
@@ -869,24 +868,31 @@ export const questionsById = {
     explanation:
       "El principio de Bernoulli relaciona velocidad y presión en un fluido: cuando el flujo de aire se acelera, la presión disminuye. Gyro aprovecha esa diferencia alrededor de su capa para obtener un impulso aerodinámico.",
   },
-  "sbr-shortest-route": {
-    id: "sbr-shortest-route",
-    type: "multiple-choice",
-    category: "Lógica",
+  "sbr-currency-matching": {
+    id: "sbr-currency-matching",
+    type: "matching",
+    category: "Geografía",
     tags: {
-      domains: ["mathematics"],
-      topics: ["arithmetic"],
-      cognitiveSkills: ["logical_reasoning", "decision_making"],
-      formatSkills: ["calculation", "comparison"],
+      domains: ["geography", "economics"],
+      topics: ["countries_flags", "personal_finance"],
+      cognitiveSkills: ["memory"],
+      formatSkills: ["comparison"],
     },
-    question:
-      "Ruta A: 12 km. Ruta B: 9 km + penalización de 5 km. Ruta C: 13 km. ¿Cuál es la ruta efectiva más corta?",
-    options: ["Ruta A", "Ruta B", "Ruta C", "Las tres empatan"],
-    correctAnswer: "Ruta A",
-    timeLimit: 12,
+    question: "Relaciona cada país con su moneda.",
+    leftItems: [
+      { id: "united-states", label: "Estados Unidos", correctMatchId: "dollar" },
+      { id: "japan", label: "Japón", correctMatchId: "yen" },
+      { id: "mexico", label: "México", correctMatchId: "peso" },
+    ],
+    rightItems: [
+      { id: "yen", label: "Yen" },
+      { id: "dollar", label: "Dólar" },
+      { id: "peso", label: "Peso" },
+    ],
+    timeLimit: 16,
     points: 120,
     explanation:
-      "La ruta B equivale a 14 km al sumar la penalización. La ruta A, con 12 km, es la más corta.",
+      "Estados Unidos usa el dólar estadounidense, Japón usa el yen y México usa el peso mexicano.",
   },
 } satisfies Record<string, Question>;
 
@@ -928,7 +934,7 @@ export const questionGroups = {
     "sbr-horse-gaits",
     "sbr-horses-sleep-standing",
     "sbr-bernoulli-principle",
-    "sbr-shortest-route",
+    "sbr-currency-matching",
     "sbr-creator",
   ],
 } satisfies Record<string, QuestionId[]>;

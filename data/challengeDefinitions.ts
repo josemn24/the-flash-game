@@ -22,7 +22,7 @@ export const challengeDefinitions = {
       "sbr-horse-gaits",
       "sbr-horses-sleep-standing",
       "sbr-bernoulli-principle",
-      "sbr-shortest-route",
+      "sbr-currency-matching",
       "sbr-creator",
     ],
   },
