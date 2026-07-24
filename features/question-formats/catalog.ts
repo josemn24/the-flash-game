@@ -495,6 +495,7 @@ export const QUESTION_FORMAT_CATALOG = {
           question: "Ordena estos inventos del más antiguo al más reciente.",
           items: ["Internet", "Imprenta", "Teléfono", "Máquina de vapor"],
           correctOrder: ["Imprenta", "Máquina de vapor", "Teléfono", "Internet"],
+          directionLabels: { start: "Más antiguo", end: "Más reciente" },
           timeLimit: 16,
           points: 140,
           explanation: "La imprenta precede a la máquina de vapor, el teléfono e Internet.",

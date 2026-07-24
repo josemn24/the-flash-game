@@ -8,6 +8,10 @@ import styles from "@/components/OrderingQuestion.module.css";
 
 type OrderingQuestionProps = {
   items: string[];
+  directionLabels?: {
+    start: string;
+    end: string;
+  };
   locked: boolean;
   onSubmit: (items: string[]) => void;
 };
@@ -18,7 +22,12 @@ type LastMove = {
   sequence: number;
 };
 
-export function OrderingQuestion({ items, locked, onSubmit }: OrderingQuestionProps) {
+export function OrderingQuestion({
+  items,
+  directionLabels = { start: "Menos", end: "Más" },
+  locked,
+  onSubmit,
+}: OrderingQuestionProps) {
   const [orderedItems, setOrderedItems] = useState(() => [...items]);
   const [lastMove, setLastMove] = useState<LastMove | null>(null);
 
@@ -46,7 +55,7 @@ export function OrderingQuestion({ items, locked, onSubmit }: OrderingQuestionPr
     <div className={styles.root}>
       <div className={styles.shell}>
         <div className={styles.directionLabel} aria-hidden="true">
-          <span>Más antiguo</span>
+          <span>{directionLabels.start}</span>
           <ArrowUpIcon className={styles.directionIcon} />
         </div>
 
@@ -106,7 +115,7 @@ export function OrderingQuestion({ items, locked, onSubmit }: OrderingQuestionPr
           aria-hidden="true"
         >
           <ArrowDownIcon className={styles.directionIcon} />
-          <span>Más reciente</span>
+          <span>{directionLabels.end}</span>
         </div>
       </div>
 

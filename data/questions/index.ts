@@ -272,6 +272,7 @@ export const questionsById = {
     question: "Ordena estos inventos del más antiguo al más reciente.",
     items: ["Internet", "Imprenta", "Teléfono", "Máquina de vapor"],
     correctOrder: ["Imprenta", "Máquina de vapor", "Teléfono", "Internet"],
+    directionLabels: { start: "Más antiguo", end: "Más reciente" },
     timeLimit: 16,
     points: 140,
     explanation:
@@ -521,6 +522,7 @@ export const questionsById = {
     question: "Ordena estas ciudades de oeste a este.",
     items: ["Nueva York", "Denver", "San Diego", "Chicago"],
     correctOrder: ["San Diego", "Denver", "Chicago", "Nueva York"],
+    directionLabels: { start: "Más al oeste", end: "Más al este" },
     timeLimit: 18,
     points: 120,
     explanation:
@@ -565,7 +567,7 @@ export const questionsById = {
     solutionAlt: "Fotografía del Gran Cañón con paredes rojizas, sombras profundas y cielo azul.",
     revealDuration: 11,
     correctAnswer: "Gran Cañón",
-    acceptedAnswers: ["Gran Cañón", "Gran Canon", "Grand Canyon", "El Gran Cañón"],
+    acceptedAnswers: ["Gran Cañón", "Grand Canyon", "El Gran Cañón"],
     timeLimit: 18,
     points: 140,
     explanation:
@@ -773,6 +775,7 @@ export const questionsById = {
     question: "Ordena estos movimientos del caballo de menor a mayor velocidad.",
     items: ["Galope", "Paso", "Trote"],
     correctOrder: ["Paso", "Trote", "Galope"],
+    directionLabels: { start: "Más lento", end: "Más rápido" },
     timeLimit: 14,
     points: 120,
     explanation:

@@ -203,6 +203,10 @@ export type OrderingQuestion = BaseQuestion & {
   type: "ordering";
   items: string[];
   correctOrder: string[];
+  directionLabels?: {
+    start: string;
+    end: string;
+  };
 };
 
 export type ClassificationItem = {

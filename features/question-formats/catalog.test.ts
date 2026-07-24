@@ -13,7 +13,7 @@ import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
-import { isValidMemoryPairsConfiguration } from "@/lib/scoring";
+import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
   PlayableScheduledChallenge,
@@ -309,6 +309,22 @@ describe("question format catalog", () => {
         .flatMap((challenge) => challenge.questions)
         .some((question) => (question.type as string) === "image-choice"),
     ).toBe(false);
+
+    const progressiveImageQuestion = questionsById["sbr-grand-canyon-progressive"];
+    expect(
+      evaluateAnswer({
+        question: progressiveImageQuestion,
+        answer: "gran cañon",
+        timeUsed: 5,
+      }).status,
+    ).toBe("correct");
+
+    expect(questionsById["sbr-west-to-east-cities"]).toMatchObject({
+      directionLabels: { start: "Más al oeste", end: "Más al este" },
+    });
+    expect(questionsById["sbr-horse-gaits"]).toMatchObject({
+      directionLabels: { start: "Más lento", end: "Más rápido" },
+    });
   });
 
   it("keeps the mock question table consistent", () => {

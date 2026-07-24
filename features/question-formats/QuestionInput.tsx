@@ -188,7 +188,14 @@ function OrderingInput({
   locked,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"ordering">>) {
-  return <OrderingQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
+  return (
+    <OrderingQuestion
+      items={question.items}
+      directionLabels={question.directionLabels}
+      locked={locked}
+      onSubmit={onSubmit}
+    />
+  );
 }
 
 function ProgressiveCluesInput({
