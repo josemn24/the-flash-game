@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import styles from "@/components/AnagramQuestion.module.css";
 import { RotateIcon, UndoIcon } from "@/components/icons";
@@ -17,11 +18,10 @@ type Props = {
 export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
   const [chosenIds, setChosenIds] = useState<string[]>([]);
   const chosenTiles = chosenIds.map((id) => tiles.find((tile) => tile.id === id)!);
-  const availableTiles = tiles.filter((tile) => !chosenIds.includes(tile.id));
   const answer = chosenTiles.map((tile) => tile.value).join("");
 
   const chooseTile = (id: string) => {
-    if (!locked) setChosenIds((current) => [...current, id]);
+    if (!locked) setChosenIds((current) => (current.includes(id) ? current : [...current, id]));
   };
 
   return (
@@ -61,20 +61,24 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
 
       <section aria-label="Letras disponibles">
         <p className={styles.availableLabel}>Letras disponibles</p>
-        <div className={styles.tiles}>
-          {availableTiles.map((tile) => (
-            <motion.button
-              key={tile.id}
-              type="button"
-              className={styles.tile}
-              disabled={locked}
-              onClick={() => chooseTile(tile.id)}
-              aria-label={`Añadir letra ${tile.value}`}
-              whileTap={locked ? undefined : { scale: 0.93 }}
-            >
-              {tile.value}
-            </motion.button>
-          ))}
+        <div className={styles.tiles} style={{ "--tile-count": tiles.length } as CSSProperties}>
+          {tiles.map((tile) => {
+            const isUsed = chosenIds.includes(tile.id);
+
+            return (
+              <motion.button
+                key={tile.id}
+                type="button"
+                className={`${styles.tile} ${isUsed ? styles.tileUsed : ""}`}
+                disabled={locked || isUsed}
+                onClick={() => chooseTile(tile.id)}
+                aria-label={isUsed ? `Letra ${tile.value} ya usada` : `Añadir letra ${tile.value}`}
+                whileTap={locked || isUsed ? undefined : { scale: 0.93 }}
+              >
+                <span aria-hidden={isUsed ? "true" : undefined}>{isUsed ? "_" : tile.value}</span>
+              </motion.button>
+            );
+          })}
         </div>
       </section>
 

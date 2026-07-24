@@ -29,7 +29,12 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.answerTiles,
+.answerTiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2.45rem, 1fr));
+  gap: 0.55rem;
+}
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(2.45rem, 1fr));
@@ -72,13 +77,21 @@
     border-color 160ms,
     background 160ms;
 }
-.tile:hover {
+.tile:not(:disabled):hover {
   border-color: rgba(53, 232, 255, 0.6);
   background: rgba(53, 232, 255, 0.12);
 }
 .tile:focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 2px;
+}
+.tileUsed {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.025);
+  cursor: default;
+  opacity: 0.72;
 }
 .actions {
   display: grid;
@@ -112,5 +125,9 @@
   .emptySlot,
   .tile {
     height: 3rem;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(var(--tile-count), minmax(0, 1fr));
   }
 }

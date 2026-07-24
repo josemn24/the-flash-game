@@ -623,24 +623,31 @@ export const questionsById = {
     explanation:
       "40 minutos son dos tercios de hora. Recorrer 24 km en dos tercios de hora equivale a 36 km/h.",
   },
-  "sbr-nine-stages-distance": {
-    id: "sbr-nine-stages-distance",
+  "sbr-fire-horse-year": {
+    id: "sbr-fire-horse-year",
     type: "multiple-choice",
-    category: "Matemáticas",
+    category: "Cultura",
     tags: {
-      domains: ["mathematics"],
-      topics: ["arithmetic"],
-      cognitiveSkills: ["quantitative_reasoning"],
-      formatSkills: ["calculation", "estimation"],
+      domains: ["culture", "history"],
+      topics: ["countries_flags"],
+      cognitiveSkills: ["memory"],
+      formatSkills: ["recall"],
     },
     question:
-      "Una carrera de 6.000 km se divide en nueve tramos iguales. ¿Cuánto mide aproximadamente cada tramo?",
-    options: ["67 km", "333 km", "667 km", "1.500 km"],
-    correctAnswer: "667 km",
-    timeLimit: 14,
-    points: 120,
+      "¿Qué cultura celebra el año 2026 específicamente como el Año del Caballo de Fuego, un evento que ocurre solo una vez cada 60 años?",
+    media: {
+      type: "image",
+      src: "/visuals/sbr/horse-fire.jpg",
+      alt: "Ilustración de un caballo envuelto en llamas sobre un fondo oscuro",
+      fit: "cover",
+      position: "50% 50%",
+    },
+    options: ["La cultura azteca", "La cultura maya", "La cultura china", "La cultura celta"],
+    correctAnswer: "La cultura china",
+    timeLimit: 12,
+    points: 100,
     explanation:
-      "6.000 dividido entre 9 da 666,6 periódico, así que cada tramo mide aproximadamente 667 km.",
+      "En el zodiaco chino, 2026 corresponde al Año del Caballo de Fuego dentro del ciclo sexagenario, que combina animales y elementos. Imagen: Horse Fire.jpg, Surojit52, CC BY-SA 4.0, via Wikimedia Commons.",
   },
   "sbr-equidae-odd-one-out": {
     id: "sbr-equidae-odd-one-out",
@@ -945,7 +952,7 @@ export const questionGroups = {
     "sbr-grand-canyon-progressive",
     "sbr-grand-canyon-heat-map",
     "sbr-average-speed",
-    "sbr-nine-stages-distance",
+    "sbr-fire-horse-year",
     "sbr-equidae-odd-one-out",
     "sbr-race-anagram",
     "sbr-pony-express",

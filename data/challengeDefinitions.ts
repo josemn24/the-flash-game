@@ -13,7 +13,7 @@ export const challengeDefinitions = {
       "sbr-grand-canyon-progressive",
       "sbr-grand-canyon-heat-map",
       "sbr-average-speed",
-      "sbr-nine-stages-distance",
+      "sbr-fire-horse-year",
       "sbr-equidae-odd-one-out",
       "sbr-race-anagram",
       "sbr-pony-express",
