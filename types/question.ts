@@ -48,6 +48,7 @@ export type OddOneOutQuestion = BaseQuestion & {
 export type MatchingItem = {
   id: string;
   label: string;
+  icon?: string;
   media?: QuestionMedia;
 };
 

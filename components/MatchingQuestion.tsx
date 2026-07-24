@@ -170,7 +170,16 @@ function MatchingCard({
       whileTap={disabled ? undefined : { scale: 0.98 }}
     >
       {item.media && <QuestionMedia media={item.media} compact />}
-      {!item.media && <span className={styles.cardLabel}>{item.label}</span>}
+      {!item.media && (
+        <span className={`${styles.cardLabel} ${item.icon ? styles.cardLabelWithIcon : ""}`}>
+          {item.icon && (
+            <span className={styles.cardIcon} aria-hidden="true">
+              {item.icon}
+            </span>
+          )}
+          <span>{item.label}</span>
+        </span>
+      )}
       {matched && <CheckIcon className={styles.stateIcon} aria-hidden="true" />}
       {invalid && <CrossIcon className={styles.stateIcon} aria-hidden="true" />}
     </motion.button>

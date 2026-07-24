@@ -68,6 +68,24 @@
   line-height: 1.2;
   text-align: center;
 }
+.cardLabelWithIcon {
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-content: start;
+  gap: 0.55rem;
+  text-align: left;
+}
+.cardIcon {
+  display: inline-grid;
+  min-width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border-radius: 0.55rem;
+  color: var(--electric);
+  background: rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
 .cardMediaOnly > div {
   border-radius: 0.9rem;
 }

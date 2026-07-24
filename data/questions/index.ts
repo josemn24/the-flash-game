@@ -880,19 +880,21 @@ export const questionsById = {
     },
     question: "Relaciona cada país con su moneda.",
     leftItems: [
-      { id: "united-states", label: "Estados Unidos", correctMatchId: "dollar" },
-      { id: "japan", label: "Japón", correctMatchId: "yen" },
-      { id: "mexico", label: "México", correctMatchId: "peso" },
+      { id: "united-states", label: "Estados Unidos", icon: "🇺🇸", correctMatchId: "dollar" },
+      { id: "japan", label: "Japón", icon: "🇯🇵", correctMatchId: "yen" },
+      { id: "mexico", label: "México", icon: "🇲🇽", correctMatchId: "peso" },
+      { id: "spain", label: "España", icon: "🇪🇸", correctMatchId: "euro" },
     ],
     rightItems: [
-      { id: "yen", label: "Yen" },
-      { id: "dollar", label: "Dólar" },
-      { id: "peso", label: "Peso" },
+      { id: "yen", label: "Yen", icon: "¥" },
+      { id: "dollar", label: "Dólar", icon: "$" },
+      { id: "peso", label: "Peso", icon: "MX$" },
+      { id: "euro", label: "Euro", icon: "€" },
     ],
     timeLimit: 16,
     points: 120,
     explanation:
-      "Estados Unidos usa el dólar estadounidense, Japón usa el yen y México usa el peso mexicano.",
+      "Estados Unidos usa el dólar estadounidense, Japón usa el yen, México usa el peso mexicano y España usa el euro.",
   },
 } satisfies Record<string, Question>;
 
