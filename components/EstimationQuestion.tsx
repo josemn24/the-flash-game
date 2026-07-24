@@ -77,7 +77,6 @@ export function EstimationQuestion({
             aria-label={`Restar ${step} ${unit}`}
           >
             <span aria-hidden="true">−</span>
-            <small>{step}</small>
           </motion.button>
 
           <motion.button
@@ -89,7 +88,6 @@ export function EstimationQuestion({
             aria-label={`Sumar ${step} ${unit}`}
           >
             <span aria-hidden="true">+</span>
-            <small>{step}</small>
           </motion.button>
         </div>
       </div>

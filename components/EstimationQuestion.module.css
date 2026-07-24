@@ -57,16 +57,9 @@
 }
 
 .adjustButton span {
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   font-weight: 700;
-  line-height: 0.8;
-}
-
-.adjustButton small {
-  margin-top: 0.25rem;
-  color: rgba(255, 255, 255, 0.4);
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
+  line-height: 1;
 }
 
 .adjustButton:focus-visible,

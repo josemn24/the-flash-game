@@ -862,15 +862,15 @@ export const questionsById = {
       formatSkills: ["interpretation", "recall"],
     },
     question:
-      "En la primera etapa de Steel Ball Run, Gyro usa el viento y su capa para ganar velocidad. ¿Qué idea resume el principio de Bernoulli que aprovecha esa maniobra?",
+      "Un caballo galopa con viento. Según Bernoulli, ¿qué pasa con el aire que va más rápido sobre su lomo?",
     options: [
       "El aire más rápido ejerce menos presión",
-      "Un objeto más pesado siempre acelera más",
-      "La fricción desaparece con suficiente viento",
-      "La gravedad aumenta si el aire se comprime",
+      "El aire se reparte con la misma presión",
+      "El viento elimina toda la resistencia",
+      "El aire comprimido empuja más hacia abajo",
     ],
     correctAnswer: "El aire más rápido ejerce menos presión",
-    timeLimit: 12,
+    timeLimit: 18,
     points: 100,
     explanation:
       "El principio de Bernoulli relaciona velocidad y presión en un fluido: cuando el flujo de aire se acelera, la presión disminuye. Gyro aprovecha esa diferencia alrededor de su capa para obtener un impulso aerodinámico.",
