@@ -43,18 +43,6 @@ export function EstimationQuestion({
       </div>
 
       <div className={styles.controls}>
-        <motion.button
-          type="button"
-          className={styles.adjustButton}
-          disabled={locked || value <= min}
-          onClick={() => adjust(-step)}
-          whileTap={{ scale: 0.94 }}
-          aria-label={`Restar ${step} ${unit}`}
-        >
-          <span aria-hidden="true">−</span>
-          <small>{step}</small>
-        </motion.button>
-
         <div className={styles.rangeWrap}>
           <input
             className={styles.range}
@@ -79,22 +67,34 @@ export function EstimationQuestion({
           </div>
         </div>
 
-        <motion.button
-          type="button"
-          className={styles.adjustButton}
-          disabled={locked || value >= max}
-          onClick={() => adjust(step)}
-          whileTap={{ scale: 0.94 }}
-          aria-label={`Sumar ${step} ${unit}`}
-        >
-          <span aria-hidden="true">+</span>
-          <small>{step}</small>
-        </motion.button>
+        <div className={styles.adjustRow}>
+          <motion.button
+            type="button"
+            className={styles.adjustButton}
+            disabled={locked || value <= min}
+            onClick={() => adjust(-step)}
+            whileTap={{ scale: 0.94 }}
+            aria-label={`Restar ${step} ${unit}`}
+          >
+            <span aria-hidden="true">−</span>
+            <small>{step}</small>
+          </motion.button>
+
+          <motion.button
+            type="button"
+            className={styles.adjustButton}
+            disabled={locked || value >= max}
+            onClick={() => adjust(step)}
+            whileTap={{ scale: 0.94 }}
+            aria-label={`Sumar ${step} ${unit}`}
+          >
+            <span aria-hidden="true">+</span>
+            <small>{step}</small>
+          </motion.button>
+        </div>
       </div>
 
-      <p className={styles.hint}>
-        Acércate todo lo posible. Una estimación alejada nunca resta puntos.
-      </p>
+      <p className={styles.hint}>Cuanto más cerca, más puntos. No resta.</p>
 
       <motion.button
         type="button"

@@ -99,8 +99,13 @@
   }
 }
 @media (max-width: 639px) {
+  .questionTitle {
+    font-size: clamp(1.65rem, 6.2vw, 2.35rem);
+    line-height: 1.12;
+  }
+
   .questionTitleCompact {
-    font-size: clamp(1.72rem, 7.5vw, 2.2rem);
-    line-height: 1.02;
+    font-size: clamp(1.55rem, 5.8vw, 2.05rem);
+    line-height: 1.1;
   }
 }
