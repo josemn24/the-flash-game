@@ -11,3 +11,24 @@
 - License text: <https://www.mozilla.org/MPL/1.1/>
 
 The generated file contains only normalized four-letter entries. Local editorial additions and exclusions are maintained separately in `data/dictionaries/mini-wordle-es-4.overrides.json`.
+
+## Grand Canyon photo
+
+`public/visuals/sbr/grand-canyon-nps.jpg` is derived from `Grand Canyon National Park GRCA9862.jpg`, sourced from the National Park Service Digital Image Archives via Wikimedia Commons.
+
+- Source: <https://commons.wikimedia.org/wiki/File:Grand_Canyon_National_Park_GRCA9862.jpg>
+- Original NPS source: <https://www.nps.gov/storage/images/grca/Webpages/originals/379.jpg>
+- Author: National Park Service Digital Image Archives.
+- License/status: Public domain in the United States as a work of the U.S. federal government / National Park Service.
+- Note: Use must not imply National Park Service endorsement.
+
+## USA location map
+
+`public/visuals/sbr/usa-location-map.svg` is a local copy of `USA location map.svg`, sourced from Wikimedia Commons.
+
+- Source: <https://ca.wikipedia.org/wiki/Fitxer:USA_location_map.svg>
+- Commons file page: <https://commons.wikimedia.org/wiki/File:USA_location_map.svg>
+- Author: NordNordWest.
+- Selected license: Creative Commons Attribution-Share Alike 3.0 Unported.
+- License text: <https://creativecommons.org/licenses/by-sa/3.0/>
+- Changes: copied locally and renamed from `USA_location_map.svg` to `usa-location-map.svg`; no visual modifications.
