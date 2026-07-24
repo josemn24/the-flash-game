@@ -505,7 +505,7 @@ export const questionsById = {
     question: "¿Qué mangaka es el autor de Steel Ball Run?",
     options: ["Eiichiro Oda", "Masashi Kishimoto", "Yoshihiro Togashi", "Hirohiko Araki"],
     correctAnswer: "Hirohiko Araki",
-    timeLimit: 12,
+    timeLimit: 14,
     points: 100,
     explanation: "Steel Ball Run es obra de Hirohiko Araki, autor de JoJo's Bizarre Adventure.",
   },
@@ -523,7 +523,7 @@ export const questionsById = {
     items: ["Nueva York", "Denver", "San Diego", "Chicago"],
     correctOrder: ["San Diego", "Denver", "Chicago", "Nueva York"],
     directionLabels: { start: "Más al oeste", end: "Más al este" },
-    timeLimit: 18,
+    timeLimit: 26,
     points: 120,
     explanation:
       "San Diego está en la costa oeste; Denver queda en las Rocosas, Chicago más al este y Nueva York en la costa atlántica.",
@@ -568,7 +568,7 @@ export const questionsById = {
     revealDuration: 11,
     correctAnswer: "Gran Cañón",
     acceptedAnswers: ["Gran Cañón", "Grand Canyon", "El Gran Cañón"],
-    timeLimit: 18,
+    timeLimit: 20,
     points: 140,
     explanation:
       "El paisaje representa el Gran Cañón, una de las formaciones más reconocibles del suroeste de Estados Unidos.",
@@ -618,7 +618,7 @@ export const questionsById = {
     initialValue: 30,
     tolerance: 18,
     unit: "km/h",
-    timeLimit: 14,
+    timeLimit: 22,
     points: 120,
     explanation:
       "40 minutos son dos tercios de hora. Recorrer 24 km en dos tercios de hora equivale a 36 km/h.",
@@ -644,7 +644,7 @@ export const questionsById = {
     },
     options: ["La cultura azteca", "La cultura maya", "La cultura china", "La cultura celta"],
     correctAnswer: "La cultura china",
-    timeLimit: 12,
+    timeLimit: 18,
     points: 100,
     explanation:
       "En el zodiaco chino, 2026 corresponde al Año del Caballo de Fuego dentro del ciclo sexagenario, que combina animales y elementos. Imagen: Horse Fire.jpg, Surojit52, CC BY-SA 4.0, via Wikimedia Commons.",
@@ -667,7 +667,7 @@ export const questionsById = {
       { id: "bison", label: "Bisonte" },
     ],
     correctAnswer: "bison",
-    timeLimit: 10,
+    timeLimit: 14,
     points: 100,
     explanation:
       "Caballos, cebras y burros son équidos. El bisonte pertenece a la familia de los bóvidos.",
@@ -693,7 +693,7 @@ export const questionsById = {
       { id: "r-3", value: "R" },
     ],
     correctAnswer: "CARRERA",
-    timeLimit: 14,
+    timeLimit: 30,
     points: 100,
     explanation:
       "Las letras ACRRAER se reordenan como CARRERA, una palabra central en Steel Ball Run.",
@@ -712,7 +712,7 @@ export const questionsById = {
     question: "¿Qué transportaba principalmente el Pony Express?",
     options: ["Correo", "Minerales", "Ganado", "Pasajeros"],
     correctAnswer: "Correo",
-    timeLimit: 10,
+    timeLimit: 16,
     points: 100,
     explanation:
       "El Pony Express fue un servicio de mensajería rápida que transportaba principalmente correo.",
@@ -774,7 +774,7 @@ export const questionsById = {
       { label: "Navegador GPS", correctCategory: "anacrónico" },
       { label: "Smartphone", correctCategory: "anacrónico" },
     ],
-    timeLimit: 18,
+    timeLimit: 22,
     points: 120,
     explanation:
       "Brújula, telégrafo y cantimplora encajan en el siglo XIX; GPS y smartphone pertenecen a la tecnología moderna.",
@@ -793,7 +793,7 @@ export const questionsById = {
     items: ["Galope", "Paso", "Trote"],
     correctOrder: ["Paso", "Trote", "Galope"],
     directionLabels: { start: "Más lento", end: "Más rápido" },
-    timeLimit: 14,
+    timeLimit: 20,
     points: 120,
     explanation:
       "El paso es el ritmo más lento, el trote es intermedio y el galope es el más rápido.",
@@ -810,7 +810,7 @@ export const questionsById = {
     },
     question: "Los caballos pueden dormir de pie.",
     correctAnswer: true,
-    timeLimit: 7,
+    timeLimit: 12,
     points: 100,
     explanation:
       "Los caballos pueden dormir de pie gracias a un mecanismo de bloqueo en las patas, aunque necesitan tumbarse para fases de sueño profundo.",
@@ -846,7 +846,7 @@ export const questionsById = {
     question: "¿Qué dos elementos forman principalmente el acero?",
     options: ["Hierro y carbono", "Cobre y estaño", "Oro y plata", "Sodio y cloro"],
     correctAnswer: "Hierro y carbono",
-    timeLimit: 10,
+    timeLimit: 16,
     points: 100,
     explanation:
       "El acero es una aleación compuesta principalmente por hierro con una pequeña proporción de carbono.",
@@ -870,7 +870,7 @@ export const questionsById = {
       "El aire comprimido empuja más hacia abajo",
     ],
     correctAnswer: "El aire más rápido ejerce menos presión",
-    timeLimit: 18,
+    timeLimit: 20,
     points: 100,
     explanation:
       "El principio de Bernoulli relaciona velocidad y presión en un fluido: cuando el flujo de aire se acelera, la presión disminuye. Gyro aprovecha esa diferencia alrededor de su capa para obtener un impulso aerodinámico.",
@@ -898,7 +898,7 @@ export const questionsById = {
       { id: "peso", label: "Peso", icon: "MX$" },
       { id: "euro", label: "Euro", icon: "€" },
     ],
-    timeLimit: 16,
+    timeLimit: 22,
     points: 120,
     explanation:
       "Estados Unidos usa el dólar estadounidense, Japón usa el yen, México usa el peso mexicano y España usa el euro.",
@@ -916,7 +916,7 @@ export const questionsById = {
     question:
       "En una carrera, adelantas al participante que va segundo. Por lo tanto, quedas primero.",
     correctAnswer: false,
-    timeLimit: 8,
+    timeLimit: 12,
     points: 100,
     explanation:
       "Si adelantas al participante que va segundo, ocupas su posición: quedas segundo, no primero.",

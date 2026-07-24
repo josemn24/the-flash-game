@@ -9,10 +9,29 @@ type TimerProps = {
   active: boolean;
   onTimeUp: () => void;
   onTick?: (remaining: number) => void;
+  resetKey?: string | number;
+  size?: "default" | "compact";
 };
 
-export function Timer({ duration, active, onTimeUp, onTick }: TimerProps) {
-  const [remaining, setRemaining] = useState(duration);
+type TimerState = {
+  duration: number;
+  remaining: number;
+  resetKey?: string | number;
+};
+
+export function Timer({
+  duration,
+  active,
+  onTimeUp,
+  onTick,
+  resetKey,
+  size = "default",
+}: TimerProps) {
+  const [timerState, setTimerState] = useState<TimerState>({
+    duration,
+    remaining: duration,
+    resetKey,
+  });
   const onTimeUpRef = useRef(onTimeUp);
   const onTickRef = useRef(onTick);
 
@@ -30,7 +49,7 @@ export function Timer({ duration, active, onTimeUp, onTick }: TimerProps) {
 
     const update = () => {
       const next = Math.max(0, (endAt - performance.now()) / 1000);
-      setRemaining(next);
+      setTimerState({ duration, remaining: next, resetKey });
       onTickRef.current?.(next);
 
       if (next <= 0) {
@@ -46,22 +65,25 @@ export function Timer({ duration, active, onTimeUp, onTick }: TimerProps) {
 
     frameId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frameId);
-  }, [duration, active]);
+  }, [duration, active, resetKey]);
 
-  const ratio = remaining / duration;
-  const urgent = remaining <= 5;
-  const display = Math.ceil(remaining);
+  const isCurrentTimerState =
+    timerState.duration === duration && timerState.resetKey === resetKey;
+  const visibleRemaining = active && isCurrentTimerState ? timerState.remaining : duration;
+  const ratio = Math.min(1, Math.max(0, visibleRemaining / duration));
+  const urgent = visibleRemaining <= 5;
+  const display = Math.ceil(visibleRemaining);
   const circumference = 2 * Math.PI * 27;
 
   return (
     <motion.div
-      className={`${styles.shell} ${urgent ? styles.urgent : ""}`}
+      className={`${styles.shell} ${size === "compact" ? styles.compact : ""} ${urgent ? styles.urgent : ""}`}
       animate={urgent ? { scale: [1, 1.035, 1] } : { scale: 1 }}
       transition={urgent ? { duration: 0.65, repeat: Infinity } : undefined}
       aria-label={`${display} segundos restantes`}
       role="timer"
     >
-      <svg className="h-[68px] w-[68px] -rotate-90" viewBox="0 0 64 64" aria-hidden="true">
+      <svg className={styles.ring} viewBox="0 0 64 64" aria-hidden="true">
         <circle className={styles.track} cx="32" cy="32" r="27" />
         <circle
           className={styles.progress}
@@ -72,9 +94,7 @@ export function Timer({ duration, active, onTimeUp, onTick }: TimerProps) {
           strokeDashoffset={circumference * (1 - ratio)}
         />
       </svg>
-      <span className="absolute inset-0 grid place-items-center font-mono text-xl font-black tabular-nums">
-        {display}
-      </span>
+      <span className={styles.value}>{display}</span>
     </motion.div>
   );
 }

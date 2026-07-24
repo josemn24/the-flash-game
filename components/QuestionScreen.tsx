@@ -7,7 +7,6 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { Timer } from "@/components/Timer";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { Badge } from "@/components/ui/Badge";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/QuestionScreen.module.css";
@@ -54,6 +53,8 @@ export function QuestionScreen({
     setTimedResponseStarted(true);
     onTimedResponseStart();
   };
+  const displayChallengeTitle = challengeTitle.split(":")[0].trim();
+
   return (
     <motion.section
       className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"
@@ -63,19 +64,15 @@ export function QuestionScreen({
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
       <AppHeader
-        className="mb-5 gap-4 sm:mb-7"
+        className="mb-3 gap-4 sm:mb-4"
         left={
-          <div>
-            <div className="mb-2.5 flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
               <span className={styles.brandMarkSmall}>
                 <BoltIcon className="h-3.5 w-3.5" />
               </span>
-              <p className={`${styles.eyebrow} text-white/55`}>{challengeTitle}</p>
+              <p className={`${styles.eyebrow} truncate text-white/55`}>{displayChallengeTitle}</p>
             </div>
-            <p className="font-mono text-sm font-bold tracking-wide text-white">
-              Pregunta {questionNumber}
-              <span className="text-white/35"> / {totalQuestions}</span>
-            </p>
           </div>
         }
         right={
@@ -84,21 +81,27 @@ export function QuestionScreen({
               duration={question.timeLimit}
               active={!locked && timedResponseStarted}
               onTimeUp={onTimeUp}
+              resetKey={question.id}
+              size="compact"
             />
           ) : null
         }
       />
 
-      <ProgressBar current={questionNumber} total={totalQuestions} />
-
-      <div className="flex flex-1 flex-col pt-6 sm:pt-9">
-        <div className="mb-4 flex items-center justify-between">
-          <Badge>{question.category}</Badge>
-          <span className="font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
+      <div className="grid gap-3">
+        <div className="flex items-baseline justify-between gap-4">
+          <p className="font-mono text-sm font-bold tracking-wide text-white">
+            Pregunta {questionNumber}
+            <span className="text-white/35"> / {totalQuestions}</span>
+          </p>
+          <span className="shrink-0 font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
             {QUESTION_FORMAT_LABELS[question.type]}
           </span>
         </div>
+        <ProgressBar current={questionNumber} total={totalQuestions} />
+      </div>
 
+      <div className="flex flex-1 flex-col pt-5 sm:pt-8">
         <h1
           className={`${styles.questionTitle} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}
         >
