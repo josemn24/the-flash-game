@@ -5,6 +5,7 @@ export type GameMode = "flash";
 
 export type ChallengeDefinitionId = string;
 export type ChallengeAvailabilityStatus = "available" | "locked" | "expired";
+export type ChallengeQuestionPoints = Partial<Record<string, number>>;
 
 export type ChallengeDefinition = {
   id: ChallengeDefinitionId;
@@ -13,6 +14,7 @@ export type ChallengeDefinition = {
   description: string;
   mode: GameMode;
   questionIds: QuestionId[];
+  questionPoints?: ChallengeQuestionPoints;
 };
 
 export type PlayableScheduledChallenge = {
@@ -47,6 +49,7 @@ export type Challenge = {
   description: string;
   mode: GameMode;
   questions: Question[];
+  questionPoints?: ChallengeQuestionPoints;
 };
 
 export type ChallengeSummary = {

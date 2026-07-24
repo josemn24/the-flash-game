@@ -94,7 +94,7 @@ export function QuestionScreen({
             Pregunta {questionNumber}
             <span className="text-white/35"> / {totalQuestions}</span>
           </p>
-          <span className="shrink-0 font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
+          <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
             {QUESTION_FORMAT_LABELS[question.type]}
           </span>
         </div>

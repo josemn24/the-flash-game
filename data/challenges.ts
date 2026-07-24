@@ -26,6 +26,7 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
     description: definition.description,
     mode: definition.mode,
     questions: getQuestionsByIds(definition.questionIds),
+    questionPoints: definition.questionPoints,
   };
 }
 

@@ -92,13 +92,28 @@ Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conec
 | Imagen progresiva        | Identificar una imagen mientras desaparece su desenfoque.           | Acierto binario por velocidad; un fallo o timeout no puntúan.                    |
 | Laberinto contrarreloj   | Guiar una ficha por una cuadrícula mediante cruceta o flechas.      | Resolver puntúa por velocidad; los movimientos adicionales no penalizan.         |
 
+Cada desafío tiene un máximo estándar de 100 puntos. La definición del desafío puede declarar una puntuación entera específica para cada pregunta mediante `questionPoints`, usando el ID de cada pregunta. La suma debe ser exactamente 100 para que el máximo del desafío sea comparable entre publicaciones.
+
+Este reparto manual permite ponderar dificultad, duración esperada, riesgo de fallo y formato. Por ejemplo, en un desafío de 10 preguntas puede haber preguntas de 9, 10 u 11 puntos siempre que el total cierre en 100.
+
+Si una definición todavía no declara `questionPoints`, la sesión usa un reparto automático de enteros como fallback editorial:
+
+```text
+base = floor(100 / número_de_preguntas)
+resto = 100 % número_de_preguntas
+```
+
+Las primeras `resto` preguntas valen `base + 1` puntos y el resto valen `base`. Por ejemplo, un desafío de 10 preguntas reparte `10 × 10`; uno de 12 reparte `4 × 9 + 8 × 8`; y uno de 16 reparte `4 × 7 + 12 × 6`. El orden de preguntas de la definición determina qué preguntas reciben el punto extra en ese fallback.
+
+Los `points` declarados en una pregunta siguen sirviendo para ejemplos de la biblioteca y para expresar el valor editorial base del formato. En una partida de desafío, la sesión sustituye ese valor por los puntos enteros del desafío antes de evaluar la respuesta.
+
 En todos los formatos la velocidad ajusta la puntuación. Para un acierto binario de valor `V`, límite `T` y tiempo usado `t`:
 
 ```text
 points = V × (1 - 0.5 × (t / T))
 ```
 
-Un acierto conserva entre el 50 % y el 100 % de los puntos. El total final de un desafío nunca baja de cero.
+Un acierto conserva entre el 50 % y el 100 % de los puntos de esa pregunta dentro del desafío. El total final de un desafío nunca baja de cero.
 
 En «Adivinanzas por pistas», la primera pista es gratuita y cada revelación adicional descuenta una cantidad fija antes de aplicar el multiplicador de velocidad. Un fallo o el timeout puntúan cero.
 

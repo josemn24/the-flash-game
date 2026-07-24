@@ -7,6 +7,7 @@ import { Logo } from "@/components/Logo";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { MotionButton } from "@/components/ui/MotionButton.client";
+import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/ChallengeIntro.module.css";
 import type { Challenge } from "@/types/game";
@@ -65,12 +66,16 @@ export function ChallengeIntro({
               {challenge.description}
             </p>
 
-            <div className="my-7 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/9 bg-black/20 sm:my-8">
+            <div className="my-7 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/9 bg-black/20 sm:my-8">
               <div className={styles.stageStat}>
                 <strong>{challenge.questions.length}</strong>
                 <span>Preguntas</span>
               </div>
               <div className={`${styles.stageStat} border-x border-white/9`}>
+                <strong>{CHALLENGE_MAX_SCORE}</strong>
+                <span>Puntos</span>
+              </div>
+              <div className={`${styles.stageStat} border-r border-white/9`}>
                 <strong>≈ 2</strong>
                 <span>Minutos</span>
               </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { QuestionScreen } from "@/components/QuestionScreen";
 import { QuestionTransition } from "@/components/QuestionTransition";
@@ -8,10 +9,12 @@ import { ReviewAnswers } from "@/components/ReviewAnswers";
 import { SpeedBackground } from "@/components/SpeedBackground";
 import { ChallengeIntro } from "@/components/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
+import { withChallengeScoring } from "@/lib/challengeScoring";
 import type { Challenge } from "@/types/game";
 
 export function GameApp({ challenge }: { challenge: Challenge }) {
-  const session = useGameSession(challenge);
+  const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
+  const session = useGameSession(scoredChallenge);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -22,7 +25,7 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
             {session.phase === "intro" && (
               <ChallengeIntro
                 key={`intro-${challenge.id}`}
-                challenge={challenge}
+                challenge={scoredChallenge}
                 onStart={session.start}
               />
             )}
@@ -30,9 +33,9 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
               <QuestionScreen
                 key={session.question.id}
                 question={session.question}
-                challengeTitle={challenge.title}
+                challengeTitle={scoredChallenge.title}
                 questionNumber={session.questionIndex + 1}
-                totalQuestions={challenge.questions.length}
+                totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
@@ -48,13 +51,13 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
               <QuestionTransition
                 key={`transition-${session.questionIndex}`}
                 timedOut={session.lastTimedOut}
-                isLast={session.questionIndex === challenge.questions.length - 1}
+                isLast={session.questionIndex === scoredChallenge.questions.length - 1}
               />
             )}
             {session.phase === "results" && (
               <ResultScreen
                 key="results"
-                challenge={challenge}
+                challenge={scoredChallenge}
                 results={session.results}
                 score={session.score}
                 onReview={session.showReview}
@@ -64,7 +67,7 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
             {session.phase === "review" && (
               <ReviewAnswers
                 key="review"
-                challenge={challenge}
+                challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}
                 onReplay={session.replay}
