@@ -9,7 +9,6 @@ export const challengeDefinitions = {
       "Quince retos rápidos sin spoilers inspirados en la carrera transcontinental de Steel Ball Run.",
     mode: "flash",
     questionIds: [
-      "sbr-race-type",
       "sbr-west-to-east-cities",
       "sbr-grand-canyon-progressive",
       "sbr-grand-canyon-heat-map",
@@ -24,6 +23,7 @@ export const challengeDefinitions = {
       "sbr-rider-translation",
       "sbr-bernoulli-principle",
       "sbr-shortest-route",
+      "sbr-creator",
     ],
   },
   "connections-challenge-definition": {

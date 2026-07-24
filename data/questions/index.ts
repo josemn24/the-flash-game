@@ -494,7 +494,7 @@ export const questionsById = {
   },
   "sbr-creator": {
     id: "sbr-creator",
-    type: "short-text",
+    type: "multiple-choice",
     category: "Steel Ball Run",
     tags: {
       domains: ["media_entertainment", "culture"],
@@ -502,9 +502,9 @@ export const questionsById = {
       cognitiveSkills: ["memory"],
       formatSkills: ["recall"],
     },
-    question: "¿Quién creó Steel Ball Run?",
+    question: "¿Qué mangaka es el autor de Steel Ball Run?",
+    options: ["Eiichiro Oda", "Masashi Kishimoto", "Yoshihiro Togashi", "Hirohiko Araki", ],
     correctAnswer: "Hirohiko Araki",
-    acceptedAnswers: ["Hirohiko Araki", "Araki", "荒木飛呂彦"],
     timeLimit: 12,
     points: 100,
     explanation: "Steel Ball Run es obra de Hirohiko Araki, autor de JoJo's Bizarre Adventure.",
@@ -904,7 +904,6 @@ export const questionGroups = {
   music: ["queen-song"],
   languageCommunication: ["letter-pattern"],
   steelBallRun: [
-    "sbr-race-type",
     "sbr-west-to-east-cities",
     "sbr-grand-canyon-progressive",
     "sbr-grand-canyon-heat-map",
@@ -919,5 +918,6 @@ export const questionGroups = {
     "sbr-rider-translation",
     "sbr-bernoulli-principle",
     "sbr-shortest-route",
+    "sbr-creator",
   ],
 } satisfies Record<string, QuestionId[]>;
