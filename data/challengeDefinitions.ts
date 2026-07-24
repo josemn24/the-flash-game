@@ -6,7 +6,7 @@ export const challengeDefinitions = {
     title: "Steel Ball Run: primera etapa",
     subtitle: "Carrera, ingenio y reflejos",
     description:
-      "Quince retos rápidos sin spoilers inspirados en la carrera transcontinental de Steel Ball Run.",
+      "Dieciséis retos rápidos sin spoilers inspirados en la carrera transcontinental de Steel Ball Run.",
     mode: "flash",
     questionIds: [
       "sbr-west-to-east-cities",
@@ -23,6 +23,7 @@ export const challengeDefinitions = {
       "sbr-horses-sleep-standing",
       "sbr-bernoulli-principle",
       "sbr-currency-matching",
+      "sbr-overtake-second-trap",
       "sbr-creator",
     ],
   },

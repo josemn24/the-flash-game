@@ -291,7 +291,7 @@ describe("question format catalog", () => {
     ).toEqual(Array(9).fill(86_399_999));
     expect(challenges).toHaveLength(1);
     expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
-    expect(challenges.every((challenge) => challenge.questions.length === 15)).toBe(true);
+    expect(challenges.every((challenge) => challenge.questions.length === 16)).toBe(true);
     expect(challenges[0].questions.every((question) => question.id.startsWith("sbr-"))).toBe(true);
     expect(challenges.map((challenge) => challenge.id)).toEqual(["tabarnia-flash-01"]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
@@ -329,7 +329,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(44);
+    expect(questionIds).toHaveLength(45);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -347,7 +347,7 @@ describe("question format catalog", () => {
     expect(definitions).toHaveLength(2);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
     expect(definitions.every((definition) => definition.mode === "flash")).toBe(true);
-    expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(15);
+    expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
     expect(
       challengeDefinitions["demo-challenge-definition"].questionIds.every((questionId) =>
         questionId.startsWith("sbr-"),

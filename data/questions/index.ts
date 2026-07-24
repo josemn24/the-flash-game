@@ -896,6 +896,24 @@ export const questionsById = {
     explanation:
       "Estados Unidos usa el dólar estadounidense, Japón usa el yen, México usa el peso mexicano y España usa el euro.",
   },
+  "sbr-overtake-second-trap": {
+    id: "sbr-overtake-second-trap",
+    type: "true-false",
+    category: "Lógica",
+    tags: {
+      domains: ["mathematics", "sports"],
+      topics: ["logic_puzzles"],
+      cognitiveSkills: ["critical_thinking", "logical_reasoning"],
+      formatSkills: ["deduction"],
+    },
+    question:
+      "En una carrera, adelantas al participante que va segundo. Por lo tanto, quedas primero.",
+    correctAnswer: false,
+    timeLimit: 8,
+    points: 100,
+    explanation:
+      "Si adelantas al participante que va segundo, ocupas su posición: quedas segundo, no primero.",
+  },
 } satisfies Record<string, Question>;
 
 export type QuestionId = keyof typeof questionsById;
@@ -938,5 +956,6 @@ export const questionGroups = {
     "sbr-bernoulli-principle",
     "sbr-currency-matching",
     "sbr-creator",
+    "sbr-overtake-second-trap",
   ],
 } satisfies Record<string, QuestionId[]>;
