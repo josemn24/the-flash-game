@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import styles from "@/components/AnagramQuestion.module.css";
+import { RotateIcon, UndoIcon } from "@/components/icons";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import type { AnagramTile } from "@/types/game";
 
@@ -34,19 +35,27 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
           </span>
         </div>
         <div className={styles.answerTiles} aria-live="polite">
-          {chosenTiles.length ? (
-            chosenTiles.map((tile, index) => (
+          {tiles.map((tile, index) => {
+            const chosenTile = chosenTiles[index];
+
+            return chosenTile ? (
               <span
-                key={tile.id}
+                key={`chosen-${chosenTile.id}`}
                 className={styles.chosenTile}
-                aria-label={`Letra ${index + 1}: ${tile.value}`}
+                aria-label={`Letra ${index + 1}: ${chosenTile.value}`}
               >
-                {tile.value}
+                {chosenTile.value}
               </span>
-            ))
-          ) : (
-            <span className={styles.placeholder}>Selecciona las letras en orden</span>
-          )}
+            ) : (
+              <span
+                key={`empty-${tile.id}`}
+                className={styles.emptySlot}
+                aria-label={`Letra ${index + 1} vacía`}
+              >
+                <span aria-hidden="true">_</span>
+              </span>
+            );
+          })}
         </div>
       </section>
 
@@ -70,22 +79,26 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
       </section>
 
       <div className={styles.actions}>
-        <MotionButton
-          variant="secondary"
-          disabled={locked || chosenIds.length === 0}
-          onClick={() => setChosenIds((current) => current.slice(0, -1))}
-          whileTap={{ scale: 0.985 }}
-        >
-          Quitar última
-        </MotionButton>
-        <MotionButton
-          variant="secondary"
-          disabled={locked || chosenIds.length === 0}
-          onClick={() => setChosenIds([])}
-          whileTap={{ scale: 0.985 }}
-        >
-          Reiniciar
-        </MotionButton>
+        <div className={styles.secondaryActions}>
+          <MotionButton
+            variant="secondary"
+            disabled={locked || chosenIds.length === 0}
+            onClick={() => setChosenIds((current) => current.slice(0, -1))}
+            whileTap={{ scale: 0.985 }}
+          >
+            <UndoIcon className={styles.actionIcon} />
+            Quitar
+          </MotionButton>
+          <MotionButton
+            variant="secondary"
+            disabled={locked || chosenIds.length === 0}
+            onClick={() => setChosenIds([])}
+            whileTap={{ scale: 0.985 }}
+          >
+            <RotateIcon className={styles.actionIcon} />
+            Reiniciar
+          </MotionButton>
+        </div>
         <MotionButton
           disabled={locked || chosenIds.length !== tiles.length}
           onClick={() => onSubmit(answer)}

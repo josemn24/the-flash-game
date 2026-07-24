@@ -1,7 +1,7 @@
 .root {
   display: grid;
-  gap: 1rem;
-  margin-top: 1.75rem;
+  gap: 0.9rem;
+  margin-top: 1.35rem;
 }
 .hint {
   border-left: 2px solid var(--cyan);
@@ -12,11 +12,10 @@
 }
 .answer {
   display: grid;
-  gap: 0.7rem;
-  min-height: 7rem;
+  gap: 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 1rem;
-  padding: 0.9rem;
+  border-radius: 0.9rem;
+  padding: 0.75rem;
   background: rgba(255, 255, 255, 0.035);
 }
 .answerHeader {
@@ -32,17 +31,18 @@
 }
 .answerTiles,
 .tiles {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2.45rem, 1fr));
   gap: 0.55rem;
 }
 .chosenTile,
+.emptySlot,
 .tile {
   display: grid;
-  width: 2.85rem;
-  height: 3rem;
+  min-width: 0;
+  height: 2.7rem;
   place-items: center;
-  border-radius: 0.75rem;
+  border-radius: 0.7rem;
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 900;
@@ -52,11 +52,10 @@
   background: var(--electric);
   box-shadow: 0 0 18px rgba(215, 255, 24, 0.16);
 }
-.placeholder {
-  align-self: center;
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 0.86rem;
-  font-weight: 700;
+.emptySlot {
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.025);
 }
 .availableLabel {
   margin-bottom: 0.6rem;
@@ -82,7 +81,36 @@
   outline-offset: 2px;
 }
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 0.6rem;
+}
+
+.secondaryActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.actionIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
+  opacity: 0.9;
+}
+
+@media (min-width: 640px) {
+  .root {
+    gap: 1rem;
+    margin-top: 1.6rem;
+  }
+
+  .answer {
+    padding: 0.9rem;
+  }
+
+  .chosenTile,
+  .emptySlot,
+  .tile {
+    height: 3rem;
+  }
 }
