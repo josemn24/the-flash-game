@@ -2,12 +2,12 @@ import { demoSeasonScheduledChallenges } from "@/data/scheduledChallenges";
 import type { Room } from "@/types/game";
 
 export const demoRoom = {
-  id: "demo-room",
-  title: "Sala Demo",
-  description: "Sala local para probar desafíos de The Flash.",
+  id: "tabarnia-room",
+  title: "Tabarnia",
+  description: "Sala privada mock para la primera temporada de The Flash.",
   activeSeason: {
-    id: "demo-season",
-    title: "Temporada Demo",
+    id: "tabarnia-season-1",
+    title: "Primera temporada",
     status: "active",
     scheduledChallenges: demoSeasonScheduledChallenges,
   },

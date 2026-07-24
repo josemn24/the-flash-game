@@ -180,6 +180,15 @@
   background: linear-gradient(120deg, rgba(32, 36, 37, 0.98), rgba(11, 13, 12, 0.98));
   transform: translateY(-2px);
 }
+.stageSelectCardDisabled {
+  cursor: default;
+  opacity: 0.58;
+}
+.stageSelectCardDisabled:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(120deg, rgba(24, 27, 31, 0.96), rgba(11, 12, 15, 0.98));
+  transform: none;
+}
 .stageSelectNumber {
   display: grid;
   width: 5.5rem;
@@ -214,6 +223,15 @@
   color: rgba(255, 255, 255, 0.46);
   font-size: 0.86rem;
   font-weight: 700;
+}
+.stageSelectDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+  color: rgba(255, 255, 255, 0.36);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 .stageSelectAction {
   display: inline-flex;

@@ -4,6 +4,7 @@ import type { QuestionId } from "@/data/questions";
 export type GameMode = "flash";
 
 export type ChallengeDefinitionId = string;
+export type ChallengeAvailabilityStatus = "available" | "locked" | "expired";
 
 export type ChallengeDefinition = {
   id: ChallengeDefinitionId;
@@ -14,7 +15,7 @@ export type ChallengeDefinition = {
   questionIds: QuestionId[];
 };
 
-export type ScheduledChallenge = {
+export type PlayableScheduledChallenge = {
   id: string;
   number: number;
   seasonId: string;
@@ -22,6 +23,20 @@ export type ScheduledChallenge = {
   availableFrom: string;
   availableUntil: string;
 };
+
+export type PlaceholderScheduledChallenge = {
+  id: string;
+  number: number;
+  seasonId: string;
+  challengeDefinitionId?: never;
+  title: string;
+  subtitle: string;
+  mode?: GameMode;
+  availableFrom: string;
+  availableUntil: string;
+};
+
+export type ScheduledChallenge = PlayableScheduledChallenge | PlaceholderScheduledChallenge;
 
 export type Challenge = {
   id: string;
@@ -39,6 +54,10 @@ export type ChallengeSummary = {
   number: number;
   title: string;
   subtitle: string;
-  mode: GameMode;
+  mode?: GameMode;
   questionCount: number;
+  availableFrom: string;
+  availableUntil: string;
+  availabilityStatus: ChallengeAvailabilityStatus;
+  playable: boolean;
 };

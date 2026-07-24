@@ -3,9 +3,10 @@ import type { ChallengeDefinition } from "@/types/game";
 export const challengeDefinitions = {
   "demo-challenge-definition": {
     id: "demo-challenge-definition",
-    title: "Desafío Demo",
-    subtitle: "Sprint de prueba",
-    description: "Diez retos rápidos para medir reflejos, memoria y sangre fría.",
+    title: "Flash 01",
+    subtitle: "Sprint provisional",
+    description:
+      "Diez retos rápidos provisionales hasta incorporar las preguntas definitivas de Tabarnia.",
     mode: "flash",
     questionIds: [
       "capital-canada",

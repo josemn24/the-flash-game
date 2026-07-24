@@ -81,10 +81,13 @@ export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/re
 export type { GamePhase } from "@/types/session";
 export type {
   Challenge,
+  ChallengeAvailabilityStatus,
   ChallengeDefinition,
   ChallengeDefinitionId,
   ChallengeSummary,
   GameMode,
+  PlaceholderScheduledChallenge,
+  PlayableScheduledChallenge,
   ScheduledChallenge,
 } from "@/types/challenge";
 export type { Room, Season, SeasonStatus } from "@/types/room";

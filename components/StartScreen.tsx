@@ -17,6 +17,33 @@ function formatSeasonStatus(status: SeasonStatus) {
   return status === "active" ? "Activa" : "Finalizada";
 }
 
+function formatChallengeDate(value: string) {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Madrid",
+  }).format(new Date(value));
+}
+
+function getChallengeStatusLabel(challenge: ChallengeSummary) {
+  if (!challenge.playable && challenge.availabilityStatus === "available") return "Próximamente";
+  if (challenge.availabilityStatus === "available") return "Disponible";
+  if (challenge.availabilityStatus === "expired") return "Cerrado";
+  return "Próximamente";
+}
+
+function getChallengeDateLabel(challenge: ChallengeSummary) {
+  if (challenge.availabilityStatus === "expired") {
+    return `Cerrado el ${formatChallengeDate(challenge.availableUntil)}`;
+  }
+  if (challenge.availabilityStatus === "available") {
+    return `Disponible hasta ${formatChallengeDate(challenge.availableUntil)}`;
+  }
+  return `Abre el ${formatChallengeDate(challenge.availableFrom)}`;
+}
+
 export function StartScreen({
   roomTitle,
   seasonTitle,
@@ -62,30 +89,53 @@ export function StartScreen({
         </div>
 
         <div className={`${styles.stageSelector} ${styles.stageSelectorEntrance} mt-9`}>
-          {challenges.map((challenge) => (
-            <Link
-              key={challenge.id}
-              className={styles.stageSelectCard}
-              href={`/desafios/${challenge.id}`}
-            >
-              <span className={styles.stageSelectNumber}>
-                {String(challenge.number).padStart(2, "0")}
-              </span>
-              <span className={styles.stageSelectContent}>
-                <span className="flex w-full items-center justify-between gap-3">
-                  <Badge>Desafío {String(challenge.number).padStart(2, "0")}</Badge>
-                  <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
-                    {challenge.questionCount} retos
+          {challenges.map((challenge) => {
+            const cardContent = (
+              <>
+                <span className={styles.stageSelectNumber}>
+                  {String(challenge.number).padStart(2, "0")}
+                </span>
+                <span className={styles.stageSelectContent}>
+                  <span className="flex w-full items-center justify-between gap-3">
+                    <Badge>{getChallengeStatusLabel(challenge)}</Badge>
+                    <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
+                      {challenge.questionCount > 0
+                        ? `${challenge.questionCount} retos`
+                        : "Sin abrir"}
+                    </span>
+                  </span>
+                  <strong>{challenge.title}</strong>
+                  <span className={styles.stageSelectSubtitle}>{challenge.subtitle}</span>
+                  <span className={styles.stageSelectDate}>
+                    <ClockIcon className="h-4 w-4" />
+                    {getChallengeDateLabel(challenge)}
+                  </span>
+                  <span className={styles.stageSelectAction}>
+                    {challenge.playable ? "Jugar desafío" : "Bloqueado"}
+                    {challenge.playable && <ArrowIcon className="h-4 w-4" />}
                   </span>
                 </span>
-                <strong>{challenge.title}</strong>
-                <span className={styles.stageSelectSubtitle}>{challenge.subtitle}</span>
-                <span className={styles.stageSelectAction}>
-                  Jugar desafío <ArrowIcon className="h-4 w-4" />
-                </span>
-              </span>
-            </Link>
-          ))}
+              </>
+            );
+
+            return challenge.playable ? (
+              <Link
+                key={challenge.id}
+                className={styles.stageSelectCard}
+                href={`/desafios/${challenge.id}`}
+              >
+                {cardContent}
+              </Link>
+            ) : (
+              <div
+                key={challenge.id}
+                className={`${styles.stageSelectCard} ${styles.stageSelectCardDisabled}`}
+                aria-disabled="true"
+              >
+                {cardContent}
+              </div>
+            );
+          })}
         </div>
 
         <div className={styles.libraryEntrance}>
@@ -94,7 +144,7 @@ export function StartScreen({
               <small>Manual de juego</small>
               <strong>Biblioteca de formatos</strong>
               <p>
-                Descubre las reglas, la puntuación y las mejores prácticas de los doce tipos de
+                Descubre las reglas, la puntuación y las mejores prácticas de los formatos de
                 pregunta.
               </p>
             </span>

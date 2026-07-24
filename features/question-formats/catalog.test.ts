@@ -14,6 +14,23 @@ import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 import { isValidMemoryPairsConfiguration } from "@/lib/scoring";
+import type {
+  PlaceholderScheduledChallenge,
+  PlayableScheduledChallenge,
+  ScheduledChallenge,
+} from "@/types/game";
+
+function isPlayableScheduledChallenge(
+  challenge: ScheduledChallenge,
+): challenge is PlayableScheduledChallenge {
+  return typeof challenge.challengeDefinitionId === "string";
+}
+
+function isPlaceholderScheduledChallenge(
+  challenge: ScheduledChallenge,
+): challenge is PlaceholderScheduledChallenge {
+  return !isPlayableScheduledChallenge(challenge);
+}
 
 describe("question format catalog", () => {
   it("contains exactly twenty-five formats with unique slugs", () => {
@@ -230,13 +247,22 @@ describe("question format catalog", () => {
     expect(question.items.every((item) => item.label.trim().length > 0)).toBe(true);
   });
 
-  it("keeps both ten-question challenges in flash mode and models image choice as a variant", () => {
-    expect(demoRoom.id).toBe("demo-room");
+  it("keeps the Tabarnia mock season and playable flash challenge consistent", () => {
+    expect(demoRoom.id).toBe("tabarnia-room");
+    expect(demoRoom.title).toBe("Tabarnia");
+    expect(demoRoom.activeSeason.title).toBe("Primera temporada");
     expect(demoRoom.activeSeason.status).toBe("active");
-    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(2);
+    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(9);
     expect(demoRoom.activeSeason.scheduledChallenges.map((challenge) => challenge.id)).toEqual([
-      "demo-challenge",
-      "connections-challenge",
+      "tabarnia-flash-01",
+      "tabarnia-challenge-02",
+      "tabarnia-challenge-03",
+      "tabarnia-challenge-04",
+      "tabarnia-challenge-05",
+      "tabarnia-challenge-06",
+      "tabarnia-challenge-07",
+      "tabarnia-challenge-08",
+      "tabarnia-challenge-09",
     ]);
     expect(
       demoRoom.activeSeason.scheduledChallenges.every(
@@ -244,25 +270,34 @@ describe("question format catalog", () => {
       ),
     ).toBe(true);
     expect(
-      demoRoom.activeSeason.scheduledChallenges.every(
-        (challenge) => challenge.challengeDefinitionId in challengeDefinitions,
-      ),
+      demoRoom.activeSeason.scheduledChallenges
+        .filter(isPlayableScheduledChallenge)
+        .every((challenge) => challenge.challengeDefinitionId in challengeDefinitions),
     ).toBe(true);
-    expect(challenges).toHaveLength(2);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges
+        .filter(isPlaceholderScheduledChallenge)
+        .every(
+          (challenge) =>
+            typeof challenge.title === "string" &&
+            challenge.title.startsWith("Desafío ") &&
+            challenge.subtitle === "Próximamente",
+        ),
+    ).toBe(true);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges.map(
+        (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
+      ),
+    ).toEqual(Array(9).fill(86_399_999));
+    expect(challenges).toHaveLength(1);
     expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
     expect(challenges.every((challenge) => challenge.questions.length === 10)).toBe(true);
-    expect(challenges.map((challenge) => challenge.id)).toEqual([
-      "demo-challenge",
-      "connections-challenge",
-    ]);
+    expect(challenges.map((challenge) => challenge.id)).toEqual(["tabarnia-flash-01"]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
-      "connections-challenge-definition",
     ]);
-    expect(getChallengeById("demo-challenge")?.definitionId).toBe("demo-challenge-definition");
-    expect(getChallengeById("connections-challenge")?.definitionId).toBe(
-      "connections-challenge-definition",
-    );
+    expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
+    expect(getChallengeById("tabarnia-challenge-02")).toBeUndefined();
     expect(
       challenges
         .flatMap((challenge) => challenge.questions)
