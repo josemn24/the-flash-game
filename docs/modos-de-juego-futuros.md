@@ -39,7 +39,7 @@ La prioridad temporal queda así:
 1. **Asíncrono:** modalidad inicial; cada jugador completa la sala cuando pueda dentro de una ventana o invitación.
 2. **Tiempo real:** evolución posterior; añade sincronización, presencia, latencia, desconexiones y estado compartido en vivo.
 
-Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, Alfabeto, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización completa de salas, temporadas y rankings se mantiene en `salas-y-temporadas.md`.
+Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización completa de salas, temporadas y rankings se mantiene en `salas-y-temporadas.md`.
 
 ## Dimensiones de clasificación
 
@@ -56,6 +56,7 @@ La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué vali
 | Flash / Contrarreloj | velocidad, competición, marca personal    | solo / todos contra todos               | asíncrono / tiempo real |
 | Supervivencia        | superación, resistencia                   | solo / todos contra todos               | asíncrono / tiempo real |
 | Cadena               | racha, riesgo, progresión                 | solo / todos contra todos               | asíncrono / tiempo real |
+| La Pirámide          | progresión, dificultad, superación        | solo / todos contra todos               | asíncrono / tiempo real |
 | Alfabeto             | precisión, recorrido, gestión del tiempo  | solo / todos contra todos               | asíncrono / tiempo real |
 | Apuesta de confianza | estrategia, metacognición, riesgo         | solo / todos contra todos               | asíncrono / tiempo real |
 | Duelo                | competición directa                       | uno contra uno                          | asíncrono / tiempo real |
@@ -77,10 +78,11 @@ Los primeros modos a validar deberían ser:
 1. **Flash / Contrarreloj**, como modo base y control.
 2. **Supervivencia**, por superación personal y rejugabilidad.
 3. **Cadena**, por rachas, tensión y riesgo con coste bajo.
-4. **Alfabeto**, por combinar conocimiento, memoria de pendientes y gestión del tiempo.
-5. **Apuesta de confianza**, por añadir estrategia y metacognición.
-6. **Predicción**, por funcionar bien como comparación todos contra todos.
-7. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual.
+4. **La Pirámide**, por convertir la dificultad creciente en una meta visible y compartible.
+5. **Alfabeto**, por combinar conocimiento, memoria de pendientes y gestión del tiempo.
+6. **Apuesta de confianza**, por añadir estrategia y metacognición.
+7. **Predicción**, por funcionar bien como comparación todos contra todos.
+8. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual.
 
 Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
 
@@ -121,6 +123,19 @@ Los aciertos consecutivos aumentan un multiplicador, una recompensa o una barra 
 - **Encaje con The Flash:** refuerza partidas cortas y convierte cada pregunta en parte de una progresión visible.
 - **V1 validable:** aplicar multiplicador por racha en una sala asíncrona todos contra todos y reflejar la mejor cadena en el ranking.
 - **Riesgos:** un multiplicador demasiado agresivo puede hacer que una sola pregunta pese más que toda la etapa.
+
+### La Pirámide
+
+La partida empieza con pruebas relativamente accesibles y asciende por niveles cada vez más exigentes. La cima queda reservada para preguntas que, en teoría, solo un porcentaje pequeño de jugadores puede resolver.
+
+- **Motivación principal:** progresión, superación, dificultad creciente y logro visible.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** el jugador avanza por una escalera de niveles; cada nivel contiene una prueba calibrada para ser más difícil que la anterior; el resultado compara el nivel alcanzado, la precisión, los errores y el tiempo utilizado.
+- **Encaje con The Flash:** da una fantasía muy clara de ascenso y crea una métrica fácil de compartir: hasta qué nivel llegó cada jugador. Se diferencia de Supervivencia porque no premia aguantar una secuencia larga, sino superar una ruta curada hacia una cima.
+- **V1 validable:** pirámide corta de cinco a siete niveles en una sala asíncrona todos contra todos, con ranking por nivel máximo alcanzado, puntos, errores y tiempo.
+- **Variantes:** una vida, margen de uno o dos fallos, rutas segura/difícil, pirámides temáticas, evento especial con pregunta final de élite o calibración por percentiles cuando haya datos suficientes.
+- **Riesgos:** exige calibrar muy bien la dificultad; si la pendiente es irregular, el modo puede sentirse injusto o aleatorio. La pregunta final debe parecer exigente, no arbitraria.
 
 ### Alfabeto
 
@@ -286,6 +301,7 @@ Se plantea un dilema o una postura. Los jugadores argumentan, responden objecion
 | Flash                | Bajo       | Alto         | Mantener como control |
 | Supervivencia        | Bajo/medio | Alto         | Alta                  |
 | Cadena               | Bajo       | Alto         | Alta                  |
+| La Pirámide          | Medio      | Alto         | Alta                  |
 | Alfabeto             | Medio      | Alto         | Alta                  |
 | Apuesta de confianza | Medio      | Muy alto     | Alta                  |
 | Duelo                | Bajo       | Alto         | Media                 |
@@ -304,7 +320,7 @@ Se plantea un dilema o una postura. Los jugadores argumentan, responden objecion
 
 La primera validación no debería intentar construir todos los modos. Conviene partir de salas asíncronas todos contra todos con ranking individual y comparar el modo actual con varias variantes que reutilicen contenido existente:
 
-- **Competición rápida en sala:** Flash, Cadena, Alfabeto, Predicción y Narrativo competitivo.
+- **Competición rápida en sala:** Flash, Cadena, La Pirámide, Alfabeto, Predicción y Narrativo competitivo.
 - **Superación personal:** Supervivencia y Apuesta de confianza.
 - **Caso especial de sala pequeña:** Duelo como sala de dos jugadores.
 - **Social flexible posterior:** Creador de retos.
