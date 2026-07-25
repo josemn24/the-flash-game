@@ -77,6 +77,32 @@ export const challengeDefinitions = {
       "living-things-classification": 10,
     },
   },
+  "animals-alphabet-definition": {
+    id: "animals-alphabet-definition",
+    title: "Alfabeto: animales",
+    subtitle: "Quince letras, una sola cuenta atrás",
+    description:
+      "Recorre quince letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
+    mode: "alphabet",
+    timeLimit: 120,
+    entries: [
+      { letter: "A", questionId: "alphabet-animals-a" },
+      { letter: "B", questionId: "alphabet-animals-b" },
+      { letter: "C", questionId: "alphabet-animals-c" },
+      { letter: "D", questionId: "alphabet-animals-d" },
+      { letter: "E", questionId: "alphabet-animals-e" },
+      { letter: "F", questionId: "alphabet-animals-f" },
+      { letter: "G", questionId: "alphabet-animals-g" },
+      { letter: "H", questionId: "alphabet-animals-h" },
+      { letter: "I", questionId: "alphabet-animals-i" },
+      { letter: "J", questionId: "alphabet-animals-j" },
+      { letter: "L", questionId: "alphabet-animals-l" },
+      { letter: "M", questionId: "alphabet-animals-m" },
+      { letter: "O", questionId: "alphabet-animals-o" },
+      { letter: "P", questionId: "alphabet-animals-p" },
+      { letter: "R", questionId: "alphabet-animals-r" },
+    ],
+  },
 } satisfies Record<string, ChallengeDefinition>;
 
 export type KnownChallengeDefinitionId = keyof typeof challengeDefinitions;

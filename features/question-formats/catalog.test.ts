@@ -247,7 +247,7 @@ describe("question format catalog", () => {
     expect(question.items.every((item) => item.label.trim().length > 0)).toBe(true);
   });
 
-  it("keeps the Tabarnia mock season and playable flash challenge consistent", () => {
+  it("keeps the Tabarnia mock season and playable challenges consistent", () => {
     expect(demoRoom.id).toBe("tabarnia-room");
     expect(demoRoom.title).toBe("Tabarnia");
     expect(demoRoom.activeSeason.title).toBe("Primera temporada");
@@ -289,25 +289,32 @@ describe("question format catalog", () => {
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
     ).toEqual(Array(9).fill(86_399_999));
-    expect(challenges).toHaveLength(1);
-    expect(challenges.every((challenge) => challenge.mode === "flash")).toBe(true);
-    expect(challenges.every((challenge) => challenge.questions.length === 16)).toBe(true);
-    expect(challenges[0].questions.every((question) => question.id.startsWith("sbr-"))).toBe(true);
-    expect(challenges.map((challenge) => challenge.id)).toEqual(["tabarnia-flash-01"]);
+    expect(challenges).toHaveLength(2);
+    const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
+    const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
+    expect(flashChallenge?.questions).toHaveLength(16);
+    expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
+      true,
+    );
+    expect(alphabetChallenge?.entries).toHaveLength(15);
+    expect(alphabetChallenge?.timeLimit).toBe(120);
+    expect(challenges.map((challenge) => challenge.id)).toEqual([
+      "tabarnia-flash-01",
+      "tabarnia-challenge-02",
+    ]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
+      "animals-alphabet-definition",
     ]);
     expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
-    expect(getChallengeById("tabarnia-challenge-02")).toBeUndefined();
+    expect(getChallengeById("tabarnia-challenge-02")?.definitionId).toBe(
+      "animals-alphabet-definition",
+    );
+    expect(flashChallenge?.questions.some((question) => question.type === "odd-one-out")).toBe(
+      true,
+    );
     expect(
-      challenges
-        .flatMap((challenge) => challenge.questions)
-        .some((question) => question.type === "odd-one-out"),
-    ).toBe(true);
-    expect(
-      challenges
-        .flatMap((challenge) => challenge.questions)
-        .some((question) => (question.type as string) === "image-choice"),
+      flashChallenge?.questions.some((question) => (question.type as string) === "image-choice"),
     ).toBe(false);
 
     const progressiveImageQuestion = questionsById["sbr-grand-canyon-progressive"];
@@ -329,7 +336,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(45);
+    expect(questionIds).toHaveLength(60);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -344,9 +351,8 @@ describe("question format catalog", () => {
 
   it("keeps challenge definitions connected to valid questions", () => {
     const definitions = Object.values(challengeDefinitions);
-    expect(definitions).toHaveLength(2);
+    expect(definitions).toHaveLength(3);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
-    expect(definitions.every((definition) => definition.mode === "flash")).toBe(true);
     expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
     expect(
       challengeDefinitions["demo-challenge-definition"].questionIds.every((questionId) =>
@@ -354,9 +360,15 @@ describe("question format catalog", () => {
       ),
     ).toBe(true);
     expect(challengeDefinitions["connections-challenge-definition"].questionIds).toHaveLength(10);
+    const alphabetDefinition = challengeDefinitions["animals-alphabet-definition"];
+    expect(alphabetDefinition.entries).toHaveLength(15);
+    expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(15);
     expect(
       definitions.every((definition) =>
-        definition.questionIds.every((questionId) => questionId in questionsById),
+        (definition.mode === "alphabet"
+          ? definition.entries.map((entry) => entry.questionId)
+          : definition.questionIds
+        ).every((questionId) => questionId in questionsById),
       ),
     ).toBe(true);
   });

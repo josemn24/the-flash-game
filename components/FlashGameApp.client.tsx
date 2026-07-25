@@ -10,9 +10,9 @@ import { SpeedBackground } from "@/components/SpeedBackground";
 import { ChallengeIntro } from "@/components/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import type { Challenge } from "@/types/game";
+import type { FlashChallenge } from "@/types/game";
 
-export function GameApp({ challenge }: { challenge: Challenge }) {
+export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useGameSession(scoredChallenge);
 

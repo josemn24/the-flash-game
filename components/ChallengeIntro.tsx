@@ -10,13 +10,13 @@ import { MotionButton } from "@/components/ui/MotionButton.client";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/ChallengeIntro.module.css";
-import type { Challenge } from "@/types/game";
+import type { FlashChallenge } from "@/types/game";
 
 export function ChallengeIntro({
   challenge,
   onStart,
 }: {
-  challenge: Challenge;
+  challenge: FlashChallenge;
   onStart: () => void;
 }) {
   const formats = Array.from(

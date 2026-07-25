@@ -1,21 +1,37 @@
 import type { Question } from "@/types/question";
 import type { QuestionId } from "@/data/questions";
 
-export type GameMode = "flash";
+export type GameMode = "flash" | "alphabet";
 
 export type ChallengeDefinitionId = string;
 export type ChallengeAvailabilityStatus = "available" | "locked" | "expired";
 export type ChallengeQuestionPoints = Partial<Record<string, number>>;
 
-export type ChallengeDefinition = {
+type ChallengeDefinitionBase = {
   id: ChallengeDefinitionId;
   title: string;
   subtitle: string;
   description: string;
-  mode: GameMode;
+};
+
+export type FlashChallengeDefinition = ChallengeDefinitionBase & {
+  mode: "flash";
   questionIds: QuestionId[];
   questionPoints?: ChallengeQuestionPoints;
 };
+
+export type AlphabetChallengeDefinitionEntry = {
+  letter: string;
+  questionId: QuestionId;
+};
+
+export type AlphabetChallengeDefinition = ChallengeDefinitionBase & {
+  mode: "alphabet";
+  timeLimit: number;
+  entries: AlphabetChallengeDefinitionEntry[];
+};
+
+export type ChallengeDefinition = FlashChallengeDefinition | AlphabetChallengeDefinition;
 
 export type PlayableScheduledChallenge = {
   id: string;
@@ -40,17 +56,33 @@ export type PlaceholderScheduledChallenge = {
 
 export type ScheduledChallenge = PlayableScheduledChallenge | PlaceholderScheduledChallenge;
 
-export type Challenge = {
+type ChallengeBase = {
   id: string;
   definitionId: ChallengeDefinitionId;
   number: number;
   title: string;
   subtitle: string;
   description: string;
-  mode: GameMode;
+};
+
+export type FlashChallenge = ChallengeBase & {
+  mode: "flash";
   questions: Question[];
   questionPoints?: ChallengeQuestionPoints;
 };
+
+export type AlphabetChallengeEntry = {
+  letter: string;
+  question: Question;
+};
+
+export type AlphabetChallenge = ChallengeBase & {
+  mode: "alphabet";
+  timeLimit: number;
+  entries: AlphabetChallengeEntry[];
+};
+
+export type Challenge = FlashChallenge | AlphabetChallenge;
 
 export type ChallengeSummary = {
   id: string;

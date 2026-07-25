@@ -6,7 +6,7 @@ import {
   withChallengeQuestionPoints,
   withChallengeScoring,
 } from "@/lib/challengeScoring";
-import type { Challenge, ProgressiveCluesQuestion } from "@/types/game";
+import type { FlashChallenge, ProgressiveCluesQuestion } from "@/types/game";
 
 describe("challenge scoring", () => {
   it("distributes the challenge maximum as integer points", () => {
@@ -75,7 +75,7 @@ describe("challenge scoring", () => {
   });
 
   it("normalizes a challenge to the standard maximum score", () => {
-    const challenge: Challenge = {
+    const challenge: FlashChallenge = {
       id: "demo",
       definitionId: "definition",
       number: 1,
@@ -103,8 +103,9 @@ describe("challenge scoring", () => {
 
     const scoredChallenge = withChallengeScoring(challenge);
 
-    expect(scoredChallenge.questions.map((question) => question.points).reduce((a, b) => a + b, 0))
-      .toBe(CHALLENGE_MAX_SCORE);
+    expect(
+      scoredChallenge.questions.map((question) => question.points).reduce((a, b) => a + b, 0),
+    ).toBe(CHALLENGE_MAX_SCORE);
     expect(scoredChallenge.questions.map((question) => question.points)).toEqual([
       9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8,
     ]);
@@ -112,7 +113,7 @@ describe("challenge scoring", () => {
   });
 
   it("normalizes a challenge using configured question scores", () => {
-    const challenge: Challenge = {
+    const challenge: FlashChallenge = {
       id: "demo",
       definitionId: "definition",
       number: 1,

@@ -17,14 +17,31 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
     );
   }
 
-  return {
+  const base = {
     id: scheduledChallenge.id,
     definitionId: definition.id,
     number: scheduledChallenge.number,
     title: definition.title,
     subtitle: definition.subtitle,
     description: definition.description,
-    mode: definition.mode,
+  };
+
+  if (definition.mode === "alphabet") {
+    const questions = getQuestionsByIds(definition.entries.map((entry) => entry.questionId));
+    return {
+      ...base,
+      mode: "alphabet",
+      timeLimit: definition.timeLimit,
+      entries: definition.entries.map((entry, index) => ({
+        letter: entry.letter,
+        question: questions[index],
+      })),
+    };
+  }
+
+  return {
+    ...base,
+    mode: "flash",
     questions: getQuestionsByIds(definition.questionIds),
     questionPoints: definition.questionPoints,
   };

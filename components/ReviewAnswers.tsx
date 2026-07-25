@@ -7,7 +7,7 @@ import styles from "@/components/ReviewAnswers.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
-import type { AnswerResult, Challenge } from "@/types/game";
+import type { AnswerResult, FlashChallenge } from "@/types/game";
 
 function statusLabel(result: AnswerResult) {
   if (result.status === "correct") return "Correcta";
@@ -22,7 +22,7 @@ export function ReviewAnswers({
   onBack,
   onReplay,
 }: {
-  challenge: Challenge;
+  challenge: FlashChallenge;
   results: AnswerResult[];
   onBack: () => void;
   onReplay: () => void;

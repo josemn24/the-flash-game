@@ -1,8 +1,8 @@
-import type { Challenge, ProgressiveCluesQuestion, Question } from "@/types/game";
+import type { FlashChallenge, ProgressiveCluesQuestion, Question } from "@/types/game";
 
 export const CHALLENGE_MAX_SCORE = 100;
 
-type ChallengeQuestionPoints = NonNullable<Challenge["questionPoints"]>;
+type ChallengeQuestionPoints = NonNullable<FlashChallenge["questionPoints"]>;
 
 export function getChallengeQuestionPointValues(
   questionCount: number,
@@ -60,18 +60,12 @@ export function getConfiguredChallengeQuestionPointValues(
   return pointValues as number[];
 }
 
-function scaleProgressiveCluePenalty(
-  question: ProgressiveCluesQuestion,
-  challengePoints: number,
-) {
+function scaleProgressiveCluePenalty(question: ProgressiveCluesQuestion, challengePoints: number) {
   if (question.points <= 0 || question.cluePenalty <= 0) return 0;
   return Math.max(1, Math.round((question.cluePenalty / question.points) * challengePoints));
 }
 
-export function withChallengeQuestionPoints(
-  question: Question,
-  challengePoints: number,
-): Question {
+export function withChallengeQuestionPoints(question: Question, challengePoints: number): Question {
   if (question.type === "progressive-clues") {
     return {
       ...question,
@@ -83,7 +77,7 @@ export function withChallengeQuestionPoints(
   return { ...question, points: challengePoints };
 }
 
-export function withChallengeScoring(challenge: Challenge): Challenge {
+export function withChallengeScoring(challenge: FlashChallenge): FlashChallenge {
   const pointValues = getConfiguredChallengeQuestionPointValues(
     challenge.questions.map((question) => question.id),
     challenge.questionPoints,

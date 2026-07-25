@@ -44,6 +44,13 @@ function getChallengeDateLabel(challenge: ChallengeSummary) {
   return `Abre el ${formatChallengeDate(challenge.availableFrom)}`;
 }
 
+function getChallengeCountLabel(challenge: ChallengeSummary) {
+  if (challenge.questionCount <= 0) return "Sin abrir";
+  return challenge.mode === "alphabet"
+    ? `${challenge.questionCount} letras · Alfabeto`
+    : `${challenge.questionCount} retos · Flash`;
+}
+
 export function StartScreen({
   roomTitle,
   seasonTitle,
@@ -69,19 +76,20 @@ export function StartScreen({
             className={`${styles.eyebrowEntrance} mb-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-[var(--electric)] uppercase`}
           >
             <span className="h-px w-8 bg-[var(--electric)]" />
-            Tu sprint empieza aquí
+            Tu próximo desafío
           </div>
 
           <h1 className={`${styles.heroTitle} ${styles.titleEntrance}`}>
             <span>PIENSA.</span>
             <span>RESPONDE.</span>
-            <span className={styles.heroTitleAccent}>VUELA.</span>
+            <span className={styles.heroTitleAccent}>SUPERA.</span>
           </h1>
 
           <p
             className={`${styles.copyEntrance} mt-6 max-w-xl text-base leading-7 text-white/55 sm:text-lg`}
           >
-            Elige tu sprint. Diez preguntas, poco tiempo y cero excusas para quedarte quieto.
+            Cada desafío propone una forma distinta de jugar. Elige el que esté disponible y
+            demuestra hasta dónde puedes llegar.
           </p>
           <p className="mt-4 font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
             {roomTitle} · {seasonTitle}
@@ -99,9 +107,7 @@ export function StartScreen({
                   <span className="flex w-full items-center justify-between gap-3">
                     <Badge>{getChallengeStatusLabel(challenge)}</Badge>
                     <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
-                      {challenge.questionCount > 0
-                        ? `${challenge.questionCount} retos`
-                        : "Sin abrir"}
+                      {getChallengeCountLabel(challenge)}
                     </span>
                   </span>
                   <strong>{challenge.title}</strong>
@@ -111,7 +117,11 @@ export function StartScreen({
                     {getChallengeDateLabel(challenge)}
                   </span>
                   <span className={styles.stageSelectAction}>
-                    {challenge.playable ? "Jugar desafío" : "Bloqueado"}
+                    {challenge.playable
+                      ? challenge.mode === "alphabet"
+                        ? "Jugar Alfabeto"
+                        : "Jugar Flash"
+                      : "Bloqueado"}
                     {challenge.playable && <ArrowIcon className="h-4 w-4" />}
                   </span>
                 </span>
@@ -156,12 +166,12 @@ export function StartScreen({
 
         <div className="mt-5 flex items-center gap-2 text-sm text-white/40">
           <ClockIcon className="h-4 w-4" />
-          Cada sprint dura menos de 3 minutos
+          Cada desafío dura menos de 3 minutos
         </div>
       </div>
 
       <footer className="flex items-center justify-between border-t border-white/8 pt-4 font-mono text-[10px] font-bold tracking-[0.16em] text-white/25 uppercase">
-        <span>Velocidad + precisión</span>
+        <span>Precisión + estrategia</span>
         <span>Versión 02</span>
       </footer>
     </section>

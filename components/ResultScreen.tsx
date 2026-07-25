@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import styles from "@/components/ResultScreen.module.css";
-import type { AnswerResult, Challenge } from "@/types/game";
+import type { AnswerResult, FlashChallenge } from "@/types/game";
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -31,7 +31,7 @@ export function ResultScreen({
   onReview,
   onReplay,
 }: {
-  challenge: Challenge;
+  challenge: FlashChallenge;
   results: AnswerResult[];
   score: number;
   onReview: () => void;

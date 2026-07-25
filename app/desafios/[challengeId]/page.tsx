@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { GameApp } from "@/components/GameApp.client";
+import { GameApp } from "@/components/GameApp";
 import { challenges, getChallengeById } from "@/data/challenges";
 
 type Props = { params: Promise<{ challengeId: string }> };

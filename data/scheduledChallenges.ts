@@ -13,10 +13,8 @@ export const demoSeasonScheduledChallenges = [
     id: "tabarnia-challenge-02",
     number: 2,
     seasonId: "tabarnia-season-1",
-    title: "Desafío 02",
-    subtitle: "Próximamente",
-    mode: "flash",
-    availableFrom: "2026-07-25T22:00:00.000Z",
+    challengeDefinitionId: "animals-alphabet-definition",
+    availableFrom: "2026-07-24T22:00:00.000Z",
     availableUntil: "2026-07-26T21:59:59.999Z",
   },
   {

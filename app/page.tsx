@@ -53,7 +53,10 @@ export default function Home() {
         title: definition.title,
         subtitle: definition.subtitle,
         mode: definition.mode,
-        questionCount: definition.questionIds.length,
+        questionCount:
+          definition.mode === "alphabet"
+            ? definition.entries.length
+            : definition.questionIds.length,
         availableFrom: scheduledChallenge.availableFrom,
         availableUntil: scheduledChallenge.availableUntil,
         availabilityStatus,

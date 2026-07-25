@@ -63,12 +63,12 @@ Client Components will be identified with `"use client"` and used when a compone
 - client-side contexts.
 
 ```tsx
-// components/GameApp.client.tsx
+// components/FlashGameApp.client.tsx
 "use client";
 
-export function GameApp({ challenge }: { challenge: Challenge }) {
+export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
   const session = useGameSession(challenge);
-  // Complete interactive game flow.
+  // Complete interactive Flash flow.
 }
 ```
 
@@ -289,14 +289,11 @@ Gameplay must prioritize minimal latency, continuity, and immediate responses.
 
 ```text
 app/desafios/[challengeId]/page.tsx  Server Component
-└── GameApp.client             Client Component
-    ├── useGameSession
-    ├── QuestionScreen
-    ├── Timer
-    ├── renderers
-    ├── transitions
-    ├── results
-    └── review
+└── GameApp                    Server mode dispatcher
+    ├── FlashGameApp.client
+    │   └── useGameSession, questions, transitions, results and review
+    └── AlphabetGameApp.client
+        └── useAlphabetSession, alphabet board, results and review
 ```
 
 The server route:
@@ -322,7 +319,8 @@ Results and review must not be split into Server Components while they depend on
 When the nature of a component is not obvious, use explicit suffixes:
 
 ```text
-GameApp.client.tsx
+FlashGameApp.client.tsx
+AlphabetGameApp.client.tsx
 MotionButton.client.tsx
 AnimatedHero.client.tsx
 ChallengePage.tsx

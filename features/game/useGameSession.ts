@@ -7,7 +7,7 @@ import {
   getTimedOutAnswer,
   isAnswerCorrect,
 } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, Challenge, GamePhase } from "@/types/game";
+import type { AnswerResult, AnswerValue, FlashChallenge, GamePhase } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
 
@@ -72,7 +72,7 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
   }
 }
 
-export function useGameSession(challenge: Challenge) {
+export function useGameSession(challenge: FlashChallenge) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const question = challenge.questions[state.questionIndex];
   const questionStartedAt = useRef(0);

@@ -11,11 +11,11 @@ La pregunta de producto sigue siendo:
 ## Alcance actual
 
 - Un único jugador y estado de sesión en memoria.
-- Una sala demo local con temporada activa y dos desafíos publicados de diez preguntas cada uno.
+- Una sala demo local con temporada activa y dos desafíos jugables de modos distintos.
 - Veinticinco formatos de pregunta con reglas y puntuación propias.
 - Preguntas con texto, ilustraciones locales e imágenes locales.
-- Temporizador independiente por pregunta.
-- Transición automática después de responder o agotar el tiempo.
+- Temporizador por pregunta en Flash y temporizador global en Alfabeto.
+- Transición automática en Flash y recorrido por vueltas con opción de pasar en Alfabeto.
 - Resultado final, puntuación, precisión, tiempo y desglose de respuestas.
 - Biblioteca editorial de formatos con uno o varios ejemplos jugables por ficha.
 - Interfaz responsive, accesible y completamente en español.
@@ -31,7 +31,7 @@ No existen backend, base de datos, autenticación, usuarios, creación de salas,
 | `/formatos`               | Catálogo de los veinticinco formatos disponibles.               |
 | `/formatos/[slug]`        | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
 
-Un desafío recorre estos estados:
+El modo Flash recorre estos estados:
 
 ```text
 intro → playing → transition → playing → results ⇄ review
@@ -39,28 +39,26 @@ intro → playing → transition → playing → results ⇄ review
   └──────────────────────── replay ────────────────┘
 ```
 
-Durante el desafío no se muestran aciertos, soluciones ni puntos parciales. La respuesta queda bloqueada al enviarse y el timeout avanza automáticamente. El resultado y la explicación solo aparecen al terminar o dentro de un ejemplo jugable de la biblioteca.
+Alfabeto añade cuenta atrás, feedback inmediato de estado y vueltas sobre letras pasadas, manteniendo las soluciones ocultas hasta la revisión.
 
 ## Desafíos disponibles
 
-### Desafío Demo
+### Steel Ball Run: primera etapa
 
-- Identificador: `demo-challenge`.
+- Identificador: `tabarnia-flash-01`.
 - Modo: `flash`.
-- Diez preguntas de cultura general.
-- Usa elección múltiple, verdadero o falso y respuesta corta.
-- Incluye ilustraciones de banderas y astronomía.
+- Dieciséis preguntas sobre carrera, ciencia, lógica y cultura.
+- Combina múltiples formatos del catálogo con tiempo individual por pregunta.
 
-### Conexiones rápidas
+### Alfabeto: animales
 
-- Identificador: `connections-challenge`.
-- Modo: `flash`.
-- Diez preguntas de patrones, cultura, imágenes y lógica.
-- Añade ordenar, estimación, código lógico y clasificación.
-- Incluye una imagen local de la Torre Eiffel y una ilustración de la bandera italiana.
+- Identificador: `tabarnia-challenge-02`.
+- Modo: `alphabet`.
+- Quince definiciones de animales con respuesta corta.
+- Usa un límite global de 120 segundos, permite pasar y recupera pendientes en nuevas vueltas.
+- Puntúa únicamente por precisión; el tiempo hasta el último acierto actúa como desempate.
 
 Ambos desafíos se publican desde `demoRoom.activeSeason.scheduledChallenges`, apuntan a definiciones reutilizables y resuelven sus preguntas desde `questionsById`. La ruta `/desafios/[challengeId]` usa el ID de publicación, no el ID interno de definición, y se prerenderiza mediante `generateStaticParams`.
-Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, están disponibles mediante ejemplos jugables en la biblioteca.
 
 ## Formatos implementados
 
@@ -157,9 +155,9 @@ El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionRevie
 
 - Las páginas, metadata, parámetros, navegación y contenido editorial se resuelven en Server Components.
 - La portada lee `demoRoom`, muestra contexto mínimo de sala y temporada, y recibe `ChallengeSummary[]`; nunca necesita las preguntas completas.
-- Los desafíos declaran listas ordenadas de IDs y exponen `questions: Question[]` ya resuelto para la UI.
-- La ruta de desafío valida el identificador y envía un único `Challenge` a `GameApp.client.tsx`.
-- La sesión jugable mantiene reducer, tiempos, respuestas, resultados y transiciones en el cliente.
+- Flash declara una lista de preguntas; Alfabeto declara entradas `{ letter, questionId }` y un límite global.
+- La ruta de desafío valida el identificador y envía un `Challenge` discriminado por modo al dispatcher `GameApp`.
+- Cada modo mantiene su propio reducer, tiempos, respuestas, resultados y transiciones en el cliente.
 - El número de pistas reveladas se conserva en la sesión o en el ejemplo jugable y se envía al evaluador junto con la respuesta.
 - El mapa de calor solo envía una coordenada confirmada; la revisión reutiliza la superficie para superponer selección, objetivo, tolerancia y distancia.
 - Etiquetar imagen discrimina entre `assign-all` e `identify-one`. La primera conserva localmente las asociaciones y solo envía el mapa completo al confirmar; la segunda envía inmediatamente la opción elegida o el texto introducido. Ambas revisiones superponen la elección y la solución y mantienen un resumen textual.

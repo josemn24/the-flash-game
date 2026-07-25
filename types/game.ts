@@ -80,11 +80,17 @@ export type {
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";
 export type { GamePhase } from "@/types/session";
 export type {
+  AlphabetChallenge,
+  AlphabetChallengeDefinition,
+  AlphabetChallengeDefinitionEntry,
+  AlphabetChallengeEntry,
   Challenge,
   ChallengeAvailabilityStatus,
   ChallengeDefinition,
   ChallengeDefinitionId,
   ChallengeSummary,
+  FlashChallenge,
+  FlashChallengeDefinition,
   GameMode,
   PlaceholderScheduledChallenge,
   PlayableScheduledChallenge,
