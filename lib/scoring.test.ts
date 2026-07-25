@@ -239,7 +239,7 @@ describe("question evaluation", () => {
     ({ question, correctAnswer }) => {
       expect(calculateAnswerScore(question, correctAnswer, 0)).toBe(question.points);
       expect(calculateAnswerScore(question, correctAnswer, question.timeLimit)).toBe(
-        Math.round(question.points * 0.5),
+        Math.round(question.points * 0.6),
       );
     },
   );
@@ -275,7 +275,7 @@ describe("question evaluation", () => {
     });
     expect(
       evaluateAnswer({ question, answer: "Torre Eiffel", timeUsed: question.timeLimit }),
-    ).toMatchObject({ status: "correct", points: 80 });
+    ).toMatchObject({ status: "correct", points: 96 });
     expect(evaluateAnswer({ question, answer: "Arco del Triunfo", timeUsed: 2 })).toMatchObject({
       status: "incorrect",
       points: 0,
@@ -385,7 +385,7 @@ describe("question evaluation", () => {
       evaluateAnswer({ question, answer: { path: longerPath }, timeUsed: question.timeLimit }),
     ).toMatchObject({
       status: "correct",
-      points: 75,
+      points: 90,
       details: { type: "time-maze", moves: longerPath.length - 1, reachedExit: true },
     });
   });
@@ -473,7 +473,7 @@ describe("question evaluation", () => {
       evaluateAnswer({ question, answer: locationOnly, timeUsed: question.timeLimit }),
     ).toMatchObject({
       status: "partial",
-      points: 30,
+      points: 36,
       details: { type: "error-reconstruction", locationCorrect: true, correctionCorrect: false },
     });
   });
@@ -504,7 +504,7 @@ describe("question evaluation", () => {
         timeUsed: question.timeLimit,
         timedOut: true,
       }),
-    ).toMatchObject({ status: "partial", points: 30 });
+    ).toMatchObject({ status: "partial", points: 36 });
     expect(
       evaluateAnswer({ question, answer: null, timeUsed: question.timeLimit, timedOut: true }),
     ).toMatchObject({ status: "unanswered", points: 0 });
@@ -598,7 +598,7 @@ describe("question evaluation", () => {
     ).toMatchObject({ status: "correct", points: 135, details: { incorrectAttempts: 1 } });
     expect(
       evaluateAnswer({ question, answer: { guesses: ["LUNA"] }, timeUsed: question.timeLimit }),
-    ).toMatchObject({ status: "correct", points: 75 });
+    ).toMatchObject({ status: "correct", points: 90 });
   });
 
   it("ends Mini-Wordle after four failures and preserves timeout history without points", () => {
@@ -647,7 +647,7 @@ describe("question evaluation", () => {
       }),
     ).toMatchObject({
       status: "correct",
-      points: 65,
+      points: 78,
       details: { type: "progressive-clues", revealedClues: 2, availablePoints: 130 },
     });
     expect(
@@ -723,7 +723,7 @@ describe("question evaluation", () => {
     });
     expect(evaluateAnswer({ question, answer: nearEdge, timeUsed: 15 })).toMatchObject({
       status: "correct",
-      points: 70,
+      points: 84,
     });
   });
 
@@ -744,7 +744,7 @@ describe("question evaluation", () => {
     });
     expect(evaluateAnswer({ question, answer, timeUsed: question.timeLimit })).toMatchObject({
       status: "partial",
-      points: 35,
+      points: 42,
     });
   });
 
@@ -814,7 +814,7 @@ describe("question evaluation", () => {
     });
     expect(evaluateAnswer({ question, answer: complete, timeUsed: 25 })).toMatchObject({
       status: "correct",
-      points: 80,
+      points: 96,
     });
     expect(evaluateAnswer({ question, answer: partial, timeUsed: 0 })).toMatchObject({
       status: "partial",
@@ -878,7 +878,7 @@ describe("question evaluation", () => {
     });
     expect(evaluateAnswer({ question, answer: "Muslos", timeUsed: 12 })).toMatchObject({
       status: "correct",
-      points: 50,
+      points: 60,
     });
     expect(evaluateAnswer({ question, answer: "Torso", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
@@ -952,7 +952,7 @@ describe("question evaluation", () => {
     const choice = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
     const trueFalse = QUESTION_FORMAT_CATALOG["true-false"].examples[0].question;
     expect(calculateAnswerScore(choice, choice.correctAnswer, 0)).toBe(100);
-    expect(calculateAnswerScore(choice, choice.correctAnswer, choice.timeLimit)).toBe(50);
+    expect(calculateAnswerScore(choice, choice.correctAnswer, choice.timeLimit)).toBe(60);
     expect(calculateAnswerScore(choice, "Toronto", 0)).toBe(-20);
     expect(calculateAnswerScore(trueFalse, true, 0)).toBe(-40);
   });
@@ -1007,7 +1007,7 @@ describe("question evaluation", () => {
         answer: { japon: "bandera-japon", italia: "bandera-italia" },
         timeUsed: 10,
       }),
-    ).toMatchObject({ status: "partial", points: 75 });
+    ).toMatchObject({ status: "partial", points: 80 });
   });
 
   it("validates connect-pairs routes, endpoints, conflicts, and coverage", () => {
@@ -1139,7 +1139,7 @@ describe("question evaluation", () => {
       evaluateAnswer({ question, answer: perfect, timeUsed: question.timeLimit }),
     ).toMatchObject({
       status: "correct",
-      points: 75,
+      points: 90,
     });
     expect(evaluateAnswer({ question, answer: partial, timeUsed: 0 })).toMatchObject({
       status: "partial",
@@ -1153,7 +1153,7 @@ describe("question evaluation", () => {
         timeUsed: question.timeLimit,
         timedOut: true,
       }),
-    ).toMatchObject({ status: "partial", points: 15 });
+    ).toMatchObject({ status: "partial", points: 18 });
     expect(
       evaluateAnswer({ question, answer: { paths: {} }, timeUsed: 0, timedOut: true }),
     ).toMatchObject({ status: "unanswered", points: 0 });
@@ -1178,7 +1178,7 @@ describe("question evaluation", () => {
       evaluateAnswer({ question, answer: partialAnswer, timeUsed: question.timeLimit }),
     ).toMatchObject({
       status: "partial",
-      points: 35,
+      points: 42,
       details: { type: "flash-memory", correctPlacements: 2, totalPlacements: 4 },
     });
   });
@@ -1194,7 +1194,7 @@ describe("question evaluation", () => {
       }),
     ).toMatchObject({
       status: "partial",
-      points: 18,
+      points: 21,
       timeUsed: question.timeLimit,
       details: { type: "flash-memory", correctPlacements: 1, totalPlacements: 4 },
     });
@@ -1251,7 +1251,7 @@ describe("question evaluation", () => {
     ).toMatchObject({
       answer: partialWithFailure,
       status: "partial",
-      points: 4,
+      points: 7,
       details: { type: "memory-pairs", totalAttempts: 2 },
     });
     expect(
@@ -1307,7 +1307,7 @@ describe("question evaluation", () => {
     });
     expect(
       evaluateAnswer({ question, answer: question.sequence, timeUsed: question.timeLimit }),
-    ).toMatchObject({ status: "correct", points: 70 });
+    ).toMatchObject({ status: "correct", points: 84 });
     expect(evaluateAnswer({ question, answer: ["orbita", "luna"], timeUsed: 2 })).toMatchObject({
       status: "incorrect",
       points: 0,
@@ -1354,7 +1354,7 @@ describe("question evaluation", () => {
         answer: question.correctOptionId,
         timeUsed: question.timeLimit,
       }),
-    ).toMatchObject({ status: "correct", points: 65 });
+    ).toMatchObject({ status: "correct", points: 78 });
     expect(evaluateAnswer({ question, answer: "circle", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
       points: -26,
@@ -1411,7 +1411,7 @@ describe("question evaluation", () => {
         timeUsed: 20,
         timedOut: true,
       }),
-    ).toMatchObject({ status: "partial", points: 25 });
+    ).toMatchObject({ status: "partial", points: 30 });
     expect(
       evaluateAnswer({ question, answer: { japon: "bandera-italia" }, timeUsed: 0 }),
     ).toMatchObject({ status: "incorrect", points: 0 });
@@ -1441,12 +1441,12 @@ describe("question evaluation", () => {
     });
     expect(
       evaluateAnswer({ question, answer: completeAnswer, timeUsed: question.timeLimit }),
-    ).toMatchObject({ status: "correct", points: 80 });
+    ).toMatchObject({ status: "correct", points: 96 });
     expect(
       evaluateAnswer({ question, answer: partialAnswer, timeUsed: question.timeLimit }),
     ).toMatchObject({
       status: "partial",
-      points: 40,
+      points: 48,
     });
     expect(evaluateAnswer({ question, answer: { "1": 3 }, timeUsed: 0 })).toMatchObject({
       status: "incorrect",
@@ -1456,7 +1456,7 @@ describe("question evaluation", () => {
       evaluateAnswer({ question, answer: { "1": 2, "6": 4 }, timeUsed: 99, timedOut: true }),
     ).toMatchObject({
       status: "partial",
-      points: 20,
+      points: 24,
       timeUsed: question.timeLimit,
       details: { type: "mini-sudoku", correctCells: 1, totalCells: 4 },
     });
@@ -1515,7 +1515,7 @@ describe("question evaluation", () => {
     });
     expect(
       evaluateAnswer({ question, answer: completeAnswer, timeUsed: question.timeLimit }),
-    ).toMatchObject({ status: "correct", points: 90 });
+    ).toMatchObject({ status: "correct", points: 108 });
     expect(evaluateAnswer({ question, answer: partialAnswer, timeUsed: 0 })).toMatchObject({
       status: "partial",
       points: 11,
@@ -1532,7 +1532,7 @@ describe("question evaluation", () => {
       evaluateAnswer({ question, answer: partialAnswer, timeUsed: 99, timedOut: true }),
     ).toMatchObject({
       status: "partial",
-      points: 5,
+      points: 6,
       timeUsed: question.timeLimit,
       details: { type: "mini-nonogram", correctFilled: 2, incorrectFilled: 1, totalFilled: 17 },
     });
@@ -1586,7 +1586,7 @@ describe("question evaluation", () => {
     });
     expect(
       evaluateAnswer({ question, answer: solvedAnswer, timeUsed: question.timeLimit }),
-    ).toMatchObject({ status: "correct", points: 75 });
+    ).toMatchObject({ status: "correct", points: 90 });
     expect(
       evaluateAnswer({ question, answer: { tiles: question.initialTiles, moves: 0 }, timeUsed: 0 }),
     ).toMatchObject({
@@ -1690,7 +1690,7 @@ describe("question evaluation", () => {
     const question = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
     expect(calculateAnswerScore(question, question.correctAnswer, -10)).toBe(question.points);
     expect(calculateAnswerScore(question, question.correctAnswer, question.timeLimit + 10)).toBe(
-      Math.round(question.points * 0.5),
+      Math.round(question.points * 0.6),
     );
   });
 
@@ -1719,7 +1719,7 @@ describe("question evaluation", () => {
     };
 
     expect(calculateAnswerScore(choice, choice.correctAnswer, 0)).toBe(
-      Math.round(choice.points * 0.5),
+      Math.round(choice.points * 0.6),
     );
     expect(calculateEstimationMetrics(estimation, estimation.correctAnswer).proximity).toBe(1);
     expect(calculateEstimationMetrics(estimation, estimation.correctAnswer + 1).proximity).toBe(0);

@@ -110,10 +110,10 @@ Los `points` declarados en una pregunta siguen sirviendo para ejemplos de la bib
 En todos los formatos la velocidad ajusta la puntuación. Para un acierto binario de valor `V`, límite `T` y tiempo usado `t`:
 
 ```text
-points = V × (1 - 0.5 × (t / T))
+points = V × (1 - 0.4 × (t / T))
 ```
 
-Un acierto conserva entre el 50 % y el 100 % de los puntos de esa pregunta dentro del desafío. El total final de un desafío nunca baja de cero.
+Un acierto conserva entre el 60 % y el 100 % de los puntos de esa pregunta dentro del desafío. El total final de un desafío nunca baja de cero.
 
 En «Adivinanzas por pistas», la primera pista es gratuita y cada revelación adicional descuenta una cantidad fija antes de aplicar el multiplicador de velocidad. Un fallo o el timeout puntúan cero.
 

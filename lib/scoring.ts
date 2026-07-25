@@ -60,6 +60,8 @@ import {
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
 
+const MIN_SPEED_MULTIPLIER = 0.6;
+
 export type EvaluationInput = {
   question: Question;
   answer: AnswerValue | null;
@@ -321,8 +323,8 @@ function clampTime(timeUsed: number, timeLimit: number) {
 }
 
 function calculateSpeedMultiplier(timeUsed: number, timeLimit: number) {
-  if (timeLimit <= 0) return 0.5;
-  return 1 - 0.5 * (clampTime(timeUsed, timeLimit) / timeLimit);
+  if (timeLimit <= 0) return MIN_SPEED_MULTIPLIER;
+  return 1 - (1 - MIN_SPEED_MULTIPLIER) * (clampTime(timeUsed, timeLimit) / timeLimit);
 }
 
 function calculateProportionalScore(
@@ -982,7 +984,7 @@ export function calculateQuestionScore(question: Question, correct: boolean, tim
     const score = Math.round(
       question.points * calculateSpeedMultiplier(timeUsed, question.timeLimit),
     );
-    return Math.max(score, Math.ceil(question.points * 0.5));
+    return Math.max(score, Math.ceil(question.points * MIN_SPEED_MULTIPLIER));
   }
 
   if (question.type === "true-false") return -Math.round(question.points * 0.4);

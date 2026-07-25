@@ -16,7 +16,7 @@ export const SCORING_POLICIES = {
   "multiple-choice": {
     id: QUESTION_SCORING_POLICY["multiple-choice"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 50 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 %.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -24,7 +24,7 @@ export const SCORING_POLICIES = {
   "odd-one-out": {
     id: QUESTION_SCORING_POLICY["odd-one-out"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 50 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 %.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -60,7 +60,7 @@ export const SCORING_POLICIES = {
   "short-text": {
     id: QUESTION_SCORING_POLICY["short-text"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 50 % y el 100 % de los puntos; los fallos no penalizan.",
+    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; los fallos no penalizan.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
@@ -69,7 +69,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["progressive-clues"],
     label: "Pistas y velocidad",
     summary:
-      "Cada pista adicional reduce el máximo disponible; una respuesta correcta conserva entre el 50 % y el 100 % de ese máximo según el tiempo.",
+      "Cada pista adicional reduce el máximo disponible; una respuesta correcta conserva entre el 60 % y el 100 % de ese máximo según el tiempo.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
@@ -78,7 +78,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["progressive-image"],
     label: "Reconocimiento y velocidad",
     summary:
-      "Un acierto conserva entre el 50 % y el 100 % de los puntos; responder antes revela menos imagen y conserva más puntos.",
+      "Un acierto conserva entre el 60 % y el 100 % de los puntos; responder antes revela menos imagen y conserva más puntos.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
@@ -146,7 +146,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["simon-sequence"],
     label: "Secuencia y velocidad",
     summary:
-      "La secuencia debe repetirse exactamente; un acierto conserva entre el 50 % y el 100 % de los puntos según el tiempo de respuesta.",
+      "La secuencia debe repetirse exactamente; un acierto conserva entre el 60 % y el 100 % de los puntos según el tiempo de respuesta.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
@@ -154,7 +154,7 @@ export const SCORING_POLICIES = {
   "logic-matrix": {
     id: QUESTION_SCORING_POLICY["logic-matrix"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 50 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 %.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -181,7 +181,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["time-maze"],
     label: "Salida y velocidad",
     summary:
-      "Llegar a la salida conserva entre el 50 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
+      "Llegar a la salida conserva entre el 60 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
@@ -190,7 +190,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["sliding-puzzle"],
     label: "Resolución y velocidad",
     summary:
-      "Solo resolver el tablero concede entre el 50 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
+      "Solo resolver el tablero concede entre el 60 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
@@ -209,7 +209,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY.anagram,
     label: "Acierto y velocidad",
     summary:
-      "Formar la palabra exacta conserva entre el 50 % y el 100 % de los puntos; un fallo o timeout no puntúa.",
+      "Formar la palabra exacta conserva entre el 60 % y el 100 % de los puntos; un fallo o timeout no puntúa.",
     partialCredit: false,
     incorrectPenalty: false,
     speedBonus: true,
