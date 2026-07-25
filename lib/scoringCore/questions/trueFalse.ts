@@ -1,5 +1,5 @@
 import type { AnswerValue, TrueFalseQuestion, Question } from "@/types/game";
-import { calculateQuestionScore } from "@/lib/scoringCore/shared";
+import { calculateQuestionScore, TRUE_FALSE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
   InternalEvaluation,
@@ -23,7 +23,9 @@ export function evaluateTrueFalse({
   return {
     isCorrect: correct,
     status: correct ? "correct" : "incorrect",
-    points: calculateQuestionScore(question, correct, timeUsed),
+    points: calculateQuestionScore(question, correct, timeUsed, {
+      incorrectPenaltyRatio: TRUE_FALSE_PENALTY_RATIO,
+    }),
   };
 }
 

@@ -30,7 +30,12 @@ export function applyAttemptPenalty(score: number, points: number, incorrectAtte
   return Math.max(0, score - penalty);
 }
 
-export function calculateQuestionScore(question: Question, correct: boolean, timeUsed: number) {
+export function calculateQuestionScore(
+  question: Question,
+  correct: boolean,
+  timeUsed: number,
+  { incorrectPenaltyRatio = 0 } = {},
+) {
   if (correct) {
     const score = Math.round(
       question.points * calculateSpeedMultiplier(timeUsed, question.timeLimit),
@@ -38,15 +43,6 @@ export function calculateQuestionScore(question: Question, correct: boolean, tim
     return Math.max(score, Math.ceil(question.points * MIN_SPEED_MULTIPLIER));
   }
 
-  if (question.type === "true-false")
-    return -Math.round(question.points * TRUE_FALSE_PENALTY_RATIO);
-  if (
-    question.type === "multiple-choice" ||
-    question.type === "odd-one-out" ||
-    question.type === "ordering" ||
-    question.type === "logic-matrix"
-  ) {
-    return -Math.round(question.points * CHOICE_PENALTY_RATIO);
-  }
-  return 0;
+  if (incorrectPenaltyRatio <= 0) return 0;
+  return -Math.round(question.points * incorrectPenaltyRatio);
 }

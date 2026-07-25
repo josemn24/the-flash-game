@@ -1,5 +1,5 @@
 import type { AnswerValue, LogicMatrixQuestion, Question } from "@/types/game";
-import { calculateQuestionScore } from "@/lib/scoringCore/shared";
+import { calculateQuestionScore, CHOICE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
   InternalEvaluation,
@@ -50,7 +50,9 @@ export function evaluateLogicMatrix({
   return {
     isCorrect: correct,
     status: correct ? "correct" : "incorrect",
-    points: calculateQuestionScore(question, correct, timeUsed),
+    points: calculateQuestionScore(question, correct, timeUsed, {
+      incorrectPenaltyRatio: CHOICE_PENALTY_RATIO,
+    }),
   };
 }
 
