@@ -1,8 +1,8 @@
 .shell {
   --alphabet-bg: #090a12;
   --alphabet-panel: rgba(19, 20, 35, 0.86);
-  --alphabet-violet: #9384ff;
-  --alphabet-cyan: #54e6eb;
+  --alphabet-violet: #d7ff18;
+  --alphabet-cyan: #35e8ff;
   --alphabet-green: #63d9a0;
   --alphabet-amber: #f2b84b;
   --alphabet-coral: #ff747d;
@@ -13,8 +13,8 @@
   overflow: hidden;
   color: #f7f6ff;
   background:
-    radial-gradient(circle at 75% 15%, rgba(128, 107, 255, 0.16), transparent 29rem),
-    radial-gradient(circle at 10% 85%, rgba(69, 223, 230, 0.08), transparent 26rem),
+    radial-gradient(circle at 75% 15%, rgba(215, 255, 24, 0.11), transparent 29rem),
+    radial-gradient(circle at 10% 85%, rgba(53, 232, 255, 0.07), transparent 26rem),
     var(--alphabet-bg);
 }
 
@@ -48,7 +48,13 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.backLink,
+.brandLink {
+  justify-self: start;
+  transition:
+    color 160ms,
+    opacity 160ms;
+}
+
 .resultsBack {
   justify-self: start;
   color: rgba(255, 255, 255, 0.5);
@@ -60,18 +66,21 @@
   transition: color 160ms;
 }
 
-.backLink {
+.brandLink {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  color: white;
 }
 
-.backLink:hover,
+.brandLink:hover {
+  opacity: 0.78;
+}
+
 .resultsBack:hover {
   color: white;
 }
 
-.modeBrand {
+.challengeBrand {
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -82,15 +91,33 @@
   text-transform: uppercase;
 }
 
+.challengeBrand p {
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 0.58rem;
+  line-height: 1.1;
+}
+
+.challengeBrand strong {
+  display: block;
+  margin-top: 0.15rem;
+  max-width: 17rem;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.72rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .modeGlyph {
   display: grid;
   width: 2rem;
   height: 2rem;
   place-items: center;
-  border: 1px solid rgba(147, 132, 255, 0.48);
+  border: 1px solid rgba(215, 255, 24, 0.38);
   border-radius: 0.65rem;
   color: var(--alphabet-violet);
-  background: rgba(147, 132, 255, 0.1);
+  background: rgba(215, 255, 24, 0.08);
   font-size: 0.66rem;
   letter-spacing: -0.08em;
 }
@@ -224,11 +251,10 @@
 
 .primaryButton {
   color: #0b0a15 !important;
-  background: linear-gradient(135deg, #a79cff, var(--alphabet-cyan)) !important;
+  background: var(--alphabet-violet) !important;
 }
 
-.introBoard,
-.gameBoardPanel {
+.introBoard {
   position: relative;
   display: grid;
   aspect-ratio: 1;
@@ -296,11 +322,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(147, 132, 255, 0.2);
+  border: 1px solid rgba(215, 255, 24, 0.18);
   border-radius: 50%;
   background:
-    radial-gradient(circle, rgba(147, 132, 255, 0.15), transparent 68%), rgba(10, 11, 20, 0.76);
-  box-shadow: inset 0 0 50px rgba(147, 132, 255, 0.08);
+    radial-gradient(circle, rgba(215, 255, 24, 0.1), transparent 68%), rgba(10, 11, 20, 0.76);
+  box-shadow: inset 0 0 50px rgba(215, 255, 24, 0.07);
 }
 
 .boardCenter span,
@@ -323,12 +349,14 @@
 
 .status_active {
   z-index: 3;
-  border-color: var(--alphabet-cyan);
-  color: #0b0c15;
-  background: var(--alphabet-cyan);
+  border-color: var(--alphabet-violet);
+  color: var(--alphabet-violet);
+  background:
+    linear-gradient(rgba(215, 255, 24, 0.1), rgba(215, 255, 24, 0.1)), rgba(16, 17, 28, 0.96);
   box-shadow:
-    0 0 0 6px rgba(84, 230, 235, 0.1),
-    0 0 30px rgba(84, 230, 235, 0.35);
+    inset 0 0 0 1px rgba(215, 255, 24, 0.42),
+    0 0 0 4px rgba(215, 255, 24, 0.08),
+    0 0 24px rgba(215, 255, 24, 0.2);
   transform: translate(-50%, -50%) rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
     translateY(calc(min(17vw, 12.5rem) * -1))
     rotate(calc(var(--letter-index) * -360deg / var(--letter-count))) scale(1.12);
@@ -341,15 +369,17 @@
 }
 
 .status_correct {
-  border-color: var(--alphabet-green);
-  color: #08140f;
-  background: var(--alphabet-green);
+  border-color: rgba(99, 217, 160, 0.58);
+  color: rgba(218, 255, 232, 0.9);
+  background:
+    linear-gradient(rgba(99, 217, 160, 0.18), rgba(99, 217, 160, 0.18)), rgba(16, 17, 28, 0.94);
 }
 
 .status_incorrect {
-  border-color: var(--alphabet-coral);
-  color: white;
-  background: rgba(255, 116, 125, 0.75);
+  border-color: rgba(255, 116, 125, 0.62);
+  color: rgba(255, 226, 228, 0.96);
+  background:
+    linear-gradient(rgba(255, 116, 125, 0.2), rgba(255, 116, 125, 0.2)), rgba(16, 17, 28, 0.94);
 }
 
 .status_unanswered {
@@ -412,17 +442,41 @@
 }
 
 .playGrid {
-  grid-template-columns: minmax(22rem, 0.9fr) minmax(0, 1.1fr);
+  width: min(100%, 58rem);
+  min-height: auto;
+  grid-template-columns: 1fr;
+  align-content: start;
+  align-items: stretch;
+  gap: 1.35rem;
+  padding: clamp(1.5rem, 4vw, 3.25rem) 0;
+}
+
+.gameBoardCard {
+  display: grid;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1.2rem;
+  padding: clamp(0.7rem, 1.5vw, 1rem);
+  background: rgba(18, 19, 32, 0.74);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.gameBoardCard .boardCompact {
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.gameBoardCard .boardCompact .letterCell {
+  min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 0.55rem;
+  font-size: 0.82rem;
+  box-shadow: none;
 }
 
 .questionPanel {
   position: relative;
-  padding: clamp(1.5rem, 4vw, 3.2rem);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 1.75rem;
-  background: var(--alphabet-panel);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(16px);
+  padding: clamp(0.75rem, 2.4vw, 1.3rem) 0 0;
 }
 
 .questionHeading {
@@ -437,9 +491,11 @@
   height: 3.75rem;
   place-items: center;
   border-radius: 1.1rem;
-  color: #0b0c15;
-  background: var(--alphabet-cyan);
-  box-shadow: 0 0 30px rgba(84, 230, 235, 0.24);
+  border: 1px solid rgba(215, 255, 24, 0.78);
+  color: var(--alphabet-violet);
+  background:
+    linear-gradient(rgba(215, 255, 24, 0.12), rgba(215, 255, 24, 0.12)), rgba(16, 17, 28, 0.92);
+  box-shadow: 0 0 24px rgba(215, 255, 24, 0.18);
   font-family: var(--font-display);
   font-size: 1.75rem;
   font-weight: 950;
@@ -462,16 +518,18 @@
 }
 
 .questionPanel > h1 {
-  min-height: 7rem;
+  max-width: 48rem;
+  min-height: 6.25rem;
   margin-top: 2rem;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4.3vw, 3.6rem);
+  font-size: clamp(2.35rem, 5.2vw, 4.25rem);
   font-weight: 950;
   letter-spacing: -0.05em;
   line-height: 1.02;
 }
 
 .answerForm {
+  max-width: 47rem;
   margin-top: 2.25rem;
 }
 
@@ -527,18 +585,26 @@
   transition:
     transform 120ms,
     opacity 120ms,
-    background 120ms;
+    border-color 160ms,
+    background 160ms,
+    color 160ms;
 }
 
 .passButton {
-  border: 1px solid rgba(242, 184, 75, 0.3);
-  color: var(--alphabet-amber);
-  background: rgba(242, 184, 75, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .submitButton {
   color: #090a12;
-  background: linear-gradient(135deg, var(--alphabet-violet), var(--alphabet-cyan));
+  background: var(--alphabet-violet);
+}
+
+.passButton:hover:not(:disabled),
+.passButton:focus-visible {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .passButton:active,
@@ -551,6 +617,12 @@
   opacity: 0.3;
 }
 
+.passButton:disabled {
+  border-color: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.025);
+}
+
 .answerForm > p {
   margin-top: 0.65rem;
   color: rgba(255, 255, 255, 0.28);
@@ -558,23 +630,10 @@
   line-height: 1.5;
 }
 
-.finishButton {
-  margin-top: 1.25rem;
-  color: rgba(255, 255, 255, 0.32);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-decoration: underline;
-  text-underline-offset: 0.25rem;
-  text-transform: uppercase;
-}
-
 .feedback {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 1.35rem;
+  position: static;
   min-height: 1.5rem;
+  margin-top: 0.85rem;
 }
 
 .feedbackCorrect,
@@ -600,7 +659,7 @@
   top: 5.5rem;
   left: 50%;
   padding: 0.65rem 1rem;
-  border: 1px solid rgba(147, 132, 255, 0.3);
+  border: 1px solid rgba(215, 255, 24, 0.24);
   border-radius: 999px;
   color: white;
   background: rgba(18, 18, 32, 0.94);
@@ -635,7 +694,7 @@
   font-weight: 950;
   letter-spacing: -0.09em;
   line-height: 0.8;
-  background: linear-gradient(135deg, white 15%, var(--alphabet-violet), var(--alphabet-cyan));
+  background: linear-gradient(135deg, white 12%, var(--alphabet-violet) 58%, var(--alphabet-cyan));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -910,19 +969,19 @@
     margin: 1rem auto 0;
   }
 
-  .board {
+  .introBoard .board {
     width: min(78vw, 27rem);
   }
 
-  .letterCell,
-  .status_active {
+  .introBoard .letterCell,
+  .introBoard .status_active {
     transform: translate(-50%, -50%)
       rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
       translateY(calc(min(35vw, 12rem) * -1))
       rotate(calc(var(--letter-index) * -360deg / var(--letter-count)));
   }
 
-  .status_active {
+  .introBoard .status_active {
     transform: translate(-50%, -50%)
       rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
       translateY(calc(min(35vw, 12rem) * -1))
@@ -931,11 +990,6 @@
 
   .playGrid {
     padding: 1.5rem 0;
-  }
-
-  .gameBoardPanel {
-    width: min(100%, 28rem);
-    margin: 0 auto;
   }
 
   .resultsGrid {
@@ -953,33 +1007,29 @@
     grid-template-columns: 1fr auto;
   }
 
-  .modeBrand {
+  .challengeBrand {
     display: none;
   }
 
-  .backLink {
-    max-width: 7.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .brandLink {
+    max-width: 9rem;
   }
 
   .introGrid {
     gap: 1.25rem;
   }
 
-  .introBoard,
-  .gameBoardPanel {
+  .introBoard {
     display: block;
     width: 100%;
     aspect-ratio: auto;
   }
 
-  .boardCenter {
+  .introBoard .boardCenter {
     display: none;
   }
 
-  .board {
+  .introBoard .board {
     display: grid;
     width: 100%;
     height: auto;
@@ -988,8 +1038,8 @@
     gap: 0.45rem;
   }
 
-  .letterCell,
-  .status_active {
+  .introBoard .letterCell,
+  .introBoard .status_active {
     position: relative;
     top: auto;
     left: auto;
@@ -1038,9 +1088,23 @@
     padding-top: 1rem;
   }
 
+  .gameBoardCard {
+    border-radius: 1rem;
+    padding: 0.65rem;
+  }
+
+  .gameBoardCard .boardCompact {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.45rem;
+  }
+
+  .gameBoardCard .boardCompact .letterCell {
+    border-radius: 0.72rem;
+    font-size: 0.95rem;
+  }
+
   .questionPanel {
-    padding: 1.25rem 1rem 1rem;
-    border-radius: 1.2rem;
+    padding: 0.45rem 0 0;
   }
 
   .activeLetter {
@@ -1081,10 +1145,6 @@
     position: static;
     min-height: 1.35rem;
     margin-top: 0.6rem;
-  }
-
-  .finishButton {
-    margin-top: 0.5rem;
   }
 
   .scoreCard h1 {

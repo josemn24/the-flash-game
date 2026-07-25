@@ -11,6 +11,7 @@ import {
   EyeIcon,
   RotateIcon,
 } from "@/components/icons";
+import { Logo } from "@/components/Logo";
 import { Timer } from "@/components/Timer";
 import { Button } from "@/components/ui/Button";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
@@ -78,20 +79,22 @@ function AlphabetBoard({
 
 function AlphabetTopbar({
   right,
-  backLabel = "Volver a desafíos",
+  challengeTitle,
 }: {
   right?: React.ReactNode;
-  backLabel?: string;
+  challengeTitle?: string;
 }) {
   return (
     <header className={styles.topbar}>
-      <Link className={styles.backLink} href="/">
-        <span aria-hidden="true">←</span>
-        {backLabel}
+      <Link className={styles.brandLink} href="/" aria-label="Volver a los desafíos">
+        <Logo />
       </Link>
-      <div className={styles.modeBrand}>
+      <div className={styles.challengeBrand}>
         <span className={styles.modeGlyph}>Aa</span>
-        <span>Alfabeto</span>
+        <div>
+          <p>Alfabeto</p>
+          {challengeTitle && <strong>{challengeTitle}</strong>}
+        </div>
       </div>
       <div className={styles.topbarRight}>{right}</div>
     </header>
@@ -304,7 +307,7 @@ function Playing({ challenge, session }: { challenge: AlphabetChallenge; session
       exit={{ opacity: 0 }}
     >
       <AlphabetTopbar
-        backLabel="Abandonar"
+        challengeTitle={challenge.title}
         right={
           <div className={styles.gameMeta}>
             <span>Vuelta {session.round}</span>
@@ -325,13 +328,8 @@ function Playing({ challenge, session }: { challenge: AlphabetChallenge; session
       <RoundNotice key={session.round} round={session.round} remaining={remaining} />
 
       <div className={styles.playGrid}>
-        <div className={styles.gameBoardPanel}>
-          <div className={styles.boardCenter}>
-            <span>Letra activa</span>
-            <strong>{entry.letter}</strong>
-            <small>{remaining} pendientes</small>
-          </div>
-          <AlphabetBoard letters={session.letters} />
+        <div className={styles.gameBoardCard}>
+          <AlphabetBoard letters={session.letters} compact />
         </div>
 
         <div className={styles.questionPanel}>
@@ -351,23 +349,6 @@ function Playing({ challenge, session }: { challenge: AlphabetChallenge; session
             onSubmit={session.submitAnswer}
             onPass={session.pass}
           />
-
-          <button
-            className={styles.finishButton}
-            type="button"
-            onClick={() => {
-              if (
-                window.confirm(
-                  "Las letras pendientes quedarán sin responder. ¿Quieres finalizar el desafío?",
-                )
-              ) {
-                session.finish();
-              }
-            }}
-            disabled={locked}
-          >
-            Finalizar desafío
-          </button>
 
           <div className={styles.feedback} aria-live="assertive" aria-atomic="true">
             <AnimatePresence>
@@ -406,7 +387,10 @@ function Results({ challenge, session }: { challenge: AlphabetChallenge; session
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
     >
-      <AlphabetTopbar right={<span className={styles.completeBadge}>Completado</span>} />
+      <AlphabetTopbar
+        challengeTitle={challenge.title}
+        right={<span className={styles.completeBadge}>Completado</span>}
+      />
       <div className={styles.resultsGrid}>
         <div className={styles.scoreCard}>
           <p className={styles.eyebrow}>Desafío completado</p>
@@ -496,7 +480,7 @@ function Review({ challenge, session }: { challenge: AlphabetChallenge; session:
       exit={{ opacity: 0 }}
     >
       <AlphabetTopbar
-        backLabel="Volver a desafíos"
+        challengeTitle={challenge.title}
         right={
           <button className={styles.resultsBack} type="button" onClick={session.showResults}>
             Resultados
