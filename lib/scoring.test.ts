@@ -1763,10 +1763,8 @@ describe("question evaluation", () => {
   });
 
   it("registers scoring behavior for every question type", () => {
-    expect(Object.keys(SCORING).sort()).toEqual(Object.keys(QUESTION_SCORING_POLICY).sort());
-    for (const type of Object.keys(QUESTION_SCORING_POLICY) as QuestionType[]) {
+    for (const type of Object.keys(SCORING) as QuestionType[]) {
       expect(SCORING[type].questionType).toBe(type);
-      expect(SCORING[type].policy).toBe(QUESTION_SCORING_POLICY[type]);
     }
   });
 

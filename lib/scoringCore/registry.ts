@@ -26,34 +26,6 @@ import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze
 import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
 import type { QuestionScoring, ScoringPolicyId } from "@/lib/scoringCore/types";
 
-export const QUESTION_SCORING_POLICY = {
-  "multiple-choice": "binary-speed",
-  "odd-one-out": "binary-speed",
-  matching: "partial-items",
-  "connect-pairs": "partial-items",
-  "true-false": "binary-speed",
-  "short-text": "binary-speed",
-  "progressive-clues": "clue-speed",
-  "progressive-image": "binary-speed",
-  "heat-map": "spatial-proximity",
-  "image-labeling": "image-labeling",
-  ordering: "partial-items",
-  classification: "partial-items",
-  "flash-memory": "partial-items",
-  "memory-pairs": "partial-items",
-  "simon-sequence": "binary-speed",
-  "logic-matrix": "binary-speed",
-  "mini-sudoku": "partial-items",
-  "mini-nonogram": "partial-items",
-  "time-maze": "binary-speed",
-  "sliding-puzzle": "binary-speed",
-  "error-reconstruction": "error-location-correction",
-  anagram: "binary-speed",
-  "mini-wordle": "attempt-penalty",
-  "logic-code": "attempt-penalty",
-  estimation: "proximity",
-} as const satisfies Record<QuestionType, ScoringPolicyId>;
-
 export const SCORING: Record<QuestionType, QuestionScoring> = {
   "multiple-choice": multipleChoiceScoring,
   "odd-one-out": oddOneOutScoring,
@@ -81,3 +53,7 @@ export const SCORING: Record<QuestionType, QuestionScoring> = {
   "logic-code": logicCodeScoring,
   estimation: estimationScoring,
 };
+
+export const QUESTION_SCORING_POLICY = Object.fromEntries(
+  Object.entries(SCORING).map(([type, scoring]) => [type, scoring.policy]),
+) as Record<QuestionType, ScoringPolicyId>;
