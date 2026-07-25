@@ -409,20 +409,24 @@
 }
 
 .countdown strong {
-  margin: 0.5rem 0;
+  display: block;
+  margin: 0.15rem 0 0.25rem;
+  padding: 0.08em 0.04em;
   font-family: var(--font-display);
   font-size: clamp(9rem, 28vw, 18rem);
   font-weight: 950;
   letter-spacing: -0.08em;
-  line-height: 0.9;
+  line-height: 1;
   background: linear-gradient(135deg, white, var(--alphabet-violet), var(--alphabet-cyan));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .countdown span {
+  max-width: min(calc(100% - 2rem), 34rem);
   color: rgba(255, 255, 255, 0.38);
   font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .gameMeta {
