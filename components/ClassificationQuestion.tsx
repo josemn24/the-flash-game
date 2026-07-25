@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { CheckIcon } from "@/components/icons";
 import styles from "@/components/ClassificationQuestion.module.css";
@@ -27,6 +28,8 @@ export function ClassificationQuestion({
   const [answers, setAnswers] = useState<ClassificationAnswer>({});
   const answeredCount = items.filter((item) => answers[item.label]).length;
   const complete = answeredCount === items.length;
+  const isBinary = categories.length === 2;
+  const categoryGridStyle = { "--category-count": categories.length } as CSSProperties;
 
   const chooseCategory = (item: ClassificationItem, category: string) => {
     if (locked) return;
@@ -56,28 +59,28 @@ export function ClassificationQuestion({
         />
       </div>
 
-      <div className={styles.matrix}>
-        <div className={styles.matrixHeader} aria-hidden="true">
-          <span>Ser vivo</span>
-          {categories.map((category) => (
-            <span key={category} className={styles.categoryHeading}>
-              {categoryLabel(category)}
-            </span>
-          ))}
-        </div>
+      {isBinary ? (
+        <div className={styles.binaryList}>
+          <div className={styles.binaryHeader} aria-hidden="true">
+            <span>Elemento</span>
+            {categories.map((category) => (
+              <span key={category} className={styles.categoryHeading}>
+                {categoryLabel(category)}
+              </span>
+            ))}
+          </div>
 
-        <div className={styles.rows}>
           {items.map((item, itemIndex) => (
             <motion.div
               key={item.label}
-              className={styles.row}
+              className={styles.binaryRow}
               role="group"
               aria-label={`Clasificar ${item.label}`}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(itemIndex * 0.025, 0.15), duration: 0.18 }}
             >
-              <strong className={styles.itemLabel}>{item.label}</strong>
+              <strong className={styles.binaryItemLabel}>{item.label}</strong>
               {categories.map((category) => {
                 const selected = answers[item.label] === category;
 
@@ -85,21 +88,15 @@ export function ClassificationQuestion({
                   <motion.button
                     key={category}
                     type="button"
-                    className={`${styles.choiceButton} ${selected ? styles.choiceButtonSelected : ""}`}
+                    className={`${styles.binaryChoice} ${selected ? styles.binaryChoiceSelected : ""}`}
                     disabled={locked}
                     aria-pressed={selected}
                     aria-label={`Clasificar ${item.label} como ${categoryLabel(category)}`}
                     onClick={() => chooseCategory(item, category)}
-                    whileTap={locked ? undefined : { scale: 0.92 }}
+                    whileTap={locked ? undefined : { scale: 0.94 }}
                   >
                     {selected ? (
-                      <motion.span
-                        initial={{ scale: 0.5 }}
-                        animate={{ scale: 1 }}
-                        aria-hidden="true"
-                      >
-                        <CheckIcon className={styles.checkIcon} />
-                      </motion.span>
+                      <CheckIcon className={styles.binaryCheckIcon} aria-hidden="true" />
                     ) : (
                       <span className={styles.emptyChoice} aria-hidden="true" />
                     )}
@@ -109,7 +106,62 @@ export function ClassificationQuestion({
             </motion.div>
           ))}
         </div>
-      </div>
+      ) : (
+        <div className={styles.matrix} style={categoryGridStyle}>
+          <div className={styles.matrixHeader} aria-hidden="true">
+            <span>Elemento</span>
+            {categories.map((category) => (
+              <span key={category} className={styles.categoryHeading}>
+                {categoryLabel(category)}
+              </span>
+            ))}
+          </div>
+
+          <div className={styles.rows}>
+            {items.map((item, itemIndex) => (
+              <motion.div
+                key={item.label}
+                className={styles.row}
+                role="group"
+                aria-label={`Clasificar ${item.label}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(itemIndex * 0.025, 0.15), duration: 0.18 }}
+              >
+                <strong className={styles.itemLabel}>{item.label}</strong>
+                {categories.map((category) => {
+                  const selected = answers[item.label] === category;
+
+                  return (
+                    <motion.button
+                      key={category}
+                      type="button"
+                      className={`${styles.choiceButton} ${selected ? styles.choiceButtonSelected : ""}`}
+                      disabled={locked}
+                      aria-pressed={selected}
+                      aria-label={`Clasificar ${item.label} como ${categoryLabel(category)}`}
+                      onClick={() => chooseCategory(item, category)}
+                      whileTap={locked ? undefined : { scale: 0.92 }}
+                    >
+                      {selected ? (
+                        <motion.span
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          aria-hidden="true"
+                        >
+                          <CheckIcon className={styles.checkIcon} />
+                        </motion.span>
+                      ) : (
+                        <span className={styles.emptyChoice} aria-hidden="true" />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <MotionButton
         className={styles.confirmButton}
