@@ -93,6 +93,7 @@ Estas líneas pueden tener valor, pero deberían esperar hasta validar el loop b
 - Cooperativo.
 - Constructor.
 - Conquista.
+- Respuesta rara.
 - Creador de retos.
 - Debate.
 - Tiempo real.

@@ -65,6 +65,7 @@ La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué vali
 | Narrativo            | inmersión, contexto, competición          | solo / todos contra todos / cooperativo | asíncrono / episódico   |
 | Detective            | investigación, pensamiento crítico        | solo / cooperativo / equipos            | asíncrono / episódico   |
 | Predicción           | anticipación, razonamiento causal         | solo / todos contra todos               | asíncrono / tiempo real |
+| Respuesta rara       | estrategia social, conocimiento abierto   | todos contra todos / comunidad          | asíncrono / agregado    |
 | Orden y conexión     | comprensión estructural                   | solo / todos contra todos / cooperativo | asíncrono / tiempo real |
 | Conquista            | estrategia territorial                    | todos contra todos / equipos            | persistente             |
 | Constructor          | progresión, estrategia                    | solo / cooperativo / competitivo        | persistente             |
@@ -234,6 +235,19 @@ Se muestra una situación, experimento, gráfico incompleto o acontecimiento his
 - **V1 validable:** sala asíncrona todos contra todos con preguntas de elección múltiple o estimación formuladas como predicción, comparando acierto, proximidad y tiempo.
 - **Riesgos:** debe evitar depender de adivinanza; cada predicción necesita evidencia suficiente en pantalla.
 
+### Respuesta rara
+
+El jugador debe dar una respuesta correcta que haya sido elegida por el menor número posible de participantes o que tenga baja frecuencia en una muestra de referencia. Las respuestas obvias conceden pocos puntos; las respuestas válidas pero poco frecuentes ofrecen mayor recompensa.
+
+- **Motivación principal:** estrategia social, conocimiento abierto y lectura del comportamiento del grupo.
+- **Relación entre jugadores:** todos contra todos / comunidad.
+- **Ritmo:** asíncrono / agregado.
+- **Cómo funciona:** se plantea una consigna con varias respuestas válidas; cada jugador responde intentando acertar y, a la vez, evitar la respuesta más evidente; la puntuación combina validez, rareza y penalización por respuestas incorrectas o no reconocidas.
+- **Encaje con The Flash:** añade una capa distinta a la trivia rápida porque la pregunta no es solo "qué sé", sino "qué sé que otros no elegirán". Funciona especialmente bien en salas, eventos y temporadas con suficiente participación.
+- **V1 validable:** variante cerrada con opciones válidas visibles u ocultas y rareza calculada contra una tabla editorial o contra las respuestas de la sala al cerrar el desafío.
+- **Variantes:** contra la sala, contra histórico global, lista cerrada, respuesta abierta, cero absoluto si nadie más respondió lo mismo, rondas temáticas o penalización fuerte por respuesta inválida.
+- **Riesgos:** requiere normalizar sinónimos, ortografía y variantes válidas; necesita masa crítica o datos de referencia para que la rareza sea justa; una validación abierta insuficiente puede hacer que el modo parezca arbitrario.
+
 ### Orden y conexión
 
 Modo centrado en ordenar acontecimientos, pasos, magnitudes o conceptos, y en construir conexiones entre elementos.
@@ -310,6 +324,7 @@ Se plantea un dilema o una postura. Los jugadores argumentan, responden objecion
 | Narrativo            | Medio      | Alto         | Media                 |
 | Detective            | Alto       | Alto         | Media                 |
 | Predicción           | Bajo/medio | Alto         | Media                 |
+| Respuesta rara       | Alto       | Alto         | Baja inicial          |
 | Orden y conexión     | Bajo       | Medio/alto   | Media                 |
 | Conquista            | Alto       | Alto         | Baja inicial          |
 | Constructor          | Alto       | Alto         | Baja inicial          |
@@ -324,6 +339,6 @@ La primera validación no debería intentar construir todos los modos. Conviene 
 - **Superación personal:** Supervivencia y Apuesta de confianza.
 - **Caso especial de sala pequeña:** Duelo como sala de dos jugadores.
 - **Social flexible posterior:** Creador de retos.
-- **Variantes posteriores:** Equipos, Cooperativo, Constructor, Conquista, Detective y Debate.
+- **Variantes posteriores:** Equipos, Cooperativo, Constructor, Conquista, Detective, Respuesta rara y Debate.
 
-Los modos que exigen cooperación profunda, equipos equilibrados, conquista, construcción, creación de retos o tiempo real deberían esperar hasta que esté validado el núcleo de sala asíncrona competitiva individual y ranking general.
+Los modos que exigen cooperación profunda, equipos equilibrados, conquista, construcción, creación de retos, rareza basada en datos agregados o tiempo real deberían esperar hasta que esté validado el núcleo de sala asíncrona competitiva individual y ranking general.
