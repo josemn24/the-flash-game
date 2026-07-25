@@ -76,6 +76,7 @@ Estos modos encajan bien como desafíos periódicos asíncronos dentro de una te
 - Flash / Contrarreloj.
 - Supervivencia.
 - Cadena.
+- Alfabeto.
 - Apuesta de confianza.
 - Predicción.
 - Narrativo competitivo.

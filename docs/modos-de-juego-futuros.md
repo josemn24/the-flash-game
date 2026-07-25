@@ -39,7 +39,7 @@ La prioridad temporal queda así:
 1. **Asíncrono:** modalidad inicial; cada jugador completa la sala cuando pueda dentro de una ventana o invitación.
 2. **Tiempo real:** evolución posterior; añade sincronización, presencia, latencia, desconexiones y estado compartido en vivo.
 
-Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización completa de salas, temporadas y rankings se mantiene en `salas-y-temporadas.md`.
+Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, Alfabeto, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización completa de salas, temporadas y rankings se mantiene en `salas-y-temporadas.md`.
 
 ## Dimensiones de clasificación
 
@@ -51,23 +51,24 @@ Cada modo debería describirse con tres dimensiones:
 
 La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué validar primero, no para cerrar una taxonomía definitiva.
 
-| Modo                 | Finalidad principal                    | Relación entre jugadores                | Ritmo                   |
-| -------------------- | -------------------------------------- | --------------------------------------- | ----------------------- |
-| Flash / Contrarreloj | velocidad, competición, marca personal | solo / todos contra todos               | asíncrono / tiempo real |
-| Supervivencia        | superación, resistencia                | solo / todos contra todos               | asíncrono / tiempo real |
-| Cadena               | racha, riesgo, progresión              | solo / todos contra todos               | asíncrono / tiempo real |
-| Apuesta de confianza | estrategia, metacognición, riesgo      | solo / todos contra todos               | asíncrono / tiempo real |
-| Duelo                | competición directa                    | uno contra uno                          | asíncrono / tiempo real |
-| Cooperativo          | objetivo común                         | cooperativo                             | asíncrono / tiempo real |
-| Equipos              | competición social, coordinación       | equipo contra equipo                    | tiempo real             |
-| Narrativo            | inmersión, contexto, competición       | solo / todos contra todos / cooperativo | asíncrono / episódico   |
-| Detective            | investigación, pensamiento crítico     | solo / cooperativo / equipos            | asíncrono / episódico   |
-| Predicción           | anticipación, razonamiento causal      | solo / todos contra todos               | asíncrono / tiempo real |
-| Orden y conexión     | comprensión estructural                | solo / todos contra todos / cooperativo | asíncrono / tiempo real |
-| Conquista            | estrategia territorial                 | todos contra todos / equipos            | persistente             |
-| Constructor          | progresión, estrategia                 | solo / cooperativo / competitivo        | persistente             |
-| Creador de retos     | creatividad, socialización             | creador contra jugadores / comunidad    | asíncrono               |
-| Debate               | argumentación, expresión               | uno contra uno / equipos / grupo        | asíncrono / tiempo real |
+| Modo                 | Finalidad principal                       | Relación entre jugadores                | Ritmo                   |
+| -------------------- | ----------------------------------------- | --------------------------------------- | ----------------------- |
+| Flash / Contrarreloj | velocidad, competición, marca personal    | solo / todos contra todos               | asíncrono / tiempo real |
+| Supervivencia        | superación, resistencia                   | solo / todos contra todos               | asíncrono / tiempo real |
+| Cadena               | racha, riesgo, progresión                 | solo / todos contra todos               | asíncrono / tiempo real |
+| Alfabeto             | precisión, recorrido, gestión del tiempo  | solo / todos contra todos               | asíncrono / tiempo real |
+| Apuesta de confianza | estrategia, metacognición, riesgo         | solo / todos contra todos               | asíncrono / tiempo real |
+| Duelo                | competición directa                       | uno contra uno                          | asíncrono / tiempo real |
+| Cooperativo          | objetivo común                            | cooperativo                             | asíncrono / tiempo real |
+| Equipos              | competición social, coordinación          | equipo contra equipo                    | tiempo real             |
+| Narrativo            | inmersión, contexto, competición          | solo / todos contra todos / cooperativo | asíncrono / episódico   |
+| Detective            | investigación, pensamiento crítico        | solo / cooperativo / equipos            | asíncrono / episódico   |
+| Predicción           | anticipación, razonamiento causal         | solo / todos contra todos               | asíncrono / tiempo real |
+| Orden y conexión     | comprensión estructural                   | solo / todos contra todos / cooperativo | asíncrono / tiempo real |
+| Conquista            | estrategia territorial                    | todos contra todos / equipos            | persistente             |
+| Constructor          | progresión, estrategia                    | solo / cooperativo / competitivo        | persistente             |
+| Creador de retos     | creatividad, socialización                | creador contra jugadores / comunidad    | asíncrono               |
+| Debate               | argumentación, expresión                  | uno contra uno / equipos / grupo        | asíncrono / tiempo real |
 
 ## Shortlist recomendada
 
@@ -76,9 +77,10 @@ Los primeros modos a validar deberían ser:
 1. **Flash / Contrarreloj**, como modo base y control.
 2. **Supervivencia**, por superación personal y rejugabilidad.
 3. **Cadena**, por rachas, tensión y riesgo con coste bajo.
-4. **Apuesta de confianza**, por añadir estrategia y metacognición.
-5. **Predicción**, por funcionar bien como comparación todos contra todos.
-6. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual.
+4. **Alfabeto**, por combinar conocimiento, memoria de pendientes y gestión del tiempo.
+5. **Apuesta de confianza**, por añadir estrategia y metacognición.
+6. **Predicción**, por funcionar bien como comparación todos contra todos.
+7. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual.
 
 Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
 
@@ -119,6 +121,19 @@ Los aciertos consecutivos aumentan un multiplicador, una recompensa o una barra 
 - **Encaje con The Flash:** refuerza partidas cortas y convierte cada pregunta en parte de una progresión visible.
 - **V1 validable:** aplicar multiplicador por racha en una sala asíncrona todos contra todos y reflejar la mejor cadena en el ranking.
 - **Riesgos:** un multiplicador demasiado agresivo puede hacer que una sola pregunta pese más que toda la etapa.
+
+### Alfabeto
+
+El jugador recorre letras del alfabeto y responde una definición asociada a cada una. Puede contestar, pasar y volver más tarde a las letras pendientes mientras el tiempo sigue corriendo.
+
+- **Motivación principal:** precisión, memoria de pendientes y gestión del tiempo.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** cada letra tiene una definición cuya respuesta empieza por esa letra, la contiene o se asocia editorialmente a ella; el jugador avanza por el alfabeto, marca letras resueltas, falla o pasa, y puede completar varias vueltas hasta agotar el tiempo o cerrar todas las letras.
+- **Encaje con The Flash:** aporta un modo reconocible, estratégico y televisivo sin abandonar la presión temporal; obliga a decidir cuándo insistir, cuándo pasar y cómo administrar las letras pendientes.
+- **V1 validable:** mini alfabeto temático de ocho a doce letras con respuesta corta, botón de pasar, estado por letra y ranking por aciertos, errores y tiempo utilizado.
+- **Variantes:** rosco completo, mini rosco, alfabeto temático, letras con respuesta que empieza por la letra, letras con respuesta que contiene la letra, bloqueo por error o vueltas con dificultad creciente.
+- **Riesgos:** requiere contenido editorial muy cuidado para evitar ambigüedades; un alfabeto completo puede ser demasiado largo para sesiones rápidas si no se ajusta el tiempo o el número de letras.
 
 ### Apuesta de confianza
 
@@ -271,6 +286,7 @@ Se plantea un dilema o una postura. Los jugadores argumentan, responden objecion
 | Flash                | Bajo       | Alto         | Mantener como control |
 | Supervivencia        | Bajo/medio | Alto         | Alta                  |
 | Cadena               | Bajo       | Alto         | Alta                  |
+| Alfabeto             | Medio      | Alto         | Alta                  |
 | Apuesta de confianza | Medio      | Muy alto     | Alta                  |
 | Duelo                | Bajo       | Alto         | Media                 |
 | Cooperativo          | Medio/alto | Alto         | Baja inicial          |
@@ -286,9 +302,9 @@ Se plantea un dilema o una postura. Los jugadores argumentan, responden objecion
 
 ## Lectura recomendada
 
-La primera validación no debería intentar construir todos los modos. Conviene partir de salas asíncronas todos contra todos con ranking individual y comparar el modo actual con tres o cuatro variantes que reutilicen contenido existente:
+La primera validación no debería intentar construir todos los modos. Conviene partir de salas asíncronas todos contra todos con ranking individual y comparar el modo actual con varias variantes que reutilicen contenido existente:
 
-- **Competición rápida en sala:** Flash, Cadena, Predicción y Narrativo competitivo.
+- **Competición rápida en sala:** Flash, Cadena, Alfabeto, Predicción y Narrativo competitivo.
 - **Superación personal:** Supervivencia y Apuesta de confianza.
 - **Caso especial de sala pequeña:** Duelo como sala de dos jugadores.
 - **Social flexible posterior:** Creador de retos.

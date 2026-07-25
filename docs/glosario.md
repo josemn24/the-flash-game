@@ -26,7 +26,7 @@ Una sala contiene temporadas. Una temporada publica desafíos periódicos. Cada 
 | Sala                        | Room                  | Grupo privado creado por un usuario para invitar amigos y competir juntos.                                                               |
 | Temporada                   | Season                | Ciclo competitivo dentro de una sala, con inicio, fin y ranking acumulado.                                                               |
 | Desafío                     | Challenge             | Evento jugable periódico publicado en una sala durante una temporada.                                                                    |
-| Modo de juego               | Game Mode             | Reglas globales del desafío, como Flash, Supervivencia, Cadena, Apuesta de confianza, Predicción o Narrativo competitivo.                |
+| Modo de juego               | Game Mode             | Reglas globales del desafío, como Flash, Supervivencia, Cadena, Alfabeto, Apuesta de confianza, Predicción o Narrativo competitivo.      |
 | Prueba                      | Trial / Task          | Unidad jugable individual vista por el usuario. Es más amplia que "pregunta" y cubre puzzles, memoria, laberintos, estimaciones o mapas. |
 | Pregunta                    | Question              | Unidad técnica actual del modelo de datos. También puede usarse cuando la prueba es claramente textual o interrogativa.                  |
 | Formato de pregunta         | Question Format       | Tipo de interacción de una prueba: elección múltiple, verdadero/falso, ordenar, estimación, mapa de calor, Mini-Wordle, laberinto, etc.  |
