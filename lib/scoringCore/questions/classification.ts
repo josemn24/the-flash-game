@@ -49,7 +49,7 @@ export function evaluateClassification({
   ).length;
   return {
     isCorrect: correct,
-    status: correct ? "correct" : "incorrect",
+    status: correct ? "correct" : correctItems > 0 ? "partial" : "incorrect",
     points: calculateProportionalScore(
       classificationQuestion.points,
       correctItems,

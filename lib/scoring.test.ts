@@ -1011,8 +1011,19 @@ describe("question evaluation", () => {
       answer: { Delfín: "mamífero", Águila: "ave", Tortuga: "ave" },
       timeUsed: 0,
     });
-    expect(result.status).toBe("incorrect");
+    expect(result.status).toBe("partial");
     expect(result.points).toBe(107);
+  });
+
+  it("keeps classification answers with no correct items incorrect", () => {
+    const question = QUESTION_FORMAT_CATALOG.classification.examples[0].question;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { Delfín: "ave", Águila: "mamífero", Tortuga: "ave" },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
   it("awards matching credit per correct pair and adjusts it by speed", () => {
