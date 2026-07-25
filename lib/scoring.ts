@@ -3,6 +3,7 @@ export {
   calculateAnswerScore,
   calculateTotalScore,
   evaluateAnswer,
+  getTimedOutAnswer,
   isAnswerCorrect,
 } from "@/lib/scoringCore/engine";
 export { QUESTION_SCORING_POLICY, SCORING } from "@/lib/scoringCore/registry";

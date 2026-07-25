@@ -15,6 +15,7 @@ import {
   calculateProgressiveCluesMetrics,
   calculateTotalScore,
   evaluateAnswer,
+  getTimedOutAnswer,
   isAnswerCorrect,
   isHeatMapAnswer,
   isMiniNonogramAnswer,
@@ -1714,6 +1715,76 @@ describe("question evaluation", () => {
       submittedCodes: ["111", "222", "042"],
       incorrectAttempts: 2,
     });
+    expect(calculateAnswerScore(question, "042", 0, 2)).toBe(120);
+  });
+
+  it("keeps format-owned evaluation context behavior", () => {
+    const logicCode = QUESTION_FORMAT_CATALOG["logic-code"].examples[0].question;
+    const matching = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
+    const progressiveClues = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
+
+    expect(
+      evaluateAnswer({
+        question: logicCode,
+        answer: logicCode.correctAnswer,
+        submittedCodes: ["111", "222", logicCode.correctAnswer],
+        timeUsed: 0,
+      }),
+    ).toMatchObject({
+      status: "correct",
+      details: { type: "logic-code", incorrectAttempts: 2 },
+    });
+
+    expect(
+      evaluateAnswer({
+        question: matching,
+        answer: { japon: "bandera-japon", italia: "bandera-italia" },
+        timeUsed: 0,
+        matchingIncorrectAttempts: 2,
+      }),
+    ).toMatchObject({
+      status: "partial",
+      points: 70,
+      details: { type: "matching", correctPairs: 2, incorrectAttempts: 2 },
+    });
+
+    expect(
+      evaluateAnswer({
+        question: progressiveClues,
+        answer: progressiveClues.correctAnswer,
+        timeUsed: 0,
+        progressiveCluesRevealed: 3,
+      }),
+    ).toMatchObject({
+      status: "correct",
+      details: { type: "progressive-clues", revealedClues: 3 },
+    });
+  });
+
+  it("resolves timed-out answers through scoring metadata", () => {
+    const logicCode = QUESTION_FORMAT_CATALOG["logic-code"].examples[0].question;
+    const matching = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
+    const multipleChoice = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
+    const draft = { japon: "bandera-japon" };
+
+    expect(
+      getTimedOutAnswer(logicCode, {
+        draftAnswer: "ignored",
+        submittedCodes: ["111", "222"],
+      }),
+    ).toBe("222");
+    expect(
+      getTimedOutAnswer(matching, {
+        draftAnswer: draft,
+        submittedCodes: ["111"],
+      }),
+    ).toBe(draft);
+    expect(
+      getTimedOutAnswer(multipleChoice, {
+        draftAnswer: multipleChoice.correctAnswer,
+        submittedCodes: ["111"],
+      }),
+    ).toBeNull();
   });
 
   it("returns zero points after a timeout", () => {

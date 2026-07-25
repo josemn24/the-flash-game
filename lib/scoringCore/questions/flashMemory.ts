@@ -110,6 +110,7 @@ export const scoring = {
   questionType: "flash-memory",
   policy: "partial-items",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isFlashMemoryAnswer,
   isCorrect,
   evaluate: evaluateFlashMemory,

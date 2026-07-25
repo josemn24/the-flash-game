@@ -130,6 +130,7 @@ export const scoring = {
   questionType: "mini-nonogram",
   policy: "partial-items",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isMiniNonogramAnswer,
   isCorrect,
   evaluate: evaluateMiniNonogram,

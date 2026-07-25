@@ -132,6 +132,7 @@ export const scoring = {
   questionType: "error-reconstruction",
   policy: "error-location-correction",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isErrorReconstructionAnswer,
   isCorrect,
   evaluate: evaluateErrorReconstruction,

@@ -166,6 +166,7 @@ export const scoring = {
   questionType: "memory-pairs",
   policy: "partial-items",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isMemoryPairsAnswer,
   isCorrect,
   evaluate: evaluateMemoryPairs,

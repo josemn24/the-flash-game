@@ -124,6 +124,7 @@ export const scoring = {
   questionType: "mini-sudoku",
   policy: "partial-items",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isMiniSudokuAnswer,
   isCorrect,
   evaluate: evaluateMiniSudoku,

@@ -98,6 +98,7 @@ export const scoring = {
   questionType: "connect-pairs",
   policy: "partial-items",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isConnectPairsAnswer,
   isCorrect,
   evaluate: evaluateConnectPairs,

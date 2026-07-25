@@ -77,6 +77,14 @@ export const scoring = {
   policy: "clue-speed",
   isAnswer: (answer) => typeof answer === "string",
   isCorrect,
+  buildEvaluationContext: (input) => ({
+    question: input.question,
+    answer: input.answer,
+    timeUsed: input.timeUsed,
+    submittedCodes: input.submittedCodes,
+    incorrectAttempts: 0,
+    revealedClues: input.progressiveCluesRevealed,
+  }),
   evaluate: evaluateProgressiveClues,
   unansweredDetails,
 } as const satisfies QuestionScoring;

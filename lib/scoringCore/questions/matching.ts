@@ -71,8 +71,17 @@ export const scoring = {
   questionType: "matching",
   policy: "partial-items",
   preserveTimedOutPoints: true,
+  timeoutAnswerSource: "draft",
   isAnswer: isMatchingAnswer,
   isCorrect,
+  buildEvaluationContext: (input) => ({
+    question: input.question,
+    answer: input.answer,
+    timeUsed: input.timeUsed,
+    submittedCodes: input.submittedCodes,
+    incorrectAttempts: input.matchingIncorrectAttempts,
+    revealedClues: 1,
+  }),
   evaluate: evaluateMatching,
   timedOutStatus: (evaluation) =>
     evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0

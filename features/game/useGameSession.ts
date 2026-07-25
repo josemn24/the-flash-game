@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
-import { calculateTotalScore, evaluateAnswer, isAnswerCorrect } from "@/lib/scoring";
+import {
+  calculateTotalScore,
+  evaluateAnswer,
+  getTimedOutAnswer,
+  isAnswerCorrect,
+} from "@/lib/scoring";
 import type { AnswerResult, AnswerValue, Challenge, GamePhase } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
@@ -125,11 +130,9 @@ export function useGameSession(challenge: Challenge) {
         answer,
         timeUsed: rawTime,
         timedOut,
-        submittedCodes,
-        matchingIncorrectAttempts:
-          question.type === "matching" ? matchingIncorrectAttemptsRef.current : undefined,
-        progressiveCluesRevealed:
-          question.type === "progressive-clues" ? progressiveCluesRevealedRef.current : undefined,
+        submittedCodes: submittedCodes ?? codeAttemptsRef.current,
+        matchingIncorrectAttempts: matchingIncorrectAttemptsRef.current,
+        progressiveCluesRevealed: progressiveCluesRevealedRef.current,
       });
 
       dispatch({ type: "answer", result, timedOut });
@@ -165,28 +168,16 @@ export function useGameSession(challenge: Challenge) {
   );
 
   const handleTimeUp = useCallback(() => {
-    if (question?.type === "logic-code") {
-      const attempts = codeAttemptsRef.current;
-      submitAnswer(attempts.at(-1) ?? null, true, attempts);
-      return;
-    }
-    if (question?.type === "matching" || question?.type === "connect-pairs") {
-      submitAnswer(draftAnswerRef.current, true);
-      return;
-    }
-    if (
-      question?.type === "flash-memory" ||
-      question?.type === "memory-pairs" ||
-      question?.type === "mini-sudoku" ||
-      question?.type === "mini-nonogram" ||
-      question?.type === "time-maze" ||
-      question?.type === "error-reconstruction" ||
-      question?.type === "mini-wordle"
-    ) {
-      submitAnswer(draftAnswerRef.current, true);
-      return;
-    }
-    submitAnswer(null, true);
+    if (!question) return;
+    const submittedCodes = codeAttemptsRef.current;
+    submitAnswer(
+      getTimedOutAnswer(question, {
+        draftAnswer: draftAnswerRef.current,
+        submittedCodes,
+      }),
+      true,
+      submittedCodes,
+    );
   }, [question, submitAnswer]);
 
   const handleAnswerProgress = useCallback((answer: AnswerValue) => {

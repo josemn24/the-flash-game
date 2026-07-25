@@ -79,6 +79,7 @@ export function evaluateTimeMaze({
 export const scoring = {
   questionType: "time-maze",
   policy: "binary-speed",
+  timeoutAnswerSource: "draft",
   isAnswer: isTimeMazeAnswer,
   isCorrect,
   evaluate: evaluateTimeMaze,

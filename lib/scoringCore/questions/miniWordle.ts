@@ -104,6 +104,7 @@ export function evaluateMiniWordle({
 export const scoring = {
   questionType: "mini-wordle",
   policy: "attempt-penalty",
+  timeoutAnswerSource: "draft",
   isAnswer: isMiniWordleAnswer,
   isCorrect,
   evaluate: evaluateMiniWordle,
