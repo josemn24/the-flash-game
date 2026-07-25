@@ -36,6 +36,7 @@ import {
   isMiniWordleAnswer,
   isValidImageLabelingConfiguration,
   QUESTION_SCORING_POLICY,
+  SCORING,
 } from "@/lib/scoring";
 import {
   getMiniWordleFeedback,
@@ -46,6 +47,31 @@ import {
   calculateProgressiveImageReveal,
   isValidProgressiveImageConfiguration,
 } from "@/lib/progressiveImage";
+import { scoring as anagramScoring } from "@/lib/scoringCore/questions/anagram";
+import { scoring as classificationScoring } from "@/lib/scoringCore/questions/classification";
+import { scoring as connectPairsScoring } from "@/lib/scoringCore/questions/connectPairs";
+import { scoring as errorReconstructionScoring } from "@/lib/scoringCore/questions/errorReconstruction";
+import { scoring as estimationScoring } from "@/lib/scoringCore/questions/estimation";
+import { scoring as flashMemoryScoring } from "@/lib/scoringCore/questions/flashMemory";
+import { scoring as heatMapScoring } from "@/lib/scoringCore/questions/heatMap";
+import { scoring as imageLabelingScoring } from "@/lib/scoringCore/questions/imageLabeling";
+import { scoring as logicCodeScoring } from "@/lib/scoringCore/questions/logicCode";
+import { scoring as logicMatrixScoring } from "@/lib/scoringCore/questions/logicMatrix";
+import { scoring as matchingScoring } from "@/lib/scoringCore/questions/matching";
+import { scoring as memoryPairsScoring } from "@/lib/scoringCore/questions/memoryPairs";
+import { scoring as miniNonogramScoring } from "@/lib/scoringCore/questions/miniNonogram";
+import { scoring as miniSudokuScoring } from "@/lib/scoringCore/questions/miniSudoku";
+import { scoring as miniWordleScoring } from "@/lib/scoringCore/questions/miniWordle";
+import { scoring as multipleChoiceScoring } from "@/lib/scoringCore/questions/multipleChoice";
+import { scoring as oddOneOutScoring } from "@/lib/scoringCore/questions/oddOneOut";
+import { scoring as orderingScoring } from "@/lib/scoringCore/questions/ordering";
+import { scoring as progressiveCluesScoring } from "@/lib/scoringCore/questions/progressiveClues";
+import { scoring as progressiveImageScoring } from "@/lib/scoringCore/questions/progressiveImage";
+import { scoring as shortTextScoring } from "@/lib/scoringCore/questions/shortText";
+import { scoring as simonSequenceScoring } from "@/lib/scoringCore/questions/simonSequence";
+import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/slidingPuzzle";
+import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze";
+import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
 import {
   applyConnectPairsCellSelection,
   calculateConnectPairsMetrics,
@@ -1733,6 +1759,82 @@ describe("question evaluation", () => {
     );
     for (const type of Object.keys(QUESTION_SCORING_POLICY) as QuestionType[]) {
       expect(SCORING_POLICIES[type].id).toBe(QUESTION_SCORING_POLICY[type]);
+    }
+  });
+
+  it("registers scoring behavior for every question type", () => {
+    expect(Object.keys(SCORING).sort()).toEqual(Object.keys(QUESTION_SCORING_POLICY).sort());
+    for (const type of Object.keys(QUESTION_SCORING_POLICY) as QuestionType[]) {
+      expect(SCORING[type].questionType).toBe(type);
+      expect(SCORING[type].policy).toBe(QUESTION_SCORING_POLICY[type]);
+    }
+  });
+
+  it("uses extracted scoring modules for every format", () => {
+    expect(SCORING.anagram).toBe(anagramScoring);
+    expect(SCORING.classification).toBe(classificationScoring);
+    expect(SCORING["connect-pairs"]).toBe(connectPairsScoring);
+    expect(SCORING["error-reconstruction"]).toBe(errorReconstructionScoring);
+    expect(SCORING.estimation).toBe(estimationScoring);
+    expect(SCORING["flash-memory"]).toBe(flashMemoryScoring);
+    expect(SCORING["heat-map"]).toBe(heatMapScoring);
+    expect(SCORING["image-labeling"]).toBe(imageLabelingScoring);
+    expect(SCORING["logic-code"]).toBe(logicCodeScoring);
+    expect(SCORING["logic-matrix"]).toBe(logicMatrixScoring);
+    expect(SCORING.matching).toBe(matchingScoring);
+    expect(SCORING["memory-pairs"]).toBe(memoryPairsScoring);
+    expect(SCORING["mini-nonogram"]).toBe(miniNonogramScoring);
+    expect(SCORING["mini-sudoku"]).toBe(miniSudokuScoring);
+    expect(SCORING["mini-wordle"]).toBe(miniWordleScoring);
+    expect(SCORING["multiple-choice"]).toBe(multipleChoiceScoring);
+    expect(SCORING["odd-one-out"]).toBe(oddOneOutScoring);
+    expect(SCORING.ordering).toBe(orderingScoring);
+    expect(SCORING["progressive-clues"]).toBe(progressiveCluesScoring);
+    expect(SCORING["progressive-image"]).toBe(progressiveImageScoring);
+    expect(SCORING["short-text"]).toBe(shortTextScoring);
+    expect(SCORING["simon-sequence"]).toBe(simonSequenceScoring);
+    expect(SCORING["sliding-puzzle"]).toBe(slidingPuzzleScoring);
+    expect(SCORING["time-maze"]).toBe(timeMazeScoring);
+    expect(SCORING["true-false"]).toBe(trueFalseScoring);
+  });
+
+  it("keeps timeout point preservation as explicit registry metadata", () => {
+    const preservedTypes = Object.entries(SCORING)
+      .filter(([, scoring]) => scoring.preserveTimedOutPoints)
+      .map(([type]) => type)
+      .sort();
+
+    expect(preservedTypes).toEqual(
+      [
+        "connect-pairs",
+        "error-reconstruction",
+        "flash-memory",
+        "matching",
+        "memory-pairs",
+        "mini-nonogram",
+        "mini-sudoku",
+      ].sort(),
+    );
+  });
+
+  it("builds unanswered details through the scoring registry", () => {
+    for (const { question } of formatCases) {
+      const scoring = SCORING[question.type];
+      const result = evaluateAnswer({
+        question,
+        answer: null,
+        timeUsed: question.timeLimit,
+        timedOut: true,
+        submittedCodes: ["1111", "2222"],
+        progressiveCluesRevealed: 2,
+      });
+
+      expect(result.details).toEqual(
+        scoring.unansweredDetails?.(question, {
+          submittedCodes: ["1111", "2222"],
+          revealedClues: 2,
+        }),
+      );
     }
   });
 });

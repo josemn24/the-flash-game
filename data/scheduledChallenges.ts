@@ -7,7 +7,7 @@ export const demoSeasonScheduledChallenges = [
     seasonId: "tabarnia-season-1",
     challengeDefinitionId: "demo-challenge-definition",
     availableFrom: "2026-07-24T22:00:00.000Z",
-    availableUntil: "2026-08-25T21:59:59.999Z",
+    availableUntil: "2026-07-25T21:59:59.999Z",
   },
   {
     id: "tabarnia-challenge-02",
@@ -17,7 +17,7 @@ export const demoSeasonScheduledChallenges = [
     subtitle: "Próximamente",
     mode: "flash",
     availableFrom: "2026-07-25T22:00:00.000Z",
-    availableUntil: "2026-08-26T21:59:59.999Z",
+    availableUntil: "2026-07-26T21:59:59.999Z",
   },
   {
     id: "tabarnia-challenge-03",
