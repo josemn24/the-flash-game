@@ -334,11 +334,8 @@ function Playing({ challenge, session }: { challenge: AlphabetChallenge; session
 
         <div className={styles.questionPanel}>
           <div className={styles.questionHeading}>
-            <span className={styles.activeLetter}>{entry.letter}</span>
-            <div>
-              <p>Empieza por {entry.letter}</p>
-              <span>{entry.question.category}</span>
-            </div>
+            <p>Empieza por {entry.letter}</p>
+            <span>{entry.question.category}</span>
           </div>
           <h1>{entry.question.question}</h1>
 

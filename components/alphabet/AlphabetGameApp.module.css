@@ -453,9 +453,10 @@
 
 .gameBoardCard {
   display: grid;
+  width: min(100%, 52rem);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 1.2rem;
-  padding: clamp(0.7rem, 1.5vw, 1rem);
+  border-radius: 1rem;
+  padding: clamp(0.55rem, 1.2vw, 0.8rem);
   background: rgba(18, 19, 32, 0.74);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(14px);
@@ -463,14 +464,14 @@
 
 .gameBoardCard .boardCompact {
   grid-template-columns: repeat(15, minmax(0, 1fr));
-  gap: 0.35rem;
+  gap: 0.3rem;
 }
 
 .gameBoardCard .boardCompact .letterCell {
   min-width: 0;
   aspect-ratio: 1;
-  border-radius: 0.55rem;
-  font-size: 0.82rem;
+  border-radius: 0.48rem;
+  font-size: 0.78rem;
   box-shadow: none;
 }
 
@@ -481,46 +482,35 @@
 
 .questionHeading {
   display: flex;
+  min-height: 1.25rem;
   align-items: center;
-  gap: 1rem;
-}
-
-.activeLetter {
-  display: grid;
-  width: 3.75rem;
-  height: 3.75rem;
-  place-items: center;
-  border-radius: 1.1rem;
-  border: 1px solid rgba(215, 255, 24, 0.78);
-  color: var(--alphabet-violet);
-  background:
-    linear-gradient(rgba(215, 255, 24, 0.12), rgba(215, 255, 24, 0.12)), rgba(16, 17, 28, 0.92);
-  box-shadow: 0 0 24px rgba(215, 255, 24, 0.18);
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 950;
+  gap: 0.65rem;
 }
 
 .questionHeading p {
-  color: white;
+  color: rgba(255, 255, 255, 0.86);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 900;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.questionHeading div > span {
-  display: block;
-  margin-top: 0.3rem;
+.questionHeading > span {
   color: rgba(255, 255, 255, 0.34);
   font-size: 0.72rem;
+}
+
+.questionHeading > span::before {
+  content: "/";
+  margin-right: 0.65rem;
+  color: rgba(255, 255, 255, 0.2);
 }
 
 .questionPanel > h1 {
   max-width: 48rem;
   min-height: 6.25rem;
-  margin-top: 2rem;
+  margin-top: 1.25rem;
   font-family: var(--font-display);
   font-size: clamp(2.35rem, 5.2vw, 4.25rem);
   font-weight: 950;
@@ -557,7 +547,7 @@
 }
 
 .answerForm input:focus {
-  border-color: var(--alphabet-cyan);
+  border-color: rgba(255, 255, 255, 0.13);
   background: rgba(255, 255, 255, 0.065);
 }
 
@@ -1089,34 +1079,29 @@
   }
 
   .gameBoardCard {
-    border-radius: 1rem;
-    padding: 0.65rem;
+    width: min(100%, 27rem);
+    margin: 0 auto;
+    border-radius: 0.9rem;
+    padding: 0.55rem;
   }
 
   .gameBoardCard .boardCompact {
     grid-template-columns: repeat(5, 1fr);
-    gap: 0.45rem;
+    gap: 0.38rem;
   }
 
   .gameBoardCard .boardCompact .letterCell {
-    border-radius: 0.72rem;
-    font-size: 0.95rem;
+    border-radius: 0.62rem;
+    font-size: 0.88rem;
   }
 
   .questionPanel {
     padding: 0.45rem 0 0;
   }
 
-  .activeLetter {
-    width: 3.1rem;
-    height: 3.1rem;
-    border-radius: 0.9rem;
-    font-size: 1.45rem;
-  }
-
   .questionPanel > h1 {
     min-height: 0;
-    margin-top: 1.35rem;
+    margin-top: 1rem;
     font-size: clamp(1.75rem, 8vw, 2.35rem);
     line-height: 1.05;
   }
