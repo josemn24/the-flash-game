@@ -97,16 +97,18 @@ export function evaluateConnectPairs({
 export const scoring = {
   questionType: "connect-pairs",
   policy: "partial-items",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+    unansweredDetails,
+    status: (evaluation) =>
+      evaluation.details?.type === "connect-pairs" &&
+      evaluation.details.connectedPairs === 0 &&
+      evaluation.details.coveredCells === 0
+        ? "unanswered"
+        : undefined,
+  },
   isAnswer: isConnectPairsAnswer,
   isCorrect,
   evaluate: evaluateConnectPairs,
-  unansweredDetails,
-  timedOutStatus: (evaluation) =>
-    evaluation.details?.type === "connect-pairs" &&
-    evaluation.details.connectedPairs === 0 &&
-    evaluation.details.coveredCells === 0
-      ? "unanswered"
-      : undefined,
 } as const satisfies QuestionScoring;

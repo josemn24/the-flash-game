@@ -1911,9 +1911,9 @@ describe("question evaluation", () => {
     expect(SCORING["true-false"]).toBe(trueFalseScoring);
   });
 
-  it("keeps timeout point preservation as explicit registry metadata", () => {
+  it("keeps timeout point preservation as explicit scoring metadata", () => {
     const preservedTypes = Object.entries(SCORING)
-      .filter(([, scoring]) => scoring.preserveTimedOutPoints)
+      .filter(([, scoring]) => scoring.timeoutPolicy?.preservePoints)
       .map(([type]) => type)
       .sort();
 
@@ -1943,7 +1943,7 @@ describe("question evaluation", () => {
       });
 
       expect(result.details).toEqual(
-        scoring.unansweredDetails?.(question, {
+        scoring.timeoutPolicy?.unansweredDetails?.(question, {
           submittedCodes: ["1111", "2222"],
           revealedClues: 2,
         }),

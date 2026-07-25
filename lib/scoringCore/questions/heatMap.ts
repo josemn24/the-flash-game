@@ -100,8 +100,10 @@ export function evaluateHeatMap({
 export const scoring = {
   questionType: "heat-map",
   policy: "spatial-proximity",
+  timeoutPolicy: {
+    status: () => "unanswered",
+  },
   isAnswer: isHeatMapAnswer,
   isCorrect,
   evaluate: evaluateHeatMap,
-  timedOutStatus: () => "unanswered",
 } as const satisfies QuestionScoring;

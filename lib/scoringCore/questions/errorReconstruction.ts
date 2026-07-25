@@ -131,10 +131,12 @@ export function evaluateErrorReconstruction({
 export const scoring = {
   questionType: "error-reconstruction",
   policy: "error-location-correction",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+    unansweredDetails,
+  },
   isAnswer: isErrorReconstructionAnswer,
   isCorrect,
   evaluate: evaluateErrorReconstruction,
-  unansweredDetails,
 } as const satisfies QuestionScoring;

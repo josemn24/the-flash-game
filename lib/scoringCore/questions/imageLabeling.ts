@@ -209,8 +209,10 @@ export function evaluateImageLabeling({
 export const scoring = {
   questionType: "image-labeling",
   policy: "image-labeling",
+  timeoutPolicy: {
+    status: () => "unanswered",
+  },
   isAnswer: (answer) => isImageLabelingAnswer(answer) || typeof answer === "string",
   isCorrect,
   evaluate: evaluateImageLabeling,
-  timedOutStatus: () => "unanswered",
 } as const satisfies QuestionScoring;

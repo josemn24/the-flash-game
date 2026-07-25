@@ -104,10 +104,12 @@ export function evaluateMiniWordle({
 export const scoring = {
   questionType: "mini-wordle",
   policy: "attempt-penalty",
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    unansweredDetails,
+    status: () => "unanswered",
+  },
   isAnswer: isMiniWordleAnswer,
   isCorrect,
   evaluate: evaluateMiniWordle,
-  unansweredDetails,
-  timedOutStatus: () => "unanswered",
 } as const satisfies QuestionScoring;

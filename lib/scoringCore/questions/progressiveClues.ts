@@ -75,6 +75,9 @@ export function evaluateProgressiveClues({
 export const scoring = {
   questionType: "progressive-clues",
   policy: "clue-speed",
+  timeoutPolicy: {
+    unansweredDetails,
+  },
   isAnswer: (answer) => typeof answer === "string",
   isCorrect,
   buildEvaluationContext: (input) => ({
@@ -86,5 +89,4 @@ export const scoring = {
     revealedClues: input.progressiveCluesRevealed,
   }),
   evaluate: evaluateProgressiveClues,
-  unansweredDetails,
 } as const satisfies QuestionScoring;

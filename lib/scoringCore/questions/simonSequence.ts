@@ -82,8 +82,10 @@ export function evaluateSimonSequence({
 export const scoring = {
   questionType: "simon-sequence",
   policy: "binary-speed",
+  timeoutPolicy: {
+    unansweredDetails,
+  },
   isAnswer: isSimonSequenceAnswer,
   isCorrect,
   evaluate: evaluateSimonSequence,
-  unansweredDetails,
 } as const satisfies QuestionScoring;

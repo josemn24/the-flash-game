@@ -46,7 +46,10 @@ export function evaluateLogicCode({
 export const scoring = {
   questionType: "logic-code",
   policy: "attempt-penalty",
-  timeoutAnswerSource: "last-submitted-code",
+  timeoutPolicy: {
+    answerSource: "last-submitted-code",
+    unansweredDetails,
+  },
   isAnswer: (answer) => typeof answer === "string",
   isCorrect,
   buildEvaluationContext: (input) => ({
@@ -61,5 +64,4 @@ export const scoring = {
     revealedClues: 1,
   }),
   evaluate: evaluateLogicCode,
-  unansweredDetails,
 } as const satisfies QuestionScoring;

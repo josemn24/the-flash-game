@@ -129,8 +129,10 @@ export function evaluateMiniNonogram({
 export const scoring = {
   questionType: "mini-nonogram",
   policy: "partial-items",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+  },
   isAnswer: isMiniNonogramAnswer,
   isCorrect,
   evaluate: evaluateMiniNonogram,

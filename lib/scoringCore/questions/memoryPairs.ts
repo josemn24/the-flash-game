@@ -165,10 +165,12 @@ export function evaluateMemoryPairs({
 export const scoring = {
   questionType: "memory-pairs",
   policy: "partial-items",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+    unansweredDetails,
+  },
   isAnswer: isMemoryPairsAnswer,
   isCorrect,
   evaluate: evaluateMemoryPairs,
-  unansweredDetails,
 } as const satisfies QuestionScoring;

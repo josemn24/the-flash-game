@@ -109,8 +109,10 @@ export function evaluateFlashMemory({
 export const scoring = {
   questionType: "flash-memory",
   policy: "partial-items",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+  },
   isAnswer: isFlashMemoryAnswer,
   isCorrect,
   evaluate: evaluateFlashMemory,

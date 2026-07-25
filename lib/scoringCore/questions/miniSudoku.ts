@@ -123,8 +123,10 @@ export function evaluateMiniSudoku({
 export const scoring = {
   questionType: "mini-sudoku",
   policy: "partial-items",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+  },
   isAnswer: isMiniSudokuAnswer,
   isCorrect,
   evaluate: evaluateMiniSudoku,

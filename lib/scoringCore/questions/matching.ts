@@ -70,8 +70,14 @@ export function evaluateMatching({
 export const scoring = {
   questionType: "matching",
   policy: "partial-items",
-  preserveTimedOutPoints: true,
-  timeoutAnswerSource: "draft",
+  timeoutPolicy: {
+    answerSource: "draft",
+    preservePoints: true,
+    status: (evaluation) =>
+      evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0
+        ? "unanswered"
+        : undefined,
+  },
   isAnswer: isMatchingAnswer,
   isCorrect,
   buildEvaluationContext: (input) => ({
@@ -83,8 +89,4 @@ export const scoring = {
     revealedClues: 1,
   }),
   evaluate: evaluateMatching,
-  timedOutStatus: (evaluation) =>
-    evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0
-      ? "unanswered"
-      : undefined,
 } as const satisfies QuestionScoring;

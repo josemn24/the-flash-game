@@ -96,11 +96,11 @@ export function evaluateAnswer({
       isCorrect: false,
       points: 0,
       timeUsed: safeTime,
-      ...(scoring.unansweredDetails
+      ...(scoring.timeoutPolicy?.unansweredDetails
         ? {
-            details: scoring.unansweredDetails(
+            details: scoring.timeoutPolicy.unansweredDetails(
               question,
-              scoring.buildUnansweredDetailsContext?.(unansweredInput) ??
+              scoring.timeoutPolicy.buildUnansweredDetailsContext?.(unansweredInput) ??
                 buildDefaultUnansweredDetailsContext(unansweredInput),
             ),
           }
@@ -135,14 +135,14 @@ export function evaluateAnswer({
     scoring.buildEvaluationContext?.(normalizedInput) ??
       buildDefaultEvaluationContext(normalizedInput),
   );
-  const timedOutStatus = timedOut ? scoring.timedOutStatus?.(evaluation, question) : undefined;
+  const timedOutStatus = timedOut ? scoring.timeoutPolicy?.status?.(evaluation, question) : undefined;
 
   return {
     questionId: question.id,
     answer,
     ...evaluation,
     status: timedOutStatus ?? evaluation.status,
-    points: timedOut && !scoring.preserveTimedOutPoints ? 0 : evaluation.points,
+    points: timedOut && !scoring.timeoutPolicy?.preservePoints ? 0 : evaluation.points,
     timeUsed: safeTime,
   };
 }
@@ -164,7 +164,7 @@ export function getTimedOutAnswer(
     submittedCodes: string[];
   },
 ): AnswerValue | null {
-  const source = SCORING[question.type].timeoutAnswerSource ?? "none";
+  const source = SCORING[question.type].timeoutPolicy?.answerSource ?? "none";
   if (source === "draft") return draftAnswer;
   if (source === "last-submitted-code") return submittedCodes.at(-1) ?? null;
   return null;
