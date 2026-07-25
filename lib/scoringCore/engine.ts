@@ -14,7 +14,10 @@ export function calculateAnswerScore(
   incorrectAttempts = 0,
   revealedClues = 1,
 ) {
-  return SCORING[question.type].evaluate({
+  const scoring = SCORING[question.type];
+  if (!scoring.isAnswer(answer)) return 0;
+
+  return scoring.evaluate({
     question,
     answer,
     timeUsed: clampTime(timeUsed, question.timeLimit),
@@ -52,6 +55,17 @@ export function evaluateAnswer({
             }),
           }
         : {}),
+    };
+  }
+
+  if (!scoring.isAnswer(answer)) {
+    return {
+      questionId: question.id,
+      answer,
+      status: "incorrect",
+      isCorrect: false,
+      points: 0,
+      timeUsed: safeTime,
     };
   }
 

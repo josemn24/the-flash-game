@@ -980,6 +980,7 @@ describe("question evaluation", () => {
     expect(calculateAnswerScore(choice, choice.correctAnswer, 0)).toBe(100);
     expect(calculateAnswerScore(choice, choice.correctAnswer, choice.timeLimit)).toBe(60);
     expect(calculateAnswerScore(choice, "Toronto", 0)).toBe(-20);
+    expect(calculateAnswerScore(choice, 42, 0)).toBe(0);
     expect(calculateAnswerScore(trueFalse, true, 0)).toBe(-40);
   });
 
@@ -1721,6 +1722,38 @@ describe("question evaluation", () => {
     expect(result.status).toBe("unanswered");
     expect(result.points).toBe(0);
     expect(result.timeUsed).toBe(question.timeLimit);
+  });
+
+  it("normalizes malformed answers before scorer evaluation", () => {
+    const multipleChoice = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
+    const trueFalse = QUESTION_FORMAT_CATALOG["true-false"].examples[0].question;
+    const estimation = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
+    const imageLabeling = QUESTION_FORMAT_CATALOG["image-labeling"].examples[1].question;
+    const heatMap = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
+
+    expect(evaluateAnswer({ question: multipleChoice, answer: 42, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question: trueFalse, answer: "true", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question: estimation, answer: "430", timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question: imageLabeling, answer: 42, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(
+      evaluateAnswer({
+        question: heatMap,
+        answer: { x: Number.NaN, y: 0.5 },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
   it("clamps negative and excessive elapsed time", () => {

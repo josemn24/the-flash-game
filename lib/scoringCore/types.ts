@@ -51,6 +51,8 @@ export type QuestionScoring = {
   readonly questionType: QuestionType;
   readonly policy: ScoringPolicyId;
   readonly preserveTimedOutPoints?: boolean;
+  // Shape guard only: validate that the scorer can process this answer.
+  // Question-specific correctness and configuration checks stay in the scorer.
   isAnswer(answer: AnswerValue | null): boolean;
   isCorrect(question: Question, answer: AnswerValue): boolean;
   evaluate(context: EvaluationContext): InternalEvaluation;
