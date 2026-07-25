@@ -647,7 +647,7 @@ export const questionsById = {
     timeLimit: 18,
     points: 100,
     explanation:
-      "En el zodiaco chino, 2026 corresponde al Año del Caballo de Fuego dentro del ciclo sexagenario, que combina animales y elementos. Imagen: Horse Fire.jpg, Surojit52, CC BY-SA 4.0, via Wikimedia Commons.",
+      "En el zodiaco chino, 2026 corresponde al Año del Caballo de Fuego dentro del ciclo sexagenario, que combina animales y elementos.",
   },
   "sbr-equidae-odd-one-out": {
     id: "sbr-equidae-odd-one-out",

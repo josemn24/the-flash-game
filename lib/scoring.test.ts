@@ -203,7 +203,7 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "ordering":
       correctAnswer = example.correctOrder;
       incorrectAnswer = [];
-      incorrectPoints = -Math.round(example.points * 0.2);
+      incorrectPoints = 0;
       break;
     case "true-false":
       correctAnswer = example.correctAnswer;
@@ -328,6 +328,28 @@ describe("question evaluation", () => {
         acceptedAnswers: ["Eiffel"],
       }),
     ).toBe(false);
+  });
+
+  it("awards partial ordering points by exact position without negative penalties", () => {
+    const question = {
+      ...QUESTION_FORMAT_CATALOG.ordering.examples[0].question,
+      points: 10,
+    };
+
+    expect(
+      evaluateAnswer({
+        question,
+        answer: [question.correctOrder[0], question.correctOrder[1], "Internet", "Teléfono"],
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "partial", points: 5 });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: [...question.correctOrder].reverse(),
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
   it("finds and scores valid time-maze routes without penalizing extra moves", () => {

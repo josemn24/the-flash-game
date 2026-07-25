@@ -105,12 +105,13 @@ export const SCORING_POLICIES = {
   },
   ordering: {
     id: QUESTION_SCORING_POLICY.ordering,
-    label: "Secuencia exacta",
+    label: "Crédito por posición",
     summary:
-      "La secuencia completa debe ser correcta. Un fallo resta el 20 % y la rapidez mejora el resultado.",
-    partialCredit: false,
-    incorrectPenalty: true,
+      "Cada elemento colocado en su posición correcta aporta crédito ajustado por velocidad; una secuencia sin posiciones correctas puntúa cero.",
+    partialCredit: true,
+    incorrectPenalty: false,
     speedBonus: true,
+    partialCreditLabel: "Crédito por posición",
   },
   classification: {
     id: QUESTION_SCORING_POLICY.classification,

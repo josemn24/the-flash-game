@@ -35,6 +35,7 @@ import type {
   TimeMazeQuestion,
   MatchingAnswer,
   MatchingQuestion,
+  OrderingQuestion,
   ProgressiveCluesQuestion,
   Question,
   QuestionType,
@@ -90,7 +91,7 @@ export const QUESTION_SCORING_POLICY = {
   "progressive-image": "binary-speed",
   "heat-map": "spatial-proximity",
   "image-labeling": "image-labeling",
-  ordering: "binary-speed",
+  ordering: "partial-items",
   classification: "partial-items",
   "flash-memory": "partial-items",
   "memory-pairs": "partial-items",
@@ -1034,6 +1035,38 @@ function evaluateClassification(
   };
 }
 
+function evaluateOrdering(
+  question: OrderingQuestion,
+  answer: AnswerValue,
+  timeUsed: number,
+): InternalEvaluation {
+  if (
+    !Array.isArray(answer) ||
+    answer.length !== question.correctOrder.length ||
+    !answer.every((item) => typeof item === "string")
+  ) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
+  }
+
+  const correctItems = answer.filter((item, index) => item === question.correctOrder[index]).length;
+  const totalItems = question.correctOrder.length;
+  const isCorrect = correctItems === totalItems;
+
+  return {
+    isCorrect,
+    status: isCorrect ? "correct" : correctItems > 0 ? "partial" : "incorrect",
+    points:
+      correctItems > 0
+        ? calculateProportionalScore(
+            question.points,
+            correctItems,
+            totalItems,
+            calculateSpeedMultiplier(timeUsed, question.timeLimit),
+          )
+        : 0,
+  };
+}
+
 function evaluateMatching(
   question: MatchingQuestion,
   answer: AnswerValue,
@@ -1519,6 +1552,9 @@ function evaluateByPolicy(context: EvaluationContext): InternalEvaluation {
       }
       return evaluateBinarySpeed(context);
     case "partial-items":
+      if (question.type === "ordering") {
+        return evaluateOrdering(question, answer, timeUsed);
+      }
       if (question.type === "classification") {
         return evaluateClassification(question, answer, timeUsed);
       }

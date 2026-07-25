@@ -72,7 +72,7 @@ Cada uno conserva diez preguntas. Los formatos no incluidos en ellos, como Conec
 | Conectar parejas         | Trazar rutas ortogonales entre símbolos iguales en una cuadrícula.  | Crédito por parejas conectadas, cobertura y velocidad; los conflictos invalidan. |
 | Verdadero o falso        | Envío inmediato al pulsar una opción.                               | Acierto exacto; un fallo resta el 40 %.                                          |
 | Respuesta corta          | Campo de texto y envío por botón o teclado.                         | Ignora mayúsculas, tildes y espacios; admite equivalencias.                      |
-| Ordenar                  | Controles para subir y bajar elementos y confirmación final.        | La secuencia completa debe coincidir; un fallo resta el 20 %.                    |
+| Ordenar                  | Controles para subir y bajar elementos y confirmación final.        | Crédito por elemento colocado en su posición correcta.                           |
 | Clasificar               | Asignar una categoría a cada elemento.                              | Crédito parcial por elemento correctamente clasificado.                          |
 | Código lógico            | Introducir un código a partir de pistas, con varios intentos.       | Solo puntúa el código correcto; cada fallo reduce un 10 % de los puntos base.    |
 | Estimación               | Ajustar un valor dentro de un rango configurable.                   | Crédito por proximidad al valor real.                                            |
