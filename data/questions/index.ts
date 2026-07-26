@@ -1265,8 +1265,8 @@ export const questionsById = {
     explanation:
       "El Teide, con 3.718 metros, es el pico más alto de España y se encuentra en la isla de Tenerife (Canarias).",
   },
-  "spain-survival-constitution": {
-    id: "spain-survival-constitution",
+  "spain-survival-felipe-ii": {
+    id: "spain-survival-felipe-ii",
     type: "progressive-clues",
     category: "Historia",
     tags: {
@@ -1283,14 +1283,14 @@ export const questionsById = {
     ],
     cluePenalty: 30,
     correctAnswer: "Felipe II",
-    acceptedAnswers: ["Felipe II", "Felipe segundo", "Philip II"],
+    acceptedAnswers: ["Felipe II", "Felipe segundo", "Felipe 2", "Philip II"],
     timeLimit: 25,
     points: 100,
     explanation:
       "Felipe II (1527-1598), hijo de Carlos I, trasladó la corte a Madrid en 1561 y fue conocido como «el Prudente».",
   },
-  "spain-survival-map-madrid": {
-    id: "spain-survival-map-madrid",
+  "spain-survival-map-santa-cruz-tenerife": {
+    id: "spain-survival-map-santa-cruz-tenerife",
     type: "heat-map",
     category: "Mapa",
     tags: {
@@ -1387,8 +1387,8 @@ export const questionsById = {
     explanation:
       "Santander está en el norte, Madrid en el centro, Córdoba en el sur y Málaga más al sur.",
   },
-  "spain-survival-literature": {
-    id: "spain-survival-literature",
+  "spain-survival-don-quixote-real-name": {
+    id: "spain-survival-don-quixote-real-name",
     type: "multiple-choice",
     category: "Literatura",
     tags: {
@@ -1397,18 +1397,13 @@ export const questionsById = {
       cognitiveSkills: ["memory"],
       formatSkills: ["recall"],
     },
-    question: "¿Quién escribió «Don Quijote de la Mancha»?",
-    options: [
-      "Miguel de Cervantes",
-      "Federico García Lorca",
-      "Benito Pérez Galdós",
-      "Rosalía de Castro",
-    ],
-    correctAnswer: "Miguel de Cervantes",
+    question: "¿Cuál es el nombre original del personaje de Don Quijote de la Mancha?",
+    options: ["Alonso Quijano", "Miguel Quejana", "Amadís de Gaula", "Quijote"],
+    correctAnswer: "Alonso Quijano",
     timeLimit: 10,
     points: 100,
     explanation:
-      "Miguel de Cervantes publicó la primera parte del Quijote en 1605 y la segunda en 1615.",
+      "El personaje adopta el nombre de don Quijote, pero al final de la novela se le identifica como Alonso Quijano.",
   },
   "spain-survival-ramon-cajal": {
     id: "spain-survival-ramon-cajal",
@@ -1548,8 +1543,8 @@ export const questionsById = {
     explanation:
       "Conquista de Granada — 1492. Constitución de Cádiz — 1812. Inicio de la Guerra Civil — 1936. Constitución española actual — 1978.",
   },
-  "spain-survival-language-odd": {
-    id: "spain-survival-language-odd",
+  "spain-survival-literature-publication-order": {
+    id: "spain-survival-literature-publication-order",
     type: "ordering",
     category: "Literatura e historia",
     tags: {
@@ -1640,14 +1635,14 @@ export const questionsById = {
     solutionAlt: "Las Meninas de Diego Velázquez",
     revealDuration: 9,
     correctAnswer: "Diego Velázquez",
-    acceptedAnswers: ["diego velázquez", "velázquez", "velazquez", "diego velazquez"],
+    acceptedAnswers: ["Diego Velázquez", "Velázquez"],
     timeLimit: 13,
     points: 100,
     explanation:
       "Las Meninas fue pintada por Diego Velázquez en 1656 y es una de las obras más importantes del barroco español.",
   },
-  "spain-survival-mini-sudoku": {
-    id: "spain-survival-mini-sudoku",
+  "spain-survival-seat-rows-total": {
+    id: "spain-survival-seat-rows-total",
     type: "multiple-choice",
     category: "Matemáticas",
     tags: {
@@ -1767,23 +1762,23 @@ export const questionGroups = {
   ],
   spainSurvival: [
       "spain-survival-teide",
-    "spain-survival-constitution",
-    "spain-survival-map-madrid",
+    "spain-survival-felipe-ii",
+    "spain-survival-map-santa-cruz-tenerife",
     "spain-survival-food-odd",
     "spain-survival-city-monument",
     "spain-survival-west-east-cities",
-    "spain-survival-literature",
+    "spain-survival-don-quixote-real-name",
     "spain-survival-ramon-cajal",
     "spain-survival-cinema",
       "spain-survival-surface-area",
     "spain-survival-sagrada-progressive",
       "spain-survival-nadal-grand-slams",
     "spain-survival-history-order",
-    "spain-survival-language-odd",
+    "spain-survival-literature-publication-order",
       "spain-survival-sports-matching",
       "spain-survival-alhambra-pattern",
     "spain-survival-art-matching",
-    "spain-survival-mini-sudoku",
+    "spain-survival-seat-rows-total",
       "spain-survival-catalan-dance",
       "spain-survival-oak-tree",
   ],
