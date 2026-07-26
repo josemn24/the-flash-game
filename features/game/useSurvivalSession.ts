@@ -24,6 +24,7 @@ type SessionState = {
   lastTimedOut: boolean;
   codeAttempts: string[];
   livesRemaining: number;
+  pendingLifePenalty: boolean;
   mistakes: number;
   eliminated: boolean;
   survived: boolean;
@@ -43,6 +44,7 @@ type SessionAction =
   | { type: "advance" }
   | { type: "finish" }
   | { type: "code-attempts"; attempts: string[] }
+  | { type: "preview-life-penalty" }
   | { type: "show-review" }
   | { type: "show-results" }
   | { type: "replay"; lives: number };
@@ -56,6 +58,7 @@ function getInitialState(lives: number): SessionState {
     lastTimedOut: false,
     codeAttempts: [],
     livesRemaining: lives,
+    pendingLifePenalty: false,
     mistakes: 0,
     eliminated: false,
     survived: false,
@@ -74,6 +77,7 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
         lastTimedOut: action.timedOut,
         results: [...state.results, action.result],
         livesRemaining: action.livesRemaining,
+        pendingLifePenalty: false,
         mistakes: action.mistakes,
         eliminated: action.eliminated,
         survived: action.survived,
@@ -85,11 +89,14 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
         questionIndex: state.questionIndex + 1,
         locked: false,
         codeAttempts: [],
+        pendingLifePenalty: false,
       };
     case "finish":
       return { ...state, phase: "results" };
     case "code-attempts":
       return { ...state, codeAttempts: action.attempts };
+    case "preview-life-penalty":
+      return { ...state, pendingLifePenalty: true };
     case "show-review":
       return { ...state, phase: "review" };
     case "show-results":
@@ -228,8 +235,12 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
   }, []);
 
   const handleMatchingIncorrectAttempt = useCallback(() => {
+    if (answerLock.current || question?.type !== "matching") return;
+    if (matchingIncorrectAttemptsRef.current === 0) {
+      dispatch({ type: "preview-life-penalty" });
+    }
     matchingIncorrectAttemptsRef.current += 1;
-  }, []);
+  }, [question]);
 
   const handleProgressiveClueReveal = useCallback((revealedClues: number) => {
     progressiveCluesRevealedRef.current = revealedClues;
@@ -251,10 +262,15 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     () => calculateTotalScore(state.results.map((result) => result.points)),
     [state.results],
   );
+  const displayedLivesRemaining =
+    state.phase === "playing" && state.pendingLifePenalty
+      ? Math.max(0, state.livesRemaining - 1)
+      : state.livesRemaining;
 
   return {
     ...state,
     question,
+    livesRemaining: displayedLivesRemaining,
     score,
     reachedQuestionCount: getSurvivalReachedQuestionCount(state.results.length),
     start,

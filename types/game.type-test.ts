@@ -24,6 +24,20 @@ type ValidMultipleChoice = {
 };
 
 type MultipleChoiceWithoutOptions = Omit<ValidMultipleChoice, "options">;
+type ValidMultipleChoiceWithPromptVisual = ValidMultipleChoice & {
+  promptVisual: {
+    type: "number-sequence";
+    eyebrow: "Pattern";
+    sequence: ["1", "2", "__"];
+    differences: ["+1", "+2"];
+  };
+};
+type MultipleChoiceWithInvalidPromptVisual = ValidMultipleChoice & {
+  promptVisual: {
+    type: "text";
+    sequence: ["1", "2", "__"];
+  };
+};
 type TrueFalseWithStringAnswer = Omit<ValidMultipleChoice, "type" | "options"> & {
   type: "true-false";
 };
@@ -298,8 +312,14 @@ type MemoryPairsTileWithoutPair = Omit<ValidMemoryPairs, "tiles"> & {
 };
 
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
+export type AcceptsValidMultipleChoiceWithPromptVisual = Assert<
+  IsAssignable<ValidMultipleChoiceWithPromptVisual, Question>
+>;
 export type RejectsMultipleChoiceWithoutOptions = Assert<
   IsNotAssignable<MultipleChoiceWithoutOptions, Question>
+>;
+export type RejectsMultipleChoiceWithInvalidPromptVisual = Assert<
+  IsNotAssignable<MultipleChoiceWithInvalidPromptVisual, Question>
 >;
 export type RejectsTrueFalseWithStringAnswer = Assert<
   IsNotAssignable<TrueFalseWithStringAnswer, Question>

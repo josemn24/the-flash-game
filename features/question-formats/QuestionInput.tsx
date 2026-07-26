@@ -20,6 +20,7 @@ import { MemoryPairsQuestion } from "@/components/MemoryPairsQuestion";
 import { MiniNonogramQuestion } from "@/components/MiniNonogramQuestion";
 import { MiniSudokuQuestion } from "@/components/MiniSudokuQuestion";
 import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
+import { NumberSequencePrompt } from "@/components/NumberSequencePrompt";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
@@ -49,17 +50,24 @@ function MultipleChoiceInput({
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"multiple-choice">>) {
   return (
-    <div className="mt-7 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3">
-      {question.options.map((option, index) => (
-        <AnswerOption
-          key={option}
-          label={option}
-          index={index}
-          disabled={locked}
-          onSelect={() => onSubmit(option)}
-        />
-      ))}
-    </div>
+    <>
+      {question.promptVisual?.type === "number-sequence" && (
+        <NumberSequencePrompt prompt={question.promptVisual} />
+      )}
+      <div
+        className={`${question.promptVisual ? "mt-4" : "mt-7 sm:mt-8"} grid gap-2.5 sm:grid-cols-2 sm:gap-3`}
+      >
+        {question.options.map((option, index) => (
+          <AnswerOption
+            key={option}
+            label={option}
+            index={index}
+            disabled={locked}
+            onSelect={() => onSubmit(option)}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 

@@ -26,11 +26,21 @@ export type BaseQuestion = {
   explanation: string;
 };
 
+export type NumberSequencePromptVisual = {
+  type: "number-sequence";
+  eyebrow?: string;
+  sequence: string[];
+  differences?: string[];
+};
+
+export type MultipleChoicePromptVisual = NumberSequencePromptVisual;
+
 export type MultipleChoiceQuestion = BaseQuestion & {
   type: "multiple-choice";
   options: string[];
   correctAnswer: string;
   media?: QuestionMedia;
+  promptVisual?: MultipleChoicePromptVisual;
 };
 
 export type OddOneOutItem = {

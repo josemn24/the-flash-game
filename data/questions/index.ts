@@ -1605,8 +1605,12 @@ export const questionsById = {
       cognitiveSkills: ["pattern_recognition"],
       formatSkills: ["deduction"],
     },
-    question:
-      "Un mosaico de la Alhambra aumenta siguiendo esta secuencia: 4, 7, 13, 22, __\n\nLas diferencias son: +3, +6, +9, +12\n\n¿Qué número continúa la secuencia?",
+    question: "En un mosaico de la Alhambra se visualiza una secuencia, ¿qué número sigue?",
+    promptVisual: {
+      type: "number-sequence",
+      eyebrow: "Mosaico de la Alhambra",
+      sequence: ["4", "7", "13", "22", "__"],
+    },
     options: ["32", "34", "36", "39"],
     correctAnswer: "34",
     timeLimit: 20,

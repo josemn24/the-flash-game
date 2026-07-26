@@ -36,8 +36,13 @@
 }
 
 .imageFrame {
+  --progressive-image-max-height: min(48svh, 28rem);
+
   position: relative;
   isolation: isolate;
+  width: min(100%, calc(var(--progressive-image-max-height) * var(--progressive-image-ratio)));
+  max-height: var(--progressive-image-max-height);
+  justify-self: center;
   min-height: 13rem;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 14%);
@@ -153,6 +158,8 @@
   }
 
   .imageFrame {
+    --progressive-image-max-height: min(38svh, 21rem);
+
     min-height: 10.5rem;
     border-radius: 1rem;
   }

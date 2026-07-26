@@ -24,6 +24,37 @@
   letter-spacing: -0.05em;
   line-height: 1.05;
 }
+.lifeHearts {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.22rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 0.32rem 0.48rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+.lifeHeart {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  transition:
+    color 180ms,
+    fill 180ms,
+    opacity 180ms,
+    transform 180ms;
+}
+.lifeHeartActive {
+  color: var(--coral);
+  fill: currentColor;
+  filter: drop-shadow(0 0 8px rgba(255, 93, 100, 0.3));
+}
+.lifeHeartLost {
+  color: rgba(255, 255, 255, 0.22);
+  fill: transparent;
+  opacity: 0.75;
+  transform: scale(0.92);
+}
 .truthButton {
   display: flex;
   min-height: 8.5rem;

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/icons";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import {
@@ -125,7 +125,12 @@ export function ProgressiveImageQuestion({
 
       <div
         className={styles.imageFrame}
-        style={{ aspectRatio: `${surface.width} / ${surface.height}` }}
+        style={
+          {
+            "--progressive-image-ratio": surface.width / surface.height,
+            aspectRatio: `${surface.width} / ${surface.height}`,
+          } as CSSProperties
+        }
       >
         <Image
           key={`${surface.src}-${loadAttempt}`}

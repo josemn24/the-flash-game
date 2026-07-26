@@ -1,12 +1,16 @@
 import type { AnswerResult } from "@/types/game";
 
-export function isSurvivalMistake(result: Pick<AnswerResult, "status">) {
-  return result.status === "incorrect" || result.status === "unanswered";
+type SurvivalMistakeResult = Pick<AnswerResult, "status" | "details">;
+
+export function isSurvivalMistake(result: SurvivalMistakeResult) {
+  if (result.status === "incorrect" || result.status === "unanswered") return true;
+
+  return result.details?.type === "matching" && result.details.incorrectAttempts > 0;
 }
 
 export function getSurvivalLivesAfterResult(
   livesRemaining: number,
-  result: Pick<AnswerResult, "status">,
+  result: SurvivalMistakeResult,
 ) {
   return isSurvivalMistake(result) ? Math.max(0, livesRemaining - 1) : livesRemaining;
 }

@@ -100,10 +100,7 @@ export function QuestionScreen({
           </p>
           <div className="flex min-w-0 items-center gap-2">
             {typeof livesRemaining === "number" && typeof totalLives === "number" && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] px-2 py-1 font-mono text-[10px] font-black tracking-wide text-[var(--coral)]">
-                <HeartIcon className="h-3.5 w-3.5" />
-                {livesRemaining}/{totalLives}
-              </span>
+              <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
             )}
             <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
               {QUESTION_FORMAT_LABELS[question.type]}
@@ -139,5 +136,33 @@ export function QuestionScreen({
         />
       </div>
     </motion.section>
+  );
+}
+
+function LifeHearts({
+  livesRemaining,
+  totalLives,
+}: {
+  livesRemaining: number;
+  totalLives: number;
+}) {
+  const safeTotalLives = Math.max(0, totalLives);
+  const safeLivesRemaining = Math.min(Math.max(0, livesRemaining), safeTotalLives);
+
+  return (
+    <span
+      className={styles.lifeHearts}
+      aria-label={`${safeLivesRemaining} de ${safeTotalLives} vidas restantes`}
+    >
+      {Array.from({ length: safeTotalLives }, (_, index) => {
+        const active = index < safeLivesRemaining;
+        return (
+          <HeartIcon
+            key={index}
+            className={`${styles.lifeHeart} ${active ? styles.lifeHeartActive : styles.lifeHeartLost}`}
+          />
+        );
+      })}
+    </span>
   );
 }
