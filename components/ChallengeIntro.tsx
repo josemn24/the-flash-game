@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
+import { ArrowIcon, BoltIcon, ClockIcon, HeartIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -10,18 +10,19 @@ import { MotionButton } from "@/components/ui/MotionButton.client";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/ChallengeIntro.module.css";
-import type { FlashChallenge } from "@/types/game";
+import type { FlashChallenge, SurvivalChallenge } from "@/types/game";
 
 export function ChallengeIntro({
   challenge,
   onStart,
 }: {
-  challenge: FlashChallenge;
+  challenge: FlashChallenge | SurvivalChallenge;
   onStart: () => void;
 }) {
   const formats = Array.from(
     new Set(challenge.questions.map((question) => QUESTION_FORMAT_LABELS[question.type])),
   );
+  const isSurvival = challenge.mode === "survival";
 
   return (
     <motion.section
@@ -53,7 +54,9 @@ export function ChallengeIntro({
           <div className="relative z-10 p-5 sm:p-8 md:p-10">
             <div className="mb-7 flex items-start justify-between gap-4">
               <div>
-                <p className={`${styles.eyebrow} mb-3 text-[var(--electric)]`}>Siguiente carrera</p>
+                <p className={`${styles.eyebrow} mb-3 text-[var(--electric)]`}>
+                  {isSurvival ? "Modo supervivencia" : "Siguiente carrera"}
+                </p>
                 <h1 className="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
                   {challenge.title}
                 </h1>
@@ -69,15 +72,15 @@ export function ChallengeIntro({
             <div className="my-7 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/9 bg-black/20 sm:my-8">
               <div className={styles.stageStat}>
                 <strong>{challenge.questions.length}</strong>
-                <span>Preguntas</span>
+                <span>Retos</span>
               </div>
               <div className={`${styles.stageStat} border-x border-white/9`}>
                 <strong>{CHALLENGE_MAX_SCORE}</strong>
                 <span>Puntos</span>
               </div>
               <div className={`${styles.stageStat} border-r border-white/9`}>
-                <strong>≈ 2</strong>
-                <span>Minutos</span>
+                <strong>{isSurvival ? challenge.lives : "≈ 2"}</strong>
+                <span>{isSurvival ? "Vidas" : "Minutos"}</span>
               </div>
               <div className={styles.stageStat}>
                 <strong>{formats.length}</strong>
@@ -97,12 +100,20 @@ export function ChallengeIntro({
             <div className="grid gap-3 md:grid-cols-2">
               <div className={styles.ruleCard}>
                 <div className={`${styles.ruleIcon} bg-[var(--electric)] text-black`}>
-                  <BoltIcon className="h-5 w-5" />
+                  {isSurvival ? (
+                    <HeartIcon className="h-5 w-5" />
+                  ) : (
+                    <BoltIcon className="h-5 w-5" />
+                  )}
                 </div>
                 <div>
-                  <p className="text-sm font-black text-white">Primero, acierta</p>
+                  <p className="text-sm font-black text-white">
+                    {isSurvival ? "Tres vidas" : "Primero, acierta"}
+                  </p>
                   <p className="mt-1 text-xs leading-5 text-white/40">
-                    Después, responde rápido para sumar más.
+                    {isSurvival
+                      ? "Cada fallo claro o timeout consume una vida."
+                      : "Después, responde rápido para sumar más."}
                   </p>
                 </div>
               </div>
@@ -111,9 +122,13 @@ export function ChallengeIntro({
                   <ClockIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-white">Sin pausas</p>
+                  <p className="text-sm font-black text-white">
+                    {isSurvival ? "Llega al reto 20" : "Sin pausas"}
+                  </p>
                   <p className="mt-1 text-xs leading-5 text-white/40">
-                    Una vez empieces, el temporizador no se detiene.
+                    {isSurvival
+                      ? "Los parciales puntúan y no restan vida."
+                      : "Una vez empieces, el temporizador no se detiene."}
                   </p>
                 </div>
               </div>

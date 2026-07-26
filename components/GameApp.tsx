@@ -7,11 +7,12 @@ const AlphabetGameApp = dynamic(() =>
 const FlashGameApp = dynamic(() =>
   import("@/components/FlashGameApp.client").then((module) => module.FlashGameApp),
 );
+const SurvivalGameApp = dynamic(() =>
+  import("@/components/SurvivalGameApp.client").then((module) => module.SurvivalGameApp),
+);
 
 export function GameApp({ challenge }: { challenge: Challenge }) {
-  return challenge.mode === "alphabet" ? (
-    <AlphabetGameApp challenge={challenge} />
-  ) : (
-    <FlashGameApp challenge={challenge} />
-  );
+  if (challenge.mode === "alphabet") return <AlphabetGameApp challenge={challenge} />;
+  if (challenge.mode === "survival") return <SurvivalGameApp challenge={challenge} />;
+  return <FlashGameApp challenge={challenge} />;
 }

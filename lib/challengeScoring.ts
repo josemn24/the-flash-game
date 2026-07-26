@@ -1,4 +1,9 @@
-import type { FlashChallenge, ProgressiveCluesQuestion, Question } from "@/types/game";
+import type {
+  FlashChallenge,
+  ProgressiveCluesQuestion,
+  Question,
+  SurvivalChallenge,
+} from "@/types/game";
 
 export const CHALLENGE_MAX_SCORE = 100;
 
@@ -77,7 +82,9 @@ export function withChallengeQuestionPoints(question: Question, challengePoints:
   return { ...question, points: challengePoints };
 }
 
-export function withChallengeScoring(challenge: FlashChallenge): FlashChallenge {
+export function withChallengeScoring<T extends FlashChallenge | SurvivalChallenge>(
+  challenge: T,
+): T {
   const pointValues = getConfiguredChallengeQuestionPointValues(
     challenge.questions.map((question) => question.id),
     challenge.questionPoints,
@@ -88,5 +95,5 @@ export function withChallengeScoring(challenge: FlashChallenge): FlashChallenge 
     questions: challenge.questions.map((question, index) =>
       withChallengeQuestionPoints(question, pointValues[index] ?? 0),
     ),
-  };
+  } as T;
 }

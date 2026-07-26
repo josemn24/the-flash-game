@@ -6,7 +6,7 @@ import {
   withChallengeQuestionPoints,
   withChallengeScoring,
 } from "@/lib/challengeScoring";
-import type { FlashChallenge, ProgressiveCluesQuestion } from "@/types/game";
+import type { FlashChallenge, ProgressiveCluesQuestion, SurvivalChallenge } from "@/types/game";
 
 describe("challenge scoring", () => {
   it("distributes the challenge maximum as integer points", () => {
@@ -164,5 +164,39 @@ describe("challenge scoring", () => {
     const scoredChallenge = withChallengeScoring(challenge);
 
     expect(scoredChallenge.questions.map((question) => question.points)).toEqual([60, 40]);
+  });
+
+  it("normalizes a survival challenge to 100 points", () => {
+    const challenge: SurvivalChallenge = {
+      id: "survival",
+      definitionId: "definition",
+      number: 3,
+      title: "Supervivencia",
+      subtitle: "Demo",
+      description: "Demo",
+      mode: "survival",
+      lives: 3,
+      questions: Array.from({ length: 20 }, (_, index) => ({
+        id: `q-${index}`,
+        type: "true-false" as const,
+        category: "Demo",
+        tags: {
+          domains: ["culture"],
+          topics: ["landmarks"],
+          cognitiveSkills: ["memory"],
+          formatSkills: ["recall"],
+        },
+        question: "Pregunta",
+        correctAnswer: true,
+        timeLimit: 10,
+        points: 100,
+        explanation: "Explicación.",
+      })),
+    };
+
+    const scoredChallenge = withChallengeScoring(challenge);
+
+    expect(scoredChallenge.questions.map((question) => question.points)).toEqual(Array(20).fill(5));
+    expect(scoredChallenge.lives).toBe(3);
   });
 });

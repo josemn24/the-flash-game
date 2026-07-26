@@ -39,6 +39,16 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
     };
   }
 
+  if (definition.mode === "survival") {
+    return {
+      ...base,
+      mode: "survival",
+      lives: definition.lives,
+      questions: getQuestionsByIds(definition.questionIds),
+      questionPoints: definition.questionPoints,
+    };
+  }
+
   return {
     ...base,
     mode: "flash",

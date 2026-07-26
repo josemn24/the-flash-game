@@ -21,10 +21,8 @@ export const demoSeasonScheduledChallenges = [
     id: "tabarnia-challenge-03",
     number: 3,
     seasonId: "tabarnia-season-1",
-    title: "Desafío 03",
-    subtitle: "Próximamente",
-    mode: "flash",
-    availableFrom: "2026-07-27T22:00:00.000Z",
+    challengeDefinitionId: "spain-survival-definition",
+    availableFrom: "2026-07-25T22:00:00.000Z",
     availableUntil: "2026-07-28T21:59:59.999Z",
   },
   {

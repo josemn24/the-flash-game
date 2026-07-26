@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
-import { BoltIcon } from "@/components/icons";
+import { BoltIcon, HeartIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { Timer } from "@/components/Timer";
@@ -26,6 +26,8 @@ type QuestionScreenProps = {
   onMatchingIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
+  livesRemaining?: number;
+  totalLives?: number;
 };
 
 export function QuestionScreen({
@@ -42,6 +44,8 @@ export function QuestionScreen({
   onMatchingIncorrectAttempt,
   onProgressiveClueReveal,
   onTimedResponseStart,
+  livesRemaining,
+  totalLives,
 }: QuestionScreenProps) {
   const hasDelayedTimedResponse =
     question.type === "flash-memory" ||
@@ -94,9 +98,17 @@ export function QuestionScreen({
             Pregunta {questionNumber}
             <span className="text-white/35"> / {totalQuestions}</span>
           </p>
-          <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
-            {QUESTION_FORMAT_LABELS[question.type]}
-          </span>
+          <div className="flex min-w-0 items-center gap-2">
+            {typeof livesRemaining === "number" && typeof totalLives === "number" && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] px-2 py-1 font-mono text-[10px] font-black tracking-wide text-[var(--coral)]">
+                <HeartIcon className="h-3.5 w-3.5" />
+                {livesRemaining}/{totalLives}
+              </span>
+            )}
+            <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
+              {QUESTION_FORMAT_LABELS[question.type]}
+            </span>
+          </div>
         </div>
         <ProgressBar current={questionNumber} total={totalQuestions} />
       </div>

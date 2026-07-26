@@ -95,5 +95,7 @@ export type {
   PlaceholderScheduledChallenge,
   PlayableScheduledChallenge,
   ScheduledChallenge,
+  SurvivalChallenge,
+  SurvivalChallengeDefinition,
 } from "@/types/challenge";
 export type { Room, Season, SeasonStatus } from "@/types/room";

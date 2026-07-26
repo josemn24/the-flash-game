@@ -288,27 +288,38 @@ describe("question format catalog", () => {
       demoRoom.activeSeason.scheduledChallenges.map(
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
-    ).toEqual(Array(9).fill(86_399_999));
-    expect(challenges).toHaveLength(2);
+    ).toEqual([
+      86_399_999, 172_799_999, 86_399_999, 86_399_999, 86_399_999, 86_399_999, 86_399_999,
+      86_399_999, 86_399_999,
+    ]);
+    expect(challenges).toHaveLength(3);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
     const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
+    const survivalChallenge = challenges.find((challenge) => challenge.mode === "survival");
     expect(flashChallenge?.questions).toHaveLength(16);
     expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
       true,
     );
     expect(alphabetChallenge?.entries).toHaveLength(18);
     expect(alphabetChallenge?.timeLimit).toBe(135);
+    expect(survivalChallenge?.questions).toHaveLength(20);
+    expect(survivalChallenge?.lives).toBe(3);
     expect(challenges.map((challenge) => challenge.id)).toEqual([
       "tabarnia-flash-01",
       "tabarnia-challenge-02",
+      "tabarnia-challenge-03",
     ]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
       "animals-alphabet-definition",
+      "spain-survival-definition",
     ]);
     expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
     expect(getChallengeById("tabarnia-challenge-02")?.definitionId).toBe(
       "animals-alphabet-definition",
+    );
+    expect(getChallengeById("tabarnia-challenge-03")?.definitionId).toBe(
+      "spain-survival-definition",
     );
     expect(flashChallenge?.questions.some((question) => question.type === "odd-one-out")).toBe(
       true,
@@ -336,7 +347,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(63);
+    expect(questionIds).toHaveLength(83);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -351,7 +362,7 @@ describe("question format catalog", () => {
 
   it("keeps challenge definitions connected to valid questions", () => {
     const definitions = Object.values(challengeDefinitions);
-    expect(definitions).toHaveLength(3);
+    expect(definitions).toHaveLength(4);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
     expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
     expect(
@@ -363,6 +374,12 @@ describe("question format catalog", () => {
     const alphabetDefinition = challengeDefinitions["animals-alphabet-definition"];
     expect(alphabetDefinition.entries).toHaveLength(18);
     expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(18);
+    const survivalDefinition = challengeDefinitions["spain-survival-definition"];
+    expect(survivalDefinition.questionIds).toHaveLength(20);
+    expect(survivalDefinition.lives).toBe(3);
+    expect(Object.values(survivalDefinition.questionPoints ?? {}).reduce((a, b) => a + b, 0)).toBe(
+      100,
+    );
     expect(
       definitions.every((definition) =>
         (definition.mode === "alphabet"

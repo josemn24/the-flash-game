@@ -46,9 +46,16 @@ function getChallengeDateLabel(challenge: ChallengeSummary) {
 
 function getChallengeCountLabel(challenge: ChallengeSummary) {
   if (challenge.questionCount <= 0) return "Sin abrir";
-  return challenge.mode === "alphabet"
-    ? `${challenge.questionCount} letras · Alfabeto`
-    : `${challenge.questionCount} retos · Flash`;
+  if (challenge.mode === "alphabet") return `${challenge.questionCount} letras · Alfabeto`;
+  if (challenge.mode === "survival") return `${challenge.questionCount} retos · Supervivencia`;
+  return `${challenge.questionCount} retos · Flash`;
+}
+
+function getChallengeActionLabel(challenge: ChallengeSummary) {
+  if (!challenge.playable) return "Bloqueado";
+  if (challenge.mode === "alphabet") return "Jugar Alfabeto";
+  if (challenge.mode === "survival") return "Jugar Supervivencia";
+  return "Jugar Flash";
 }
 
 export function StartScreen({
@@ -117,11 +124,7 @@ export function StartScreen({
                     {getChallengeDateLabel(challenge)}
                   </span>
                   <span className={styles.stageSelectAction}>
-                    {challenge.playable
-                      ? challenge.mode === "alphabet"
-                        ? "Jugar Alfabeto"
-                        : "Jugar Flash"
-                      : "Bloqueado"}
+                    {getChallengeActionLabel(challenge)}
                     {challenge.playable && <ArrowIcon className="h-4 w-4" />}
                   </span>
                 </span>

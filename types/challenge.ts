@@ -1,7 +1,7 @@
 import type { Question } from "@/types/question";
 import type { QuestionId } from "@/data/questions";
 
-export type GameMode = "flash" | "alphabet";
+export type GameMode = "flash" | "alphabet" | "survival";
 
 export type ChallengeDefinitionId = string;
 export type ChallengeAvailabilityStatus = "available" | "locked" | "expired";
@@ -20,6 +20,13 @@ export type FlashChallengeDefinition = ChallengeDefinitionBase & {
   questionPoints?: ChallengeQuestionPoints;
 };
 
+export type SurvivalChallengeDefinition = ChallengeDefinitionBase & {
+  mode: "survival";
+  lives: number;
+  questionIds: QuestionId[];
+  questionPoints?: ChallengeQuestionPoints;
+};
+
 export type AlphabetChallengeDefinitionEntry = {
   letter: string;
   questionId: QuestionId;
@@ -31,7 +38,8 @@ export type AlphabetChallengeDefinition = ChallengeDefinitionBase & {
   entries: AlphabetChallengeDefinitionEntry[];
 };
 
-export type ChallengeDefinition = FlashChallengeDefinition | AlphabetChallengeDefinition;
+export type ChallengeDefinition =
+  FlashChallengeDefinition | AlphabetChallengeDefinition | SurvivalChallengeDefinition;
 
 export type PlayableScheduledChallenge = {
   id: string;
@@ -71,6 +79,13 @@ export type FlashChallenge = ChallengeBase & {
   questionPoints?: ChallengeQuestionPoints;
 };
 
+export type SurvivalChallenge = ChallengeBase & {
+  mode: "survival";
+  lives: number;
+  questions: Question[];
+  questionPoints?: ChallengeQuestionPoints;
+};
+
 export type AlphabetChallengeEntry = {
   letter: string;
   question: Question;
@@ -82,7 +97,7 @@ export type AlphabetChallenge = ChallengeBase & {
   entries: AlphabetChallengeEntry[];
 };
 
-export type Challenge = FlashChallenge | AlphabetChallenge;
+export type Challenge = FlashChallenge | AlphabetChallenge | SurvivalChallenge;
 
 export type ChallengeSummary = {
   id: string;
