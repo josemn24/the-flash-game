@@ -17,17 +17,26 @@ function getAlphabetChallenge() {
 
 describe("alphabet answer evaluation", () => {
   const question = getAlphabetChallenge().entries[9]!.question as ShortTextQuestion;
+  const shortQuestion = getAlphabetChallenge().entries[1]!.question as ShortTextQuestion;
 
-  it("accepts case, accents, plurals and one small typo", () => {
+  it("accepts case, accents, plurals and a trailing duplicated letter", () => {
     expect(isAlphabetAnswerCorrect(question, "JIRAFA")).toBe(true);
     expect(isAlphabetAnswerCorrect(question, "jirafas")).toBe(true);
-    expect(isAlphabetAnswerCorrect(question, "jirfaa")).toBe(true);
+    expect(isAlphabetAnswerCorrect(question, "jirafaa")).toBe(true);
   });
 
-  it("rejects empty, different and more distant answers", () => {
+  it("rejects empty, different and misspelled answers", () => {
     expect(isAlphabetAnswerCorrect(question, "")).toBe(false);
     expect(isAlphabetAnswerCorrect(question, "cebra")).toBe(false);
+    expect(isAlphabetAnswerCorrect(question, "jirfaa")).toBe(false);
     expect(isAlphabetAnswerCorrect(question, "jirxzz")).toBe(false);
+  });
+
+  it("does not fuzzy-match very short answers", () => {
+    expect(isAlphabetAnswerCorrect(shortQuestion, "búho")).toBe(true);
+    expect(isAlphabetAnswerCorrect(shortQuestion, "buho")).toBe(true);
+    expect(isAlphabetAnswerCorrect(shortQuestion, "buhos")).toBe(true);
+    expect(isAlphabetAnswerCorrect(shortQuestion, "buo")).toBe(false);
   });
 
   it("does not add fuzzy matching to Flash short-text questions", () => {

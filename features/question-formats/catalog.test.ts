@@ -296,8 +296,8 @@ describe("question format catalog", () => {
     expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
       true,
     );
-    expect(alphabetChallenge?.entries).toHaveLength(15);
-    expect(alphabetChallenge?.timeLimit).toBe(120);
+    expect(alphabetChallenge?.entries).toHaveLength(18);
+    expect(alphabetChallenge?.timeLimit).toBe(135);
     expect(challenges.map((challenge) => challenge.id)).toEqual([
       "tabarnia-flash-01",
       "tabarnia-challenge-02",
@@ -336,7 +336,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(60);
+    expect(questionIds).toHaveLength(63);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -361,8 +361,8 @@ describe("question format catalog", () => {
     ).toBe(true);
     expect(challengeDefinitions["connections-challenge-definition"].questionIds).toHaveLength(10);
     const alphabetDefinition = challengeDefinitions["animals-alphabet-definition"];
-    expect(alphabetDefinition.entries).toHaveLength(15);
-    expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(15);
+    expect(alphabetDefinition.entries).toHaveLength(18);
+    expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(18);
     expect(
       definitions.every((definition) =>
         (definition.mode === "alphabet"

@@ -102,6 +102,7 @@ function AlphabetTopbar({
 }
 
 function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: () => void }) {
+  const letterCount = challenge.entries.length;
   const previewLetters = challenge.entries.map((entry) => ({
     letter: entry.letter,
     questionId: entry.question.id,
@@ -126,7 +127,7 @@ function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: 
 
           <div className={styles.introStats}>
             <div>
-              <strong>15</strong>
+              <strong>{letterCount}</strong>
               <span>Letras</span>
             </div>
             <div>
@@ -134,7 +135,7 @@ function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: 
               <span>Puntos</span>
             </div>
             <div>
-              <strong>120</strong>
+              <strong>{challenge.timeLimit}</strong>
               <span>Segundos</span>
             </div>
           </div>
@@ -170,7 +171,7 @@ function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: 
           <div className={styles.boardCenter}>
             <span>Modo</span>
             <strong>Alfabeto</strong>
-            <small>15 letras</small>
+            <small>{letterCount} letras</small>
           </div>
           <AlphabetBoard letters={previewLetters} />
         </div>
@@ -284,7 +285,7 @@ function QuestionForm({
           <ArrowIcon className="h-5 w-5" />
         </button>
       </div>
-      <p>No importan las mayúsculas ni las tildes. Se admite una errata menor.</p>
+      <p>No importan las mayúsculas ni las tildes. Se admite una letra final repetida.</p>
     </form>
   );
 }

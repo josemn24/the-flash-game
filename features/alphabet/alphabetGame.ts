@@ -171,35 +171,13 @@ export function alphabetReducer(state: AlphabetState, action: AlphabetAction): A
   }
 }
 
-function damerauLevenshteinDistance(left: string, right: string) {
-  const rows = left.length + 1;
-  const columns = right.length + 1;
-  const matrix = Array.from({ length: rows }, () => Array<number>(columns).fill(0));
-
-  for (let row = 0; row < rows; row += 1) matrix[row]![0] = row;
-  for (let column = 0; column < columns; column += 1) matrix[0]![column] = column;
-
-  for (let row = 1; row < rows; row += 1) {
-    for (let column = 1; column < columns; column += 1) {
-      const cost = left[row - 1] === right[column - 1] ? 0 : 1;
-      matrix[row]![column] = Math.min(
-        matrix[row - 1]![column]! + 1,
-        matrix[row]![column - 1]! + 1,
-        matrix[row - 1]![column - 1]! + cost,
-      );
-
-      if (
-        row > 1 &&
-        column > 1 &&
-        left[row - 1] === right[column - 2] &&
-        left[row - 2] === right[column - 1]
-      ) {
-        matrix[row]![column] = Math.min(matrix[row]![column]!, matrix[row - 2]![column - 2]! + 1);
-      }
-    }
-  }
-
-  return matrix[left.length]![right.length]!;
+function hasOnlyTrailingDuplicate(answer: string, candidate: string) {
+  if (candidate.length < 5) return false;
+  return (
+    answer.length === candidate.length + 1 &&
+    answer.startsWith(candidate) &&
+    answer.at(-1) === candidate.at(-1)
+  );
 }
 
 export function isAlphabetAnswerCorrect(question: ShortTextQuestion, answer: string) {
@@ -210,8 +188,7 @@ export function isAlphabetAnswerCorrect(question: ShortTextQuestion, answer: str
   return accepted.some((candidate) => {
     const normalizedCandidate = normalizeAnswer(candidate);
     if (normalizedAnswer === normalizedCandidate) return true;
-    if (normalizedCandidate.length < 4 || normalizedAnswer.length < 3) return false;
-    return damerauLevenshteinDistance(normalizedAnswer, normalizedCandidate) <= 1;
+    return hasOnlyTrailingDuplicate(normalizedAnswer, normalizedCandidate);
   });
 }
 

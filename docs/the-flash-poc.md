@@ -54,8 +54,8 @@ Alfabeto añade cuenta atrás, feedback inmediato de estado y vueltas sobre letr
 
 - Identificador: `tabarnia-challenge-02`.
 - Modo: `alphabet`.
-- Quince definiciones de animales con respuesta corta.
-- Usa un límite global de 120 segundos, permite pasar y recupera pendientes en nuevas vueltas.
+- Dieciocho definiciones de animales con respuesta corta.
+- Usa un límite global de 135 segundos, permite pasar y recupera pendientes en nuevas vueltas.
 - Puntúa únicamente por precisión; el tiempo hasta el último acierto actúa como desempate.
 
 Ambos desafíos se publican desde `demoRoom.activeSeason.scheduledChallenges`, apuntan a definiciones reutilizables y resuelven sus preguntas desde `questionsById`. La ruta `/desafios/[challengeId]` usa el ID de publicación, no el ID interno de definición, y se prerenderiza mediante `generateStaticParams`.

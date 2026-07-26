@@ -80,11 +80,11 @@ export const challengeDefinitions = {
   "animals-alphabet-definition": {
     id: "animals-alphabet-definition",
     title: "Alfabeto: animales",
-    subtitle: "Quince letras, una sola cuenta atrás",
+    subtitle: "Dieciocho letras, una sola cuenta atrás",
     description:
-      "Recorre quince letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
+      "Recorre dieciocho letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
     mode: "alphabet",
-    timeLimit: 120,
+    timeLimit: 135,
     entries: [
       { letter: "A", questionId: "alphabet-animals-a" },
       { letter: "B", questionId: "alphabet-animals-b" },
@@ -101,6 +101,9 @@ export const challengeDefinitions = {
       { letter: "O", questionId: "alphabet-animals-o" },
       { letter: "P", questionId: "alphabet-animals-p" },
       { letter: "R", questionId: "alphabet-animals-r" },
+      { letter: "S", questionId: "alphabet-animals-s" },
+      { letter: "T", questionId: "alphabet-animals-t" },
+      { letter: "Z", questionId: "alphabet-animals-z" },
     ],
   },
 } satisfies Record<string, ChallengeDefinition>;

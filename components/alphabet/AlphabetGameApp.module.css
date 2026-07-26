@@ -457,7 +457,7 @@
 
 .gameBoardCard {
   display: grid;
-  width: min(100%, 52rem);
+  width: min(100%, 32rem);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 1rem;
   padding: clamp(0.55rem, 1.2vw, 0.8rem);
@@ -467,8 +467,8 @@
 }
 
 .gameBoardCard .boardCompact {
-  grid-template-columns: repeat(15, minmax(0, 1fr));
-  gap: 0.3rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.38rem;
 }
 
 .gameBoardCard .boardCompact .letterCell {
@@ -678,22 +678,25 @@
 .score {
   display: flex;
   margin-top: 2rem;
-  align-items: baseline;
+  align-items: flex-end;
   gap: 0.7rem;
 }
 
 .score strong {
+  display: block;
+  padding: 0.08em 0.04em 0.04em 0;
   font-family: var(--font-display);
   font-size: clamp(6rem, 14vw, 10rem);
   font-weight: 950;
   letter-spacing: -0.09em;
-  line-height: 0.8;
+  line-height: 1;
   background: linear-gradient(135deg, white 12%, var(--alphabet-violet) 58%, var(--alphabet-cyan));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .score span {
+  padding-bottom: 1.05rem;
   color: rgba(255, 255, 255, 0.35);
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -738,7 +741,7 @@
   width: 100%;
   height: auto;
   aspect-ratio: auto;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.55rem;
 }
 
@@ -1083,14 +1086,14 @@
   }
 
   .gameBoardCard {
-    width: min(100%, 27rem);
+    width: min(100%, 28rem);
     margin: 0 auto;
     border-radius: 0.9rem;
     padding: 0.55rem;
   }
 
   .gameBoardCard .boardCompact {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 0.38rem;
   }
 
