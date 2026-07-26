@@ -79,7 +79,7 @@ export const challengeDefinitions = {
   },
   "animals-alphabet-definition": {
     id: "animals-alphabet-definition",
-    title: "Alfabeto: animales",
+    title: "Reino de animales",
     subtitle: "Dieciocho letras, una sola cuenta atrás",
     description:
       "Recorre dieciocho letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",

@@ -5,13 +5,13 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   ArrowIcon,
+  BoltIcon,
   CheckIcon,
   ClockIcon,
   CrossIcon,
   EyeIcon,
   RotateIcon,
 } from "@/components/icons";
-import { Logo } from "@/components/Logo";
 import { Timer } from "@/components/Timer";
 import { Button } from "@/components/ui/Button";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
@@ -86,16 +86,12 @@ function AlphabetTopbar({
 }) {
   return (
     <header className={styles.topbar}>
-      <Link className={styles.brandLink} href="/" aria-label="Volver a los desafíos">
-        <Logo />
+      <Link className={styles.headerChallengeLink} href="/" aria-label="Volver a los desafíos">
+        <span className={styles.headerMark}>
+          <BoltIcon className="h-3.5 w-3.5" />
+        </span>
+        <span>{challengeTitle ?? "The Flash"}</span>
       </Link>
-      <div className={styles.challengeBrand}>
-        <span className={styles.modeGlyph}>Aa</span>
-        <div>
-          <p>Alfabeto</p>
-          {challengeTitle && <strong>{challengeTitle}</strong>}
-        </div>
-      </div>
       <div className={styles.topbarRight}>{right}</div>
     </header>
   );
@@ -117,7 +113,7 @@ function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
     >
-      <AlphabetTopbar />
+      <AlphabetTopbar challengeTitle={challenge.title} />
       <div className={styles.introGrid}>
         <div className={styles.introCopy}>
           <p className={styles.eyebrow}>Desafío {String(challenge.number).padStart(2, "0")}</p>
