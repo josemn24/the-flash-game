@@ -49,6 +49,39 @@ Adaptación reducida de kakuro con sumas cruzadas y números sin repetir dentro 
 - **Encaje:** buen complemento para mini-sudoku y mini-nonograma.
 - **Riesgo:** la carga mental crece rápido; conviene empezar con tres o cuatro huecos.
 
+### Queens / Meowdoku
+
+Puzzle lógico de colocación en cuadrícula, conocido como **Queens** y representado temáticamente por gatos en **Meowdoku**. El jugador debe colocar exactamente un elemento en cada fila, cada columna y cada región de color. Además, dos elementos no pueden tocarse entre sí, ni siquiera en diagonal. La solución se obtiene mediante deducción y descarte, no mediante azar.
+
+- **Interacción:** tocar una celda para alternar entre vacía, descartada y reina o gato colocado. Las marcas de descarte pueden editarse antes de confirmar; una colocación correcta elimina automáticamente las celdas incompatibles si se quiere ofrecer asistencia visual.
+- **Puntuación:** resolver el tablero concede puntos por velocidad. Los errores, las ayudas utilizadas y las marcas incorrectas pueden reducir la puntuación; el tiempo dedicado a leer las reglas o animaciones debe quedar fuera del cronómetro competitivo.
+- **Encaje:** puzzle de deducción compacto, reconocible y muy adecuado para móvil. Amplía la línea de mini-sudoku y mini-nonograma con regiones irregulares, restricciones de filas y columnas y una regla espacial de no contacto.
+- **Relación con otros formatos:** comparte la colocación y el descarte de **Mini-sudoku**, además de la edición de celdas de **Mini-nonograma**, pero no usa números, subcuadrículas ni pistas numéricas. También se acerca a **Akari o Light Up mini** por sus restricciones espaciales, aunque el objetivo y la lógica son distintos.
+- **Variantes:** versión neutra con reinas, versión Meowdoku con gatos, tableros de 5 × 5 a 9 × 9, modo diario con una semilla compartida, dificultad por forma de las regiones, pistas limitadas y modo contrarreloj.
+- **Riesgo:** las regiones deben estar bien diferenciadas sin depender únicamente del color; cada una necesita una textura, patrón, borde o etiqueta accesible. El generador debe garantizar una solución única y evitar tableros que solo puedan resolverse por ensayo y error.
+
+### Patches / Regiones rectangulares
+
+Puzzle de partición de cuadrícula, relacionado con la familia Shikaku. El jugador debe dividir todo el tablero en rectángulos sin huecos ni solapamientos. Cada región contiene exactamente una pista: el número indica la cantidad de casillas que debe ocupar y el icono puede exigir que la región sea cuadrada, más alta que ancha, más ancha que alta o de cualquier orientación válida.
+
+- **Interacción:** seleccionar una pista y arrastrar sobre la cuadrícula para dibujar un rectángulo que la incluya. La región puede editarse, eliminarse o redimensionarse antes de confirmar; el tablero se completa cuando todas las casillas pertenecen a una única región válida.
+- **Puntuación:** resolver el tablero concede puntos por velocidad. Se pueden aplicar penalizaciones suaves por borrar y rehacer regiones, pedir pistas o realizar intentos inválidos; el tiempo de lectura de las reglas y las ayudas visuales debe quedar fuera del cronómetro competitivo.
+- **Encaje:** lógica espacial clara, reglas explicables en segundos y buena adaptación a móvil. Obliga a razonar sobre áreas, bordes, esquinas y espacios restantes, con una solución que se puede revisar visualmente de forma inmediata.
+- **Relación con otros formatos:** comparte la lógica de regiones de **Queens / Meowdoku**, pero aquí las regiones las construye el jugador y deben ser rectángulos. Se acerca a **Mini-nonograma** por la deducción sobre la cuadrícula y a **Dominó oculto** por la cobertura completa, aunque no usa pistas de filas, columnas ni pares de números. También tiene una relación espacial con **Tangram**, pero no utiliza piezas geométricas móviles.
+- **Variantes:** pistas solo numéricas, cuadrados obligatorios, rectángulos altos o anchos, pistas sin número cuyo tamaño debe deducirse, tableros de 5 × 5 a 10 × 10, modo diario con semilla compartida, dificultad progresiva y solución única verificada.
+- **Riesgo:** dibujar y redimensionar regiones debe ser cómodo en pantallas pequeñas, con controles discretos alternativos al arrastre. El generador debe garantizar que cada región tenga una sola pista, que cubra exactamente su área y que el tablero pueda resolverse sin depender de ensayo y error.
+
+### Hashtag de palabras
+
+Puzzle de palabras con una cuadrícula que forma un símbolo `#`. El jugador debe descubrir varias palabras ocultas que se cruzan y mover o intercambiar fichas de letras hasta colocarlas correctamente. Las intersecciones hacen que una misma letra pueda aportar información a dos palabras, por lo que hay que resolverlas de forma conjunta y no como anagramas independientes.
+
+- **Interacción:** arrastrar una ficha sobre otra o intercambiar dos letras para reorganizar el tablero. Las letras correctas pueden quedar bloqueadas; las fichas usadas en intersecciones deben actualizar simultáneamente las palabras afectadas. La ronda termina al formar todas las palabras o al agotar el límite de movimientos.
+- **Puntuación:** completar las palabras concede puntos por velocidad y por movimientos restantes. Cada intercambio puede consumir un movimiento; una variante más tolerante puede permitir movimientos libres y puntuar solo el tiempo. Las palabras completas y las letras correctas pueden ofrecer crédito parcial al agotarse el tiempo.
+- **Encaje:** combina vocabulario, anagramas, razonamiento cruzado y planificación. Tiene una identidad visual clara y convierte la construcción de palabras en un puzzle de tablero, con más profundidad que formar una única palabra.
+- **Relación con otros formatos:** es una evolución de **Anagramas y palabras desordenadas**, porque usa fichas de letras, y comparte el feedback de **Mini-Wordle** cuando muestra letras correctas o desplazadas. También reutiliza la interacción de **Rompecabezas deslizante**, pero el objetivo es resolver palabras cruzadas y no reconstruir una secuencia numérica.
+- **Variantes:** cuatro palabras en una cuadrícula `#`, palabras de distintas longitudes, pistas temáticas, modo diario con tablero compartido, límite de intercambios, letras bloqueadas, casillas de intersección con doble valor y versión en español con vocabulario validado offline.
+- **Riesgo:** el diccionario debe admitir flexiones, tildes, plurales y variantes razonables sin aceptar palabras oscuras. Las intersecciones deben producir una solución inequívoca, la cuadrícula debe ser legible en móvil y el sistema debe explicar si una letra amarilla pertenece a una o a varias palabras posibles.
+
 ### Tuberías o circuito cerrado
 
 El jugador rota piezas para conectar una entrada con una salida, cerrar un circuito o activar varios nodos.
@@ -58,6 +91,28 @@ El jugador rota piezas para conectar una entrada con una salida, cerrar un circu
 - **Encaje:** muy visual, fácil de entender y con sensación de acción.
 - **Riesgo:** las piezas deben ser legibles en móvil y el objetivo debe quedar claro sin tutorial largo.
 
+### Flechas encadenadas
+
+El jugador debe retirar o ejecutar varias flechas dibujadas sobre una cuadrícula en el orden correcto. Cada flecha representa un recorrido recto o con giros, y solo puede extraerse cuando su trayectoria está libre; intentar retirar una flecha bloqueada o provocar una colisión supone un error. La posición, dirección y longitud de las flechas determinan las dependencias entre ellas.
+
+- **Interacción:** tocar una flecha para retirarla, siguiendo una secuencia válida. Las flechas disponibles pueden resaltarse de forma opcional; una acción incorrecta puede deshacer el último movimiento o terminar la ronda según la dificultad.
+- **Puntuación:** completar el tablero concede puntos por velocidad; los errores, intentos de retirar flechas bloqueadas y movimientos innecesarios pueden reducir la puntuación. El progreso parcial puede conservarse al agotarse el tiempo.
+- **Encaje:** puzzle visual muy rápido, con reglas intuitivas y una lectura competitiva clara. Combina planificación espacial, reconocimiento de trayectorias y gestión de dependencias sin exigir conocimiento externo.
+- **Relación con otros formatos:** comparte la cuadrícula y el riesgo de bloqueo de **Conectar parejas**, además del movimiento ortogonal de **Laberinto contrarreloj**, pero su objetivo específico es resolver un orden de extracción. No es una variante de **Tuberías o circuito cerrado**, porque las piezas no se rotan para crear una red.
+- **Riesgo:** las trayectorias deben ser suficientemente separadas y las colisiones inequívocas en móvil. El diseño necesita definir si una flecha desaparece completa al retirarse, si puede atravesar el espacio liberado y cómo se resuelven los cruces, solapamientos y retrocesos.
+- **Variantes:** flechas rectas frente a trayectorias con giros, obstáculos fijos, flechas que desbloquean otras, límite de errores, modo contrarreloj por rondas y tableros con solución única.
+
+### Zip / Una línea
+
+Puzzle de recorrido numérico en una cuadrícula. El jugador comienza en la casilla marcada con `1` y dibuja una única línea continua que debe pasar por los números en orden —`1 → 2 → 3 → …`— mientras visita todas las casillas exactamente una vez. La línea no puede cruzarse consigo misma, reutilizar una casilla ni atravesar paredes o bloqueos.
+
+- **Interacción:** pulsar o arrastrar desde el `1` y extender el recorrido celda a celda mediante movimientos ortogonales. Arrastrar hacia atrás deshace pasos; también se pueden ofrecer botones de deshacer, reiniciar y una ayuda que retire el camino hasta el primer error.
+- **Puntuación:** completar el recorrido concede puntos por velocidad y resolución correcta. Puede añadirse una penalización suave por deshacer, pedir pistas o cometer movimientos inválidos; el tiempo de animaciones y la lectura inicial de las reglas deben quedar fuera del cronómetro.
+- **Encaje:** reglas muy breves, razonamiento espacial claro y excelente adaptación táctil. Convierte un laberinto en un problema de planificación global: cada tramo entre números debe dejar espacio suficiente para completar el resto del tablero.
+- **Relación con otros formatos:** comparte el movimiento ortogonal y la llegada a un objetivo con **Laberinto contrarreloj**, pero exige cubrir toda la cuadrícula y respetar una secuencia de números. Se acerca a **Conectar parejas** por la cobertura completa, aunque solo existe una línea continua y no varias parejas independientes. También comparte orden obligatorio con **Flechas encadenadas**, sin retirar piezas ni resolver colisiones entre trayectorias.
+- **Variantes:** cuadrículas de 4 × 4 a 9 × 9, números más separados para aumentar la planificación, paredes entre celdas, casillas bloqueadas, modo diario con semilla compartida, límite de tiempo, solución única y versión sin números con puntos de control mediante símbolos o colores.
+- **Riesgo:** el trazado libre debe ser cómodo y preciso en móvil, con una alternativa por toques discretos o teclado. El generador debe verificar que cada tablero tenga solución única, evitar recorridos ambiguos y mantener una dificultad progresiva basada en tamaño, separación entre números y cantidad de paredes.
+
 ### Rush Hour mini
 
 Un tablero con vehículos o bloques deslizantes donde el jugador debe liberar una pieza objetivo moviendo obstáculos.
@@ -66,6 +121,17 @@ Un tablero con vehículos o bloques deslizantes donde el jugador debe liberar un
 - **Puntuación:** resolver antes de tiempo; los movimientos pueden registrarse sin penalizar o con una penalización suave.
 - **Encaje:** desafío especial fuerte, reconocible y medible por tiempo.
 - **Riesgo:** implementar arrastre, accesibilidad por teclado y validación de estados exige más cuidado que una cuadrícula estática.
+
+### Anillas de colores
+
+Puzzle de clasificación y apilado inspirado en las Torres de Hanoi y los juegos de tipo Color Sort. Hay varios palos con anillas de distintos colores y el jugador debe moverlas entre ellos hasta reunir en cada palo todas las anillas del mismo color. La restricción habitual es que solo puede moverse la anilla superior de cada pila y que una anilla no puede colocarse sobre un palo lleno.
+
+- **Interacción:** tocar o arrastrar la anilla superior de un palo y después seleccionar el palo de destino. El movimiento debe ser reversible mientras la ronda siga activa; una animación breve debe dejar claro qué anilla está seleccionada y por qué un destino es válido o está bloqueado.
+- **Puntuación:** completar todas las pilas concede puntos por velocidad y por eficiencia. La métrica principal puede ser el número de movimientos frente a una solución óptima; los movimientos extra pueden restar de forma suave para no castigar la experimentación.
+- **Encaje:** reglas visuales inmediatas, interacción táctil sencilla y buena sensación de progreso. Aporta planificación y gestión de bloqueos sin depender de conocimiento externo, y puede funcionar como ronda rápida o desafío especial.
+- **Relación con otros formatos:** comparte planificación y movimientos con **Rompecabezas deslizante**, columnas construidas con **Apilar bloques** y decisiones secuenciales con **Rush Hour mini**, pero su objetivo específico es clasificar anillas por color. No es una variante de **Tangram**, porque no hay que formar una silueta ni encajar piezas geométricas.
+- **Variantes:** tres o más palos auxiliares, capacidad variable por palo, anillas con símbolos además de color, movimientos limitados, solución óptima visible al terminar, modo contrarreloj, niveles progresivos y versión tipo Torres de Hanoi con tamaños ordenados.
+- **Riesgo:** los colores no deben ser la única forma de distinguir las anillas; cada una necesita símbolo, patrón o etiqueta accesible. El generador debe garantizar que el tablero sea resoluble, evitar estados redundantes y controlar la dificultad mediante número de palos, capacidad, colores y profundidad de las pilas.
 
 ### Laser mirror
 
