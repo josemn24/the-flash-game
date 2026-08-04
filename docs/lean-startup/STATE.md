@@ -2,19 +2,19 @@
 
 ## Resumen
 
-- Fase actual: Formulación de hipótesis
+- Fase actual: Preparación de experimento
 - Ciclo activo: `cycles/CYCLE-001.md`
 - Hipótesis crítica: HYP-001 — Participación recurrente en una competición asíncrona entre amistades
-- Pregunta de aprendizaje: ¿Un grupo inicial concreto realiza voluntariamente desafíos compartidos de forma repetida cuando se coordina una temporada manual?
-- Decisión pendiente: ¿Conviene priorizar un MVP social manual para aprender sobre el loop de sala y temporada antes de construir backend, autenticación o persistencia?
-- Incertidumbre principal: Segmento inicial y umbral de comportamiento que haría útil el experimento aún no están definidos.
+- Pregunta de aprendizaje: ¿Tabarnia participa voluntariamente de forma repetida en una temporada alpha técnica de desafíos compartidos?
+- Decisión pendiente: ¿Conviene repetir y ajustar la temporada alpha, o revisar contenido, cadencia, segmento o problema antes de ampliar el producto?
+- Incertidumbre principal: aceptación y participación recurrente de Tabarnia en el loop social asíncrono.
 - Responsable: Jose Moreno
-- Próxima revisión: Pendiente de definir tras escoger el segmento inicial.
-- Bloqueos: No hay segmento participante ni umbrales predefinidos.
+- Próxima revisión: Al finalizar la temporada alpha; fecha de inicio pendiente.
+- Bloqueos: La prueba individual previa y la selección concreta de los nueve desafíos están pendientes.
 
 ## Próxima acción
 
-Jose debe elegir y registrar en HYP-001 un segmento inicial concreto al que pueda invitar éticamente, antes de fijar experimento y umbrales.
+Realizar una prueba individual cualitativa con dos amistades. Si no revela bloqueos de claridad o calidad en los desafíos destinados a la alpha, preparar la sala técnica de Tabarnia y fijar la fecha de inicio.
 
 ## Lo que sabemos
 
@@ -34,11 +34,11 @@ Jose debe elegir y registrar en HYP-001 un segmento inicial concreto al que pued
 
 ### Supuestos
 
-- Un grupo de amistades podría querer competir de manera asíncrona con desafíos breves y un resultado acumulado.
+- Tabarnia podría querer competir de manera asíncrona con nueve desafíos breves y un resultado acumulado.
 
 ## Lo que desconocemos
 
-- Segmento inicial, comportamiento mínimo esperado, tamaño de muestra, umbrales, frecuencia y disposición real a volver.
+- La aceptación real de las hasta once invitaciones, la disposición a volver, los formatos que mejor sostienen la participación y el interés por el ranking.
 
 ## Referencias
 

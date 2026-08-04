@@ -6,12 +6,12 @@ Parcialmente documentada. La formulación procede de documentación de producto 
 
 ## Cambio que se quiere producir
 
-Permitir que grupos de amigos mantengan una competición ligera y recurrente a través de desafíos breves que cada persona pueda jugar dentro de una ventana compartida, acumulando resultados durante una temporada.
+Permitir que grupos de amigos mantengan una competición ligera y recurrente a través de desafíos mentales breves, variados y comparables. Cada persona juega dentro de una ventana compartida y acumula resultados durante una temporada.
 
 ## Personas o entidades beneficiadas
 
 - Grupos de amigos que quieran una actividad competitiva compartida sin necesidad de coincidir en tiempo real.
-- TODO — segmento inicial concreto por definir.
+- El grupo inicial Tabarnia, formado por hasta once amistades invitadas a una sala privada para la primera alpha.
 
 ## Situación que se desea transformar
 
@@ -37,7 +37,14 @@ El cambio buscado —competición social recurrente, breve y asíncrona entre am
 
 ## Qué pertenece a la estrategia actual
 
-La sala privada, las temporadas, la frecuencia de publicación, el ranking, la selección o generación de desafíos, los formatos, el backend, la autenticación y las notificaciones son opciones estratégicas modificables.
+La primera apuesta es una sala privada con una temporada, desafíos periódicos, puntuación acumulada y ranking. La alpha técnica comprobará este loop con Tabarnia; el backend, la autenticación y la persistencia son el vehículo mínimo elegido para observarlo, no evidencia de que la estrategia funcione.
+
+La frecuencia de publicación, la selección de formatos, las reglas de puntuación, las notificaciones y la ampliación a más salas son opciones estratégicas modificables.
+
+## Líneas no priorizadas en el ciclo actual
+
+- **Conquista y geolocalización:** posible capa futura inspirada en la competición territorial, no alcance ni evidencia de la alpha.
+- **Enfoque educativo:** posible producto para otro segmento y problema, no alcance ni evidencia de la alpha.
 
 ## Relación con el producto existente
 
@@ -63,16 +70,16 @@ La PoC actual permite jugar en solitario dentro de una sala y temporada demo loc
 
 ## Inferencias
 
-- Antes de invertir en persistencia, autenticación o rankings compartidos, la incertidumbre más costosa parece ser si existe comportamiento recurrente de grupo alrededor de ese loop social.
+- La incertidumbre más costosa es si existe comportamiento recurrente de grupo alrededor del loop social; la alpha técnica permitirá medirlo directamente con la experiencia prevista.
 
 ## Supuestos
 
 - Que un grupo de amigos querrá participar repetidamente en desafíos asíncronos compartidos.
 - Que un ranking acumulado de temporada aportará motivación suficiente para sostener esa participación.
-- Que la experiencia individual actual puede servir como parte de un vehículo experimental manual.
+- Que los desafíos mentales breves y variados aportarán una diferenciación suficiente frente a una trivia convencional.
 
 ## Preguntas pendientes
 
-- ¿Qué grupo concreto se investigará primero y cómo se le podrá invitar de forma ética?
-- ¿Qué frecuencia, duración de temporada y tamaño de grupo resultan aceptables?
-- ¿Qué comportamiento mínimo justificaría priorizar un MVP social antes de construir infraestructura?
+- ¿Qué formatos y reglas de puntuación harán que las personas quieran volver?
+- ¿Qué aceptación y participación recurrente observará Tabarnia en la alpha?
+- ¿Qué ajustes de contenido, cadencia o ranking justificará una segunda temporada?

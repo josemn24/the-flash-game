@@ -1,11 +1,11 @@
-# CYCLE-001 — ¿Existe participación repetida en el loop social asíncrono?
+# CYCLE-001 — ¿Existe participación repetida en la alpha social asíncrona?
 
 ## Estado del ciclo
 
 **Estado:** Planificación  
 **Responsable:** Jose Moreno  
 **Fecha de inicio:** Pendiente  
-**Fecha de revisión:** Pendiente
+**Fecha de revisión:** Al finalizar la temporada alpha
 
 ## 1. Contexto
 
@@ -18,142 +18,156 @@
 ### Afirmaciones documentadas
 
 - El producto previsto organiza grupos privados en temporadas con desafíos periódicos asíncronos y ranking acumulado. Fuente: `../../salas-y-temporadas.md`.
+- La primera apuesta usará una alpha técnica con Tabarnia: hasta once amistades invitadas a una sala privada. Fuente: contexto de producto proporcionado.
 
 ### Inferencias
 
-- Un experimento manual sobre participación repetida puede reducir una incertidumbre de producto antes de que sea necesario construir la infraestructura futura.
+- Una alpha técnica mínima puede medir directamente la participación repetida en el loop previsto sin ampliar todavía el producto a más salas o funciones sociales.
 
 ### Supuestos
 
-- Existe un segmento al que Jose puede invitar éticamente y que aceptaría probar este loop.
-- El prototipo actual puede aportar desafíos a un vehículo experimental manual, aunque no reproduce aún la experiencia social completa.
+- Tabarnia aceptará de forma voluntaria una invitación ética a una temporada privada.
+- Los desafíos mentales breves y variados, el calendario compartido y el ranking acumulado generarán interés suficiente para volver.
 
 ## 2. Decisión que necesitamos tomar
 
-¿Conviene priorizar un MVP social manual para aprender sobre el loop de sala y temporada antes de invertir en backend, autenticación, persistencia o rankings compartidos?
+¿Conviene repetir y ajustar la temporada alpha, o revisar contenido, cadencia, segmento o problema antes de ampliar The Flash?
 
 ## 3. Pregunta de aprendizaje
 
-¿Un grupo inicial concreto realiza voluntariamente desafíos compartidos de forma repetida cuando una temporada se coordina manualmente?
+¿Tabarnia participa voluntariamente de forma repetida en una temporada alpha técnica de desafíos compartidos y asíncronos?
 
 ## 4. Hipótesis crítica
 
 **Referencia:** HYP-001
 
-Creemos que un segmento inicial de grupos de amigos verá valor en coordinar y repetir desafíos breves asíncronos con una clasificación acumulada de temporada.
+Creemos que Tabarnia verá valor en repetir desafíos mentales breves asíncronos con una clasificación acumulada de temporada.
 
 ## 5. Por qué esta hipótesis es prioritaria
 
-- Contiene incertidumbre alta sobre el problema y el comportamiento de un segmento todavía desconocido.
-- Reduce el riesgo de construir infraestructura para un loop que no genere participación repetida.
-- Si fuera falsa, salas, temporadas y rankings podrían ser una estrategia inadecuada o prematura.
-- Debe probarse antes que hipótesis de implementación, porque estas no resuelven la falta de evidencia de uso social.
+- Contiene incertidumbre alta sobre el problema y el comportamiento del grupo inicial.
+- Si fuera falsa, ampliar salas, temporadas o funciones sociales no resolvería la falta de participación recurrente.
+- La alpha puede obtener evidencia con el producto social previsto y un alcance técnico limitado.
 
 ## 6. Evidencia necesaria
 
 ### Evidencia que apoyaría la hipótesis
 
-- TODO — comportamiento de repetición y consulta de resultados, con umbral fijado antes de invitar participantes.
+- Al menos seis de las once personas invitadas completan cinco o más desafíos.
+- Se observan consultas o reacciones voluntarias al ranking acumulado.
 
 ### Evidencia que debilitaría la hipótesis
 
-- TODO — nivel de no aceptación, no repetición o falta de interés en los resultados que contradiga el umbral predefinido.
+- Tres o menos personas invitadas completan cinco o más desafíos.
+- No se observa interés por el resultado compartido.
 
 ### Resultado inconcluso
 
-El segmento no está definido, se observa una muestra insuficiente, la medición falla o la coordinación manual impide atribuir el comportamiento al loop evaluado.
+- Cuatro o cinco personas invitadas completan cinco o más desafíos.
+- La convocatoria, el registro de datos o un fallo técnico relevante impiden atribuir el comportamiento al loop evaluado.
 
 ## 7. Experimento
 
 ### Descripción
 
-Propuesta condicionada: simular manualmente una temporada breve para un grupo inicial definido, usando solo los desafíos existentes que permitan observar participación repetida y consulta del resultado compartido. No ejecutar hasta fijar segmento, duración, medición y umbrales.
+Ejecutar una temporada alpha técnica en una sala privada de Tabarnia. Se invitará a hasta once amistades. La aceptación real de la invitación se registrará como dato; no se presupone que todas las personas participen.
 
-### Segmento participante
-
-TODO — definir antes del experimento.
+Antes de iniciar la alpha, dos amistades realizarán una prueba individual cualitativa de los desafíos seleccionados. Esta puerta previa sirve para corregir problemas evidentes de claridad o calidad; no constituye un ciclo Lean independiente ni evidencia de demanda.
 
 ### Método
 
-TODO — documentar la coordinación manual, la invitación, las ventanas de disponibilidad y el registro de comportamientos sin crear funcionalidad nueva.
+- Una única sala privada y una única temporada.
+- Nueve desafíos preconfigurados, publicados uno cada dos días.
+- Cada desafío estará disponible durante 24 horas y admitirá un único intento por participante.
+- La temporada tendrá una duración prevista de 17 días.
+- Al cerrar cada intento, se guardará la puntuación comparable y se actualizará el ranking acumulado.
+
+### Segmento participante
+
+Tabarnia: hasta once amistades invitadas éticamente por Jose.
 
 ### Duración máxima
 
-TODO — fijar antes de ejecutar.
+Diecisiete días desde la publicación del primer desafío hasta el cierre del noveno.
 
 ### Número mínimo de observaciones
 
-TODO — fijar antes de ejecutar.
+Hasta once personas invitadas y nueve oportunidades de participación por persona. La métrica principal se evaluará contra las once invitaciones para preservar el efecto de aceptación y retención.
 
 ### Riesgos y sesgos
 
-- Sesgo de conveniencia si las personas conocen al responsable.
-- La coordinación manual puede aumentar artificialmente la participación.
-- El prototipo individual no reproduce aún la creación de salas, el ranking compartido ni las notificaciones.
-- TODO — riesgos específicos del segmento elegido.
+- Sesgo de conveniencia: las personas conocen al responsable.
+- La muestra es pequeña y no representa el mercado general.
+- El interés inicial puede deberse a la relación personal, no al producto.
+- Un desafío ambiguo, una puntuación percibida como injusta o un fallo técnico puede reducir participación sin invalidar por sí solo el loop social.
 
 ## 8. Métrica y umbrales
 
 ### Métrica principal
 
-**Nombre:** TODO — tasa de participación repetida predefinida.  
-**Definición:** TODO — comportamiento observable, periodo y denominador.  
-**Forma de cálculo:** TODO.
+**Nombre:** participación recurrente de temporada.
+**Definición:** número de personas invitadas que completan cinco o más de los nueve desafíos, dividido entre las once invitaciones.
+**Forma de cálculo:** `participantes con >= 5 desafíos completados / 11`.
 
 ### Umbral de éxito
 
-TODO — fijar antes de ejecutar.
+Seis o más personas invitadas completan cinco o más desafíos.
 
 ### Umbral de fracaso
 
-TODO — fijar antes de ejecutar.
+Tres o menos personas invitadas completan cinco o más desafíos.
 
 ### Resultado inconcluso
 
-TODO — especificar rango o condición antes de ejecutar.
+Cuatro o cinco personas invitadas completan cinco o más desafíos, o existe una incidencia relevante de convocatoria, medición o estabilidad técnica.
 
 ### Origen del umbral
 
-TODO — decisión del equipo o supuesto provisional; registrar la justificación antes de observar resultados.
+Decisión provisional de producto fijada antes de observar resultados. Busca una mayoría activa sin interpretar como fracaso una ausencia puntual en una primera alpha cerrada.
+
+### Métricas auxiliares
+
+- Activación: personas invitadas que completan el primer desafío.
+- Finalización: personas invitadas que completan el noveno desafío.
+- Consulta social: visualizaciones, consultas o reacciones al ranking acumulado.
+- Abandono: momento y motivo conocido de dejar de participar.
+- Calidad por desafío: inicio, finalización, tiempo, puntuación, abandono y feedback cualitativo.
 
 ## 9. MVP o vehículo experimental
 
 ### Propósito
 
-Este MVP debe existir únicamente para obtener la evidencia necesaria sobre participación repetida en el loop social.
-
-### Qué debe permitir observar
-
-- Aceptación voluntaria, realización repetida de desafíos y consulta del resultado compartido, según definiciones previas.
+Observar la participación repetida en la experiencia social asíncrona prevista con el mínimo producto técnico necesario.
 
 ### Elementos imprescindibles
 
-- Un segmento participante definido.
-- Coordinación manual de una ventana de desafíos y de un resultado compartido.
-- Registro manual y fiable de la métrica principal.
+- Identidad sencilla, invitación y acceso a una sala privada.
+- Una temporada activa con programación de desafíos.
+- Un intento por desafío, puntuación comparable y ranking acumulado.
+- Registro de participación, finalización y consulta de resultados.
 
 ### Elementos reutilizables del producto actual
 
 - Los desafíos jugables individuales de la PoC.
-- La referencia conceptual de sala y temporada demo.
+- Los modelos conceptuales de sala, temporada y publicación ya documentados.
 
 ### Elementos que no deben construirse
 
-- Funcionalidades no relacionadas con la pregunta.
-- Automatizaciones que puedan realizarse manualmente.
-- Mejoras técnicas no necesarias.
-- Infraestructura para una escala inexistente.
-- El producto completo imaginado para el futuro.
+- Creación libre de salas, chat, perfiles avanzados, ranking global o notificaciones sofisticadas.
+- Conquista, geolocalización o enfoque educativo.
+- Nuevos sistemas o formatos que no sean necesarios para los nueve desafíos seleccionados.
 
 ### Criterio para detener la preparación
 
-Detén la preparación cuando sea posible ejecutar el experimento y registrar la métrica principal de forma fiable.
+Detener la preparación cuando la prueba individual no revele bloqueos de claridad o calidad y la alpha pueda registrar la métrica principal y sus métricas auxiliares de forma fiable.
 
 ## 10. Plan de ejecución
 
-1. Definir el segmento inicial y su vía ética de invitación.
-2. Fijar métrica, observaciones mínimas, duración y umbrales sin consultar resultados.
-3. Documentar y ejecutar la simulación manual solo cuando los pasos anteriores estén completos.
+1. Seleccionar los nueve desafíos y probarlos individualmente con dos amistades.
+2. Corregir los bloqueos de claridad o calidad detectados antes de invitar a Tabarnia.
+3. Preparar la sala, la temporada y el registro de métricas de la alpha técnica.
+4. Invitar a hasta once personas de Tabarnia y ejecutar los nueve desafíos según el calendario definido.
+5. Registrar resultados, analizar los umbrales y tomar una única decisión estratégica.
 
 ## 11. Resultados observados
 
@@ -233,17 +247,17 @@ Si el diseño no permite aprendizaje fiable, decidir explícitamente si hay que 
 
 ## 14. Decisión estratégica
 
-**Decisión estratégica:** Pendiente — seleccionar una única opción: PERSEVERAR, PIVOTAR o PARAR.
+**Decisión estratégica:** Pendiente — seleccionar una única opción: PERSEVERAR, ITERAR, PIVOTAR o PARAR.
 
 Un resultado defectuoso no implica por sí solo pivotar o parar. Si se recomienda PIVOTAR, documentar la señal suficiente, el elemento que cambia, la visión conservada, la nueva hipótesis, el siguiente experimento y el criterio para volver a pivotar o parar.
 
 ## 15. Próxima incertidumbre
 
-Segmento inicial y criterios observables que permitan diseñar el experimento sin reinterpretar sus resultados después.
+Qué formatos, reglas de puntuación y ajustes de cadencia sostienen mejor la participación tras la primera temporada.
 
 ## 16. Próxima acción
 
-Jose debe elegir y registrar en HYP-001 un segmento inicial concreto al que pueda invitar éticamente, antes de fijar experimento y umbrales.
+Realizar la prueba individual cualitativa con dos amistades y, si no revela bloqueos de claridad o calidad, preparar la alpha técnica de Tabarnia.
 
 ## 17. Documentos que deben actualizarse
 

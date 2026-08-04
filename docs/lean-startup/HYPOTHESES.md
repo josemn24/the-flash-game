@@ -20,15 +20,15 @@ Creemos que un segmento inicial de grupos de amigos verá valor en coordinar y r
 
 **Segmento**
 
-TODO — Jose debe concretar un grupo inicial alcanzable, su contexto compartido y el modo de invitación ético.
+Tabarnia: hasta once amistades a quienes Jose puede invitar éticamente a una sala privada de la primera alpha.
 
 **Problema**
 
-TODO — confirmar que el segmento tiene interés real en una actividad competitiva recurrente que no requiera coincidir en tiempo real.
+Confirmar si este grupo encuentra valor suficiente en una actividad competitiva recurrente que no exige coincidir en tiempo real.
 
 **Comportamiento esperado**
 
-Tras aceptar participar en una temporada manual, las personas del grupo juegan voluntariamente más de un desafío dentro de su ventana disponible y consultan el resultado compartido. El número mínimo y el periodo se definirán antes de ejecutar.
+Tras aceptar participar en la alpha, las personas juegan voluntariamente al menos cinco de los nueve desafíos disponibles durante 24 horas cada dos días y consultan o reaccionan al ranking acumulado de la temporada.
 
 **Base de la hipótesis**
 
@@ -42,7 +42,7 @@ Tras aceptar participar en una temporada manual, las personas del grupo juegan v
 
 ### Inferencias
 
-- La repetición por parte de un grupo es un requisito previo más relevante que implementar la infraestructura que lo soportaría.
+- La repetición por parte de un grupo es la incertidumbre principal que debe medirse con la alpha técnica prevista.
 
 ### Supuestos
 
@@ -50,15 +50,15 @@ Tras aceptar participar en una temporada manual, las personas del grupo juegan v
 
 **Evidencia que podría apoyarla**
 
-- Comportamiento predefinido de participación repetida y consulta voluntaria de resultados por parte del segmento elegido, medido en una simulación manual.
+- Al menos seis de las once personas invitadas completan cinco o más desafíos y se observan consultas o reacciones voluntarias al ranking de temporada.
 
 **Evidencia que podría debilitarla**
 
-- No aceptación, baja participación repetida o indiferencia observada ante el resultado compartido según umbrales definidos antes de ejecutar.
+- Tres o menos personas invitadas completan cinco o más desafíos, o no se observa interés por el resultado compartido.
 
 **Decisión que permitirá tomar**
 
-Si conviene preparar un MVP social manual como siguiente vehículo de aprendizaje o revisar el segmento/problema antes de construir infraestructura.
+Si conviene repetir y ajustar la temporada alpha, revisar el contenido o la cadencia, o reconsiderar el segmento y el problema antes de ampliar el producto.
 
 **Ciclo relacionado**
 
