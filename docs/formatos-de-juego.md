@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, veinticinco formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, veintisiete formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuros desafíos, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -35,6 +35,8 @@ La aplicación soporta de forma nativa:
 - Mini-Wordle de cuatro letras y cuatro intentos con feedback por posición.
 - imagen progresivamente revelada con desenfoque automático y un único intento.
 - laberinto contrarreloj con movimiento ortogonal mediante cruceta o teclado.
+- Zip con recorrido único, checkpoints ordenados y cobertura completa de una cuadrícula 5 × 5;
+- Queens con cinco coronas, regiones accesibles, marcas X manuales y conflictos visibles.
 
 Cada formato tiene una ficha editorial y un ejemplo cronometrado que reutiliza la misma entrada, evaluación y puntuación que los desafíos. El segundo desafío, «Conexiones rápidas», utiliza ordenar, estimación, código lógico y clasificación; también contiene una secuencia resuelta como elección múltiple.
 
@@ -415,6 +417,23 @@ O también:
 - **Puntuación:** acierto exacto ajustado por velocidad; una versión nativa podría añadir bonus por racha, penalización por error, dificultad por número de pasos y crédito separado para operaciones encadenadas.
 - **Uso recomendado:** preguntas rápidas de cinco a veinte segundos o modo racha de treinta a sesenta segundos. Las operaciones deberían usar números pequeños, divisiones exactas y expresiones sin ambigüedad de precedencia.
 - **Riesgo:** un formato demasiado escolar o repetitivo puede romper la variedad. La dificultad debe calibrarse por edad, tamaño de números, número de pasos y tipo de operación; en campo libre conviene evitar respuestas decimales salvo que la tolerancia esté definida con claridad.
+
+### 36. Queens — Implementada
+
+El jugador coloca cinco coronas en una cuadrícula 5 × 5 con una corona por fila, columna y región, sin que dos coronas se toquen.
+
+- **Interacción actual:** herramientas explícitas para colocar coronas o marcas X, edición reversible, control táctil y por teclado, conflictos anunciados inmediatamente y envío automático al resolver.
+- **Puntuación actual:** resolución binaria ajustada por velocidad; cada colocación que crea un conflicto resta un 5 % de los puntos base. Corregir coronas y editar marcas no penaliza.
+- **Accesibilidad:** las regiones combinan color, patrón y bordes; cada celda comunica fila, columna, región, estado y conflictos.
+- **Uso actual:** tipo nativo y ejemplo jugable curado en la biblioteca. Todavía no se publica en desafíos y no incluye generador ni pistas.
+
+### 37. Zip / Una línea — Implementada
+
+El jugador traza un único recorrido ortogonal que visita checkpoints numéricos en orden y usa cada celda exactamente una vez.
+
+- **Interacción actual:** arrastre, toques discretos o flechas del teclado; retroceder recorta el camino y completar el tablero lo envía automáticamente.
+- **Puntuación actual:** resolución binaria ajustada por velocidad; el timeout conserva el recorrido con cero puntos.
+- **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; todavía no se publica en desafíos.
 
 ## Priorización de mecánicas pendientes
 

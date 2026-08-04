@@ -60,6 +60,24 @@ export function CrossIcon(props: IconProps) {
   );
 }
 
+export function CrownIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="m3 7 4.2 4L12 4l4.8 7L21 7l-2 11H5L3 7Z" />
+      <path d="M5 18h14M7 14h10" />
+    </svg>
+  );
+}
+
+export function WarningIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M12 3 2.8 20h18.4L12 3Z" />
+      <path d="M12 9v5M12 17h.01" />
+    </svg>
+  );
+}
+
 export function ClockIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

@@ -25,6 +25,7 @@ import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
 import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion";
+import { QueensQuestion } from "@/components/QueensQuestion";
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
@@ -38,7 +39,7 @@ type CommonProps = {
   codeAttemptCount: number;
   onCodeAttempt: (code: string) => boolean;
   onProgress: (answer: AnswerValue) => void;
-  onMatchingIncorrectAttempt: () => void;
+  onIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
 };
@@ -111,7 +112,7 @@ function MatchingInput({
   question,
   locked,
   onProgress,
-  onMatchingIncorrectAttempt,
+  onIncorrectAttempt,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"matching">>) {
   return (
@@ -120,7 +121,7 @@ function MatchingInput({
       rightItems={question.rightItems}
       locked={locked}
       onProgress={onProgress}
-      onIncorrectAttempt={onMatchingIncorrectAttempt}
+      onIncorrectAttempt={onIncorrectAttempt}
       onSubmit={onSubmit}
     />
   );
@@ -379,6 +380,25 @@ function MiniNonogramInput({
   );
 }
 
+function QueensInput({
+  question,
+  locked,
+  onProgress,
+  onIncorrectAttempt,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"queens">>) {
+  return (
+    <QueensQuestion
+      key={question.id}
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
+      onIncorrectAttempt={onIncorrectAttempt}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function SlidingPuzzleInput({
   question,
   locked,
@@ -533,6 +553,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "logic-matrix": LogicMatrixInput,
   "mini-sudoku": MiniSudokuInput,
   "mini-nonogram": MiniNonogramInput,
+  queens: QueensInput,
   "time-maze": TimeMazeInput,
   "sliding-puzzle": SlidingPuzzleInput,
   "error-reconstruction": ErrorReconstructionInput,

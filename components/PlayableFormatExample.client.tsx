@@ -31,14 +31,22 @@ function hasDelayedTimedResponse(question: Question) {
   );
 }
 
-export function PlayableFormatExample({ title, question }: { title: string; question: Question }) {
+export function PlayableFormatExample({
+  title,
+  question,
+  rules,
+}: {
+  title: string;
+  question: Question;
+  rules: string[];
+}) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const startedAtRef = useRef(0);
   const answerLockRef = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
   const draftAnswerRef = useRef<AnswerValue | null>(null);
-  const matchingIncorrectAttemptsRef = useRef(0);
+  const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<ExamplePhase>("ready");
@@ -60,7 +68,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
     answerLockRef.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
-    matchingIncorrectAttemptsRef.current = 0;
+    incorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     setCodeAttemptCount(0);
     setTimedResponseStarted(false);
@@ -87,7 +95,7 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
     answerLockRef.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
-    matchingIncorrectAttemptsRef.current = 0;
+    incorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     setCodeAttemptCount(0);
     setTimedResponseStarted(false);
@@ -113,7 +121,8 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
           timeUsed,
           timedOut,
           submittedCodes: submittedCodes ?? codeAttemptsRef.current,
-          matchingIncorrectAttempts: matchingIncorrectAttemptsRef.current,
+          incorrectAttempts: incorrectAttemptsRef.current,
+          matchingIncorrectAttempts: incorrectAttemptsRef.current,
           progressiveCluesRevealed: progressiveCluesRevealedRef.current,
         }),
       );
@@ -224,6 +233,11 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
                   </>
                 )}
               </p>
+              <ul className={styles.readyRules}>
+                {rules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
               <MotionButton size="hero" onClick={startAttempt} whileTap={{ scale: 0.985 }}>
                 Empezar ejemplo
               </MotionButton>
@@ -261,8 +275,8 @@ export function PlayableFormatExample({ title, question }: { title: string; ques
                 onProgress={(answer) => {
                   draftAnswerRef.current = answer;
                 }}
-                onMatchingIncorrectAttempt={() => {
-                  matchingIncorrectAttemptsRef.current += 1;
+                onIncorrectAttempt={() => {
+                  incorrectAttemptsRef.current += 1;
                 }}
                 onProgressiveClueReveal={(revealedClues) => {
                   progressiveCluesRevealedRef.current = revealedClues;

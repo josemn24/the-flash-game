@@ -177,6 +177,16 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  queens: {
+    id: QUESTION_SCORING_POLICY.queens,
+    label: "Resolución, errores y velocidad",
+    summary:
+      "Solo resolver concede puntos ajustados por velocidad; cada corona colocada en conflicto resta un 5 % de los puntos base.",
+    partialCredit: false,
+    incorrectPenalty: true,
+    speedBonus: true,
+    incorrectPenaltyLabel: "Cada conflicto −5 %",
+  },
   "time-maze": {
     id: QUESTION_SCORING_POLICY["time-maze"],
     label: "Salida y velocidad",

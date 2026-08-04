@@ -298,6 +298,13 @@ export type MiniNonogramQuestion = BaseQuestion & {
   columnClues: number[][];
 };
 
+export type QueensQuestion = BaseQuestion & {
+  type: "queens";
+  grid: { rows: 5; columns: 5 };
+  regions: number[];
+  solution: number[];
+};
+
 export type MazeCell = "wall" | "path" | "start" | "exit";
 
 export type TimeMazeQuestion = BaseQuestion & {
@@ -379,6 +386,7 @@ export type Question =
   | LogicMatrixQuestion
   | MiniSudokuQuestion
   | MiniNonogramQuestion
+  | QueensQuestion
   | TimeMazeQuestion
   | ZipQuestion
   | SlidingPuzzleQuestion
@@ -399,6 +407,7 @@ export type MemoryPairsAnswer = { attempts: Array<[string, string]> };
 export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
+export type QueensAnswer = { queens: number[]; marks: number[] };
 export type TimeMazeAnswer = { path: number[] };
 export type ZipAnswer = { path: number[] };
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
@@ -416,6 +425,7 @@ export type AnswerValue =
   | MemoryPairsAnswer
   | MiniSudokuAnswer
   | MiniNonogramAnswer
+  | QueensAnswer
   | TimeMazeAnswer
   | ZipAnswer
   | SlidingPuzzleAnswer

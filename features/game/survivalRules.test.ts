@@ -19,6 +19,20 @@ function matchingDetails(incorrectAttempts: number): AnswerResultDetails {
   };
 }
 
+function queensDetails(incorrectAttempts: number): AnswerResultDetails {
+  return {
+    type: "queens",
+    placedQueens: 5,
+    completedRows: 5,
+    completedColumns: 5,
+    completedRegions: 5,
+    conflictingQueens: 0,
+    incorrectAttempts,
+    marksUsed: 4,
+    solved: true,
+  };
+}
+
 describe("survival rules", () => {
   it("consumes lives for incorrect or unanswered results", () => {
     expect(isSurvivalMistake(result("correct"))).toBe(false);
@@ -50,6 +64,11 @@ describe("survival rules", () => {
 
   it("subtracts one life for partial matching answers with incorrect attempts", () => {
     expect(getSurvivalLivesAfterResult(2, result("partial", matchingDetails(1)))).toBe(1);
+  });
+
+  it("subtracts at most one life for a solved Queens board with mistakes", () => {
+    expect(getSurvivalLivesAfterResult(3, result("correct", queensDetails(0)))).toBe(3);
+    expect(getSurvivalLivesAfterResult(3, result("correct", queensDetails(4)))).toBe(2);
   });
 
   it("uses answered results as the reached question count", () => {

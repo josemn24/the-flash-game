@@ -25,6 +25,7 @@ function buildDefaultUnansweredDetailsContext(
 ): UnansweredDetailsContext {
   return {
     submittedCodes: input.submittedCodes,
+    incorrectAttempts: input.incorrectAttempts,
     revealedClues: input.progressiveCluesRevealed,
   };
 }
@@ -73,6 +74,7 @@ export function evaluateAnswer({
   timeUsed,
   timedOut = false,
   submittedCodes = [],
+  incorrectAttempts = 0,
   matchingIncorrectAttempts = 0,
   progressiveCluesRevealed = 1,
 }: EvaluationInput): AnswerResult {
@@ -86,6 +88,7 @@ export function evaluateAnswer({
       timeUsed: safeTime,
       timedOut,
       submittedCodes,
+      incorrectAttempts,
       matchingIncorrectAttempts,
       progressiveCluesRevealed,
     };
@@ -126,7 +129,7 @@ export function evaluateAnswer({
     timeUsed: safeTime,
     timedOut,
     submittedCodes,
-    incorrectAttempts: 0,
+    incorrectAttempts,
     matchingIncorrectAttempts,
     progressiveCluesRevealed,
     isCorrect,
@@ -135,7 +138,9 @@ export function evaluateAnswer({
     scoring.buildEvaluationContext?.(normalizedInput) ??
       buildDefaultEvaluationContext(normalizedInput),
   );
-  const timedOutStatus = timedOut ? scoring.timeoutPolicy?.status?.(evaluation, question) : undefined;
+  const timedOutStatus = timedOut
+    ? scoring.timeoutPolicy?.status?.(evaluation, question)
+    : undefined;
 
   return {
     questionId: question.id,

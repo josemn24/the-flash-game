@@ -14,6 +14,7 @@ import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
+import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
@@ -34,9 +35,9 @@ function isPlaceholderScheduledChallenge(
 }
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-six formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(26);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(26);
+  it("contains exactly twenty-seven formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(27);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(27);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -57,6 +58,7 @@ describe("question format catalog", () => {
       "logic-matrix",
       "mini-sudoku",
       "mini-nonogram",
+      "queens",
       "sliding-puzzle",
       "error-reconstruction",
       "anagram",
@@ -133,6 +135,15 @@ describe("question format catalog", () => {
     expect(question.solution).toHaveLength(25);
     expect(isValidZipConfiguration(question)).toBe(true);
     expect(countZipSolutions(question)).toBe(1);
+  });
+
+  it("keeps the Queens example unique and internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.queens.examples[0].question;
+    expect(question.grid).toEqual({ rows: 5, columns: 5 });
+    expect(question.regions).toHaveLength(25);
+    expect(question.solution).toHaveLength(5);
+    expect(isValidQueensConfiguration(question)).toBe(true);
+    expect(countQueensSolutions(question)).toBe(1);
   });
 
   it("keeps the heat-map example internally consistent", () => {

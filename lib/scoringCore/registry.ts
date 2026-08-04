@@ -19,6 +19,7 @@ import { scoring as oddOneOutScoring } from "@/lib/scoringCore/questions/oddOneO
 import { scoring as orderingScoring } from "@/lib/scoringCore/questions/ordering";
 import { scoring as progressiveCluesScoring } from "@/lib/scoringCore/questions/progressiveClues";
 import { scoring as progressiveImageScoring } from "@/lib/scoringCore/questions/progressiveImage";
+import { scoring as queensScoring } from "@/lib/scoringCore/questions/queens";
 import { scoring as shortTextScoring } from "@/lib/scoringCore/questions/shortText";
 import { scoring as simonSequenceScoring } from "@/lib/scoringCore/questions/simonSequence";
 import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/slidingPuzzle";
@@ -46,6 +47,7 @@ export const SCORING: Record<QuestionType, QuestionScoring> = {
   "logic-matrix": logicMatrixScoring,
   "mini-sudoku": miniSudokuScoring,
   "mini-nonogram": miniNonogramScoring,
+  queens: queensScoring,
   "time-maze": timeMazeScoring,
   "sliding-puzzle": slidingPuzzleScoring,
   "error-reconstruction": errorReconstructionScoring,

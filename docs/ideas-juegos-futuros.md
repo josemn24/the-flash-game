@@ -51,6 +51,8 @@ Adaptación reducida de kakuro con sumas cruzadas y números sin repetir dentro 
 
 ### Queens / Meowdoku
 
+> **Estado:** implementada en la biblioteca de formatos como Queens, exclusivamente con coronas y tablero curado 5 × 5. El generador y los tamaños mayores continúan como evolución futura.
+
 Puzzle lógico de colocación en cuadrícula, conocido como **Queens** y representado temáticamente por gatos en **Meowdoku**. El jugador debe colocar exactamente un elemento en cada fila, cada columna y cada región de color. Además, dos elementos no pueden tocarse entre sí, ni siquiera en diagonal. La solución se obtiene mediante deducción y descarte, no mediante azar.
 
 - **Interacción:** tocar una celda para alternar entre vacía, descartada y reina o gato colocado. Las marcas de descarte pueden editarse antes de confirmar; una colocación correcta elimina automáticamente las celdas incompatibles si se quiere ofrecer asistencia visual.

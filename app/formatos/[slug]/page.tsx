@@ -125,6 +125,7 @@ export default async function FormatDetailPage({ params }: Props) {
                   key={example.question.id}
                   title={example.title}
                   question={example.question}
+                  rules={format.rules}
                 />
               ))}
             </div>

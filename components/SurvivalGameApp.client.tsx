@@ -43,7 +43,7 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
                 codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
-                onMatchingIncorrectAttempt={session.handleMatchingIncorrectAttempt}
+                onIncorrectAttempt={session.handleIncorrectAttempt}
                 onProgressiveClueReveal={session.handleProgressiveClueReveal}
                 onTimedResponseStart={session.handleTimedResponseStart}
                 livesRemaining={session.livesRemaining}

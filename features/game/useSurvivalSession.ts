@@ -113,7 +113,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
   const answerLock = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
   const draftAnswerRef = useRef<AnswerValue | null>(null);
-  const matchingIncorrectAttemptsRef = useRef(0);
+  const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -134,7 +134,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     answerLock.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
-    matchingIncorrectAttemptsRef.current = 0;
+    incorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
   }, []);
 
@@ -165,7 +165,8 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
         timeUsed: rawTime,
         timedOut,
         submittedCodes: submittedCodes ?? codeAttemptsRef.current,
-        matchingIncorrectAttempts: matchingIncorrectAttemptsRef.current,
+        incorrectAttempts: incorrectAttemptsRef.current,
+        matchingIncorrectAttempts: incorrectAttemptsRef.current,
         progressiveCluesRevealed: progressiveCluesRevealedRef.current,
       });
       const livesRemaining = getSurvivalLivesAfterResult(state.livesRemaining, result);
@@ -234,12 +235,13 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     draftAnswerRef.current = answer;
   }, []);
 
-  const handleMatchingIncorrectAttempt = useCallback(() => {
-    if (answerLock.current || question?.type !== "matching") return;
-    if (matchingIncorrectAttemptsRef.current === 0) {
+  const handleIncorrectAttempt = useCallback(() => {
+    if (answerLock.current || (question?.type !== "matching" && question?.type !== "queens"))
+      return;
+    if (incorrectAttemptsRef.current === 0) {
       dispatch({ type: "preview-life-penalty" });
     }
-    matchingIncorrectAttemptsRef.current += 1;
+    incorrectAttemptsRef.current += 1;
   }, [question]);
 
   const handleProgressiveClueReveal = useCallback((revealedClues: number) => {
@@ -279,7 +281,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     handleCodeAttempt,
     handleTimeUp,
     handleAnswerProgress,
-    handleMatchingIncorrectAttempt,
+    handleIncorrectAttempt,
     handleProgressiveClueReveal,
     handleTimedResponseStart,
     showReview: () => dispatch({ type: "show-review" }),

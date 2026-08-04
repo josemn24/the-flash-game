@@ -226,6 +226,26 @@ type ZipWithUnsupportedGrid = Omit<ValidZip, "grid"> & {
   grid: { rows: 6; columns: 6 };
 };
 
+type ValidQueens = {
+  id: "valid-queens";
+  type: "queens";
+  category: "Test";
+  tags: TestQuestionTags;
+  question: "Place the crowns";
+  grid: { rows: 5; columns: 5 };
+  regions: number[];
+  solution: number[];
+  timeLimit: 60;
+  points: 150;
+  explanation: "Each crown has a unique place";
+};
+
+type QueensWithoutRegions = Omit<ValidQueens, "regions">;
+type QueensWithoutSolution = Omit<ValidQueens, "solution">;
+type QueensWithUnsupportedGrid = Omit<ValidQueens, "grid"> & {
+  grid: { rows: 6; columns: 6 };
+};
+
 type ValidHeatMap = {
   id: "valid-heat-map";
   type: "heat-map";
@@ -396,6 +416,12 @@ export type RejectsZipWithoutCheckpoints = Assert<IsNotAssignable<ZipWithoutChec
 export type RejectsZipWithoutSolution = Assert<IsNotAssignable<ZipWithoutSolution, Question>>;
 export type RejectsZipWithUnsupportedGrid = Assert<
   IsNotAssignable<ZipWithUnsupportedGrid, Question>
+>;
+export type AcceptsValidQueens = Assert<IsAssignable<ValidQueens, Question>>;
+export type RejectsQueensWithoutRegions = Assert<IsNotAssignable<QueensWithoutRegions, Question>>;
+export type RejectsQueensWithoutSolution = Assert<IsNotAssignable<QueensWithoutSolution, Question>>;
+export type RejectsQueensWithUnsupportedGrid = Assert<
+  IsNotAssignable<QueensWithUnsupportedGrid, Question>
 >;
 export type AcceptsValidHeatMap = Assert<IsAssignable<ValidHeatMap, Question>>;
 export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithoutSurface, Question>>;

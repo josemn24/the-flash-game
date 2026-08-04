@@ -23,7 +23,7 @@ type QuestionScreenProps = {
   codeAttemptCount: number;
   onCodeAttempt: (code: string) => boolean;
   onProgress: (answer: AnswerValue) => void;
-  onMatchingIncorrectAttempt: () => void;
+  onIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
   livesRemaining?: number;
@@ -41,7 +41,7 @@ export function QuestionScreen({
   codeAttemptCount,
   onCodeAttempt,
   onProgress,
-  onMatchingIncorrectAttempt,
+  onIncorrectAttempt,
   onProgressiveClueReveal,
   onTimedResponseStart,
   livesRemaining,
@@ -130,7 +130,7 @@ export function QuestionScreen({
           codeAttemptCount={codeAttemptCount}
           onCodeAttempt={onCodeAttempt}
           onProgress={onProgress}
-          onMatchingIncorrectAttempt={onMatchingIncorrectAttempt}
+          onIncorrectAttempt={onIncorrectAttempt}
           onProgressiveClueReveal={onProgressiveClueReveal}
           onTimedResponseStart={startTimedResponse}
         />

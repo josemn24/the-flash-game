@@ -79,7 +79,7 @@ export function useGameSession(challenge: FlashChallenge) {
   const answerLock = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
   const draftAnswerRef = useRef<AnswerValue | null>(null);
-  const matchingIncorrectAttemptsRef = useRef(0);
+  const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -101,7 +101,7 @@ export function useGameSession(challenge: FlashChallenge) {
     answerLock.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
-    matchingIncorrectAttemptsRef.current = 0;
+    incorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     questionStartedAt.current = performance.now();
     dispatch({ type: "start" });
@@ -112,7 +112,7 @@ export function useGameSession(challenge: FlashChallenge) {
     answerLock.current = false;
     codeAttemptsRef.current = [];
     draftAnswerRef.current = null;
-    matchingIncorrectAttemptsRef.current = 0;
+    incorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     dispatch({ type: "replay" });
   }, [clearAdvanceTimeout]);
@@ -131,7 +131,8 @@ export function useGameSession(challenge: FlashChallenge) {
         timeUsed: rawTime,
         timedOut,
         submittedCodes: submittedCodes ?? codeAttemptsRef.current,
-        matchingIncorrectAttempts: matchingIncorrectAttemptsRef.current,
+        incorrectAttempts: incorrectAttemptsRef.current,
+        matchingIncorrectAttempts: incorrectAttemptsRef.current,
         progressiveCluesRevealed: progressiveCluesRevealedRef.current,
       });
 
@@ -145,7 +146,7 @@ export function useGameSession(challenge: FlashChallenge) {
         answerLock.current = false;
         codeAttemptsRef.current = [];
         draftAnswerRef.current = null;
-        matchingIncorrectAttemptsRef.current = 0;
+        incorrectAttemptsRef.current = 0;
         progressiveCluesRevealedRef.current = 1;
         questionStartedAt.current = performance.now();
         dispatch({ type: "advance" });
@@ -184,8 +185,8 @@ export function useGameSession(challenge: FlashChallenge) {
     draftAnswerRef.current = answer;
   }, []);
 
-  const handleMatchingIncorrectAttempt = useCallback(() => {
-    matchingIncorrectAttemptsRef.current += 1;
+  const handleIncorrectAttempt = useCallback(() => {
+    incorrectAttemptsRef.current += 1;
   }, []);
 
   const handleProgressiveClueReveal = useCallback((revealedClues: number) => {
@@ -219,7 +220,7 @@ export function useGameSession(challenge: FlashChallenge) {
     handleCodeAttempt,
     handleTimeUp,
     handleAnswerProgress,
-    handleMatchingIncorrectAttempt,
+    handleIncorrectAttempt,
     handleProgressiveClueReveal,
     handleTimedResponseStart,
     showReview: () => dispatch({ type: "show-review" }),

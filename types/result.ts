@@ -57,6 +57,17 @@ export type AnswerResultDetails =
       totalFilled: number;
     }
   | {
+      type: "queens";
+      placedQueens: number;
+      completedRows: number;
+      completedColumns: number;
+      completedRegions: number;
+      conflictingQueens: number;
+      incorrectAttempts: number;
+      marksUsed: number;
+      solved: boolean;
+    }
+  | {
       type: "time-maze";
       moves: number;
       optimalMoves: number;

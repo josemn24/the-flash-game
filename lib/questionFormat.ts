@@ -19,6 +19,7 @@ export const QUESTION_FORMAT_LABELS = {
   "logic-matrix": "Matriz",
   "mini-sudoku": "Sudoku",
   "mini-nonogram": "Nonograma",
+  queens: "Queens",
   "time-maze": "Laberinto",
   "sliding-puzzle": "Puzzle",
   "error-reconstruction": "Reconstruir error",

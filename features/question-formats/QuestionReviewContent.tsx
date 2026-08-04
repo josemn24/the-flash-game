@@ -3,6 +3,7 @@ import { HeatMapSurface } from "@/components/HeatMapQuestion";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
 import { ZipBoard } from "@/components/ZipQuestion";
+import { QueensBoard } from "@/components/QueensQuestion";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
@@ -20,6 +21,7 @@ import {
   isMiniNonogramAnswer,
   isMiniSudokuAnswer,
   isMiniWordleAnswer,
+  isQueensAnswer,
   isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
   isTimeMazeAnswer,
@@ -793,6 +795,47 @@ function MiniNonogramReview({ question, result }: ReviewProps<QuestionOfType<"mi
   );
 }
 
+function QueensReview({ question, result }: ReviewProps<QuestionOfType<"queens">>) {
+  const answer = isQueensAnswer(result.answer) ? result.answer : { queens: [], marks: [] };
+  const details = result.details?.type === "queens" ? result.details : undefined;
+  return (
+    <div className="grid gap-3">
+      <div className={styles.queensReviewPair}>
+        <div>
+          <span className={styles.memoryGridLabel}>Tu tablero</span>
+          <QueensBoard question={question} answer={answer} label="Tablero final del jugador" />
+        </div>
+        <div>
+          <span className={styles.memoryGridLabel}>Solución</span>
+          <QueensBoard
+            question={question}
+            answer={{ queens: question.solution, marks: [] }}
+            label="Solución de Queens"
+          />
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-4">
+        <div className={styles.answerBox}>
+          <span>Coronas</span>
+          <strong>{details?.placedQueens ?? answer.queens.length}/5</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>En conflicto</span>
+          <strong>{details?.conflictingQueens ?? 0}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Errores</span>
+          <strong>{details?.incorrectAttempts ?? 0}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Marcas X</span>
+          <strong>{details?.marksUsed ?? answer.marks.length}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SlidingPuzzleBoard({ tiles, label }: { tiles: Array<number | null>; label: string }) {
   return (
     <div className={styles.puzzleReviewBoard} aria-label={label}>
@@ -1039,6 +1082,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "logic-matrix": LogicMatrixReview,
   "mini-sudoku": MiniSudokuReview,
   "mini-nonogram": MiniNonogramReview,
+  queens: QueensReview,
   "time-maze": TimeMazeReview,
   "sliding-puzzle": SlidingPuzzleReview,
   "error-reconstruction": ErrorReconstructionReview,

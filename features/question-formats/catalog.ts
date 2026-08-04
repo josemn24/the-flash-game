@@ -1455,6 +1455,78 @@ export const QUESTION_FORMAT_CATALOG = {
       },
     ],
   },
+  queens: {
+    id: "queens",
+    slug: "queens",
+    name: "Queens",
+    shortName: "Queens",
+    summary:
+      "Colocar cinco coronas sin repetir fila, columna o región y sin que dos coronas se toquen.",
+    description: [
+      "El tablero se divide en cinco regiones. El jugador coloca exactamente una corona en cada fila, columna y región mientras descarta candidatos con marcas X opcionales.",
+      "Las colocaciones conflictivas se permiten y se señalan al instante. Resolver envía el tablero automáticamente; corregir o editar marcas no tiene coste.",
+    ],
+    recommendations: [
+      "Deducción espacial compacta",
+      "Desafíos táctiles de lógica",
+      "Rondas donde importan precisión y velocidad",
+    ],
+    avoidWhen: [
+      "Las regiones no pueden distinguirse sin depender del color",
+      "El tablero no tiene una solución única verificada",
+      "El tiempo disponible no permite anotar y corregir candidatos",
+    ],
+    rules: [
+      "Coloca exactamente una corona en cada fila y columna",
+      "Coloca exactamente una corona en cada región",
+      "Dos coronas no pueden tocarse, tampoco en diagonal",
+      "Usa marcas X para descartar celdas; no se colocan automáticamente",
+      "Resolver el tablero lo envía automáticamente",
+    ],
+    authoringTips: [
+      "Usa una cuadrícula 5 × 5 con cinco regiones ortogonalmente conectadas",
+      "Comprueba por software que la solución sea legal y única",
+      "Empieza con tableros curados y mide tiempos reales antes de aumentar el tamaño",
+      "Evita regiones o soluciones que conviertan el reto en ensayo y error",
+    ],
+    accessibility: [
+      "Distingue regiones mediante color, patrón y bordes de alto contraste",
+      "Etiqueta cada celda con fila, columna, región, estado y conflictos",
+      "Ofrece herramientas explícitas, foco móvil y control completo por teclado",
+      "Anuncia cada colocación y conflicto sin mover el foco",
+    ],
+    mediaSupport: ["Cuadrícula de regiones 5 × 5", "Coronas SVG y marcas X"],
+    timing: {
+      recommendedSeconds: "45–75 s",
+      notes:
+        "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada colocación conflictiva resta un 5 % de los puntos base.",
+    },
+    scoring: SCORING_POLICIES.queens,
+    examples: [
+      {
+        title: "Cinco coronas",
+        question: {
+          id: "guide-queens",
+          type: "queens",
+          category: "Lógica espacial",
+          tags: {
+            domains: ["mathematics"],
+            topics: ["spatial_logic_puzzles"],
+            cognitiveSkills: ["logical_reasoning", "problem_solving"],
+            formatSkills: ["deduction", "planning"],
+          },
+          question: "Coloca cinco coronas sin repetir fila, columna o región.",
+          grid: { rows: 5, columns: 5 },
+          regions: [0, 0, 0, 1, 1, 2, 0, 1, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 3, 3, 2, 4, 3, 3, 3],
+          solution: [2, 9, 10, 18, 21],
+          timeLimit: 60,
+          points: 150,
+          explanation:
+            "La solución coloca las coronas en las columnas 3, 5, 1, 4 y 2. Así cada fila, columna y región contiene una sola corona y ninguna toca a otra.",
+        },
+      },
+    ],
+  },
   "sliding-puzzle": {
     id: "sliding-puzzle",
     slug: "rompecabezas-deslizante",

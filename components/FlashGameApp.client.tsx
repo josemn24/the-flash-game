@@ -42,7 +42,7 @@ export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
                 codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
-                onMatchingIncorrectAttempt={session.handleMatchingIncorrectAttempt}
+                onIncorrectAttempt={session.handleIncorrectAttempt}
                 onProgressiveClueReveal={session.handleProgressiveClueReveal}
                 onTimedResponseStart={session.handleTimedResponseStart}
               />

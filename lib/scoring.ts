@@ -44,6 +44,13 @@ export {
   isValidMiniSudokuConfiguration,
 } from "@/lib/scoringCore/questions/miniSudoku";
 export {
+  calculateQueensMetrics,
+  countQueensSolutions,
+  getQueensConflicts,
+  isQueensAnswer,
+  isValidQueensConfiguration,
+} from "@/lib/queens";
+export {
   calculateMiniWordleMetrics,
   isMiniWordleAnswer,
 } from "@/lib/scoringCore/questions/miniWordle";

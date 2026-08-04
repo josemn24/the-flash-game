@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, creación de salas,
 | ------------------------- | --------------------------------------------------------------- |
 | `/`                       | Presentación, selector de desafíos y acceso a la biblioteca.    |
 | `/desafios/[challengeId]` | Validación del desafío y sesión jugable completa.               |
-| `/formatos`               | Catálogo de los veinticinco formatos disponibles.               |
+| `/formatos`               | Catálogo de los veintisiete formatos disponibles.               |
 | `/formatos/[slug]`        | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
 
 El modo Flash recorre estos estados:
@@ -206,7 +206,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, los dos desafíos y las veinticinco fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva` y `/formatos/laberinto-contrarreloj`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, los desafíos publicados y las veintisiete fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva`, `/formatos/laberinto-contrarreloj` y `/formatos/queens`.
 
 ## Evolución pendiente
 

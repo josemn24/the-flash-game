@@ -233,6 +233,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
       incorrectAnswer = { path: example.solution.slice(0, -1) };
       incorrectPoints = 0;
       break;
+    case "queens":
+      correctAnswer = { queens: example.solution, marks: [] };
+      incorrectAnswer = { queens: example.solution.slice(0, -1), marks: [] };
+      incorrectPoints = 0;
+      break;
     case "ordering":
       correctAnswer = example.correctOrder;
       incorrectAnswer = [];
@@ -1952,6 +1957,7 @@ describe("question evaluation", () => {
       expect(result.details).toEqual(
         scoring.timeoutPolicy?.unansweredDetails?.(question, {
           submittedCodes: ["1111", "2222"],
+          incorrectAttempts: 0,
           revealedClues: 2,
         }),
       );

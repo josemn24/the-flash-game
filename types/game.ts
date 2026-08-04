@@ -51,6 +51,8 @@ export type {
   MiniSudokuQuestion,
   MiniNonogramAnswer,
   MiniNonogramQuestion,
+  QueensAnswer,
+  QueensQuestion,
   MultipleChoicePromptVisual,
   SlidingPuzzleAnswer,
   SlidingPuzzleQuestion,

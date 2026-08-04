@@ -38,6 +38,7 @@ export type EvaluationInput = {
   timeUsed: number;
   timedOut?: boolean;
   submittedCodes?: string[];
+  incorrectAttempts?: number;
   matchingIncorrectAttempts?: number;
   progressiveCluesRevealed?: number;
 };
@@ -60,12 +61,14 @@ export type NormalizedUnansweredInput = {
   timeUsed: number;
   timedOut: boolean;
   submittedCodes: string[];
+  incorrectAttempts: number;
   matchingIncorrectAttempts: number;
   progressiveCluesRevealed: number;
 };
 
 export type UnansweredDetailsContext = {
   submittedCodes: string[];
+  incorrectAttempts: number;
   revealedClues: number;
 };
 
