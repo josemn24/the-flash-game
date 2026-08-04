@@ -105,6 +105,28 @@ Antes de iniciar, deben enviarse exactamente once invitaciones a la cohorte fija
 - Abandono: momento y motivo conocido de dejar de participar.
 - Calidad por desafío: inicio, finalización, tiempo, puntuación, abandono y feedback cualitativo.
 
+### Observación exploratoria de modos y formatos
+
+Los modos y formatos se observarán como dimensiones secundarias del vehículo, no como una segunda hipótesis crítica ni como una decisión estratégica de este ciclo. Se podrán comparar, cuando haya datos suficientes, mediante inicio, finalización, abandono, repetición posterior y feedback declarado por desafío.
+
+Estas observaciones no permitirán concluir por sí solas qué modo «gusta más», ni cambiarán la clasificación de HYP-001 o sus umbrales. La preferencia de modos y formatos queda como candidata para un ciclo posterior específico, si la evidencia y la decisión de CYCLE-001 lo justifican.
+
+### Encuesta de satisfacción post-temporada
+
+Al finalizar la temporada se prevé una encuesta breve dirigida a las personas invitadas. Será un instrumento complementario para interpretar la recurrencia observada y generar señales para HYP-002; no será un criterio adicional de clasificación de HYP-001.
+
+La encuesta recogerá, como mínimo:
+
+- valoración general de la experiencia;
+- modo y tipo de pregunta preferidos entre los experimentados;
+- claridad, dificultad y disfrute percibidos;
+- valoración de la cadencia, la ventana de participación y el ranking;
+- aspectos mejor y peor valorados;
+- motivos conocidos de abandono o no participación;
+- mejoras propuestas en respuesta abierta.
+
+Se registrará el número de respuestas y quién no responde, separando las opiniones declaradas de los datos de uso. Las respuestas podrán estar sesgadas hacia las personas más implicadas y no demostrarán por sí solas preferencia real ni intención de volver. No se reinterpretarán retrospectivamente los umbrales de la métrica principal a partir de la encuesta.
+
 ## 8. Experimento
 
 ### Descripción
@@ -174,7 +196,10 @@ Detener la preparación cuando la prueba individual no revele bloqueos de clarid
 2. Probarlos individualmente con dos amistades y registrar bloqueos de claridad o calidad separados de la evidencia de HYP-001.
 3. Corregir solo los bloqueos que impidan medir de forma fiable y preparar la sala, la temporada y el registro de métricas.
 4. Fijar la cohorte y enviar exactamente once invitaciones; si no es posible, revisar el diseño antes de ejecutar.
-5. Ejecutar los nueve desafíos, registrar resultados, analizar umbrales y tomar una única decisión estratégica.
+5. Ejecutar los nueve desafíos, registrar resultados y, al finalizar, enviar la encuesta post-temporada.
+6. Analizar los umbrales y el feedback separado por tipo de evidencia, y tomar una única decisión estratégica.
+
+Durante la ejecución, registrar por desafío el modo, los formatos utilizados y las métricas auxiliares definidas arriba, manteniendo separados los comportamientos observados de las opiniones declaradas.
 
 ## 11. Resultados observados
 
@@ -261,6 +286,8 @@ Un resultado defectuoso no implica por sí solo pivotar o parar. Si se recomiend
 ## 15. Próxima incertidumbre
 
 Qué formatos, reglas de puntuación y ajustes de cadencia sostienen mejor la participación tras la primera temporada.
+
+Esta incertidumbre no abre un segundo ciclo activo. Se mantiene como candidata para priorización después de analizar la recurrencia de CYCLE-001.
 
 ## 16. Próxima acción
 

@@ -64,9 +64,39 @@ Si la evidencia justifica PERSEVERAR con una segunda temporada del mismo loop so
 
 `cycles/CYCLE-001.md`
 
+### HYP-002 — Preferencia y contribución de modos y formatos
+
+- **Tipo:** Valor / uso
+- **Estado:** Borrador
+- **Prioridad:** Pendiente de priorización después de CYCLE-001
+- **Incertidumbre:** Desconocida
+- **Coste de estar equivocados:** No evaluado
+
+**Hipótesis candidata**
+
+Creemos que determinados modos y formatos de desafío generan más activación, finalización y repetición que otros dentro de una competición asíncrona.
+
+**Estado metodológico**
+
+No está seleccionada como hipótesis crítica ni tiene todavía decisión, experimento, población, métrica principal o umbrales propios. En CYCLE-001 solo puede observarse de forma exploratoria, sin cambiar la decisión principal sobre recurrencia.
+
+La encuesta post-temporada prevista en CYCLE-001 podrá aportar opiniones declaradas para esta hipótesis, pero no demostrará por sí sola preferencia ni intención de repetición.
+
+**Qué tendría que definirse antes de probarla**
+
+- Qué decisión concreta desbloquea.
+- Qué significa «mejor» entre modos y formatos.
+- Qué comportamiento observable se comparará.
+- Qué condiciones deben mantenerse equivalentes.
+- Métrica principal, denominador, ventana, umbrales y resultado inconcluso.
+
+**Ciclo relacionado**
+
+Ninguno todavía.
+
 ## Hipótesis pendientes
 
-- Ninguna todavía.
+- HYP-002 permanece en estado `Borrador`; no tiene ciclo activo.
 
 ## Hipótesis cerradas
 

@@ -12,6 +12,8 @@
 - Responsable: Jose Moreno
 - Próxima revisión: Al finalizar la temporada alpha; fecha de inicio pendiente.
 - Bloqueos: La selección concreta de los nueve desafíos está pendiente; sin ella no puede realizarse la prueba individual previa.
+- Hipótesis secundaria candidata: HYP-002 — Preferencia y contribución de modos y formatos; permanece en `Borrador` y no abre un segundo ciclo.
+- Instrumento complementario previsto: encuesta breve post-temporada para recoger opiniones declaradas y ayudar a interpretar CYCLE-001.
 
 ## Próxima acción
 
@@ -40,6 +42,7 @@ Seleccionar y registrar en CYCLE-001 los nueve desafíos candidatos para la alph
 ## Lo que desconocemos
 
 - La aceptación real de las once invitaciones, la disposición a volver, los formatos que mejor sostienen la participación y el interés por el ranking.
+- La contribución relativa de cada modo o formato no se puede atribuir con los datos actuales; solo está prevista como observación exploratoria de CYCLE-001.
 
 ## Referencias
 
