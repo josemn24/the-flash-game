@@ -8,11 +8,11 @@ Las hipótesis representan creencias importantes que deben comprobarse antes de 
 
 ### HYP-001 — Participación recurrente en una competición asíncrona entre amistades
 
-**Tipo:** Problema  
-**Estado:** Priorizada
-**Prioridad:** Alta  
-**Incertidumbre:** Alta  
-**Coste de estar equivocados:** Alto
+- **Tipo:** Problema
+- **Estado:** Priorizada
+- **Prioridad:** Alta
+- **Incertidumbre:** Alta
+- **Coste de estar equivocados:** Alto
 
 **Hipótesis**
 

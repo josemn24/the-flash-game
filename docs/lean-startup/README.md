@@ -25,6 +25,8 @@ El repositorio contiene una PoC frontend para jugar desafíos individuales. Este
 - `cycles/`: historial detallado e inmutable de los ciclos.
 - `templates/CYCLE.md`: plantilla manual para el siguiente ciclo.
 - `AGENTS.md`: protocolo operativo para facilitar ciclos sin saltar pasos.
+- `STARTER_PROMPT.md`: prompt copiable para iniciar un nuevo chat con un agente.
+- `METHOD.md`: explicación del método y relación entre los documentos.
 
 ## Modos de funcionamiento
 
@@ -65,6 +67,8 @@ También puede usarse `Archivada` cuando ya no sea relevante. «Apoyada» no sig
 ## Cómo comenzar
 
 Abra `STATE.md` y ejecute únicamente la acción indicada allí. Complete los datos mínimos que permitan convertir la hipótesis crítica en un experimento con comportamiento observable y umbrales previos.
+
+Para una persona que quiera comprender el sistema, consulte `METHOD.md`. Para empezar un chat nuevo con un agente, copie `STARTER_PROMPT.md`; el agente deberá seguir `AGENTS.md`.
 
 ## Qué no incluye esta versión
 
