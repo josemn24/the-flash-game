@@ -26,4 +26,5 @@ export const QUESTION_FORMAT_LABELS = {
   "mini-wordle": "Mini-Wordle",
   "logic-code": "Código lógico",
   estimation: "Estimación",
+  zip: "Zip",
 } satisfies Record<QuestionType, string>;

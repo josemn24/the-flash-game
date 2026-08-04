@@ -8,8 +8,7 @@ import { questionFormats } from "@/features/question-formats/catalog";
 
 export const metadata: Metadata = {
   title: "Biblioteca de formatos — The Flash",
-  description:
-    "Reglas, puntuación y recomendaciones de los veinticinco formatos de pregunta de The Flash.",
+  description: "Reglas, puntuación y recomendaciones de los formatos de pregunta de The Flash.",
 };
 
 export default function FormatsPage() {

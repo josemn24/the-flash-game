@@ -63,6 +63,14 @@ export type AnswerResultDetails =
       reachedExit: boolean;
     }
   | {
+      type: "zip";
+      coveredCells: number;
+      totalCells: number;
+      reachedCheckpoint: number;
+      totalCheckpoints: number;
+      completed: boolean;
+    }
+  | {
       type: "sliding-puzzle";
       moves: number;
     }

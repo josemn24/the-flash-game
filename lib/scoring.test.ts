@@ -73,6 +73,7 @@ import { scoring as simonSequenceScoring } from "@/lib/scoringCore/questions/sim
 import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/slidingPuzzle";
 import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze";
 import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
+import { scoring as zipScoring } from "@/lib/scoringCore/questions/zip";
 import {
   applyConnectPairsCellSelection,
   calculateConnectPairsMetrics,
@@ -227,6 +228,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
       incorrectPoints = 0;
       break;
     }
+    case "zip":
+      correctAnswer = { path: example.solution };
+      incorrectAnswer = { path: example.solution.slice(0, -1) };
+      incorrectPoints = 0;
+      break;
     case "ordering":
       correctAnswer = example.correctOrder;
       incorrectAnswer = [];
@@ -1909,6 +1915,7 @@ describe("question evaluation", () => {
     expect(SCORING["sliding-puzzle"]).toBe(slidingPuzzleScoring);
     expect(SCORING["time-maze"]).toBe(timeMazeScoring);
     expect(SCORING["true-false"]).toBe(trueFalseScoring);
+    expect(SCORING.zip).toBe(zipScoring);
   });
 
   it("keeps timeout point preservation as explicit scoring metadata", () => {

@@ -13,6 +13,7 @@ import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
+import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
@@ -33,9 +34,9 @@ function isPlaceholderScheduledChallenge(
 }
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-five formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(25);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(25);
+  it("contains exactly twenty-six formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(26);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(26);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -62,6 +63,7 @@ describe("question format catalog", () => {
       "mini-wordle",
       "progressive-image",
       "time-maze",
+      "zip",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
@@ -123,6 +125,14 @@ describe("question format catalog", () => {
     expect(question.cells.filter((cell) => cell === "exit")).toHaveLength(1);
     expect(question.timeLimit).toBe(35);
     expect(isValidTimeMazeConfiguration(question)).toBe(true);
+  });
+
+  it("keeps the Zip example unique and internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.zip.examples[0].question;
+    expect(question.grid).toEqual({ rows: 5, columns: 5 });
+    expect(question.solution).toHaveLength(25);
+    expect(isValidZipConfiguration(question)).toBe(true);
+    expect(countZipSolutions(question)).toBe(1);
   });
 
   it("keeps the heat-map example internally consistent", () => {

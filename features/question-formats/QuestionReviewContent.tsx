@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { HeatMapSurface } from "@/components/HeatMapQuestion";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
+import { ZipBoard } from "@/components/ZipQuestion";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
@@ -22,6 +23,7 @@ import {
   isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
   isTimeMazeAnswer,
+  isZipAnswer,
 } from "@/lib/scoring";
 import { getMiniWordleFeedback } from "@/lib/miniWordle";
 import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
@@ -880,6 +882,50 @@ function TimeMazeReview({ question, result }: ReviewProps<QuestionOfType<"time-m
   );
 }
 
+function ZipReview({ question, result }: ReviewProps<QuestionOfType<"zip">>) {
+  const answer = isZipAnswer(result.answer) ? result.answer : null;
+  const details = result.details?.type === "zip" ? result.details : undefined;
+  const path = answer?.path ?? [question.checkpoints[0].cell];
+
+  return (
+    <div className="grid gap-3">
+      <ZipBoard
+        question={question}
+        path={path}
+        solutionPath={question.solution}
+        label="Revisión de Zip con recorrido realizado y solución correcta."
+      />
+      <div className={styles.mazeLegend} aria-label="Leyenda de rutas">
+        <span>
+          <i className={styles.zipPlayerLine} /> Recorrido realizado
+        </span>
+        <span>
+          <i className={styles.zipSolutionLine} /> Solución
+        </span>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={styles.answerBox}>
+          <span>Celdas recorridas</span>
+          <strong>
+            {details?.coveredCells ?? path.length}/{details?.totalCells ?? 25}
+          </strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Número alcanzado</span>
+          <strong>
+            {details?.reachedCheckpoint ?? 1}/
+            {details?.totalCheckpoints ?? question.checkpoints.length}
+          </strong>
+        </div>
+        <div className={`${styles.answerBox} ${details?.completed ? styles.answerBoxCorrect : ""}`}>
+          <span>Resultado</span>
+          <strong>{details?.completed ? "Recorrido completo" : "Recorrido incompleto"}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ErrorReconstructionReview({
   question,
   result,
@@ -1000,6 +1046,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "mini-wordle": MiniWordleReview,
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,
+  zip: ZipReview,
 } satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };
 
 export function QuestionReviewContent(props: ReviewProps) {

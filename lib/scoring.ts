@@ -58,5 +58,6 @@ export {
   isValidSlidingPuzzleConfiguration,
 } from "@/lib/scoringCore/questions/slidingPuzzle";
 export { isTimeMazeAnswer } from "@/lib/scoringCore/questions/timeMaze";
+export { isZipAnswer } from "@/lib/scoringCore/questions/zip";
 export { calculateEstimationMetrics } from "@/lib/scoringCore/questions/estimation";
 export { isValidLogicMatrixConfiguration } from "@/lib/scoringCore/questions/logicMatrix";

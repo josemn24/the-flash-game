@@ -241,4 +241,13 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  zip: {
+    id: QUESTION_SCORING_POLICY.zip,
+    label: "Resolución y velocidad",
+    summary:
+      "Solo completar el recorrido concede entre el 60 % y el 100 % de los puntos según el tiempo; retroceder no penaliza.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
 } satisfies Record<QuestionType, ScoringPolicy>;

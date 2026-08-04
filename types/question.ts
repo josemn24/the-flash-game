@@ -306,6 +306,18 @@ export type TimeMazeQuestion = BaseQuestion & {
   cells: MazeCell[];
 };
 
+export type ZipCheckpoint = {
+  value: number;
+  cell: number;
+};
+
+export type ZipQuestion = BaseQuestion & {
+  type: "zip";
+  grid: { rows: 5; columns: 5 };
+  checkpoints: ZipCheckpoint[];
+  solution: number[];
+};
+
 export type SlidingPuzzleQuestion = BaseQuestion & {
   type: "sliding-puzzle";
   initialTiles: Array<number | null>;
@@ -368,6 +380,7 @@ export type Question =
   | MiniSudokuQuestion
   | MiniNonogramQuestion
   | TimeMazeQuestion
+  | ZipQuestion
   | SlidingPuzzleQuestion
   | ErrorReconstructionQuestion
   | AnagramQuestion
@@ -387,6 +400,7 @@ export type SimonSequenceAnswer = string[];
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
 export type TimeMazeAnswer = { path: number[] };
+export type ZipAnswer = { path: number[] };
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
 export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
 export type MiniWordleAnswer = { guesses: string[] };
@@ -403,6 +417,7 @@ export type AnswerValue =
   | MiniSudokuAnswer
   | MiniNonogramAnswer
   | TimeMazeAnswer
+  | ZipAnswer
   | SlidingPuzzleAnswer
   | ErrorReconstructionAnswer
   | MiniWordleAnswer

@@ -206,6 +206,26 @@ type ValidTimeMaze = {
 type TimeMazeWithoutGrid = Omit<ValidTimeMaze, "grid">;
 type TimeMazeWithoutCells = Omit<ValidTimeMaze, "cells">;
 
+type ValidZip = {
+  id: "valid-zip";
+  type: "zip";
+  category: "Test";
+  tags: TestQuestionTags;
+  question: "Complete the path";
+  grid: { rows: 5; columns: 5 };
+  checkpoints: [{ value: 1; cell: 0 }, { value: 2; cell: 24 }];
+  solution: number[];
+  timeLimit: 35;
+  points: 150;
+  explanation: "The path covers the grid";
+};
+
+type ZipWithoutCheckpoints = Omit<ValidZip, "checkpoints">;
+type ZipWithoutSolution = Omit<ValidZip, "solution">;
+type ZipWithUnsupportedGrid = Omit<ValidZip, "grid"> & {
+  grid: { rows: 6; columns: 6 };
+};
+
 type ValidHeatMap = {
   id: "valid-heat-map";
   type: "heat-map";
@@ -371,6 +391,12 @@ export type RejectsProgressiveImageWithoutAnswer = Assert<
 export type AcceptsValidTimeMaze = Assert<IsAssignable<ValidTimeMaze, Question>>;
 export type RejectsTimeMazeWithoutGrid = Assert<IsNotAssignable<TimeMazeWithoutGrid, Question>>;
 export type RejectsTimeMazeWithoutCells = Assert<IsNotAssignable<TimeMazeWithoutCells, Question>>;
+export type AcceptsValidZip = Assert<IsAssignable<ValidZip, Question>>;
+export type RejectsZipWithoutCheckpoints = Assert<IsNotAssignable<ZipWithoutCheckpoints, Question>>;
+export type RejectsZipWithoutSolution = Assert<IsNotAssignable<ZipWithoutSolution, Question>>;
+export type RejectsZipWithUnsupportedGrid = Assert<
+  IsNotAssignable<ZipWithUnsupportedGrid, Question>
+>;
 export type AcceptsValidHeatMap = Assert<IsAssignable<ValidHeatMap, Question>>;
 export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithoutSurface, Question>>;
 export type RejectsHeatMapWithoutTarget = Assert<IsNotAssignable<HeatMapWithoutTarget, Question>>;

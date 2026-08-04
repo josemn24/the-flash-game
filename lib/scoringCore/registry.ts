@@ -24,6 +24,7 @@ import { scoring as simonSequenceScoring } from "@/lib/scoringCore/questions/sim
 import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/slidingPuzzle";
 import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze";
 import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
+import { scoring as zipScoring } from "@/lib/scoringCore/questions/zip";
 import type { QuestionScoring, ScoringPolicyId } from "@/lib/scoringCore/types";
 
 export const SCORING: Record<QuestionType, QuestionScoring> = {
@@ -52,6 +53,7 @@ export const SCORING: Record<QuestionType, QuestionScoring> = {
   "mini-wordle": miniWordleScoring,
   "logic-code": logicCodeScoring,
   estimation: estimationScoring,
+  zip: zipScoring,
 };
 
 export const QUESTION_SCORING_POLICY = Object.fromEntries(

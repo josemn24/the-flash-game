@@ -28,6 +28,7 @@ import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion"
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
+import { ZipQuestion } from "@/components/ZipQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
@@ -410,6 +411,23 @@ function TimeMazeInput({
   );
 }
 
+function ZipInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"zip">>) {
+  return (
+    <ZipQuestion
+      key={question.id}
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -522,6 +540,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "mini-wordle": MiniWordleInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
+  zip: ZipInput,
 } satisfies {
   [T in QuestionType]: ComponentType<QuestionInputProps<QuestionOfType<T>>>;
 };

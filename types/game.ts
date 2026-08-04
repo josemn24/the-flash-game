@@ -78,6 +78,9 @@ export type {
   SimonSequencePad,
   SimonSequenceQuestion,
   TrueFalseQuestion,
+  ZipAnswer,
+  ZipCheckpoint,
+  ZipQuestion,
 } from "@/types/question";
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";
 export type { GamePhase } from "@/types/session";

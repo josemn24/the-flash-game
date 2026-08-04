@@ -1,0 +1,184 @@
+.root {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  margin-top: 1.35rem;
+}
+
+.header {
+  display: flex;
+  width: min(100%, 31rem);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgb(255 255 255 / 48%);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header strong {
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
+.board {
+  position: relative;
+  display: grid;
+  width: min(100%, 31rem);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  overflow: hidden;
+  border: 2px solid rgb(255 255 255 / 18%);
+  border-radius: 1rem;
+  outline: 0;
+  background: #07090c;
+}
+
+.boardInteractive {
+  touch-action: none;
+  user-select: none;
+}
+
+.boardInteractive:focus-visible {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 6%);
+  color: white;
+  background:
+    radial-gradient(circle at 50% 50%, rgb(255 255 255 / 6%) 0 0.08rem, transparent 0.09rem),
+    rgb(255 255 255 / 3%);
+}
+
+.visited {
+  background: rgb(215 255 24 / 8%);
+}
+
+.current {
+  box-shadow: inset 0 0 0 2px var(--electric);
+}
+
+.checkpoint {
+  background: rgb(53 232 255 / 10%);
+}
+
+.cellButton {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.cellButton:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: -4px;
+}
+
+.checkpointMarker {
+  position: relative;
+  z-index: 4;
+  display: inline-grid;
+  width: clamp(1.45rem, 7vw, 2.2rem);
+  height: clamp(1.45rem, 7vw, 2.2rem);
+  place-items: center;
+  border: 2px solid #071011;
+  border-radius: 999px;
+  color: #071011;
+  background: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 3vw, 1.1rem);
+  font-weight: 950;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 65%);
+}
+
+.routeOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.routeOverlay polyline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.playerRoute {
+  stroke: var(--electric);
+  stroke-width: 5;
+  filter: drop-shadow(0 0 0.18rem rgb(215 255 24 / 48%));
+}
+
+.solutionRoute {
+  stroke: var(--cyan);
+  stroke-width: 3;
+  stroke-dasharray: 7 6;
+  opacity: 0.72;
+}
+
+.actions {
+  display: flex;
+  gap: 0.55rem;
+  justify-content: center;
+}
+
+.actions button {
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  color: white;
+  background: rgb(255 255 255 / 6%);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.actions button:hover:not(:disabled) {
+  border-color: var(--cyan);
+  background: rgb(53 232 255 / 10%);
+}
+
+.actions button:disabled {
+  opacity: 0.4;
+}
+
+.instructions {
+  max-width: 31rem;
+  margin: 0;
+  color: rgb(255 255 255 / 42%);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .root {
+    gap: 0.8rem;
+  }
+
+  .board {
+    border-radius: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playerRoute {
+    filter: none;
+  }
+}

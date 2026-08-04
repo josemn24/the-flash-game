@@ -143,6 +143,15 @@
   border-top-style: dashed;
   border-top-color: var(--cyan);
 }
+
+.zipPlayerLine {
+  background: var(--electric);
+}
+
+.zipSolutionLine {
+  border-top: 2px dashed var(--cyan);
+  background: transparent;
+}
 .sudokuReviewGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
