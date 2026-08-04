@@ -86,6 +86,8 @@ Puzzle de palabras con una cuadrícula que forma un símbolo `#`. El jugador deb
 
 ### Tuberías o circuito cerrado
 
+> **Estado:** implementada en la biblioteca de formatos como **Tuberías**, con un tablero editorial 5 × 5, una única red sin bucles y puntuación binaria por velocidad. El generador de tableros continúa como evolución futura.
+
 El jugador rota piezas para conectar una entrada con una salida, cerrar un circuito o activar varios nodos.
 
 - **Interacción:** tocar una pieza para rotarla; el envío puede ser automático al conectar el objetivo.

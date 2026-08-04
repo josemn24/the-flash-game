@@ -48,6 +48,15 @@ export const SCORING_POLICIES = {
     speedBonus: true,
     partialCreditLabel: "Progreso por cobertura",
   },
+  pipes: {
+    id: QUESTION_SCORING_POLICY.pipes,
+    label: "Resolución y velocidad",
+    summary:
+      "Completar la red concede puntos ajustados por velocidad; los giros se registran solo para revisión.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "true-false": {
     id: QUESTION_SCORING_POLICY["true-false"],
     label: "Riesgo alto",

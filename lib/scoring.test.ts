@@ -244,6 +244,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
       incorrectAnswer = { queens: example.solution.slice(0, -1), marks: [] };
       incorrectPoints = 0;
       break;
+    case "pipes":
+      correctAnswer = { rotations: example.solutionRotations, moves: 12 };
+      incorrectAnswer = { rotations: example.initialRotations, moves: 0 };
+      incorrectPoints = 0;
+      break;
     case "ordering":
       correctAnswer = example.correctOrder;
       incorrectAnswer = [];

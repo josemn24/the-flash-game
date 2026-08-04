@@ -16,6 +16,7 @@ import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 import { isValidEscapeConfiguration } from "@/lib/escape";
 import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
+import { countPipesSolutions, isValidPipesConfiguration } from "@/lib/pipes";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
@@ -36,9 +37,9 @@ function isPlaceholderScheduledChallenge(
 }
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-eight formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(28);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(28);
+  it("contains exactly twenty-nine formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(29);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(29);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -68,12 +69,19 @@ describe("question format catalog", () => {
       "progressive-image",
       "time-maze",
       "zip",
+      "pipes",
     ]);
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
       format.examples.map((example) => example.question.id),
     );
     expect(new Set(exampleIds).size).toBe(exampleIds.length);
+  });
+
+  it("keeps the Pipes example unique and internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.pipes.examples[0].question;
+    expect(isValidPipesConfiguration(question)).toBe(true);
+    expect(countPipesSolutions(question)).toBe(1);
   });
 
   it("keeps error-reconstruction examples internally consistent", () => {

@@ -31,6 +31,7 @@ import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
 import { ZipQuestion } from "@/components/ZipQuestion";
+import { PipesQuestion } from "@/components/PipesQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
@@ -466,6 +467,23 @@ function ZipInput({
   );
 }
 
+function PipesInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"pipes">>) {
+  return (
+    <PipesQuestion
+      key={question.id}
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function LogicCodeInput({
   question,
   locked,
@@ -581,6 +599,7 @@ export const QUESTION_INPUT_RENDERERS = {
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
   zip: ZipInput,
+  pipes: PipesInput,
 } satisfies {
   [T in QuestionType]: ComponentType<QuestionInputProps<QuestionOfType<T>>>;
 };

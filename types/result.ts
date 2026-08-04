@@ -82,6 +82,15 @@ export type AnswerResultDetails =
       completed: boolean;
     }
   | {
+      type: "pipes";
+      connectedTiles: number;
+      totalTiles: number;
+      openConnections: number;
+      isolatedComponents: number;
+      moves: number;
+      solved: boolean;
+    }
+  | {
       type: "sliding-puzzle";
       moves: number;
     }

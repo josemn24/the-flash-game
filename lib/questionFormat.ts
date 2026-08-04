@@ -29,4 +29,5 @@ export const QUESTION_FORMAT_LABELS = {
   "logic-code": "Código lógico",
   estimation: "Estimación",
   zip: "Zip",
+  pipes: "Tuberías",
 } satisfies Record<QuestionType, string>;

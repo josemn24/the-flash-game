@@ -17,6 +17,7 @@ import { scoring as miniSudokuScoring } from "@/lib/scoringCore/questions/miniSu
 import { scoring as miniWordleScoring } from "@/lib/scoringCore/questions/miniWordle";
 import { scoring as multipleChoiceScoring } from "@/lib/scoringCore/questions/multipleChoice";
 import { scoring as oddOneOutScoring } from "@/lib/scoringCore/questions/oddOneOut";
+import { scoring as pipesScoring } from "@/lib/scoringCore/questions/pipes";
 import { scoring as orderingScoring } from "@/lib/scoringCore/questions/ordering";
 import { scoring as progressiveCluesScoring } from "@/lib/scoringCore/questions/progressiveClues";
 import { scoring as progressiveImageScoring } from "@/lib/scoringCore/questions/progressiveImage";
@@ -58,6 +59,7 @@ export const SCORING: Record<QuestionType, QuestionScoring> = {
   estimation: estimationScoring,
   escape: escapeScoring,
   zip: zipScoring,
+  pipes: pipesScoring,
 };
 
 export const QUESTION_SCORING_POLICY = Object.fromEntries(

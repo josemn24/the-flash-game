@@ -5,6 +5,7 @@ import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
 import { ZipBoard } from "@/components/ZipQuestion";
 import { QueensBoard } from "@/components/QueensQuestion";
 import { EscapeBoard } from "@/components/EscapeQuestion";
+import { PipesBoard } from "@/components/PipesQuestion";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
@@ -28,6 +29,7 @@ import {
   isSimonSequenceAnswer,
   isTimeMazeAnswer,
   isZipAnswer,
+  isPipesAnswer,
 } from "@/lib/scoring";
 import { getMiniWordleFeedback } from "@/lib/miniWordle";
 import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
@@ -1026,6 +1028,51 @@ function ZipReview({ question, result }: ReviewProps<QuestionOfType<"zip">>) {
   );
 }
 
+function PipesReview({ question, result }: ReviewProps<QuestionOfType<"pipes">>) {
+  const answer = isPipesAnswer(result.answer)
+    ? result.answer
+    : { rotations: question.initialRotations, moves: 0 };
+  const details = result.details?.type === "pipes" ? result.details : undefined;
+  return (
+    <div className="grid gap-3">
+      <div className={styles.queensReviewPair}>
+        <div>
+          <span className={styles.memoryGridLabel}>Tu tablero</span>
+          <PipesBoard question={question} answer={answer} label="Tablero final del jugador" />
+        </div>
+        <div>
+          <span className={styles.memoryGridLabel}>Solución</span>
+          <PipesBoard
+            question={question}
+            answer={{ rotations: question.solutionRotations, moves: 0 }}
+            label="Solución de Tuberías"
+          />
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-4">
+        <div className={styles.answerBox}>
+          <span>Conectadas</span>
+          <strong>
+            {details?.connectedTiles ?? 0}/{details?.totalTiles ?? 25}
+          </strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Salidas abiertas</span>
+          <strong>{details?.openConnections ?? 0}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Redes aisladas</span>
+          <strong>{details?.isolatedComponents ?? 0}</strong>
+        </div>
+        <div className={`${styles.answerBox} ${details?.solved ? styles.answerBoxCorrect : ""}`}>
+          <span>Giros</span>
+          <strong>{details?.moves ?? answer.moves}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ErrorReconstructionReview({
   question,
   result,
@@ -1149,6 +1196,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,
   zip: ZipReview,
+  pipes: PipesReview,
 } satisfies { [T in QuestionType]: ComponentType<ReviewProps<QuestionOfType<T>>> };
 
 export function QuestionReviewContent(props: ReviewProps) {

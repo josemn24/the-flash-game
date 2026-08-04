@@ -325,6 +325,17 @@ export type ZipQuestion = BaseQuestion & {
   solution: number[];
 };
 
+export type PipesTileKind = "end" | "straight" | "corner" | "tee";
+
+export type PipesQuestion = BaseQuestion & {
+  type: "pipes";
+  grid: { rows: 5; columns: 5 };
+  tiles: PipesTileKind[];
+  initialRotations: number[];
+  solutionRotations: number[];
+  source: number;
+};
+
 export type SlidingPuzzleQuestion = BaseQuestion & {
   type: "sliding-puzzle";
   initialTiles: Array<number | null>;
@@ -416,6 +427,7 @@ export type Question =
   | QueensQuestion
   | TimeMazeQuestion
   | ZipQuestion
+  | PipesQuestion
   | SlidingPuzzleQuestion
   | EscapeQuestion
   | ErrorReconstructionQuestion
@@ -438,6 +450,7 @@ export type MiniNonogramAnswer = Record<string, true>;
 export type QueensAnswer = { queens: number[]; marks: number[] };
 export type TimeMazeAnswer = { path: number[] };
 export type ZipAnswer = { path: number[] };
+export type PipesAnswer = { rotations: number[]; moves: number };
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
 export type EscapeAnswer = { moves: EscapeMove[] };
 export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
@@ -457,6 +470,7 @@ export type AnswerValue =
   | QueensAnswer
   | TimeMazeAnswer
   | ZipAnswer
+  | PipesAnswer
   | SlidingPuzzleAnswer
   | EscapeAnswer
   | ErrorReconstructionAnswer

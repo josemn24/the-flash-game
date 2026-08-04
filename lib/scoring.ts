@@ -66,6 +66,7 @@ export {
 } from "@/lib/scoringCore/questions/slidingPuzzle";
 export { isTimeMazeAnswer } from "@/lib/scoringCore/questions/timeMaze";
 export { isZipAnswer } from "@/lib/scoringCore/questions/zip";
+export { isPipesAnswer } from "@/lib/pipes";
 export { calculateEstimationMetrics } from "@/lib/scoringCore/questions/estimation";
 export { evaluateEscape } from "@/lib/scoringCore/questions/escape";
 export { isEscapeAnswer, isValidEscapeConfiguration } from "@/lib/escape";
