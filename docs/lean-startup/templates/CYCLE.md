@@ -43,7 +43,33 @@ Explicar incertidumbre, riesgo, consecuencia de estar equivocados y por qué deb
 
 TODO — condición que impediría una decisión fiable.
 
-## 7. Experimento
+## 7. Métrica y umbrales
+
+Definir antes de elegir o ejecutar el experimento. No cambiar retrospectivamente los criterios.
+
+### Métrica principal
+
+**Nombre:** TODO
+**Definición:** TODO
+**Forma de cálculo:** TODO
+
+### Umbral de éxito
+
+TODO
+
+### Umbral de fracaso
+
+TODO
+
+### Resultado inconcluso
+
+TODO
+
+### Origen del umbral
+
+TODO — línea base, benchmark, restricción, decisión del equipo o supuesto provisional.
+
+## 8. Experimento
 
 ### Descripción
 
@@ -68,32 +94,6 @@ TODO
 ### Riesgos y sesgos
 
 - TODO
-
-## 8. Métrica y umbrales
-
-Definir antes de ejecutar. No cambiar retrospectivamente los criterios.
-
-### Métrica principal
-
-**Nombre:** TODO  
-**Definición:** TODO  
-**Forma de cálculo:** TODO
-
-### Umbral de éxito
-
-TODO
-
-### Umbral de fracaso
-
-TODO
-
-### Resultado inconcluso
-
-TODO
-
-### Origen del umbral
-
-TODO — línea base, benchmark, restricción, decisión del equipo o supuesto provisional.
 
 ## 9. MVP o vehículo experimental
 

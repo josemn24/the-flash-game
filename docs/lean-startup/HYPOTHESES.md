@@ -9,7 +9,7 @@ Las hipótesis representan creencias importantes que deben comprobarse antes de 
 ### HYP-001 — Participación recurrente en una competición asíncrona entre amistades
 
 **Tipo:** Problema  
-**Estado:** Borrador  
+**Estado:** Priorizada
 **Prioridad:** Alta  
 **Incertidumbre:** Alta  
 **Coste de estar equivocados:** Alto
@@ -20,7 +20,7 @@ Creemos que un segmento inicial de grupos de amigos verá valor en coordinar y r
 
 **Segmento**
 
-Tabarnia: hasta once amistades a quienes Jose puede invitar éticamente a una sala privada de la primera alpha.
+Tabarnia: cohorte prevista de once amistades a quienes Jose puede invitar éticamente a una sala privada de la primera alpha. La cohorte debe fijarse antes de ejecutar.
 
 **Problema**
 
@@ -28,7 +28,7 @@ Confirmar si este grupo encuentra valor suficiente en una actividad competitiva 
 
 **Comportamiento esperado**
 
-Tras aceptar participar en la alpha, las personas juegan voluntariamente al menos cinco de los nueve desafíos disponibles durante 24 horas cada dos días y consultan o reaccionan al ranking acumulado de la temporada.
+Tras aceptar participar en la alpha, las personas juegan voluntariamente al menos cinco de los nueve desafíos disponibles durante 24 horas cada dos días. La consulta o reacción al ranking se registra como métrica auxiliar, no como criterio de clasificación de esta hipótesis.
 
 **Base de la hipótesis**
 
@@ -50,15 +50,15 @@ Tras aceptar participar en la alpha, las personas juegan voluntariamente al meno
 
 **Evidencia que podría apoyarla**
 
-- Al menos seis de las once personas invitadas completan cinco o más desafíos y se observan consultas o reacciones voluntarias al ranking de temporada.
+- Al menos seis de las once personas invitadas completan cinco o más desafíos.
 
 **Evidencia que podría debilitarla**
 
-- Tres o menos personas invitadas completan cinco o más desafíos, o no se observa interés por el resultado compartido.
+- Tres o menos personas invitadas completan cinco o más desafíos.
 
 **Decisión que permitirá tomar**
 
-Si conviene repetir y ajustar la temporada alpha, revisar el contenido o la cadencia, o reconsiderar el segmento y el problema antes de ampliar el producto.
+Si la evidencia justifica PERSEVERAR con una segunda temporada del mismo loop social o si, tras revisar la calidad del experimento, hay que reconsiderar estrategia antes de ampliar el producto.
 
 **Ciclo relacionado**
 

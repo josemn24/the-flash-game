@@ -2,19 +2,19 @@
 
 ## Resumen
 
-- Fase actual: Preparación de experimento
+- Fase actual: Preparación del MVP
 - Ciclo activo: `cycles/CYCLE-001.md`
 - Hipótesis crítica: HYP-001 — Participación recurrente en una competición asíncrona entre amistades
 - Pregunta de aprendizaje: ¿Tabarnia participa voluntariamente de forma repetida en una temporada alpha técnica de desafíos compartidos?
-- Decisión pendiente: ¿Conviene repetir y ajustar la temporada alpha, o revisar contenido, cadencia, segmento o problema antes de ampliar el producto?
+- Decisión pendiente: ¿La evidencia de la alpha justificará PERSEVERAR con una segunda temporada del mismo loop social?
 - Incertidumbre principal: aceptación y participación recurrente de Tabarnia en el loop social asíncrono.
 - Responsable: Jose Moreno
 - Próxima revisión: Al finalizar la temporada alpha; fecha de inicio pendiente.
-- Bloqueos: La prueba individual previa y la selección concreta de los nueve desafíos están pendientes.
+- Bloqueos: La selección concreta de los nueve desafíos está pendiente; sin ella no puede realizarse la prueba individual previa.
 
 ## Próxima acción
 
-Realizar una prueba individual cualitativa con dos amistades. Si no revela bloqueos de claridad o calidad en los desafíos destinados a la alpha, preparar la sala técnica de Tabarnia y fijar la fecha de inicio.
+Seleccionar y registrar en CYCLE-001 los nueve desafíos candidatos para la alpha de Tabarnia.
 
 ## Lo que sabemos
 
@@ -38,10 +38,11 @@ Realizar una prueba individual cualitativa con dos amistades. Si no revela bloqu
 
 ## Lo que desconocemos
 
-- La aceptación real de las hasta once invitaciones, la disposición a volver, los formatos que mejor sostienen la participación y el interés por el ranking.
+- La aceptación real de las once invitaciones, la disposición a volver, los formatos que mejor sostienen la participación y el interés por el ranking.
 
 ## Referencias
 
 - Visión: `VISION.md`
+- Estrategia: `STRATEGY.md`
 - Hipótesis: `HYPOTHESES.md`
 - Ciclo activo: `cycles/CYCLE-001.md`

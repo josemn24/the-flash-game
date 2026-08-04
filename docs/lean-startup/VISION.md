@@ -11,7 +11,6 @@ Permitir que grupos de amigos mantengan una competición ligera y recurrente a t
 ## Personas o entidades beneficiadas
 
 - Grupos de amigos que quieran una actividad competitiva compartida sin necesidad de coincidir en tiempo real.
-- El grupo inicial Tabarnia, formado por hasta once amistades invitadas a una sala privada para la primera alpha.
 
 ## Situación que se desea transformar
 
@@ -37,14 +36,7 @@ El cambio buscado —competición social recurrente, breve y asíncrona entre am
 
 ## Qué pertenece a la estrategia actual
 
-La primera apuesta es una sala privada con una temporada, desafíos periódicos, puntuación acumulada y ranking. La alpha técnica comprobará este loop con Tabarnia; el backend, la autenticación y la persistencia son el vehículo mínimo elegido para observarlo, no evidencia de que la estrategia funcione.
-
-La frecuencia de publicación, la selección de formatos, las reglas de puntuación, las notificaciones y la ampliación a más salas son opciones estratégicas modificables.
-
-## Líneas no priorizadas en el ciclo actual
-
-- **Conquista y geolocalización:** posible capa futura inspirada en la competición territorial, no alcance ni evidencia de la alpha.
-- **Enfoque educativo:** posible producto para otro segmento y problema, no alcance ni evidencia de la alpha.
+El segmento inicial, la alpha de Tabarnia, la sala privada, las temporadas, la frecuencia de publicación, el ranking, los formatos, el canal, la tecnología y la ampliación futura son opciones modificables. Se describen en `STRATEGY.md` para no confundirlas con la visión.
 
 ## Relación con el producto existente
 
@@ -70,7 +62,7 @@ La PoC actual permite jugar en solitario dentro de una sala y temporada demo loc
 
 ## Inferencias
 
-- La incertidumbre más costosa es si existe comportamiento recurrente de grupo alrededor del loop social; la alpha técnica permitirá medirlo directamente con la experiencia prevista.
+- La incertidumbre más costosa es si existe comportamiento recurrente de grupo alrededor de un loop social asíncrono.
 
 ## Supuestos
 
@@ -81,5 +73,5 @@ La PoC actual permite jugar en solitario dentro de una sala y temporada demo loc
 ## Preguntas pendientes
 
 - ¿Qué formatos y reglas de puntuación harán que las personas quieran volver?
-- ¿Qué aceptación y participación recurrente observará Tabarnia en la alpha?
-- ¿Qué ajustes de contenido, cadencia o ranking justificará una segunda temporada?
+- ¿Qué aceptación y participación recurrente observará un grupo inicial en la primera alpha?
+- ¿Qué ajustes de contenido, cadencia o ranking justificarían una segunda temporada?
