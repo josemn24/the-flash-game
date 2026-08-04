@@ -4,11 +4,12 @@ Estas instrucciones rigen cualquier intervención dentro de `docs/lean-startup/`
 
 ## Secuencia obligatoria de lectura
 
-1. Leer `STATE.md` y señalar fase, ciclo activo, hipótesis crítica, incertidumbre y única acción inmediata.
-2. Consultar `VISION.md` para distinguir el cambio buscado de la estrategia modificable.
-3. Consultar `STRATEGY.md` para entender las apuestas vigentes y sus incertidumbres.
-4. Abrir la hipótesis crítica en `HYPOTHESES.md` y el ciclo activo enlazado.
-5. Consultar solo las fuentes del repositorio o ciclos que hagan falta para la decisión actual.
+1. Leer `STATE.md` y señalar fase, estado detallado, ciclo activo, hipótesis crítica, incertidumbre y única acción inmediata.
+2. Consultar `STATE_MACHINE.md` para comprobar la puerta de entrada y de salida del estado detallado.
+3. Consultar `VISION.md` para distinguir el cambio buscado de la estrategia modificable.
+4. Consultar `STRATEGY.md` para entender las apuestas vigentes y sus incertidumbres.
+5. Abrir la hipótesis crítica en `HYPOTHESES.md` y el ciclo activo enlazado.
+6. Consultar solo las fuentes del repositorio o ciclos que hagan falta para la decisión actual.
 
 No reiniciar el sistema, no reescribir resultados históricos y no abrir un segundo ciclo activo.
 
@@ -27,6 +28,8 @@ Crear → Medir → Aprender
 ```
 
 Antes de preparar un MVP, deben constar la decisión pendiente, la pregunta de aprendizaje, la hipótesis crítica, la evidencia que la apoyaría o debilitaría, la métrica, los umbrales y el resultado inconcluso. Si falta alguno, la siguiente acción debe resolverlo; no se inicia el experimento.
+
+La transición entre estados se rige por `STATE_MACHINE.md`. No declarar un estado completado por haber realizado actividades parciales; comprobar su puerta de salida. Al pasar de `READY_TO_RUN` a `RUNNING`, congelar hipótesis, métrica, umbrales y protocolo.
 
 ## Clasificación de información
 
@@ -65,6 +68,7 @@ La decisión estratégica del ciclo solo puede ser `PERSEVERAR`, `PIVOTAR` o `PA
 2. Actualizar la hipótesis relacionada con su estado y resumen vivo.
 3. Actualizar `STRATEGY.md` si cambian las apuestas vigentes; no cambiar `VISION.md` salvo que cambie el propósito o sus principios.
 4. Actualizar `STATE.md` como fotografía breve y enlazar el único ciclo activo.
-5. Indicar los archivos modificados y terminar con una única acción inmediata, concreta, limitada y necesaria.
+5. Actualizar el estado detallado y la condición de avance del ciclo si cambia la puerta de transición.
+6. Indicar los archivos modificados y terminar con una única acción inmediata, concreta, limitada y necesaria.
 
 No modificar código, pruebas, infraestructura, herramientas ni documentación fuera de esta carpeta como parte de una intervención Lean.

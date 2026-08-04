@@ -2,10 +2,13 @@
 
 ## Estado del ciclo
 
-**Estado:** Planificación  
-**Responsable:** Jose Moreno  
-**Fecha de inicio:** Pendiente  
-**Fecha de revisión:** Al finalizar la temporada alpha
+- **Estado:** Planificación
+- **Estado de máquina:** MVP_DESIGN
+- **Siguiente puerta:** READY_TO_RUN
+- **Condición de avance:** vehículo preparado, medición verificable y criterios de la puerta `READY_TO_RUN` completos.
+- **Responsable:** Jose Moreno
+- **Fecha de inicio:** Pendiente
+- **Fecha de revisión:** Al finalizar la temporada alpha
 
 ## 1. Contexto
 

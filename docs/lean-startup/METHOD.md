@@ -31,6 +31,7 @@ Diseñar primero evita construir una solución sin saber qué comportamiento ten
 | Estado | ¿Dónde estamos, qué incertidumbre domina y qué se hace ahora? | `STATE.md` |
 | Hipótesis | ¿Qué creencia crítica puede estar equivocada? | `HYPOTHESES.md` |
 | Ciclo | ¿Qué decisión, evidencia, métrica, experimento y aprendizaje sostienen la apuesta? | `cycles/CYCLE-XXX.md` |
+| Máquina de estados | ¿Qué puerta debe cumplirse antes de avanzar? | `STATE_MACHINE.md` |
 | Protocolo | ¿Cómo debe actuar quien facilita el proceso? | `AGENTS.md` |
 | Historial | ¿Qué ocurrió y por qué se tomó una decisión anterior? | ciclos cerrados |
 
@@ -74,6 +75,8 @@ Una hipótesis avanza normalmente de `Borrador` a `Priorizada`, luego a `En prue
 
 `STATE.md` es una fotografía actual, no un diario. `HYPOTHESES.md` es un resumen vivo. Los ciclos cerrados contienen el historial detallado de razonamiento, evidencia y decisiones; no se borran ni se alteran retrospectivamente.
 
+La fase breve de `STATE.md` se complementa con el estado detallado de `STATE_MACHINE.md`. La máquina no añade trabajo por sí misma: evita saltar de diseño a ejecución sin cumplir las condiciones de transición, especialmente la puerta `READY_TO_RUN`.
+
 ## Uso práctico
 
-Para facilitar una intervención, seguir `AGENTS.md`. Para iniciar un chat nuevo, copiar `STARTER_PROMPT.md`. Para entender el estado de la apuesta actual, empezar siempre por `STATE.md`.
+Para facilitar una intervención, seguir `AGENTS.md`. Para iniciar un chat nuevo, copiar `STARTER_PROMPT.md`. Para entender el estado de la apuesta actual, empezar siempre por `STATE.md` y consultar después `STATE_MACHINE.md`.

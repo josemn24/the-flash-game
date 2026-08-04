@@ -3,6 +3,7 @@
 ## Resumen
 
 - Fase actual: Preparación del MVP
+- Estado detallado: MVP_DESIGN → READY_TO_RUN
 - Ciclo activo: `cycles/CYCLE-001.md`
 - Hipótesis crítica: HYP-001 — Participación recurrente en una competición asíncrona entre amistades
 - Pregunta de aprendizaje: ¿Tabarnia participa voluntariamente de forma repetida en una temporada alpha técnica de desafíos compartidos?
@@ -43,6 +44,7 @@ Seleccionar y registrar en CYCLE-001 los nueve desafíos candidatos para la alph
 ## Referencias
 
 - Visión: `VISION.md`
+- Máquina de estados: `STATE_MACHINE.md`
 - Estrategia: `STRATEGY.md`
 - Hipótesis: `HYPOTHESES.md`
 - Ciclo activo: `cycles/CYCLE-001.md`

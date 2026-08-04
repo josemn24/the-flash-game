@@ -2,10 +2,13 @@
 
 ## Estado del ciclo
 
-**Estado:** Planificación  
-**Responsable:** TODO  
-**Fecha de inicio:** Pendiente  
-**Fecha de revisión:** Pendiente
+- **Estado:** Planificación
+- **Estado de máquina:** TODO — consultar `../STATE_MACHINE.md`.
+- **Siguiente puerta:** TODO
+- **Condición de avance:** TODO — criterio verificable para la transición.
+- **Responsable:** TODO
+- **Fecha de inicio:** Pendiente
+- **Fecha de revisión:** Pendiente
 
 ## 1. Contexto
 
@@ -224,5 +227,6 @@ TODO — una única acción concreta, limitada y necesaria.
 ## 17. Documentos que deben actualizarse
 
 - `../STATE.md`
+- `../STATE_MACHINE.md` si cambia la transición o se aclara una puerta
 - `../HYPOTHESES.md`
 - Este ciclo

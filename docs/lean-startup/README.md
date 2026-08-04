@@ -22,6 +22,7 @@ El repositorio contiene una PoC frontend para jugar desafíos individuales. Este
 - `STRATEGY.md`: apuestas vigentes, alcance de aprendizaje y principales incertidumbres modificables.
 - `STATE.md`: fotografía breve del aprendizaje actual y enlace al único ciclo activo.
 - `HYPOTHESES.md`: resumen vivo de las hipótesis y su estado.
+- `STATE_MACHINE.md`: puertas manuales para avanzar entre estados del ciclo.
 - `cycles/`: historial detallado e inmutable de los ciclos.
 - `templates/CYCLE.md`: plantilla manual para el siguiente ciclo.
 - `AGENTS.md`: protocolo operativo para facilitar ciclos sin saltar pasos.
@@ -36,21 +37,23 @@ El repositorio contiene una PoC frontend para jugar desafíos individuales. Este
 ## Cómo utilizar el sistema
 
 1. Revisar `STATE.md`.
-2. Consultar `VISION.md`.
-3. Consultar `STRATEGY.md`.
-4. Revisar `HYPOTHESES.md`.
-5. Abrir el ciclo activo.
-6. Definir la decisión.
-7. Formular la pregunta de aprendizaje.
-8. Seleccionar la hipótesis crítica.
-9. Definir evidencia, métricas y umbrales.
-10. Diseñar el experimento y el MVP mínimo.
-11. Ejecutar el experimento.
-12. Registrar resultados.
-13. Analizar el aprendizaje.
-14. Tomar una decisión.
-15. Actualizar estrategia, hipótesis y estado.
-16. Iniciar el siguiente ciclo.
+2. Consultar `STATE_MACHINE.md` para comprobar la transición aplicable.
+3. Consultar `VISION.md`.
+4. Consultar `STRATEGY.md`.
+5. Revisar `HYPOTHESES.md`.
+6. Abrir el ciclo activo.
+7. Definir la decisión.
+8. Formular la pregunta de aprendizaje.
+9. Seleccionar la hipótesis crítica.
+10. Definir evidencia, métricas y umbrales.
+11. Diseñar el experimento y el MVP mínimo.
+12. Superar la puerta `READY_TO_RUN` antes de ejecutar.
+13. Ejecutar el experimento.
+14. Registrar resultados.
+15. Analizar el aprendizaje.
+16. Tomar una decisión.
+17. Actualizar estrategia, hipótesis y estado.
+18. Iniciar el siguiente ciclo.
 
 ## Ciclo de aprendizaje
 

@@ -11,11 +11,12 @@ Lee, en este orden:
 
 1. `docs/lean-startup/AGENTS.md`
 2. `docs/lean-startup/STATE.md`
-3. `docs/lean-startup/VISION.md`
-4. `docs/lean-startup/STRATEGY.md`
-5. `docs/lean-startup/HYPOTHESES.md`
-6. El ciclo activo enlazado desde `STATE.md`
-7. Solo las fuentes del repositorio necesarias para verificar afirmaciones críticas.
+3. `docs/lean-startup/STATE_MACHINE.md`
+4. `docs/lean-startup/VISION.md`
+5. `docs/lean-startup/STRATEGY.md`
+6. `docs/lean-startup/HYPOTHESES.md`
+7. El ciclo activo enlazado desde `STATE.md`
+8. Solo las fuentes del repositorio necesarias para verificar afirmaciones críticas.
 
 No inventes datos, usuarios, resultados, métricas, evidencia ni decisiones. Distingue hechos observados, afirmaciones documentadas, inferencias, supuestos y datos desconocidos. Si los documentos se contradicen, indícalo de forma explícita sin resolverlo por su cuenta.
 
