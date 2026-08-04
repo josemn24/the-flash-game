@@ -53,6 +53,7 @@ import { scoring as classificationScoring } from "@/lib/scoringCore/questions/cl
 import { scoring as connectPairsScoring } from "@/lib/scoringCore/questions/connectPairs";
 import { scoring as errorReconstructionScoring } from "@/lib/scoringCore/questions/errorReconstruction";
 import { scoring as estimationScoring } from "@/lib/scoringCore/questions/estimation";
+import { scoring as escapeScoring } from "@/lib/scoringCore/questions/escape";
 import { scoring as flashMemoryScoring } from "@/lib/scoringCore/questions/flashMemory";
 import { scoring as heatMapScoring } from "@/lib/scoringCore/questions/heatMap";
 import { scoring as imageLabelingScoring } from "@/lib/scoringCore/questions/imageLabeling";
@@ -199,6 +200,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "sliding-puzzle":
       correctAnswer = { tiles: example.solution, moves: 2 };
       incorrectAnswer = { tiles: example.initialTiles, moves: 0 };
+      incorrectPoints = 0;
+      break;
+    case "escape":
+      correctAnswer = { moves: example.referenceSolution };
+      incorrectAnswer = { moves: [] };
       incorrectPoints = 0;
       break;
     case "error-reconstruction":
@@ -1918,6 +1924,7 @@ describe("question evaluation", () => {
     expect(SCORING["short-text"]).toBe(shortTextScoring);
     expect(SCORING["simon-sequence"]).toBe(simonSequenceScoring);
     expect(SCORING["sliding-puzzle"]).toBe(slidingPuzzleScoring);
+    expect(SCORING.escape).toBe(escapeScoring);
     expect(SCORING["time-maze"]).toBe(timeMazeScoring);
     expect(SCORING["true-false"]).toBe(trueFalseScoring);
     expect(SCORING.zip).toBe(zipScoring);

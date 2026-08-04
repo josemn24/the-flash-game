@@ -4,6 +4,7 @@ import { scoring as classificationScoring } from "@/lib/scoringCore/questions/cl
 import { scoring as connectPairsScoring } from "@/lib/scoringCore/questions/connectPairs";
 import { scoring as errorReconstructionScoring } from "@/lib/scoringCore/questions/errorReconstruction";
 import { scoring as estimationScoring } from "@/lib/scoringCore/questions/estimation";
+import { scoring as escapeScoring } from "@/lib/scoringCore/questions/escape";
 import { scoring as flashMemoryScoring } from "@/lib/scoringCore/questions/flashMemory";
 import { scoring as heatMapScoring } from "@/lib/scoringCore/questions/heatMap";
 import { scoring as imageLabelingScoring } from "@/lib/scoringCore/questions/imageLabeling";
@@ -55,6 +56,7 @@ export const SCORING: Record<QuestionType, QuestionScoring> = {
   "mini-wordle": miniWordleScoring,
   "logic-code": logicCodeScoring,
   estimation: estimationScoring,
+  escape: escapeScoring,
   zip: zipScoring,
 };
 

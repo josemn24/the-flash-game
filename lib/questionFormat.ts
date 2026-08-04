@@ -22,6 +22,7 @@ export const QUESTION_FORMAT_LABELS = {
   queens: "Queens",
   "time-maze": "Laberinto",
   "sliding-puzzle": "Puzzle",
+  escape: "Escape",
   "error-reconstruction": "Reconstruir error",
   anagram: "Anagrama",
   "mini-wordle": "Mini-Wordle",

@@ -435,6 +435,15 @@ El jugador traza un único recorrido ortogonal que visita checkpoints numéricos
 - **Puntuación actual:** resolución binaria ajustada por velocidad; el timeout conserva el recorrido con cero puntos.
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; todavía no se publica en desafíos.
 
+### 38. Escape — Implementada
+
+El jugador libera un bloque objetivo amarillo desplazando obstáculos horizontales y verticales sobre su propio eje en un tablero 6 × 6.
+
+- **Interacción actual:** arrastre con ajuste a celdas, selección táctil, flechas de teclado, deshacer y reiniciar; alcanzar el borde derecho completa la ronda automáticamente.
+- **Puntuación actual:** resolución binaria ajustada por velocidad. Los movimientos se comparan con un óptimo editorial en la revisión, pero no penalizan; el timeout conserva el tablero con cero puntos.
+- **Accesibilidad:** los bloques combinan color, patrón, símbolo y etiquetas de posición; las flechas recorren los destinos legales uno a uno con foco y anuncios accesibles.
+- **Uso actual:** tipo nativo y un único ejemplo jugable en la biblioteca. No está incluido en desafíos y no incorpora generador ni solver de búsqueda.
+
 ## Priorización de mecánicas pendientes
 
 | Objetivo                                   | Mecánicas prioritarias                                             | Motivo                                                                              |

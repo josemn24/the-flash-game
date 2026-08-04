@@ -86,6 +86,12 @@ export type AnswerResultDetails =
       moves: number;
     }
   | {
+      type: "escape";
+      moves: number;
+      optimalMoves: number;
+      escaped: boolean;
+    }
+  | {
       type: "progressive-clues";
       revealedClues: number;
       totalClues: number;

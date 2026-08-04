@@ -205,6 +205,15 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  escape: {
+    id: QUESTION_SCORING_POLICY.escape,
+    label: "Resolución y velocidad",
+    summary:
+      "Solo liberar el bloque objetivo concede entre el 60 % y el 100 % de los puntos según el tiempo; los movimientos no penalizan.",
+    partialCredit: false,
+    incorrectPenalty: false,
+    speedBonus: true,
+  },
   "error-reconstruction": {
     id: QUESTION_SCORING_POLICY["error-reconstruction"],
     label: "Localización y corrección",

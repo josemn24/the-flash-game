@@ -13,6 +13,7 @@ import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
+import { isValidEscapeConfiguration } from "@/lib/escape";
 import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
@@ -35,9 +36,9 @@ function isPlaceholderScheduledChallenge(
 }
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-seven formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(27);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(27);
+  it("contains exactly twenty-eight formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(28);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(28);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -60,6 +61,7 @@ describe("question format catalog", () => {
       "mini-nonogram",
       "queens",
       "sliding-puzzle",
+      "escape",
       "error-reconstruction",
       "anagram",
       "mini-wordle",
@@ -144,6 +146,15 @@ describe("question format catalog", () => {
     expect(question.solution).toHaveLength(5);
     expect(isValidQueensConfiguration(question)).toBe(true);
     expect(countQueensSolutions(question)).toBe(1);
+  });
+
+  it("keeps the Escape example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.escape.examples[0].question;
+    expect(question.grid).toEqual({ rows: 6, columns: 6, exit: { side: "right", row: 2 } });
+    expect(question.initialBlocks).toHaveLength(5);
+    expect(question.referenceSolution).toHaveLength(4);
+    expect(question.optimalMoves).toBe(4);
+    expect(isValidEscapeConfiguration(question)).toBe(true);
   });
 
   it("keeps the heat-map example internally consistent", () => {

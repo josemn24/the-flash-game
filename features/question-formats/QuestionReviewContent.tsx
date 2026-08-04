@@ -4,6 +4,7 @@ import { QuestionMedia } from "@/components/QuestionMedia";
 import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
 import { ZipBoard } from "@/components/ZipQuestion";
 import { QueensBoard } from "@/components/QueensQuestion";
+import { EscapeBoard } from "@/components/EscapeQuestion";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
@@ -14,6 +15,7 @@ import {
   isClassificationAnswer,
   isConnectPairsAnswer,
   isErrorReconstructionAnswer,
+  isEscapeAnswer,
   isFlashMemoryAnswer,
   isImageLabelingAnswer,
   isMatchingAnswer,
@@ -30,9 +32,11 @@ import {
 import { getMiniWordleFeedback } from "@/lib/miniWordle";
 import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
 import { findShortestTimeMazePath, getTimeMazeStartIndex } from "@/lib/timeMaze";
+import { replayEscapeMoves } from "@/lib/escape";
 import type {
   AnswerResult,
   AnswerValue,
+  EscapeAnswer,
   MemoryPairsTile,
   MiniSudokuAnswer,
   SlidingPuzzleAnswer,
@@ -883,6 +887,59 @@ function SlidingPuzzleReview({ question, result }: ReviewProps<QuestionOfType<"s
   );
 }
 
+function EscapeReview({ question, result }: ReviewProps<QuestionOfType<"escape">>) {
+  const answer: EscapeAnswer = isEscapeAnswer(result.answer) ? result.answer : { moves: [] };
+  const replay = replayEscapeMoves(question, answer.moves);
+  const reference = replayEscapeMoves(question, question.referenceSolution);
+  const details = result.details?.type === "escape" ? result.details : undefined;
+
+  return (
+    <div className="grid gap-3">
+      <div className={styles.escapeReviewPair}>
+        <div>
+          <span className={styles.memoryGridLabel}>Inicio</span>
+          <EscapeBoard
+            question={question}
+            blocks={question.initialBlocks}
+            label="Tablero inicial de Escape"
+          />
+        </div>
+        <div>
+          <span className={styles.memoryGridLabel}>Tu tablero</span>
+          <EscapeBoard
+            question={question}
+            blocks={replay.blocks}
+            label="Tablero final del jugador"
+            animateEscape={details?.escaped}
+          />
+        </div>
+        <div>
+          <span className={styles.memoryGridLabel}>Una solución</span>
+          <EscapeBoard
+            question={question}
+            blocks={reference.blocks}
+            label="Solución de referencia"
+          />
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={styles.answerBox}>
+          <span>Movimientos</span>
+          <strong>{details?.moves ?? replay.appliedMoves}</strong>
+        </div>
+        <div className={styles.answerBox}>
+          <span>Óptimo editorial</span>
+          <strong>{details?.optimalMoves ?? question.optimalMoves}</strong>
+        </div>
+        <div className={`${styles.answerBox} ${details?.escaped ? styles.answerBoxCorrect : ""}`}>
+          <span>Resultado</span>
+          <strong>{details?.escaped ? "Bloque liberado" : "Salida no alcanzada"}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TimeMazeReview({ question, result }: ReviewProps<QuestionOfType<"time-maze">>) {
   const answer = isTimeMazeAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "time-maze" ? result.details : undefined;
@@ -1085,6 +1142,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   queens: QueensReview,
   "time-maze": TimeMazeReview,
   "sliding-puzzle": SlidingPuzzleReview,
+  escape: EscapeReview,
   "error-reconstruction": ErrorReconstructionReview,
   anagram: AnagramReview,
   "mini-wordle": MiniWordleReview,

@@ -331,6 +331,33 @@ export type SlidingPuzzleQuestion = BaseQuestion & {
   solution: Array<number | null>;
 };
 
+export type EscapeBlock = {
+  id: string;
+  kind: "target" | "obstacle";
+  orientation: "horizontal" | "vertical";
+  row: number;
+  column: number;
+  length: 2 | 3;
+};
+
+export type EscapeMove = {
+  blockId: string;
+  from: number;
+  to: number;
+};
+
+export type EscapeQuestion = BaseQuestion & {
+  type: "escape";
+  grid: {
+    rows: 6;
+    columns: 6;
+    exit: { side: "right"; row: number };
+  };
+  initialBlocks: EscapeBlock[];
+  referenceSolution: EscapeMove[];
+  optimalMoves: number;
+};
+
 export type ErrorReconstructionStep = {
   id: string;
   text: string;
@@ -390,6 +417,7 @@ export type Question =
   | TimeMazeQuestion
   | ZipQuestion
   | SlidingPuzzleQuestion
+  | EscapeQuestion
   | ErrorReconstructionQuestion
   | AnagramQuestion
   | MiniWordleQuestion
@@ -411,6 +439,7 @@ export type QueensAnswer = { queens: number[]; marks: number[] };
 export type TimeMazeAnswer = { path: number[] };
 export type ZipAnswer = { path: number[] };
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
+export type EscapeAnswer = { moves: EscapeMove[] };
 export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
 export type MiniWordleAnswer = { guesses: string[] };
 export type AnswerValue =
@@ -429,6 +458,7 @@ export type AnswerValue =
   | TimeMazeAnswer
   | ZipAnswer
   | SlidingPuzzleAnswer
+  | EscapeAnswer
   | ErrorReconstructionAnswer
   | MiniWordleAnswer
   | HeatMapAnswer

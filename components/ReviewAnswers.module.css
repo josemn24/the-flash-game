@@ -472,6 +472,13 @@
   display: grid;
   gap: 0.7rem;
 }
+.escapeReviewPair {
+  display: grid;
+  gap: 0.9rem;
+}
+.escapeReviewPair > div {
+  min-width: 0;
+}
 .puzzleReviewBoard {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -549,6 +556,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .puzzleReviewPair {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .escapeReviewPair {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

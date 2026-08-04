@@ -117,6 +117,8 @@ Puzzle de recorrido numérico en una cuadrícula. El jugador comienza en la casi
 
 ### Rush Hour mini
 
+> **Estado:** implementada en la biblioteca de formatos como **Escape**, con bloques abstractos, tablero editorial 6 × 6, salida derecha y puntuación binaria por velocidad. La generación automática y los niveles adicionales continúan como evolución futura.
+
 Un tablero con vehículos o bloques deslizantes donde el jugador debe liberar una pieza objetivo moviendo obstáculos.
 
 - **Interacción:** desplazar piezas en su eje permitido mediante toques o controles discretos.

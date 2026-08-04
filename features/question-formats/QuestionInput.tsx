@@ -9,6 +9,7 @@ import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { ConnectPairsQuestion } from "@/components/ConnectPairsQuestion";
 import { EstimationQuestion } from "@/components/EstimationQuestion";
 import { ErrorReconstructionQuestionInput } from "@/components/ErrorReconstructionQuestion";
+import { EscapeQuestion } from "@/components/EscapeQuestion";
 import { FlashMemoryQuestion } from "@/components/FlashMemoryQuestion";
 import { HeatMapQuestion } from "@/components/HeatMapQuestion";
 import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
@@ -414,6 +415,23 @@ function SlidingPuzzleInput({
   );
 }
 
+function EscapeInput({
+  question,
+  locked,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"escape">>) {
+  return (
+    <EscapeQuestion
+      key={question.id}
+      question={question}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function TimeMazeInput({
   question,
   locked,
@@ -556,6 +574,7 @@ export const QUESTION_INPUT_RENDERERS = {
   queens: QueensInput,
   "time-maze": TimeMazeInput,
   "sliding-puzzle": SlidingPuzzleInput,
+  escape: EscapeInput,
   "error-reconstruction": ErrorReconstructionInput,
   anagram: AnagramInput,
   "mini-wordle": MiniWordleInput,
