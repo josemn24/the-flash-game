@@ -22,6 +22,11 @@ const RESULT_LABELS = {
   unanswered: "Tiempo agotado",
 } as const;
 
+function resultLabel(question: Question, result: AnswerResult) {
+  if (question.type === "pipes" && result.status === "partial") return "Red incompleta";
+  return RESULT_LABELS[result.status];
+}
+
 function hasDelayedTimedResponse(question: Question) {
   return (
     question.type === "flash-memory" ||
@@ -292,7 +297,7 @@ export function PlayableFormatExample({
           {phase === "feedback" && result && (
             <div className={styles.feedbackPanel}>
               <div className={`${styles.resultBanner} ${styles[result.status]}`}>
-                <span>{RESULT_LABELS[result.status]}</span>
+                <span>{resultLabel(question, result)}</span>
                 <strong>{result.points > 0 ? `+${result.points}` : result.points} pts</strong>
                 <small>{result.timeUsed.toFixed(1)} s</small>
               </div>
