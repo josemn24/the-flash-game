@@ -29,7 +29,7 @@ Crear → Medir → Aprender
 
 Antes de preparar un MVP, deben constar la decisión pendiente, la pregunta de aprendizaje, la hipótesis crítica, la evidencia que la apoyaría o debilitaría, la métrica, los umbrales y el resultado inconcluso. Si falta alguno, la siguiente acción debe resolverlo; no se inicia el experimento.
 
-La transición entre estados se rige por `STATE_MACHINE.md`. No declarar un estado completado por haber realizado actividades parciales; comprobar su puerta de salida. Al pasar de `READY_TO_RUN` a `RUNNING`, congelar hipótesis, métrica, umbrales y protocolo.
+La transición entre estados se rige por `STATE_MACHINE.md`. Comprobar tanto la salida verificable como la puerta de salida, sin confundirlas: un documento relleno no demuestra que el estado esté completo. No declarar un estado completado por haber realizado actividades parciales. Al pasar de `READY_TO_RUN` a `RUNNING`, congelar hipótesis, métrica, umbrales y protocolo.
 
 ## Clasificación de información
 

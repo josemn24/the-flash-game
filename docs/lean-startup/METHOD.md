@@ -77,6 +77,8 @@ Una hipótesis avanza normalmente de `Borrador` a `Priorizada`, luego a `En prue
 
 La fase breve de `STATE.md` se complementa con el estado detallado de `STATE_MACHINE.md`. La máquina no añade trabajo por sí misma: evita saltar de diseño a ejecución sin cumplir las condiciones de transición, especialmente la puerta `READY_TO_RUN`.
 
+Cada estado deja una salida verificable en los documentos existentes: documento vivo, diseño congelable o registro histórico. La salida no sustituye el criterio de avance; ambos se describen en `STATE_MACHINE.md` para conservar trazabilidad sin crear un archivo por estado.
+
 ## Uso práctico
 
 Para facilitar una intervención, seguir `AGENTS.md`. Para iniciar un chat nuevo, copiar `STARTER_PROMPT.md`. Para entender el estado de la apuesta actual, empezar siempre por `STATE.md` y consultar después `STATE_MACHINE.md`.

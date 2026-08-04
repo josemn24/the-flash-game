@@ -190,7 +190,29 @@ Observar la participación repetida en la experiencia social asíncrona prevista
 
 Detener la preparación cuando la prueba individual no revele bloqueos de claridad o calidad y la alpha pueda registrar la métrica principal y sus métricas auxiliares de forma fiable.
 
-## 10. Plan de ejecución
+## 10. Control `READY_TO_RUN`
+
+- **Estado:** Bloqueado — CYCLE-001 permanece en `MVP_DESIGN`; no se han iniciado invitaciones ni recogida de datos.
+- **Versión del protocolo:** Pendiente de congelar.
+- **Responsable de aprobación:** Jose Moreno.
+- **Fecha de congelación:** Pendiente.
+- **Fecha prevista de inicio:** Pendiente.
+
+### Comprobaciones
+
+- [x] Decisión, pregunta, hipótesis, evidencia, métrica y umbrales definidos.
+- [x] Muestra, duración y condición de cohorte definidos.
+- [ ] Nueve desafíos seleccionados y prueba individual previa registrada.
+- [ ] MVP técnico o mecanismo mínimo preparado y capaz de registrar la medición.
+- [ ] Fuente, captura y tratamiento de datos comprobados.
+- [ ] Riesgos éticos, operativos y técnicos revisados para iniciar la alpha.
+- [ ] Protocolo y criterios congelados sin cambios pendientes.
+
+### Bloqueos o desviaciones previas al inicio
+
+La selección concreta de los nueve desafíos es el bloqueo inmediato. No hay desviaciones de ejecución porque el experimento aún no ha comenzado.
+
+## 11. Plan de ejecución
 
 1. Seleccionar los nueve desafíos y registrarlos antes de la prueba individual.
 2. Probarlos individualmente con dos amistades y registrar bloqueos de claridad o calidad separados de la evidencia de HYP-001.
@@ -201,7 +223,7 @@ Detener la preparación cuando la prueba individual no revele bloqueos de clarid
 
 Durante la ejecución, registrar por desafío el modo, los formatos utilizados y las métricas auxiliares definidas arriba, manteniendo separados los comportamientos observados de las opiniones declaradas.
 
-## 11. Resultados observados
+## 12. Resultados observados
 
 **Estado:** Pendiente de ejecución
 
@@ -233,7 +255,7 @@ Pendiente.
 
 Pendiente.
 
-## 12. Análisis del aprendizaje
+## 13. Análisis del aprendizaje
 
 **Estado:** Pendiente
 
@@ -273,27 +295,27 @@ Pendiente.
 
 Pendiente.
 
-## 13. Calidad del experimento
+## 14. Calidad del experimento
 
 Si el diseño no permite aprendizaje fiable, decidir explícitamente si hay que repetir, reparar, ampliar la muestra, modificar la medición o declarar el resultado inconcluso antes de valorar la estrategia.
 
-## 14. Decisión estratégica
+## 15. Decisión estratégica
 
 **Decisión estratégica:** Pendiente — seleccionar una única opción: PERSEVERAR, PIVOTAR o PARAR.
 
 Un resultado defectuoso no implica por sí solo pivotar o parar. Si se recomienda PIVOTAR, documentar la señal suficiente, el elemento que cambia, la visión conservada, la nueva hipótesis, el siguiente experimento y el criterio para volver a pivotar o parar.
 
-## 15. Próxima incertidumbre
+## 16. Próxima incertidumbre
 
 Qué formatos, reglas de puntuación y ajustes de cadencia sostienen mejor la participación tras la primera temporada.
 
 Esta incertidumbre no abre un segundo ciclo activo. Se mantiene como candidata para priorización después de analizar la recurrencia de CYCLE-001.
 
-## 16. Próxima acción
+## 17. Próxima acción
 
 Seleccionar y registrar los nueve desafíos candidatos para la alpha de Tabarnia.
 
-## 17. Documentos que deben actualizarse
+## 18. Documentos que deben actualizarse
 
 Cuando el ciclo avance, actualiza:
 

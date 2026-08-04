@@ -128,13 +128,36 @@ TODO
 
 TODO — detenerse cuando la métrica pueda registrarse de forma fiable.
 
-## 10. Plan de ejecución
+## 10. Control `READY_TO_RUN`
+
+Esta sección no crea un documento adicional. Solo se completa al pasar de `MVP_DESIGN` a `READY_TO_RUN`; la transición requiere tanto esta salida verificable como la puerta sustantiva de `../STATE_MACHINE.md`.
+
+- **Estado:** Pendiente / Bloqueado / Listo / Congelado
+- **Versión del protocolo:** Pendiente
+- **Responsable de aprobación:** TODO
+- **Fecha de congelación:** Pendiente
+- **Fecha prevista de inicio:** Pendiente
+
+### Comprobaciones
+
+- [ ] Decisión, pregunta, hipótesis, evidencia, métrica y umbrales completos.
+- [ ] Segmento, muestra, duración y condiciones de parada definidos.
+- [ ] MVP o mecanismo manual preparado y capaz de registrar la medición.
+- [ ] Fuente y tratamiento de datos verificables.
+- [ ] Riesgos éticos, operativos y técnicos revisados.
+- [ ] Criterios y protocolo listos para congelar sin cambios silenciosos.
+
+### Bloqueos o desviaciones previas al inicio
+
+Pendiente.
+
+## 11. Plan de ejecución
 
 1. TODO
 2. TODO
 3. TODO
 
-## 11. Resultados observados
+## 12. Resultados observados
 
 **Estado:** Pendiente de ejecución
 
@@ -166,7 +189,7 @@ Pendiente.
 
 Pendiente.
 
-## 12. Análisis del aprendizaje
+## 13. Análisis del aprendizaje
 
 **Estado:** Pendiente
 
@@ -206,27 +229,28 @@ Pendiente.
 
 Pendiente.
 
-## 13. Calidad del experimento
+## 14. Calidad del experimento
 
 Antes de una decisión estratégica, indicar si hay que repetir, reparar, ampliar la muestra, modificar la medición o declarar inconcluso.
 
-## 14. Decisión estratégica
+## 15. Decisión estratégica
 
 **Decisión estratégica:** Pendiente — elegir PERSEVERAR, PIVOTAR o PARAR.
 
 Un pivot requiere documentar señal suficiente, elemento que cambia, visión que se conserva, nueva hipótesis, siguiente experimento y criterio para volver a pivotar o parar.
 
-## 15. Próxima incertidumbre
+## 16. Próxima incertidumbre
 
 TODO
 
-## 16. Próxima acción
+## 17. Próxima acción
 
 TODO — una única acción concreta, limitada y necesaria.
 
-## 17. Documentos que deben actualizarse
+## 18. Documentos que deben actualizarse
 
 - `../STATE.md`
 - `../STATE_MACHINE.md` si cambia la transición o se aclara una puerta
+- `../STRATEGY.md` si cambian las apuestas vigentes
 - `../HYPOTHESES.md`
 - Este ciclo
