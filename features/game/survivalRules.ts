@@ -1,4 +1,4 @@
-import type { AnswerResult } from "@/types/game";
+import type { AnswerResult, QuestionType } from "@/types/game";
 
 type SurvivalMistakeResult = Pick<AnswerResult, "status" | "details">;
 
@@ -13,6 +13,13 @@ export function isSurvivalMistake(result: SurvivalMistakeResult) {
 
 export function getSurvivalLivesAfterResult(livesRemaining: number, result: SurvivalMistakeResult) {
   return isSurvivalMistake(result) ? Math.max(0, livesRemaining - 1) : livesRemaining;
+}
+
+export function shouldEliminateAfterIncorrectAttempt(
+  questionType: QuestionType | undefined,
+  livesRemaining: number,
+) {
+  return questionType === "matching" && livesRemaining === 1;
 }
 
 export function getSurvivalReachedQuestionCount(resultsCount: number) {

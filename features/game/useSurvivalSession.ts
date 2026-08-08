@@ -11,6 +11,7 @@ import {
   getSurvivalLivesAfterResult,
   getSurvivalReachedQuestionCount,
   isSurvivalMistake,
+  shouldEliminateAfterIncorrectAttempt,
 } from "@/features/game/survivalRules";
 import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
 
@@ -242,7 +243,10 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
       dispatch({ type: "preview-life-penalty" });
     }
     incorrectAttemptsRef.current += 1;
-  }, [question]);
+    if (shouldEliminateAfterIncorrectAttempt(question?.type, state.livesRemaining)) {
+      submitAnswer(draftAnswerRef.current ?? {}, false);
+    }
+  }, [question, state.livesRemaining, submitAnswer]);
 
   const handleProgressiveClueReveal = useCallback((revealedClues: number) => {
     progressiveCluesRevealedRef.current = revealedClues;

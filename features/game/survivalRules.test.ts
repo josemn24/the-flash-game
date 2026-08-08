@@ -3,6 +3,7 @@ import {
   getSurvivalLivesAfterResult,
   getSurvivalReachedQuestionCount,
   isSurvivalMistake,
+  shouldEliminateAfterIncorrectAttempt,
 } from "@/features/game/survivalRules";
 import type { AnswerResultDetails, AnswerStatus } from "@/types/game";
 
@@ -64,6 +65,13 @@ describe("survival rules", () => {
 
   it("subtracts one life for partial matching answers with incorrect attempts", () => {
     expect(getSurvivalLivesAfterResult(2, result("partial", matchingDetails(1)))).toBe(1);
+    expect(getSurvivalLivesAfterResult(1, result("partial", matchingDetails(1)))).toBe(0);
+  });
+
+  it("eliminates immediately only for matching mistakes on the last life", () => {
+    expect(shouldEliminateAfterIncorrectAttempt("matching", 1)).toBe(true);
+    expect(shouldEliminateAfterIncorrectAttempt("matching", 2)).toBe(false);
+    expect(shouldEliminateAfterIncorrectAttempt("queens", 1)).toBe(false);
   });
 
   it("subtracts at most one life for a solved Queens board with mistakes", () => {
