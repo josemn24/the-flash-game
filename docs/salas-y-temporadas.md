@@ -60,6 +60,8 @@ Ranking de temporada:
 
 En este ejemplo, cada día publica un desafío diferente. Todos los jugadores reciben el mismo reto o uno equivalente, lo completan cuando pueden y sus puntos se suman al total de la temporada.
 
+La primera misión narrativa prevista para el cuarto desafío de la temporada mock es **Encuentros en el fin del mundo**. Su diseño y alcance están documentados en [`docs/narrativa-competitiva-encuentros-fin-del-mundo.md`](narrativa-competitiva-encuentros-fin-del-mundo.md). Hasta que se implemente el modo, el cuarto desafío continúa siendo un placeholder no jugable.
+
 ## Decisiones de producto
 
 - **Prioridad inicial: asíncrono.** Los jugadores no necesitan coincidir en tiempo real.

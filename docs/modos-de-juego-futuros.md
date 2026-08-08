@@ -83,9 +83,9 @@ Los primeros modos a validar deberían ser:
 5. **Alfabeto**, por combinar conocimiento, memoria de pendientes y gestión del tiempo.
 6. **Apuesta de confianza**, por añadir estrategia y metacognición.
 7. **Predicción**, por funcionar bien como comparación todos contra todos.
-8. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual.
+8. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual. La primera validación concreta será «Encuentros en el fin del mundo», documentada en [`docs/narrativa-competitiva-encuentros-fin-del-mundo.md`](narrativa-competitiva-encuentros-fin-del-mundo.md).
 
-Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
+Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. La primera versión prevista del modo es una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
 
 ## Catálogo de modos
 
@@ -208,7 +208,7 @@ Las preguntas forman parte de una misión, historia o escenario. El contexto da 
 - **Ritmo:** asíncrono / episódico.
 - **Cómo funciona:** cada ronda representa una escena, punto de control o decisión dentro de una historia; los aciertos desbloquean avances, pistas o desenlaces.
 - **Encaje con The Flash:** puede funcionar como historia compartida competitiva: todos recorren la misma misión, pero puntúan individualmente por acierto, progreso y velocidad.
-- **V1 validable:** sala asíncrona todos contra todos con una misión breve, cinco o seis puntos de control y ranking por pruebas resueltas, puntos y tiempo.
+- **V1 validable:** sala asíncrona todos contra todos con una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre; el ranking combina pruebas resueltas, puntos y tiempo.
 - **Riesgos:** requiere contenido editorial más cuidado; demasiado texto puede chocar con el ritmo rápido.
 
 ### Detective
