@@ -3,8 +3,9 @@
 ## Estado y alcance
 
 Este documento es la **fuente de verdad editorial** de la primera versión del modo
-**Narrativa competitiva**. El desafío ocupará el cuarto puesto de la temporada mock
-(`tabarnia-challenge-04`), pero todavía no está implementado ni es jugable.
+**Narrativa competitiva**. El desafío ocupa el cuarto puesto de la temporada mock
+(`tabarnia-challenge-04`). El prólogo y el movimiento I están disponibles como prototipo
+jugable; los movimientos II y III siguen pendientes de implementación.
 
 La referencia creativa es la Antártida de _Encounters at the End of the World_, de Werner
 Herzog. La película inspira el tono, el entorno y la atención a quienes habitan McMurdo, pero
@@ -28,7 +29,8 @@ acompañar al equipo como observador y mantener un cuaderno de campo. Cada prueb
 una acción dentro de ese mundo: orientarse, completar el abrigo, localizar material, calcular
 suministros, asignar instrumentos, observar una criatura o interpretar registros.
 
-La partida dura aproximadamente **cuatro o cinco minutos**. Todos los jugadores reciben las
+La partida completa durará aproximadamente **seis o siete minutos**, de los cuales unos tres
+corresponden al relato no competitivo. Todos los jugadores reciben las
 mismas escenas, pruebas y datos. Un fallo reduce la puntuación, pero nunca bloquea el avance ni
 vuelve irresoluble la prueba final.
 
@@ -45,29 +47,158 @@ La definición tendrá tres movimientos y ocho preguntas:
 El cierre del pingüino forma parte del tercer movimiento, pero tiene una escena propia antes de
 la pregunta 8. El epílogo aparece después de registrar la última respuesta.
 
+## Guía de voz narrativa
+
+- El relato está escrito en **segunda persona y presente**. El jugador observa y actúa, pero no
+  recibe una biografía ni una personalidad cerrada.
+- La voz es sobria y concreta. Cada escena combina una sensación física, una acción del equipo,
+  una incertidumbre y un enlace causal con la prueba siguiente.
+- Los diálogos se integran con raya en el flujo del cuento. No funcionan como titulares ni
+  repiten literalmente el enunciado de la prueba.
+- Nora coordina sin juzgar al jugador. Alba observa organismos, Álex trabaja con sonido y
+  logística, y Mara separa los datos de las hipótesis.
+- Un error cambia una reacción breve, nunca la ruta, los hechos registrados ni el desenlace.
+- La señal permanece sin explicación. La ficción puede sugerir posibilidades, pero no confirma
+  que proceda del Erebus, de una avería o de un animal.
+
 ## Guion de escenas
 
-Las escenas avanzan manualmente con una acción «Continuar». No tienen cuenta atrás y el reloj de
-la siguiente prueba no comienza hasta que su interfaz está preparada. Los tiempos siguientes son
-un presupuesto editorial de lectura, no una animación que impida avanzar.
+Las escenas avanzan manualmente con «Continuar». No tienen cuenta atrás y el reloj de la prueba
+siguiente solo comienza cuando su interfaz está preparada. Los párrafos y diálogos siguientes son
+texto definitivo; los tiempos son un presupuesto de lectura, no una animación obligatoria.
 
-| ID                | Ubicación                | Tiempo | Texto definitivo                                                                                                                                                                                                                                                                                                                               |
-| ----------------- | ------------------------ | -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scene-prologue`  | Antes del movimiento I   |   14 s | El avión se detiene entre viento y nieve. Al bajar, la coordinadora, Nora Valdés, te entrega un cuaderno impermeable. «No tienes que entender todavía lo que estás viendo. Solo tienes que aprender a observarlo». Un instrumento bajo el hielo repite una señal cada cuarenta segundos. Esta tarde acompañarás al equipo que irá a revisarlo. |
-| `scene-arrival`   | Antes de la pregunta 1   |    8 s | El horizonte desaparece. Nora señala una brújula de campo y una tarjeta plastificada. «La estación sigue ahí aunque hayas dejado de verla. Corrige la lectura y elige la ruta».                                                                                                                                                                |
-| `scene-after-q1`  | Antes de la pregunta 2   |    5 s | La ruta queda anotada. Nora revisa tu equipo: llevas la capa base y el cortavientos, pero entre ambas queda un hueco peligroso.                                                                                                                                                                                                                |
-| `scene-station`   | Antes de la pregunta 3   |   10 s | McMurdo aparece como una pequeña ciudad industrial junto al hielo. En el almacén, Álex enciende la luz: «Necesitamos tres cajas. Mira bien; después cortaré la corriente».                                                                                                                                                                     |
-| `scene-after-q3`  | Antes de la pregunta 4   |    5 s | Las cajas llegan al vehículo. La bióloga cuenta cuatro radios y te pasa la hoja de autonomía. «Añade una reserva completa para cada persona».                                                                                                                                                                                                  |
-| `scene-after-q4`  | Antes de la pregunta 5   |    5 s | Mientras completas el inventario, llegan tres fichas sin ordenar. Cada miembro del equipo necesita el instrumento que corresponde a su tarea.                                                                                                                                                                                                  |
-| `scene-departure` | Después de la pregunta 5 |    5 s | Álex guarda el hidrófono H-2 y marca C4 en el mapa. En la pantalla, la señal vuelve a aparecer. Cuarenta segundos. Otra vez.                                                                                                                                                                                                                   |
-| `scene-field`     | Antes de la pregunta 6   |   10 s | El vehículo abandona la estación. En el punto de observación abren un acceso en el hielo y descienden una cámara. «No adivines todavía qué significa», dice Alba. «Empieza por reconocer qué estás viendo».                                                                                                                                    |
-| `scene-after-q6`  | Antes de la pregunta 7   |    5 s | Mara alinea los dos registros acústicos con el sismómetro. «Mismo minuto, tres instrumentos. Dime solo qué permiten afirmar los datos».                                                                                                                                                                                                        |
-| `scene-return`    | Después de la pregunta 7 |    5 s | La señal sigue sin nombre. El equipo recoge los instrumentos y emprende el regreso. Nadie intenta llenar el silencio con una explicación.                                                                                                                                                                                                      |
-| `scene-penguin`   | Antes de la pregunta 8   |    8 s | Cerca de una colonia, casi todos los pingüinos avanzan hacia el mar. Uno se separa. Nora observa la brújula, escribe 270° y te devuelve el cuaderno. «Anota su dirección».                                                                                                                                                                     |
-| `scene-epilogue`  | Después de la pregunta 8 |    6 s | La ruta queda registrada. El pingüino continúa hacia el interior. Nadie formula una hipótesis y nadie interviene. La imagen se aleja hasta dejar solo una figura entre el hielo y las montañas. Pantalla negra: «But why?»                                                                                                                     |
+### Prólogo y movimiento I · Llegada
 
-**Tiempo editorial total:** 86 segundos. Las transiciones visuales pueden durar alrededor de
-650 ms, pero tampoco forman parte del tiempo puntuable.
+#### `scene-prologue` · Prólogo · «El cuaderno»
+
+Tras la ventanilla, la nieve convierte el mundo en una página en blanco. Al bajar, el frío encuentra
+el hueco entre guante y manga.
+
+Nora Valdés te entrega un cuaderno impermeable. En la primera página: **40 segundos**.
+
+—Un instrumento bajo el hielo repite una señal con ese intervalo. Esta tarde iremos a revisarlo.
+Por ahora, observa.
+
+#### `scene-arrival` · Movimiento I · Llegada
+
+El viento borra el avión y después el primer poste. La estación debería estar delante, pero cada
+dirección parece la misma.
+
+Nora te entrega una brújula y una tarjeta. La aguja marca **090°**; una corrección convierte esa
+lectura en rumbo de mapa.
+
+—La estación no se ha movido. Corrige la lectura y elige por dónde seguimos.
+
+#### `scene-after-q1` · Movimiento I · Llegada
+
+Las luces aparecen detrás de la nieve. Al detenerte, el sudor empieza a enfriarse bajo el
+cortavientos.
+
+Nora abre tu chaqueta: llevas base seca y barrera exterior, pero nada que retenga aire caliente
+entre ambas.
+
+—Al frío le basta con una capa sin completar.
+
+### Movimiento II · La estación
+
+#### `scene-station` · Antes de la pregunta 3
+
+McMurdo surge como una ciudad de almacenes, tuberías y motores. Dentro del depósito, Álex ilumina
+cuatro huecos, tres cajas y demasiadas etiquetas.
+
+—El generador está fallando. Mira ahora; cuando se apague, tendrás que recordar cada posición.
+
+#### `scene-after-q3` · Antes de la pregunta 4
+
+Alba cuenta cuatro radios y te pasa la autonomía: seis horas fuera, tres por batería, más una
+reserva por persona.
+
+—Aquí una batería de menos es alguien que deja de poder llamar.
+
+#### `scene-after-q4` · Antes de la pregunta 5
+
+Tres fichas se deslizan por la mesa: nombres separados de instrumentos. Desde el banco de pruebas
+llega un pulso; luego, silencio.
+
+—Antes de salir, cada pregunta necesita la herramienta adecuada —dice Nora.
+
+#### `scene-departure` · Después de la pregunta 5
+
+Alba guarda la cámara, Mara el sismómetro y Álex el hidrófono H-2. Antes de cerrar, marca **C4** en
+el mapa.
+
+Un pulso aparece en pantalla. Cuarenta segundos después llega otro. Todos miran el reloj antes de
+partir.
+
+### Movimiento III · Más allá del hielo
+
+#### `scene-field` · Antes de la pregunta 6
+
+La estación desaparece en el retrovisor. En C4, el equipo abre un acceso y la cámara desciende bajo
+el hielo. Primero ves burbujas; después, una sombra que gira lentamente.
+
+—No decidas qué significa. Empieza por nombrar lo que ves.
+
+#### `scene-after-q6` · Antes de la pregunta 7
+
+Álex conecta dos hidrófonos; Mara añade el sismómetro. En el mismo minuto, dos líneas recogen
+pulsos a cero y cuarenta segundos; la tercera no.
+
+—Dime hasta dónde llegan los datos.
+
+#### `scene-return` · Después de la pregunta 7
+
+La señal sigue sin nombre cuando desmontáis el equipo. El acceso vuelve a cubrirse hasta parecer
+intacto y el vehículo emprende el regreso. Fuera, la luz ya no parece de mañana ni de tarde. Dentro,
+nadie llena el silencio con una explicación que los registros no sostienen.
+
+#### `scene-penguin` · Antes de la pregunta 8
+
+Casi todos los pingüinos avanzan hacia el mar. Uno se separa, hacia una extensión sin agua ni
+refugio.
+
+Nora escribe **270°** y te devuelve el cuaderno abierto por las notas marcadas.
+
+—No sabemos por qué. Anota solo hacia dónde va.
+
+#### `scene-epilogue` · Después de la pregunta 8
+
+La trayectoria queda registrada. El pingüino continúa hacia el interior hasta convertirse en una
+mancha sobre el hielo.
+
+Nadie formula una hipótesis ni abandona el vehículo. La imagen se aleja: solo quedan la figura, la
+llanura y las montañas.
+
+Pantalla negra: **But why?**
+
+### Presupuesto editorial
+
+| Tramo                    | Palabras visibles aproximadas | Lectura objetivo |
+| ------------------------ | ----------------------------: | ---------------: |
+| Prólogo y movimiento I   |                           180 |             60 s |
+| Movimiento II            |                           160 |             50 s |
+| Movimiento III y epílogo |                           220 |             70 s |
+| **Total de una partida** |                       **560** |        **180 s** |
+
+La estimación incluye una reacción por pregunta. Las transiciones visuales duran alrededor de
+650 ms y no forman parte del tiempo puntuable.
+
+## Reacciones a las pruebas
+
+Las tres variantes de cada prueba desembocan en la misma escena y desbloquean las mismas entradas.
+La reacción elegida se presenta como el primer bloque de la escena siguiente; tras la última
+pregunta aparece antes del epílogo o del resultado provisional.
+
+| Prueba | Acierto                                                         | Fallo                                                                    | Tiempo agotado                                                  |
+| ------ | --------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| 1      | Nora te devuelve la brújula. —Bien. Podemos orientarnos.        | Nora enfrenta tarjeta y aguja. —El mapa necesita 060°. Lo anotamos.      | El viento borra las huellas. Nora fija el rumbo: 060°.          |
+| 2      | Nora cierra la chaqueta. —Así conservas el aire caliente.       | Nora añade un forro polar. —Necesitamos aislamiento entre base y viento. | Tus dedos se entumecen. Nora te ayuda a añadir aislamiento.     |
+| 3      | Álex apaga la linterna. —Exacto. Podemos cargar.                | Álex ilumina cada posición correcta. —Comparamos, anotamos y cargamos.   | La luz de emergencia se enciende. Álex localiza las tres cajas. |
+| 4      | Alba cuenta doce baterías. —Autonomía y reservas cubiertas.     | Alba separa doce baterías y repasa el cálculo contigo.                   | El vehículo arranca. Alba completa la carga con doce baterías.  |
+| 5      | Cada especialista recoge su instrumento. El equipo está listo.  | Nora corrige las fichas y cada especialista recoge su herramienta.       | Llega otro pulso. Nora reparte los instrumentos para partir.    |
+| 6      | Alba sigue la silueta. —Foca de Weddell; nada más todavía.      | La imagen se enfoca: es una foca de Weddell.                             | La cámara corrige el enfoque: una foca de Weddell.              |
+| 7      | Mara asiente. —Dos puntos de escucha; ningún origen demostrado. | Mara subraya los pulsos. El origen continúa abierto.                     | Llega otro pulso. Mara guarda los registros sin interpretarlo.  |
+| 8      | Nora comprueba C4 y 240°. La trayectoria queda registrada.      | Nora resta la calibración. —C4, rumbo 240°. Eso registramos.             | Nora aplica la corrección y anota C4, rumbo 240°.               |
 
 ## Tabla maestra de pruebas
 

@@ -9,6 +9,32 @@
   box-shadow: 0 0 24px rgba(215, 255, 24, 0.22);
   transform: skewX(-7deg);
 }
+
+.notebookButton {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.38rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.25);
+  padding: 0.55rem 0.72rem;
+  color: rgb(255 255 255 / 0.72);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.notebookButton:hover,
+.notebookButton:focus-visible {
+  border-color: rgb(125 232 255 / 0.55);
+  background: rgb(125 232 255 / 0.1);
+  color: white;
+}
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.65rem;
@@ -23,6 +49,19 @@
   font-weight: 950;
   letter-spacing: -0.05em;
   line-height: 1.05;
+}
+.questionContext {
+  max-width: 44rem;
+  margin-bottom: 0.55rem;
+  color: rgb(255 255 255 / 0.66);
+  font-size: clamp(0.8rem, 2.8vw, 0.98rem);
+  font-weight: 650;
+  line-height: 1.55;
+}
+.questionTitleFocused {
+  max-width: 38rem;
+  font-size: clamp(1.55rem, 5.5vw, 2.65rem);
+  line-height: 1.04;
 }
 .lifeHearts {
   display: inline-flex;
@@ -138,5 +177,10 @@
   .questionTitleCompact {
     font-size: clamp(1.55rem, 5.8vw, 2.05rem);
     line-height: 1.1;
+  }
+
+  .questionTitleFocused {
+    font-size: clamp(1.55rem, 5.5vw, 2rem);
+    line-height: 1.08;
   }
 }

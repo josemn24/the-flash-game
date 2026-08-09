@@ -1,6 +1,8 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { challengeDefinitions } from "@/data/challengeDefinitions";
-import { challenges, getChallengeById } from "@/data/challenges";
+import { challenges, getChallengeById, getNarrativeQuestionIds } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
 import {
   getQuestionsByIds,
@@ -332,10 +334,11 @@ describe("question format catalog", () => {
       86_399_999, 172_799_999, 259_199_999, 86_399_999, 86_399_999, 86_399_999, 86_399_999,
       86_399_999, 86_399_999,
     ]);
-    expect(challenges).toHaveLength(3);
+    expect(challenges).toHaveLength(4);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
     const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
     const survivalChallenge = challenges.find((challenge) => challenge.mode === "survival");
+    const narrativeChallenge = challenges.find((challenge) => challenge.mode === "narrative");
     expect(flashChallenge?.questions).toHaveLength(16);
     expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
       true,
@@ -344,15 +347,61 @@ describe("question format catalog", () => {
     expect(alphabetChallenge?.timeLimit).toBe(135);
     expect(survivalChallenge?.questions).toHaveLength(20);
     expect(survivalChallenge?.lives).toBe(3);
+    expect(narrativeChallenge?.implementationStatus).toBe("prototype");
+    expect(narrativeChallenge?.maxScore).toBe(24);
+    expect(
+      narrativeChallenge?.beats.flatMap((beat) =>
+        beat.steps.filter((step) => step.type === "question"),
+      ),
+    ).toHaveLength(2);
+    expect(narrativeChallenge?.notebookEntries).toHaveLength(2);
+    if (narrativeChallenge?.mode !== "narrative") {
+      throw new Error("Expected narrative challenge");
+    }
+    const narrativeQuestions = narrativeChallenge.beats.flatMap((beat) =>
+      beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
+    );
+    expect(narrativeQuestions.map((question) => question.points)).toEqual([12, 12]);
+    expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([20, 18]);
+    expect(narrativeQuestions[0]).toMatchObject({
+      correctAnswer: "060°",
+      media: { src: "/visuals/antarctica/orientation-card.png" },
+    });
+    expect(narrativeQuestions[1]).toMatchObject({
+      correctAnswer: "Una capa aislante de forro polar",
+      media: { src: "/visuals/antarctica/cold-layers.svg" },
+    });
+    expect(
+      evaluateAnswer({ question: narrativeQuestions[0], answer: "060°", timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 12 });
+    expect(
+      evaluateAnswer({ question: narrativeQuestions[0], answer: "60°", timeUsed: 0 }).status,
+    ).toBe("incorrect");
+    expect(
+      evaluateAnswer({
+        question: narrativeQuestions[1],
+        answer: "Una capa aislante de forro polar",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 12 });
+    for (const question of narrativeQuestions) {
+      if (!("media" in question) || !question.media || !("src" in question.media)) {
+        throw new Error(`Expected media for narrative question ${question.id}`);
+      }
+      expect(question.media.alt.trim().length).toBeGreaterThan(30);
+      expect(existsSync(join(process.cwd(), "public", question.media.src))).toBe(true);
+    }
     expect(challenges.map((challenge) => challenge.id)).toEqual([
       "tabarnia-flash-01",
       "tabarnia-challenge-02",
       "tabarnia-challenge-03",
+      "tabarnia-challenge-04",
     ]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
       "animals-alphabet-definition",
       "spain-survival-definition",
+      "antarctica-narrative-definition",
     ]);
     expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
     expect(getChallengeById("tabarnia-challenge-02")?.definitionId).toBe(
@@ -360,6 +409,9 @@ describe("question format catalog", () => {
     );
     expect(getChallengeById("tabarnia-challenge-03")?.definitionId).toBe(
       "spain-survival-definition",
+    );
+    expect(getChallengeById("tabarnia-challenge-04")?.definitionId).toBe(
+      "antarctica-narrative-definition",
     );
     expect(flashChallenge?.questions.some((question) => question.type === "odd-one-out")).toBe(
       true,
@@ -387,7 +439,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(83);
+    expect(questionIds).toHaveLength(85);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -402,7 +454,7 @@ describe("question format catalog", () => {
 
   it("keeps challenge definitions connected to valid questions", () => {
     const definitions = Object.values(challengeDefinitions);
-    expect(definitions).toHaveLength(4);
+    expect(definitions).toHaveLength(5);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
     expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
     expect(
@@ -420,13 +472,22 @@ describe("question format catalog", () => {
     expect(Object.values(survivalDefinition.questionPoints ?? {}).reduce((a, b) => a + b, 0)).toBe(
       100,
     );
+    const narrativeDefinition = challengeDefinitions["antarctica-narrative-definition"];
+    expect(getNarrativeQuestionIds(narrativeDefinition)).toEqual([
+      "antarctica-orientation-calibration",
+      "antarctica-cold-layer",
+    ]);
+    expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(24);
     expect(
-      definitions.every((definition) =>
-        (definition.mode === "alphabet"
-          ? definition.entries.map((entry) => entry.questionId)
-          : definition.questionIds
-        ).every((questionId) => questionId in questionsById),
-      ),
+      definitions.every((definition) => {
+        const questionIds =
+          definition.mode === "alphabet"
+            ? definition.entries.map((entry) => entry.questionId)
+            : definition.mode === "narrative"
+              ? getNarrativeQuestionIds(definition)
+              : definition.questionIds;
+        return questionIds.every((questionId) => questionId in questionsById);
+      }),
     ).toBe(true);
   });
 });

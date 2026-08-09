@@ -1,6 +1,7 @@
 import { SpeedBackground } from "@/components/SpeedBackground";
 import { StartScreen } from "@/components/StartScreen";
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
+import { getNarrativeQuestionIds } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import type { ChallengeSummary } from "@/types/game";
@@ -56,11 +57,15 @@ export default function Home() {
         questionCount:
           definition.mode === "alphabet"
             ? definition.entries.length
-            : definition.questionIds.length,
+            : definition.mode === "narrative"
+              ? getNarrativeQuestionIds(definition).length
+              : definition.questionIds.length,
         availableFrom: scheduledChallenge.availableFrom,
         availableUntil: scheduledChallenge.availableUntil,
         availabilityStatus,
         playable: Boolean(definition && availabilityStatus === "available"),
+        implementationStatus:
+          definition.mode === "narrative" ? definition.implementationStatus : undefined,
       };
     },
   );

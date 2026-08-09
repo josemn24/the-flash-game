@@ -159,6 +159,170 @@ export const challengeDefinitions = {
       "spain-survival-oak-tree": 6,
     },
   },
+  "antarctica-narrative-definition": {
+    id: "antarctica-narrative-definition",
+    title: "Encuentros en el fin del mundo",
+    subtitle: "Una señal bajo el hielo",
+    description:
+      "Acompaña a un equipo de campo en la Antártida, registra lo que observas y ayuda a interpretar una señal que se repite cada cuarenta segundos.",
+    mode: "narrative",
+    implementationStatus: "prototype",
+    maxScore: 24,
+    prologue: {
+      id: "scene-prologue",
+      eyebrow: "Prólogo",
+      title: "El cuaderno",
+      blocks: [
+        {
+          type: "narration",
+          text: "Tras la ventanilla, la nieve convierte el mundo en una página en blanco. Al bajar, el frío encuentra el hueco entre guante y manga.",
+        },
+        {
+          type: "narration",
+          text: "Nora Valdés te entrega un cuaderno impermeable. En la primera página: 40 segundos.",
+        },
+        {
+          type: "dialogue",
+          speaker: "Nora",
+          text: "Un instrumento bajo el hielo repite una señal con ese intervalo. Esta tarde iremos a revisarlo. Por ahora, observa.",
+        },
+      ],
+    },
+    beats: [
+      {
+        id: "arrival",
+        title: "Llegada",
+        steps: [
+          {
+            type: "scene",
+            scene: {
+              id: "scene-arrival",
+              eyebrow: "Movimiento I · Llegada",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "El viento borra el avión y después el primer poste. La estación debería estar delante, pero cada dirección parece la misma.",
+                },
+                {
+                  type: "narration",
+                  text: "Nora te entrega una brújula y una tarjeta. La aguja marca 090°; una corrección convierte esa lectura en rumbo de mapa.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "La estación no se ha movido. Corrige la lectura y elige por dónde seguimos.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-orientation-calibration",
+            unlockEntryIds: ["note-calibration"],
+            reactions: {
+              correct: [
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "Bien. Podemos orientarnos.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Nora enfrenta tarjeta y aguja.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "El mapa necesita 060°. Lo anotamos.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "El viento borra las huellas. Nora fija el rumbo: 060°.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-after-q1",
+              eyebrow: "Movimiento I · Llegada",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Las luces aparecen detrás de la nieve. Al detenerte, el sudor empieza a enfriarse bajo el cortavientos.",
+                },
+                {
+                  type: "narration",
+                  text: "Nora abre tu chaqueta: llevas base seca y barrera exterior, pero nada que retenga aire caliente entre ambas.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "Al frío le basta con una capa sin completar.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-cold-layer",
+            unlockEntryIds: ["note-weather"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Nora cierra la chaqueta.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "Así conservas el aire caliente.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Nora añade un forro polar.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "Necesitamos aislamiento entre base y viento.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "Tus dedos se entumecen. Nora te ayuda a añadir aislamiento.",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    notebookEntries: [
+      {
+        id: "note-calibration",
+        text: "Calibración: rumbo de mapa = lectura de brújula − 30°.",
+        relevance: "potential",
+      },
+      {
+        id: "note-weather",
+        text: "Condiciones al aterrizar: −18 °C. Capas: base + aislamiento + cortavientos.",
+        relevance: "context",
+      },
+    ],
+    questionPoints: {
+      "antarctica-orientation-calibration": 12,
+      "antarctica-cold-layer": 12,
+    },
+  },
 } satisfies Record<string, ChallengeDefinition>;
 
 export type KnownChallengeDefinitionId = keyof typeof challengeDefinitions;

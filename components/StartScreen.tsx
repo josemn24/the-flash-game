@@ -29,6 +29,12 @@ function formatChallengeDate(value: string) {
 
 function getChallengeStatusLabel(challenge: ChallengeSummary) {
   if (!challenge.playable && challenge.availabilityStatus === "available") return "Próximamente";
+  if (
+    challenge.availabilityStatus === "available" &&
+    challenge.implementationStatus === "prototype"
+  ) {
+    return "Vista previa";
+  }
   if (challenge.availabilityStatus === "available") return "Disponible";
   if (challenge.availabilityStatus === "expired") return "Cerrado";
   return "Próximamente";
@@ -48,6 +54,7 @@ function getChallengeCountLabel(challenge: ChallengeSummary) {
   if (challenge.questionCount <= 0) return "Sin abrir";
   if (challenge.mode === "alphabet") return `${challenge.questionCount} letras · Alfabeto`;
   if (challenge.mode === "survival") return `${challenge.questionCount} retos · Supervivencia`;
+  if (challenge.mode === "narrative") return `${challenge.questionCount} pruebas · Narrativa`;
   return `${challenge.questionCount} retos · Flash`;
 }
 
@@ -55,6 +62,7 @@ function getChallengeActionLabel(challenge: ChallengeSummary) {
   if (!challenge.playable) return "Bloqueado";
   if (challenge.mode === "alphabet") return "Jugar Alfabeto";
   if (challenge.mode === "survival") return "Jugar Supervivencia";
+  if (challenge.mode === "narrative") return "Probar movimiento I";
   return "Jugar Flash";
 }
 

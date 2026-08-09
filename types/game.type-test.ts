@@ -1,4 +1,4 @@
-import type { Question } from "@/types/game";
+import type { ChallengeDefinition, Question } from "@/types/game";
 
 type Assert<T extends true> = T;
 type IsAssignable<Source, Target> = Source extends Target ? true : false;
@@ -351,6 +351,52 @@ type MemoryPairsTileWithoutPair = Omit<ValidMemoryPairs, "tiles"> & {
   tiles: [{ id: "sun-a"; label: "Sun" }];
 };
 
+type ValidNarrativeChallengeDefinition = {
+  id: "narrative-test";
+  title: "Narrative";
+  subtitle: "Prototype";
+  description: "A narrative challenge";
+  mode: "narrative";
+  implementationStatus: "prototype";
+  maxScore: 24;
+  prologue: {
+    id: "prologue";
+    eyebrow: "Prólogo";
+    title: "Start";
+    blocks: [{ type: "narration"; text: "Opening scene" }];
+  };
+  beats: [
+    {
+      id: "movement-one";
+      title: "Movement I";
+      steps: [
+        {
+          type: "scene";
+          scene: {
+            id: "arrival";
+            eyebrow: "I";
+            blocks: [{ type: "dialogue"; speaker: "Guide"; text: "Scene" }];
+          };
+        },
+        {
+          type: "question";
+          questionId: "antarctica-orientation-calibration";
+          unlockEntryIds: ["note-calibration"];
+          reactions: {
+            correct: [{ type: "narration"; text: "Correct" }];
+            incorrect: [{ type: "narration"; text: "Incorrect" }];
+            timeout: [{ type: "narration"; text: "Timeout" }];
+          };
+        },
+      ];
+    },
+  ];
+  notebookEntries: [{ id: "note-calibration"; text: "Calibration"; relevance: "potential" }];
+  questionPoints: { "antarctica-orientation-calibration": 24 };
+};
+
+type NarrativeChallengeWithoutNotebook = Omit<ValidNarrativeChallengeDefinition, "notebookEntries">;
+
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type AcceptsValidMultipleChoiceWithPromptVisual = Assert<
   IsAssignable<ValidMultipleChoiceWithPromptVisual, Question>
@@ -467,4 +513,10 @@ export type RejectsSingleImageLabelingWithoutOptions = Assert<
 >;
 export type RejectsSingleImageLabelingWithoutAnswer = Assert<
   IsNotAssignable<SingleImageLabelingWithoutAnswer, Question>
+>;
+export type AcceptsValidNarrativeChallengeDefinition = Assert<
+  IsAssignable<ValidNarrativeChallengeDefinition, ChallengeDefinition>
+>;
+export type RejectsNarrativeChallengeWithoutNotebook = Assert<
+  IsNotAssignable<NarrativeChallengeWithoutNotebook, ChallengeDefinition>
 >;

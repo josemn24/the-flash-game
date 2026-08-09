@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
-import { BoltIcon, HeartIcon } from "@/components/icons";
+import { BoltIcon, HeartIcon, NotebookIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { Timer } from "@/components/Timer";
@@ -28,7 +28,24 @@ type QuestionScreenProps = {
   onTimedResponseStart: () => void;
   livesRemaining?: number;
   totalLives?: number;
+  notebook?: {
+    entryCount: number;
+    onOpen: () => void;
+  };
+  presentation?: {
+    splitPrompt?: boolean;
+    prominentMedia?: boolean;
+  };
 };
+
+function splitQuestionPrompt(prompt: string) {
+  const questionStart = prompt.lastIndexOf("¿");
+  if (questionStart <= 0) return { title: prompt };
+  return {
+    context: prompt.slice(0, questionStart).trim(),
+    title: prompt.slice(questionStart).trim(),
+  };
+}
 
 export function QuestionScreen({
   question,
@@ -46,6 +63,8 @@ export function QuestionScreen({
   onTimedResponseStart,
   livesRemaining,
   totalLives,
+  notebook,
+  presentation,
 }: QuestionScreenProps) {
   const hasDelayedTimedResponse =
     question.type === "flash-memory" ||
@@ -58,6 +77,9 @@ export function QuestionScreen({
     onTimedResponseStart();
   };
   const displayChallengeTitle = challengeTitle.split(":")[0].trim();
+  const prompt = presentation?.splitPrompt
+    ? splitQuestionPrompt(question.question)
+    : { title: question.question };
 
   return (
     <motion.section
@@ -80,15 +102,28 @@ export function QuestionScreen({
           </div>
         }
         right={
-          !hasDelayedTimedResponse || timedResponseStarted ? (
-            <Timer
-              duration={question.timeLimit}
-              active={!locked && timedResponseStarted}
-              onTimeUp={onTimeUp}
-              resetKey={question.id}
-              size="compact"
-            />
-          ) : null
+          <div className="flex items-center gap-2">
+            {notebook && (
+              <button
+                type="button"
+                className={styles.notebookButton}
+                onClick={notebook.onOpen}
+                aria-label={`Abrir cuaderno de campo, ${notebook.entryCount} ${notebook.entryCount === 1 ? "entrada" : "entradas"}`}
+              >
+                <NotebookIcon className="h-4 w-4" />
+                <span>{notebook.entryCount}</span>
+              </button>
+            )}
+            {!hasDelayedTimedResponse || timedResponseStarted ? (
+              <Timer
+                duration={question.timeLimit}
+                active={!locked && timedResponseStarted}
+                onTimeUp={onTimeUp}
+                resetKey={question.id}
+                size="compact"
+              />
+            ) : null}
+          </div>
         }
       />
 
@@ -111,15 +146,16 @@ export function QuestionScreen({
       </div>
 
       <div className="flex flex-1 flex-col pt-5 sm:pt-8">
+        {prompt.context && <p className={styles.questionContext}>{prompt.context}</p>}
         <h1
-          className={`${styles.questionTitle} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}
+          className={`${styles.questionTitle} ${presentation?.splitPrompt ? styles.questionTitleFocused : ""} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}
         >
-          {question.question}
+          {prompt.title}
         </h1>
 
         {"media" in question && question.media && (
           <div className="mt-5 sm:mt-6">
-            <QuestionMedia media={question.media} />
+            <QuestionMedia media={question.media} prominent={presentation?.prominentMedia} />
           </div>
         )}
 

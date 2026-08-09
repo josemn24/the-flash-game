@@ -1,7 +1,8 @@
 import type { Question } from "@/types/question";
 import type { QuestionId } from "@/data/questions";
 
-export type GameMode = "flash" | "alphabet" | "survival";
+export type GameMode = "flash" | "alphabet" | "survival" | "narrative";
+export type ChallengeImplementationStatus = "prototype" | "complete";
 
 export type ChallengeDefinitionId = string;
 export type ChallengeAvailabilityStatus = "available" | "locked" | "expired";
@@ -38,8 +39,63 @@ export type AlphabetChallengeDefinition = ChallengeDefinitionBase & {
   entries: AlphabetChallengeDefinitionEntry[];
 };
 
+export type NarrativeTextBlock =
+  { type: "narration"; text: string } | { type: "dialogue"; speaker: string; text: string };
+
+export type NarrativeOutcome = "correct" | "incorrect" | "timeout";
+
+export type NarrativeReactionMap = Record<NarrativeOutcome, NarrativeTextBlock[]>;
+
+export type NarrativeScene = {
+  id: string;
+  eyebrow: string;
+  title?: string;
+  blocks: NarrativeTextBlock[];
+};
+
+export type NarrativeNotebookEntry = {
+  id: string;
+  text: string;
+  relevance: "context" | "potential";
+};
+
+export type NarrativeSceneStepDefinition = {
+  type: "scene";
+  scene: NarrativeScene;
+  unlockEntryIds?: string[];
+};
+
+export type NarrativeQuestionStepDefinition = {
+  type: "question";
+  questionId: QuestionId;
+  unlockEntryIds: string[];
+  reactions: NarrativeReactionMap;
+};
+
+export type NarrativeStepDefinition =
+  NarrativeSceneStepDefinition | NarrativeQuestionStepDefinition;
+
+export type NarrativeBeatDefinition = {
+  id: string;
+  title: string;
+  steps: NarrativeStepDefinition[];
+};
+
+export type NarrativeChallengeDefinition = ChallengeDefinitionBase & {
+  mode: "narrative";
+  implementationStatus: ChallengeImplementationStatus;
+  maxScore: number;
+  prologue: NarrativeScene;
+  beats: NarrativeBeatDefinition[];
+  notebookEntries: NarrativeNotebookEntry[];
+  questionPoints: Record<string, number>;
+};
+
 export type ChallengeDefinition =
-  FlashChallengeDefinition | AlphabetChallengeDefinition | SurvivalChallengeDefinition;
+  | FlashChallengeDefinition
+  | AlphabetChallengeDefinition
+  | SurvivalChallengeDefinition
+  | NarrativeChallengeDefinition;
 
 export type PlayableScheduledChallenge = {
   id: string;
@@ -97,7 +153,33 @@ export type AlphabetChallenge = ChallengeBase & {
   entries: AlphabetChallengeEntry[];
 };
 
-export type Challenge = FlashChallenge | AlphabetChallenge | SurvivalChallenge;
+export type NarrativeSceneStep = NarrativeSceneStepDefinition;
+
+export type NarrativeQuestionStep = {
+  type: "question";
+  question: Question;
+  unlockEntryIds: string[];
+  reactions: NarrativeReactionMap;
+};
+
+export type NarrativeStep = NarrativeSceneStep | NarrativeQuestionStep;
+
+export type NarrativeBeat = {
+  id: string;
+  title: string;
+  steps: NarrativeStep[];
+};
+
+export type NarrativeChallenge = ChallengeBase & {
+  mode: "narrative";
+  implementationStatus: ChallengeImplementationStatus;
+  maxScore: number;
+  prologue: NarrativeScene;
+  beats: NarrativeBeat[];
+  notebookEntries: NarrativeNotebookEntry[];
+};
+
+export type Challenge = FlashChallenge | AlphabetChallenge | SurvivalChallenge | NarrativeChallenge;
 
 export type ChallengeSummary = {
   id: string;
@@ -110,4 +192,5 @@ export type ChallengeSummary = {
   availableUntil: string;
   availabilityStatus: ChallengeAvailabilityStatus;
   playable: boolean;
+  implementationStatus?: ChallengeImplementationStatus;
 };

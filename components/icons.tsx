@@ -104,6 +104,15 @@ export function EyeIcon(props: IconProps) {
   );
 }
 
+export function NotebookIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2V3Z" />
+      <path d="M8 3v18M11 8h5M11 12h5M11 16h3M3 7h4M3 12h4M3 17h4" />
+    </svg>
+  );
+}
+
 export function RotateIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

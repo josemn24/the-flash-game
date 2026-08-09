@@ -10,12 +10,15 @@ function getTransitionCopy({
   isLast,
   status,
   eliminated,
+  customCopy,
 }: {
   timedOut: boolean;
   isLast: boolean;
   status?: AnswerStatus;
   eliminated?: boolean;
+  customCopy?: { title: string; body: string; tone?: "success" | "partial" | "danger" };
 }) {
+  if (customCopy) return { ...customCopy, tone: customCopy.tone ?? "success" };
   if (eliminated) {
     return {
       tone: "danger",
@@ -60,13 +63,15 @@ export function QuestionTransition({
   isLast,
   status,
   eliminated,
+  customCopy,
 }: {
   timedOut: boolean;
   isLast: boolean;
   status?: AnswerStatus;
   eliminated?: boolean;
+  customCopy?: { title: string; body: string; tone?: "success" | "partial" | "danger" };
 }) {
-  const copy = getTransitionCopy({ timedOut, isLast, status, eliminated });
+  const copy = getTransitionCopy({ timedOut, isLast, status, eliminated, customCopy });
   const isDanger = copy.tone === "danger";
   const isPartial = copy.tone === "partial";
 

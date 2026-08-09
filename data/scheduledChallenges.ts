@@ -29,10 +29,8 @@ export const demoSeasonScheduledChallenges = [
     id: "tabarnia-challenge-04",
     number: 4,
     seasonId: "tabarnia-season-1",
-    title: "Desafío 04",
-    subtitle: "Próximamente",
-    mode: "flash",
-    availableFrom: "2026-08-11T22:00:00.000Z",
+    challengeDefinitionId: "antarctica-narrative-definition",
+    availableFrom: "2026-08-08T22:00:00.000Z",
     availableUntil: "2026-08-12T21:59:59.999Z",
   },
   {

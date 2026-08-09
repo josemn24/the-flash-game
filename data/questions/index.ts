@@ -1415,7 +1415,8 @@ export const questionsById = {
       cognitiveSkills: ["memory"],
       formatSkills: ["recall"],
     },
-    question: "¿Qué científico español recibió el Premio Nobel por sus investigaciones sobre la estructura del sistema nervioso?",
+    question:
+      "¿Qué científico español recibió el Premio Nobel por sus investigaciones sobre la estructura del sistema nervioso?",
     options: [
       "Severo Ochoa",
       "Santiago Ramón y Cajal",
@@ -1466,8 +1467,7 @@ export const questionsById = {
     unit: "km²",
     timeLimit: 14,
     points: 100,
-    explanation:
-      "España tiene una superficie aproximada de 505.990 km².",
+    explanation: "España tiene una superficie aproximada de 505.990 km².",
   },
   "spain-survival-sagrada-progressive": {
     id: "spain-survival-sagrada-progressive",
@@ -1555,12 +1555,7 @@ export const questionsById = {
     },
     question: "Ordena estas obras por la fecha de su primera publicación.",
     items: ["Nada", "Lazarillo de Tormes", "La Regenta", "Don Quijote de la Mancha"],
-    correctOrder: [
-      "Lazarillo de Tormes",
-      "Don Quijote de la Mancha",
-      "La Regenta",
-      "Nada",
-    ],
+    correctOrder: ["Lazarillo de Tormes", "Don Quijote de la Mancha", "La Regenta", "Nada"],
     directionLabels: { start: "Más antigua", end: "Más reciente" },
     timeLimit: 18,
     points: 100,
@@ -1701,6 +1696,63 @@ export const questionsById = {
     explanation:
       "La encina (Quercus ilex) es el árbol que produce las bellotas con las que se alimenta el cerdo ibérico, especialmente en la dehesa.",
   },
+  "antarctica-orientation-calibration": {
+    id: "antarctica-orientation-calibration",
+    type: "multiple-choice",
+    category: "Orientación",
+    tags: {
+      domains: ["geography", "mathematics"],
+      topics: ["orientation"],
+      cognitiveSkills: ["logical_reasoning", "problem_solving"],
+      formatSkills: ["calculation", "interpretation"],
+      lifeSkills: ["adaptability"],
+    },
+    question:
+      "La brújula marca 090°. La tarjeta indica: «Rumbo de mapa = lectura de brújula − 30°». ¿Qué rumbo debes seguir hasta la estación?",
+    options: ["060°", "090°", "120°", "270°"],
+    correctAnswer: "060°",
+    media: {
+      type: "image",
+      src: "/visuals/antarctica/orientation-card.png",
+      alt: "Tarjeta de campo con una brújula convencional cuya aguja marca 090 grados, la fórmula para restar 30 grados y un mapa con cuatro rutas desde el mismo origen: 060, 090, 120 y 270 grados.",
+      fit: "contain",
+    },
+    timeLimit: 20,
+    points: 100,
+    explanation:
+      "La tarjeta pide restar 30° a la lectura: 090° − 30° = 060°. Esa corrección pertenece al instrumento de la misión, no representa una declinación real de McMurdo.",
+  },
+  "antarctica-cold-layer": {
+    id: "antarctica-cold-layer",
+    type: "multiple-choice",
+    category: "Preparación",
+    tags: {
+      domains: ["natural_sciences"],
+      topics: ["weather"],
+      cognitiveSkills: ["decision_making", "comprehension"],
+      formatSkills: ["interpretation"],
+      lifeSkills: ["health_self_care"],
+    },
+    question:
+      "Llevas una capa base seca y un cortavientos exterior. ¿Qué falta entre ambas para conservar mejor el calor?",
+    options: [
+      "Una capa aislante de forro polar",
+      "Otra capa impermeable idéntica",
+      "Una camiseta de algodón mojada",
+      "Un chaleco reflectante sin aislamiento",
+    ],
+    correctAnswer: "Una capa aislante de forro polar",
+    media: {
+      type: "image",
+      src: "/visuals/antarctica/cold-layers.svg",
+      alt: "Sistema de abrigo con una capa base junto al cuerpo, un espacio central marcado como capa pendiente y un cortavientos exterior.",
+      fit: "contain",
+    },
+    timeLimit: 18,
+    points: 100,
+    explanation:
+      "La capa intermedia aislante retiene aire caliente entre la capa base seca y el cortavientos exterior.",
+  },
 } satisfies Record<string, Question>;
 
 export type QuestionId = keyof typeof questionsById;
@@ -1766,7 +1818,7 @@ export const questionGroups = {
     "sbr-overtake-second-trap",
   ],
   spainSurvival: [
-      "spain-survival-teide",
+    "spain-survival-teide",
     "spain-survival-felipe-ii",
     "spain-survival-map-santa-cruz-tenerife",
     "spain-survival-food-odd",
@@ -1775,16 +1827,17 @@ export const questionGroups = {
     "spain-survival-don-quixote-real-name",
     "spain-survival-ramon-cajal",
     "spain-survival-cinema",
-      "spain-survival-surface-area",
+    "spain-survival-surface-area",
     "spain-survival-sagrada-progressive",
-      "spain-survival-nadal-grand-slams",
+    "spain-survival-nadal-grand-slams",
     "spain-survival-history-order",
     "spain-survival-literature-publication-order",
-      "spain-survival-sports-matching",
-      "spain-survival-alhambra-pattern",
+    "spain-survival-sports-matching",
+    "spain-survival-alhambra-pattern",
     "spain-survival-art-matching",
     "spain-survival-seat-rows-total",
-      "spain-survival-catalan-dance",
-      "spain-survival-oak-tree",
+    "spain-survival-catalan-dance",
+    "spain-survival-oak-tree",
   ],
+  antarcticaNarrative: ["antarctica-orientation-calibration", "antarctica-cold-layer"],
 } satisfies Record<string, QuestionId[]>;

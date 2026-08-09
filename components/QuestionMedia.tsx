@@ -56,11 +56,13 @@ function Illustration({ id }: { id: QuestionIllustration }) {
 export function QuestionMedia({
   media,
   compact = false,
+  prominent = false,
 }: {
   media: QuestionMediaType;
   compact?: boolean;
+  prominent?: boolean;
 }) {
-  const stageClassName = `${styles.visualStage} ${compact ? styles.visualStageCompact : ""}`;
+  const stageClassName = `${styles.visualStage} ${compact ? styles.visualStageCompact : ""} ${prominent ? styles.visualStageProminent : ""}`;
 
   if (media.type === "image") {
     const isSvg = media.src.endsWith(".svg");
