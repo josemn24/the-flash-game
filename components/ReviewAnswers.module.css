@@ -6,6 +6,9 @@
   text-transform: uppercase;
 }
 .textButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--text-muted);
   font-size: 0.7rem;
   font-weight: 800;

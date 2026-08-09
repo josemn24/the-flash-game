@@ -30,35 +30,35 @@ Desde `DECISION`, `PARAR` lleva a `STOPPED`. Desde `NEXT_CYCLE`, un pivot que ca
 
 ## Relación con las fases de `STATE.md`
 
-| Estado detallado | Fase breve en `STATE.md` |
-| --- | --- |
-| `DISCOVERY` | Descubrimiento |
-| `HYPOTHESIS_MAPPING` | Formulación de hipótesis |
-| `DECISION_FRAMING`, `LEARNING_QUESTION_DESIGN`, `HYPOTHESIS_SELECTION` | Priorización de hipótesis |
-| `EVIDENCE_DESIGN`, `MEASUREMENT_DESIGN`, `EXPERIMENT_DESIGN` | Diseño del experimento |
-| `MVP_DESIGN`, `READY_TO_RUN` | Preparación del MVP |
-| `RUNNING` | Ejecución |
-| `RESULTS_PROCESSING` | Medición |
-| `LEARNING_ANALYSIS` | Análisis del aprendizaje |
-| `DECISION` | Decisión |
-| `NEXT_CYCLE` | Preparación del siguiente ciclo |
-| `STOPPED` | Sin fase activa; el proyecto queda cerrado de forma explícita |
+| Estado detallado                                                       | Fase breve en `STATE.md`                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `DISCOVERY`                                                            | Descubrimiento                                                |
+| `HYPOTHESIS_MAPPING`                                                   | Formulación de hipótesis                                      |
+| `DECISION_FRAMING`, `LEARNING_QUESTION_DESIGN`, `HYPOTHESIS_SELECTION` | Priorización de hipótesis                                     |
+| `EVIDENCE_DESIGN`, `MEASUREMENT_DESIGN`, `EXPERIMENT_DESIGN`           | Diseño del experimento                                        |
+| `MVP_DESIGN`, `READY_TO_RUN`                                           | Preparación del MVP                                           |
+| `RUNNING`                                                              | Ejecución                                                     |
+| `RESULTS_PROCESSING`                                                   | Medición                                                      |
+| `LEARNING_ANALYSIS`                                                    | Análisis del aprendizaje                                      |
+| `DECISION`                                                             | Decisión                                                      |
+| `NEXT_CYCLE`                                                           | Preparación del siguiente ciclo                               |
+| `STOPPED`                                                              | Sin fase activa; el proyecto queda cerrado de forma explícita |
 
 ## Salidas verificables y ubicación
 
 Cada estado debe dejar una salida verificable, pero la existencia de esa salida no basta para avanzar: la puerta de salida del estado debe cumplirse de forma sustantiva.
 
-| Estados | Salida verificable | Tipo | Ubicación |
-| --- | --- | --- | --- |
-| `DISCOVERY` | Contexto, fuentes, hechos, supuestos y lagunas iniciales | Documento vivo | `VISION.md`, `STRATEGY.md` o contexto del ciclo, según alcance |
-| `HYPOTHESIS_MAPPING` | Hipótesis identificadas y priorización visible | Documento vivo | `HYPOTHESES.md` |
-| `DECISION_FRAMING` a `MVP_DESIGN` | Decisión, pregunta, hipótesis, evidencia, medición, protocolo y alcance del vehículo | Expediente de ciclo | Secciones 2 a 9 de `cycles/CYCLE-XXX.md` |
-| `READY_TO_RUN` | Lista de comprobación, versión congelada y condiciones de inicio | Control de preparación | Sección 10 de `cycles/CYCLE-XXX.md` |
-| `RUNNING` | Datos, comportamientos, incidencias, datos faltantes y desviaciones | Registro histórico | Sección de resultados del ciclo; un archivo adicional solo si el volumen lo exige |
-| `RESULTS_PROCESSING` | Cálculo reproducible y comparación con umbrales | Registro histórico | Sección de resultados del ciclo |
-| `LEARNING_ANALYSIS` | Interpretación, límites, confianza y clasificación de hipótesis | Análisis histórico | Sección de análisis del ciclo |
-| `DECISION` y `NEXT_CYCLE` | Decisión, siguiente incertidumbre y única acción inmediata | Registro histórico y transición | Secciones de decisión y cierre del ciclo; `STATE.md`, `HYPOTHESES.md` y `STRATEGY.md` cuando corresponda |
-| `STOPPED` | Motivo, evidencia y condiciones de reapertura | Registro histórico | Ciclo de cierre; no requiere un archivo separado salvo necesidad real |
+| Estados                           | Salida verificable                                                                   | Tipo                            | Ubicación                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `DISCOVERY`                       | Contexto, fuentes, hechos, supuestos y lagunas iniciales                             | Documento vivo                  | `VISION.md`, `STRATEGY.md` o contexto del ciclo, según alcance                                           |
+| `HYPOTHESIS_MAPPING`              | Hipótesis identificadas y priorización visible                                       | Documento vivo                  | `HYPOTHESES.md`                                                                                          |
+| `DECISION_FRAMING` a `MVP_DESIGN` | Decisión, pregunta, hipótesis, evidencia, medición, protocolo y alcance del vehículo | Expediente de ciclo             | Secciones 2 a 9 de `cycles/CYCLE-XXX.md`                                                                 |
+| `READY_TO_RUN`                    | Lista de comprobación, versión congelada y condiciones de inicio                     | Control de preparación          | Sección 10 de `cycles/CYCLE-XXX.md`                                                                      |
+| `RUNNING`                         | Datos, comportamientos, incidencias, datos faltantes y desviaciones                  | Registro histórico              | Sección de resultados del ciclo; un archivo adicional solo si el volumen lo exige                        |
+| `RESULTS_PROCESSING`              | Cálculo reproducible y comparación con umbrales                                      | Registro histórico              | Sección de resultados del ciclo                                                                          |
+| `LEARNING_ANALYSIS`               | Interpretación, límites, confianza y clasificación de hipótesis                      | Análisis histórico              | Sección de análisis del ciclo                                                                            |
+| `DECISION` y `NEXT_CYCLE`         | Decisión, siguiente incertidumbre y única acción inmediata                           | Registro histórico y transición | Secciones de decisión y cierre del ciclo; `STATE.md`, `HYPOTHESES.md` y `STRATEGY.md` cuando corresponda |
+| `STOPPED`                         | Motivo, evidencia y condiciones de reapertura                                        | Registro histórico              | Ciclo de cierre; no requiere un archivo separado salvo necesidad real                                    |
 
 No se sale de `MEASUREMENT_DESIGN` porque una sección esté rellenada, sino porque la medición sea inequívoca y reproducible. Del mismo modo, no se sale de `RUNNING` por una fecha aislada, sino al cumplirse una condición de finalización o parada definida.
 

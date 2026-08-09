@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Foca de Weddell bajo el hielo</title>
+  <desc id="desc">Una foca moteada nada bajo una placa de hielo azul; se distinguen el cuerpo completo, las aletas y la cara.</desc>
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#123c58"/>
+      <stop offset="1" stop-color="#031521"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eafcff"/>
+      <stop offset="1" stop-color="#7dc9dc"/>
+    </linearGradient>
+    <linearGradient id="seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b7c7c9"/>
+      <stop offset="1" stop-color="#526f76"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#water)"/>
+  <path d="M0 0h1600v220c-125 12-207-18-325 5-128 25-214 0-326-12-154-16-247 38-395 28-158-11-306-25-554 14Z" fill="url(#ice)"/>
+  <path d="M0 205c175-25 323 21 494 8 139-11 243-45 395-25 139 18 243 45 379 18 118-23 209 2 332-5" fill="none" stroke="#d8f8ff" stroke-width="18" opacity=".75"/>
+  <g fill="#7ee8ff" opacity=".22" filter="url(#glow)">
+    <circle cx="245" cy="350" r="62"/><circle cx="1320" cy="390" r="86"/><circle cx="1100" cy="790" r="72"/>
+  </g>
+  <g fill="none" stroke="#bceef7" stroke-width="6" opacity=".65">
+    <circle cx="420" cy="410" r="19"/><circle cx="455" cy="355" r="11"/><circle cx="490" cy="310" r="7"/>
+    <circle cx="1200" cy="690" r="13"/><circle cx="1228" cy="642" r="8"/>
+  </g>
+  <g transform="translate(770 575) rotate(-9)">
+    <path d="M-470 30C-365-135-90-205 205-136c160 37 270 113 290 201 17 77-45 145-158 170-222 50-641-35-807-205Z" fill="url(#seal)" stroke="#d9edf0" stroke-width="8"/>
+    <path d="M-454 15c-86-8-151-59-199-120 92 4 174 29 237 76M-437 75c-78 24-131 78-165 143 89-26 156-67 207-126" fill="#66858c" stroke="#d9edf0" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M-25 155c22 92 92 151 180 179-5-85-38-145-101-193M20-141c49-80 127-116 217-110-33 75-82 124-154 147" fill="#6e8d93" stroke="#d9edf0" stroke-width="7" stroke-linejoin="round"/>
+    <ellipse cx="360" cy="42" rx="140" ry="122" fill="#91a7aa"/>
+    <ellipse cx="416" cy="57" rx="24" ry="19" fill="#10212a"/>
+    <circle cx="392" cy="12" r="11" fill="#031014"/>
+    <path d="M433 78c33 12 55 9 76-4M437 91c39 27 68 29 100 19" fill="none" stroke="#233c43" stroke-width="7" stroke-linecap="round"/>
+    <g fill="#334f55" opacity=".74">
+      <circle cx="-310" cy="4" r="18"/><circle cx="-220" cy="-67" r="13"/><circle cx="-155" cy="71" r="16"/>
+      <circle cx="-61" cy="-90" r="20"/><circle cx="7" cy="34" r="14"/><circle cx="91" cy="-36" r="17"/>
+      <circle cx="182" cy="73" r="12"/><circle cx="265" cy="-28" r="15"/><circle cx="320" cy="92" r="10"/>
+    </g>
+  </g>
+  <path d="M0 870c220-60 360-35 548 2 228 45 397-8 595-21 171-11 297 14 457 67v82H0Z" fill="#061019" opacity=".78"/>
+</svg>

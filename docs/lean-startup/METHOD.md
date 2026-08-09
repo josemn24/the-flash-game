@@ -24,16 +24,16 @@ Diseñar primero evita construir una solución sin saber qué comportamiento ten
 
 ## Elementos del ciclo
 
-| Elemento | Pregunta que responde | Documento principal |
-| --- | --- | --- |
-| Visión | ¿Qué cambio queremos producir y qué principios se mantienen? | `VISION.md` |
-| Estrategia | ¿Qué apuestas modificables estamos haciendo ahora? | `STRATEGY.md` |
-| Estado | ¿Dónde estamos, qué incertidumbre domina y qué se hace ahora? | `STATE.md` |
-| Hipótesis | ¿Qué creencia crítica puede estar equivocada? | `HYPOTHESES.md` |
-| Ciclo | ¿Qué decisión, evidencia, métrica, experimento y aprendizaje sostienen la apuesta? | `cycles/CYCLE-XXX.md` |
-| Máquina de estados | ¿Qué puerta debe cumplirse antes de avanzar? | `STATE_MACHINE.md` |
-| Protocolo | ¿Cómo debe actuar quien facilita el proceso? | `AGENTS.md` |
-| Historial | ¿Qué ocurrió y por qué se tomó una decisión anterior? | ciclos cerrados |
+| Elemento           | Pregunta que responde                                                              | Documento principal   |
+| ------------------ | ---------------------------------------------------------------------------------- | --------------------- |
+| Visión             | ¿Qué cambio queremos producir y qué principios se mantienen?                       | `VISION.md`           |
+| Estrategia         | ¿Qué apuestas modificables estamos haciendo ahora?                                 | `STRATEGY.md`         |
+| Estado             | ¿Dónde estamos, qué incertidumbre domina y qué se hace ahora?                      | `STATE.md`            |
+| Hipótesis          | ¿Qué creencia crítica puede estar equivocada?                                      | `HYPOTHESES.md`       |
+| Ciclo              | ¿Qué decisión, evidencia, métrica, experimento y aprendizaje sostienen la apuesta? | `cycles/CYCLE-XXX.md` |
+| Máquina de estados | ¿Qué puerta debe cumplirse antes de avanzar?                                       | `STATE_MACHINE.md`    |
+| Protocolo          | ¿Cómo debe actuar quien facilita el proceso?                                       | `AGENTS.md`           |
+| Historial          | ¿Qué ocurrió y por qué se tomó una decisión anterior?                              | ciclos cerrados       |
 
 La visión no se usa para justificar cualquier solución. La estrategia contiene segmento, problema, propuesta de valor, canal y vehículo actuales; puede cambiar cuando la evidencia lo requiera.
 

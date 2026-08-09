@@ -15,6 +15,7 @@ import {
 import { Logo } from "@/components/Logo";
 import { QuestionScreen } from "@/components/QuestionScreen";
 import { QuestionTransition } from "@/components/QuestionTransition";
+import { ReviewAnswers } from "@/components/ReviewAnswers";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { MotionButton } from "@/components/ui/MotionButton.client";
@@ -93,7 +94,7 @@ function NarrativeIntro({
             <Logo />
           </Link>
         }
-        right={<Badge>Vista previa · Movimientos I–II</Badge>}
+        right={<Badge>Movimientos I–III</Badge>}
       />
 
       <div className={styles.introContent}>
@@ -115,7 +116,7 @@ function NarrativeIntro({
               <span>Puntos</span>
             </div>
             <div>
-              <strong>≈ 4</strong>
+              <strong>≈ 6–7</strong>
               <span>Minutos</span>
             </div>
           </div>
@@ -162,6 +163,16 @@ function NarrativeSceneScreen({
           <p className={styles.eyebrow}>{scene.eyebrow}</p>
           {scene.title && <h1>{scene.title}</h1>}
           <NarrativeBlocks blocks={reactionBlocks} className={styles.sceneReaction} />
+          {scene.id === "scene-epilogue" && reactionBlocks.length > 0 && (
+            <div className={styles.trajectoryResolution} aria-label="Resolución de la trayectoria">
+              <p className={styles.eyebrow}>Trayectoria resuelta</p>
+              <strong>270° − 30° = 240° · C4 → Ruta B</strong>
+              <p>
+                A ignora la calibración; C invierte el rumbo; D parte de B4. Solo B conserva el
+                origen C4 y aplica la corrección.
+              </p>
+            </div>
+          )}
           <NarrativeBlocks blocks={scene.blocks} />
           <MotionButton
             className={styles.continueButton}
@@ -184,12 +195,12 @@ function formatTime(seconds: number) {
   return `${seconds.toFixed(1)} s`;
 }
 
-function NarrativePrototypeResult({
+function NarrativeResult({
   challenge,
   results,
   entries,
   score,
-  reactionBlocks,
+  onReview,
   onReplay,
   onOpenNotebook,
 }: {
@@ -197,7 +208,7 @@ function NarrativePrototypeResult({
   results: AnswerResult[];
   entries: NarrativeNotebookEntry[];
   score: number;
-  reactionBlocks: NarrativeTextBlock[];
+  onReview: () => void;
   onReplay: () => void;
   onOpenNotebook: () => void;
 }) {
@@ -220,19 +231,21 @@ function NarrativePrototypeResult({
             <Logo />
           </Link>
         }
-        right={<Badge>Prototipo completado</Badge>}
+        right={<Badge>Misión completada</Badge>}
       />
       <div className={styles.resultGrid}>
         <div className={styles.resultScore}>
-          <p className={styles.eyebrow}>Movimientos I y II completados</p>
-          <NarrativeBlocks blocks={reactionBlocks} className={styles.resultReaction} />
-          <h1>El equipo está listo para salir de McMurdo.</h1>
+          <p className={styles.eyebrow}>Movimientos I–III completados</p>
+          <h1>La jornada queda registrada.</h1>
           <div className={styles.scoreValue}>
             <strong>{score}</strong>
             <span>/ {challenge.maxScore} puntos</span>
           </div>
           <div className={styles.resultActions}>
-            <MotionButton onClick={onReplay} whileTap={{ scale: 0.985 }}>
+            <MotionButton onClick={onReview} whileTap={{ scale: 0.985 }}>
+              <NotebookIcon className="h-5 w-5" /> Revisar respuestas
+            </MotionButton>
+            <MotionButton variant="secondary" onClick={onReplay} whileTap={{ scale: 0.985 }}>
               <RotateIcon className="h-5 w-5" /> Volver a jugar
             </MotionButton>
             <Link className={styles.backLink} href="/">
@@ -294,9 +307,9 @@ function NarrativePrototypeResult({
             <span>Tiempo competitivo</span>
             <strong>{formatTime(totalTime)}</strong>
           </div>
-          <p className={styles.prototypeNotice}>
-            Vista previa hasta el final del movimiento II. Esta puntuación todavía no forma parte de
-            un ranking.
+          <p className={styles.resultNotice}>
+            Puntuación individual de la misión. La señal y la trayectoria permanecen como
+            observaciones, no como una explicación cerrada.
           </p>
         </div>
       </div>
@@ -385,16 +398,29 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 customCopy={transitionCopy}
               />
             )}
-            {session.phase === "prototype-results" && (
-              <NarrativePrototypeResult
+            {session.phase === "results" && (
+              <NarrativeResult
                 key="narrative-results"
                 challenge={challenge}
                 results={session.results}
                 entries={session.unlockedEntries}
                 score={session.score}
-                reactionBlocks={session.reactionBlocks}
+                onReview={session.showReview}
                 onReplay={session.replay}
                 onOpenNotebook={session.openNotebook}
+              />
+            )}
+            {session.phase === "review" && (
+              <ReviewAnswers
+                key="narrative-review"
+                challenge={challenge}
+                results={session.results}
+                onBack={session.showResults}
+                onReplay={session.replay}
+                notebook={{
+                  entryCount: session.unlockedEntries.length,
+                  onOpen: session.openNotebook,
+                }}
               />
             )}
           </AnimatePresence>

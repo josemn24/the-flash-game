@@ -4,8 +4,8 @@
 
 Este documento es la **fuente de verdad editorial** de la primera versión del modo
 **Narrativa competitiva**. El desafío ocupa el cuarto puesto de la temporada mock
-(`tabarnia-challenge-04`). El prólogo y el movimiento I están disponibles como prototipo
-jugable; los movimientos II y III siguen pendientes de implementación.
+(`tabarnia-challenge-04`). El prólogo, los tres movimientos, el epílogo y la revisión están
+implementados como una misión completa.
 
 La referencia creativa es la Antártida de _Encounters at the End of the World_, de Werner
 Herzog. La película inspira el tono, el entorno y la atención a quienes habitan McMurdo, pero

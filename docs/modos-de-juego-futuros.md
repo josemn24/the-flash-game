@@ -51,26 +51,26 @@ Cada modo debería describirse con tres dimensiones:
 
 La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué validar primero, no para cerrar una taxonomía definitiva.
 
-| Modo                 | Finalidad principal                       | Relación entre jugadores                | Ritmo                   |
-| -------------------- | ----------------------------------------- | --------------------------------------- | ----------------------- |
-| Flash / Contrarreloj | velocidad, competición, marca personal    | solo / todos contra todos               | asíncrono / tiempo real |
-| Supervivencia        | superación, resistencia                   | solo / todos contra todos               | asíncrono / tiempo real |
-| Cadena               | racha, riesgo, progresión                 | solo / todos contra todos               | asíncrono / tiempo real |
-| La Pirámide          | progresión, dificultad, superación        | solo / todos contra todos               | asíncrono / tiempo real |
-| Alfabeto             | precisión, recorrido, gestión del tiempo  | solo / todos contra todos               | asíncrono / tiempo real |
-| Apuesta de confianza | estrategia, metacognición, riesgo         | solo / todos contra todos               | asíncrono / tiempo real |
-| Duelo                | competición directa                       | uno contra uno                          | asíncrono / tiempo real |
-| Cooperativo          | objetivo común                            | cooperativo                             | asíncrono / tiempo real |
-| Equipos              | competición social, coordinación          | equipo contra equipo                    | tiempo real             |
-| Narrativo            | inmersión, contexto, competición          | solo / todos contra todos / cooperativo | asíncrono / episódico   |
-| Detective            | investigación, pensamiento crítico        | solo / cooperativo / equipos            | asíncrono / episódico   |
-| Predicción           | anticipación, razonamiento causal         | solo / todos contra todos               | asíncrono / tiempo real |
-| Respuesta rara       | estrategia social, conocimiento abierto   | todos contra todos / comunidad          | asíncrono / agregado    |
-| Orden y conexión     | comprensión estructural                   | solo / todos contra todos / cooperativo | asíncrono / tiempo real |
-| Conquista            | estrategia territorial                    | todos contra todos / equipos            | persistente             |
-| Constructor          | progresión, estrategia                    | solo / cooperativo / competitivo        | persistente             |
-| Creador de retos     | creatividad, socialización                | creador contra jugadores / comunidad    | asíncrono               |
-| Debate               | argumentación, expresión                  | uno contra uno / equipos / grupo        | asíncrono / tiempo real |
+| Modo                 | Finalidad principal                      | Relación entre jugadores                | Ritmo                   |
+| -------------------- | ---------------------------------------- | --------------------------------------- | ----------------------- |
+| Flash / Contrarreloj | velocidad, competición, marca personal   | solo / todos contra todos               | asíncrono / tiempo real |
+| Supervivencia        | superación, resistencia                  | solo / todos contra todos               | asíncrono / tiempo real |
+| Cadena               | racha, riesgo, progresión                | solo / todos contra todos               | asíncrono / tiempo real |
+| La Pirámide          | progresión, dificultad, superación       | solo / todos contra todos               | asíncrono / tiempo real |
+| Alfabeto             | precisión, recorrido, gestión del tiempo | solo / todos contra todos               | asíncrono / tiempo real |
+| Apuesta de confianza | estrategia, metacognición, riesgo        | solo / todos contra todos               | asíncrono / tiempo real |
+| Duelo                | competición directa                      | uno contra uno                          | asíncrono / tiempo real |
+| Cooperativo          | objetivo común                           | cooperativo                             | asíncrono / tiempo real |
+| Equipos              | competición social, coordinación         | equipo contra equipo                    | tiempo real             |
+| Narrativo            | inmersión, contexto, competición         | solo / todos contra todos / cooperativo | asíncrono / episódico   |
+| Detective            | investigación, pensamiento crítico       | solo / cooperativo / equipos            | asíncrono / episódico   |
+| Predicción           | anticipación, razonamiento causal        | solo / todos contra todos               | asíncrono / tiempo real |
+| Respuesta rara       | estrategia social, conocimiento abierto  | todos contra todos / comunidad          | asíncrono / agregado    |
+| Orden y conexión     | comprensión estructural                  | solo / todos contra todos / cooperativo | asíncrono / tiempo real |
+| Conquista            | estrategia territorial                   | todos contra todos / equipos            | persistente             |
+| Constructor          | progresión, estrategia                   | solo / cooperativo / competitivo        | persistente             |
+| Creador de retos     | creatividad, socialización               | creador contra jugadores / comunidad    | asíncrono               |
+| Debate               | argumentación, expresión                 | uno contra uno / equipos / grupo        | asíncrono / tiempo real |
 
 ## Shortlist recomendada
 

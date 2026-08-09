@@ -166,8 +166,8 @@ export const challengeDefinitions = {
     description:
       "Acompaña a un equipo de campo en la Antártida, registra lo que observas y ayuda a interpretar una señal que se repite cada cuarenta segundos.",
     mode: "narrative",
-    implementationStatus: "prototype",
-    maxScore: 60,
+    implementationStatus: "complete",
+    maxScore: 100,
     prologue: {
       id: "scene-prologue",
       eyebrow: "Prólogo",
@@ -472,6 +472,195 @@ export const challengeDefinitions = {
           },
         ],
       },
+      {
+        id: "field",
+        title: "Más allá del hielo",
+        steps: [
+          {
+            type: "scene",
+            scene: {
+              id: "scene-field",
+              eyebrow: "Movimiento III · Más allá del hielo",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "La estación desaparece en el retrovisor. En C4, el equipo abre un acceso y la cámara desciende bajo el hielo. Primero ves burbujas; después, una sombra que gira lentamente.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Alba",
+                  text: "No decidas qué significa. Empieza por nombrar lo que ves.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-weddell-seal",
+            unlockEntryIds: ["note-species"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Alba sigue la silueta.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Alba",
+                  text: "Foca de Weddell; nada más todavía.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "La imagen se enfoca: es una foca de Weddell.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "La cámara corrige el enfoque: una foca de Weddell.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-after-q6",
+              eyebrow: "Movimiento III · Más allá del hielo",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Álex conecta dos hidrófonos; Mara añade el sismómetro. En el mismo minuto, dos líneas recogen pulsos a cero y cuarenta segundos; la tercera no.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Mara",
+                  text: "Dime hasta dónde llegan los datos.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-sensor-reading",
+            unlockEntryIds: ["note-signal"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Mara asiente.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Mara",
+                  text: "Dos puntos de escucha; ningún origen demostrado.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Mara subraya los pulsos. El origen continúa abierto.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "Llega otro pulso. Mara guarda los registros sin interpretarlo.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-return",
+              eyebrow: "Movimiento III · Más allá del hielo",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "La señal sigue sin nombre cuando desmontáis el equipo. El acceso vuelve a cubrirse hasta parecer intacto y el vehículo emprende el regreso. Fuera, la luz ya no parece de mañana ni de tarde. Dentro, nadie llena el silencio con una explicación que los registros no sostienen.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-penguin",
+              eyebrow: "Movimiento III · Más allá del hielo",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Casi todos los pingüinos avanzan hacia el mar. Uno se separa, hacia una extensión sin agua ni refugio.",
+                },
+                {
+                  type: "narration",
+                  text: "Nora escribe 270° y te devuelve el cuaderno abierto por las notas marcadas.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "No sabemos por qué. Anota solo hacia dónde va.",
+                },
+              ],
+            },
+            unlockEntryIds: ["note-final-bearing"],
+          },
+          {
+            type: "question",
+            questionId: "antarctica-penguin-trajectory",
+            unlockEntryIds: ["note-final-route"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Nora comprueba C4 y 240°. La trayectoria queda registrada.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Nora resta la calibración.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "C4, rumbo 240°. Eso registramos.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "Nora aplica la corrección y anota C4, rumbo 240°.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-epilogue",
+              eyebrow: "Epílogo",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "La trayectoria queda registrada. El pingüino continúa hacia el interior hasta convertirse en una mancha sobre el hielo.",
+                },
+                {
+                  type: "narration",
+                  text: "Nadie formula una hipótesis ni abandona el vehículo. La imagen se aleja: solo quedan la figura, la llanura y las montañas.",
+                },
+                {
+                  type: "narration",
+                  text: "Pantalla negra: But why?",
+                },
+              ],
+            },
+          },
+        ],
+      },
     ],
     notebookEntries: [
       {
@@ -504,6 +693,26 @@ export const challengeDefinitions = {
         text: "Punto de observación de la colonia: C4.",
         relevance: "potential",
       },
+      {
+        id: "note-species",
+        text: "Observación visual: foca de Weddell bajo el hielo.",
+        relevance: "context",
+      },
+      {
+        id: "note-signal",
+        text: "H-1 y H-2: pulsos cada 40 s. Sin variación simultánea en el sismómetro. Origen no determinado.",
+        relevance: "context",
+      },
+      {
+        id: "note-final-bearing",
+        text: "Observación final: lectura de brújula 270°.",
+        relevance: "potential",
+      },
+      {
+        id: "note-final-route",
+        text: "Trayectoria registrada: C4, rumbo de mapa 240°.",
+        relevance: "context",
+      },
     ],
     questionPoints: {
       "antarctica-orientation-calibration": 12,
@@ -511,6 +720,9 @@ export const challengeDefinitions = {
       "antarctica-warehouse-memory": 12,
       "antarctica-radio-batteries": 12,
       "antarctica-team-instruments": 12,
+      "antarctica-weddell-seal": 12,
+      "antarctica-sensor-reading": 12,
+      "antarctica-penguin-trajectory": 16,
     },
   },
 } satisfies Record<string, ChallengeDefinition>;

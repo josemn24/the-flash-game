@@ -62,7 +62,7 @@ function getChallengeActionLabel(challenge: ChallengeSummary) {
   if (!challenge.playable) return "Bloqueado";
   if (challenge.mode === "alphabet") return "Jugar Alfabeto";
   if (challenge.mode === "survival") return "Jugar Supervivencia";
-  if (challenge.mode === "narrative") return "Probar movimientos I–II";
+  if (challenge.mode === "narrative") return "Jugar Narrativa";
   return "Jugar Flash";
 }
 

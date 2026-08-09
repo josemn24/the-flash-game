@@ -1,17 +1,29 @@
 "use client";
 
 import { motion } from "motion/react";
-import { CheckIcon, ChevronIcon, ClockIcon, CrossIcon, RotateIcon } from "@/components/icons";
+import {
+  CheckIcon,
+  ChevronIcon,
+  ClockIcon,
+  CrossIcon,
+  NotebookIcon,
+  RotateIcon,
+} from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import styles from "@/components/ReviewAnswers.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
-import type { AnswerResult, FlashChallenge, SurvivalChallenge } from "@/types/game";
+import type {
+  AnswerResult,
+  FlashChallenge,
+  NarrativeChallenge,
+  SurvivalChallenge,
+} from "@/types/game";
 
 function statusLabel(result: AnswerResult) {
   if (result.status === "correct") return "Correcta";
-  if (result.status === "partial") return "Aproximada";
+  if (result.status === "partial") return "Parcial";
   if (result.status === "incorrect") return "Incorrecta";
   return "Sin contestar";
 }
@@ -21,12 +33,22 @@ export function ReviewAnswers({
   results,
   onBack,
   onReplay,
+  notebook,
 }: {
-  challenge: FlashChallenge | SurvivalChallenge;
+  challenge: FlashChallenge | SurvivalChallenge | NarrativeChallenge;
   results: AnswerResult[];
   onBack: () => void;
   onReplay: () => void;
+  notebook?: { entryCount: number; onOpen: () => void };
 }) {
+  const questions =
+    challenge.mode === "narrative"
+      ? challenge.beats.flatMap((beat) =>
+          beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
+        )
+      : challenge.questions;
+  const narrative = challenge.mode === "narrative";
+
   return (
     <motion.section
       className="mx-auto min-h-[100dvh] w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7"
@@ -38,29 +60,47 @@ export function ReviewAnswers({
         className="mb-9"
         left={<Logo />}
         right={
-          <motion.button
-            type="button"
-            className={styles.textButton}
-            onClick={onBack}
-            whileTap={{ scale: 0.98 }}
-          >
-            Volver al resultado
-          </motion.button>
+          <div className="flex items-center gap-3">
+            {notebook && (
+              <motion.button
+                type="button"
+                className={styles.textButton}
+                onClick={notebook.onOpen}
+                whileTap={{ scale: 0.98 }}
+                aria-label={`Abrir cuaderno de campo, ${notebook.entryCount} entradas`}
+              >
+                <NotebookIcon className="h-4 w-4" />
+                Cuaderno · {notebook.entryCount}
+              </motion.button>
+            )}
+            <motion.button
+              type="button"
+              className={styles.textButton}
+              onClick={onBack}
+              whileTap={{ scale: 0.98 }}
+            >
+              Volver al resultado
+            </motion.button>
+          </div>
         }
       />
 
       <div className="mb-7 sm:mb-9">
-        <p className={`${styles.eyebrow} text-[var(--electric)]`}>Análisis de carrera</p>
+        <p className={`${styles.eyebrow} text-[var(--electric)]`}>
+          {narrative ? "Análisis de misión" : "Análisis de carrera"}
+        </p>
         <h1 className="mt-2 text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
           Revisa tus respuestas
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-white/45">
-          Aquí sí: descubre qué acertaste, dónde fallaste y cuánto sumó cada decisión.
+          {narrative
+            ? "Contrasta tus respuestas con el registro científico y consulta el cuaderno completo."
+            : "Aquí sí: descubre qué acertaste, dónde fallaste y cuánto sumó cada decisión."}
         </p>
       </div>
 
       <div className="space-y-3">
-        {challenge.questions.map((question, index) => {
+        {questions.map((question, index) => {
           const result = results.find((item) => item.questionId === question.id);
           if (!result) return null;
           const correct = result.status === "correct";

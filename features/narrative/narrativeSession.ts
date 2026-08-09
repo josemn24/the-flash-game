@@ -6,7 +6,7 @@ import type {
   NarrativeTextBlock,
 } from "@/types/game";
 
-export type NarrativePhase = "intro" | "scene" | "playing" | "transition" | "prototype-results";
+export type NarrativePhase = "intro" | "scene" | "playing" | "transition" | "results" | "review";
 
 export type NarrativeSessionState = {
   phase: NarrativePhase;
@@ -21,7 +21,13 @@ export type NarrativeSessionState = {
 export type NarrativeSessionAction =
   | { type: "start" }
   | { type: "answer"; result: AnswerResult; timedOut: boolean; unlockEntryIds: string[] }
-  | { type: "advance"; nextStepType: NarrativeStep["type"] | null }
+  | {
+      type: "advance";
+      nextStepType: NarrativeStep["type"] | null;
+      unlockEntryIds?: string[];
+    }
+  | { type: "show-review" }
+  | { type: "show-results" }
   | { type: "open-notebook" }
   | { type: "close-notebook" }
   | { type: "replay" };
@@ -80,7 +86,7 @@ export function narrativeSessionReducer(
       if (action.nextStepType === null) {
         return {
           ...state,
-          phase: "prototype-results",
+          phase: "results",
           locked: false,
           notebookOpen: false,
         };
@@ -89,9 +95,16 @@ export function narrativeSessionReducer(
         ...state,
         phase: action.nextStepType === "scene" ? "scene" : "playing",
         stepIndex: state.stepIndex + 1,
+        unlockedEntryIds: Array.from(
+          new Set([...state.unlockedEntryIds, ...(action.unlockEntryIds ?? [])]),
+        ),
         locked: false,
         notebookOpen: false,
       };
+    case "show-review":
+      return { ...state, phase: "review", notebookOpen: false };
+    case "show-results":
+      return { ...state, phase: "results", notebookOpen: false };
     case "open-notebook":
       return { ...state, notebookOpen: true };
     case "close-notebook":

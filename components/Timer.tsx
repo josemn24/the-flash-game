@@ -67,8 +67,7 @@ export function Timer({
     return () => cancelAnimationFrame(frameId);
   }, [duration, active, resetKey]);
 
-  const isCurrentTimerState =
-    timerState.duration === duration && timerState.resetKey === resetKey;
+  const isCurrentTimerState = timerState.duration === duration && timerState.resetKey === resetKey;
   const visibleRemaining = active && isCurrentTimerState ? timerState.remaining : duration;
   const ratio = Math.min(1, Math.max(0, visibleRemaining / duration));
   const urgent = visibleRemaining <= 5;

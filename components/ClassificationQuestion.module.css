@@ -274,10 +274,7 @@
 
   .matrixHeader,
   .row {
-    grid-template-columns: minmax(9rem, 1.4fr) repeat(
-        var(--category-count),
-        minmax(4.5rem, 0.6fr)
-      );
+    grid-template-columns: minmax(9rem, 1.4fr) repeat(var(--category-count), minmax(4.5rem, 0.6fr));
     gap: 0.5rem;
   }
 

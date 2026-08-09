@@ -36,7 +36,7 @@ function reachFirstQuestion() {
 }
 
 describe("narrative session", () => {
-  it("builds the exact prologue and Movements I–II sequence", () => {
+  it("builds the exact prologue and three-movement sequence", () => {
     const sequence = getNarrativeSequence(getNarrativeChallenge());
 
     expect(
@@ -54,10 +54,18 @@ describe("narrative session", () => {
       "scene-after-q4",
       "antarctica-team-instruments",
       "scene-departure",
+      "scene-field",
+      "antarctica-weddell-seal",
+      "scene-after-q6",
+      "antarctica-sensor-reading",
+      "scene-return",
+      "scene-penguin",
+      "antarctica-penguin-trajectory",
+      "scene-epilogue",
     ]);
   });
 
-  it("keeps all six notebook entries in narrative order", () => {
+  it("keeps all ten notebook entries in narrative order", () => {
     expect(getNarrativeChallenge().notebookEntries.map((entry) => entry.id)).toEqual([
       "note-calibration",
       "note-weather",
@@ -65,6 +73,10 @@ describe("narrative session", () => {
       "note-batteries",
       "note-team",
       "note-location",
+      "note-species",
+      "note-signal",
+      "note-final-bearing",
+      "note-final-route",
     ]);
   });
 
@@ -152,40 +164,116 @@ describe("narrative session", () => {
     );
   });
 
-  it("finishes after the departure scene with all observations preserved", () => {
+  it("unlocks the final bearing when entering the penguin scene", () => {
     const state = {
       ...reachFirstQuestion(),
       phase: "scene" as const,
-      stepIndex: 11,
+      stepIndex: 16,
+      unlockedEntryIds: ["note-calibration", "note-location"],
+    };
+
+    expect(
+      narrativeSessionReducer(state, {
+        type: "advance",
+        nextStepType: "scene",
+        unlockEntryIds: ["note-final-bearing"],
+      }),
+    ).toMatchObject({
+      phase: "scene",
+      stepIndex: 17,
+      unlockedEntryIds: ["note-calibration", "note-location", "note-final-bearing"],
+    });
+  });
+
+  it("uses the final trajectory reaction at the start of the epilogue", () => {
+    const sequence = getNarrativeSequence(getNarrativeChallenge());
+    const result = {
+      ...correctResult,
+      questionId: "antarctica-penguin-trajectory",
+      answer: "Ruta B",
+      points: 16,
+    };
+
+    expect(getNarrativeReaction(sequence[18], result, false)).toEqual(
+      sequence[18].type === "question" ? sequence[18].reactions.correct : [],
+    );
+  });
+
+  it.each([
+    ["acierto", "correct", false, "Ruta B"],
+    ["fallo", "incorrect", false, "Ruta A"],
+    ["timeout", "unanswered", true, null],
+  ] as const)("records the final route after %s", (_label, status, timedOut, answer) => {
+    const playing = {
+      ...reachFirstQuestion(),
+      phase: "playing" as const,
+      stepIndex: 18,
+      unlockedEntryIds: ["note-calibration", "note-location", "note-final-bearing"],
+    };
+    const transition = narrativeSessionReducer(playing, {
+      type: "answer",
+      result: {
+        ...correctResult,
+        questionId: "antarctica-penguin-trajectory",
+        answer,
+        status,
+        isCorrect: status === "correct",
+        points: status === "correct" ? 16 : 0,
+      },
+      timedOut,
+      unlockEntryIds: ["note-final-route"],
+    });
+
+    expect(transition).toMatchObject({
+      phase: "transition",
+      unlockedEntryIds: [
+        "note-calibration",
+        "note-location",
+        "note-final-bearing",
+        "note-final-route",
+      ],
+      lastTimedOut: timedOut,
+    });
+  });
+
+  it("finishes after the epilogue with all observations preserved", () => {
+    const notebookEntryIds = getNarrativeChallenge().notebookEntries.map((entry) => entry.id);
+    const state = {
+      ...reachFirstQuestion(),
+      phase: "scene" as const,
+      stepIndex: 19,
       results: [
         correctResult,
         { ...correctResult, questionId: "antarctica-cold-layer" },
         { ...correctResult, questionId: "antarctica-warehouse-memory" },
         { ...correctResult, questionId: "antarctica-radio-batteries" },
         { ...correctResult, questionId: "antarctica-team-instruments" },
+        { ...correctResult, questionId: "antarctica-weddell-seal" },
+        { ...correctResult, questionId: "antarctica-sensor-reading" },
+        { ...correctResult, questionId: "antarctica-penguin-trajectory", points: 16 },
       ],
-      unlockedEntryIds: [
-        "note-calibration",
-        "note-weather",
-        "note-storage",
-        "note-batteries",
-        "note-team",
-        "note-location",
-      ],
+      unlockedEntryIds: notebookEntryIds,
       locked: false,
     };
 
     expect(narrativeSessionReducer(state, { type: "advance", nextStepType: null })).toMatchObject({
-      phase: "prototype-results",
-      stepIndex: 11,
-      unlockedEntryIds: [
-        "note-calibration",
-        "note-weather",
-        "note-storage",
-        "note-batteries",
-        "note-team",
-        "note-location",
-      ],
+      phase: "results",
+      stepIndex: 19,
+      unlockedEntryIds: notebookEntryIds,
+    });
+  });
+
+  it("moves between the final result and review without losing progress", () => {
+    const results = narrativeSessionReducer(
+      { ...reachFirstQuestion(), phase: "scene", stepIndex: 19, results: [correctResult] },
+      { type: "advance", nextStepType: null },
+    );
+    const review = narrativeSessionReducer(results, { type: "show-review" });
+
+    expect(review).toMatchObject({ phase: "review", results: [correctResult] });
+    expect(narrativeSessionReducer(review, { type: "show-results" })).toMatchObject({
+      phase: "results",
+      results: [correctResult],
     });
   });
 

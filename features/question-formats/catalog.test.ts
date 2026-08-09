@@ -13,6 +13,7 @@ import {
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
+import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 import { isValidEscapeConfiguration } from "@/lib/escape";
@@ -351,22 +352,27 @@ describe("question format catalog", () => {
     expect(alphabetChallenge?.timeLimit).toBe(135);
     expect(survivalChallenge?.questions).toHaveLength(20);
     expect(survivalChallenge?.lives).toBe(3);
-    expect(narrativeChallenge?.implementationStatus).toBe("prototype");
-    expect(narrativeChallenge?.maxScore).toBe(60);
+    expect(narrativeChallenge?.implementationStatus).toBe("complete");
+    expect(narrativeChallenge?.maxScore).toBe(100);
     expect(
       narrativeChallenge?.beats.flatMap((beat) =>
         beat.steps.filter((step) => step.type === "question"),
       ),
-    ).toHaveLength(5);
-    expect(narrativeChallenge?.notebookEntries).toHaveLength(6);
+    ).toHaveLength(8);
+    expect(narrativeChallenge?.notebookEntries).toHaveLength(10);
     if (narrativeChallenge?.mode !== "narrative") {
       throw new Error("Expected narrative challenge");
     }
     const narrativeQuestions = narrativeChallenge.beats.flatMap((beat) =>
       beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
     );
-    expect(narrativeQuestions.map((question) => question.points)).toEqual([12, 12, 12, 12, 12]);
-    expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([20, 18, 30, 30, 35]);
+    expect(narrativeQuestions.map((question) => question.points)).toEqual([
+      12, 12, 12, 12, 12, 12, 12, 16,
+    ]);
+    expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([
+      20, 18, 30, 30, 35, 30, 35, 40,
+    ]);
+    expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(238);
     expect(narrativeQuestions[0]).toMatchObject({
       correctAnswer: "060°",
       media: { src: "/visuals/antarctica/orientation-card.png" },
@@ -462,9 +468,79 @@ describe("question format catalog", () => {
       incorrectAttempts: 1,
     });
 
+    const seal = narrativeQuestions[5];
+    expect(seal.type).toBe("progressive-image");
+    if (seal.type !== "progressive-image") throw new Error("Expected seal progressive image");
+    expect(isValidProgressiveImageConfiguration(seal)).toBe(true);
+    expect(seal.revealDuration).toBe(12);
+    for (const answer of ["foca", "foca Weddell", "foca de Weddell"]) {
+      expect(evaluateAnswer({ question: seal, answer, timeUsed: 0 })).toMatchObject({
+        status: "correct",
+        points: 12,
+      });
+    }
+    expect(evaluateAnswer({ question: seal, answer: "pingüino", timeUsed: 4 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    const lateSealAnswer = evaluateAnswer({
+      question: seal,
+      answer: "foca",
+      timeUsed: seal.timeLimit,
+    });
+    expect(lateSealAnswer.status).toBe("correct");
+    expect(lateSealAnswer.points).toBeGreaterThan(0);
+    expect(lateSealAnswer.points).toBeLessThan(12);
+    expect(
+      evaluateAnswer({
+        question: seal,
+        answer: null,
+        timeUsed: seal.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({ status: "unanswered", points: 0, timeUsed: 30 });
+
+    const sensors = narrativeQuestions[6];
+    expect(sensors.type).toBe("multiple-choice");
+    if (sensors.type !== "multiple-choice") throw new Error("Expected sensor choice question");
+    expect(sensors.options).toHaveLength(4);
+    expect(
+      sensors.options.map(
+        (answer) => evaluateAnswer({ question: sensors, answer, timeUsed: 0 }).status,
+      ),
+    ).toEqual(["incorrect", "correct", "incorrect", "incorrect"]);
+
+    const trajectory = narrativeQuestions[7];
+    expect(trajectory.type).toBe("multiple-choice");
+    if (trajectory.type !== "multiple-choice") {
+      throw new Error("Expected trajectory choice question");
+    }
+    expect(
+      trajectory.options.map(
+        (answer) => evaluateAnswer({ question: trajectory, answer, timeUsed: 0 }).status,
+      ),
+    ).toEqual(["incorrect", "correct", "incorrect", "incorrect"]);
+    expect(evaluateAnswer({ question: trajectory, answer: "Ruta B", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 16,
+    });
+    expect(trajectory.explanation).toContain("A ignora");
+    expect(trajectory.explanation).toContain("C invierte");
+    expect(trajectory.explanation).toContain("D utiliza B4");
+
     const narrativeMedia = narrativeQuestions.flatMap((question) => {
       const topLevel =
         "media" in question && question.media?.type === "image" ? [question.media] : [];
+      const surfaceMedia =
+        question.type === "progressive-image"
+          ? [
+              {
+                type: "image" as const,
+                src: question.surface.src,
+                alt: question.solutionAlt,
+              },
+            ]
+          : [];
       const itemMedia =
         question.type === "flash-memory"
           ? question.items.flatMap((item) => (item.media?.type === "image" ? [item.media] : []))
@@ -473,9 +549,9 @@ describe("question format catalog", () => {
                 item.media?.type === "image" ? [item.media] : [],
               )
             : [];
-      return [...topLevel, ...itemMedia];
+      return [...topLevel, ...surfaceMedia, ...itemMedia];
     });
-    expect(narrativeMedia).toHaveLength(13);
+    expect(narrativeMedia).toHaveLength(16);
     for (const media of narrativeMedia) {
       expect(media.alt.trim().length).toBeGreaterThan(20);
       expect(existsSync(join(process.cwd(), "public", media.src))).toBe(true);
@@ -528,7 +604,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(88);
+    expect(questionIds).toHaveLength(91);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -568,8 +644,11 @@ describe("question format catalog", () => {
       "antarctica-warehouse-memory",
       "antarctica-radio-batteries",
       "antarctica-team-instruments",
+      "antarctica-weddell-seal",
+      "antarctica-sensor-reading",
+      "antarctica-penguin-trajectory",
     ]);
-    expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(60);
+    expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
     expect(
       definitions.every((definition) => {
         const questionIds =

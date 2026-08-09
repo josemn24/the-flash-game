@@ -44,7 +44,11 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
         incorrectAttemptsRef.current = 0;
         questionStartedAt.current = performance.now();
       }
-      dispatch({ type: "advance", nextStepType: nextStep?.type ?? null });
+      dispatch({
+        type: "advance",
+        nextStepType: nextStep?.type ?? null,
+        unlockEntryIds: nextStep?.type === "scene" ? nextStep.unlockEntryIds : undefined,
+      });
     },
     [sequence],
   );
@@ -147,12 +151,7 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
       ? sequence.slice(0, state.stepIndex + 1).filter((step) => step.type === "question").length
       : 0;
   const lastResult = state.results.at(-1);
-  const reactionStep =
-    state.phase === "scene"
-      ? sequence[state.stepIndex - 1]
-      : state.phase === "prototype-results"
-        ? currentStep
-        : undefined;
+  const reactionStep = state.phase === "scene" ? sequence[state.stepIndex - 1] : undefined;
   const reactionBlocks = getNarrativeReaction(reactionStep, lastResult, state.lastTimedOut);
 
   return {
@@ -166,6 +165,8 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     start,
     continueScene,
     replay,
+    showReview: () => dispatch({ type: "show-review" }),
+    showResults: () => dispatch({ type: "show-results" }),
     submitAnswer,
     handleTimeUp,
     handleAnswerProgress,

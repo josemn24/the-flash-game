@@ -1934,6 +1934,94 @@ export const questionsById = {
     explanation:
       "Alba necesita la cámara para observar organismos; Álex, el hidrófono para escuchar bajo el agua; y Mara, el sismómetro para registrar movimiento del terreno.",
   },
+  "antarctica-weddell-seal": {
+    id: "antarctica-weddell-seal",
+    type: "progressive-image",
+    category: "Biología polar",
+    tags: {
+      domains: ["natural_sciences"],
+      topics: ["biology_taxonomy"],
+      cognitiveSkills: ["pattern_recognition", "memory"],
+      formatSkills: ["recall"],
+      lifeSkills: ["environmental_awareness"],
+    },
+    question: "¿Qué animal aparece bajo el hielo?",
+    surface: {
+      src: "/visuals/antarctica/weddell-seal.svg",
+      alt: "Ilustración submarina desenfocada que se revela progresivamente",
+      width: 1600,
+      height: 1000,
+      fit: "cover",
+      position: "50% 50%",
+    },
+    solutionAlt:
+      "Foca de Weddell moteada que nada bajo una placa de hielo, con el cuerpo completo, las aletas y la cara visibles",
+    revealDuration: 12,
+    correctAnswer: "foca de Weddell",
+    acceptedAnswers: ["foca", "foca Weddell", "foca de Weddell"],
+    timeLimit: 30,
+    points: 100,
+    explanation:
+      "Es una foca de Weddell. Reconocer una foca basta para acertar: verla cerca de los instrumentos no demuestra que sea el origen de la señal.",
+  },
+  "antarctica-sensor-reading": {
+    id: "antarctica-sensor-reading",
+    type: "multiple-choice",
+    category: "Interpretación científica",
+    tags: {
+      domains: ["natural_sciences", "technology"],
+      topics: ["sound_waves"],
+      cognitiveSkills: ["scientific_reasoning", "critical_thinking"],
+      formatSkills: ["interpretation", "deduction"],
+      lifeSkills: ["environmental_awareness"],
+    },
+    question:
+      "Durante el mismo minuto, H-1 y H-2 registran pulsos a los 0 y 40 segundos. El sismómetro no muestra una variación coincidente. ¿Qué conclusión permiten los datos?",
+    options: [
+      "El Erebus ha entrado en erupción",
+      "La señal aparece en dos puntos de escucha bajo el agua, pero su origen sigue sin determinarse",
+      "H-2 está averiado",
+      "La foca observada produce necesariamente la señal",
+    ],
+    correctAnswer:
+      "La señal aparece en dos puntos de escucha bajo el agua, pero su origen sigue sin determinarse",
+    media: {
+      type: "image",
+      src: "/visuals/antarctica/sensor-readings.svg",
+      alt: "Gráfico de 0 a 60 segundos con pulsos a los 0 y 40 segundos en los hidrófonos H-1 y H-2, mientras el sismómetro solo muestra ruido basal sin un pico coincidente",
+      fit: "contain",
+    },
+    timeLimit: 35,
+    points: 100,
+    explanation:
+      "La coincidencia en dos hidrófonos debilita la hipótesis de un fallo aislado. La ausencia de una variación simultánea en este sismómetro no identifica el origen ni permite atribuirlo a un animal concreto.",
+  },
+  "antarctica-penguin-trajectory": {
+    id: "antarctica-penguin-trajectory",
+    type: "multiple-choice",
+    category: "Orientación",
+    tags: {
+      domains: ["geography", "mathematics"],
+      topics: ["orientation"],
+      cognitiveSkills: ["logical_reasoning", "problem_solving"],
+      formatSkills: ["calculation", "interpretation"],
+      lifeSkills: ["adaptability"],
+    },
+    question:
+      "El pingüino parte del punto C4. La brújula marca 270°. Consulta el cuaderno y elige la trayectoria que debes registrar.",
+    options: ["Ruta A", "Ruta B", "Ruta C", "Ruta D"],
+    correctAnswer: "Ruta B",
+    media: {
+      type: "image",
+      src: "/visuals/antarctica/penguin-trajectories.svg",
+      alt: "Mapa de cuadrícula A–E por 1–5. La colonia está en C4. A sale de C4 al oeste; B sale de C4 al suroeste; C sale de C4 al nordeste; D sale de B4 al suroeste",
+      fit: "contain",
+    },
+    timeLimit: 40,
+    points: 100,
+    explanation:
+      "Ruta B. La calibración indica 270° − 30° = 240° y el recorrido debe comenzar en C4. A ignora la corrección, C invierte el rumbo y D utiliza B4 como origen.",
+  },
 } satisfies Record<string, Question>;
 
 export type QuestionId = keyof typeof questionsById;
@@ -2026,5 +2114,8 @@ export const questionGroups = {
     "antarctica-warehouse-memory",
     "antarctica-radio-batteries",
     "antarctica-team-instruments",
+    "antarctica-weddell-seal",
+    "antarctica-sensor-reading",
+    "antarctica-penguin-trajectory",
   ],
 } satisfies Record<string, QuestionId[]>;
