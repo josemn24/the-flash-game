@@ -1,156 +1,306 @@
 # Desafío 04: Encuentros en el fin del mundo
 
-## Estado
+## Estado y alcance
 
-Este documento define la primera versión prevista del modo **Narrativa competitiva**. El desafío ocupa el cuarto puesto de la temporada mock (`tabarnia-challenge-04`), pero todavía no está implementado ni es jugable.
+Este documento es la **fuente de verdad editorial** de la primera versión del modo
+**Narrativa competitiva**. El desafío ocupará el cuarto puesto de la temporada mock
+(`tabarnia-challenge-04`), pero todavía no está implementado ni es jugable.
 
-La referencia creativa es la Antártida de *Encounters at the End of the World*, de Werner Herzog. La película inspira el tono, el entorno y la atención a los científicos y personajes que habitan McMurdo; el desafío debe tener historia, textos, ilustraciones y datos propios, y no exige conocer el documental.
+La referencia creativa es la Antártida de _Encounters at the End of the World_, de Werner
+Herzog. La película inspira el tono, el entorno y la atención a quienes habitan McMurdo, pero
+el desafío usa personajes, textos, datos de misión e ilustraciones propios. No reutiliza
+fotogramas, audio ni textos de la película y no exige conocerla.
+
+Esta versión cierra el contenido de una misión lineal de ocho pruebas y 100 puntos. Quedan
+fuera la persistencia, el ranking real, el multijugador, las ramas, el audio y los formatos
+nuevos. La competición consiste, por ahora, en obtener una puntuación individual comparable
+con otros desafíos.
 
 ## Objetivo de la experiencia
 
-El jugador llega por primera vez a la Antártida y pasa unas horas en una estación científica antes de acompañar a un equipo de investigación. Una señal repetida, registrada bajo el hielo, ha dejado una duda abierta: puede ser un error técnico, una vibración volcánica o algo vivo. El jugador no es el especialista que resolverá el misterio, sino un recién llegado al que piden acompañar al equipo como observador y mantener el cuaderno de campo.
+El jugador llega por primera vez a la Antártida y pasa unas horas en una estación científica
+antes de acompañar a un equipo de investigación. Una señal registrada bajo el hielo se repite
+cada cuarenta segundos. Puede ser un error técnico, una vibración del hielo, actividad
+volcánica o algo vivo.
 
-La historia no debe limitarse a aparecer entre preguntas. Cada prueba tiene que ser una acción que el jugador realiza dentro de ese mundo: orientarse durante un whiteout, repartir suministros, recordar un almacén, interpretar una señal o calcular una trayectoria.
+El jugador no es el especialista que resolverá el misterio. Es un recién llegado al que piden
+acompañar al equipo como observador y mantener un cuaderno de campo. Cada prueba representa
+una acción dentro de ese mundo: orientarse, completar el abrigo, localizar material, calcular
+suministros, asignar instrumentos, observar una criatura o interpretar registros.
 
-La partida debe durar aproximadamente **cuatro o cinco minutos**, con una secuencia lineal de ocho pruebas. Todos los jugadores reciben la misma misión, las mismas pruebas y los mismos datos, pero compiten individualmente por puntos y velocidad dentro de una ventana asíncrona.
+La partida dura aproximadamente **cuatro o cinco minutos**. Todos los jugadores reciben las
+mismas escenas, pruebas y datos. Un fallo reduce la puntuación, pero nunca bloquea el avance ni
+vuelve irresoluble la prueba final.
 
-## Estructura narrativa
+## Reparto narrativo
 
-La narración debe avanzar como una pequeña jornada de campo. Cada prueba aparece porque un personaje necesita algo del jugador o porque una observación abre la siguiente pregunta. El hilo conductor es la señal bajo el hielo y el cuaderno que permite ordenar lo observado.
+La definición tendrá tres movimientos y ocho preguntas:
 
-### Prólogo: el cuaderno
+| Movimiento              | Propósito                                                | Preguntas |
+| ----------------------- | -------------------------------------------------------- | --------- |
+| I. Llegada              | Aprender a orientarse y prepararse para el exterior      | 1–2       |
+| II. La estación         | Preparar la salida y conocer al equipo por su trabajo    | 3–5       |
+| III. Más allá del hielo | Observar, interpretar y registrar sin cerrar el misterio | 6–8       |
 
-El avión aterriza entre viento y nieve. Al bajar, la coordinadora de la estación entrega al jugador un cuaderno impermeable.
+El cierre del pingüino forma parte del tercer movimiento, pero tiene una escena propia antes de
+la pregunta 8. El epílogo aparece después de registrar la última respuesta.
 
-> No tienes que entender todavía lo que estás viendo. Solo tienes que aprender a observarlo.
+## Guion de escenas
 
-La coordinadora explica que un equipo saldrá esa tarde hacia una zona de hielo marino. Uno de sus instrumentos ha registrado una señal repetida cada cuarenta segundos. No saben si es un fallo, una vibración del hielo, actividad volcánica o algo vivo.
+Las escenas avanzan manualmente con una acción «Continuar». No tienen cuenta atrás y el reloj de
+la siguiente prueba no comienza hasta que su interfaz está preparada. Los tiempos siguientes son
+un presupuesto editorial de lectura, no una animación que impida avanzar.
 
-El jugador acompañará al equipo como observador. No tendrá que salvar la estación ni descubrir una conspiración: tendrá que ayudar a preparar la salida, mirar con atención y anotar lo que parezca importante.
+| ID                | Ubicación                | Tiempo | Texto definitivo                                                                                                                                                                                                                                                                                                                               |
+| ----------------- | ------------------------ | -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scene-prologue`  | Antes del movimiento I   |   14 s | El avión se detiene entre viento y nieve. Al bajar, la coordinadora, Nora Valdés, te entrega un cuaderno impermeable. «No tienes que entender todavía lo que estás viendo. Solo tienes que aprender a observarlo». Un instrumento bajo el hielo repite una señal cada cuarenta segundos. Esta tarde acompañarás al equipo que irá a revisarlo. |
+| `scene-arrival`   | Antes de la pregunta 1   |    8 s | El horizonte desaparece. Nora señala una brújula de campo y una tarjeta plastificada. «La estación sigue ahí aunque hayas dejado de verla. Corrige la lectura y elige la ruta».                                                                                                                                                                |
+| `scene-after-q1`  | Antes de la pregunta 2   |    5 s | La ruta queda anotada. Nora revisa tu equipo: llevas la capa base y el cortavientos, pero entre ambas queda un hueco peligroso.                                                                                                                                                                                                                |
+| `scene-station`   | Antes de la pregunta 3   |   10 s | McMurdo aparece como una pequeña ciudad industrial junto al hielo. En el almacén, Álex enciende la luz: «Necesitamos tres cajas. Mira bien; después cortaré la corriente».                                                                                                                                                                     |
+| `scene-after-q3`  | Antes de la pregunta 4   |    5 s | Las cajas llegan al vehículo. La bióloga cuenta cuatro radios y te pasa la hoja de autonomía. «Añade una reserva completa para cada persona».                                                                                                                                                                                                  |
+| `scene-after-q4`  | Antes de la pregunta 5   |    5 s | Mientras completas el inventario, llegan tres fichas sin ordenar. Cada miembro del equipo necesita el instrumento que corresponde a su tarea.                                                                                                                                                                                                  |
+| `scene-departure` | Después de la pregunta 5 |    5 s | Álex guarda el hidrófono H-2 y marca C4 en el mapa. En la pantalla, la señal vuelve a aparecer. Cuarenta segundos. Otra vez.                                                                                                                                                                                                                   |
+| `scene-field`     | Antes de la pregunta 6   |   10 s | El vehículo abandona la estación. En el punto de observación abren un acceso en el hielo y descienden una cámara. «No adivines todavía qué significa», dice Alba. «Empieza por reconocer qué estás viendo».                                                                                                                                    |
+| `scene-after-q6`  | Antes de la pregunta 7   |    5 s | Mara alinea los dos registros acústicos con el sismómetro. «Mismo minuto, tres instrumentos. Dime solo qué permiten afirmar los datos».                                                                                                                                                                                                        |
+| `scene-return`    | Después de la pregunta 7 |    5 s | La señal sigue sin nombre. El equipo recoge los instrumentos y emprende el regreso. Nadie intenta llenar el silencio con una explicación.                                                                                                                                                                                                      |
+| `scene-penguin`   | Antes de la pregunta 8   |    8 s | Cerca de una colonia, casi todos los pingüinos avanzan hacia el mar. Uno se separa. Nora observa la brújula, escribe 270° y te devuelve el cuaderno. «Anota su dirección».                                                                                                                                                                     |
+| `scene-epilogue`  | Después de la pregunta 8 |    6 s | La ruta queda registrada. El pingüino continúa hacia el interior. Nadie formula una hipótesis y nadie interviene. La imagen se aleja hasta dejar solo una figura entre el hielo y las montañas. Pantalla negra: «But why?»                                                                                                                     |
 
-### I. Llegada: aprender a no perderse
+**Tiempo editorial total:** 86 segundos. Las transiciones visuales pueden durar alrededor de
+650 ms, pero tampoco forman parte del tiempo puntuable.
 
-La coordinadora se aleja para comprobar la meteorología y deja al jugador con una instrucción sencilla:
+## Tabla maestra de pruebas
 
-> La estación está al norte. El problema es que, aquí, el norte no siempre se parece a la dirección que esperas.
+Los textos, valores, soluciones y opciones de esta tabla son definitivos para la primera
+implementación. Los códigos `F1`–`F7` remiten al apéndice de fuentes. Cuando una cifra se marca
+como ficticia, es un dato autocontenido de la misión y no una afirmación sobre McMurdo.
 
-La primera prueba consiste en localizar la estación, determinar un rumbo o interpretar una brújula durante un whiteout. La prueba no aparece como un ejercicio abstracto: es la primera comprobación de que el recién llegado puede orientarse fuera del avión.
+| # / ID                                   | Movimiento y necesidad narrativa                                                                   | Formato                        | Enunciado completo                                                                                                                                                                           | Datos u opciones                                                                                                                                                                                              | Solución y explicación                                                                                                                                                                                                                                                                                                |                               Tiempo | Puntos | Entrada del cuaderno                                                                                                                                                                 | Recurso visual                                                                                                               | Fuente factual                                                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -----------------------------------: | -----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 1 · `antarctica-orientation-calibration` | I. Demostrar que el recién llegado puede orientarse durante el whiteout.                           | Elección múltiple con imagen   | **La brújula marca 090°. La tarjeta indica: «Rumbo de mapa = lectura de brújula − 30°». ¿Qué rumbo debes seguir hasta la estación?**                                                         | `060°`, `090°`, `120°`, `270°`                                                                                                                                                                                | **060°**. `090° − 30° = 060°`; en el mapa de misión esa es la ruta hacia la estación. La corrección de 30° pertenece al instrumento ficticio, no es una declinación real de McMurdo.                                                                                                                                  |                                 20 s |     12 | «Calibración: rumbo de mapa = lectura de brújula − 30°». Marcada como posible conexión.                                                                                              | Tarjeta de brújula y mapa local con los cuatro rumbos.                                                                       | F3; calibración ficticia.                                                                           |
+| 2 · `antarctica-cold-layer`              | I. Completar el abrigo antes de salir.                                                             | Elección múltiple              | **Llevas una capa base seca y un cortavientos exterior. ¿Qué falta entre ambas para conservar mejor el calor?**                                                                              | `Una capa aislante de forro polar`, `Otra capa impermeable idéntica`, `Una camiseta de algodón mojada`, `Un chaleco reflectante sin aislamiento`                                                              | **Una capa aislante de forro polar**. La capa intermedia retiene aire caliente; la exterior reduce la pérdida por viento. El equipo concreto es ficticio, pero el principio de vestirse por capas procede del manual de campo.                                                                                        |                                 18 s |     12 | «Condiciones al aterrizar: −18 °C; sistema previsto: base + aislamiento + cortavientos».                                                                                             | Silueta original de tres capas, con la intermedia vacía.                                                                     | F1, F2.                                                                                             |
+| 3 · `antarctica-warehouse-memory`        | II. Recuperar solo las cajas necesarias sin perder tiempo en el almacén.                           | Memoria relámpago 2×2          | **La luz se apaga en cuatro segundos. Reconstruye la posición de las tres cajas y del hueco libre.**                                                                                         | Exposición: arriba izquierda `Hidrófono H-2`; arriba derecha `Hueco libre`; abajo izquierda `Baterías`; abajo derecha `Cámara submarina`. Después se muestran las cuatro fichas desordenadas.                 | La reconstrucción exacta es la disposición de la exposición. Cada posición correcta recibe crédito parcial. La ficha «Hueco libre» ocupa la cuarta celda porque el formato actual exige completar la cuadrícula.                                                                                                      | 30 s; exposición de 4 s no puntuable |     12 | «Almacén: H-2 arriba izquierda; baterías abajo izquierda; cámara abajo derecha».                                                                                                     | Cuadrícula ortogonal con tres cajas de forma y símbolo distintos y un hueco rayado.                                          | Datos ficticios; F4 para la función del hidrófono.                                                  |
+| 4 · `antarctica-radio-batteries`         | II. Garantizar la autonomía de comunicación del equipo.                                            | Estimación numérica            | **Salen cuatro personas durante seis horas. Cada batería alimenta una radio durante tres horas y cada persona debe llevar además una batería de reserva. ¿Cuántas baterías hay que cargar?** | Mínimo `4`, máximo `20`, paso `1`, valor inicial `8`, tolerancia de puntuación `4`.                                                                                                                           | **12 baterías**. Dos baterías por radio cubren seis horas: `4 × 2 = 8`. Una reserva adicional para cada persona suma `4`: total `12`. Las respuestas cercanas reciben crédito por proximidad.                                                                                                                         |                                 30 s |     12 | «Comunicaciones: 12 baterías para 4 radios; incluye una reserva por persona».                                                                                                        | Sin recurso obligatorio; se pueden usar cuatro pictogramas de radio y una ficha de autonomía.                                | Cálculo y valores ficticios; F2 respalda la importancia de comunicaciones y planificación de campo. |
+| 5 · `antarctica-team-instruments`        | II. Entender quién persigue cada clase de observación y asignarle su instrumento.                  | Emparejar tres parejas         | **Asigna a cada miembro del equipo el instrumento que necesita para su tarea.**                                                                                                              | `Alba Ríos — observar animales bajo el hielo` ↔ `Cámara submarina`; `Álex Vega — escuchar la señal en el agua` ↔ `Hidrófono H-2`; `Mara Soler — comparar vibraciones del terreno` ↔ `Sismómetro`.             | Las tres parejas anteriores. Un hidrófono escucha sonido bajo el agua; un sismómetro registra movimiento del terreno. La cámara permite identificar visualmente organismos. Cada pareja correcta concede crédito parcial y los intentos fallidos aplican la penalización existente.                                   |                                 35 s |     12 | «Equipo: Alba—cámara; Álex—hidrófono H-2; Mara—sismómetro». Después de completar la prueba se añade también «Punto de observación de la colonia: C4», marcado como posible conexión. | Retratos ilustrados sencillos y siluetas inequívocas de los tres instrumentos.                                               | F4, F5. Personajes y coordenada ficticios.                                                          |
+| 6 · `antarctica-weddell-seal`            | III. Nombrar lo observado antes de atribuirle la señal.                                            | Imagen progresiva              | **¿Qué animal aparece bajo el hielo?**                                                                                                                                                       | Respuesta principal `foca de Weddell`. Aceptadas: `foca`, `foca Weddell`, `foca de Weddell`. Revelado progresivo de 12 s; un único intento.                                                                   | **Foca de Weddell**. Reconocer una foca basta para acertar: la subespecie no debe convertirse en conocimiento previo obligatorio. Las focas de Weddell producen vocalizaciones submarinas, pero ver una cerca no demuestra que sea el origen de la señal.                                                             |                                 30 s |     12 | «Observación visual: foca de Weddell bajo el hielo».                                                                                                                                 | Ilustración original submarina, sin texto, que muestre cuerpo moteado, aletas y la cara de una foca bajo una placa de hielo. | F6, F7.                                                                                             |
+| 7 · `antarctica-sensor-reading`          | III. Separar observación e interpretación y descartar el fallo de un único receptor.               | Elección múltiple con gráfico  | **Durante el mismo minuto, H-1 y H-2 registran pulsos a los 0 y 40 segundos. El sismómetro no muestra una variación coincidente. ¿Qué conclusión permiten los datos?**                       | `El Erebus ha entrado en erupción`; `La señal aparece en dos puntos de escucha bajo el agua, pero su origen sigue sin determinarse`; `H-2 está averiado`; `La foca observada produce necesariamente la señal` | **La señal aparece en dos puntos de escucha bajo el agua, pero su origen sigue sin determinarse**. La coincidencia en dos hidrófonos debilita la hipótesis de un fallo aislado. La ausencia de una variación simultánea en este sismómetro no identifica el origen y tampoco permite atribuirlo a un animal concreto. |                                 35 s |     12 | «Registro: pulsos en H-1 y H-2 cada 40 s; sin variación simultánea en el sismómetro; origen no determinado».                                                                         | Gráfico original con tres bandas sincronizadas, ejes de 0–60 s y picos a 0 y 40 s solo en H-1/H-2.                           | F4, F5, F6; registros ficticios.                                                                    |
+| 8 · `antarctica-penguin-trajectory`      | III. Cerrar el cuaderno con una observación objetiva, sin explicar el comportamiento del pingüino. | Elección múltiple con mapa A–D | **El pingüino parte del punto C4. La brújula marca 270°. Consulta el cuaderno y elige la trayectoria que debes registrar.**                                                                  | `Ruta A`: desde C4 a 270°; `Ruta B`: desde C4 a 240°; `Ruta C`: desde C4 a 060°; `Ruta D`: desde B4 a 240°.                                                                                                   | **Ruta B**. El cuaderno indica restar 30°: `270° − 30° = 240°`. La ruta comienza en C4 y avanza al suroeste, hacia el interior. Los otros recorridos representan ignorar la corrección, invertir el rumbo o usar un origen incorrecto.                                                                                |                                 40 s |     16 | Antes de activar el reloj se añade «Observación final: lectura de brújula 270°», marcada como posible conexión. Al responder: «Trayectoria registrada: C4, rumbo de mapa 240°».      | Mapa original descrito en el brief final, con rutas etiquetadas mediante letra, patrón y forma.                              | Datos de misión ficticios; F3 respalda el uso de puntos y rumbos para navegación.                   |
 
-Después, la coordinadora entrega un equipo de abrigo incompleto.
+### Etiquetado previsto
 
-> En otro lugar podrías equivocarte y volver dentro. Aquí fuera, equivocarse forma parte del informe.
+Solo se usan IDs ya existentes en la taxonomía del proyecto.
 
-La segunda prueba pide escoger la capa adecuada, interpretar una temperatura o decidir qué elemento falta. Al terminar, el cuaderno registra el rumbo y las condiciones meteorológicas. El tutorial queda integrado en la ficción.
+| Pregunta | Dominios                         | Topics             | Habilidades cognitivas                      | Habilidades de formato          | Habilidades vitales         |
+| -------- | -------------------------------- | ------------------ | ------------------------------------------- | ------------------------------- | --------------------------- |
+| 1        | `geography`, `mathematics`       | `orientation`      | `logical_reasoning`, `problem_solving`      | `calculation`, `interpretation` | `adaptability`              |
+| 2        | `natural_sciences`               | `weather`          | `decision_making`, `comprehension`          | `interpretation`                | `health_self_care`          |
+| 3        | `mathematics`                    | `memory_training`  | `memory`                                    | `recall`                        | `organization_productivity` |
+| 4        | `mathematics`, `technology`      | `arithmetic`       | `quantitative_reasoning`, `problem_solving` | `calculation`, `estimation`     | `organization_productivity` |
+| 5        | `natural_sciences`, `technology` | `scientists`       | `comprehension`, `scientific_reasoning`     | `classification`, `deduction`   | `organization_productivity` |
+| 6        | `natural_sciences`               | `biology_taxonomy` | `pattern_recognition`, `memory`             | `recall`                        | `environmental_awareness`   |
+| 7        | `natural_sciences`, `technology` | `sound_waves`      | `scientific_reasoning`, `critical_thinking` | `interpretation`, `deduction`   | `environmental_awareness`   |
+| 8        | `geography`, `mathematics`       | `orientation`      | `logical_reasoning`, `problem_solving`      | `calculation`, `interpretation` | `adaptability`              |
 
-### II. La estación: preparar la salida
+## Cuaderno de campo
 
-McMurdo aparece como una pequeña ciudad industrial: almacenes, vehículos, dormitorios, laboratorios y tuberías junto a un paisaje inmenso. Lo sublime convive con tareas muy mundanas.
+### Reglas
 
-La coordinadora presenta rápidamente al equipo: una especialista en organismos bajo el hielo, un técnico de instrumentos y una vulcanóloga que trabaja con datos del Erebus. No hay tiempo para largas biografías; cada persona está ocupada preparando la salida.
+- El cuaderno comienza vacío y solo muestra entradas cuyo momento narrativo ya ha ocurrido.
+- Cada entrada de las preguntas 1–7 se desbloquea al terminar la prueba, con independencia de
+  que la respuesta sea correcta, parcial, incorrecta o quede sin responder.
+- El cuaderno registra la lectura correcta producida por el equipo o el instrumento, no corrige
+  retroactivamente la puntuación del jugador.
+- La entrada final de 270° se añade durante `scene-penguin`, antes de iniciar la pregunta 8.
+- Las entradas 1, 5 y final muestran un icono neutro de clip y el texto «Puede estar
+  relacionado». El icono no explica la operación ni destaca la respuesta.
+- El jugador puede abrir y cerrar el cuaderno durante cualquier prueba. El cronómetro sigue
+  corriendo mientras lo consulta porque interpretar la información sí forma parte de la prueba.
+- Las escenas pueden mostrar el cuaderno sin activar el cronómetro.
+- La revisión conserva todas las entradas, incluida la trayectoria registrada después de la
+  pregunta 8.
 
-El técnico muestra un almacén durante unos segundos:
+### Inventario de entradas
 
-> El equipo necesita tres cosas concretas. Si vuelves con cuatro, alguien tendrá que cargar peso inútil durante seis horas.
+| ID                   | Se desbloquea   | Texto visible                                                                                  | Relevancia final    |
+| -------------------- | --------------- | ---------------------------------------------------------------------------------------------- | ------------------- |
+| `note-calibration`   | Después de la 1 | Calibración: rumbo de mapa = lectura de brújula − 30°.                                         | Marcada; necesaria. |
+| `note-weather`       | Después de la 2 | Condiciones al aterrizar: −18 °C. Capas: base + aislamiento + cortavientos.                    | Ambiental.          |
+| `note-storage`       | Después de la 3 | H-2: arriba izquierda. Baterías: abajo izquierda. Cámara: abajo derecha.                       | Contextual.         |
+| `note-batteries`     | Después de la 4 | 12 baterías para 4 radios; incluye una reserva por persona.                                    | Contextual.         |
+| `note-team`          | Después de la 5 | Alba—cámara. Álex—hidrófono H-2. Mara—sismómetro.                                              | Contextual.         |
+| `note-location`      | Después de la 5 | Punto de observación de la colonia: C4.                                                        | Marcada; necesaria. |
+| `note-species`       | Después de la 6 | Observación visual: foca de Weddell bajo el hielo.                                             | Contextual.         |
+| `note-signal`        | Después de la 7 | H-1 y H-2: pulsos cada 40 s. Sin variación simultánea en el sismómetro. Origen no determinado. | Contextual.         |
+| `note-final-bearing` | Antes de la 8   | Observación final: lectura de brújula 270°.                                                    | Marcada; necesaria. |
+| `note-final-route`   | Después de la 8 | Trayectoria registrada: C4, rumbo de mapa 240°.                                                | Resultado final.    |
 
-La tercera prueba consiste en recordar la posición de los objetos necesarios. Después, la especialista pide repartir raciones, baterías o combustible:
+## Metapuzle final resuelto
 
-> La matemática aquí no es una asignatura. Es cuánto dura una persona cuando la radio deja de funcionar.
+El metapuzle no depende de recordar respuestas anteriores. Combina tres observaciones visibles en
+el cuaderno:
 
-La cuarta prueba es el cálculo de suministros. Finalmente, el técnico entrega varias fichas y notas incompletas:
+1. El punto de partida es **C4**.
+2. La lectura final de brújula es **270°**.
+3. La calibración indica **restar 30°** para trasladar la lectura al mapa.
 
-> No memorices los nombres. Mira lo que persigue cada persona.
+Por tanto:
 
-La quinta prueba relaciona investigadores, especialidades e instrumentos. Al resolverla, el jugador entiende quién es quién a través de sus tareas y el cuaderno incorpora una coordenada, una temperatura y el nombre del instrumento que está registrando la señal.
+```text
+270° − 30° = 240°
+origen C4 + rumbo 240° = Ruta B
+```
 
-Antes de partir, el técnico vuelve a mirar la pantalla:
+### Especificación del mapa final
 
-> La señal sigue ahí. Exactamente cada cuarenta segundos.
+- Cuadrícula 5×5, columnas A–E de izquierda a derecha y filas 1–5 de arriba abajo.
+- Norte de mapa arriba, indicado con flecha y palabra `NORTE`.
+- Mar en el borde derecho; interior y silueta de montañas en el borde izquierdo.
+- Colonia representada en C4 con un símbolo y la etiqueta textual `Colonia · C4`.
+- Ruta A: sale de C4 hacia 270°, línea discontinua de trazos largos.
+- Ruta B: sale de C4 hacia 240°, línea continua con marcas transversales; es la correcta.
+- Ruta C: sale de C4 hacia 060°, línea de puntos.
+- Ruta D: sale de B4 hacia 240°, línea de trazo y punto.
+- Cada ruta lleva su letra en el inicio y en el extremo. Las letras, patrones y geometría permiten
+  distinguirlas sin color.
+- Texto alternativo: «Mapa de cuadrícula A–E por 1–5. La colonia está en C4. A sale de C4 al
+  oeste; B sale de C4 al suroeste; C sale de C4 al nordeste; D sale de B4 al suroeste».
 
-### III. Más allá del hielo: observar antes de interpretar
+### Distractores
 
-El vehículo abandona la estación. El paisaje se vacía, la radio funciona a intervalos y el equipo deja de hablar. Llegan a un agujero abierto en el hielo y hacen descender una cámara.
+| Ruta | Error representado        | Por qué no es válida                             |
+| ---- | ------------------------- | ------------------------------------------------ |
+| A    | Ignorar la calibración    | Usa directamente 270° en vez de restar 30°.      |
+| B    | Ninguno                   | Empieza en C4 y aplica la corrección hasta 240°. |
+| C    | Invertir el rumbo         | Usa 060°, la dirección opuesta a 240°.           |
+| D    | Usar un origen incorrecto | Aplica 240°, pero empieza en B4 en lugar de C4.  |
 
-La imagen aparece cubierta de oscuridad y se revela poco a poco.
+Después de la respuesta, la explicación muestra el cálculo y registra el resultado. Solo entonces
+aparece `scene-epilogue`. «But why?» no es una pregunta, no tiene solución, no concede puntos y no
+atribuye causas al comportamiento del pingüino.
 
-> No intentes adivinar qué es. Intenta reconocer qué clase de mundo estás mirando.
+## Briefs de recursos visuales
 
-La sexta prueba consiste en identificar una criatura o una forma de vida mediante una imagen progresiva o varias pistas. La observación se incorpora al cuaderno.
+Todos los recursos serán ilustraciones originales o composiciones creadas expresamente para el
+juego. Formato maestro recomendado: 1600×1000 px o SVG equivalente, composición segura para
+móvil, contraste WCAG AA en textos y símbolos, y significado redundante mediante texto, forma o
+patrón.
 
-La vulcanóloga compara la imagen con los registros del instrumento y muestra una gráfica:
+### Brújula y tarjeta de calibración
 
-> Este es el momento exacto en el que la señal cambió. ¿Qué ves tú?
+- Vista cenital de una brújula que marque 090° junto a una tarjeta con la fórmula visible.
+- Mini mapa con cuatro flechas etiquetadas `060°`, `090°`, `120°` y `270°`.
+- No representar la corrección de 30° como declinación geográfica real.
+- Texto alternativo: «Brújula con lectura 090° y tarjeta que indica restar 30° para obtener el
+  rumbo de mapa».
 
-La séptima prueba pide interpretar los datos, ordenar una cadena alimentaria o detectar una anomalía. La respuesta elimina algunas explicaciones, pero no resuelve por completo el fenómeno. El equipo sigue sin saber si escucha al hielo, al volcán o a algo vivo.
+### Almacén 2×2
 
-La jornada de campo parece terminada. El equipo recoge los instrumentos y empieza el regreso a la estación.
+- Tres cajas con silueta, etiqueta y símbolo distintos: ondas para H-2, batería para suministros y
+  cámara para imagen submarina.
+- Cuarta celda claramente vacía mediante un contorno rayado y la etiqueta `Hueco libre`.
+- Evitar detalles pequeños que conviertan la memoria en una prueba de agudeza visual.
 
-### Cierre: el pingüino
+### Foca bajo el hielo
 
-Al pasar cerca de una colonia, el jugador ve que la mayoría de los pingüinos se dirige hacia el mar. Entonces uno se separa del grupo.
+- Escena submarina oscura con la parte inferior del hielo visible y una foca de Weddell completa.
+- El desenfoque inicial debe ocultar detalles sin confundirla deliberadamente con otro animal.
+- No usar una fotografía o fotograma del documental como base visible.
+- La solución accesible acepta el nivel general «foca».
 
-Una de las investigadoras lo observa durante unos segundos y entrega el cuaderno al jugador:
+### Gráfico de sensores
 
-> Anota su dirección.
+- Tres bandas apiladas con la misma escala temporal de 0–60 s: `Hidrófono H-1`, `Hidrófono H-2`
+  y `Sismómetro`.
+- H-1 y H-2 muestran pulsos inequívocos en 0 y 40 s; el sismómetro mantiene ruido basal sin pico
+  coincidente.
+- Los pulsos se distinguen por posición y forma, no solo por color.
+- Texto alternativo equivalente a todos los datos necesarios para responder.
 
-La octava y última prueba es objetiva y puntuable: el jugador calcula un rumbo, estima una distancia, determina cuánto tardará en alcanzar un punto o identifica la trayectoria que sigue. No debe preguntar por qué se marcha; debe limitarse a registrar lo que puede observar.
+### Mapa de trayectorias
 
-Cuando la respuesta queda registrada, el pingüino continúa caminando hacia el interior, alejándose del mar y de la colonia. La investigadora explica que, aunque alguien intentara devolverlo, probablemente volvería a marcharse. Nadie interviene.
+- Seguir exactamente la cuadrícula, rutas, patrones y texto alternativo definidos en la sección
+  del metapuzle.
+- La ruta B no debe destacar visualmente sobre las demás.
+- El pingüino y las montañas son ambientales; la solución depende solo de C4, la calibración y el
+  rumbo.
 
-La imagen se aleja. El pingüino sigue avanzando hacia las montañas.
+## Puntuación y tiempo
 
-La pantalla queda en negro:
+Los máximos son `12 + 12 + 12 + 12 + 12 + 12 + 12 + 16 = 100`. La prueba final pesa más que
+una prueba ordinaria, pero representa solo el 16 % del total y no decide por sí sola el resultado.
 
-> But why?
+Se reutilizan las políticas actuales de cada formato:
 
-La frase es el epílogo, no una pregunta jugable. No tiene respuesta, no concede puntos y no necesita una explicación adicional. El jugador vuelve a la estación y recibe sus resultados después de haber visto cómo la jornada termina en algo que puede observar, pero no comprender.
+- elección múltiple e imagen progresiva: resolución binaria ajustada por velocidad;
+- memoria relámpago y emparejar: crédito parcial por elementos correctos y conservación del
+  progreso compatible con el timeout;
+- estimación: proximidad al valor 12 y velocidad, con tolerancia 4;
+- emparejar: penalización existente por intentos incorrectos.
 
-## El cuaderno de campo
+La suma de límites puntuables es 238 segundos. La duración esperada de interacción es de unos 190
+segundos; con 86 segundos de escenas y aproximadamente 5 segundos de transiciones, la sesión
+objetivo dura alrededor de **4 min 41 s**. Una partida que agote todos los límites puede acercarse a
+5 min 30 s y sigue avanzando automáticamente.
 
-Durante el desafío aparecen algunos datos que parecen secundarios: una coordenada, una temperatura, el nombre de una especie, un símbolo o una cifra. El juego los guarda automáticamente en un cuaderno visible.
+## Resolución en frío y casos de fallo
 
-La octava prueba utiliza parte de esa información como un pequeño metapuzle. El jugador puede revisar el cuaderno durante la partida; la dificultad está en interpretar y relacionar los datos, no en recordar detalles arbitrarios.
+### Resolución sin conocimiento externo
 
-El cuaderno debe:
+1. La pregunta 1 entrega la fórmula necesaria.
+2. La pregunta 2 describe las capas presentes y pregunta por la función ausente.
+3. La pregunta 3 muestra toda la disposición antes de pedir reconstruirla.
+4. La pregunta 4 proporciona personas, duración, autonomía y reserva.
+5. La pregunta 5 explica la tarea de cada persona y ofrece instrumentos con funciones
+   reconocibles en el propio texto y las ilustraciones.
+6. La pregunta 6 acepta «foca», visible en la imagen, sin exigir recordar la película ni dominar
+   taxonomía.
+7. La pregunta 7 incluye las tres series y limita la respuesta a lo que muestran.
+8. La pregunta 8 puede resolverse consultando tres entradas marcadas del cuaderno.
 
-- mostrar solo la información descubierta;
-- permitir revisar los datos durante la partida;
-- indicar qué elementos pueden ser relevantes sin revelar la solución;
-- conservar su contenido en la revisión final;
-- usar una solución única y comprobable.
+### Simulación de errores
 
-## Pruebas y formatos de la primera versión
+- Fallar o agotar el tiempo en las preguntas 1–7 no impide que el instrumento o el equipo añadan
+  la observación correspondiente al cuaderno.
+- La prueba 8 siempre recibe `note-calibration`, `note-location` y `note-final-bearing`.
+- Fallar la pregunta 8 registra la respuesta enviada para la revisión, muestra después la
+  trayectoria correcta y continúa al epílogo.
+- Ningún error altera escenas, pruebas posteriores ni desenlace.
 
-La primera versión debe reutilizar formatos ya disponibles:
+### Solución única
 
-| Momento | Prueba | Formato previsto |
-| --- | --- | --- |
-| Llegada | Orientación y localización | Elección múltiple o mapa de calor |
-| Llegada | Frío y equipamiento | Elección múltiple o verdadero/falso |
-| Estación | Almacén | Memoria relámpago |
-| Estación | Suministros | Estimación o respuesta corta |
-| Estación | Investigadores | Emparejar |
-| Campo | Vida bajo el hielo | Imagen progresiva o pistas |
-| Campo | Datos de investigación | Ordenar, clasificar o elección con gráfico |
-| Final | Pingüino y cuaderno | Orientación, estimación o metapuzle lineal |
+Solo la ruta B satisface simultáneamente los tres requisitos: origen C4, corrección de −30° y rumbo
+240°. A comparte origen pero no corrección; C comparte origen pero invierte el rumbo; D comparte
+rumbo pero no origen.
 
-El globo giratorio, el audio y las interacciones científicas complejas quedan fuera de esta primera versión. Podrán añadirse como formatos o medios posteriores si el modo demuestra interés.
+## Fuentes primarias y límites factuales
 
-## Reglas competitivas
+Consulta editorial realizada el 9 de agosto de 2026. Las fuentes respaldan el entorno y los
+principios científicos; los nombres, coordenadas, temperaturas de la jornada, baterías, lecturas y
+señal son datos ficticios de la misión.
 
-- Puntuación máxima de 100 puntos.
-- Cada prueba puntúa por acierto, precisión y velocidad cuando el formato lo permita.
-- El tiempo de lectura de escenas, animaciones y transiciones no cuenta para la puntuación.
-- Todos recorren la misma secuencia y no hay decisiones ramificadas que alteren las pruebas.
-- Un fallo no bloquea el avance narrativo; reduce la puntuación y el jugador continúa.
-- Las preguntas y el metapuzle deben poder resolverse sin conocimiento previo del documental.
-- El epílogo «But why?» aparece después de la última respuesta y no forma parte del ranking.
-- La revisión final muestra las respuestas, las explicaciones y los datos del cuaderno.
+| Código | Fuente institucional                                                                                                                                                                           | Qué respalda                                                                                                                                                                               | Aplicación y límite                                                                                                                                 |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1     | [NSF — McMurdo Station](https://www.nsf.gov/geo/opp/ail/mcmurdo-station)                                                                                                                       | McMurdo es una estación costera y centro logístico próximo al Erebus; alberga investigación de biología, geología, geofísica, hielo y océano. La página publica una media anual de −18 °C. | Justifica el entorno industrial, la variedad del equipo y una temperatura ficticia plausible. No convierte −18 °C en la temperatura de un día real. |
+| F2     | [U.S. Antarctic Program — Continental Field Manual](https://www.usap.gov/travelanddeployment/540/) y [manual completo](https://www.usap.gov/travelAndDeployment/documents/USAPFieldManual.pdf) | Planificación, comunicaciones, meteorología antártica, whiteouts y vestimenta por capas para trabajo de campo.                                                                             | Sustenta las pruebas de abrigo y preparación. El equipo y la autonomía concretos son ficticios.                                                     |
+| F3     | [Australian Antarctic Program — Navigation](https://www.antarctica.gov.au/antarctic-operations/travel-and-logistics/navigation/)                                                               | Uso de coordenadas, waypoints, mapas y navegación instrumental en desplazamientos antárticos.                                                                                              | Sustenta el lenguaje de rutas y puntos. La cuadrícula C4 y la corrección de 30° son convenciones internas.                                          |
+| F4     | [U.S. Geological Survey — Hydrophone](https://www.usgs.gov/media/images/hydrophone-0)                                                                                                          | Un hidrófono es un micrófono empleado para escuchar sonidos bajo el agua.                                                                                                                  | Sustenta la función de H-1 y H-2; sus registros son ficticios.                                                                                      |
+| F5     | [U.S. Geological Survey — Seismographs](https://www.usgs.gov/programs/earthquake-hazards/seismographs-keeping-track-earthquakes)                                                               | Los sismómetros registran ondas sísmicas y movimiento del terreno.                                                                                                                         | Sustenta la comparación instrumental; una banda plana ficticia no descarta universalmente toda causa geológica.                                     |
+| F6     | [NOAA Fisheries — Sounds in the Ocean: Mammals](https://www.fisheries.noaa.gov/national/science-data/sounds-ocean-mammals)                                                                     | Las focas producen sonidos submarinos y NOAA incluye vocalizaciones y espectrogramas de foca de Weddell.                                                                                   | Sustenta que una foca sea una hipótesis plausible, nunca una conclusión derivada solo de verla.                                                     |
+| F7     | [Australian Antarctic Program — Weddell seal](https://www.antarctica.gov.au/about-antarctica/animals/seals/weddell-seal/)                                                                      | Las focas de Weddell viven asociadas al hielo fijo, mantienen orificios para respirar y vocalizan bajo el agua.                                                                            | Sustenta la observación bajo el hielo y sus rasgos generales; la presencia concreta en la misión sigue siendo ficticia.                             |
 
-El peso exacto de cada prueba se cerrará al calibrar la dificultad. La prueba final puede tener un valor mayor por ser el cierre, pero no debe decidir por sí sola el ranking.
+## Contrato para la implementación posterior
 
-## Implementación prevista
+La implementación debe conservar estos invariantes:
 
-La definición del desafío necesitará representar movimientos narrativos además de una lista plana de preguntas. Una forma inicial sería:
+- `mode: "narrative"`, tres movimientos y ocho IDs en el orden fijado;
+- escenas y epílogo fuera del tiempo competitivo;
+- entradas del cuaderno desbloqueadas por progreso, no por acierto;
+- pregunta 8 resuelta contra datos visibles del cuaderno;
+- puntuación máxima exacta de 100;
+- revisión con respuestas, explicaciones y cuaderno completo;
+- recursos propios, accesibles y sin dependencia del documental.
+
+Una estructura inicial compatible con este contrato sería:
 
 ```ts
 type NarrativeBeat = {
@@ -161,24 +311,17 @@ type NarrativeBeat = {
 };
 ```
 
-La definición de `Encuentros en el fin del mundo` tendría `mode: "narrative"`, tres movimientos y ocho IDs de preguntas. El motor puede reutilizar la evaluación, puntuación, revisión y componentes de los formatos existentes. El trabajo específico del modo sería:
+El modelo definitivo podrá separar escenas, notas y epílogo, pero no debe cambiar el orden ni las
+reglas editoriales de este documento sin actualizar primero esta fuente de verdad.
 
-1. añadir el tipo de desafío narrativo y resolver sus movimientos;
-2. mostrar escenas breves antes de cada movimiento;
-3. mantener el estado del cuaderno durante la sesión;
-4. añadir la prueba final que consume ese estado;
-5. mostrar un epílogo fijo y los resultados competitivos.
+## Criterios de aceptación del desafío implementado
 
-No se implementarán en esta primera versión persistencia multijugador, ramas narrativas, audio, tiempo real ni formatos nuevos complejos.
-
-## Criterios de aceptación
-
-La primera versión estará lista para validación cuando:
-
-- se pueda completar la jornada de principio a fin en una única sesión;
-- la narración explique por qué aparece cada prueba;
-- las escenas no interrumpan el ritmo ni consuman tiempo competitivo;
-- el cuaderno participe realmente en la prueba final;
-- la puntuación sea comparable con otros desafíos de 100 puntos;
-- el desafío funcione sin conocer la película de Herzog;
-- el epílogo «But why?» conserve el tono contemplativo y abierto del pingüino que continúa su camino.
+- Se completa la jornada de principio a fin en una única sesión.
+- La narración explica por qué aparece cada prueba.
+- Las escenas no consumen tiempo puntuable.
+- El cuaderno sigue siendo suficiente después de cualquier combinación de fallos.
+- El metapuzle solo admite la ruta B y explica por qué se descartan A, C y D.
+- La puntuación es comparable con otros desafíos de 100 puntos.
+- Todo puede resolverse sin conocer la película de Herzog.
+- Los recursos son legibles en móvil y no transmiten información solo mediante color.
+- El epílogo «But why?» aparece después de la última respuesta y conserva un tono abierto.
