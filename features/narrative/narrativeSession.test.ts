@@ -36,7 +36,7 @@ function reachFirstQuestion() {
 }
 
 describe("narrative session", () => {
-  it("builds the exact prologue and Movement I sequence", () => {
+  it("builds the exact prologue and Movements I–II sequence", () => {
     const sequence = getNarrativeSequence(getNarrativeChallenge());
 
     expect(
@@ -47,6 +47,24 @@ describe("narrative session", () => {
       "antarctica-orientation-calibration",
       "scene-after-q1",
       "antarctica-cold-layer",
+      "scene-station",
+      "antarctica-warehouse-memory",
+      "scene-after-q3",
+      "antarctica-radio-batteries",
+      "scene-after-q4",
+      "antarctica-team-instruments",
+      "scene-departure",
+    ]);
+  });
+
+  it("keeps all six notebook entries in narrative order", () => {
+    expect(getNarrativeChallenge().notebookEntries.map((entry) => entry.id)).toEqual([
+      "note-calibration",
+      "note-weather",
+      "note-storage",
+      "note-batteries",
+      "note-team",
+      "note-location",
     ]);
   });
 
@@ -66,6 +84,11 @@ describe("narrative session", () => {
     [
       "fallo",
       { ...correctResult, answer: "090°", status: "incorrect", isCorrect: false, points: 0 },
+      false,
+    ],
+    [
+      "parcial",
+      { ...correctResult, answer: "090°", status: "partial", isCorrect: false, points: 4 },
       false,
     ],
     [
@@ -116,33 +139,53 @@ describe("narrative session", () => {
     );
   });
 
-  it("uses the final question reaction on the prototype result", () => {
+  it("uses the final question reaction at the start of the departure scene", () => {
     const sequence = getNarrativeSequence(getNarrativeChallenge());
     const result = {
       ...correctResult,
-      questionId: "antarctica-cold-layer",
-      answer: "Una capa aislante de forro polar",
+      questionId: "antarctica-team-instruments",
+      answer: { alba: "camera", alex: "hydrophone", mara: "seismometer" },
     };
 
-    expect(getNarrativeReaction(sequence[4], result, false)).toEqual(
-      sequence[4].type === "question" ? sequence[4].reactions.correct : [],
+    expect(getNarrativeReaction(sequence[10], result, false)).toEqual(
+      sequence[10].type === "question" ? sequence[10].reactions.correct : [],
     );
   });
 
-  it("finishes after the second answer instead of creating another scene", () => {
+  it("finishes after the departure scene with all observations preserved", () => {
     const state = {
       ...reachFirstQuestion(),
-      phase: "transition" as const,
-      stepIndex: 4,
-      results: [correctResult, { ...correctResult, questionId: "antarctica-cold-layer" }],
-      unlockedEntryIds: ["note-calibration", "note-weather"],
-      locked: true,
+      phase: "scene" as const,
+      stepIndex: 11,
+      results: [
+        correctResult,
+        { ...correctResult, questionId: "antarctica-cold-layer" },
+        { ...correctResult, questionId: "antarctica-warehouse-memory" },
+        { ...correctResult, questionId: "antarctica-radio-batteries" },
+        { ...correctResult, questionId: "antarctica-team-instruments" },
+      ],
+      unlockedEntryIds: [
+        "note-calibration",
+        "note-weather",
+        "note-storage",
+        "note-batteries",
+        "note-team",
+        "note-location",
+      ],
+      locked: false,
     };
 
     expect(narrativeSessionReducer(state, { type: "advance", nextStepType: null })).toMatchObject({
       phase: "prototype-results",
-      stepIndex: 4,
-      unlockedEntryIds: ["note-calibration", "note-weather"],
+      stepIndex: 11,
+      unlockedEntryIds: [
+        "note-calibration",
+        "note-weather",
+        "note-storage",
+        "note-batteries",
+        "note-team",
+        "note-location",
+      ],
     });
   });
 

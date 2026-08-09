@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+  <title id="title">Hueco libre</title>
+  <desc id="desc">Espacio vacío de almacén indicado mediante un contorno y rayas diagonales.</desc>
+  <defs>
+    <pattern id="hatch" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <path d="M0 0v20" stroke="#2b6078" stroke-width="7"/>
+    </pattern>
+  </defs>
+  <rect width="320" height="220" rx="24" fill="#071b2b"/>
+  <rect x="42" y="39" width="236" height="142" rx="18" fill="url(#hatch)" stroke="#8be8ff" stroke-width="7" stroke-dasharray="18 12"/>
+  <rect x="86" y="86" width="148" height="48" rx="24" fill="#071b2b" stroke="#8be8ff" stroke-width="3"/>
+  <text x="160" y="117" text-anchor="middle" fill="#d8f3ff" font-family="ui-monospace, monospace" font-size="20" font-weight="700">HUECO LIBRE</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" role="img" aria-labelledby="title desc">
+  <title id="title">Alba Ríos</title>
+  <desc id="desc">Retrato ilustrado de Alba Ríos, especialista en observación biológica.</desc>
+  <rect width="260" height="220" rx="24" fill="#09263a"/>
+  <circle cx="130" cy="82" r="46" fill="#b86d4f"/>
+  <path d="M84 84c0-48 23-65 50-65 33 0 49 23 44 69-12-25-24-34-47-34-19 0-32 10-47 30z" fill="#17151b"/>
+  <path d="M54 220c4-70 32-102 76-102s72 32 76 102z" fill="#f3c84b"/>
+  <path d="M99 88c9 8 18 11 31 11s24-3 33-11" fill="none" stroke="#7a3f36" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="113" cy="76" r="4" fill="#07121c"/><circle cx="151" cy="76" r="4" fill="#07121c"/>
+  <circle cx="189" cy="179" r="28" fill="#071b2b" stroke="#8be8ff" stroke-width="4"/>
+  <path d="M176 181c10-13 23-13 31 0-9 10-22 12-31 0z" fill="none" stroke="#8be8ff" stroke-width="4"/>
+  <circle cx="192" cy="178" r="4" fill="#8be8ff"/>
+</svg>

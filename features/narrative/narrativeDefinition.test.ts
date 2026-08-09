@@ -104,7 +104,7 @@ describe("narrative challenge definition", () => {
     );
   });
 
-  it("rejects incomplete scoring and totals other than 24", () => {
+  it("rejects incomplete scoring and totals other than 60", () => {
     const missing = cloneDefinition();
     delete missing.questionPoints["antarctica-cold-layer"];
     expect(() => validateNarrativeChallengeDefinition(missing)).toThrow(
@@ -114,7 +114,7 @@ describe("narrative challenge definition", () => {
     const wrongTotal = cloneDefinition();
     wrongTotal.questionPoints["antarctica-cold-layer"] = 11;
     expect(() => validateNarrativeChallengeDefinition(wrongTotal)).toThrow(
-      "must add up to 24 points",
+      "must add up to 60 points",
     );
 
     const extraQuestion = cloneDefinition();

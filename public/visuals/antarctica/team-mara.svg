@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" role="img" aria-labelledby="title desc">
+  <title id="title">Mara Soler</title>
+  <desc id="desc">Retrato ilustrado de Mara Soler, especialista en registros sísmicos.</desc>
+  <rect width="260" height="220" rx="24" fill="#09263a"/>
+  <circle cx="130" cy="82" r="46" fill="#8f5a43"/>
+  <path d="M83 78c2-44 22-62 48-62 38 0 53 27 46 73-11-25-29-39-52-39-18 0-29 9-42 28z" fill="#101a20"/>
+  <path d="M54 220c4-70 32-102 76-102s72 32 76 102z" fill="#ff6b5d"/>
+  <path d="M110 95c13 8 27 8 40 0" fill="none" stroke="#653a30" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="113" cy="76" r="4" fill="#07121c"/><circle cx="151" cy="76" r="4" fill="#07121c"/>
+  <circle cx="189" cy="179" r="28" fill="#071b2b" stroke="#8be8ff" stroke-width="4"/>
+  <path d="M171 180h10l6-13 7 27 7-18h8" fill="none" stroke="#8be8ff" stroke-width="4" stroke-linejoin="round"/>
+</svg>

@@ -7,7 +7,7 @@ import {
   initialNarrativeSessionState,
   narrativeSessionReducer,
 } from "@/features/narrative/narrativeSession";
-import { calculateTotalScore, evaluateAnswer } from "@/lib/scoring";
+import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
 import type { AnswerValue, NarrativeChallenge } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
@@ -17,6 +17,8 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
   const [state, dispatch] = useReducer(narrativeSessionReducer, initialNarrativeSessionState);
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
+  const draftAnswerRef = useRef<AnswerValue | null>(null);
+  const incorrectAttemptsRef = useRef(0);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentStep = sequence[state.stepIndex];
 
@@ -38,6 +40,8 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
       const nextStep = sequence[nextIndex];
       if (nextStep?.type === "question") {
         answerLock.current = false;
+        draftAnswerRef.current = null;
+        incorrectAttemptsRef.current = 0;
         questionStartedAt.current = performance.now();
       }
       dispatch({ type: "advance", nextStepType: nextStep?.type ?? null });
@@ -48,6 +52,8 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
   const start = useCallback(() => {
     clearAdvanceTimeout();
     answerLock.current = false;
+    draftAnswerRef.current = null;
+    incorrectAttemptsRef.current = 0;
     dispatch({ type: "start" });
   }, [clearAdvanceTimeout]);
 
@@ -70,6 +76,8 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
         answer,
         timeUsed: rawTime,
         timedOut,
+        incorrectAttempts: incorrectAttemptsRef.current,
+        matchingIncorrectAttempts: incorrectAttemptsRef.current,
       });
 
       dispatch({
@@ -89,8 +97,42 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
   const replay = useCallback(() => {
     clearAdvanceTimeout();
     answerLock.current = false;
+    draftAnswerRef.current = null;
+    incorrectAttemptsRef.current = 0;
     dispatch({ type: "replay" });
   }, [clearAdvanceTimeout]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentStep?.type !== "question") return;
+    submitAnswer(
+      getTimedOutAnswer(currentStep.question, {
+        draftAnswer: draftAnswerRef.current,
+        submittedCodes: [],
+      }),
+      true,
+    );
+  }, [currentStep, submitAnswer]);
+
+  const handleAnswerProgress = useCallback((answer: AnswerValue) => {
+    draftAnswerRef.current = answer;
+  }, []);
+
+  const handleIncorrectAttempt = useCallback(() => {
+    incorrectAttemptsRef.current += 1;
+  }, []);
+
+  const handleTimedResponseStart = useCallback(() => {
+    if (
+      currentStep?.type === "question" &&
+      (currentStep.question.type === "flash-memory" ||
+        currentStep.question.type === "simon-sequence" ||
+        currentStep.question.type === "mini-wordle" ||
+        currentStep.question.type === "progressive-image") &&
+      !answerLock.current
+    ) {
+      questionStartedAt.current = performance.now();
+    }
+  }, [currentStep]);
 
   const unlockedEntries = useMemo(
     () => challenge.notebookEntries.filter((entry) => state.unlockedEntryIds.includes(entry.id)),
@@ -125,7 +167,10 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     continueScene,
     replay,
     submitAnswer,
-    handleTimeUp: () => submitAnswer(null, true),
+    handleTimeUp,
+    handleAnswerProgress,
+    handleIncorrectAttempt,
+    handleTimedResponseStart,
     openNotebook: () => dispatch({ type: "open-notebook" }),
     closeNotebook: () => dispatch({ type: "close-notebook" }),
   };

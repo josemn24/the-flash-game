@@ -162,7 +162,7 @@ function MatchingCard({
   return (
     <motion.button
       type="button"
-      className={`${styles.card} ${item.media ? styles.cardMediaOnly : ""} ${selected ? styles.cardSelected : ""} ${matched ? styles.cardMatched : ""} ${invalid ? styles.cardInvalid : ""}`}
+      className={`${styles.card} ${item.media ? styles.cardWithMedia : ""} ${selected ? styles.cardSelected : ""} ${matched ? styles.cardMatched : ""} ${invalid ? styles.cardInvalid : ""}`}
       disabled={disabled}
       aria-label={item.label}
       aria-pressed={selected}
@@ -170,16 +170,14 @@ function MatchingCard({
       whileTap={disabled ? undefined : { scale: 0.98 }}
     >
       {item.media && <QuestionMedia media={item.media} compact />}
-      {!item.media && (
-        <span className={`${styles.cardLabel} ${item.icon ? styles.cardLabelWithIcon : ""}`}>
-          {item.icon && (
-            <span className={styles.cardIcon} aria-hidden="true">
-              {item.icon}
-            </span>
-          )}
-          <span>{item.label}</span>
-        </span>
-      )}
+      <span className={`${styles.cardLabel} ${item.icon ? styles.cardLabelWithIcon : ""}`}>
+        {item.icon && (
+          <span className={styles.cardIcon} aria-hidden="true">
+            {item.icon}
+          </span>
+        )}
+        <span>{item.label}</span>
+      </span>
       {matched && <CheckIcon className={styles.stateIcon} aria-hidden="true" />}
       {invalid && <CrossIcon className={styles.stateIcon} aria-hidden="true" />}
     </motion.button>

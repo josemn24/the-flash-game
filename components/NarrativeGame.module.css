@@ -468,7 +468,7 @@
 
 .resultStats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.6rem;
 }
 
@@ -521,6 +521,10 @@
 .answerStates li[data-status="incorrect"] strong,
 .answerStates li[data-status="unanswered"] strong {
   color: #f3bf78;
+}
+
+.answerStates li[data-status="partial"] strong {
+  color: var(--cyan);
 }
 
 .resultNotebook {
@@ -589,6 +593,10 @@
   .introPanel,
   .resultDetails {
     padding: 1.5rem;
+  }
+
+  .resultStats {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

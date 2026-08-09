@@ -167,7 +167,7 @@ export const challengeDefinitions = {
       "Acompaña a un equipo de campo en la Antártida, registra lo que observas y ayuda a interpretar una señal que se repite cada cuarenta segundos.",
     mode: "narrative",
     implementationStatus: "prototype",
-    maxScore: 24,
+    maxScore: 60,
     prologue: {
       id: "scene-prologue",
       eyebrow: "Prólogo",
@@ -305,6 +305,173 @@ export const challengeDefinitions = {
           },
         ],
       },
+      {
+        id: "station",
+        title: "La estación",
+        steps: [
+          {
+            type: "scene",
+            scene: {
+              id: "scene-station",
+              eyebrow: "Movimiento II · La estación",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "McMurdo surge como una ciudad de almacenes, tuberías y motores. Dentro del depósito, Álex ilumina cuatro huecos, tres cajas y demasiadas etiquetas.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Álex",
+                  text: "El generador está fallando. Mira ahora; cuando se apague, tendrás que recordar cada posición.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-warehouse-memory",
+            unlockEntryIds: ["note-storage"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Álex apaga la linterna.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Álex",
+                  text: "Exacto. Podemos cargar.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Álex ilumina cada posición correcta.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Álex",
+                  text: "Comparamos, anotamos y cargamos.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "La luz de emergencia se enciende. Álex localiza las tres cajas.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-after-q3",
+              eyebrow: "Movimiento II · La estación",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Alba cuenta cuatro radios y te pasa la autonomía: seis horas fuera, tres por batería, más una reserva por persona.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Alba",
+                  text: "Aquí una batería de menos es alguien que deja de poder llamar.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-radio-batteries",
+            unlockEntryIds: ["note-batteries"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Alba cuenta doce baterías.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Alba",
+                  text: "Autonomía y reservas cubiertas.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Alba separa doce baterías y repasa el cálculo contigo.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "El vehículo arranca. Alba completa la carga con doce baterías.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-after-q4",
+              eyebrow: "Movimiento II · La estación",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Tres fichas se deslizan por la mesa: nombres separados de instrumentos. Desde el banco de pruebas llega un pulso; luego, silencio.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "Antes de salir, cada pregunta necesita la herramienta adecuada.",
+                },
+              ],
+            },
+          },
+          {
+            type: "question",
+            questionId: "antarctica-team-instruments",
+            unlockEntryIds: ["note-team", "note-location"],
+            reactions: {
+              correct: [
+                {
+                  type: "narration",
+                  text: "Cada especialista recoge su instrumento. El equipo está listo.",
+                },
+              ],
+              incorrect: [
+                {
+                  type: "narration",
+                  text: "Nora corrige las fichas y cada especialista recoge su herramienta.",
+                },
+              ],
+              timeout: [
+                {
+                  type: "narration",
+                  text: "Llega otro pulso. Nora reparte los instrumentos para partir.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-departure",
+              eyebrow: "Movimiento II · La estación",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Alba guarda la cámara, Mara el sismómetro y Álex el hidrófono H-2. Antes de cerrar, marca C4 en el mapa.",
+                },
+                {
+                  type: "narration",
+                  text: "Un pulso aparece en pantalla. Cuarenta segundos después llega otro. Todos miran el reloj antes de partir.",
+                },
+              ],
+            },
+          },
+        ],
+      },
     ],
     notebookEntries: [
       {
@@ -317,10 +484,33 @@ export const challengeDefinitions = {
         text: "Condiciones al aterrizar: −18 °C. Capas: base + aislamiento + cortavientos.",
         relevance: "context",
       },
+      {
+        id: "note-storage",
+        text: "H-2: arriba izquierda. Baterías: abajo izquierda. Cámara: abajo derecha.",
+        relevance: "context",
+      },
+      {
+        id: "note-batteries",
+        text: "12 baterías para 4 radios; incluye una reserva por persona.",
+        relevance: "context",
+      },
+      {
+        id: "note-team",
+        text: "Alba—cámara. Álex—hidrófono H-2. Mara—sismómetro.",
+        relevance: "context",
+      },
+      {
+        id: "note-location",
+        text: "Punto de observación de la colonia: C4.",
+        relevance: "potential",
+      },
     ],
     questionPoints: {
       "antarctica-orientation-calibration": 12,
       "antarctica-cold-layer": 12,
+      "antarctica-warehouse-memory": 12,
+      "antarctica-radio-batteries": 12,
+      "antarctica-team-instruments": 12,
     },
   },
 } satisfies Record<string, ChallengeDefinition>;

@@ -1753,6 +1753,187 @@ export const questionsById = {
     explanation:
       "La capa intermedia aislante retiene aire caliente entre la capa base seca y el cortavientos exterior.",
   },
+  "antarctica-warehouse-memory": {
+    id: "antarctica-warehouse-memory",
+    type: "flash-memory",
+    category: "Logística",
+    tags: {
+      domains: ["mathematics"],
+      topics: ["memory_training"],
+      cognitiveSkills: ["memory"],
+      formatSkills: ["recall"],
+      lifeSkills: ["organization_productivity"],
+    },
+    question:
+      "La luz se apaga en cuatro segundos. Reconstruye la posición de las tres cajas y del hueco libre.",
+    revealDuration: 4,
+    grid: { rows: 2, columns: 2 },
+    items: [
+      {
+        id: "batteries",
+        label: "Baterías",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/supply-batteries.svg",
+          alt: "Caja de suministros identificada con el símbolo de una batería",
+          fit: "contain",
+        },
+        correctPosition: 2,
+      },
+      {
+        id: "underwater-camera",
+        label: "Cámara submarina",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/instrument-camera.svg",
+          alt: "Caja de cámara submarina identificada con una lente",
+          fit: "contain",
+        },
+        correctPosition: 3,
+      },
+      {
+        id: "empty-slot",
+        label: "Hueco libre",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/warehouse-empty.svg",
+          alt: "Hueco libre marcado con un contorno rayado",
+          fit: "contain",
+        },
+        correctPosition: 1,
+      },
+      {
+        id: "hydrophone-h2",
+        label: "Hidrófono H-2",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/instrument-hydrophone.svg",
+          alt: "Caja de hidrófono H-2 identificada con ondas submarinas",
+          fit: "contain",
+        },
+        correctPosition: 0,
+      },
+    ],
+    timeLimit: 30,
+    points: 100,
+    explanation:
+      "La disposición era: H-2 arriba izquierda, hueco libre arriba derecha, baterías abajo izquierda y cámara submarina abajo derecha.",
+  },
+  "antarctica-radio-batteries": {
+    id: "antarctica-radio-batteries",
+    type: "estimation",
+    category: "Comunicaciones",
+    tags: {
+      domains: ["mathematics", "technology"],
+      topics: ["arithmetic"],
+      cognitiveSkills: ["quantitative_reasoning", "problem_solving"],
+      formatSkills: ["calculation", "estimation"],
+      lifeSkills: ["organization_productivity"],
+    },
+    question:
+      "Salen cuatro personas durante seis horas. Cada batería alimenta una radio durante tres horas y cada persona debe llevar además una batería de reserva. ¿Cuántas baterías hay que cargar?",
+    correctAnswer: 12,
+    min: 4,
+    max: 20,
+    step: 1,
+    initialValue: 8,
+    tolerance: 4,
+    unit: "baterías",
+    media: {
+      type: "image",
+      src: "/visuals/antarctica/radio-plan.svg",
+      alt: "Ficha de misión: cuatro personas, seis horas fuera, tres horas de autonomía por batería y una reserva por persona",
+      fit: "contain",
+    },
+    timeLimit: 30,
+    points: 100,
+    explanation:
+      "Dos baterías por radio cubren seis horas: 4 × 2 = 8. Una reserva adicional para cada persona suma 4; en total hacen falta 12 baterías.",
+  },
+  "antarctica-team-instruments": {
+    id: "antarctica-team-instruments",
+    type: "matching",
+    category: "Equipo científico",
+    tags: {
+      domains: ["natural_sciences", "technology"],
+      topics: ["scientists"],
+      cognitiveSkills: ["comprehension", "scientific_reasoning"],
+      formatSkills: ["classification", "deduction"],
+      lifeSkills: ["organization_productivity"],
+    },
+    question: "Asigna a cada miembro del equipo el instrumento que necesita para su tarea.",
+    leftItems: [
+      {
+        id: "alba",
+        label: "Alba Ríos — observar animales bajo el hielo",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/team-alba.svg",
+          alt: "Retrato ilustrado de Alba Ríos con distintivo de observación biológica",
+          fit: "contain",
+        },
+        correctMatchId: "camera",
+      },
+      {
+        id: "alex",
+        label: "Álex Vega — escuchar la señal en el agua",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/team-alex.svg",
+          alt: "Retrato ilustrado de Álex Vega con distintivo de ondas de sonido",
+          fit: "contain",
+        },
+        correctMatchId: "hydrophone",
+      },
+      {
+        id: "mara",
+        label: "Mara Soler — comparar vibraciones del terreno",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/team-mara.svg",
+          alt: "Retrato ilustrado de Mara Soler con distintivo de registro sísmico",
+          fit: "contain",
+        },
+        correctMatchId: "seismometer",
+      },
+    ],
+    rightItems: [
+      {
+        id: "hydrophone",
+        label: "Hidrófono H-2",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/instrument-hydrophone.svg",
+          alt: "Silueta del hidrófono H-2",
+          fit: "contain",
+        },
+      },
+      {
+        id: "seismometer",
+        label: "Sismómetro",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/instrument-seismometer.svg",
+          alt: "Silueta de un sismómetro con su registro",
+          fit: "contain",
+        },
+      },
+      {
+        id: "camera",
+        label: "Cámara submarina",
+        media: {
+          type: "image",
+          src: "/visuals/antarctica/instrument-camera.svg",
+          alt: "Silueta de una cámara submarina",
+          fit: "contain",
+        },
+      },
+    ],
+    timeLimit: 35,
+    points: 100,
+    explanation:
+      "Alba necesita la cámara para observar organismos; Álex, el hidrófono para escuchar bajo el agua; y Mara, el sismómetro para registrar movimiento del terreno.",
+  },
 } satisfies Record<string, Question>;
 
 export type QuestionId = keyof typeof questionsById;
@@ -1839,5 +2020,11 @@ export const questionGroups = {
     "spain-survival-catalan-dance",
     "spain-survival-oak-tree",
   ],
-  antarcticaNarrative: ["antarctica-orientation-calibration", "antarctica-cold-layer"],
+  antarcticaNarrative: [
+    "antarctica-orientation-calibration",
+    "antarctica-cold-layer",
+    "antarctica-warehouse-memory",
+    "antarctica-radio-batteries",
+    "antarctica-team-instruments",
+  ],
 } satisfies Record<string, QuestionId[]>;

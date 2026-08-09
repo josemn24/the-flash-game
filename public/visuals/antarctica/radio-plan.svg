@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" role="img" aria-labelledby="title desc">
+  <title id="title">Plan de autonomía de radios</title>
+  <desc id="desc">Cuatro personas estarán seis horas fuera. Cada batería dura tres horas y cada persona necesita además una reserva.</desc>
+  <rect width="800" height="360" rx="32" fill="#071b2b"/>
+  <text x="54" y="62" fill="#8be8ff" font-family="ui-monospace, monospace" font-size="22" font-weight="700">PLAN DE COMUNICACIONES</text>
+  <g transform="translate(52 102)">
+    <g fill="#e9f4f7" stroke="#07121c" stroke-width="5">
+      <circle cx="44" cy="35" r="24"/><path d="M8 112c3-42 18-62 36-62s33 20 36 62z"/>
+      <circle cx="130" cy="35" r="24"/><path d="M94 112c3-42 18-62 36-62s33 20 36 62z"/>
+      <circle cx="216" cy="35" r="24"/><path d="M180 112c3-42 18-62 36-62s33 20 36 62z"/>
+      <circle cx="302" cy="35" r="24"/><path d="M266 112c3-42 18-62 36-62s33 20 36 62z"/>
+    </g>
+    <text x="155" y="153" text-anchor="middle" fill="#d8f3ff" font-family="ui-monospace, monospace" font-size="24" font-weight="700">4 PERSONAS</text>
+  </g>
+  <path d="M424 102v188" stroke="#2b6078" stroke-width="3"/>
+  <g transform="translate(480 91)">
+    <rect width="258" height="68" rx="18" fill="#0d3c55"/>
+    <text x="24" y="29" fill="#8be8ff" font-family="ui-monospace, monospace" font-size="15" font-weight="700">TIEMPO FUERA</text>
+    <text x="234" y="47" text-anchor="end" fill="#ffffff" font-family="system-ui, sans-serif" font-size="34" font-weight="800">6 h</text>
+    <rect y="86" width="258" height="68" rx="18" fill="#0d3c55"/>
+    <text x="24" y="115" fill="#8be8ff" font-family="ui-monospace, monospace" font-size="15" font-weight="700">POR BATERÍA</text>
+    <text x="234" y="133" text-anchor="end" fill="#ffffff" font-family="system-ui, sans-serif" font-size="34" font-weight="800">3 h</text>
+    <rect y="172" width="258" height="68" rx="18" fill="#f3c84b"/>
+    <text x="24" y="201" fill="#07121c" font-family="ui-monospace, monospace" font-size="15" font-weight="700">RESERVA</text>
+    <text x="234" y="219" text-anchor="end" fill="#07121c" font-family="system-ui, sans-serif" font-size="29" font-weight="800">+1 / persona</text>
+  </g>
+</svg>

@@ -86,8 +86,14 @@
   font-size: 0.78rem;
   font-weight: 900;
 }
-.cardMediaOnly > div {
-  border-radius: 0.9rem;
+.cardWithMedia > div {
+  border-radius: 0.9rem 0.9rem 0 0;
+}
+.cardWithMedia .cardLabel {
+  min-height: 3.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.55rem 0.65rem 0.65rem;
+  font-size: 0.7rem;
 }
 .stateIcon {
   position: absolute;
@@ -139,5 +145,8 @@
   }
   .cardLabel {
     font-size: 0.92rem;
+  }
+  .cardWithMedia .cardLabel {
+    font-size: 0.78rem;
   }
 }

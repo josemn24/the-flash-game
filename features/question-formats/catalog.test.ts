@@ -19,7 +19,11 @@ import { isValidEscapeConfiguration } from "@/lib/escape";
 import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
 import { countPipesSolutions, isValidPipesConfiguration } from "@/lib/pipes";
-import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
+import {
+  evaluateAnswer,
+  isValidFlashMemoryConfiguration,
+  isValidMemoryPairsConfiguration,
+} from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
   PlayableScheduledChallenge,
@@ -331,7 +335,7 @@ describe("question format catalog", () => {
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
     ).toEqual([
-      86_399_999, 172_799_999, 259_199_999, 86_399_999, 86_399_999, 86_399_999, 86_399_999,
+      86_399_999, 172_799_999, 259_199_999, 345_599_999, 86_399_999, 86_399_999, 86_399_999,
       86_399_999, 86_399_999,
     ]);
     expect(challenges).toHaveLength(4);
@@ -348,21 +352,21 @@ describe("question format catalog", () => {
     expect(survivalChallenge?.questions).toHaveLength(20);
     expect(survivalChallenge?.lives).toBe(3);
     expect(narrativeChallenge?.implementationStatus).toBe("prototype");
-    expect(narrativeChallenge?.maxScore).toBe(24);
+    expect(narrativeChallenge?.maxScore).toBe(60);
     expect(
       narrativeChallenge?.beats.flatMap((beat) =>
         beat.steps.filter((step) => step.type === "question"),
       ),
-    ).toHaveLength(2);
-    expect(narrativeChallenge?.notebookEntries).toHaveLength(2);
+    ).toHaveLength(5);
+    expect(narrativeChallenge?.notebookEntries).toHaveLength(6);
     if (narrativeChallenge?.mode !== "narrative") {
       throw new Error("Expected narrative challenge");
     }
     const narrativeQuestions = narrativeChallenge.beats.flatMap((beat) =>
       beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
     );
-    expect(narrativeQuestions.map((question) => question.points)).toEqual([12, 12]);
-    expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([20, 18]);
+    expect(narrativeQuestions.map((question) => question.points)).toEqual([12, 12, 12, 12, 12]);
+    expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([20, 18, 30, 30, 35]);
     expect(narrativeQuestions[0]).toMatchObject({
       correctAnswer: "060°",
       media: { src: "/visuals/antarctica/orientation-card.png" },
@@ -384,12 +388,97 @@ describe("question format catalog", () => {
         timeUsed: 0,
       }),
     ).toMatchObject({ status: "correct", points: 12 });
-    for (const question of narrativeQuestions) {
-      if (!("media" in question) || !question.media || !("src" in question.media)) {
-        throw new Error(`Expected media for narrative question ${question.id}`);
-      }
-      expect(question.media.alt.trim().length).toBeGreaterThan(30);
-      expect(existsSync(join(process.cwd(), "public", question.media.src))).toBe(true);
+    const warehouse = narrativeQuestions[2];
+    expect(warehouse.type).toBe("flash-memory");
+    if (warehouse.type !== "flash-memory") throw new Error("Expected warehouse memory question");
+    expect(isValidFlashMemoryConfiguration(warehouse)).toBe(true);
+    expect(warehouse.revealDuration).toBe(4);
+    expect(warehouse.items.map((item) => item.id)).toEqual([
+      "batteries",
+      "underwater-camera",
+      "empty-slot",
+      "hydrophone-h2",
+    ]);
+    const warehouseAnswer = {
+      "0": "hydrophone-h2",
+      "1": "empty-slot",
+      "2": "batteries",
+      "3": "underwater-camera",
+    };
+    expect(
+      evaluateAnswer({ question: warehouse, answer: warehouseAnswer, timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 12 });
+    expect(
+      evaluateAnswer({
+        question: warehouse,
+        answer: { "0": "hydrophone-h2" },
+        timeUsed: warehouse.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({ status: "partial", points: 2 });
+
+    const batteries = narrativeQuestions[3];
+    expect(batteries.type).toBe("estimation");
+    if (batteries.type !== "estimation") throw new Error("Expected battery estimation question");
+    expect(evaluateAnswer({ question: batteries, answer: 12, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 12,
+    });
+    expect(evaluateAnswer({ question: batteries, answer: 10, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 6,
+    });
+    expect(
+      evaluateAnswer({
+        question: batteries,
+        answer: null,
+        timeUsed: batteries.timeLimit,
+        timedOut: true,
+      }),
+    ).toMatchObject({ status: "unanswered", points: 0 });
+
+    const team = narrativeQuestions[4];
+    expect(team.type).toBe("matching");
+    if (team.type !== "matching") throw new Error("Expected team matching question");
+    expect(team.rightItems.map((item) => item.id)).toEqual(["hydrophone", "seismometer", "camera"]);
+    const teamAnswer = { alba: "camera", alex: "hydrophone", mara: "seismometer" };
+    expect(evaluateAnswer({ question: team, answer: teamAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: 12,
+    });
+    const partialTeam = evaluateAnswer({
+      question: team,
+      answer: { alba: "camera" },
+      timeUsed: team.timeLimit,
+      timedOut: true,
+      matchingIncorrectAttempts: 1,
+    });
+    expect(partialTeam.status).toBe("partial");
+    expect(partialTeam.points).toBeGreaterThan(0);
+    expect(partialTeam.details).toMatchObject({
+      type: "matching",
+      correctPairs: 1,
+      totalPairs: 3,
+      incorrectAttempts: 1,
+    });
+
+    const narrativeMedia = narrativeQuestions.flatMap((question) => {
+      const topLevel =
+        "media" in question && question.media?.type === "image" ? [question.media] : [];
+      const itemMedia =
+        question.type === "flash-memory"
+          ? question.items.flatMap((item) => (item.media?.type === "image" ? [item.media] : []))
+          : question.type === "matching"
+            ? [...question.leftItems, ...question.rightItems].flatMap((item) =>
+                item.media?.type === "image" ? [item.media] : [],
+              )
+            : [];
+      return [...topLevel, ...itemMedia];
+    });
+    expect(narrativeMedia).toHaveLength(13);
+    for (const media of narrativeMedia) {
+      expect(media.alt.trim().length).toBeGreaterThan(20);
+      expect(existsSync(join(process.cwd(), "public", media.src))).toBe(true);
     }
     expect(challenges.map((challenge) => challenge.id)).toEqual([
       "tabarnia-flash-01",
@@ -439,7 +528,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(85);
+    expect(questionIds).toHaveLength(88);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -476,8 +565,11 @@ describe("question format catalog", () => {
     expect(getNarrativeQuestionIds(narrativeDefinition)).toEqual([
       "antarctica-orientation-calibration",
       "antarctica-cold-layer",
+      "antarctica-warehouse-memory",
+      "antarctica-radio-batteries",
+      "antarctica-team-instruments",
     ]);
-    expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(24);
+    expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(60);
     expect(
       definitions.every((definition) => {
         const questionIds =

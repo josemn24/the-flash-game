@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FieldNotebook } from "@/components/FieldNotebook.client";
 import {
   ArrowIcon,
+  BoltIcon,
   CheckIcon,
   ClockIcon,
   CrossIcon,
@@ -92,7 +93,7 @@ function NarrativeIntro({
             <Logo />
           </Link>
         }
-        right={<Badge>Vista previa · Movimiento I</Badge>}
+        right={<Badge>Vista previa · Movimientos I–II</Badge>}
       />
 
       <div className={styles.introContent}>
@@ -114,7 +115,7 @@ function NarrativeIntro({
               <span>Puntos</span>
             </div>
             <div>
-              <strong>≈ 2</strong>
+              <strong>≈ 4</strong>
               <span>Minutos</span>
             </div>
           </div>
@@ -201,8 +202,9 @@ function NarrativePrototypeResult({
   onOpenNotebook: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
+  const partial = results.filter((result) => result.status === "partial").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
-  const incorrect = results.length - correct - unanswered;
+  const incorrect = results.length - correct - partial - unanswered;
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
 
   return (
@@ -222,9 +224,9 @@ function NarrativePrototypeResult({
       />
       <div className={styles.resultGrid}>
         <div className={styles.resultScore}>
-          <p className={styles.eyebrow}>Movimiento I completado</p>
+          <p className={styles.eyebrow}>Movimientos I y II completados</p>
           <NarrativeBlocks blocks={reactionBlocks} className={styles.resultReaction} />
-          <h1>La primera página ya no está en blanco.</h1>
+          <h1>El equipo está listo para salir de McMurdo.</h1>
           <div className={styles.scoreValue}>
             <strong>{score}</strong>
             <span>/ {challenge.maxScore} puntos</span>
@@ -247,6 +249,11 @@ function NarrativePrototypeResult({
               <span>Correctas</span>
             </div>
             <div>
+              <BoltIcon className="h-5 w-5" />
+              <strong>{partial}</strong>
+              <span>Parciales</span>
+            </div>
+            <div>
               <CrossIcon className="h-5 w-5" />
               <strong>{incorrect}</strong>
               <span>Falladas</span>
@@ -257,14 +264,16 @@ function NarrativePrototypeResult({
               <span>Sin respuesta</span>
             </div>
           </div>
-          <ol className={styles.answerStates} aria-label="Estado de las dos pruebas">
+          <ol className={styles.answerStates} aria-label="Estado de las pruebas">
             {results.map((result, index) => {
               const label =
                 result.status === "correct"
                   ? "Correcta"
-                  : result.status === "unanswered"
-                    ? "Tiempo agotado"
-                    : "Fallada";
+                  : result.status === "partial"
+                    ? "Parcial"
+                    : result.status === "unanswered"
+                      ? "Tiempo agotado"
+                      : "Fallada";
               return (
                 <li key={result.questionId} data-status={result.status}>
                   <span>Prueba {index + 1}</span>
@@ -286,8 +295,8 @@ function NarrativePrototypeResult({
             <strong>{formatTime(totalTime)}</strong>
           </div>
           <p className={styles.prototypeNotice}>
-            Vista previa del primer movimiento. Esta puntuación todavía no forma parte de un
-            ranking.
+            Vista previa hasta el final del movimiento II. Esta puntuación todavía no forma parte de
+            un ranking.
           </p>
         </div>
       </div>
@@ -357,10 +366,10 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 onTimeUp={session.handleTimeUp}
                 codeAttemptCount={0}
                 onCodeAttempt={() => false}
-                onProgress={() => undefined}
-                onIncorrectAttempt={() => undefined}
+                onProgress={session.handleAnswerProgress}
+                onIncorrectAttempt={session.handleIncorrectAttempt}
                 onProgressiveClueReveal={() => undefined}
-                onTimedResponseStart={() => undefined}
+                onTimedResponseStart={session.handleTimedResponseStart}
                 notebook={{
                   entryCount: session.unlockedEntries.length,
                   onOpen: session.openNotebook,
