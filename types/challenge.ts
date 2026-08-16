@@ -50,6 +50,7 @@ export type NarrativeScene = {
   id: string;
   eyebrow: string;
   title?: string;
+  presentation?: "standard" | "blackout";
   blocks: NarrativeTextBlock[];
 };
 

@@ -162,9 +162,9 @@ export const challengeDefinitions = {
   "antarctica-narrative-definition": {
     id: "antarctica-narrative-definition",
     title: "Encuentros en el fin del mundo",
-    subtitle: "Una señal bajo el hielo",
+    subtitle: "Lo que el hielo no explica",
     description:
-      "Acompaña a un equipo de campo en la Antártida, registra lo que observas y ayuda a interpretar una señal que se repite cada cuarenta segundos.",
+      "Acompaña a un equipo de campo hasta C4, registra una señal que se repite cada cuarenta segundos y observa qué queda fuera de toda explicación.",
     mode: "narrative",
     implementationStatus: "complete",
     maxScore: 100,
@@ -184,7 +184,7 @@ export const challengeDefinitions = {
         {
           type: "dialogue",
           speaker: "Nora",
-          text: "Un instrumento bajo el hielo repite una señal con ese intervalo. Esta tarde iremos a revisarlo. Por ahora, observa.",
+          text: "Un instrumento bajo el hielo repite una señal con ese intervalo. Está registrada en C4. Iremos a observarla; no a inventarle una respuesta.",
         },
       ],
     },
@@ -197,15 +197,15 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-arrival",
-              eyebrow: "Movimiento I · Llegada",
+              eyebrow: "Movimiento I · Llegada a C4",
               blocks: [
                 {
                   type: "narration",
-                  text: "El viento borra el avión y después el primer poste. La estación debería estar delante, pero cada dirección parece la misma.",
+                  text: "El viento borra el avión y después el primer poste. La estación queda a tu espalda; delante, en algún punto, está C4 y la ruta de observación.",
                 },
                 {
                   type: "narration",
-                  text: "Nora te entrega una brújula y una tarjeta. La aguja marca 090°; una corrección convierte esa lectura en rumbo de mapa.",
+                  text: "Nora te entrega una brújula y una tarjeta. La aguja marca 090°; una corrección convierte esa lectura en rumbo de mapa hacia la estación y el punto C4.",
                 },
                 {
                   type: "dialogue",
@@ -254,11 +254,11 @@ export const challengeDefinitions = {
               blocks: [
                 {
                   type: "narration",
-                  text: "Las luces aparecen detrás de la nieve. Al detenerte, el sudor empieza a enfriarse bajo el cortavientos.",
+                  text: "Las luces aparecen detrás de la nieve. Has llegado a la estación; C4 queda para la salida de la tarde. Al detenerte, el sudor empieza a enfriarse bajo el cortavientos.",
                 },
                 {
                   type: "narration",
-                  text: "Nora abre tu chaqueta: llevas base seca y barrera exterior, pero nada que retenga aire caliente entre ambas.",
+                  text: "Nora abre tu chaqueta: llevas base seca y barrera exterior, pero nada que retenga aire caliente entre ambas. En C4 no habrá una puerta que cerrar.",
                 },
                 {
                   type: "dialogue",
@@ -307,57 +307,53 @@ export const challengeDefinitions = {
       },
       {
         id: "station",
-        title: "La estación",
+        title: "Preparar la observación",
         steps: [
           {
             type: "scene",
             scene: {
               id: "scene-station",
-              eyebrow: "Movimiento II · La estación",
+              eyebrow: "Movimiento II · Preparar la observación",
               blocks: [
                 {
                   type: "narration",
-                  text: "McMurdo surge como una ciudad de almacenes, tuberías y motores. Dentro del depósito, Álex ilumina cuatro huecos, tres cajas y demasiadas etiquetas.",
+                  text: "McMurdo surge como una ciudad de almacenes, tuberías y motores. Dentro del depósito, Álex extiende el plano de C4 y separa el equipo que puede viajar.",
                 },
                 {
                   type: "dialogue",
                   speaker: "Álex",
-                  text: "El generador está fallando. Mira ahora; cuando se apague, tendrás que recordar cada posición.",
+                  text: "El vehículo admite cuatro bultos científicos. Lo que no llevemos no podrá convertirse en dato.",
                 },
               ],
             },
           },
           {
             type: "question",
-            questionId: "antarctica-warehouse-memory",
-            unlockEntryIds: ["note-storage"],
+            questionId: "antarctica-field-kit-selection",
+            unlockEntryIds: ["note-kit"],
             reactions: {
               correct: [
                 {
-                  type: "narration",
-                  text: "Álex apaga la linterna.",
-                },
-                {
                   type: "dialogue",
                   speaker: "Álex",
-                  text: "Exacto. Podemos cargar.",
+                  text: "El equipo de observación está completo. Podemos ir a C4.",
                 },
               ],
               incorrect: [
                 {
                   type: "narration",
-                  text: "Álex ilumina cada posición correcta.",
+                  text: "Álex retira lo redundante y vuelve a revisar el plano de C4.",
                 },
                 {
                   type: "dialogue",
                   speaker: "Álex",
-                  text: "Comparamos, anotamos y cargamos.",
+                  text: "El vehículo solo puede llevar lo que convierte una observación en evidencia.",
                 },
               ],
               timeout: [
                 {
                   type: "narration",
-                  text: "La luz de emergencia se enciende. Álex localiza las tres cajas.",
+                  text: "El motor arranca antes de que termines. Álex carga el kit mínimo y deja el resto en el almacén.",
                 },
               ],
             },
@@ -366,11 +362,11 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-after-q3",
-              eyebrow: "Movimiento II · La estación",
+              eyebrow: "Movimiento II · Preparar la observación",
               blocks: [
                 {
                   type: "narration",
-                  text: "Alba cuenta cuatro radios y te pasa la autonomía: seis horas fuera, tres por batería, más una reserva por persona.",
+                  text: "Alba cuenta cuatro radios y te pasa la autonomía: seis horas fuera, tres por batería, más una reserva por persona. La vuelta también forma parte de la misión.",
                 },
                 {
                   type: "dialogue",
@@ -414,41 +410,42 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-after-q4",
-              eyebrow: "Movimiento II · La estación",
+              eyebrow: "Movimiento II · Preparar la observación",
               blocks: [
                 {
                   type: "narration",
-                  text: "Tres fichas se deslizan por la mesa: nombres separados de instrumentos. Desde el banco de pruebas llega un pulso; luego, silencio.",
+                  text: "El equipo ya está cargado. Desde el banco de pruebas llega un pulso; luego, silencio. Nora abre una hoja en blanco para el protocolo.",
                 },
                 {
                   type: "dialogue",
                   speaker: "Nora",
-                  text: "Antes de salir, cada pregunta necesita la herramienta adecuada.",
+                  text: "Antes de interpretar, decidimos qué vamos a registrar y en qué orden.",
                 },
               ],
             },
           },
           {
             type: "question",
-            questionId: "antarctica-team-instruments",
-            unlockEntryIds: ["note-team", "note-location"],
+            questionId: "antarctica-observation-protocol",
+            unlockEntryIds: ["note-protocol", "note-location"],
             reactions: {
               correct: [
                 {
                   type: "narration",
-                  text: "Cada especialista recoge su instrumento. El equipo está listo.",
+                  text: "Mara copia el protocolo en el cuaderno. Nadie escribe todavía una causa.",
                 },
               ],
               incorrect: [
                 {
-                  type: "narration",
-                  text: "Nora corrige las fichas y cada especialista recoge su herramienta.",
+                  type: "dialogue",
+                  speaker: "Mara",
+                  text: "Primero registramos; después comparamos. Una hipótesis no puede ocupar el lugar de un dato.",
                 },
               ],
               timeout: [
                 {
                   type: "narration",
-                  text: "Llega otro pulso. Nora reparte los instrumentos para partir.",
+                  text: "Llega otro pulso. Mara deja el orden marcado para revisarlo en C4.",
                 },
               ],
             },
@@ -457,11 +454,11 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-departure",
-              eyebrow: "Movimiento II · La estación",
+              eyebrow: "Movimiento II · Preparar la observación",
               blocks: [
                 {
                   type: "narration",
-                  text: "Alba guarda la cámara, Mara el sismómetro y Álex el hidrófono H-2. Antes de cerrar, marca C4 en el mapa.",
+                  text: "Alba guarda la cámara, Mara el sismómetro y Álex los dos hidrófonos. Nora marca C4 en el mapa: un lugar concreto para una pregunta que todavía no lo es.",
                 },
                 {
                   type: "narration",
@@ -474,17 +471,17 @@ export const challengeDefinitions = {
       },
       {
         id: "field",
-        title: "Más allá del hielo",
+        title: "Lo que queda sin explicación",
         steps: [
           {
             type: "scene",
             scene: {
               id: "scene-field",
-              eyebrow: "Movimiento III · Más allá del hielo",
+              eyebrow: "Movimiento III · Lo que queda sin explicación",
               blocks: [
                 {
                   type: "narration",
-                  text: "La estación desaparece en el retrovisor. En C4, el equipo abre un acceso y la cámara desciende bajo el hielo. Primero ves burbujas; después, una sombra que gira lentamente.",
+                  text: "La estación desaparece en el retrovisor. En C4, el equipo abre un acceso y la cámara desciende bajo el hielo. Primero ves burbujas; después, una sombra que gira lentamente mientras el cuaderno espera una descripción.",
                 },
                 {
                   type: "dialogue",
@@ -528,11 +525,11 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-after-q6",
-              eyebrow: "Movimiento III · Más allá del hielo",
+              eyebrow: "Movimiento III · Lo que queda sin explicación",
               blocks: [
                 {
                   type: "narration",
-                  text: "Álex conecta dos hidrófonos; Mara añade el sismómetro. En el mismo minuto, dos líneas recogen pulsos a cero y cuarenta segundos; la tercera no.",
+                  text: "Álex conecta los dos hidrófonos; Mara activa el sismómetro. El protocolo ya está escrito. En el mismo minuto, dos líneas recogen pulsos a cero y cuarenta segundos; la tercera no.",
                 },
                 {
                   type: "dialogue",
@@ -576,11 +573,11 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-return",
-              eyebrow: "Movimiento III · Más allá del hielo",
+              eyebrow: "Movimiento III · Lo que queda sin explicación",
               blocks: [
                 {
                   type: "narration",
-                  text: "La señal sigue sin nombre cuando desmontáis el equipo. El acceso vuelve a cubrirse hasta parecer intacto y el vehículo emprende el regreso. Fuera, la luz ya no parece de mañana ni de tarde. Dentro, nadie llena el silencio con una explicación que los registros no sostienen.",
+                  text: "La señal sigue sin nombre cuando desmontáis el equipo. El acceso vuelve a cubrirse hasta parecer intacto y el vehículo emprende el regreso. Los datos tienen límites; el silencio de dentro no necesita una hipótesis.",
                 },
               ],
             },
@@ -589,15 +586,15 @@ export const challengeDefinitions = {
             type: "scene",
             scene: {
               id: "scene-penguin",
-              eyebrow: "Movimiento III · Más allá del hielo",
+              eyebrow: "Movimiento III · Lo que queda sin explicación",
               blocks: [
                 {
                   type: "narration",
-                  text: "Casi todos los pingüinos avanzan hacia el mar. Uno se separa, hacia una extensión sin agua ni refugio.",
+                  text: "Casi todos los pingüinos avanzan hacia el mar. Uno se separa y camina hacia una extensión sin agua ni refugio. No hay señal en el cuaderno que explique ese desvío.",
                 },
                 {
                   type: "narration",
-                  text: "Nora escribe 270° y te devuelve el cuaderno abierto por las notas marcadas.",
+                  text: "Nora escribe 270° y te devuelve el cuaderno abierto por las notas marcadas: C4, la corrección y los límites de lo que habéis medido.",
                 },
                 {
                   type: "dialogue",
@@ -616,24 +613,47 @@ export const challengeDefinitions = {
               correct: [
                 {
                   type: "narration",
-                  text: "Nora comprueba C4 y 240°. La trayectoria queda registrada.",
+                  text: "Nora comprueba C4 y la Ruta B. La trayectoria queda registrada sin añadirle un motivo.",
                 },
               ],
               incorrect: [
                 {
                   type: "narration",
-                  text: "Nora resta la calibración.",
+                  text: "Nora vuelve a la hoja de calibración y separa la trayectoria de cualquier explicación.",
                 },
                 {
                   type: "dialogue",
                   speaker: "Nora",
-                  text: "C4, rumbo 240°. Eso registramos.",
+                  text: "C4, Ruta B hacia el interior. Eso registramos; el motivo queda abierto.",
                 },
               ],
               timeout: [
                 {
                   type: "narration",
-                  text: "Nora aplica la corrección y anota C4, rumbo 240°.",
+                  text: "Nora aplica la corrección y anota C4, Ruta B hacia el interior. No añade una causa.",
+                },
+              ],
+            },
+          },
+          {
+            type: "scene",
+            scene: {
+              id: "scene-resolution",
+              eyebrow: "Desenlace",
+              presentation: "standard",
+              blocks: [
+                {
+                  type: "narration",
+                  text: "Nora registra la trayectoria: el pingüino sale de C4 y continúa hacia el interior hasta convertirse en una mancha sobre el hielo.",
+                },
+                {
+                  type: "narration",
+                  text: "El equipo observa en silencio. La imagen se aleja; solo quedan la figura, la llanura y las montañas.",
+                },
+                {
+                  type: "dialogue",
+                  speaker: "Nora",
+                  text: "Eso es lo que hemos visto. Lo demás sigue fuera del cuaderno.",
                 },
               ],
             },
@@ -643,18 +663,11 @@ export const challengeDefinitions = {
             scene: {
               id: "scene-epilogue",
               eyebrow: "Epílogo",
+              presentation: "blackout",
               blocks: [
                 {
                   type: "narration",
-                  text: "La trayectoria queda registrada. El pingüino continúa hacia el interior hasta convertirse en una mancha sobre el hielo.",
-                },
-                {
-                  type: "narration",
-                  text: "Nadie formula una hipótesis ni abandona el vehículo. La imagen se aleja: solo quedan la figura, la llanura y las montañas.",
-                },
-                {
-                  type: "narration",
-                  text: "Pantalla negra: But why?",
+                  text: "La pantalla se queda en negro.",
                 },
               ],
             },
@@ -674,9 +687,9 @@ export const challengeDefinitions = {
         relevance: "context",
       },
       {
-        id: "note-storage",
-        text: "H-2: arriba izquierda. Baterías: abajo izquierda. Cámara: abajo derecha.",
-        relevance: "context",
+        id: "note-kit",
+        text: "Kit de C4: cámara submarina, H-1 y H-2, sismómetro y baterías de reserva.",
+        relevance: "potential",
       },
       {
         id: "note-batteries",
@@ -684,9 +697,9 @@ export const challengeDefinitions = {
         relevance: "context",
       },
       {
-        id: "note-team",
-        text: "Alba—cámara. Álex—hidrófono H-2. Mara—sismómetro.",
-        relevance: "context",
+        id: "note-protocol",
+        text: "Protocolo: registrar hidrófonos y sismómetro, comparar los tiempos y anotar los límites de la evidencia.",
+        relevance: "potential",
       },
       {
         id: "note-location",
@@ -705,21 +718,21 @@ export const challengeDefinitions = {
       },
       {
         id: "note-final-bearing",
-        text: "Observación final: lectura de brújula 270°.",
+        text: "Observación final: lectura de brújula 270°. El registro no explica la trayectoria.",
         relevance: "potential",
       },
       {
         id: "note-final-route",
-        text: "Trayectoria registrada: C4, rumbo de mapa 240°.",
+        text: "Trayectoria registrada: C4, Ruta B hacia el interior. El motivo queda abierto.",
         relevance: "context",
       },
     ],
     questionPoints: {
       "antarctica-orientation-calibration": 12,
       "antarctica-cold-layer": 12,
-      "antarctica-warehouse-memory": 12,
+      "antarctica-field-kit-selection": 12,
       "antarctica-radio-batteries": 12,
-      "antarctica-team-instruments": 12,
+      "antarctica-observation-protocol": 12,
       "antarctica-weddell-seal": 12,
       "antarctica-sensor-reading": 12,
       "antarctica-penguin-trajectory": 16,

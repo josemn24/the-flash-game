@@ -1753,71 +1753,32 @@ export const questionsById = {
     explanation:
       "La capa intermedia aislante retiene aire caliente entre la capa base seca y el cortavientos exterior.",
   },
-  "antarctica-warehouse-memory": {
-    id: "antarctica-warehouse-memory",
-    type: "flash-memory",
-    category: "Logística",
+  "antarctica-field-kit-selection": {
+    id: "antarctica-field-kit-selection",
+    type: "classification",
+    category: "Logística de campo",
     tags: {
-      domains: ["mathematics"],
-      topics: ["memory_training"],
-      cognitiveSkills: ["memory"],
-      formatSkills: ["recall"],
-      lifeSkills: ["organization_productivity"],
+      domains: ["natural_sciences", "technology"],
+      topics: ["sound_waves"],
+      cognitiveSkills: ["decision_making", "problem_solving"],
+      formatSkills: ["classification", "interpretation"],
+      lifeSkills: ["organization_productivity", "adaptability"],
     },
     question:
-      "La luz se apaga en cuatro segundos. Reconstruye la posición de las tres cajas y del hueco libre.",
-    revealDuration: 4,
-    grid: { rows: 2, columns: 2 },
+      "El vehículo solo admite cuatro bultos científicos. Clasifica qué debe viajar a C4 y qué puede quedarse en la estación.",
+    categories: ["Llevar a C4", "Dejar en la estación"],
     items: [
-      {
-        id: "batteries",
-        label: "Baterías",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/supply-batteries.svg",
-          alt: "Caja de suministros identificada con el símbolo de una batería",
-          fit: "contain",
-        },
-        correctPosition: 2,
-      },
-      {
-        id: "underwater-camera",
-        label: "Cámara submarina",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/instrument-camera.svg",
-          alt: "Caja de cámara submarina identificada con una lente",
-          fit: "contain",
-        },
-        correctPosition: 3,
-      },
-      {
-        id: "empty-slot",
-        label: "Hueco libre",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/warehouse-empty.svg",
-          alt: "Hueco libre marcado con un contorno rayado",
-          fit: "contain",
-        },
-        correctPosition: 1,
-      },
-      {
-        id: "hydrophone-h2",
-        label: "Hidrófono H-2",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/instrument-hydrophone.svg",
-          alt: "Caja de hidrófono H-2 identificada con ondas submarinas",
-          fit: "contain",
-        },
-        correctPosition: 0,
-      },
+      { label: "Cámara submarina", correctCategory: "Llevar a C4" },
+      { label: "Pareja de hidrófonos H-1 y H-2", correctCategory: "Llevar a C4" },
+      { label: "Sismómetro", correctCategory: "Llevar a C4" },
+      { label: "Kit de baterías de reserva", correctCategory: "Llevar a C4" },
+      { label: "Segunda cámara sin batería", correctCategory: "Dejar en la estación" },
+      { label: "Juego de etiquetas de almacén", correctCategory: "Dejar en la estación" },
     ],
     timeLimit: 30,
     points: 100,
     explanation:
-      "La disposición era: H-2 arriba izquierda, hueco libre arriba derecha, baterías abajo izquierda y cámara submarina abajo derecha.",
+      "La salida necesita observar bajo el hielo, comparar dos puntos de escucha, comprobar vibraciones y mantener la comunicación. La cámara duplicada sin batería y las etiquetas no aportan una medición prioritaria en C4.",
   },
   "antarctica-radio-batteries": {
     id: "antarctica-radio-batteries",
@@ -1850,89 +1811,35 @@ export const questionsById = {
     explanation:
       "Dos baterías por radio cubren seis horas: 4 × 2 = 8. Una reserva adicional para cada persona suma 4; en total hacen falta 12 baterías.",
   },
-  "antarctica-team-instruments": {
-    id: "antarctica-team-instruments",
-    type: "matching",
-    category: "Equipo científico",
+  "antarctica-observation-protocol": {
+    id: "antarctica-observation-protocol",
+    type: "ordering",
+    category: "Método científico",
     tags: {
       domains: ["natural_sciences", "technology"],
-      topics: ["scientists"],
-      cognitiveSkills: ["comprehension", "scientific_reasoning"],
-      formatSkills: ["classification", "deduction"],
-      lifeSkills: ["organization_productivity"],
+      topics: ["sound_waves"],
+      cognitiveSkills: ["scientific_reasoning", "critical_thinking"],
+      formatSkills: ["ordering", "deduction"],
+      lifeSkills: ["environmental_awareness"],
     },
-    question: "Asigna a cada miembro del equipo el instrumento que necesita para su tarea.",
-    leftItems: [
-      {
-        id: "alba",
-        label: "Alba Ríos — observar animales bajo el hielo",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/team-alba.svg",
-          alt: "Retrato ilustrado de Alba Ríos con distintivo de observación biológica",
-          fit: "contain",
-        },
-        correctMatchId: "camera",
-      },
-      {
-        id: "alex",
-        label: "Álex Vega — escuchar la señal en el agua",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/team-alex.svg",
-          alt: "Retrato ilustrado de Álex Vega con distintivo de ondas de sonido",
-          fit: "contain",
-        },
-        correctMatchId: "hydrophone",
-      },
-      {
-        id: "mara",
-        label: "Mara Soler — comparar vibraciones del terreno",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/team-mara.svg",
-          alt: "Retrato ilustrado de Mara Soler con distintivo de registro sísmico",
-          fit: "contain",
-        },
-        correctMatchId: "seismometer",
-      },
+    question:
+      "Ordena el protocolo antes de afirmar que un animal produce la señal. Primero se registra; después se compara.",
+    items: [
+      "Registrar los pulsos en H-1 y H-2",
+      "Registrar la línea del sismómetro durante el mismo intervalo",
+      "Comparar los tiempos y la presencia de variaciones coincidentes",
+      "Anotar qué permiten afirmar los datos y qué sigue sin demostrarse",
     ],
-    rightItems: [
-      {
-        id: "hydrophone",
-        label: "Hidrófono H-2",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/instrument-hydrophone.svg",
-          alt: "Silueta del hidrófono H-2",
-          fit: "contain",
-        },
-      },
-      {
-        id: "seismometer",
-        label: "Sismómetro",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/instrument-seismometer.svg",
-          alt: "Silueta de un sismómetro con su registro",
-          fit: "contain",
-        },
-      },
-      {
-        id: "camera",
-        label: "Cámara submarina",
-        media: {
-          type: "image",
-          src: "/visuals/antarctica/instrument-camera.svg",
-          alt: "Silueta de una cámara submarina",
-          fit: "contain",
-        },
-      },
+    correctOrder: [
+      "Registrar los pulsos en H-1 y H-2",
+      "Registrar la línea del sismómetro durante el mismo intervalo",
+      "Comparar los tiempos y la presencia de variaciones coincidentes",
+      "Anotar qué permiten afirmar los datos y qué sigue sin demostrarse",
     ],
     timeLimit: 35,
     points: 100,
     explanation:
-      "Alba necesita la cámara para observar organismos; Álex, el hidrófono para escuchar bajo el agua; y Mara, el sismómetro para registrar movimiento del terreno.",
+      "El equipo registra primero las señales y el movimiento del terreno en el mismo intervalo. Solo después puede comparar las líneas y escribir los límites de la evidencia sin convertir una coincidencia en una causa.",
   },
   "antarctica-weddell-seal": {
     id: "antarctica-weddell-seal",
@@ -1947,15 +1854,15 @@ export const questionsById = {
     },
     question: "¿Qué animal aparece bajo el hielo?",
     surface: {
-      src: "/visuals/antarctica/weddell-seal.svg",
-      alt: "Ilustración submarina desenfocada que se revela progresivamente",
-      width: 1600,
-      height: 1000,
+      src: "/visuals/antarctica/weddell-seal.jpg",
+      alt: "Fotografía submarina desenfocada de una foca bajo el hielo antártico que se revela progresivamente",
+      width: 4000,
+      height: 3000,
       fit: "cover",
       position: "50% 50%",
     },
     solutionAlt:
-      "Foca de Weddell moteada que nada bajo una placa de hielo, con el cuerpo completo, las aletas y la cara visibles",
+      "Fotografía de una foca de Weddell moteada que nada bajo el hielo antártico, con el cuerpo completo y la cara visibles",
     revealDuration: 12,
     correctAnswer: "foca de Weddell",
     acceptedAnswers: ["foca", "foca Weddell", "foca de Weddell"],
@@ -1999,28 +1906,34 @@ export const questionsById = {
   "antarctica-penguin-trajectory": {
     id: "antarctica-penguin-trajectory",
     type: "multiple-choice",
-    category: "Orientación",
+    category: "Registro de campo",
     tags: {
       domains: ["geography", "mathematics"],
       topics: ["orientation"],
-      cognitiveSkills: ["logical_reasoning", "problem_solving"],
-      formatSkills: ["calculation", "interpretation"],
-      lifeSkills: ["adaptability"],
+      cognitiveSkills: ["logical_reasoning", "critical_thinking"],
+      formatSkills: ["interpretation", "deduction"],
+      lifeSkills: ["environmental_awareness"],
     },
     question:
-      "El pingüino parte del punto C4. La brújula marca 270°. Consulta el cuaderno y elige la trayectoria que debes registrar.",
-    options: ["Ruta A", "Ruta B", "Ruta C", "Ruta D"],
-    correctAnswer: "Ruta B",
+      "El pingüino parte de C4 y se aleja de la colonia hacia el interior. Consulta el cuaderno y elige el registro que solo afirma lo que podemos observar.",
+    options: [
+      "C4 → Ruta B hacia el interior; el motivo de la trayectoria no está determinado",
+      "C4 → Ruta B hacia el interior; sigue la señal bajo el hielo",
+      "C4 → Ruta A hacia el mar; ha perdido el rumbo",
+      "B4 → Ruta B hacia el interior; busca un nuevo refugio",
+    ],
+    correctAnswer:
+      "C4 → Ruta B hacia el interior; el motivo de la trayectoria no está determinado",
     media: {
       type: "image",
       src: "/visuals/antarctica/penguin-trajectories.svg",
-      alt: "Mapa de cuadrícula A–E por 1–5. La colonia está en C4. A sale de C4 al oeste; B sale de C4 al suroeste; C sale de C4 al nordeste; D sale de B4 al suroeste",
+      alt: "Mapa de cuadrícula A–E por 1–5. La colonia está en C4 y la Ruta B sale hacia el interior; las alternativas cambian el origen, la dirección o añaden una explicación no demostrada",
       fit: "contain",
     },
     timeLimit: 40,
     points: 100,
     explanation:
-      "Ruta B. La calibración indica 270° − 30° = 240° y el recorrido debe comenzar en C4. A ignora la corrección, C invierte el rumbo y D utiliza B4 como origen.",
+      "El registro correcto conserva el origen C4, aplica la calibración para identificar la Ruta B y no transforma una observación en una explicación. Sabemos hacia dónde camina; no sabemos por qué.",
   },
 } satisfies Record<string, Question>;
 
@@ -2111,9 +2024,9 @@ export const questionGroups = {
   antarcticaNarrative: [
     "antarctica-orientation-calibration",
     "antarctica-cold-layer",
-    "antarctica-warehouse-memory",
+    "antarctica-field-kit-selection",
     "antarctica-radio-batteries",
-    "antarctica-team-instruments",
+    "antarctica-observation-protocol",
     "antarctica-weddell-seal",
     "antarctica-sensor-reading",
     "antarctica-penguin-trajectory",

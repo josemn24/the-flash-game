@@ -163,16 +163,6 @@ function NarrativeSceneScreen({
           <p className={styles.eyebrow}>{scene.eyebrow}</p>
           {scene.title && <h1>{scene.title}</h1>}
           <NarrativeBlocks blocks={reactionBlocks} className={styles.sceneReaction} />
-          {scene.id === "scene-epilogue" && reactionBlocks.length > 0 && (
-            <div className={styles.trajectoryResolution} aria-label="Resolución de la trayectoria">
-              <p className={styles.eyebrow}>Trayectoria resuelta</p>
-              <strong>270° − 30° = 240° · C4 → Ruta B</strong>
-              <p>
-                A ignora la calibración; C invierte el rumbo; D parte de B4. Solo B conserva el
-                origen C4 y aplica la corrección.
-              </p>
-            </div>
-          )}
           <NarrativeBlocks blocks={scene.blocks} />
           <MotionButton
             className={styles.continueButton}
@@ -186,6 +176,41 @@ function NarrativeSceneScreen({
             <ClockIcon className="h-4 w-4" /> Sin tiempo competitivo
           </p>
         </article>
+      </div>
+    </motion.section>
+  );
+}
+
+function NarrativeEpilogueScreen({ onContinue }: { onContinue: () => void }) {
+  return (
+    <motion.section
+      className={styles.epilogueScreen}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      aria-labelledby="narrative-epilogue-title"
+    >
+      <div className={styles.epilogueContent}>
+        <motion.h1
+          id="narrative-epilogue-title"
+          className={styles.epilogueTitle}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        >
+          BUT WHY?
+        </motion.h1>
+        <MotionButton
+          className={styles.epilogueContinue}
+          onClick={onContinue}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2.1, duration: 0.45 }}
+          whileTap={{ scale: 0.985 }}
+        >
+          Continuar al resultado
+          <ArrowIcon className="h-5 w-5" />
+        </MotionButton>
       </div>
     </motion.section>
   );
@@ -329,6 +354,10 @@ function PolarBackground() {
 
 export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge }) {
   const session = useNarrativeSession(challenge);
+  const isBlackoutScene =
+    session.phase === "scene" &&
+    session.currentStep?.type === "scene" &&
+    session.currentStep.scene.presentation === "blackout";
   const transitionCopy = session.lastTimedOut
     ? {
         title: "Tiempo agotado",
@@ -344,7 +373,7 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
   return (
     <MotionConfig reducedMotion="user">
       <main
-        className={`${styles.gameRoot} ${session.phase === "playing" ? styles.questionPhase : ""}`}
+        className={`${styles.gameRoot} ${session.phase === "playing" ? styles.questionPhase : ""} ${isBlackoutScene ? styles.blackoutPhase : ""}`}
       >
         <PolarBackground />
         <div className={styles.gameContent}>
@@ -357,16 +386,23 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 onStart={session.start}
               />
             )}
-            {session.phase === "scene" && session.currentStep?.type === "scene" && (
-              <NarrativeSceneScreen
-                key={session.currentStep.scene.id}
-                scene={session.currentStep.scene}
-                reactionBlocks={session.reactionBlocks}
-                entryCount={session.unlockedEntries.length}
-                onContinue={session.continueScene}
-                onOpenNotebook={session.openNotebook}
-              />
-            )}
+            {session.phase === "scene" &&
+              session.currentStep?.type === "scene" &&
+              (isBlackoutScene ? (
+                <NarrativeEpilogueScreen
+                  key={session.currentStep.scene.id}
+                  onContinue={session.continueScene}
+                />
+              ) : (
+                <NarrativeSceneScreen
+                  key={session.currentStep.scene.id}
+                  scene={session.currentStep.scene}
+                  reactionBlocks={session.reactionBlocks}
+                  entryCount={session.unlockedEntries.length}
+                  onContinue={session.continueScene}
+                  onOpenNotebook={session.openNotebook}
+                />
+              ))}
             {session.phase === "playing" && session.currentStep?.type === "question" && (
               <QuestionScreen
                 key={session.currentStep.question.id}
