@@ -12,19 +12,14 @@ const dialogue = (speaker: string, text: string): NarrativeTextBlock => ({
   speaker,
   text,
 });
+const emphasis = (text: string): NarrativeTextBlock => ({ type: "emphasis", text });
 
 function narrativeImage(src: string, alt: string, position = "50% 50%"): QuestionMedia {
   return { type: "image", src, alt, fit: "cover", position };
 }
 
-function scene(
-  id: string,
-  eyebrow: string,
-  title: string,
-  media: QuestionMedia,
-  blocks: NarrativeTextBlock[],
-): NarrativeScene {
-  return { id, eyebrow, title, media, blocks };
+function storyScene(id: string, scene: Omit<NarrativeScene, "id">): NarrativeScene {
+  return { id, ...scene };
 }
 
 function reactions(correct: string, incorrect: string, timeout: string): NarrativeReactionMap {
@@ -203,33 +198,52 @@ export const challengeDefinitions = {
     mode: "narrative",
     implementationStatus: "complete",
     maxScore: 100,
-    prologue: scene(
-      "scene-prologue",
-      "Prólogo · Todos menos uno",
-      "Todos menos uno",
-      narrativeImage(
-        "/visuals/p17/colony-panorama.jpg",
-        "Una colonia avanza hacia el mar mientras un pingüino se separa hacia las montañas",
-        "50% 52%",
+    prologue: storyScene("scene-prologue-recording", {
+      eyebrow: "Capítulo I",
+      title: "Todos menos uno",
+      presentation: "chapter-opening",
+      media: narrativeImage(
+        "/visuals/p17/archive-recorder.jpg",
+        "Una grabadora de cinta y un monitor de archivo iluminan una estación antártica oscura",
+        "42% 50%",
       ),
-      [
+      caption: "Archivo de campo · cinta sin fechar",
+      blocks: [
         narration(
-          "La voz de un antiguo investigador llega desde una grabación deformada por el viento y por los años.",
+          "La cinta llevaba años guardada en una caja sin fecha. Cuando Nora pulsó el interruptor, el motor tardó unos segundos en vencer el frío.",
+        ),
+        narration(
+          "Primero llegó el roce del carrete. Después, el viento. Por último, la voz de alguien que ya no estaba allí.",
         ),
         dialogue(
           "Grabación",
           "A veces un pingüino se desorienta. Puede terminar muy lejos del océano, en un lugar donde no esperaríamos encontrarlo.",
         ),
-        narration(
-          "Durante unos segundos solo queda el siseo de la cinta. Cientos de pingüinos avanzan hacia el agua abierta. Todos caminan en la misma dirección. Todos menos uno.",
-        ),
       ],
-    ),
+    }),
     beats: [
       {
         id: "all-but-one",
         title: "Todos menos uno",
         steps: [
+          {
+            type: "scene",
+            scene: storyScene("scene-all-but-one", {
+              presentation: "full-bleed",
+              media: narrativeImage(
+                "/visuals/p17/colony-panorama.jpg",
+                "Una colonia avanza hacia el mar mientras un pingüino se separa hacia las montañas",
+                "50% 52%",
+              ),
+              caption: "Primer registro · 06:42",
+              blocks: [
+                narration(
+                  "La imagen emergió despacio del ruido: una llanura blanca, la línea de las montañas y la colonia moviéndose hacia el agua abierta.",
+                ),
+                emphasis("Todos avanzaban en la misma dirección. Todos menos uno."),
+              ],
+            }),
+          },
           {
             type: "question",
             questionId: "mountains-progressive-image",
@@ -242,25 +256,37 @@ export const challengeDefinitions = {
           },
           {
             type: "scene",
-            scene: scene(
-              "scene-p17",
-              "Capítulo I · P-17",
-              "Una marca, no una razón",
-              narrativeImage(
+            scene: storyScene("scene-p17-identification", {
+              presentation: "split",
+              media: narrativeImage(
                 "/visuals/p17/p17-identification.jpg",
                 "P-17 frente a una cordillera, con la colonia desenfocada al fondo",
                 "42% 50%",
               ),
-              [
+              caption: "Muesca blanca · lado izquierdo del pecho",
+              blocks: [
                 narration(
-                  "La cámara se acerca. En el lado izquierdo de su pecho aparece una pequeña muesca blanca. Nora la anota como identificación visual provisional: P-17.",
+                  "Nora detuvo el fotograma. En el lado izquierdo del pecho había una muesca blanca, pequeña y desigual. Bastaba para volver a encontrarlo entre otras imágenes.",
                 ),
                 narration(
-                  "El pingüino se detiene, gira y avanza hacia las montañas. No corre. No vuelve a incorporarse a la columna.",
+                  "En el margen del cuaderno escribió una identificación provisional: P-17.",
                 ),
-                dialogue("Nora", "Conserva la imagen. Todavía no escribas una razón."),
               ],
-            ),
+            }),
+          },
+          {
+            type: "scene",
+            scene: storyScene("scene-p17-register", {
+              presentation: "text-led",
+              blocks: [
+                narration(
+                  "El pingüino se detuvo una vez. La colonia siguió alejándose hacia el mar. Luego P-17 giró y continuó hacia las montañas hasta que el viento empezó a borrar sus huellas.",
+                ),
+                dialogue("Nora", "¿Lo has registrado?"),
+                narration("Asentiste sin apartar la mirada de la pantalla."),
+                dialogue("Nora", "Entonces conserva la imagen. Todavía no escribas una razón."),
+              ],
+            }),
           },
           {
             type: "question",
@@ -274,23 +300,37 @@ export const challengeDefinitions = {
           },
           {
             type: "scene",
-            scene: scene(
-              "scene-camera-limits",
-              "Capítulo I · Lo que una cámara no sabe",
-              "Lo observable",
-              narrativeImage(
-                "/visuals/p17/p17-identification.jpg",
-                "P-17 permanece orientado hacia las montañas",
-                "42% 50%",
+            scene: storyScene("scene-deviation-overlay", {
+              presentation: "artifact",
+              media: narrativeImage(
+                "/visuals/p17/observation-table.jpg",
+                "Mapas, fotografías y trayectorias de pingüinos se superponen sobre una mesa de observación",
+                "56% 50%",
               ),
-              [
-                dialogue("Equipo", "Podríamos decir que está perdido."),
-                dialogue("Nora", "Podríamos pensarlo. La imagen solo demuestra que se separa."),
+              caption: "Superposición de recorridos · sector C3",
+              blocks: [
                 narration(
-                  "En la mesa aparecen movimientos, tiempos y direcciones junto a frases que atribuyen al animal una intención que ningún instrumento ha medido.",
+                  "Nora trazó una cruz allí donde la línea de P-17 abandonaba el corredor de la colonia. Debajo del papel translúcido, cientos de recorridos terminaban en el mar; uno solo continuaba hacia el interior.",
                 ),
               ],
-            ),
+            }),
+          },
+          {
+            type: "scene",
+            scene: storyScene("scene-camera-limits", {
+              presentation: "text-led",
+              blocks: [
+                dialogue("Equipo", "Podríamos decir que está perdido."),
+                narration("Nora dejó el lápiz sobre el borde del cuaderno."),
+                dialogue(
+                  "Nora",
+                  "Podríamos pensarlo. Pero la imagen solo demuestra que se separa.",
+                ),
+                narration(
+                  "Sobre la mesa convivían dos clases de frase. Unas hablaban de posiciones, minutos y direcciones. Las otras cruzaban una frontera invisible y entraban en la mente del animal.",
+                ),
+              ],
+            }),
           },
           {
             type: "question",
@@ -302,6 +342,18 @@ export const challengeDefinitions = {
               "El equipo completa la clasificación antes de continuar.",
             ),
           },
+          {
+            type: "scene",
+            scene: storyScene("scene-observation-rule", {
+              presentation: "text-led",
+              blocks: [
+                narration(
+                  "Al caer la tarde, Nora cerró el primer cuaderno. Las frases que no podían sostenerse habían quedado fuera. En las páginas permanecían una marca blanca, una hora, un punto del mapa y una dirección.",
+                ),
+                emphasis("Era menos que una explicación. Era todo lo que sabían."),
+              ],
+            }),
+          },
         ],
       },
       {
@@ -310,28 +362,45 @@ export const challengeDefinitions = {
         steps: [
           {
             type: "scene",
-            scene: scene(
-              "scene-corridor",
-              "Capítulo II · Mantenerse fuera",
-              "El corredor",
-              narrativeImage(
+            scene: storyScene("scene-chapter-stay-out", {
+              eyebrow: "Capítulo II",
+              title: "Mantenerse fuera",
+              presentation: "chapter-opening",
+              media: narrativeImage(
+                "/visuals/p17/camp-corridor.jpg",
+                "Un campamento de observación ocupa una llanura recorrida por P-17",
+                "58% 48%",
+              ),
+              blocks: [
+                narration(
+                  "Durante la noche cambió el viento. Al amanecer, una figura oscura apareció al otro lado del campamento base.",
+                ),
+              ],
+            }),
+          },
+          {
+            type: "scene",
+            scene: storyScene("scene-corridor", {
+              presentation: "split",
+              media: narrativeImage(
                 "/visuals/p17/camp-corridor.jpg",
                 "Equipo de campamento bloquea temporalmente un corredor de nieve",
                 "50% 52%",
               ),
-              [
+              caption: "Campamento base · corredor este",
+              blocks: [
                 narration(
-                  "Al amanecer, P-17 reaparece cerca del campamento base. Entre él y la llanura hay cajas, trineos y un trípode colocado durante la noche.",
+                  "P-17 avanzaba hacia el corredor este. Entre él y la llanura quedaban cajas, trineos y un trípode que el equipo había instalado durante la noche.",
                 ),
                 narration(
-                  "El protocolo exige no tocar al animal, no llamarlo y permanecer fuera de su distancia de seguridad. El obstáculo debe desaparecer antes de que se acerque.",
+                  "Nadie podía tocarlo, llamarlo ni cerrarle el paso. Eran los objetos humanos los que debían desaparecer.",
                 ),
                 dialogue(
                   "Nora",
-                  "Él no ha elegido nuestros objetos. Esa diferencia nos obliga a retirarlos.",
+                  "Nosotros conocemos su posición. Él no ha elegido nuestros objetos. Esa diferencia nos obliga a retirarlos.",
                 ),
               ],
-            ),
+            }),
           },
           {
             type: "question",
@@ -345,28 +414,43 @@ export const challengeDefinitions = {
           },
           {
             type: "scene",
-            scene: scene(
-              "scene-nadir",
-              "Capítulo II · Campamento Nadir",
-              "Tres coincidencias",
-              narrativeImage(
-                "/visuals/p17/camp-corridor.jpg",
-                "Campamento ficticio en una llanura antártica",
-                "66% 44%",
+            scene: storyScene("scene-camp-cleared", {
+              presentation: "full-bleed",
+              media: narrativeImage(
+                "/visuals/p17/cleared-camp.jpg",
+                "P-17 atraviesa un corredor despejado mientras el equipo permanece lejos",
+                "52% 55%",
               ),
-              [
+              caption: "Corredor despejado · sin contacto",
+              blocks: [
                 narration(
-                  "P-17 atraviesa el límite del campamento sin variar la dirección registrada. Dos días después llega un mensaje de Nadir.",
+                  "Cuando el trípode alcanzó la salida de servicio, el corredor volvió a ser una franja de nieve vacía. El equipo retrocedió hasta las tiendas.",
                 ),
                 narration(
-                  "Una cámara remota ha registrado un pingüino que entra desde el nordeste y continúa hacia el suroeste. La distancia impide reconocerlo a simple vista.",
-                ),
-                dialogue(
-                  "Nora",
-                  "Compara marca, rumbo y tiempo. La compatibilidad necesita las tres columnas.",
+                  "P-17 cruzó el campamento sin variar la dirección registrada. Nadie se acercó. Durante unos segundos solo se oyó el viento entre los cables.",
                 ),
               ],
-            ),
+            }),
+          },
+          {
+            type: "scene",
+            scene: storyScene("scene-nadir-message", {
+              presentation: "artifact",
+              media: narrativeImage(
+                "/visuals/p17/nadir-monitor.jpg",
+                "Un monitor remoto muestra un pingüino distante y tres fragmentos de evidencia",
+                "48% 50%",
+              ),
+              caption: "Transmisión entrante · estación Nadir",
+              blocks: [
+                narration(
+                  "Dos días más tarde, la pantalla de comunicaciones se encendió con un destello azul. Nadir había registrado un pingüino entrando desde el nordeste y continuando hacia el suroeste.",
+                ),
+                narration(
+                  "La figura era demasiado pequeña para reconocerla. Junto al vídeo llegaron tres fragmentos: una marca en el pecho, un rumbo y una ventana de tiempo.",
+                ),
+              ],
+            }),
           },
           {
             type: "question",
@@ -378,6 +462,21 @@ export const challengeDefinitions = {
               "El equipo registra P-17 como identificación compatible.",
             ),
           },
+          {
+            type: "scene",
+            scene: storyScene("scene-nadir-match", {
+              presentation: "text-led",
+              blocks: [
+                narration(
+                  "Nora recorrió las tres columnas una última vez. La muesca, el rumbo y el intervalo coincidían en una sola fila.",
+                ),
+                emphasis("Compatible con P-17."),
+                narration(
+                  "No escribió que fuera él con absoluta certeza. Cerró la carpeta y dejó que aquella cautela permaneciera en la frase.",
+                ),
+              ],
+            }),
+          },
         ],
       },
       {
@@ -386,24 +485,41 @@ export const challengeDefinitions = {
         steps: [
           {
             type: "scene",
-            scene: scene(
-              "scene-complete-line",
-              "Capítulo III · La línea completa",
-              "Seis registros",
-              narrativeImage(
-                "/visuals/p17/colony-panorama.jpg",
-                "Llanura entre la colonia, el mar y las montañas",
-                "45% 60%",
+            scene: storyScene("scene-chapter-complete-line", {
+              eyebrow: "Capítulo III",
+              title: "La línea completa",
+              presentation: "chapter-opening",
+              media: narrativeImage(
+                "/visuals/p17/final-plain.jpg",
+                "Una figura y sus huellas avanzan hacia montañas lejanas",
+                "50% 54%",
               ),
-              [
+              blocks: [
                 narration(
-                  "La identificación compatible permite incorporar Nadir. La colonia, el primer desvío, la base, H-3 y una última cámara completan los otros cinco registros.",
-                ),
-                narration(
-                  "Nora coloca los seis puntos sobre una cuadrícula de sectores. No representa una escala exacta; comprueba el orden espacial de las observaciones.",
+                  "Las cámaras no habían visto un viaje. Habían conservado fragmentos separados por horas de oscuridad y kilómetros de nieve.",
                 ),
               ],
-            ),
+            }),
+          },
+          {
+            type: "scene",
+            scene: storyScene("scene-six-records", {
+              presentation: "artifact",
+              media: narrativeImage(
+                "/visuals/p17/route-board.jpg",
+                "Seis registros físicos forman una línea desde la costa hacia las montañas",
+                "50% 50%",
+              ),
+              caption: "Colonia · desvío · base · H-3 · Nadir · último registro",
+              blocks: [
+                narration(
+                  "Nora extendió seis registros sobre la mesa: la colonia, el primer desvío, la base, H-3, Nadir y una última cámara orientada hacia el interior.",
+                ),
+                narration(
+                  "Entre uno y otro había zonas que nadie había observado. La cuadrícula no podía llenarlas con certezas, pero sí comprobar si los fragmentos admitían una línea continua.",
+                ),
+              ],
+            }),
           },
           {
             type: "question",
@@ -417,25 +533,35 @@ export const challengeDefinitions = {
           },
           {
             type: "scene",
-            scene: scene(
-              "scene-story-is-not-cause",
-              "Capítulo III · Una historia no es una causa",
-              "Antes y después",
-              narrativeImage(
-                "/visuals/p17/p17-identification.jpg",
-                "P-17 frente a las montañas durante la observación",
-                "42% 50%",
+            scene: storyScene("scene-route-complete", {
+              presentation: "full-bleed",
+              media: narrativeImage(
+                "/visuals/p17/route-board.jpg",
+                "Los seis registros quedan enlazados por una trayectoria continua",
+                "50% 50%",
               ),
-              [
+              caption: "Único recorrido compatible con los seis registros",
+              blocks: [
                 narration(
-                  "La trayectoria queda continua. El recorrido elimina dudas sobre dónde fue observado P-17, pero no explica por qué siguió esa dirección.",
-                ),
-                dialogue(
-                  "Nora",
-                  "Cuanto más completo es el recorrido, más fácil resulta imaginar una intención. El cuaderno debe resistirse a esa facilidad.",
+                  "La línea atravesó los seis registros sin romperse. Por primera vez, los fragmentos podían leerse como una trayectoria completa desde la colonia hasta el interior.",
                 ),
               ],
-            ),
+            }),
+          },
+          {
+            type: "scene",
+            scene: storyScene("scene-story-is-not-cause", {
+              presentation: "text-led",
+              blocks: [
+                narration(
+                  "Al verla terminada, alguien dijo que por fin tenían la historia. Nora observó la línea azul, tan limpia que parecía contener una respuesta.",
+                ),
+                dialogue("Nora", "Tenemos un antes y un después. No tenemos un porqué."),
+                narration(
+                  "Cuanto más completo resultaba el recorrido, más fácil era imaginar una intención. El cuaderno debía resistirse precisamente a esa facilidad.",
+                ),
+              ],
+            }),
           },
           {
             type: "question",
@@ -449,27 +575,26 @@ export const challengeDefinitions = {
           },
           {
             type: "scene",
-            scene: scene(
-              "scene-last-sheet",
-              "Capítulo III · La última hoja",
-              "El límite del registro",
-              narrativeImage(
+            scene: storyScene("scene-last-sheet", {
+              presentation: "split",
+              media: narrativeImage(
                 "/visuals/p17/final-plain.jpg",
                 "Un pingüino lejano cruza una llanura hacia las montañas dejando huellas",
               ),
-              [
+              caption: "Última imagen conservada",
+              blocks: [
                 narration(
-                  "P-17 avanza sobre una llanura sin referencias próximas. El equipo conserva la distancia establecida por el protocolo.",
+                  "Ordenados por su hora, los registros dejaron la última cámara al final de la secuencia. En ella, P-17 avanzaba sobre una llanura sin referencias próximas.",
                 ),
                 narration(
-                  "El animal se detiene, sacude la nieve de las plumas y continúa. Nora entrega la última hoja.",
+                  "Se detuvo, sacudió la nieve de las plumas y continuó. La cámara dejó que la distancia creciera.",
                 ),
                 dialogue(
                   "Nora",
-                  "Escribe lo que sabemos. Si una frase necesita entrar en su cabeza, no pertenece al registro.",
+                  "Esta es la última hoja. Si una frase necesita entrar en su cabeza, no pertenece aquí.",
                 ),
               ],
-            ),
+            }),
           },
           {
             type: "question",
@@ -483,30 +608,30 @@ export const challengeDefinitions = {
           },
           {
             type: "scene",
-            scene: scene(
-              "scene-resolution",
-              "Desenlace",
-              "El que caminaba hacia las montañas",
-              narrativeImage(
+            scene: storyScene("scene-resolution", {
+              presentation: "artifact",
+              media: narrativeImage(
                 "/visuals/p17/final-plain.jpg",
                 "P-17 y sus huellas se pierden en la inmensidad de la llanura",
               ),
-              [
+              caption: "Cierre del registro P-17",
+              advanceLabel: "Cerrar el registro",
+              blocks: [
                 narration(
+                  "Nora leyó el texto una vez, tachó una palabra y volvió a empezar. La hoja no necesitaba resolver aquello que las imágenes habían dejado abierto.",
+                ),
+                emphasis(
                   "P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo determinarse.",
                 ),
-                narration(
-                  "La imagen se aleja. Primero se ve el pingüino. Después, sus huellas. Después, la llanura entera. La cámara deja de seguirlo antes de que desaparezca en la distancia.",
-                ),
               ],
-            ),
+            }),
           },
           {
             type: "scene",
             scene: {
               id: "scene-epilogue",
-              eyebrow: "Epílogo",
               presentation: "blackout",
+              advanceLabel: "Ver resultado",
               blocks: [narration("La imagen se funde a negro.")],
             },
           },

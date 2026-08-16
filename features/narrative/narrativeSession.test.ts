@@ -25,28 +25,41 @@ function getNarrativeChallenge() {
 
 function reachFirstQuestion() {
   const started = narrativeSessionReducer(initialNarrativeSessionState, { type: "start" });
-  return narrativeSessionReducer(started, { type: "advance", nextStepType: "question" });
+  const secondScene = narrativeSessionReducer(started, {
+    type: "advance",
+    nextStepType: "scene",
+  });
+  return narrativeSessionReducer(secondScene, { type: "advance", nextStepType: "question" });
 }
 
 describe("P-17 narrative session", () => {
-  it("builds the exact eighteen-page sequence", () => {
+  it("builds the exact twenty-seven-page sequence", () => {
     const sequence = getNarrativeSequence(getNarrativeChallenge());
 
     expect(
       sequence.map((step) => (step.type === "scene" ? step.scene.id : step.question.id)),
     ).toEqual([
-      "scene-prologue",
+      "scene-prologue-recording",
+      "scene-all-but-one",
       "mountains-progressive-image",
-      "scene-p17",
+      "scene-p17-identification",
+      "scene-p17-register",
       "trajectory-deviation-heat-map",
+      "scene-deviation-overlay",
       "scene-camera-limits",
       "observation-vs-interpretation",
+      "scene-observation-rule",
+      "scene-chapter-stay-out",
       "scene-corridor",
       "clear-camp-escape",
-      "scene-nadir",
+      "scene-camp-cleared",
+      "scene-nadir-message",
       "p17-evidence-matrix",
-      "scene-complete-line",
+      "scene-nadir-match",
+      "scene-chapter-complete-line",
+      "scene-six-records",
       "p17-route-zip",
+      "scene-route-complete",
       "scene-story-is-not-cause",
       "p17-observation-order",
       "scene-last-sheet",
@@ -54,6 +67,37 @@ describe("P-17 narrative session", () => {
       "scene-resolution",
       "scene-epilogue",
     ]);
+    expect(sequence).toHaveLength(27);
+    const questions = sequence.flatMap((step) => (step.type === "question" ? [step.question] : []));
+    expect(questions).toHaveLength(8);
+    expect(questions.reduce((total, question) => total + question.points, 0)).toBe(100);
+    expect(questions.reduce((total, question) => total + question.timeLimit, 0)).toBe(284);
+    expect(
+      sequence.flatMap((step, index) =>
+        step.type === "question" ? [{ question: step.question.id, page: index + 1 }] : [],
+      ),
+    ).toEqual([
+      { question: "mountains-progressive-image", page: 3 },
+      { question: "trajectory-deviation-heat-map", page: 6 },
+      { question: "observation-vs-interpretation", page: 9 },
+      { question: "clear-camp-escape", page: 13 },
+      { question: "p17-evidence-matrix", page: 16 },
+      { question: "p17-route-zip", page: 20 },
+      { question: "p17-observation-order", page: 23 },
+      { question: "p17-final-record", page: 25 },
+    ]);
+    expect(
+      sequence.flatMap((step, index) =>
+        step.type === "question"
+          ? [{ reactionPage: index + 2, nextType: sequence[index + 1]?.type }]
+          : [],
+      ),
+    ).toEqual(
+      [4, 7, 10, 14, 17, 21, 24, 26].map((reactionPage) => ({
+        reactionPage,
+        nextType: "scene",
+      })),
+    );
   });
 
   it("keeps the final evidence statement immediately before the blackout", () => {
@@ -74,6 +118,9 @@ describe("P-17 narrative session", () => {
 
   it("keeps the three chapters and eight evidence entries in narrative order", () => {
     const challenge = getNarrativeChallenge();
+    const scenes = getNarrativeSequence(challenge).flatMap((step, index) =>
+      step.type === "scene" ? [{ ...step.scene, page: index + 1 }] : [],
+    );
     expect(challenge.beats.map((beat) => beat.title)).toEqual([
       "Todos menos uno",
       "Mantenerse fuera",
@@ -90,11 +137,42 @@ describe("P-17 narrative session", () => {
       "note-final",
     ]);
     expect(challenge.notebookEntries.every((entry) => entry.relevance === "context")).toBe(true);
+    expect(
+      scenes
+        .filter((scene) => scene.presentation === "chapter-opening")
+        .map((scene) => [scene.page, scene.title]),
+    ).toEqual([
+      [1, "Todos menos uno"],
+      [11, "Mantenerse fuera"],
+      [18, "La línea completa"],
+    ]);
+    expect(scenes.filter((scene) => scene.title).map((scene) => scene.page)).toEqual([1, 11, 18]);
+    expect(scenes.map((scene) => scene.presentation)).toEqual([
+      "chapter-opening",
+      "full-bleed",
+      "split",
+      "text-led",
+      "artifact",
+      "text-led",
+      "text-led",
+      "chapter-opening",
+      "split",
+      "full-bleed",
+      "artifact",
+      "text-led",
+      "chapter-opening",
+      "artifact",
+      "full-bleed",
+      "text-led",
+      "split",
+      "artifact",
+      "blackout",
+    ]);
   });
 
   it("starts in the prologue and advances to the first timed proof", () => {
     const playing = reachFirstQuestion();
-    expect(playing).toMatchObject({ phase: "playing", stepIndex: 1, locked: false });
+    expect(playing).toMatchObject({ phase: "playing", stepIndex: 2, locked: false });
     expect(getNarrativeSequence(getNarrativeChallenge())[playing.stepIndex]).toMatchObject({
       type: "question",
       question: { id: "mountains-progressive-image" },
@@ -127,7 +205,7 @@ describe("P-17 narrative session", () => {
     });
 
     expect(transition).toMatchObject({
-      phase: "transition",
+      phase: "playing",
       unlockedEntryIds: ["note-direction"],
       lastTimedOut: timedOut,
       locked: true,
@@ -156,7 +234,7 @@ describe("P-17 narrative session", () => {
     ],
   ] as const)("selects the %s narrative reaction", (_label, result, timedOut, expected) => {
     const reaction = getNarrativeReaction(
-      getNarrativeSequence(getNarrativeChallenge())[1],
+      getNarrativeSequence(getNarrativeChallenge())[2],
       result,
       timedOut,
     );
@@ -175,7 +253,7 @@ describe("P-17 narrative session", () => {
     const state = {
       ...reachFirstQuestion(),
       phase: "scene" as const,
-      stepIndex: 17,
+      stepIndex: 26,
       results,
       unlockedEntryIds: challenge.notebookEntries.map((entry) => entry.id),
       locked: false,
@@ -190,7 +268,7 @@ describe("P-17 narrative session", () => {
 
   it("moves between result and review without losing progress", () => {
     const results = narrativeSessionReducer(
-      { ...reachFirstQuestion(), phase: "scene", stepIndex: 17, results: [correctResult] },
+      { ...reachFirstQuestion(), phase: "scene", stepIndex: 26, results: [correctResult] },
       { type: "advance", nextStepType: null },
     );
     const review = narrativeSessionReducer(results, { type: "show-review" });

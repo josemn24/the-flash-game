@@ -41,7 +41,9 @@ export type AlphabetChallengeDefinition = ChallengeDefinitionBase & {
 };
 
 export type NarrativeTextBlock =
-  { type: "narration"; text: string } | { type: "dialogue"; speaker: string; text: string };
+  | { type: "narration"; text: string }
+  | { type: "dialogue"; speaker: string; text: string }
+  | { type: "emphasis"; text: string };
 
 export type NarrativeOutcome = "correct" | "incorrect" | "timeout";
 
@@ -49,10 +51,13 @@ export type NarrativeReactionMap = Record<NarrativeOutcome, NarrativeTextBlock[]
 
 export type NarrativeScene = {
   id: string;
-  eyebrow: string;
+  eyebrow?: string;
   title?: string;
-  presentation?: "standard" | "blackout";
+  presentation?:
+    "standard" | "chapter-opening" | "full-bleed" | "split" | "text-led" | "artifact" | "blackout";
   media?: QuestionMedia;
+  caption?: string;
+  advanceLabel?: string;
   blocks: NarrativeTextBlock[];
 };
 

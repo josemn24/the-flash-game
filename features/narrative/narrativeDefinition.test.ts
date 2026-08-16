@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { challengeDefinitions } from "@/data/challengeDefinitions";
 import { validateNarrativeChallengeDefinition } from "@/data/challenges";
@@ -16,15 +18,43 @@ function questionSteps(definition: NarrativeChallengeDefinition) {
 
 describe("narrative challenge definition", () => {
   it("validates the complete production contract", () => {
-    expect(() => validateNarrativeChallengeDefinition(cloneDefinition())).not.toThrow();
+    const definition = cloneDefinition();
+    expect(() => validateNarrativeChallengeDefinition(definition)).not.toThrow();
+    const scenes = [
+      definition.prologue,
+      ...definition.beats.flatMap((beat) =>
+        beat.steps.flatMap((step) => (step.type === "scene" ? [step.scene] : [])),
+      ),
+    ];
+    const imageSources = scenes.flatMap((scene) =>
+      scene.media?.type === "image" ? [scene.media.src] : [],
+    );
+    expect(new Set(imageSources)).toEqual(
+      new Set([
+        "/visuals/p17/archive-recorder.jpg",
+        "/visuals/p17/colony-panorama.jpg",
+        "/visuals/p17/p17-identification.jpg",
+        "/visuals/p17/observation-table.jpg",
+        "/visuals/p17/camp-corridor.jpg",
+        "/visuals/p17/cleared-camp.jpg",
+        "/visuals/p17/nadir-monitor.jpg",
+        "/visuals/p17/final-plain.jpg",
+        "/visuals/p17/route-board.jpg",
+      ]),
+    );
+    expect(imageSources.every((source) => existsSync(join(process.cwd(), "public", source)))).toBe(
+      true,
+    );
   });
 
-  it("accepts optional titles and mixed narration and dialogue blocks", () => {
+  it("accepts optional labels and mixed narration, dialogue and emphasis blocks", () => {
     const definition = cloneDefinition();
     delete definition.prologue.title;
+    delete definition.prologue.eyebrow;
     definition.prologue.blocks = [
       { type: "narration", text: "The plane stops." },
       { type: "dialogue", speaker: "Nora", text: "Observe." },
+      { type: "emphasis", text: "Only the image remains." },
     ];
 
     expect(() => validateNarrativeChallengeDefinition(definition)).not.toThrow();

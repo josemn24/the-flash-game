@@ -996,3 +996,423 @@
     background-position: 120px 180px;
   }
 }
+
+/* Immersive story pages */
+.storyScreen {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  padding: 0;
+}
+
+.storyChrome {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  pointer-events: none;
+}
+
+.storyChrome > * {
+  pointer-events: auto;
+}
+
+.storyFolio {
+  position: absolute;
+  bottom: 1.35rem;
+  left: 1.5rem;
+  color: rgb(255 255 255 / 0.48);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.storyChrome .notebookTriggerCompact {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.35rem;
+}
+
+.notebookTriggerCompact {
+  min-width: 3.25rem;
+  justify-content: center;
+  border-color: rgb(255 255 255 / 0.2);
+  background: rgb(2 10 13 / 0.68);
+  backdrop-filter: blur(14px);
+}
+
+.storyPage {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #061419;
+  box-shadow: none;
+}
+
+.storyVisual {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.storyImage,
+.storyImageContain {
+  object-fit: cover;
+}
+
+.storyCaption {
+  position: absolute;
+  z-index: 3;
+  right: 1.5rem;
+  bottom: 1.35rem;
+  max-width: min(26rem, 64vw);
+  color: rgb(255 255 255 / 0.68);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.storyArticle {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(4.5rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem) clamp(7rem, 10vw, 8rem);
+}
+
+.storyArticle h1 {
+  max-width: 20ch;
+  margin-top: 0.65rem;
+  font-size: clamp(1.8rem, 3.4vw, 3.25rem);
+  line-height: 1.02;
+}
+
+.storyArticle .sceneBlocks {
+  max-width: 42rem;
+  margin-top: 0;
+  gap: clamp(0.85rem, 2vh, 1.35rem);
+}
+
+.storyArticle h1 + .sceneBlocks,
+.storyArticle .eyebrow + h1 + .sceneBlocks {
+  margin-top: 1.5rem;
+}
+
+.storyArticle .sceneParagraph,
+.storyArticle .sceneDialogue {
+  color: rgb(255 255 255 / 0.76);
+  font-size: clamp(1rem, 1.55vw, 1.22rem);
+  line-height: 1.72;
+}
+
+.storyArticle .sceneDialogue {
+  color: white;
+}
+
+.sceneEmphasis {
+  max-width: 28ch;
+  color: white;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 2.7rem);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+.storyArticle .sceneReaction {
+  position: relative;
+  margin: 0 0 1.35rem;
+  border: 0;
+  border-left: 1px solid rgb(143 231 234 / 0.55);
+  border-radius: 0;
+  background: transparent;
+  padding: 0 0 0 1rem;
+  color: inherit;
+}
+
+.storyArticle .sceneReaction::before {
+  content: none;
+}
+
+.storyArticle .sceneReaction .sceneParagraph,
+.storyArticle .sceneReaction .sceneDialogue {
+  color: #b9f3ef;
+  font-size: clamp(0.9rem, 1.25vw, 1rem);
+  font-style: italic;
+  line-height: 1.65;
+}
+
+.continueButton {
+  position: fixed;
+  z-index: 35;
+  right: 1.35rem;
+  bottom: 1.15rem;
+  min-width: 0;
+  width: auto !important;
+  max-width: calc(100vw - 2rem);
+  min-height: 2.8rem;
+  margin: 0;
+  border: 1px solid rgb(255 255 255 / 0.24) !important;
+  border-radius: 999px !important;
+  background: rgb(2 10 13 / 0.68) !important;
+  padding: 0.7rem 1rem !important;
+  color: rgb(255 255 255 / 0.88) !important;
+  box-shadow: none !important;
+  font-size: 0.74rem !important;
+  backdrop-filter: blur(14px);
+}
+
+.continueButton:hover {
+  border-color: rgb(143 231 234 / 0.6) !important;
+  background: rgb(11 35 40 / 0.88) !important;
+}
+
+.storyPageChapter,
+.storyPageFullBleed {
+  grid-template-columns: 1fr;
+}
+
+.storyPageChapter .storyVisual,
+.storyPageFullBleed .storyVisual {
+  position: absolute;
+  inset: 0;
+}
+
+.storyPageChapter .visualShade {
+  background:
+    linear-gradient(90deg, rgb(1 9 12 / 0.9) 0%, rgb(1 9 12 / 0.52) 48%, transparent 82%),
+    linear-gradient(0deg, rgb(1 9 12 / 0.64), transparent 55%);
+}
+
+.storyPageFullBleed .visualShade {
+  background:
+    linear-gradient(90deg, rgb(1 9 12 / 0.82) 0%, rgb(1 9 12 / 0.28) 54%, transparent 82%),
+    linear-gradient(0deg, rgb(1 9 12 / 0.68), transparent 62%);
+}
+
+.storyPageChapter .storyArticle,
+.storyPageFullBleed .storyArticle {
+  width: min(100%, 58rem);
+  align-self: end;
+}
+
+.storyPageChapter .storyArticle h1 {
+  max-width: 12ch;
+  font-size: clamp(3.4rem, 9vw, 8rem);
+  letter-spacing: -0.06em;
+  line-height: 0.88;
+}
+
+.storyPageChapter .storyArticle .sceneBlocks {
+  max-width: 34rem;
+}
+
+.storyPageFullBleed .storyArticle {
+  justify-content: end;
+  padding-bottom: clamp(7.5rem, 14vh, 10rem);
+}
+
+.storyPageSplit {
+  grid-template-columns: minmax(0, 1.12fr) minmax(24rem, 0.88fr);
+}
+
+.storyPageSplit .visualShade {
+  background: linear-gradient(90deg, transparent 58%, rgb(3 15 20 / 0.5));
+}
+
+.storyPageText {
+  grid-template-columns: 1fr;
+  place-items: center;
+  background:
+    radial-gradient(circle at 18% 26%, rgb(143 231 234 / 0.07), transparent 28%),
+    linear-gradient(145deg, #07191f, #041014 72%);
+}
+
+.storyPageText .storyArticle {
+  width: min(100%, 58rem);
+}
+
+.storyPageText .sceneParagraph,
+.storyPageText .sceneDialogue {
+  font-size: clamp(1.12rem, 2vw, 1.5rem);
+}
+
+.storyPageArtifact {
+  grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.65fr);
+  background: #08171b;
+}
+
+.storyPageArtifact .storyVisual {
+  margin: clamp(1rem, 3vw, 2.5rem) 0 clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
+  border: 1px solid rgb(255 255 255 / 0.11);
+  box-shadow: 0 2rem 6rem rgb(0 0 0 / 0.3);
+}
+
+.storyPageArtifact .visualShade {
+  background: linear-gradient(90deg, transparent 74%, rgb(5 17 21 / 0.3));
+}
+
+.questionHud {
+  position: fixed;
+  z-index: 40;
+  top: 1rem;
+  right: 1rem;
+  left: 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.questionHud > * {
+  pointer-events: auto;
+}
+
+.questionHud > span {
+  color: rgb(255 255 255 / 0.48);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.questionPage {
+  min-height: 100dvh;
+  grid-template-columns: minmax(14rem, 0.48fr) minmax(0, 1.52fr);
+  padding-top: 0;
+}
+
+.questionPage .questionArticle {
+  padding-top: 6rem;
+}
+
+@media (max-width: 799px) {
+  .storyScreen {
+    padding: 0;
+  }
+
+  .storyPage,
+  .questionPage {
+    min-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .storyPageSplit,
+  .storyPageArtifact,
+  .questionPage {
+    grid-template-columns: 1fr;
+  }
+
+  .storyPageSplit .storyVisual {
+    min-height: clamp(20rem, 48vh, 30rem);
+  }
+
+  .storyPageArtifact .storyVisual {
+    min-height: clamp(19rem, 46vh, 28rem);
+    margin: 0;
+    border: 0;
+  }
+
+  .storyPageSplit .storyArticle,
+  .storyPageArtifact .storyArticle {
+    padding-top: 2.25rem;
+  }
+
+  .storyPageChapter .storyArticle,
+  .storyPageFullBleed .storyArticle {
+    min-height: 100dvh;
+    justify-content: end;
+  }
+
+  .storyPageChapter .storyArticle h1 {
+    font-size: clamp(3rem, 17vw, 5.6rem);
+  }
+
+  .storyPageChapter .tapeSignal {
+    display: none;
+  }
+
+  .storyPageChapter .storyCaption {
+    top: 1rem;
+    right: auto;
+    bottom: auto;
+    left: 1rem;
+    text-align: left;
+  }
+
+  .storyArticle {
+    padding-right: 1.35rem;
+    padding-bottom: 7.5rem;
+    padding-left: 1.35rem;
+  }
+
+  .storyArticle .sceneParagraph,
+  .storyArticle .sceneDialogue,
+  .storyPageText .sceneParagraph,
+  .storyPageText .sceneDialogue {
+    font-size: 1.05rem;
+    line-height: 1.72;
+  }
+
+  .storyCaption {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .storyPageSplit .storyCaption,
+  .storyPageArtifact .storyCaption {
+    top: 1rem;
+    right: 1rem;
+    bottom: auto;
+  }
+
+  .questionVisual {
+    min-height: 11rem;
+    max-height: 11rem;
+  }
+
+  .questionPage .questionArticle {
+    padding-top: 1.5rem;
+  }
+
+  .questionHud {
+    position: fixed;
+  }
+}
+
+@media (max-width: 520px) {
+  .storyFolio {
+    bottom: 1.15rem;
+    left: 1rem;
+  }
+
+  .storyChrome .notebookTriggerCompact {
+    top: 0.85rem;
+    right: 0.85rem;
+  }
+
+  .continueButton {
+    right: 0.85rem;
+    bottom: 0.75rem;
+  }
+
+  .notebookTriggerCompact strong {
+    display: grid;
+  }
+
+  .questionHud {
+    top: 0.7rem;
+    right: 0.7rem;
+    left: 0.7rem;
+  }
+}

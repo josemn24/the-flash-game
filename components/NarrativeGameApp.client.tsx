@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { FieldNotebook } from "@/components/FieldNotebook.client";
 import {
   ArrowIcon,
@@ -45,40 +45,24 @@ function getChapterTitle(challenge: NarrativeChallenge, stepIndex: number) {
   return challenge.beats.at(-1)?.title ?? "Desenlace";
 }
 
-function NarrativePageHeader({
-  chapter,
+function NarrativeSceneChrome({
   pageNumber,
   pageCount,
   entryCount,
   onOpenNotebook,
-  timer,
 }: {
-  chapter: string;
   pageNumber: number;
   pageCount: number;
   entryCount: number;
   onOpenNotebook: () => void;
-  timer?: ReactNode;
 }) {
   return (
-    <AppHeader
-      className={styles.pageHeader}
-      left={
-        <div className={styles.pageIdentity}>
-          <Logo />
-          <span>{chapter}</span>
-          <small>
-            Página {pageNumber} / {pageCount}
-          </small>
-        </div>
-      }
-      right={
-        <div className={styles.pageActions}>
-          {timer}
-          <NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} />
-        </div>
-      }
-    />
+    <div className={styles.storyChrome}>
+      <span className={styles.storyFolio} aria-label={`Página ${pageNumber} de ${pageCount}`}>
+        {String(pageNumber).padStart(2, "0")} / {pageCount}
+      </span>
+      <NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} compact />
+    </div>
   );
 }
 
@@ -100,6 +84,10 @@ function NarrativeBlocks({
             <span aria-hidden="true">—</span>
             {block.text}
           </p>
+        ) : block.type === "emphasis" ? (
+          <p className={styles.sceneEmphasis} key={`${block.type}-${index}`}>
+            {block.text}
+          </p>
         ) : (
           <p className={styles.sceneParagraph} key={`${block.type}-${index}`}>
             {block.text}
@@ -110,16 +98,24 @@ function NarrativeBlocks({
   );
 }
 
-function NotebookButton({ entryCount, onOpen }: { entryCount: number; onOpen: () => void }) {
+function NotebookButton({
+  entryCount,
+  onOpen,
+  compact = false,
+}: {
+  entryCount: number;
+  onOpen: () => void;
+  compact?: boolean;
+}) {
   return (
     <button
       type="button"
-      className={styles.notebookTrigger}
+      className={`${styles.notebookTrigger} ${compact ? styles.notebookTriggerCompact : ""}`}
       onClick={onOpen}
       aria-label={`Abrir registro de evidencias, ${entryCount} ${entryCount === 1 ? "entrada" : "entradas"}`}
     >
       <NotebookIcon className="h-4 w-4" />
-      <span>Registro</span>
+      <span>{compact ? <span className="sr-only">Registro</span> : "Registro"}</span>
       <strong>{entryCount}</strong>
     </button>
   );
@@ -174,8 +170,8 @@ function NarrativeIntro({
             </div>
           </div>
           <ul className={styles.introRules}>
-            <li>Las escenas y transiciones no consumen tiempo competitivo.</li>
             <li>El registro conserva la evidencia aunque falles la prueba.</li>
+            <li>Lee cada página antes de intervenir en los registros.</li>
           </ul>
           <MotionButton size="hero" onClick={onStart} whileTap={{ scale: 0.985 }}>
             Abrir el relato
@@ -189,7 +185,6 @@ function NarrativeIntro({
 
 function NarrativeSceneScreen({
   scene,
-  chapter,
   pageNumber,
   pageCount,
   reactionBlocks,
@@ -198,7 +193,6 @@ function NarrativeSceneScreen({
   onOpenNotebook,
 }: {
   scene: NarrativeScene;
-  chapter: string;
   pageNumber: number;
   pageCount: number;
   reactionBlocks: NarrativeTextBlock[];
@@ -206,6 +200,17 @@ function NarrativeSceneScreen({
   onContinue: () => void;
   onOpenNotebook: () => void;
 }) {
+  const presentation = scene.presentation ?? "standard";
+  const presentationClass = {
+    standard: styles.storyPageSplit,
+    "chapter-opening": styles.storyPageChapter,
+    "full-bleed": styles.storyPageFullBleed,
+    split: styles.storyPageSplit,
+    "text-led": styles.storyPageText,
+    artifact: styles.storyPageArtifact,
+    blackout: styles.storyPageText,
+  }[presentation];
+
   return (
     <motion.section
       className={styles.storyScreen}
@@ -213,64 +218,53 @@ function NarrativeSceneScreen({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -28 }}
     >
-      <NarrativePageHeader
-        chapter={chapter}
+      <NarrativeSceneChrome
         pageNumber={pageNumber}
         pageCount={pageCount}
         entryCount={entryCount}
         onOpenNotebook={onOpenNotebook}
       />
-      <div className={styles.storyPage}>
-        <div className={styles.storyVisual}>
-          {scene.media?.type === "image" && (
+      <div className={`${styles.storyPage} ${presentationClass}`}>
+        {scene.media?.type === "image" && (
+          <div className={styles.storyVisual}>
             <Image
               src={scene.media.src}
               alt={scene.media.alt}
               fill
-              sizes="(max-width: 799px) 100vw, 52vw"
+              sizes="(max-width: 799px) 100vw, 68vw"
               className={
                 scene.media.fit === "contain" ? styles.storyImageContain : styles.storyImage
               }
               style={{ objectPosition: scene.media.position }}
-              priority={scene.id === "scene-prologue"}
+              priority={scene.id === "scene-prologue-recording"}
             />
-          )}
-          <div className={styles.visualShade} aria-hidden="true" />
-          {scene.id === "scene-prologue" && (
-            <div className={styles.tapeSignal} aria-label="Siseo de una grabación antigua">
-              <span>REC · ARCHIVO</span>
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
-          )}
-        </div>
+            <div className={styles.visualShade} aria-hidden="true" />
+            {scene.caption && <p className={styles.storyCaption}>{scene.caption}</p>}
+            {scene.id === "scene-prologue-recording" && (
+              <div className={styles.tapeSignal} aria-label="Siseo de una grabación antigua">
+                <span>REC · ARCHIVO</span>
+                {Array.from({ length: 12 }, (_, index) => (
+                  <i key={index} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <article className={styles.storyArticle}>
-          <p className={styles.eyebrow}>{scene.eyebrow}</p>
+          {scene.eyebrow && <p className={styles.eyebrow}>{scene.eyebrow}</p>}
           {scene.title && <h1>{scene.title}</h1>}
           <NarrativeBlocks blocks={reactionBlocks} className={styles.sceneReaction} />
           <NarrativeBlocks blocks={scene.blocks} />
-          <MotionButton
-            className={styles.continueButton}
-            onClick={onContinue}
-            whileTap={{ scale: 0.985 }}
-          >
-            Continuar
-            <ArrowIcon className="h-5 w-5" />
-          </MotionButton>
-          <p className={styles.untimedLabel}>
-            <ClockIcon className="h-4 w-4" /> Sin tiempo competitivo
-          </p>
         </article>
+        <MotionButton
+          variant="secondary"
+          className={styles.continueButton}
+          onClick={onContinue}
+          whileTap={{ scale: 0.985 }}
+        >
+          {scene.advanceLabel ?? "Seguir"}
+          <ArrowIcon className="h-4 w-4" />
+        </MotionButton>
       </div>
     </motion.section>
   );
@@ -327,14 +321,12 @@ function NarrativeQuestionScreen({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -28 }}
     >
-      <NarrativePageHeader
-        chapter={chapter}
-        pageNumber={pageNumber}
-        pageCount={pageCount}
-        entryCount={entryCount}
-        onOpenNotebook={onOpenNotebook}
-        timer={
-          !hasDelayedStart || timedResponseStarted ? (
+      <header className={styles.questionHud}>
+        <span aria-label={`Página ${pageNumber} de ${pageCount}`}>
+          {String(pageNumber).padStart(2, "0")} / {pageCount}
+        </span>
+        <div>
+          {!hasDelayedStart || timedResponseStarted ? (
             <Timer
               duration={question.timeLimit}
               active={!locked && timedResponseStarted}
@@ -342,9 +334,10 @@ function NarrativeQuestionScreen({
               resetKey={question.id}
               size="compact"
             />
-          ) : undefined
-        }
-      />
+          ) : null}
+        </div>
+        <NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} compact />
+      </header>
       <div className={`${styles.storyPage} ${styles.questionPage}`}>
         <div className={styles.questionVisual} aria-hidden="true">
           <Image src={chapterImage} alt="" fill sizes="(max-width: 799px) 100vw, 34vw" />
@@ -381,22 +374,6 @@ function NarrativeQuestionScreen({
   );
 }
 
-function NarrativeRecordTransition({ timedOut }: { timedOut: boolean }) {
-  return (
-    <motion.section
-      className={styles.recordTransition}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      role="status"
-    >
-      <NotebookIcon className="h-8 w-8" />
-      <span>{timedOut ? "Tiempo agotado" : "Registro actualizado"}</span>
-      <p>La evidencia queda conservada. El relato continúa.</p>
-    </motion.section>
-  );
-}
-
 function NarrativeEpilogueScreen({ onContinue }: { onContinue: () => void }) {
   return (
     <motion.section
@@ -417,6 +394,7 @@ function NarrativeEpilogueScreen({ onContinue }: { onContinue: () => void }) {
           BUT WHY?
         </motion.h1>
         <MotionButton
+          variant="secondary"
           className={styles.epilogueContinue}
           onClick={onContinue}
           initial={{ opacity: 0, y: 10 }}
@@ -424,7 +402,7 @@ function NarrativeEpilogueScreen({ onContinue }: { onContinue: () => void }) {
           transition={{ delay: 2.1, duration: 0.45 }}
           whileTap={{ scale: 0.985 }}
         >
-          Continuar al resultado
+          Ver resultado
           <ArrowIcon className="h-5 w-5" />
         </MotionButton>
       </div>
@@ -603,7 +581,6 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 <NarrativeSceneScreen
                   key={session.currentStep.scene.id}
                   scene={session.currentStep.scene}
-                  chapter={chapter}
                   pageNumber={session.stepIndex + 1}
                   pageCount={pageCount}
                   reactionBlocks={session.reactionBlocks}
@@ -629,12 +606,6 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 onTimedResponseStart={session.handleTimedResponseStart}
                 entryCount={session.unlockedEntries.length}
                 onOpenNotebook={session.openNotebook}
-              />
-            )}
-            {session.phase === "transition" && (
-              <NarrativeRecordTransition
-                key={`narrative-transition-${session.stepIndex}`}
-                timedOut={session.lastTimedOut}
               />
             )}
             {session.phase === "results" && (

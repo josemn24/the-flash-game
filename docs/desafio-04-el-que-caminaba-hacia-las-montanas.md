@@ -40,154 +40,186 @@ horarios, observaciones o recorridos de la misión.
 - **Descripción:** Sigue el rastro de un pingüino que abandona la colonia, protege su recorrido de
   cualquier intervención y escribe únicamente aquello que las imágenes permiten afirmar.
 
-## Guion revisado
+## Guion de 27 páginas
 
-### Prólogo · Todos menos uno
+La experiencia se lee como un cuento continuo. Solo las páginas 1, 11 y 18 anuncian capítulo; las
+demás evitan la plantilla de título, resumen y CTA dominante.
 
-La voz de un antiguo investigador llega desde una grabación de la expedición, deformada por el
-viento y por los años.
+### Página 1 · Grabación antigua
+
+La cinta llevaba años guardada en una caja sin fecha. Cuando Nora pulsó el interruptor, el motor
+tardó unos segundos en vencer el frío.
+
+Primero llegó el roce del carrete. Después, el viento. Por último, la voz de alguien que ya no
+estaba allí.
 
 —A veces un pingüino se desorienta. Puede terminar muy lejos del océano, en un lugar donde no
 esperaríamos encontrarlo.
 
-Durante unos segundos solo queda el siseo de la cinta.
+### Página 2 · Todos menos uno
 
-La imagen aparece lentamente: una extensión blanca, la línea oscura de las montañas y, al fin, la
-colonia. Cientos de pingüinos avanzan hacia el agua abierta.
+La imagen emergió despacio del ruido: una llanura blanca, la línea de las montañas y la colonia
+moviéndose hacia el agua abierta.
 
-Todos caminan en la misma dirección.
+Todos avanzaban en la misma dirección. Todos menos uno.
 
-Todos menos uno.
+### Página 3 · Prueba 1: la dirección
 
-### Prueba 1 · La dirección
+La imagen se revela progresivamente. El jugador identifica hacia qué referencia del paisaje se
+orienta el pingüino que abandona la formación.
 
-La imagen se revela desde una mancha imprecisa hasta mostrar la colonia, el mar y las montañas. El
-jugador debe identificar hacia qué referencia del paisaje se orienta el pingüino que rompe la
-formación.
+### Página 4 · Identificación
 
-### Escena 1 · P-17
+La reacción a la prueba abre la página sin aviso intermedio. Nora detiene el fotograma y encuentra
+una pequeña muesca blanca en el lado izquierdo del pecho. En el margen escribe una identificación
+visual provisional: P-17.
 
-La cámara se acerca. En el lado izquierdo de su pecho aparece una pequeña muesca blanca. Nora la
-anota como identificación visual provisional: P-17.
+### Página 5 · Conservar la imagen
 
-El pingüino se detiene, gira y avanza hacia las montañas. No corre. No vuelve a incorporarse a la
-columna. En la pantalla se hace cada vez más pequeño.
+La colonia sigue alejándose hacia el mar. P-17 gira y continúa hacia las montañas hasta que el
+viento empieza a borrar sus huellas.
 
 —¿Lo has registrado? —pregunta Nora.
 
-Asientes.
+Asientes sin apartar la mirada de la pantalla.
 
 —Entonces conserva la imagen. Todavía no escribas una razón.
 
-### Prueba 2 · La anomalía
+### Página 6 · Prueba 2: el desvío
 
-Durante las horas siguientes, el equipo superpone los recorridos de la colonia. La mayor densidad
-de trayectorias desemboca en el mar. Una sola línea abandona ese corredor y se interna en el mapa.
-El jugador debe señalar el punto exacto donde empieza el desvío.
+El jugador señala dónde la trayectoria de P-17 abandona el corredor habitual de la colonia.
 
-### Escena 2 · Lo que una cámara no sabe
+### Página 7 · Trayectorias superpuestas
+
+La reacción aparece junto a las hojas de observación. Bajo el papel translúcido, cientos de
+recorridos terminan en el mar; uno solo continúa hacia el interior.
+
+### Página 8 · Lo que una cámara no sabe
 
 —Podríamos decir que está perdido —murmura alguien.
 
-Nora mantiene el lápiz sobre el cuaderno.
+Nora deja el lápiz sobre el cuaderno.
 
-—Podríamos pensarlo. La imagen solo demuestra que se separa.
+—Podríamos pensarlo. Pero la imagen solo demuestra que se separa.
 
-En la mesa aparecen las observaciones del día. Algunas describen movimientos, tiempos y
-direcciones. Otras atribuyen al animal una intención que ningún instrumento ha medido.
+Unas frases hablan de posiciones, minutos y direcciones. Otras cruzan una frontera invisible y
+entran en la mente del animal.
 
-### Prueba 3 · Hecho o interpretación
+### Página 9 · Prueba 3: observación o interpretación
 
-El jugador clasifica cada anotación como hecho observado o interpretación no demostrada.
+El jugador separa hechos registrados de interpretaciones no demostradas.
 
-### Escena 3 · El corredor
+### Página 10 · El primer cuaderno
 
-Al amanecer, P-17 reaparece cerca del campamento base. Entre él y la llanura hay cajas, trineos y un
-trípode colocado durante la noche.
+La reacción cierra el capítulo. En las páginas permanecen una marca blanca, una hora, un punto del
+mapa y una dirección.
 
-El protocolo es claro: no tocar al animal, no llamarlo, no cerrarle el paso y permanecer fuera de su
-distancia de seguridad. El obstáculo debe desaparecer antes de que se acerque.
+Era menos que una explicación. Era todo lo que sabían.
 
-—Nosotros conocemos su posición —dice Nora—. Él no ha elegido nuestros objetos. Esa diferencia nos
-obliga a retirarlos.
+### Página 11 · Mantenerse fuera
 
-### Prueba 4 · Despejar el paso
+Durante la noche cambia el viento. Al amanecer, una figura oscura aparece al otro lado del
+campamento base.
 
-El jugador mueve únicamente el equipo del campamento y saca el trípode por el corredor de servicio.
-P-17 nunca es una pieza interactiva del tablero.
+### Página 12 · El corredor
 
-### Escena 4 · El mensaje de Nadir
+P-17 avanza hacia el corredor este. Entre él y la llanura quedan cajas, trineos y un trípode
+instalado durante la noche.
 
-P-17 atraviesa el límite del campamento sin variar la dirección registrada. Durante los dos días
-siguientes, las cámaras de las balizas conservan fragmentos cada vez más distantes de la misma
-trayectoria.
+Nadie puede tocarlo, llamarlo ni cerrarle el paso. Son los objetos humanos los que deben
+desaparecer.
 
-Después llega un mensaje del campamento ficticio Nadir. Una cámara remota ha registrado un pingüino
-que entra desde el nordeste y continúa hacia el suroeste.
+—Nosotros conocemos su posición —dice Nora—. Él no ha elegido nuestros objetos.
 
-La distancia impide reconocerlo a simple vista. El equipo compara la marca del pecho, el rumbo y la
-ventana temporal con tres identificaciones posibles. Solo una es compatible con los tres datos.
+### Página 13 · Prueba 4: despejar el paso
 
-### Prueba 5 · Matriz de evidencias
+El jugador mueve únicamente el equipo humano y saca el trípode por la salida de servicio.
 
-El jugador consulta una matriz y selecciona la identificación que coincide simultáneamente con la
-muesca del pecho, el rumbo y el intervalo entre observaciones.
+### Página 14 · Campamento despejado
 
-### Escena 5 · La línea completa
+La reacción se integra sobre el nuevo plano del corredor vacío. P-17 cruza el campamento sin variar
+la dirección registrada. El equipo permanece lejos.
 
-La identificación compatible permite incorporar el registro de Nadir. La colonia, el primer
-desvío, el campamento base, la baliza H-3 y una última cámara completan los otros cinco registros.
-Nora coloca los seis puntos sobre una cuadrícula estilizada.
+### Página 15 · Mensaje de Nadir
 
-La cuadrícula no representa una escala geográfica exacta. Sirve para comprobar el orden espacial de
-las observaciones y que ningún tramo contradiga el anterior.
+Dos días más tarde, la pantalla de comunicaciones se enciende. Nadir ha registrado un pingüino
+entrando desde el nordeste y continuando hacia el suroeste.
 
-### Prueba 6 · Reconstruir el recorrido
+La figura es demasiado pequeña para reconocerla. Junto al vídeo llegan tres fragmentos: una marca,
+un rumbo y una ventana de tiempo.
 
-El jugador une los puntos en orden y cubre la cuadrícula con un único recorrido válido.
+### Página 16 · Prueba 5: matriz de evidencias
 
-### Escena 6 · Una historia no es una causa
+El jugador busca la única identificación compatible simultáneamente con los tres registros.
 
-Sobre el mapa, la trayectoria queda continua. La continuidad elimina algunas dudas sobre dónde fue
-observado P-17, pero no explica por qué siguió esa dirección.
+### Página 17 · Compatible con P-17
 
-—Cuanto más completo es el recorrido, más fácil resulta imaginar una intención —dice Nora—. El
-cuaderno debe resistirse a esa facilidad.
+La reacción abre una página breve. Nora recorre las tres columnas una última vez. La muesca, el
+rumbo y el intervalo coinciden en una sola fila.
 
-Antes de redactar el informe, separa las fichas y pide ordenar únicamente los hechos.
+Compatible con P-17.
 
-### Prueba 7 · Cronología
+La cautela permanece deliberadamente en la frase.
 
-El jugador ordena cinco hechos: desplazamiento de la colonia, separación de P-17, paso por el
-campamento base, identificación compatible en Nadir y continuación hacia el interior.
+### Página 18 · La línea completa
 
-### Escena 7 · La última hoja
+Las cámaras no han visto un viaje. Han conservado fragmentos separados por horas de oscuridad y
+kilómetros de nieve.
 
-P-17 avanza sobre una llanura sin referencias próximas. El equipo conserva la distancia establecida
-por el protocolo. El animal se detiene, sacude la nieve de las plumas y continúa.
+### Página 19 · Seis registros
 
-Nora entrega al jugador la última hoja.
+Nora extiende sobre la mesa la colonia, el primer desvío, la base, H-3, Nadir y una última cámara
+orientada hacia el interior.
 
-—Escribe lo que sabemos. Si una frase necesita entrar en su cabeza, no pertenece al registro.
+Entre ellos quedan zonas que nadie observó. La cuadrícula solo puede comprobar si los fragmentos
+admiten una línea continua.
 
-El borrador contiene una afirmación que las imágenes no sostienen.
+### Página 20 · Prueba 6: reconstruir el recorrido
 
-### Prueba 8 · Registro final
+El jugador conecta los seis registros en orden y completa el único recorrido Zip válido.
+
+### Página 21 · Una trayectoria continua
+
+La reacción aparece sobre el tablero completo. La línea atraviesa los seis registros sin romperse.
+Por primera vez, los fragmentos pueden leerse como una trayectoria desde la colonia hasta el
+interior.
+
+### Página 22 · Una historia no es una causa
+
+Alguien dice que por fin tienen la historia. Nora observa la línea azul, tan limpia que parece
+contener una respuesta.
+
+—Tenemos un antes y un después. No tenemos un porqué.
+
+Cuanto más completo resulta el recorrido, más fácil es imaginar una intención. El cuaderno debe
+resistirse precisamente a esa facilidad.
+
+### Página 23 · Prueba 7: cronología
+
+El jugador ordena únicamente los hechos registrados, sin añadir una causa.
+
+### Página 24 · La última hoja
+
+La reacción conduce a la última cámara. P-17 se detiene, sacude la nieve de las plumas y continúa.
+La cámara deja que la distancia crezca.
+
+—Esta es la última hoja —dice Nora—. Si una frase necesita entrar en su cabeza, no pertenece aquí.
+
+### Página 25 · Prueba 8: registro final
 
 El jugador localiza la primera interpretación no demostrada y la sustituye por el límite correcto
 de la evidencia.
 
-### Desenlace · El que caminaba hacia las montañas
+### Página 26 · Cierre del registro
 
-En el cuaderno queda escrito:
+La reacción queda incorporada al documento. Nora lee el texto, tacha una palabra y vuelve a empezar.
+La hoja termina exactamente así:
 
 > P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma
 > compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo
 > determinarse.
 
-La imagen se aleja. Primero se ve el pingüino. Después, sus huellas. Después, la llanura entera.
-
-La cámara deja de seguirlo antes de que desaparezca en la distancia.
+### Página 27 · Epílogo
 
 La imagen se funde a negro.
 

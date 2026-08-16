@@ -6,7 +6,7 @@ import type {
   NarrativeTextBlock,
 } from "@/types/game";
 
-export type NarrativePhase = "intro" | "scene" | "playing" | "transition" | "results" | "review";
+export type NarrativePhase = "intro" | "scene" | "playing" | "results" | "review";
 
 export type NarrativeSessionState = {
   phase: NarrativePhase;
@@ -73,7 +73,7 @@ export function narrativeSessionReducer(
     case "answer":
       return {
         ...state,
-        phase: "transition",
+        phase: "playing",
         results: [...state.results, action.result],
         unlockedEntryIds: Array.from(
           new Set([...state.unlockedEntryIds, ...action.unlockEntryIds]),
