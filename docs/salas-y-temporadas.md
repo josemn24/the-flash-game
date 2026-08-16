@@ -60,7 +60,7 @@ Ranking de temporada:
 
 En este ejemplo, cada día publica un desafío diferente. Todos los jugadores reciben el mismo reto o uno equivalente, lo completan cuando pueden y sus puntos se suman al total de la temporada.
 
-La primera misión narrativa prevista para el cuarto desafío de la temporada mock es **Encuentros en el fin del mundo**. Su diseño y alcance están documentados en [`docs/narrativa-competitiva-encuentros-fin-del-mundo.md`](narrativa-competitiva-encuentros-fin-del-mundo.md). Hasta que se implemente el modo, el cuarto desafío continúa siendo un placeholder no jugable.
+El cuarto desafío de la temporada mock es la misión narrativa **El que caminaba hacia las montañas**. Su relato, sus ocho pruebas y sus límites editoriales están documentados en [`docs/desafio-04-el-que-caminaba-hacia-las-montanas.md`](desafio-04-el-que-caminaba-hacia-las-montanas.md).
 
 ## Decisiones de producto
 

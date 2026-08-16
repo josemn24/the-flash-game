@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Matriz de evidencias de Nadir</title>
+  <desc id="desc">Comparación de tres identificaciones por marca de pecho, rumbo y ventana temporal.</desc>
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e9eee8"/>
+      <stop offset="1" stop-color="#c8d5d1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="620" rx="30" fill="#0b2027"/>
+  <rect x="30" y="30" width="1140" height="560" rx="20" fill="url(#paper)"/>
+  <g stroke="#71888a" stroke-width="2">
+    <path d="M30 150H1170M30 296H1170M30 442H1170"/>
+    <path d="M210 30V590M590 30V590M850 30V590"/>
+  </g>
+  <rect x="30" y="30" width="1140" height="120" rx="20" fill="#173840"/>
+  <path d="M30 130H1170V150H30Z" fill="#173840"/>
+  <g font-family="ui-monospace, monospace" font-size="24" font-weight="800" fill="#dff8f3" letter-spacing="1">
+    <text x="70" y="98">IDENTIFICACIÓN</text>
+    <text x="250" y="98">MARCA DE PECHO</text>
+    <text x="636" y="98">RUMBO</text>
+    <text x="895" y="98">VENTANA</text>
+  </g>
+  <g font-family="ui-sans-serif, system-ui" fill="#173036">
+    <g font-size="32" font-weight="900"><text x="86" y="238">P-17</text><text x="86" y="384">P-23</text><text x="86" y="530">P-41</text></g>
+    <g font-size="27" font-weight="650">
+      <text x="250" y="218"><tspan x="250">Muesca blanca</tspan><tspan x="250" dy="36">izquierda</tspan></text>
+      <text x="250" y="372">Dos puntos blancos</text>
+      <text x="250" y="510"><tspan x="250">Muesca blanca</tspan><tspan x="250" dy="36">izquierda</tspan></text>
+      <text x="666" y="238">240°</text><text x="666" y="384">240°</text><text x="666" y="530">190°</text>
+      <text x="922" y="238">46–54 h</text><text x="922" y="384">46–54 h</text><text x="922" y="530">14–18 h</text>
+    </g>
+  </g>
+  <g fill="none" stroke="#2a6e76" stroke-width="5" opacity=".55"><path d="M52 170H62M52 316H62M52 462H62"/></g>
+</svg>

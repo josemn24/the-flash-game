@@ -1,4 +1,39 @@
-import type { ChallengeDefinition } from "@/types/game";
+import type {
+  ChallengeDefinition,
+  NarrativeReactionMap,
+  NarrativeScene,
+  NarrativeTextBlock,
+  QuestionMedia,
+} from "@/types/game";
+
+const narration = (text: string): NarrativeTextBlock => ({ type: "narration", text });
+const dialogue = (speaker: string, text: string): NarrativeTextBlock => ({
+  type: "dialogue",
+  speaker,
+  text,
+});
+
+function narrativeImage(src: string, alt: string, position = "50% 50%"): QuestionMedia {
+  return { type: "image", src, alt, fit: "cover", position };
+}
+
+function scene(
+  id: string,
+  eyebrow: string,
+  title: string,
+  media: QuestionMedia,
+  blocks: NarrativeTextBlock[],
+): NarrativeScene {
+  return { id, eyebrow, title, media, blocks };
+}
+
+function reactions(correct: string, incorrect: string, timeout: string): NarrativeReactionMap {
+  return {
+    correct: [narration(correct)],
+    incorrect: [narration(incorrect)],
+    timeout: [narration(timeout)],
+  };
+}
 
 export const challengeDefinitions = {
   "demo-challenge-definition": {
@@ -161,502 +196,310 @@ export const challengeDefinitions = {
   },
   "antarctica-narrative-definition": {
     id: "antarctica-narrative-definition",
-    title: "Encuentros en el fin del mundo",
-    subtitle: "Lo que el hielo no explica",
+    title: "El que caminaba hacia las montañas",
+    subtitle: "Una dirección no es una explicación",
     description:
-      "Acompaña a un equipo de campo hasta C4, registra una señal que se repite cada cuarenta segundos y observa qué queda fuera de toda explicación.",
+      "Sigue el rastro de un pingüino que abandona la colonia, protege su recorrido de cualquier intervención y escribe únicamente aquello que las imágenes permiten afirmar.",
     mode: "narrative",
     implementationStatus: "complete",
     maxScore: 100,
-    prologue: {
-      id: "scene-prologue",
-      eyebrow: "Prólogo",
-      title: "El cuaderno",
-      blocks: [
-        {
-          type: "narration",
-          text: "Tras la ventanilla, la nieve convierte el mundo en una página en blanco. Al bajar, el frío encuentra el hueco entre guante y manga.",
-        },
-        {
-          type: "narration",
-          text: "Nora Valdés te entrega un cuaderno impermeable. En la primera página: 40 segundos.",
-        },
-        {
-          type: "dialogue",
-          speaker: "Nora",
-          text: "Un instrumento bajo el hielo repite una señal con ese intervalo. Está registrada en C4. Iremos a observarla; no a inventarle una respuesta.",
-        },
+    prologue: scene(
+      "scene-prologue",
+      "Prólogo · Todos menos uno",
+      "Todos menos uno",
+      narrativeImage(
+        "/visuals/p17/colony-panorama.jpg",
+        "Una colonia avanza hacia el mar mientras un pingüino se separa hacia las montañas",
+        "50% 52%",
+      ),
+      [
+        narration(
+          "La voz de un antiguo investigador llega desde una grabación deformada por el viento y por los años.",
+        ),
+        dialogue(
+          "Grabación",
+          "A veces un pingüino se desorienta. Puede terminar muy lejos del océano, en un lugar donde no esperaríamos encontrarlo.",
+        ),
+        narration(
+          "Durante unos segundos solo queda el siseo de la cinta. Cientos de pingüinos avanzan hacia el agua abierta. Todos caminan en la misma dirección. Todos menos uno.",
+        ),
       ],
-    },
+    ),
     beats: [
       {
-        id: "arrival",
-        title: "Llegada",
+        id: "all-but-one",
+        title: "Todos menos uno",
         steps: [
           {
-            type: "scene",
-            scene: {
-              id: "scene-arrival",
-              eyebrow: "Movimiento I · Llegada a C4",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "El viento borra el avión y después el primer poste. La estación queda a tu espalda; delante, en algún punto, está C4 y la ruta de observación.",
-                },
-                {
-                  type: "narration",
-                  text: "Nora te entrega una brújula y una tarjeta. La aguja marca 090°; una corrección convierte esa lectura en rumbo de mapa hacia la estación y el punto C4.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "La estación no se ha movido. Corrige la lectura y elige por dónde seguimos.",
-                },
-              ],
-            },
-          },
-          {
             type: "question",
-            questionId: "antarctica-orientation-calibration",
-            unlockEntryIds: ["note-calibration"],
-            reactions: {
-              correct: [
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "Bien. Podemos orientarnos.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "Nora enfrenta tarjeta y aguja.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "El mapa necesita 060°. Lo anotamos.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "El viento borra las huellas. Nora fija el rumbo: 060°.",
-                },
-              ],
-            },
+            questionId: "mountains-progressive-image",
+            unlockEntryIds: ["note-direction"],
+            reactions: reactions(
+              "La cámara conserva la referencia: montañas, hacia el interior.",
+              "Nora congela el fotograma y marca la línea de montañas. Esa es la dirección observable.",
+              "La imagen termina de revelarse. P-17 se orienta hacia las montañas.",
+            ),
           },
           {
             type: "scene",
-            scene: {
-              id: "scene-after-q1",
-              eyebrow: "Movimiento I · Llegada",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "Las luces aparecen detrás de la nieve. Has llegado a la estación; C4 queda para la salida de la tarde. Al detenerte, el sudor empieza a enfriarse bajo el cortavientos.",
-                },
-                {
-                  type: "narration",
-                  text: "Nora abre tu chaqueta: llevas base seca y barrera exterior, pero nada que retenga aire caliente entre ambas. En C4 no habrá una puerta que cerrar.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "Al frío le basta con una capa sin completar.",
-                },
+            scene: scene(
+              "scene-p17",
+              "Capítulo I · P-17",
+              "Una marca, no una razón",
+              narrativeImage(
+                "/visuals/p17/p17-identification.jpg",
+                "P-17 frente a una cordillera, con la colonia desenfocada al fondo",
+                "42% 50%",
+              ),
+              [
+                narration(
+                  "La cámara se acerca. En el lado izquierdo de su pecho aparece una pequeña muesca blanca. Nora la anota como identificación visual provisional: P-17.",
+                ),
+                narration(
+                  "El pingüino se detiene, gira y avanza hacia las montañas. No corre. No vuelve a incorporarse a la columna.",
+                ),
+                dialogue("Nora", "Conserva la imagen. Todavía no escribas una razón."),
               ],
-            },
+            ),
           },
           {
             type: "question",
-            questionId: "antarctica-cold-layer",
-            unlockEntryIds: ["note-weather"],
-            reactions: {
-              correct: [
-                {
-                  type: "narration",
-                  text: "Nora cierra la chaqueta.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "Así conservas el aire caliente.",
-                },
+            questionId: "trajectory-deviation-heat-map",
+            unlockEntryIds: ["note-deviation"],
+            reactions: reactions(
+              "El punto queda fijado: aquí abandona el corredor de la colonia.",
+              "Nora superpone de nuevo las trayectorias y registra el inicio exacto del desvío.",
+              "La superposición automática localiza el desvío en el sector C3.",
+            ),
+          },
+          {
+            type: "scene",
+            scene: scene(
+              "scene-camera-limits",
+              "Capítulo I · Lo que una cámara no sabe",
+              "Lo observable",
+              narrativeImage(
+                "/visuals/p17/p17-identification.jpg",
+                "P-17 permanece orientado hacia las montañas",
+                "42% 50%",
+              ),
+              [
+                dialogue("Equipo", "Podríamos decir que está perdido."),
+                dialogue("Nora", "Podríamos pensarlo. La imagen solo demuestra que se separa."),
+                narration(
+                  "En la mesa aparecen movimientos, tiempos y direcciones junto a frases que atribuyen al animal una intención que ningún instrumento ha medido.",
+                ),
               ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "Nora añade un forro polar.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "Necesitamos aislamiento entre base y viento.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "Tus dedos se entumecen. Nora te ayuda a añadir aislamiento.",
-                },
-              ],
-            },
+            ),
+          },
+          {
+            type: "question",
+            questionId: "observation-vs-interpretation",
+            unlockEntryIds: ["note-register-rule"],
+            reactions: reactions(
+              "El registro conserva únicamente lo que los instrumentos pueden sostener.",
+              "Nora retira las frases que necesitan suponer qué piensa o siente P-17.",
+              "El equipo completa la clasificación antes de continuar.",
+            ),
           },
         ],
       },
       {
-        id: "station",
-        title: "Preparar la observación",
+        id: "stay-out",
+        title: "Mantenerse fuera",
         steps: [
           {
             type: "scene",
-            scene: {
-              id: "scene-station",
-              eyebrow: "Movimiento II · Preparar la observación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "McMurdo surge como una ciudad de almacenes, tuberías y motores. Dentro del depósito, Álex extiende el plano de C4 y separa el equipo que puede viajar.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Álex",
-                  text: "El vehículo admite cuatro bultos científicos. Lo que no llevemos no podrá convertirse en dato.",
-                },
+            scene: scene(
+              "scene-corridor",
+              "Capítulo II · Mantenerse fuera",
+              "El corredor",
+              narrativeImage(
+                "/visuals/p17/camp-corridor.jpg",
+                "Equipo de campamento bloquea temporalmente un corredor de nieve",
+                "50% 52%",
+              ),
+              [
+                narration(
+                  "Al amanecer, P-17 reaparece cerca del campamento base. Entre él y la llanura hay cajas, trineos y un trípode colocado durante la noche.",
+                ),
+                narration(
+                  "El protocolo exige no tocar al animal, no llamarlo y permanecer fuera de su distancia de seguridad. El obstáculo debe desaparecer antes de que se acerque.",
+                ),
+                dialogue(
+                  "Nora",
+                  "Él no ha elegido nuestros objetos. Esa diferencia nos obliga a retirarlos.",
+                ),
               ],
-            },
+            ),
           },
           {
             type: "question",
-            questionId: "antarctica-field-kit-selection",
-            unlockEntryIds: ["note-kit"],
-            reactions: {
-              correct: [
-                {
-                  type: "dialogue",
-                  speaker: "Álex",
-                  text: "El equipo de observación está completo. Podemos ir a C4.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "Álex retira lo redundante y vuelve a revisar el plano de C4.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Álex",
-                  text: "El vehículo solo puede llevar lo que convierte una observación en evidencia.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "El motor arranca antes de que termines. Álex carga el kit mínimo y deja el resto en el almacén.",
-                },
-              ],
-            },
+            questionId: "clear-camp-escape",
+            unlockEntryIds: ["note-intervention"],
+            reactions: reactions(
+              "El trípode sale del corredor. El equipo vuelve a la distancia de seguridad.",
+              "Nora completa la retirada desde el lateral protegido.",
+              "El equipo retira el último obstáculo antes de la llegada de P-17.",
+            ),
           },
           {
             type: "scene",
-            scene: {
-              id: "scene-after-q3",
-              eyebrow: "Movimiento II · Preparar la observación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "Alba cuenta cuatro radios y te pasa la autonomía: seis horas fuera, tres por batería, más una reserva por persona. La vuelta también forma parte de la misión.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Alba",
-                  text: "Aquí una batería de menos es alguien que deja de poder llamar.",
-                },
+            scene: scene(
+              "scene-nadir",
+              "Capítulo II · Campamento Nadir",
+              "Tres coincidencias",
+              narrativeImage(
+                "/visuals/p17/camp-corridor.jpg",
+                "Campamento ficticio en una llanura antártica",
+                "66% 44%",
+              ),
+              [
+                narration(
+                  "P-17 atraviesa el límite del campamento sin variar la dirección registrada. Dos días después llega un mensaje de Nadir.",
+                ),
+                narration(
+                  "Una cámara remota ha registrado un pingüino que entra desde el nordeste y continúa hacia el suroeste. La distancia impide reconocerlo a simple vista.",
+                ),
+                dialogue(
+                  "Nora",
+                  "Compara marca, rumbo y tiempo. La compatibilidad necesita las tres columnas.",
+                ),
               ],
-            },
+            ),
           },
           {
             type: "question",
-            questionId: "antarctica-radio-batteries",
-            unlockEntryIds: ["note-batteries"],
-            reactions: {
-              correct: [
-                {
-                  type: "narration",
-                  text: "Alba cuenta doce baterías.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Alba",
-                  text: "Autonomía y reservas cubiertas.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "Alba separa doce baterías y repasa el cálculo contigo.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "El vehículo arranca. Alba completa la carga con doce baterías.",
-                },
-              ],
-            },
-          },
-          {
-            type: "scene",
-            scene: {
-              id: "scene-after-q4",
-              eyebrow: "Movimiento II · Preparar la observación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "El equipo ya está cargado. Desde el banco de pruebas llega un pulso; luego, silencio. Nora abre una hoja en blanco para el protocolo.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "Antes de interpretar, decidimos qué vamos a registrar y en qué orden.",
-                },
-              ],
-            },
-          },
-          {
-            type: "question",
-            questionId: "antarctica-observation-protocol",
-            unlockEntryIds: ["note-protocol", "note-location"],
-            reactions: {
-              correct: [
-                {
-                  type: "narration",
-                  text: "Mara copia el protocolo en el cuaderno. Nadie escribe todavía una causa.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "dialogue",
-                  speaker: "Mara",
-                  text: "Primero registramos; después comparamos. Una hipótesis no puede ocupar el lugar de un dato.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "Llega otro pulso. Mara deja el orden marcado para revisarlo en C4.",
-                },
-              ],
-            },
-          },
-          {
-            type: "scene",
-            scene: {
-              id: "scene-departure",
-              eyebrow: "Movimiento II · Preparar la observación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "Alba guarda la cámara, Mara el sismómetro y Álex los dos hidrófonos. Nora marca C4 en el mapa: un lugar concreto para una pregunta que todavía no lo es.",
-                },
-                {
-                  type: "narration",
-                  text: "Un pulso aparece en pantalla. Cuarenta segundos después llega otro. Todos miran el reloj antes de partir.",
-                },
-              ],
-            },
+            questionId: "p17-evidence-matrix",
+            unlockEntryIds: ["note-nadir"],
+            reactions: reactions(
+              "Las tres columnas coinciden con P-17.",
+              "Nora compara las filas: solo P-17 coincide en los tres criterios.",
+              "El equipo registra P-17 como identificación compatible.",
+            ),
           },
         ],
       },
       {
-        id: "field",
-        title: "Lo que queda sin explicación",
+        id: "complete-line",
+        title: "La línea completa",
         steps: [
           {
             type: "scene",
-            scene: {
-              id: "scene-field",
-              eyebrow: "Movimiento III · Lo que queda sin explicación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "La estación desaparece en el retrovisor. En C4, el equipo abre un acceso y la cámara desciende bajo el hielo. Primero ves burbujas; después, una sombra que gira lentamente mientras el cuaderno espera una descripción.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Alba",
-                  text: "No decidas qué significa. Empieza por nombrar lo que ves.",
-                },
+            scene: scene(
+              "scene-complete-line",
+              "Capítulo III · La línea completa",
+              "Seis registros",
+              narrativeImage(
+                "/visuals/p17/colony-panorama.jpg",
+                "Llanura entre la colonia, el mar y las montañas",
+                "45% 60%",
+              ),
+              [
+                narration(
+                  "La identificación compatible permite incorporar Nadir. La colonia, el primer desvío, la base, H-3 y una última cámara completan los otros cinco registros.",
+                ),
+                narration(
+                  "Nora coloca los seis puntos sobre una cuadrícula de sectores. No representa una escala exacta; comprueba el orden espacial de las observaciones.",
+                ),
               ],
-            },
+            ),
           },
           {
             type: "question",
-            questionId: "antarctica-weddell-seal",
-            unlockEntryIds: ["note-species"],
-            reactions: {
-              correct: [
-                {
-                  type: "narration",
-                  text: "Alba sigue la silueta.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Alba",
-                  text: "Foca de Weddell; nada más todavía.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "La imagen se enfoca: es una foca de Weddell.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "La cámara corrige el enfoque: una foca de Weddell.",
-                },
-              ],
-            },
+            questionId: "p17-route-zip",
+            unlockEntryIds: ["note-route"],
+            reactions: reactions(
+              "Los seis registros forman una trayectoria continua.",
+              "Nora conserva los puntos confirmados y completa el único recorrido compatible.",
+              "El sistema enlaza los seis registros antes de cerrar el mapa.",
+            ),
           },
           {
             type: "scene",
-            scene: {
-              id: "scene-after-q6",
-              eyebrow: "Movimiento III · Lo que queda sin explicación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "Álex conecta los dos hidrófonos; Mara activa el sismómetro. El protocolo ya está escrito. En el mismo minuto, dos líneas recogen pulsos a cero y cuarenta segundos; la tercera no.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Mara",
-                  text: "Dime hasta dónde llegan los datos.",
-                },
+            scene: scene(
+              "scene-story-is-not-cause",
+              "Capítulo III · Una historia no es una causa",
+              "Antes y después",
+              narrativeImage(
+                "/visuals/p17/p17-identification.jpg",
+                "P-17 frente a las montañas durante la observación",
+                "42% 50%",
+              ),
+              [
+                narration(
+                  "La trayectoria queda continua. El recorrido elimina dudas sobre dónde fue observado P-17, pero no explica por qué siguió esa dirección.",
+                ),
+                dialogue(
+                  "Nora",
+                  "Cuanto más completo es el recorrido, más fácil resulta imaginar una intención. El cuaderno debe resistirse a esa facilidad.",
+                ),
               ],
-            },
+            ),
           },
           {
             type: "question",
-            questionId: "antarctica-sensor-reading",
-            unlockEntryIds: ["note-signal"],
-            reactions: {
-              correct: [
-                {
-                  type: "narration",
-                  text: "Mara asiente.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Mara",
-                  text: "Dos puntos de escucha; ningún origen demostrado.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "Mara subraya los pulsos. El origen continúa abierto.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "Llega otro pulso. Mara guarda los registros sin interpretarlo.",
-                },
-              ],
-            },
+            questionId: "p17-observation-order",
+            unlockEntryIds: ["note-chronology"],
+            reactions: reactions(
+              "Los hechos quedan ordenados sin añadir una explicación.",
+              "Nora recompone la secuencia usando las marcas de tiempo.",
+              "El cuaderno ordena automáticamente los cinco registros.",
+            ),
           },
           {
             type: "scene",
-            scene: {
-              id: "scene-return",
-              eyebrow: "Movimiento III · Lo que queda sin explicación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "La señal sigue sin nombre cuando desmontáis el equipo. El acceso vuelve a cubrirse hasta parecer intacto y el vehículo emprende el regreso. Los datos tienen límites; el silencio de dentro no necesita una hipótesis.",
-                },
+            scene: scene(
+              "scene-last-sheet",
+              "Capítulo III · La última hoja",
+              "El límite del registro",
+              narrativeImage(
+                "/visuals/p17/final-plain.jpg",
+                "Un pingüino lejano cruza una llanura hacia las montañas dejando huellas",
+              ),
+              [
+                narration(
+                  "P-17 avanza sobre una llanura sin referencias próximas. El equipo conserva la distancia establecida por el protocolo.",
+                ),
+                narration(
+                  "El animal se detiene, sacude la nieve de las plumas y continúa. Nora entrega la última hoja.",
+                ),
+                dialogue(
+                  "Nora",
+                  "Escribe lo que sabemos. Si una frase necesita entrar en su cabeza, no pertenece al registro.",
+                ),
               ],
-            },
-          },
-          {
-            type: "scene",
-            scene: {
-              id: "scene-penguin",
-              eyebrow: "Movimiento III · Lo que queda sin explicación",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "Casi todos los pingüinos avanzan hacia el mar. Uno se separa y camina hacia una extensión sin agua ni refugio. No hay señal en el cuaderno que explique ese desvío.",
-                },
-                {
-                  type: "narration",
-                  text: "Nora escribe 270° y te devuelve el cuaderno abierto por las notas marcadas: C4, la corrección y los límites de lo que habéis medido.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "No sabemos por qué. Anota solo hacia dónde va.",
-                },
-              ],
-            },
-            unlockEntryIds: ["note-final-bearing"],
+            ),
           },
           {
             type: "question",
-            questionId: "antarctica-penguin-trajectory",
-            unlockEntryIds: ["note-final-route"],
-            reactions: {
-              correct: [
-                {
-                  type: "narration",
-                  text: "Nora comprueba C4 y la Ruta B. La trayectoria queda registrada sin añadirle un motivo.",
-                },
-              ],
-              incorrect: [
-                {
-                  type: "narration",
-                  text: "Nora vuelve a la hoja de calibración y separa la trayectoria de cualquier explicación.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "C4, Ruta B hacia el interior. Eso registramos; el motivo queda abierto.",
-                },
-              ],
-              timeout: [
-                {
-                  type: "narration",
-                  text: "Nora aplica la corrección y anota C4, Ruta B hacia el interior. No añade una causa.",
-                },
-              ],
-            },
+            questionId: "p17-final-record",
+            unlockEntryIds: ["note-final"],
+            reactions: reactions(
+              "La última hoja conserva la trayectoria y deja fuera la causa.",
+              "Nora elimina la atribución de intención y escribe el límite de la evidencia.",
+              "El informe se cierra con una conclusión limitada a los registros.",
+            ),
           },
           {
             type: "scene",
-            scene: {
-              id: "scene-resolution",
-              eyebrow: "Desenlace",
-              presentation: "standard",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "Nora registra la trayectoria: el pingüino sale de C4 y continúa hacia el interior hasta convertirse en una mancha sobre el hielo.",
-                },
-                {
-                  type: "narration",
-                  text: "El equipo observa en silencio. La imagen se aleja; solo quedan la figura, la llanura y las montañas.",
-                },
-                {
-                  type: "dialogue",
-                  speaker: "Nora",
-                  text: "Eso es lo que hemos visto. Lo demás sigue fuera del cuaderno.",
-                },
+            scene: scene(
+              "scene-resolution",
+              "Desenlace",
+              "El que caminaba hacia las montañas",
+              narrativeImage(
+                "/visuals/p17/final-plain.jpg",
+                "P-17 y sus huellas se pierden en la inmensidad de la llanura",
+              ),
+              [
+                narration(
+                  "P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo determinarse.",
+                ),
+                narration(
+                  "La imagen se aleja. Primero se ve el pingüino. Después, sus huellas. Después, la llanura entera. La cámara deja de seguirlo antes de que desaparezca en la distancia.",
+                ),
               ],
-            },
+            ),
           },
           {
             type: "scene",
@@ -664,12 +507,7 @@ export const challengeDefinitions = {
               id: "scene-epilogue",
               eyebrow: "Epílogo",
               presentation: "blackout",
-              blocks: [
-                {
-                  type: "narration",
-                  text: "La pantalla se queda en negro.",
-                },
-              ],
+              blocks: [narration("La imagen se funde a negro.")],
             },
           },
         ],
@@ -677,65 +515,55 @@ export const challengeDefinitions = {
     ],
     notebookEntries: [
       {
-        id: "note-calibration",
-        text: "Calibración: rumbo de mapa = lectura de brújula − 30°.",
-        relevance: "potential",
-      },
-      {
-        id: "note-weather",
-        text: "Condiciones al aterrizar: −18 °C. Capas: base + aislamiento + cortavientos.",
+        id: "note-direction",
+        text: "P-17: muesca blanca en el lado izquierdo del pecho. Dirección inicial: montañas, hacia el interior.",
         relevance: "context",
       },
       {
-        id: "note-kit",
-        text: "Kit de C4: cámara submarina, H-1 y H-2, sismómetro y baterías de reserva.",
-        relevance: "potential",
-      },
-      {
-        id: "note-batteries",
-        text: "12 baterías para 4 radios; incluye una reserva por persona.",
+        id: "note-deviation",
+        text: "Inicio del desvío localizado en el sector C3 del mapa de observación.",
         relevance: "context",
       },
       {
-        id: "note-protocol",
-        text: "Protocolo: registrar hidrófonos y sismómetro, comparar los tiempos y anotar los límites de la evidencia.",
-        relevance: "potential",
-      },
-      {
-        id: "note-location",
-        text: "Punto de observación de la colonia: C4.",
-        relevance: "potential",
-      },
-      {
-        id: "note-species",
-        text: "Observación visual: foca de Weddell bajo el hielo.",
+        id: "note-register-rule",
+        text: "Regla de registro: describir movimiento, posición y tiempo; no atribuir intención.",
         relevance: "context",
       },
       {
-        id: "note-signal",
-        text: "H-1 y H-2: pulsos cada 40 s. Sin variación simultánea en el sismómetro. Origen no determinado.",
+        id: "note-intervention",
+        text: "Intervención humana retirada antes del paso de P-17; sin contacto ni aproximación.",
         relevance: "context",
       },
       {
-        id: "note-final-bearing",
-        text: "Observación final: lectura de brújula 270°. El registro no explica la trayectoria.",
-        relevance: "potential",
+        id: "note-nadir",
+        text: "Nadir: identificación compatible con P-17 por marca, rumbo y ventana temporal.",
+        relevance: "context",
       },
       {
-        id: "note-final-route",
-        text: "Trayectoria registrada: C4, Ruta B hacia el interior. El motivo queda abierto.",
+        id: "note-route",
+        text: "Recorrido reconstruido: colonia → desvío → base → H-3 → Nadir → interior.",
+        relevance: "context",
+      },
+      {
+        id: "note-chronology",
+        text: "Secuencia temporal verificada en cinco observaciones.",
+        relevance: "context",
+      },
+      {
+        id: "note-final",
+        text: "P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo determinarse.",
         relevance: "context",
       },
     ],
     questionPoints: {
-      "antarctica-orientation-calibration": 12,
-      "antarctica-cold-layer": 12,
-      "antarctica-field-kit-selection": 12,
-      "antarctica-radio-batteries": 12,
-      "antarctica-observation-protocol": 12,
-      "antarctica-weddell-seal": 12,
-      "antarctica-sensor-reading": 12,
-      "antarctica-penguin-trajectory": 16,
+      "mountains-progressive-image": 10,
+      "trajectory-deviation-heat-map": 10,
+      "observation-vs-interpretation": 12,
+      "clear-camp-escape": 12,
+      "p17-evidence-matrix": 12,
+      "p17-route-zip": 14,
+      "p17-observation-order": 12,
+      "p17-final-record": 18,
     },
   },
 } satisfies Record<string, ChallengeDefinition>;

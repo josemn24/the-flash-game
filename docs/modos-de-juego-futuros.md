@@ -83,7 +83,7 @@ Los primeros modos a validar deberían ser:
 5. **Alfabeto**, por combinar conocimiento, memoria de pendientes y gestión del tiempo.
 6. **Apuesta de confianza**, por añadir estrategia y metacognición.
 7. **Predicción**, por funcionar bien como comparación todos contra todos.
-8. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual. La primera validación concreta será «Encuentros en el fin del mundo», documentada en [`docs/narrativa-competitiva-encuentros-fin-del-mundo.md`](narrativa-competitiva-encuentros-fin-del-mundo.md).
+8. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual. La primera implementación es «El que caminaba hacia las montañas», documentada en [`docs/desafio-04-el-que-caminaba-hacia-las-montanas.md`](desafio-04-el-que-caminaba-hacia-las-montanas.md).
 
 Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. La primera versión prevista del modo es una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
 

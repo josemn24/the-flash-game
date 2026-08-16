@@ -58,9 +58,10 @@ function boardStyle(question: EscapeQuestionType) {
 
 function blockLabel(block: EscapeBlock, symbol: string) {
   const end = blockStart(block) + block.length - 1;
+  const authoredLabel = block.label ? `${block.label}, ` : "";
   return block.kind === "target"
-    ? `Bloque objetivo, horizontal, fila ${block.row + 1}, columnas ${block.column + 1} a ${block.column + block.length}`
-    : `Bloque ${symbol}, ${block.orientation === "horizontal" ? "horizontal" : "vertical"}, ${
+    ? `${authoredLabel}pieza objetivo, horizontal, fila ${block.row + 1}, columnas ${block.column + 1} a ${block.column + block.length}`
+    : `${authoredLabel}bloque ${symbol}, ${block.orientation === "horizontal" ? "horizontal" : "vertical"}, ${
         block.orientation === "horizontal"
           ? `fila ${block.row + 1}, columnas ${block.column + 1} a ${end + 1}`
           : `columna ${block.column + 1}, filas ${block.row + 1} a ${end + 1}`
@@ -72,7 +73,7 @@ function blockSymbols(question: EscapeQuestionType) {
   return Object.fromEntries(
     question.initialBlocks.map((block) => [
       block.id,
-      block.kind === "target" ? "→" : String.fromCharCode(65 + obstacleIndex++),
+      block.symbol ?? (block.kind === "target" ? "→" : String.fromCharCode(65 + obstacleIndex++)),
     ]),
   );
 }
@@ -168,7 +169,7 @@ export function EscapeQuestion({
     const escaped = isEscapeSolved(question, nextBlocks);
     setAnnouncement(
       escaped
-        ? "Salida despejada. El bloque objetivo ha escapado."
+        ? (question.completionMessage ?? "Salida despejada. El bloque objetivo ha escapado.")
         : `Bloque ${symbol} movido a la posición ${move.to + 1}.`,
     );
     if (escaped) {
@@ -300,9 +301,12 @@ export function EscapeQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Escape, puzzle de bloques deslizantes">
+    <section
+      className={styles.root}
+      aria-label={question.boardLabel ?? "Escape, puzzle de bloques deslizantes"}
+    >
       <div className={styles.header}>
-        <span>Saca el bloque amarillo</span>
+        <span>{question.objectiveLabel ?? "Saca el bloque amarillo"}</span>
         <strong>
           {moves.length} {moves.length === 1 ? "movimiento" : "movimientos"}
         </strong>
@@ -313,7 +317,7 @@ export function EscapeQuestion({
           className={styles.board}
           style={boardStyle(question)}
           role="group"
-          aria-label="Tablero Escape de seis por seis"
+          aria-label={question.boardLabel ?? "Tablero Escape de seis por seis"}
         >
           <span
             className={styles.exit}
@@ -387,7 +391,7 @@ export function EscapeQuestion({
         </button>
       </div>
       <p className={styles.instructions}>
-        Arrastra los bloques sobre su eje para despejar la salida.
+        {question.instruction ?? "Arrastra los bloques sobre su eje para despejar la salida."}
       </p>
       <p className={styles.srStatus} aria-live="polite">
         {announcement}

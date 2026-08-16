@@ -1,7 +1,7 @@
 .gameRoot {
   position: relative;
   min-height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
   background: #071319;
   color: white;
   isolation: isolate;
@@ -78,6 +78,260 @@
   min-height: 100dvh;
   margin: 0 auto;
   padding: 1.25rem;
+}
+
+.storyScreen {
+  width: min(100%, 90rem);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.pageHeader {
+  gap: 1rem;
+}
+
+.pageIdentity,
+.pageActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pageIdentity > span {
+  max-width: 20rem;
+  overflow: hidden;
+  color: rgb(255 255 255 / 72%);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pageIdentity small {
+  padding-left: 0.75rem;
+  border-left: 1px solid rgb(255 255 255 / 12%);
+  color: rgb(255 255 255 / 36%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.storyPage {
+  display: grid;
+  min-height: calc(100dvh - 6.5rem);
+  grid-template-columns: minmax(0, 1.1fr) minmax(25rem, 0.9fr);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 1.6rem;
+  background: rgb(3 15 20 / 82%);
+  box-shadow: 0 2.5rem 7rem rgb(0 0 0 / 32%);
+}
+
+.storyVisual,
+.questionVisual {
+  position: relative;
+  min-height: 32rem;
+  overflow: hidden;
+  background: #14272c;
+}
+
+.storyImage,
+.questionVisual img {
+  object-fit: cover;
+}
+
+.storyImageContain {
+  object-fit: contain;
+}
+
+.visualShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 52%, rgb(3 15 20 / 42%) 100%),
+    linear-gradient(0deg, rgb(3 15 20 / 32%), transparent 42%);
+  pointer-events: none;
+}
+
+.storyArticle,
+.questionArticle {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 4rem);
+}
+
+.storyArticle h1,
+.questionArticle h1 {
+  max-width: 18ch;
+  margin-top: 0.7rem;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.storyArticle .sceneBlocks {
+  margin-top: 1.4rem;
+}
+
+.storyArticle .sceneReaction {
+  margin-top: 1.2rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: rgb(143 231 234 / 8%);
+  padding: 0.8rem 0.9rem;
+  color: #b9f3ef;
+}
+
+.storyArticle .sceneReaction::before {
+  color: #8fe7ea;
+  content: "REGISTRO ACTUALIZADO";
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.storyArticle .sceneReaction .sceneParagraph,
+.storyArticle .sceneReaction .sceneDialogue {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.tapeSignal {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  left: 1.4rem;
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 0.8rem;
+  background: rgb(4 17 21 / 70%);
+  padding: 0.8rem 1rem;
+  backdrop-filter: blur(12px);
+}
+
+.tapeSignal span {
+  margin-right: auto;
+  color: rgb(255 255 255 / 72%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.tapeSignal i {
+  width: 2px;
+  height: 0.7rem;
+  background: #8fe7ea;
+  animation: tapeWave 1.2s ease-in-out infinite alternate;
+}
+
+.tapeSignal i:nth-of-type(3n) {
+  height: 1.8rem;
+}
+.tapeSignal i:nth-of-type(4n) {
+  height: 1.2rem;
+}
+.tapeSignal i:nth-of-type(2n) {
+  animation-delay: -0.6s;
+}
+
+.questionPage {
+  grid-template-columns: minmax(14rem, 0.52fr) minmax(0, 1.48fr);
+}
+
+.questionVisual img {
+  filter: saturate(0.72) contrast(0.92);
+}
+
+.questionVisual .visualShade {
+  background: linear-gradient(90deg, transparent 28%, rgb(3 15 20 / 72%));
+}
+
+.questionVisual > span {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  color: rgb(255 255 255 / 62%);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.questionArticle {
+  justify-content: flex-start;
+  overflow: visible;
+  padding-top: clamp(1.5rem, 3vw, 3rem);
+  padding-bottom: clamp(2rem, 4vw, 4rem);
+}
+
+.questionArticle h1 {
+  max-width: 34ch;
+  margin-top: 1.4rem;
+  font-size: clamp(1.65rem, 3vw, 2.75rem);
+  line-height: 1.04;
+}
+
+.questionMeta {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.questionMeta > span {
+  color: #8fe7ea;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.questionMedia {
+  max-width: 46rem;
+  margin-top: 1rem;
+}
+
+.recordTransition {
+  display: grid;
+  min-height: 100dvh;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.recordTransition svg {
+  color: #8fe7ea;
+}
+
+.recordTransition span {
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.recordTransition p {
+  color: rgb(255 255 255 / 48%);
+  font-size: 0.86rem;
 }
 
 .eyebrow {
@@ -635,6 +889,63 @@
   }
 }
 
+@media (max-width: 799px) {
+  .storyScreen {
+    padding: 0.8rem;
+  }
+
+  .pageIdentity > span {
+    max-width: 8.5rem;
+  }
+
+  .pageIdentity small {
+    display: none;
+  }
+
+  .storyPage,
+  .questionPage {
+    min-height: calc(100dvh - 5.5rem);
+    grid-template-columns: 1fr;
+    border-radius: 1.1rem;
+  }
+
+  .storyVisual {
+    min-height: clamp(14rem, 42vh, 24rem);
+  }
+
+  .questionVisual {
+    min-height: 9rem;
+    max-height: 9rem;
+  }
+
+  .questionVisual .visualShade {
+    background: linear-gradient(0deg, rgb(3 15 20 / 88%), transparent 70%);
+  }
+
+  .questionVisual > span {
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .storyArticle,
+  .questionArticle {
+    padding: 1.35rem;
+  }
+
+  .storyArticle h1 {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+
+  .questionArticle h1 {
+    margin-top: 1rem;
+  }
+
+  .questionMeta {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+}
+
 @media (max-width: 520px) {
   .notebookTrigger span {
     display: none;
@@ -648,12 +959,29 @@
   .notebookEmpty {
     padding-left: 3.5rem;
   }
+
+  .pageActions .notebookTrigger {
+    min-width: 2.6rem;
+    justify-content: center;
+  }
+
+  .pageActions .notebookTrigger strong {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .aurora,
-  .snow {
+  .snow,
+  .tapeSignal i {
     animation: none;
+  }
+}
+
+@keyframes tapeWave {
+  to {
+    transform: scaleY(0.45);
+    opacity: 0.48;
   }
 }
 

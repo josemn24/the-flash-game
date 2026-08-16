@@ -62,7 +62,7 @@ export function ZipBoard({
   label?: string;
 }) {
   const checkpoints = useMemo(
-    () => new Map(question.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint.value])),
+    () => new Map(question.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint])),
     [question.checkpoints],
   );
   const visited = new Set(path);
@@ -97,7 +97,9 @@ export function ZipBoard({
         const row = Math.floor(cell / ZIP_COLUMNS) + 1;
         const column = (cell % ZIP_COLUMNS) + 1;
         const checkpoint = checkpoints.get(cell);
-        const description = checkpoint ? `, número ${checkpoint}` : "";
+        const description = checkpoint
+          ? `, punto ${checkpoint.value}${checkpoint.label ? `, ${checkpoint.label}` : ""}`
+          : "";
         return (
           <div
             key={cell}
@@ -116,10 +118,10 @@ export function ZipBoard({
                 onClick={() => onCellSelect?.(cell)}
                 aria-label={`Seleccionar fila ${row}, columna ${column}${description}`}
               >
-                {checkpoint && <span className={styles.checkpointMarker}>{checkpoint}</span>}
+                {checkpoint && <span className={styles.checkpointMarker}>{checkpoint.value}</span>}
               </button>
             ) : (
-              checkpoint && <span className={styles.checkpointMarker}>{checkpoint}</span>
+              checkpoint && <span className={styles.checkpointMarker}>{checkpoint.value}</span>
             )}
           </div>
         );
@@ -256,7 +258,7 @@ export function ZipQuestion({
   return (
     <section className={styles.root} aria-label="Zip, una línea">
       <div className={styles.header}>
-        <span>Une los números y llena el tablero</span>
+        <span>{question.instruction ?? "Une los números y llena el tablero"}</span>
         <strong>
           {metrics.coveredCells}/{metrics.totalCells} · {metrics.reachedCheckpoint}/
           {metrics.totalCheckpoints}
@@ -271,8 +273,21 @@ export function ZipQuestion({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        label="Tablero Zip. Arrastra, toca una celda adyacente o usa las flechas para extender el camino."
+        label={
+          question.boardLabel ??
+          "Tablero Zip. Arrastra, toca una celda adyacente o usa las flechas para extender el camino."
+        }
       />
+      {question.checkpoints.some((checkpoint) => checkpoint.label) && (
+        <ol className={styles.legend} aria-label="Puntos de observación">
+          {question.checkpoints.map((checkpoint) => (
+            <li key={checkpoint.value}>
+              <span>{checkpoint.value}</span>
+              {checkpoint.label}
+            </li>
+          ))}
+        </ol>
+      )}
       <p className="sr-only" role="status" aria-live="polite">
         {announcement}
       </p>
@@ -288,6 +303,7 @@ export function ZipQuestion({
         Pasa por los números en orden y usa cada celda una sola vez. Puedes retroceder sin perder
         puntos.
       </p>
+      {question.mapNote && <p className={styles.mapNote}>{question.mapNote}</p>}
     </section>
   );
 }

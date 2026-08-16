@@ -106,13 +106,13 @@ describe("narrative challenge definition", () => {
 
   it("rejects incomplete scoring and totals other than 100", () => {
     const missing = cloneDefinition();
-    delete missing.questionPoints["antarctica-cold-layer"];
+    delete missing.questionPoints["trajectory-deviation-heat-map"];
     expect(() => validateNarrativeChallengeDefinition(missing)).toThrow(
       "missing points for questions",
     );
 
     const wrongTotal = cloneDefinition();
-    wrongTotal.questionPoints["antarctica-cold-layer"] = 11;
+    wrongTotal.questionPoints["trajectory-deviation-heat-map"] = 11;
     expect(() => validateNarrativeChallengeDefinition(wrongTotal)).toThrow(
       "must add up to 100 points",
     );

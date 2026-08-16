@@ -240,6 +240,8 @@ function ProgressiveImageInput({
       key={question.id}
       surface={question.surface}
       revealDuration={question.revealDuration}
+      answerLabel={question.answerLabel}
+      answerPlaceholder={question.answerPlaceholder}
       locked={locked}
       onSubmit={onSubmit}
       onTimedResponseStart={onTimedResponseStart}

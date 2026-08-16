@@ -1,7 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
+import { type ReactNode, useState } from "react";
 import { FieldNotebook } from "@/components/FieldNotebook.client";
 import {
   ArrowIcon,
@@ -13,21 +15,72 @@ import {
   RotateIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/Logo";
-import { QuestionScreen } from "@/components/QuestionScreen";
-import { QuestionTransition } from "@/components/QuestionTransition";
+import { ProgressBar } from "@/components/ProgressBar";
+import { QuestionMedia } from "@/components/QuestionMedia";
 import { ReviewAnswers } from "@/components/ReviewAnswers";
+import { Timer } from "@/components/Timer";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { MotionButton } from "@/components/ui/MotionButton.client";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
 import styles from "@/components/NarrativeGame.module.css";
 import type {
   AnswerResult,
+  AnswerValue,
   NarrativeChallenge,
   NarrativeNotebookEntry,
   NarrativeScene,
   NarrativeTextBlock,
+  Question,
 } from "@/types/game";
+
+function getChapterTitle(challenge: NarrativeChallenge, stepIndex: number) {
+  if (stepIndex <= 0) return challenge.beats[0]?.title ?? "Prólogo";
+  let cursor = 1;
+  for (const beat of challenge.beats) {
+    if (stepIndex < cursor + beat.steps.length) return beat.title;
+    cursor += beat.steps.length;
+  }
+  return challenge.beats.at(-1)?.title ?? "Desenlace";
+}
+
+function NarrativePageHeader({
+  chapter,
+  pageNumber,
+  pageCount,
+  entryCount,
+  onOpenNotebook,
+  timer,
+}: {
+  chapter: string;
+  pageNumber: number;
+  pageCount: number;
+  entryCount: number;
+  onOpenNotebook: () => void;
+  timer?: ReactNode;
+}) {
+  return (
+    <AppHeader
+      className={styles.pageHeader}
+      left={
+        <div className={styles.pageIdentity}>
+          <Logo />
+          <span>{chapter}</span>
+          <small>
+            Página {pageNumber} / {pageCount}
+          </small>
+        </div>
+      }
+      right={
+        <div className={styles.pageActions}>
+          {timer}
+          <NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} />
+        </div>
+      }
+    />
+  );
+}
 
 function NarrativeBlocks({
   blocks,
@@ -63,10 +116,10 @@ function NotebookButton({ entryCount, onOpen }: { entryCount: number; onOpen: ()
       type="button"
       className={styles.notebookTrigger}
       onClick={onOpen}
-      aria-label={`Abrir cuaderno de campo, ${entryCount} ${entryCount === 1 ? "entrada" : "entradas"}`}
+      aria-label={`Abrir registro de evidencias, ${entryCount} ${entryCount === 1 ? "entrada" : "entradas"}`}
     >
       <NotebookIcon className="h-4 w-4" />
-      <span>Cuaderno</span>
+      <span>Registro</span>
       <strong>{entryCount}</strong>
     </button>
   );
@@ -94,7 +147,7 @@ function NarrativeIntro({
             <Logo />
           </Link>
         }
-        right={<Badge>Movimientos I–III</Badge>}
+        right={<Badge>Cuento en tres capítulos</Badge>}
       />
 
       <div className={styles.introContent}>
@@ -116,16 +169,16 @@ function NarrativeIntro({
               <span>Puntos</span>
             </div>
             <div>
-              <strong>≈ 6–7</strong>
+              <strong>≈ 7–9</strong>
               <span>Minutos</span>
             </div>
           </div>
           <ul className={styles.introRules}>
             <li>Las escenas y transiciones no consumen tiempo competitivo.</li>
-            <li>El cuaderno registra la observación aunque falles la prueba.</li>
+            <li>El registro conserva la evidencia aunque falles la prueba.</li>
           </ul>
           <MotionButton size="hero" onClick={onStart} whileTap={{ scale: 0.985 }}>
-            Comenzar misión
+            Abrir el relato
             <ArrowIcon className="h-5 w-5" />
           </MotionButton>
         </div>
@@ -136,12 +189,18 @@ function NarrativeIntro({
 
 function NarrativeSceneScreen({
   scene,
+  chapter,
+  pageNumber,
+  pageCount,
   reactionBlocks,
   entryCount,
   onContinue,
   onOpenNotebook,
 }: {
   scene: NarrativeScene;
+  chapter: string;
+  pageNumber: number;
+  pageCount: number;
   reactionBlocks: NarrativeTextBlock[];
   entryCount: number;
   onContinue: () => void;
@@ -149,17 +208,53 @@ function NarrativeSceneScreen({
 }) {
   return (
     <motion.section
-      className={styles.fullScreen}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      className={styles.storyScreen}
+      initial={{ opacity: 0, x: 28 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -28 }}
     >
-      <AppHeader
-        left={<Logo />}
-        right={<NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} />}
+      <NarrativePageHeader
+        chapter={chapter}
+        pageNumber={pageNumber}
+        pageCount={pageCount}
+        entryCount={entryCount}
+        onOpenNotebook={onOpenNotebook}
       />
-      <div className={styles.sceneContent}>
-        <article className={styles.sceneArticle}>
+      <div className={styles.storyPage}>
+        <div className={styles.storyVisual}>
+          {scene.media?.type === "image" && (
+            <Image
+              src={scene.media.src}
+              alt={scene.media.alt}
+              fill
+              sizes="(max-width: 799px) 100vw, 52vw"
+              className={
+                scene.media.fit === "contain" ? styles.storyImageContain : styles.storyImage
+              }
+              style={{ objectPosition: scene.media.position }}
+              priority={scene.id === "scene-prologue"}
+            />
+          )}
+          <div className={styles.visualShade} aria-hidden="true" />
+          {scene.id === "scene-prologue" && (
+            <div className={styles.tapeSignal} aria-label="Siseo de una grabación antigua">
+              <span>REC · ARCHIVO</span>
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+          )}
+        </div>
+        <article className={styles.storyArticle}>
           <p className={styles.eyebrow}>{scene.eyebrow}</p>
           {scene.title && <h1>{scene.title}</h1>}
           <NarrativeBlocks blocks={reactionBlocks} className={styles.sceneReaction} />
@@ -177,6 +272,127 @@ function NarrativeSceneScreen({
           </p>
         </article>
       </div>
+    </motion.section>
+  );
+}
+
+function NarrativeQuestionScreen({
+  question,
+  chapter,
+  pageNumber,
+  pageCount,
+  questionNumber,
+  totalQuestions,
+  locked,
+  entryCount,
+  onOpenNotebook,
+  onSubmit,
+  onTimeUp,
+  onProgress,
+  onIncorrectAttempt,
+  onTimedResponseStart,
+}: {
+  question: Question;
+  chapter: string;
+  pageNumber: number;
+  pageCount: number;
+  questionNumber: number;
+  totalQuestions: number;
+  locked: boolean;
+  entryCount: number;
+  onOpenNotebook: () => void;
+  onSubmit: (answer: AnswerValue) => void;
+  onTimeUp: () => void;
+  onProgress: (answer: AnswerValue) => void;
+  onIncorrectAttempt: () => void;
+  onTimedResponseStart: () => void;
+}) {
+  const hasDelayedStart = question.type === "progressive-image";
+  const [timedResponseStarted, setTimedResponseStarted] = useState(!hasDelayedStart);
+  const chapterImage =
+    chapter === "Mantenerse fuera"
+      ? "/visuals/p17/camp-corridor.jpg"
+      : chapter === "La línea completa"
+        ? "/visuals/p17/final-plain.jpg"
+        : "/visuals/p17/colony-panorama.jpg";
+  const startTimedResponse = () => {
+    setTimedResponseStarted(true);
+    onTimedResponseStart();
+  };
+
+  return (
+    <motion.section
+      className={styles.storyScreen}
+      initial={{ opacity: 0, x: 28 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -28 }}
+    >
+      <NarrativePageHeader
+        chapter={chapter}
+        pageNumber={pageNumber}
+        pageCount={pageCount}
+        entryCount={entryCount}
+        onOpenNotebook={onOpenNotebook}
+        timer={
+          !hasDelayedStart || timedResponseStarted ? (
+            <Timer
+              duration={question.timeLimit}
+              active={!locked && timedResponseStarted}
+              onTimeUp={onTimeUp}
+              resetKey={question.id}
+              size="compact"
+            />
+          ) : undefined
+        }
+      />
+      <div className={`${styles.storyPage} ${styles.questionPage}`}>
+        <div className={styles.questionVisual} aria-hidden="true">
+          <Image src={chapterImage} alt="" fill sizes="(max-width: 799px) 100vw, 34vw" />
+          <div className={styles.visualShade} />
+          <span>Registro {String(questionNumber).padStart(2, "0")}</span>
+        </div>
+        <article className={styles.questionArticle}>
+          <div className={styles.questionMeta}>
+            <span>
+              Prueba {questionNumber} de {totalQuestions}
+            </span>
+            <ProgressBar current={questionNumber} total={totalQuestions} />
+          </div>
+          <h1>{question.question}</h1>
+          {"media" in question && question.media && (
+            <div className={styles.questionMedia}>
+              <QuestionMedia media={question.media} prominent />
+            </div>
+          )}
+          <QuestionInput
+            question={question}
+            locked={locked}
+            onSubmit={onSubmit}
+            codeAttemptCount={0}
+            onCodeAttempt={() => false}
+            onProgress={onProgress}
+            onIncorrectAttempt={onIncorrectAttempt}
+            onProgressiveClueReveal={() => undefined}
+            onTimedResponseStart={startTimedResponse}
+          />
+        </article>
+      </div>
+    </motion.section>
+  );
+}
+
+function NarrativeRecordTransition({ timedOut }: { timedOut: boolean }) {
+  return (
+    <motion.section
+      className={styles.recordTransition}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      role="status"
+    >
+      <NotebookIcon className="h-8 w-8" />
+      <span>{timedOut ? "Tiempo agotado" : "Registro actualizado"}</span>
+      <p>La evidencia queda conservada. El relato continúa.</p>
     </motion.section>
   );
 }
@@ -260,8 +476,8 @@ function NarrativeResult({
       />
       <div className={styles.resultGrid}>
         <div className={styles.resultScore}>
-          <p className={styles.eyebrow}>Movimientos I–III completados</p>
-          <h1>La jornada queda registrada.</h1>
+          <p className={styles.eyebrow}>Tres capítulos completados</p>
+          <h1>El recorrido queda registrado.</h1>
           <div className={styles.scoreValue}>
             <strong>{score}</strong>
             <span>/ {challenge.maxScore} puntos</span>
@@ -323,8 +539,8 @@ function NarrativeResult({
           <button type="button" className={styles.resultNotebook} onClick={onOpenNotebook}>
             <NotebookIcon className="h-6 w-6" />
             <span>
-              <small>Cuaderno actualizado</small>
-              <strong>{entries.length} observaciones registradas</strong>
+              <small>Registro de evidencias</small>
+              <strong>{entries.length} entradas conservadas</strong>
             </span>
             <ArrowIcon className="ml-auto h-5 w-5" />
           </button>
@@ -333,8 +549,7 @@ function NarrativeResult({
             <strong>{formatTime(totalTime)}</strong>
           </div>
           <p className={styles.resultNotice}>
-            Puntuación individual de la misión. La señal y la trayectoria permanecen como
-            observaciones, no como una explicación cerrada.
+            La trayectoria está documentada. Su causa permanece fuera del registro.
           </p>
         </div>
       </div>
@@ -354,21 +569,12 @@ function PolarBackground() {
 
 export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge }) {
   const session = useNarrativeSession(challenge);
+  const pageCount = 1 + challenge.beats.reduce((total, beat) => total + beat.steps.length, 0);
+  const chapter = getChapterTitle(challenge, session.stepIndex);
   const isBlackoutScene =
     session.phase === "scene" &&
     session.currentStep?.type === "scene" &&
     session.currentStep.scene.presentation === "blackout";
-  const transitionCopy = session.lastTimedOut
-    ? {
-        title: "Tiempo agotado",
-        body: "El cuaderno conserva la observación. La jornada continúa.",
-        tone: "danger" as const,
-      }
-    : {
-        title: "Observación registrada",
-        body: "Actualizando el cuaderno de campo.",
-        tone: "success" as const,
-      };
 
   return (
     <MotionConfig reducedMotion="user">
@@ -397,6 +603,9 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 <NarrativeSceneScreen
                   key={session.currentStep.scene.id}
                   scene={session.currentStep.scene}
+                  chapter={chapter}
+                  pageNumber={session.stepIndex + 1}
+                  pageCount={pageCount}
                   reactionBlocks={session.reactionBlocks}
                   entryCount={session.unlockedEntries.length}
                   onContinue={session.continueScene}
@@ -404,34 +613,28 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 />
               ))}
             {session.phase === "playing" && session.currentStep?.type === "question" && (
-              <QuestionScreen
+              <NarrativeQuestionScreen
                 key={session.currentStep.question.id}
                 question={session.currentStep.question}
-                challengeTitle={challenge.title}
+                chapter={chapter}
+                pageNumber={session.stepIndex + 1}
+                pageCount={pageCount}
                 questionNumber={session.questionNumber}
                 totalQuestions={session.totalQuestions}
                 locked={session.locked}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                codeAttemptCount={0}
-                onCodeAttempt={() => false}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={() => undefined}
                 onTimedResponseStart={session.handleTimedResponseStart}
-                notebook={{
-                  entryCount: session.unlockedEntries.length,
-                  onOpen: session.openNotebook,
-                }}
-                presentation={{ splitPrompt: true, prominentMedia: true }}
+                entryCount={session.unlockedEntries.length}
+                onOpenNotebook={session.openNotebook}
               />
             )}
             {session.phase === "transition" && (
-              <QuestionTransition
+              <NarrativeRecordTransition
                 key={`narrative-transition-${session.stepIndex}`}
                 timedOut={session.lastTimedOut}
-                isLast={session.results.length === session.totalQuestions}
-                customCopy={transitionCopy}
               />
             )}
             {session.phase === "results" && (

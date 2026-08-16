@@ -380,7 +380,7 @@ type ValidNarrativeChallengeDefinition = {
         },
         {
           type: "question";
-          questionId: "antarctica-orientation-calibration";
+          questionId: "mountains-progressive-image";
           unlockEntryIds: ["note-calibration"];
           reactions: {
             correct: [{ type: "narration"; text: "Correct" }];
@@ -392,7 +392,7 @@ type ValidNarrativeChallengeDefinition = {
     },
   ];
   notebookEntries: [{ id: "note-calibration"; text: "Calibration"; relevance: "potential" }];
-  questionPoints: { "antarctica-orientation-calibration": 24 };
+  questionPoints: { "mountains-progressive-image": 24 };
 };
 
 type NarrativeChallengeWithoutNotebook = Omit<ValidNarrativeChallengeDefinition, "notebookEntries">;

@@ -9,11 +9,11 @@ import {
 import type { AnswerResult } from "@/types/game";
 
 const correctResult: AnswerResult = {
-  questionId: "antarctica-orientation-calibration",
-  answer: "060°",
+  questionId: "mountains-progressive-image",
+  answer: "las montañas",
   status: "correct",
   isCorrect: true,
-  points: 12,
+  points: 10,
   timeUsed: 4.2,
 };
 
@@ -25,100 +25,79 @@ function getNarrativeChallenge() {
 
 function reachFirstQuestion() {
   const started = narrativeSessionReducer(initialNarrativeSessionState, { type: "start" });
-  const arrival = narrativeSessionReducer(started, {
-    type: "advance",
-    nextStepType: "scene",
-  });
-  return narrativeSessionReducer(arrival, {
-    type: "advance",
-    nextStepType: "question",
-  });
+  return narrativeSessionReducer(started, { type: "advance", nextStepType: "question" });
 }
 
-describe("narrative session", () => {
-  it("builds the exact prologue and three-movement sequence", () => {
+describe("P-17 narrative session", () => {
+  it("builds the exact eighteen-page sequence", () => {
     const sequence = getNarrativeSequence(getNarrativeChallenge());
 
     expect(
       sequence.map((step) => (step.type === "scene" ? step.scene.id : step.question.id)),
     ).toEqual([
       "scene-prologue",
-      "scene-arrival",
-      "antarctica-orientation-calibration",
-      "scene-after-q1",
-      "antarctica-cold-layer",
-      "scene-station",
-      "antarctica-field-kit-selection",
-      "scene-after-q3",
-      "antarctica-radio-batteries",
-      "scene-after-q4",
-      "antarctica-observation-protocol",
-      "scene-departure",
-      "scene-field",
-      "antarctica-weddell-seal",
-      "scene-after-q6",
-      "antarctica-sensor-reading",
-      "scene-return",
-      "scene-penguin",
-      "antarctica-penguin-trajectory",
+      "mountains-progressive-image",
+      "scene-p17",
+      "trajectory-deviation-heat-map",
+      "scene-camera-limits",
+      "observation-vs-interpretation",
+      "scene-corridor",
+      "clear-camp-escape",
+      "scene-nadir",
+      "p17-evidence-matrix",
+      "scene-complete-line",
+      "p17-route-zip",
+      "scene-story-is-not-cause",
+      "p17-observation-order",
+      "scene-last-sheet",
+      "p17-final-record",
       "scene-resolution",
       "scene-epilogue",
     ]);
   });
 
-  it("places the narrative resolution before the blackout epilogue", () => {
+  it("keeps the final evidence statement immediately before the blackout", () => {
     const sequence = getNarrativeSequence(getNarrativeChallenge());
-    const resolutionIndex = sequence.findIndex(
-      (step) => step.type === "scene" && step.scene.id === "scene-resolution",
-    );
-    const epilogueIndex = sequence.findIndex(
-      (step) => step.type === "scene" && step.scene.id === "scene-epilogue",
-    );
-
-    expect(resolutionIndex).toBeGreaterThan(-1);
-    expect(sequence[resolutionIndex]).toMatchObject({
-      type: "scene",
-      scene: { id: "scene-resolution", presentation: "standard" },
-    });
-    expect(epilogueIndex).toBe(resolutionIndex + 1);
-    expect(sequence[epilogueIndex]).toMatchObject({
+    expect(sequence.at(-2)).toMatchObject({ type: "scene", scene: { id: "scene-resolution" } });
+    expect(sequence.at(-1)).toMatchObject({
       type: "scene",
       scene: { id: "scene-epilogue", presentation: "blackout" },
     });
+    const resolution = sequence.at(-2);
+    expect(
+      resolution?.type === "scene" &&
+        resolution.scene.blocks.some((block) =>
+          block.text.endsWith("La causa de la trayectoria no pudo determinarse."),
+        ),
+    ).toBe(true);
   });
 
-  it("marks the final scene as a blackout epilogue", () => {
-    const finalStep = getNarrativeSequence(getNarrativeChallenge()).at(-1);
-
-    expect(finalStep).toMatchObject({
-      type: "scene",
-      scene: { id: "scene-epilogue", presentation: "blackout" },
-    });
-  });
-
-  it("keeps all ten notebook entries in narrative order", () => {
-    expect(getNarrativeChallenge().notebookEntries.map((entry) => entry.id)).toEqual([
-      "note-calibration",
-      "note-weather",
-      "note-kit",
-      "note-batteries",
-      "note-protocol",
-      "note-location",
-      "note-species",
-      "note-signal",
-      "note-final-bearing",
-      "note-final-route",
-    ]);
-  });
-
-  it("starts in the prologue and advances into the first question", () => {
+  it("keeps the three chapters and eight evidence entries in narrative order", () => {
     const challenge = getNarrativeChallenge();
-    const playing = reachFirstQuestion();
+    expect(challenge.beats.map((beat) => beat.title)).toEqual([
+      "Todos menos uno",
+      "Mantenerse fuera",
+      "La línea completa",
+    ]);
+    expect(challenge.notebookEntries.map((entry) => entry.id)).toEqual([
+      "note-direction",
+      "note-deviation",
+      "note-register-rule",
+      "note-intervention",
+      "note-nadir",
+      "note-route",
+      "note-chronology",
+      "note-final",
+    ]);
+    expect(challenge.notebookEntries.every((entry) => entry.relevance === "context")).toBe(true);
+  });
 
-    expect(playing).toMatchObject({ phase: "playing", stepIndex: 2, locked: false });
-    expect(getNarrativeSequence(challenge)[playing.stepIndex]).toMatchObject({
+  it("starts in the prologue and advances to the first timed proof", () => {
+    const playing = reachFirstQuestion();
+    expect(playing).toMatchObject({ phase: "playing", stepIndex: 1, locked: false });
+    expect(getNarrativeSequence(getNarrativeChallenge())[playing.stepIndex]).toMatchObject({
       type: "question",
-      question: { id: "antarctica-orientation-calibration" },
+      question: { id: "mountains-progressive-image" },
     });
   });
 
@@ -126,12 +105,12 @@ describe("narrative session", () => {
     ["acierto", correctResult, false],
     [
       "fallo",
-      { ...correctResult, answer: "090°", status: "incorrect", isCorrect: false, points: 0 },
+      { ...correctResult, answer: "mar", status: "incorrect", isCorrect: false, points: 0 },
       false,
     ],
     [
       "parcial",
-      { ...correctResult, answer: "090°", status: "partial", isCorrect: false, points: 4 },
+      { ...correctResult, answer: "interior", status: "partial", isCorrect: false, points: 4 },
       false,
     ],
     [
@@ -139,207 +118,86 @@ describe("narrative session", () => {
       { ...correctResult, answer: null, status: "unanswered", isCorrect: false, points: 0 },
       true,
     ],
-  ] as const)("unlocks the same notebook entry after %s", (_label, result, timedOut) => {
-    const playing = reachFirstQuestion();
-    const transition = narrativeSessionReducer(playing, {
+  ] as const)("unlocks the same evidence after %s", (_label, result, timedOut) => {
+    const transition = narrativeSessionReducer(reachFirstQuestion(), {
       type: "answer",
       result,
       timedOut,
-      unlockEntryIds: ["note-calibration"],
+      unlockEntryIds: ["note-direction"],
     });
 
     expect(transition).toMatchObject({
       phase: "transition",
-      unlockedEntryIds: ["note-calibration"],
+      unlockedEntryIds: ["note-direction"],
       lastTimedOut: timedOut,
       locked: true,
     });
   });
 
   it.each([
-    ["correct", correctResult, false, "Podemos orientarnos"],
+    ["correct", correctResult, false, "cámara conserva"],
     [
       "incorrect",
-      { ...correctResult, answer: "090°", status: "incorrect", isCorrect: false, points: 0 },
+      { ...correctResult, answer: "mar", status: "incorrect", isCorrect: false, points: 0 },
       false,
-      "El mapa necesita 060°",
+      "Nora congela",
+    ],
+    [
+      "partial",
+      { ...correctResult, answer: "interior", status: "partial", isCorrect: false, points: 4 },
+      false,
+      "Nora congela",
     ],
     [
       "timeout",
       { ...correctResult, answer: null, status: "unanswered", isCorrect: false, points: 0 },
       true,
-      "Nora fija el rumbo",
+      "termina de revelarse",
     ],
-  ] as const)("selects only the %s reaction", (_outcome, result, timedOut, expectedText) => {
-    const sequence = getNarrativeSequence(getNarrativeChallenge());
-    const reaction = getNarrativeReaction(sequence[2], result, timedOut);
-
-    expect(reaction.some((block) => block.text.includes(expectedText))).toBe(true);
-    expect(reaction).toEqual(
-      sequence[2].type === "question"
-        ? sequence[2].reactions[timedOut ? "timeout" : result.isCorrect ? "correct" : "incorrect"]
-        : [],
-    );
-  });
-
-  it("uses the final question reaction at the start of the departure scene", () => {
-    const sequence = getNarrativeSequence(getNarrativeChallenge());
-    const result = {
-      ...correctResult,
-      questionId: "antarctica-observation-protocol",
-      answer: [
-        "Registrar los pulsos en H-1 y H-2",
-        "Registrar la línea del sismómetro durante el mismo intervalo",
-        "Comparar los tiempos y la presencia de variaciones coincidentes",
-        "Anotar qué permiten afirmar los datos y qué sigue sin demostrarse",
-      ],
-    };
-
-    expect(getNarrativeReaction(sequence[10], result, false)).toEqual(
-      sequence[10].type === "question" ? sequence[10].reactions.correct : [],
-    );
-  });
-
-  it("unlocks the final bearing when entering the penguin scene", () => {
-    const state = {
-      ...reachFirstQuestion(),
-      phase: "scene" as const,
-      stepIndex: 16,
-      unlockedEntryIds: ["note-calibration", "note-location"],
-    };
-
-    expect(
-      narrativeSessionReducer(state, {
-        type: "advance",
-        nextStepType: "scene",
-        unlockEntryIds: ["note-final-bearing"],
-      }),
-    ).toMatchObject({
-      phase: "scene",
-      stepIndex: 17,
-      unlockedEntryIds: ["note-calibration", "note-location", "note-final-bearing"],
-    });
-  });
-
-  it("uses the final trajectory reaction at the start of the epilogue", () => {
-    const sequence = getNarrativeSequence(getNarrativeChallenge());
-    const result = {
-      ...correctResult,
-      questionId: "antarctica-penguin-trajectory",
-      answer:
-        "C4 → Ruta B hacia el interior; el motivo de la trayectoria no está determinado",
-      points: 16,
-    };
-
-    expect(getNarrativeReaction(sequence[18], result, false)).toEqual(
-      sequence[18].type === "question" ? sequence[18].reactions.correct : [],
-    );
-  });
-
-  it.each([
-      [
-        "acierto",
-        "correct",
-        false,
-        "C4 → Ruta B hacia el interior; el motivo de la trayectoria no está determinado",
-      ],
-      ["fallo", "incorrect", false, "C4 → Ruta B hacia el interior; sigue la señal bajo el hielo"],
-    ["timeout", "unanswered", true, null],
-  ] as const)("records the final route after %s", (_label, status, timedOut, answer) => {
-    const playing = {
-      ...reachFirstQuestion(),
-      phase: "playing" as const,
-      stepIndex: 18,
-      unlockedEntryIds: ["note-calibration", "note-location", "note-final-bearing"],
-    };
-    const transition = narrativeSessionReducer(playing, {
-      type: "answer",
-      result: {
-        ...correctResult,
-        questionId: "antarctica-penguin-trajectory",
-        answer,
-        status,
-        isCorrect: status === "correct",
-        points: status === "correct" ? 16 : 0,
-      },
+  ] as const)("selects the %s narrative reaction", (_label, result, timedOut, expected) => {
+    const reaction = getNarrativeReaction(
+      getNarrativeSequence(getNarrativeChallenge())[1],
+      result,
       timedOut,
-      unlockEntryIds: ["note-final-route"],
-    });
-
-    expect(transition).toMatchObject({
-      phase: "transition",
-      unlockedEntryIds: [
-        "note-calibration",
-        "note-location",
-        "note-final-bearing",
-        "note-final-route",
-      ],
-      lastTimedOut: timedOut,
-    });
+    );
+    expect(reaction.some((block) => block.text.includes(expected))).toBe(true);
   });
 
-  it("finishes after the epilogue with all observations preserved", () => {
-    const notebookEntryIds = getNarrativeChallenge().notebookEntries.map((entry) => entry.id);
+  it("finishes after the blackout while preserving every result and evidence entry", () => {
+    const challenge = getNarrativeChallenge();
+    const results = challenge.beats
+      .flatMap((beat) => beat.steps)
+      .flatMap((step) =>
+        step.type === "question"
+          ? [{ ...correctResult, questionId: step.question.id, points: step.question.points }]
+          : [],
+      );
     const state = {
       ...reachFirstQuestion(),
       phase: "scene" as const,
-      stepIndex: 20,
-      results: [
-        correctResult,
-        { ...correctResult, questionId: "antarctica-cold-layer" },
-        { ...correctResult, questionId: "antarctica-field-kit-selection" },
-        { ...correctResult, questionId: "antarctica-radio-batteries" },
-        { ...correctResult, questionId: "antarctica-observation-protocol" },
-        { ...correctResult, questionId: "antarctica-weddell-seal" },
-        { ...correctResult, questionId: "antarctica-sensor-reading" },
-        { ...correctResult, questionId: "antarctica-penguin-trajectory", points: 16 },
-      ],
-      unlockedEntryIds: notebookEntryIds,
+      stepIndex: 17,
+      results,
+      unlockedEntryIds: challenge.notebookEntries.map((entry) => entry.id),
       locked: false,
     };
 
     expect(narrativeSessionReducer(state, { type: "advance", nextStepType: null })).toMatchObject({
       phase: "results",
-      stepIndex: 20,
-      unlockedEntryIds: notebookEntryIds,
+      results,
+      unlockedEntryIds: challenge.notebookEntries.map((entry) => entry.id),
     });
   });
 
-  it("moves between the final result and review without losing progress", () => {
+  it("moves between result and review without losing progress", () => {
     const results = narrativeSessionReducer(
-      { ...reachFirstQuestion(), phase: "scene", stepIndex: 20, results: [correctResult] },
+      { ...reachFirstQuestion(), phase: "scene", stepIndex: 17, results: [correctResult] },
       { type: "advance", nextStepType: null },
     );
     const review = narrativeSessionReducer(results, { type: "show-review" });
-
     expect(review).toMatchObject({ phase: "review", results: [correctResult] });
     expect(narrativeSessionReducer(review, { type: "show-results" })).toMatchObject({
       phase: "results",
       results: [correctResult],
     });
-  });
-
-  it("opens the notebook without changing the active question", () => {
-    const playing = reachFirstQuestion();
-    const withNotebook = narrativeSessionReducer(playing, { type: "open-notebook" });
-
-    expect(withNotebook).toMatchObject({
-      phase: "playing",
-      stepIndex: playing.stepIndex,
-      notebookOpen: true,
-    });
-  });
-
-  it("restores the complete initial state on replay", () => {
-    const dirtyState = {
-      ...reachFirstQuestion(),
-      results: [correctResult],
-      unlockedEntryIds: ["note-calibration"],
-      notebookOpen: true,
-    };
-
-    expect(narrativeSessionReducer(dirtyState, { type: "replay" })).toEqual(
-      initialNarrativeSessionState,
-    );
   });
 });

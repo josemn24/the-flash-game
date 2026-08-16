@@ -30,8 +30,8 @@ export const demoSeasonScheduledChallenges = [
     number: 4,
     seasonId: "tabarnia-season-1",
     challengeDefinitionId: "antarctica-narrative-definition",
-    availableFrom: "2026-08-08T22:00:00.000Z",
-    availableUntil: "2026-08-12T21:59:59.999Z",
+    availableFrom: "2026-08-15T22:00:00.000Z",
+    availableUntil: "2026-08-24T21:59:59.999Z",
   },
   {
     id: "tabarnia-challenge-05",
@@ -40,8 +40,8 @@ export const demoSeasonScheduledChallenges = [
     title: "Desafío 05",
     subtitle: "Próximamente",
     mode: "flash",
-    availableFrom: "2026-08-12T22:00:00.000Z",
-    availableUntil: "2026-08-13T21:59:59.999Z",
+    availableFrom: "2026-08-16T22:00:00.000Z",
+    availableUntil: "2026-08-25T21:59:59.999Z",
   },
   {
     id: "tabarnia-challenge-06",

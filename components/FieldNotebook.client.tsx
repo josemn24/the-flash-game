@@ -50,8 +50,8 @@ export function FieldNotebook({
       <div className={styles.notebookSurface}>
         <header className={styles.notebookHeader}>
           <div>
-            <span>Registro de campo</span>
-            <h2 id={titleId}>Cuaderno impermeable</h2>
+            <span>Pruebas de la trayectoria</span>
+            <h2 id={titleId}>Registro de evidencias</h2>
           </div>
           <button
             type="button"
@@ -66,8 +66,8 @@ export function FieldNotebook({
         {entries.length === 0 ? (
           <div className={styles.notebookEmpty}>
             <NotebookIcon className="h-9 w-9" />
-            <strong>La primera página está en blanco</strong>
-            <p>Las observaciones aparecerán aquí a medida que avance la jornada.</p>
+            <strong>El registro todavía está en blanco</strong>
+            <p>Las evidencias aparecerán aquí a medida que avance el relato.</p>
           </div>
         ) : (
           <ol className={styles.notebookEntries}>

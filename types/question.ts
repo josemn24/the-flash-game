@@ -114,6 +114,8 @@ export type ProgressiveImageQuestion = BaseQuestion & {
   revealDuration: number;
   correctAnswer: string;
   acceptedAnswers?: string[];
+  answerLabel?: string;
+  answerPlaceholder?: string;
 };
 
 export type NormalizedPoint = {
@@ -316,6 +318,7 @@ export type TimeMazeQuestion = BaseQuestion & {
 export type ZipCheckpoint = {
   value: number;
   cell: number;
+  label?: string;
 };
 
 export type ZipQuestion = BaseQuestion & {
@@ -323,6 +326,9 @@ export type ZipQuestion = BaseQuestion & {
   grid: { rows: 5; columns: 5 };
   checkpoints: ZipCheckpoint[];
   solution: number[];
+  instruction?: string;
+  mapNote?: string;
+  boardLabel?: string;
 };
 
 export type PipesTileKind = "end" | "straight" | "corner" | "tee";
@@ -349,6 +355,8 @@ export type EscapeBlock = {
   row: number;
   column: number;
   length: 2 | 3;
+  label?: string;
+  symbol?: string;
 };
 
 export type EscapeMove = {
@@ -367,6 +375,10 @@ export type EscapeQuestion = BaseQuestion & {
   initialBlocks: EscapeBlock[];
   referenceSolution: EscapeMove[];
   optimalMoves: number;
+  instruction?: string;
+  objectiveLabel?: string;
+  completionMessage?: string;
+  boardLabel?: string;
 };
 
 export type ErrorReconstructionStep = {
@@ -384,6 +396,10 @@ export type ErrorReconstructionQuestion = BaseQuestion & {
   steps: ErrorReconstructionStep[];
   firstErrorStepId: string;
   correction?: ErrorReconstructionCorrection;
+  instruction?: string;
+  correctionLabel?: string;
+  correctionRequired?: boolean;
+  submitLabel?: string;
 };
 
 export type AnagramTile = {

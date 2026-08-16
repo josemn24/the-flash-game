@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Mapa de trayectorias de la colonia</title>
+  <desc id="desc">La mayoría de trayectorias se concentra hacia el mar a la derecha. La trayectoria de P-17 se separa hacia las montañas a la izquierda.</desc>
+  <defs>
+    <linearGradient id="ice" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8e2e2"/>
+      <stop offset="1" stop-color="#8fa4a7"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#294b55"/>
+      <stop offset="1" stop-color="#102d36"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="16"/></filter>
+  </defs>
+  <rect width="1600" height="1000" rx="40" fill="url(#ice)"/>
+  <path d="M1260 0H1600V1000H1300C1240 820 1274 660 1245 492C1219 341 1198 185 1260 0Z" fill="url(#sea)"/>
+  <path d="M0 164L112 82L221 146L336 44L462 152L570 72L706 180H0Z" fill="#40555a" opacity=".76"/>
+  <g stroke="#31484d" stroke-width="2" opacity=".25">
+    <path d="M320 0V1000M640 0V1000M960 0V1000M1280 0V1000"/>
+    <path d="M0 200H1600M0 400H1600M0 600H1600M0 800H1600"/>
+  </g>
+  <g fill="#20383d" font-family="ui-monospace, monospace" font-size="28" font-weight="700" opacity=".72">
+    <text x="150" y="960">A</text><text x="470" y="960">B</text><text x="790" y="960">C</text><text x="1110" y="960">D</text><text x="1430" y="960">E</text>
+    <text x="28" y="110">1</text><text x="28" y="310">2</text><text x="28" y="510">3</text><text x="28" y="710">4</text><text x="28" y="910">5</text>
+  </g>
+  <g fill="none" stroke="#65d5d7" stroke-linecap="round" opacity=".2" filter="url(#glow)">
+    <path d="M590 690C760 616 868 556 1005 500C1110 457 1180 420 1375 365" stroke-width="72"/>
+  </g>
+  <g fill="none" stroke="#e9f4ef" stroke-linecap="round" stroke-width="9" opacity=".56">
+    <path d="M590 690C746 625 855 571 1000 506C1120 452 1238 420 1430 350"/>
+    <path d="M574 705C748 646 854 592 1014 526C1133 476 1260 446 1450 394"/>
+    <path d="M606 676C754 601 882 548 1026 486C1154 431 1278 400 1460 330"/>
+    <path d="M596 722C780 652 881 610 1035 548C1170 494 1282 474 1452 430"/>
+    <path d="M620 700C782 624 888 574 1048 512C1190 458 1300 433 1470 370"/>
+  </g>
+  <path d="M590 690C646 625 669 552 672 480C674 402 611 345 514 294C420 244 320 230 205 250" fill="none" stroke="#152c32" stroke-width="15" stroke-linecap="round" stroke-dasharray="28 18"/>
+  <g font-family="ui-sans-serif, system-ui" font-weight="800" letter-spacing="3">
+    <text x="1320" y="90" fill="#d8ffff" font-size="28">MAR</text>
+    <text x="92" y="96" fill="#eef5ef" font-size="28">MONTAÑAS</text>
+    <text x="475" y="782" fill="#20383d" font-size="24">COLONIA</text>
+  </g>
+</svg>

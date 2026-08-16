@@ -29,7 +29,8 @@ export function ErrorReconstructionQuestionInput({
   return (
     <div className={styles.root}>
       <p className={styles.instruction}>
-        Selecciona el primer paso en el que el razonamiento deja de ser válido.
+        {question.instruction ??
+          "Selecciona el primer paso en el que el razonamiento deja de ser válido."}
       </p>
       <ol className={styles.steps}>
         {question.steps.map((step, index) => {
@@ -54,7 +55,8 @@ export function ErrorReconstructionQuestionInput({
       {question.correction && stepId && (
         <fieldset className={styles.correction} disabled={locked}>
           <legend>
-            ¿Cuál sería la corrección? <span>Opcional</span>
+            {question.correctionLabel ?? "¿Cuál sería la corrección?"}{" "}
+            {!question.correctionRequired && <span>Opcional</span>}
           </legend>
           <div className={styles.options}>
             {question.correction.options.map((option, index) => {
@@ -78,11 +80,11 @@ export function ErrorReconstructionQuestionInput({
       )}
       <MotionButton
         className={styles.confirm}
-        disabled={locked || !stepId}
+        disabled={locked || !stepId || Boolean(question.correctionRequired && !correction)}
         onClick={() => stepId && onSubmit({ stepId, ...(correction ? { correction } : {}) })}
         whileTap={{ scale: 0.985 }}
       >
-        Confirmar primer error
+        {question.submitLabel ?? "Confirmar primer error"}
       </MotionButton>
     </div>
   );

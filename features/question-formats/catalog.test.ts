@@ -355,7 +355,7 @@ describe("question format catalog", () => {
         beat.steps.filter((step) => step.type === "question"),
       ),
     ).toHaveLength(8);
-    expect(narrativeChallenge?.notebookEntries).toHaveLength(10);
+    expect(narrativeChallenge?.notebookEntries).toHaveLength(8);
     if (narrativeChallenge?.mode !== "narrative") {
       throw new Error("Expected narrative challenge");
     }
@@ -363,183 +363,118 @@ describe("question format catalog", () => {
       beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
     );
     expect(narrativeQuestions.map((question) => question.points)).toEqual([
-      12, 12, 12, 12, 12, 12, 12, 16,
+      10, 10, 12, 12, 12, 14, 12, 18,
     ]);
     expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([
-      20, 18, 30, 30, 35, 30, 35, 40,
+      24, 25, 35, 45, 35, 45, 35, 40,
     ]);
-    expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(238);
-    expect(narrativeQuestions[0]).toMatchObject({
-      correctAnswer: "060°",
-      media: { src: "/visuals/antarctica/orientation-card.png" },
-    });
-    expect(narrativeQuestions[1]).toMatchObject({
-      correctAnswer: "Una capa aislante de forro polar",
-      media: { src: "/visuals/antarctica/cold-layers.svg" },
-    });
-    expect(
-      evaluateAnswer({ question: narrativeQuestions[0], answer: "060°", timeUsed: 0 }),
-    ).toMatchObject({ status: "correct", points: 12 });
-    expect(
-      evaluateAnswer({ question: narrativeQuestions[0], answer: "60°", timeUsed: 0 }).status,
-    ).toBe("incorrect");
-    expect(
-      evaluateAnswer({
-        question: narrativeQuestions[1],
-        answer: "Una capa aislante de forro polar",
-        timeUsed: 0,
-      }),
-    ).toMatchObject({ status: "correct", points: 12 });
-    const fieldKit = narrativeQuestions[2];
-    expect(fieldKit.type).toBe("classification");
-    if (fieldKit.type !== "classification") {
-      throw new Error("Expected field kit classification question");
-    }
-    expect(fieldKit.categories).toEqual(["Llevar a C4", "Dejar en la estación"]);
-    const fieldKitAnswer = Object.fromEntries(
-      fieldKit.items.map((item) => [item.label, item.correctCategory]),
-    );
-    expect(
-      evaluateAnswer({ question: fieldKit, answer: fieldKitAnswer, timeUsed: 0 }),
-    ).toMatchObject({ status: "correct", points: 12 });
-    expect(
-      evaluateAnswer({
-        question: fieldKit,
-        answer: { "Cámara submarina": "Llevar a C4" },
-        timeUsed: fieldKit.timeLimit,
-      }),
-    ).toMatchObject({ status: "partial", points: 1 });
-    expect(
-      evaluateAnswer({
-        question: fieldKit,
-        answer: fieldKitAnswer,
-        timeUsed: fieldKit.timeLimit,
-        timedOut: true,
-      }),
-    ).toMatchObject({ status: "correct", points: 0 });
+    expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(284);
 
-    const batteries = narrativeQuestions[3];
-    expect(batteries.type).toBe("estimation");
-    if (batteries.type !== "estimation") throw new Error("Expected battery estimation question");
-    expect(evaluateAnswer({ question: batteries, answer: 12, timeUsed: 0 })).toMatchObject({
-      status: "correct",
-      points: 12,
-    });
-    expect(evaluateAnswer({ question: batteries, answer: 10, timeUsed: 0 })).toMatchObject({
-      status: "partial",
-      points: 6,
-    });
-    expect(
-      evaluateAnswer({
-        question: batteries,
-        answer: null,
-        timeUsed: batteries.timeLimit,
-        timedOut: true,
-      }),
-    ).toMatchObject({ status: "unanswered", points: 0 });
-
-    const protocol = narrativeQuestions[4];
-    expect(protocol.type).toBe("ordering");
-    if (protocol.type !== "ordering") throw new Error("Expected observation protocol question");
-    expect(evaluateAnswer({ question: protocol, answer: protocol.correctOrder, timeUsed: 0 })).toMatchObject({
-      status: "correct",
-      points: 12,
-    });
-    const partialProtocol = evaluateAnswer({
-      question: protocol,
-      answer: [
-        protocol.correctOrder[0],
-        protocol.correctOrder[2],
-        protocol.correctOrder[1],
-        protocol.correctOrder[3],
-      ],
-      timeUsed: protocol.timeLimit,
-    });
-    expect(partialProtocol.status).toBe("partial");
-    expect(partialProtocol.points).toBeGreaterThan(0);
-    expect(
-      evaluateAnswer({
-        question: protocol,
-        answer: protocol.correctOrder,
-        timeUsed: protocol.timeLimit,
-        timedOut: true,
-      }),
-    ).toMatchObject({ status: "correct", points: 0 });
-
-    const seal = narrativeQuestions[5];
-    expect(seal.type).toBe("progressive-image");
-    if (seal.type !== "progressive-image") throw new Error("Expected seal progressive image");
-    expect(isValidProgressiveImageConfiguration(seal)).toBe(true);
-    expect(seal.revealDuration).toBe(12);
-    for (const answer of ["foca", "foca Weddell", "foca de Weddell"]) {
-      expect(evaluateAnswer({ question: seal, answer, timeUsed: 0 })).toMatchObject({
+    const direction = narrativeQuestions[0];
+    expect(direction.type).toBe("progressive-image");
+    if (direction.type !== "progressive-image") throw new Error("Expected progressive image");
+    expect(isValidProgressiveImageConfiguration(direction)).toBe(true);
+    for (const answer of ["montañas", "la cordillera", "hacia el interior"]) {
+      expect(evaluateAnswer({ question: direction, answer, timeUsed: 0 })).toMatchObject({
         status: "correct",
-        points: 12,
+        points: 10,
       });
     }
-    expect(evaluateAnswer({ question: seal, answer: "pingüino", timeUsed: 4 })).toMatchObject({
-      status: "incorrect",
-      points: 0,
+
+    const deviation = narrativeQuestions[1];
+    expect(deviation).toMatchObject({
+      type: "heat-map",
+      target: { x: 0.42, y: 0.48 },
+      fullCreditRadius: 0.06,
+      toleranceRadius: 0.16,
     });
-    const lateSealAnswer = evaluateAnswer({
-      question: seal,
-      answer: "foca",
-      timeUsed: seal.timeLimit,
-    });
-    expect(lateSealAnswer.status).toBe("correct");
-    expect(lateSealAnswer.points).toBeGreaterThan(0);
-    expect(lateSealAnswer.points).toBeLessThan(12);
+
+    const classification = narrativeQuestions[2];
+    expect(classification.type).toBe("classification");
+    if (classification.type !== "classification") throw new Error("Expected classification");
+    expect(classification.categories).toEqual(["Hecho observado", "Interpretación no demostrada"]);
+    const classificationAnswer = Object.fromEntries(
+      classification.items.map((item) => [item.label, item.correctCategory]),
+    );
+    expect(
+      evaluateAnswer({ question: classification, answer: classificationAnswer, timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 12 });
+
+    const corridor = narrativeQuestions[3];
+    expect(corridor.type).toBe("escape");
+    if (corridor.type !== "escape") throw new Error("Expected escape");
+    expect(isValidEscapeConfiguration(corridor)).toBe(true);
+    expect(corridor.optimalMoves).toBe(4);
+    expect(corridor.initialBlocks.some((block) => block.id === "p17")).toBe(false);
     expect(
       evaluateAnswer({
-        question: seal,
-        answer: null,
-        timeUsed: seal.timeLimit,
-        timedOut: true,
-      }),
-    ).toMatchObject({ status: "unanswered", points: 0, timeUsed: 30 });
-
-    const sensors = narrativeQuestions[6];
-    expect(sensors.type).toBe("multiple-choice");
-    if (sensors.type !== "multiple-choice") throw new Error("Expected sensor choice question");
-    expect(sensors.options).toHaveLength(4);
-    expect(
-      sensors.options.map(
-        (answer) => evaluateAnswer({ question: sensors, answer, timeUsed: 0 }).status,
-      ),
-    ).toEqual(["incorrect", "correct", "incorrect", "incorrect"]);
-
-    const trajectory = narrativeQuestions[7];
-    expect(trajectory.type).toBe("multiple-choice");
-    if (trajectory.type !== "multiple-choice") {
-      throw new Error("Expected trajectory choice question");
-    }
-    expect(
-      trajectory.options.map(
-        (answer) => evaluateAnswer({ question: trajectory, answer, timeUsed: 0 }).status,
-      ),
-    ).toEqual(["correct", "incorrect", "incorrect", "incorrect"]);
-    expect(
-      evaluateAnswer({
-        question: trajectory,
-        answer:
-          "C4 → Ruta B hacia el interior; el motivo de la trayectoria no está determinado",
+        question: corridor,
+        answer: { moves: corridor.referenceSolution },
         timeUsed: 0,
       }),
-    ).toMatchObject({ status: "correct", points: 16 });
-    expect(trajectory.explanation).toContain("C4");
-    expect(trajectory.explanation).toContain("Ruta B");
-    expect(trajectory.explanation).toContain("no transforma una observación en una explicación");
+    ).toMatchObject({ status: "correct", points: 12 });
+
+    const evidence = narrativeQuestions[4];
+    expect(evidence.type).toBe("multiple-choice");
+    if (evidence.type !== "multiple-choice") throw new Error("Expected evidence choice");
+    expect(
+      evidence.options.map(
+        (answer) => evaluateAnswer({ question: evidence, answer, timeUsed: 0 }).status,
+      ),
+    ).toEqual(["correct", "incorrect", "incorrect", "incorrect"]);
+
+    const route = narrativeQuestions[5];
+    expect(route.type).toBe("zip");
+    if (route.type !== "zip") throw new Error("Expected Zip route");
+    expect(isValidZipConfiguration(route)).toBe(true);
+    expect(countZipSolutions(route)).toBe(1);
+    expect(route.checkpoints.map((checkpoint) => checkpoint.label)).toEqual([
+      "Colonia",
+      "Primer desvío",
+      "Campamento base",
+      "Baliza H-3",
+      "Nadir",
+      "Último registro",
+    ]);
+
+    const chronology = narrativeQuestions[6];
+    expect(chronology.type).toBe("ordering");
+    if (chronology.type !== "ordering") throw new Error("Expected chronology");
+    expect(
+      evaluateAnswer({ question: chronology, answer: chronology.correctOrder, timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 12 });
+
+    const finalRecord = narrativeQuestions[7];
+    expect(finalRecord.type).toBe("error-reconstruction");
+    if (finalRecord.type !== "error-reconstruction") throw new Error("Expected final record");
+    expect(finalRecord).toMatchObject({ firstErrorStepId: "cause", correctionRequired: true });
+    expect(
+      evaluateAnswer({
+        question: finalRecord,
+        answer: {
+          stepId: "cause",
+          correction: "La causa de la trayectoria no pudo determinarse",
+        },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 18 });
+    expect(
+      evaluateAnswer({ question: finalRecord, answer: { stepId: "cause" }, timeUsed: 0 }),
+    ).toMatchObject({ status: "partial" });
 
     const narrativeMedia = narrativeQuestions.flatMap((question) => {
       const topLevel =
         "media" in question && question.media?.type === "image" ? [question.media] : [];
       const surfaceMedia =
-        question.type === "progressive-image"
+        question.type === "progressive-image" || question.type === "heat-map"
           ? [
               {
                 type: "image" as const,
                 src: question.surface.src,
-                alt: question.solutionAlt,
+                alt:
+                  question.type === "progressive-image"
+                    ? question.solutionAlt
+                    : question.surface.alt,
               },
             ]
           : [];
@@ -553,7 +488,7 @@ describe("question format catalog", () => {
             : [];
       return [...topLevel, ...surfaceMedia, ...itemMedia];
     });
-    expect(narrativeMedia).toHaveLength(6);
+    expect(narrativeMedia).toHaveLength(3);
     for (const media of narrativeMedia) {
       expect(media.alt.trim().length).toBeGreaterThan(20);
       expect(existsSync(join(process.cwd(), "public", media.src))).toBe(true);
@@ -641,14 +576,14 @@ describe("question format catalog", () => {
     );
     const narrativeDefinition = challengeDefinitions["antarctica-narrative-definition"];
     expect(getNarrativeQuestionIds(narrativeDefinition)).toEqual([
-      "antarctica-orientation-calibration",
-      "antarctica-cold-layer",
-      "antarctica-field-kit-selection",
-      "antarctica-radio-batteries",
-      "antarctica-observation-protocol",
-      "antarctica-weddell-seal",
-      "antarctica-sensor-reading",
-      "antarctica-penguin-trajectory",
+      "mountains-progressive-image",
+      "trajectory-deviation-heat-map",
+      "observation-vs-interpretation",
+      "clear-camp-escape",
+      "p17-evidence-matrix",
+      "p17-route-zip",
+      "p17-observation-order",
+      "p17-final-record",
     ]);
     expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
     expect(

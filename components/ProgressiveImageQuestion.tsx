@@ -15,6 +15,8 @@ import styles from "@/components/ProgressiveImageQuestion.module.css";
 type ProgressiveImageQuestionProps = {
   surface: ImageSurface;
   revealDuration: number;
+  answerLabel?: string;
+  answerPlaceholder?: string;
   locked: boolean;
   onSubmit: (answer: string) => void;
   onTimedResponseStart: () => void;
@@ -29,6 +31,8 @@ function prefersReducedMotion() {
 export function ProgressiveImageQuestion({
   surface,
   revealDuration,
+  answerLabel = "¿Qué aparece en la imagen?",
+  answerPlaceholder = "Tu respuesta…",
   locked,
   onSubmit,
   onTimedResponseStart,
@@ -169,7 +173,7 @@ export function ProgressiveImageQuestion({
       </p>
 
       <form className={styles.answerPanel} onSubmit={submit}>
-        <label htmlFor="progressive-image-answer">¿Qué aparece en la imagen?</label>
+        <label htmlFor="progressive-image-answer">{answerLabel}</label>
         <div className={styles.answerRow}>
           <input
             ref={inputRef}
@@ -177,7 +181,7 @@ export function ProgressiveImageQuestion({
             type="text"
             value={answer}
             onChange={(event) => setAnswer(event.target.value)}
-            placeholder="Tu respuesta…"
+            placeholder={answerPlaceholder}
             disabled={unavailable}
             autoComplete="off"
           />

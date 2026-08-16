@@ -1,4 +1,5 @@
 import type { Question } from "@/types/question";
+import type { QuestionMedia } from "@/types/question";
 import type { QuestionId } from "@/data/questions";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative";
@@ -51,6 +52,7 @@ export type NarrativeScene = {
   eyebrow: string;
   title?: string;
   presentation?: "standard" | "blackout";
+  media?: QuestionMedia;
   blocks: NarrativeTextBlock[];
 };
 

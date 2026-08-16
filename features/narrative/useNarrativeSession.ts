@@ -10,7 +10,7 @@ import {
 import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
 import type { AnswerValue, NarrativeChallenge } from "@/types/game";
 
-const TRANSITION_DURATION = 650;
+const TRANSITION_DURATION = 900;
 
 export function useNarrativeSession(challenge: NarrativeChallenge) {
   const sequence = useMemo(() => getNarrativeSequence(challenge), [challenge]);
