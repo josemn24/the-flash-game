@@ -210,10 +210,10 @@ export const challengeDefinitions = {
       caption: "Archivo de campo · cinta sin fechar",
       blocks: [
         narration(
-          "La cinta llevaba años guardada en una caja sin fecha. Cuando Nora pulsó el interruptor, el motor tardó unos segundos en vencer el frío.",
+          "La cinta llevaba años al fondo de una caja sin fecha, bajo mapas que nadie consultaba ya. Nora limpió el polvo de la carcasa con la manga y comprobó dos veces que el carrete seguía entero.",
         ),
         narration(
-          "Primero llegó el roce del carrete. Después, el viento. Por último, la voz de alguien que ya no estaba allí.",
+          "Cuando pulsó el interruptor, el motor tosió antes de ponerse en marcha. Primero llegó el roce de la cinta. Después, un viento antiguo llenó la habitación. Por último, habló una voz que parecía venir de muy lejos.",
         ),
         dialogue(
           "Grabación",
@@ -238,9 +238,12 @@ export const challengeDefinitions = {
               caption: "Primer registro · 06:42",
               blocks: [
                 narration(
-                  "La imagen emergió despacio del ruido: una llanura blanca, la línea de las montañas y la colonia moviéndose hacia el agua abierta.",
+                  "La imagen tardó en desprenderse del ruido. Poco a poco aparecieron una llanura blanca, la línea oscura de las montañas y, al fondo, el brillo del agua abierta.",
                 ),
-                emphasis("Todos avanzaban en la misma dirección. Todos menos uno."),
+                narration(
+                  "La colonia se movía hacia el mar con la lentitud de una sola criatura. La mirada podía seguirla sin esfuerzo, hasta que una figura se detuvo y rompió la forma del grupo.",
+                ),
+                emphasis("Todos siguieron hacia el agua. Todos menos uno."),
               ],
             }),
           },
@@ -249,9 +252,9 @@ export const challengeDefinitions = {
             questionId: "mountains-progressive-image",
             unlockEntryIds: ["note-direction"],
             reactions: reactions(
-              "La cámara conserva la referencia: montañas, hacia el interior.",
-              "Nora congela el fotograma y marca la línea de montañas. Esa es la dirección observable.",
-              "La imagen termina de revelarse. P-17 se orienta hacia las montañas.",
+              "La cordillera quedó señalada en el monitor. Nora hizo retroceder la cinta hasta el instante preciso del giro.",
+              "Nora rebobinó unos segundos. Al abrirse de nuevo el plano, el mar quedó a un lado y las montañas al otro.",
+              "El grano terminó por disiparse. Debajo apareció el giro: desde la colonia hacia la línea de montañas.",
             ),
           },
           {
@@ -266,10 +269,10 @@ export const challengeDefinitions = {
               caption: "Muesca blanca · lado izquierdo del pecho",
               blocks: [
                 narration(
-                  "Nora detuvo el fotograma. En el lado izquierdo del pecho había una muesca blanca, pequeña y desigual. Bastaba para volver a encontrarlo entre otras imágenes.",
+                  "El fotograma quedó inmóvil. Nora amplió la imagen hasta que las plumas perdieron nitidez. En el lado izquierdo del pecho, una muesca blanca interrumpía el borde oscuro del animal.",
                 ),
                 narration(
-                  "En el margen del cuaderno escribió una identificación provisional: P-17.",
+                  "No era un nombre ni una explicación. Era apenas una señal que permitiría reconocerlo si otra cámara volvía a encontrarlo. En el margen del cuaderno escribió P-17 y rodeó el código una sola vez.",
                 ),
               ],
             }),
@@ -280,11 +283,16 @@ export const challengeDefinitions = {
               presentation: "text-led",
               blocks: [
                 narration(
-                  "El pingüino se detuvo una vez. La colonia siguió alejándose hacia el mar. Luego P-17 giró y continuó hacia las montañas hasta que el viento empezó a borrar sus huellas.",
+                  "Nora soltó el mando y la cinta volvió a avanzar. La colonia se hizo pequeña junto al mar. P-17 permaneció quieto unos segundos; después giró y continuó hacia las montañas.",
                 ),
                 dialogue("Nora", "¿Lo has registrado?"),
-                narration("Asentiste sin apartar la mirada de la pantalla."),
-                dialogue("Nora", "Entonces conserva la imagen. Todavía no escribas una razón."),
+                narration(
+                  "Asentiste sin apartar la mirada de la pantalla. El viento pasaba sobre las huellas recientes y deshacía primero los bordes, luego la forma entera.",
+                ),
+                dialogue(
+                  "Nora",
+                  "Guarda lo que la cámara nos ha dado. La razón, si llega alguna vez, tendrá que esperar.",
+                ),
               ],
             }),
           },
@@ -293,9 +301,9 @@ export const challengeDefinitions = {
             questionId: "trajectory-deviation-heat-map",
             unlockEntryIds: ["note-deviation"],
             reactions: reactions(
-              "El punto queda fijado: aquí abandona el corredor de la colonia.",
-              "Nora superpone de nuevo las trayectorias y registra el inicio exacto del desvío.",
-              "La superposición automática localiza el desvío en el sector C3.",
+              "La marca cayó en el sector C3, allí donde una línea se apartaba del haz que descendía hacia el mar.",
+              "Nora desplazó el papel translúcido unos milímetros. Solo entonces los dos recorridos se separaron con claridad.",
+              "La superposición terminó de ajustarse y dejó al descubierto el desvío, en el sector C3.",
             ),
           },
           {
@@ -310,7 +318,10 @@ export const challengeDefinitions = {
               caption: "Superposición de recorridos · sector C3",
               blocks: [
                 narration(
-                  "Nora trazó una cruz allí donde la línea de P-17 abandonaba el corredor de la colonia. Debajo del papel translúcido, cientos de recorridos terminaban en el mar; uno solo continuaba hacia el interior.",
+                  "Nora sujetó el papel translúcido para que no lo levantara la corriente de la calefacción. Debajo se amontonaban cientos de recorridos: líneas breves, casi paralelas, que descendían hacia el mar.",
+                ),
+                narration(
+                  "Marcó una cruz en el lugar donde la trayectoria de P-17 se desprendía de las demás. A partir de allí, una sola línea atravesaba el blanco del mapa y continuaba hacia el interior.",
                 ),
               ],
             }),
@@ -321,13 +332,15 @@ export const challengeDefinitions = {
               presentation: "text-led",
               blocks: [
                 dialogue("Equipo", "Podríamos decir que está perdido."),
-                narration("Nora dejó el lápiz sobre el borde del cuaderno."),
-                dialogue(
-                  "Nora",
-                  "Podríamos pensarlo. Pero la imagen solo demuestra que se separa.",
+                narration(
+                  "Nora no respondió enseguida. Miró otra vez el punto oscuro detenido en el monitor, abrió el cuaderno por una página limpia y trazó una línea vertical de arriba abajo.",
                 ),
                 narration(
-                  "Sobre la mesa convivían dos clases de frase. Unas hablaban de posiciones, minutos y direcciones. Las otras cruzaban una frontera invisible y entraban en la mente del animal.",
+                  "A un lado copió lo que había resistido al rebobinado: la hora, el rumbo, cuarenta y dos minutos sin regresar a la colonia. Al otro quedaron palabras que ninguna cámara había registrado: perdido, enfermo, decidido.",
+                ),
+                dialogue(
+                  "Nora",
+                  "Esto pertenece a la imagen. Lo demás, por ahora, nos pertenece a nosotros.",
                 ),
               ],
             }),
@@ -337,9 +350,9 @@ export const challengeDefinitions = {
             questionId: "observation-vs-interpretation",
             unlockEntryIds: ["note-register-rule"],
             reactions: reactions(
-              "El registro conserva únicamente lo que los instrumentos pueden sostener.",
-              "Nora retira las frases que necesitan suponer qué piensa o siente P-17.",
-              "El equipo completa la clasificación antes de continuar.",
+              "Las últimas notas quedaron a ambos lados de la línea. Nora apartó las palabras que la cámara nunca había visto.",
+              "Nora devolvió una nota a la mesa y volvió a leerla en voz baja. La frase decía más que las imágenes.",
+              "Antes de cerrar el cuaderno, el equipo separó las medidas de todo aquello que solo podía imaginar.",
             ),
           },
           {
@@ -348,9 +361,11 @@ export const challengeDefinitions = {
               presentation: "text-led",
               blocks: [
                 narration(
-                  "Al caer la tarde, Nora cerró el primer cuaderno. Las frases que no podían sostenerse habían quedado fuera. En las páginas permanecían una marca blanca, una hora, un punto del mapa y una dirección.",
+                  "Al caer la tarde, Nora cerró el primer cuaderno. Afuera, el viento hacía temblar la pared de la estación; dentro solo quedó el zumbido del monitor y el olor seco del papel caliente.",
                 ),
-                emphasis("Era menos que una explicación. Era todo lo que sabían."),
+                narration(
+                  "En las páginas permanecían una muesca blanca, una hora, un punto del mapa y una dirección. Nada de aquello explicaba por qué P-17 se había separado. Pero era suficiente para reconocer su rastro si volvía a aparecer.",
+                ),
               ],
             }),
           },
@@ -373,7 +388,10 @@ export const challengeDefinitions = {
               ),
               blocks: [
                 narration(
-                  "Durante la noche cambió el viento. Al amanecer, una figura oscura apareció al otro lado del campamento base.",
+                  "Durante la noche el viento cambió de costado. Las lonas golpearon los mástiles hasta el amanecer y la nieve cubrió las marcas alrededor de las tiendas.",
+                ),
+                narration(
+                  "Con la primera claridad, una figura oscura apareció al otro lado del campamento base. Nora reconoció la muesca del pecho antes de que nadie pronunciara el código.",
                 ),
               ],
             }),
@@ -390,14 +408,14 @@ export const challengeDefinitions = {
               caption: "Campamento base · corredor este",
               blocks: [
                 narration(
-                  "P-17 avanzaba hacia el corredor este. Entre él y la llanura quedaban cajas, trineos y un trípode que el equipo había instalado durante la noche.",
+                  "P-17 avanzaba hacia el corredor este, despacio y sin desviarse. Entre él y la llanura, el campamento estrechaba el paso con cajas, trineos y un trípode que el equipo había instalado durante la noche.",
                 ),
                 narration(
-                  "Nadie podía tocarlo, llamarlo ni cerrarle el paso. Eran los objetos humanos los que debían desaparecer.",
+                  "Desde la ventana parecía sencillo apartarlo con una voz o un movimiento. El protocolo prohibía ambas cosas: nadie debía tocarlo, llamarlo ni obligarlo a corregir el rumbo. El obstáculo no era el animal, sino todo lo que ellos habían dejado sobre la nieve.",
                 ),
                 dialogue(
                   "Nora",
-                  "Nosotros conocemos su posición. Él no ha elegido nuestros objetos. Esa diferencia nos obliga a retirarlos.",
+                  "Esas cosas las pusimos nosotros. Tienen que desaparecer antes de que llegue.",
                 ),
               ],
             }),
@@ -407,9 +425,9 @@ export const challengeDefinitions = {
             questionId: "clear-camp-escape",
             unlockEntryIds: ["note-intervention"],
             reactions: reactions(
-              "El trípode sale del corredor. El equipo vuelve a la distancia de seguridad.",
-              "Nora completa la retirada desde el lateral protegido.",
-              "El equipo retira el último obstáculo antes de la llegada de P-17.",
+              "La última pata del trípode desapareció por la salida de servicio. El corredor volvió a quedar abierto.",
+              "Desde el lateral protegido, Nora terminó de retirar el trípode y ordenó al equipo que retrocediera.",
+              "Cuando P-17 se acercó al límite del campamento, el equipo completó la retirada y dejó libre el paso.",
             ),
           },
           {
@@ -424,10 +442,10 @@ export const challengeDefinitions = {
               caption: "Corredor despejado · sin contacto",
               blocks: [
                 narration(
-                  "Cuando el trípode alcanzó la salida de servicio, el corredor volvió a ser una franja de nieve vacía. El equipo retrocedió hasta las tiendas.",
+                  "Cuando el último objeto quedó fuera, el corredor volvió a ser una franja de nieve sin marcas humanas. El equipo retrocedió hasta las tiendas y esperó detrás de las ventanas empañadas.",
                 ),
                 narration(
-                  "P-17 cruzó el campamento sin variar la dirección registrada. Nadie se acercó. Durante unos segundos solo se oyó el viento entre los cables.",
+                  "P-17 atravesó el campamento sin variar el rumbo. Nadie se acercó. Durante unos segundos solo se oyó el viento entre los cables y el roce leve de sus patas sobre la nieve. Después desapareció detrás de una elevación, todavía en dirección al interior.",
                 ),
               ],
             }),
@@ -444,10 +462,13 @@ export const challengeDefinitions = {
               caption: "Transmisión entrante · estación Nadir",
               blocks: [
                 narration(
-                  "Dos días más tarde, la pantalla de comunicaciones se encendió con un destello azul. Nadir había registrado un pingüino entrando desde el nordeste y continuando hacia el suroeste.",
+                  "Dos días más tarde, un chasquido despertó la sala de comunicaciones. La pantalla se encendió con un destello azul y dejó entrar una imagen enviada desde Nadir.",
                 ),
                 narration(
-                  "La figura era demasiado pequeña para reconocerla. Junto al vídeo llegaron tres fragmentos: una marca en el pecho, un rumbo y una ventana de tiempo.",
+                  "En el vídeo, un pingüino entraba desde el nordeste y continuaba hacia el suroeste. La figura era demasiado pequeña para reconocerla a simple vista. Junto a la grabación llegaron tres apuntes: una marca en el pecho, un rumbo y una franja de tiempo.",
+                ),
+                narration(
+                  "Nadir no enviaba una respuesta. Enviaba tres detalles que, puestos uno junto a otro, quizá permitieran formular una pregunta mejor.",
                 ),
               ],
             }),
@@ -457,9 +478,9 @@ export const challengeDefinitions = {
             questionId: "p17-evidence-matrix",
             unlockEntryIds: ["note-nadir"],
             reactions: reactions(
-              "Las tres columnas coinciden con P-17.",
-              "Nora compara las filas: solo P-17 coincide en los tres criterios.",
-              "El equipo registra P-17 como identificación compatible.",
+              "La marca, el rumbo y la hora terminaron sobre la misma fila. Nora mantuvo el dedo junto al código P-17.",
+              "Nora recorrió de nuevo las filas. Dos candidatos coincidían a medias; solo uno reunía los tres detalles.",
+              "Cuando la comparación terminó, una sola fila permaneció abierta sobre la mesa: P-17.",
             ),
           },
           {
@@ -468,11 +489,14 @@ export const challengeDefinitions = {
               presentation: "text-led",
               blocks: [
                 narration(
-                  "Nora recorrió las tres columnas una última vez. La muesca, el rumbo y el intervalo coincidían en una sola fila.",
+                  "La muesca podía repetirse en otro animal. También el rumbo o la hora, tomados por separado, demostraban muy poco. Pero las tres señales terminaban en la misma fila.",
+                ),
+                narration(
+                  "Nadie dijo que lo hubieran encontrado. Nora acercó el cuaderno, mojó la punta del lápiz en los labios y eligió con cuidado las únicas palabras que los datos permitían.",
                 ),
                 emphasis("Compatible con P-17."),
                 narration(
-                  "No escribió que fuera él con absoluta certeza. Cerró la carpeta y dejó que aquella cautela permaneciera en la frase.",
+                  "Después cerró la carpeta. La duda no era un defecto del registro; era la parte que todavía pertenecía a la nieve.",
                 ),
               ],
             }),
@@ -496,7 +520,10 @@ export const challengeDefinitions = {
               ),
               blocks: [
                 narration(
-                  "Las cámaras no habían visto un viaje. Habían conservado fragmentos separados por horas de oscuridad y kilómetros de nieve.",
+                  "El viento borró las huellas poco después de cada paso. Una cámara lo vio salir; otra lo encontró mucho más tarde. Entre ambas quedaron horas de oscuridad y kilómetros de nieve sin testigos.",
+                ),
+                emphasis(
+                  "Ninguna mirada había contemplado el viaje entero. Solo quedaban sus fragmentos.",
                 ),
               ],
             }),
@@ -513,10 +540,13 @@ export const challengeDefinitions = {
               caption: "Colonia · desvío · base · H-3 · Nadir · último registro",
               blocks: [
                 narration(
-                  "Nora extendió seis registros sobre la mesa: la colonia, el primer desvío, la base, H-3, Nadir y una última cámara orientada hacia el interior.",
+                  "Nora apagó la luz principal y extendió seis registros bajo la lámpara: la colonia, el primer desvío, la base, H-3, Nadir y una última cámara orientada hacia el interior.",
                 ),
                 narration(
-                  "Entre uno y otro había zonas que nadie había observado. La cuadrícula no podía llenarlas con certezas, pero sí comprobar si los fragmentos admitían una línea continua.",
+                  "Entre una hoja y la siguiente se veía la superficie desnuda de la mesa. Aquellos espacios eran horas que nadie había observado; no podían llenarse con recuerdos ni con deseos.",
+                ),
+                narration(
+                  "Nora desplazó la primera ficha sobre la cuadrícula. Los fragmentos no contarían qué había ocurrido en los huecos, pero podían revelar si pertenecían a un mismo recorrido.",
                 ),
               ],
             }),
@@ -526,9 +556,9 @@ export const challengeDefinitions = {
             questionId: "p17-route-zip",
             unlockEntryIds: ["note-route"],
             reactions: reactions(
-              "Los seis registros forman una trayectoria continua.",
-              "Nora conserva los puntos confirmados y completa el único recorrido compatible.",
-              "El sistema enlaza los seis registros antes de cerrar el mapa.",
+              "La última unión encajó sin contradecir ninguno de los seis registros. Una línea cruzó la mesa de extremo a extremo.",
+              "Nora dejó a un lado los enlaces imposibles y acercó las fichas que aún podían compartir un mismo recorrido.",
+              "El sistema terminó de ordenar los seis puntos. Sobre la cuadrícula apareció una sola línea compatible.",
             ),
           },
           {
@@ -543,7 +573,10 @@ export const challengeDefinitions = {
               caption: "Único recorrido compatible con los seis registros",
               blocks: [
                 narration(
-                  "La línea atravesó los seis registros sin romperse. Por primera vez, los fragmentos podían leerse como una trayectoria completa desde la colonia hasta el interior.",
+                  "Cuando la última unión ocupó su lugar, la línea atravesó los seis registros sin romperse. Nacía junto a la colonia, pasaba por el campamento y Nadir, y terminaba en el blanco del interior.",
+                ),
+                narration(
+                  "No mostraba lo ocurrido entre una cámara y la siguiente. Pero ninguno de los fragmentos la contradecía. Por primera vez, el recorrido podía contemplarse de una sola mirada.",
                 ),
               ],
             }),
@@ -554,11 +587,14 @@ export const challengeDefinitions = {
               presentation: "text-led",
               blocks: [
                 narration(
-                  "Al verla terminada, alguien dijo que por fin tenían la historia. Nora observó la línea azul, tan limpia que parecía contener una respuesta.",
+                  "Alguien dejó escapar el aire y dijo que por fin tenían la historia. Nora no contestó. Observó la línea azul, tan limpia sobre el mapa que parecía contener una respuesta.",
                 ),
-                dialogue("Nora", "Tenemos un antes y un después. No tenemos un porqué."),
+                dialogue(
+                  "Nora",
+                  "Ahora sabemos por dónde pasó. Seguimos sin saber qué lo llevó hasta allí.",
+                ),
                 narration(
-                  "Cuanto más completo resultaba el recorrido, más fácil era imaginar una intención. El cuaderno debía resistirse precisamente a esa facilidad.",
+                  "Con el recorrido completo, ciertos verbos acudían solos: buscaba, huía, quería llegar. Nora los escribió en una hoja aparte y luego le dio la vuelta. Ninguna de las seis cámaras había visto nada de aquello.",
                 ),
               ],
             }),
@@ -568,9 +604,9 @@ export const challengeDefinitions = {
             questionId: "p17-observation-order",
             unlockEntryIds: ["note-chronology"],
             reactions: reactions(
-              "Los hechos quedan ordenados sin añadir una explicación.",
-              "Nora recompone la secuencia usando las marcas de tiempo.",
-              "El cuaderno ordena automáticamente los cinco registros.",
+              "La última hora ocupó su lugar. La secuencia avanzaba sin saltos desde la colonia hasta la cámara final.",
+              "Nora volvió a las marcas de tiempo y cambió de lugar dos hojas. El orden apareció sin necesidad de explicar la causa.",
+              "El cuaderno terminó de ordenar los cinco registros y dejó la última cámara al final de la secuencia.",
             ),
           },
           {
@@ -584,14 +620,17 @@ export const challengeDefinitions = {
               caption: "Última imagen conservada",
               blocks: [
                 narration(
-                  "Ordenados por su hora, los registros dejaron la última cámara al final de la secuencia. En ella, P-17 avanzaba sobre una llanura sin referencias próximas.",
+                  "La última cámara mostraba una llanura tan abierta que resultaba difícil medir las distancias. P-17 avanzaba en ella como un punto oscuro; detrás, sus huellas eran la única escala.",
                 ),
                 narration(
-                  "Se detuvo, sacudió la nieve de las plumas y continuó. La cámara dejó que la distancia creciera.",
+                  "Se detuvo una vez, sacudió la nieve de las plumas y continuó. Por un instante el viento lo borró de la imagen. Cuando volvió a aparecer, era más pequeño y estaba más cerca de las montañas.",
                 ),
                 dialogue(
                   "Nora",
-                  "Esta es la última hoja. Si una frase necesita entrar en su cabeza, no pertenece aquí.",
+                  "Esta es la última hoja. La frase no puede llegar más lejos que la imagen.",
+                ),
+                narration(
+                  "Nadie respondió. La cinta siguió corriendo unos segundos después de que P-17 desapareciera en el grano.",
                 ),
               ],
             }),
@@ -601,9 +640,9 @@ export const challengeDefinitions = {
             questionId: "p17-final-record",
             unlockEntryIds: ["note-final"],
             reactions: reactions(
-              "La última hoja conserva la trayectoria y deja fuera la causa.",
-              "Nora elimina la atribución de intención y escribe el límite de la evidencia.",
-              "El informe se cierra con una conclusión limitada a los registros.",
+              "Las palabras «estaba perdido» desaparecieron del párrafo. En su lugar quedó escrito el límite de lo observado.",
+              "Nora tachó la frase que atribuía una decisión a P-17 y dejó el lápiz junto al margen vacío.",
+              "Antes de cerrar el informe, Nora retiró la causa que ninguna cámara había podido registrar.",
             ),
           },
           {
@@ -618,7 +657,10 @@ export const challengeDefinitions = {
               advanceLabel: "Cerrar el registro",
               blocks: [
                 narration(
-                  "Nora leyó el texto una vez, tachó una palabra y volvió a empezar. La hoja no necesitaba resolver aquello que las imágenes habían dejado abierto.",
+                  "Nora leyó el párrafo en voz baja. Allí estaban el mar, el campamento, Nadir y las montañas; también una respuesta que nadie había visto. La tachó hasta que dejó de poder leerse.",
+                ),
+                narration(
+                  "El texto se volvió más breve y, al mismo tiempo, más verdadero. El papel no explicaba el viaje. Lo dejaba intacto, detenido justo donde terminaban las imágenes.",
                 ),
                 emphasis(
                   "P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo determinarse.",

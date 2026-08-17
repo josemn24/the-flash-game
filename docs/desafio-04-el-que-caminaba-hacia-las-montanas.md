@@ -34,7 +34,7 @@ horarios, observaciones o recorridos de la misión.
 - **Título:** El que caminaba hacia las montañas
 - **Subtítulo:** Una dirección no es una explicación
 - **Modo:** Narrativa competitiva
-- **Duración objetivo:** 7–9 minutos
+- **Duración objetivo:** 9–11 minutos
 - **Pruebas:** 8
 - **Puntuación máxima:** 100
 - **Descripción:** Sigue el rastro de un pingüino que abandona la colonia, protege su recorrido de
@@ -47,21 +47,25 @@ demás evitan la plantilla de título, resumen y CTA dominante.
 
 ### Página 1 · Grabación antigua
 
-La cinta llevaba años guardada en una caja sin fecha. Cuando Nora pulsó el interruptor, el motor
-tardó unos segundos en vencer el frío.
+La cinta llevaba años al fondo de una caja sin fecha, bajo mapas que nadie consultaba ya. Nora
+limpió el polvo de la carcasa con la manga y comprobó dos veces que el carrete seguía entero.
 
-Primero llegó el roce del carrete. Después, el viento. Por último, la voz de alguien que ya no
-estaba allí.
+Cuando pulsó el interruptor, el motor tosió antes de ponerse en marcha. Primero llegó el roce de la
+cinta. Después, un viento antiguo llenó la habitación. Por último, habló una voz que parecía venir
+de muy lejos.
 
 —A veces un pingüino se desorienta. Puede terminar muy lejos del océano, en un lugar donde no
 esperaríamos encontrarlo.
 
 ### Página 2 · Todos menos uno
 
-La imagen emergió despacio del ruido: una llanura blanca, la línea de las montañas y la colonia
-moviéndose hacia el agua abierta.
+La imagen tardó en desprenderse del ruido. Poco a poco aparecieron una llanura blanca, la línea
+oscura de las montañas y, al fondo, el brillo del agua abierta.
 
-Todos avanzaban en la misma dirección. Todos menos uno.
+La colonia se movía hacia el mar con la lentitud de una sola criatura. La mirada podía seguirla
+sin esfuerzo, hasta que una figura se detuvo y rompió la forma del grupo.
+
+Todos siguieron hacia el agua. Todos menos uno.
 
 ### Página 3 · Prueba 1: la dirección
 
@@ -70,20 +74,25 @@ orienta el pingüino que abandona la formación.
 
 ### Página 4 · Identificación
 
-La reacción a la prueba abre la página sin aviso intermedio. Nora detiene el fotograma y encuentra
-una pequeña muesca blanca en el lado izquierdo del pecho. En el margen escribe una identificación
-visual provisional: P-17.
+La reacción a la prueba abre la página sin aviso intermedio y conduce al instante preciso del giro.
+
+El fotograma queda inmóvil. Nora amplía la imagen hasta que las plumas pierden nitidez. En el lado
+izquierdo del pecho, una muesca blanca interrumpe el borde oscuro del animal.
+
+No es un nombre ni una explicación. Es apenas una señal que permitirá reconocerlo si otra cámara
+vuelve a encontrarlo. En el margen del cuaderno, Nora escribe P-17 y rodea el código una sola vez.
 
 ### Página 5 · Conservar la imagen
 
-La colonia sigue alejándose hacia el mar. P-17 gira y continúa hacia las montañas hasta que el
-viento empieza a borrar sus huellas.
+Nora suelta el mando y la cinta vuelve a avanzar. La colonia se hace pequeña junto al mar. P-17
+permanece quieto unos segundos; después gira y continúa hacia las montañas.
 
 —¿Lo has registrado? —pregunta Nora.
 
-Asientes sin apartar la mirada de la pantalla.
+Asientes sin apartar la mirada de la pantalla. El viento pasa sobre las huellas recientes y
+deshace primero los bordes, luego la forma entera.
 
-—Entonces conserva la imagen. Todavía no escribas una razón.
+—Guarda lo que la cámara nos ha dado. La razón, si llega alguna vez, tendrá que esperar.
 
 ### Página 6 · Prueba 2: el desvío
 
@@ -91,19 +100,25 @@ El jugador señala dónde la trayectoria de P-17 abandona el corredor habitual d
 
 ### Página 7 · Trayectorias superpuestas
 
-La reacción aparece junto a las hojas de observación. Bajo el papel translúcido, cientos de
-recorridos terminan en el mar; uno solo continúa hacia el interior.
+La reacción aparece junto a las hojas de observación. Nora sujeta el papel translúcido para que no
+lo levante la corriente de la calefacción. Debajo se amontonan cientos de recorridos: líneas
+breves, casi paralelas, que descienden hacia el mar.
+
+Marca una cruz en el lugar donde la trayectoria de P-17 se desprende de las demás. A partir de
+allí, una sola línea atraviesa el blanco del mapa y continúa hacia el interior.
 
 ### Página 8 · Lo que una cámara no sabe
 
 —Podríamos decir que está perdido —murmura alguien.
 
-Nora deja el lápiz sobre el cuaderno.
+Nora no responde enseguida. Mira otra vez el punto oscuro detenido en el monitor, abre el cuaderno
+por una página limpia y traza una línea vertical de arriba abajo.
 
-—Podríamos pensarlo. Pero la imagen solo demuestra que se separa.
+A un lado copia lo que ha resistido al rebobinado: la hora, el rumbo, cuarenta y dos minutos sin
+regresar a la colonia. Al otro quedan palabras que ninguna cámara ha registrado: perdido, enfermo,
+decidido.
 
-Unas frases hablan de posiciones, minutos y direcciones. Otras cruzan una frontera invisible y
-entran en la mente del animal.
+—Esto pertenece a la imagen. Lo demás, por ahora, nos pertenece a nosotros.
 
 ### Página 9 · Prueba 3: observación o interpretación
 
@@ -111,25 +126,33 @@ El jugador separa hechos registrados de interpretaciones no demostradas.
 
 ### Página 10 · El primer cuaderno
 
-La reacción cierra el capítulo. En las páginas permanecen una marca blanca, una hora, un punto del
-mapa y una dirección.
+La reacción cierra el capítulo. Al caer la tarde, Nora cierra el primer cuaderno. Afuera, el viento
+hace temblar la pared de la estación; dentro solo quedan el zumbido del monitor y el olor seco del
+papel caliente.
 
-Era menos que una explicación. Era todo lo que sabían.
+En las páginas permanecen una muesca blanca, una hora, un punto del mapa y una dirección. Nada de
+aquello explica por qué P-17 se ha separado. Pero es suficiente para reconocer su rastro si vuelve
+a aparecer.
 
 ### Página 11 · Mantenerse fuera
 
-Durante la noche cambia el viento. Al amanecer, una figura oscura aparece al otro lado del
-campamento base.
+Durante la noche el viento cambió de costado. Las lonas golpearon los mástiles hasta el amanecer y
+la nieve cubrió las marcas alrededor de las tiendas.
+
+Con la primera claridad, una figura oscura apareció al otro lado del campamento base. Nora
+reconoció la muesca del pecho antes de que nadie pronunciara el código.
 
 ### Página 12 · El corredor
 
-P-17 avanza hacia el corredor este. Entre él y la llanura quedan cajas, trineos y un trípode
-instalado durante la noche.
+P-17 avanzaba hacia el corredor este, despacio y sin desviarse. Entre él y la llanura, el
+campamento estrechaba el paso con cajas, trineos y un trípode que el equipo había instalado durante
+la noche.
 
-Nadie puede tocarlo, llamarlo ni cerrarle el paso. Son los objetos humanos los que deben
-desaparecer.
+Desde la ventana parecía sencillo apartarlo con una voz o un movimiento. El protocolo prohibía
+ambas cosas: nadie debía tocarlo, llamarlo ni obligarlo a corregir el rumbo. El obstáculo no era el
+animal, sino todo lo que ellos habían dejado sobre la nieve.
 
-—Nosotros conocemos su posición —dice Nora—. Él no ha elegido nuestros objetos.
+—Esas cosas las pusimos nosotros —dijo Nora—. Tienen que desaparecer antes de que llegue.
 
 ### Página 13 · Prueba 4: despejar el paso
 
@@ -137,16 +160,25 @@ El jugador mueve únicamente el equipo humano y saca el trípode por la salida d
 
 ### Página 14 · Campamento despejado
 
-La reacción se integra sobre el nuevo plano del corredor vacío. P-17 cruza el campamento sin variar
-la dirección registrada. El equipo permanece lejos.
+La reacción se integra sobre el nuevo plano del corredor vacío. Cuando el último objeto quedó
+fuera, el paso volvió a ser una franja de nieve sin marcas humanas. El equipo retrocedió hasta las
+tiendas y esperó detrás de las ventanas empañadas.
+
+P-17 atravesó el campamento sin variar el rumbo. Nadie se acercó. Durante unos segundos solo se oyó
+el viento entre los cables y el roce leve de sus patas sobre la nieve. Después desapareció detrás
+de una elevación, todavía en dirección al interior.
 
 ### Página 15 · Mensaje de Nadir
 
-Dos días más tarde, la pantalla de comunicaciones se enciende. Nadir ha registrado un pingüino
-entrando desde el nordeste y continuando hacia el suroeste.
+Dos días más tarde, un chasquido despertó la sala de comunicaciones. La pantalla se encendió con un
+destello azul y dejó entrar una imagen enviada desde Nadir.
 
-La figura es demasiado pequeña para reconocerla. Junto al vídeo llegan tres fragmentos: una marca,
-un rumbo y una ventana de tiempo.
+En el vídeo, un pingüino entraba desde el nordeste y continuaba hacia el suroeste. La figura era
+demasiado pequeña para reconocerla a simple vista. Junto a la grabación llegaron tres apuntes: una
+marca en el pecho, un rumbo y una franja de tiempo.
+
+Nadir no enviaba una respuesta. Enviaba tres detalles que, puestos uno junto a otro, quizá
+permitieran formular una pregunta mejor.
 
 ### Página 16 · Prueba 5: matriz de evidencias
 
@@ -154,25 +186,35 @@ El jugador busca la única identificación compatible simultáneamente con los t
 
 ### Página 17 · Compatible con P-17
 
-La reacción abre una página breve. Nora recorre las tres columnas una última vez. La muesca, el
-rumbo y el intervalo coinciden en una sola fila.
+La reacción abre una página breve. La muesca podía repetirse en otro animal. También el rumbo o la
+hora, tomados por separado, demostraban muy poco. Pero las tres señales terminaban en la misma
+fila.
+
+Nadie dijo que lo hubieran encontrado. Nora acercó el cuaderno, mojó la punta del lápiz en los
+labios y eligió con cuidado las únicas palabras que los datos permitían.
 
 Compatible con P-17.
 
-La cautela permanece deliberadamente en la frase.
+Después cerró la carpeta. La duda no era un defecto del registro; era la parte que todavía
+pertenecía a la nieve.
 
 ### Página 18 · La línea completa
 
-Las cámaras no han visto un viaje. Han conservado fragmentos separados por horas de oscuridad y
-kilómetros de nieve.
+El viento borró las huellas poco después de cada paso. Una cámara lo vio salir; otra lo encontró
+mucho más tarde. Entre ambas quedaron horas de oscuridad y kilómetros de nieve sin testigos.
+
+Ninguna mirada había contemplado el viaje entero. Solo quedaban sus fragmentos.
 
 ### Página 19 · Seis registros
 
-Nora extiende sobre la mesa la colonia, el primer desvío, la base, H-3, Nadir y una última cámara
-orientada hacia el interior.
+Nora apagó la luz principal y extendió seis registros bajo la lámpara: la colonia, el primer
+desvío, la base, H-3, Nadir y una última cámara orientada hacia el interior.
 
-Entre ellos quedan zonas que nadie observó. La cuadrícula solo puede comprobar si los fragmentos
-admiten una línea continua.
+Entre una hoja y la siguiente se veía la superficie desnuda de la mesa. Aquellos espacios eran
+horas que nadie había observado; no podían llenarse con recuerdos ni con deseos.
+
+Nora desplazó la primera ficha sobre la cuadrícula. Los fragmentos no contarían qué había ocurrido
+en los huecos, pero podían revelar si pertenecían a un mismo recorrido.
 
 ### Página 20 · Prueba 6: reconstruir el recorrido
 
@@ -180,19 +222,23 @@ El jugador conecta los seis registros en orden y completa el único recorrido Zi
 
 ### Página 21 · Una trayectoria continua
 
-La reacción aparece sobre el tablero completo. La línea atraviesa los seis registros sin romperse.
-Por primera vez, los fragmentos pueden leerse como una trayectoria desde la colonia hasta el
-interior.
+La reacción aparece sobre el tablero completo. Cuando la última unión ocupó su lugar, la línea
+atravesó los seis registros sin romperse. Nacía junto a la colonia, pasaba por el campamento y
+Nadir, y terminaba en el blanco del interior.
+
+No mostraba lo ocurrido entre una cámara y la siguiente. Pero ninguno de los fragmentos la
+contradecía. Por primera vez, el recorrido podía contemplarse de una sola mirada.
 
 ### Página 22 · Una historia no es una causa
 
-Alguien dice que por fin tienen la historia. Nora observa la línea azul, tan limpia que parece
-contener una respuesta.
+Alguien dejó escapar el aire y dijo que por fin tenían la historia. Nora no contestó. Observó la
+línea azul, tan limpia sobre el mapa que parecía contener una respuesta.
 
-—Tenemos un antes y un después. No tenemos un porqué.
+—Ahora sabemos por dónde pasó. Seguimos sin saber qué lo llevó hasta allí.
 
-Cuanto más completo resulta el recorrido, más fácil es imaginar una intención. El cuaderno debe
-resistirse precisamente a esa facilidad.
+Con el recorrido completo, ciertos verbos acudían solos: buscaba, huía, quería llegar. Nora los
+escribió en una hoja aparte y luego le dio la vuelta. Ninguna de las seis cámaras había visto nada
+de aquello.
 
 ### Página 23 · Prueba 7: cronología
 
@@ -200,10 +246,17 @@ El jugador ordena únicamente los hechos registrados, sin añadir una causa.
 
 ### Página 24 · La última hoja
 
-La reacción conduce a la última cámara. P-17 se detiene, sacude la nieve de las plumas y continúa.
-La cámara deja que la distancia crezca.
+La reacción conduce a la última cámara, que mostraba una llanura tan abierta que resultaba difícil
+medir las distancias. P-17 avanzaba en ella como un punto oscuro; detrás, sus huellas eran la única
+escala.
 
-—Esta es la última hoja —dice Nora—. Si una frase necesita entrar en su cabeza, no pertenece aquí.
+Se detuvo una vez, sacudió la nieve de las plumas y continuó. Por un instante el viento lo borró de
+la imagen. Cuando volvió a aparecer, era más pequeño y estaba más cerca de las montañas.
+
+—Esta es la última hoja —dijo Nora—. La frase no puede llegar más lejos que la imagen.
+
+Nadie respondió. La cinta siguió corriendo unos segundos después de que P-17 desapareciera en el
+grano.
 
 ### Página 25 · Prueba 8: registro final
 
@@ -212,8 +265,12 @@ de la evidencia.
 
 ### Página 26 · Cierre del registro
 
-La reacción queda incorporada al documento. Nora lee el texto, tacha una palabra y vuelve a empezar.
-La hoja termina exactamente así:
+La reacción queda incorporada al documento. Nora leyó el párrafo en voz baja. Allí estaban el mar,
+el campamento, Nadir y las montañas; también una respuesta que nadie había visto. La tachó hasta
+que dejó de poder leerse.
+
+El texto se volvió más breve y, al mismo tiempo, más verdadero. El papel no explicaba el viaje. Lo
+dejaba intacto, detenido justo donde terminaban las imágenes. La hoja termina exactamente así:
 
 > P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma
 > compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo
@@ -224,6 +281,82 @@ La hoja termina exactamente así:
 La imagen se funde a negro.
 
 ## BUT WHY?
+
+## Entradas narrativas variables
+
+Cada prueba desemboca en la misma página del relato. La primera frase cambia según el resultado,
+pero siempre describe una acción dentro de la escena y evita el tono de corrección de interfaz.
+
+### Después de la prueba 1
+
+- **Acierto:** La cordillera quedó señalada en el monitor. Nora hizo retroceder la cinta hasta el
+  instante preciso del giro.
+- **Error o parcial:** Nora rebobinó unos segundos. Al abrirse de nuevo el plano, el mar quedó a un
+  lado y las montañas al otro.
+- **Tiempo:** El grano terminó por disiparse. Debajo apareció el giro: desde la colonia hacia la
+  línea de montañas.
+
+### Después de la prueba 2
+
+- **Acierto:** La marca cayó en el sector C3, allí donde una línea se apartaba del haz que descendía
+  hacia el mar.
+- **Error o parcial:** Nora desplazó el papel translúcido unos milímetros. Solo entonces los dos
+  recorridos se separaron con claridad.
+- **Tiempo:** La superposición terminó de ajustarse y dejó al descubierto el desvío, en el sector
+  C3.
+
+### Después de la prueba 3
+
+- **Acierto:** Las últimas notas quedaron a ambos lados de la línea. Nora apartó las palabras que
+  la cámara nunca había visto.
+- **Error o parcial:** Nora devolvió una nota a la mesa y volvió a leerla en voz baja. La frase decía
+  más que las imágenes.
+- **Tiempo:** Antes de cerrar el cuaderno, el equipo separó las medidas de todo aquello que solo
+  podía imaginar.
+
+### Después de la prueba 4
+
+- **Acierto:** La última pata del trípode desapareció por la salida de servicio. El corredor volvió
+  a quedar abierto.
+- **Error o parcial:** Desde el lateral protegido, Nora terminó de retirar el trípode y ordenó al
+  equipo que retrocediera.
+- **Tiempo:** Cuando P-17 se acercó al límite del campamento, el equipo completó la retirada y dejó
+  libre el paso.
+
+### Después de la prueba 5
+
+- **Acierto:** La marca, el rumbo y la hora terminaron sobre la misma fila. Nora mantuvo el dedo
+  junto al código P-17.
+- **Error o parcial:** Nora recorrió de nuevo las filas. Dos candidatos coincidían a medias; solo
+  uno reunía los tres detalles.
+- **Tiempo:** Cuando la comparación terminó, una sola fila permaneció abierta sobre la mesa: P-17.
+
+### Después de la prueba 6
+
+- **Acierto:** La última unión encajó sin contradecir ninguno de los seis registros. Una línea cruzó
+  la mesa de extremo a extremo.
+- **Error o parcial:** Nora dejó a un lado los enlaces imposibles y acercó las fichas que aún podían
+  compartir un mismo recorrido.
+- **Tiempo:** El sistema terminó de ordenar los seis puntos. Sobre la cuadrícula apareció una sola
+  línea compatible.
+
+### Después de la prueba 7
+
+- **Acierto:** La última hora ocupó su lugar. La secuencia avanzaba sin saltos desde la colonia
+  hasta la cámara final.
+- **Error o parcial:** Nora volvió a las marcas de tiempo y cambió de lugar dos hojas. El orden
+  apareció sin necesidad de explicar la causa.
+- **Tiempo:** El cuaderno terminó de ordenar los cinco registros y dejó la última cámara al final de
+  la secuencia.
+
+### Después de la prueba 8
+
+- **Acierto:** Las palabras «estaba perdido» desaparecieron del párrafo. En su lugar quedó escrito
+  el límite de lo observado.
+- **Error o parcial:** Nora tachó la frase que atribuía una decisión a P-17 y dejó el lápiz junto al
+  margen vacío.
+- **Tiempo:** Antes de cerrar el informe, Nora retiró la causa que ninguna cámara había podido
+  registrar.
 
 ## Tabla maestra de pruebas
 
@@ -261,10 +394,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
   permite registrar una dirección, no una intención.»
 - **Cuaderno:** «P-17: muesca blanca en el lado izquierdo del pecho. Dirección inicial: montañas,
   hacia el interior.»
-- **Feedback correcto:** «La cámara conserva la referencia: montañas, hacia el interior.»
-- **Feedback incorrecto:** «Nora congela el fotograma y marca la línea de montañas. Esa es la
-  dirección observable.»
-- **Feedback por tiempo:** «La imagen termina de revelarse. P-17 se orienta hacia las montañas.»
+- **Feedback correcto:** «La cordillera quedó señalada en el monitor. Nora hizo retroceder la cinta
+  hasta el instante preciso del giro.»
+- **Feedback incorrecto:** «Nora rebobinó unos segundos. Al abrirse de nuevo el plano, el mar quedó
+  a un lado y las montañas al otro.»
+- **Feedback por tiempo:** «El grano terminó por disiparse. Debajo apareció el giro: desde la
+  colonia hacia la línea de montañas.»
 
 ### 2 · La anomalía
 
@@ -281,10 +416,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Explicación:** «La mayoría de recorridos continúa hacia el mar. P-17 abandona esa concentración
   en el punto marcado y mantiene una línea hacia el interior.»
 - **Cuaderno:** «Inicio del desvío localizado en el sector C3 del mapa de observación.»
-- **Feedback correcto:** «El punto queda fijado: aquí abandona el corredor de la colonia.»
-- **Feedback parcial o incorrecto:** «Nora superpone de nuevo las trayectorias y registra el inicio
-  exacto del desvío.»
-- **Feedback por tiempo:** «La superposición automática localiza el desvío en el sector C3.»
+- **Feedback correcto:** «La marca cayó en el sector C3, allí donde una línea se apartaba del haz
+  que descendía hacia el mar.»
+- **Feedback parcial o incorrecto:** «Nora desplazó el papel translúcido unos milímetros. Solo
+  entonces los dos recorridos se separaron con claridad.»
+- **Feedback por tiempo:** «La superposición terminó de ajustarse y dejó al descubierto el desvío,
+  en el sector C3.»
 
 ### 3 · Hecho o interpretación
 
@@ -306,10 +443,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Explicación:** «La cámara registra posiciones, direcciones y tiempos. No registra enfermedad,
   intención, percepción ni conocimiento.»
 - **Cuaderno:** «Regla de registro: describir movimiento, posición y tiempo; no atribuir intención.»
-- **Feedback correcto:** «El registro conserva únicamente lo que los instrumentos pueden sostener.»
-- **Feedback parcial o incorrecto:** «Nora retira las frases que necesitan suponer qué piensa o
-  siente P-17.»
-- **Feedback por tiempo:** «El equipo completa la clasificación antes de continuar.»
+- **Feedback correcto:** «Las últimas notas quedaron a ambos lados de la línea. Nora apartó las
+  palabras que la cámara nunca había visto.»
+- **Feedback parcial o incorrecto:** «Nora devolvió una nota a la mesa y volvió a leerla en voz
+  baja. La frase decía más que las imágenes.»
+- **Feedback por tiempo:** «Antes de cerrar el cuaderno, el equipo separó las medidas de todo
+  aquello que solo podía imaginar.»
 
 ### 4 · Despejar el paso
 
@@ -332,10 +471,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Explicación:** «Todo el movimiento ocurre dentro del equipo humano. Al retirar el trípode por
   la salida de servicio, el corredor queda como estaba antes de instalar el campamento.»
 - **Cuaderno:** «Intervención humana retirada antes del paso de P-17; sin contacto ni aproximación.»
-- **Feedback correcto:** «El trípode sale del corredor. El equipo vuelve a la distancia de
-  seguridad.»
-- **Feedback incorrecto:** «Nora completa la retirada desde el lateral protegido.»
-- **Feedback por tiempo:** «El equipo retira el último obstáculo antes de la llegada de P-17.»
+- **Feedback correcto:** «La última pata del trípode desapareció por la salida de servicio. El
+  corredor volvió a quedar abierto.»
+- **Feedback incorrecto:** «Desde el lateral protegido, Nora terminó de retirar el trípode y ordenó
+  al equipo que retrocediera.»
+- **Feedback por tiempo:** «Cuando P-17 se acercó al límite del campamento, el equipo completó la
+  retirada y dejó libre el paso.»
 
 ### 5 · Matriz de evidencias
 
@@ -358,10 +499,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Explicación:** «P-17 es la única fila que coincide en marca, rumbo y tiempo. El resultado
   identifica de forma compatible al individuo observado; no explica su conducta.»
 - **Cuaderno:** «Nadir: identificación compatible con P-17 por marca, rumbo y ventana temporal.»
-- **Feedback correcto:** «Las tres columnas coinciden con P-17.»
-- **Feedback incorrecto:** «Nora compara las filas: solo P-17 coincide en los tres criterios.»
-- **Feedback por tiempo:** «El equipo completa la comparación y registra P-17 como identificación
-  compatible.»
+- **Feedback correcto:** «La marca, el rumbo y la hora terminaron sobre la misma fila. Nora mantuvo
+  el dedo junto al código P-17.»
+- **Feedback incorrecto:** «Nora recorrió de nuevo las filas. Dos candidatos coincidían a medias;
+  solo uno reunía los tres detalles.»
+- **Feedback por tiempo:** «Cuando la comparación terminó, una sola fila permaneció abierta sobre
+  la mesa: P-17.»
 
 ### 6 · Reconstruir el recorrido
 
@@ -385,10 +528,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Explicación:** «La línea conecta todos los registros en orden y no contradice ninguna posición
   observada. Completarla no convierte el recorrido en una decisión.»
 - **Cuaderno:** «Recorrido reconstruido: colonia → desvío → base → H-3 → Nadir → interior.»
-- **Feedback correcto:** «Los seis registros forman una trayectoria continua.»
-- **Feedback incorrecto:** «Nora conserva los puntos confirmados y completa el único recorrido
-  compatible.»
-- **Feedback por tiempo:** «El sistema enlaza los seis registros antes de cerrar el mapa.»
+- **Feedback correcto:** «La última unión encajó sin contradecir ninguno de los seis registros. Una
+  línea cruzó la mesa de extremo a extremo.»
+- **Feedback incorrecto:** «Nora dejó a un lado los enlaces imposibles y acercó las fichas que aún
+  podían compartir un mismo recorrido.»
+- **Feedback por tiempo:** «El sistema terminó de ordenar los seis puntos. Sobre la cuadrícula
+  apareció una sola línea compatible.»
 
 ### 7 · Cronología
 
@@ -406,9 +551,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Explicación:** «La cronología establece qué ocurrió antes y después. No establece enfermedad,
   pérdida de orientación ni intención.»
 - **Cuaderno:** «Secuencia temporal verificada en cinco observaciones.»
-- **Feedback correcto:** «Los hechos quedan ordenados sin añadir una explicación.»
-- **Feedback parcial o incorrecto:** «Nora recompone la secuencia usando las marcas de tiempo.»
-- **Feedback por tiempo:** «El cuaderno ordena automáticamente los cinco registros.»
+- **Feedback correcto:** «La última hora ocupó su lugar. La secuencia avanzaba sin saltos desde la
+  colonia hasta la cámara final.»
+- **Feedback parcial o incorrecto:** «Nora volvió a las marcas de tiempo y cambió de lugar dos
+  hojas. El orden apareció sin necesidad de explicar la causa.»
+- **Feedback por tiempo:** «El cuaderno terminó de ordenar los cinco registros y dejó la última
+  cámara al final de la secuencia.»
 
 ### 8 · Registro final
 
@@ -435,10 +583,12 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - **Cuaderno final:** «P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue
   identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la
   trayectoria no pudo determinarse.»
-- **Feedback correcto:** «La última hoja conserva la trayectoria y deja fuera la causa.»
-- **Feedback parcial o incorrecto:** «Nora elimina la atribución de intención y escribe el límite de
-  la evidencia.»
-- **Feedback por tiempo:** «El informe se cierra con una conclusión limitada a los registros.»
+- **Feedback correcto:** «Las palabras “estaba perdido” desaparecieron del párrafo. En su lugar
+  quedó escrito el límite de lo observado.»
+- **Feedback parcial o incorrecto:** «Nora tachó la frase que atribuía una decisión a P-17 y dejó el
+  lápiz junto al margen vacío.»
+- **Feedback por tiempo:** «Antes de cerrar el informe, Nora retiró la causa que ninguna cámara
+  había podido registrar.»
 
 ## Dependencias entre pruebas
 

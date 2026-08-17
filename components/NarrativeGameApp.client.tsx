@@ -165,7 +165,7 @@ function NarrativeIntro({
               <span>Puntos</span>
             </div>
             <div>
-              <strong>≈ 7–9</strong>
+              <strong>≈ 9–11</strong>
               <span>Minutos</span>
             </div>
           </div>

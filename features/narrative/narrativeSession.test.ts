@@ -213,24 +213,24 @@ describe("P-17 narrative session", () => {
   });
 
   it.each([
-    ["correct", correctResult, false, "cámara conserva"],
+    ["correct", correctResult, false, "cordillera quedó señalada"],
     [
       "incorrect",
       { ...correctResult, answer: "mar", status: "incorrect", isCorrect: false, points: 0 },
       false,
-      "Nora congela",
+      "Nora rebobinó",
     ],
     [
       "partial",
       { ...correctResult, answer: "interior", status: "partial", isCorrect: false, points: 4 },
       false,
-      "Nora congela",
+      "Nora rebobinó",
     ],
     [
       "timeout",
       { ...correctResult, answer: null, status: "unanswered", isCorrect: false, points: 0 },
       true,
-      "termina de revelarse",
+      "grano terminó por disiparse",
     ],
   ] as const)("selects the %s narrative reaction", (_label, result, timedOut, expected) => {
     const reaction = getNarrativeReaction(

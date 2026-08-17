@@ -60,6 +60,27 @@ describe("narrative challenge definition", () => {
     expect(() => validateNarrativeChallengeDefinition(definition)).not.toThrow();
   });
 
+  it("keeps a substantial literary voice and narrative reactions", () => {
+    const definition = cloneDefinition();
+    const scenes = [
+      definition.prologue,
+      ...definition.beats.flatMap((beat) =>
+        beat.steps.flatMap((step) => (step.type === "scene" ? [step.scene] : [])),
+      ),
+    ];
+    const storyText = scenes.flatMap((scene) => scene.blocks.map((block) => block.text)).join(" ");
+    const reactionTexts = questionSteps(definition).flatMap((step) =>
+      Object.values(step.reactions ?? {}).flatMap((blocks) => blocks.map((block) => block.text)),
+    );
+
+    expect(storyText.split(/\s+/).length).toBeGreaterThanOrEqual(1_000);
+    expect(reactionTexts).toHaveLength(24);
+    expect(reactionTexts.every((reaction) => reaction.split(/\s+/).length >= 8)).toBe(true);
+    expect(`${storyText} ${reactionTexts.join(" ")}`).not.toMatch(
+      /dirección observable|Sobre la mesa convivían|Registro actualizado|Sin tiempo competitivo/i,
+    );
+  });
+
   it("rejects empty blocks and dialogue without a speaker", () => {
     const emptyScene = cloneDefinition();
     emptyScene.prologue.blocks = [];
