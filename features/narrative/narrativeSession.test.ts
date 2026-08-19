@@ -9,8 +9,8 @@ import {
 import type { AnswerResult } from "@/types/game";
 
 const correctResult: AnswerResult = {
-  questionId: "mountains-progressive-image",
-  answer: "las montañas",
+  questionId: "ross-sea-transantarctic-range",
+  answer: "Cordillera Transantártica",
   status: "correct",
   isCorrect: true,
   points: 10,
@@ -25,11 +25,15 @@ function getNarrativeChallenge() {
 
 function reachFirstQuestion() {
   const started = narrativeSessionReducer(initialNarrativeSessionState, { type: "start" });
-  const secondScene = narrativeSessionReducer(started, {
+  const chapterOpening = narrativeSessionReducer(started, {
     type: "advance",
     nextStepType: "scene",
   });
-  return narrativeSessionReducer(secondScene, { type: "advance", nextStepType: "question" });
+  const firstObservation = narrativeSessionReducer(chapterOpening, {
+    type: "advance",
+    nextStepType: "scene",
+  });
+  return narrativeSessionReducer(firstObservation, { type: "advance", nextStepType: "question" });
 }
 
 describe("P-17 narrative session", () => {
@@ -39,15 +43,15 @@ describe("P-17 narrative session", () => {
     expect(
       sequence.map((step) => (step.type === "scene" ? step.scene.id : step.question.id)),
     ).toEqual([
+      "scene-field-context",
       "scene-prologue-recording",
       "scene-all-but-one",
-      "mountains-progressive-image",
+      "ross-sea-transantarctic-range",
       "scene-p17-identification",
       "scene-p17-register",
-      "trajectory-deviation-heat-map",
+      "antarctic-circle-map",
       "scene-deviation-overlay",
-      "scene-camera-limits",
-      "observation-vs-interpretation",
+      "polar-fauna-classification",
       "scene-observation-rule",
       "scene-chapter-stay-out",
       "scene-corridor",
@@ -77,9 +81,9 @@ describe("P-17 narrative session", () => {
         step.type === "question" ? [{ question: step.question.id, page: index + 1 }] : [],
       ),
     ).toEqual([
-      { question: "mountains-progressive-image", page: 3 },
-      { question: "trajectory-deviation-heat-map", page: 6 },
-      { question: "observation-vs-interpretation", page: 9 },
+      { question: "ross-sea-transantarctic-range", page: 4 },
+      { question: "antarctic-circle-map", page: 7 },
+      { question: "polar-fauna-classification", page: 9 },
       { question: "clear-camp-escape", page: 13 },
       { question: "p17-evidence-matrix", page: 16 },
       { question: "p17-route-zip", page: 20 },
@@ -93,7 +97,7 @@ describe("P-17 narrative session", () => {
           : [],
       ),
     ).toEqual(
-      [4, 7, 10, 14, 17, 21, 24, 26].map((reactionPage) => ({
+      [5, 8, 10, 14, 17, 21, 24, 26].map((reactionPage) => ({
         reactionPage,
         nextType: "scene",
       })),
@@ -114,6 +118,9 @@ describe("P-17 narrative session", () => {
           block.text.endsWith("La causa de la trayectoria no pudo determinarse."),
         ),
     ).toBe(true);
+    expect(resolution?.type === "scene" && resolution.scene.blocks.at(-1)?.text).toBe(
+      "Pero, ¿por qué?",
+    );
   });
 
   it("keeps the three chapters and eight evidence entries in narrative order", () => {
@@ -128,8 +135,8 @@ describe("P-17 narrative session", () => {
     ]);
     expect(challenge.notebookEntries.map((entry) => entry.id)).toEqual([
       "note-direction",
-      "note-deviation",
-      "note-register-rule",
+      "note-polar-context",
+      "note-polar-fauna",
       "note-intervention",
       "note-nadir",
       "note-route",
@@ -142,18 +149,20 @@ describe("P-17 narrative session", () => {
         .filter((scene) => scene.presentation === "chapter-opening")
         .map((scene) => [scene.page, scene.title]),
     ).toEqual([
-      [1, "Todos menos uno"],
+      [2, "Todos menos uno"],
       [11, "Mantenerse fuera"],
       [18, "La línea completa"],
     ]);
-    expect(scenes.filter((scene) => scene.title).map((scene) => scene.page)).toEqual([1, 11, 18]);
+    expect(scenes.filter((scene) => scene.title).map((scene) => scene.page)).toEqual([
+      1, 2, 11, 18,
+    ]);
     expect(scenes.map((scene) => scene.presentation)).toEqual([
+      "text-led",
       "chapter-opening",
       "full-bleed",
       "split",
       "text-led",
       "artifact",
-      "text-led",
       "text-led",
       "chapter-opening",
       "split",
@@ -172,10 +181,10 @@ describe("P-17 narrative session", () => {
 
   it("starts in the prologue and advances to the first timed proof", () => {
     const playing = reachFirstQuestion();
-    expect(playing).toMatchObject({ phase: "playing", stepIndex: 2, locked: false });
+    expect(playing).toMatchObject({ phase: "playing", stepIndex: 3, locked: false });
     expect(getNarrativeSequence(getNarrativeChallenge())[playing.stepIndex]).toMatchObject({
       type: "question",
-      question: { id: "mountains-progressive-image" },
+      question: { id: "ross-sea-transantarctic-range" },
     });
   });
 
@@ -213,16 +222,28 @@ describe("P-17 narrative session", () => {
   });
 
   it.each([
-    ["correct", correctResult, false, "cordillera quedó señalada"],
+    ["correct", correctResult, false, "referencia del mapa quedó encajada"],
     [
       "incorrect",
-      { ...correctResult, answer: "mar", status: "incorrect", isCorrect: false, points: 0 },
+      {
+        ...correctResult,
+        answer: "Montes Ellsworth",
+        status: "incorrect",
+        isCorrect: false,
+        points: 0,
+      },
       false,
       "Nora rebobinó",
     ],
     [
       "partial",
-      { ...correctResult, answer: "interior", status: "partial", isCorrect: false, points: 4 },
+      {
+        ...correctResult,
+        answer: "Cordillera de la Península Antártica",
+        status: "partial",
+        isCorrect: false,
+        points: 4,
+      },
       false,
       "Nora rebobinó",
     ],
@@ -230,11 +251,11 @@ describe("P-17 narrative session", () => {
       "timeout",
       { ...correctResult, answer: null, status: "unanswered", isCorrect: false, points: 0 },
       true,
-      "grano terminó por disiparse",
+      "ficha de archivo terminó de revelarse",
     ],
   ] as const)("selects the %s narrative reaction", (_label, result, timedOut, expected) => {
     const reaction = getNarrativeReaction(
-      getNarrativeSequence(getNarrativeChallenge())[2],
+      getNarrativeSequence(getNarrativeChallenge())[3],
       result,
       timedOut,
     );

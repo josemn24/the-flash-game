@@ -40,9 +40,9 @@ horarios, observaciones o recorridos de la misión.
 - **Descripción:** Sigue el rastro de un pingüino que abandona la colonia, protege su recorrido de
   cualquier intervención y escribe únicamente aquello que las imágenes permiten afirmar.
 
-## Guion de 27 páginas
+## Guion de 26 páginas
 
-La experiencia se lee como un cuento continuo. Solo las páginas 1, 11 y 18 anuncian capítulo; las
+La experiencia se lee como un cuento continuo. Solo las páginas 1, 10 y 17 anuncian capítulo; las
 demás evitan la plantilla de título, resumen y CTA dominante.
 
 ### Página 1 · Grabación antigua
@@ -62,15 +62,18 @@ esperaríamos encontrarlo.
 La imagen tardó en desprenderse del ruido. Poco a poco aparecieron una llanura blanca, la línea
 oscura de las montañas y, al fondo, el brillo del agua abierta.
 
+En el borde del fotograma, una referencia de archivo situaba la estación en el sector del mar de
+Ross. La cordillera del fondo todavía no tenía nombre en la ficha.
+
 La colonia se movía hacia el mar con la lentitud de una sola criatura. La mirada podía seguirla
 sin esfuerzo, hasta que una figura se detuvo y rompió la forma del grupo.
 
 Todos siguieron hacia el agua. Todos menos uno.
 
-### Página 3 · Prueba 1: la dirección
+### Página 3 · Prueba 1: la cordillera
 
-La imagen se revela progresivamente. El jugador identifica hacia qué referencia del paisaje se
-orienta el pingüino que abandona la formación.
+La ficha sitúa el registro en el sector del mar de Ross. El jugador identifica el gran sistema
+montañoso que se extiende junto a este sector y marca el paso hacia el interior continental.
 
 ### Página 4 · Identificación
 
@@ -87,44 +90,33 @@ vuelve a encontrarlo. En el margen del cuaderno, Nora escribe P-17 y rodea el c�
 Nora suelta el mando y la cinta vuelve a avanzar. La colonia se hace pequeña junto al mar. P-17
 permanece quieto unos segundos; después gira y continúa hacia las montañas.
 
-—¿Lo has registrado? —pregunta Nora.
+—¿Has registrado el giro? —pregunta Nora.
 
-Asientes sin apartar la mirada de la pantalla. El viento pasa sobre las huellas recientes y
-deshace primero los bordes, luego la forma entera.
+Asientes sin apartar la mirada de la pantalla. El viento empieza a borrar las huellas.
 
-—Guarda lo que la cámara nos ha dado. La razón, si llega alguna vez, tendrá que esperar.
+—Registra lo que muestra la cámara. Todavía no sabemos por qué se ha separado.
 
-### Página 6 · Prueba 2: el desvío
+### Página 6 · Prueba 2: el atlas polar
 
-El jugador señala dónde la trayectoria de P-17 abandona el corredor habitual de la colonia.
+Antes de volver a las trayectorias, Nora abre el atlas de la estación. El jugador identifica en el
+mapa mundial la línea de latitud que delimita aproximadamente la región polar antártica.
 
 ### Página 7 · Trayectorias superpuestas
 
-La reacción aparece junto a las hojas de observación. Nora sujeta el papel translúcido para que no
-lo levante la corriente de la calefacción. Debajo se amontonan cientos de recorridos: líneas
-breves, casi paralelas, que descienden hacia el mar.
+La reacción aparece junto al atlas y conduce de nuevo a las hojas de observación. Nora sujeta el
+papel translúcido para que no lo levante la corriente de la calefacción. Debajo se amontonan cientos
+de recorridos: líneas breves, casi paralelas, que descienden hacia el mar.
 
 Marca una cruz en el lugar donde la trayectoria de P-17 se desprende de las demás. A partir de
 allí, una sola línea atraviesa el blanco del mapa y continúa hacia el interior.
 
-### Página 8 · Lo que una cámara no sabe
+### Página 8 · Prueba 3: fauna polar
 
-—Podríamos decir que está perdido —murmura alguien.
+La prueba aparece como un interludio cultural sobre el entorno antártico. El jugador clasifica seis
+especies según pertenezcan habitualmente a la fauna antártica o a la del Ártico, sin introducir una
+nueva acción de los personajes.
 
-Nora no responde enseguida. Mira otra vez el punto oscuro detenido en el monitor, abre el cuaderno
-por una página limpia y traza una línea vertical de arriba abajo.
-
-A un lado copia lo que ha resistido al rebobinado: la hora, el rumbo, cuarenta y dos minutos sin
-regresar a la colonia. Al otro quedan palabras que ninguna cámara ha registrado: perdido, enfermo,
-decidido.
-
-—Esto pertenece a la imagen. Lo demás, por ahora, nos pertenece a nosotros.
-
-### Página 9 · Prueba 3: observación o interpretación
-
-El jugador separa hechos registrados de interpretaciones no demostradas.
-
-### Página 10 · El primer cuaderno
+### Página 9 · El primer cuaderno
 
 La reacción cierra el capítulo. Al caer la tarde, Nora cierra el primer cuaderno. Afuera, el viento
 hace temblar la pared de la estación; dentro solo quedan el zumbido del monitor y el olor seco del
@@ -134,15 +126,15 @@ En las páginas permanecen una muesca blanca, una hora, un punto del mapa y una 
 aquello explica por qué P-17 se ha separado. Pero es suficiente para reconocer su rastro si vuelve
 a aparecer.
 
-### Página 11 · Mantenerse fuera
+### Página 10 · Mantenerse fuera
 
 Durante la noche el viento cambió de costado. Las lonas golpearon los mástiles hasta el amanecer y
 la nieve cubrió las marcas alrededor de las tiendas.
 
 Con la primera claridad, una figura oscura apareció al otro lado del campamento base. Nora
-reconoció la muesca del pecho antes de que nadie pronunciara el código.
+reconoció la muesca del pecho antes de que alguien pudiera identificarlo.
 
-### Página 12 · El corredor
+### Página 11 · El corredor
 
 P-17 avanzaba hacia el corredor este, despacio y sin desviarse. Entre él y la llanura, el
 campamento estrechaba el paso con cajas, trineos y un trípode que el equipo había instalado durante
@@ -154,11 +146,11 @@ animal, sino todo lo que ellos habían dejado sobre la nieve.
 
 —Esas cosas las pusimos nosotros —dijo Nora—. Tienen que desaparecer antes de que llegue.
 
-### Página 13 · Prueba 4: despejar el paso
+### Página 12 · Prueba 4: despejar el paso
 
 El jugador mueve únicamente el equipo humano y saca el trípode por la salida de servicio.
 
-### Página 14 · Campamento despejado
+### Página 13 · Campamento despejado
 
 La reacción se integra sobre el nuevo plano del corredor vacío. Cuando el último objeto quedó
 fuera, el paso volvió a ser una franja de nieve sin marcas humanas. El equipo retrocedió hasta las
@@ -168,7 +160,7 @@ P-17 atravesó el campamento sin variar el rumbo. Nadie se acercó. Durante unos
 el viento entre los cables y el roce leve de sus patas sobre la nieve. Después desapareció detrás
 de una elevación, todavía en dirección al interior.
 
-### Página 15 · Mensaje de Nadir
+### Página 14 · Mensaje de Nadir
 
 Dos días más tarde, un chasquido despertó la sala de comunicaciones. La pantalla se encendió con un
 destello azul y dejó entrar una imagen enviada desde Nadir.
@@ -180,32 +172,31 @@ marca en el pecho, un rumbo y una franja de tiempo.
 Nadir no enviaba una respuesta. Enviaba tres detalles que, puestos uno junto a otro, quizá
 permitieran formular una pregunta mejor.
 
-### Página 16 · Prueba 5: matriz de evidencias
+### Página 15 · Prueba 5: matriz de evidencias
 
 El jugador busca la única identificación compatible simultáneamente con los tres registros.
 
-### Página 17 · Compatible con P-17
+### Página 16 · Compatible con P-17
 
-La reacción abre una página breve. La muesca podía repetirse en otro animal. También el rumbo o la
-hora, tomados por separado, demostraban muy poco. Pero las tres señales terminaban en la misma
-fila.
+La reacción abre una página breve. La muesca podía aparecer en más de un animal. El rumbo, por sí
+solo, tampoco bastaba; lo mismo ocurría con la hora. Pero los tres datos juntos apuntaban al mismo
+candidato.
 
-Nadie dijo que lo hubieran encontrado. Nora acercó el cuaderno, mojó la punta del lápiz en los
-labios y eligió con cuidado las únicas palabras que los datos permitían.
+Nadie se apresuró a darlo por encontrado. Nora acercó el cuaderno y escribió con cuidado:
 
 Compatible con P-17.
 
-Después cerró la carpeta. La duda no era un defecto del registro; era la parte que todavía
-pertenecía a la nieve.
+Después cerró la carpeta. Habían encontrado una coincidencia, no una explicación. El motivo de aquel
+desvío seguía perdido en la nieve.
 
-### Página 18 · La línea completa
+### Página 17 · La línea completa
 
 El viento borró las huellas poco después de cada paso. Una cámara lo vio salir; otra lo encontró
 mucho más tarde. Entre ambas quedaron horas de oscuridad y kilómetros de nieve sin testigos.
 
 Ninguna mirada había contemplado el viaje entero. Solo quedaban sus fragmentos.
 
-### Página 19 · Seis registros
+### Página 18 · Seis registros
 
 Nora apagó la luz principal y extendió seis registros bajo la lámpara: la colonia, el primer
 desvío, la base, H-3, Nadir y una última cámara orientada hacia el interior.
@@ -216,11 +207,11 @@ horas que nadie había observado; no podían llenarse con recuerdos ni con deseo
 Nora desplazó la primera ficha sobre la cuadrícula. Los fragmentos no contarían qué había ocurrido
 en los huecos, pero podían revelar si pertenecían a un mismo recorrido.
 
-### Página 20 · Prueba 6: reconstruir el recorrido
+### Página 19 · Prueba 6: reconstruir el recorrido
 
 El jugador conecta los seis registros en orden y completa el único recorrido Zip válido.
 
-### Página 21 · Una trayectoria continua
+### Página 20 · Una trayectoria continua
 
 La reacción aparece sobre el tablero completo. Cuando la última unión ocupó su lugar, la línea
 atravesó los seis registros sin romperse. Nacía junto a la colonia, pasaba por el campamento y
@@ -229,7 +220,7 @@ Nadir, y terminaba en el blanco del interior.
 No mostraba lo ocurrido entre una cámara y la siguiente. Pero ninguno de los fragmentos la
 contradecía. Por primera vez, el recorrido podía contemplarse de una sola mirada.
 
-### Página 22 · Una historia no es una causa
+### Página 21 · Una historia no es una causa
 
 Alguien dejó escapar el aire y dijo que por fin tenían la historia. Nora no contestó. Observó la
 línea azul, tan limpia sobre el mapa que parecía contener una respuesta.
@@ -240,30 +231,30 @@ Con el recorrido completo, ciertos verbos acudían solos: buscaba, huía, querí
 escribió en una hoja aparte y luego le dio la vuelta. Ninguna de las seis cámaras había visto nada
 de aquello.
 
-### Página 23 · Prueba 7: cronología
+### Página 22 · Prueba 7: cronología
 
 El jugador ordena únicamente los hechos registrados, sin añadir una causa.
 
-### Página 24 · La última hoja
+### Página 23 · La última hoja
 
-La reacción conduce a la última cámara, que mostraba una llanura tan abierta que resultaba difícil
-medir las distancias. P-17 avanzaba en ella como un punto oscuro; detrás, sus huellas eran la única
-escala.
+La reacción conduce a la última cámara, que mostraba una llanura tan extensa que las distancias se
+volvían difíciles de calcular. P-17 avanzaba como un punto oscuro; sus huellas eran la única
+referencia sobre la nieve.
 
-Se detuvo una vez, sacudió la nieve de las plumas y continuó. Por un instante el viento lo borró de
-la imagen. Cuando volvió a aparecer, era más pequeño y estaba más cerca de las montañas.
+Se detuvo una vez, sacudió la nieve de las plumas y continuó. Durante un instante, el viento lo
+ocultó. Cuando volvió a verse, parecía más pequeño y estaba más cerca de las montañas.
 
-—Esta es la última hoja —dijo Nora—. La frase no puede llegar más lejos que la imagen.
+—Esta es la última hoja —dijo Nora—. A partir de aquí, solo podemos describir lo que vemos.
 
-Nadie respondió. La cinta siguió corriendo unos segundos después de que P-17 desapareciera en el
-grano.
+Nadie respondió. La cinta siguió avanzando unos segundos después de que P-17 desapareciera entre el
+ruido de la grabación.
 
-### Página 25 · Prueba 8: registro final
+### Página 24 · Prueba 8: registro final
 
 El jugador localiza la primera interpretación no demostrada y la sustituye por el límite correcto
 de la evidencia.
 
-### Página 26 · Cierre del registro
+### Página 25 · Cierre del registro
 
 La reacción queda incorporada al documento. Nora leyó el párrafo en voz baja. Allí estaban el mar,
 el campamento, Nadir y las montañas; también una respuesta que nadie había visto. La tachó hasta
@@ -276,7 +267,7 @@ dejaba intacto, detenido justo donde terminaban las imágenes. La hoja termina e
 > compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo
 > determinarse.
 
-### Página 27 · Epílogo
+### Página 26 · Epílogo
 
 La imagen se funde a negro.
 
@@ -289,30 +280,27 @@ pero siempre describe una acción dentro de la escena y evita el tono de correcc
 
 ### Después de la prueba 1
 
-- **Acierto:** La cordillera quedó señalada en el monitor. Nora hizo retroceder la cinta hasta el
-  instante preciso del giro.
-- **Error o parcial:** Nora rebobinó unos segundos. Al abrirse de nuevo el plano, el mar quedó a un
-  lado y las montañas al otro.
-- **Tiempo:** El grano terminó por disiparse. Debajo apareció el giro: desde la colonia hacia la
-  línea de montañas.
+- **Acierto:** La referencia del mapa quedó encajada: el registro procede del mar de Ross y la
+  cordillera del fondo es la Transantártica. Nora hizo retroceder la cinta hasta el instante preciso
+  del giro.
+- **Error o parcial:** Nora rebobinó unos segundos. La cordillera seguía sin nombre en la ficha; solo
+  quedaban el mar de Ross a un lado y el interior al otro.
+- **Tiempo:** La ficha de archivo terminó de revelarse: mar de Ross, Cordillera Transantártica y un
+  giro desde la colonia hacia el interior.
 
 ### Después de la prueba 2
 
-- **Acierto:** La marca cayó en el sector C3, allí donde una línea se apartaba del haz que descendía
-  hacia el mar.
-- **Error o parcial:** Nora desplazó el papel translúcido unos milímetros. Solo entonces los dos
-  recorridos se separaron con claridad.
-- **Tiempo:** La superposición terminó de ajustarse y dejó al descubierto el desvío, en el sector
-  C3.
+- **Acierto:** Nora trazó el Círculo Polar Antártico en el margen del atlas. La estación quedaba
+  dentro de la región polar; después volvió al registro de P-17.
+- **Error o parcial:** Nora volvió a extender el atlas. Antes de seguir las trayectorias, había que
+  distinguir el límite polar de las líneas que cruzaban el hemisferio.
+- **Tiempo:** La línea quedó anotada en el atlas: el Círculo Polar Antártico. El mapa volvió a
+  cerrarse sobre la mesa de observación.
 
 ### Después de la prueba 3
 
-- **Acierto:** Las últimas notas quedaron a ambos lados de la línea. Nora apartó las palabras que
-  la cámara nunca había visto.
-- **Error o parcial:** Nora devolvió una nota a la mesa y volvió a leerla en voz baja. La frase decía
-  más que las imágenes.
-- **Tiempo:** Antes de cerrar el cuaderno, el equipo separó las medidas de todo aquello que solo
-  podía imaginar.
+No se añade feedback narrativo: esta prueba funciona como un interludio cultural y la historia
+continúa directamente con el cierre del primer cuaderno.
 
 ### Después de la prueba 4
 
@@ -325,11 +313,12 @@ pero siempre describe una acción dentro de la escena y evita el tono de correcc
 
 ### Después de la prueba 5
 
-- **Acierto:** La marca, el rumbo y la hora terminaron sobre la misma fila. Nora mantuvo el dedo
-  junto al código P-17.
-- **Error o parcial:** Nora recorrió de nuevo las filas. Dos candidatos coincidían a medias; solo
-  uno reunía los tres detalles.
-- **Tiempo:** Cuando la comparación terminó, una sola fila permaneció abierta sobre la mesa: P-17.
+- **Acierto:** Las tres señales coincidieron en el candidato A. La identificación compatible quedó
+  separada de cualquier explicación sobre su conducta.
+- **Error o parcial:** Nora volvió a recorrer las filas. Dos candidatos coincidían a medias; solo uno
+  reunía los tres datos.
+- **Tiempo:** La comparación quedó incompleta. Sin las tres coincidencias, ninguna fila podía darse
+  por compatible.
 
 ### Después de la prueba 6
 
@@ -360,95 +349,92 @@ pero siempre describe una acción dentro de la escena y evita el tono de correcc
 
 ## Tabla maestra de pruebas
 
-|   # | ID propuesto                    | Formato                   |    Tiempo |  Puntos | Resultado evaluado                                    |
-| --: | ------------------------------- | ------------------------- | --------: | ------: | ----------------------------------------------------- |
-|   1 | `mountains-progressive-image`   | Imagen progresiva         |      24 s |      10 | Identificar las montañas o el interior como dirección |
-|   2 | `trajectory-deviation-heat-map` | Mapa de calor             |      25 s |      10 | Localizar el inicio del desvío                        |
-|   3 | `observation-vs-interpretation` | Clasificación             |      35 s |      12 | Separar hechos de hipótesis                           |
-|   4 | `clear-camp-escape`             | Escape                    |      45 s |      12 | Retirar el trípode sin mover al animal                |
-|   5 | `p17-evidence-matrix`           | Elección sobre matriz     |      35 s |      12 | Seleccionar P-17                                      |
-|   6 | `p17-route-zip`                 | Zip                       |      45 s |      14 | Reconstruir el recorrido completo                     |
-|   7 | `p17-observation-order`         | Ordenación                |      35 s |      12 | Ordenar los cinco hechos                              |
-|   8 | `p17-final-record`              | Reconstrucción de errores |      40 s |      18 | Eliminar la inferencia causal                         |
-|     | **Total**                       |                           | **284 s** | **100** |                                                       |
+|   # | ID propuesto                    | Formato                   |    Tiempo |  Puntos | Resultado evaluado                       |
+| --: | ------------------------------- | ------------------------- | --------: | ------: | ---------------------------------------- |
+|   1 | `ross-sea-transantarctic-range` | Elección geográfica       |      24 s |      10 | Identificar la Cordillera Transantártica |
+|   2 | `antarctic-circle-map`          | Elección sobre mapa       |      25 s |      10 | Identificar el Círculo Polar Antártico   |
+|   3 | `polar-fauna-classification`    | Clasificación             |      35 s |      12 | Distinguir fauna antártica y ártica      |
+|   4 | `clear-camp-escape`             | Escape                    |      45 s |      12 | Retirar el trípode sin mover al animal   |
+|   5 | `p17-evidence-matrix`           | Elección sobre matriz     |      35 s |      12 | Comparar tres registros                  |
+|   6 | `p17-route-zip`                 | Zip                       |      45 s |      14 | Reconstruir el recorrido completo        |
+|   7 | `p17-observation-order`         | Ordenación                |      35 s |      12 | Ordenar los cinco hechos                 |
+|   8 | `p17-final-record`              | Reconstrucción de errores |      40 s |      18 | Eliminar la inferencia causal            |
+|     | **Total**                       |                           | **284 s** | **100** |                                          |
 
 Los 284 segundos son límites máximos, no duración esperada. La interacción competitiva objetivo es
 de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro minutos.
 
 ## Especificación de las pruebas
 
-### 1 · La dirección
+### 1 · La cordillera
 
-- **Tipo:** `progressive-image`.
-- **Enunciado:** «¿Hacia qué referencia del paisaje se orienta el pingüino que abandona la
-  formación?»
-- **Respuesta principal:** `las montañas`.
-- **Respuestas aceptadas:** `montañas`, `las montañas`, `cordillera`, `la cordillera`, `interior`,
-  `hacia el interior`.
-- **Revelado:** 12 segundos.
+- **Tipo:** `multiple-choice`.
+- **Contexto visible:** «Sector del mar de Ross · Registro 01».
+- **Enunciado:** «¿Qué cordillera marca el paso hacia el interior antártico?»
+- **Opciones:** `Cordillera Transantártica`, `Montes Ellsworth`, `Cordillera de la Península
+Antártica`, `Montañas Prince Charles`.
+- **Respuesta correcta:** `Cordillera Transantártica`.
 - **Tiempo total:** 24 segundos.
-- **Puntos:** 10, con ajuste por velocidad.
-- **Recurso:** imagen original de colonia, mar a la derecha, montañas a la izquierda y P-17 en el
-  centro. La solución no debe depender únicamente del color.
-- **Explicación:** «P-17 gira hacia la línea de montañas, en dirección al interior. La imagen
-  permite registrar una dirección, no una intención.»
-- **Cuaderno:** «P-17: muesca blanca en el lado izquierdo del pecho. Dirección inicial: montañas,
-  hacia el interior.»
-- **Feedback correcto:** «La cordillera quedó señalada en el monitor. Nora hizo retroceder la cinta
-  hasta el instante preciso del giro.»
-- **Feedback incorrecto:** «Nora rebobinó unos segundos. Al abrirse de nuevo el plano, el mar quedó
-  a un lado y las montañas al otro.»
-- **Feedback por tiempo:** «El grano terminó por disiparse. Debajo apareció el giro: desde la
-  colonia hacia la línea de montañas.»
+- **Puntos:** 10.
+- **Recurso:** sin imagen propia en la prueba; la escena anterior ya muestra la colonia, el mar de
+  Ross y la cordillera. La pregunta conserva únicamente el contexto geográfico necesario.
+- **Explicación:** «El sector del mar de Ross está flanqueado por la Cordillera Transantártica, que
+  marca el paso desde la costa hacia el interior antártico. El registro permite describir la
+  dirección de P-17, no su intención.»
+- **Cuaderno:** «P-17: muesca blanca en el lado izquierdo del pecho. Registro 01 situado en el sector
+  del mar de Ross. Dirección inicial: hacia el interior, frente a la Cordillera Transantártica.»
+- **Feedback correcto:** «La referencia del mapa quedó encajada: el registro procede del mar de Ross
+  y la cordillera del fondo es la Transantártica. Nora hizo retroceder la cinta hasta el instante
+  preciso del giro.»
+- **Feedback incorrecto:** «Nora rebobinó unos segundos. La cordillera seguía sin nombre en la ficha;
+  solo quedaban el mar de Ross a un lado y el interior al otro.»
+- **Feedback por tiempo:** «La ficha de archivo terminó de revelarse: mar de Ross, Cordillera
+  Transantártica y un giro desde la colonia hacia el interior.»
 
-### 2 · La anomalía
+### 2 · El atlas polar
 
-- **Tipo:** `heat-map`.
-- **Enunciado:** «Señala el punto donde la trayectoria de P-17 abandona el corredor habitual hacia
-  el mar.»
-- **Superficie:** mapa original de 1600 × 1000 px.
-- **Objetivo normalizado:** `x = 0.42`, `y = 0.48`.
-- **Radio de puntuación completa:** `0.06`.
-- **Radio de tolerancia:** `0.16`.
-- **Etiqueta del objetivo:** `Inicio del desvío de P-17`.
+- **Tipo:** `multiple-choice`.
+- **Contexto visible:** «Atlas de la estación · Hemisferio sur».
+- **Enunciado:** «¿Qué línea de latitud delimita aproximadamente la región polar antártica?»
+- **Recurso:** mapa mundial con los principales círculos de latitud y la Antártida en el extremo
+  sur.
+- **Fuente:** [World map with major latitude circles.svg](https://commons.wikimedia.org/wiki/File:World_map_with_major_latitude_circles.svg), de Thesevenseas, licencia CC BY-SA 3.0. Se conserva el archivo original sin modificar.
+- **Opciones:** `Ecuador`, `Trópico de Capricornio`, `Círculo Polar Antártico`, `Meridiano de
+Greenwich`.
+- **Respuesta correcta:** `Círculo Polar Antártico`.
 - **Tiempo:** 25 segundos.
-- **Puntos:** 10, proporcionales a distancia y velocidad.
-- **Explicación:** «La mayoría de recorridos continúa hacia el mar. P-17 abandona esa concentración
-  en el punto marcado y mantiene una línea hacia el interior.»
-- **Cuaderno:** «Inicio del desvío localizado en el sector C3 del mapa de observación.»
-- **Feedback correcto:** «La marca cayó en el sector C3, allí donde una línea se apartaba del haz
-  que descendía hacia el mar.»
-- **Feedback parcial o incorrecto:** «Nora desplazó el papel translúcido unos milímetros. Solo
-  entonces los dos recorridos se separaron con claridad.»
-- **Feedback por tiempo:** «La superposición terminó de ajustarse y dejó al descubierto el desvío,
-  en el sector C3.»
+- **Puntos:** 10.
+- **Explicación:** «El Círculo Polar Antártico es la línea de latitud situada aproximadamente a 66
+  grados y 33 minutos al sur del ecuador. Delimita la región polar antártica.»
+- **Cuaderno:** «Contexto geográfico: el Círculo Polar Antártico delimita aproximadamente la región
+  polar donde se encuentra la estación.»
+- **Feedback correcto:** «Nora trazó el Círculo Polar Antártico en el margen del atlas. La estación
+  quedaba dentro de la región polar; después volvió al registro de P-17.»
+- **Feedback parcial o incorrecto:** «Nora volvió a extender el atlas. Antes de seguir las
+  trayectorias, había que distinguir el límite polar de las líneas que cruzaban el hemisferio.»
+- **Feedback por tiempo:** «La línea quedó anotada en el atlas: el Círculo Polar Antártico. El mapa
+  volvió a cerrarse sobre la mesa de observación.»
 
-### 3 · Hecho o interpretación
+### 3 · Fauna polar
 
 - **Tipo:** `classification`.
-- **Enunciado:** «Clasifica las notas. Una observación describe algo registrado; una interpretación
-  atribuye una causa, intención o estado que no se ha medido.»
-- **Categorías:** `Hecho observado`; `Interpretación no demostrada`.
+- **Contexto visible:** «Guía de fauna polar · Dos regiones extremas».
+- **Enunciado:** «Clasifica cada especie según la región polar en la que vive habitualmente.»
+- **Categorías:** `Antártida`; `Ártico`.
 - **Elementos:**
-  - «P-17 gira hacia el interior» → Hecho observado.
-  - «Se separa de la dirección de la colonia» → Hecho observado.
-  - «No regresa al grupo durante el periodo observado» → Hecho observado.
-  - «Mantiene el rumbo durante 42 minutos de grabación» → Hecho observado.
-  - «Está enfermo» → Interpretación no demostrada.
-  - «Sigue un sonido» → Interpretación no demostrada.
-  - «Ha perdido el rumbo» → Interpretación no demostrada.
-  - «Ha decidido morir» → Interpretación no demostrada.
+  - «Pingüino emperador» → Antártida.
+  - «Pingüino de Adelia» → Antártida.
+  - «Foca de Weddell» → Antártida.
+  - «Oso polar» → Ártico.
+  - «Morsa» → Ártico.
+  - «Zorro ártico» → Ártico.
 - **Tiempo:** 35 segundos.
 - **Puntos:** 12, con crédito por cada elemento correctamente clasificado.
-- **Explicación:** «La cámara registra posiciones, direcciones y tiempos. No registra enfermedad,
-  intención, percepción ni conocimiento.»
-- **Cuaderno:** «Regla de registro: describir movimiento, posición y tiempo; no atribuir intención.»
-- **Feedback correcto:** «Las últimas notas quedaron a ambos lados de la línea. Nora apartó las
-  palabras que la cámara nunca había visto.»
-- **Feedback parcial o incorrecto:** «Nora devolvió una nota a la mesa y volvió a leerla en voz
-  baja. La frase decía más que las imágenes.»
-- **Feedback por tiempo:** «Antes de cerrar el cuaderno, el equipo separó las medidas de todo
-  aquello que solo podía imaginar.»
+- **Explicación:** «El pingüino emperador, el pingüino de Adelia y la foca de Weddell son especies
+  antárticas. El oso polar, la morsa y el zorro ártico viven en la región ártica.»
+- **Cuaderno:** «Guía de fauna polar: pingüinos emperador y de Adelia, y foca de Weddell pertenecen
+  a la fauna antártica; oso polar, morsa y zorro ártico, a la fauna del Ártico.»
+- **Feedback narrativo:** No se añade reacción; la historia continúa con la escena siguiente.
 
 ### 4 · Despejar el paso
 
@@ -482,29 +468,31 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 
 - **Tipo de implementación recomendado:** `multiple-choice` con una imagen de matriz; no utilizar la
   matriz visual 3 × 3 de patrones existente.
-- **Enunciado:** «La cámara de Nadir registra una muesca blanca izquierda, entrada desde el nordeste
-  y una ventana de viaje de 50 horas. ¿Qué identificación es compatible con los tres datos?»
+- **Contexto visible:** «Registro de Nadir: Señal blanca en el lado izquierdo del pecho · Trayectoria
+  del nordeste al suroeste · Casi dos días después del inicio».
+- **Enunciado:** «¿Qué candidato coincide completamente con el registro?»
 - **Matriz visible:**
 
-  | Identificación | Marca de pecho          | Rumbo registrado | Ventana compatible |
-  | -------------- | ----------------------- | ---------------- | ------------------ |
-  | P-17           | Muesca blanca izquierda | 240°             | 46–54 h            |
-  | P-23           | Dos puntos blancos      | 240°             | 46–54 h            |
-  | P-41           | Muesca blanca izquierda | 190°             | 14–18 h            |
+  | Candidato   | Marca de pecho          | Rumbo registrado | Ventana compatible |
+  | ----------- | ----------------------- | ---------------- | ------------------ |
+  | Candidato A | Muesca blanca izquierda | 240°             | 46–54 h            |
+  | Candidato B | Dos puntos blancos      | 240°             | 46–54 h            |
+  | Candidato C | Muesca blanca izquierda | 190°             | 14–18 h            |
 
-- **Opciones:** `P-17`; `P-23`; `P-41`; `No hay ninguna identificación compatible`.
-- **Respuesta:** `P-17`.
+- **Opciones:** `Candidato A`; `Candidato B`; `Candidato C`; `Ningún candidato`.
+- **Respuesta:** `Candidato A`.
 - **Tiempo:** 35 segundos.
 - **Puntos:** 12, binarios y ajustados por velocidad.
-- **Explicación:** «P-17 es la única fila que coincide en marca, rumbo y tiempo. El resultado
-  identifica de forma compatible al individuo observado; no explica su conducta.»
-- **Cuaderno:** «Nadir: identificación compatible con P-17 por marca, rumbo y ventana temporal.»
-- **Feedback correcto:** «La marca, el rumbo y la hora terminaron sobre la misma fila. Nora mantuvo
-  el dedo junto al código P-17.»
-- **Feedback incorrecto:** «Nora recorrió de nuevo las filas. Dos candidatos coincidían a medias;
-  solo uno reunía los tres detalles.»
-- **Feedback por tiempo:** «Cuando la comparación terminó, una sola fila permaneció abierta sobre
-  la mesa: P-17.»
+- **Explicación:** «El candidato A es la única fila que coincide en marca, rumbo y ventana temporal.
+  La coincidencia permite continuar la identificación, pero no explica la conducta del animal.»
+- **Cuaderno:** «Nadir: el candidato A coincide con la marca, el rumbo y la ventana temporal; la
+  identificación queda pendiente.»
+- **Feedback correcto:** «Las tres señales coincidieron en el candidato A. La identificación compatible
+  quedó separada de cualquier explicación sobre su conducta.»
+- **Feedback incorrecto:** «Nora volvió a recorrer las filas. Dos candidatos coincidían a medias; solo
+  uno reunía los tres datos.»
+- **Feedback por tiempo:** «La comparación quedó incompleta. Sin las tres coincidencias, ninguna fila
+  podía darse por compatible.»
 
 ### 6 · Reconstruir el recorrido
 
@@ -592,9 +580,10 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 
 ## Dependencias entre pruebas
 
-- La prueba 1 introduce P-17, su marca y la dirección inicial.
-- La prueba 2 fija el punto del desvío.
-- La prueba 3 establece la regla epistemológica que gobierna el resto del desafío.
+- La prueba 1 introduce P-17, sitúa el registro en el mar de Ross y aporta el marco geográfico de la
+  dirección inicial.
+- La prueba 2 sitúa la misión dentro del contexto geográfico de la región polar antártica.
+- La prueba 3 amplía el contexto natural de la misión y distingue la fauna de los dos polos.
 - La prueba 4 aplica el protocolo de no intervención a las acciones del equipo humano.
 - La prueba 5 reutiliza marca, rumbo y tiempo sin convertir la identificación en una causa.
 - La prueba 6 integra los registros espaciales.
@@ -607,7 +596,9 @@ de aproximadamente cuatro minutos; las escenas deben aportar otros tres o cuatro
 - La historia puede leerse de principio a fin como un único cuento.
 - Ninguna prueba podría trasladarse a otro relato sin perder una parte sustancial de su sentido.
 - Toda cifra necesaria aparece antes o dentro de la prueba correspondiente.
-- Todas las soluciones son únicas y pueden obtenerse sin conocimiento externo.
+- Las pruebas culturales están contextualizadas por la escena, el enunciado o el material visual y
+  no dependen de un dato operativo oculto. Sus soluciones son únicas y sus distractores pertenecen
+  al mismo campo de conocimiento.
 - Ningún fallo impide resolver una prueba posterior.
 - P-17 nunca se convierte en una pieza que el jugador pueda mover o dirigir.
 - El equipo solo manipula su propio material y mantiene la distancia de seguridad.

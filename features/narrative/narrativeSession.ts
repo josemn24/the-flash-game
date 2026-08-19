@@ -60,6 +60,7 @@ export function getNarrativeReaction(
   timedOut: boolean,
 ): NarrativeTextBlock[] {
   if (!result || step?.type !== "question" || step.question.id !== result.questionId) return [];
+  if (!step.reactions) return [];
   return step.reactions[getNarrativeOutcome(result, timedOut)];
 }
 

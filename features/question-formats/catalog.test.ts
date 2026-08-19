@@ -13,7 +13,6 @@ import {
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
-import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
 import { isValidEscapeConfiguration } from "@/lib/escape";
@@ -371,15 +370,19 @@ describe("question format catalog", () => {
     expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(284);
 
     const direction = narrativeQuestions[0];
-    expect(direction.type).toBe("progressive-image");
-    if (direction.type !== "progressive-image") throw new Error("Expected progressive image");
-    expect(isValidProgressiveImageConfiguration(direction)).toBe(true);
-    for (const answer of ["montañas", "la cordillera", "hacia el interior"]) {
-      expect(evaluateAnswer({ question: direction, answer, timeUsed: 0 })).toMatchObject({
-        status: "correct",
-        points: 10,
-      });
-    }
+    expect(direction.type).toBe("multiple-choice");
+    if (direction.type !== "multiple-choice") throw new Error("Expected multiple choice");
+    expect(direction.options).toContain("Cordillera Transantártica");
+    expect(
+      evaluateAnswer({
+        question: direction,
+        answer: "Cordillera Transantártica",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 10 });
+    expect(
+      evaluateAnswer({ question: direction, answer: "Montes Ellsworth", timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
 
     const deviation = narrativeQuestions[1];
     expect(deviation).toMatchObject({
@@ -576,9 +579,9 @@ describe("question format catalog", () => {
     );
     const narrativeDefinition = challengeDefinitions["antarctica-narrative-definition"];
     expect(getNarrativeQuestionIds(narrativeDefinition)).toEqual([
-      "mountains-progressive-image",
-      "trajectory-deviation-heat-map",
-      "observation-vs-interpretation",
+      "ross-sea-transantarctic-range",
+      "antarctic-circle-map",
+      "polar-fauna-classification",
       "clear-camp-escape",
       "p17-evidence-matrix",
       "p17-route-zip",

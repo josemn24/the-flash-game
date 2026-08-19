@@ -77,8 +77,11 @@ export function validateNarrativeChallengeDefinition(definition: NarrativeChalle
         return;
       }
 
+      const reactions = step.reactions;
+      if (!reactions) return;
+
       narrativeOutcomes.forEach((outcome) => {
-        const blocks = step.reactions[outcome];
+        const blocks = reactions[outcome];
         if (!Array.isArray(blocks)) {
           throw new Error(
             `Narrative question "${step.questionId}" is missing the "${outcome}" reaction.`,

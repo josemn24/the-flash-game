@@ -77,7 +77,7 @@ export type NarrativeQuestionStepDefinition = {
   type: "question";
   questionId: QuestionId;
   unlockEntryIds: string[];
-  reactions: NarrativeReactionMap;
+  reactions?: NarrativeReactionMap;
 };
 
 export type NarrativeStepDefinition =
@@ -167,7 +167,7 @@ export type NarrativeQuestionStep = {
   type: "question";
   question: Question;
   unlockEntryIds: string[];
-  reactions: NarrativeReactionMap;
+  reactions?: NarrativeReactionMap;
 };
 
 export type NarrativeStep = NarrativeSceneStep | NarrativeQuestionStep;

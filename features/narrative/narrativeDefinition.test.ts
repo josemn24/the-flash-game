@@ -74,7 +74,7 @@ describe("narrative challenge definition", () => {
     );
 
     expect(storyText.split(/\s+/).length).toBeGreaterThanOrEqual(1_000);
-    expect(reactionTexts).toHaveLength(24);
+    expect(reactionTexts).toHaveLength(21);
     expect(reactionTexts.every((reaction) => reaction.split(/\s+/).length >= 8)).toBe(true);
     expect(`${storyText} ${reactionTexts.join(" ")}`).not.toMatch(
       /dirección observable|Sobre la mesa convivían|Registro actualizado|Sin tiempo competitivo/i,
@@ -157,13 +157,13 @@ describe("narrative challenge definition", () => {
 
   it("rejects incomplete scoring and totals other than 100", () => {
     const missing = cloneDefinition();
-    delete missing.questionPoints["trajectory-deviation-heat-map"];
+    delete missing.questionPoints["antarctic-circle-map"];
     expect(() => validateNarrativeChallengeDefinition(missing)).toThrow(
       "missing points for questions",
     );
 
     const wrongTotal = cloneDefinition();
-    wrongTotal.questionPoints["trajectory-deviation-heat-map"] = 11;
+    wrongTotal.questionPoints["antarctic-circle-map"] = 11;
     expect(() => validateNarrativeChallengeDefinition(wrongTotal)).toThrow(
       "must add up to 100 points",
     );

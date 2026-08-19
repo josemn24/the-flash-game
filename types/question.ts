@@ -21,6 +21,7 @@ export type BaseQuestion = {
   category: string;
   tags: QuestionTags;
   question: string;
+  questionContext?: string;
   timeLimit: number;
   points: number;
   explanation: string;

@@ -13,37 +13,44 @@ function getP17Questions() {
 }
 
 describe("P-17 proofs", () => {
-  it("accepts only observable mountain references in the progressive image", () => {
+  it("identifies the Transantarctic Mountains from the Ross Sea context", () => {
     const question = getP17Questions()[0];
-    expect(question.type).toBe("progressive-image");
-    if (question.type !== "progressive-image") throw new Error("Expected progressive image");
+    expect(question.type).toBe("multiple-choice");
+    if (question.type !== "multiple-choice") throw new Error("Expected multiple choice");
 
-    expect(evaluateAnswer({ question, answer: "la cordillera", timeUsed: 0 })).toMatchObject({
+    expect(
+      evaluateAnswer({ question, answer: "Cordillera Transantártica", timeUsed: 0 }),
+    ).toMatchObject({
       status: "correct",
       points: 10,
     });
-    expect(evaluateAnswer({ question, answer: "el mar", timeUsed: 0 })).toMatchObject({
+    expect(evaluateAnswer({ question, answer: "Montes Ellsworth", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: 0,
+      points: -2,
     });
   });
 
-  it("scores the exact trajectory deviation point", () => {
+  it("identifies the Antarctic Circle on a southern hemisphere map", () => {
     const question = getP17Questions()[1];
-    expect(question.type).toBe("heat-map");
-    if (question.type !== "heat-map") throw new Error("Expected heat map");
+    expect(question.type).toBe("multiple-choice");
+    if (question.type !== "multiple-choice") throw new Error("Expected multiple choice");
 
-    expect(evaluateAnswer({ question, answer: question.target, timeUsed: 0 })).toMatchObject({
+    expect(
+      evaluateAnswer({
+        question,
+        answer: "Círculo Polar Antártico",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({
       status: "correct",
       points: 10,
     });
-    expect(evaluateAnswer({ question, answer: { x: 0.9, y: 0.9 }, timeUsed: 0 })).toMatchObject({
-      status: "incorrect",
-      points: 0,
-    });
+    expect(
+      evaluateAnswer({ question, answer: "Trópico de Capricornio", timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: -2 });
   });
 
-  it("separates observations from unsupported interpretations", () => {
+  it("classifies species by polar region", () => {
     const question = getP17Questions()[2];
     expect(question.type).toBe("classification");
     if (question.type !== "classification") throw new Error("Expected classification");
@@ -55,8 +62,8 @@ describe("P-17 proofs", () => {
       status: "correct",
       points: 12,
     });
-    expect(answer["Está enfermo"]).toBe("Interpretación no demostrada");
-    expect(answer["P-17 gira hacia el interior"]).toBe("Hecho observado");
+    expect(answer["Pingüino emperador"]).toBe("Antártida");
+    expect(answer["Oso polar"]).toBe("Ártico");
   });
 
   it("clears the camp in four moves with the tripod as the target", () => {
@@ -112,25 +119,20 @@ describe("P-17 proofs", () => {
     expect(question.correctOrder.every((step) => !step.includes("porque"))).toBe(true);
   });
 
-  it("requires the evidentiary correction for all final-record points", () => {
+  it("selects the valid evidence-based final conclusion", () => {
     const question = getP17Questions()[7];
-    expect(question.type).toBe("error-reconstruction");
-    if (question.type !== "error-reconstruction") {
-      throw new Error("Expected error reconstruction");
-    }
+    expect(question.type).toBe("multiple-choice");
+    if (question.type !== "multiple-choice") throw new Error("Expected multiple choice");
 
-    expect(evaluateAnswer({ question, answer: { stepId: "cause" }, timeUsed: 0 })).toMatchObject({
-      status: "partial",
-    });
     expect(
       evaluateAnswer({
         question,
-        answer: {
-          stepId: "cause",
-          correction: "La causa de la trayectoria no pudo determinarse",
-        },
+        answer: question.correctAnswer,
         timeUsed: 0,
       }),
     ).toMatchObject({ status: "correct", points: 18 });
+    expect(
+      evaluateAnswer({ question, answer: question.options[0], timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: -4 });
   });
 });

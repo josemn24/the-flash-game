@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
-  <title id="title">Matriz de evidencias de Nadir</title>
-  <desc id="desc">Comparación de tres identificaciones por marca de pecho, rumbo y ventana temporal.</desc>
+  <title id="title">Matriz de candidatos de Nadir</title>
+  <desc id="desc">Comparación de tres candidatos por marca de pecho, rumbo y ventana temporal.</desc>
   <defs>
     <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
       <stop stop-color="#e9eee8"/>
@@ -16,13 +16,13 @@
   <rect x="30" y="30" width="1140" height="120" rx="20" fill="#173840"/>
   <path d="M30 130H1170V150H30Z" fill="#173840"/>
   <g font-family="ui-monospace, monospace" font-size="24" font-weight="800" fill="#dff8f3" letter-spacing="1">
-    <text x="70" y="98">IDENTIFICACIÓN</text>
+    <text x="70" y="98">CANDIDATO</text>
     <text x="250" y="98">MARCA DE PECHO</text>
     <text x="636" y="98">RUMBO</text>
     <text x="895" y="98">VENTANA</text>
   </g>
   <g font-family="ui-sans-serif, system-ui" fill="#173036">
-    <g font-size="32" font-weight="900"><text x="86" y="238">P-17</text><text x="86" y="384">P-23</text><text x="86" y="530">P-41</text></g>
+    <g font-size="32" font-weight="900"><text x="104" y="238">A</text><text x="104" y="384">B</text><text x="104" y="530">C</text></g>
     <g font-size="27" font-weight="650">
       <text x="250" y="218"><tspan x="250">Muesca blanca</tspan><tspan x="250" dy="36">izquierda</tspan></text>
       <text x="250" y="372">Dos puntos blancos</text>

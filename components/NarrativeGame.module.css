@@ -132,16 +132,14 @@
   box-shadow: 0 2.5rem 7rem rgb(0 0 0 / 32%);
 }
 
-.storyVisual,
-.questionVisual {
+.storyVisual {
   position: relative;
   min-height: 32rem;
   overflow: hidden;
   background: #14272c;
 }
 
-.storyImage,
-.questionVisual img {
+.storyImage {
   object-fit: cover;
 }
 
@@ -247,31 +245,9 @@
   animation-delay: -0.6s;
 }
 
-.questionPage {
-  grid-template-columns: minmax(14rem, 0.52fr) minmax(0, 1.48fr);
-}
-
-.questionVisual img {
-  filter: saturate(0.72) contrast(0.92);
-}
-
-.questionVisual .visualShade {
-  background: linear-gradient(90deg, transparent 28%, rgb(3 15 20 / 72%));
-}
-
-.questionVisual > span {
-  position: absolute;
-  bottom: 2rem;
-  left: 2rem;
-  color: rgb(255 255 255 / 62%);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .questionArticle {
+  width: min(100%, 58rem);
+  margin: 0 auto;
   justify-content: flex-start;
   overflow: visible;
   padding-top: clamp(1.5rem, 3vw, 3rem);
@@ -281,15 +257,23 @@
 .questionArticle h1 {
   max-width: 34ch;
   margin-top: 1.4rem;
-  font-size: clamp(1.65rem, 3vw, 2.75rem);
+  font-size: clamp(1.45rem, 2.5vw, 2.2rem);
   line-height: 1.04;
 }
 
+.questionContext {
+  margin-top: 1.25rem;
+  color: rgb(255 255 255 / 48%);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .questionMeta {
-  display: grid;
-  grid-template-columns: auto minmax(8rem, 1fr);
+  display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
 .questionMeta > span {
@@ -913,20 +897,6 @@
     min-height: clamp(14rem, 42vh, 24rem);
   }
 
-  .questionVisual {
-    min-height: 9rem;
-    max-height: 9rem;
-  }
-
-  .questionVisual .visualShade {
-    background: linear-gradient(0deg, rgb(3 15 20 / 88%), transparent 70%);
-  }
-
-  .questionVisual > span {
-    bottom: 1rem;
-    left: 1rem;
-  }
-
   .storyArticle,
   .questionArticle {
     padding: 1.35rem;
@@ -941,7 +911,6 @@
   }
 
   .questionMeta {
-    grid-template-columns: 1fr;
     gap: 0.55rem;
   }
 }
@@ -1189,20 +1158,33 @@
 
 .storyPageChapter .visualShade {
   background:
-    linear-gradient(90deg, rgb(1 9 12 / 0.9) 0%, rgb(1 9 12 / 0.52) 48%, transparent 82%),
-    linear-gradient(0deg, rgb(1 9 12 / 0.64), transparent 55%);
+    linear-gradient(
+      90deg,
+      rgb(1 9 12 / 0.94) 0%,
+      rgb(1 9 12 / 0.68) 48%,
+      rgb(1 9 12 / 0.18) 78%,
+      transparent 94%
+    ),
+    linear-gradient(0deg, rgb(1 9 12 / 0.78), transparent 68%);
 }
 
 .storyPageFullBleed .visualShade {
   background:
-    linear-gradient(90deg, rgb(1 9 12 / 0.82) 0%, rgb(1 9 12 / 0.28) 54%, transparent 82%),
-    linear-gradient(0deg, rgb(1 9 12 / 0.68), transparent 62%);
+    linear-gradient(
+      90deg,
+      rgb(1 9 12 / 0.92) 0%,
+      rgb(1 9 12 / 0.62) 50%,
+      rgb(1 9 12 / 0.16) 80%,
+      transparent 96%
+    ),
+    linear-gradient(0deg, rgb(1 9 12 / 0.78), transparent 70%);
 }
 
 .storyPageChapter .storyArticle,
 .storyPageFullBleed .storyArticle {
   width: min(100%, 58rem);
   align-self: end;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 0.32);
 }
 
 .storyPageChapter .storyArticle h1 {
@@ -1267,9 +1249,9 @@
   top: 1rem;
   right: 1rem;
   left: 1rem;
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+  display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.75rem;
   pointer-events: none;
 }
@@ -1278,17 +1260,9 @@
   pointer-events: auto;
 }
 
-.questionHud > span {
-  color: rgb(255 255 255 / 0.48);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 850;
-  letter-spacing: 0.12em;
-}
-
 .questionPage {
   min-height: 100dvh;
-  grid-template-columns: minmax(14rem, 0.48fr) minmax(0, 1.52fr);
+  grid-template-columns: minmax(0, 1fr);
   padding-top: 0;
 }
 
@@ -1376,13 +1350,8 @@
     bottom: auto;
   }
 
-  .questionVisual {
-    min-height: 11rem;
-    max-height: 11rem;
-  }
-
   .questionPage .questionArticle {
-    padding-top: 1.5rem;
+    padding-top: 5rem;
   }
 
   .questionHud {

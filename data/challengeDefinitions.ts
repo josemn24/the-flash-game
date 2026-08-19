@@ -198,27 +198,20 @@ export const challengeDefinitions = {
     mode: "narrative",
     implementationStatus: "complete",
     maxScore: 100,
-    prologue: storyScene("scene-prologue-recording", {
-      eyebrow: "Capítulo I",
-      title: "Todos menos uno",
-      presentation: "chapter-opening",
-      media: narrativeImage(
-        "/visuals/p17/archive-recorder.jpg",
-        "Una grabadora de cinta y un monitor de archivo iluminan una estación antártica oscura",
-        "42% 50%",
-      ),
-      caption: "Archivo de campo · cinta sin fechar",
+    prologue: storyScene("scene-field-context", {
+      eyebrow: "Prólogo",
+      title: "Antes de la imagen",
+      presentation: "text-led",
       blocks: [
         narration(
-          "La cinta llevaba años al fondo de una caja sin fecha, bajo mapas que nadie consultaba ya. Nora limpió el polvo de la carcasa con la manga y comprobó dos veces que el carrete seguía entero.",
+          "En el mar de Ross, el viento borraba las huellas antes de que llegara la siguiente cámara.",
         ),
         narration(
-          "Cuando pulsó el interruptor, el motor tosió antes de ponerse en marcha. Primero llegó el roce de la cinta. Después, un viento antiguo llenó la habitación. Por último, habló una voz que parecía venir de muy lejos.",
+          "Nora y su equipo observaban una colonia de pingüinos desde la estación. No intervenían. Anotaban la hora, el rumbo y cualquier marca que permitiera reconocer a cada animal.",
         ),
-        dialogue(
-          "Grabación",
-          "A veces un pingüino se desorienta. Puede terminar muy lejos del océano, en un lugar donde no esperaríamos encontrarlo.",
-        ),
+        narration("Tú estabas de guardia cuando Nora sacó del archivo una cinta sin fecha."),
+        dialogue("Nora", "Lo que la cámara no muestra, no lo damos por cierto."),
+        narration("Después pulsó el interruptor."),
       ],
     }),
     beats: [
@@ -228,17 +221,46 @@ export const challengeDefinitions = {
         steps: [
           {
             type: "scene",
+            scene: storyScene("scene-prologue-recording", {
+              eyebrow: "Capítulo I",
+              title: "Todos menos uno",
+              presentation: "chapter-opening",
+              media: narrativeImage(
+                "/visuals/p17/archive-recorder.jpg",
+                "Una grabadora de cinta y un monitor de archivo iluminan una estación antártica oscura",
+                "42% 50%",
+              ),
+              caption: "Archivo de campo · cinta sin fechar",
+              blocks: [
+                narration(
+                  "La cinta llevaba años al fondo de una caja sin fecha, bajo mapas que nadie consultaba ya. Nora limpió el polvo de la carcasa con la manga y comprobó dos veces que el carrete seguía entero.",
+                ),
+                narration(
+                  "Cuando pulsó el interruptor, el motor tosió antes de ponerse en marcha. Primero llegó el roce de la cinta. Después, un viento antiguo llenó la habitación. Por último, habló una voz que parecía venir de muy lejos.",
+                ),
+                dialogue(
+                  "Grabación",
+                  "A veces un pingüino se desorienta. Puede terminar muy lejos del océano, en un lugar donde no esperaríamos encontrarlo.",
+                ),
+              ],
+            }),
+          },
+          {
+            type: "scene",
             scene: storyScene("scene-all-but-one", {
               presentation: "full-bleed",
               media: narrativeImage(
                 "/visuals/p17/colony-panorama.jpg",
-                "Una colonia avanza hacia el mar mientras un pingüino se separa hacia las montañas",
+                "Una colonia de pingüinos avanza hacia el mar de Ross mientras uno se separa hacia el interior",
                 "50% 52%",
               ),
-              caption: "Primer registro · 06:42",
+              caption: "Sector del mar de Ross · Primer registro · 06:42",
               blocks: [
                 narration(
                   "La imagen tardó en desprenderse del ruido. Poco a poco aparecieron una llanura blanca, la línea oscura de las montañas y, al fondo, el brillo del agua abierta.",
+                ),
+                narration(
+                  "En el borde del fotograma, una referencia de archivo situaba la estación en el sector del mar de Ross. La cordillera del fondo todavía no tenía nombre en la ficha.",
                 ),
                 narration(
                   "La colonia se movía hacia el mar con la lentitud de una sola criatura. La mirada podía seguirla sin esfuerzo, hasta que una figura se detuvo y rompió la forma del grupo.",
@@ -249,12 +271,12 @@ export const challengeDefinitions = {
           },
           {
             type: "question",
-            questionId: "mountains-progressive-image",
+            questionId: "ross-sea-transantarctic-range",
             unlockEntryIds: ["note-direction"],
             reactions: reactions(
-              "La cordillera quedó señalada en el monitor. Nora hizo retroceder la cinta hasta el instante preciso del giro.",
-              "Nora rebobinó unos segundos. Al abrirse de nuevo el plano, el mar quedó a un lado y las montañas al otro.",
-              "El grano terminó por disiparse. Debajo apareció el giro: desde la colonia hacia la línea de montañas.",
+              "La referencia del mapa quedó encajada: el registro procede del mar de Ross y la cordillera del fondo es la Transantártica. Nora hizo retroceder la cinta hasta el instante preciso del giro.",
+              "Nora rebobinó unos segundos. La cordillera seguía sin nombre en la ficha; solo quedaban el mar de Ross a un lado y el interior al otro.",
+              "La ficha de archivo terminó de revelarse: mar de Ross, Cordillera Transantártica y un giro desde la colonia hacia el interior.",
             ),
           },
           {
@@ -285,25 +307,25 @@ export const challengeDefinitions = {
                 narration(
                   "Nora soltó el mando y la cinta volvió a avanzar. La colonia se hizo pequeña junto al mar. P-17 permaneció quieto unos segundos; después giró y continuó hacia las montañas.",
                 ),
-                dialogue("Nora", "¿Lo has registrado?"),
+                dialogue("Nora", "¿Has registrado el giro?"),
                 narration(
-                  "Asentiste sin apartar la mirada de la pantalla. El viento pasaba sobre las huellas recientes y deshacía primero los bordes, luego la forma entera.",
+                  "Asentiste sin apartar la mirada de la pantalla. El viento empezaba a borrar las huellas.",
                 ),
                 dialogue(
                   "Nora",
-                  "Guarda lo que la cámara nos ha dado. La razón, si llega alguna vez, tendrá que esperar.",
+                  "Registra lo que muestra la cámara. Todavía no sabemos por qué se ha separado.",
                 ),
               ],
             }),
           },
           {
             type: "question",
-            questionId: "trajectory-deviation-heat-map",
-            unlockEntryIds: ["note-deviation"],
+            questionId: "antarctic-circle-map",
+            unlockEntryIds: ["note-polar-context"],
             reactions: reactions(
-              "La marca cayó en el sector C3, allí donde una línea se apartaba del haz que descendía hacia el mar.",
-              "Nora desplazó el papel translúcido unos milímetros. Solo entonces los dos recorridos se separaron con claridad.",
-              "La superposición terminó de ajustarse y dejó al descubierto el desvío, en el sector C3.",
+              "Nora trazó el Círculo Polar Antártico en el margen del atlas. La estación quedaba dentro de la región polar; después volvió al registro de P-17.",
+              "Nora volvió a extender el atlas. Antes de seguir las trayectorias, había que distinguir el límite polar de las líneas que cruzaban el hemisferio.",
+              "La línea quedó anotada en el atlas: el Círculo Polar Antártico. El mapa volvió a cerrarse sobre la mesa de observación.",
             ),
           },
           {
@@ -327,33 +349,9 @@ export const challengeDefinitions = {
             }),
           },
           {
-            type: "scene",
-            scene: storyScene("scene-camera-limits", {
-              presentation: "text-led",
-              blocks: [
-                dialogue("Equipo", "Podríamos decir que está perdido."),
-                narration(
-                  "Nora no respondió enseguida. Miró otra vez el punto oscuro detenido en el monitor, abrió el cuaderno por una página limpia y trazó una línea vertical de arriba abajo.",
-                ),
-                narration(
-                  "A un lado copió lo que había resistido al rebobinado: la hora, el rumbo, cuarenta y dos minutos sin regresar a la colonia. Al otro quedaron palabras que ninguna cámara había registrado: perdido, enfermo, decidido.",
-                ),
-                dialogue(
-                  "Nora",
-                  "Esto pertenece a la imagen. Lo demás, por ahora, nos pertenece a nosotros.",
-                ),
-              ],
-            }),
-          },
-          {
             type: "question",
-            questionId: "observation-vs-interpretation",
-            unlockEntryIds: ["note-register-rule"],
-            reactions: reactions(
-              "Las últimas notas quedaron a ambos lados de la línea. Nora apartó las palabras que la cámara nunca había visto.",
-              "Nora devolvió una nota a la mesa y volvió a leerla en voz baja. La frase decía más que las imágenes.",
-              "Antes de cerrar el cuaderno, el equipo separó las medidas de todo aquello que solo podía imaginar.",
-            ),
+            questionId: "polar-fauna-classification",
+            unlockEntryIds: ["note-polar-fauna"],
           },
           {
             type: "scene",
@@ -391,7 +389,7 @@ export const challengeDefinitions = {
                   "Durante la noche el viento cambió de costado. Las lonas golpearon los mástiles hasta el amanecer y la nieve cubrió las marcas alrededor de las tiendas.",
                 ),
                 narration(
-                  "Con la primera claridad, una figura oscura apareció al otro lado del campamento base. Nora reconoció la muesca del pecho antes de que nadie pronunciara el código.",
+                  "Con la primera claridad, una figura oscura apareció al otro lado del campamento base. Nora reconoció la muesca del pecho antes de que alguien pudiera identificarlo.",
                 ),
               ],
             }),
@@ -478,9 +476,9 @@ export const challengeDefinitions = {
             questionId: "p17-evidence-matrix",
             unlockEntryIds: ["note-nadir"],
             reactions: reactions(
-              "La marca, el rumbo y la hora terminaron sobre la misma fila. Nora mantuvo el dedo junto al código P-17.",
-              "Nora recorrió de nuevo las filas. Dos candidatos coincidían a medias; solo uno reunía los tres detalles.",
-              "Cuando la comparación terminó, una sola fila permaneció abierta sobre la mesa: P-17.",
+              "Las tres señales coincidieron en el candidato A. La identificación compatible quedó separada de cualquier explicación sobre su conducta.",
+              "Nora volvió a recorrer las filas. Dos candidatos coincidían a medias; solo uno reunía los tres datos.",
+              "La comparación quedó incompleta. Sin las tres coincidencias, ninguna fila podía darse por compatible.",
             ),
           },
           {
@@ -489,14 +487,14 @@ export const challengeDefinitions = {
               presentation: "text-led",
               blocks: [
                 narration(
-                  "La muesca podía repetirse en otro animal. También el rumbo o la hora, tomados por separado, demostraban muy poco. Pero las tres señales terminaban en la misma fila.",
+                  "La muesca podía aparecer en más de un animal. El rumbo, por sí solo, tampoco bastaba; lo mismo ocurría con la hora. Pero los tres datos juntos apuntaban al mismo candidato.",
                 ),
                 narration(
-                  "Nadie dijo que lo hubieran encontrado. Nora acercó el cuaderno, mojó la punta del lápiz en los labios y eligió con cuidado las únicas palabras que los datos permitían.",
+                  "Nadie se apresuró a darlo por encontrado. Nora acercó el cuaderno y escribió con cuidado:",
                 ),
                 emphasis("Compatible con P-17."),
                 narration(
-                  "Después cerró la carpeta. La duda no era un defecto del registro; era la parte que todavía pertenecía a la nieve.",
+                  "Después cerró la carpeta. Habían encontrado una coincidencia, no una explicación. El motivo de aquel desvío seguía perdido en la nieve.",
                 ),
               ],
             }),
@@ -620,17 +618,17 @@ export const challengeDefinitions = {
               caption: "Última imagen conservada",
               blocks: [
                 narration(
-                  "La última cámara mostraba una llanura tan abierta que resultaba difícil medir las distancias. P-17 avanzaba en ella como un punto oscuro; detrás, sus huellas eran la única escala.",
+                  "La última cámara mostraba una llanura tan extensa que las distancias se volvían difíciles de calcular. P-17 avanzaba como un punto oscuro; sus huellas eran la única referencia sobre la nieve.",
                 ),
                 narration(
-                  "Se detuvo una vez, sacudió la nieve de las plumas y continuó. Por un instante el viento lo borró de la imagen. Cuando volvió a aparecer, era más pequeño y estaba más cerca de las montañas.",
+                  "Se detuvo una vez, sacudió la nieve de las plumas y continuó. Durante un instante, el viento lo ocultó. Cuando volvió a verse, parecía más pequeño y estaba más cerca de las montañas.",
                 ),
                 dialogue(
                   "Nora",
-                  "Esta es la última hoja. La frase no puede llegar más lejos que la imagen.",
+                  "Esta es la última hoja. A partir de aquí, solo podemos describir lo que vemos.",
                 ),
                 narration(
-                  "Nadie respondió. La cinta siguió corriendo unos segundos después de que P-17 desapareciera en el grano.",
+                  "Nadie respondió. La cinta siguió avanzando unos segundos después de que P-17 desapareciera entre el ruido de la grabación.",
                 ),
               ],
             }),
@@ -640,9 +638,9 @@ export const challengeDefinitions = {
             questionId: "p17-final-record",
             unlockEntryIds: ["note-final"],
             reactions: reactions(
-              "Las palabras «estaba perdido» desaparecieron del párrafo. En su lugar quedó escrito el límite de lo observado.",
-              "Nora tachó la frase que atribuía una decisión a P-17 y dejó el lápiz junto al margen vacío.",
-              "Antes de cerrar el informe, Nora retiró la causa que ninguna cámara había podido registrar.",
+              "Nora eligió la única conclusión que respetaba los registros: P-17 había recorrido la ruta observada, pero la causa de su trayectoria no pudo determinarse.",
+              "Nora descartó la conclusión. Describía una intención de P-17 que ninguna cámara había podido registrar.",
+              "El informe quedó sin cerrar. Antes de archivarlo, Nora debía elegir una conclusión que no añadiera una causa a los hechos observados.",
             ),
           },
           {
@@ -665,6 +663,10 @@ export const challengeDefinitions = {
                 emphasis(
                   "P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo determinarse.",
                 ),
+                narration(
+                  "Toda la colonia siguió hacia el agua abierta. P-17 se separó y tomó rumbo hacia las montañas lejanas.",
+                ),
+                dialogue("Tú", "Pero, ¿por qué?"),
               ],
             }),
           },
@@ -683,17 +685,17 @@ export const challengeDefinitions = {
     notebookEntries: [
       {
         id: "note-direction",
-        text: "P-17: muesca blanca en el lado izquierdo del pecho. Dirección inicial: montañas, hacia el interior.",
+        text: "P-17: muesca blanca en el lado izquierdo del pecho. Registro 01 situado en el sector del mar de Ross. Dirección inicial: hacia el interior, frente a la Cordillera Transantártica.",
         relevance: "context",
       },
       {
-        id: "note-deviation",
-        text: "Inicio del desvío localizado en el sector C3 del mapa de observación.",
+        id: "note-polar-context",
+        text: "Contexto geográfico: el Círculo Polar Antártico delimita aproximadamente la región polar donde se encuentra la estación.",
         relevance: "context",
       },
       {
-        id: "note-register-rule",
-        text: "Regla de registro: describir movimiento, posición y tiempo; no atribuir intención.",
+        id: "note-polar-fauna",
+        text: "Guía de fauna polar: pingüinos emperador y de Adelia, y foca de Weddell pertenecen a la fauna antártica; oso polar, morsa y zorro ártico, a la fauna del Ártico.",
         relevance: "context",
       },
       {
@@ -703,7 +705,7 @@ export const challengeDefinitions = {
       },
       {
         id: "note-nadir",
-        text: "Nadir: identificación compatible con P-17 por marca, rumbo y ventana temporal.",
+        text: "Nadir: el candidato A coincide con la marca, el rumbo y la ventana temporal; la identificación queda pendiente.",
         relevance: "context",
       },
       {
@@ -723,9 +725,9 @@ export const challengeDefinitions = {
       },
     ],
     questionPoints: {
-      "mountains-progressive-image": 10,
-      "trajectory-deviation-heat-map": 10,
-      "observation-vs-interpretation": 12,
+      "ross-sea-transantarctic-range": 10,
+      "antarctic-circle-map": 10,
+      "polar-fauna-classification": 12,
       "clear-camp-escape": 12,
       "p17-evidence-matrix": 12,
       "p17-route-zip": 14,

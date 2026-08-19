@@ -380,7 +380,7 @@ type ValidNarrativeChallengeDefinition = {
         },
         {
           type: "question";
-          questionId: "mountains-progressive-image";
+          questionId: "ross-sea-transantarctic-range";
           unlockEntryIds: ["note-calibration"];
           reactions: {
             correct: [{ type: "narration"; text: "Correct" }];
@@ -392,7 +392,7 @@ type ValidNarrativeChallengeDefinition = {
     },
   ];
   notebookEntries: [{ id: "note-calibration"; text: "Calibration"; relevance: "potential" }];
-  questionPoints: { "mountains-progressive-image": 24 };
+  questionPoints: { "ross-sea-transantarctic-range": 24 };
 };
 
 type NarrativeChallengeWithoutNotebook = Omit<ValidNarrativeChallengeDefinition, "notebookEntries">;

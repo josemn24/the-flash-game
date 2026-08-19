@@ -15,7 +15,6 @@ import {
   RotateIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/Logo";
-import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { ReviewAnswers } from "@/components/ReviewAnswers";
 import { Timer } from "@/components/Timer";
@@ -34,16 +33,6 @@ import type {
   NarrativeTextBlock,
   Question,
 } from "@/types/game";
-
-function getChapterTitle(challenge: NarrativeChallenge, stepIndex: number) {
-  if (stepIndex <= 0) return challenge.beats[0]?.title ?? "Prólogo";
-  let cursor = 1;
-  for (const beat of challenge.beats) {
-    if (stepIndex < cursor + beat.steps.length) return beat.title;
-    cursor += beat.steps.length;
-  }
-  return challenge.beats.at(-1)?.title ?? "Desenlace";
-}
 
 function NarrativeSceneChrome({
   pageNumber,
@@ -272,9 +261,6 @@ function NarrativeSceneScreen({
 
 function NarrativeQuestionScreen({
   question,
-  chapter,
-  pageNumber,
-  pageCount,
   questionNumber,
   totalQuestions,
   locked,
@@ -287,9 +273,6 @@ function NarrativeQuestionScreen({
   onTimedResponseStart,
 }: {
   question: Question;
-  chapter: string;
-  pageNumber: number;
-  pageCount: number;
   questionNumber: number;
   totalQuestions: number;
   locked: boolean;
@@ -303,12 +286,6 @@ function NarrativeQuestionScreen({
 }) {
   const hasDelayedStart = question.type === "progressive-image";
   const [timedResponseStarted, setTimedResponseStarted] = useState(!hasDelayedStart);
-  const chapterImage =
-    chapter === "Mantenerse fuera"
-      ? "/visuals/p17/camp-corridor.jpg"
-      : chapter === "La línea completa"
-        ? "/visuals/p17/final-plain.jpg"
-        : "/visuals/p17/colony-panorama.jpg";
   const startTimedResponse = () => {
     setTimedResponseStarted(true);
     onTimedResponseStart();
@@ -322,9 +299,6 @@ function NarrativeQuestionScreen({
       exit={{ opacity: 0, x: -28 }}
     >
       <header className={styles.questionHud}>
-        <span aria-label={`Página ${pageNumber} de ${pageCount}`}>
-          {String(pageNumber).padStart(2, "0")} / {pageCount}
-        </span>
         <div>
           {!hasDelayedStart || timedResponseStarted ? (
             <Timer
@@ -339,19 +313,16 @@ function NarrativeQuestionScreen({
         <NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} compact />
       </header>
       <div className={`${styles.storyPage} ${styles.questionPage}`}>
-        <div className={styles.questionVisual} aria-hidden="true">
-          <Image src={chapterImage} alt="" fill sizes="(max-width: 799px) 100vw, 34vw" />
-          <div className={styles.visualShade} />
-          <span>Registro {String(questionNumber).padStart(2, "0")}</span>
-        </div>
         <article className={styles.questionArticle}>
           <div className={styles.questionMeta}>
             <span>
               Prueba {questionNumber} de {totalQuestions}
             </span>
-            <ProgressBar current={questionNumber} total={totalQuestions} />
           </div>
           <h1>{question.question}</h1>
+          {question.questionContext && (
+            <p className={styles.questionContext}>{question.questionContext}</p>
+          )}
           {"media" in question && question.media && (
             <div className={styles.questionMedia}>
               <QuestionMedia media={question.media} prominent />
@@ -548,7 +519,6 @@ function PolarBackground() {
 export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge }) {
   const session = useNarrativeSession(challenge);
   const pageCount = 1 + challenge.beats.reduce((total, beat) => total + beat.steps.length, 0);
-  const chapter = getChapterTitle(challenge, session.stepIndex);
   const isBlackoutScene =
     session.phase === "scene" &&
     session.currentStep?.type === "scene" &&
@@ -593,9 +563,6 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
               <NarrativeQuestionScreen
                 key={session.currentStep.question.id}
                 question={session.currentStep.question}
-                chapter={chapter}
-                pageNumber={session.stepIndex + 1}
-                pageCount={pageCount}
                 questionNumber={session.questionNumber}
                 totalQuestions={session.totalQuestions}
                 locked={session.locked}
