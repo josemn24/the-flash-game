@@ -72,7 +72,7 @@ export function Timer({
   const isCurrentTimerState = timerState.duration === duration && timerState.resetKey === resetKey;
   const visibleRemaining = active && isCurrentTimerState ? timerState.remaining : duration;
   const ratio = Math.min(1, Math.max(0, visibleRemaining / duration));
-  const urgent = visibleRemaining <= 5;
+  const urgent = visibleRemaining > 0 && visibleRemaining <= 5;
   const display = Math.ceil(visibleRemaining);
   const circumference = 2 * Math.PI * 27;
 

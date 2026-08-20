@@ -286,6 +286,7 @@ export type LogicMatrixQuestion = BaseQuestion & {
   cells: Array<string | null>;
   optionIds: string[];
   correctOptionId: string;
+  showPieceLabels?: boolean;
 };
 
 export type MiniSudokuQuestion = BaseQuestion & {
@@ -305,6 +306,7 @@ export type QueensQuestion = BaseQuestion & {
   type: "queens";
   grid: { rows: 5; columns: 5 };
   regions: number[];
+  prefilledQueens?: number[];
   solution: number[];
 };
 

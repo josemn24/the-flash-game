@@ -57,7 +57,11 @@ export function QueensBoard({
   onCellFocus?: (cell: number) => void;
   onCellKeyDown?: (event: KeyboardEvent<HTMLButtonElement>, cell: number) => void;
 }) {
-  const conflicts = getQueensConflicts(question, answer.queens);
+  const prefilledQueens = question.prefilledQueens ?? [];
+  const visibleQueens = [...new Set([...prefilledQueens, ...answer.queens])].sort(
+    (left, right) => left - right,
+  );
+  const conflicts = getQueensConflicts(question, visibleQueens);
   const interactive = Boolean(onCellAction);
 
   return (
@@ -65,17 +69,25 @@ export function QueensBoard({
       {Array.from({ length: QUEENS_CELL_COUNT }, (_, cell) => {
         const row = Math.floor(cell / QUEENS_COLUMNS) + 1;
         const column = (cell % QUEENS_COLUMNS) + 1;
-        const queen = answer.queens.includes(cell);
-        const mark = answer.marks.includes(cell);
+        const prefilled = prefilledQueens.includes(cell);
+        const queen = prefilled || answer.queens.includes(cell);
+        const mark = !prefilled && answer.marks.includes(cell);
         const conflictTypes = [...(conflicts.get(cell) ?? [])];
-        const state = queen ? "corona" : mark ? "marcada con X" : "vacía";
+        const state = prefilled
+          ? "corona fija, pista"
+          : queen
+            ? "corona"
+            : mark
+              ? "marcada con X"
+              : "vacía";
         const conflictLabel = conflictTypes.length
           ? `, conflicto: ${conflictTypes.map((type) => CONFLICT_LABELS[type]).join(", ")}`
           : "";
-        const className = `${styles.cell} ${styles[`region${question.regions[cell]}`]} ${boundaryClasses(question, cell)} ${queen ? styles.queen : ""} ${mark ? styles.mark : ""} ${conflictTypes.length ? styles.conflict : ""}`;
+        const className = `${styles.cell} ${styles[`region${question.regions[cell]}`]} ${boundaryClasses(question, cell)} ${queen ? styles.queen : ""} ${prefilled ? styles.prefilledQueen : ""} ${mark ? styles.mark : ""} ${conflictTypes.length ? styles.conflict : ""}`;
         const content = (
           <>
             {queen && <CrownIcon className={styles.crownIcon} />}
+            {prefilled && <span className={styles.prefilledLabel}>Pista</span>}
             {mark && <CrossIcon className={styles.markIcon} />}
             {conflictTypes.length > 0 && <WarningIcon className={styles.warningIcon} />}
           </>
@@ -128,9 +140,17 @@ export function QueensQuestion({
   onIncorrectAttempt: () => void;
   onSubmit: (answer: QueensAnswer) => void;
 }) {
+  const prefilledQueens = useMemo(() => question.prefilledQueens ?? [], [question.prefilledQueens]);
   const [answer, setAnswer] = useState<QueensAnswer>(() => ({
-    queens: Array.isArray(initialAnswer?.queens) ? [...initialAnswer.queens] : [],
-    marks: Array.isArray(initialAnswer?.marks) ? [...initialAnswer.marks] : [],
+    queens: [
+      ...new Set([
+        ...prefilledQueens,
+        ...(Array.isArray(initialAnswer?.queens) ? initialAnswer.queens : []),
+      ]),
+    ].sort((left, right) => left - right),
+    marks: Array.isArray(initialAnswer?.marks)
+      ? initialAnswer.marks.filter((cell) => !prefilledQueens.includes(cell))
+      : [],
   }));
   const [tool, setTool] = useState<QueensTool>("queen");
   const [focusedCell, setFocusedCell] = useState(0);
@@ -148,6 +168,10 @@ export function QueensQuestion({
 
   const applyTool = (cell: number) => {
     if (locked) return;
+    if (prefilledQueens.includes(cell)) {
+      setAnnouncement("Esta corona es una pista fija y no se puede retirar.");
+      return;
+    }
     const hasQueen = answer.queens.includes(cell);
     const hasMark = answer.marks.includes(cell);
     if (tool === "queen") {
@@ -193,7 +217,12 @@ export function QueensQuestion({
   };
 
   const clearCell = (cell: number) => {
-    if (locked || (!answer.queens.includes(cell) && !answer.marks.includes(cell))) return;
+    if (locked) return;
+    if (prefilledQueens.includes(cell)) {
+      setAnnouncement("Esta corona es una pista fija y no se puede retirar.");
+      return;
+    }
+    if (!answer.queens.includes(cell) && !answer.marks.includes(cell)) return;
     publish(
       {
         queens: answer.queens.filter((candidate) => candidate !== cell),
@@ -273,7 +302,8 @@ export function QueensQuestion({
         </span>
       </div>
       <p className={styles.instructions}>
-        Una corona por fila, columna y región. Las coronas no pueden tocarse.
+        La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
+        toquen.
       </p>
       <p className="sr-only" role="status" aria-live="polite">
         {announcement}

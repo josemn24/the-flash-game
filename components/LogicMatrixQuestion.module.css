@@ -78,3 +78,8 @@
 .option strong {
   font-size: 0.78rem;
 }
+
+.symbolsOnly .cell > span,
+.symbolsOnly .option > span {
+  font-size: clamp(2.25rem, 9vw, 3rem);
+}

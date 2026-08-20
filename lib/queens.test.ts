@@ -32,6 +32,7 @@ describe("Queens configuration", () => {
   it("accepts the curated unique board", () => {
     expect(isValidQueensConfiguration(question)).toBe(true);
     expect(countQueensSolutions(question)).toBe(1);
+    expect(isValidQueensConfiguration({ ...question, prefilledQueens: [2] })).toBe(true);
   });
 
   it("rejects malformed, disconnected and incorrect configurations", () => {
@@ -51,6 +52,8 @@ describe("Queens configuration", () => {
       }),
     ).toBe(false);
     expect(isValidQueensConfiguration({ ...question, solution: [0, 6, 12, 18, 24] })).toBe(false);
+    expect(isValidQueensConfiguration({ ...question, prefilledQueens: [2, 2] })).toBe(false);
+    expect(isValidQueensConfiguration({ ...question, prefilledQueens: [0] })).toBe(false);
   });
 
   it("detects ambiguous and impossible connected region layouts", () => {

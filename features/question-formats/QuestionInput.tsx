@@ -34,7 +34,7 @@ import { ZipQuestion } from "@/components/ZipQuestion";
 import { PipesQuestion } from "@/components/PipesQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import { isQueensAnswer } from "@/lib/queens";
-import { isErrorReconstructionAnswer } from "@/lib/scoring";
+import { isConnectPairsAnswer, isErrorReconstructionAnswer } from "@/lib/scoring";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
@@ -135,6 +135,7 @@ function MatchingInput({
 function ConnectPairsInput({
   question,
   locked,
+  initialAnswer,
   onProgress,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"connect-pairs">>) {
@@ -142,6 +143,11 @@ function ConnectPairsInput({
     <ConnectPairsQuestion
       key={question.id}
       question={question}
+      initialAnswer={
+        initialAnswer !== undefined && isConnectPairsAnswer(initialAnswer)
+          ? initialAnswer
+          : undefined
+      }
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
@@ -356,6 +362,7 @@ function LogicMatrixInput({
       pieces={question.pieces}
       cells={question.cells}
       optionIds={question.optionIds}
+      showPieceLabels={question.showPieceLabels}
       locked={locked}
       onSubmit={onSubmit}
     />

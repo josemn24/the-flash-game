@@ -100,6 +100,42 @@ export function isValidConnectPairsAnswer(answer: unknown): answer is ConnectPai
   );
 }
 
+export function isRestorableConnectPairsDraft(
+  question: ConnectPairsQuestion,
+  answer: unknown,
+): answer is ConnectPairsAnswer {
+  if (!isValidConnectPairsAnswer(answer)) return false;
+
+  const pairsById = new Map(question.pairs.map((pair) => [pair.id, pair]));
+  const allEndpoints = new Set(question.pairs.flatMap((pair) => pair.endpoints));
+  const occupiedCells = new Set<number>();
+
+  for (const [pairId, path] of Object.entries(answer.paths)) {
+    const pair = pairsById.get(pairId);
+    if (!pair) return false;
+    if (path.length === 0) continue;
+    if (!uniquePathCells(path) || !isContiguousPath(path) || !pair.endpoints.includes(path[0])) {
+      return false;
+    }
+
+    const otherEndpoint = pair.endpoints.find((endpoint) => endpoint !== path[0]);
+    for (let index = 0; index < path.length; index += 1) {
+      const cell = path[index];
+      if (
+        !isBoardIndex(cell) ||
+        occupiedCells.has(cell) ||
+        (index > 0 && allEndpoints.has(cell) && cell !== otherEndpoint) ||
+        (cell === otherEndpoint && index !== path.length - 1)
+      ) {
+        return false;
+      }
+      occupiedCells.add(cell);
+    }
+  }
+
+  return true;
+}
+
 export function isValidConnectPairsConfiguration(question: ConnectPairsQuestion) {
   const pairIds = question.pairs.map((pair) => pair.id);
   const endpoints = question.pairs.flatMap((pair) => pair.endpoints);

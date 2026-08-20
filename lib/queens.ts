@@ -50,6 +50,7 @@ function regionIsConnected(regions: number[], region: number) {
 }
 
 function hasValidShape(question: QueensQuestion) {
+  const prefilledQueens = question.prefilledQueens ?? [];
   return (
     question.grid.rows === QUEENS_ROWS &&
     question.grid.columns === QUEENS_COLUMNS &&
@@ -60,6 +61,8 @@ function hasValidShape(question: QueensQuestion) {
     Array.from({ length: QUEENS_REGION_COUNT }, (_, region) =>
       regionIsConnected(question.regions, region),
     ).every(Boolean) &&
+    uniqueCells(prefilledQueens) &&
+    prefilledQueens.every((cell) => question.solution.includes(cell)) &&
     question.solution.length === QUEENS_ROWS &&
     uniqueCells(question.solution)
   );

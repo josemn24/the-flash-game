@@ -47,12 +47,10 @@ export function OrderingQuestion({
 
     const item = orderedItems[index];
 
-    setOrderedItems((current) => {
-      const next = [...current];
-      [next[index], next[destination]] = [next[destination], next[index]];
-      onProgress?.(next);
-      return next;
-    });
+    const next = [...orderedItems];
+    [next[index], next[destination]] = [next[destination], next[index]];
+    setOrderedItems(next);
+    onProgress?.(next);
     setLastMove((current) => ({
       item,
       position: destination + 1,

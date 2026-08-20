@@ -234,6 +234,7 @@ type ValidQueens = {
   question: "Place the crowns";
   grid: { rows: 5; columns: 5 };
   regions: number[];
+  prefilledQueens: [2];
   solution: number[];
   timeLimit: 60;
   points: 150;

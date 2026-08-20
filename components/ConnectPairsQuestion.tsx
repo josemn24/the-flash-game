@@ -6,6 +6,7 @@ import {
   calculateConnectPairsMetrics,
   CONNECT_PAIRS_COLUMNS,
   CONNECT_PAIRS_ROWS,
+  isRestorableConnectPairsDraft,
 } from "@/lib/connectPairs";
 import type {
   ConnectPairsAnswer,
@@ -56,17 +57,25 @@ function routePoints(path: number[]) {
 
 export function ConnectPairsQuestion({
   question,
+  initialAnswer,
   locked,
   onProgress,
   onSubmit,
 }: {
   question: Question;
+  initialAnswer?: ConnectPairsAnswer;
   locked: boolean;
   onProgress: (answer: ConnectPairsAnswer) => void;
   onSubmit: (answer: ConnectPairsAnswer) => void;
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [paths, setPaths] = useState<Record<string, number[]>>({});
+  const [paths, setPaths] = useState<Record<string, number[]>>(() =>
+    isRestorableConnectPairsDraft(question, initialAnswer)
+      ? Object.fromEntries(
+          Object.entries(initialAnswer.paths).map(([pairId, path]) => [pairId, [...path]]),
+        )
+      : {},
+  );
   const [activePairId, setActivePairId] = useState(question.pairs[0]?.id ?? "");
   const [announcement, setAnnouncement] = useState("Selecciona un extremo para empezar.");
 

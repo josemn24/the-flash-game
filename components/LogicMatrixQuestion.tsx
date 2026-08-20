@@ -8,6 +8,7 @@ type LogicMatrixQuestionProps = {
   pieces: LogicMatrixPiece[];
   cells: Array<string | null>;
   optionIds: string[];
+  showPieceLabels?: boolean;
   locked: boolean;
   onSubmit: (answer: string) => void;
 };
@@ -16,13 +17,14 @@ export function LogicMatrixQuestion({
   pieces,
   cells,
   optionIds,
+  showPieceLabels = true,
   locked,
   onSubmit,
 }: LogicMatrixQuestionProps) {
   const piecesById = new Map(pieces.map((piece) => [piece.id, piece]));
 
   return (
-    <section className={styles.root}>
+    <section className={`${styles.root} ${showPieceLabels ? "" : styles.symbolsOnly}`}>
       <div className={styles.matrix} role="grid" aria-label="Matriz lógica con una casilla vacía">
         {cells.map((pieceId, index) => {
           const piece = pieceId ? piecesById.get(pieceId) : undefined;
@@ -40,7 +42,7 @@ export function LogicMatrixQuestion({
               {piece ? (
                 <>
                   <span aria-hidden="true">{piece.symbol}</span>
-                  <small>{piece.label}</small>
+                  {showPieceLabels && <small>{piece.label}</small>}
                 </>
               ) : (
                 <span aria-hidden="true">?</span>
@@ -66,7 +68,7 @@ export function LogicMatrixQuestion({
               aria-label={`Opción ${index + 1}: ${piece.label}`}
             >
               <span aria-hidden="true">{piece.symbol}</span>
-              <strong>{piece.label}</strong>
+              {showPieceLabels && <strong>{piece.label}</strong>}
             </motion.button>
           );
         })}

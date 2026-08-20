@@ -64,7 +64,7 @@ describe("pyramid attempt rules", () => {
     });
     expect(parsePyramidAttempt(JSON.stringify(completed), challenge)).toEqual(completed);
     expect(getPyramidAttemptStorageKey(challenge)).toBe(
-      "the-flash:pyramid-attempt:tabarnia-challenge-05:v1",
+      "the-flash:pyramid-attempt:tabarnia-challenge-05:v2",
     );
   });
 

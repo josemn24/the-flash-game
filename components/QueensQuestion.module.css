@@ -138,6 +138,28 @@ button.cell {
   height: clamp(1.55rem, 8vw, 2.4rem);
   filter: drop-shadow(0 2px 1px rgb(255 255 255 / 0.5));
 }
+.prefilledQueen {
+  box-shadow: inset 0 0 0 3px rgb(17 21 26 / 0.72);
+  cursor: default !important;
+}
+.prefilledQueen .crownIcon {
+  transform: translateY(-0.18rem);
+}
+.prefilledLabel {
+  position: absolute;
+  bottom: 0.2rem;
+  left: 50%;
+  padding: 0.08rem 0.28rem;
+  border-radius: 999px;
+  color: #11151a;
+  background: var(--electric);
+  font-family: var(--font-mono);
+  font-size: clamp(0.42rem, 1.8vw, 0.56rem);
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
 .markIcon {
   width: clamp(1.2rem, 6vw, 1.8rem);
   height: clamp(1.2rem, 6vw, 1.8rem);

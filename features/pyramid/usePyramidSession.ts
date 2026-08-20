@@ -71,6 +71,58 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     [persist],
   );
 
+  const submitAnswer = useCallback(
+    (answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
+      const current = recordRef.current;
+      if (answerLock.current || !current || current.status === "completed") return;
+      const level = challenge.levels[current.currentLevelIndex];
+      if (!level || current.levelStartedAt === null) return;
+      answerLock.current = true;
+
+      const now = Date.now();
+      const timeUsed = timedOut
+        ? level.question.timeLimit
+        : Math.min(level.question.timeLimit, Math.max(0, (now - current.levelStartedAt) / 1000));
+      const result = normalizePyramidResult(
+        evaluateAnswer({
+          question: level.question,
+          answer,
+          timeUsed,
+          timedOut,
+          submittedCodes: submittedCodes ?? current.submittedCodes,
+          incorrectAttempts: current.incorrectAttempts,
+          matchingIncorrectAttempts: current.incorrectAttempts,
+        }),
+      );
+      const passed = isPyramidLevelPassed(result);
+      const lastLevel = current.currentLevelIndex === challenge.levels.length - 1;
+
+      if (!passed || lastLevel) {
+        persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));
+        setPhase("transition");
+        transitionTimeout.current = setTimeout(() => setPhase("results"), TRANSITION_DURATION);
+        return;
+      }
+
+      const next: PyramidAttemptRecord = {
+        ...current,
+        phase: "transition",
+        deadlineAt: null,
+        results: [...current.results, result],
+        draftAnswer: null,
+        submittedCodes: [],
+        incorrectAttempts: 0,
+      };
+      persist(next);
+      setPhase("transition");
+      transitionTimeout.current = setTimeout(
+        () => advanceFromTransition(next),
+        TRANSITION_DURATION,
+      );
+    },
+    [advanceFromTransition, challenge.levels, persist],
+  );
+
   const applyLoadedRecord = useCallback(
     (loaded: PyramidAttemptRecord) => {
       recordRef.current = loaded;
@@ -80,13 +132,31 @@ export function usePyramidSession(challenge: PyramidChallenge) {
         setPhase("results");
         return;
       }
+      if (
+        loaded.phase === "playing" &&
+        loaded.deadlineAt !== null &&
+        loaded.deadlineAt <= Date.now()
+      ) {
+        const level = challenge.levels[loaded.currentLevelIndex];
+        if (level) {
+          submitAnswer(
+            getTimedOutAnswer(level.question, {
+              draftAnswer: loaded.draftAnswer,
+              submittedCodes: loaded.submittedCodes,
+            }),
+            true,
+            loaded.submittedCodes,
+          );
+          return;
+        }
+      }
       if (loaded.phase === "transition") {
         advanceFromTransition(loaded);
         return;
       }
       setPhase("playing");
     },
-    [advanceFromTransition],
+    [advanceFromTransition, challenge.levels, submitAnswer],
   );
 
   useEffect(() => {
@@ -167,58 +237,6 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     persist(next);
     setPhase("playing");
   }, [challenge, persist]);
-
-  const submitAnswer = useCallback(
-    (answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
-      const current = recordRef.current;
-      if (answerLock.current || !current || current.status === "completed") return;
-      const level = challenge.levels[current.currentLevelIndex];
-      if (!level || current.levelStartedAt === null) return;
-      answerLock.current = true;
-
-      const now = Date.now();
-      const timeUsed = timedOut
-        ? level.question.timeLimit
-        : Math.min(level.question.timeLimit, Math.max(0, (now - current.levelStartedAt) / 1000));
-      const result = normalizePyramidResult(
-        evaluateAnswer({
-          question: level.question,
-          answer,
-          timeUsed,
-          timedOut,
-          submittedCodes: submittedCodes ?? current.submittedCodes,
-          incorrectAttempts: current.incorrectAttempts,
-          matchingIncorrectAttempts: current.incorrectAttempts,
-        }),
-      );
-      const passed = isPyramidLevelPassed(result);
-      const lastLevel = current.currentLevelIndex === challenge.levels.length - 1;
-
-      if (!passed || lastLevel) {
-        persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));
-        setPhase("transition");
-        transitionTimeout.current = setTimeout(() => setPhase("results"), TRANSITION_DURATION);
-        return;
-      }
-
-      const next: PyramidAttemptRecord = {
-        ...current,
-        phase: "transition",
-        deadlineAt: null,
-        results: [...current.results, result],
-        draftAnswer: null,
-        submittedCodes: [],
-        incorrectAttempts: 0,
-      };
-      persist(next);
-      setPhase("transition");
-      transitionTimeout.current = setTimeout(
-        () => advanceFromTransition(next),
-        TRANSITION_DURATION,
-      );
-    },
-    [advanceFromTransition, challenge.levels, persist],
-  );
 
   const handleTimeUp = useCallback(() => {
     const current = recordRef.current;
