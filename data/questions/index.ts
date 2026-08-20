@@ -1707,7 +1707,6 @@ export const questionsById = {
       formatSkills: ["recall", "interpretation"],
       lifeSkills: ["environmental_awareness"],
     },
-    questionContext: "Sector del mar de Ross · Registro 01",
     question: "¿Qué cordillera marca el paso hacia el interior antártico?",
     options: [
       "Cordillera Transantártica",
@@ -1732,7 +1731,6 @@ export const questionsById = {
       formatSkills: ["recall", "interpretation"],
       lifeSkills: ["environmental_awareness"],
     },
-    questionContext: "Atlas de la estación · Hemisferio sur",
     question: "¿Qué línea de latitud delimita aproximadamente la región polar antártica?",
     options: [
       "Ecuador",
@@ -1763,7 +1761,6 @@ export const questionsById = {
       formatSkills: ["classification", "comparison"],
       lifeSkills: ["environmental_awareness"],
     },
-    questionContext: "Guía de fauna polar · Dos regiones extremas",
     question: "Clasifica cada especie según la región polar en la que vive habitualmente.",
     categories: ["Antártida", "Ártico"],
     items: [
@@ -1899,8 +1896,7 @@ export const questionsById = {
       formatSkills: ["deduction"],
       lifeSkills: ["environmental_awareness"],
     },
-    question:
-      "Une los seis registros en orden y reconstruye una única línea continua a través de la cuadrícula de observación.",
+    question: "Reconstruye la ruta uniendo los seis registros en orden.",
     grid: { rows: 5, columns: 5 },
     checkpoints: [
       { value: 1, cell: 20, label: "Colonia" },
@@ -1913,10 +1909,8 @@ export const questionsById = {
     solution: [
       20, 21, 22, 23, 24, 19, 18, 17, 16, 15, 10, 11, 12, 13, 14, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4,
     ],
-    instruction: "Conecta los registros y cubre todos los sectores",
     boardLabel:
       "Cuadrícula de observación de cinco por cinco con seis registros desde la colonia hasta el interior",
-    mapNote: "Reconstrucción por sectores · No representa una escala geográfica exacta",
     timeLimit: 45,
     points: 100,
     explanation:
@@ -1965,7 +1959,6 @@ export const questionsById = {
       formatSkills: ["interpretation", "decision_making"],
       lifeSkills: ["environmental_awareness"],
     },
-    questionContext: "Registro final · Informe de Nora",
     question:
       "¿Cuál de estas conclusiones puede incluirse en el informe final sin añadir información no observada?",
     options: [

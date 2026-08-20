@@ -230,7 +230,6 @@ export const challengeDefinitions = {
                 "Una grabadora de cinta y un monitor de archivo iluminan una estación antártica oscura",
                 "42% 50%",
               ),
-              caption: "Archivo de campo · cinta sin fechar",
               blocks: [
                 narration(
                   "La cinta llevaba años al fondo de una caja sin fecha, bajo mapas que nadie consultaba ya. Nora limpió el polvo de la carcasa con la manga y comprobó dos veces que el carrete seguía entero.",
@@ -254,7 +253,6 @@ export const challengeDefinitions = {
                 "Una colonia de pingüinos avanza hacia el mar de Ross mientras uno se separa hacia el interior",
                 "50% 52%",
               ),
-              caption: "Sector del mar de Ross · Primer registro · 06:42",
               blocks: [
                 narration(
                   "La imagen tardó en desprenderse del ruido. Poco a poco aparecieron una llanura blanca, la línea oscura de las montañas y, al fondo, el brillo del agua abierta.",
@@ -288,7 +286,6 @@ export const challengeDefinitions = {
                 "P-17 frente a una cordillera, con la colonia desenfocada al fondo",
                 "42% 50%",
               ),
-              caption: "Muesca blanca · lado izquierdo del pecho",
               blocks: [
                 narration(
                   "El fotograma quedó inmóvil. Nora amplió la imagen hasta que las plumas perdieron nitidez. En el lado izquierdo del pecho, una muesca blanca interrumpía el borde oscuro del animal.",
@@ -337,7 +334,6 @@ export const challengeDefinitions = {
                 "Mapas, fotografías y trayectorias de pingüinos se superponen sobre una mesa de observación",
                 "56% 50%",
               ),
-              caption: "Superposición de recorridos · sector C3",
               blocks: [
                 narration(
                   "Nora sujetó el papel translúcido para que no lo levantara la corriente de la calefacción. Debajo se amontonaban cientos de recorridos: líneas breves, casi paralelas, que descendían hacia el mar.",
@@ -403,7 +399,6 @@ export const challengeDefinitions = {
                 "Equipo de campamento bloquea temporalmente un corredor de nieve",
                 "50% 52%",
               ),
-              caption: "Campamento base · corredor este",
               blocks: [
                 narration(
                   "P-17 avanzaba hacia el corredor este, despacio y sin desviarse. Entre él y la llanura, el campamento estrechaba el paso con cajas, trineos y un trípode que el equipo había instalado durante la noche.",
@@ -437,7 +432,6 @@ export const challengeDefinitions = {
                 "P-17 atraviesa un corredor despejado mientras el equipo permanece lejos",
                 "52% 55%",
               ),
-              caption: "Corredor despejado · sin contacto",
               blocks: [
                 narration(
                   "Cuando el último objeto quedó fuera, el corredor volvió a ser una franja de nieve sin marcas humanas. El equipo retrocedió hasta las tiendas y esperó detrás de las ventanas empañadas.",
@@ -457,7 +451,6 @@ export const challengeDefinitions = {
                 "Un monitor remoto muestra un pingüino distante y tres fragmentos de evidencia",
                 "48% 50%",
               ),
-              caption: "Transmisión entrante · estación Nadir",
               blocks: [
                 narration(
                   "Dos días más tarde, un chasquido despertó la sala de comunicaciones. La pantalla se encendió con un destello azul y dejó entrar una imagen enviada desde Nadir.",
@@ -535,7 +528,6 @@ export const challengeDefinitions = {
                 "Seis registros físicos forman una línea desde la costa hacia las montañas",
                 "50% 50%",
               ),
-              caption: "Colonia · desvío · base · H-3 · Nadir · último registro",
               blocks: [
                 narration(
                   "Nora apagó la luz principal y extendió seis registros bajo la lámpara: la colonia, el primer desvío, la base, H-3, Nadir y una última cámara orientada hacia el interior.",
@@ -568,7 +560,6 @@ export const challengeDefinitions = {
                 "Los seis registros quedan enlazados por una trayectoria continua",
                 "50% 50%",
               ),
-              caption: "Único recorrido compatible con los seis registros",
               blocks: [
                 narration(
                   "Cuando la última unión ocupó su lugar, la línea atravesó los seis registros sin romperse. Nacía junto a la colonia, pasaba por el campamento y Nadir, y terminaba en el blanco del interior.",
@@ -615,7 +606,6 @@ export const challengeDefinitions = {
                 "/visuals/p17/final-plain.jpg",
                 "Un pingüino lejano cruza una llanura hacia las montañas dejando huellas",
               ),
-              caption: "Última imagen conservada",
               blocks: [
                 narration(
                   "La última cámara mostraba una llanura tan extensa que las distancias se volvían difíciles de calcular. P-17 avanzaba como un punto oscuro; sus huellas eran la única referencia sobre la nieve.",
@@ -651,7 +641,6 @@ export const challengeDefinitions = {
                 "/visuals/p17/final-plain.jpg",
                 "P-17 y sus huellas se pierden en la inmensidad de la llanura",
               ),
-              caption: "Cierre del registro P-17",
               advanceLabel: "Cerrar el registro",
               blocks: [
                 narration(

@@ -258,7 +258,6 @@ export function ZipQuestion({
   return (
     <section className={styles.root} aria-label="Zip, una línea">
       <div className={styles.header}>
-        <span>{question.instruction ?? "Une los números y llena el tablero"}</span>
         <strong>
           {metrics.coveredCells}/{metrics.totalCells} · {metrics.reachedCheckpoint}/
           {metrics.totalCheckpoints}
@@ -299,11 +298,7 @@ export function ZipQuestion({
           Reiniciar
         </button>
       </div>
-      <p className={styles.instructions}>
-        Pasa por los números en orden y usa cada celda una sola vez. Puedes retroceder sin perder
-        puntos.
-      </p>
-      {question.mapNote && <p className={styles.mapNote}>{question.mapNote}</p>}
+      <p className={styles.instructions}>Usa cada celda una sola vez.</p>
     </section>
   );
 }

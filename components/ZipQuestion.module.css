@@ -9,7 +9,7 @@
   display: flex;
   width: min(100%, 31rem);
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   color: rgb(255 255 255 / 48%);
   font-family: var(--font-mono);
@@ -197,18 +197,6 @@
   font-size: 0.75rem;
   line-height: 1.5;
   text-align: center;
-}
-
-.mapNote {
-  max-width: 31rem;
-  margin-top: -0.4rem;
-  color: rgb(143 231 234 / 68%);
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
-  line-height: 1.45;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 @media (max-width: 480px) {
