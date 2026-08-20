@@ -8,11 +8,13 @@ import styles from "@/components/OrderingQuestion.module.css";
 
 type OrderingQuestionProps = {
   items: string[];
+  initialItems?: string[];
   directionLabels?: {
     start: string;
     end: string;
   };
   locked: boolean;
+  onProgress?: (items: string[]) => void;
   onSubmit: (items: string[]) => void;
 };
 
@@ -24,11 +26,17 @@ type LastMove = {
 
 export function OrderingQuestion({
   items,
+  initialItems,
   directionLabels = { start: "Menos", end: "Más" },
   locked,
+  onProgress,
   onSubmit,
 }: OrderingQuestionProps) {
-  const [orderedItems, setOrderedItems] = useState(() => [...items]);
+  const [orderedItems, setOrderedItems] = useState(() =>
+    initialItems?.length === items.length && initialItems.every((item) => items.includes(item))
+      ? [...initialItems]
+      : [...items],
+  );
   const [lastMove, setLastMove] = useState<LastMove | null>(null);
 
   const moveItem = (index: number, direction: -1 | 1) => {
@@ -42,6 +50,7 @@ export function OrderingQuestion({
     setOrderedItems((current) => {
       const next = [...current];
       [next[index], next[destination]] = [next[destination], next[index]];
+      onProgress?.(next);
       return next;
     });
     setLastMove((current) => ({

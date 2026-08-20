@@ -1,0 +1,313 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  armPyramidLevel,
+  completePyramidAttempt,
+  createPyramidAttempt,
+  getPyramidAttemptStorageKey,
+  isPyramidLevelPassed,
+  normalizePyramidResult,
+  parsePyramidAttempt,
+  type PyramidAttemptRecord,
+} from "@/features/pyramid/pyramidAttempt";
+import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
+import type { AnswerValue, PyramidChallenge } from "@/types/game";
+
+const TRANSITION_DURATION = 900;
+const STORAGE_PROBE_KEY = "the-flash:pyramid-storage-probe";
+
+export type PyramidSessionPhase =
+  "loading" | "intro" | "confirm" | "playing" | "transition" | "results" | "review";
+
+function storageIsAvailable() {
+  try {
+    window.localStorage.setItem(STORAGE_PROBE_KEY, "1");
+    window.localStorage.removeItem(STORAGE_PROBE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function usePyramidSession(challenge: PyramidChallenge) {
+  const storageKey = getPyramidAttemptStorageKey(challenge);
+  const [phase, setPhase] = useState<PyramidSessionPhase>("loading");
+  const [record, setRecord] = useState<PyramidAttemptRecord | null>(null);
+  const [storageAvailable, setStorageAvailable] = useState(true);
+  const recordRef = useRef<PyramidAttemptRecord | null>(null);
+  const answerLock = useRef(false);
+  const transitionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const persist = useCallback(
+    (next: PyramidAttemptRecord) => {
+      recordRef.current = next;
+      setRecord(next);
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch {
+        setStorageAvailable(false);
+      }
+    },
+    [storageKey],
+  );
+
+  const advanceFromTransition = useCallback(
+    (source: PyramidAttemptRecord) => {
+      const next: PyramidAttemptRecord = {
+        ...source,
+        phase: "playing",
+        currentLevelIndex: source.currentLevelIndex + 1,
+        levelStartedAt: null,
+        deadlineAt: null,
+        draftAnswer: null,
+        submittedCodes: [],
+        incorrectAttempts: 0,
+      };
+      answerLock.current = false;
+      persist(next);
+      setPhase("playing");
+    },
+    [persist],
+  );
+
+  const applyLoadedRecord = useCallback(
+    (loaded: PyramidAttemptRecord) => {
+      recordRef.current = loaded;
+      setRecord(loaded);
+      answerLock.current = false;
+      if (loaded.status === "completed") {
+        setPhase("results");
+        return;
+      }
+      if (loaded.phase === "transition") {
+        advanceFromTransition(loaded);
+        return;
+      }
+      setPhase("playing");
+    },
+    [advanceFromTransition],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      const available = storageIsAvailable();
+      setStorageAvailable(available);
+      if (!available) {
+        setPhase("intro");
+        return;
+      }
+
+      const serialized = window.localStorage.getItem(storageKey);
+      if (serialized) {
+        const loaded = parsePyramidAttempt(serialized, challenge);
+        if (loaded) {
+          applyLoadedRecord(loaded);
+          return;
+        }
+        window.localStorage.removeItem(storageKey);
+      }
+      setPhase("intro");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applyLoadedRecord, challenge, storageKey]);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== storageKey || !event.newValue) return;
+      const loaded = parsePyramidAttempt(event.newValue, challenge);
+      if (loaded) applyLoadedRecord(loaded);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [applyLoadedRecord, challenge, storageKey]);
+
+  useEffect(
+    () => () => {
+      if (transitionTimeout.current) clearTimeout(transitionTimeout.current);
+    },
+    [],
+  );
+
+  const currentLevel = record ? challenge.levels[record.currentLevelIndex] : undefined;
+
+  const start = useCallback(() => {
+    if (storageAvailable) {
+      const existing = window.localStorage.getItem(storageKey);
+      if (existing) {
+        const loaded = parsePyramidAttempt(existing, challenge);
+        if (loaded?.status === "in-progress") {
+          applyLoadedRecord(loaded);
+          return;
+        }
+      }
+    }
+    const next = createPyramidAttempt(challenge, Date.now());
+    persist(next);
+    setPhase("playing");
+  }, [applyLoadedRecord, challenge, persist, storageAvailable, storageKey]);
+
+  const armCurrentLevel = useCallback(() => {
+    const current = recordRef.current;
+    if (!current || current.status === "completed") return;
+    const level = challenge.levels[current.currentLevelIndex];
+    if (!level) return;
+    const next = armPyramidLevel(current, level.question, null, Date.now());
+    if (next !== current) persist(next);
+  }, [challenge, persist]);
+
+  const restart = useCallback(() => {
+    if (transitionTimeout.current) clearTimeout(transitionTimeout.current);
+    answerLock.current = false;
+    const next = createPyramidAttempt(challenge, Date.now());
+    persist(next);
+    setPhase("playing");
+  }, [challenge, persist]);
+
+  const submitAnswer = useCallback(
+    (answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
+      const current = recordRef.current;
+      if (answerLock.current || !current || current.status === "completed") return;
+      const level = challenge.levels[current.currentLevelIndex];
+      if (!level || current.levelStartedAt === null) return;
+      answerLock.current = true;
+
+      const now = Date.now();
+      const timeUsed = timedOut
+        ? level.question.timeLimit
+        : Math.min(level.question.timeLimit, Math.max(0, (now - current.levelStartedAt) / 1000));
+      const result = normalizePyramidResult(
+        evaluateAnswer({
+          question: level.question,
+          answer,
+          timeUsed,
+          timedOut,
+          submittedCodes: submittedCodes ?? current.submittedCodes,
+          incorrectAttempts: current.incorrectAttempts,
+          matchingIncorrectAttempts: current.incorrectAttempts,
+        }),
+      );
+      const passed = isPyramidLevelPassed(result);
+      const lastLevel = current.currentLevelIndex === challenge.levels.length - 1;
+
+      if (!passed || lastLevel) {
+        persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));
+        setPhase("transition");
+        transitionTimeout.current = setTimeout(() => setPhase("results"), TRANSITION_DURATION);
+        return;
+      }
+
+      const next: PyramidAttemptRecord = {
+        ...current,
+        phase: "transition",
+        deadlineAt: null,
+        results: [...current.results, result],
+        draftAnswer: null,
+        submittedCodes: [],
+        incorrectAttempts: 0,
+      };
+      persist(next);
+      setPhase("transition");
+      transitionTimeout.current = setTimeout(
+        () => advanceFromTransition(next),
+        TRANSITION_DURATION,
+      );
+    },
+    [advanceFromTransition, challenge.levels, persist],
+  );
+
+  const handleTimeUp = useCallback(() => {
+    const current = recordRef.current;
+    if (!current || current.status === "completed") return;
+    const level = challenge.levels[current.currentLevelIndex];
+    if (!level) return;
+    submitAnswer(
+      getTimedOutAnswer(level.question, {
+        draftAnswer: current.draftAnswer,
+        submittedCodes: current.submittedCodes,
+      }),
+      true,
+      current.submittedCodes,
+    );
+  }, [challenge.levels, submitAnswer]);
+
+  useEffect(() => {
+    if (
+      phase === "playing" &&
+      record?.deadlineAt !== null &&
+      typeof record?.deadlineAt === "number" &&
+      record.deadlineAt <= Date.now()
+    ) {
+      handleTimeUp();
+    }
+  }, [handleTimeUp, phase, record?.deadlineAt]);
+
+  const handleAnswerProgress = useCallback(
+    (answer: AnswerValue) => {
+      const current = recordRef.current;
+      if (!current || current.status === "completed") return;
+      persist({ ...current, draftAnswer: answer });
+    },
+    [persist],
+  );
+
+  const handleIncorrectAttempt = useCallback(() => {
+    const current = recordRef.current;
+    if (!current || current.status === "completed") return;
+    persist({ ...current, incorrectAttempts: current.incorrectAttempts + 1 });
+  }, [persist]);
+
+  const handleCodeAttempt = useCallback(
+    (code: string) => {
+      const current = recordRef.current;
+      const level = current ? challenge.levels[current.currentLevelIndex] : undefined;
+      if (!current || !level || level.question.type !== "logic-code") return false;
+      const submittedCodes = [...current.submittedCodes, code];
+      const correct = isAnswerCorrect(level.question, code);
+      persist({
+        ...current,
+        submittedCodes,
+        incorrectAttempts: current.incorrectAttempts + (correct ? 0 : 1),
+        draftAnswer: correct ? code : null,
+      });
+      if (correct) submitAnswer(code, false, submittedCodes);
+      return correct;
+    },
+    [challenge.levels, persist, submitAnswer],
+  );
+
+  const latestResult = record?.results.at(-1);
+  const summary = record?.summary;
+
+  return {
+    phase,
+    record,
+    currentLevel,
+    latestResult,
+    summary,
+    storageAvailable,
+    locked: phase !== "playing",
+    codeAttempts: record?.submittedCodes ?? [],
+    initialAnswer: record?.draftAnswer ?? null,
+    deadlineAt: record?.deadlineAt ?? null,
+    showConfirmation: () => setPhase("confirm"),
+    hideConfirmation: () => setPhase("intro"),
+    start,
+    restart,
+    armCurrentLevel,
+    submitAnswer,
+    handleTimeUp,
+    handleAnswerProgress,
+    handleIncorrectAttempt,
+    handleCodeAttempt,
+    showReview: () => setPhase("review"),
+    showResults: () => setPhase("results"),
+    score: summary?.score ?? 0,
+    levelsCleared:
+      summary?.levelsCleared ?? record?.results.filter(isPyramidLevelPassed).length ?? 0,
+  };
+}

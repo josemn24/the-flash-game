@@ -131,8 +131,9 @@ describe("P-17 proofs", () => {
         timeUsed: 0,
       }),
     ).toMatchObject({ status: "correct", points: 18 });
-    expect(
-      evaluateAnswer({ question, answer: question.options[0], timeUsed: 0 }),
-    ).toMatchObject({ status: "incorrect", points: -4 });
+    expect(evaluateAnswer({ question, answer: question.options[0], timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: -4,
+    });
   });
 });

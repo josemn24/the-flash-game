@@ -6,13 +6,7 @@ import type {
   NarrativeTextBlock,
 } from "@/types/game";
 
-export type NarrativePhase =
-  | "intro"
-  | "scene"
-  | "playing"
-  | "transition"
-  | "results"
-  | "review";
+export type NarrativePhase = "intro" | "scene" | "playing" | "transition" | "results" | "review";
 
 export type NarrativeSessionState = {
   phase: NarrativePhase;

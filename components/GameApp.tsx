@@ -10,6 +10,9 @@ const FlashGameApp = dynamic(() =>
 const NarrativeGameApp = dynamic(() =>
   import("@/components/NarrativeGameApp.client").then((module) => module.NarrativeGameApp),
 );
+const PyramidGameApp = dynamic(() =>
+  import("@/components/pyramid/PyramidGameApp.client").then((module) => module.PyramidGameApp),
+);
 const SurvivalGameApp = dynamic(() =>
   import("@/components/SurvivalGameApp.client").then((module) => module.SurvivalGameApp),
 );
@@ -17,6 +20,7 @@ const SurvivalGameApp = dynamic(() =>
 export function GameApp({ challenge }: { challenge: Challenge }) {
   if (challenge.mode === "alphabet") return <AlphabetGameApp challenge={challenge} />;
   if (challenge.mode === "narrative") return <NarrativeGameApp challenge={challenge} />;
+  if (challenge.mode === "pyramid") return <PyramidGameApp challenge={challenge} />;
   if (challenge.mode === "survival") return <SurvivalGameApp challenge={challenge} />;
   return <FlashGameApp challenge={challenge} />;
 }

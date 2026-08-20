@@ -2,7 +2,12 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { challengeDefinitions } from "@/data/challengeDefinitions";
-import { challenges, getChallengeById, getNarrativeQuestionIds } from "@/data/challenges";
+import {
+  challenges,
+  getChallengeById,
+  getNarrativeQuestionIds,
+  getPyramidQuestionIds,
+} from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
 import {
   getQuestionsByIds,
@@ -331,14 +336,15 @@ describe("question format catalog", () => {
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
     ).toEqual([
-      86_399_999, 172_799_999, 259_199_999, 345_599_999, 86_399_999, 86_399_999, 86_399_999,
+      86_399_999, 172_799_999, 259_199_999, 777_599_999, 777_599_999, 86_399_999, 86_399_999,
       86_399_999, 86_399_999,
     ]);
-    expect(challenges).toHaveLength(4);
+    expect(challenges).toHaveLength(5);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
     const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
     const survivalChallenge = challenges.find((challenge) => challenge.mode === "survival");
     const narrativeChallenge = challenges.find((challenge) => challenge.mode === "narrative");
+    const pyramidChallenge = challenges.find((challenge) => challenge.mode === "pyramid");
     expect(flashChallenge?.questions).toHaveLength(16);
     expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
       true,
@@ -349,6 +355,13 @@ describe("question format catalog", () => {
     expect(survivalChallenge?.lives).toBe(3);
     expect(narrativeChallenge?.implementationStatus).toBe("complete");
     expect(narrativeChallenge?.maxScore).toBe(100);
+    expect(pyramidChallenge?.levels).toHaveLength(7);
+    expect(
+      Object.values(pyramidChallenge?.questionPoints ?? {}).reduce(
+        (total, points) => total + points,
+        0,
+      ),
+    ).toBe(100);
     expect(
       narrativeChallenge?.beats.flatMap((beat) =>
         beat.steps.filter((step) => step.type === "question"),
@@ -382,20 +395,23 @@ describe("question format catalog", () => {
     ).toMatchObject({ status: "correct", points: 10 });
     expect(
       evaluateAnswer({ question: direction, answer: "Montes Ellsworth", timeUsed: 0 }),
-    ).toMatchObject({ status: "incorrect", points: 0 });
+    ).toMatchObject({ status: "incorrect", points: -2 });
 
-    const deviation = narrativeQuestions[1];
-    expect(deviation).toMatchObject({
-      type: "heat-map",
-      target: { x: 0.42, y: 0.48 },
-      fullCreditRadius: 0.06,
-      toleranceRadius: 0.16,
-    });
+    const polarContext = narrativeQuestions[1];
+    expect(polarContext.type).toBe("multiple-choice");
+    if (polarContext.type !== "multiple-choice") throw new Error("Expected multiple choice");
+    expect(
+      evaluateAnswer({
+        question: polarContext,
+        answer: "Círculo Polar Antártico",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 10 });
 
     const classification = narrativeQuestions[2];
     expect(classification.type).toBe("classification");
     if (classification.type !== "classification") throw new Error("Expected classification");
-    expect(classification.categories).toEqual(["Hecho observado", "Interpretación no demostrada"]);
+    expect(classification.categories).toEqual(["Antártida", "Ártico"]);
     const classificationAnswer = Object.fromEntries(
       classification.items.map((item) => [item.label, item.correctCategory]),
     );
@@ -448,22 +464,19 @@ describe("question format catalog", () => {
     ).toMatchObject({ status: "correct", points: 12 });
 
     const finalRecord = narrativeQuestions[7];
-    expect(finalRecord.type).toBe("error-reconstruction");
-    if (finalRecord.type !== "error-reconstruction") throw new Error("Expected final record");
-    expect(finalRecord).toMatchObject({ firstErrorStepId: "cause", correctionRequired: true });
+    expect(finalRecord.type).toBe("multiple-choice");
+    if (finalRecord.type !== "multiple-choice") throw new Error("Expected final record");
     expect(
       evaluateAnswer({
         question: finalRecord,
-        answer: {
-          stepId: "cause",
-          correction: "La causa de la trayectoria no pudo determinarse",
-        },
+        answer:
+          "P-17 continuó hacia las montañas. La causa de su trayectoria no pudo determinarse.",
         timeUsed: 0,
       }),
     ).toMatchObject({ status: "correct", points: 18 });
     expect(
-      evaluateAnswer({ question: finalRecord, answer: { stepId: "cause" }, timeUsed: 0 }),
-    ).toMatchObject({ status: "partial" });
+      evaluateAnswer({ question: finalRecord, answer: finalRecord.options[0], timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect" });
 
     const narrativeMedia = narrativeQuestions.flatMap((question) => {
       const topLevel =
@@ -491,7 +504,7 @@ describe("question format catalog", () => {
             : [];
       return [...topLevel, ...surfaceMedia, ...itemMedia];
     });
-    expect(narrativeMedia).toHaveLength(3);
+    expect(narrativeMedia).toHaveLength(2);
     for (const media of narrativeMedia) {
       expect(media.alt.trim().length).toBeGreaterThan(20);
       expect(existsSync(join(process.cwd(), "public", media.src))).toBe(true);
@@ -501,12 +514,14 @@ describe("question format catalog", () => {
       "tabarnia-challenge-02",
       "tabarnia-challenge-03",
       "tabarnia-challenge-04",
+      "tabarnia-challenge-05",
     ]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
       "animals-alphabet-definition",
       "spain-survival-definition",
       "antarctica-narrative-definition",
+      "pyramid-logic-definition",
     ]);
     expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
     expect(getChallengeById("tabarnia-challenge-02")?.definitionId).toBe(
@@ -544,7 +559,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(91);
+    expect(questionIds).toHaveLength(98);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -559,7 +574,7 @@ describe("question format catalog", () => {
 
   it("keeps challenge definitions connected to valid questions", () => {
     const definitions = Object.values(challengeDefinitions);
-    expect(definitions).toHaveLength(5);
+    expect(definitions).toHaveLength(6);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
     expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
     expect(
@@ -589,6 +604,9 @@ describe("question format catalog", () => {
       "p17-final-record",
     ]);
     expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
+    const pyramidDefinition = challengeDefinitions["pyramid-logic-definition"];
+    expect(getPyramidQuestionIds(pyramidDefinition)).toHaveLength(7);
+    expect(Object.values(pyramidDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
     expect(
       definitions.every((definition) => {
         const questionIds =
@@ -596,7 +614,9 @@ describe("question format catalog", () => {
             ? definition.entries.map((entry) => entry.questionId)
             : definition.mode === "narrative"
               ? getNarrativeQuestionIds(definition)
-              : definition.questionIds;
+              : definition.mode === "pyramid"
+                ? getPyramidQuestionIds(definition)
+                : definition.questionIds;
         return questionIds.every((questionId) => questionId in questionsById);
       }),
     ).toBe(true);

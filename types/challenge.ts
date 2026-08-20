@@ -2,7 +2,7 @@ import type { Question } from "@/types/question";
 import type { QuestionMedia } from "@/types/question";
 import type { QuestionId } from "@/data/questions";
 
-export type GameMode = "flash" | "alphabet" | "survival" | "narrative";
+export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
 export type ChallengeImplementationStatus = "prototype" | "complete";
 
 export type ChallengeDefinitionId = string;
@@ -38,6 +38,19 @@ export type AlphabetChallengeDefinition = ChallengeDefinitionBase & {
   mode: "alphabet";
   timeLimit: number;
   entries: AlphabetChallengeDefinitionEntry[];
+};
+
+export type PyramidLevelDefinition = {
+  id: string;
+  label: string;
+  questionId: QuestionId;
+};
+
+export type PyramidChallengeDefinition = ChallengeDefinitionBase & {
+  mode: "pyramid";
+  attemptVersion: number;
+  levels: PyramidLevelDefinition[];
+  questionPoints: Record<string, number>;
 };
 
 export type NarrativeTextBlock =
@@ -103,7 +116,8 @@ export type ChallengeDefinition =
   | FlashChallengeDefinition
   | AlphabetChallengeDefinition
   | SurvivalChallengeDefinition
-  | NarrativeChallengeDefinition;
+  | NarrativeChallengeDefinition
+  | PyramidChallengeDefinition;
 
 export type PlayableScheduledChallenge = {
   id: string;
@@ -161,6 +175,21 @@ export type AlphabetChallenge = ChallengeBase & {
   entries: AlphabetChallengeEntry[];
 };
 
+export type PyramidLevel = {
+  id: string;
+  label: string;
+  question: Question;
+};
+
+export type PyramidChallenge = ChallengeBase & {
+  mode: "pyramid";
+  attemptVersion: number;
+  availableFrom: string;
+  availableUntil: string;
+  levels: PyramidLevel[];
+  questionPoints: Record<string, number>;
+};
+
 export type NarrativeSceneStep = NarrativeSceneStepDefinition;
 
 export type NarrativeQuestionStep = {
@@ -187,7 +216,8 @@ export type NarrativeChallenge = ChallengeBase & {
   notebookEntries: NarrativeNotebookEntry[];
 };
 
-export type Challenge = FlashChallenge | AlphabetChallenge | SurvivalChallenge | NarrativeChallenge;
+export type Challenge =
+  FlashChallenge | AlphabetChallenge | SurvivalChallenge | NarrativeChallenge | PyramidChallenge;
 
 export type ChallengeSummary = {
   id: string;
@@ -200,5 +230,7 @@ export type ChallengeSummary = {
   availableUntil: string;
   availabilityStatus: ChallengeAvailabilityStatus;
   playable: boolean;
+  openable?: boolean;
+  attemptVersion?: number;
   implementationStatus?: ChallengeImplementationStatus;
 };

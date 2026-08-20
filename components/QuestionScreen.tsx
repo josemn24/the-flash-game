@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BoltIcon, HeartIcon, NotebookIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
@@ -26,6 +26,11 @@ type QuestionScreenProps = {
   onIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
+  initialAnswer?: AnswerValue | null;
+  deadlineAt?: number | null;
+  onReady?: () => void;
+  progressVariant?: "linear" | "pyramid";
+  progressLabels?: string[];
   livesRemaining?: number;
   totalLives?: number;
   notebook?: {
@@ -61,6 +66,11 @@ export function QuestionScreen({
   onIncorrectAttempt,
   onProgressiveClueReveal,
   onTimedResponseStart,
+  initialAnswer,
+  deadlineAt,
+  onReady,
+  progressVariant = "linear",
+  progressLabels,
   livesRemaining,
   totalLives,
   notebook,
@@ -80,6 +90,8 @@ export function QuestionScreen({
   const prompt = presentation?.splitPrompt
     ? splitQuestionPrompt(question.question)
     : { title: question.question };
+
+  useEffect(() => onReady?.(), [onReady]);
 
   return (
     <motion.section
@@ -117,9 +129,14 @@ export function QuestionScreen({
             {!hasDelayedTimedResponse || timedResponseStarted ? (
               <Timer
                 duration={question.timeLimit}
-                active={!locked && timedResponseStarted}
+                active={
+                  !locked &&
+                  timedResponseStarted &&
+                  (deadlineAt === undefined || typeof deadlineAt === "number")
+                }
                 onTimeUp={onTimeUp}
                 resetKey={question.id}
+                deadlineAt={deadlineAt ?? undefined}
                 size="compact"
               />
             ) : null}
@@ -130,7 +147,7 @@ export function QuestionScreen({
       <div className="grid gap-3">
         <div className="flex items-baseline justify-between gap-4">
           <p className="font-mono text-sm font-bold tracking-wide text-white">
-            Pregunta {questionNumber}
+            {progressVariant === "pyramid" ? "Nivel" : "Pregunta"} {questionNumber}
             <span className="text-white/35"> / {totalQuestions}</span>
           </p>
           <div className="flex min-w-0 items-center gap-2">
@@ -142,7 +159,30 @@ export function QuestionScreen({
             </span>
           </div>
         </div>
-        <ProgressBar current={questionNumber} total={totalQuestions} />
+        {progressVariant === "pyramid" ? (
+          <ol className={styles.pyramidProgress} aria-label="Progreso por la pirámide">
+            {(
+              progressLabels ?? Array.from({ length: totalQuestions }, (_, index) => `${index + 1}`)
+            ).map((label, index) => (
+              <li
+                key={`${label}-${index}`}
+                className={
+                  index + 1 < questionNumber
+                    ? styles.pyramidProgressCleared
+                    : index + 1 === questionNumber
+                      ? styles.pyramidProgressCurrent
+                      : styles.pyramidProgressLocked
+                }
+                aria-current={index + 1 === questionNumber ? "step" : undefined}
+              >
+                <span>{index + 1}</span>
+                <small>{label}</small>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <ProgressBar current={questionNumber} total={totalQuestions} />
+        )}
       </div>
 
       <div className="flex flex-1 flex-col pt-5 sm:pt-8">
@@ -169,6 +209,7 @@ export function QuestionScreen({
           onIncorrectAttempt={onIncorrectAttempt}
           onProgressiveClueReveal={onProgressiveClueReveal}
           onTimedResponseStart={startTimedResponse}
+          initialAnswer={initialAnswer}
         />
       </div>
     </motion.section>

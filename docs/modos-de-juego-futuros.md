@@ -129,13 +129,15 @@ Los aciertos consecutivos aumentan un multiplicador, una recompensa o una barra 
 
 La partida empieza con pruebas relativamente accesibles y asciende por niveles cada vez más exigentes. La cima queda reservada para preguntas que, en teoría, solo un porcentaje pequeño de jugadores puede resolver.
 
+La primera implementación jugable es el Desafío 05, **«La Pirámide: Cumbre lógica»**: un prototipo rejugable de siete niveles de lógica y eliminación ante el primer resultado que no sea completamente correcto.
+
 - **Motivación principal:** progresión, superación, dificultad creciente y logro visible.
 - **Relación entre jugadores:** solo / todos contra todos.
 - **Ritmo:** asíncrono / tiempo real.
-- **Cómo funciona:** el jugador avanza por una escalera de niveles; cada nivel contiene una prueba calibrada para ser más difícil que la anterior; el resultado compara el nivel alcanzado, la precisión, los errores y el tiempo utilizado.
+- **Cómo funciona:** el jugador avanza por una escalera de niveles; cada nivel contiene una prueba calibrada para ser más difícil que la anterior; solo un acierto completo permite subir y cualquier respuesta parcial, incorrecta o sin contestar termina el ascenso.
 - **Encaje con The Flash:** da una fantasía muy clara de ascenso y crea una métrica fácil de compartir: hasta qué nivel llegó cada jugador. Se diferencia de Supervivencia porque no premia aguantar una secuencia larga, sino superar una ruta curada hacia una cima.
-- **V1 validable:** pirámide corta de cinco a siete niveles en una sala asíncrona todos contra todos, con ranking por nivel máximo alcanzado, puntos, errores y tiempo.
-- **Variantes:** una vida, margen de uno o dos fallos, rutas segura/difícil, pirámides temáticas, evento especial con pregunta final de élite o calibración por percentiles cuando haya datos suficientes.
+- **V1 implementada:** prototipo sin límite de partidas con una pirámide de siete niveles. El contrato de ranking ordena por niveles superados, puntos y menor tiempo; el ranking compartido queda pendiente de backend.
+- **Variantes:** margen de uno o dos fallos, rutas segura/difícil, pirámides temáticas, evento especial con pregunta final de élite o calibración por percentiles cuando haya datos suficientes.
 - **Riesgos:** exige calibrar muy bien la dificultad; si la pendiente es irregular, el modo puede sentirse injusto o aleatorio. La pregunta final debe parecer exigente, no arbitraria.
 
 ### Alfabeto

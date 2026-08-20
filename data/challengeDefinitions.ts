@@ -189,6 +189,33 @@ export const challengeDefinitions = {
       "spain-survival-oak-tree": 6,
     },
   },
+  "pyramid-logic-definition": {
+    id: "pyramid-logic-definition",
+    title: "La Pirámide: Cumbre lógica",
+    subtitle: "Siete niveles. Sube cuanto puedas.",
+    description:
+      "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",
+    mode: "pyramid",
+    attemptVersion: 1,
+    levels: [
+      { id: "entrance", label: "Entrada", questionId: "pyramid-square-intruder" },
+      { id: "pattern", label: "Patrón", questionId: "pyramid-growing-products" },
+      { id: "order", label: "Orden", questionId: "pyramid-constraint-order" },
+      { id: "chamber", label: "Cámara", questionId: "pyramid-shape-direction-matrix" },
+      { id: "trap", label: "Trampa", questionId: "pyramid-algebra-error" },
+      { id: "lock", label: "Cerradura", questionId: "pyramid-secret-code" },
+      { id: "summit", label: "Cima", questionId: "pyramid-summit-queens" },
+    ],
+    questionPoints: {
+      "pyramid-square-intruder": 7,
+      "pyramid-growing-products": 9,
+      "pyramid-constraint-order": 11,
+      "pyramid-shape-direction-matrix": 14,
+      "pyramid-algebra-error": 16,
+      "pyramid-secret-code": 19,
+      "pyramid-summit-queens": 24,
+    },
+  },
   "antarctica-narrative-definition": {
     id: "antarctica-narrative-definition",
     title: "El que caminaba hacia las montañas",

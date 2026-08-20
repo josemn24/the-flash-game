@@ -12,6 +12,7 @@ import type {
   NarrativeQuestionStep,
   NarrativeScene,
   PlayableScheduledChallenge,
+  PyramidChallengeDefinition,
   ScheduledChallenge,
 } from "@/types/game";
 
@@ -145,6 +146,44 @@ export function validateNarrativeChallengeDefinition(definition: NarrativeChalle
   );
 }
 
+export function getPyramidQuestionIds(definition: PyramidChallengeDefinition) {
+  return definition.levels.map((level) => level.questionId);
+}
+
+export function validatePyramidChallengeDefinition(definition: PyramidChallengeDefinition) {
+  if (!Number.isInteger(definition.attemptVersion) || definition.attemptVersion <= 0) {
+    throw new Error("Pyramid challenge attemptVersion must be a positive integer.");
+  }
+  if (definition.levels.length < 5 || definition.levels.length > 7) {
+    throw new Error("Pyramid challenge must contain between five and seven levels.");
+  }
+
+  const levelIds = definition.levels.map((level) => level.id);
+  const questionIds = getPyramidQuestionIds(definition);
+  if (new Set(levelIds).size !== levelIds.length) {
+    throw new Error("Pyramid challenge level IDs must be unique.");
+  }
+  if (new Set(questionIds).size !== questionIds.length) {
+    throw new Error("Pyramid challenge question IDs must be unique.");
+  }
+  if (definition.levels.some((level) => !level.id.trim() || !level.label.trim())) {
+    throw new Error("Pyramid challenge levels require non-empty IDs and labels.");
+  }
+
+  const unknownQuestionIds = questionIds.filter((id) => !(id in questionsById));
+  if (unknownQuestionIds.length > 0) {
+    throw new Error(`Pyramid challenge references unknown questions: ${unknownQuestionIds}`);
+  }
+  const unknownScoringIds = Object.keys(definition.questionPoints).filter(
+    (id) => !questionIds.includes(id as (typeof questionIds)[number]),
+  );
+  if (unknownScoringIds.length > 0) {
+    throw new Error(`Pyramid challenge scoring references unknown questions: ${unknownScoringIds}`);
+  }
+
+  getConfiguredChallengeQuestionPointValues(questionIds, definition.questionPoints);
+}
+
 function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChallenge): Challenge {
   const definition = getChallengeDefinitionById(scheduledChallenge.challengeDefinitionId);
   if (!definition) {
@@ -181,6 +220,24 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
       mode: "survival",
       lives: definition.lives,
       questions: getQuestionsByIds(definition.questionIds),
+      questionPoints: definition.questionPoints,
+    };
+  }
+
+  if (definition.mode === "pyramid") {
+    validatePyramidChallengeDefinition(definition);
+    const questions = getQuestionsByIds(getPyramidQuestionIds(definition));
+    return {
+      ...base,
+      mode: "pyramid",
+      attemptVersion: definition.attemptVersion,
+      availableFrom: scheduledChallenge.availableFrom,
+      availableUntil: scheduledChallenge.availableUntil,
+      levels: definition.levels.map((level, index) => ({
+        id: level.id,
+        label: level.label,
+        question: questions[index],
+      })),
       questionPoints: definition.questionPoints,
     };
   }

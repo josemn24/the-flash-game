@@ -33,6 +33,8 @@ import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
 import { ZipQuestion } from "@/components/ZipQuestion";
 import { PipesQuestion } from "@/components/PipesQuestion";
 import styles from "@/components/QuestionScreen.module.css";
+import { isQueensAnswer } from "@/lib/queens";
+import { isErrorReconstructionAnswer } from "@/lib/scoring";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
@@ -44,6 +46,7 @@ type CommonProps = {
   onIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
+  initialAnswer?: AnswerValue | null;
 };
 
 type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
@@ -198,13 +201,21 @@ function ShortTextInput({
 function OrderingInput({
   question,
   locked,
+  initialAnswer,
+  onProgress,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"ordering">>) {
   return (
     <OrderingQuestion
       items={question.items}
       directionLabels={question.directionLabels}
+      initialItems={
+        Array.isArray(initialAnswer) && initialAnswer.every((item) => typeof item === "string")
+          ? initialAnswer
+          : undefined
+      }
       locked={locked}
+      onProgress={onProgress}
       onSubmit={onSubmit}
     />
   );
@@ -387,6 +398,7 @@ function MiniNonogramInput({
 function QueensInput({
   question,
   locked,
+  initialAnswer,
   onProgress,
   onIncorrectAttempt,
   onSubmit,
@@ -395,6 +407,7 @@ function QueensInput({
     <QueensQuestion
       key={question.id}
       question={question}
+      initialAnswer={isQueensAnswer(initialAnswer) ? initialAnswer : undefined}
       locked={locked}
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}
@@ -489,15 +502,19 @@ function PipesInput({
 function LogicCodeInput({
   question,
   locked,
+  initialAnswer,
   codeAttemptCount,
+  onProgress,
   onCodeAttempt,
 }: QuestionInputProps<QuestionOfType<"logic-code">>) {
   return (
     <LogicCodeQuestion
       clues={question.clues}
       codeLength={question.codeLength}
+      initialDraft={typeof initialAnswer === "string" ? initialAnswer : undefined}
       locked={locked}
       attemptCount={codeAttemptCount}
+      onProgress={onProgress}
       onAttempt={onCodeAttempt}
     />
   );
@@ -524,12 +541,18 @@ function EstimationInput({
 function ErrorReconstructionInput({
   question,
   locked,
+  initialAnswer,
   onProgress,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"error-reconstruction">>) {
   return (
     <ErrorReconstructionQuestionInput
       question={question}
+      initialAnswer={
+        initialAnswer !== undefined && isErrorReconstructionAnswer(initialAnswer)
+          ? initialAnswer
+          : undefined
+      }
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

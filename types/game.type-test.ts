@@ -397,6 +397,34 @@ type ValidNarrativeChallengeDefinition = {
 
 type NarrativeChallengeWithoutNotebook = Omit<ValidNarrativeChallengeDefinition, "notebookEntries">;
 
+type ValidPyramidChallengeDefinition = {
+  id: "pyramid-test";
+  title: "Pyramid";
+  subtitle: "Seven levels";
+  description: "A pyramid challenge";
+  mode: "pyramid";
+  attemptVersion: 1;
+  levels: [
+    { id: "level-1"; label: "Entry"; questionId: "pyramid-square-intruder" },
+    { id: "level-2"; label: "Pattern"; questionId: "pyramid-growing-products" },
+    { id: "level-3"; label: "Order"; questionId: "pyramid-constraint-order" },
+    { id: "level-4"; label: "Lock"; questionId: "pyramid-secret-code" },
+    { id: "level-5"; label: "Summit"; questionId: "pyramid-summit-queens" },
+  ];
+  questionPoints: {
+    "pyramid-square-intruder": 10;
+    "pyramid-growing-products": 15;
+    "pyramid-constraint-order": 20;
+    "pyramid-secret-code": 25;
+    "pyramid-summit-queens": 30;
+  };
+};
+
+type PyramidChallengeWithoutAttemptVersion = Omit<
+  ValidPyramidChallengeDefinition,
+  "attemptVersion"
+>;
+
 export type AcceptsValidMultipleChoice = Assert<IsAssignable<ValidMultipleChoice, Question>>;
 export type AcceptsValidMultipleChoiceWithPromptVisual = Assert<
   IsAssignable<ValidMultipleChoiceWithPromptVisual, Question>
@@ -519,4 +547,10 @@ export type AcceptsValidNarrativeChallengeDefinition = Assert<
 >;
 export type RejectsNarrativeChallengeWithoutNotebook = Assert<
   IsNotAssignable<NarrativeChallengeWithoutNotebook, ChallengeDefinition>
+>;
+export type AcceptsValidPyramidChallengeDefinition = Assert<
+  IsAssignable<ValidPyramidChallengeDefinition, ChallengeDefinition>
+>;
+export type RejectsPyramidChallengeWithoutAttemptVersion = Assert<
+  IsNotAssignable<PyramidChallengeWithoutAttemptVersion, ChallengeDefinition>
 >;

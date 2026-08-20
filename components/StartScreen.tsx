@@ -28,19 +28,15 @@ function formatChallengeDate(value: string) {
 }
 
 function getChallengeStatusLabel(challenge: ChallengeSummary) {
+  if (challenge.implementationStatus === "prototype") return "Vista previa";
   if (!challenge.playable && challenge.availabilityStatus === "available") return "Próximamente";
-  if (
-    challenge.availabilityStatus === "available" &&
-    challenge.implementationStatus === "prototype"
-  ) {
-    return "Vista previa";
-  }
   if (challenge.availabilityStatus === "available") return "Disponible";
   if (challenge.availabilityStatus === "expired") return "Cerrado";
   return "Próximamente";
 }
 
 function getChallengeDateLabel(challenge: ChallengeSummary) {
+  if (challenge.implementationStatus === "prototype") return "Prototipo disponible sin límite";
   if (challenge.availabilityStatus === "expired") {
     return `Cerrado el ${formatChallengeDate(challenge.availableUntil)}`;
   }
@@ -55,6 +51,7 @@ function getChallengeCountLabel(challenge: ChallengeSummary) {
   if (challenge.mode === "alphabet") return `${challenge.questionCount} letras · Alfabeto`;
   if (challenge.mode === "survival") return `${challenge.questionCount} retos · Supervivencia`;
   if (challenge.mode === "narrative") return `${challenge.questionCount} pruebas · Narrativa`;
+  if (challenge.mode === "pyramid") return `${challenge.questionCount} niveles · Pirámide`;
   return `${challenge.questionCount} retos · Flash`;
 }
 
@@ -63,6 +60,7 @@ function getChallengeActionLabel(challenge: ChallengeSummary) {
   if (challenge.mode === "alphabet") return "Jugar Alfabeto";
   if (challenge.mode === "survival") return "Jugar Supervivencia";
   if (challenge.mode === "narrative") return "Jugar Narrativa";
+  if (challenge.mode === "pyramid") return "Jugar Pirámide";
   return "Jugar Flash";
 }
 
@@ -133,13 +131,15 @@ export function StartScreen({
                   </span>
                   <span className={styles.stageSelectAction}>
                     {getChallengeActionLabel(challenge)}
-                    {challenge.playable && <ArrowIcon className="h-4 w-4" />}
+                    {(challenge.playable || challenge.openable) && (
+                      <ArrowIcon className="h-4 w-4" />
+                    )}
                   </span>
                 </span>
               </>
             );
 
-            return challenge.playable ? (
+            return challenge.playable || challenge.openable ? (
               <Link
                 key={challenge.id}
                 className={styles.stageSelectCard}

@@ -10,6 +10,7 @@ type TimerProps = {
   onTimeUp: () => void;
   onTick?: (remaining: number) => void;
   resetKey?: string | number;
+  deadlineAt?: number;
   size?: "default" | "compact";
 };
 
@@ -25,6 +26,7 @@ export function Timer({
   onTimeUp,
   onTick,
   resetKey,
+  deadlineAt,
   size = "default",
 }: TimerProps) {
   const [timerState, setTimerState] = useState<TimerState>({
@@ -43,12 +45,12 @@ export function Timer({
   useEffect(() => {
     if (!active) return;
 
-    const endAt = performance.now() + duration * 1000;
+    const endAt = deadlineAt ?? Date.now() + duration * 1000;
     let frameId = 0;
     let finished = false;
 
     const update = () => {
-      const next = Math.max(0, (endAt - performance.now()) / 1000);
+      const next = Math.max(0, (endAt - Date.now()) / 1000);
       setTimerState({ duration, remaining: next, resetKey });
       onTickRef.current?.(next);
 
@@ -65,7 +67,7 @@ export function Timer({
 
     frameId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frameId);
-  }, [duration, active, resetKey]);
+  }, [deadlineAt, duration, active, resetKey]);
 
   const isCurrentTimerState = timerState.duration === duration && timerState.resetKey === resetKey;
   const visibleRemaining = active && isCurrentTimerState ? timerState.remaining : duration;

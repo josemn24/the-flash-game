@@ -1,6 +1,7 @@
 import type {
   FlashChallenge,
   ProgressiveCluesQuestion,
+  PyramidChallenge,
   Question,
   SurvivalChallenge,
 } from "@/types/game";
@@ -96,4 +97,20 @@ export function withChallengeScoring<T extends FlashChallenge | SurvivalChalleng
       withChallengeQuestionPoints(question, pointValues[index] ?? 0),
     ),
   } as T;
+}
+
+export function withPyramidScoring(challenge: PyramidChallenge): PyramidChallenge {
+  const questionIds = challenge.levels.map((level) => level.question.id);
+  const pointValues = getConfiguredChallengeQuestionPointValues(
+    questionIds,
+    challenge.questionPoints,
+  );
+
+  return {
+    ...challenge,
+    levels: challenge.levels.map((level, index) => ({
+      ...level,
+      question: withChallengeQuestionPoints(level.question, pointValues[index] ?? 0),
+    })),
+  };
 }

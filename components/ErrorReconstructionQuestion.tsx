@@ -8,6 +8,7 @@ import type { ErrorReconstructionAnswer, ErrorReconstructionQuestion } from "@/t
 
 type Props = {
   question: ErrorReconstructionQuestion;
+  initialAnswer?: Partial<ErrorReconstructionAnswer>;
   locked: boolean;
   onProgress: (answer: ErrorReconstructionAnswer) => void;
   onSubmit: (answer: ErrorReconstructionAnswer) => void;
@@ -15,12 +16,15 @@ type Props = {
 
 export function ErrorReconstructionQuestionInput({
   question,
+  initialAnswer,
   locked,
   onProgress,
   onSubmit,
 }: Props) {
-  const [stepId, setStepId] = useState<string>();
-  const [correction, setCorrection] = useState<string>();
+  const [stepId, setStepId] = useState<string | undefined>(initialAnswer?.stepId);
+  const [correction, setCorrection] = useState<string | undefined>(
+    initialAnswer?.correction ?? undefined,
+  );
 
   useEffect(() => {
     if (stepId) onProgress({ stepId, ...(correction ? { correction } : {}) });

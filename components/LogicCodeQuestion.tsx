@@ -9,19 +9,25 @@ import type { LogicCodeClue } from "@/types/game";
 type LogicCodeQuestionProps = {
   clues: LogicCodeClue[];
   codeLength: number;
+  initialDraft?: string;
   locked: boolean;
   attemptCount: number;
+  onProgress?: (code: string) => void;
   onAttempt: (code: string) => boolean;
 };
 
 export function LogicCodeQuestion({
   clues,
   codeLength,
+  initialDraft,
   locked,
   attemptCount,
+  onProgress,
   onAttempt,
 }: LogicCodeQuestionProps) {
-  const [digits, setDigits] = useState<string[]>(() => Array(codeLength).fill(""));
+  const [digits, setDigits] = useState<string[]>(() =>
+    Array.from({ length: codeLength }, (_, index) => initialDraft?.[index] ?? ""),
+  );
   const [feedback, setFeedback] = useState("");
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const code = useMemo(() => digits.join(""), [digits]);
@@ -29,9 +35,11 @@ export function LogicCodeQuestion({
   const updateDigit = (index: number, event: ChangeEvent<HTMLInputElement>) => {
     const incoming = event.target.value.replace(/\D/g, "");
     if (!incoming) {
-      setDigits((current) =>
-        current.map((digit, digitIndex) => (digitIndex === index ? "" : digit)),
-      );
+      setDigits((current) => {
+        const next = current.map((digit, digitIndex) => (digitIndex === index ? "" : digit));
+        onProgress?.(next.join(""));
+        return next;
+      });
       return;
     }
 
@@ -44,6 +52,7 @@ export function LogicCodeQuestion({
       });
     setFeedback("");
     setDigits(nextDigits);
+    onProgress?.(nextDigits.join(""));
     const nextIndex = Math.min(index + incoming.length, codeLength - 1);
     inputRefs.current[nextIndex]?.focus();
     inputRefs.current[nextIndex]?.select();
@@ -54,6 +63,7 @@ export function LogicCodeQuestion({
     const correct = onAttempt(code);
     if (!correct) {
       setDigits(Array(codeLength).fill(""));
+      onProgress?.("");
       setFeedback("Código incorrecto. Prueba otra combinación.");
       inputRefs.current[0]?.focus();
     }
@@ -66,9 +76,11 @@ export function LogicCodeQuestion({
     } else if (event.key === "Backspace" && !digits[index] && index > 0) {
       event.preventDefault();
       inputRefs.current[index - 1]?.focus();
-      setDigits((current) =>
-        current.map((digit, digitIndex) => (digitIndex === index - 1 ? "" : digit)),
-      );
+      setDigits((current) => {
+        const next = current.map((digit, digitIndex) => (digitIndex === index - 1 ? "" : digit));
+        onProgress?.(next.join(""));
+        return next;
+      });
     } else if (event.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     } else if (event.key === "ArrowRight" && index < codeLength - 1) {
@@ -91,7 +103,7 @@ export function LogicCodeQuestion({
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-bold text-white/65">Introduce el código</span>
           <span className="font-mono text-[10px] font-bold tracking-wider text-white/35 uppercase">
-            {attemptCount} {attemptCount === 1 ? "fallo" : "fallos"}
+            {attemptCount} {attemptCount === 1 ? "intento incorrecto" : "intentos incorrectos"}
           </span>
         </div>
 
@@ -121,7 +133,7 @@ export function LogicCodeQuestion({
         </div>
 
         <p className={styles.feedback} role="status" aria-live="polite">
-          {feedback || "Cada fallo resta 15 puntos. El reloj sigue corriendo."}
+          {feedback || "Cada intento incorrecto reduce la puntuación. El reloj sigue corriendo."}
         </p>
 
         <motion.button

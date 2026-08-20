@@ -184,3 +184,86 @@
     line-height: 1.08;
   }
 }
+
+.pyramidProgress {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: flex-end;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pyramidProgress li {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem 0.45rem 0.2rem 0.2rem;
+  color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.pyramidProgress li:nth-child(1) {
+  height: 1.25rem;
+}
+.pyramidProgress li:nth-child(2) {
+  height: 1.5rem;
+}
+.pyramidProgress li:nth-child(3) {
+  height: 1.75rem;
+}
+.pyramidProgress li:nth-child(4) {
+  height: 2rem;
+}
+.pyramidProgress li:nth-child(5) {
+  height: 2.25rem;
+}
+.pyramidProgress li:nth-child(6) {
+  height: 2.5rem;
+}
+.pyramidProgress li:nth-child(7) {
+  height: 2.75rem;
+}
+
+.pyramidProgress li span {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.pyramidProgress li small {
+  display: none;
+}
+
+.pyramidProgress .pyramidProgressCleared {
+  border-color: rgba(215, 255, 24, 0.3);
+  color: var(--electric);
+  background: rgba(215, 255, 24, 0.12);
+}
+
+.pyramidProgress .pyramidProgressCurrent {
+  border-color: var(--electric);
+  color: var(--ink);
+  background: var(--electric);
+  box-shadow: 0 0 18px rgba(215, 255, 24, 0.18);
+}
+
+@media (min-width: 640px) {
+  .pyramidProgress li small {
+    display: block;
+    overflow: hidden;
+    max-width: 100%;
+    padding-inline: 0.15rem;
+    font-size: 0.5rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

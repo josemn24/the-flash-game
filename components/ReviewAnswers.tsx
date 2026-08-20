@@ -18,6 +18,7 @@ import type {
   AnswerResult,
   FlashChallenge,
   NarrativeChallenge,
+  PyramidChallenge,
   SurvivalChallenge,
 } from "@/types/game";
 
@@ -35,10 +36,10 @@ export function ReviewAnswers({
   onReplay,
   notebook,
 }: {
-  challenge: FlashChallenge | SurvivalChallenge | NarrativeChallenge;
+  challenge: FlashChallenge | SurvivalChallenge | NarrativeChallenge | PyramidChallenge;
   results: AnswerResult[];
   onBack: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
   notebook?: { entryCount: number; onOpen: () => void };
 }) {
   const questions =
@@ -46,7 +47,9 @@ export function ReviewAnswers({
       ? challenge.beats.flatMap((beat) =>
           beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
         )
-      : challenge.questions;
+      : challenge.mode === "pyramid"
+        ? challenge.levels.map((level) => level.question)
+        : challenge.questions;
   const narrative = challenge.mode === "narrative";
 
   return (
@@ -194,10 +197,12 @@ export function ReviewAnswers({
         <MotionButton variant="secondary" onClick={onBack} whileTap={{ scale: 0.98 }}>
           Volver al resultado
         </MotionButton>
-        <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
-          <RotateIcon className="h-5 w-5" />
-          Volver a jugar
-        </MotionButton>
+        {onReplay && (
+          <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
+            <RotateIcon className="h-5 w-5" />
+            Volver a jugar
+          </MotionButton>
+        )}
       </div>
     </motion.section>
   );

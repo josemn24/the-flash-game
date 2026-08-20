@@ -115,18 +115,23 @@ export function QueensBoard({
 
 export function QueensQuestion({
   question,
+  initialAnswer,
   locked,
   onProgress,
   onIncorrectAttempt,
   onSubmit,
 }: {
   question: QueensQuestionType;
+  initialAnswer?: Partial<QueensAnswer>;
   locked: boolean;
   onProgress: (answer: QueensAnswer) => void;
   onIncorrectAttempt: () => void;
   onSubmit: (answer: QueensAnswer) => void;
 }) {
-  const [answer, setAnswer] = useState<QueensAnswer>({ queens: [], marks: [] });
+  const [answer, setAnswer] = useState<QueensAnswer>(() => ({
+    queens: Array.isArray(initialAnswer?.queens) ? [...initialAnswer.queens] : [],
+    marks: Array.isArray(initialAnswer?.marks) ? [...initialAnswer.marks] : [],
+  }));
   const [tool, setTool] = useState<QueensTool>("queen");
   const [focusedCell, setFocusedCell] = useState(0);
   const [announcement, setAnnouncement] = useState("Herramienta Corona seleccionada.");
