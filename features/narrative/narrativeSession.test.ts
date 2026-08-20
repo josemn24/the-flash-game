@@ -214,10 +214,53 @@ describe("P-17 narrative session", () => {
     });
 
     expect(transition).toMatchObject({
-      phase: "playing",
+      phase: "transition",
       unlockedEntryIds: ["note-direction"],
       lastTimedOut: timedOut,
       locked: true,
+    });
+  });
+
+  it("advances from the answer transition to the following narrative scene", () => {
+    const transition = narrativeSessionReducer(reachFirstQuestion(), {
+      type: "answer",
+      result: correctResult,
+      timedOut: false,
+      unlockEntryIds: ["note-direction"],
+    });
+
+    const scene = narrativeSessionReducer(transition, {
+      type: "advance",
+      nextStepType: "scene",
+    });
+
+    expect(scene).toMatchObject({
+      phase: "scene",
+      stepIndex: 4,
+      locked: false,
+      results: [correctResult],
+      unlockedEntryIds: ["note-direction"],
+    });
+  });
+
+  it("does not add another result while the answer transition is active", () => {
+    const transition = narrativeSessionReducer(reachFirstQuestion(), {
+      type: "answer",
+      result: correctResult,
+      timedOut: false,
+      unlockEntryIds: ["note-direction"],
+    });
+
+    expect(
+      narrativeSessionReducer(transition, {
+        type: "answer",
+        result: { ...correctResult, timeUsed: 5.1 },
+        timedOut: false,
+        unlockEntryIds: ["note-direction"],
+      }),
+    ).toMatchObject({
+      phase: "transition",
+      results: [correctResult],
     });
   });
 

@@ -18,6 +18,7 @@ import { Logo } from "@/components/Logo";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { ReviewAnswers } from "@/components/ReviewAnswers";
 import { Timer } from "@/components/Timer";
+import { QuestionTransition } from "@/components/QuestionTransition";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/Badge";
 import { MotionButton } from "@/components/ui/MotionButton.client";
@@ -573,6 +574,26 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 onTimedResponseStart={session.handleTimedResponseStart}
                 entryCount={session.unlockedEntries.length}
                 onOpenNotebook={session.openNotebook}
+              />
+            )}
+            {session.phase === "transition" && (
+              <QuestionTransition
+                key={`narrative-transition-${session.stepIndex}`}
+                timedOut={session.lastTimedOut}
+                isLast={false}
+                customCopy={
+                  session.lastTimedOut
+                    ? {
+                        title: "Tiempo agotado",
+                        body: "La evidencia queda anotada. La siguiente escena está lista.",
+                        tone: "danger",
+                      }
+                    : {
+                        title: "Registro actualizado",
+                        body: "La evidencia queda anotada. La siguiente escena está lista.",
+                        tone: "success",
+                      }
+                }
               />
             )}
             {session.phase === "results" && (

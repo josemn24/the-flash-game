@@ -1767,12 +1767,12 @@ export const questionsById = {
     question: "Clasifica cada especie según la región polar en la que vive habitualmente.",
     categories: ["Antártida", "Ártico"],
     items: [
-      { label: "Pingüino emperador", correctCategory: "Antártida" },
-      { label: "Pingüino de Adelia", correctCategory: "Antártida" },
       { label: "Foca de Weddell", correctCategory: "Antártida" },
-      { label: "Oso polar", correctCategory: "Ártico" },
       { label: "Morsa", correctCategory: "Ártico" },
+      { label: "Pingüino emperador", correctCategory: "Antártida" },
       { label: "Zorro ártico", correctCategory: "Ártico" },
+      { label: "Oso polar", correctCategory: "Ártico" },
+      { label: "Pingüino de Adelia", correctCategory: "Antártida" },
     ],
     timeLimit: 35,
     points: 100,
@@ -1937,9 +1937,9 @@ export const questionsById = {
     items: [
       "La colonia avanza hacia el agua abierta",
       "P-17 se separa y toma dirección hacia el interior",
-      "P-17 cruza el campamento base después de retirar el equipo",
-      "La cámara de Nadir registra una identificación compatible con P-17",
       "P-17 abandona Nadir y continúa hacia las montañas",
+      "La cámara de Nadir registra una identificación compatible con P-17",
+      "P-17 cruza el campamento base después de retirar el equipo",
     ],
     correctOrder: [
       "La colonia avanza hacia el agua abierta",
@@ -1974,7 +1974,8 @@ export const questionsById = {
       "P-17 seguía un sonido procedente de las montañas.",
       "P-17 quería encontrar otra colonia en el interior.",
     ],
-    correctAnswer: "P-17 continuó hacia las montañas. La causa de su trayectoria no pudo determinarse.",
+    correctAnswer:
+      "P-17 continuó hacia las montañas. La causa de su trayectoria no pudo determinarse.",
     timeLimit: 40,
     points: 100,
     explanation:
