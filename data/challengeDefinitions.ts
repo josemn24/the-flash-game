@@ -240,7 +240,7 @@ export const challengeDefinitions = {
       },
       {
         id: "trap",
-        label: "Trampa",
+        label: "Conexiones",
         questionId: "pyramid-connect-pairs-trap",
         briefing: {
           title: "Cubre la cuadrícula",
