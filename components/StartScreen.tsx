@@ -177,7 +177,7 @@ export function StartScreen({
 
         <div className="mt-5 flex items-center gap-2 text-sm text-white/40">
           <ClockIcon className="h-4 w-4" />
-          Cada desafío dura menos de 3 minutos
+          Cada desafío está diseñado para jugarse en pocos minutos
         </div>
       </div>
 
