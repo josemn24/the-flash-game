@@ -28,6 +28,7 @@ import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/sli
 import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze";
 import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
 import { scoring as wordHashtagScoring } from "@/lib/scoringCore/questions/wordHashtag";
+import { scoring as wordSearchScoring } from "@/lib/scoringCore/questions/wordSearch";
 import { scoring as zipScoring } from "@/lib/scoringCore/questions/zip";
 import type { QuestionScoring, ScoringPolicyId } from "@/lib/scoringCore/types";
 
@@ -56,6 +57,7 @@ export const SCORING: Record<QuestionType, QuestionScoring> = {
   "error-reconstruction": errorReconstructionScoring,
   anagram: anagramScoring,
   "word-hashtag": wordHashtagScoring,
+  "word-search": wordSearchScoring,
   "mini-wordle": miniWordleScoring,
   "logic-code": logicCodeScoring,
   estimation: estimationScoring,

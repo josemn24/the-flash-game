@@ -252,6 +252,16 @@ export const SCORING_POLICIES = {
     speedBonus: true,
     incorrectPenaltyLabel: "Cada movimiento extra −10 %",
   },
+  "word-search": {
+    id: QUESTION_SCORING_POLICY["word-search"],
+    label: "Palabras y velocidad",
+    summary:
+      "Cada palabra encontrada aporta crédito ajustado por tiempo; las selecciones fallidas no restan puntos.",
+    partialCredit: true,
+    incorrectPenalty: false,
+    speedBonus: true,
+    partialCreditLabel: "Crédito por palabra",
+  },
   "mini-wordle": {
     id: QUESTION_SCORING_POLICY["mini-wordle"],
     label: "Velocidad e intentos",

@@ -75,6 +75,7 @@ import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/sli
 import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze";
 import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
 import { scoring as wordHashtagScoring } from "@/lib/scoringCore/questions/wordHashtag";
+import { scoring as wordSearchScoring } from "@/lib/scoringCore/questions/wordSearch";
 import { scoring as zipScoring } from "@/lib/scoringCore/questions/zip";
 import {
   applyConnectPairsCellSelection,
@@ -232,6 +233,11 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
         ],
       };
       incorrectAnswer = { swaps: [] };
+      incorrectPoints = 0;
+      break;
+    case "word-search":
+      correctAnswer = { foundWordIds: example.targets.map((target) => target.id) };
+      incorrectAnswer = { foundWordIds: [] };
       incorrectPoints = 0;
       break;
     case "mini-wordle":
@@ -1945,6 +1951,7 @@ describe("question evaluation", () => {
     expect(SCORING["time-maze"]).toBe(timeMazeScoring);
     expect(SCORING["true-false"]).toBe(trueFalseScoring);
     expect(SCORING["word-hashtag"]).toBe(wordHashtagScoring);
+    expect(SCORING["word-search"]).toBe(wordSearchScoring);
     expect(SCORING.zip).toBe(zipScoring);
   });
 
@@ -1963,6 +1970,7 @@ describe("question evaluation", () => {
         "memory-pairs",
         "mini-nonogram",
         "mini-sudoku",
+        "word-search",
       ].sort(),
     );
   });

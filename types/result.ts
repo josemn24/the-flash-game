@@ -147,6 +147,13 @@ export type AnswerResultDetails =
       movesRemaining: number;
       optimalMoves: number;
       solved: boolean;
+    }
+  | {
+      type: "word-search";
+      foundWords: number;
+      totalWords: number;
+      incorrectSelections: number;
+      solved: boolean;
     };
 
 export type AnswerResult = {

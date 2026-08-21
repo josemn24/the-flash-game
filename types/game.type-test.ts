@@ -372,6 +372,23 @@ type WordHashtagWithUnsupportedGrid = Omit<ValidWordHashtag, "grid"> & {
   grid: { rows: 6; columns: 6 };
 };
 
+type ValidWordSearch = {
+  id: "valid-word-search";
+  type: "word-search";
+  category: "Test";
+  tags: TestQuestionTags;
+  question: "Find the words";
+  grid: { rows: 6; columns: 6 };
+  letters: string[];
+  targets: [{ id: "sun"; word: "SUN"; startCell: 0; endCell: 2 }];
+  timeLimit: 30;
+  points: 100;
+  explanation: "SUN is on the first row";
+};
+
+type WordSearchWithoutLetters = Omit<ValidWordSearch, "letters">;
+type WordSearchWithoutTargets = Omit<ValidWordSearch, "targets">;
+
 type ValidNarrativeChallengeDefinition = {
   id: "narrative-test";
   title: "Narrative";
@@ -560,6 +577,13 @@ export type RejectsWordHashtagWithoutWords = Assert<
 >;
 export type RejectsWordHashtagWithUnsupportedGrid = Assert<
   IsNotAssignable<WordHashtagWithUnsupportedGrid, Question>
+>;
+export type AcceptsValidWordSearch = Assert<IsAssignable<ValidWordSearch, Question>>;
+export type RejectsWordSearchWithoutLetters = Assert<
+  IsNotAssignable<WordSearchWithoutLetters, Question>
+>;
+export type RejectsWordSearchWithoutTargets = Assert<
+  IsNotAssignable<WordSearchWithoutTargets, Question>
 >;
 export type RejectsSingleImageLabelingWithoutTarget = Assert<
   IsNotAssignable<SingleImageLabelingWithoutTarget, Question>

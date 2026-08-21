@@ -6,6 +6,9 @@ import { ZipBoard } from "@/components/ZipQuestion";
 import { QueensBoard } from "@/components/QueensQuestion";
 import { EscapeBoard } from "@/components/EscapeQuestion";
 import { PipesBoard } from "@/components/PipesQuestion";
+import { WordSearchBoard } from "@/components/WordSearchQuestion";
+import wordSearchStyles from "@/components/WordSearchQuestion.module.css";
+import { CheckIcon } from "@/components/icons";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
@@ -30,6 +33,7 @@ import {
   isTimeMazeAnswer,
   isZipAnswer,
   isPipesAnswer,
+  isWordSearchAnswer,
 } from "@/lib/scoring";
 import { getMiniWordleFeedback } from "@/lib/miniWordle";
 import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
@@ -53,6 +57,7 @@ import type {
   QuestionOfType,
   QuestionType,
   WordHashtagAnswer,
+  WordSearchAnswer,
 } from "@/types/game";
 
 type ReviewProps<T extends Question = Question> = { question: T; result: AnswerResult };
@@ -1208,6 +1213,43 @@ function WordHashtagReview({ question, result }: ReviewProps<QuestionOfType<"wor
   );
 }
 
+function WordSearchReview({ question, result }: ReviewProps<QuestionOfType<"word-search">>) {
+  const answer: WordSearchAnswer = isWordSearchAnswer(result.answer)
+    ? result.answer
+    : { foundWordIds: [] };
+  const details = result.details?.type === "word-search" ? result.details : undefined;
+  const foundIds = new Set(answer.foundWordIds);
+  return (
+    <div className="grid gap-4">
+      <WordSearchBoard question={question} foundWordIds={answer.foundWordIds} revealSolution />
+      <ul className={wordSearchStyles.wordList} aria-label="Resultado de las palabras objetivo">
+        {question.targets.map((target) => {
+          const found = foundIds.has(target.id);
+          return (
+            <li key={target.id} className={found ? wordSearchStyles.wordFound : ""}>
+              {found ? <CheckIcon aria-hidden="true" /> : <span aria-hidden="true">•</span>}
+              <span>{target.word}</span>
+              <span className="sr-only">{found ? "encontrada" : "no encontrada"}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className={styles.answerBox}>
+          <span>Palabras encontradas</span>
+          <strong>
+            {details?.foundWords ?? answer.foundWordIds.length} de {question.targets.length}
+          </strong>
+        </div>
+        <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
+          <span>Selecciones fallidas</span>
+          <strong>{details?.incorrectSelections ?? 0} · sin penalización</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MiniWordleReview({ question, result }: ReviewProps<QuestionOfType<"mini-wordle">>) {
   const answer = isMiniWordleAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "mini-wordle" ? result.details : undefined;
@@ -1281,6 +1323,7 @@ export const QUESTION_REVIEW_RENDERERS = {
   "error-reconstruction": ErrorReconstructionReview,
   anagram: AnagramReview,
   "word-hashtag": WordHashtagReview,
+  "word-search": WordSearchReview,
   "mini-wordle": MiniWordleReview,
   "logic-code": LogicCodeReview,
   estimation: EstimationReview,

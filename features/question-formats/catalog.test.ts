@@ -29,6 +29,7 @@ import {
   calculateMinimumWordHashtagSwaps,
   isValidWordHashtagConfiguration,
 } from "@/lib/wordHashtag";
+import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
@@ -49,9 +50,9 @@ function isPlaceholderScheduledChallenge(
 }
 
 describe("question format catalog", () => {
-  it("contains exactly thirty formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(30);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(30);
+  it("contains exactly thirty-one formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(31);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(31);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -78,6 +79,7 @@ describe("question format catalog", () => {
       "error-reconstruction",
       "anagram",
       "word-hashtag",
+      "word-search",
       "mini-wordle",
       "progressive-image",
       "time-maze",
@@ -129,6 +131,20 @@ describe("question format catalog", () => {
     expect(isValidWordHashtagConfiguration(question)).toBe(true);
     expect(calculateMinimumWordHashtagSwaps(question.initialLetters, solution)).toBe(3);
     expect(question.maxMoves).toBe(3);
+  });
+
+  it("keeps the word-search example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["word-search"].examples[0].question;
+    expect(question.grid).toEqual({ rows: 8, columns: 8 });
+    expect(question.letters).toHaveLength(64);
+    expect(question.targets.map((target) => target.word)).toEqual([
+      "TIGRE",
+      "CEBRA",
+      "PANDA",
+      "KOALA",
+      "LINCE",
+    ]);
+    expect(isValidWordSearchConfiguration(question)).toBe(true);
   });
 
   it("keeps the Mini-Wordle example internally consistent", () => {

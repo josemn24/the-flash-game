@@ -14,6 +14,14 @@ export {
   isValidWordHashtagConfiguration,
   isWordHashtagAnswer,
 } from "@/lib/wordHashtag";
+export {
+  calculateWordSearchMetrics,
+  findWordSearchTarget,
+  getWordSearchPath,
+  getWordSearchTargetPath,
+  isValidWordSearchConfiguration,
+  isWordSearchAnswer,
+} from "@/lib/wordSearch";
 export { isClassificationAnswer } from "@/lib/scoringCore/questions/classification";
 export { isConnectPairsAnswer } from "@/lib/scoringCore/questions/connectPairs";
 export {

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, treinta formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, treinta y un formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuros desafíos, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -34,6 +34,7 @@ La aplicación soporta de forma nativa:
 - anagramas de una palabra mediante fichas de letras, incluidas letras repetidas;
 - Hashtag de palabras con cuatro palabras cruzadas, fichas bloqueadas y movimientos limitados;
 - Mini-Wordle de cuatro letras y cuatro intentos con feedback por posición.
+- sopa de letras con objetivos visibles, selección en ocho direcciones y crédito por palabra.
 - imagen progresivamente revelada con desenfoque automático y un único intento.
 - laberinto contrarreloj con movimiento ortogonal mediante cruceta o teclado.
 - Zip con recorrido único, checkpoints ordenados y cobertura completa de una cuadrícula 5 × 5;
@@ -453,6 +454,18 @@ El jugador intercambia fichas en una cuadrícula con forma de `#` hasta completa
 - **Puntuación actual:** solo resolver concede puntos por velocidad; cada movimiento por encima del mínimo calculado resta un 10 % de los puntos base. El timeout conserva el tablero para revisión con cero puntos.
 - **Accesibilidad:** los estados combinan color, símbolos `✓` y `↔`, etiquetas de posición, botones nativos, navegación por flechas y alternativa por dos toques al arrastre.
 - **Uso actual:** tipo nativo y ejemplo jugable fijo en la biblioteca. No está incluido en desafíos y no incorpora generador, diccionario en runtime ni longitudes variables.
+
+### 40. Sopa de letras — Implementada
+
+El jugador encuentra una o varias palabras ocultas en una cuadrícula de letras. Las palabras pueden aparecer en horizontal, vertical o diagonal y, según la dificultad, también en sentido inverso. Una ronda puede mostrar la lista completa de objetivos, ofrecer pistas temáticas o pedir descubrir las palabras sin revelarlas de antemano.
+
+- **Interacción actual:** seleccionar la primera y la última letra mediante arrastre o dos toques. Las flechas mueven el foco por la cuadrícula y Enter o Espacio fijan los extremos; Escape cancela una selección pendiente. Una palabra válida queda resaltada y completar la lista envía la respuesta automáticamente.
+- **Encaje:** combina vocabulario, exploración visual y velocidad con una regla conocida y fácil de explicar. Funciona como pregunta rápida con una o dos palabras o como desafío especial con una lista breve y una cuadrícula mayor.
+- **Puntuación actual:** crédito parcial por cada palabra encontrada y ajuste por velocidad. Las selecciones incorrectas se registran para revisión, pero no restan puntos; el timeout conserva las palabras encontradas y su crédito.
+- **Autoría recomendada:** cuadrículas compactas, de 6 × 6 a 10 × 10, con entre dos y ocho palabras de una misma temática. La validación comprueba que cada objetivo aparece una sola vez en la posición declarada y rechaza palabras, segmentos o identificadores duplicados.
+- **Accesibilidad:** la selección y las palabras resueltas combinan color, patrón, iconos y texto. Cada celda anuncia coordenadas, letra y estado; el foco itinerante evita recorrer toda la cuadrícula con Tab y ofrece una alternativa completa al arrastre.
+- **Riesgo:** en pantallas pequeñas, una cuadrícula densa puede provocar errores de selección y fatiga visual. Las direcciones permitidas, el tratamiento de tildes y `ñ`, las palabras solapadas y la aceptación de variantes deben definirse de forma explícita para que la validación sea inequívoca.
+- **Uso actual:** tipo nativo y ejemplo jugable de fauna en la biblioteca. No está incluido en desafíos y no incorpora un generador procedural.
 
 ## Priorización de mecánicas pendientes
 
