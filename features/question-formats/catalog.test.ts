@@ -24,6 +24,11 @@ import { isValidEscapeConfiguration } from "@/lib/escape";
 import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
 import { countPipesSolutions, isValidPipesConfiguration } from "@/lib/pipes";
+import {
+  buildWordHashtagSolution,
+  calculateMinimumWordHashtagSwaps,
+  isValidWordHashtagConfiguration,
+} from "@/lib/wordHashtag";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
 import type {
   PlaceholderScheduledChallenge,
@@ -44,9 +49,9 @@ function isPlaceholderScheduledChallenge(
 }
 
 describe("question format catalog", () => {
-  it("contains exactly twenty-nine formats with unique slugs", () => {
-    expect(questionFormats).toHaveLength(29);
-    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(29);
+  it("contains exactly thirty formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(30);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(30);
     expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
       "multiple-choice",
       "odd-one-out",
@@ -72,6 +77,7 @@ describe("question format catalog", () => {
       "escape",
       "error-reconstruction",
       "anagram",
+      "word-hashtag",
       "mini-wordle",
       "progressive-image",
       "time-maze",
@@ -115,6 +121,14 @@ describe("question format catalog", () => {
       );
       expect(question.tiles.map((tile) => tile.value).join("")).not.toBe(question.correctAnswer);
     }
+  });
+
+  it("keeps the Word Hashtag example solvable within its movement limit", () => {
+    const question = QUESTION_FORMAT_CATALOG["word-hashtag"].examples[0].question;
+    const solution = buildWordHashtagSolution(question.words)!;
+    expect(isValidWordHashtagConfiguration(question)).toBe(true);
+    expect(calculateMinimumWordHashtagSwaps(question.initialLetters, solution)).toBe(3);
+    expect(question.maxMoves).toBe(3);
   });
 
   it("keeps the Mini-Wordle example internally consistent", () => {

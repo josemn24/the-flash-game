@@ -2,7 +2,7 @@
 
 ## Propósito
 
-The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, veintisiete formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+The Flash es actualmente un sprint de preguntas individual con dos desafíos locales, treinta formatos y una biblioteca con ejemplos jugables. Puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
 
 Este documento distingue las mecánicas ya disponibles de las candidatas para futuros desafíos, eventos y modos competitivos. No compromete por sí mismo el alcance de una siguiente versión.
 
@@ -32,6 +32,7 @@ La aplicación soporta de forma nativa:
 - rompecabezas deslizante 3 × 3 con fichas numéricas y resolución automática;
 - reconstrucción del error con detección del primer paso inválido y corrección guiada opcional;
 - anagramas de una palabra mediante fichas de letras, incluidas letras repetidas;
+- Hashtag de palabras con cuatro palabras cruzadas, fichas bloqueadas y movimientos limitados;
 - Mini-Wordle de cuatro letras y cuatro intentos con feedback por posición.
 - imagen progresivamente revelada con desenfoque automático y un único intento.
 - laberinto contrarreloj con movimiento ortogonal mediante cruceta o teclado.
@@ -443,6 +444,15 @@ El jugador libera un bloque objetivo amarillo desplazando obstáculos horizontal
 - **Puntuación actual:** resolución binaria ajustada por velocidad. Los movimientos se comparan con un óptimo editorial en la revisión, pero no penalizan; el timeout conserva el tablero con cero puntos.
 - **Accesibilidad:** los bloques combinan color, patrón, símbolo y etiquetas de posición; las flechas recorren los destinos legales uno a uno con foco y anuncios accesibles.
 - **Uso actual:** tipo nativo y un único ejemplo jugable en la biblioteca. No está incluido en desafíos y no incorpora generador ni solver de búsqueda.
+
+### 39. Hashtag de palabras — Implementada
+
+El jugador intercambia fichas en una cuadrícula con forma de `#` hasta completar dos palabras horizontales y dos verticales de cinco letras. Las cuatro intersecciones hacen que una misma casilla participe en dos palabras.
+
+- **Interacción actual:** seleccionar dos fichas amarillas mediante toque o teclado, o arrastrar una sobre otra. Las letras verdes correctas quedan bloqueadas y cada intercambio válido consume un movimiento.
+- **Puntuación actual:** solo resolver concede puntos por velocidad; cada movimiento por encima del mínimo calculado resta un 10 % de los puntos base. El timeout conserva el tablero para revisión con cero puntos.
+- **Accesibilidad:** los estados combinan color, símbolos `✓` y `↔`, etiquetas de posición, botones nativos, navegación por flechas y alternativa por dos toques al arrastre.
+- **Uso actual:** tipo nativo y ejemplo jugable fijo en la biblioteca. No está incluido en desafíos y no incorpora generador, diccionario en runtime ni longitudes variables.
 
 ## Priorización de mecánicas pendientes
 

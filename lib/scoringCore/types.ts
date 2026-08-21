@@ -10,6 +10,7 @@ export type ScoringPolicyId =
   | "binary-speed"
   | "partial-items"
   | "attempt-penalty"
+  | "movement-penalty"
   | "proximity"
   | "clue-speed"
   | "spatial-proximity"

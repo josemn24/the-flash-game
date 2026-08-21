@@ -75,6 +75,8 @@ Puzzle de partición de cuadrícula, relacionado con la familia Shikaku. El juga
 
 ### Hashtag de palabras
 
+> **Estado:** implementada exclusivamente en la biblioteca de formatos, con cuatro palabras de cinco letras, tablero editorial fijo, fichas correctas bloqueadas y penalización por movimientos adicionales. El generador y las longitudes variables continúan como evolución futura.
+
 Puzzle de palabras con una cuadrícula que forma un símbolo `#`. El jugador debe descubrir varias palabras ocultas que se cruzan y mover o intercambiar fichas de letras hasta colocarlas correctamente. Las intersecciones hacen que una misma letra pueda aportar información a dos palabras, por lo que hay que resolverlas de forma conjunta y no como anagramas independientes.
 
 - **Interacción:** arrastrar una ficha sobre otra o intercambiar dos letras para reorganizar el tablero. Las letras correctas pueden quedar bloqueadas; las fichas usadas en intersecciones deben actualizar simultáneamente las palabras afectadas. La ronda termina al formar todas las palabras o al agotar el límite de movimientos.

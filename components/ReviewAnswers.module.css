@@ -547,6 +547,45 @@
   color: rgba(255, 255, 255, 0.68);
   background: rgba(255, 255, 255, 0.09);
 }
+.wordHashtagReviewPair {
+  display: grid;
+  gap: 1rem;
+}
+.wordHashtagReviewBoard {
+  display: grid;
+  width: min(100%, 18rem);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(0.18rem, 1vw, 0.4rem);
+  margin-top: 0.5rem;
+}
+.wordHashtagReviewTile {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: clamp(0.35rem, 1vw, 0.58rem);
+  color: #11150a;
+  box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
+}
+.wordHashtagReviewTile b {
+  font-family: var(--font-display);
+  font-size: clamp(0.78rem, 3vw, 1.35rem);
+  font-weight: 950;
+}
+.wordHashtagReviewTile small {
+  position: absolute;
+  right: 0.12rem;
+  bottom: 0.08rem;
+  font-size: clamp(0.38rem, 1.2vw, 0.55rem);
+  font-weight: 950;
+}
+.wordHashtagReviewCorrect {
+  background: #74c900;
+}
+.wordHashtagReviewDisplaced {
+  background: #ffc400;
+}
 @media (min-width: 640px) {
   .reviewCard summary {
     gap: 1rem;
@@ -563,5 +602,8 @@
   }
   .escapeReviewPair {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .wordHashtagReviewPair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

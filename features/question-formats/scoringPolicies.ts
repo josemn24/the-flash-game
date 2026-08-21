@@ -242,6 +242,16 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
+  "word-hashtag": {
+    id: QUESTION_SCORING_POLICY["word-hashtag"],
+    label: "Velocidad y eficiencia",
+    summary:
+      "Resolver concede puntos por velocidad; cada intercambio por encima del mínimo resta un 10 % de los puntos base.",
+    partialCredit: false,
+    incorrectPenalty: true,
+    speedBonus: true,
+    incorrectPenaltyLabel: "Cada movimiento extra −10 %",
+  },
   "mini-wordle": {
     id: QUESTION_SCORING_POLICY["mini-wordle"],
     label: "Velocidad e intentos",

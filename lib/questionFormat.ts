@@ -25,6 +25,7 @@ export const QUESTION_FORMAT_LABELS = {
   escape: "Escape",
   "error-reconstruction": "Reconstruir error",
   anagram: "Anagrama",
+  "word-hashtag": "Hashtag",
   "mini-wordle": "Mini-Wordle",
   "logic-code": "Código lógico",
   estimation: "Estimación",

@@ -28,7 +28,7 @@ No existen backend, base de datos, autenticación, usuarios, creación de salas,
 | ------------------------- | --------------------------------------------------------------- |
 | `/`                       | Presentación, selector de desafíos y acceso a la biblioteca.    |
 | `/desafios/[challengeId]` | Validación del desafío y sesión jugable completa.               |
-| `/formatos`               | Catálogo de los veintisiete formatos disponibles.               |
+| `/formatos`               | Catálogo de los treinta formatos disponibles.                   |
 | `/formatos/[slug]`        | Reglas, puntuación, autoría, accesibilidad y ejemplos jugables. |
 
 El modo Flash recorre estos estados:
@@ -86,6 +86,7 @@ Ambos desafíos se publican desde `demoRoom.activeSeason.scheduledChallenges`, a
 | Rompecabezas deslizante  | Desplazar fichas adyacentes hasta resolver un tablero 3 × 3.        | Resolución exacta y velocidad; los movimientos no penalizan.                     |
 | Reconstrucción del error | Localizar el primer paso inválido y, opcionalmente, corregirlo.     | 60 % por localizar y 40 % por corregir, ajustado por velocidad.                  |
 | Anagramas                | Ordenar fichas de letras para formar una palabra.                   | Acierto exacto y velocidad; un fallo no puntúa.                                  |
+| Hashtag de palabras      | Intercambiar letras en cuatro palabras cruzadas de cinco letras.    | Velocidad y penalización del 10 % por cada movimiento sobre el mínimo.           |
 | Mini-Wordle              | Descubrir una palabra de cuatro letras en cuatro intentos.          | Velocidad y penalización del 10 % por intento fallido previo.                    |
 | Imagen progresiva        | Identificar una imagen mientras desaparece su desenfoque.           | Acierto binario por velocidad; un fallo o timeout no puntúan.                    |
 | Laberinto contrarreloj   | Guiar una ficha por una cuadrícula mediante cruceta o flechas.      | Resolver puntúa por velocidad; los movimientos adicionales no penalizan.         |
@@ -120,6 +121,8 @@ En «Mapa de calor», las coordenadas se normalizan respecto a la fuente origina
 En el etiquetado múltiple, cada anclaje correcto aporta la misma fracción del valor base; las etiquetas son únicas y todas las zonas deben completarse antes de confirmar. En la identificación única, una elección correcta o un texto equivalente puntúan de forma binaria y por velocidad: una elección incorrecta resta el 20 %, mientras que el texto incorrecto no penaliza.
 
 En Mini-Wordle, un vocabulario español general se genera offline desde Hunspell y se carga bajo demanda antes de iniciar el cronómetro. La comparación ignora mayúsculas y tildes, conserva la distinción entre `N` y `Ñ`, y gestiona letras repetidas mediante el recuento restante de la solución. Cada pregunta puede declarar adiciones editoriales; el timeout conserva los intentos para la revisión, pero no concede puntos.
+
+En «Hashtag de palabras», cuatro palabras de cinco letras comparten una cuadrícula fija con forma de `#`. Las fichas correctas quedan bloqueadas; las demás se intercambian mediante toque, teclado o arrastre. Solo resolver puntúa, y cada movimiento por encima del mínimo calculado resta un 10 % de los puntos base después de aplicar la velocidad. El timeout conserva el tablero para revisión con cero puntos.
 
 En «Conectar parejas», el tablero 5 × 5 exige rutas ortogonales sin cruces ni casillas compartidas. La respuesta correcta conecta todas las parejas y cubre las 25 casillas; el progreso válido puede puntuar parcialmente mediante `min(parejas conectadas, cobertura)` ajustado por velocidad. Un timeout conserva las rutas enviadas para la revisión y mantiene crédito parcial si hay progreso real.
 
@@ -162,6 +165,7 @@ El ejemplo reutiliza `Timer`, `QuestionInput`, `evaluateAnswer` y `QuestionRevie
 - El mapa de calor solo envía una coordenada confirmada; la revisión reutiliza la superficie para superponer selección, objetivo, tolerancia y distancia.
 - Etiquetar imagen discrimina entre `assign-all` e `identify-one`. La primera conserva localmente las asociaciones y solo envía el mapa completo al confirmar; la segunda envía inmediatamente la opción elegida o el texto introducido. Ambas revisiones superponen la elección y la solución y mantienen un resumen textual.
 - Mini-Wordle descarga una vez el vocabulario versionado, lo reutiliza como `Set` durante la sesión y conserva únicamente los intentos válidos enviados; al resolver, consumir cuatro intentos o agotar el tiempo, el evaluador recibe el historial completo.
+- Hashtag de palabras conserva la secuencia de intercambios, reconstruye el tablero de forma determinista y calcula el mínimo mediante búsqueda memoizada; la primera versión solo se publica como ejemplo de biblioteca.
 - Los componentes universales como `Badge`, `Logo`, `AppHeader` y `Button` pueden utilizarse desde ambos grafos.
 - `MotionButton.client.tsx` contiene la mejora animada de la primitiva universal.
 - Motion respeta la preferencia del sistema mediante `MotionConfig reducedMotion="user"`; las decoraciones sencillas utilizan CSS.
@@ -206,7 +210,7 @@ npm run format:check
 npm run build
 ```
 
-Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, los desafíos publicados y las veintisiete fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva`, `/formatos/laberinto-contrarreloj` y `/formatos/queens`.
+Los tests actuales cubren la integridad del catálogo de formatos y las reglas de evaluación y puntuación. El build genera estáticamente la portada, la biblioteca, los desafíos publicados y las treinta fichas de formato, incluidas `/formatos/conectar-parejas`, `/formatos/hashtag-de-palabras`, `/formatos/memoria-de-parejas`, `/formatos/mini-wordle`, `/formatos/imagen-progresiva`, `/formatos/laberinto-contrarreloj` y `/formatos/queens`.
 
 ## Evolución pendiente
 

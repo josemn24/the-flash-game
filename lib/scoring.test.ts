@@ -74,6 +74,7 @@ import { scoring as simonSequenceScoring } from "@/lib/scoringCore/questions/sim
 import { scoring as slidingPuzzleScoring } from "@/lib/scoringCore/questions/slidingPuzzle";
 import { scoring as timeMazeScoring } from "@/lib/scoringCore/questions/timeMaze";
 import { scoring as trueFalseScoring } from "@/lib/scoringCore/questions/trueFalse";
+import { scoring as wordHashtagScoring } from "@/lib/scoringCore/questions/wordHashtag";
 import { scoring as zipScoring } from "@/lib/scoringCore/questions/zip";
 import {
   applyConnectPairsCellSelection,
@@ -220,6 +221,17 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "anagram":
       correctAnswer = example.correctAnswer;
       incorrectAnswer = example.tiles.map((tile) => tile.value).join("");
+      incorrectPoints = 0;
+      break;
+    case "word-hashtag":
+      correctAnswer = {
+        swaps: [
+          { fromCell: 1, toCell: 7 },
+          { fromCell: 5, toCell: 13 },
+          { fromCell: 16, toCell: 19 },
+        ],
+      };
+      incorrectAnswer = { swaps: [] };
       incorrectPoints = 0;
       break;
     case "mini-wordle":
@@ -1932,6 +1944,7 @@ describe("question evaluation", () => {
     expect(SCORING.escape).toBe(escapeScoring);
     expect(SCORING["time-maze"]).toBe(timeMazeScoring);
     expect(SCORING["true-false"]).toBe(trueFalseScoring);
+    expect(SCORING["word-hashtag"]).toBe(wordHashtagScoring);
     expect(SCORING.zip).toBe(zipScoring);
   });
 

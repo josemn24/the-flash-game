@@ -417,6 +417,26 @@ export type AnagramQuestion = BaseQuestion & {
   hint?: string;
 };
 
+export type WordHashtagWords = {
+  top: string;
+  bottom: string;
+  left: string;
+  right: string;
+};
+
+export type WordHashtagSwap = {
+  fromCell: number;
+  toCell: number;
+};
+
+export type WordHashtagQuestion = BaseQuestion & {
+  type: "word-hashtag";
+  grid: { rows: 5; columns: 5 };
+  words: WordHashtagWords;
+  initialLetters: Array<string | null>;
+  maxMoves: number;
+};
+
 export type MiniWordleQuestion = BaseQuestion & {
   type: "mini-wordle";
   correctAnswer: string;
@@ -451,6 +471,7 @@ export type Question =
   | EscapeQuestion
   | ErrorReconstructionQuestion
   | AnagramQuestion
+  | WordHashtagQuestion
   | MiniWordleQuestion
   | LogicCodeQuestion
   | EstimationQuestion;
@@ -473,6 +494,7 @@ export type PipesAnswer = { rotations: number[]; moves: number };
 export type SlidingPuzzleAnswer = { tiles: Array<number | null>; moves: number };
 export type EscapeAnswer = { moves: EscapeMove[] };
 export type ErrorReconstructionAnswer = { stepId: string; correction?: string | null };
+export type WordHashtagAnswer = { swaps: WordHashtagSwap[] };
 export type MiniWordleAnswer = { guesses: string[] };
 export type AnswerValue =
   | string
@@ -493,6 +515,7 @@ export type AnswerValue =
   | SlidingPuzzleAnswer
   | EscapeAnswer
   | ErrorReconstructionAnswer
+  | WordHashtagAnswer
   | MiniWordleAnswer
   | HeatMapAnswer
   | ImageLabelingAnswer;

@@ -9,6 +9,11 @@ export {
 export { QUESTION_SCORING_POLICY, SCORING } from "@/lib/scoringCore/registry";
 export { calculateQuestionScore } from "@/lib/scoringCore/shared";
 export { isValidAnagramConfiguration } from "@/lib/scoringCore/questions/anagram";
+export {
+  calculateWordHashtagMetrics,
+  isValidWordHashtagConfiguration,
+  isWordHashtagAnswer,
+} from "@/lib/wordHashtag";
 export { isClassificationAnswer } from "@/lib/scoringCore/questions/classification";
 export { isConnectPairsAnswer } from "@/lib/scoringCore/questions/connectPairs";
 export {

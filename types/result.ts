@@ -136,6 +136,17 @@ export type AnswerResultDetails =
       attemptsUsed: number;
       incorrectAttempts: number;
       solved: boolean;
+    }
+  | {
+      type: "word-hashtag";
+      correctCells: number;
+      totalCells: number;
+      completedWords: number;
+      totalWords: number;
+      movesUsed: number;
+      movesRemaining: number;
+      optimalMoves: number;
+      solved: boolean;
     };
 
 export type AnswerResult = {

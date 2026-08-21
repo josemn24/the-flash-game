@@ -352,6 +352,26 @@ type MemoryPairsTileWithoutPair = Omit<ValidMemoryPairs, "tiles"> & {
   tiles: [{ id: "sun-a"; label: "Sun" }];
 };
 
+type ValidWordHashtag = {
+  id: "valid-word-hashtag";
+  type: "word-hashtag";
+  category: "Test";
+  tags: TestQuestionTags;
+  question: "Complete the words";
+  grid: { rows: 5; columns: 5 };
+  words: { top: "YOGUI"; bottom: "REUMA"; left: "PONER"; right: "QUEMA" };
+  initialLetters: Array<string | null>;
+  maxMoves: 3;
+  timeLimit: 20;
+  points: 150;
+  explanation: "Swap A and E";
+};
+
+type WordHashtagWithoutWords = Omit<ValidWordHashtag, "words">;
+type WordHashtagWithUnsupportedGrid = Omit<ValidWordHashtag, "grid"> & {
+  grid: { rows: 6; columns: 6 };
+};
+
 type ValidNarrativeChallengeDefinition = {
   id: "narrative-test";
   title: "Narrative";
@@ -533,6 +553,13 @@ export type RejectsMemoryPairsWithoutTiles = Assert<
 >;
 export type RejectsMemoryPairsTileWithoutPair = Assert<
   IsNotAssignable<MemoryPairsTileWithoutPair, Question>
+>;
+export type AcceptsValidWordHashtag = Assert<IsAssignable<ValidWordHashtag, Question>>;
+export type RejectsWordHashtagWithoutWords = Assert<
+  IsNotAssignable<WordHashtagWithoutWords, Question>
+>;
+export type RejectsWordHashtagWithUnsupportedGrid = Assert<
+  IsNotAssignable<WordHashtagWithUnsupportedGrid, Question>
 >;
 export type RejectsSingleImageLabelingWithoutTarget = Assert<
   IsNotAssignable<SingleImageLabelingWithoutTarget, Question>

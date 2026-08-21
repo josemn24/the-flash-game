@@ -30,11 +30,16 @@ import { QueensQuestion } from "@/components/QueensQuestion";
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
+import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
 import { ZipQuestion } from "@/components/ZipQuestion";
 import { PipesQuestion } from "@/components/PipesQuestion";
 import styles from "@/components/QuestionScreen.module.css";
 import { isQueensAnswer } from "@/lib/queens";
-import { isConnectPairsAnswer, isErrorReconstructionAnswer } from "@/lib/scoring";
+import {
+  isConnectPairsAnswer,
+  isErrorReconstructionAnswer,
+  isWordHashtagAnswer,
+} from "@/lib/scoring";
 import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
@@ -582,6 +587,25 @@ function AnagramInput({
   );
 }
 
+function WordHashtagInput({
+  question,
+  locked,
+  initialAnswer,
+  onProgress,
+  onSubmit,
+}: QuestionInputProps<QuestionOfType<"word-hashtag">>) {
+  return (
+    <WordHashtagQuestion
+      key={question.id}
+      question={question}
+      initialAnswer={isWordHashtagAnswer(initialAnswer) ? initialAnswer : undefined}
+      locked={locked}
+      onProgress={onProgress}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
 function MiniWordleInput({
   question,
   locked,
@@ -627,6 +651,7 @@ export const QUESTION_INPUT_RENDERERS = {
   escape: EscapeInput,
   "error-reconstruction": ErrorReconstructionInput,
   anagram: AnagramInput,
+  "word-hashtag": WordHashtagInput,
   "mini-wordle": MiniWordleInput,
   "logic-code": LogicCodeInput,
   estimation: EstimationInput,
