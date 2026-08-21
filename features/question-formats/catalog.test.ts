@@ -369,7 +369,7 @@ describe("question format catalog", () => {
       86_399_999, 172_799_999, 259_199_999, 777_599_999, 777_599_999, 86_399_999, 86_399_999,
       86_399_999, 86_399_999,
     ]);
-    expect(challenges).toHaveLength(5);
+    expect(challenges).toHaveLength(6);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
     const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
     const survivalChallenge = challenges.find((challenge) => challenge.mode === "survival");
@@ -545,6 +545,7 @@ describe("question format catalog", () => {
       "tabarnia-challenge-03",
       "tabarnia-challenge-04",
       "tabarnia-challenge-05",
+      "tabarnia-challenge-06",
     ]);
     expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
       "demo-challenge-definition",
@@ -552,6 +553,7 @@ describe("question format catalog", () => {
       "spain-survival-definition",
       "antarctica-narrative-definition",
       "pyramid-logic-definition",
+      "pyramid-abrahamic-definition",
     ]);
     expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
     expect(getChallengeById("tabarnia-challenge-02")?.definitionId).toBe(
@@ -589,7 +591,7 @@ describe("question format catalog", () => {
 
   it("keeps the mock question table consistent", () => {
     const questionIds = Object.keys(questionsById) as QuestionId[];
-    expect(questionIds).toHaveLength(100);
+    expect(questionIds).toHaveLength(105);
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
 
@@ -604,7 +606,7 @@ describe("question format catalog", () => {
 
   it("keeps challenge definitions connected to valid questions", () => {
     const definitions = Object.values(challengeDefinitions);
-    expect(definitions).toHaveLength(6);
+    expect(definitions).toHaveLength(7);
     expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
     expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
     expect(
@@ -637,6 +639,11 @@ describe("question format catalog", () => {
     const pyramidDefinition = challengeDefinitions["pyramid-logic-definition"];
     expect(getPyramidQuestionIds(pyramidDefinition)).toHaveLength(7);
     expect(Object.values(pyramidDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
+    const abrahamicPyramidDefinition = challengeDefinitions["pyramid-abrahamic-definition"];
+    expect(getPyramidQuestionIds(abrahamicPyramidDefinition)).toHaveLength(7);
+    expect(
+      Object.values(abrahamicPyramidDefinition.questionPoints).reduce((a, b) => a + b, 0),
+    ).toBe(100);
     expect(
       definitions.every((definition) => {
         const questionIds =

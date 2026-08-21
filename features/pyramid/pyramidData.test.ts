@@ -7,6 +7,7 @@ import {
 } from "@/data/challenges";
 import { questionsById } from "@/data/questions";
 import { withPyramidScoring } from "@/lib/challengeScoring";
+import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { evaluateAnswer, isValidLogicMatrixConfiguration } from "@/lib/scoring";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
@@ -101,5 +102,136 @@ describe("La Pirámide: Cumbre lógica", () => {
     expect(timedOut).toMatchObject({ status: "partial", isCorrect: false });
     expect(normalizePyramidResult(partial).points).toBe(0);
     expect(normalizePyramidResult(timedOut).points).toBe(0);
+  });
+});
+
+describe("La Pirámide: Biblia y religiones abrahámicas", () => {
+  it("defines seven unique levels worth exactly 100 points", () => {
+    const definition = challengeDefinitions["pyramid-abrahamic-definition"];
+    expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();
+    expect(definition.attemptVersion).toBe(1);
+    expect(getPyramidQuestionIds(definition)).toEqual([
+      "abrahamic-matching-biblical-associations",
+      "abrahamic-progressive-abraham",
+      "abrahamic-order-torah-books",
+      "abrahamic-mini-wordle-josue",
+      "abrahamic-word-search-biblical-characters",
+      "abrahamic-classification-three-traditions",
+      "abrahamic-word-hashtag-references",
+    ]);
+    expect(Object.values(definition.questionPoints).reduce((sum, points) => sum + points, 0)).toBe(
+      100,
+    );
+  });
+
+  it("resolves the scheduled challenge with increasing point values and the expected formats", () => {
+    const challenge = getChallengeById("tabarnia-challenge-06");
+    expect(challenge?.mode).toBe("pyramid");
+    if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
+
+    const scored = withPyramidScoring(challenge);
+    expect(scored.levels.map((level) => level.question.points)).toEqual([7, 9, 11, 14, 16, 19, 24]);
+    expect(scored.levels.map((level) => level.question.type)).toEqual([
+      "matching",
+      "progressive-clues",
+      "ordering",
+      "mini-wordle",
+      "word-search",
+      "classification",
+      "word-hashtag",
+    ]);
+  });
+
+  it("accepts the authored answers and stops on partial word search or classification", () => {
+    const challenge = getChallengeById("tabarnia-challenge-06");
+    if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
+    const levels = withPyramidScoring(challenge).levels;
+    const matching = levels[0]?.question;
+    const clues = levels[1]?.question;
+    const ordering = levels[2]?.question;
+    const wordle = levels[3]?.question;
+    const wordSearch = levels[4]?.question;
+    const classification = levels[5]?.question;
+    if (
+      matching?.type !== "matching" ||
+      clues?.type !== "progressive-clues" ||
+      ordering?.type !== "ordering" ||
+      wordle?.type !== "mini-wordle" ||
+      wordSearch?.type !== "word-search" ||
+      classification?.type !== "classification"
+    ) {
+      throw new Error("Unexpected Abrahamic pyramid question types");
+    }
+
+    expect(
+      evaluateAnswer({
+        question: matching,
+        answer: { noe: "arca", moises: "exodo", david: "goliat", jesus: "nazaret" },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", isCorrect: true });
+    expect(evaluateAnswer({ question: clues, answer: "Abraham", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      isCorrect: true,
+    });
+    expect(evaluateAnswer({ question: clues, answer: "Ibrahim", timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      isCorrect: true,
+    });
+    expect(
+      evaluateAnswer({ question: ordering, answer: ordering.correctOrder, timeUsed: 0 }),
+    ).toMatchObject({
+      status: "correct",
+      isCorrect: true,
+    });
+    expect(
+      evaluateAnswer({
+        question: wordle,
+        answer: { guesses: ["ANGEL", "ALTAR", "AYUNO", "BABEL", "BELEN", "JOSUE"] },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", isCorrect: true });
+
+    const partialSearch = evaluateAnswer({
+      question: wordSearch,
+      answer: { foundWordIds: ["isaac"] },
+      timeUsed: 0,
+    });
+    const partialClassification = evaluateAnswer({
+      question: classification,
+      answer: { Torá: "Judaísmo" },
+      timeUsed: 0,
+    });
+    expect(partialSearch).toMatchObject({ status: "partial", isCorrect: false });
+    expect(partialClassification).toMatchObject({ status: "partial", isCorrect: false });
+    expect(normalizePyramidResult(partialSearch).points).toBe(0);
+    expect(normalizePyramidResult(partialClassification).points).toBe(0);
+  });
+
+  it("uses the scheduled availability window", () => {
+    const challenge = getChallengeById("tabarnia-challenge-06");
+    if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
+
+    expect(
+      getChallengeAvailabilityStatus(
+        challenge.availableFrom,
+        challenge.availableUntil,
+        new Date("2026-08-25T21:59:59.999Z"),
+      ),
+    ).toBe("locked");
+    expect(
+      getChallengeAvailabilityStatus(
+        challenge.availableFrom,
+        challenge.availableUntil,
+        new Date("2026-08-26T10:00:00.000Z"),
+      ),
+    ).toBe("available");
+    expect(
+      getChallengeAvailabilityStatus(
+        challenge.availableFrom,
+        challenge.availableUntil,
+        new Date("2026-08-26T22:00:00.000Z"),
+      ),
+    ).toBe("expired");
   });
 });

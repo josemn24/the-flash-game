@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, CSSProperties } from "react";
 import { HeatMapSurface } from "@/components/HeatMapQuestion";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
@@ -35,7 +35,11 @@ import {
   isPipesAnswer,
   isWordSearchAnswer,
 } from "@/lib/scoring";
-import { getMiniWordleFeedback } from "@/lib/miniWordle";
+import {
+  getMiniWordleFeedback,
+  getMiniWordleMaxAttempts,
+  getMiniWordleWordLength,
+} from "@/lib/miniWordle";
 import { calculateProgressiveImageReveal } from "@/lib/progressiveImage";
 import { findShortestTimeMazePath, getTimeMazeStartIndex } from "@/lib/timeMaze";
 import { replayEscapeMoves } from "@/lib/escape";
@@ -1253,10 +1257,16 @@ function WordSearchReview({ question, result }: ReviewProps<QuestionOfType<"word
 function MiniWordleReview({ question, result }: ReviewProps<QuestionOfType<"mini-wordle">>) {
   const answer = isMiniWordleAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "mini-wordle" ? result.details : undefined;
+  const wordLength = getMiniWordleWordLength(question);
+  const maxAttempts = getMiniWordleMaxAttempts(question);
   return (
     <div className="grid gap-3">
       {answer?.guesses.length ? (
-        <div className={styles.wordleReview} aria-label="Intentos realizados">
+        <div
+          className={styles.wordleReview}
+          style={{ "--mini-wordle-columns": wordLength } as CSSProperties}
+          aria-label="Intentos realizados"
+        >
           {answer.guesses.map((guess, rowIndex) => (
             <div key={`${guess}-${rowIndex}`} className={styles.wordleReviewRow}>
               {getMiniWordleFeedback(guess, question.correctAnswer).map((item, index) => (
@@ -1286,7 +1296,9 @@ function MiniWordleReview({ question, result }: ReviewProps<QuestionOfType<"mini
       <div className="grid gap-3 sm:grid-cols-2">
         <div className={styles.answerBox}>
           <span>Intentos utilizados</span>
-          <strong>{details?.attemptsUsed ?? 0} de 4</strong>
+          <strong>
+            {details?.attemptsUsed ?? 0} de {maxAttempts}
+          </strong>
         </div>
         <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
           <span>Solución</span>

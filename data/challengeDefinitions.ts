@@ -282,6 +282,97 @@ export const challengeDefinitions = {
       "pyramid-summit-queens": 24,
     },
   },
+  "pyramid-abrahamic-definition": {
+    id: "pyramid-abrahamic-definition",
+    title: "La Pirámide: Biblia y religiones abrahámicas",
+    subtitle: "Siete niveles. Una herencia compartida.",
+    description:
+      "Asciende por siete pruebas sobre personajes, textos y tradiciones del judaísmo, el cristianismo y el islam. Solo un acierto completo abre el siguiente nivel.",
+    mode: "pyramid",
+    attemptVersion: 1,
+    levels: [
+      {
+        id: "entrance",
+        label: "Entrada",
+        questionId: "abrahamic-matching-biblical-associations",
+        briefing: {
+          title: "Relaciona las figuras",
+          format: "Emparejamiento",
+          description: "Asocia cada personaje bíblico con una referencia ampliamente reconocida.",
+        },
+      },
+      {
+        id: "patriarch",
+        label: "Patriarca",
+        questionId: "abrahamic-progressive-abraham",
+        briefing: {
+          title: "Sigue las pistas",
+          format: "Adivinanza por pistas",
+          description: "Identifica una figura compartida por las tres tradiciones.",
+        },
+      },
+      {
+        id: "torah",
+        label: "Torá",
+        questionId: "abrahamic-order-torah-books",
+        briefing: {
+          title: "Ordena los libros",
+          format: "Ordenación",
+          description: "Reconstruye el orden tradicional de los cinco libros de la Torá.",
+        },
+      },
+      {
+        id: "name",
+        label: "Nombre",
+        questionId: "abrahamic-mini-wordle-josue",
+        briefing: {
+          title: "Descifra el nombre",
+          format: "Mini-Wordle",
+          description:
+            "Encuentra un personaje bíblico de cinco letras antes de agotar los intentos.",
+        },
+      },
+      {
+        id: "search",
+        label: "Búsqueda",
+        questionId: "abrahamic-word-search-biblical-characters",
+        briefing: {
+          title: "Busca los personajes",
+          format: "Sopa de letras",
+          description: "Localiza los seis nombres ocultos en la cuadrícula.",
+        },
+      },
+      {
+        id: "traditions",
+        label: "Tradiciones",
+        questionId: "abrahamic-classification-three-traditions",
+        briefing: {
+          title: "Traza el mapa",
+          format: "Clasificación",
+          description: "Distingue los elementos asociados principalmente a cada tradición.",
+        },
+      },
+      {
+        id: "summit",
+        label: "Cima",
+        questionId: "abrahamic-word-hashtag-references",
+        briefing: {
+          title: "Conquista la cima",
+          format: "Hashtag de palabras",
+          description: "Completa cuatro referencias cruzadas con el menor número de movimientos.",
+        },
+      },
+    ],
+    questionPoints: {
+      "abrahamic-matching-biblical-associations": 7,
+      "abrahamic-progressive-abraham": 9,
+      "abrahamic-order-torah-books": 11,
+      "abrahamic-mini-wordle-josue": 14,
+      "abrahamic-word-search-biblical-characters": 16,
+      "abrahamic-classification-three-traditions": 19,
+      "abrahamic-word-hashtag-references": 24,
+    },
+  },
   "antarctica-narrative-definition": {
     id: "antarctica-narrative-definition",
     title: "El que caminaba hacia las montañas",

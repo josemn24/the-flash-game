@@ -1,6 +1,14 @@
 "use client";
 
-import { type FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type FormEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import styles from "@/components/MiniWordleQuestion.module.css";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import {
@@ -120,7 +128,11 @@ export function MiniWordleQuestion({
     <div className={styles.root}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
-      <section className={styles.board} aria-label="Intentos de Mini-Wordle">
+      <section
+        className={styles.board}
+        style={{ "--mini-wordle-columns": wordLength } as CSSProperties}
+        aria-label="Intentos de Mini-Wordle"
+      >
         {Array.from({ length: maxAttempts }, (_, rowIndex) => {
           const guess = guesses[rowIndex];
           const feedback = guess ? getMiniWordleFeedback(guess, correctAnswer) : null;
