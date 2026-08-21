@@ -643,6 +643,8 @@ function MiniWordleInput({
       correctAnswer={question.correctAnswer}
       additionalGuesses={question.additionalGuesses}
       hint={question.hint}
+      wordLength={question.wordLength}
+      maxAttempts={question.maxAttempts}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

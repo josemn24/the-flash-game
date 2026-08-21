@@ -629,6 +629,36 @@ describe("question evaluation", () => {
     ]);
   });
 
+  it("supports five-letter Mini-Wordle games with six attempts", () => {
+    const question: MiniWordleQuestion = {
+      ...QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question,
+      correctAnswer: "JOSUÉ",
+      additionalGuesses: ["ANGEL", "ALTAR", "AYUNO", "BABEL", "BELEN"],
+      wordLength: 5,
+      maxAttempts: 6,
+    };
+    const guesses = ["ANGEL", "ALTAR", "AYUNO", "BABEL", "BELEN", "JOSUE"];
+
+    expect(isValidMiniWordleConfiguration(question)).toBe(true);
+    expect(normalizeMiniWordleWord("josué")).toBe("JOSUE");
+    expect(getMiniWordleFeedback("SASAS", "SABAS")).toEqual([
+      { letter: "S", status: "correct" },
+      { letter: "A", status: "correct" },
+      { letter: "S", status: "absent" },
+      { letter: "A", status: "correct" },
+      { letter: "S", status: "correct" },
+    ]);
+    expect(calculateMiniWordleMetrics(question, { guesses })).toMatchObject({
+      valid: true,
+      solved: true,
+      attemptsUsed: 6,
+      incorrectAttempts: 5,
+    });
+    expect(calculateMiniWordleMetrics(question, { guesses: [...guesses, "JOSUE"] }).valid).toBe(
+      false,
+    );
+  });
+
   it("validates Mini-Wordle configuration and answer shapes", () => {
     const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
     expect(isValidMiniWordleConfiguration(question)).toBe(true);

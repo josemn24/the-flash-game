@@ -5,9 +5,9 @@ import styles from "@/components/MiniWordleQuestion.module.css";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import {
   getMiniWordleFeedback,
+  getMiniWordleMaxAttempts,
+  getMiniWordleWordLength,
   isValidMiniWordleWord,
-  MINI_WORDLE_MAX_ATTEMPTS,
-  MINI_WORDLE_WORD_LENGTH,
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
 import { loadMiniWordleDictionary } from "@/lib/miniWordleDictionary";
@@ -17,6 +17,8 @@ type Props = {
   correctAnswer: string;
   additionalGuesses?: string[];
   hint?: string;
+  wordLength?: 4 | 5;
+  maxAttempts?: number;
   locked: boolean;
   onProgress: (answer: MiniWordleAnswer) => void;
   onSubmit: (answer: MiniWordleAnswer) => void;
@@ -39,11 +41,15 @@ export function MiniWordleQuestion({
   correctAnswer,
   additionalGuesses = [],
   hint,
+  wordLength: configuredWordLength,
+  maxAttempts: configuredMaxAttempts,
   locked,
   onProgress,
   onSubmit,
   onTimedResponseStart,
 }: Props) {
+  const wordLength = getMiniWordleWordLength({ wordLength: configuredWordLength });
+  const maxAttempts = getMiniWordleMaxAttempts({ maxAttempts: configuredMaxAttempts });
   const [guesses, setGuesses] = useState<string[]>([]);
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +62,7 @@ export function MiniWordleQuestion({
 
   useEffect(() => {
     let active = true;
-    loadMiniWordleDictionary()
+    loadMiniWordleDictionary(wordLength)
       .then((words) => {
         if (active) setDictionary(words);
       })
@@ -66,7 +72,7 @@ export function MiniWordleQuestion({
     return () => {
       active = false;
     };
-  }, [loadAttempt]);
+  }, [loadAttempt, wordLength]);
 
   useEffect(() => {
     if (!dictionary || timedResponseStartedRef.current) return;
@@ -88,11 +94,11 @@ export function MiniWordleQuestion({
 
   const submitGuess = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!dictionaryReady || locked || guesses.length >= MINI_WORDLE_MAX_ATTEMPTS) return;
+    if (!dictionaryReady || locked || guesses.length >= maxAttempts) return;
 
     const guess = normalizeMiniWordleWord(value);
-    if (!isValidMiniWordleWord(guess)) {
-      setError(`Escribe una palabra de ${MINI_WORDLE_WORD_LENGTH} letras.`);
+    if (!isValidMiniWordleWord(guess, wordLength)) {
+      setError(`Escribe una palabra de ${wordLength} letras.`);
       return;
     }
     if (!normalizedValidGuesses.has(guess)) {
@@ -107,7 +113,7 @@ export function MiniWordleQuestion({
     setValue("");
     setError("");
     onProgress(answer);
-    if (solved || nextGuesses.length === MINI_WORDLE_MAX_ATTEMPTS) onSubmit(answer);
+    if (solved || nextGuesses.length === maxAttempts) onSubmit(answer);
   };
 
   return (
@@ -115,7 +121,7 @@ export function MiniWordleQuestion({
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
       <section className={styles.board} aria-label="Intentos de Mini-Wordle">
-        {Array.from({ length: MINI_WORDLE_MAX_ATTEMPTS }, (_, rowIndex) => {
+        {Array.from({ length: maxAttempts }, (_, rowIndex) => {
           const guess = guesses[rowIndex];
           const feedback = guess ? getMiniWordleFeedback(guess, correctAnswer) : null;
           return (
@@ -124,7 +130,7 @@ export function MiniWordleQuestion({
               className={styles.row}
               aria-label={`Intento ${rowIndex + 1}${guess ? `: ${guess}` : ", vacío"}`}
             >
-              {Array.from({ length: MINI_WORDLE_WORD_LENGTH }, (_, columnIndex) => {
+              {Array.from({ length: wordLength }, (_, columnIndex) => {
                 const item = feedback?.[columnIndex];
                 return (
                   <span
@@ -174,8 +180,8 @@ export function MiniWordleQuestion({
             id={inputId}
             type="text"
             value={value}
-            maxLength={MINI_WORDLE_WORD_LENGTH}
-            disabled={!dictionaryReady || locked || guesses.length >= MINI_WORDLE_MAX_ATTEMPTS}
+            maxLength={wordLength}
+            disabled={!dictionaryReady || locked || guesses.length >= maxAttempts}
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
@@ -187,12 +193,7 @@ export function MiniWordleQuestion({
           />
           <MotionButton
             type="submit"
-            disabled={
-              !dictionaryReady ||
-              locked ||
-              !value.trim() ||
-              guesses.length >= MINI_WORDLE_MAX_ATTEMPTS
-            }
+            disabled={!dictionaryReady || locked || !value.trim() || guesses.length >= maxAttempts}
             whileTap={{ scale: 0.985 }}
           >
             Enviar
@@ -200,8 +201,7 @@ export function MiniWordleQuestion({
         </div>
         <div className={styles.formMeta}>
           <span>
-            Intento {Math.min(guesses.length + 1, MINI_WORDLE_MAX_ATTEMPTS)} de{" "}
-            {MINI_WORDLE_MAX_ATTEMPTS}
+            Intento {Math.min(guesses.length + 1, maxAttempts)} de {maxAttempts}
           </span>
           <span className={styles.error} role="status" aria-live="polite">
             {error}

@@ -456,6 +456,8 @@ export type MiniWordleQuestion = BaseQuestion & {
   correctAnswer: string;
   additionalGuesses?: string[];
   hint?: string;
+  wordLength?: 4 | 5;
+  maxAttempts?: number;
 };
 
 export type Question =

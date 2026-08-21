@@ -14,15 +14,15 @@ La Pirámide tendrá siete niveles con dificultad creciente. Un nivel solo se co
 
 ## Pruebas
 
-| Nivel | Formato | Tema | Estado |
-| --- | --- | --- | --- |
-| 1 | Emparejamiento | Personajes y asociaciones bíblicas | Definida provisionalmente |
-| 2 | Adivinanza por pistas | Patriarca compartido por las religiones abrahámicas | Definida provisionalmente |
-| 3 | Ordenación | Los cinco libros de la Torá | Definida provisionalmente |
-| 4 | Mini-Wordle | Personaje bíblico: Josué | Definida provisionalmente |
-| 5 | Sopa de letras | Personajes bíblicos | Definida provisionalmente |
-| 6 | Clasificación | El mapa de las tres tradiciones | Definida provisionalmente |
-| 7 | Hashtag | Personaje, lugar, texto y elemento religioso — Cima | Definida provisionalmente |
+| Nivel | Formato               | Tema                                                | Estado                    |
+| ----- | --------------------- | --------------------------------------------------- | ------------------------- |
+| 1     | Emparejamiento        | Personajes y asociaciones bíblicas                  | Definida provisionalmente |
+| 2     | Adivinanza por pistas | Patriarca compartido por las religiones abrahámicas | Definida provisionalmente |
+| 3     | Ordenación            | Los cinco libros de la Torá                         | Definida provisionalmente |
+| 4     | Mini-Wordle           | Personaje bíblico: Josué                            | Definida provisionalmente |
+| 5     | Sopa de letras        | Personajes bíblicos                                 | Definida provisionalmente |
+| 6     | Clasificación         | El mapa de las tres tradiciones                     | Definida provisionalmente |
+| 7     | Hashtag               | Personaje, lugar, texto y elemento religioso — Cima | Definida provisionalmente |
 
 ## Prueba 1 — Emparejamiento: personajes y asociaciones bíblicas
 
@@ -41,11 +41,11 @@ Relacionar cuatro personajes bíblicos con la asociación más conocida de cada 
 - **Condición de éxito:** completar las cuatro parejas para superar el nivel.
 
 | Personaje | Asociación |
-| --- | --- |
-| Noé | Arca |
-| Moisés | Éxodo |
-| David | Goliat |
-| Jesús | Nazaret |
+| --------- | ---------- |
+| Noé       | Arca       |
+| Moisés    | Éxodo      |
+| David     | Goliat     |
+| Jesús     | Nazaret    |
 
 ### Criterio editorial
 
@@ -62,7 +62,7 @@ Se han elegido asociaciones muy reconocibles y se ha evitado incluir varias resp
 - Un timeout o una respuesta incompleta hacen fallar el nivel y bloquean la subida al siguiente peldaño.
 - La puntuación se ajusta por velocidad y conserva la penalización vigente por intentos incorrectos.
 
-### Configuración técnica orientativa
+### Configuración técnica validada
 
 ```ts
 {
@@ -348,28 +348,90 @@ La prueba busca los nombres, no distinguir entre las diferentes figuras bíblica
   category: "Biblia y religiones abrahámicas",
   question: "Encuentra los seis personajes bíblicos ocultos en la cuadrícula.",
   grid: { rows: 8, columns: 8 },
-  letters: "Pendiente de generar",
+  letters: [
+    "F", "W", "N", "E", "C", "E", "C", "I",
+    "H", "C", "J", "P", "S", "M", "V", "G",
+    "Y", "A", "Q", "A", "E", "T", "O", "G",
+    "H", "A", "V", "C", "C", "D", "E", "U",
+    "R", "S", "E", "J", "Y", "O", "R", "R",
+    "J", "I", "I", "U", "E", "D", "B", "O",
+    "G", "K", "J", "U", "D", "A", "S", "V",
+    "F", "H", "L", "E", "I", "N", "A", "D",
+  ],
   targets: [
-    { id: "isaac", word: "ISAAC", startCell: 0, endCell: 0 },
-    { id: "jacob", word: "JACOB", startCell: 0, endCell: 0 },
-    { id: "ester", word: "ESTER", startCell: 0, endCell: 0 },
-    { id: "daniel", word: "DANIEL", startCell: 0, endCell: 0 },
-    { id: "judas", word: "JUDAS", startCell: 0, endCell: 0 },
-    { id: "pedro", word: "PEDRO", startCell: 0, endCell: 0 },
+    { id: "isaac", word: "ISAAC", startCell: 41, endCell: 9 },
+    { id: "jacob", word: "JACOB", startCell: 10, endCell: 46 },
+    { id: "ester", word: "ESTER", startCell: 3, endCell: 39 },
+    { id: "daniel", word: "DANIEL", startCell: 63, endCell: 58 },
+    { id: "judas", word: "JUDAS", startCell: 50, endCell: 54 },
+    { id: "pedro", word: "PEDRO", startCell: 11, endCell: 47 },
   ],
   timeLimit: 45,
   points: 16,
 }
 ```
 
-Los valores de `letters`, `startCell` y `endCell` son provisionales y deben sustituirse por una cuadrícula validada antes de implementar la prueba.
+La cuadrícula se valida en el catálogo: contiene las seis palabras una única vez, con rutas horizontales, verticales y diagonales, y combina sentidos directo e inverso.
 
-### Pendientes de implementación
+## Prueba 6 — Clasificación: el mapa de las tres tradiciones
 
-- Generar una cuadrícula 8 × 8 con una única aparición de cada objetivo.
-- Comprobar que las palabras no formen segmentos objetivo accidentales en otras posiciones.
-- Decidir cuántas palabras se colocan en diagonal o en sentido inverso.
-- Validar que la densidad de la cuadrícula sea exigente, pero cómoda en móvil.
+### Objetivo
+
+Clasificar nueve elementos según la tradición religiosa con la que se relacionan principalmente: judaísmo, cristianismo o islam.
+
+La prueba funciona como nivel avanzado porque exige distinguir textos, celebraciones, símbolos y lugares de culto sin apoyarse únicamente en personajes compartidos por varias tradiciones.
+
+### Configuración editorial
+
+- **Formato:** Clasificación.
+- **Pregunta:** «Clasifica cada elemento según la tradición religiosa con la que se relaciona principalmente».
+- **Categorías:** Judaísmo, Cristianismo e Islam.
+- **Elementos:** nueve, tres por categoría.
+- **Tiempo límite propuesto:** 50 segundos.
+- **Puntuación provisional:** 19 puntos como sexto nivel.
+- **Dificultad:** alta.
+- **Condición de éxito:** clasificar correctamente los nueve elementos.
+
+| Judaísmo | Cristianismo | Islam   |
+| -------- | ------------ | ------- |
+| Torá     | Evangelios   | Corán   |
+| Pésaj    | Cruz         | Ramadán |
+| Menorá   | Navidad      | Kaaba   |
+
+### Criterio editorial
+
+Los elementos se han elegido por su asociación principal y suficientemente reconocible. No se deben utilizar figuras como Abraham, Moisés, Jesús o María porque tienen presencia relevante en más de una tradición. La categoría indica la asociación principal esperada en esta prueba, no exclusividad histórica.
+
+### Reglas dentro de la Pirámide
+
+- Las nueve tarjetas aparecen mezcladas y se pueden corregir antes de confirmar.
+- Solo nueve aciertos desbloquean el séptimo nivel; un resultado parcial queda disponible para revisión, pero termina el ascenso.
+- Un error en la confirmación o el timeout hacen fallar el desafío completo.
+
+### Configuración técnica orientativa
+
+```ts
+{
+  id: "abrahamic-classification-three-traditions",
+  type: "classification",
+  category: "Biblia y religiones abrahámicas",
+  question: "Clasifica cada elemento según la tradición religiosa con la que se relaciona principalmente.",
+  categories: ["Judaísmo", "Cristianismo", "Islam"],
+  items: [
+    { label: "Torá", correctCategory: "Judaísmo" },
+    { label: "Pésaj", correctCategory: "Judaísmo" },
+    { label: "Menorá", correctCategory: "Judaísmo" },
+    { label: "Evangelios", correctCategory: "Cristianismo" },
+    { label: "Cruz", correctCategory: "Cristianismo" },
+    { label: "Navidad", correctCategory: "Cristianismo" },
+    { label: "Corán", correctCategory: "Islam" },
+    { label: "Ramadán", correctCategory: "Islam" },
+    { label: "Kaaba", correctCategory: "Islam" },
+  ],
+  timeLimit: 50,
+  points: 19,
+}
+```
 
 ## Prueba 7 — Hashtag: cuatro referencias cruzadas — Cima
 
@@ -438,7 +500,7 @@ La dificultad debe proceder de la planificación y de las intersecciones, no de 
 - Resolver con más movimientos que el mínimo reduce la puntuación, manteniendo la política actual de Hashtag.
 - Agotar los movimientos o el tiempo implica fallar el nivel de la Pirámide.
 
-### Configuración técnica orientativa
+### Configuración técnica validada
 
 ```ts
 {
@@ -454,96 +516,17 @@ La dificultad debe proceder de la planificación y de las intersecciones, no de 
     left: "TABOR",
     right: "ALTAR",
   },
-  initialLetters: "Pendiente de generar",
+  initialLetters: [
+    null, "T", null, "A", null,
+    "H", "A", "P", "B", "L",
+    null, "B", null, "O", null,
+    "T", "O", "R", "A", "T",
+    null, "R", null, "R", null,
+  ],
   maxMoves: 7,
   timeLimit: 45,
   points: 24,
 }
 ```
 
-### Pendientes de implementación
-
-- Generar un estado inicial que utilice exactamente las letras de la solución.
-- Verificar con el solver que el estado inicial requiere cinco movimientos óptimos.
-- Confirmar que siete movimientos ofrecen margen suficiente sin trivializar la prueba.
-- Revisar si `TORAH` debe mostrarse siempre sin tilde y documentar la normalización de vocabulario.
-  - Añadir la prueba a la Pirámide cuando se cierre el orden definitivo de los siete niveles.
-
-## Prueba 6 — Clasificación: el mapa de las tres tradiciones
-
-### Objetivo
-
-Clasificar nueve elementos según la tradición religiosa con la que se relacionan principalmente: judaísmo, cristianismo o islam.
-
-La prueba funciona como nivel avanzado porque exige distinguir textos, celebraciones, símbolos y lugares de culto sin apoyarse únicamente en personajes compartidos por varias tradiciones.
-
-### Configuración editorial
-
-- **Formato:** Clasificación.
-- **Pregunta:** «Clasifica cada elemento según la tradición religiosa con la que se relaciona principalmente».
-- **Categorías:** Judaísmo, Cristianismo e Islam.
-- **Elementos:** nueve, tres por categoría.
-- **Tiempo límite propuesto:** 50 segundos.
-- **Puntuación provisional:** 19 puntos como sexto nivel.
-- **Dificultad:** alta.
-- **Condición de éxito:** clasificar correctamente los nueve elementos.
-
-| Judaísmo | Cristianismo | Islam |
-| --- | --- | --- |
-| Torá | Evangelios | Corán |
-| Pésaj | Cruz | Ramadán |
-| Menorá | Navidad | Kaaba |
-
-### Criterio editorial
-
-Los elementos se han elegido por su asociación principal y suficientemente reconocible con cada tradición:
-
-- **Judaísmo:** la Torá, Pésaj y la menorá.
-- **Cristianismo:** los Evangelios, la cruz y Navidad.
-- **Islam:** el Corán, Ramadán y la Kaaba.
-
-No se deben utilizar en esta prueba figuras como Abraham, Moisés, Jesús o María, porque tienen presencia relevante en más de una tradición y podrían generar respuestas razonables en varias categorías.
-
-La clasificación no pretende afirmar que una tradición tenga la exclusividad histórica de todos los elementos relacionados con ella. La categoría se refiere a la asociación principal que se espera en el contexto de esta prueba.
-
-### Reglas dentro de la Pirámide
-
-- Las nueve tarjetas aparecen mezcladas.
-- El jugador debe colocar cada tarjeta en una de las tres categorías.
-- Puede corregir sus decisiones antes de confirmar.
-- La prueba se considera superada únicamente con nueve aciertos.
-- Los aciertos parciales pueden conservarse para la revisión del resultado, pero no desbloquean el séptimo nivel.
-- Un error en la confirmación o el timeout hacen fallar el desafío completo.
-
-### Configuración técnica orientativa
-
-```ts
-{
-  id: "abrahamic-classification-three-traditions",
-  type: "classification",
-  category: "Biblia y religiones abrahámicas",
-  question: "Clasifica cada elemento según la tradición religiosa con la que se relaciona principalmente.",
-  categories: ["Judaísmo", "Cristianismo", "Islam"],
-  items: [
-    { label: "Torá", correctCategory: "Judaísmo" },
-    { label: "Pésaj", correctCategory: "Judaísmo" },
-    { label: "Menorá", correctCategory: "Judaísmo" },
-    { label: "Evangelios", correctCategory: "Cristianismo" },
-    { label: "Cruz", correctCategory: "Cristianismo" },
-    { label: "Navidad", correctCategory: "Cristianismo" },
-    { label: "Corán", correctCategory: "Islam" },
-    { label: "Ramadán", correctCategory: "Islam" },
-    { label: "Kaaba", correctCategory: "Islam" },
-  ],
-  timeLimit: 50,
-  points: 19,
-}
-```
-
-### Motivos para utilizarla como sexto nivel
-
-- Prepara el tramo final recuperando las tres tradiciones que definen su tema.
-- Es más exigente que las pruebas anteriores porque requiere nueve decisiones correctas.
-- Combina reconocimiento cultural, vocabulario religioso y precisión.
-- La solución es verificable y no depende de una cronología discutible.
-- Utiliza una mecánica ya disponible y permite una confirmación final clara.
+El estado inicial usa exactamente las dieciséis letras de la solución. El solver lo resuelve en cinco intercambios y el máximo de siete conserva dos movimientos de margen. `TORAH` se muestra sin tilde, igual que en la configuración del tablero.

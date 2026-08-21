@@ -3,11 +3,19 @@ import { fileURLToPath } from "node:url";
 import dictionary from "dictionary-es";
 import nspell from "nspell";
 
-const WORD_LENGTH = 4;
+const SUPPORTED_WORD_LENGTHS = new Set([4, 5]);
+const lengthArgument = process.argv.find((argument) => argument.startsWith("--length="));
+const WORD_LENGTH = lengthArgument ? Number(lengthArgument.slice("--length=".length)) : 4;
+if (!SUPPORTED_WORD_LENGTHS.has(WORD_LENGTH)) {
+  throw new Error("Usa --length=4 o --length=5.");
+}
 const ALPHABET = Array.from("abcdefghijklmnñopqrstuvwxyzáéíóúü");
-const OUTPUT_URL = new URL("../public/dictionaries/es-general-4.v1.json", import.meta.url);
+const OUTPUT_URL = new URL(
+  `../public/dictionaries/es-general-${WORD_LENGTH}.v1.json`,
+  import.meta.url,
+);
 const OVERRIDES_URL = new URL(
-  "../data/dictionaries/mini-wordle-es-4.overrides.json",
+  `../data/dictionaries/mini-wordle-es-${WORD_LENGTH}.overrides.json`,
   import.meta.url,
 );
 
@@ -36,16 +44,14 @@ async function buildDictionaryPayload() {
   const spell = nspell(dictionary);
   const accepted = new Set();
 
-  for (const first of ALPHABET) {
-    for (const second of ALPHABET) {
-      for (const third of ALPHABET) {
-        for (const fourth of ALPHABET) {
-          const candidate = first + second + third + fourth;
-          if (spell.correct(candidate)) accepted.add(normalizeWord(candidate));
-        }
-      }
+  function collectWords(prefix) {
+    if (prefix.length === WORD_LENGTH) {
+      if (spell.correct(prefix)) accepted.add(normalizeWord(prefix));
+      return;
     }
+    for (const letter of ALPHABET) collectWords(prefix + letter);
   }
+  collectWords("");
 
   const overrides = JSON.parse(await readFile(OVERRIDES_URL, "utf8"));
   const allow = validateOverrideList("allow", overrides.allow);
@@ -59,7 +65,7 @@ async function buildDictionaryPayload() {
 
   return {
     schemaVersion: 1,
-    id: "es-general-4",
+    id: `es-general-${WORD_LENGTH}`,
     source: {
       package: "dictionary-es@4.0.0",
       upstream: "https://github.com/sbosio/rla-es",

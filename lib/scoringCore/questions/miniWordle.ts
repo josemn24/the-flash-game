@@ -6,7 +6,8 @@ import type {
   Question,
 } from "@/types/game";
 import {
-  MINI_WORDLE_MAX_ATTEMPTS,
+  getMiniWordleMaxAttempts,
+  getMiniWordleWordLength,
   isValidMiniWordleConfiguration,
   isValidMiniWordleWord,
   normalizeMiniWordleWord,
@@ -36,12 +37,14 @@ export function isMiniWordleAnswer(answer: AnswerValue | null): answer is MiniWo
 export function calculateMiniWordleMetrics(question: MiniWordleQuestion, answer: MiniWordleAnswer) {
   const normalizedGuesses = answer.guesses.map(normalizeMiniWordleWord);
   const solution = normalizeMiniWordleWord(question.correctAnswer);
+  const wordLength = getMiniWordleWordLength(question);
+  const maxAttempts = getMiniWordleMaxAttempts(question);
   const solutionIndex = normalizedGuesses.indexOf(solution);
   const valid =
     isValidMiniWordleConfiguration(question) &&
     normalizedGuesses.length > 0 &&
-    normalizedGuesses.length <= MINI_WORDLE_MAX_ATTEMPTS &&
-    answer.guesses.every(isValidMiniWordleWord) &&
+    normalizedGuesses.length <= maxAttempts &&
+    answer.guesses.every((guess) => isValidMiniWordleWord(guess, wordLength)) &&
     (solutionIndex === -1 || solutionIndex === normalizedGuesses.length - 1);
   const solved = valid && normalizedGuesses.at(-1) === solution;
   const incorrectAttempts = solved ? normalizedGuesses.length - 1 : normalizedGuesses.length;

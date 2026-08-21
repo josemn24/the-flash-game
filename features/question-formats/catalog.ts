@@ -2091,10 +2091,11 @@ export const QUESTION_FORMAT_CATALOG = {
     slug: "mini-wordle",
     name: "Mini-Wordle",
     shortName: "Wordle",
-    summary: "Descubrir una palabra de cuatro letras en un máximo de cuatro intentos.",
+    summary:
+      "Descubrir una palabra de cuatro o cinco letras en un número configurable de intentos.",
     description: [
-      "El jugador escribe palabras válidas de cuatro letras. Después de cada intento, cada casilla indica si la letra está en la posición correcta, aparece en otra posición o no pertenece a la solución.",
-      "La ronda termina al resolver la palabra o consumir cuatro intentos. Un vocabulario español generado desde Hunspell se carga antes de iniciar el cronómetro y valida los intentos sin depender de servicios externos durante la partida.",
+      "El jugador escribe palabras válidas de la longitud configurada. Después de cada intento, cada casilla indica si la letra está en la posición correcta, aparece en otra posición o no pertenece a la solución.",
+      "La ronda termina al resolver la palabra o consumir los intentos configurados. Un vocabulario español generado desde Hunspell se carga antes de iniciar el cronómetro y valida los intentos sin depender de servicios externos durante la partida.",
     ],
     recommendations: [
       "Desafíos especiales de lenguaje",
@@ -2107,10 +2108,10 @@ export const QUESTION_FORMAT_CATALOG = {
       "Se necesita una pregunta de respuesta inmediata",
     ],
     rules: [
-      "Cada intento debe ser una palabra válida de cuatro letras",
+      "Cada intento debe ser una palabra válida de la longitud configurada",
       "Las casillas distinguen posición correcta, letra desplazada y letra ausente",
       "Los intentos no válidos no consumen una oportunidad",
-      "Resolver o fallar el cuarto intento termina la ronda",
+      "Resolver o consumir el último intento termina la ronda",
     ],
     authoringTips: [
       "Comprueba que la solución pertenezca al vocabulario general o declárala como adición editorial",
@@ -2126,7 +2127,7 @@ export const QUESTION_FORMAT_CATALOG = {
     timing: {
       recommendedSeconds: "30–45 s",
       notes:
-        "Es un desafío especial más largo que una pregunta convencional; cuatro intentos mantienen la ronda contenida.",
+        "Es un desafío especial más largo que una pregunta convencional; ajusta el tiempo a la longitud y el número de intentos.",
     },
     scoring: SCORING_POLICIES["mini-wordle"],
     examples: [
