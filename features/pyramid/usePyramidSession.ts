@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  advancePyramidToNextBriefing,
   armPyramidLevel,
+  beginPyramidLevel,
   completePyramidAttempt,
   createPyramidAttempt,
   getPyramidAttemptStorageKey,
@@ -18,7 +20,7 @@ const TRANSITION_DURATION = 900;
 const STORAGE_PROBE_KEY = "the-flash:pyramid-storage-probe";
 
 export type PyramidSessionPhase =
-  "loading" | "intro" | "confirm" | "playing" | "transition" | "results" | "review";
+  "loading" | "intro" | "confirm" | "briefing" | "playing" | "transition" | "results" | "review";
 
 function storageIsAvailable() {
   try {
@@ -54,21 +56,13 @@ export function usePyramidSession(challenge: PyramidChallenge) {
 
   const advanceFromTransition = useCallback(
     (source: PyramidAttemptRecord) => {
-      const next: PyramidAttemptRecord = {
-        ...source,
-        phase: "playing",
-        currentLevelIndex: source.currentLevelIndex + 1,
-        levelStartedAt: null,
-        deadlineAt: null,
-        draftAnswer: null,
-        submittedCodes: [],
-        incorrectAttempts: 0,
-      };
+      const next = advancePyramidToNextBriefing(source, challenge.levels.length);
+      if (next === source) return;
       answerLock.current = false;
       persist(next);
-      setPhase("playing");
+      setPhase("briefing");
     },
-    [persist],
+    [challenge.levels.length, persist],
   );
 
   const submitAnswer = useCallback(
@@ -154,6 +148,10 @@ export function usePyramidSession(challenge: PyramidChallenge) {
         advanceFromTransition(loaded);
         return;
       }
+      if (loaded.phase === "briefing") {
+        setPhase("briefing");
+        return;
+      }
       setPhase("playing");
     },
     [advanceFromTransition, challenge.levels, submitAnswer],
@@ -218,8 +216,18 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     }
     const next = createPyramidAttempt(challenge, Date.now());
     persist(next);
-    setPhase("playing");
+    setPhase("briefing");
   }, [applyLoadedRecord, challenge, persist, storageAvailable, storageKey]);
+
+  const beginLevel = useCallback(() => {
+    const current = recordRef.current;
+    if (!current || current.status === "completed") return;
+    const next = beginPyramidLevel(current);
+    if (next === current) return;
+    answerLock.current = false;
+    persist(next);
+    setPhase("playing");
+  }, [persist]);
 
   const armCurrentLevel = useCallback(() => {
     const current = recordRef.current;
@@ -235,7 +243,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     answerLock.current = false;
     const next = createPyramidAttempt(challenge, Date.now());
     persist(next);
-    setPhase("playing");
+    setPhase("briefing");
   }, [challenge, persist]);
 
   const handleTimeUp = useCallback(() => {
@@ -315,6 +323,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     showConfirmation: () => setPhase("confirm"),
     hideConfirmation: () => setPhase("intro"),
     start,
+    beginLevel,
     restart,
     armCurrentLevel,
     submitAnswer,

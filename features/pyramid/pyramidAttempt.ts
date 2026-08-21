@@ -1,9 +1,9 @@
 import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/game";
 
-export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 1;
+export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 2;
 
 export type PyramidAttemptOutcome = "failed" | "summit";
-export type PyramidAttemptPhase = "playing" | "transition" | "completed";
+export type PyramidAttemptPhase = "briefing" | "playing" | "transition" | "completed";
 
 export type PyramidAttemptSummary = {
   challengeId: string;
@@ -58,7 +58,7 @@ export function createPyramidAttempt(
     definitionId: challenge.definitionId,
     attemptVersion: challenge.attemptVersion,
     status: "in-progress",
-    phase: "playing",
+    phase: "briefing",
     startedAt: now,
     currentLevelIndex: 0,
     levelStartedAt: null,
@@ -73,13 +73,52 @@ export function createPyramidAttempt(
   };
 }
 
+export function beginPyramidLevel(record: PyramidAttemptRecord): PyramidAttemptRecord {
+  if (record.status === "completed" || record.phase !== "briefing") return record;
+  return {
+    ...record,
+    phase: "playing",
+    levelStartedAt: null,
+    deadlineAt: null,
+    draftAnswer: null,
+    submittedCodes: [],
+    incorrectAttempts: 0,
+  };
+}
+
+export function advancePyramidToNextBriefing(
+  record: PyramidAttemptRecord,
+  levelCount: number,
+): PyramidAttemptRecord {
+  if (
+    record.status === "completed" ||
+    record.phase !== "transition" ||
+    record.currentLevelIndex >= levelCount - 1
+  ) {
+    return record;
+  }
+
+  return {
+    ...record,
+    phase: "briefing",
+    currentLevelIndex: record.currentLevelIndex + 1,
+    levelStartedAt: null,
+    deadlineAt: null,
+    draftAnswer: null,
+    submittedCodes: [],
+    incorrectAttempts: 0,
+  };
+}
+
 export function armPyramidLevel(
   record: PyramidAttemptRecord,
   question: Question,
   availableUntil: string | null,
   now: number,
 ): PyramidAttemptRecord {
-  if (record.status === "completed" || record.deadlineAt !== null) return record;
+  if (record.status === "completed" || record.phase !== "playing" || record.deadlineAt !== null) {
+    return record;
+  }
   return {
     ...record,
     levelStartedAt: now,
@@ -197,7 +236,10 @@ export function parsePyramidAttempt(
     const value = JSON.parse(serialized) as Partial<PyramidAttemptRecord>;
     const validStatus = value.status === "in-progress" || value.status === "completed";
     const validPhase =
-      value.phase === "playing" || value.phase === "transition" || value.phase === "completed";
+      value.phase === "briefing" ||
+      value.phase === "playing" ||
+      value.phase === "transition" ||
+      value.phase === "completed";
     const validIndex =
       Number.isInteger(value.currentLevelIndex) &&
       Number(value.currentLevelIndex) >= 0 &&
@@ -252,13 +294,17 @@ export function parsePyramidAttempt(
 
     if (value.outcome !== null || value.completedAt !== null || value.summary !== null) return null;
     const inProgressStateIsValid =
-      value.phase === "playing"
-        ? typedResults.length === currentLevelIndex
-        : value.phase === "transition" &&
-          currentLevelIndex < challenge.levels.length - 1 &&
-          typedResults.length === currentLevelIndex + 1 &&
-          value.deadlineAt === null &&
-          isPyramidLevelPassed(typedResults.at(-1)!);
+      value.phase === "briefing"
+        ? typedResults.length === currentLevelIndex &&
+          value.levelStartedAt === null &&
+          value.deadlineAt === null
+        : value.phase === "playing"
+          ? typedResults.length === currentLevelIndex
+          : value.phase === "transition" &&
+            currentLevelIndex < challenge.levels.length - 1 &&
+            typedResults.length === currentLevelIndex + 1 &&
+            value.deadlineAt === null &&
+            isPyramidLevelPassed(typedResults.at(-1)!);
     if (!inProgressStateIsValid) return null;
     return value as PyramidAttemptRecord;
   } catch {

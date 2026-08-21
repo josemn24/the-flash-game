@@ -166,8 +166,17 @@ export function validatePyramidChallengeDefinition(definition: PyramidChallengeD
   if (new Set(questionIds).size !== questionIds.length) {
     throw new Error("Pyramid challenge question IDs must be unique.");
   }
-  if (definition.levels.some((level) => !level.id.trim() || !level.label.trim())) {
-    throw new Error("Pyramid challenge levels require non-empty IDs and labels.");
+  if (
+    definition.levels.some(
+      (level) =>
+        !level.id.trim() ||
+        !level.label.trim() ||
+        !level.briefing.title.trim() ||
+        !level.briefing.format.trim() ||
+        !level.briefing.description.trim(),
+    )
+  ) {
+    throw new Error("Pyramid challenge levels require non-empty IDs, labels and briefings.");
   }
 
   const unknownQuestionIds = questionIds.filter((id) => !(id in questionsById));
@@ -237,6 +246,7 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
         id: level.id,
         label: level.label,
         question: questions[index],
+        briefing: level.briefing,
       })),
       questionPoints: definition.questionPoints,
     };

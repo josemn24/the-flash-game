@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  advancePyramidToNextBriefing,
   armPyramidLevel,
+  beginPyramidLevel,
   comparePyramidAttemptSummaries,
   completePyramidAttempt,
   createPyramidAttempt,
@@ -44,14 +46,19 @@ describe("pyramid attempt rules", () => {
   it("builds, arms, completes and restores a versioned official attempt", () => {
     const challenge = getChallenge();
     const started = createPyramidAttempt(challenge, 1_000);
+    expect(started.phase).toBe("briefing");
+    expect(armPyramidLevel(started, challenge.levels[0].question, null, 2_000)).toEqual(started);
+
+    const playing = beginPyramidLevel(started);
+    expect(playing.phase).toBe("playing");
     const armed = armPyramidLevel(
-      started,
+      playing,
       challenge.levels[0].question,
       challenge.availableUntil,
       2_000,
     );
     expect(armed.deadlineAt).toBe(14_000);
-    expect(armPyramidLevel(started, challenge.levels[0].question, null, 2_000).deadlineAt).toBe(
+    expect(armPyramidLevel(playing, challenge.levels[0].question, null, 2_000).deadlineAt).toBe(
       14_000,
     );
 
@@ -68,6 +75,37 @@ describe("pyramid attempt rules", () => {
     );
   });
 
+  it("keeps a manual briefing between levels and restores it without a timer", () => {
+    const challenge = getChallenge();
+    const started = createPyramidAttempt(challenge, 1_000);
+    const playing = beginPyramidLevel(started);
+    const transition = {
+      ...playing,
+      phase: "transition" as const,
+      results: [result("correct", 7)],
+      levelStartedAt: 2_000,
+      deadlineAt: null,
+    };
+    const nextBriefing = advancePyramidToNextBriefing(transition, challenge.levels.length);
+
+    expect(nextBriefing).toMatchObject({
+      phase: "briefing",
+      currentLevelIndex: 1,
+      levelStartedAt: null,
+      deadlineAt: null,
+      results: transition.results,
+    });
+    expect(parsePyramidAttempt(JSON.stringify(nextBriefing), challenge)).toEqual(nextBriefing);
+    expect(
+      parsePyramidAttempt(JSON.stringify({ ...nextBriefing, deadlineAt: 9_000 }), challenge),
+    ).toBeNull();
+    expect(beginPyramidLevel(nextBriefing)).toMatchObject({
+      phase: "playing",
+      currentLevelIndex: 1,
+      deadlineAt: null,
+    });
+  });
+
   it("rejects corrupt records and records from another content version", () => {
     const challenge = getChallenge();
     const record = createPyramidAttempt(challenge, 1_000);
@@ -77,6 +115,9 @@ describe("pyramid attempt rules", () => {
         ...challenge,
         attemptVersion: challenge.attemptVersion + 1,
       }),
+    ).toBeNull();
+    expect(
+      parsePyramidAttempt(JSON.stringify({ ...record, schemaVersion: 1 }), challenge),
     ).toBeNull();
     expect(
       parsePyramidAttempt(

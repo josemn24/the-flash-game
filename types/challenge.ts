@@ -44,6 +44,13 @@ export type PyramidLevelDefinition = {
   id: string;
   label: string;
   questionId: QuestionId;
+  briefing: PyramidLevelBriefing;
+};
+
+export type PyramidLevelBriefing = {
+  title: string;
+  format: string;
+  description: string;
 };
 
 export type PyramidChallengeDefinition = ChallengeDefinitionBase & {
@@ -179,6 +186,7 @@ export type PyramidLevel = {
   id: string;
   label: string;
   question: Question;
+  briefing: PyramidLevelBriefing;
 };
 
 export type PyramidChallenge = ChallengeBase & {

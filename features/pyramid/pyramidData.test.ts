@@ -18,6 +18,14 @@ describe("La Pirámide: Cumbre lógica", () => {
     expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();
     expect(definition.levels).toHaveLength(7);
     expect(new Set(getPyramidQuestionIds(definition))).toHaveProperty("size", 7);
+    expect(
+      definition.levels.every(
+        (level) =>
+          level.briefing.title.trim().length > 0 &&
+          level.briefing.format.trim().length > 0 &&
+          level.briefing.description.trim().length > 0,
+      ),
+    ).toBe(true);
     expect(Object.values(definition.questionPoints).reduce((sum, points) => sum + points, 0)).toBe(
       100,
     );
@@ -29,6 +37,15 @@ describe("La Pirámide: Cumbre lógica", () => {
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
     expect(withPyramidScoring(challenge).levels.map((level) => level.question.points)).toEqual([
       7, 9, 11, 14, 16, 19, 24,
+    ]);
+    expect(withPyramidScoring(challenge).levels.map((level) => level.briefing.format)).toEqual([
+      "Encontrar el intruso",
+      "Secuencia numérica",
+      "Ordenación lógica",
+      "Matriz visual",
+      "Conectar parejas",
+      "Código secreto",
+      "Queens",
     ]);
   });
 

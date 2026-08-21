@@ -249,6 +249,67 @@ function PyramidTransition({
   );
 }
 
+function PyramidBriefing({
+  challenge,
+  level,
+  levelIndex,
+  cleared,
+  onStart,
+}: {
+  challenge: PyramidChallenge;
+  level: PyramidLevel;
+  levelIndex: number;
+  cleared: number;
+  onStart: () => void;
+}) {
+  const titleId = `pyramid-briefing-title-${level.id}`;
+  const descriptionId = `pyramid-briefing-description-${level.id}`;
+
+  return (
+    <motion.section
+      className={styles.briefingScreen}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -18 }}
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+      aria-live="polite"
+    >
+      <div className={styles.briefingContent}>
+        <PyramidMap levels={challenge.levels} cleared={cleared} currentIndex={levelIndex} compact />
+        <div className={styles.briefingCard}>
+          <h1 id={titleId}>{level.briefing.title}</h1>
+          <p className={styles.briefingFormat}>{level.briefing.format}</p>
+          <p id={descriptionId} className={styles.briefingDescription}>
+            {level.briefing.description}
+          </p>
+
+          <div className={styles.briefingStats} aria-label="Condiciones del nivel">
+            <div>
+              <strong>{formatTime(level.question.timeLimit)}</strong>
+              <span>tiempo</span>
+            </div>
+            <div>
+              <strong>{level.question.points}</strong>
+              <span>puntos máximos</span>
+            </div>
+          </div>
+
+          <MotionButton
+            autoFocus
+            className={styles.briefingAction}
+            onClick={onStart}
+            whileTap={{ scale: 0.98 }}
+          >
+            Empezar nivel
+            <ArrowIcon className="h-5 w-5" />
+          </MotionButton>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
 function PyramidResults({
   challenge,
   levelsCleared,
@@ -357,6 +418,16 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
                 onStart={session.start}
               />
             )}
+            {session.phase === "briefing" && session.currentLevel && session.record && (
+              <PyramidBriefing
+                key={`briefing-${currentIndex}`}
+                challenge={scoredChallenge}
+                level={session.currentLevel}
+                levelIndex={currentIndex}
+                cleared={session.levelsCleared}
+                onStart={session.beginLevel}
+              />
+            )}
             {session.phase === "playing" && session.currentLevel && (
               <QuestionScreen
                 key={session.currentLevel.question.id}
@@ -365,7 +436,6 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
                 questionNumber={currentIndex + 1}
                 totalQuestions={scoredChallenge.levels.length}
                 progressVariant="pyramid"
-                progressLabels={scoredChallenge.levels.map((level) => level.label)}
                 locked={session.locked}
                 deadlineAt={session.deadlineAt}
                 initialAnswer={session.initialAnswer}

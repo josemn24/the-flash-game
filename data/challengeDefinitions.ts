@@ -198,13 +198,79 @@ export const challengeDefinitions = {
     mode: "pyramid",
     attemptVersion: 2,
     levels: [
-      { id: "entrance", label: "Entrada", questionId: "pyramid-square-intruder" },
-      { id: "pattern", label: "Patrón", questionId: "pyramid-growing-products" },
-      { id: "order", label: "Orden", questionId: "pyramid-constraint-order" },
-      { id: "chamber", label: "Cámara", questionId: "pyramid-shape-direction-matrix" },
-      { id: "trap", label: "Trampa", questionId: "pyramid-connect-pairs-trap" },
-      { id: "lock", label: "Cerradura", questionId: "pyramid-secret-code" },
-      { id: "summit", label: "Cima", questionId: "pyramid-summit-queens" },
+      {
+        id: "entrance",
+        label: "Entrada",
+        questionId: "pyramid-square-intruder",
+        briefing: {
+          title: "Encuentra el intruso",
+          format: "Encontrar el intruso",
+          description: "Selecciona el único número que rompe el patrón de cuadrados perfectos.",
+        },
+      },
+      {
+        id: "pattern",
+        label: "Patrón",
+        questionId: "pyramid-growing-products",
+        briefing: {
+          title: "Completa la secuencia",
+          format: "Secuencia numérica",
+          description: "Identifica la regla que conecta los términos y elige el siguiente valor.",
+        },
+      },
+      {
+        id: "order",
+        label: "Orden",
+        questionId: "pyramid-constraint-order",
+        briefing: {
+          title: "Construye el orden",
+          format: "Ordenación lógica",
+          description: "Coloca todos los elementos respetando simultáneamente las restricciones.",
+        },
+      },
+      {
+        id: "chamber",
+        label: "Cámara",
+        questionId: "pyramid-shape-direction-matrix",
+        briefing: {
+          title: "Completa la matriz",
+          format: "Matriz visual",
+          description: "Observa la regla de figuras y flechas y elige la pieza que falta.",
+        },
+      },
+      {
+        id: "trap",
+        label: "Trampa",
+        questionId: "pyramid-connect-pairs-trap",
+        briefing: {
+          title: "Cubre la cuadrícula",
+          format: "Conectar parejas",
+          description:
+            "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
+        },
+      },
+      {
+        id: "lock",
+        label: "Cerradura",
+        questionId: "pyramid-secret-code",
+        briefing: {
+          title: "Descifra la cerradura",
+          format: "Código secreto",
+          description:
+            "Deduce el código de tres cifras combinando las pistas de posición y presencia.",
+        },
+      },
+      {
+        id: "summit",
+        label: "Cima",
+        questionId: "pyramid-summit-queens",
+        briefing: {
+          title: "Conquista la cima",
+          format: "Queens",
+          description:
+            "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
+        },
+      },
     ],
     questionPoints: {
       "pyramid-square-intruder": 7,

@@ -443,11 +443,36 @@ type ValidPyramidChallengeDefinition = {
   mode: "pyramid";
   attemptVersion: 1;
   levels: [
-    { id: "level-1"; label: "Entry"; questionId: "pyramid-square-intruder" },
-    { id: "level-2"; label: "Pattern"; questionId: "pyramid-growing-products" },
-    { id: "level-3"; label: "Order"; questionId: "pyramid-constraint-order" },
-    { id: "level-4"; label: "Lock"; questionId: "pyramid-secret-code" },
-    { id: "level-5"; label: "Summit"; questionId: "pyramid-summit-queens" },
+    {
+      id: "level-1";
+      label: "Entry";
+      questionId: "pyramid-square-intruder";
+      briefing: { title: "Intruder"; format: "Odd one out"; description: "Find it" };
+    },
+    {
+      id: "level-2";
+      label: "Pattern";
+      questionId: "pyramid-growing-products";
+      briefing: { title: "Pattern"; format: "Sequence"; description: "Complete it" };
+    },
+    {
+      id: "level-3";
+      label: "Order";
+      questionId: "pyramid-constraint-order";
+      briefing: { title: "Order"; format: "Ordering"; description: "Arrange it" };
+    },
+    {
+      id: "level-4";
+      label: "Lock";
+      questionId: "pyramid-secret-code";
+      briefing: { title: "Code"; format: "Logic code"; description: "Deduce it" };
+    },
+    {
+      id: "level-5";
+      label: "Summit";
+      questionId: "pyramid-summit-queens";
+      briefing: { title: "Queens"; format: "Queens"; description: "Solve it" };
+    },
   ];
   questionPoints: {
     "pyramid-square-intruder": 10;

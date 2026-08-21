@@ -131,6 +131,7 @@ export type {
   NarrativeTextBlock,
   PlaceholderScheduledChallenge,
   PlayableScheduledChallenge,
+  PyramidLevelBriefing,
   PyramidChallenge,
   PyramidChallengeDefinition,
   PyramidLevel,

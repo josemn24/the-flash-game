@@ -30,7 +30,6 @@ type QuestionScreenProps = {
   deadlineAt?: number | null;
   onReady?: () => void;
   progressVariant?: "linear" | "pyramid";
-  progressLabels?: string[];
   livesRemaining?: number;
   totalLives?: number;
   notebook?: {
@@ -70,7 +69,6 @@ export function QuestionScreen({
   deadlineAt,
   onReady,
   progressVariant = "linear",
-  progressLabels,
   livesRemaining,
   totalLives,
   notebook,
@@ -159,28 +157,7 @@ export function QuestionScreen({
             </span>
           </div>
         </div>
-        {progressVariant === "pyramid" ? (
-          <ol className={styles.pyramidProgress} aria-label="Progreso por la pirámide">
-            {(
-              progressLabels ?? Array.from({ length: totalQuestions }, (_, index) => `${index + 1}`)
-            ).map((label, index) => (
-              <li
-                key={`${label}-${index}`}
-                className={
-                  index + 1 < questionNumber
-                    ? styles.pyramidProgressCleared
-                    : index + 1 === questionNumber
-                      ? styles.pyramidProgressCurrent
-                      : styles.pyramidProgressLocked
-                }
-                aria-current={index + 1 === questionNumber ? "step" : undefined}
-              >
-                <span>{index + 1}</span>
-                <small>{label}</small>
-              </li>
-            ))}
-          </ol>
-        ) : (
+        {progressVariant !== "pyramid" && (
           <ProgressBar current={questionNumber} total={totalQuestions} />
         )}
       </div>
