@@ -61,7 +61,7 @@
   position: sticky;
   top: 0;
   z-index: 4;
-  min-height: 2rem;
+  min-height: 2.55rem;
   border-radius: 0.7rem;
   padding-inline: 0.45rem;
   color: rgba(255, 255, 255, 0.34);
@@ -74,9 +74,18 @@
 }
 
 .categoryHeading {
+  display: grid;
   min-width: 0;
+  min-height: 2.1rem;
+  align-items: center;
+  padding-inline: 0.15rem;
   color: rgba(215, 255, 24, 0.58);
+  line-height: 1.05;
   text-align: center;
+  text-wrap: balance;
+  white-space: normal;
+  hyphens: auto;
+  overflow-wrap: anywhere;
 }
 
 .rows {
@@ -321,6 +330,22 @@
   }
 }
 
+@media (max-width: 420px) {
+  .matrixHeader,
+  .row {
+    grid-template-columns: minmax(5.75rem, 1.2fr) repeat(
+        var(--category-count),
+        minmax(3.1rem, 0.75fr)
+      );
+    column-gap: 0.35rem;
+  }
+
+  .matrixHeader {
+    min-height: 3.1rem;
+    padding-inline: 0.25rem;
+  }
+}
+
 @media (max-width: 340px) {
   .matrix,
   .binaryList {
@@ -329,15 +354,16 @@
 
   .matrixHeader,
   .row {
-    grid-template-columns: minmax(5.75rem, 1.35fr) repeat(
+    grid-template-columns: minmax(5.75rem, 1.2fr) repeat(
         var(--category-count),
-        minmax(2.75rem, 0.55fr)
+        minmax(3.1rem, 0.75fr)
       );
-    gap: 0.2rem;
+    column-gap: 0.35rem;
   }
 
   .matrixHeader {
-    padding-inline: 0.35rem;
+    min-height: 3.1rem;
+    padding-inline: 0.25rem;
     font-size: 0.48rem;
   }
 

@@ -77,10 +77,10 @@ Se han elegido asociaciones muy reconocibles y se ha evitado incluir varias resp
     { id: "jesus", label: "Jesús", correctMatchId: "nazaret" },
   ],
   rightItems: [
-    { id: "arca", label: "Arca" },
-    { id: "exodo", label: "Éxodo" },
     { id: "goliat", label: "Goliat" },
+    { id: "arca", label: "Arca" },
     { id: "nazaret", label: "Nazaret" },
+    { id: "exodo", label: "Éxodo" },
   ],
   timeLimit: 15,
   points: 7,
@@ -96,7 +96,7 @@ Identificar a un personaje a partir de cuatro pistas que aparecen progresivament
 ### Configuración editorial
 
 - **Formato:** Adivinanza por pistas.
-- **Pregunta:** «¿Qué patriarca soy?».
+- **Pregunta:** «¿Qué personaje bíblico soy?».
 - **Respuesta principal:** `Abraham`.
 - **Respuesta alternativa aceptada:** `Ibrahim`, nombre utilizado en la tradición islámica.
 - **Número de pistas:** cuatro.
@@ -138,7 +138,7 @@ La respuesta se escribirá sin necesidad de acento y se comparará con normaliza
   id: "abrahamic-progressive-abraham",
   type: "progressive-clues",
   category: "Biblia y religiones abrahámicas",
-  question: "¿Qué patriarca soy?",
+  question: "¿Qué personaje bíblico soy?",
   clues: [
     "Mi historia aparece tanto en la Biblia como en el Corán.",
     "Soy considerado un patriarca y una figura de referencia para varias tradiciones.",
@@ -199,6 +199,7 @@ La pregunta debe utilizar la expresión «orden tradicional» para dejar claro q
   question: "Ordena los cinco libros de la Torá según su orden tradicional.",
   items: ["Números", "Génesis", "Deuteronomio", "Éxodo", "Levítico"],
   correctOrder: ["Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio"],
+  directionLabels: { start: "Primero", end: "Último" },
   timeLimit: 30,
   points: 11,
 }
@@ -215,7 +216,6 @@ Descubrir el nombre de un personaje bíblico de cinco letras utilizando el feedb
 - **Formato:** Mini-Wordle.
 - **Respuesta:** `JOSUÉ`.
 - **Respuesta normalizada:** `JOSUE`.
-- **Pista:** «Sucedió a Moisés y dirigió al pueblo de Israel».
 - **Longitud:** cinco letras.
 - **Intentos máximos:** seis.
 - **Tiempo límite propuesto:** 55 segundos.
@@ -253,13 +253,13 @@ La solución `JOSUE` debe añadirse siempre a las palabras aceptadas, aunque el 
 
 - Tiene cinco letras exactas.
 - No repite ninguna letra, por lo que el feedback es fácil de interpretar.
-- Es una figura central del relato bíblico y su relación con Moisés proporciona una pista clara.
+- Es una figura central del relato bíblico y su relación con Moisés aporta un contexto reconocible.
 - Permite introducir el judaísmo y el Antiguo Testamento sin que la respuesta sea excesivamente obvia.
 - La tilde ofrece una prueba útil para comprobar la normalización del vocabulario español.
 
 ### Dificultad y posición en la Pirámide
 
-Se propone colocarlo en el cuarto nivel. Con seis intentos, cinco letras y una pista temática, la prueba ofrece dificultad suficiente sin convertirse en una apuesta de azar.
+Se propone colocarlo en el cuarto nivel. Con seis intentos, cinco letras y un nombre propio, la prueba ofrece dificultad suficiente sin convertirse en una apuesta de azar.
 
 Cuatro intentos serían demasiado exigentes para un nombre propio. Cinco podrían funcionar, pero seis proporciona una experiencia más cercana al Wordle convencional y compensa la posible ausencia de `JOSUE` en el vocabulario habitual del jugador.
 
@@ -271,7 +271,6 @@ Cuatro intentos serían demasiado exigentes para un nombre propio. Cinco podría
   type: "mini-wordle",
   category: "Biblia y religiones abrahámicas",
   question: "Descubre un personaje bíblico de cinco letras.",
-  hint: "Sucedió a Moisés y dirigió al pueblo de Israel.",
   correctAnswer: "JOSUÉ",
   additionalGuesses: [
     "ANGEL", "ALTAR", "AYUNO", "BABEL", "BELEN", "CORAN", "CREDO", "CULTO",
@@ -384,7 +383,7 @@ La prueba funciona como nivel avanzado porque exige distinguir textos, celebraci
 ### Configuración editorial
 
 - **Formato:** Clasificación.
-- **Pregunta:** «Clasifica cada elemento según la tradición religiosa con la que se relaciona principalmente».
+- **Pregunta:** «Clasifica los elementos por tradición».
 - **Categorías:** Judaísmo, Cristianismo e Islam.
 - **Elementos:** nueve, tres por categoría.
 - **Tiempo límite propuesto:** 50 segundos.
@@ -415,17 +414,17 @@ Los elementos se han elegido por su asociación principal y suficientemente reco
   id: "abrahamic-classification-three-traditions",
   type: "classification",
   category: "Biblia y religiones abrahámicas",
-  question: "Clasifica cada elemento según la tradición religiosa con la que se relaciona principalmente.",
+  question: "Clasifica los elementos por tradición.",
   categories: ["Judaísmo", "Cristianismo", "Islam"],
   items: [
     { label: "Torá", correctCategory: "Judaísmo" },
-    { label: "Pésaj", correctCategory: "Judaísmo" },
-    { label: "Menorá", correctCategory: "Judaísmo" },
     { label: "Evangelios", correctCategory: "Cristianismo" },
-    { label: "Cruz", correctCategory: "Cristianismo" },
-    { label: "Navidad", correctCategory: "Cristianismo" },
+    { label: "Pésaj", correctCategory: "Judaísmo" },
     { label: "Corán", correctCategory: "Islam" },
+    { label: "Cruz", correctCategory: "Cristianismo" },
     { label: "Ramadán", correctCategory: "Islam" },
+    { label: "Menorá", correctCategory: "Judaísmo" },
+    { label: "Navidad", correctCategory: "Cristianismo" },
     { label: "Kaaba", correctCategory: "Islam" },
   ],
   timeLimit: 50,
@@ -449,7 +448,7 @@ La mezcla de categorías aumenta el número de combinaciones posibles y evita qu
 ### Configuración editorial
 
 - **Formato:** Hashtag de palabras.
-- **Pregunta:** «Completa cuatro palabras de cinco letras relacionadas con la Biblia y las religiones abrahámicas: un personaje, un lugar, un texto y un elemento del culto».
+- **Pregunta:** «Completa cuatro palabras bíblicas de cinco letras».
 - **Personaje:** `PABLO`.
 - **Lugar:** `TABOR`.
 - **Texto:** `TORAH`.
@@ -457,7 +456,7 @@ La mezcla de categorías aumenta el número de combinaciones posibles y evita qu
 - **Tiempo límite propuesto:** 45 segundos.
 - **Puntuación provisional:** 24 puntos como Cima.
 - **Dificultad:** muy alta.
-- **Movimientos:** estado inicial con cinco movimientos óptimos y siete movimientos máximos permitidos.
+- **Movimientos:** estado inicial con seis movimientos óptimos y siete movimientos máximos permitidos.
 
 ### Solución visual
 
@@ -507,8 +506,7 @@ La dificultad debe proceder de la planificación y de las intersecciones, no de 
   id: "abrahamic-word-hashtag-references",
   type: "word-hashtag",
   category: "Biblia y religiones abrahámicas",
-  question:
-    "Completa cuatro palabras de cinco letras: un personaje, un lugar, un texto y un elemento del culto.",
+  question: "Completa cuatro palabras bíblicas de cinco letras.",
   grid: { rows: 5, columns: 5 },
   words: {
     top: "PABLO",
@@ -519,8 +517,8 @@ La dificultad debe proceder de la planificación y de las intersecciones, no de 
   initialLetters: [
     null, "T", null, "A", null,
     "H", "A", "P", "B", "L",
-    null, "B", null, "O", null,
-    "T", "O", "R", "A", "T",
+    null, "R", null, "O", null,
+    "T", "O", "B", "A", "T",
     null, "R", null, "R", null,
   ],
   maxMoves: 7,
@@ -529,4 +527,4 @@ La dificultad debe proceder de la planificación y de las intersecciones, no de 
 }
 ```
 
-El estado inicial usa exactamente las dieciséis letras de la solución. El solver lo resuelve en cinco intercambios y el máximo de siete conserva dos movimientos de margen. `TORAH` se muestra sin tilde, igual que en la configuración del tablero.
+El estado inicial usa exactamente las dieciséis letras de la solución. El solver lo resuelve en seis intercambios y el máximo de siete conserva un movimiento de margen. `TORAH` se muestra sin tilde, igual que en la configuración del tablero.

@@ -324,7 +324,7 @@ export function WordSearchQuestion({
           {foundWordIds.length} / {question.targets.length}
         </strong>
       </div>
-      <ul className={styles.wordList} aria-label="Palabras objetivo">
+      <ul className="sr-only" aria-label="Palabras objetivo">
         {question.targets.map((target) => {
           const found = foundWordIds.includes(target.id);
           return (

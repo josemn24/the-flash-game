@@ -19,18 +19,19 @@ describe("Abrahamic challenge preparation", () => {
     expect(isValidWordSearchConfiguration(wordSearch)).toBe(true);
   });
 
-  it("ships a five-swap Hashtag board that remains solvable within seven moves", () => {
+  it("ships a six-swap Hashtag board that remains solvable within seven moves", () => {
     const solution = buildWordHashtagSolution(wordHashtag.words)!;
     expect(isValidWordHashtagConfiguration(wordHashtag)).toBe(true);
-    expect(calculateMinimumWordHashtagSwaps(wordHashtag.initialLetters, solution)).toBe(5);
+    expect(calculateMinimumWordHashtagSwaps(wordHashtag.initialLetters, solution)).toBe(6);
     expect(
       replayWordHashtagSwaps(wordHashtag, [
         { fromCell: 5, toCell: 7 },
         { fromCell: 7, toCell: 8 },
         { fromCell: 8, toCell: 9 },
         { fromCell: 9, toCell: 13 },
+        { fromCell: 11, toCell: 17 },
         { fromCell: 13, toCell: 19 },
       ]),
-    ).toMatchObject({ valid: true, appliedMoves: 5, solved: true });
+    ).toMatchObject({ valid: true, appliedMoves: 6, solved: true });
   });
 });

@@ -163,6 +163,30 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
       throw new Error("Unexpected Abrahamic pyramid question types");
     }
 
+    expect(classification.items.map((item) => item.label)).toEqual([
+      "Torá",
+      "Evangelios",
+      "Pésaj",
+      "Corán",
+      "Cruz",
+      "Ramadán",
+      "Menorá",
+      "Navidad",
+      "Kaaba",
+    ]);
+
+    expect(matching.rightItems.map((item) => item.id)).toEqual([
+      "goliat",
+      "arca",
+      "nazaret",
+      "exodo",
+    ]);
+    expect(
+      matching.rightItems.every(
+        (item, index) => item.id !== matching.leftItems[index]?.correctMatchId,
+      ),
+    ).toBe(true);
+
     expect(
       evaluateAnswer({
         question: matching,
