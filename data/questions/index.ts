@@ -2295,19 +2295,19 @@ export const questionsById = {
     },
     question: "Encuentra los seis personajes bíblicos ocultos en la cuadrícula.",
     grid: { rows: 8, columns: 8 },
-    letters: Array.from("FWNECECIHCJPSMVGYAQAETOGHAVCCDEURSEJYORRJIIUEDBOGKJUDASVFHLEINAD"),
+    letters: Array.from("FWNECECIHCJPSMVGYAQAETOGHAVCCDEURSEJYORRJIIUEDBOGKJUDASVFHLSUSEJ"),
     targets: [
       { id: "isaac", word: "ISAAC", startCell: 41, endCell: 9 },
       { id: "jacob", word: "JACOB", startCell: 10, endCell: 46 },
       { id: "ester", word: "ESTER", startCell: 3, endCell: 39 },
-      { id: "daniel", word: "DANIEL", startCell: 63, endCell: 58 },
+      { id: "jesus", word: "JESUS", startCell: 63, endCell: 59 },
       { id: "judas", word: "JUDAS", startCell: 50, endCell: 54 },
       { id: "pedro", word: "PEDRO", startCell: 11, endCell: 47 },
     ],
     timeLimit: 45,
     points: 100,
     explanation:
-      "ISAAC aparece en vertical invertida, JACOB y PEDRO en diagonal, ESTER en diagonal, DANIEL en horizontal invertida y JUDAS en horizontal.",
+      "ISAAC aparece en vertical invertida, JACOB y PEDRO en diagonal, ESTER en diagonal, JESUS en horizontal invertida y JUDAS en horizontal.",
   },
   "abrahamic-word-hashtag-references": {
     id: "abrahamic-word-hashtag-references",

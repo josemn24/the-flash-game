@@ -303,8 +303,8 @@ Encontrar seis personajes bíblicos ocultos en una cuadrícula de letras. La lis
 
 - **Formato:** Sopa de letras.
 - **Pregunta:** «Encuentra los seis personajes bíblicos ocultos en la cuadrícula».
-- **Personajes:** Isaac, Jacob, Ester, Daniel, Judas y Pedro.
-- **Palabras objetivo normalizadas:** `ISAAC`, `JACOB`, `ESTER`, `DANIEL`, `JUDAS`, `PEDRO`.
+- **Personajes:** Isaac, Jacob, Ester, Jesús, Judas y Pedro.
+- **Palabras objetivo normalizadas:** `ISAAC`, `JACOB`, `ESTER`, `JESUS`, `JUDAS`, `PEDRO`.
 - **Cuadrícula propuesta:** 8 × 8.
 - **Direcciones:** horizontal, vertical y diagonal, incluyendo algunas palabras invertidas.
 - **Tiempo límite propuesto:** 45 segundos.
@@ -316,15 +316,15 @@ Encontrar seis personajes bíblicos ocultos en una cuadrícula de letras. La lis
 
 ```text
 ISAAC   JACOB   ESTER
-DANIEL  JUDAS   PEDRO
+JESUS   JUDAS   PEDRO
 ```
 
 ### Criterio editorial
 
 La selección evita repetir los personajes utilizados en las pruebas anteriores: Noé, Moisés, David, Jesús, Abraham y Josué. También combina personajes del Antiguo y del Nuevo Testamento:
 
-- **Antiguo Testamento:** Isaac, Jacob, Ester y Daniel.
-- **Nuevo Testamento:** Judas y Pedro.
+- **Antiguo Testamento:** Isaac, Jacob y Ester.
+- **Nuevo Testamento:** Jesús, Judas y Pedro.
 
 La prueba busca los nombres, no distinguir entre las diferentes figuras bíblicas llamadas Judas. La palabra `JUDAS` se considera un objetivo único dentro de la cuadrícula.
 
@@ -355,13 +355,13 @@ La prueba busca los nombres, no distinguir entre las diferentes figuras bíblica
     "R", "S", "E", "J", "Y", "O", "R", "R",
     "J", "I", "I", "U", "E", "D", "B", "O",
     "G", "K", "J", "U", "D", "A", "S", "V",
-    "F", "H", "L", "E", "I", "N", "A", "D",
+    "F", "H", "L", "S", "U", "S", "E", "J",
   ],
   targets: [
     { id: "isaac", word: "ISAAC", startCell: 41, endCell: 9 },
     { id: "jacob", word: "JACOB", startCell: 10, endCell: 46 },
     { id: "ester", word: "ESTER", startCell: 3, endCell: 39 },
-    { id: "daniel", word: "DANIEL", startCell: 63, endCell: 58 },
+    { id: "jesus", word: "JESUS", startCell: 63, endCell: 59 },
     { id: "judas", word: "JUDAS", startCell: 50, endCell: 54 },
     { id: "pedro", word: "PEDRO", startCell: 11, endCell: 47 },
   ],

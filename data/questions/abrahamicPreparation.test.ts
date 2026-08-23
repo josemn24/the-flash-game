@@ -16,6 +16,8 @@ describe("Abrahamic challenge preparation", () => {
   it("ships a unique 8 × 8 word search with six biblical characters", () => {
     expect(wordSearch.letters).toHaveLength(64);
     expect(wordSearch.targets).toHaveLength(6);
+    expect(wordSearch.targets.map((target) => target.word)).toContain("JESUS");
+    expect(wordSearch.targets.map((target) => target.word)).not.toContain("DANIEL");
     expect(isValidWordSearchConfiguration(wordSearch)).toBe(true);
   });
 
