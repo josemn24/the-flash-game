@@ -36,7 +36,7 @@ Relacionar cuatro personajes bíblicos con la asociación más conocida de cada 
 - **Pregunta:** «Relaciona cada personaje bíblico con su asociación más conocida».
 - **Parejas:** cuatro.
 - **Tiempo límite propuesto:** 15 segundos.
-- **Puntuación provisional:** 7 puntos como primer nivel.
+- **Puntuación:** 10 puntos como primer nivel.
 - **Dificultad:** fácil.
 - **Condición de éxito:** completar las cuatro parejas para superar el nivel.
 
@@ -101,7 +101,7 @@ Identificar a un personaje a partir de cuatro pistas que aparecen progresivament
 - **Respuesta alternativa aceptada:** `Ibrahim`, nombre utilizado en la tradición islámica.
 - **Número de pistas:** cuatro.
 - **Tiempo límite propuesto:** 35 segundos.
-- **Puntuación provisional:** 9 puntos como segundo nivel.
+- **Puntuación:** 12 puntos como segundo nivel.
 - **Penalización por pista:** 20 % de los puntos base por cada pista adicional que se revele.
 - **Dificultad:** fácil-media.
 - **Condición de éxito:** acertar en un único intento para superar el nivel.
@@ -171,7 +171,7 @@ Ordenar los cinco libros que forman la Torá, también llamada Pentateuco, segú
 - **Pregunta:** «Ordena los cinco libros de la Torá según su orden tradicional».
 - **Elementos:** cinco.
 - **Tiempo límite propuesto:** 30 segundos.
-- **Puntuación provisional:** 11 puntos como tercer nivel.
+- **Puntuación:** 13 puntos como tercer nivel.
 - **Dificultad:** fácil-media.
 - **Condición de éxito:** colocar correctamente los cinco libros para superar el nivel.
 
@@ -219,7 +219,7 @@ Descubrir el nombre de un personaje bíblico de cinco letras utilizando el feedb
 - **Longitud:** cinco letras.
 - **Intentos máximos:** seis.
 - **Tiempo límite propuesto:** 55 segundos.
-- **Puntuación provisional:** 14 puntos si ocupa el cuarto nivel de la Pirámide.
+- **Puntuación:** 14 puntos si ocupa el cuarto nivel de la Pirámide.
 - **Penalización:** 10 % de los puntos base por cada intento fallido anterior, manteniendo la política actual del formato.
 - **Resultado:** si no se descubre la palabra en seis intentos o antes del tiempo límite, el nivel se considera fallido y no se desbloquea el siguiente.
 
@@ -308,7 +308,7 @@ Encontrar seis personajes bíblicos ocultos en una cuadrícula de letras. La lis
 - **Cuadrícula propuesta:** 8 × 8.
 - **Direcciones:** horizontal, vertical y diagonal, incluyendo algunas palabras invertidas.
 - **Tiempo límite propuesto:** 45 segundos.
-- **Puntuación provisional:** 16 puntos como quinto nivel.
+- **Puntuación:** 15 puntos como quinto nivel.
 - **Dificultad:** media-alta.
 - **Condición de éxito:** encontrar las seis palabras.
 
@@ -387,7 +387,7 @@ La prueba funciona como nivel avanzado porque exige distinguir textos, celebraci
 - **Categorías:** Judaísmo, Cristianismo e Islam.
 - **Elementos:** nueve, tres por categoría.
 - **Tiempo límite propuesto:** 50 segundos.
-- **Puntuación provisional:** 19 puntos como sexto nivel.
+- **Puntuación:** 17 puntos como sexto nivel.
 - **Dificultad:** alta.
 - **Condición de éxito:** clasificar correctamente los nueve elementos.
 
@@ -454,7 +454,7 @@ La mezcla de categorías aumenta el número de combinaciones posibles y evita qu
 - **Texto:** `TORAH`.
 - **Elemento del culto:** `ALTAR`.
 - **Tiempo límite propuesto:** 45 segundos.
-- **Puntuación provisional:** 24 puntos como Cima.
+- **Puntuación:** 19 puntos como Cima.
 - **Dificultad:** muy alta.
 - **Movimientos:** estado inicial con seis movimientos óptimos y siete movimientos máximos permitidos.
 

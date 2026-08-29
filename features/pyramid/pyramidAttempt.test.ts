@@ -37,7 +37,7 @@ function result(
 
 describe("pyramid attempt rules", () => {
   it("keeps points only for completely correct levels", () => {
-    expect(normalizePyramidResult(result("correct", 7)).points).toBe(7);
+    expect(normalizePyramidResult(result("correct", 10)).points).toBe(10);
     expect(normalizePyramidResult(result("partial", 5)).points).toBe(0);
     expect(normalizePyramidResult(result("incorrect", -2)).points).toBe(0);
     expect(normalizePyramidResult(result("unanswered", 0)).points).toBe(0);
@@ -151,7 +151,7 @@ describe("pyramid attempt rules", () => {
     };
     const summit = completePyramidAttempt(
       record,
-      result("correct", 24, challenge.levels.at(-1)?.question.id),
+      result("correct", 19, challenge.levels.at(-1)?.question.id),
       "summit",
       8_000,
     );

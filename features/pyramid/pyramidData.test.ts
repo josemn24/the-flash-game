@@ -37,7 +37,7 @@ describe("La Pirámide: Cumbre lógica", () => {
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
     expect(withPyramidScoring(challenge).levels.map((level) => level.question.points)).toEqual([
-      7, 9, 11, 14, 16, 19, 24,
+      10, 12, 13, 14, 15, 17, 19,
     ]);
     expect(withPyramidScoring(challenge).levels.map((level) => level.briefing.format)).toEqual([
       "Encontrar el intruso",
@@ -55,6 +55,7 @@ describe("La Pirámide: Cumbre lógica", () => {
     const trap = questionsById["pyramid-connect-pairs-trap"];
     const code = questionsById["pyramid-secret-code"];
     const queens = questionsById["pyramid-summit-queens"];
+    const miniWordle = questionsById["abrahamic-mini-wordle-josue"];
     expect(isValidLogicMatrixConfiguration(matrix)).toBe(true);
     expect(matrix.showPieceLabels).toBe(false);
     expect(trap.pairs).toHaveLength(4);
@@ -67,6 +68,9 @@ describe("La Pirámide: Cumbre lógica", () => {
       exact: true,
     });
     expect(code.correctAnswer).toBe("507");
+    expect(miniWordle.additionalGuesses).toEqual(
+      expect.arrayContaining(["AARON", "CALEB", "ELIAS", "JACOB", "TAMAR", "YUSUF"]),
+    );
     expect(queens.prefilledQueens).toEqual([2]);
     expect(queens.solution).toEqual(expect.arrayContaining(queens.prefilledQueens ?? []));
     expect(isValidQueensConfiguration(queens)).toBe(true);
@@ -130,7 +134,9 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
     const scored = withPyramidScoring(challenge);
-    expect(scored.levels.map((level) => level.question.points)).toEqual([7, 9, 11, 14, 16, 19, 24]);
+    expect(scored.levels.map((level) => level.question.points)).toEqual([
+      10, 12, 13, 14, 15, 17, 19,
+    ]);
     expect(scored.levels.map((level) => level.question.type)).toEqual([
       "matching",
       "progressive-clues",
