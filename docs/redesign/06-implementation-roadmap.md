@@ -26,10 +26,12 @@ Las decisiones de producto aprobadas son: un único intento oficial sin práctic
 
 ## Fase 0: baseline y contrato
 
+Estado: **dirección visual seleccionada**. Soft Diorama es la base aprobada; consulta `07-visual-direction-decision.md`.
+
 ### Trabajo
 
 - Aprobar esta documentación.
-- Elegir una dirección de ilustración mediante 2–3 frames comparables.
+- Mantener archivadas las tres direcciones comparables y la justificación de Soft Diorama.
 - Seleccionar tipografía con licencia.
 - Capturar baseline móvil y escritorio de lobby, pregunta y resultado.
 - Definir una ruta o flag de preview para Flash Pop.

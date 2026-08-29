@@ -18,6 +18,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 4. [`04-screen-blueprints.md`](04-screen-blueprints.md): arquitectura y especificación del vertical slice.
 5. [`05-game-feel.md`](05-game-feel.md): movimiento, feedback, sonido y háptica.
 6. [`06-implementation-roadmap.md`](06-implementation-roadmap.md): fases, impacto técnico y criterios de aceptación.
+7. [`07-visual-direction-decision.md`](07-visual-direction-decision.md): propuestas comparadas y dirección visual seleccionada.
 
 ## Decisión central
 
