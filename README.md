@@ -96,3 +96,7 @@ El laberinto contrarreloj usa una cuadrícula ortogonal controlada mediante cruc
 Conectar parejas usa una cuadrícula 5 × 5 con rutas ortogonales entre símbolos iguales. Conserva rutas parciales en timeout, concede crédito por parejas conectadas y cobertura, y exige cubrir todo el tablero para resolver.
 
 Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos, emojis o imágenes y etiqueta accesible. Conserva el historial de intentos para la revisión, concede crédito por cada pareja encontrada y resta un 10 % de los puntos base por cada fallo.
+
+## Rediseño Flash Pop
+
+La evolución visual y de experiencia hacia un juego más alegre, social, casual y cercano está especificada en [`docs/redesign/README.md`](docs/redesign/README.md). La propuesta conserva el motor de juego actual y define un vertical slice de lobby, pregunta, feedback y resultado antes de extender el nuevo lenguaje al resto de formatos.
