@@ -1,12 +1,21 @@
 "use client";
 
-import { KeyboardEvent, type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   applyConnectPairsCellSelection,
   calculateConnectPairsMetrics,
   CONNECT_PAIRS_COLUMNS,
   CONNECT_PAIRS_ROWS,
   isRestorableConnectPairsDraft,
+  startConnectPairsDrag,
 } from "@/lib/connectPairs";
 import type {
   ConnectPairsAnswer,
@@ -21,6 +30,20 @@ type CellOwner = {
   pair: ConnectPairsPair;
   isEndpoint: boolean;
 };
+
+type Point = { x: number; y: number };
+
+type DragState = {
+  pointerId: number;
+  startCell: number;
+  startPoint: Point;
+  lastPoint: Point;
+  lastCell: number;
+  canDrag: boolean;
+  moved: boolean;
+};
+
+const DRAG_THRESHOLD = 6;
 
 function neighborForKey(index: number, key: string) {
   const row = Math.floor(index / CONNECT_PAIRS_COLUMNS);
@@ -78,7 +101,11 @@ export function ConnectPairsQuestion({
         )
       : {},
   );
+  const pathsRef = useRef(paths);
   const [activePairId, setActivePairId] = useState(question.pairs[0]?.id ?? "");
+  const activePairIdRef = useRef(activePairId);
+  const dragRef = useRef<DragState | null>(null);
+  const suppressClickRef = useRef(false);
   const [announcement, setAnnouncement] = useState("Selecciona un extremo para empezar.");
 
   const activePair = question.pairs.find((pair) => pair.id === activePairId) ?? question.pairs[0];
@@ -89,9 +116,15 @@ export function ConnectPairsQuestion({
     boardRef.current?.focus();
   }, []);
 
+  const setActivePair = (pairId: string) => {
+    activePairIdRef.current = pairId;
+    setActivePairId(pairId);
+  };
+
   const publishPaths = (nextPaths: Record<string, number[]>, message: string) => {
     const nextAnswer = { paths: nextPaths };
     const nextMetrics = calculateConnectPairsMetrics(question, nextAnswer);
+    pathsRef.current = nextPaths;
     setPaths(nextPaths);
     onProgress(nextAnswer);
     setAnnouncement(message);
@@ -99,32 +132,36 @@ export function ConnectPairsQuestion({
   };
 
   const startPairAt = (pair: ConnectPairsPair, cell: number) => {
-    setActivePairId(pair.id);
-    const existingPath = paths[pair.id] ?? [];
+    setActivePair(pair.id);
+    const existingPath = pathsRef.current[pair.id] ?? [];
     const existingIndex = existingPath.indexOf(cell);
     if (existingIndex >= 0) {
       publishPaths(
-        { ...paths, [pair.id]: existingPath.slice(0, existingIndex + 1) },
+        { ...pathsRef.current, [pair.id]: existingPath.slice(0, existingIndex + 1) },
         `${pair.label}: ruta recortada hasta la casilla ${cell + 1}.`,
       );
       return;
     }
-    publishPaths({ ...paths, [pair.id]: [cell] }, `${pair.label}: ruta iniciada.`);
+    publishPaths({ ...pathsRef.current, [pair.id]: [cell] }, `${pair.label}: ruta iniciada.`);
   };
 
   const extendActivePath = (cell: number) => {
-    if (!activePair) return;
-    const currentPath = paths[activePair.id] ?? [];
+    const currentActivePairId = activePairIdRef.current;
+    const currentActivePair =
+      question.pairs.find((pair) => pair.id === currentActivePairId) ?? question.pairs[0];
+    if (!currentActivePair) return;
+    const currentPaths = pathsRef.current;
+    const currentPath = currentPaths[currentActivePair.id] ?? [];
     if (currentPath.length === 0) {
-      if (activePair.endpoints.includes(cell)) startPairAt(activePair, cell);
+      if (currentActivePair.endpoints.includes(cell)) startPairAt(currentActivePair, cell);
       return;
     }
 
     const existingIndex = currentPath.indexOf(cell);
     if (existingIndex >= 0) {
       publishPaths(
-        { ...paths, [activePair.id]: currentPath.slice(0, existingIndex + 1) },
-        `${activePair.label}: ruta recortada hasta la casilla ${cell + 1}.`,
+        { ...currentPaths, [currentActivePair.id]: currentPath.slice(0, existingIndex + 1) },
+        `${currentActivePair.label}: ruta recortada hasta la casilla ${cell + 1}.`,
       );
       return;
     }
@@ -136,7 +173,7 @@ export function ConnectPairsQuestion({
     }
 
     const occupiedByOtherPair = question.pairs.some(
-      (pair) => pair.id !== activePair.id && (paths[pair.id] ?? []).includes(cell),
+      (pair) => pair.id !== currentActivePair.id && (currentPaths[pair.id] ?? []).includes(cell),
     );
     if (occupiedByOtherPair) {
       setAnnouncement("Esa casilla ya pertenece a otra ruta.");
@@ -144,7 +181,7 @@ export function ConnectPairsQuestion({
     }
 
     const otherEndpoint = question.pairs.some(
-      (pair) => pair.id !== activePair.id && pair.endpoints.includes(cell),
+      (pair) => pair.id !== currentActivePair.id && pair.endpoints.includes(cell),
     );
     if (otherEndpoint) {
       setAnnouncement("No puedes usar el extremo de otra pareja.");
@@ -152,15 +189,20 @@ export function ConnectPairsQuestion({
     }
 
     publishPaths(
-      { ...paths, [activePair.id]: [...currentPath, cell] },
-      `${activePair.label}: ruta extendida a la casilla ${cell + 1}.`,
+      { ...currentPaths, [currentActivePair.id]: [...currentPath, cell] },
+      `${currentActivePair.label}: ruta extendida a la casilla ${cell + 1}.`,
     );
   };
 
   const handleCell = (cell: number) => {
     if (locked) return;
-    const result = applyConnectPairsCellSelection(question, paths, activePairId, cell);
-    setActivePairId(result.activePairId);
+    const result = applyConnectPairsCellSelection(
+      question,
+      pathsRef.current,
+      activePairIdRef.current,
+      cell,
+    );
+    setActivePair(result.activePairId);
     if (result.changed) {
       publishPaths(result.paths, result.message);
       return;
@@ -168,22 +210,127 @@ export function ConnectPairsQuestion({
     setAnnouncement(result.message);
   };
 
+  const cellAtPoint = (point: Point) => {
+    const board = boardRef.current;
+    if (!board) return null;
+    const rect = board.getBoundingClientRect();
+    if (
+      point.x < rect.left ||
+      point.x >= rect.right ||
+      point.y < rect.top ||
+      point.y >= rect.bottom
+    ) {
+      return null;
+    }
+    const column = Math.floor(((point.x - rect.left) / rect.width) * CONNECT_PAIRS_COLUMNS);
+    const row = Math.floor(((point.y - rect.top) / rect.height) * CONNECT_PAIRS_ROWS);
+    return row * CONNECT_PAIRS_COLUMNS + column;
+  };
+
+  const tracePointerSegment = (from: Point, to: Point) => {
+    const board = boardRef.current;
+    const drag = dragRef.current;
+    if (!board || !drag) return;
+    const rect = board.getBoundingClientRect();
+    const sampleDistance =
+      Math.min(rect.width / CONNECT_PAIRS_COLUMNS, rect.height / CONNECT_PAIRS_ROWS) / 2;
+    const distance = Math.hypot(to.x - from.x, to.y - from.y);
+    const steps = Math.max(1, Math.ceil(distance / sampleDistance));
+    let previousCell = drag.lastCell;
+    for (let step = 1; step <= steps; step += 1) {
+      const ratio = step / steps;
+      const cell = cellAtPoint({
+        x: from.x + (to.x - from.x) * ratio,
+        y: from.y + (to.y - from.y) * ratio,
+      });
+      if (cell !== null && cell !== previousCell) {
+        extendActivePath(cell);
+        previousCell = cell;
+      }
+    }
+    drag.lastCell = previousCell;
+  };
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (locked || !event.isPrimary || event.button !== 0) return;
+    const point = { x: event.clientX, y: event.clientY };
+    const cell = cellAtPoint(point);
+    if (cell === null) return;
+    const canDrag = question.pairs.some((pair) => pair.endpoints.includes(cell));
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startCell: cell,
+      startPoint: point,
+      lastPoint: point,
+      lastCell: cell,
+      canDrag,
+      moved: false,
+    };
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || !drag.canDrag) return;
+    const point = { x: event.clientX, y: event.clientY };
+    if (!drag.moved) {
+      if (Math.hypot(point.x - drag.startPoint.x, point.y - drag.startPoint.y) <= DRAG_THRESHOLD) {
+        return;
+      }
+      const result = startConnectPairsDrag(
+        question,
+        pathsRef.current,
+        drag.startCell,
+        activePairIdRef.current,
+      );
+      if (!result.changed) return;
+      drag.moved = true;
+      suppressClickRef.current = true;
+      setActivePair(result.activePairId);
+      publishPaths(result.paths, result.message);
+    }
+    event.preventDefault();
+    tracePointerSegment(drag.lastPoint, point);
+    drag.lastPoint = point;
+  };
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>, cancelled = false) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    dragRef.current = null;
+    if (cancelled) {
+      suppressClickRef.current = false;
+    } else if (drag.moved) {
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+    boardRef.current?.focus();
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (locked || !activePair) return;
-    const nextCell = neighborForKey(
-      (paths[activePair.id] ?? []).at(-1) ?? activePair.endpoints[0],
-      event.key,
-    );
+    const currentActivePair =
+      question.pairs.find((pair) => pair.id === activePairIdRef.current) ?? question.pairs[0];
+    if (locked || !currentActivePair) return;
+    const currentPath = pathsRef.current[currentActivePair.id] ?? [];
+    const currentCell = currentPath.at(-1);
+    if (currentCell === undefined) return;
+    const nextCell = neighborForKey(currentCell, event.key);
     if (nextCell === null) return;
     event.preventDefault();
     extendActivePath(nextCell);
   };
 
   const clearActivePath = () => {
-    if (!activePair || locked) return;
-    const nextPaths = { ...paths };
-    delete nextPaths[activePair.id];
-    publishPaths(nextPaths, `${activePair.label}: ruta borrada.`);
+    const currentActivePair =
+      question.pairs.find((pair) => pair.id === activePairIdRef.current) ?? question.pairs[0];
+    if (!currentActivePair || locked) return;
+    const nextPaths = { ...pathsRef.current };
+    delete nextPaths[currentActivePair.id];
+    publishPaths(nextPaths, `${currentActivePair.label}: ruta borrada.`);
   };
 
   const cellOwners = new Map<number, CellOwner>();
@@ -217,36 +364,17 @@ export function ConnectPairsQuestion({
         </strong>
       </div>
 
-      <div className={styles.legend} aria-label="Parejas disponibles">
-        {question.pairs.map((pair, index) => {
-          const color = pair.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
-          return (
-            <button
-              key={pair.id}
-              type="button"
-              className={`${styles.legendButton} ${pair.id === activePairId ? styles.legendActive : ""}`}
-              style={{ "--pair-color": color } as CSSProperties}
-              disabled={locked}
-              onClick={() => {
-                setActivePairId(pair.id);
-                setAnnouncement(`${pair.label} seleccionada.`);
-                boardRef.current?.focus();
-              }}
-            >
-              <span aria-hidden="true">{pair.symbol}</span>
-              {pair.label}
-            </button>
-          );
-        })}
-      </div>
-
       <div
         ref={boardRef}
         className={styles.board}
         style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
         role="grid"
-        aria-label="Tablero de Conectar parejas. Usa las flechas para extender la ruta activa."
+        aria-label="Tablero de Conectar parejas. Arrastra desde un extremo hasta su pareja o usa las flechas."
         tabIndex={0}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={(event) => handlePointerUp(event, true)}
         onKeyDown={handleKeyDown}
       >
         <svg
@@ -288,7 +416,13 @@ export function ConnectPairsQuestion({
                 className={styles.cellButton}
                 style={{ "--pair-color": owner?.pair.color ?? "transparent" } as CSSProperties}
                 disabled={locked}
-                onClick={() => handleCell(cell)}
+                onClick={() => {
+                  if (suppressClickRef.current) {
+                    suppressClickRef.current = false;
+                    return;
+                  }
+                  handleCell(cell);
+                }}
                 aria-label={`Fila ${row}, columna ${column}${
                   owner
                     ? `: ${owner.isEndpoint ? "extremo" : "ruta"} de ${owner.pair.label}`
@@ -332,8 +466,8 @@ export function ConnectPairsQuestion({
       </div>
 
       <p className={styles.instructions}>
-        Selecciona un extremo y avanza por celdas contiguas hasta tocar el otro extremo de la misma
-        pareja. Cada ruta usa su propio símbolo además del color.
+        Arrastra desde un símbolo hasta su pareja. No cruces ni compartas celdas; también puedes
+        usar clics o las flechas del teclado.
       </p>
       <p className={styles.statusText} role="status" aria-live="polite">
         {announcement}
