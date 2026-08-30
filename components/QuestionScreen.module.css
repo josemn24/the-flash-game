@@ -1,0 +1,186 @@
+.brandMarkSmall {
+  display: inline-grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 0.45rem;
+  color: #080907;
+  background: var(--electric);
+  box-shadow: 0 0 24px rgba(215, 255, 24, 0.22);
+  transform: skewX(-7deg);
+}
+
+.notebookButton {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.38rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.25);
+  padding: 0.55rem 0.72rem;
+  color: rgb(255 255 255 / 0.72);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.notebookButton:hover,
+.notebookButton:focus-visible {
+  border-color: rgb(125 232 255 / 0.55);
+  background: rgb(125 232 255 / 0.1);
+  color: white;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+}
+.questionTitle {
+  max-width: 44rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 7vw, 3.15rem);
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+.questionContext {
+  max-width: 44rem;
+  margin-bottom: 0.55rem;
+  color: rgb(255 255 255 / 0.66);
+  font-size: clamp(0.8rem, 2.8vw, 0.98rem);
+  font-weight: 650;
+  line-height: 1.55;
+}
+.questionTitleFocused {
+  max-width: 38rem;
+  font-size: clamp(1.55rem, 5.5vw, 2.65rem);
+  line-height: 1.04;
+}
+.lifeHearts {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.22rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 0.32rem 0.48rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+.lifeHeart {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  transition:
+    color 180ms,
+    fill 180ms,
+    opacity 180ms,
+    transform 180ms;
+}
+.lifeHeartActive {
+  color: var(--coral);
+  fill: currentColor;
+  filter: drop-shadow(0 0 8px rgba(255, 93, 100, 0.3));
+}
+.lifeHeartLost {
+  color: rgba(255, 255, 255, 0.22);
+  fill: transparent;
+  opacity: 0.75;
+  transform: scale(0.92);
+}
+.truthButton {
+  display: flex;
+  min-height: 8.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 900;
+  transition:
+    border-color 160ms,
+    background 160ms,
+    color 160ms;
+}
+.truthButtonTrue {
+  color: var(--electric);
+  background: rgba(215, 255, 24, 0.035);
+}
+.truthButtonFalse {
+  color: #ff858a;
+  background: rgba(255, 93, 100, 0.035);
+}
+.truthButtonTrue:hover {
+  border-color: rgba(215, 255, 24, 0.45);
+  background: rgba(215, 255, 24, 0.08);
+}
+.truthButtonFalse:hover {
+  border-color: rgba(255, 93, 100, 0.45);
+  background: rgba(255, 93, 100, 0.08);
+}
+.textAnswerRow {
+  display: flex;
+  gap: 0.65rem;
+}
+.textAnswerInput {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 0.95rem 1rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 1rem;
+  font-weight: 700;
+  transition:
+    border-color 160ms,
+    background 160ms;
+}
+.textAnswerInput::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+.textAnswerInput:focus {
+  border-color: rgba(215, 255, 24, 0.65);
+  background: rgba(255, 255, 255, 0.055);
+}
+.textSubmitButton {
+  display: grid;
+  width: 3.7rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 1rem;
+  color: #080a05;
+  background: var(--electric);
+}
+.textSubmitButton:disabled {
+  opacity: 0.24;
+}
+@media (min-width: 640px) {
+  .truthButton {
+    min-height: 10rem;
+  }
+}
+@media (max-width: 639px) {
+  .questionTitle {
+    font-size: clamp(1.65rem, 6.2vw, 2.35rem);
+    line-height: 1.12;
+  }
+
+  .questionTitleCompact {
+    font-size: clamp(1.55rem, 5.8vw, 2.05rem);
+    line-height: 1.1;
+  }
+
+  .questionTitleFocused {
+    font-size: clamp(1.55rem, 5.5vw, 2rem);
+    line-height: 1.08;
+  }
+}

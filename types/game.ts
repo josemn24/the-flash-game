@@ -1,65 +1,143 @@
-export type QuestionType =
-  | "multiple-choice"
-  | "true-false"
-  | "short-text"
-  | "image-choice";
-
-export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag";
-
-export type QuestionMedia =
-  | {
-      type: "illustration";
-      id: QuestionIllustration;
-      alt: string;
-    }
-  | {
-      type: "image";
-      src: string;
-      alt: string;
-      fit?: "cover" | "contain";
-      position?: string;
-    };
-
-export type Question = {
-  id: string;
-  type: QuestionType;
-  category: string;
-  question: string;
-  options?: string[];
-  correctAnswer: string | boolean;
-  acceptedAnswers?: string[];
-  media?: QuestionMedia;
-  timeLimit: number;
-  points: number;
-  explanation: string;
-};
-
-export type Stage = {
-  id: string;
-  number: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  questions: Question[];
-};
-
-export type AnswerValue = string | boolean;
-
-export type AnswerStatus = "correct" | "incorrect" | "unanswered";
-
-export type AnswerResult = {
-  questionId: string;
-  answer: AnswerValue | null;
-  status: AnswerStatus;
-  isCorrect: boolean;
-  points: number;
-  timeUsed: number;
-};
-
-export type GameScreen =
-  | "start"
-  | "intro"
-  | "playing"
-  | "transition"
-  | "results"
-  | "review";
+export type {
+  CognitiveSkillTagId,
+  DomainTagId,
+  FormatSkillTagId,
+  LifeSkillTagId,
+  QuestionTags,
+  TopicDefinition,
+  TopicTagId,
+} from "@/lib/questionTags";
+export type {
+  AnswerValue,
+  AnagramQuestion,
+  AnagramTile,
+  AssignAllImageLabelingQuestion,
+  BaseQuestion,
+  ConnectPairsAnswer,
+  ConnectPairsPair,
+  ConnectPairsQuestion,
+  ClassificationAnswer,
+  ClassificationItem,
+  ClassificationQuestion,
+  EstimationQuestion,
+  EscapeAnswer,
+  EscapeBlock,
+  EscapeMove,
+  EscapeQuestion,
+  ErrorReconstructionAnswer,
+  ErrorReconstructionCorrection,
+  ErrorReconstructionQuestion,
+  ErrorReconstructionStep,
+  FlashMemoryAnswer,
+  FlashMemoryItem,
+  FlashMemoryQuestion,
+  HeatMapAnswer,
+  HeatMapQuestion,
+  ImageLabelAnchor,
+  ImageLabelingAnswer,
+  ImageLabelingChoiceResponse,
+  ImageLabelingQuestion,
+  ImageLabelingTextResponse,
+  ImageLabelOption,
+  ImageSurface,
+  IdentifyOneImageLabelingQuestion,
+  LogicCodeClue,
+  LogicCodeQuestion,
+  LogicMatrixPiece,
+  LogicMatrixQuestion,
+  MazeCell,
+  MemoryPairsAnswer,
+  MemoryPairsQuestion,
+  MemoryPairsTile,
+  MiniWordleAnswer,
+  MiniWordleQuestion,
+  MiniSudokuAnswer,
+  MiniSudokuQuestion,
+  MiniNonogramAnswer,
+  MiniNonogramQuestion,
+  QueensAnswer,
+  QueensQuestion,
+  PipesAnswer,
+  PipesQuestion,
+  PipesTileKind,
+  MultipleChoicePromptVisual,
+  SlidingPuzzleAnswer,
+  SlidingPuzzleQuestion,
+  TimeMazeAnswer,
+  TimeMazeQuestion,
+  MatchingAnswer,
+  MatchingItem,
+  MatchingLeftItem,
+  MatchingQuestion,
+  MultipleChoiceQuestion,
+  NumberSequencePromptVisual,
+  NormalizedPoint,
+  OddOneOutItem,
+  OddOneOutQuestion,
+  OrderingQuestion,
+  ProgressiveCluesQuestion,
+  ProgressiveImageQuestion,
+  Question,
+  QuestionIllustration,
+  QuestionMedia,
+  QuestionOfType,
+  QuestionType,
+  ShortTextQuestion,
+  SimonSequenceAnswer,
+  SimonSequencePad,
+  SimonSequenceQuestion,
+  TrueFalseQuestion,
+  WordHashtagAnswer,
+  WordHashtagQuestion,
+  WordHashtagSwap,
+  WordHashtagWords,
+  WordSearchAnswer,
+  WordSearchQuestion,
+  WordSearchTarget,
+  ZipAnswer,
+  ZipCheckpoint,
+  ZipQuestion,
+} from "@/types/question";
+export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";
+export type { GamePhase } from "@/types/session";
+export type {
+  AlphabetChallenge,
+  AlphabetChallengeDefinition,
+  AlphabetChallengeDefinitionEntry,
+  AlphabetChallengeEntry,
+  Challenge,
+  ChallengeAvailabilityStatus,
+  ChallengeDefinition,
+  ChallengeDefinitionId,
+  ChallengeImplementationStatus,
+  ChallengeSummary,
+  FlashChallenge,
+  FlashChallengeDefinition,
+  GameMode,
+  NarrativeBeat,
+  NarrativeBeatDefinition,
+  NarrativeChallenge,
+  NarrativeChallengeDefinition,
+  NarrativeNotebookEntry,
+  NarrativeOutcome,
+  NarrativeQuestionStep,
+  NarrativeQuestionStepDefinition,
+  NarrativeReactionMap,
+  NarrativeScene,
+  NarrativeSceneStep,
+  NarrativeSceneStepDefinition,
+  NarrativeStep,
+  NarrativeStepDefinition,
+  NarrativeTextBlock,
+  PlaceholderScheduledChallenge,
+  PlayableScheduledChallenge,
+  PyramidLevelBriefing,
+  PyramidChallenge,
+  PyramidChallengeDefinition,
+  PyramidLevel,
+  PyramidLevelDefinition,
+  ScheduledChallenge,
+  SurvivalChallenge,
+  SurvivalChallengeDefinition,
+} from "@/types/challenge";
+export type { Room, Season, SeasonStatus } from "@/types/room";

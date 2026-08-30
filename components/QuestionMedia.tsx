@@ -1,11 +1,12 @@
 import Image from "next/image";
+import styles from "@/components/QuestionMedia.module.css";
 import type { QuestionIllustration, QuestionMedia as QuestionMediaType } from "@/types/game";
 
 function Illustration({ id }: { id: QuestionIllustration }) {
   if (id === "japan-flag") {
     return (
-      <div className="japan-flag">
-        <div className="japan-sun" />
+      <div className={styles.japanFlag}>
+        <div className={styles.japanSun} />
       </div>
     );
   }
@@ -24,26 +25,50 @@ function Illustration({ id }: { id: QuestionIllustration }) {
     );
   }
 
+  if (id === "france-flag") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 300 200"
+        className="h-auto w-[min(63%,18rem)] rounded-[0.3rem] shadow-2xl"
+      >
+        <rect width="100" height="200" fill="#1b3f8b" />
+        <rect x="100" width="100" height="200" fill="#f2f0e8" />
+        <rect x="200" width="100" height="200" fill="#d43c4c" />
+      </svg>
+    );
+  }
+
   return (
     <>
-      <div className="star star-one" />
-      <div className="star star-two" />
-      <div className="star star-three" />
-      <div className="saturn">
-        <div className="saturn-ring saturn-ring-back" />
-        <div className="saturn-planet" />
-        <div className="saturn-ring saturn-ring-front" />
+      <div className={`${styles.star} ${styles.starOne}`} />
+      <div className={`${styles.star} ${styles.starTwo}`} />
+      <div className={`${styles.star} ${styles.starThree}`} />
+      <div className={styles.saturn}>
+        <div className={`${styles.saturnRing} ${styles.saturnRingBack}`} />
+        <div className={styles.saturnPlanet} />
+        <div className={`${styles.saturnRing} ${styles.saturnRingFront}`} />
       </div>
     </>
   );
 }
 
-export function QuestionMedia({ media }: { media: QuestionMediaType }) {
+export function QuestionMedia({
+  media,
+  compact = false,
+  prominent = false,
+}: {
+  media: QuestionMediaType;
+  compact?: boolean;
+  prominent?: boolean;
+}) {
+  const stageClassName = `${styles.visualStage} ${compact ? styles.visualStageCompact : ""} ${prominent ? styles.visualStageProminent : ""}`;
+
   if (media.type === "image") {
     const isSvg = media.src.endsWith(".svg");
 
     return (
-      <div className="visual-stage">
+      <div className={stageClassName}>
         <Image
           src={media.src}
           alt={media.alt}
@@ -53,19 +78,19 @@ export function QuestionMedia({ media }: { media: QuestionMediaType }) {
           className={media.fit === "contain" ? "object-contain" : "object-cover"}
           style={{ objectPosition: media.position }}
         />
-        <div className="visual-scanline" aria-hidden="true" />
+        <div className={styles.visualScanline} aria-hidden="true" />
       </div>
     );
   }
 
   return (
     <div
-      className={`visual-stage${media.id === "saturn" ? " visual-space" : ""}`}
+      className={`${stageClassName} ${media.id === "saturn" ? styles.visualSpace : ""}`}
       role="img"
       aria-label={media.alt}
     >
       <Illustration id={media.id} />
-      <div className="visual-scanline" aria-hidden="true" />
+      <div className={styles.visualScanline} aria-hidden="true" />
     </div>
   );
 }

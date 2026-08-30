@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustración de la Sagrada Familia</title>
+  <desc id="desc">Basílica con torres altas, fachada central y formas inspiradas en la arquitectura de Gaudí.</desc>
+  <rect width="900" height="600" fill="#101419"/>
+  <path d="M0 495h900v105H0z" fill="#171f26"/>
+  <path d="M195 500h510v45H195z" fill="#d7b170"/>
+  <path d="M230 265h440v245H230z" fill="#c99656"/>
+  <path d="M285 220h85v290h-85zM415 175h70v335h-70zM530 220h85v290h-85z" fill="#d8ad68"/>
+  <path d="M292 145h70l8 75h-86zM421 90h58l6 85h-70zM538 145h70l8 75h-86z" fill="#b98345"/>
+  <path d="M327 62l38 85h-76zM450 18l35 76h-70zM573 62l38 85h-76z" fill="#e4c585"/>
+  <path d="M318 52h18v-24h18v24h18v17h-18v23h-18V69h-18zM441 10h15V0h18v10h15v15h-15v20h-18V25h-15zM564 52h18v-24h18v24h18v17h-18v23h-18V69h-18z" fill="#f0d99a"/>
+  <path d="M250 302h400M250 365h400M250 430h400" stroke="#8c5f36" stroke-width="13" stroke-linecap="round"/>
+  <g fill="#1b2832">
+    <path d="M309 285c0-25 38-25 38 0v66h-38zM431 250c0-27 38-27 38 0v78h-38zM553 285c0-25 38-25 38 0v66h-38z"/>
+    <path d="M325 405c0-42 50-42 50 0v105h-50zM425 390c0-50 50-50 50 0v120h-50zM525 405c0-42 50-42 50 0v105h-50z"/>
+  </g>
+  <g fill="#efe1ba" opacity=".88">
+    <circle cx="450" cy="342" r="34"/>
+    <path d="M450 295v94M403 342h94M417 309l66 66M483 309l-66 66" stroke="#efe1ba" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <path d="M140 520h620" stroke="#f5d48d" stroke-width="10" stroke-linecap="round" opacity=".35"/>
+</svg>

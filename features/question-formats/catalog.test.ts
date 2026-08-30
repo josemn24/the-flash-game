@@ -1,0 +1,661 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { challengeDefinitions } from "@/data/challengeDefinitions";
+import {
+  challenges,
+  getChallengeById,
+  getNarrativeQuestionIds,
+  getPyramidQuestionIds,
+} from "@/data/challenges";
+import { demoRoom } from "@/data/demoRoom";
+import {
+  getQuestionsByIds,
+  questionGroups,
+  questionsById,
+  type QuestionId,
+} from "@/data/questions";
+import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
+import dictionary from "@/public/dictionaries/es-general-4.v1.json";
+import { normalizeMiniWordleWord } from "@/lib/miniWordle";
+import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
+import { isValidTimeMazeConfiguration } from "@/lib/timeMaze";
+import { isValidEscapeConfiguration } from "@/lib/escape";
+import { countZipSolutions, isValidZipConfiguration } from "@/lib/zip";
+import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
+import { countPipesSolutions, isValidPipesConfiguration } from "@/lib/pipes";
+import {
+  buildWordHashtagSolution,
+  calculateMinimumWordHashtagSwaps,
+  isValidWordHashtagConfiguration,
+} from "@/lib/wordHashtag";
+import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
+import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
+import type {
+  PlaceholderScheduledChallenge,
+  PlayableScheduledChallenge,
+  ScheduledChallenge,
+} from "@/types/game";
+
+function isPlayableScheduledChallenge(
+  challenge: ScheduledChallenge,
+): challenge is PlayableScheduledChallenge {
+  return typeof challenge.challengeDefinitionId === "string";
+}
+
+function isPlaceholderScheduledChallenge(
+  challenge: ScheduledChallenge,
+): challenge is PlaceholderScheduledChallenge {
+  return !isPlayableScheduledChallenge(challenge);
+}
+
+describe("question format catalog", () => {
+  it("contains exactly thirty-one formats with unique slugs", () => {
+    expect(questionFormats).toHaveLength(31);
+    expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(31);
+    expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
+      "multiple-choice",
+      "odd-one-out",
+      "matching",
+      "connect-pairs",
+      "true-false",
+      "short-text",
+      "ordering",
+      "classification",
+      "logic-code",
+      "estimation",
+      "progressive-clues",
+      "heat-map",
+      "image-labeling",
+      "flash-memory",
+      "memory-pairs",
+      "simon-sequence",
+      "logic-matrix",
+      "mini-sudoku",
+      "mini-nonogram",
+      "queens",
+      "sliding-puzzle",
+      "escape",
+      "error-reconstruction",
+      "anagram",
+      "word-hashtag",
+      "word-search",
+      "mini-wordle",
+      "progressive-image",
+      "time-maze",
+      "zip",
+      "pipes",
+    ]);
+    expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
+    const exampleIds = questionFormats.flatMap((format) =>
+      format.examples.map((example) => example.question.id),
+    );
+    expect(new Set(exampleIds).size).toBe(exampleIds.length);
+  });
+
+  it("keeps the Pipes example unique and internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.pipes.examples[0].question;
+    expect(isValidPipesConfiguration(question)).toBe(true);
+    expect(countPipesSolutions(question)).toBe(1);
+  });
+
+  it("keeps error-reconstruction examples internally consistent", () => {
+    const examples = QUESTION_FORMAT_CATALOG["error-reconstruction"].examples;
+    expect(examples).toHaveLength(2);
+    for (const question of examples.map((example) => example.question)) {
+      expect(question.steps.length).toBeGreaterThanOrEqual(3);
+      expect(question.steps.length).toBeLessThanOrEqual(7);
+      expect(question.steps.some((step) => step.id === question.firstErrorStepId)).toBe(true);
+      if (question.correction) {
+        expect(question.correction.options).toContain(question.correction.correctAnswer);
+      }
+    }
+  });
+
+  it("keeps anagram examples internally consistent", () => {
+    const examples = QUESTION_FORMAT_CATALOG.anagram.examples;
+    expect(examples).toHaveLength(2);
+    for (const question of examples.map((example) => example.question)) {
+      expect(question.tiles.length).toBeGreaterThanOrEqual(3);
+      expect(question.tiles.length).toBeLessThanOrEqual(10);
+      expect(question.tiles.map((tile) => tile.value).sort()).toEqual(
+        Array.from(question.correctAnswer).sort(),
+      );
+      expect(question.tiles.map((tile) => tile.value).join("")).not.toBe(question.correctAnswer);
+    }
+  });
+
+  it("keeps the Word Hashtag example solvable within its movement limit", () => {
+    const question = QUESTION_FORMAT_CATALOG["word-hashtag"].examples[0].question;
+    const solution = buildWordHashtagSolution(question.words)!;
+    expect(isValidWordHashtagConfiguration(question)).toBe(true);
+    expect(calculateMinimumWordHashtagSwaps(question.initialLetters, solution)).toBe(3);
+    expect(question.maxMoves).toBe(3);
+  });
+
+  it("keeps the word-search example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["word-search"].examples[0].question;
+    expect(question.grid).toEqual({ rows: 8, columns: 8 });
+    expect(question.letters).toHaveLength(64);
+    expect(question.targets.map((target) => target.word)).toEqual([
+      "TIGRE",
+      "CEBRA",
+      "PANDA",
+      "KOALA",
+      "LINCE",
+    ]);
+    expect(isValidWordSearchConfiguration(question)).toBe(true);
+  });
+
+  it("keeps the Mini-Wordle example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["mini-wordle"].examples[0].question;
+    expect(question.correctAnswer).toHaveLength(4);
+    expect(dictionary.words).toContain(normalizeMiniWordleWord(question.correctAnswer));
+    expect("additionalGuesses" in question).toBe(false);
+  });
+
+  it("keeps the progressive-image example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-image"].examples[0].question;
+    expect(question.surface.src).toBe("/visuals/connections/eiffel-tower.png");
+    expect(question.surface.width).toBeGreaterThan(0);
+    expect(question.surface.height).toBeGreaterThan(0);
+    expect(question.surface.alt).not.toContain(question.correctAnswer);
+    expect(question.solutionAlt).toContain("Torre Eiffel");
+    expect(question.revealDuration).toBeGreaterThan(0);
+    expect(question.revealDuration).toBeLessThan(question.timeLimit);
+    expect(question.acceptedAnswers).toContain(question.correctAnswer);
+  });
+
+  it("keeps the time-maze example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["time-maze"].examples[0].question;
+    expect(question.grid).toEqual({ rows: 7, columns: 7 });
+    expect(question.cells).toHaveLength(49);
+    expect(question.cells.filter((cell) => cell === "start")).toHaveLength(1);
+    expect(question.cells.filter((cell) => cell === "exit")).toHaveLength(1);
+    expect(question.timeLimit).toBe(35);
+    expect(isValidTimeMazeConfiguration(question)).toBe(true);
+  });
+
+  it("keeps the Zip example unique and internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.zip.examples[0].question;
+    expect(question.grid).toEqual({ rows: 5, columns: 5 });
+    expect(question.solution).toHaveLength(25);
+    expect(isValidZipConfiguration(question)).toBe(true);
+    expect(countZipSolutions(question)).toBe(1);
+  });
+
+  it("keeps the Queens example unique and internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.queens.examples[0].question;
+    expect(question.grid).toEqual({ rows: 5, columns: 5 });
+    expect(question.regions).toHaveLength(25);
+    expect(question.solution).toHaveLength(5);
+    expect(isValidQueensConfiguration(question)).toBe(true);
+    expect(countQueensSolutions(question)).toBe(1);
+  });
+
+  it("keeps the Escape example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.escape.examples[0].question;
+    expect(question.grid).toEqual({ rows: 6, columns: 6, exit: { side: "right", row: 2 } });
+    expect(question.initialBlocks).toHaveLength(5);
+    expect(question.referenceSolution).toHaveLength(4);
+    expect(question.optimalMoves).toBe(4);
+    expect(isValidEscapeConfiguration(question)).toBe(true);
+  });
+
+  it("keeps the heat-map example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["heat-map"].examples[0].question;
+    expect(question.surface.src).toBe("/visuals/heat-map/spain-map.svg");
+    expect(question.surface.width).toBeGreaterThan(0);
+    expect(question.surface.height).toBeGreaterThan(0);
+    expect(question.fullCreditRadius).toBeGreaterThan(0);
+    expect(question.toleranceRadius).toBeGreaterThan(question.fullCreditRadius);
+    expect(question.target.x).toBeGreaterThanOrEqual(0);
+    expect(question.target.x).toBeLessThanOrEqual(1);
+    expect(question.target.y).toBeGreaterThanOrEqual(0);
+    expect(question.target.y).toBeLessThanOrEqual(1);
+  });
+
+  it("keeps both image-labeling examples internally consistent", () => {
+    const examples = QUESTION_FORMAT_CATALOG["image-labeling"].examples;
+    expect(examples).toHaveLength(2);
+    expect(examples.map((example) => example.title)).toEqual([
+      "Etiquetado múltiple",
+      "Etiquetado único",
+    ]);
+    const question = examples[0].question;
+    expect(question.task).toBe("assign-all");
+    if (question.task !== "assign-all") throw new Error("Expected assign-all example");
+    const anchorIds = question.anchors.map((anchor) => anchor.id);
+    const labelIds = question.labels.map((label) => label.id);
+    expect(question.surface.src).toBe("/visuals/heat-map/human-body.svg");
+    expect(question.surface.width).toBeGreaterThan(0);
+    expect(question.surface.height).toBeGreaterThan(0);
+    expect(question.anchors).toHaveLength(5);
+    expect(question.labels.length).toBeGreaterThanOrEqual(question.anchors.length);
+    expect(new Set(anchorIds).size).toBe(anchorIds.length);
+    expect(new Set(labelIds).size).toBe(labelIds.length);
+    expect(question.labels.every((label) => label.label.trim().length > 0)).toBe(true);
+    expect(question.anchors.every((anchor) => labelIds.includes(anchor.correctLabelId))).toBe(true);
+    expect(question.anchors.every((anchor) => anchor.point.x >= 0 && anchor.point.x <= 1)).toBe(
+      true,
+    );
+    expect(question.anchors.every((anchor) => anchor.point.y >= 0 && anchor.point.y <= 1)).toBe(
+      true,
+    );
+
+    const single = examples[1].question;
+    expect(single.task).toBe("identify-one");
+    if (single.task !== "identify-one") throw new Error("Expected identify-one example");
+    expect(single.response.kind).toBe("choice");
+    expect(single.target).toEqual({ x: 0.5, y: 0.6 });
+    if (single.response.kind !== "choice") throw new Error("Expected choice response");
+    expect(single.response.options).toContain(single.response.correctAnswer);
+  });
+
+  it("keeps the progressive-clues example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
+    expect(question.clues.length).toBeGreaterThanOrEqual(2);
+    expect(question.clues.every((clue) => clue.trim().length > 0)).toBe(true);
+    expect(question.acceptedAnswers).toContain(question.correctAnswer);
+    expect(question.cluePenalty).toBeGreaterThan(0);
+    expect(question.cluePenalty * (question.clues.length - 1)).toBeLessThan(question.points);
+  });
+
+  it("keeps the matching example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
+    const leftIds = question.leftItems.map((item) => item.id);
+    const rightIds = question.rightItems.map((item) => item.id);
+    expect(question.leftItems.length).toBeGreaterThanOrEqual(3);
+    expect(question.leftItems.length).toBeLessThanOrEqual(6);
+    expect(question.rightItems).toHaveLength(question.leftItems.length);
+    expect(new Set(leftIds).size).toBe(leftIds.length);
+    expect(new Set(rightIds).size).toBe(rightIds.length);
+    expect(question.leftItems.every((item) => rightIds.includes(item.correctMatchId))).toBe(true);
+    expect(question.leftItems.every((item) => item.label.trim().length > 0)).toBe(true);
+    expect(question.rightItems.every((item) => item.label.trim().length > 0)).toBe(true);
+  });
+
+  it("keeps the memory-pairs example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["memory-pairs"].examples[0].question;
+    const pairCounts = question.tiles.reduce<Record<string, number>>((counts, tile) => {
+      counts[tile.pairId] = (counts[tile.pairId] ?? 0) + 1;
+      return counts;
+    }, {});
+
+    expect(question.grid.rows * question.grid.columns).toBe(question.tiles.length);
+    expect(Object.keys(pairCounts)).toHaveLength(4);
+    expect(Object.values(pairCounts).every((count) => count === 2)).toBe(true);
+    expect(new Set(question.tiles.map((tile) => tile.id)).size).toBe(question.tiles.length);
+    expect(question.tiles.every((tile) => tile.label.trim().length > 0)).toBe(true);
+    expect(question.tiles.every((tile) => tile.symbol && tile.symbol.trim().length > 0)).toBe(true);
+    expect(isValidMemoryPairsConfiguration(question)).toBe(true);
+  });
+
+  it("keeps the connect-pairs example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
+    const endpointCells = question.pairs.flatMap((pair) => pair.endpoints);
+    const metrics = calculateConnectPairsMetrics(question, { paths: question.solutionPaths });
+
+    expect(question.grid).toEqual({ rows: 5, columns: 5 });
+    expect(question.pairs).toHaveLength(3);
+    expect(question.requireFullCoverage).toBe(true);
+    expect(new Set(question.pairs.map((pair) => pair.id)).size).toBe(question.pairs.length);
+    expect(new Set(endpointCells).size).toBe(endpointCells.length);
+    expect(question.pairs.every((pair) => pair.symbol.trim().length > 0)).toBe(true);
+    expect(isValidConnectPairsConfiguration(question)).toBe(true);
+    expect(metrics).toMatchObject({
+      valid: true,
+      connectedPairs: 3,
+      totalPairs: 3,
+      coveredCells: 25,
+      totalCells: 25,
+      conflicts: 0,
+      exact: true,
+    });
+  });
+
+  it("keeps the odd-one-out example internally consistent", () => {
+    const question = QUESTION_FORMAT_CATALOG["odd-one-out"].examples[0].question;
+    expect(question.items).toHaveLength(4);
+    expect(question.items.length).toBeGreaterThanOrEqual(3);
+    expect(question.items.length).toBeLessThanOrEqual(6);
+    expect(new Set(question.items.map((item) => item.id)).size).toBe(question.items.length);
+    expect(question.items.some((item) => item.id === question.correctAnswer)).toBe(true);
+    expect(question.items.every((item) => item.label.trim().length > 0)).toBe(true);
+  });
+
+  it("keeps the Tabarnia mock season and playable challenges consistent", () => {
+    expect(demoRoom.id).toBe("tabarnia-room");
+    expect(demoRoom.title).toBe("Tabarnia");
+    expect(demoRoom.activeSeason.title).toBe("Primera temporada");
+    expect(demoRoom.activeSeason.status).toBe("active");
+    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(9);
+    expect(demoRoom.activeSeason.scheduledChallenges.map((challenge) => challenge.id)).toEqual([
+      "tabarnia-flash-01",
+      "tabarnia-challenge-02",
+      "tabarnia-challenge-03",
+      "tabarnia-challenge-04",
+      "tabarnia-challenge-05",
+      "tabarnia-challenge-06",
+      "tabarnia-challenge-07",
+      "tabarnia-challenge-08",
+      "tabarnia-challenge-09",
+    ]);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges.every(
+        (challenge) => challenge.seasonId === demoRoom.activeSeason.id,
+      ),
+    ).toBe(true);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges
+        .filter(isPlayableScheduledChallenge)
+        .every((challenge) => challenge.challengeDefinitionId in challengeDefinitions),
+    ).toBe(true);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges
+        .filter(isPlaceholderScheduledChallenge)
+        .every(
+          (challenge) =>
+            typeof challenge.title === "string" &&
+            challenge.title.startsWith("Desafío ") &&
+            challenge.subtitle === "Próximamente",
+        ),
+    ).toBe(true);
+    expect(
+      demoRoom.activeSeason.scheduledChallenges.map(
+        (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
+      ),
+    ).toEqual([
+      86_399_999, 172_799_999, 259_199_999, 777_599_999, 777_599_999, 86_399_999, 86_399_999,
+      86_399_999, 86_399_999,
+    ]);
+    expect(challenges).toHaveLength(6);
+    const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
+    const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
+    const survivalChallenge = challenges.find((challenge) => challenge.mode === "survival");
+    const narrativeChallenge = challenges.find((challenge) => challenge.mode === "narrative");
+    const pyramidChallenge = challenges.find((challenge) => challenge.mode === "pyramid");
+    expect(flashChallenge?.questions).toHaveLength(16);
+    expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
+      true,
+    );
+    expect(alphabetChallenge?.entries).toHaveLength(18);
+    expect(alphabetChallenge?.timeLimit).toBe(135);
+    expect(survivalChallenge?.questions).toHaveLength(20);
+    expect(survivalChallenge?.lives).toBe(3);
+    expect(narrativeChallenge?.implementationStatus).toBe("complete");
+    expect(narrativeChallenge?.maxScore).toBe(100);
+    expect(pyramidChallenge?.levels).toHaveLength(7);
+    expect(
+      Object.values(pyramidChallenge?.questionPoints ?? {}).reduce(
+        (total, points) => total + points,
+        0,
+      ),
+    ).toBe(100);
+    expect(
+      narrativeChallenge?.beats.flatMap((beat) =>
+        beat.steps.filter((step) => step.type === "question"),
+      ),
+    ).toHaveLength(8);
+    expect(narrativeChallenge?.notebookEntries).toHaveLength(8);
+    if (narrativeChallenge?.mode !== "narrative") {
+      throw new Error("Expected narrative challenge");
+    }
+    const narrativeQuestions = narrativeChallenge.beats.flatMap((beat) =>
+      beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
+    );
+    expect(narrativeQuestions.map((question) => question.points)).toEqual([
+      10, 10, 12, 12, 12, 14, 12, 18,
+    ]);
+    expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([
+      24, 25, 35, 45, 35, 45, 35, 40,
+    ]);
+    expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(284);
+
+    const direction = narrativeQuestions[0];
+    expect(direction.type).toBe("multiple-choice");
+    if (direction.type !== "multiple-choice") throw new Error("Expected multiple choice");
+    expect(direction.options).toContain("Cordillera Transantártica");
+    expect(
+      evaluateAnswer({
+        question: direction,
+        answer: "Cordillera Transantártica",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 10 });
+    expect(
+      evaluateAnswer({ question: direction, answer: "Montes Ellsworth", timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect", points: -2 });
+
+    const polarContext = narrativeQuestions[1];
+    expect(polarContext.type).toBe("multiple-choice");
+    if (polarContext.type !== "multiple-choice") throw new Error("Expected multiple choice");
+    expect(
+      evaluateAnswer({
+        question: polarContext,
+        answer: "Círculo Polar Antártico",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 10 });
+
+    const classification = narrativeQuestions[2];
+    expect(classification.type).toBe("classification");
+    if (classification.type !== "classification") throw new Error("Expected classification");
+    expect(classification.categories).toEqual(["Antártida", "Ártico"]);
+    const classificationAnswer = Object.fromEntries(
+      classification.items.map((item) => [item.label, item.correctCategory]),
+    );
+    expect(
+      evaluateAnswer({ question: classification, answer: classificationAnswer, timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 12 });
+
+    const corridor = narrativeQuestions[3];
+    expect(corridor.type).toBe("escape");
+    if (corridor.type !== "escape") throw new Error("Expected escape");
+    expect(isValidEscapeConfiguration(corridor)).toBe(true);
+    expect(corridor.optimalMoves).toBe(4);
+    expect(corridor.initialBlocks.some((block) => block.id === "p17")).toBe(false);
+    expect(
+      evaluateAnswer({
+        question: corridor,
+        answer: { moves: corridor.referenceSolution },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 12 });
+
+    const evidence = narrativeQuestions[4];
+    expect(evidence.type).toBe("multiple-choice");
+    if (evidence.type !== "multiple-choice") throw new Error("Expected evidence choice");
+    expect(
+      evidence.options.map(
+        (answer) => evaluateAnswer({ question: evidence, answer, timeUsed: 0 }).status,
+      ),
+    ).toEqual(["correct", "incorrect", "incorrect", "incorrect"]);
+
+    const route = narrativeQuestions[5];
+    expect(route.type).toBe("zip");
+    if (route.type !== "zip") throw new Error("Expected Zip route");
+    expect(isValidZipConfiguration(route)).toBe(true);
+    expect(countZipSolutions(route)).toBe(1);
+    expect(route.checkpoints.map((checkpoint) => checkpoint.label)).toEqual([
+      "Colonia",
+      "Primer desvío",
+      "Campamento base",
+      "Baliza H-3",
+      "Nadir",
+      "Último registro",
+    ]);
+
+    const chronology = narrativeQuestions[6];
+    expect(chronology.type).toBe("ordering");
+    if (chronology.type !== "ordering") throw new Error("Expected chronology");
+    expect(
+      evaluateAnswer({ question: chronology, answer: chronology.correctOrder, timeUsed: 0 }),
+    ).toMatchObject({ status: "correct", points: 12 });
+
+    const finalRecord = narrativeQuestions[7];
+    expect(finalRecord.type).toBe("multiple-choice");
+    if (finalRecord.type !== "multiple-choice") throw new Error("Expected final record");
+    expect(
+      evaluateAnswer({
+        question: finalRecord,
+        answer:
+          "P-17 continuó hacia las montañas. La causa de su trayectoria no pudo determinarse.",
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "correct", points: 18 });
+    expect(
+      evaluateAnswer({ question: finalRecord, answer: finalRecord.options[0], timeUsed: 0 }),
+    ).toMatchObject({ status: "incorrect" });
+
+    const narrativeMedia = narrativeQuestions.flatMap((question) => {
+      const topLevel =
+        "media" in question && question.media?.type === "image" ? [question.media] : [];
+      const surfaceMedia =
+        question.type === "progressive-image" || question.type === "heat-map"
+          ? [
+              {
+                type: "image" as const,
+                src: question.surface.src,
+                alt:
+                  question.type === "progressive-image"
+                    ? question.solutionAlt
+                    : question.surface.alt,
+              },
+            ]
+          : [];
+      const itemMedia =
+        question.type === "flash-memory"
+          ? question.items.flatMap((item) => (item.media?.type === "image" ? [item.media] : []))
+          : question.type === "matching"
+            ? [...question.leftItems, ...question.rightItems].flatMap((item) =>
+                item.media?.type === "image" ? [item.media] : [],
+              )
+            : [];
+      return [...topLevel, ...surfaceMedia, ...itemMedia];
+    });
+    expect(narrativeMedia).toHaveLength(2);
+    for (const media of narrativeMedia) {
+      expect(media.alt.trim().length).toBeGreaterThan(20);
+      expect(existsSync(join(process.cwd(), "public", media.src))).toBe(true);
+    }
+    expect(challenges.map((challenge) => challenge.id)).toEqual([
+      "tabarnia-flash-01",
+      "tabarnia-challenge-02",
+      "tabarnia-challenge-03",
+      "tabarnia-challenge-04",
+      "tabarnia-challenge-05",
+      "tabarnia-challenge-06",
+    ]);
+    expect(challenges.map((challenge) => challenge.definitionId)).toEqual([
+      "demo-challenge-definition",
+      "animals-alphabet-definition",
+      "spain-survival-definition",
+      "antarctica-narrative-definition",
+      "pyramid-logic-definition",
+      "pyramid-abrahamic-definition",
+    ]);
+    expect(getChallengeById("tabarnia-flash-01")?.definitionId).toBe("demo-challenge-definition");
+    expect(getChallengeById("tabarnia-challenge-02")?.definitionId).toBe(
+      "animals-alphabet-definition",
+    );
+    expect(getChallengeById("tabarnia-challenge-03")?.definitionId).toBe(
+      "spain-survival-definition",
+    );
+    expect(getChallengeById("tabarnia-challenge-04")?.definitionId).toBe(
+      "antarctica-narrative-definition",
+    );
+    expect(flashChallenge?.questions.some((question) => question.type === "odd-one-out")).toBe(
+      true,
+    );
+    expect(
+      flashChallenge?.questions.some((question) => (question.type as string) === "image-choice"),
+    ).toBe(false);
+
+    const progressiveImageQuestion = questionsById["sbr-grand-canyon-progressive"];
+    expect(
+      evaluateAnswer({
+        question: progressiveImageQuestion,
+        answer: "gran cañon",
+        timeUsed: 5,
+      }).status,
+    ).toBe("correct");
+
+    expect(questionsById["sbr-west-to-east-cities"]).toMatchObject({
+      directionLabels: { start: "Más al oeste", end: "Más al este" },
+    });
+    expect(questionsById["sbr-horse-gaits"]).toMatchObject({
+      directionLabels: { start: "Más lento", end: "Más rápido" },
+    });
+  });
+
+  it("keeps the mock question table consistent", () => {
+    const questionIds = Object.keys(questionsById) as QuestionId[];
+    expect(questionIds).toHaveLength(105);
+    expect(new Set(questionIds).size).toBe(questionIds.length);
+    expect(questionIds.every((id) => questionsById[id].id === id)).toBe(true);
+
+    const sampleIds = ["capital-canada", "sequence", "eiffel-tower"] satisfies QuestionId[];
+    expect(getQuestionsByIds(sampleIds).map((question) => question.id)).toEqual(sampleIds);
+    expect(
+      Object.values(questionGroups)
+        .flat()
+        .every((id) => id in questionsById),
+    ).toBe(true);
+  });
+
+  it("keeps challenge definitions connected to valid questions", () => {
+    const definitions = Object.values(challengeDefinitions);
+    expect(definitions).toHaveLength(7);
+    expect(new Set(definitions.map((definition) => definition.id)).size).toBe(definitions.length);
+    expect(challengeDefinitions["demo-challenge-definition"].questionIds).toHaveLength(16);
+    expect(
+      challengeDefinitions["demo-challenge-definition"].questionIds.every((questionId) =>
+        questionId.startsWith("sbr-"),
+      ),
+    ).toBe(true);
+    expect(challengeDefinitions["connections-challenge-definition"].questionIds).toHaveLength(10);
+    const alphabetDefinition = challengeDefinitions["animals-alphabet-definition"];
+    expect(alphabetDefinition.entries).toHaveLength(18);
+    expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(18);
+    const survivalDefinition = challengeDefinitions["spain-survival-definition"];
+    expect(survivalDefinition.questionIds).toHaveLength(20);
+    expect(survivalDefinition.lives).toBe(3);
+    expect(Object.values(survivalDefinition.questionPoints ?? {}).reduce((a, b) => a + b, 0)).toBe(
+      100,
+    );
+    const narrativeDefinition = challengeDefinitions["antarctica-narrative-definition"];
+    expect(getNarrativeQuestionIds(narrativeDefinition)).toEqual([
+      "ross-sea-transantarctic-range",
+      "antarctic-circle-map",
+      "polar-fauna-classification",
+      "clear-camp-escape",
+      "p17-evidence-matrix",
+      "p17-route-zip",
+      "p17-observation-order",
+      "p17-final-record",
+    ]);
+    expect(Object.values(narrativeDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
+    const pyramidDefinition = challengeDefinitions["pyramid-logic-definition"];
+    expect(getPyramidQuestionIds(pyramidDefinition)).toHaveLength(7);
+    expect(Object.values(pyramidDefinition.questionPoints).reduce((a, b) => a + b, 0)).toBe(100);
+    const abrahamicPyramidDefinition = challengeDefinitions["pyramid-abrahamic-definition"];
+    expect(getPyramidQuestionIds(abrahamicPyramidDefinition)).toHaveLength(7);
+    expect(
+      Object.values(abrahamicPyramidDefinition.questionPoints).reduce((a, b) => a + b, 0),
+    ).toBe(100);
+    expect(
+      definitions.every((definition) => {
+        const questionIds =
+          definition.mode === "alphabet"
+            ? definition.entries.map((entry) => entry.questionId)
+            : definition.mode === "narrative"
+              ? getNarrativeQuestionIds(definition)
+              : definition.mode === "pyramid"
+                ? getPyramidQuestionIds(definition)
+                : definition.questionIds;
+        return questionIds.every((questionId) => questionId in questionsById);
+      }),
+    ).toBe(true);
+  });
+});

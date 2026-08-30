@@ -1,85 +1,190 @@
 "use client";
 
 import { motion } from "motion/react";
-import { CheckIcon, ChevronIcon, ClockIcon, CrossIcon, RotateIcon } from "@/components/icons";
+import {
+  CheckIcon,
+  ChevronIcon,
+  ClockIcon,
+  CrossIcon,
+  NotebookIcon,
+  RotateIcon,
+} from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import styles from "@/components/ReviewAnswers.module.css";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { Button } from "@/components/ui/Button";
-import type { AnswerResult, AnswerValue, Stage } from "@/types/game";
-
-function answerLabel(value: AnswerValue | null) {
-  if (value === null) return "Sin respuesta";
-  if (typeof value === "boolean") return value ? "Verdadero" : "Falso";
-  return value;
-}
+import { MotionButton } from "@/components/ui/MotionButton.client";
+import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
+import type {
+  AnswerResult,
+  FlashChallenge,
+  NarrativeChallenge,
+  PyramidChallenge,
+  SurvivalChallenge,
+} from "@/types/game";
 
 function statusLabel(result: AnswerResult) {
   if (result.status === "correct") return "Correcta";
+  if (result.status === "partial") return "Parcial";
   if (result.status === "incorrect") return "Incorrecta";
   return "Sin contestar";
 }
 
-export function ReviewAnswers({ stage, results, onBack, onReplay }: {
-  stage: Stage;
+export function ReviewAnswers({
+  challenge,
+  results,
+  onBack,
+  onReplay,
+  notebook,
+}: {
+  challenge: FlashChallenge | SurvivalChallenge | NarrativeChallenge | PyramidChallenge;
   results: AnswerResult[];
   onBack: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
+  notebook?: { entryCount: number; onOpen: () => void };
 }) {
+  const questions =
+    challenge.mode === "narrative"
+      ? challenge.beats.flatMap((beat) =>
+          beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
+        )
+      : challenge.mode === "pyramid"
+        ? challenge.levels.map((level) => level.question)
+        : challenge.questions;
+  const narrative = challenge.mode === "narrative";
+
   return (
-    <motion.section className="mx-auto min-h-[100dvh] w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+    <motion.section
+      className="mx-auto min-h-[100dvh] w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+    >
       <AppHeader
         className="mb-9"
         left={<Logo />}
-        right={(
-          <motion.button
-          type="button"
-          className="text-button"
-          onClick={onBack}
-          whileTap={{ scale: 0.98 }}
-        >
-          Volver al resultado
-          </motion.button>
-        )}
+        right={
+          <div className="flex items-center gap-3">
+            {notebook && (
+              <motion.button
+                type="button"
+                className={styles.textButton}
+                onClick={notebook.onOpen}
+                whileTap={{ scale: 0.98 }}
+                aria-label={`Abrir cuaderno de campo, ${notebook.entryCount} entradas`}
+              >
+                <NotebookIcon className="h-4 w-4" />
+                Cuaderno · {notebook.entryCount}
+              </motion.button>
+            )}
+            <motion.button
+              type="button"
+              className={styles.textButton}
+              onClick={onBack}
+              whileTap={{ scale: 0.98 }}
+            >
+              Volver al resultado
+            </motion.button>
+          </div>
+        }
       />
 
       <div className="mb-7 sm:mb-9">
-        <p className="eyebrow text-[var(--electric)]">Análisis de carrera</p>
-        <h1 className="mt-2 text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">Revisa tus respuestas</h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-white/45">Aquí sí: descubre qué acertaste, dónde fallaste y cuánto sumó cada decisión.</p>
+        <p className={`${styles.eyebrow} text-[var(--electric)]`}>
+          {narrative ? "Análisis de misión" : "Análisis de carrera"}
+        </p>
+        <h1 className="mt-2 text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
+          Revisa tus respuestas
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-white/45">
+          {narrative
+            ? "Contrasta tus respuestas con el registro científico y consulta el cuaderno completo."
+            : "Aquí sí: descubre qué acertaste, dónde fallaste y cuánto sumó cada decisión."}
+        </p>
       </div>
 
       <div className="space-y-3">
-        {stage.questions.map((question, index) => {
+        {questions.map((question, index) => {
           const result = results.find((item) => item.questionId === question.id);
           if (!result) return null;
           const correct = result.status === "correct";
+          const partial = result.status === "partial";
           const unanswered = result.status === "unanswered";
+          const logicDetails = result.details?.type === "logic-code" ? result.details : undefined;
+          const estimationDetails =
+            result.details?.type === "estimation" ? result.details : undefined;
+          const matchingDetails = result.details?.type === "matching" ? result.details : undefined;
 
           return (
-            <motion.details key={question.id} className={`review-card ${correct ? "review-correct" : unanswered ? "review-unanswered" : "review-wrong"}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index * 0.035, 0.3) }}>
+            <motion.details
+              key={question.id}
+              className={`${styles.reviewCard} ${correct ? styles.reviewCorrect : partial ? styles.reviewPartial : unanswered ? styles.reviewUnanswered : styles.reviewWrong}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(index * 0.035, 0.3) }}
+            >
               <summary>
-                <span className="review-number">{String(index + 1).padStart(2, "0")}</span>
+                <span className={styles.reviewNumber}>{String(index + 1).padStart(2, "0")}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="mb-1 block font-mono text-[9px] font-black tracking-[0.15em] text-white/35 uppercase">{question.category}</span>
-                  <span className="block text-sm font-bold leading-5 text-white sm:text-base">{question.question}</span>
+                  <span className="mb-1 block font-mono text-[9px] font-black tracking-[0.15em] text-white/35 uppercase">
+                    {question.category}
+                  </span>
+                  <span className="block text-sm font-bold leading-5 text-white sm:text-base">
+                    {question.question}
+                  </span>
                 </span>
-                <span className={`review-status ${correct ? "status-correct" : unanswered ? "status-unanswered" : "status-wrong"}`}>
-                  {correct ? <CheckIcon className="h-4 w-4" /> : unanswered ? <ClockIcon className="h-4 w-4" /> : <CrossIcon className="h-4 w-4" />}
+                <span
+                  className={`${styles.reviewStatus} ${correct ? styles.statusCorrect : partial ? styles.statusPartial : unanswered ? styles.statusUnanswered : styles.statusWrong}`}
+                >
+                  {correct || partial ? (
+                    <CheckIcon className="h-4 w-4" />
+                  ) : unanswered ? (
+                    <ClockIcon className="h-4 w-4" />
+                  ) : (
+                    <CrossIcon className="h-4 w-4" />
+                  )}
                   <span className="hidden sm:inline">{statusLabel(result)}</span>
                 </span>
-                <ChevronIcon className="review-chevron h-5 w-5 text-white/25" />
+                <ChevronIcon className={`${styles.reviewChevron} h-5 w-5 text-white/25`} />
               </summary>
 
-              <div className="review-content">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="answer-box"><span>Tu respuesta</span><strong>{answerLabel(result.answer)}</strong></div>
-                  <div className="answer-box answer-box-correct"><span>Respuesta correcta</span><strong>{answerLabel(question.correctAnswer)}</strong></div>
+              <div className={styles.reviewContent}>
+                <QuestionReviewContent question={question} result={result} />
+                <div className="mt-3 rounded-xl bg-white/[0.035] p-4">
+                  <p className="text-sm leading-6 text-white/55">{question.explanation}</p>
                 </div>
-                <div className="mt-3 rounded-xl bg-white/[0.035] p-4"><p className="text-sm leading-6 text-white/55">{question.explanation}</p></div>
                 <div className="mt-3 flex items-center gap-4 font-mono text-[10px] font-bold tracking-wide uppercase">
                   <span className="text-white/35">Tiempo: {result.timeUsed.toFixed(1)} s</span>
-                  <span className={result.points > 0 ? "text-[var(--electric)]" : result.points < 0 ? "text-[var(--coral)]" : "text-white/35"}>
-                    {result.points > 0 ? "+" : ""}{result.points} pts
+                  {logicDetails && (
+                    <span className="text-white/35">
+                      Intentos: {logicDetails.submittedCodes.length}
+                    </span>
+                  )}
+                  {estimationDetails && (
+                    <span className="text-[var(--cyan)]">
+                      Cercanía: {Math.round(estimationDetails.proximity * 100)}%
+                    </span>
+                  )}
+                  {matchingDetails && (
+                    <>
+                      <span className="text-[var(--cyan)]">
+                        Parejas: {matchingDetails.correctPairs}/{matchingDetails.totalPairs}
+                      </span>
+                      <span className="text-white/35">
+                        Fallos: {matchingDetails.incorrectAttempts}
+                      </span>
+                    </>
+                  )}
+                  <span
+                    className={
+                      result.points > 0
+                        ? "text-[var(--electric)]"
+                        : result.points < 0
+                          ? "text-[var(--coral)]"
+                          : "text-white/35"
+                    }
+                  >
+                    {result.points > 0 ? "+" : ""}
+                    {result.points} pts
                   </span>
                 </div>
               </div>
@@ -89,20 +194,15 @@ export function ReviewAnswers({ stage, results, onBack, onReplay }: {
       </div>
 
       <div className="mt-7 grid gap-3 sm:grid-cols-2">
-        <Button
-          variant="secondary"
-          onClick={onBack}
-          whileTap={{ scale: 0.98 }}
-        >
+        <MotionButton variant="secondary" onClick={onBack} whileTap={{ scale: 0.98 }}>
           Volver al resultado
-        </Button>
-        <Button
-          onClick={onReplay}
-          whileTap={{ scale: 0.98 }}
-        >
-          <RotateIcon className="h-5 w-5" />
-          Volver a jugar
-        </Button>
+        </MotionButton>
+        {onReplay && (
+          <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
+            <RotateIcon className="h-5 w-5" />
+            Volver a jugar
+          </MotionButton>
+        )}
       </div>
     </motion.section>
   );

@@ -1,51 +1,86 @@
-import type { AnswerValue, Question } from "@/types/game";
-import { normalizeAnswer } from "@/lib/normalizeAnswer";
-
-export function isAnswerCorrect(
-  question: Question,
-  answer: AnswerValue,
-): boolean {
-  if (typeof question.correctAnswer === "boolean") {
-    return answer === question.correctAnswer;
-  }
-
-  if (typeof answer !== "string") return false;
-
-  const accepted = question.acceptedAnswers ?? [question.correctAnswer];
-  const normalizedAnswer = normalizeAnswer(answer);
-
-  return accepted.some(
-    (candidate) => normalizeAnswer(candidate) === normalizedAnswer,
-  );
-}
-
-export function calculateQuestionScore(
-  question: Question,
-  correct: boolean,
-  timeUsed: number,
-): number {
-  if (correct) {
-    const safeTime = Math.min(Math.max(timeUsed, 0), question.timeLimit);
-    const score = Math.round(
-      question.points * (1 - 0.5 * (safeTime / question.timeLimit)),
-    );
-    return Math.max(score, Math.ceil(question.points * 0.5));
-  }
-
-  if (question.type === "true-false") {
-    return -Math.round(question.points * 0.4);
-  }
-
-  if (
-    question.type === "multiple-choice" ||
-    question.type === "image-choice"
-  ) {
-    return -Math.round(question.points * 0.2);
-  }
-
-  return 0;
-}
-
-export function calculateTotalScore(scores: number[]): number {
-  return Math.max(0, scores.reduce((total, score) => total + score, 0));
-}
+export type { EvaluationInput, ScoringPolicyId } from "@/lib/scoringCore/types";
+export {
+  calculateAnswerScore,
+  calculateTotalScore,
+  evaluateAnswer,
+  getTimedOutAnswer,
+  isAnswerCorrect,
+} from "@/lib/scoringCore/engine";
+export { QUESTION_SCORING_POLICY, SCORING } from "@/lib/scoringCore/registry";
+export { calculateQuestionScore } from "@/lib/scoringCore/shared";
+export { isValidAnagramConfiguration } from "@/lib/scoringCore/questions/anagram";
+export {
+  calculateWordHashtagMetrics,
+  isValidWordHashtagConfiguration,
+  isWordHashtagAnswer,
+} from "@/lib/wordHashtag";
+export {
+  calculateWordSearchMetrics,
+  findWordSearchTarget,
+  getWordSearchPath,
+  getWordSearchTargetPath,
+  isValidWordSearchConfiguration,
+  isWordSearchAnswer,
+} from "@/lib/wordSearch";
+export { isClassificationAnswer } from "@/lib/scoringCore/questions/classification";
+export { isConnectPairsAnswer } from "@/lib/scoringCore/questions/connectPairs";
+export {
+  calculateErrorReconstructionMetrics,
+  isErrorReconstructionAnswer,
+  isValidErrorReconstructionConfiguration,
+} from "@/lib/scoringCore/questions/errorReconstruction";
+export {
+  calculateFlashMemoryMetrics,
+  isFlashMemoryAnswer,
+  isValidFlashMemoryConfiguration,
+} from "@/lib/scoringCore/questions/flashMemory";
+export { calculateHeatMapMetrics, isHeatMapAnswer } from "@/lib/scoringCore/questions/heatMap";
+export {
+  calculateImageLabelingMetrics,
+  isImageLabelingAnswer,
+  isValidImageLabelingConfiguration,
+} from "@/lib/scoringCore/questions/imageLabeling";
+export { calculateMatchingMetrics, isMatchingAnswer } from "@/lib/scoringCore/questions/matching";
+export {
+  calculateMemoryPairsMetrics,
+  isMemoryPairsAnswer,
+  isValidMemoryPairsConfiguration,
+} from "@/lib/scoringCore/questions/memoryPairs";
+export {
+  calculateMiniNonogramMetrics,
+  isMiniNonogramAnswer,
+  isValidMiniNonogramConfiguration,
+} from "@/lib/scoringCore/questions/miniNonogram";
+export {
+  calculateMiniSudokuMetrics,
+  isMiniSudokuAnswer,
+  isValidMiniSudokuConfiguration,
+} from "@/lib/scoringCore/questions/miniSudoku";
+export {
+  calculateQueensMetrics,
+  countQueensSolutions,
+  getQueensConflicts,
+  isQueensAnswer,
+  isValidQueensConfiguration,
+} from "@/lib/queens";
+export {
+  calculateMiniWordleMetrics,
+  isMiniWordleAnswer,
+} from "@/lib/scoringCore/questions/miniWordle";
+export { calculateProgressiveCluesMetrics } from "@/lib/scoringCore/questions/progressiveClues";
+export {
+  findSimonSequenceMismatch,
+  isSimonSequenceAnswer,
+  isValidSimonSequenceConfiguration,
+} from "@/lib/scoringCore/questions/simonSequence";
+export {
+  isSlidingPuzzleAnswer,
+  isValidSlidingPuzzleConfiguration,
+} from "@/lib/scoringCore/questions/slidingPuzzle";
+export { isTimeMazeAnswer } from "@/lib/scoringCore/questions/timeMaze";
+export { isZipAnswer } from "@/lib/scoringCore/questions/zip";
+export { isPipesAnswer } from "@/lib/pipes";
+export { calculateEstimationMetrics } from "@/lib/scoringCore/questions/estimation";
+export { evaluateEscape } from "@/lib/scoringCore/questions/escape";
+export { isEscapeAnswer, isValidEscapeConfiguration } from "@/lib/escape";
+export { isValidLogicMatrixConfiguration } from "@/lib/scoringCore/questions/logicMatrix";

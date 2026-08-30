@@ -1,0 +1,122 @@
+.root {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1.4rem;
+}
+.phaseHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.64);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.phaseHeader strong {
+  color: var(--electric);
+}
+.helper,
+.instructions {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.grid {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 31rem;
+}
+.memoryCell,
+.recallCell {
+  min-height: 7rem;
+  overflow: hidden;
+  border: 1px solid rgba(215, 255, 24, 0.34);
+  border-radius: 1rem;
+  background: rgba(215, 255, 24, 0.07);
+}
+.recallCell {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.16);
+  background: var(--surface-subtle);
+  transition:
+    border-color 150ms,
+    background 150ms;
+}
+.recallCell:hover:not(:disabled),
+.recallCellFilled {
+  border-color: rgba(215, 255, 24, 0.7);
+  background: rgba(215, 255, 24, 0.08);
+}
+.recallCell:focus-visible,
+.bankItem:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 2px;
+}
+.tileContent {
+  display: grid;
+  min-height: 7rem;
+  place-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem;
+  text-align: center;
+}
+.tileContent > div {
+  width: 100%;
+  height: 3.8rem;
+}
+.tileContent > div img,
+.tileContent > div svg {
+  max-height: 100%;
+}
+.tileContent strong {
+  font-size: 0.83rem;
+  line-height: 1.2;
+}
+.emptyCell {
+  color: rgba(255, 255, 255, 0.3);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.bank {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.bankItem {
+  min-height: 4.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 0.85rem;
+  color: rgba(255, 255, 255, 0.82);
+  background: var(--surface-subtle);
+  transition:
+    border-color 150ms,
+    opacity 150ms,
+    background 150ms;
+}
+.bankItem .tileContent {
+  min-height: 4.5rem;
+}
+.bankItemSelected {
+  border-color: var(--electric);
+  background: rgba(215, 255, 24, 0.1);
+  color: white;
+}
+.bankItemPlaced {
+  opacity: 0.42;
+}
+@media (min-width: 640px) {
+  .bank {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .memoryCell,
+  .recallCell {
+    min-height: 8.5rem;
+  }
+}

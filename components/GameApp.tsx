@@ -1,129 +1,26 @@
-"use client";
+import dynamic from "next/dynamic";
+import type { Challenge } from "@/types/game";
 
-import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { QuestionScreen } from "@/components/QuestionScreen";
-import { QuestionTransition } from "@/components/QuestionTransition";
-import { ResultScreen } from "@/components/ResultScreen";
-import { ReviewAnswers } from "@/components/ReviewAnswers";
-import { SpeedBackground } from "@/components/SpeedBackground";
-import { StageIntro } from "@/components/StageIntro";
-import { StartScreen } from "@/components/StartScreen";
-import { stages } from "@/data/stages";
-import { calculateQuestionScore, calculateTotalScore, isAnswerCorrect } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, GameScreen, Stage } from "@/types/game";
+const AlphabetGameApp = dynamic(() =>
+  import("@/components/alphabet/AlphabetGameApp.client").then((module) => module.AlphabetGameApp),
+);
+const FlashGameApp = dynamic(() =>
+  import("@/components/FlashGameApp.client").then((module) => module.FlashGameApp),
+);
+const NarrativeGameApp = dynamic(() =>
+  import("@/components/NarrativeGameApp.client").then((module) => module.NarrativeGameApp),
+);
+const PyramidGameApp = dynamic(() =>
+  import("@/components/pyramid/PyramidGameApp.client").then((module) => module.PyramidGameApp),
+);
+const SurvivalGameApp = dynamic(() =>
+  import("@/components/SurvivalGameApp.client").then((module) => module.SurvivalGameApp),
+);
 
-const TRANSITION_DURATION = 650;
-
-export function GameApp() {
-  const [screen, setScreen] = useState<GameScreen>("start");
-  const [selectedStage, setSelectedStage] = useState<Stage>(stages[0]);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [results, setResults] = useState<AnswerResult[]>([]);
-  const [locked, setLocked] = useState(false);
-  const [lastTimedOut, setLastTimedOut] = useState(false);
-  const questionStartedAt = useRef(0);
-  const answerLock = useRef(false);
-  const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const question = selectedStage.questions[questionIndex];
-  const score = useMemo(() => calculateTotalScore(results.map((result) => result.points)), [results]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [screen, questionIndex]);
-
-  const beginStage = () => {
-    setQuestionIndex(0);
-    setResults([]);
-    setLocked(false);
-    answerLock.current = false;
-    questionStartedAt.current = performance.now();
-    setScreen("playing");
-  };
-
-  const selectStage = (stage: Stage) => {
-    setSelectedStage(stage);
-    setScreen("intro");
-  };
-
-  const replay = () => {
-    if (advanceTimeout.current) clearTimeout(advanceTimeout.current);
-    setResults([]);
-    setQuestionIndex(0);
-    setLocked(false);
-    answerLock.current = false;
-    setScreen("intro");
-  };
-
-  const submitAnswer = useCallback((answer: AnswerValue | null, timedOut = false) => {
-    if (answerLock.current || !question) return;
-    answerLock.current = true;
-    setLocked(true);
-
-    const rawTime = timedOut ? question.timeLimit : (performance.now() - questionStartedAt.current) / 1000;
-    const timeUsed = Math.min(Math.max(rawTime, 0), question.timeLimit);
-    const isCorrect = answer !== null && isAnswerCorrect(question, answer);
-    const points = answer === null ? 0 : calculateQuestionScore(question, isCorrect, timeUsed);
-
-    setResults((current) => [...current, {
-      questionId: question.id,
-      answer,
-      isCorrect,
-      status: answer === null ? "unanswered" : isCorrect ? "correct" : "incorrect",
-      points,
-      timeUsed,
-    }]);
-    setLastTimedOut(timedOut);
-    setScreen("transition");
-
-    const lastQuestion = questionIndex === selectedStage.questions.length - 1;
-    advanceTimeout.current = setTimeout(() => {
-      if (lastQuestion) {
-        setScreen("results");
-        return;
-      }
-
-      setQuestionIndex((current) => current + 1);
-      answerLock.current = false;
-      setLocked(false);
-      questionStartedAt.current = performance.now();
-      setScreen("playing");
-    }, TRANSITION_DURATION);
-  }, [question, questionIndex, selectedStage.questions.length]);
-
-  const handleTimeUp = useCallback(() => submitAnswer(null, true), [submitAnswer]);
-
-  return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ink)] text-white selection:bg-[var(--electric)] selection:text-black">
-      <SpeedBackground />
-      <div className="relative z-10">
-        <AnimatePresence mode="wait">
-          {screen === "start" && <StartScreen key="start" stages={stages} onSelectStage={selectStage} />}
-          {screen === "intro" && <StageIntro key={`intro-${selectedStage.id}`} stage={selectedStage} onStart={beginStage} />}
-          {screen === "playing" && question && (
-            <QuestionScreen
-              key={question.id}
-              question={question}
-              stageTitle={selectedStage.title}
-              questionNumber={questionIndex + 1}
-              totalQuestions={selectedStage.questions.length}
-              locked={locked}
-              onSubmit={(answer) => submitAnswer(answer)}
-              onTimeUp={handleTimeUp}
-            />
-          )}
-          {screen === "transition" && (
-            <QuestionTransition key={`transition-${questionIndex}`} timedOut={lastTimedOut} isLast={questionIndex === selectedStage.questions.length - 1} />
-          )}
-          {screen === "results" && (
-            <ResultScreen key="results" stage={selectedStage} results={results} score={score} onReview={() => setScreen("review")} onReplay={replay} />
-          )}
-          {screen === "review" && (
-            <ReviewAnswers key="review" stage={selectedStage} results={results} onBack={() => setScreen("results")} onReplay={replay} />
-          )}
-        </AnimatePresence>
-      </div>
-    </main>
-  );
+export function GameApp({ challenge }: { challenge: Challenge }) {
+  if (challenge.mode === "alphabet") return <AlphabetGameApp challenge={challenge} />;
+  if (challenge.mode === "narrative") return <NarrativeGameApp challenge={challenge} />;
+  if (challenge.mode === "pyramid") return <PyramidGameApp challenge={challenge} />;
+  if (challenge.mode === "survival") return <SurvivalGameApp challenge={challenge} />;
+  return <FlashGameApp challenge={challenge} />;
 }

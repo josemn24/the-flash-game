@@ -2,181 +2,345 @@
 
 ## Propósito
 
-The Flash nace como un sprint de preguntas individual, pero puede evolucionar hacia una plataforma de retos rápidos y desafíos especiales, también en multijugador online. La variedad no debe diluir la identidad del producto: cada prueba debe conservar tensión, reglas comprensibles y una forma clara de comparar la ejecución entre jugadores.
+Este documento recoge modos de juego candidatos para The Flash. No describe alcance comprometido ni sustituye al catálogo de formatos: un **formato** define el tipo de reto individual, mientras que un **modo** define el contexto de partida, el ritmo, la progresión, la presión y la motivación principal.
 
-Este documento recoge mecánicas candidatas para futuras etapas, eventos y modos competitivos. No amplía el alcance de la PoC actual ni define todavía su implementación técnica.
+Este documento describe modos como plantillas de reglas para desafíos. La estructura de salas, temporadas, calendario de desafíos y rankings se documenta en `salas-y-temporadas.md`.
 
-## Principios de diseño
+La intención es validar qué hace que distintos perfiles quieran repetir: velocidad, superación personal, riesgo, cooperación, estrategia, narrativa, conocimiento o juego social. La primera validación debería usar el contenido y los formatos ya disponibles antes de construir sistemas con backend, salas, persistencia o evaluación avanzada.
 
-- **Rapidez con sentido:** la velocidad debe importar, pero nunca sustituir una respuesta correcta.
-- **Comparabilidad:** cada prueba debe ofrecer una métrica competitiva comprensible: acierto, tiempo, precisión, intentos o una combinación explícita de ellas.
-- **Variedad útil:** alternar conocimiento, lógica, memoria, lenguaje y percepción evita que The Flash se perciba como un cuestionario convencional.
-- **Móvil primero:** las interacciones táctiles deben ser cómodas, con pocos elementos arrastrables y objetivos amplios.
-- **Ritmo por capas:** las pruebas rápidas duran segundos; los desafíos especiales pueden durar entre uno y cinco minutos y aparecer de forma ocasional.
-- **Dificultad justa:** los formatos visuales o táctiles necesitan validación tolerante y diseño adaptado a distintos tamaños de pantalla.
+Un modo no pertenece necesariamente a una sola categoría social. Supervivencia puede ser individual o competitiva, Constructor puede ser cooperativo o competitivo, y Detective puede funcionar solo, en grupo o por equipos. Por eso conviene clasificarlos por dimensiones, no como una lista rígida.
 
-## Catálogo de mecánicas
+La dirección principal para una primera versión multijugador es usar estos modos como desafíos asíncronos dentro de salas y temporadas. En ese contexto, **todos contra todos** debería ser la relación base; el duelo puede tratarse como una sala de dos jugadores, y equipos debería quedar como variante posterior porque exige repartir grupos de forma equilibrada.
 
-### 1. Ordenar elementos
+## Criterios de validación
 
-El jugador coloca varios elementos en el orden correcto: acontecimientos históricos, películas por fecha, países por población, pasos de un proceso, una frase o magnitudes.
+Un modo candidato debería evaluarse con estos criterios:
 
-- **Interacción:** arrastrar tarjetas o pulsarlas en el orden correcto.
-- **Encaje:** intuitiva, competitiva y precisa para medir resultado y tiempo; sirve para cultura, lógica y lenguaje.
-- **Límite recomendado:** entre cuatro y siete elementos para evitar fricción en móvil.
+- **Repetición:** si invita a jugar otra partida inmediatamente.
+- **Claridad:** si se entiende en menos de diez segundos.
+- **Encaje móvil:** si funciona con interacciones breves y controles cómodos.
+- **Reutilización:** si puede aprovechar preguntas, formatos y puntuación actuales.
+- **Comparabilidad:** si produce resultados fáciles de explicar y comparar.
+- **Potencial social:** si genera conversación, pique, cooperación o retos compartibles.
+- **Alineación con salas:** si funciona con cualquier número razonable de jugadores sin exigir emparejamientos perfectos.
+- **Coste v1:** si puede prototiparse sin rediseñar todo el producto.
 
-### 2. Encontrar el intruso
+## Encaje multijugador
 
-Se muestran varios elementos y el jugador identifica cuál rompe una relación: una palabra de otra categoría, un número que no sigue la regla, una imagen distinta, un personaje ajeno a una saga o una bandera de otro continente.
+La prioridad social para estos modos queda así:
 
-- **Encaje:** reglas inmediatas, rondas de segundos y dificultad escalable.
-- **Ventaja:** coste de producción e implementación bajo; contenido muy reutilizable.
+1. **Todos contra todos:** base recomendada para salas y ranking individual.
+2. **Uno contra uno:** caso particular de una sala con dos jugadores; no necesita reglas propias al principio.
+3. **Equipo contra equipo:** variante posterior; exige equipos equilibrados o reglas para grupos impares.
+4. **Cooperativo:** línea futura distinta, menos alineada con ranking individual como motivación principal.
 
-### 3. Emparejar conceptos
+La prioridad temporal queda así:
 
-El jugador une elementos relacionados, como países y capitales, autores y obras, inventos e inventores, conceptos y definiciones o imágenes y nombres.
+1. **Asíncrono:** modalidad inicial; cada jugador completa la sala cuando pueda dentro de una ventana o invitación.
+2. **Tiempo real:** evolución posterior; añade sincronización, presencia, latencia, desconexiones y estado compartido en vivo.
 
-- **Interacción:** elegir una tarjeta de cada columna o arrastrar conexiones.
-- **Encaje:** convierte conocimiento en una acción activa; los errores pueden penalizar tiempo, puntos o ambos.
+Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización completa de salas, temporadas y rankings se mantiene en `salas-y-temporadas.md`.
 
-### 4. Secuencias y patrones
+## Dimensiones de clasificación
 
-El jugador descubre el siguiente elemento de una serie numérica, de símbolos, colores, letras, palabras o movimientos espaciales.
+Cada modo debería describirse con tres dimensiones:
 
-- **Encaje:** introduce lógica pura y equilibra los formatos memorísticos.
-- **Formato:** elección múltiple rápida o desafío de construcción de respuesta.
+- **Finalidad principal:** qué motivación activa, como velocidad, superación, riesgo, cooperación, estrategia, narrativa, expresión, creación o socialización.
+- **Relación entre jugadores:** cómo interactúan, como solo, todos contra todos, uno contra uno, equipos, cooperativo, asíncrono o comunidad.
+- **Ritmo:** cuándo ocurre la partida, priorizando asíncrono y dejando tiempo real como evolución posterior.
 
-### 5. Clasificación rápida
+La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué validar primero, no para cerrar una taxonomía definitiva.
 
-Varias tarjetas deben repartirse entre categorías: mamífero, ave o reptil; país europeo, asiático o africano; real o ficticio; hecho o mito; sustantivo, adjetivo o verbo.
+| Modo                 | Finalidad principal                      | Relación entre jugadores                | Ritmo                   |
+| -------------------- | ---------------------------------------- | --------------------------------------- | ----------------------- |
+| Flash / Contrarreloj | velocidad, competición, marca personal   | solo / todos contra todos               | asíncrono / tiempo real |
+| Supervivencia        | superación, resistencia                  | solo / todos contra todos               | asíncrono / tiempo real |
+| Cadena               | racha, riesgo, progresión                | solo / todos contra todos               | asíncrono / tiempo real |
+| La Pirámide          | progresión, dificultad, superación       | solo / todos contra todos               | asíncrono / tiempo real |
+| Alfabeto             | precisión, recorrido, gestión del tiempo | solo / todos contra todos               | asíncrono / tiempo real |
+| Apuesta de confianza | estrategia, metacognición, riesgo        | solo / todos contra todos               | asíncrono / tiempo real |
+| Duelo                | competición directa                      | uno contra uno                          | asíncrono / tiempo real |
+| Cooperativo          | objetivo común                           | cooperativo                             | asíncrono / tiempo real |
+| Equipos              | competición social, coordinación         | equipo contra equipo                    | tiempo real             |
+| Narrativo            | inmersión, contexto, competición         | solo / todos contra todos / cooperativo | asíncrono / episódico   |
+| Detective            | investigación, pensamiento crítico       | solo / cooperativo / equipos            | asíncrono / episódico   |
+| Predicción           | anticipación, razonamiento causal        | solo / todos contra todos               | asíncrono / tiempo real |
+| Respuesta rara       | estrategia social, conocimiento abierto  | todos contra todos / comunidad          | asíncrono / agregado    |
+| Orden y conexión     | comprensión estructural                  | solo / todos contra todos / cooperativo | asíncrono / tiempo real |
+| Conquista            | estrategia territorial                   | todos contra todos / equipos            | persistente             |
+| Constructor          | progresión, estrategia                   | solo / cooperativo / competitivo        | persistente             |
+| Creador de retos     | creatividad, socialización               | creador contra jugadores / comunidad    | asíncrono               |
+| Debate               | argumentación, expresión                 | uno contra uno / equipos / grupo        | asíncrono / tiempo real |
 
-- **Formato recomendado:** entre seis y doce elementos.
-- **Encaje:** encadena decisiones rápidas y compara muy bien la velocidad de varios jugadores.
+## Shortlist recomendada
 
-### 6. Memoria relámpago
+Los primeros modos a validar deberían ser:
 
-Una composición se muestra durante unos segundos y después se oculta. El jugador debe recordar elementos, posiciones, un orden, relaciones entre nombres e imágenes o detalles de una escena.
+1. **Flash / Contrarreloj**, como modo base y control.
+2. **Supervivencia**, por superación personal y rejugabilidad.
+3. **Cadena**, por rachas, tensión y riesgo con coste bajo.
+4. **La Pirámide**, por convertir la dificultad creciente en una meta visible y compartible.
+5. **Alfabeto**, por combinar conocimiento, memoria de pendientes y gestión del tiempo.
+6. **Apuesta de confianza**, por añadir estrategia y metacognición.
+7. **Predicción**, por funcionar bien como comparación todos contra todos.
+8. **Narrativo competitivo**, por añadir contexto compartido sin perder ranking individual. La primera implementación es «El que caminaba hacia las montañas», documentada en [`docs/desafio-04-el-que-caminaba-hacia-las-montanas.md`](desafio-04-el-que-caminaba-hacia-las-montanas.md).
 
-- **Encaje:** hace que el cronómetro forme parte real de la mecánica, tanto al memorizar como al responder.
-- **Valor:** permite dificultad alta con reglas simples.
+Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. La primera versión prevista del modo es una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
 
-### 7. Diferencias visuales
+## Catálogo de modos
 
-El jugador encuentra una o varias diferencias entre dos imágenes: una única diferencia, todas las diferencias, el elemento añadido o eliminado, o una zona concreta pulsable.
+### Flash / Contrarreloj
 
-- **Encaje:** formato reconocido, visual y accesible.
-- **Riesgo:** las imágenes y zonas pulsables deben prepararse y escalarse cuidadosamente para cada pantalla.
+Partida individual rápida con preguntas cronometradas, puntuación por acierto y bonus por velocidad. Es el modo actual y la referencia contra la que comparar cualquier alternativa.
 
-### 8. Pregunta de estimación
+- **Motivación principal:** velocidad, reflejos y repetición.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** el jugador completa una etapa con un límite por pregunta; responde, avanza y recibe resultado al final.
+- **Encaje con The Flash:** concentra la identidad del producto en rondas breves, presión temporal y comparación clara.
+- **V1 validable:** usarlo como modo base de sala asíncrona todos contra todos, con ranking individual por puntos, precisión y tiempo.
+- **Riesgos:** puede percibirse como trivia rápida si no se combina con formatos visuales, memoria, lógica y retos especiales.
 
-El jugador responde un valor aproximado; una respuesta más cercana obtiene mejor puntuación. Puede estimar una distancia, año, altura, cantidad de personas o porcentaje.
+### Supervivencia
 
-- **Interacción:** campo numérico, rueda, control deslizante o botones de incremento.
-- **Encaje:** evita el acierto binario y produce comparativas interesantes aun cuando nadie acierte exactamente.
+El jugador empieza con varias vidas. Cada fallo consume una vida y la partida continúa hasta perderlas todas o superar una cadena larga de retos.
 
-### 9. Imagen progresivamente revelada
+- **Motivación principal:** superación personal y resistencia.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** cada acierto permite avanzar; los errores restan vidas; la dificultad puede subir por rondas, tiempo disponible o valor de las preguntas.
+- **Encaje con The Flash:** usa la presión temporal actual y añade una meta muy fácil de entender: aguantar más que antes.
+- **V1 validable:** sala asíncrona todos contra todos con tres vidas por jugador; gana mejor puntuación o quien sobreviva más tiempo.
+- **Riesgos:** si los errores por desconocimiento eliminan demasiado rápido, puede frustrar; necesita calibrar dificultad y duración.
+
+### Cadena
 
-Una imagen comienza borrosa, pixelada, ampliada o cubierta y se revela con el tiempo. El jugador debe identificar personajes, lugares, banderas, películas, animales, obras de arte o logotipos cuanto antes.
+Los aciertos consecutivos aumentan un multiplicador, una recompensa o una barra de progreso. Un fallo rompe la racha o reduce el bonus acumulado.
 
-- **Encaje:** premia directamente la rapidez, pero mantiene un riesgo al responder antes.
-- **Identidad:** es una de las mecánicas que mejor representa el nombre y el espíritu de The Flash.
+- **Motivación principal:** tensión, progresión y riesgo.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** cada acierto suma racha; la puntuación crece con la cadena; el jugador intenta mantener precisión bajo presión.
+- **Encaje con The Flash:** refuerza partidas cortas y convierte cada pregunta en parte de una progresión visible.
+- **V1 validable:** aplicar multiplicador por racha en una sala asíncrona todos contra todos y reflejar la mejor cadena en el ranking.
+- **Riesgos:** un multiplicador demasiado agresivo puede hacer que una sola pregunta pese más que toda la etapa.
+
+### La Pirámide
 
-### 10. Anagramas y palabras desordenadas
+La partida empieza con pruebas relativamente accesibles y asciende por niveles cada vez más exigentes. La cima queda reservada para preguntas que, en teoría, solo un porcentaje pequeño de jugadores puede resolver.
 
-El jugador reordena letras, sílabas o fragmentos para formar una palabra o frase; también puede resolver una palabra a partir de una pista o crear el mayor número posible de palabras.
+La primera implementación jugable es el Desafío 05, **«La Pirámide: Cumbre lógica»**: un prototipo rejugable de siete niveles de lógica y eliminación ante el primer resultado que no sea completamente correcto.
 
-- **Interacción:** entrada escrita o fichas directas.
-- **Encaje:** sencillo de entender, barato de producir y eficaz bajo presión.
+- **Motivación principal:** progresión, superación, dificultad creciente y logro visible.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** el jugador avanza por una escalera de niveles; cada nivel contiene una prueba calibrada para ser más difícil que la anterior; solo un acierto completo permite subir y cualquier respuesta parcial, incorrecta o sin contestar termina el ascenso.
+- **Encaje con The Flash:** da una fantasía muy clara de ascenso y crea una métrica fácil de compartir: hasta qué nivel llegó cada jugador. Se diferencia de Supervivencia porque no premia aguantar una secuencia larga, sino superar una ruta curada hacia una cima.
+- **V1 implementada:** prototipo sin límite de partidas con una pirámide de siete niveles. El contrato de ranking ordena por niveles superados, puntos y menor tiempo; el ranking compartido queda pendiente de backend.
+- **Variantes:** margen de uno o dos fallos, rutas segura/difícil, pirámides temáticas, evento especial con pregunta final de élite o calibración por percentiles cuando haya datos suficientes.
+- **Riesgos:** exige calibrar muy bien la dificultad; si la pendiente es irregular, el modo puede sentirse injusto o aleatorio. La pregunta final debe parecer exigente, no arbitraria.
 
-### 11. Objetos ocultos
+### Alfabeto
 
-El jugador encuentra uno o varios elementos dentro de una escena: un objeto concreto, todos los símbolos de un tipo, un personaje, una cantidad de elementos o el único objeto que cumple una condición.
+El jugador recorre letras del alfabeto y responde una definición asociada a cada una. Puede contestar, pasar y volver más tarde a las letras pendientes mientras el tiempo sigue corriendo.
 
-- **Encaje:** atractivo visual y apropiado como desafío especial de uno o varios minutos.
-- **Riesgo:** exige ilustraciones o imágenes diseñadas para el reto.
+- **Motivación principal:** precisión, memoria de pendientes y gestión del tiempo.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** cada letra tiene una definición cuya respuesta empieza por esa letra, la contiene o se asocia editorialmente a ella; el jugador avanza por el alfabeto, marca letras resueltas, falla o pasa, y puede completar varias vueltas hasta agotar el tiempo o cerrar todas las letras.
+- **Encaje con The Flash:** aporta un modo reconocible, estratégico y televisivo sin abandonar la presión temporal; obliga a decidir cuándo insistir, cuándo pasar y cómo administrar las letras pendientes.
+- **V1 validable:** mini alfabeto temático de ocho a doce letras con respuesta corta, botón de pasar, estado por letra y ranking por aciertos, errores y tiempo utilizado.
+- **Variantes:** rosco completo, mini rosco, alfabeto temático, letras con respuesta que empieza por la letra, letras con respuesta que contiene la letra, bloqueo por error o vueltas con dificultad creciente.
+- **Riesgos:** requiere contenido editorial muy cuidado para evitar ambigüedades; un alfabeto completo puede ser demasiado largo para sesiones rápidas si no se ajusta el tiempo o el número de letras.
 
-### 12. Código o combinación lógica
+### Apuesta de confianza
 
-El jugador deduce un código a partir de pistas. Por ejemplo, las combinaciones `682`, `614` y `206` indican cifras correctas y su posición. El mismo formato puede usar colores, símbolos, palabras, interruptores, posiciones u operaciones.
+Antes de responder, el jugador declara cuánto confía en su respuesta o cuántos puntos quiere arriesgar. Acertar con alta confianza premia más; fallar penaliza más.
 
-- **Encaje:** prueba estrella con tensión, estrategia y recorrido más largo.
-- **Uso recomendado:** final de etapa o evento especial.
+- **Motivación principal:** estrategia personal, toma de decisiones y metacognición.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** cada pregunta ofrece niveles de confianza o una apuesta limitada; la respuesta se evalúa junto con el riesgo elegido.
+- **Encaje con The Flash:** diferencia el juego de una trivia simple porque premia saber reconocer la propia incertidumbre.
+- **V1 validable:** tres niveles de confianza aplicados a preguntas existentes, con puntuación individual comparable dentro de una sala asíncrona.
+- **Riesgos:** si la apuesta ralentiza cada pregunta, puede romper el ritmo; la interfaz debe ser extremadamente rápida.
 
-### 13. Mini-Wordle
+### Duelo
 
-El jugador descubre una palabra en pocos intentos. La adaptación puede usar palabras de cuatro o cinco letras, menos intentos, tiempo total limitado, pistas temáticas, puntos por eficiencia y penalización por letras incorrectas.
+Dos jugadores reciben retos equivalentes y compiten por puntuación, precisión o velocidad. Puede ser en tiempo real o por turnos.
 
-- **Encaje:** conocido y fácil de entender.
-- **Uso recomendado:** desafío especial, por su duración mayor que una pregunta normal.
+- **Motivación principal:** competición directa.
+- **Relación entre jugadores:** uno contra uno.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** ambos jugadores completan la misma ronda o una ronda equivalente; gana quien obtenga mejor resultado total.
+- **Encaje con The Flash:** puede aparecer sin sistema propio cuando una sala tiene exactamente dos jugadores.
+- **V1 validable:** tratarlo como sala de dos participantes con el mismo ranking individual y sin reglas adicionales.
+- **Riesgos:** si evoluciona a tiempo real exigirá sincronización, latencia y resolución de desconexiones.
 
-### 14. Simon o repetición de secuencias
+### Cooperativo
 
-Se reproduce una secuencia de colores, sonidos, símbolos, posiciones o ritmos y el jugador la repite. Puede crecer en longitud, exigir repetición inversa o pedir que se detecte un elemento incorrecto.
+Varios jugadores comparten un objetivo común, como desactivar una amenaza, resolver un caso o alcanzar una puntuación conjunta.
 
-- **Encaje:** combina memoria, reflejos y precisión.
-- **Consideración competitiva:** el jugador debe esperar la reproducción, por lo que ese tiempo debe normalizarse o excluirse al comparar resultados.
+- **Motivación principal:** cooperación y objetivo compartido.
+- **Relación entre jugadores:** cooperativo.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** el grupo progresa si suma aciertos, cubre categorías o resuelve piezas complementarias de una misión.
+- **Encaje con The Flash:** puede transformar preguntas rápidas en presión de equipo, pero no es la línea más directa si el objetivo principal es ranking individual.
+- **V1 validable:** objetivo conjunto local o asíncrono basado en puntuación acumulada y roles simples.
+- **Riesgos:** la cooperación real requiere evitar que todos hagan lo mismo; si no hay información o funciones diferentes, se convierte en suma de partidas individuales.
 
-### 15. Matrices lógicas
+### Equipos
 
-Una cuadrícula de símbolos o imágenes contiene una casilla vacía; el jugador elige la opción que completa el patrón.
+Dos equipos compiten durante varias rondas. Algunas pruebas son individuales y otras requieren consenso o reparto de funciones.
 
-- **Encaje:** aporta razonamiento abstracto y escala de niveles sencillos a exigentes.
-- **Uso recomendado:** etapas de lógica o preguntas especiales.
+- **Motivación principal:** competición social y coordinación.
+- **Relación entre jugadores:** equipo contra equipo.
+- **Ritmo:** tiempo real.
+- **Cómo funciona:** cada equipo acumula puntos; puede alternar turnos, retos simultáneos y rondas de consenso.
+- **Encaje con The Flash:** funciona bien en aulas, eventos, grupos familiares o reuniones.
+- **V1 validable:** variante posterior sobre salas, con puntuación individual que también suma a un marcador de equipo.
+- **Riesgos:** necesita equipos equilibrados o reglas para grupos impares; también debe evitar esperas largas, jugadores pasivos o discusiones que rompan el ritmo.
 
-### 16. Mini-nonograma
+### Narrativo
 
-El jugador completa una cuadrícula a partir de pistas numéricas.
+Las preguntas forman parte de una misión, historia o escenario. El contexto da sentido a los retos y al progreso.
 
-- **Formato recomendado:** cuadrículas de 5 × 5 o 7 × 7, diseños simples, uno a tres minutos y penalización por casillas incorrectas.
-- **Encaje:** diferenciador y más profundo que una pregunta convencional.
-- **Riesgo:** necesita interfaz, tutorial y generación de puzles cuidadosa.
+- **Motivación principal:** inmersión, contexto, aplicación y competición.
+- **Relación entre jugadores:** solo / todos contra todos / cooperativo.
+- **Ritmo:** asíncrono / episódico.
+- **Cómo funciona:** cada ronda representa una escena, punto de control o decisión dentro de una historia; los aciertos desbloquean avances, pistas o desenlaces.
+- **Encaje con The Flash:** puede funcionar como historia compartida competitiva: todos recorren la misma misión, pero puntúan individualmente por acierto, progreso y velocidad.
+- **V1 validable:** sala asíncrona todos contra todos con una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre; el ranking combina pruebas resueltas, puntos y tiempo.
+- **Riesgos:** requiere contenido editorial más cuidado; demasiado texto puede chocar con el ritmo rápido.
 
-### 17. Laberinto contrarreloj
+### Detective
 
-El jugador guía un elemento desde la entrada a la salida mediante arrastre, botones direccionales, cruces sucesivos o elección de caminos. Una variante accesible pregunta qué laberinto tiene salida.
-
-- **Encaje:** mide con claridad tiempo y precisión.
-- **Riesgo:** un control táctil impreciso mediría frustración, no habilidad.
-
-### 18. Mini-sudoku
-
-Adaptación del sudoku tradicional: cuadrícula 4 × 4, completar casillas críticas, detectar un número erróneo, elegir la cuadrícula válida o resolver una región.
-
-- **Encaje:** conocido, objetivo y competitivo.
-- **Uso recomendado:** desafío especial o etapa temática de lógica, no formato frecuente.
-
-### 19. Rompecabezas deslizante
-
-Una imagen, números, letras o un mapa se divide en piezas que el jugador reconstruye desplazando fichas.
-
-- **Encaje:** visual y fácilmente medible por tiempo.
-- **Riesgo:** la interacción táctil, animaciones, validación y generación requieren más trabajo que una pregunta tradicional.
-
-### 20. Tangram o construcción de figura
-
-El jugador forma una silueta con piezas geométricas: tangram clásico, bloques, piezas encajables o copia de una composición mostrada antes.
-
-- **Encaje:** desafío especial memorable y muy diferenciador.
-- **Riesgo:** exige arrastre, rotación, colisiones, ajuste de piezas y validación tolerante; es una de las mecánicas más complejas de implementar correctamente.
-
-## Priorización por objetivo
-
-| Objetivo | Mecánicas prioritarias | Motivo |
-| --- | --- | --- |
-| Equilibrio entre diversión y coste técnico | Encontrar el intruso, ordenar elementos, secuencias, anagramas, estimación | Amplían el juego con riesgo técnico contenido. |
-| Diferenciar The Flash de una trivia | Memoria relámpago, imagen progresiva, código lógico, objetos ocultos, mini-nonogramas | Introducen habilidades e interacciones que van más allá de responder preguntas. |
-| Pruebas especiales | Código lógico, mini-Wordle, mini-nonograma, laberinto, mini-sudoku, rompecabezas, tangram | Admiten retos ocasionales de uno a cinco minutos. |
-| Competición por tiempo | Ordenar, clasificación rápida, emparejar, diferencias visuales, imagen progresiva, laberinto, rompecabezas | Una ejecución correcta terminada antes representa una mejora clara. |
-
-## Implicaciones para el futuro multijugador
-
-Para que los resultados sean comparables en una partida online, cada formato deberá definir antes de construirse:
-
-- la condición de éxito y los errores recuperables o definitivos;
-- cómo se mide el tiempo, incluidos tiempos forzados de reproducción o animación;
-- el modelo de puntuación: acierto, proximidad, penalizaciones e intento(s);
-- el nivel o semilla compartida, para garantizar el mismo reto a todos los participantes;
-- la protección frente a latencia y diferencias de dispositivo;
-- la estrategia de contenido: datos estructurados, activos visuales y validación de calidad.
-
-Como siguiente paso de producto, las cinco mecánicas de mejor equilibrio permiten validar variedad sin introducir interfaces complejas. Las pruebas especiales deberían llegar después, acompañadas de prototipos específicos de interacción móvil y reglas de puntuación explícitas.
+Los jugadores analizan documentos, testimonios, mapas y datos para distinguir pistas relevantes, detectar contradicciones y formular una conclusión.
+
+- **Motivación principal:** pensamiento crítico, investigación y comprensión profunda.
+- **Relación entre jugadores:** solo / cooperativo / equipos.
+- **Ritmo:** asíncrono / episódico.
+- **Cómo funciona:** se presentan piezas de información; los retos piden identificar contradicciones, ordenar hechos, descartar pistas falsas o cerrar una hipótesis.
+- **Encaje con The Flash:** aprovecha formatos como reconstrucción del error, clasificación, ordenación, mapa de calor y respuesta corta.
+- **V1 validable:** caso breve de cinco a siete pruebas usando formatos existentes y una conclusión final.
+- **Riesgos:** el contenido debe estar muy curado para evitar ambigüedad; puede necesitar más tiempo que una etapa normal.
+
+### Predicción
+
+Se muestra una situación, experimento, gráfico incompleto o acontecimiento histórico. El jugador predice qué ocurrirá antes de descubrir el resultado.
+
+- **Motivación principal:** pensamiento causal, científico y estratégico.
+- **Relación entre jugadores:** solo / todos contra todos.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** el jugador interpreta datos o contexto, elige una predicción y después ve el resultado real con explicación.
+- **Encaje con The Flash:** convierte conocimiento en anticipación, no solo recuerdo.
+- **V1 validable:** sala asíncrona todos contra todos con preguntas de elección múltiple o estimación formuladas como predicción, comparando acierto, proximidad y tiempo.
+- **Riesgos:** debe evitar depender de adivinanza; cada predicción necesita evidencia suficiente en pantalla.
+
+### Respuesta rara
+
+El jugador debe dar una respuesta correcta que haya sido elegida por el menor número posible de participantes o que tenga baja frecuencia en una muestra de referencia. Las respuestas obvias conceden pocos puntos; las respuestas válidas pero poco frecuentes ofrecen mayor recompensa.
+
+- **Motivación principal:** estrategia social, conocimiento abierto y lectura del comportamiento del grupo.
+- **Relación entre jugadores:** todos contra todos / comunidad.
+- **Ritmo:** asíncrono / agregado.
+- **Cómo funciona:** se plantea una consigna con varias respuestas válidas; cada jugador responde intentando acertar y, a la vez, evitar la respuesta más evidente; la puntuación combina validez, rareza y penalización por respuestas incorrectas o no reconocidas.
+- **Encaje con The Flash:** añade una capa distinta a la trivia rápida porque la pregunta no es solo "qué sé", sino "qué sé que otros no elegirán". Funciona especialmente bien en salas, eventos y temporadas con suficiente participación.
+- **V1 validable:** variante cerrada con opciones válidas visibles u ocultas y rareza calculada contra una tabla editorial o contra las respuestas de la sala al cerrar el desafío.
+- **Variantes:** contra la sala, contra histórico global, lista cerrada, respuesta abierta, cero absoluto si nadie más respondió lo mismo, rondas temáticas o penalización fuerte por respuesta inválida.
+- **Riesgos:** requiere normalizar sinónimos, ortografía y variantes válidas; necesita masa crítica o datos de referencia para que la rareza sea justa; una validación abierta insuficiente puede hacer que el modo parezca arbitrario.
+
+### Orden y conexión
+
+Modo centrado en ordenar acontecimientos, pasos, magnitudes o conceptos, y en construir conexiones entre elementos.
+
+- **Motivación principal:** comprensión, relaciones y estructura mental.
+- **Relación entre jugadores:** solo / todos contra todos / cooperativo.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** la partida usa principalmente ordenar, emparejar, clasificar, conectar parejas, secuencias y patrones.
+- **Encaje con The Flash:** reutiliza muchos formatos existentes y se siente menos trivia que una ronda de preguntas aisladas.
+- **V1 validable:** etapa temática compuesta solo por formatos de relación, orden y conexión.
+- **Riesgos:** puede sentirse como una categoría de contenido más que como modo si no tiene una regla propia de progresión.
+
+### Conquista
+
+Las categorías aparecen como territorios. Ganar retos permite conquistar, defender o expandirse por un mapa.
+
+- **Motivación principal:** estrategia a medio plazo y control territorial.
+- **Relación entre jugadores:** todos contra todos / equipos.
+- **Ritmo:** persistente.
+- **Cómo funciona:** cada territorio se asocia a un dominio o topic; ganar retos captura zonas y perder puede abrir defensas o contraataques.
+- **Encaje con The Flash:** aprovecha el sistema de tags para convertir categorías en mapa estratégico.
+- **V1 validable:** mapa simple de dominios donde superar una pregunta conquista una zona y el resultado final muestra territorio ganado.
+- **Riesgos:** requiere diseño de mapa, balance, persistencia opcional y reglas que no oculten la claridad de las preguntas.
+
+### Constructor
+
+Los conocimientos ganados alimentan una ciudad, expedición, empresa, laboratorio o civilización que evoluciona entre rondas.
+
+- **Motivación principal:** progresión, estrategia y construcción a largo plazo.
+- **Relación entre jugadores:** solo / cooperativo / competitivo.
+- **Ritmo:** persistente.
+- **Cómo funciona:** las respuestas generan recursos o decisiones; esos recursos desbloquean mejoras, eventos o nuevas rutas.
+- **Encaje con The Flash:** puede dar continuidad a sesiones cortas y conectar dominios de conocimiento con consecuencias visibles.
+- **V1 validable:** meta-progreso muy simple con tres recursos y decisiones al final de cada etapa.
+- **Riesgos:** puede convertirse en otro juego; exige economía, balance y persistencia para sostenerse.
+
+### Creador de retos
+
+Los usuarios crean preguntas o pequeños desafíos para amigos a partir de plantillas y una revisión automática de calidad.
+
+- **Motivación principal:** creatividad, personalización y viralidad.
+- **Relación entre jugadores:** creador contra jugadores / comunidad.
+- **Ritmo:** asíncrono.
+- **Cómo funciona:** el creador elige un formato, completa campos guiados, etiqueta el contenido y comparte el reto.
+- **Encaje con The Flash:** aumenta contenido social y permite retos privados entre grupos.
+- **V1 validable:** generador local o interno para crear una pregunta a partir de plantillas, sin publicación abierta.
+- **Riesgos:** el contenido mediocre o incorrecto puede dañar la experiencia; necesita validación, moderación o uso restringido.
+
+### Debate
+
+Se plantea un dilema o una postura. Los jugadores argumentan, responden objeciones y consideran evidencias.
+
+- **Motivación principal:** pensamiento crítico, comunicación y ciudadanía.
+- **Relación entre jugadores:** uno contra uno / equipos / grupo.
+- **Ritmo:** asíncrono / tiempo real.
+- **Cómo funciona:** cada jugador elige postura, presenta argumentos y recibe evaluación por coherencia, evidencias o capacidad de responder contraargumentos.
+- **Encaje con The Flash:** abre un área de habilidades menos cubierta por preguntas rápidas.
+- **V1 validable:** modo editorial con rúbrica simple y revisión humana o semiautomática, no como competición de velocidad pura.
+- **Riesgos:** la puntuación automática justa es difícil; puede alejarse mucho del ritmo actual.
+
+## Priorización sugerida
+
+| Modo                 | Coste v1   | Potencial    | Prioridad             |
+| -------------------- | ---------- | ------------ | --------------------- |
+| Flash                | Bajo       | Alto         | Mantener como control |
+| Supervivencia        | Bajo/medio | Alto         | Alta                  |
+| Cadena               | Bajo       | Alto         | Alta                  |
+| La Pirámide          | Medio      | Alto         | Alta                  |
+| Alfabeto             | Medio      | Alto         | Alta                  |
+| Apuesta de confianza | Medio      | Muy alto     | Alta                  |
+| Duelo                | Bajo       | Alto         | Media                 |
+| Cooperativo          | Medio/alto | Alto         | Baja inicial          |
+| Equipos              | Medio/alto | Alto         | Baja inicial          |
+| Narrativo            | Medio      | Alto         | Media                 |
+| Detective            | Alto       | Alto         | Media                 |
+| Predicción           | Bajo/medio | Alto         | Media                 |
+| Respuesta rara       | Alto       | Alto         | Baja inicial          |
+| Orden y conexión     | Bajo       | Medio/alto   | Media                 |
+| Conquista            | Alto       | Alto         | Baja inicial          |
+| Constructor          | Alto       | Alto         | Baja inicial          |
+| Creador de retos     | Alto       | Muy alto     | Baja inicial          |
+| Debate               | Alto       | Experimental | Baja inicial          |
+
+## Lectura recomendada
+
+La primera validación no debería intentar construir todos los modos. Conviene partir de salas asíncronas todos contra todos con ranking individual y comparar el modo actual con varias variantes que reutilicen contenido existente:
+
+- **Competición rápida en sala:** Flash, Cadena, La Pirámide, Alfabeto, Predicción y Narrativo competitivo.
+- **Superación personal:** Supervivencia y Apuesta de confianza.
+- **Caso especial de sala pequeña:** Duelo como sala de dos jugadores.
+- **Social flexible posterior:** Creador de retos.
+- **Variantes posteriores:** Equipos, Cooperativo, Constructor, Conquista, Detective, Respuesta rara y Debate.
+
+Los modos que exigen cooperación profunda, equipos equilibrados, conquista, construcción, creación de retos, rareza basada en datos agregados o tiempo real deberían esperar hasta que esté validado el núcleo de sala asíncrona competitiva individual y ranking general.

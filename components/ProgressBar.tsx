@@ -1,19 +1,13 @@
 import { motion } from "motion/react";
 
-export function ProgressBar({
-  current,
-  total,
-}: {
-  current: number;
-  total: number;
-}) {
+export function ProgressBar({ current, total }: { current: number; total: number }) {
   const percentage = (current / total) * 100;
 
   return (
     <div
       className="h-1.5 overflow-hidden rounded-full bg-white/10"
       role="progressbar"
-      aria-label="Progreso de la etapa"
+      aria-label="Progreso del desafío"
       aria-valuemin={0}
       aria-valuemax={total}
       aria-valuenow={current}

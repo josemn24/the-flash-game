@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "dictionary:generate": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 && node scripts/generate-mini-wordle-dictionary.mjs --length=5",
+    "dictionary:check": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 --check && node scripts/generate-mini-wordle-dictionary.mjs --length=5 --check",
+    "test": "vitest run",
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "motion": "^12.42.2",
@@ -19,9 +24,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dictionary-es": "^4.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "eslint-config-prettier": "^10.1.8",
+    "nspell": "^2.1.5",
+    "prettier": "^3.9.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
