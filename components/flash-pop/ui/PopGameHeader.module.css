@@ -1,0 +1,75 @@
+.header {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pop-space-4);
+}
+
+.brand,
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  min-width: 0;
+  gap: 9px;
+  font-family: var(--pop-font-display);
+  font-weight: 800;
+}
+
+.brandMark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: var(--pop-border-flash);
+  border-radius: 13px;
+  background: var(--pop-color-brand);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.brandMark svg {
+  width: 19px;
+}
+
+.brandName {
+  font-size: 18px;
+  letter-spacing: -0.04em;
+}
+
+.separator {
+  color: var(--pop-color-ink-faint);
+  font-family: var(--pop-font-mono);
+  font-size: 12px;
+}
+
+.title {
+  overflow: hidden;
+  color: var(--pop-color-ink-muted);
+  font-family: var(--pop-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.actions {
+  flex: 0 0 auto;
+  gap: var(--pop-space-2);
+}
+
+@media (max-width: 520px) {
+  .brandName,
+  .separator {
+    display: none;
+  }
+
+  .title {
+    max-width: 130px;
+  }
+}

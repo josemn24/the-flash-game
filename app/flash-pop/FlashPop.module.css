@@ -219,6 +219,26 @@
   gap: 18px;
 }
 
+.classicPreviewCard {
+  border-color: var(--pop-color-social);
+  background:
+    linear-gradient(135deg, rgb(105 87 232 / 8%), transparent 58%),
+    var(--pop-color-surface);
+}
+
+.classicPreviewCard h2 {
+  margin: 7px 0 0;
+  font-family: var(--pop-font-display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.classicPreviewCard .challengeCopy {
+  margin-bottom: 16px;
+}
+
 .cardHeading {
   justify-content: space-between;
   gap: var(--pop-space-4);

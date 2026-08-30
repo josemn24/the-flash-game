@@ -10,6 +10,7 @@ import {
   PopCanvas,
   PopCard,
   PopChip,
+  PopGameHeader,
   PopTimer,
 } from "@/components/flash-pop/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
@@ -77,19 +78,7 @@ function LevelMap({ levels, currentIndex }: { levels: PyramidLevel[]; currentInd
 }
 
 function Topbar({ timer }: { timer?: React.ReactNode }) {
-  return (
-    <div className={styles.topbar}>
-      <div className={styles.topbarLeft}>
-        <span className={styles.brandMark} aria-hidden="true">
-          <BoltIcon />
-        </span>
-        <span className={styles.brandCopy}>
-          <strong>La Pirámide</strong>
-        </span>
-      </div>
-      {timer ? <div className={styles.topbarRight}>{timer}</div> : null}
-    </div>
-  );
+  return <PopGameHeader title="La Pirámide" timer={timer} />;
 }
 
 function Intro({
@@ -279,9 +268,7 @@ function Question({
           {question.question}
         </h1>
         <FlashPopQuestionInput
-          level={level}
-          levelIndex={levelIndex}
-          levelCount={levelCount}
+          question={question}
           locked={locked}
           initialAnswer={initialAnswer}
           onSubmit={onSubmit}

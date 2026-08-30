@@ -228,11 +228,63 @@
   gap: var(--pop-space-3);
 }
 
+.binaryChoice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pop-space-3);
+}
+
+.binaryChoiceButton {
+  display: flex;
+  min-height: 88px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pop-space-2);
+  border: 2px solid var(--pop-color-border) !important;
+  border-radius: var(--pop-radius-control);
+  font-family: var(--pop-font-display);
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.binaryChoiceButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--pop-color-social) !important;
+}
+
+.binaryChoiceButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.binaryChoiceFalse {
+  --binary-accent: #ff7276;
+}
+
+.binaryIcon {
+  color: var(--binary-accent, var(--pop-color-social)) !important;
+  font-size: 26px;
+  line-height: 1;
+}
+
 .choiceGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--pop-space-3);
   margin-top: var(--pop-space-3);
+}
+
+@media (max-width: 520px) {
+  .binaryChoice,
+  .choiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .binaryChoiceButton {
+    min-height: 68px;
+  }
 }
 
 .unsupported {

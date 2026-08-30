@@ -1,8 +1,12 @@
 "use client";
 
+import { motion } from "motion/react";
+import { AnagramQuestion } from "@/components/AnagramQuestion";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { ConnectPairsQuestion } from "@/components/ConnectPairsQuestion";
+import { EstimationQuestion } from "@/components/EstimationQuestion";
+import { HeatMapQuestion } from "@/components/HeatMapQuestion";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
@@ -10,6 +14,7 @@ import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
 import { NumberSequencePrompt } from "@/components/NumberSequencePrompt";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
+import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
 import { QueensQuestion } from "@/components/QueensQuestion";
 import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
@@ -29,17 +34,15 @@ import type {
   ConnectPairsAnswer,
   MatchingAnswer,
   MiniWordleAnswer,
-  PyramidLevel,
   QueensAnswer,
+  Question,
   WordHashtagAnswer,
   WordSearchAnswer,
 } from "@/types/game";
 import styles from "./FlashPopQuestionInput.module.css";
 
 export type FlashPopQuestionInputProps = {
-  level: PyramidLevel;
-  levelIndex: number;
-  levelCount: number;
+  question: Question;
   locked: boolean;
   initialAnswer?: AnswerValue | null;
   progressiveCluesRevealed?: number;
@@ -53,7 +56,7 @@ export type FlashPopQuestionInputProps = {
 };
 
 export function FlashPopQuestionInput({
-  level,
+  question,
   locked,
   initialAnswer,
   progressiveCluesRevealed = 1,
@@ -65,21 +68,46 @@ export function FlashPopQuestionInput({
   onTimedResponseStart,
   attemptCount = 0,
 }: FlashPopQuestionInputProps) {
-  const question = level.question;
-
   switch (question.type) {
+    case "true-false":
+      return (
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <div className={styles.binaryChoice} aria-label="Opciones de respuesta">
+            <motion.button
+              type="button"
+              className={styles.binaryChoiceButton}
+              disabled={locked}
+              onClick={() => onSubmit(true)}
+            >
+              <span className={styles.binaryIcon} aria-hidden="true">✓</span>
+              Verdadero
+            </motion.button>
+            <motion.button
+              type="button"
+              className={`${styles.binaryChoiceButton} ${styles.binaryChoiceFalse}`}
+              disabled={locked}
+              onClick={() => onSubmit(false)}
+            >
+              <span className={styles.binaryIcon} aria-hidden="true">×</span>
+              Falso
+            </motion.button>
+          </div>
+        </div>
+      );
     case "odd-one-out":
       return (
-        <OddOneOutQuestion
-          items={question.items}
-          locked={locked}
-          onSubmit={onSubmit}
-          variant="flash-pop"
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <OddOneOutQuestion
+            items={question.items}
+            locked={locked}
+            onSubmit={onSubmit}
+            variant="flash-pop"
+          />
+        </div>
       );
     case "multiple-choice":
       return (
-        <div className={styles.choiceInput}>
+        <div className={`${styles.flashPopFormat} ${styles.choiceInput}`} data-format={question.type}>
           {question.promptVisual?.type === "number-sequence" && (
             <NumberSequencePrompt prompt={question.promptVisual} variant="flash-pop" />
           )}
@@ -99,73 +127,141 @@ export function FlashPopQuestionInput({
       );
     case "ordering":
       return (
-        <OrderingQuestion
-          items={question.items}
-          directionLabels={question.directionLabels}
-          initialItems={
-            Array.isArray(initialAnswer) && initialAnswer.every((item) => typeof item === "string")
-              ? initialAnswer
-              : undefined
-          }
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onSubmit={(answer) => onSubmit(answer)}
-          variant="flash-pop"
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <OrderingQuestion
+            items={question.items}
+            directionLabels={question.directionLabels}
+            initialItems={
+              Array.isArray(initialAnswer) && initialAnswer.every((item) => typeof item === "string")
+                ? initialAnswer
+                : undefined
+            }
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
+          />
+        </div>
       );
     case "matching": {
       const matchingAnswer: MatchingAnswer | undefined = isMatchingAnswer(initialAnswer ?? null)
         ? (initialAnswer as MatchingAnswer)
         : undefined;
       return (
-        <MatchingQuestion
-          leftItems={question.leftItems}
-          rightItems={question.rightItems}
-          initialAnswer={matchingAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onSubmit={(answer) => onSubmit(answer)}
-          className={styles.flashPopFormat}
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <MatchingQuestion
+            leftItems={question.leftItems}
+            rightItems={question.rightItems}
+            initialAnswer={matchingAnswer}
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onIncorrectAttempt={onIncorrectAttempt}
+            onSubmit={(answer) => onSubmit(answer)}
+          />
+        </div>
       );
     }
     case "progressive-clues":
       return (
-        <ProgressiveCluesQuestion
-          questionId={question.id}
-          clues={question.clues}
-          cluePenalty={question.cluePenalty}
-          points={question.points}
-          initialAnswer={typeof initialAnswer === "string" ? initialAnswer : undefined}
-          initialRevealedClues={progressiveCluesRevealed}
-          locked={locked}
-          onReveal={onProgressiveClueReveal}
-          onProgress={(answer) => onProgress(answer)}
-          onSubmit={(answer) => onSubmit(answer)}
-          className={styles.flashPopFormat}
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <ProgressiveCluesQuestion
+            questionId={question.id}
+            clues={question.clues}
+            cluePenalty={question.cluePenalty}
+            points={question.points}
+            initialAnswer={typeof initialAnswer === "string" ? initialAnswer : undefined}
+            initialRevealedClues={progressiveCluesRevealed}
+            locked={locked}
+            onReveal={onProgressiveClueReveal}
+            onProgress={(answer) => onProgress(answer)}
+            onSubmit={(answer) => onSubmit(answer)}
+          />
+        </div>
+      );
+    case "progressive-image":
+      return (
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <ProgressiveImageQuestion
+            key={question.id}
+            surface={question.surface}
+            revealDuration={question.revealDuration}
+            answerLabel={question.answerLabel}
+            answerPlaceholder={question.answerPlaceholder}
+            locked={locked}
+            onSubmit={onSubmit}
+            onTimedResponseStart={onTimedResponseStart}
+          />
+        </div>
+      );
+    case "heat-map":
+      return (
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />
+        </div>
+      );
+    case "estimation":
+      return (
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <EstimationQuestion
+            min={question.min}
+            max={question.max}
+            step={question.step}
+            initialValue={question.initialValue}
+            unit={question.unit}
+            locked={locked}
+            onSubmit={onSubmit}
+          />
+        </div>
+      );
+    case "classification": {
+      const classificationAnswer: ClassificationAnswer | undefined =
+        isClassificationAnswer(initialAnswer ?? null)
+          ? (initialAnswer as ClassificationAnswer)
+          : undefined;
+      return (
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <ClassificationQuestion
+            items={question.items}
+            categories={question.categories}
+            initialAnswer={classificationAnswer}
+            locked={locked}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
+          />
+        </div>
+      );
+    }
+    case "anagram":
+      return (
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <AnagramQuestion
+            tiles={question.tiles}
+            hint={question.hint}
+            locked={locked}
+            onSubmit={onSubmit}
+          />
+        </div>
       );
     case "mini-wordle": {
-      const miniWordleAnswer: MiniWordleAnswer | undefined = isMiniWordleAnswer(
-        initialAnswer ?? null,
-      )
-        ? (initialAnswer as MiniWordleAnswer)
-        : undefined;
       return (
-        <MiniWordleQuestion
-          correctAnswer={question.correctAnswer}
-          additionalGuesses={question.additionalGuesses}
-          hint={question.hint}
-          wordLength={question.wordLength}
-          maxAttempts={question.maxAttempts}
-          initialAnswer={miniWordleAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onSubmit={(answer) => onSubmit(answer)}
-          onTimedResponseStart={onTimedResponseStart}
-          className={styles.flashPopFormat}
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <MiniWordleQuestion
+            correctAnswer={question.correctAnswer}
+            additionalGuesses={question.additionalGuesses}
+            hint={question.hint}
+            wordLength={question.wordLength}
+            maxAttempts={question.maxAttempts}
+            initialAnswer={
+              isMiniWordleAnswer(initialAnswer ?? null)
+                ? (initialAnswer as MiniWordleAnswer)
+                : undefined
+            }
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onSubmit={(answer) => onSubmit(answer)}
+            onTimedResponseStart={onTimedResponseStart}
+          />
+        </div>
       );
     }
     case "word-search": {
@@ -175,33 +271,16 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as WordSearchAnswer)
         : undefined;
       return (
-        <WordSearchQuestion
-          question={question}
-          initialAnswer={wordSearchAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onSubmit={(answer) => onSubmit(answer)}
-          className={styles.flashPopFormat}
-        />
-      );
-    }
-    case "classification": {
-      const classificationAnswer: ClassificationAnswer | undefined = isClassificationAnswer(
-        initialAnswer ?? null,
-      )
-        ? (initialAnswer as ClassificationAnswer)
-        : undefined;
-      return (
-        <ClassificationQuestion
-          items={question.items}
-          categories={question.categories}
-          initialAnswer={classificationAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onSubmit={(answer) => onSubmit(answer)}
-          className={styles.flashPopFormat}
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <WordSearchQuestion
+            question={question}
+            initialAnswer={wordSearchAnswer}
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onIncorrectAttempt={onIncorrectAttempt}
+            onSubmit={(answer) => onSubmit(answer)}
+          />
+        </div>
       );
     }
     case "word-hashtag": {
@@ -211,27 +290,30 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as WordHashtagAnswer)
         : undefined;
       return (
-        <WordHashtagQuestion
-          question={question}
-          initialAnswer={wordHashtagAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onSubmit={(answer) => onSubmit(answer)}
-          className={styles.flashPopFormat}
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <WordHashtagQuestion
+            question={question}
+            initialAnswer={wordHashtagAnswer}
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onSubmit={(answer) => onSubmit(answer)}
+          />
+        </div>
       );
     }
     case "logic-matrix":
       return (
-        <LogicMatrixQuestion
-          pieces={question.pieces}
-          cells={question.cells}
-          optionIds={question.optionIds}
-          showPieceLabels={question.showPieceLabels}
-          locked={locked}
-          onSubmit={onSubmit}
-          variant="flash-pop"
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <LogicMatrixQuestion
+            pieces={question.pieces}
+            cells={question.cells}
+            optionIds={question.optionIds}
+            showPieceLabels={question.showPieceLabels}
+            locked={locked}
+            onSubmit={onSubmit}
+            variant="flash-pop"
+          />
+        </div>
       );
     case "connect-pairs": {
       const connectAnswer: ConnectPairsAnswer | undefined = isConnectPairsAnswer(
@@ -240,43 +322,49 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as ConnectPairsAnswer)
         : undefined;
       return (
-        <ConnectPairsQuestion
-          question={question}
-          initialAnswer={connectAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onSubmit={(answer) => onSubmit(answer)}
-          variant="flash-pop"
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <ConnectPairsQuestion
+            question={question}
+            initialAnswer={connectAnswer}
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
+          />
+        </div>
       );
     }
     case "logic-code":
       return (
-        <LogicCodeQuestion
-          clues={question.clues}
-          codeLength={question.codeLength}
-          initialDraft={typeof initialAnswer === "string" ? initialAnswer : undefined}
-          locked={locked}
-          attemptCount={attemptCount}
-          onProgress={(answer) => onProgress(answer)}
-          onAttempt={onCodeAttempt}
-          variant="flash-pop"
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <LogicCodeQuestion
+            clues={question.clues}
+            codeLength={question.codeLength}
+            initialDraft={typeof initialAnswer === "string" ? initialAnswer : undefined}
+            locked={locked}
+            attemptCount={attemptCount}
+            onProgress={(answer) => onProgress(answer)}
+            onAttempt={onCodeAttempt}
+            variant="flash-pop"
+          />
+        </div>
       );
     case "queens": {
       const queensAnswer: Partial<QueensAnswer> | undefined = isQueensAnswer(initialAnswer ?? null)
         ? (initialAnswer as QueensAnswer)
         : undefined;
       return (
-        <QueensQuestion
-          question={question}
-          initialAnswer={queensAnswer}
-          locked={locked}
-          onProgress={(answer) => onProgress(answer)}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onSubmit={(answer) => onSubmit(answer)}
-          variant="flash-pop"
-        />
+        <div className={styles.flashPopFormat} data-format={question.type}>
+          <QueensQuestion
+            question={question}
+            initialAnswer={queensAnswer}
+            locked={locked}
+            onProgress={(answer) => onProgress(answer)}
+            onIncorrectAttempt={onIncorrectAttempt}
+            onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
+          />
+        </div>
       );
     }
     default:

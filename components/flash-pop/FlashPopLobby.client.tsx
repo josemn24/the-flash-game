@@ -267,6 +267,22 @@ export function FlashPopLobby({
             </div>
           </PopCard>
 
+          <PopCard as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Nuevo preview</p>
+            <h2>Flash clásico, en versión Pop</h2>
+            <p className={styles.challengeCopy}>
+              Juega las 16 preguntas del reto original con la nueva presentación clara y eléctrica.
+            </p>
+            <PopButtonLink
+              href="/flash-pop/flash/tabarnia-flash-01"
+              variant="secondary"
+              fullWidth
+              trailingIcon={<ArrowIcon />}
+            >
+              Probar Flash clásico
+            </PopButtonLink>
+          </PopCard>
+
           <PopCard as="section" className={styles.activitySection}>
             <div className={styles.cardHeading}>
               <div>

@@ -21,5 +21,6 @@ export { PopChip } from "./PopChip";
 export type { PopChipProps } from "./PopChip";
 export { PopIconButton } from "./PopIconButton";
 export type { PopIconButtonProps } from "./PopIconButton";
+export { PopGameHeader, PopGameTimer } from "./PopGameHeader";
 export { PopTimer, PopTimerDisplay } from "./PopTimer";
 export type { PopTimerDisplayProps, PopTimerProps } from "./PopTimer";

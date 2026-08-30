@@ -9,12 +9,10 @@ describe("Flash Pop question adapter", () => {
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
     const markup = challenge.levels
-      .map((level, levelIndex) =>
+      .map((level) =>
         renderToStaticMarkup(
           <FlashPopQuestionInput
-            level={level}
-            levelIndex={levelIndex}
-            levelCount={challenge.levels.length}
+            question={level.question}
             locked={false}
             onSubmit={vi.fn()}
             onProgress={vi.fn()}
@@ -35,5 +33,34 @@ describe("Flash Pop question adapter", () => {
     expect(markup).toContain("Sopa de letras");
     expect(markup).toContain("Clasificación");
     expect(markup).toContain("Hashtag de cuatro palabras");
+  });
+
+  it("renders the ten formats used by the Flash pilot", () => {
+    const challenge = getChallengeById("tabarnia-flash-01");
+    if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");
+
+    const markup = challenge.questions
+      .map((question) =>
+        renderToStaticMarkup(
+          <FlashPopQuestionInput
+            question={question}
+            locked={false}
+            onSubmit={vi.fn()}
+            onProgress={vi.fn()}
+            onIncorrectAttempt={vi.fn()}
+            onProgressiveClueReveal={vi.fn()}
+            onCodeAttempt={vi.fn(() => false)}
+            onTimedResponseStart={vi.fn()}
+          />,
+        ),
+      )
+      .join("\n");
+
+    expect(markup).toContain("Verdadero");
+    expect(markup).toContain("Falso");
+    expect(markup).toContain("Mapa");
+    expect(markup).toContain("Confirmar estimación");
+    expect(markup).toContain('data-format="anagram"');
+    expect(markup).toContain('data-format="progressive-image"');
   });
 });
