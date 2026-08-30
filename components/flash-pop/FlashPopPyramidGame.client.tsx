@@ -350,18 +350,41 @@ function Feedback({
     : `La respuesta correcta era ${expectedAnswerLabel(level)}.`;
 
   return (
-    <div className={styles.question}>
-      <Topbar />
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+    <div className={`${styles.question} ${passed ? styles.successQuestion : ""}`}>
+      {!passed && <Topbar />}
+      <motion.div
+        className={styles.feedbackStage}
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
         <PopCard className={`${styles.feedbackCard} ${passed ? "" : styles.failure}`}>
-          <span className={styles.feedbackIcon} aria-hidden="true">
+          <motion.span
+            className={styles.feedbackIcon}
+            aria-hidden="true"
+            initial={{ opacity: 0, scale: 0.72 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={
+              passed
+                ? { type: "spring", stiffness: 280, damping: 16, delay: 0.08 }
+                : { duration: 0.2 }
+            }
+          >
             {passed ? <CheckIcon /> : timedOut ? <ClockIcon /> : <CrossIcon />}
-          </span>
+          </motion.span>
           <p className={styles.feedbackEyebrow}>{level.label}</p>
           <h1>{title}</h1>
           <p>{body}</p>
           {!passed ? <p className={styles.correctAnswer}>{level.question.explanation}</p> : null}
-          {passed ? <p className={styles.feedbackPoints}>+{result.points} puntos</p> : null}
+          {passed ? (
+            <motion.p
+              className={styles.feedbackPoints}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.25 }}
+            >
+              +{result.points} puntos
+            </motion.p>
+          ) : null}
         </PopCard>
       </motion.div>
     </div>
