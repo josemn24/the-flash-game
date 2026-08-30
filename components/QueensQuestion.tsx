@@ -1,7 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, type MutableRefObject, useMemo, useRef, useState } from "react";
-import { CrownIcon, CrossIcon, WarningIcon } from "@/components/icons";
+import { CrownIcon, CrossIcon, QueensCrownIcon, WarningIcon } from "@/components/icons";
 import {
   calculateQueensMetrics,
   getQueensConflicts,
@@ -21,22 +21,6 @@ const CONFLICT_LABELS: Record<QueensConflictType, string> = {
   region: "región repetida",
   contact: "coronas en contacto",
 };
-
-function boundaryClasses(question: QueensQuestionType, cell: number) {
-  const row = Math.floor(cell / QUEENS_COLUMNS);
-  const column = cell % QUEENS_COLUMNS;
-  const region = question.regions[cell];
-  return [
-    row === 0 || question.regions[cell - QUEENS_COLUMNS] !== region ? styles.regionTop : "",
-    row === QUEENS_ROWS - 1 || question.regions[cell + QUEENS_COLUMNS] !== region
-      ? styles.regionBottom
-      : "",
-    column === 0 || question.regions[cell - 1] !== region ? styles.regionLeft : "",
-    column === QUEENS_COLUMNS - 1 || question.regions[cell + 1] !== region
-      ? styles.regionRight
-      : "",
-  ].join(" ");
-}
 
 export function QueensBoard({
   question,
@@ -83,10 +67,10 @@ export function QueensBoard({
         const conflictLabel = conflictTypes.length
           ? `, conflicto: ${conflictTypes.map((type) => CONFLICT_LABELS[type]).join(", ")}`
           : "";
-        const className = `${styles.cell} ${styles[`region${question.regions[cell]}`]} ${boundaryClasses(question, cell)} ${queen ? styles.queen : ""} ${prefilled ? styles.prefilledQueen : ""} ${mark ? styles.mark : ""} ${conflictTypes.length ? styles.conflict : ""}`;
+        const className = `${styles.cell} ${styles[`region${question.regions[cell]}`]} ${queen ? styles.queen : ""} ${prefilled ? styles.prefilledQueen : ""} ${mark ? styles.mark : ""} ${conflictTypes.length ? styles.conflict : ""}`;
         const content = (
           <>
-            {queen && <CrownIcon className={styles.crownIcon} />}
+            {queen && <QueensCrownIcon className={styles.queensCrownIcon} />}
             {prefilled && <span className={styles.prefilledLabel}>Pista</span>}
             {mark && <CrossIcon className={styles.markIcon} />}
             {conflictTypes.length > 0 && <WarningIcon className={styles.warningIcon} />}

@@ -55,8 +55,9 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   width: min(100%, 27rem);
   margin-inline: auto;
-  padding: 2px;
-  border-radius: 0.8rem;
+  gap: 0.24rem;
+  padding: 0.3rem;
+  border-radius: 1.05rem;
   background: rgb(255 255 255 / 0.82);
   box-shadow: 0 18px 55px rgb(0 0 0 / 0.28);
   overflow: hidden;
@@ -66,8 +67,12 @@
   display: grid;
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid rgb(8 10 12 / 0.16);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0.58rem;
   color: #11151a;
+  box-shadow: 0 1px 2px rgb(17 21 26 / 0.12);
   isolation: isolate;
 }
 button.cell {
@@ -78,7 +83,9 @@ button.cell {
   z-index: -1;
   inset: 0;
   content: "";
-  opacity: 0.32;
+  border-radius: inherit;
+  opacity: 0.26;
+  pointer-events: none;
 }
 .region0 {
   background: #f3b5bc;
@@ -117,36 +124,36 @@ button.cell {
 .region4::before {
   background-image: repeating-linear-gradient(90deg, transparent 0 8px, #765d18 8px 9px);
 }
-.regionTop {
-  border-top: 3px solid #11151a;
-}
-.regionBottom {
-  border-bottom: 3px solid #11151a;
-}
-.regionLeft {
-  border-left: 3px solid #11151a;
-}
-.regionRight {
-  border-right: 3px solid #11151a;
-}
 .cell:hover:not(:disabled) {
   filter: brightness(1.08);
 }
-.crownIcon,
+.queensCrownIcon {
+  position: relative;
+  z-index: 1;
+  width: clamp(2rem, 12vw, 3.35rem);
+  height: clamp(2rem, 12vw, 3.35rem);
+  color: #11151a;
+  filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.55)) drop-shadow(0 2px 3px rgb(17 21 26 / 0.18));
+}
 .markIcon {
+  position: relative;
+  z-index: 1;
   width: clamp(1.55rem, 8vw, 2.4rem);
   height: clamp(1.55rem, 8vw, 2.4rem);
   filter: drop-shadow(0 2px 1px rgb(255 255 255 / 0.5));
 }
 .prefilledQueen {
-  box-shadow: inset 0 0 0 3px rgb(17 21 26 / 0.72);
+  box-shadow:
+    inset 0 0 0 3px rgb(17 21 26 / 0.72),
+    0 1px 2px rgb(17 21 26 / 0.12);
   cursor: default !important;
 }
-.prefilledQueen .crownIcon {
+.prefilledQueen .queensCrownIcon {
   transform: translateY(-0.18rem);
 }
 .prefilledLabel {
   position: absolute;
+  z-index: 3;
   bottom: 0.2rem;
   left: 50%;
   padding: 0.08rem 0.28rem;
@@ -167,12 +174,16 @@ button.cell {
   stroke-width: 2.7;
 }
 .conflict {
-  box-shadow: inset 0 0 0 4px #e22b3f;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 4px #e22b3f,
+    0 1px 2px rgb(17 21 26 / 0.12);
   animation: conflict-in 180ms ease-out;
 }
 .conflict::after {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   background: repeating-linear-gradient(135deg, transparent 0 8px, rgb(226 43 63 / 0.22) 8px 13px);
   content: "";
   pointer-events: none;
@@ -187,6 +198,24 @@ button.cell {
   color: #b40018;
   fill: #fff3b0;
   stroke-width: 2.5;
+}
+/* Keep the card surface readable when the board is rendered in Flash Pop. */
+.pop .queensCrownIcon {
+  color: var(--pop-color-ink);
+  filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.6)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.14));
+}
+.pop .cell {
+  border: 0;
+}
+.pop .prefilledQueen {
+  box-shadow:
+    inset 0 0 0 3px rgb(23 23 32 / 58%),
+    0 1px 2px rgb(23 23 32 / 16%);
+}
+.pop .conflict {
+  box-shadow:
+    inset 0 0 0 4px #e22b3f,
+    0 1px 2px rgb(23 23 32 / 16%);
 }
 .progress {
   display: flex;
@@ -259,10 +288,6 @@ button.cell {
   border-radius: var(--pop-radius-card);
   background: var(--pop-color-surface-raised);
   box-shadow: var(--pop-shadow-card);
-}
-
-.pop .cell {
-  border-color: rgb(23 23 32 / 16%);
 }
 
 .pop .progress {

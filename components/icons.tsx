@@ -69,6 +69,29 @@ export function CrownIcon(props: IconProps) {
   );
 }
 
+export function QueensCrownIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props} viewBox="0 0 64 64">
+      <path
+        fill="currentColor"
+        stroke="none"
+        d="M10 18c2.8 2.3 5.4 4.1 8.1 5.4L25 9.5c.6-1 2-.9 2.5.1L32 18l4.5-8.4c.5-1 1.9-1.1 2.5-.1l6.9 13.9c2.7-1.3 5.3-3.1 8.1-5.4l-1.6 24.2c-.2 2.8-2.5 4.9-5.3 4.9H16.9c-2.8 0-5.1-2.1-5.3-4.9L10 18Z"
+      />
+      <path
+        fill="none"
+        d="M14.3 39.5h35.4M17 47.5h30"
+        stroke="rgb(255 255 255 / 0.8)"
+        strokeWidth="3.5"
+      />
+      <path
+        fill="currentColor"
+        stroke="none"
+        d="M17 51h30c1.7 0 3 1.3 3 3v1H14v-1c0-1.7 1.3-3 3-3Z"
+      />
+    </svg>
+  );
+}
+
 export function WarningIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>
