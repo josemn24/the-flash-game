@@ -14,7 +14,6 @@
 }
 
 .introCard,
-.questionCard,
 .resultCard,
 .reviewCard {
   border-radius: 28px;
@@ -180,7 +179,13 @@
 }
 
 .questionCard {
-  padding: clamp(20px, 5vw, 44px);
+  align-self: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .promptContext {
@@ -206,7 +211,7 @@
   background: var(--pop-color-surface-soft);
 }
 
-.questionCard > :global(.flashPopFormat) {
+.questionCard > div:last-child {
   margin-top: 28px;
 }
 

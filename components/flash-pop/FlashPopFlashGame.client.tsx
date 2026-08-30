@@ -181,7 +181,7 @@ function QuestionStage({
         </div>
       </div>
 
-      <PopCard as="section" className={styles.questionCard} aria-labelledby="flash-pop-question-title">
+      <section className={styles.questionCard} aria-labelledby="flash-pop-question-title">
         {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
         <h1 id="flash-pop-question-title" className={prompt.title.length > 100 ? styles.longPrompt : ""}>
           {prompt.title}
@@ -202,7 +202,7 @@ function QuestionStage({
           onTimedResponseStart={startTimedResponse}
           attemptCount={attemptCount}
         />
-      </PopCard>
+      </section>
     </div>
   );
 }
