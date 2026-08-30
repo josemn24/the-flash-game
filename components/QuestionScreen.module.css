@@ -94,38 +94,6 @@
   opacity: 0.75;
   transform: scale(0.92);
 }
-.truthButton {
-  display: flex;
-  min-height: 8.5rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 1.25rem;
-  font-size: 0.95rem;
-  font-weight: 900;
-  transition:
-    border-color 160ms,
-    background 160ms,
-    color 160ms;
-}
-.truthButtonTrue {
-  color: var(--electric);
-  background: rgba(215, 255, 24, 0.035);
-}
-.truthButtonFalse {
-  color: #ff858a;
-  background: rgba(255, 93, 100, 0.035);
-}
-.truthButtonTrue:hover {
-  border-color: rgba(215, 255, 24, 0.45);
-  background: rgba(215, 255, 24, 0.08);
-}
-.truthButtonFalse:hover {
-  border-color: rgba(255, 93, 100, 0.45);
-  background: rgba(255, 93, 100, 0.08);
-}
 .textAnswerRow {
   display: flex;
   gap: 0.65rem;
@@ -162,11 +130,6 @@
 }
 .textSubmitButton:disabled {
   opacity: 0.24;
-}
-@media (min-width: 640px) {
-  .truthButton {
-    min-height: 10rem;
-  }
 }
 @media (max-width: 639px) {
   .questionTitle {

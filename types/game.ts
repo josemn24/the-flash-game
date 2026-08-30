@@ -82,6 +82,7 @@ export type {
   QuestionMedia,
   QuestionOfType,
   QuestionType,
+  QuestionVariant,
   ShortTextQuestion,
   SimonSequenceAnswer,
   SimonSequencePad,

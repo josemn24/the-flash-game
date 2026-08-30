@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/icons";
 import styles from "@/components/MatchingQuestion.module.css";
 import { QuestionMedia } from "@/components/QuestionMedia";
-import type { MatchingAnswer, MatchingItem, MatchingLeftItem } from "@/types/game";
+import type { MatchingAnswer, MatchingItem, MatchingLeftItem, QuestionVariant } from "@/types/game";
 
 type MatchingQuestionProps = {
   leftItems: MatchingLeftItem[];
@@ -15,7 +15,7 @@ type MatchingQuestionProps = {
   onProgress: (answer: MatchingAnswer) => void;
   onIncorrectAttempt: () => void;
   onSubmit: (answer: MatchingAnswer) => void;
-  className?: string;
+  variant?: QuestionVariant;
 };
 
 type InvalidPair = { leftId: string; rightId: string };
@@ -28,7 +28,7 @@ export function MatchingQuestion({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-  className,
+  variant = "default",
 }: MatchingQuestionProps) {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [matches, setMatches] = useState<MatchingAnswer>(() => {
@@ -93,7 +93,10 @@ export function MatchingQuestion({
   const matchedCount = Object.keys(matches).length;
 
   return (
-    <div className={`${styles.root} ${className ?? ""}`}>
+    <div
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      data-variant={variant}
+    >
       <div className={styles.columns}>
         <section className={styles.column} aria-labelledby="matching-left-heading">
           <h3 id="matching-left-heading">Conceptos</h3>

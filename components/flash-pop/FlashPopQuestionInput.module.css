@@ -10,77 +10,77 @@
   font-family: var(--pop-font-ui);
 }
 
-.flashPopFormat :global(button:focus-visible),
-.flashPopFormat :global(input:focus-visible) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button:focus-visible),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(input:focus-visible) {
   outline: 3px solid var(--pop-color-focus);
   outline-offset: 3px;
 }
 
 /* The shared format components also power the dark game. These overrides keep
    their Flash Pop presentation readable on the light diorama surface. */
-.flashPopFormat :global(button) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface-raised) !important;
 }
 
-.flashPopFormat :global(button:hover:not(:disabled)) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button:hover:not(:disabled)) {
   border-color: var(--pop-color-social) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface-soft) !important;
 }
 
-.flashPopFormat :global(button[aria-pressed="true"]),
-.flashPopFormat :global(button[type="submit"]) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button[aria-pressed="true"]),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button[type="submit"]) {
   border-color: var(--pop-color-social) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-brand) !important;
 }
 
-.flashPopFormat :global(button[type="submit"]:disabled) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button[type="submit"]:disabled) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink-muted) !important;
   background: var(--pop-color-surface-soft) !important;
   opacity: 1 !important;
 }
 
-.flashPopFormat :global(input) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(input) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface) !important;
 }
 
-.flashPopFormat :global(input)::placeholder {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(input)::placeholder {
   color: var(--pop-color-ink-faint) !important;
   opacity: 1;
 }
 
-.flashPopFormat :global(form) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(form) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface-raised) !important;
 }
 
-.flashPopFormat :global(h3),
-.flashPopFormat :global(label),
-.flashPopFormat :global(p),
-.flashPopFormat :global(strong),
-.flashPopFormat :global([role="gridcell"]),
-.flashPopFormat :global([role="status"]) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(h3),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(label),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(p),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(strong),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="gridcell"]),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="status"]) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat :global([role="alert"]) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="alert"]) {
   color: #8f2633 !important;
 }
 
-.flashPopFormat :global([role="grid"]) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="grid"]) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface-soft) !important;
   box-shadow: var(--pop-shadow-card) !important;
 }
 
-.flashPopFormat :global([role="gridcell"] button) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="gridcell"] button) {
   background: transparent !important;
 }
 
@@ -106,27 +106,27 @@
   background: #e2dfe8 !important;
 }
 
-.flashPopFormat :global(form) > :global(div:last-child) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(form) > :global(div:last-child) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat :global(form) > :global(div:last-child) :global(span) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(form) > :global(div:last-child) :global(span) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat > :global(div:first-child) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) > :global(div:first-child) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat :global(ol li) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(ol li) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface-raised) !important;
 }
 
 /* Electric yellow is reserved for filled controls here; these small accents
    need the darker focus token to remain readable on white. */
-.flashPopFormat :global(ol li > span),
-.flashPopFormat :global(button span) {
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(ol li > span),
+.flashPopFormat:not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button span) {
   color: var(--pop-color-focus) !important;
 }
 
@@ -228,47 +228,6 @@
   gap: var(--pop-space-3);
 }
 
-.binaryChoice {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pop-space-3);
-}
-
-.binaryChoiceButton {
-  display: flex;
-  min-height: 88px;
-  align-items: center;
-  justify-content: center;
-  gap: var(--pop-space-2);
-  border: 2px solid var(--pop-color-border) !important;
-  border-radius: var(--pop-radius-control);
-  font-family: var(--pop-font-display);
-  font-size: 18px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
-}
-
-.binaryChoiceButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  border-color: var(--pop-color-social) !important;
-}
-
-.binaryChoiceButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.binaryChoiceFalse {
-  --binary-accent: #ff7276;
-}
-
-.binaryIcon {
-  color: var(--binary-accent, var(--pop-color-social)) !important;
-  font-size: 26px;
-  line-height: 1;
-}
-
 .choiceGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -277,13 +236,8 @@
 }
 
 @media (max-width: 520px) {
-  .binaryChoice,
   .choiceGrid {
     grid-template-columns: 1fr;
-  }
-
-  .binaryChoiceButton {
-    min-height: 68px;
   }
 }
 

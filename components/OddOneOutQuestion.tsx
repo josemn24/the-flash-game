@@ -5,13 +5,13 @@ import { useState } from "react";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { CheckIcon } from "@/components/icons";
 import styles from "@/components/OddOneOutQuestion.module.css";
-import type { OddOneOutItem } from "@/types/game";
+import type { OddOneOutItem, QuestionVariant } from "@/types/game";
 
 type OddOneOutQuestionProps = {
   items: OddOneOutItem[];
   locked: boolean;
   onSubmit: (answer: string) => void;
-  variant?: "flash-pop";
+  variant?: QuestionVariant;
 };
 
 export function OddOneOutQuestion({ items, locked, onSubmit, variant }: OddOneOutQuestionProps) {
@@ -19,6 +19,7 @@ export function OddOneOutQuestion({ items, locked, onSubmit, variant }: OddOneOu
   return (
     <div
       className={`${styles.grid} ${variant === "flash-pop" ? styles.pop : ""}`}
+      data-variant={variant ?? "default"}
       aria-label="Opciones: encuentra el intruso"
     >
       {items.map((item) => (

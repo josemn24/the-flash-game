@@ -2,6 +2,8 @@ import type { QuestionTags } from "@/lib/questionTags";
 
 export type QuestionIllustration = "japan-flag" | "saturn" | "italy-flag" | "france-flag";
 
+export type QuestionVariant = "default" | "flash-pop";
+
 export type QuestionMedia =
   | {
       type: "illustration";

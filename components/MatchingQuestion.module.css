@@ -1,4 +1,20 @@
 .root {
+  --format-ink: rgba(255, 255, 255, 0.86);
+  --format-muted: rgba(255, 255, 255, 0.38);
+  --format-surface: rgba(255, 255, 255, 0.035);
+  --format-soft-surface: rgba(255, 255, 255, 0.05);
+  --format-border: rgba(255, 255, 255, 0.1);
+  --format-hover-border: rgba(215, 255, 24, 0.72);
+  --format-hover-ink: rgba(255, 255, 255, 0.96);
+  --format-hover-surface: rgba(215, 255, 24, 0.075);
+  --format-selected-border: rgba(215, 255, 24, 0.72);
+  --format-selected-surface: rgba(215, 255, 24, 0.075);
+  --format-matched-border: rgba(67, 222, 183, 0.55);
+  --format-matched-surface: rgba(67, 222, 183, 0.09);
+  --format-invalid-border: rgba(255, 99, 112, 0.8);
+  --format-invalid-surface: rgba(255, 99, 112, 0.12);
+  --format-accent: rgb(215 255 24);
+  --format-focus: rgb(215 255 24);
   display: flex;
   flex: 1;
   min-width: 0;
@@ -17,7 +33,7 @@
 }
 .column h3 {
   padding-inline: 0.25rem;
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--format-muted);
   font-family: var(--font-mono);
   font-size: 0.58rem;
   font-weight: 900;
@@ -28,35 +44,39 @@
   position: relative;
   min-height: 4.5rem;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--format-border);
   border-radius: 0.95rem;
-  color: rgba(255, 255, 255, 0.86);
-  background: var(--surface-subtle);
+  color: var(--format-ink);
+  background: var(--format-surface);
   transition:
     border-color 150ms,
     color 150ms,
     background 150ms,
     opacity 150ms;
 }
-.card:hover:not(:disabled),
+.card:hover:not(:disabled) {
+  border-color: var(--format-hover-border);
+  color: var(--format-hover-ink);
+  background: var(--format-hover-surface);
+}
 .cardSelected {
-  border-color: rgba(215, 255, 24, 0.72);
-  color: white;
-  background: rgba(215, 255, 24, 0.075);
+  border-color: var(--format-selected-border);
+  color: var(--format-hover-ink);
+  background: var(--format-selected-surface);
 }
 .card:focus-visible {
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--format-focus);
   outline-offset: 2px;
 }
 .cardMatched {
-  border-color: rgba(67, 222, 183, 0.55);
-  color: white;
-  background: rgba(67, 222, 183, 0.09);
+  border-color: var(--format-matched-border);
+  color: var(--format-hover-ink);
+  background: var(--format-matched-surface);
   opacity: 0.68;
 }
 .cardInvalid {
-  border-color: rgba(255, 99, 112, 0.8);
-  background: rgba(255, 99, 112, 0.12);
+  border-color: var(--format-invalid-border);
+  background: var(--format-invalid-surface);
 }
 .cardLabel {
   display: grid;
@@ -80,8 +100,8 @@
   height: 1.9rem;
   place-items: center;
   border-radius: 0.55rem;
-  color: var(--electric);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--format-accent);
+  background: var(--format-soft-surface);
   font-family: var(--font-mono);
   font-size: 0.78rem;
   font-weight: 900;
@@ -91,7 +111,7 @@
 }
 .cardWithMedia .cardLabel {
   min-height: 3.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--format-border);
   padding: 0.55rem 0.65rem 0.65rem;
   font-size: 0.7rem;
 }
@@ -103,16 +123,16 @@
   height: 1.1rem;
   padding: 0.18rem;
   border-radius: 999px;
-  color: #080b0b;
-  background: var(--electric);
+  color: var(--format-surface);
+  background: var(--format-accent);
 }
 .cardMatched .stateIcon {
-  color: #080b0b;
-  background: var(--electric);
+  color: var(--format-surface);
+  background: var(--format-accent);
 }
 .cardInvalid .stateIcon {
-  color: white;
-  background: var(--coral);
+  color: var(--format-ink);
+  background: var(--format-invalid-border);
 }
 .completedList {
   display: flex;
@@ -126,15 +146,35 @@
   gap: 0.3rem;
   border-radius: 999px;
   padding: 0.35rem 0.55rem;
-  color: rgba(255, 255, 255, 0.58);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--format-muted);
+  background: var(--format-soft-surface);
   font-size: 0.62rem;
   font-weight: 700;
 }
 .completedList svg {
   width: 0.8rem;
   height: 0.8rem;
-  color: var(--electric);
+  color: var(--format-accent);
+}
+
+.pop {
+  --format-ink: var(--pop-color-ink);
+  --format-muted: var(--pop-color-ink-muted);
+  --format-surface: var(--pop-color-surface-raised);
+  --format-soft-surface: var(--pop-color-surface-soft);
+  --format-border: var(--pop-color-border);
+  --format-hover-border: var(--pop-color-social);
+  --format-hover-ink: var(--pop-color-ink);
+  --format-hover-surface: var(--pop-color-surface);
+  --format-selected-border: var(--pop-color-social);
+  --format-selected-surface: rgb(105 87 232 / 10%);
+  --format-matched-border: var(--pop-color-success);
+  --format-matched-surface: rgb(67 222 183 / 12%);
+  --format-invalid-border: var(--pop-color-danger);
+  --format-invalid-surface: rgb(255 114 118 / 12%);
+  --format-accent: var(--pop-color-brand);
+  --format-focus: var(--pop-color-focus);
+  margin-top: var(--pop-space-5);
 }
 @media (min-width: 640px) {
   .columns {

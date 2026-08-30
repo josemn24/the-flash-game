@@ -1,0 +1,114 @@
+.root {
+  --format-ink: rgba(255, 255, 255, 0.9);
+  --format-muted: rgba(255, 255, 255, 0.55);
+  --format-surface: rgba(255, 255, 255, 0.035);
+  --format-border: rgba(255, 255, 255, 0.09);
+  --format-focus: rgb(215 255 24);
+  --format-accent: rgb(215 255 24);
+  --format-danger: #ff858a;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.pop {
+  --format-ink: var(--pop-color-ink);
+  --format-muted: var(--pop-color-ink-muted);
+  --format-surface: var(--pop-color-surface-raised);
+  --format-border: var(--pop-color-border);
+  --format-focus: var(--pop-color-focus);
+  --format-accent: var(--pop-color-brand);
+  --format-danger: #c83d55;
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-5);
+}
+
+.button {
+  display: flex;
+  min-height: 8.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  border: 1px solid var(--format-border);
+  border-radius: 1.25rem;
+  color: var(--format-ink);
+  background: var(--button-surface, var(--format-surface));
+  font-size: 0.95rem;
+  font-weight: 900;
+  transition: border-color 160ms, background 160ms, color 160ms;
+}
+
+.button svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.trueButton {
+  --button-accent: var(--format-accent);
+  --button-surface: rgba(215, 255, 24, 0.035);
+}
+
+.falseButton {
+  --button-accent: var(--format-danger);
+  --button-surface: rgba(255, 93, 100, 0.035);
+}
+
+.pop .trueButton,
+.pop .falseButton {
+  --button-surface: var(--format-surface);
+}
+
+.button svg,
+.button:hover:not(:disabled) {
+  color: var(--button-accent);
+}
+
+.button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--button-accent) 52%, var(--format-border));
+  background: color-mix(in srgb, var(--button-accent) 8%, var(--format-surface));
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--format-focus);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.pop .button {
+  min-height: 72px;
+  border-radius: var(--pop-radius-control);
+  box-shadow: var(--pop-shadow-control);
+  font-family: var(--pop-font-display);
+  font-size: 1.1rem;
+}
+
+.pop .button svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+@media (min-width: 640px) {
+  .root {
+    gap: 1rem;
+  }
+
+  .button {
+    min-height: 10rem;
+  }
+
+  .pop .button {
+    min-height: 84px;
+  }
+}
+
+@media (max-width: 479px) {
+  .root {
+    grid-template-columns: 1fr;
+  }
+}

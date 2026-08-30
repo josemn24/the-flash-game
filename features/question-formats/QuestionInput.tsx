@@ -13,7 +13,7 @@ import { EscapeQuestion } from "@/components/EscapeQuestion";
 import { FlashMemoryQuestion } from "@/components/FlashMemoryQuestion";
 import { HeatMapQuestion } from "@/components/HeatMapQuestion";
 import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
-import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/icons";
+import { ArrowIcon } from "@/components/icons";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
 import { MatchingQuestion } from "@/components/MatchingQuestion";
@@ -30,6 +30,7 @@ import { QueensQuestion } from "@/components/QueensQuestion";
 import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
 import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
 import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
+import { TrueFalseQuestion } from "@/components/TrueFalseQuestion";
 import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
 import { WordSearchQuestion } from "@/components/WordSearchQuestion";
 import { ZipQuestion } from "@/components/ZipQuestion";
@@ -42,7 +43,13 @@ import {
   isWordHashtagAnswer,
   isWordSearchAnswer,
 } from "@/lib/scoring";
-import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
+import type {
+  AnswerValue,
+  Question,
+  QuestionOfType,
+  QuestionType,
+  QuestionVariant,
+} from "@/types/game";
 
 type CommonProps = {
   locked: boolean;
@@ -54,6 +61,7 @@ type CommonProps = {
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
   initialAnswer?: AnswerValue | null;
+  variant?: QuestionVariant;
 };
 
 type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
@@ -62,6 +70,7 @@ function MultipleChoiceInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"multiple-choice">>) {
   return (
     <>
@@ -78,6 +87,7 @@ function MultipleChoiceInput({
             index={index}
             disabled={locked}
             onSelect={() => onSubmit(option)}
+            variant={variant}
           />
         ))}
       </div>
@@ -85,39 +95,28 @@ function MultipleChoiceInput({
   );
 }
 
-function TrueFalseInput({ locked, onSubmit }: QuestionInputProps<QuestionOfType<"true-false">>) {
-  return (
-    <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-4">
-      <motion.button
-        type="button"
-        className={`${styles.truthButton} ${styles.truthButtonTrue}`}
-        disabled={locked}
-        onClick={() => onSubmit(true)}
-        whileTap={{ scale: 0.97 }}
-      >
-        <CheckIcon className="h-7 w-7" />
-        <span>Verdadero</span>
-      </motion.button>
-      <motion.button
-        type="button"
-        className={`${styles.truthButton} ${styles.truthButtonFalse}`}
-        disabled={locked}
-        onClick={() => onSubmit(false)}
-        whileTap={{ scale: 0.97 }}
-      >
-        <CrossIcon className="h-7 w-7" />
-        <span>Falso</span>
-      </motion.button>
-    </div>
-  );
+function TrueFalseInput({
+  locked,
+  onSubmit,
+  variant,
+}: QuestionInputProps<QuestionOfType<"true-false">>) {
+  return <TrueFalseQuestion locked={locked} onSubmit={onSubmit} variant={variant} />;
 }
 
 function OddOneOutInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"odd-one-out">>) {
-  return <OddOneOutQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
+  return (
+    <OddOneOutQuestion
+      items={question.items}
+      locked={locked}
+      onSubmit={onSubmit}
+      variant={variant}
+    />
+  );
 }
 
 function MatchingInput({
@@ -126,6 +125,7 @@ function MatchingInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"matching">>) {
   return (
     <MatchingQuestion
@@ -135,6 +135,7 @@ function MatchingInput({
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }

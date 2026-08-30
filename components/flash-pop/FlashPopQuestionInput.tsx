@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { AnagramQuestion } from "@/components/AnagramQuestion";
 import { AnswerOption } from "@/components/AnswerOption";
 import { ClassificationQuestion } from "@/components/ClassificationQuestion";
@@ -17,6 +16,7 @@ import { OrderingQuestion } from "@/components/OrderingQuestion";
 import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion";
 import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
 import { QueensQuestion } from "@/components/QueensQuestion";
+import { TrueFalseQuestion } from "@/components/TrueFalseQuestion";
 import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
 import { WordSearchQuestion } from "@/components/WordSearchQuestion";
 import {
@@ -72,26 +72,7 @@ export function FlashPopQuestionInput({
     case "true-false":
       return (
         <div className={styles.flashPopFormat} data-format={question.type}>
-          <div className={styles.binaryChoice} aria-label="Opciones de respuesta">
-            <motion.button
-              type="button"
-              className={styles.binaryChoiceButton}
-              disabled={locked}
-              onClick={() => onSubmit(true)}
-            >
-              <span className={styles.binaryIcon} aria-hidden="true">✓</span>
-              Verdadero
-            </motion.button>
-            <motion.button
-              type="button"
-              className={`${styles.binaryChoiceButton} ${styles.binaryChoiceFalse}`}
-              disabled={locked}
-              onClick={() => onSubmit(false)}
-            >
-              <span className={styles.binaryIcon} aria-hidden="true">×</span>
-              Falso
-            </motion.button>
-          </div>
+          <TrueFalseQuestion locked={locked} onSubmit={onSubmit} variant="flash-pop" />
         </div>
       );
     case "odd-one-out":
@@ -157,6 +138,7 @@ export function FlashPopQuestionInput({
             onProgress={(answer) => onProgress(answer)}
             onIncorrectAttempt={onIncorrectAttempt}
             onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
           />
         </div>
       );

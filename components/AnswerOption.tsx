@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { CheckIcon } from "@/components/icons";
+import type { QuestionVariant } from "@/types/game";
 import styles from "@/components/AnswerOption.module.css";
 
 type AnswerOptionProps = {
@@ -8,7 +9,7 @@ type AnswerOptionProps = {
   disabled: boolean;
   index: number;
   onSelect: () => void;
-  variant?: "flash-pop";
+  variant?: QuestionVariant;
 };
 
 export function AnswerOption({
@@ -28,13 +29,14 @@ export function AnswerOption({
       onClick={onSelect}
       disabled={disabled}
       aria-pressed={selected}
+      data-variant={variant ?? "default"}
       whileHover={disabled ? undefined : { x: 4 }}
       whileTap={disabled ? undefined : { scale: 0.985 }}
     >
       <span className={styles.key} aria-hidden="true">
         {selected ? <CheckIcon className="h-4 w-4" /> : shortcut}
       </span>
-      <span className="text-left text-[15px] font-bold sm:text-base">{label}</span>
+      <span className={styles.label}>{label}</span>
     </motion.button>
   );
 }
