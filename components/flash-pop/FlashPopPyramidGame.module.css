@@ -167,7 +167,7 @@
   margin: auto 0;
 }
 
-.successQuestion {
+.feedbackQuestion {
   min-height: calc(100dvh - var(--pop-space-4) - var(--pop-space-10));
   grid-template-rows: minmax(0, 1fr);
   gap: 0;
@@ -440,7 +440,9 @@
 }
 
 .feedbackCard.failure {
-  border-color: var(--pop-color-danger);
+  border-color: rgb(255 114 118 / 48%);
+  background: linear-gradient(180deg, rgb(255 114 118 / 7%), var(--pop-color-surface) 42%);
+  box-shadow: 0 18px 48px rgb(255 114 118 / 14%);
 }
 
 .feedbackIcon {
@@ -459,6 +461,9 @@
 
 .failure .feedbackIcon {
   background: var(--pop-color-danger);
+  box-shadow:
+    0 0 0 12px rgb(255 114 118 / 10%),
+    0 0 38px rgb(255 114 118 / 24%);
 }
 
 .feedbackIcon svg {
@@ -475,6 +480,10 @@
   text-transform: uppercase;
 }
 
+.failure .feedbackEyebrow {
+  color: var(--pop-color-danger) !important;
+}
+
 .feedbackCard h1 {
   margin: 0;
   font-family: var(--pop-font-display);
@@ -488,11 +497,6 @@
   font-size: 15px;
   font-weight: 600;
   line-height: 1.5;
-}
-
-.correctAnswer {
-  color: var(--pop-color-ink);
-  font-weight: 800;
 }
 
 .feedbackPoints {

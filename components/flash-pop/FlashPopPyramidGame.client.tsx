@@ -350,8 +350,7 @@ function Feedback({
     : `La respuesta correcta era ${expectedAnswerLabel(level)}.`;
 
   return (
-    <div className={`${styles.question} ${passed ? styles.successQuestion : ""}`}>
-      {!passed && <Topbar />}
+    <div className={`${styles.question} ${styles.feedbackQuestion}`}>
       <motion.div
         className={styles.feedbackStage}
         initial={{ opacity: 0, scale: 0.96 }}
@@ -374,7 +373,6 @@ function Feedback({
           <p className={styles.feedbackEyebrow}>{level.label}</p>
           <h1>{title}</h1>
           <p>{body}</p>
-          {!passed ? <p className={styles.correctAnswer}>{level.question.explanation}</p> : null}
           {passed ? (
             <motion.p
               className={styles.feedbackPoints}
