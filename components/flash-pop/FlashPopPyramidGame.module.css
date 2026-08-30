@@ -509,6 +509,23 @@
   text-align: center;
 }
 
+.resultChallenge {
+  margin: var(--pop-space-4) 0 0;
+  color: var(--pop-color-social);
+  font-family: var(--pop-font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resultSubtitle {
+  margin: 8px 0 0;
+  color: var(--pop-color-ink-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .resultScore {
   margin-top: var(--pop-space-6);
   font-family: var(--pop-font-display);

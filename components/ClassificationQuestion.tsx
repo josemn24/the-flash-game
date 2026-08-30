@@ -11,8 +11,11 @@ import type { ClassificationAnswer, ClassificationItem } from "@/types/game";
 type ClassificationQuestionProps = {
   items: ClassificationItem[];
   categories: string[];
+  initialAnswer?: ClassificationAnswer;
   locked: boolean;
+  onProgress?: (answer: ClassificationAnswer) => void;
   onSubmit: (answer: ClassificationAnswer) => void;
+  className?: string;
 };
 
 function categoryLabel(category: string) {
@@ -22,10 +25,13 @@ function categoryLabel(category: string) {
 export function ClassificationQuestion({
   items,
   categories,
+  initialAnswer,
   locked,
+  onProgress,
   onSubmit,
+  className,
 }: ClassificationQuestionProps) {
-  const [answers, setAnswers] = useState<ClassificationAnswer>({});
+  const [answers, setAnswers] = useState<ClassificationAnswer>(initialAnswer ?? {});
   const answeredCount = items.filter((item) => answers[item.label]).length;
   const complete = answeredCount === items.length;
   const isBinary = categories.length === 2;
@@ -33,11 +39,15 @@ export function ClassificationQuestion({
 
   const chooseCategory = (item: ClassificationItem, category: string) => {
     if (locked) return;
-    setAnswers((current) => ({ ...current, [item.label]: category }));
+    setAnswers((current) => {
+      const next = { ...current, [item.label]: category };
+      onProgress?.(next);
+      return next;
+    });
   };
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${className ?? ""}`}>
       <div className={styles.progressHeader}>
         <span>Clasificación</span>
         <span>

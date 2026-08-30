@@ -1,6 +1,6 @@
 import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/game";
 
-export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 2;
+export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 3;
 
 export type PyramidAttemptOutcome = "failed" | "summit";
 export type PyramidAttemptPhase = "briefing" | "playing" | "transition" | "completed";
@@ -29,6 +29,7 @@ export type PyramidAttemptRecord = {
   draftAnswer: AnswerValue | null;
   submittedCodes: string[];
   incorrectAttempts: number;
+  progressiveCluesRevealed: number;
   outcome: PyramidAttemptOutcome | null;
   completedAt: number | null;
   summary: PyramidAttemptSummary | null;
@@ -69,6 +70,7 @@ export function createPyramidAttempt(
     draftAnswer: null,
     submittedCodes: [],
     incorrectAttempts: 0,
+    progressiveCluesRevealed: 1,
     outcome: null,
     completedAt: null,
     summary: null,
@@ -85,6 +87,7 @@ export function beginPyramidLevel(record: PyramidAttemptRecord): PyramidAttemptR
     draftAnswer: null,
     submittedCodes: [],
     incorrectAttempts: 0,
+    progressiveCluesRevealed: 1,
   };
 }
 
@@ -109,6 +112,7 @@ export function advancePyramidToNextBriefing(
     draftAnswer: null,
     submittedCodes: [],
     incorrectAttempts: 0,
+    progressiveCluesRevealed: 1,
   };
 }
 
@@ -166,6 +170,7 @@ export function completePyramidAttempt(
     draftAnswer: null,
     submittedCodes: [],
     incorrectAttempts: 0,
+    progressiveCluesRevealed: 1,
     outcome,
     completedAt,
     summary: getPyramidAttemptSummary(record.challengeId, results, outcome, completedAt),
@@ -235,7 +240,16 @@ export function parsePyramidAttempt(
   challenge: Pick<PyramidChallenge, "id" | "definitionId" | "attemptVersion" | "levels">,
 ): PyramidAttemptRecord | null {
   try {
-    const value = JSON.parse(serialized) as Partial<PyramidAttemptRecord>;
+    const rawValue = JSON.parse(serialized) as Record<string, unknown>;
+    const value = (
+      rawValue.schemaVersion === 2
+        ? {
+            ...rawValue,
+            schemaVersion: PYRAMID_ATTEMPT_SCHEMA_VERSION,
+            progressiveCluesRevealed: 1,
+          }
+        : rawValue
+    ) as Partial<PyramidAttemptRecord>;
     const validStatus = value.status === "in-progress" || value.status === "completed";
     const validPhase =
       value.phase === "briefing" ||
@@ -262,6 +276,8 @@ export function parsePyramidAttempt(
       !value.submittedCodes.every((code) => typeof code === "string") ||
       !Number.isInteger(value.incorrectAttempts) ||
       Number(value.incorrectAttempts) < 0 ||
+      !Number.isInteger(value.progressiveCluesRevealed) ||
+      Number(value.progressiveCluesRevealed) < 1 ||
       (value.levelStartedAt !== null && !isFiniteNumber(value.levelStartedAt)) ||
       (value.deadlineAt !== null && !isFiniteNumber(value.deadlineAt))
     ) {

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopLobby } from "@/components/flash-pop/FlashPopLobby.client";
 import { getChallengeById } from "@/data/challenges";
-import { FLASH_POP_CHALLENGE_ID } from "@/features/flash-pop/demoSocial";
+import {
+  FLASH_POP_CHALLENGE_ID,
+  FLASH_POP_SECONDARY_CHALLENGE_ID,
+} from "@/features/flash-pop/demoSocial";
 
 export const metadata: Metadata = {
   title: "Flash Pop — Lobby",
@@ -10,7 +13,17 @@ export const metadata: Metadata = {
 };
 
 export default function FlashPopPage() {
-  const challenge = getChallengeById(FLASH_POP_CHALLENGE_ID);
-  if (!challenge || challenge.mode !== "pyramid") notFound();
-  return <FlashPopLobby challenge={challenge} />;
+  const primaryChallenge = getChallengeById(FLASH_POP_CHALLENGE_ID);
+  const secondaryChallenge = getChallengeById(FLASH_POP_SECONDARY_CHALLENGE_ID);
+  if (
+    !primaryChallenge ||
+    primaryChallenge.mode !== "pyramid" ||
+    !secondaryChallenge ||
+    secondaryChallenge.mode !== "pyramid"
+  ) {
+    notFound();
+  }
+  return (
+    <FlashPopLobby primaryChallenge={primaryChallenge} secondaryChallenge={secondaryChallenge} />
+  );
 }

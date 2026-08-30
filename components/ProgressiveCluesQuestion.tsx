@@ -10,9 +10,13 @@ type ProgressiveCluesQuestionProps = {
   clues: string[];
   cluePenalty: number;
   points: number;
+  initialAnswer?: string;
+  initialRevealedClues?: number;
   locked: boolean;
   onReveal: (revealedClues: number) => void;
+  onProgress?: (answer: string) => void;
   onSubmit: (answer: string) => void;
+  className?: string;
 };
 
 export function ProgressiveCluesQuestion({
@@ -20,12 +24,18 @@ export function ProgressiveCluesQuestion({
   clues,
   cluePenalty,
   points,
+  initialAnswer,
+  initialRevealedClues,
   locked,
   onReveal,
+  onProgress,
   onSubmit,
+  className,
 }: ProgressiveCluesQuestionProps) {
-  const [revealedClues, setRevealedClues] = useState(() => Math.min(1, clues.length));
-  const [answer, setAnswer] = useState("");
+  const [revealedClues, setRevealedClues] = useState(() =>
+    Math.min(Math.max(1, initialRevealedClues ?? 1), clues.length),
+  );
+  const [answer, setAnswer] = useState(initialAnswer ?? "");
   const [announcement, setAnnouncement] = useState("");
   const availablePoints = useMemo(
     () => Math.max(0, points - cluePenalty * Math.max(0, revealedClues - 1)),
@@ -49,7 +59,7 @@ export function ProgressiveCluesQuestion({
   };
 
   return (
-    <div className={styles.challenge}>
+    <div className={`${styles.challenge} ${className ?? ""}`}>
       <div className={styles.scoreRow}>
         <span>
           {revealedClues} de {clues.length} {clues.length === 1 ? "pista" : "pistas"}
@@ -96,7 +106,10 @@ export function ProgressiveCluesQuestion({
               id={`progressive-answer-${questionId}`}
               type="text"
               value={answer}
-              onChange={(event) => setAnswer(event.target.value)}
+              onChange={(event) => {
+                setAnswer(event.target.value);
+                onProgress?.(event.target.value);
+              }}
               placeholder="Tu respuesta…"
               disabled={locked}
               autoComplete="off"

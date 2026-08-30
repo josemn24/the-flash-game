@@ -4,8 +4,8 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 
 ## Estado
 
-- Estado de la especificación: fases 0 y 1 cerradas; dirección visual, tipografía, baseline, tema aislado, primitivas y laboratorio vivo aprobados. El siguiente trabajo es el lobby dirigido por estados de la Fase 2.
-- Alcance de validación: lobby, pregunta, feedback y resultado.
+- Estado de la especificación: fases 0 y 1 cerradas; dirección visual, tipografía, baseline, tema aislado, primitivas y laboratorio vivo aprobados. El vertical slice de la Fase 2 incluye el lobby y las dos previews de La Pirámide.
+- Alcance de validación: lobby, pregunta, feedback, resultado y persistencia de intento único.
 - Plataforma inicial: web responsive, con prioridad móvil.
 - Resolución de referencia móvil: 390 × 844 px.
 - Resolución de referencia de escritorio: 1440 × 900 px.
@@ -25,6 +25,8 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 ## Implementación disponible
 
 - `/flash-pop`: shell responsive aislado, ya construido con las primitivas públicas.
+- `/flash-pop/desafios/tabarnia-challenge-05`: preview principal de La Pirámide.
+- `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de La Pirámide: Biblia y religiones abrahámicas, con los siete formatos adaptados a Flash Pop.
 - `/flash-pop/ui-kit`: documentación viva de tokens, variantes, estados y comportamiento responsive; no está enlazada desde la navegación de producto.
 - `components/flash-pop/ui/index.ts`: única entrada pública del kit.
 - `features/game/useCountdown.ts`: lógica temporal compartida por el timer oscuro y `PopTimer`.

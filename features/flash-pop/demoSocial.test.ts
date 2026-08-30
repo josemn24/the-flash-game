@@ -4,6 +4,7 @@ import {
   getFlashPopAttemptStatus,
   getFlashPopLobbyChallenge,
   getFlashPopResult,
+  isFlashPopPreviewChallenge,
 } from "@/features/flash-pop/demoSocial";
 
 describe("Flash Pop demo social adapter", () => {
@@ -12,6 +13,12 @@ describe("Flash Pop demo social adapter", () => {
     expect(getFlashPopAttemptStatus({ status: "in-progress" })).toBe("inProgress");
     expect(getFlashPopAttemptStatus({ status: "completed" })).toBe("completed");
     expect(getFlashPopLobbyChallenge(null).status).toBe("available");
+    expect(getFlashPopLobbyChallenge(null, "tabarnia-challenge-06").title).toContain(
+      "Biblia y religiones abrahámicas",
+    );
+    expect(isFlashPopPreviewChallenge("tabarnia-challenge-05")).toBe(true);
+    expect(isFlashPopPreviewChallenge("tabarnia-challenge-06")).toBe(true);
+    expect(isFlashPopPreviewChallenge("another-challenge")).toBe(false);
   });
 
   it("calculates capped season XP deterministically", () => {
@@ -37,7 +44,7 @@ describe("Flash Pop demo social adapter", () => {
     expect(result.seasonXpEarned).toBe(120);
   });
 
-  it("keeps an unsuccessful attempt completed without pretending it is replayable", () => {
+  it("shows an unsuccessful attempt as not completed without pretending it is replayable", () => {
     const result = getFlashPopResult({
       challengeId: "tabarnia-challenge-05",
       levelsCleared: 0,
@@ -61,6 +68,6 @@ describe("Flash Pop demo social adapter", () => {
           completedAt: 100,
         },
       }).status,
-    ).toBe("completed");
+    ).toBe("notCompleted");
   });
 });

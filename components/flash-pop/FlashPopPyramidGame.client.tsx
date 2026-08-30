@@ -17,10 +17,10 @@ import { withPyramidScoring } from "@/lib/challengeScoring";
 import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
 import { FlashPopReview } from "@/components/flash-pop/FlashPopReview";
 import {
-  FLASH_POP_CHALLENGE_ID,
   FLASH_POP_LEVEL_COUNT,
   FLASH_POP_STORAGE_NAMESPACE,
   getFlashPopResult,
+  isFlashPopPreviewChallenge,
   type FlashPopResult,
 } from "@/features/flash-pop/demoSocial";
 import type { AnswerValue, PyramidChallenge, PyramidLevel } from "@/types/game";
@@ -113,13 +113,13 @@ function Intro({
       <PopCard as="section" className={styles.introCard} aria-labelledby="flash-pop-intro-title">
         <div className={styles.introIllustration} aria-hidden="true" />
         <PopChip tone="social">Reto de hoy · Demo</PopChip>
-        <h1 id="flash-pop-intro-title">La Pirámide</h1>
-        <p className={styles.introLead}>Siete pruebas de lógica. Sube cuanto puedas.</p>
+        <h1 id="flash-pop-intro-title">{challenge.title}</h1>
+        <p className={styles.introLead}>{challenge.subtitle}</p>
 
         <div className={styles.rules}>
           <div className={styles.rule}>
             <strong>Siete niveles</strong>
-            <span>De un patrón numérico a la cima de Queens.</span>
+            <span>Una secuencia de formatos para llegar a la cima.</span>
           </div>
           <div className={styles.rule}>
             <strong>Un intento</strong>
@@ -229,10 +229,12 @@ function Question({
   onTimeUp,
   onProgress,
   onIncorrectAttempt,
+  onProgressiveClueReveal,
   onCodeAttempt,
   onTimedResponseStart,
   initialAnswer,
   attemptCount,
+  progressiveCluesRevealed,
 }: {
   level: PyramidLevel;
   levelIndex: number;
@@ -244,14 +246,19 @@ function Question({
   onTimeUp: () => void;
   onProgress: (answer: AnswerValue) => void;
   onIncorrectAttempt: () => void;
+  onProgressiveClueReveal: (revealedClues: number) => void;
   onCodeAttempt: (code: string) => boolean;
   onTimedResponseStart: () => void;
   initialAnswer: AnswerValue | null;
   attemptCount: number;
+  progressiveCluesRevealed: number;
 }) {
   const question = level.question;
+  const delayedTimer = question.type === "mini-wordle";
 
-  useEffect(() => onReady(), [onReady]);
+  useEffect(() => {
+    if (!delayedTimer) onReady();
+  }, [delayedTimer, onReady]);
 
   return (
     <div className={styles.question}>
@@ -268,10 +275,7 @@ function Question({
       />
       <LevelIndicator levelIndex={levelIndex} levelCount={levelCount} />
       <PopCard as="section" className={styles.questionCard} aria-labelledby="question-title">
-        <h1
-          id="question-title"
-          className={`${styles.questionPrompt} ${getPromptScale(question)}`}
-        >
+        <h1 id="question-title" className={`${styles.questionPrompt} ${getPromptScale(question)}`}>
           {question.question}
         </h1>
         <FlashPopQuestionInput
@@ -283,8 +287,13 @@ function Question({
           onSubmit={onSubmit}
           onProgress={onProgress}
           onIncorrectAttempt={onIncorrectAttempt}
+          onProgressiveClueReveal={onProgressiveClueReveal}
           onCodeAttempt={onCodeAttempt}
-          onTimedResponseStart={onTimedResponseStart}
+          onTimedResponseStart={() => {
+            if (delayedTimer) onReady();
+            onTimedResponseStart();
+          }}
+          progressiveCluesRevealed={progressiveCluesRevealed}
           attemptCount={attemptCount}
         />
       </PopCard>
@@ -317,6 +326,18 @@ function expectedAnswerLabel(level: PyramidLevel) {
       return question.correctAnswer;
     case "queens":
       return "La disposición correcta de las coronas";
+    case "matching":
+      return "Todas las asociaciones correctas";
+    case "progressive-clues":
+      return question.correctAnswer;
+    case "mini-wordle":
+      return question.correctAnswer;
+    case "word-search":
+      return "Todos los personajes encontrados";
+    case "classification":
+      return "La clasificación correcta";
+    case "word-hashtag":
+      return "Las cuatro referencias completas";
     default:
       return "La respuesta correcta";
   }
@@ -389,14 +410,24 @@ function Feedback({
   );
 }
 
-function Result({ result, onReview }: { result: FlashPopResult; onReview: () => void }) {
+function Result({
+  challenge,
+  result,
+  onReview,
+}: {
+  challenge: PyramidChallenge;
+  result: FlashPopResult;
+  onReview: () => void;
+}) {
   const summit = result.levelsCleared >= FLASH_POP_LEVEL_COUNT;
   return (
     <div className={styles.result}>
       <Topbar />
       <PopCard as="section" className={styles.resultCard} aria-labelledby="result-title">
         <PopChip variant="reward">Resultado · Demo</PopChip>
+        <p className={styles.resultChallenge}>{challenge.title}</p>
         <h1 id="result-title">{summit ? "Cima conquistada" : "Ascenso terminado"}</h1>
+        <p className={styles.resultSubtitle}>{challenge.subtitle}</p>
         <div className={styles.resultScore}>{result.score}</div>
         <p className={styles.resultScoreLabel}>puntos de partida</p>
         <div className={styles.resultMeta}>
@@ -470,7 +501,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
   const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 
   if (
-    challenge.id !== FLASH_POP_CHALLENGE_ID ||
+    !isFlashPopPreviewChallenge(challenge.id) ||
     challenge.mode !== "pyramid" ||
     challenge.levels.length !== FLASH_POP_LEVEL_COUNT ||
     !currentLevel
@@ -563,10 +594,12 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
                 onTimeUp={session.handleTimeUp}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}
+                onProgressiveClueReveal={session.handleProgressiveClueReveal}
                 onCodeAttempt={session.handleCodeAttempt}
-                onTimedResponseStart={() => undefined}
+                onTimedResponseStart={session.armCurrentLevel}
                 initialAnswer={session.initialAnswer}
                 attemptCount={session.codeAttempts.length}
+                progressiveCluesRevealed={session.record?.progressiveCluesRevealed ?? 1}
               />
             </motion.div>
           ) : null}
@@ -592,7 +625,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Result result={result} onReview={session.showReview} />
+              <Result challenge={challenge} result={result} onReview={session.showReview} />
             </motion.div>
           ) : null}
           {session.phase === "review" && session.summary && session.record ? (

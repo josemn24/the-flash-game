@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopPyramidGame } from "@/components/flash-pop/FlashPopPyramidGame.client";
 import { getChallengeById } from "@/data/challenges";
-import { FLASH_POP_CHALLENGE_ID } from "@/features/flash-pop/demoSocial";
+import {
+  FLASH_POP_PREVIEW_CHALLENGE_IDS,
+  isFlashPopPreviewChallenge,
+} from "@/features/flash-pop/demoSocial";
 
 type Props = { params: Promise<{ challengeId: string }> };
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return [{ challengeId: FLASH_POP_CHALLENGE_ID }];
+  return FLASH_POP_PREVIEW_CHALLENGE_IDS.map((challengeId) => ({ challengeId }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,8 +23,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function FlashPopChallengePage({ params }: Props) {
-  const challenge = getChallengeById((await params).challengeId);
-  if (!challenge || challenge.mode !== "pyramid" || challenge.id !== FLASH_POP_CHALLENGE_ID) {
+  const challengeId = (await params).challengeId;
+  const challenge = getChallengeById(challengeId);
+  if (!isFlashPopPreviewChallenge(challengeId) || !challenge || challenge.mode !== "pyramid") {
     notFound();
   }
 

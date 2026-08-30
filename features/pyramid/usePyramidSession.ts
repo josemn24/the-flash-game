@@ -104,6 +104,7 @@ export function usePyramidSession(
           submittedCodes: submittedCodes ?? current.submittedCodes,
           incorrectAttempts: current.incorrectAttempts,
           matchingIncorrectAttempts: current.incorrectAttempts,
+          progressiveCluesRevealed: current.progressiveCluesRevealed,
         }),
       );
       const passed = isPyramidLevelPassed(result);
@@ -130,6 +131,7 @@ export function usePyramidSession(
         draftAnswer: null,
         submittedCodes: [],
         incorrectAttempts: 0,
+        progressiveCluesRevealed: 1,
       };
       persist(next);
       setPhase("transition");
@@ -318,6 +320,18 @@ export function usePyramidSession(
     persist({ ...current, incorrectAttempts: current.incorrectAttempts + 1 });
   }, [persist]);
 
+  const handleProgressiveClueReveal = useCallback(
+    (revealedClues: number) => {
+      const current = recordRef.current;
+      if (!current || current.status === "completed") return;
+      persist({
+        ...current,
+        progressiveCluesRevealed: Math.max(1, Math.round(revealedClues)),
+      });
+    },
+    [persist],
+  );
+
   const handleCodeAttempt = useCallback(
     (code: string) => {
       const current = recordRef.current;
@@ -361,6 +375,7 @@ export function usePyramidSession(
     handleTimeUp,
     handleAnswerProgress,
     handleIncorrectAttempt,
+    handleProgressiveClueReveal,
     handleCodeAttempt,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

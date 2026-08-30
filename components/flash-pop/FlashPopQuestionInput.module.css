@@ -1,3 +1,150 @@
+.flashPopFormat {
+  --electric: var(--pop-color-brand);
+  --cyan: var(--pop-color-social);
+  --coral: #ff7276;
+  --font-body: var(--pop-font-ui);
+  --font-display: var(--pop-font-display);
+  --font-mono: var(--pop-font-mono);
+  --surface-subtle: var(--pop-color-surface-raised);
+  color: var(--pop-color-ink);
+  font-family: var(--pop-font-ui);
+}
+
+.flashPopFormat :global(button:focus-visible),
+.flashPopFormat :global(input:focus-visible) {
+  outline: 3px solid var(--pop-color-focus);
+  outline-offset: 3px;
+}
+
+/* The shared format components also power the dark game. These overrides keep
+   their Flash Pop presentation readable on the light diorama surface. */
+.flashPopFormat :global(button) {
+  border-color: var(--pop-color-border) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-surface-raised) !important;
+}
+
+.flashPopFormat :global(button:hover:not(:disabled)) {
+  border-color: var(--pop-color-social) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-surface-soft) !important;
+}
+
+.flashPopFormat :global(button[aria-pressed="true"]),
+.flashPopFormat :global(button[type="submit"]) {
+  border-color: var(--pop-color-social) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-brand) !important;
+}
+
+.flashPopFormat :global(button[type="submit"]:disabled) {
+  border-color: var(--pop-color-border) !important;
+  color: var(--pop-color-ink-muted) !important;
+  background: var(--pop-color-surface-soft) !important;
+  opacity: 1 !important;
+}
+
+.flashPopFormat :global(input) {
+  border-color: var(--pop-color-border) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-surface) !important;
+}
+
+.flashPopFormat :global(input)::placeholder {
+  color: var(--pop-color-ink-faint) !important;
+  opacity: 1;
+}
+
+.flashPopFormat :global(form) {
+  border-color: var(--pop-color-border) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-surface-raised) !important;
+}
+
+.flashPopFormat :global(h3),
+.flashPopFormat :global(label),
+.flashPopFormat :global(p),
+.flashPopFormat :global(strong),
+.flashPopFormat :global([role="gridcell"]),
+.flashPopFormat :global([role="status"]) {
+  color: var(--pop-color-ink-muted) !important;
+}
+
+.flashPopFormat :global([role="alert"]) {
+  color: #8f2633 !important;
+}
+
+.flashPopFormat :global([role="grid"]) {
+  border-color: var(--pop-color-border) !important;
+  background: var(--pop-color-surface-soft) !important;
+  box-shadow: var(--pop-shadow-card) !important;
+}
+
+.flashPopFormat :global([role="gridcell"] button) {
+  background: transparent !important;
+}
+
+.flashPopFormat :global(section[aria-label="Intentos de Mini-Wordle"]) {
+  border: 1px solid var(--pop-color-border) !important;
+  border-radius: var(--pop-radius-control);
+  padding: var(--pop-space-3);
+  background: var(--pop-color-surface-soft) !important;
+}
+
+.flashPopFormat
+  :global(section[aria-label="Intentos de Mini-Wordle"])
+  :global([data-state="empty"]) {
+  border-color: var(--pop-color-border) !important;
+  background: var(--pop-color-surface) !important;
+}
+
+.flashPopFormat
+  :global(section[aria-label="Intentos de Mini-Wordle"])
+  :global([data-state="absent"]) {
+  border-color: var(--pop-color-ink-faint) !important;
+  color: var(--pop-color-ink-muted) !important;
+  background: #e2dfe8 !important;
+}
+
+.flashPopFormat :global(form) > :global(div:last-child) {
+  color: var(--pop-color-ink-muted) !important;
+}
+
+.flashPopFormat :global(form) > :global(div:last-child) :global(span) {
+  color: var(--pop-color-ink-muted) !important;
+}
+
+.flashPopFormat > :global(div:first-child) {
+  color: var(--pop-color-ink-muted) !important;
+}
+
+.flashPopFormat :global(ol li) {
+  border-color: var(--pop-color-border) !important;
+  background: var(--pop-color-surface-raised) !important;
+}
+
+/* Electric yellow is reserved for filled controls here; these small accents
+   need the darker focus token to remain readable on white. */
+.flashPopFormat :global(ol li > span),
+.flashPopFormat :global(button span) {
+  color: var(--pop-color-focus) !important;
+}
+
+.flashPopFormat > :global(section) {
+  background: var(--pop-color-surface-soft);
+}
+
+.flashPopFormat > :global(div:nth-child(3)) {
+  border-color: var(--pop-color-border) !important;
+  background: var(--pop-color-surface-soft) !important;
+}
+
+.flashPopFormat > :global(div:nth-child(3)) > :global(div) {
+  border-color: var(--pop-color-border) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-surface) !important;
+}
+
 .choiceInput {
   display: grid;
   gap: var(--pop-space-3);

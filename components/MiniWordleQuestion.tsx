@@ -27,10 +27,12 @@ type Props = {
   hint?: string;
   wordLength?: 4 | 5;
   maxAttempts?: number;
+  initialAnswer?: MiniWordleAnswer;
   locked: boolean;
   onProgress: (answer: MiniWordleAnswer) => void;
   onSubmit: (answer: MiniWordleAnswer) => void;
   onTimedResponseStart: () => void;
+  className?: string;
 };
 
 const STATUS_LABELS = {
@@ -51,14 +53,18 @@ export function MiniWordleQuestion({
   hint,
   wordLength: configuredWordLength,
   maxAttempts: configuredMaxAttempts,
+  initialAnswer,
   locked,
   onProgress,
   onSubmit,
   onTimedResponseStart,
+  className,
 }: Props) {
   const wordLength = getMiniWordleWordLength({ wordLength: configuredWordLength });
   const maxAttempts = getMiniWordleMaxAttempts({ maxAttempts: configuredMaxAttempts });
-  const [guesses, setGuesses] = useState<string[]>([]);
+  const [guesses, setGuesses] = useState<string[]>(() =>
+    (initialAnswer?.guesses ?? []).slice(0, maxAttempts).map(normalizeMiniWordleWord),
+  );
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const timedResponseStartedRef = useRef(false);
@@ -125,7 +131,7 @@ export function MiniWordleQuestion({
   };
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${className ?? ""}`}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
       <section
@@ -148,6 +154,7 @@ export function MiniWordleQuestion({
                   <span
                     key={columnIndex}
                     className={`${styles.tile} ${item ? styles[item.status] : styles.empty}`}
+                    data-state={item?.status ?? "empty"}
                     aria-label={
                       item
                         ? `${item.letter}: ${STATUS_LABELS[item.status]}`

@@ -10,10 +10,12 @@ import type { MatchingAnswer, MatchingItem, MatchingLeftItem } from "@/types/gam
 type MatchingQuestionProps = {
   leftItems: MatchingLeftItem[];
   rightItems: MatchingItem[];
+  initialAnswer?: MatchingAnswer;
   locked: boolean;
   onProgress: (answer: MatchingAnswer) => void;
   onIncorrectAttempt: () => void;
   onSubmit: (answer: MatchingAnswer) => void;
+  className?: string;
 };
 
 type InvalidPair = { leftId: string; rightId: string };
@@ -21,13 +23,23 @@ type InvalidPair = { leftId: string; rightId: string };
 export function MatchingQuestion({
   leftItems,
   rightItems,
+  initialAnswer,
   locked,
   onProgress,
   onIncorrectAttempt,
   onSubmit,
+  className,
 }: MatchingQuestionProps) {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [matches, setMatches] = useState<MatchingAnswer>({});
+  const [matches, setMatches] = useState<MatchingAnswer>(() => {
+    const validRightIds = new Set(rightItems.map((item) => item.id));
+    return Object.fromEntries(
+      Object.entries(initialAnswer ?? {}).filter(
+        ([leftId, rightId]) =>
+          leftItems.some((item) => item.id === leftId) && validRightIds.has(rightId),
+      ),
+    );
+  });
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [selectedRight, setSelectedRight] = useState<string | null>(null);
   const [invalidPair, setInvalidPair] = useState<InvalidPair | null>(null);
@@ -81,7 +93,7 @@ export function MatchingQuestion({
   const matchedCount = Object.keys(matches).length;
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${className ?? ""}`}>
       <div className={styles.columns}>
         <section className={styles.column} aria-labelledby="matching-left-heading">
           <h3 id="matching-left-heading">Conceptos</h3>

@@ -1,15 +1,39 @@
 "use client";
 
 import { AnswerOption } from "@/components/AnswerOption";
+import { ClassificationQuestion } from "@/components/ClassificationQuestion";
 import { ConnectPairsQuestion } from "@/components/ConnectPairsQuestion";
 import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
 import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
+import { MatchingQuestion } from "@/components/MatchingQuestion";
+import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
 import { NumberSequencePrompt } from "@/components/NumberSequencePrompt";
 import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
 import { OrderingQuestion } from "@/components/OrderingQuestion";
+import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
 import { QueensQuestion } from "@/components/QueensQuestion";
-import { isConnectPairsAnswer, isQueensAnswer } from "@/lib/scoring";
-import type { AnswerValue, ConnectPairsAnswer, PyramidLevel, QueensAnswer } from "@/types/game";
+import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
+import { WordSearchQuestion } from "@/components/WordSearchQuestion";
+import {
+  isClassificationAnswer,
+  isConnectPairsAnswer,
+  isMatchingAnswer,
+  isMiniWordleAnswer,
+  isQueensAnswer,
+  isWordHashtagAnswer,
+  isWordSearchAnswer,
+} from "@/lib/scoring";
+import type {
+  AnswerValue,
+  ClassificationAnswer,
+  ConnectPairsAnswer,
+  MatchingAnswer,
+  MiniWordleAnswer,
+  PyramidLevel,
+  QueensAnswer,
+  WordHashtagAnswer,
+  WordSearchAnswer,
+} from "@/types/game";
 import styles from "./FlashPopQuestionInput.module.css";
 
 export type FlashPopQuestionInputProps = {
@@ -18,9 +42,11 @@ export type FlashPopQuestionInputProps = {
   levelCount: number;
   locked: boolean;
   initialAnswer?: AnswerValue | null;
+  progressiveCluesRevealed?: number;
   onSubmit: (answer: AnswerValue) => void;
   onProgress: (answer: AnswerValue) => void;
   onIncorrectAttempt: () => void;
+  onProgressiveClueReveal: (revealedClues: number) => void;
   onCodeAttempt: (code: string) => boolean;
   onTimedResponseStart: () => void;
   attemptCount?: number;
@@ -30,10 +56,13 @@ export function FlashPopQuestionInput({
   level,
   locked,
   initialAnswer,
+  progressiveCluesRevealed = 1,
   onSubmit,
   onProgress,
   onIncorrectAttempt,
+  onProgressiveClueReveal,
   onCodeAttempt,
+  onTimedResponseStart,
   attemptCount = 0,
 }: FlashPopQuestionInputProps) {
   const question = level.question;
@@ -84,6 +113,114 @@ export function FlashPopQuestionInput({
           variant="flash-pop"
         />
       );
+    case "matching": {
+      const matchingAnswer: MatchingAnswer | undefined = isMatchingAnswer(initialAnswer ?? null)
+        ? (initialAnswer as MatchingAnswer)
+        : undefined;
+      return (
+        <MatchingQuestion
+          leftItems={question.leftItems}
+          rightItems={question.rightItems}
+          initialAnswer={matchingAnswer}
+          locked={locked}
+          onProgress={(answer) => onProgress(answer)}
+          onIncorrectAttempt={onIncorrectAttempt}
+          onSubmit={(answer) => onSubmit(answer)}
+          className={styles.flashPopFormat}
+        />
+      );
+    }
+    case "progressive-clues":
+      return (
+        <ProgressiveCluesQuestion
+          questionId={question.id}
+          clues={question.clues}
+          cluePenalty={question.cluePenalty}
+          points={question.points}
+          initialAnswer={typeof initialAnswer === "string" ? initialAnswer : undefined}
+          initialRevealedClues={progressiveCluesRevealed}
+          locked={locked}
+          onReveal={onProgressiveClueReveal}
+          onProgress={(answer) => onProgress(answer)}
+          onSubmit={(answer) => onSubmit(answer)}
+          className={styles.flashPopFormat}
+        />
+      );
+    case "mini-wordle": {
+      const miniWordleAnswer: MiniWordleAnswer | undefined = isMiniWordleAnswer(
+        initialAnswer ?? null,
+      )
+        ? (initialAnswer as MiniWordleAnswer)
+        : undefined;
+      return (
+        <MiniWordleQuestion
+          correctAnswer={question.correctAnswer}
+          additionalGuesses={question.additionalGuesses}
+          hint={question.hint}
+          wordLength={question.wordLength}
+          maxAttempts={question.maxAttempts}
+          initialAnswer={miniWordleAnswer}
+          locked={locked}
+          onProgress={(answer) => onProgress(answer)}
+          onSubmit={(answer) => onSubmit(answer)}
+          onTimedResponseStart={onTimedResponseStart}
+          className={styles.flashPopFormat}
+        />
+      );
+    }
+    case "word-search": {
+      const wordSearchAnswer: WordSearchAnswer | undefined = isWordSearchAnswer(
+        initialAnswer ?? null,
+      )
+        ? (initialAnswer as WordSearchAnswer)
+        : undefined;
+      return (
+        <WordSearchQuestion
+          question={question}
+          initialAnswer={wordSearchAnswer}
+          locked={locked}
+          onProgress={(answer) => onProgress(answer)}
+          onIncorrectAttempt={onIncorrectAttempt}
+          onSubmit={(answer) => onSubmit(answer)}
+          className={styles.flashPopFormat}
+        />
+      );
+    }
+    case "classification": {
+      const classificationAnswer: ClassificationAnswer | undefined = isClassificationAnswer(
+        initialAnswer ?? null,
+      )
+        ? (initialAnswer as ClassificationAnswer)
+        : undefined;
+      return (
+        <ClassificationQuestion
+          items={question.items}
+          categories={question.categories}
+          initialAnswer={classificationAnswer}
+          locked={locked}
+          onProgress={(answer) => onProgress(answer)}
+          onSubmit={(answer) => onSubmit(answer)}
+          className={styles.flashPopFormat}
+        />
+      );
+    }
+    case "word-hashtag": {
+      const wordHashtagAnswer: WordHashtagAnswer | undefined = isWordHashtagAnswer(
+        initialAnswer ?? null,
+      )
+        ? (initialAnswer as WordHashtagAnswer)
+        : undefined;
+      return (
+        <WordHashtagQuestion
+          question={question}
+          initialAnswer={wordHashtagAnswer}
+          locked={locked}
+          onProgress={(answer) => onProgress(answer)}
+          onSubmit={(answer) => onSubmit(answer)}
+          className={styles.flashPopFormat}
+        />
+      );
+    }
     case "logic-matrix":
       return (
         <LogicMatrixQuestion

@@ -19,6 +19,7 @@ import {
 } from "@/features/pyramid/pyramidAttempt";
 import {
   FLASH_POP_CHALLENGE_ID,
+  FLASH_POP_SECONDARY_CHALLENGE_ID,
   FLASH_POP_STORAGE_NAMESPACE,
   getFlashPopLobbyChallenge,
   flashPopPlayers,
@@ -41,29 +42,71 @@ function getActionLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["st
       : "Ver resultado";
 }
 
-export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
-  const flashPopChallenge = useMemo(() => challenge, [challenge]);
-  const [model, setModel] = useState(() => getFlashPopLobbyChallenge(null));
+function getStatusLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["status"]) {
+  return status === "completed"
+    ? "Completado"
+    : status === "notCompleted"
+      ? "No completado"
+      : status === "inProgress"
+        ? "En curso"
+        : "Nuevo";
+}
+
+export function FlashPopLobby({
+  primaryChallenge,
+  secondaryChallenge,
+}: {
+  primaryChallenge: PyramidChallenge;
+  secondaryChallenge: PyramidChallenge;
+}) {
+  const flashPopChallenges = useMemo(
+    () => ({ primary: primaryChallenge, secondary: secondaryChallenge }),
+    [primaryChallenge, secondaryChallenge],
+  );
+  const [primaryModel, setPrimaryModel] = useState(() =>
+    getFlashPopLobbyChallenge(null, FLASH_POP_CHALLENGE_ID),
+  );
+  const [secondaryModel, setSecondaryModel] = useState(() =>
+    getFlashPopLobbyChallenge(null, FLASH_POP_SECONDARY_CHALLENGE_ID),
+  );
 
   useEffect(() => {
-    const storageKey = getPyramidAttemptStorageKey(flashPopChallenge, FLASH_POP_STORAGE_NAMESPACE);
-    const sync = (serialized: string | null) => {
-      const record = serialized ? parsePyramidAttempt(serialized, flashPopChallenge) : null;
-      setModel(getFlashPopLobbyChallenge(record));
+    const storageEntries = (
+      [
+        {
+          challenge: flashPopChallenges.primary,
+          challengeId: FLASH_POP_CHALLENGE_ID,
+          setModel: setPrimaryModel,
+        },
+        {
+          challenge: flashPopChallenges.secondary,
+          challengeId: FLASH_POP_SECONDARY_CHALLENGE_ID,
+          setModel: setSecondaryModel,
+        },
+      ] as const
+    ).map((entry) => ({
+      ...entry,
+      storageKey: getPyramidAttemptStorageKey(entry.challenge, FLASH_POP_STORAGE_NAMESPACE),
+    }));
+
+    const sync = (entry: (typeof storageEntries)[number], serialized: string | null) => {
+      const record = serialized ? parsePyramidAttempt(serialized, entry.challenge) : null;
+      entry.setModel(getFlashPopLobbyChallenge(record, entry.challengeId));
     };
 
-    sync(window.localStorage.getItem(storageKey));
+    storageEntries.forEach((entry) => sync(entry, window.localStorage.getItem(entry.storageKey)));
     const onStorage = (event: StorageEvent) => {
-      if (event.key === storageKey) sync(event.newValue);
+      const entry = storageEntries.find((candidate) => candidate.storageKey === event.key);
+      if (entry) sync(entry, event.newValue);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [flashPopChallenge]);
+  }, [flashPopChallenges]);
 
-  const actionLabel = getActionLabel(model.status);
+  const actionLabel = getActionLabel(primaryModel.status);
   const progress = Math.min(
     100,
-    Math.round((model.seasonXp.current / model.seasonXp.nextLevelAt) * 100),
+    Math.round((primaryModel.seasonXp.current / primaryModel.seasonXp.nextLevelAt) * 100),
   );
   const playerById = (id: string) => flashPopPlayers.find((player) => player.id === id)!;
 
@@ -122,8 +165,8 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
               className={styles.heroImage}
             />
             <div className={styles.heroBadges}>
-              <PopChip tone={model.status === "completed" ? "success" : "social"}>
-                {model.status === "completed" ? "Completado" : "Nuevo"}
+              <PopChip tone={primaryModel.status === "completed" ? "success" : "social"}>
+                {getStatusLabel(primaryModel.status)}
               </PopChip>
               <PopChip variant="data">Preview</PopChip>
             </div>
@@ -133,25 +176,26 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
             <div className={styles.modeLabel}>
               <BoltIcon /> Reto de hoy
             </div>
-            <h2 id="flash-pop-challenge-title">{model.title}</h2>
-            <p className={styles.challengeCopy}>{model.subtitle}</p>
-            {model.status === "inProgress" && typeof model.currentLevelIndex === "number" ? (
+            <h2 id="flash-pop-challenge-title">{primaryModel.title}</h2>
+            <p className={styles.challengeCopy}>{primaryModel.subtitle}</p>
+            {primaryModel.status === "inProgress" &&
+            typeof primaryModel.currentLevelIndex === "number" ? (
               <p className={styles.progressCopy}>
-                En curso · Nivel {Math.min(model.currentLevelIndex + 1, 7)} de 7
+                En curso · Nivel {Math.min(primaryModel.currentLevelIndex + 1, 7)} de 7
               </p>
             ) : null}
             <div className={styles.socialRow}>
               <PopAvatarStack
                 items={players}
                 maxVisible={3}
-                label={`${model.participants.length} ya jugaron`}
+                label={`${primaryModel.participants.length} ya jugaron`}
               />
               <PopChip variant="reward" icon={<BoltIcon />} className={styles.rewardChip}>
                 Hasta +120
               </PopChip>
             </div>
             <PopButtonLink
-              href={`/flash-pop/desafios/${FLASH_POP_CHALLENGE_ID}`}
+              href={`/flash-pop/desafios/${primaryModel.id}`}
               size="hero"
               fullWidth
               trailingIcon={<ArrowIcon />}
@@ -170,22 +214,57 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
               <div>
                 <p className={styles.eyebrow}>Temporada</p>
                 <h2>
-                  {model.playerRank
-                    ? `Vas ${model.playerRank}.º de ${model.totalPlayers}`
+                  {primaryModel.playerRank
+                    ? `Vas ${primaryModel.playerRank}.º de ${primaryModel.totalPlayers}`
                     : "Vas 4.º de 8"}
                 </h2>
               </div>
               <span className={styles.seasonValue}>
-                {model.seasonXp.current} / {model.seasonXp.nextLevelAt} ⚡
+                {primaryModel.seasonXp.current} / {primaryModel.seasonXp.nextLevelAt} ⚡
               </span>
             </div>
             <div className={styles.progressTrack} aria-label={`${progress} % del nivel completado`}>
               <span style={{ width: `${progress}%` }} />
             </div>
             <p className={styles.progressCopy}>
-              {Math.max(0, model.seasonXp.nextLevelAt - model.seasonXp.current)} rayos para alcanzar
-              el siguiente nivel.
+              {Math.max(0, primaryModel.seasonXp.nextLevelAt - primaryModel.seasonXp.current)} rayos
+              para alcanzar el siguiente nivel.
             </p>
+          </PopCard>
+
+          <PopCard as="section" className={styles.secondaryChallengeCard}>
+            <div className={styles.secondaryChallengeArt}>
+              <Image
+                src="/flash-pop/concepts/pyramid-soft-diorama.webp"
+                alt="Diorama suave de la segunda Pirámide"
+                fill
+                sizes="120px"
+                className={styles.secondaryChallengeImage}
+              />
+            </div>
+            <div className={styles.secondaryChallengeBody}>
+              <div className={styles.cardHeading}>
+                <p className={styles.eyebrow}>Siguiente preview</p>
+                <PopChip tone={secondaryModel.status === "completed" ? "success" : "social"}>
+                  {getStatusLabel(secondaryModel.status)}
+                </PopChip>
+              </div>
+              <h2>{secondaryModel.title}</h2>
+              <p className={styles.challengeCopy}>{secondaryModel.subtitle}</p>
+              {secondaryModel.status === "inProgress" &&
+              typeof secondaryModel.currentLevelIndex === "number" ? (
+                <p className={styles.progressCopy}>
+                  Nivel {Math.min(secondaryModel.currentLevelIndex + 1, 7)} de 7
+                </p>
+              ) : null}
+              <PopButtonLink
+                href={`/flash-pop/desafios/${secondaryModel.id}`}
+                fullWidth
+                trailingIcon={<ArrowIcon />}
+              >
+                {getActionLabel(secondaryModel.status)}
+              </PopButtonLink>
+            </div>
           </PopCard>
 
           <PopCard as="section" className={styles.activitySection}>
@@ -197,7 +276,7 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
               <PopChip tone="social">Demo</PopChip>
             </div>
             <div className={styles.activityList}>
-              {model.activities.map((activity) => {
+              {primaryModel.activities.map((activity) => {
                 const player = playerById(activity.playerId);
                 return (
                   <PopCard

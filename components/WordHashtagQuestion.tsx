@@ -21,6 +21,7 @@ type Props = {
   locked: boolean;
   onProgress: (answer: WordHashtagAnswer) => void;
   onSubmit: (answer: WordHashtagAnswer) => void;
+  className?: string;
 };
 
 type DragState = {
@@ -49,6 +50,7 @@ export function WordHashtagQuestion({
   locked,
   onProgress,
   onSubmit,
+  className,
 }: Props) {
   const [answer, setAnswer] = useState<WordHashtagAnswer>(() => ({
     swaps: initialSwaps(question, initialAnswer),
@@ -188,7 +190,10 @@ export function WordHashtagQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Hashtag de cuatro palabras">
+    <section
+      className={`${styles.root} ${className ?? ""}`}
+      aria-label="Hashtag de cuatro palabras"
+    >
       <div className={styles.header}>
         <span>Tablero de palabras</span>
         <strong>
