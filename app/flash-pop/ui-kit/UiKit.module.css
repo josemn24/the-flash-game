@@ -277,8 +277,8 @@
   flex: 1;
 }
 
-.liveTimer strong,
-.liveTimer span {
+.liveTimer > div > strong,
+.liveTimer > div > span {
   display: block;
 }
 

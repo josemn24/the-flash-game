@@ -16,8 +16,22 @@ import {
 import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
 import type { AnswerValue, PyramidChallenge } from "@/types/game";
 
-const TRANSITION_DURATION = 900;
+const DEFAULT_TRANSITION_DURATION = 900;
+const DEFAULT_FEEDBACK_DURATIONS = {
+  correct: DEFAULT_TRANSITION_DURATION,
+  incorrect: 1500,
+  unanswered: 1500,
+} as const;
 const STORAGE_PROBE_KEY = "the-flash:pyramid-storage-probe";
+
+export type PyramidSessionOptions = {
+  storageNamespace?: string;
+  feedbackDuration?: Partial<{
+    correct: number;
+    incorrect: number;
+    unanswered: number;
+  }>;
+};
 
 export type PyramidSessionPhase =
   "loading" | "intro" | "confirm" | "briefing" | "playing" | "transition" | "results" | "review";
@@ -32,8 +46,12 @@ function storageIsAvailable() {
   }
 }
 
-export function usePyramidSession(challenge: PyramidChallenge) {
-  const storageKey = getPyramidAttemptStorageKey(challenge);
+export function usePyramidSession(
+  challenge: PyramidChallenge,
+  options: PyramidSessionOptions = {},
+) {
+  const storageKey = getPyramidAttemptStorageKey(challenge, options.storageNamespace);
+  const feedbackDurations = { ...DEFAULT_FEEDBACK_DURATIONS, ...options.feedbackDuration };
   const [phase, setPhase] = useState<PyramidSessionPhase>("loading");
   const [record, setRecord] = useState<PyramidAttemptRecord | null>(null);
   const [storageAvailable, setStorageAvailable] = useState(true);
@@ -94,7 +112,13 @@ export function usePyramidSession(challenge: PyramidChallenge) {
       if (!passed || lastLevel) {
         persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));
         setPhase("transition");
-        transitionTimeout.current = setTimeout(() => setPhase("results"), TRANSITION_DURATION);
+        const duration =
+          result.status === "correct"
+            ? feedbackDurations.correct
+            : result.status === "unanswered"
+              ? feedbackDurations.unanswered
+              : feedbackDurations.incorrect;
+        transitionTimeout.current = setTimeout(() => setPhase("results"), duration);
         return;
       }
 
@@ -111,10 +135,17 @@ export function usePyramidSession(challenge: PyramidChallenge) {
       setPhase("transition");
       transitionTimeout.current = setTimeout(
         () => advanceFromTransition(next),
-        TRANSITION_DURATION,
+        feedbackDurations.correct,
       );
     },
-    [advanceFromTransition, challenge.levels, persist],
+    [
+      advanceFromTransition,
+      challenge.levels,
+      feedbackDurations.correct,
+      feedbackDurations.incorrect,
+      feedbackDurations.unanswered,
+      persist,
+    ],
   );
 
   const applyLoadedRecord = useCallback(

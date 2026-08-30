@@ -73,6 +73,9 @@ describe("pyramid attempt rules", () => {
     expect(getPyramidAttemptStorageKey(challenge)).toBe(
       "the-flash:pyramid-attempt:tabarnia-challenge-05:v2",
     );
+    expect(getPyramidAttemptStorageKey(challenge, "flash-pop-pyramid-slice")).toBe(
+      "the-flash:flash-pop-pyramid-slice:tabarnia-challenge-05:v2",
+    );
   });
 
   it("keeps a manual briefing between levels and restores it without a timer", () => {

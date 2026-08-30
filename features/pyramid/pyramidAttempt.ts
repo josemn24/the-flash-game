@@ -36,8 +36,10 @@ export type PyramidAttemptRecord = {
 
 export function getPyramidAttemptStorageKey(
   challenge: Pick<PyramidChallenge, "id" | "attemptVersion">,
+  namespace?: string,
 ) {
-  return `the-flash:pyramid-attempt:${challenge.id}:v${challenge.attemptVersion}`;
+  const prefix = namespace ? `the-flash:${namespace}` : "the-flash:pyramid-attempt";
+  return `${prefix}:${challenge.id}:v${challenge.attemptVersion}`;
 }
 
 export function isPyramidLevelPassed(result: Pick<AnswerResult, "status" | "isCorrect">) {
