@@ -335,24 +335,33 @@ function Feedback({
 }) {
   const passed = result.status === "correct" && result.isCorrect;
   const timedOut = result.status === "unanswered";
-  const title = passed ? "¡Bien visto!" : timedOut ? "¡Se escapó por poco!" : "Casi.";
+  const summit = levelIndex + 1 >= levelCount;
+  const title = passed
+    ? summit
+      ? "Desafío completado"
+      : "Nivel superado"
+    : timedOut
+      ? "¡Se escapó por poco!"
+      : "Casi.";
   const body = passed
-    ? level.question.explanation
+    ? summit
+      ? "Has superado todos los niveles."
+      : "Preparando la siguiente pregunta…"
     : `La respuesta correcta era ${expectedAnswerLabel(level)}.`;
 
   return (
     <div className={styles.question}>
       <Topbar />
-      <LevelIndicator levelIndex={levelIndex} levelCount={levelCount} />
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
         <PopCard className={`${styles.feedbackCard} ${passed ? "" : styles.failure}`}>
           <span className={styles.feedbackIcon} aria-hidden="true">
             {passed ? <CheckIcon /> : timedOut ? <ClockIcon /> : <CrossIcon />}
           </span>
+          <p className={styles.feedbackEyebrow}>{level.label}</p>
           <h1>{title}</h1>
           <p>{body}</p>
           {!passed ? <p className={styles.correctAnswer}>{level.question.explanation}</p> : null}
-          {passed ? <p className={styles.correctAnswer}>+{result.points} puntos</p> : null}
+          {passed ? <p className={styles.feedbackPoints}>+{result.points} puntos</p> : null}
         </PopCard>
       </motion.div>
     </div>

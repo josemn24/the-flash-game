@@ -431,8 +431,8 @@
 
 .feedbackIcon {
   display: grid;
-  width: 64px;
-  height: 64px;
+  width: 104px;
+  height: 104px;
   margin: 0 auto;
   place-items: center;
   border-radius: var(--pop-radius-pill);
@@ -445,7 +445,16 @@
 }
 
 .feedbackIcon svg {
-  width: 30px;
+  width: 48px;
+}
+
+.feedbackEyebrow {
+  color: var(--pop-color-success) !important;
+  font-family: var(--pop-font-mono);
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .feedbackCard h1 {
@@ -466,6 +475,12 @@
 .correctAnswer {
   color: var(--pop-color-ink);
   font-weight: 800;
+}
+
+.feedbackPoints {
+  color: var(--pop-color-ink) !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
 }
 
 .resultCard {
