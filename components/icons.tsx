@@ -72,21 +72,89 @@ export function CrownIcon(props: IconProps) {
 export function QueensCrownIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props} viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="queens-crown-gold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffe37a" />
+          <stop offset="0.55" stopColor="#f5c84b" />
+          <stop offset="1" stopColor="#d99225" />
+        </linearGradient>
+        <linearGradient id="queens-crown-band" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff0a6" />
+          <stop offset="1" stopColor="#f5c84b" />
+        </linearGradient>
+        <radialGradient id="queens-crown-red" cx="30%" cy="25%" r="80%">
+          <stop offset="0" stopColor="#ff9b9c" />
+          <stop offset="1" stopColor="#e84e67" />
+        </radialGradient>
+        <radialGradient id="queens-crown-blue" cx="30%" cy="25%" r="80%">
+          <stop offset="0" stopColor="#a4e2ff" />
+          <stop offset="1" stopColor="#3c9ed0" />
+        </radialGradient>
+        <radialGradient id="queens-crown-purple" cx="30%" cy="25%" r="80%">
+          <stop offset="0" stopColor="#c7adff" />
+          <stop offset="1" stopColor="#7956c9" />
+        </radialGradient>
+      </defs>
       <path
-        fill="currentColor"
-        stroke="none"
-        d="M10 18c2.8 2.3 5.4 4.1 8.1 5.4L25 9.5c.6-1 2-.9 2.5.1L32 18l4.5-8.4c.5-1 1.9-1.1 2.5-.1l6.9 13.9c2.7-1.3 5.3-3.1 8.1-5.4l-1.6 24.2c-.2 2.8-2.5 4.9-5.3 4.9H16.9c-2.8 0-5.1-2.1-5.3-4.9L10 18Z"
+        fill="url(#queens-crown-gold)"
+        d="M8.5 18.5 16.5 23 23 11l5.4 10 3.6-15 3.6 15 5.4-10 6.5 12 8-4.5-2.35 22.4A7 7 0 0 1 46.65 48H17.35a7 7 0 0 1-6.95-6.1L8.5 18.5Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
       />
       <path
+        fill="url(#queens-crown-band)"
+        d="M11.7 37.4h40.6l-.55 5.1A6.2 6.2 0 0 1 45.6 48H18.4a6.2 6.2 0 0 1-6.15-5.5l-.55-5.1Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      />
+      <path
+        fill="#d99225"
+        d="M16.5 47.5h31c1.65 0 3 1.35 3 3V53H13.5v-2.5c0-1.65 1.35-3 3-3Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M14.5 29c9.5 3.8 25.5 3.8 35 0"
         fill="none"
-        d="M14.3 39.5h35.4M17 47.5h30"
-        stroke="rgb(255 255 255 / 0.8)"
-        strokeWidth="3.5"
+        stroke="#fff5c4"
+        strokeWidth="2.2"
+        opacity="0.9"
+      />
+      <circle cx="8.5" cy="18.5" r="2.35" fill="#ffb82e" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="23" cy="11" r="2.35" fill="#ffb82e" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="32" cy="6" r="2.45" fill="#ffb82e" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="41" cy="11" r="2.35" fill="#ffb82e" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="55.5" cy="18.5" r="2.35" fill="#ffb82e" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="20.5"
+        cy="29"
+        r="3.15"
+        fill="url(#queens-crown-red)"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="32"
+        cy="23.5"
+        r="3.15"
+        fill="url(#queens-crown-blue)"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="43.5"
+        cy="29"
+        r="3.15"
+        fill="url(#queens-crown-purple)"
+        stroke="currentColor"
+        strokeWidth="1.5"
       />
       <path
-        fill="currentColor"
-        stroke="none"
-        d="M17 51h30c1.7 0 3 1.3 3 3v1H14v-1c0-1.7 1.3-3 3-3Z"
+        d="M16 33.2c8.8 2.6 23.2 2.6 32 0"
+        fill="none"
+        stroke="#b9781d"
+        strokeWidth="1.5"
+        opacity="0.55"
       />
     </svg>
   );
