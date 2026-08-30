@@ -232,3 +232,47 @@ button.cell {
     display: none;
   }
 }
+
+.root.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .toolbar {
+  border: 0;
+  border-radius: var(--pop-radius-control);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .toolbar button {
+  min-height: 44px;
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .toolbar .toolActive {
+  border-color: var(--pop-color-brand);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+}
+
+.pop .board {
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-card);
+}
+
+.pop .cell {
+  border-color: rgb(23 23 32 / 16%);
+}
+
+.pop .progress {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .progress strong {
+  color: var(--pop-color-ink);
+}
+
+.pop .instructions {
+  color: var(--pop-color-ink-muted);
+}

@@ -1,0 +1,26 @@
+.choiceInput {
+  display: grid;
+  gap: var(--pop-space-3);
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-3);
+}
+
+.unsupported {
+  margin: var(--pop-space-6) 0 0;
+  padding: var(--pop-space-4);
+  border-radius: var(--pop-radius-control);
+  background: rgb(255 114 118 / 12%);
+  color: #a22d38;
+  font-weight: 700;
+}
+
+@media (max-width: 390px) {
+  .choiceGrid {
+    gap: var(--pop-space-2);
+  }
+}

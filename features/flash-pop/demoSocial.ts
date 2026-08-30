@@ -5,9 +5,9 @@ import type {
 } from "@/features/pyramid/pyramidAttempt";
 
 export const FLASH_POP_CHALLENGE_ID = "tabarnia-challenge-05";
-export const FLASH_POP_STORAGE_NAMESPACE = "flash-pop-pyramid-slice";
-export const FLASH_POP_SLICE_LEVEL_COUNT = 1;
-export const FLASH_POP_SLICE_TIME_LIMIT = 12;
+export const FLASH_POP_STORAGE_NAMESPACE = "flash-pop-pyramid-v2";
+export const FLASH_POP_LEVEL_COUNT = 7;
+export const FLASH_POP_TOTAL_TIME_LIMIT = 235;
 
 export type FlashPopAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
 
@@ -31,6 +31,7 @@ export type FlashPopLobbyChallenge = {
   title: string;
   subtitle: string;
   status: FlashPopAttemptStatus;
+  currentLevelIndex?: number;
   participants: FlashPopPlayer[];
   playerScore?: number;
   playerRank?: number;
@@ -52,12 +53,20 @@ export type FlashPopRankRow = {
 
 export type FlashPopResult = {
   score: number;
+  levelsCleared: number;
   playerRank: number;
   totalPlayers: number;
   seasonXpEarned: number;
   seasonXpCurrent: number;
   nextLevelAt: number;
   peers: FlashPopRankRow[];
+};
+
+export type FlashPopScoringConfig = {
+  levelCount?: number;
+  totalTimeLimit?: number;
+  seasonXpCurrent?: number;
+  nextLevelAt?: number;
 };
 
 export const flashPopPlayers: FlashPopPlayer[] = [
@@ -72,13 +81,13 @@ export const flashPopPlayers: FlashPopPlayer[] = [
 ];
 
 const demoPeerRows = [
-  { playerId: "ana", score: 9, timeUsed: 5.4 },
-  { playerId: "luis", score: 8, timeUsed: 7.1 },
-  { playerId: "rocio", score: 7, timeUsed: 6.2 },
-  { playerId: "joel", score: 6, timeUsed: 8.8 },
-  { playerId: "marta", score: 5, timeUsed: 9.4 },
-  { playerId: "ines", score: 4, timeUsed: 10.2 },
-  { playerId: "pablo", score: 3, timeUsed: 11.1 },
+  { playerId: "ana", score: 92, timeUsed: 154 },
+  { playerId: "luis", score: 84, timeUsed: 177 },
+  { playerId: "rocio", score: 78, timeUsed: 185 },
+  { playerId: "joel", score: 70, timeUsed: 201 },
+  { playerId: "marta", score: 63, timeUsed: 212 },
+  { playerId: "ines", score: 56, timeUsed: 226 },
+  { playerId: "pablo", score: 48, timeUsed: 232 },
 ];
 
 function getPlayer(id: string) {
@@ -94,8 +103,8 @@ export function getFlashPopAttemptStatus(
 
 export function calculateSeasonXp(
   summary: Pick<PyramidAttemptSummary, "levelsCleared" | "timeUsed">,
-  levelCount = FLASH_POP_SLICE_LEVEL_COUNT,
-  timeLimit = FLASH_POP_SLICE_TIME_LIMIT,
+  levelCount = FLASH_POP_LEVEL_COUNT,
+  timeLimit = FLASH_POP_TOTAL_TIME_LIMIT,
 ) {
   const safeLevelCount = Math.max(1, levelCount);
   const performance = Math.round(
@@ -108,9 +117,10 @@ export function calculateSeasonXp(
 
 export function getFlashPopResult(
   summary: PyramidAttemptSummary,
-  seasonXpCurrent = 680,
-  nextLevelAt = 900,
+  config: FlashPopScoringConfig = {},
 ): FlashPopResult {
+  const seasonXpCurrent = config.seasonXpCurrent ?? 680;
+  const nextLevelAt = config.nextLevelAt ?? 900;
   const rows = [
     { player: getPlayer("javi"), score: summary.score, timeUsed: summary.timeUsed },
     ...demoPeerRows.map(({ playerId, score, timeUsed }) => ({
@@ -122,10 +132,15 @@ export function getFlashPopResult(
 
   const ranked = rows.map((row, index) => ({ ...row, rank: index + 1 }));
   const current = ranked.find((row) => row.player.id === "javi")!;
-  const earned = calculateSeasonXp(summary);
+  const earned = calculateSeasonXp(
+    summary,
+    config.levelCount ?? FLASH_POP_LEVEL_COUNT,
+    config.totalTimeLimit ?? FLASH_POP_TOTAL_TIME_LIMIT,
+  );
 
   return {
     score: summary.score,
+    levelsCleared: summary.levelsCleared,
     playerRank: current.rank,
     totalPlayers: ranked.length,
     seasonXpEarned: earned,
@@ -136,7 +151,10 @@ export function getFlashPopResult(
 }
 
 export function getFlashPopLobbyChallenge(
-  record: Pick<PyramidAttemptRecord, "status" | "summary"> | null | undefined,
+  record:
+    | (Pick<PyramidAttemptRecord, "status" | "summary"> & { currentLevelIndex?: number })
+    | null
+    | undefined,
 ): FlashPopLobbyChallenge {
   const status = getFlashPopAttemptStatus(record);
   const result = record?.summary ? getFlashPopResult(record.summary) : null;
@@ -144,8 +162,9 @@ export function getFlashPopLobbyChallenge(
   return {
     id: FLASH_POP_CHALLENGE_ID,
     title: "La Pirámide",
-    subtitle: "Un nivel. Un intento. Sube cuanto puedas.",
+    subtitle: "Siete niveles. Un intento. Sube cuanto puedas.",
     status,
+    currentLevelIndex: record?.currentLevelIndex,
     participants: flashPopPlayers.slice(1),
     playerScore: result?.score,
     playerRank: result?.playerRank,

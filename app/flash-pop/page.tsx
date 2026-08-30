@@ -6,7 +6,7 @@ import { FLASH_POP_CHALLENGE_ID } from "@/features/flash-pop/demoSocial";
 
 export const metadata: Metadata = {
   title: "Flash Pop — Lobby",
-  description: "Lobby demo del vertical slice de Flash Pop.",
+  description: "Lobby demo de Flash Pop: asciende por siete niveles de La Pirámide.",
 };
 
 export default function FlashPopPage() {

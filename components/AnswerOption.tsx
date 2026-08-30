@@ -8,15 +8,23 @@ type AnswerOptionProps = {
   disabled: boolean;
   index: number;
   onSelect: () => void;
+  variant?: "flash-pop";
 };
 
-export function AnswerOption({ label, selected, disabled, index, onSelect }: AnswerOptionProps) {
+export function AnswerOption({
+  label,
+  selected,
+  disabled,
+  index,
+  onSelect,
+  variant,
+}: AnswerOptionProps) {
   const shortcut = String.fromCharCode(65 + index);
 
   return (
     <motion.button
       type="button"
-      className={`${styles.option} ${selected ? styles.selected : ""}`}
+      className={`${styles.option} ${selected ? styles.selected : ""} ${variant === "flash-pop" ? styles.pop : ""}`}
       onClick={onSelect}
       disabled={disabled}
       aria-pressed={selected}

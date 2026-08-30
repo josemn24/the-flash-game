@@ -16,6 +16,7 @@ type OrderingQuestionProps = {
   locked: boolean;
   onProgress?: (items: string[]) => void;
   onSubmit: (items: string[]) => void;
+  variant?: "flash-pop";
 };
 
 type LastMove = {
@@ -31,6 +32,7 @@ export function OrderingQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: OrderingQuestionProps) {
   const [orderedItems, setOrderedItems] = useState(() =>
     initialItems?.length === items.length && initialItems.every((item) => items.includes(item))
@@ -59,7 +61,7 @@ export function OrderingQuestion({
   };
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}>
       <div className={styles.shell}>
         <div className={styles.directionLabel} aria-hidden="true">
           <span>{directionLabels.start}</span>

@@ -72,3 +72,26 @@
     padding: 0.9rem 0.75rem;
   }
 }
+
+.prompt.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-control);
+  background: var(--pop-color-surface-raised);
+  padding: var(--pop-space-4);
+  box-shadow: none;
+}
+
+.prompt.pop .eyebrow {
+  color: var(--pop-color-ink-muted);
+}
+
+.prompt.pop .sequenceRow {
+  color: var(--pop-color-ink);
+  font-size: clamp(1.4rem, 7vw, 2.3rem);
+}
+
+.prompt.pop .differenceRow {
+  color: var(--pop-color-social);
+}

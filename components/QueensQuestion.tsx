@@ -132,6 +132,7 @@ export function QueensQuestion({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
+  variant,
 }: {
   question: QueensQuestionType;
   initialAnswer?: Partial<QueensAnswer>;
@@ -139,6 +140,7 @@ export function QueensQuestion({
   onProgress: (answer: QueensAnswer) => void;
   onIncorrectAttempt: () => void;
   onSubmit: (answer: QueensAnswer) => void;
+  variant?: "flash-pop";
 }) {
   const prefilledQueens = useMemo(() => question.prefilledQueens ?? [], [question.prefilledQueens]);
   const [answer, setAnswer] = useState<QueensAnswer>(() => ({
@@ -260,7 +262,10 @@ export function QueensQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Queens, puzzle de cinco coronas">
+    <section
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      aria-label="Queens, puzzle de cinco coronas"
+    >
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button
           type="button"

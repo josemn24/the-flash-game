@@ -83,3 +83,58 @@
 .symbolsOnly .option > span {
   font-size: clamp(2.25rem, 9vw, 3rem);
 }
+
+.symbolGraphic {
+  display: block;
+  width: clamp(4.5rem, 20vw, 6rem);
+  height: auto;
+  overflow: visible;
+}
+
+.root.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .matrix {
+  gap: var(--pop-space-2);
+  border-radius: var(--pop-radius-card);
+  padding: var(--pop-space-2);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .cell {
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-sm);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+}
+
+.pop .cell small {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .emptyCell {
+  border: 2px dashed var(--pop-color-social);
+  color: var(--pop-color-social);
+  background: var(--pop-color-surface-soft);
+}
+
+.pop .instructions {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .option {
+  min-height: 72px;
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-control);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.pop .option:hover:not(:disabled) {
+  border-color: var(--pop-color-social);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+}

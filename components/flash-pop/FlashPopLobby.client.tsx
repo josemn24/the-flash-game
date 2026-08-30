@@ -42,16 +42,13 @@ function getActionLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["st
 }
 
 export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
-  const sliceChallenge = useMemo(
-    () => ({ ...challenge, levels: challenge.levels.slice(0, 1) }),
-    [challenge],
-  );
+  const flashPopChallenge = useMemo(() => challenge, [challenge]);
   const [model, setModel] = useState(() => getFlashPopLobbyChallenge(null));
 
   useEffect(() => {
-    const storageKey = getPyramidAttemptStorageKey(sliceChallenge, FLASH_POP_STORAGE_NAMESPACE);
+    const storageKey = getPyramidAttemptStorageKey(flashPopChallenge, FLASH_POP_STORAGE_NAMESPACE);
     const sync = (serialized: string | null) => {
-      const record = serialized ? parsePyramidAttempt(serialized, sliceChallenge) : null;
+      const record = serialized ? parsePyramidAttempt(serialized, flashPopChallenge) : null;
       setModel(getFlashPopLobbyChallenge(record));
     };
 
@@ -61,7 +58,7 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [sliceChallenge]);
+  }, [flashPopChallenge]);
 
   const actionLabel = getActionLabel(model.status);
   const progress = Math.min(
@@ -138,6 +135,11 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
             </div>
             <h2 id="flash-pop-challenge-title">{model.title}</h2>
             <p className={styles.challengeCopy}>{model.subtitle}</p>
+            {model.status === "inProgress" && typeof model.currentLevelIndex === "number" ? (
+              <p className={styles.progressCopy}>
+                En curso · Nivel {Math.min(model.currentLevelIndex + 1, 7)} de 7
+              </p>
+            ) : null}
             <div className={styles.socialRow}>
               <PopAvatarStack
                 items={players}
@@ -156,7 +158,9 @@ export function FlashPopLobby({ challenge }: { challenge: PyramidChallenge }) {
             >
               {actionLabel}
             </PopButtonLink>
-            <p className={styles.attemptNote}>Tu primer acceso inicia el único intento oficial.</p>
+            <p className={styles.attemptNote}>
+              7 niveles · Tu primer acceso inicia el único intento oficial.
+            </p>
           </div>
         </PopCard>
 

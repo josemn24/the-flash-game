@@ -42,3 +42,38 @@
   color: #0a0c06;
   background: var(--electric);
 }
+
+.option.pop {
+  min-height: 72px;
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-control);
+  padding: var(--pop-space-3) var(--pop-space-4);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.option.pop:hover:not(:disabled) {
+  border-color: var(--pop-color-social);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+}
+
+.option.pop.selected {
+  border-color: var(--pop-color-social);
+  color: var(--pop-color-ink);
+  background: rgb(105 87 232 / 10%);
+  box-shadow: none;
+}
+
+.option.pop .key {
+  border-color: rgb(23 23 32 / 18%);
+  color: var(--pop-color-ink-muted);
+  background: var(--pop-color-surface);
+}
+
+.option.pop.selected .key {
+  border-color: var(--pop-color-brand);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+}

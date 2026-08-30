@@ -9,6 +9,8 @@
   min-height: var(--pop-control-height);
   align-items: center;
   justify-content: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: var(--pop-space-2);
   padding: 0 var(--pop-space-6);
   border-radius: var(--pop-radius-control);
@@ -16,6 +18,7 @@
   font-size: 15px;
   font-weight: 800;
   line-height: 1;
+  white-space: nowrap;
   text-decoration: none;
   transition:
     transform var(--pop-motion-press-out) var(--pop-ease-out),

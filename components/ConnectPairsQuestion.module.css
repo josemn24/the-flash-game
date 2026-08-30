@@ -209,3 +209,66 @@
     border-radius: 0.8rem;
   }
 }
+
+.root.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .header {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .header strong {
+  color: var(--pop-color-social);
+}
+
+.pop .legendButton {
+  min-height: 44px;
+  border-color: var(--pop-border-subtle);
+  color: var(--pop-color-ink-muted);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .legendButton:hover:not(:disabled),
+.pop .legendActive {
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+}
+
+.pop .board {
+  border-color: rgb(23 23 32 / 16%);
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-card);
+}
+
+.pop .board:focus-visible {
+  border-color: var(--pop-color-focus);
+  box-shadow: 0 0 0 3px rgb(77 59 209 / 22%);
+}
+
+.pop .cell {
+  border-color: rgb(23 23 32 / 8%);
+  color: var(--pop-color-ink);
+  background:
+    radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
+    var(--pop-color-surface);
+}
+
+.pop .empty .cellButton,
+.pop .endpoint .cellButton {
+  background: rgb(23 23 32 / 3%);
+}
+
+.pop .instructions,
+.pop .statusText {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .actions button {
+  min-height: 44px;
+  border-color: var(--pop-border-subtle);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface-raised);
+}

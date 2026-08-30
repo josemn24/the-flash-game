@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, BoltIcon, CheckIcon, ClockIcon, CrossIcon } from "@/components/icons";
 import {
@@ -13,27 +13,67 @@ import {
   PopTimer,
 } from "@/components/flash-pop/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
+import { withPyramidScoring } from "@/lib/challengeScoring";
+import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
+import { FlashPopReview } from "@/components/flash-pop/FlashPopReview";
 import {
   FLASH_POP_CHALLENGE_ID,
-  FLASH_POP_SLICE_LEVEL_COUNT,
-  FLASH_POP_SLICE_TIME_LIMIT,
+  FLASH_POP_LEVEL_COUNT,
   FLASH_POP_STORAGE_NAMESPACE,
   getFlashPopResult,
   type FlashPopResult,
 } from "@/features/flash-pop/demoSocial";
-import type { PyramidChallenge, PyramidLevel, QuestionOfType } from "@/types/game";
+import type { AnswerValue, PyramidChallenge, PyramidLevel } from "@/types/game";
 import styles from "./FlashPopPyramidGame.module.css";
 
-function getSliceChallenge(challenge: PyramidChallenge): PyramidChallenge {
-  return { ...challenge, levels: challenge.levels.slice(0, FLASH_POP_SLICE_LEVEL_COUNT) };
-}
-
 function formatTime(seconds: number) {
-  return seconds < 60 ? `${Math.round(seconds)} s` : `${Math.floor(seconds / 60)} min`;
+  const rounded = Math.max(0, Math.round(seconds));
+  if (rounded < 60) return `${rounded} s`;
+  const minutes = Math.floor(rounded / 60);
+  const rest = rounded % 60;
+  return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
 }
 
-function getOddOneOutQuestion(level: PyramidLevel): QuestionOfType<"odd-one-out"> | null {
-  return level.question.type === "odd-one-out" ? level.question : null;
+function getChallengeTimeLimit(challenge: PyramidChallenge) {
+  return challenge.levels.reduce((total, level) => total + level.question.timeLimit, 0);
+}
+
+function LevelIndicator({ levelIndex, levelCount }: { levelIndex: number; levelCount: number }) {
+  return (
+    <p className={styles.levelIndicator} aria-label={`Nivel ${levelIndex + 1} de ${levelCount}`}>
+      Nivel {levelIndex + 1} <span>de {levelCount}</span>
+    </p>
+  );
+}
+
+function LevelMap({ levels, currentIndex }: { levels: PyramidLevel[]; currentIndex: number }) {
+  return (
+    <ol className={styles.levelMap} aria-label="Niveles de La Pirámide">
+      {[...levels].reverse().map((level, reversedIndex) => {
+        const index = levels.length - reversedIndex - 1;
+        const stateClass =
+          index < currentIndex
+            ? styles.levelTierCleared
+            : index === currentIndex
+              ? styles.levelTierCurrent
+              : styles.levelTierLocked;
+        const width = 45 + ((levels.length - index - 1) / Math.max(1, levels.length - 1)) * 55;
+
+        return (
+          <li
+            key={level.id}
+            className={`${styles.levelTier} ${stateClass}`}
+            style={{ width: `${width}%` }}
+            aria-current={index === currentIndex ? "step" : undefined}
+          >
+            <span>{index + 1}</span>
+            <strong>{level.label}</strong>
+            {index < currentIndex && <CheckIcon className={styles.levelTierIcon} />}
+          </li>
+        );
+      })}
+    </ol>
+  );
 }
 
 function Topbar({ timer }: { timer?: React.ReactNode }) {
@@ -74,12 +114,12 @@ function Intro({
         <div className={styles.introIllustration} aria-hidden="true" />
         <PopChip tone="social">Reto de hoy · Demo</PopChip>
         <h1 id="flash-pop-intro-title">La Pirámide</h1>
-        <p className={styles.introLead}>El primer nivel del nuevo recorrido Flash Pop.</p>
+        <p className={styles.introLead}>Siete pruebas de lógica. Sube cuanto puedas.</p>
 
         <div className={styles.rules}>
           <div className={styles.rule}>
-            <strong>Un nivel</strong>
-            <span>Encontrar el intruso y demostrar tu intuición.</span>
+            <strong>Siete niveles</strong>
+            <span>De un patrón numérico a la cima de Queens.</span>
           </div>
           <div className={styles.rule}>
             <strong>Un intento</strong>
@@ -93,11 +133,17 @@ function Intro({
           </p>
         )}
 
-        <PopButton size="hero" fullWidth className={styles.action} onClick={onConfirm}>
-          Empezar intento <ArrowIcon />
+        <PopButton
+          size="hero"
+          fullWidth
+          trailingIcon={<ArrowIcon />}
+          className={styles.action}
+          onClick={onConfirm}
+        >
+          Empezar intento
         </PopButton>
         <p className={styles.attemptNote}>
-          {challenge.levels[0]?.question.timeLimit ?? FLASH_POP_SLICE_TIME_LIMIT} segundos · Hasta
+          {challenge.levels.length} niveles · {formatTime(getChallengeTimeLimit(challenge))} · Hasta
           +120 ⚡
         </p>
       </PopCard>
@@ -111,8 +157,8 @@ function Intro({
         >
           <h1 id="confirm-title">¿Listo para subir?</h1>
           <p>Tienes un único intento oficial. El reloj comienza al mostrar la pregunta.</p>
-          <PopButton size="hero" fullWidth onClick={onStart}>
-            Confirmar intento <ArrowIcon />
+          <PopButton size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
+            Confirmar intento
           </PopButton>
           <PopButton variant="secondary" fullWidth onClick={onCancel}>
             Todavía no
@@ -123,13 +169,24 @@ function Intro({
   );
 }
 
-function Briefing({ level, onStart }: { level: PyramidLevel; onStart: () => void }) {
+function Briefing({
+  level,
+  levels,
+  levelIndex,
+  onStart,
+}: {
+  level: PyramidLevel;
+  levels: PyramidLevel[];
+  levelIndex: number;
+  onStart: () => void;
+}) {
   return (
     <div className={styles.briefing}>
       <Topbar />
+      <LevelMap levels={levels} currentIndex={levelIndex} />
       <PopCard as="section" className={styles.briefingCard} aria-labelledby="briefing-title">
-        <p className={styles.eyebrow}>Entrada · Nivel 1</p>
         <h1 id="briefing-title">{level.briefing.title}</h1>
+        <p className={styles.briefingFormat}>{level.briefing.format}</p>
         <p className={styles.briefingDescription}>{level.briefing.description}</p>
         <div className={styles.briefingStats} aria-label="Condiciones del nivel">
           <div className={styles.briefingStat}>
@@ -137,32 +194,62 @@ function Briefing({ level, onStart }: { level: PyramidLevel; onStart: () => void
             <span>tiempo</span>
           </div>
           <div className={styles.briefingStat}>
-            <strong>+120 ⚡</strong>
-            <span>máximo de temporada</span>
+            <strong>{level.question.points} pts</strong>
+            <span>máximo del nivel</span>
           </div>
         </div>
-        <PopButton size="hero" fullWidth className={styles.briefingAction} onClick={onStart}>
-          Ver pregunta <ArrowIcon />
+        <PopButton
+          size="hero"
+          fullWidth
+          trailingIcon={<ArrowIcon />}
+          className={styles.briefingAction}
+          onClick={onStart}
+        >
+          Empezar nivel
         </PopButton>
       </PopCard>
     </div>
   );
 }
 
+function getPromptScale(question: PyramidLevel["question"]) {
+  if (question.question.length > 100) return styles.questionPromptLong;
+  if (question.question.length > 54) return styles.questionPromptMedium;
+  return "";
+}
+
 function Question({
-  question,
+  level,
+  levelIndex,
+  levelCount,
   deadlineAt,
   onReady,
+  locked,
   onSubmit,
   onTimeUp,
+  onProgress,
+  onIncorrectAttempt,
+  onCodeAttempt,
+  onTimedResponseStart,
+  initialAnswer,
+  attemptCount,
 }: {
-  question: QuestionOfType<"odd-one-out">;
+  level: PyramidLevel;
+  levelIndex: number;
+  levelCount: number;
   deadlineAt: number | null;
   onReady: () => void;
-  onSubmit: (answer: string) => void;
+  locked: boolean;
+  onSubmit: (answer: AnswerValue) => void;
   onTimeUp: () => void;
+  onProgress: (answer: AnswerValue) => void;
+  onIncorrectAttempt: () => void;
+  onCodeAttempt: (code: string) => boolean;
+  onTimedResponseStart: () => void;
+  initialAnswer: AnswerValue | null;
+  attemptCount: number;
 }) {
-  const [selected, setSelected] = useState<string | null>(null);
+  const question = level.question;
 
   useEffect(() => onReady(), [onReady]);
 
@@ -179,60 +266,84 @@ function Question({
           />
         }
       />
+      <LevelIndicator levelIndex={levelIndex} levelCount={levelCount} />
       <PopCard as="section" className={styles.questionCard} aria-labelledby="question-title">
-        <p className={styles.levelTag}>Entrada</p>
-        <h1 id="question-title" className={styles.questionPrompt}>
+        <h1
+          id="question-title"
+          className={`${styles.questionPrompt} ${getPromptScale(question)}`}
+        >
           {question.question}
         </h1>
-        <div className={styles.answerGrid} aria-label="Opciones de respuesta">
-          {question.items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`${styles.answerTile} ${selected === item.id ? styles.selected : ""}`}
-              aria-pressed={selected === item.id}
-              disabled={selected !== null}
-              onClick={() => {
-                setSelected(item.id);
-                onSubmit(item.id);
-              }}
-            >
-              {selected === item.id ? (
-                <span className={styles.answerContent}>
-                  <CheckIcon aria-hidden="true" />
-                  <span>{item.label}</span>
-                </span>
-              ) : (
-                item.label
-              )}
-            </button>
-          ))}
-        </div>
+        <FlashPopQuestionInput
+          level={level}
+          levelIndex={levelIndex}
+          levelCount={levelCount}
+          locked={locked}
+          initialAnswer={initialAnswer}
+          onSubmit={onSubmit}
+          onProgress={onProgress}
+          onIncorrectAttempt={onIncorrectAttempt}
+          onCodeAttempt={onCodeAttempt}
+          onTimedResponseStart={onTimedResponseStart}
+          attemptCount={attemptCount}
+        />
       </PopCard>
     </div>
   );
 }
 
+function expectedAnswerLabel(level: PyramidLevel) {
+  const question = level.question;
+  switch (question.type) {
+    case "odd-one-out":
+      return (
+        question.items.find((item) => item.id === question.correctAnswer)?.label ??
+        question.correctAnswer
+      );
+    case "multiple-choice":
+      return question.correctAnswer;
+    case "ordering":
+      return question.correctOrder.join(" → ");
+    case "logic-matrix":
+      return (
+        question.pieces.find((piece) => piece.id === question.correctOptionId)?.label ??
+        "La pieza correcta"
+      );
+    case "connect-pairs":
+      return question.requireFullCoverage
+        ? "Las parejas y la cobertura completa"
+        : "Todas las parejas conectadas";
+    case "logic-code":
+      return question.correctAnswer;
+    case "queens":
+      return "La disposición correcta de las coronas";
+    default:
+      return "La respuesta correcta";
+  }
+}
+
 function Feedback({
   result,
-  question,
+  level,
+  levelIndex,
+  levelCount,
 }: {
   result: NonNullable<ReturnType<typeof usePyramidSession>["latestResult"]>;
-  question: QuestionOfType<"odd-one-out">;
+  level: PyramidLevel;
+  levelIndex: number;
+  levelCount: number;
 }) {
   const passed = result.status === "correct" && result.isCorrect;
   const timedOut = result.status === "unanswered";
-  const correctItem = question.items.find((item) => item.id === question.correctAnswer);
   const title = passed ? "¡Bien visto!" : timedOut ? "¡Se escapó por poco!" : "Casi.";
   const body = passed
-    ? question.explanation
-    : timedOut
-      ? `La respuesta correcta era ${correctItem?.label ?? "27"}.`
-      : `${correctItem?.label ?? "27"} era el único número que rompía el patrón.`;
+    ? level.question.explanation
+    : `La respuesta correcta era ${expectedAnswerLabel(level)}.`;
 
   return (
     <div className={styles.question}>
       <Topbar />
+      <LevelIndicator levelIndex={levelIndex} levelCount={levelCount} />
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
         <PopCard className={`${styles.feedbackCard} ${passed ? "" : styles.failure}`}>
           <span className={styles.feedbackIcon} aria-hidden="true">
@@ -240,9 +351,8 @@ function Feedback({
           </span>
           <h1>{title}</h1>
           <p>{body}</p>
-          {!passed && correctItem ? (
-            <p className={styles.correctAnswer}>Respuesta: {correctItem.label}</p>
-          ) : null}
+          {!passed ? <p className={styles.correctAnswer}>{level.question.explanation}</p> : null}
+          {passed ? <p className={styles.correctAnswer}>+{result.points} puntos</p> : null}
         </PopCard>
       </motion.div>
     </div>
@@ -250,15 +360,22 @@ function Feedback({
 }
 
 function Result({ result, onReview }: { result: FlashPopResult; onReview: () => void }) {
+  const summit = result.levelsCleared >= FLASH_POP_LEVEL_COUNT;
   return (
     <div className={styles.result}>
       <Topbar />
       <PopCard as="section" className={styles.resultCard} aria-labelledby="result-title">
         <PopChip variant="reward">Resultado · Demo</PopChip>
-        <h1 id="result-title">Nivel completado</h1>
+        <h1 id="result-title">{summit ? "Cima conquistada" : "Ascenso terminado"}</h1>
         <div className={styles.resultScore}>{result.score}</div>
         <p className={styles.resultScoreLabel}>puntos de partida</p>
         <div className={styles.resultMeta}>
+          <div className={styles.resultStat}>
+            <strong>
+              {result.levelsCleared} / {FLASH_POP_LEVEL_COUNT}
+            </strong>
+            <span>niveles superados</span>
+          </div>
           <div className={styles.resultStat}>
             <strong>{result.playerRank}.º</strong>
             <span>posición · {result.totalPlayers}</span>
@@ -296,8 +413,14 @@ function Result({ result, onReview }: { result: FlashPopResult; onReview: () => 
           ))}
         </div>
 
-        <PopButtonLink href="/flash-pop" size="hero" fullWidth className={styles.action}>
-          Volver al lobby <ArrowIcon />
+        <PopButtonLink
+          href="/flash-pop"
+          size="hero"
+          fullWidth
+          trailingIcon={<ArrowIcon />}
+          className={styles.action}
+        >
+          Volver al lobby
         </PopButtonLink>
         <PopButton variant="secondary" fullWidth className={styles.action} onClick={onReview}>
           Revisar respuesta
@@ -307,61 +430,26 @@ function Result({ result, onReview }: { result: FlashPopResult; onReview: () => 
   );
 }
 
-function Review({
-  result,
-  question,
-  onBack,
-}: {
-  result: NonNullable<ReturnType<typeof usePyramidSession>["latestResult"]>;
-  question: QuestionOfType<"odd-one-out">;
-  onBack: () => void;
-}) {
-  const answerId = typeof result.answer === "string" ? result.answer : null;
-  const answer = question.items.find((item) => item.id === answerId)?.label ?? "Sin respuesta";
-  const correct = question.items.find((item) => item.id === question.correctAnswer)?.label;
-
-  return (
-    <div className={styles.review}>
-      <Topbar />
-      <PopCard as="section" className={styles.reviewCard} aria-labelledby="review-title">
-        <div className={styles.reviewHeader}>
-          <div>
-            <p className={styles.eyebrow}>Revisión</p>
-            <h1 id="review-title">Encontrar el intruso</h1>
-          </div>
-          <PopChip tone={result.isCorrect ? "success" : "danger"}>
-            {result.isCorrect ? "Correcta" : "Fallada"}
-          </PopChip>
-        </div>
-        <p className={styles.reviewCopy}>{question.question}</p>
-        <div className={styles.reviewAnswer}>Tu respuesta: {answer}</div>
-        <p className={styles.reviewExplanation}>
-          La respuesta correcta era <strong>{correct}</strong>. {question.explanation}
-        </p>
-        <PopButton variant="secondary" fullWidth className={styles.action} onClick={onBack}>
-          Volver al resultado
-        </PopButton>
-      </PopCard>
-    </div>
-  );
-}
-
 export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge }) {
-  const sliceChallenge = useMemo(() => getSliceChallenge(challenge), [challenge]);
-  const session = usePyramidSession(sliceChallenge, {
+  const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
+  const session = usePyramidSession(scoredChallenge, {
     storageNamespace: FLASH_POP_STORAGE_NAMESPACE,
-    feedbackDuration: { correct: 900, incorrect: 1500, unanswered: 1500 },
+    feedbackDuration: { correct: 1100, incorrect: 1800, unanswered: 1800 },
   });
-  const sliceLevel = sliceChallenge.levels[0];
-  const currentLevel = session.currentLevel ?? sliceLevel;
-  const question = getOddOneOutQuestion(currentLevel);
+  const currentLevel = session.currentLevel ?? challenge.levels[0];
+  const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 
-  if (challenge.id !== FLASH_POP_CHALLENGE_ID || !sliceLevel || !question) {
+  if (
+    challenge.id !== FLASH_POP_CHALLENGE_ID ||
+    challenge.mode !== "pyramid" ||
+    challenge.levels.length !== FLASH_POP_LEVEL_COUNT ||
+    !currentLevel
+  ) {
     return (
       <PopCanvas maxWidth="content">
         <PopCard>
           <h1>Reto no disponible</h1>
-          <p>Este preview solo contiene el primer nivel de La Pirámide.</p>
+          <p>Este preview requiere los siete niveles de La Pirámide.</p>
           <PopButtonLink href="/flash-pop" className={styles.action}>
             Volver al lobby
           </PopButtonLink>
@@ -370,7 +458,12 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
     );
   }
 
-  const result = session.summary ? getFlashPopResult(session.summary) : null;
+  const result = session.summary
+    ? getFlashPopResult(session.summary, {
+        levelCount: challenge.levels.length,
+        totalTimeLimit: getChallengeTimeLimit(challenge),
+      })
+    : null;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -398,7 +491,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               exit={{ opacity: 0 }}
             >
               <Intro
-                challenge={sliceChallenge}
+                challenge={challenge}
                 storageAvailable={session.storageAvailable}
                 confirming={session.phase === "confirm"}
                 onConfirm={session.showConfirmation}
@@ -414,7 +507,12 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <Briefing level={currentLevel} onStart={session.beginLevel} />
+              <Briefing
+                level={currentLevel}
+                levels={challenge.levels}
+                levelIndex={currentLevelIndex}
+                onStart={session.beginLevel}
+              />
             </motion.div>
           ) : null}
           {session.phase === "playing" ? (
@@ -425,11 +523,20 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               exit={{ opacity: 0, x: -18 }}
             >
               <Question
-                question={question}
+                level={currentLevel}
+                levelIndex={currentLevelIndex}
+                levelCount={challenge.levels.length}
                 deadlineAt={session.deadlineAt}
+                locked={session.locked}
                 onReady={session.armCurrentLevel}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
+                onProgress={session.handleAnswerProgress}
+                onIncorrectAttempt={session.handleIncorrectAttempt}
+                onCodeAttempt={session.handleCodeAttempt}
+                onTimedResponseStart={() => undefined}
+                initialAnswer={session.initialAnswer}
+                attemptCount={session.codeAttempts.length}
               />
             </motion.div>
           ) : null}
@@ -440,7 +547,12 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Feedback result={session.latestResult} question={question} />
+              <Feedback
+                result={session.latestResult}
+                level={currentLevel}
+                levelIndex={currentLevelIndex}
+                levelCount={challenge.levels.length}
+              />
             </motion.div>
           ) : null}
           {session.phase === "results" && result ? (
@@ -453,18 +565,22 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               <Result result={result} onReview={session.showReview} />
             </motion.div>
           ) : null}
-          {session.phase === "review" && session.latestResult ? (
+          {session.phase === "review" && session.summary && session.record ? (
             <motion.div
               key="review"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Review
-                result={session.latestResult}
-                question={question}
-                onBack={session.showResults}
-              />
+              <div className={styles.review}>
+                <Topbar />
+                <FlashPopReview
+                  challenge={scoredChallenge}
+                  results={session.record.results}
+                  summary={session.summary}
+                  onBack={session.showResults}
+                />
+              </div>
             </motion.div>
           ) : null}
         </AnimatePresence>

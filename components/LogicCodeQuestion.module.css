@@ -132,3 +132,65 @@
   cursor: not-allowed;
   opacity: 0.24;
 }
+
+.challenge.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .clue {
+  border-color: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-control);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .clue strong {
+  color: var(--pop-color-social);
+}
+
+.pop .clue span {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .entryPanel {
+  border-color: rgb(105 87 232 / 22%);
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .entryPanel > div > span:first-child {
+  color: var(--pop-color-ink);
+}
+
+.pop .entryPanel > div > span:last-child {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .digitInput {
+  border-color: var(--pop-border-subtle);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+  caret-color: var(--pop-color-social);
+}
+
+.pop .digitInput:focus-visible {
+  border-color: var(--pop-color-focus);
+  outline-color: rgb(77 59 209 / 18%);
+}
+
+.pop .digitInput.filled {
+  border-color: var(--pop-color-social);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+}
+
+.pop .feedback {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .submitButton {
+  min-height: var(--pop-control-height);
+  border-radius: var(--pop-radius-control);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+}

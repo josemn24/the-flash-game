@@ -15,22 +15,23 @@ describe("Flash Pop demo social adapter", () => {
   });
 
   it("calculates capped season XP deterministically", () => {
-    expect(calculateSeasonXp({ levelsCleared: 0, timeUsed: 12 })).toBe(40);
-    expect(calculateSeasonXp({ levelsCleared: 1, timeUsed: 0 })).toBe(120);
+    expect(calculateSeasonXp({ levelsCleared: 0, timeUsed: 235 })).toBe(40);
+    expect(calculateSeasonXp({ levelsCleared: 7, timeUsed: 0 })).toBe(120);
     expect(calculateSeasonXp({ levelsCleared: 99, timeUsed: -10 })).toBe(120);
   });
 
   it("ranks the player by score and then time", () => {
     const result = getFlashPopResult({
       challengeId: "tabarnia-challenge-05",
-      levelsCleared: 1,
-      score: 10,
+      levelsCleared: 7,
+      score: 100,
       timeUsed: 0,
       outcome: "summit",
       completedAt: 100,
     });
 
     expect(result.playerRank).toBe(1);
+    expect(result.levelsCleared).toBe(7);
     expect(result.peers[0]?.player.id).toBe("javi");
     expect(result.totalPlayers).toBe(8);
     expect(result.seasonXpEarned).toBe(120);
@@ -47,7 +48,7 @@ describe("Flash Pop demo social adapter", () => {
     });
 
     expect(result.playerRank).toBe(8);
-    expect(result.seasonXpEarned).toBe(40);
+    expect(result.seasonXpEarned).toBe(59);
     expect(
       getFlashPopLobbyChallenge({
         status: "completed",

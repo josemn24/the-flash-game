@@ -203,3 +203,82 @@
     gap: 0.3rem;
   }
 }
+
+.root.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .shell {
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-card);
+  padding: var(--pop-space-3);
+  background: var(--pop-color-surface-raised);
+  box-shadow: none;
+}
+
+.pop .directionLabel {
+  color: var(--pop-color-social);
+}
+
+.pop .sequence::before {
+  background: linear-gradient(
+    to bottom,
+    rgb(105 87 232 / 18%),
+    rgb(105 87 232 / 55%),
+    rgb(19 184 154 / 30%)
+  );
+  box-shadow: none;
+}
+
+.pop .card {
+  min-height: 60px;
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-control);
+  padding: var(--pop-space-2) var(--pop-space-2) var(--pop-space-2) var(--pop-space-3);
+  background: var(--pop-color-surface);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.pop .position {
+  border-color: rgb(23 23 32 / 16%);
+  color: var(--pop-color-social);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .itemLabel {
+  color: var(--pop-color-ink);
+}
+
+.pop .control {
+  width: 44px;
+  height: 44px;
+  border-color: rgb(23 23 32 / 14%);
+  color: var(--pop-color-ink-muted);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .control:hover:not(:disabled) {
+  border-color: var(--pop-color-social);
+  color: var(--pop-color-social);
+  background: var(--pop-color-surface);
+}
+
+.pop .control:disabled {
+  border-color: rgb(23 23 32 / 8%);
+  color: var(--pop-color-ink-faint);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .movePulse {
+  border-color: var(--pop-color-brand);
+  background: rgb(215 255 25 / 16%);
+  box-shadow: none;
+}
+
+.pop .confirmButton {
+  min-height: var(--pop-control-height);
+  border-radius: var(--pop-radius-control);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+}

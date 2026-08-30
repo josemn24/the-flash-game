@@ -61,12 +61,14 @@ export function ConnectPairsQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: {
   question: Question;
   initialAnswer?: ConnectPairsAnswer;
   locked: boolean;
   onProgress: (answer: ConnectPairsAnswer) => void;
   onSubmit: (answer: ConnectPairsAnswer) => void;
+  variant?: "flash-pop";
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [paths, setPaths] = useState<Record<string, number[]>>(() =>
@@ -203,7 +205,10 @@ export function ConnectPairsQuestion({
   });
 
   return (
-    <section className={styles.root} aria-label="Conectar parejas">
+    <section
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      aria-label="Conectar parejas"
+    >
       <div className={styles.header}>
         <span>Conecta sin cruzar rutas</span>
         <strong>
