@@ -1,0 +1,130 @@
+.page {
+  --font-pop-ui: var(--font-manrope);
+  --font-pop-mono: var(--font-plex-mono);
+
+  min-height: 100dvh;
+  overflow-x: auto;
+  padding: 64px 40px 88px;
+  background:
+    radial-gradient(circle at 17% 0%, rgb(215 255 25 / 11%), transparent 29%),
+    radial-gradient(circle at 83% 4%, rgb(105 87 232 / 16%), transparent 26%), #111119;
+  color: #f7f5ed;
+  color-scheme: light;
+  font-family: var(--font-manrope);
+}
+
+.pageHeader {
+  width: min(100%, 760px);
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.pageHeader h1 {
+  margin: 8px 0 14px;
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.pageHeader > p:last-child {
+  max-width: 680px;
+  margin: 0 auto;
+  color: rgb(247 245 237 / 68%);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.kicker {
+  margin: 0;
+  color: #d7ff19;
+  font-family: var(--font-plex-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 390px);
+  gap: 46px;
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+  margin: 0 auto;
+}
+
+.bricolage {
+  --font-pop-display: var(--font-bricolage);
+}
+
+.fredoka {
+  --font-pop-display: var(--font-fredoka);
+}
+
+.bricolage h3,
+.fredoka h3 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.controlNote {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  margin: 36px auto 0;
+  padding: 10px 14px;
+  border: 1px solid rgb(247 245 237 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 5%);
+}
+
+.controlNote span {
+  color: #d7ff19;
+  font-family: var(--font-plex-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.controlNote p {
+  margin: 0;
+  color: rgb(247 245 237 / 62%);
+  font-size: 12px;
+}
+
+@media (max-width: 920px) {
+  .page {
+    padding: 44px 24px 72px;
+  }
+
+  .pageHeader {
+    text-align: left;
+  }
+
+  .comparisonGrid {
+    grid-template-columns: 390px;
+    gap: 48px;
+  }
+}
+
+@media (max-width: 440px) {
+  .page {
+    padding-inline: 18px;
+  }
+
+  .comparisonGrid {
+    grid-template-columns: minmax(0, 390px);
+    justify-content: start;
+  }
+
+  .controlNote {
+    align-items: flex-start;
+    margin-top: 44px;
+    border-radius: 18px;
+  }
+}

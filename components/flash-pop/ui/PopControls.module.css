@@ -1,0 +1,222 @@
+.button,
+.iconButton,
+.chip {
+  font-family: var(--pop-font-ui);
+}
+
+.button {
+  display: inline-flex;
+  min-height: var(--pop-control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--pop-space-2);
+  padding: 0 var(--pop-space-6);
+  border-radius: var(--pop-radius-control);
+  color: var(--pop-color-ink);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform var(--pop-motion-press-out) var(--pop-ease-out),
+    box-shadow var(--pop-motion-press-out) var(--pop-ease-out),
+    border-color var(--pop-motion-press-out) ease,
+    background var(--pop-motion-press-out) ease,
+    opacity var(--pop-motion-press-out) ease;
+}
+
+.button svg,
+.iconButton svg,
+.chip svg {
+  flex: 0 0 auto;
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.primary {
+  border: var(--pop-border-action);
+  background: var(--pop-color-brand);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.secondary {
+  border: var(--pop-border-subtle);
+  background: var(--pop-color-surface);
+  box-shadow: 0 3px 10px rgb(35 30 70 / 10%);
+}
+
+.button:hover:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+}
+
+.primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: #e1ff48;
+  box-shadow: 0 5px 0 rgb(23 23 32 / 18%);
+}
+
+.secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: rgb(23 23 32 / 28%);
+  box-shadow: 0 5px 14px rgb(35 30 70 / 13%);
+}
+
+.button:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 transparent;
+  transition-duration: var(--pop-motion-press-in);
+}
+
+.button:focus-visible,
+.iconButton:focus-visible {
+  outline: 3px solid var(--pop-color-focus);
+  outline-offset: 3px;
+}
+
+.button:disabled,
+.button[aria-disabled="true"],
+.iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.hero {
+  min-height: var(--pop-control-height-hero);
+  padding-inline: var(--pop-space-8);
+  font-size: 16px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--pop-radius-pill);
+  animation: spin 650ms linear infinite;
+}
+
+.iconButton {
+  display: inline-grid;
+  width: var(--pop-control-height-icon);
+  height: var(--pop-control-height-icon);
+  padding: 0;
+  place-items: center;
+  border-radius: var(--pop-radius-sm);
+  box-shadow: 0 3px 10px rgb(35 30 70 / 10%);
+  transition:
+    transform var(--pop-motion-press-out) var(--pop-ease-out),
+    box-shadow var(--pop-motion-press-out) var(--pop-ease-out),
+    opacity var(--pop-motion-press-out) ease;
+}
+
+.iconButton svg {
+  width: 22px;
+  height: 22px;
+}
+
+.iconSurface {
+  border: var(--pop-border-subtle);
+  background: var(--pop-color-surface);
+  color: var(--pop-color-ink);
+}
+
+.iconSocial {
+  border: 2px solid var(--pop-color-social);
+  background: var(--pop-color-social);
+  color: #fff;
+}
+
+.iconButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgb(35 30 70 / 14%);
+}
+
+.iconButton:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+  transition-duration: var(--pop-motion-press-in);
+}
+
+.chip {
+  display: inline-flex;
+  min-height: 30px;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--pop-radius-pill);
+  color: var(--pop-color-ink);
+  font-family: var(--pop-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.status {
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.data {
+  border: 1px solid rgb(255 255 255 / 16%);
+  background: rgb(23 23 32 / 84%);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  font-variant-numeric: tabular-nums;
+}
+
+.reward {
+  background: var(--pop-color-reward);
+}
+
+.neutral {
+  border: var(--pop-border-subtle);
+  background: var(--pop-color-surface);
+}
+
+.social {
+  background: var(--pop-color-social);
+  color: #fff;
+}
+
+.info {
+  background: var(--pop-color-info);
+}
+
+.success {
+  background: var(--pop-color-success);
+}
+
+.danger {
+  background: var(--pop-color-danger);
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .iconButton {
+    transition: none;
+  }
+
+  .button:hover,
+  .button:active,
+  .iconButton:hover,
+  .iconButton:active {
+    transform: none;
+  }
+
+  .spinner {
+    animation: none;
+    border-right-color: currentColor;
+    opacity: 0.45;
+  }
+}

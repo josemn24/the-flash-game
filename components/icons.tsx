@@ -122,6 +122,22 @@ export function RotateIcon(props: IconProps) {
   );
 }
 
+export function BellIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 8h18c0-1-3-1-3-8ZM10 20h4" />
+    </svg>
+  );
+}
+
+export function TrophyIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M8 4h8v3c0 4-1.8 6-4 6s-4-2-4-6V4Zm4 9v4m-4 3h8M8 6H5v1c0 2 1.2 3.5 3.4 4M16 6h3v1c0 2-1.2 3.5-3.4 4" />
+    </svg>
+  );
+}
+
 export function UndoIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

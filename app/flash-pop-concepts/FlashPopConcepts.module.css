@@ -137,6 +137,7 @@
   background: var(--canvas);
   box-shadow: 0 28px 90px rgb(0 0 0 / 42%);
   color: var(--ink);
+  font-family: var(--font-pop-ui, var(--font-body));
   isolation: isolate;
 }
 
@@ -227,6 +228,7 @@
   gap: 4px;
   padding: 0 11px;
   border-radius: 999px;
+  font-family: var(--font-pop-mono, var(--font-mono));
   font-size: 11px;
   font-weight: 850;
 }
@@ -302,6 +304,7 @@
   padding: 7px 10px;
   background: rgb(23 23 32 / 82%);
   color: #fff;
+  font-family: var(--font-pop-mono, var(--font-mono));
   backdrop-filter: blur(8px);
 }
 
@@ -331,6 +334,7 @@
 }
 
 .heroBody h3 {
+  font-family: var(--font-pop-display, var(--font-display));
   font-size: 28px;
   font-weight: 950;
   letter-spacing: -0.055em;
@@ -394,6 +398,7 @@
   padding: 7px 9px;
   background: var(--gold);
   color: var(--ink);
+  font-family: var(--font-pop-mono, var(--font-mono));
 }
 
 .primaryCta {
@@ -437,6 +442,7 @@
 
 .eyebrow {
   color: var(--muted);
+  font-family: var(--font-pop-mono, var(--font-mono));
   font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.08em;
@@ -451,6 +457,7 @@
 
 .seasonXp {
   color: var(--social);
+  font-family: var(--font-pop-mono, var(--font-mono));
   font-size: 11px;
   font-weight: 850;
 }

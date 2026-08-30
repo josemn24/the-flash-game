@@ -4,7 +4,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 
 ## Estado
 
-- Estado de la especificación: dirección aprobada; decisiones de producto documentadas y lista para iniciar la fase visual del vertical slice.
+- Estado de la especificación: fases 0 y 1 cerradas; dirección visual, tipografía, baseline, tema aislado, primitivas y laboratorio vivo aprobados. El siguiente trabajo es el lobby dirigido por estados de la Fase 2.
 - Alcance de validación: lobby, pregunta, feedback y resultado.
 - Plataforma inicial: web responsive, con prioridad móvil.
 - Resolución de referencia móvil: 390 × 844 px.
@@ -19,6 +19,15 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 5. [`05-game-feel.md`](05-game-feel.md): movimiento, feedback, sonido y háptica.
 6. [`06-implementation-roadmap.md`](06-implementation-roadmap.md): fases, impacto técnico y criterios de aceptación.
 7. [`07-visual-direction-decision.md`](07-visual-direction-decision.md): propuestas comparadas y dirección visual seleccionada.
+8. [`08-typography-decision.md`](08-typography-decision.md): familias aprobadas, responsabilidades y reglas de uso.
+9. [`baseline/README.md`](baseline/README.md): capturas reproducibles del producto anterior a Flash Pop.
+
+## Implementación disponible
+
+- `/flash-pop`: shell responsive aislado, ya construido con las primitivas públicas.
+- `/flash-pop/ui-kit`: documentación viva de tokens, variantes, estados y comportamiento responsive; no está enlazada desde la navegación de producto.
+- `components/flash-pop/ui/index.ts`: única entrada pública del kit.
+- `features/game/useCountdown.ts`: lógica temporal compartida por el timer oscuro y `PopTimer`.
 
 ## Decisión central
 

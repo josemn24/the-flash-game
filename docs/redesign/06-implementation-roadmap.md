@@ -26,15 +26,15 @@ Las decisiones de producto aprobadas son: un único intento oficial sin práctic
 
 ## Fase 0: baseline y contrato
 
-Estado: **dirección visual seleccionada**. Soft Diorama es la base aprobada; consulta `07-visual-direction-decision.md`.
+Estado: **fase completada**. Soft Diorama es la base aprobada, el sistema tipográfico es Manrope + Fredoka + IBM Plex Mono, el baseline está archivado en `baseline/` y `/flash-pop` es la ruta aislada del vertical slice.
 
 ### Trabajo
 
-- Aprobar esta documentación.
-- Mantener archivadas las tres direcciones comparables y la justificación de Soft Diorama.
-- Seleccionar tipografía con licencia.
-- Capturar baseline móvil y escritorio de lobby, pregunta y resultado.
-- Definir una ruta o flag de preview para Flash Pop.
+- Aprobar esta documentación. **Completado.**
+- Mantener archivadas las tres direcciones comparables y la justificación de Soft Diorama. **Completado.**
+- Seleccionar tipografía con licencia. **Completado.**
+- Capturar baseline móvil y escritorio de lobby, pregunta y resultado. **Completado.**
+- Definir una ruta o flag de preview para Flash Pop. **Completado con `/flash-pop`.**
 
 ### Salida
 
@@ -49,24 +49,29 @@ No quedan decisiones abiertas que cambien estructura, paleta o estilo de ilustra
 
 ## Fase 1: fundamentos
 
+Estado: **fase completada**. El tema aislado, las primitivas públicas, el lobby consumidor y el laboratorio `/flash-pop/ui-kit` constituyen la base integrada de Flash Pop. El tema oscuro, scoring, sesiones y datos no se han migrado.
+
 ### Trabajo
 
-- Añadir tokens Flash Pop.
-- Crear canvas y patrón claro.
-- Incorporar tipografía aprobada.
-- Crear primitivas de botón, chip, avatar, card y timer.
-- Crear documentación de estados en una página de desarrollo o ampliar `/formatos` con un laboratorio aislado.
+- Añadir tokens Flash Pop. **Completado.**
+- Crear canvas y patrón claro. **Completado.**
+- Incorporar tipografía aprobada. **Completado.**
+- Crear primitivas de botón, chip, avatar, card y timer. **Completado.**
+- Crear documentación de estados en una página de desarrollo. **Completado con `/flash-pop/ui-kit`.**
+- Migrar el lobby aislado para consumir exclusivamente las primitivas públicas. **Completado.**
+- Compartir la lógica de cuenta atrás sin alterar el timer oscuro existente. **Completado.**
 
 ### Verificación
 
-- Contraste automatizado y manual.
-- Foco visible.
-- 320, 390, 768 y 1440 px.
-- Reducción de movimiento.
+- Contraste automatizado y manual. **Completado para ocho combinaciones aprobadas.**
+- Foco visible, hover, pressed, loading y disabled. **Completado.**
+- 320, 390, 768 y 1440 px sin overflow horizontal. **Completado en lobby y laboratorio.**
+- Reducción de movimiento. **Completado.**
+- Regresión visual de `/` y una pregunta oscura. **Completado contra el baseline.**
 
 ### Criterio de cierre
 
-Las primitivas cubren todos sus estados sin depender de una pantalla concreta.
+Cumplido: las primitivas cubren sus estados sin depender de una pantalla concreta y el lobby no conserva implementaciones locales equivalentes.
 
 ## Fase 2: lobby
 
@@ -258,10 +263,10 @@ El vertical slice está terminado cuando:
 
 La extensión a todos los formatos requiere además la prueba social real; no forma parte de la Definition of done técnica del primer slice.
 
-## Primer hito ejecutable
+## Próximo hito ejecutable
 
 La siguiente tarea de implementación debe limitarse a:
 
-> Crear el tema Flash Pop y una versión estática responsive del lobby con datos demo, sin modificar todavía el flujo de preguntas.
+> Crear el adaptador social demo y convertir el shell estático del lobby en una pantalla dirigida por estados, sin modificar todavía el flujo de preguntas ni la persistencia del intento.
 
-Este hito permite validar la decisión visual más grande antes de tocar estados complejos del juego.
+Este hito inicia la Fase 2 sobre los fundamentos ya validados y mantiene la migración de preguntas para la Fase 3.

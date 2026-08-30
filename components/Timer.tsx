@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
 import styles from "@/components/Timer.module.css";
+import { useCountdown } from "@/features/game/useCountdown";
 
 type TimerProps = {
   duration: number;
@@ -14,12 +14,6 @@ type TimerProps = {
   size?: "default" | "compact";
 };
 
-type TimerState = {
-  duration: number;
-  remaining: number;
-  resetKey?: string | number;
-};
-
 export function Timer({
   duration,
   active,
@@ -29,51 +23,15 @@ export function Timer({
   deadlineAt,
   size = "default",
 }: TimerProps) {
-  const [timerState, setTimerState] = useState<TimerState>({
+  const { ratio, urgent, display } = useCountdown({
     duration,
-    remaining: duration,
+    active,
+    onTimeUp,
+    onTick,
     resetKey,
+    deadlineAt,
+    urgency: { type: "seconds", value: 5 },
   });
-  const onTimeUpRef = useRef(onTimeUp);
-  const onTickRef = useRef(onTick);
-
-  useEffect(() => {
-    onTimeUpRef.current = onTimeUp;
-    onTickRef.current = onTick;
-  }, [onTimeUp, onTick]);
-
-  useEffect(() => {
-    if (!active) return;
-
-    const endAt = deadlineAt ?? Date.now() + duration * 1000;
-    let frameId = 0;
-    let finished = false;
-
-    const update = () => {
-      const next = Math.max(0, (endAt - Date.now()) / 1000);
-      setTimerState({ duration, remaining: next, resetKey });
-      onTickRef.current?.(next);
-
-      if (next <= 0) {
-        if (!finished) {
-          finished = true;
-          onTimeUpRef.current();
-        }
-        return;
-      }
-
-      frameId = requestAnimationFrame(update);
-    };
-
-    frameId = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(frameId);
-  }, [deadlineAt, duration, active, resetKey]);
-
-  const isCurrentTimerState = timerState.duration === duration && timerState.resetKey === resetKey;
-  const visibleRemaining = active && isCurrentTimerState ? timerState.remaining : duration;
-  const ratio = Math.min(1, Math.max(0, visibleRemaining / duration));
-  const urgent = visibleRemaining > 0 && visibleRemaining <= 5;
-  const display = Math.ceil(visibleRemaining);
   const circumference = 2 * Math.PI * 27;
 
   return (

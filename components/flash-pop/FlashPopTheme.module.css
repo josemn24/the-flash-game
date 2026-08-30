@@ -1,0 +1,57 @@
+.theme {
+  --pop-color-canvas: #f4f1ea;
+  --pop-color-surface: #ffffff;
+  --pop-color-surface-raised: #fbfaf6;
+  --pop-color-surface-soft: #eae7ff;
+  --pop-color-ink: #171720;
+  --pop-color-ink-muted: #686872;
+  --pop-color-ink-faint: #94949c;
+  --pop-color-brand: #d7ff19;
+  --pop-color-social: #6957e8;
+  --pop-color-success: #13b89a;
+  --pop-color-danger: #ff7276;
+  --pop-color-info: #74a7f5;
+  --pop-color-reward: #ffd85a;
+  --pop-color-focus: #4d3bd1;
+
+  --pop-border-subtle: 1px solid rgb(23 23 32 / 12%);
+  --pop-border-action: 2px solid rgb(23 23 32 / 78%);
+
+  --pop-space-1: 4px;
+  --pop-space-2: 8px;
+  --pop-space-3: 12px;
+  --pop-space-4: 16px;
+  --pop-space-5: 20px;
+  --pop-space-6: 24px;
+  --pop-space-8: 32px;
+  --pop-space-10: 40px;
+  --pop-space-12: 48px;
+
+  --pop-radius-sm: 12px;
+  --pop-radius-control: 18px;
+  --pop-radius-card: 24px;
+  --pop-radius-hero: 30px;
+  --pop-radius-pill: 999px;
+
+  --pop-shadow-control: 0 3px 0 rgb(23 23 32 / 18%);
+  --pop-shadow-card: 0 8px 22px rgb(35 30 70 / 12%);
+  --pop-shadow-hero: 0 18px 48px rgb(35 30 70 / 18%);
+  --pop-shadow-dialog: 0 28px 80px rgb(23 23 32 / 28%);
+
+  --pop-font-ui: var(--font-flash-pop-ui), sans-serif;
+  --pop-font-display: var(--font-flash-pop-display), sans-serif;
+  --pop-font-mono: var(--font-flash-pop-mono), monospace;
+
+  --pop-control-height: 56px;
+  --pop-control-height-hero: 64px;
+  --pop-control-height-icon: 48px;
+  --pop-motion-press-in: 90ms;
+  --pop-motion-press-out: 140ms;
+  --pop-motion-card-enter: 320ms;
+  --pop-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  min-height: 100dvh;
+  color: var(--pop-color-ink);
+  color-scheme: light;
+  font-family: var(--pop-font-ui);
+}

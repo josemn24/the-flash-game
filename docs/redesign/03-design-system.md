@@ -7,28 +7,29 @@ Este documento traduce Flash Pop a reglas implementables. Los nombres propuestos
 ## Tokens de color
 
 ```css
-:root {
-  --color-canvas: #f7f5ed;
-  --color-surface: #ffffff;
-  --color-surface-soft: #efede5;
-  --color-ink: #171720;
-  --color-ink-muted: #686872;
-  --color-ink-faint: #94949c;
+[data-theme="flash-pop"] {
+  --pop-color-canvas: #f4f1ea;
+  --pop-color-surface: #ffffff;
+  --pop-color-surface-raised: #fbfaf6;
+  --pop-color-surface-soft: #eae7ff;
+  --pop-color-ink: #171720;
+  --pop-color-ink-muted: #686872;
+  --pop-color-ink-faint: #94949c;
 
-  --color-brand: #d7ff19;
-  --color-social: #6957e8;
-  --color-success: #13b89a;
-  --color-danger: #ff7276;
-  --color-info: #74a7f5;
-  --color-reward: #ffd85a;
+  --pop-color-brand: #d7ff19;
+  --pop-color-social: #6957e8;
+  --pop-color-success: #13b89a;
+  --pop-color-danger: #ff7276;
+  --pop-color-info: #74a7f5;
+  --pop-color-reward: #ffd85a;
 
-  --color-border: rgb(23 23 32 / 0.12);
-  --color-border-strong: rgb(23 23 32 / 0.78);
-  --color-focus: #4d3bd1;
+  --pop-border-subtle: 1px solid rgb(23 23 32 / 12%);
+  --pop-border-action: 2px solid rgb(23 23 32 / 78%);
+  --pop-color-focus: #4d3bd1;
 }
 ```
 
-Antes de sustituir los tokens globales actuales se implementarán bajo un tema aislado, por ejemplo `data-theme="flash-pop"`. Esto evita una migración accidental de todos los formatos durante el vertical slice.
+Los tokens están implementados bajo `data-theme="flash-pop"` y el layout de `/flash-pop`; no sustituyen variables globales. Esto evita una migración accidental de los formatos oscuros durante el vertical slice.
 
 ## Economía visual: puntos y rayos
 
@@ -95,24 +96,53 @@ shadow-dialog   0 28px 80px rgb(23 23 32 / 0.28)
 
 Un control pulsado reduce su sombra y se desplaza verticalmente. La animación no puede provocar cambios de layout.
 
-## Escala tipográfica
+## Sistema tipográfico
 
-| Rol         | Móvil | Escritorio |     Peso | Línea |
-| ----------- | ----: | ---------: | -------: | ----: |
-| Display XL  | 48 px |      68 px |      900 |  0.95 |
-| Display     | 36 px |      48 px |      900 |   1.0 |
-| H1          | 30 px |      40 px |  850–900 |  1.05 |
-| H2          | 24 px |      30 px |      800 |   1.1 |
-| H3          | 20 px |      24 px |      800 |  1.15 |
-| Body        | 16 px |      17 px |      500 |   1.5 |
-| Body strong | 16 px |      17 px |      700 |   1.4 |
-| Label       | 14 px |      14 px |      700 |  1.25 |
-| Meta        | 13 px |      13 px |      650 |   1.3 |
-| Timer       | 20 px |      22 px | 800 mono |     1 |
+| Familia       | Responsabilidad                                   | Uso aproximado |
+| ------------- | ------------------------------------------------- | -------------: |
+| Manrope       | Interfaz funcional, navegación y lectura          |        70–80 % |
+| Fredoka       | Voz de marca, titulares y momentos emocionales    |        15–20 % |
+| IBM Plex Mono | Tiempo, score, posición, nivel y datos de sistema |         5–10 % |
 
-No se usa `Arial Narrow` para cuerpo ni títulos principales del vertical slice.
+### Escala
+
+| Rol              | Familia       | Móvil | Escritorio | Peso | Línea |
+| ---------------- | ------------- | ----: | ---------: | ---: | ----: |
+| Brand Display XL | Fredoka       | 48 px |      68 px |  700 |  0.95 |
+| Brand Display    | Fredoka       | 36 px |      48 px |  700 |   1.0 |
+| Screen H1        | Manrope       | 30 px |      40 px |  800 |  1.05 |
+| H2               | Manrope       | 24 px |      30 px |  800 |   1.1 |
+| H3               | Manrope       | 20 px |      24 px |  800 |  1.15 |
+| Body             | Manrope       | 16 px |      17 px |  500 |   1.5 |
+| Body strong      | Manrope       | 16 px |      17 px |  700 |   1.4 |
+| Label            | Manrope       | 14 px |      14 px |  700 |  1.25 |
+| Meta             | Manrope       | 13 px |      13 px |  650 |   1.3 |
+| Timer / score    | IBM Plex Mono | 20 px |      22 px |  700 |     1 |
+
+Fredoka se reserva para textos breves de alto impacto: nombres de retos, presentación de juegos, resultados, hitos y desbloqueos. Se usa normalmente desde 24 px, en peso 650–700 y con un máximo de uno o dos elementos por pantalla. No se usa en párrafos, navegación, formularios ni bloques densos.
+
+IBM Plex Mono usa números tabulares cuando el dato cambia durante el juego. No se utiliza como recurso decorativo para sustituir a Manrope en etiquetas ordinarias.
+
+No se usa `Arial Narrow` para cuerpo ni títulos principales del vertical slice. La decisión completa y su comparativa están registradas en `08-typography-decision.md`.
 
 ## Componentes base
+
+Las primitivas de fundamentos se exportan desde `components/flash-pop/ui/index.ts`. Su documentación viva se encuentra en `/flash-pop/ui-kit`, una ruta de desarrollo que no aparece en la navegación pública.
+
+| Primitiva         | Contrato público principal                                                            |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `PopCanvas`       | canvas claro, patrón, safe areas y ancho `wide \| content \| none`                    |
+| `PopButton`       | `primary \| secondary`, `default \| hero`, iconos, ancho completo, loading y disabled |
+| `PopButtonLink`   | mismo lenguaje visual para navegación                                                 |
+| `PopIconButton`   | 48 × 48 px, etiqueta accesible obligatoria y superficie `surface \| social`           |
+| `PopChip`         | unión tipada para estados semánticos, datos y recompensa                              |
+| `PopAvatar`       | imagen o iniciales, tamaños `sm \| md \| lg` y tonos controlados                      |
+| `PopAvatarStack`  | máximo visible configurable, overflow `+N` y etiqueta textual                         |
+| `PopCard`         | elemento semántico, superficies `surface \| soft`, tres elevaciones y tres densidades |
+| `PopTimerDisplay` | representación determinista normal, urgente y finalizada                              |
+| `PopTimer`        | API temporal compatible con el timer existente y urgencia durante el último 25 %      |
+
+El timer oscuro y `PopTimer` comparten `useCountdown`. El timer oscuro conserva su API, markup y apariencia; el hook centraliza deadline, clamping a cero, reset y disparo único de `onTimeUp`.
 
 ### App shell
 
