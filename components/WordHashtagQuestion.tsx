@@ -193,6 +193,7 @@ export function WordHashtagQuestion({
     <section
       className={`${styles.root} ${className ?? ""}`}
       aria-label="Hashtag de cuatro palabras"
+      data-format="word-hashtag"
     >
       <div className={styles.header}>
         <span>Tablero de palabras</span>
@@ -211,6 +212,13 @@ export function WordHashtagQuestion({
           const correct = letter === solution[cell];
           const selected = selectedCell === cell;
           const target = dragTarget === cell;
+          const state = correct
+            ? "correct"
+            : target
+              ? "target"
+              : selected
+                ? "selected"
+                : "displaced";
           return (
             <button
               key={cell}
@@ -221,6 +229,7 @@ export function WordHashtagQuestion({
               type="button"
               role="gridcell"
               data-word-hashtag-cell={cell}
+              data-state={state}
               className={`${styles.tile} ${correct ? styles.correct : styles.displaced} ${selected ? styles.selected : ""} ${target ? styles.dragTarget : ""}`}
               disabled={!isMovable(cell)}
               aria-selected={selected}

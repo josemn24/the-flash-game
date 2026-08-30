@@ -47,7 +47,7 @@ export function ClassificationQuestion({
   };
 
   return (
-    <div className={`${styles.root} ${className ?? ""}`}>
+    <div className={`${styles.root} ${className ?? ""}`} data-format="classification">
       <div className={styles.progressHeader}>
         <span>Clasificación</span>
         <span>
@@ -74,7 +74,11 @@ export function ClassificationQuestion({
           <div className={styles.binaryHeader} aria-hidden="true">
             <span>Elemento</span>
             {categories.map((category) => (
-              <span key={category} className={styles.categoryHeading}>
+              <span
+                key={category}
+                className={styles.categoryHeading}
+                data-role="classification-category"
+              >
                 {categoryLabel(category)}
               </span>
             ))}
@@ -121,7 +125,11 @@ export function ClassificationQuestion({
           <div className={styles.matrixHeader} aria-hidden="true">
             <span>Elemento</span>
             {categories.map((category) => (
-              <span key={category} className={styles.categoryHeading}>
+              <span
+                key={category}
+                className={styles.categoryHeading}
+                data-role="classification-category"
+              >
                 {categoryLabel(category)}
               </span>
             ))}

@@ -134,15 +134,93 @@
   background: var(--pop-color-surface-soft);
 }
 
-.flashPopFormat > :global(div:nth-child(3)) {
+.flashPopFormat[data-format="classification"] > :global(div:nth-child(3)) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface-soft) !important;
 }
 
-.flashPopFormat > :global(div:nth-child(3)) > :global(div) {
+.flashPopFormat[data-format="classification"] > :global(div:nth-child(3)) > :global(div) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface) !important;
+}
+
+.flashPopFormat[data-format="classification"] :global([data-role="classification-category"]) {
+  color: var(--pop-color-focus) !important;
+}
+
+.flashPopFormat[data-format="classification"] :global(button[aria-pressed="true"]),
+.flashPopFormat[data-format="classification"] :global(button[aria-pressed="true"]:hover) {
+  border-color: var(--pop-color-focus) !important;
+  color: #ffffff !important;
+  background: var(--pop-color-focus) !important;
+  box-shadow: 0 0 0 2px rgb(77 59 209 / 18%) !important;
+}
+
+.flashPopFormat[data-format="classification"] :global(button[aria-pressed="true"] span),
+.flashPopFormat[data-format="classification"] :global(button[aria-pressed="true"] svg) {
+  color: #ffffff !important;
+}
+
+.flashPopFormat[data-format="word-hashtag"] :global(strong) {
+  color: var(--pop-color-focus) !important;
+}
+
+.flashPopFormat[data-format="word-hashtag"]
+  :global([role="grid"][aria-label^="Hashtag de palabras"])
+  :global(button[data-state="correct"]) {
+  border-color: var(--pop-color-success) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-success) !important;
+}
+
+.flashPopFormat[data-format="word-hashtag"]
+  :global([role="grid"][aria-label^="Hashtag de palabras"])
+  :global(button[data-state="displaced"]) {
+  border-color: var(--pop-color-brand) !important;
+  color: var(--pop-color-ink) !important;
+  background: var(--pop-color-brand) !important;
+}
+
+.flashPopFormat[data-format="word-hashtag"]
+  :global([role="grid"][aria-label^="Hashtag de palabras"])
+  :global(button[data-state="selected"]),
+.flashPopFormat[data-format="word-hashtag"]
+  :global([role="grid"][aria-label^="Hashtag de palabras"])
+  :global(button[data-state="selected"]:hover) {
+  border-color: var(--pop-color-focus) !important;
+  color: #ffffff !important;
+  background: var(--pop-color-focus) !important;
+  box-shadow: 0 0 0 3px rgb(77 59 209 / 22%) !important;
+}
+
+.flashPopFormat[data-format="word-hashtag"]
+  :global([role="grid"][aria-label^="Hashtag de palabras"])
+  :global(button[data-state="target"]) {
+  border-color: var(--pop-color-social) !important;
+  color: #ffffff !important;
+  background: var(--pop-color-social) !important;
+  box-shadow: 0 0 0 3px rgb(105 87 232 / 22%) !important;
+}
+
+.flashPopFormat
+  :global([role="grid"][aria-label^="Sopa de letras"])
+  :global([role="gridcell"][data-state="found"]) {
+  border-color: var(--pop-color-focus) !important;
+  color: #ffffff !important;
+  background: var(--pop-color-focus) !important;
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 28%),
+    0 0 0 1px var(--pop-color-focus) !important;
+}
+
+.flashPopFormat
+  :global([role="grid"][aria-label^="Sopa de letras"])
+  :global([role="gridcell"][data-state="found"] button),
+.flashPopFormat
+  :global([role="grid"][aria-label^="Sopa de letras"])
+  :global([role="gridcell"][data-state="found"] button span) {
+  color: #ffffff !important;
 }
 
 .choiceInput {

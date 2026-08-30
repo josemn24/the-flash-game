@@ -19,4 +19,20 @@ describe("Word-search target list", () => {
     expect(markup).toContain('class="sr-only" aria-label="Palabras objetivo"');
     expect(markup).not.toContain("WordSearchQuestion_wordList");
   });
+
+  it("exposes the found-cell state for visual feedback", () => {
+    const question = questionsById["abrahamic-word-search-biblical-characters"];
+    const markup = renderToStaticMarkup(
+      <WordSearchQuestion
+        question={question}
+        initialAnswer={{ foundWordIds: ["isaac"] }}
+        locked={false}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(markup.match(/data-state="found"/g)).toHaveLength(5);
+  });
 });

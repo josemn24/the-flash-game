@@ -94,10 +94,25 @@ export function WordSearchBoard({
             : selected
               ? ", seleccionada"
               : "";
+        const state = found
+          ? "found"
+          : missing
+            ? "missing"
+            : selected
+              ? "preview"
+              : rejected
+                ? "invalid"
+                : "idle";
         const className = `${styles.cell} ${found ? styles.cellFound : ""} ${missing ? styles.cellMissing : ""} ${selected ? styles.cellPreview : ""} ${rejected ? styles.cellInvalid : ""}`;
         const content = <span>{normalizeWordSearchText(letter)}</span>;
         return (
-          <div key={cell} className={className} role="gridcell" aria-selected={selected || found}>
+          <div
+            key={cell}
+            className={className}
+            role="gridcell"
+            aria-selected={selected || found}
+            data-state={state}
+          >
             {interactive ? (
               <button
                 ref={(node) => {
