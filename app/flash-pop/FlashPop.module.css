@@ -33,7 +33,7 @@
   width: 42px;
   height: 42px;
   place-items: center;
-  border: var(--pop-border-action);
+  border: var(--pop-border-flash);
   border-radius: 14px;
   background: var(--pop-color-brand);
   box-shadow: var(--pop-shadow-control);

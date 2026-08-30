@@ -34,7 +34,7 @@
 }
 
 .primary {
-  border: var(--pop-border-action);
+  border: var(--pop-border-flash);
   background: var(--pop-color-brand);
   box-shadow: var(--pop-shadow-control);
 }

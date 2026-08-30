@@ -24,6 +24,7 @@ Este documento traduce Flash Pop a reglas implementables. Los nombres propuestos
   --pop-color-reward: #ffd85a;
 
   --pop-border-subtle: 1px solid rgb(23 23 32 / 12%);
+  --pop-border-flash: 1.5px solid rgb(23 23 32 / 36%);
   --pop-border-action: 2px solid rgb(23 23 32 / 78%);
   --pop-color-focus: #4d3bd1;
 }
@@ -85,6 +86,7 @@ radius-pill     999 px  chips, contadores y avatares
 
 ```text
 border-subtle  1 px / 12 % ink
+border-flash   1.5 px / 36 % ink
 border-action  2 px / 78 % ink
 border-state   2 px / color semántico
 
@@ -155,7 +157,8 @@ El timer oscuro y `PopTimer` comparten `useCountdown`. El timer oscuro conserva 
 
 - Fondo Flash.
 - Texto e icono Ink.
-- Borde Ink de 2 px en la variante hero.
+- Borde Ink suave al 36 % de 1,5 px; conserva definición sin enmarcar el CTA en negro.
+- La marca sobre fondo Flash reutiliza el mismo borde; el rayo interior permanece en Ink sólido.
 - Altura mínima 56 px; 64 px en CTA hero.
 - Radio control.
 - Sombra física corta.
