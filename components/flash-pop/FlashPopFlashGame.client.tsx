@@ -300,9 +300,11 @@ function ResultStage({
 function StatCard({ icon, value, label, tone }: { icon: React.ReactNode; value: string | number; label: string; tone?: "success" | "danger" }) {
   return (
     <PopCard className={`${styles.statCard} ${tone === "success" ? styles.statSuccess : tone === "danger" ? styles.statDanger : ""}`}>
-      {icon}
+      <div className={styles.statHeader}>
+        <span>{label}</span>
+        {icon}
+      </div>
       <strong>{value}</strong>
-      <span>{label}</span>
     </PopCard>
   );
 }
@@ -371,7 +373,7 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
           {session.phase === "intro" ? <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Intro challenge={scoredChallenge} onStart={session.start} /></motion.div> : null}
           {session.phase === "playing" && session.question ? <motion.div className={styles.stageFrame} key={session.question.id} initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -18 }}><QuestionStage challenge={scoredChallenge} question={session.question} questionIndex={session.questionIndex} locked={session.locked} onSubmit={session.submitAnswer} onTimeUp={session.handleTimeUp} onProgress={session.handleAnswerProgress} onIncorrectAttempt={session.handleIncorrectAttempt} onProgressiveClueReveal={session.handleProgressiveClueReveal} onCodeAttempt={session.handleCodeAttempt} onTimedResponseStart={session.handleTimedResponseStart} attemptCount={session.codeAttempts.length} /></motion.div> : null}
           {session.phase === "transition" ? <motion.div key={`transition-${session.questionIndex}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Transition result={lastResult} timedOut={session.lastTimedOut} isLast={session.questionIndex === scoredChallenge.questions.length - 1} /></motion.div> : null}
-          {session.phase === "results" ? <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ResultStage challenge={scoredChallenge} results={session.results} score={session.score} onReview={session.showReview} onReplay={session.replay} /></motion.div> : null}
+          {session.phase === "results" ? <motion.div className={styles.stageFrame} key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ResultStage challenge={scoredChallenge} results={session.results} score={session.score} onReview={session.showReview} onReplay={session.replay} /></motion.div> : null}
           {session.phase === "review" ? <motion.div key="review" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ReviewStage challenge={scoredChallenge} results={session.results} onBack={session.showResults} onReplay={session.replay} /></motion.div> : null}
         </AnimatePresence>
       </PopCanvas>

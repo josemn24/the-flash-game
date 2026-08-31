@@ -193,8 +193,17 @@
 }
 
 .promptContext {
-  margin: 0 0 13px;
-  color: var(--pop-color-social);
+  display: inline-block;
+  max-width: 100%;
+  margin: 0 0 16px;
+  border-left: 3px solid var(--pop-color-social);
+  border-radius: 0 8px 8px 0;
+  padding: 6px 10px;
+  color: var(--pop-color-focus);
+  background: rgb(105 87 232 / 9%);
+  font-size: clamp(0.64rem, 1.4vw, 0.75rem);
+  font-weight: 900;
+  letter-spacing: 0.07em;
 }
 
 .questionCard h1 {
@@ -276,6 +285,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+  padding: 18px 24px;
+}
+
+.accuracyCard .eyebrow {
+  margin-top: 0;
 }
 
 .accuracyCard strong {
@@ -320,16 +334,29 @@
 }
 
 .statCard {
-  display: grid;
+  display: flex;
   min-height: 112px;
-  align-content: space-between;
-  gap: 7px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
   padding: 16px;
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.statHeader span {
+  color: var(--pop-color-ink-muted);
+  font-size: 10px;
+  font-weight: 800;
 }
 
 .statCard svg { width: 19px; color: var(--pop-color-ink-muted); }
 .statCard strong { font-family: var(--pop-font-display); font-size: 25px; }
-.statCard span { color: var(--pop-color-ink-muted); font-size: 10px; font-weight: 800; }
 .statSuccess svg { color: var(--pop-color-success); }
 .statDanger svg { color: #c83d55; }
 
@@ -363,8 +390,6 @@
 @media (max-width: 700px) {
   .stage { min-height: calc(100dvh - 32px); }
   .resultLayout { grid-template-columns: 1fr; margin-top: 12px; }
-  .resultStats { grid-row: 1; }
-  .resultCard { grid-row: 2; }
   .reviewItem summary { align-items: start; }
   .reviewItem summary > :global(.card) { margin-left: auto; }
 }

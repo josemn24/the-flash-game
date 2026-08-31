@@ -360,6 +360,10 @@
   margin-top: var(--pop-space-4);
 }
 
+.root.pop .progressTrack {
+  display: none;
+}
+
 .pop .matrix,
 .pop .binaryList {
   border: var(--pop-border-subtle);
