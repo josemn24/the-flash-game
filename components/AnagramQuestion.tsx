@@ -6,16 +6,17 @@ import { useState } from "react";
 import styles from "@/components/AnagramQuestion.module.css";
 import { RotateIcon, UndoIcon } from "@/components/icons";
 import { MotionButton } from "@/components/ui/MotionButton.client";
-import type { AnagramTile } from "@/types/game";
+import type { AnagramTile, QuestionVariant } from "@/types/game";
 
 type Props = {
   tiles: AnagramTile[];
   hint?: string;
   locked: boolean;
   onSubmit: (answer: string) => void;
+  variant?: QuestionVariant;
 };
 
-export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
+export function AnagramQuestion({ tiles, hint, locked, onSubmit, variant = "default" }: Props) {
   const [chosenIds, setChosenIds] = useState<string[]>([]);
   const chosenTiles = chosenIds.map((id) => tiles.find((tile) => tile.id === id)!);
   const answer = chosenTiles.map((tile) => tile.value).join("");
@@ -25,7 +26,10 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
   };
 
   return (
-    <div className={styles.root}>
+    <div
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      data-variant={variant}
+    >
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
       <section className={styles.answer} aria-label="Palabra construida">
         <div className={styles.answerHeader}>
@@ -34,7 +38,11 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
             {chosenIds.length} de {tiles.length} letras
           </span>
         </div>
-        <div className={styles.answerTiles} aria-live="polite">
+        <div
+          className={styles.answerTiles}
+          style={{ "--tile-count": tiles.length } as CSSProperties}
+          aria-live="polite"
+        >
           {tiles.map((tile, index) => {
             const chosenTile = chosenTiles[index];
 
@@ -71,6 +79,7 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
                 type="button"
                 className={`${styles.tile} ${isUsed ? styles.tileUsed : ""}`}
                 disabled={locked || isUsed}
+                aria-pressed={isUsed}
                 onClick={() => chooseTile(tile.id)}
                 aria-label={isUsed ? `Letra ${tile.value} ya usada` : `Añadir letra ${tile.value}`}
                 whileTap={locked || isUsed ? undefined : { scale: 0.93 }}
@@ -85,6 +94,7 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
       <div className={styles.actions}>
         <div className={styles.secondaryActions}>
           <MotionButton
+            className={styles.secondaryAction}
             variant="secondary"
             disabled={locked || chosenIds.length === 0}
             onClick={() => setChosenIds((current) => current.slice(0, -1))}
@@ -94,6 +104,7 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
             Quitar
           </MotionButton>
           <MotionButton
+            className={styles.secondaryAction}
             variant="secondary"
             disabled={locked || chosenIds.length === 0}
             onClick={() => setChosenIds([])}
@@ -104,6 +115,7 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
           </MotionButton>
         </div>
         <MotionButton
+          className={styles.submitButton}
           disabled={locked || chosenIds.length !== tiles.length}
           onClick={() => onSubmit(answer)}
           whileTap={{ scale: 0.985 }}

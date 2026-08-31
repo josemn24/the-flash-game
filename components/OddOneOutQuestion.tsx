@@ -20,6 +20,7 @@ export function OddOneOutQuestion({ items, locked, onSubmit, variant }: OddOneOu
     <div
       className={`${styles.grid} ${variant === "flash-pop" ? styles.pop : ""}`}
       data-variant={variant ?? "default"}
+      data-item-count={items.length}
       aria-label="Opciones: encuentra el intruso"
     >
       {items.map((item) => (

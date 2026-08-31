@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/icons";
 import { MotionButton } from "@/components/ui/MotionButton.client";
 import styles from "@/components/OrderingQuestion.module.css";
+import type { QuestionVariant } from "@/types/game";
 
 type OrderingQuestionProps = {
   items: string[];
@@ -16,7 +17,7 @@ type OrderingQuestionProps = {
   locked: boolean;
   onProgress?: (items: string[]) => void;
   onSubmit: (items: string[]) => void;
-  variant?: "flash-pop";
+  variant?: QuestionVariant;
 };
 
 type LastMove = {
@@ -61,7 +62,10 @@ export function OrderingQuestion({
   };
 
   return (
-    <div className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}>
+    <div
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      data-variant={variant ?? "default"}
+    >
       <div className={styles.shell}>
         <div className={styles.directionLabel} aria-hidden="true">
           <span>{directionLabels.start}</span>

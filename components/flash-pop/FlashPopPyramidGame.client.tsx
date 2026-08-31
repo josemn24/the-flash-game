@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { ArrowIcon, BoltIcon, CheckIcon, ClockIcon, CrossIcon } from "@/components/icons";
+import { ArrowIcon, BoltIcon, CheckIcon } from "@/components/icons";
 import {
   PopAvatar,
   PopButton,
@@ -13,6 +13,7 @@ import {
   PopGameHeader,
   PopTimer,
 } from "@/components/flash-pop/ui";
+import { FlashPopFeedback } from "@/components/flash-pop/FlashPopFeedback";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
@@ -139,7 +140,7 @@ function Intro({
 
       {confirming ? (
         <div
-          className={styles.feedbackCard}
+          className={styles.confirmCard}
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirm-title"
@@ -358,42 +359,13 @@ function Feedback({
     : `La respuesta correcta era ${expectedAnswerLabel(level)}.`;
 
   return (
-    <div className={`${styles.question} ${styles.feedbackQuestion}`}>
-      <motion.div
-        className={styles.feedbackStage}
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <PopCard className={`${styles.feedbackCard} ${passed ? "" : styles.failure}`}>
-          <motion.span
-            className={styles.feedbackIcon}
-            aria-hidden="true"
-            initial={{ opacity: 0, scale: 0.72 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={
-              passed
-                ? { type: "spring", stiffness: 280, damping: 16, delay: 0.08 }
-                : { duration: 0.2 }
-            }
-          >
-            {passed ? <CheckIcon /> : timedOut ? <ClockIcon /> : <CrossIcon />}
-          </motion.span>
-          <p className={styles.feedbackEyebrow}>{level.label}</p>
-          <h1>{title}</h1>
-          <p>{body}</p>
-          {passed ? (
-            <motion.p
-              className={styles.feedbackPoints}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.25 }}
-            >
-              +{result.points} puntos
-            </motion.p>
-          ) : null}
-        </PopCard>
-      </motion.div>
-    </div>
+    <FlashPopFeedback
+      status={passed ? "correct" : timedOut ? "unanswered" : "incorrect"}
+      eyebrow={level.label}
+      title={title}
+      body={body}
+      points={passed ? result.points : undefined}
+    />
   );
 }
 

@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { ArrowIcon } from "@/components/icons";
 import styles from "@/components/EstimationQuestion.module.css";
+import type { QuestionVariant } from "@/types/game";
 
 type EstimationQuestionProps = {
   min: number;
@@ -13,6 +14,7 @@ type EstimationQuestionProps = {
   unit: string;
   locked: boolean;
   onSubmit: (value: number) => void;
+  variant?: QuestionVariant;
 };
 
 export function EstimationQuestion({
@@ -23,6 +25,7 @@ export function EstimationQuestion({
   unit,
   locked,
   onSubmit,
+  variant = "default",
 }: EstimationQuestionProps) {
   const [value, setValue] = useState(initialValue);
 
@@ -33,7 +36,10 @@ export function EstimationQuestion({
   const progress = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className={styles.challenge}>
+    <div
+      className={`${styles.challenge} ${variant === "flash-pop" ? styles.pop : ""}`}
+      data-variant={variant}
+    >
       <div className={styles.valueDisplay} aria-live="polite">
         <span>Tu estimación</span>
         <strong>

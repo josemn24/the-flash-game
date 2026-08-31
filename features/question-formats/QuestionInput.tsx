@@ -218,6 +218,7 @@ function OrderingInput({
   initialAnswer,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"ordering">>) {
   return (
     <OrderingQuestion
@@ -231,6 +232,7 @@ function OrderingInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -259,6 +261,7 @@ function ProgressiveImageInput({
   locked,
   onSubmit,
   onTimedResponseStart,
+  variant,
 }: QuestionInputProps<QuestionOfType<"progressive-image">>) {
   return (
     <ProgressiveImageQuestion
@@ -270,6 +273,7 @@ function ProgressiveImageInput({
       locked={locked}
       onSubmit={onSubmit}
       onTimedResponseStart={onTimedResponseStart}
+      variant={variant}
     />
   );
 }
@@ -278,8 +282,11 @@ function HeatMapInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"heat-map">>) {
-  return <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />;
+  return (
+    <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} variant={variant} />
+  );
 }
 
 function ImageLabelingInput({
@@ -294,6 +301,7 @@ function ClassificationInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"classification">>) {
   return (
     <ClassificationQuestion
@@ -301,6 +309,7 @@ function ClassificationInput({
       categories={question.categories}
       locked={locked}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -539,6 +548,7 @@ function EstimationInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"estimation">>) {
   return (
     <EstimationQuestion
@@ -549,6 +559,7 @@ function EstimationInput({
       unit={question.unit}
       locked={locked}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -579,6 +590,7 @@ function AnagramInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"anagram">>) {
   return (
     <AnagramQuestion
@@ -586,6 +598,7 @@ function AnagramInput({
       hint={question.hint}
       locked={locked}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }

@@ -7,7 +7,7 @@ import {
   getTimedOutAnswer,
   isAnswerCorrect,
 } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, FlashChallenge, GamePhase } from "@/types/game";
+import type { AnswerResult, AnswerStatus, AnswerValue, FlashChallenge, GamePhase } from "@/types/game";
 
 const TRANSITION_DURATION = 650;
 
@@ -29,6 +29,10 @@ type SessionAction =
   | { type: "show-review" }
   | { type: "show-results" }
   | { type: "replay" };
+
+type GameSessionOptions = {
+  transitionDuration?: Partial<Record<AnswerStatus, number>>;
+};
 
 const initialState: SessionState = {
   phase: "intro",
@@ -72,8 +76,12 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
   }
 }
 
-export function useGameSession(challenge: FlashChallenge) {
+export function useGameSession(challenge: FlashChallenge, options: GameSessionOptions = {}) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const correctTransitionDuration = options.transitionDuration?.correct ?? TRANSITION_DURATION;
+  const partialTransitionDuration = options.transitionDuration?.partial ?? TRANSITION_DURATION;
+  const incorrectTransitionDuration = options.transitionDuration?.incorrect ?? TRANSITION_DURATION;
+  const unansweredTransitionDuration = options.transitionDuration?.unanswered ?? TRANSITION_DURATION;
   const question = challenge.questions[state.questionIndex];
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
@@ -138,6 +146,15 @@ export function useGameSession(challenge: FlashChallenge) {
 
       dispatch({ type: "answer", result, timedOut });
       const lastQuestion = state.questionIndex === challenge.questions.length - 1;
+      const transitionDuration =
+        result.status === "correct"
+          ? correctTransitionDuration
+          : result.status === "partial"
+            ? partialTransitionDuration
+            : result.status === "unanswered"
+              ? unansweredTransitionDuration
+              : incorrectTransitionDuration;
+
       advanceTimeout.current = setTimeout(() => {
         if (lastQuestion) {
           dispatch({ type: "finish" });
@@ -150,9 +167,17 @@ export function useGameSession(challenge: FlashChallenge) {
         progressiveCluesRevealedRef.current = 1;
         questionStartedAt.current = performance.now();
         dispatch({ type: "advance" });
-      }, TRANSITION_DURATION);
+      }, transitionDuration);
     },
-    [question, challenge.questions.length, state.questionIndex],
+    [
+      challenge.questions.length,
+      correctTransitionDuration,
+      incorrectTransitionDuration,
+      partialTransitionDuration,
+      question,
+      state.questionIndex,
+      unansweredTransitionDuration,
+    ],
   );
 
   const handleCodeAttempt = useCallback(

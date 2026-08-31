@@ -14,6 +14,14 @@
   --format-invalid-border: rgba(255, 99, 112, 0.8);
   --format-invalid-surface: rgba(255, 99, 112, 0.12);
   --format-accent: rgb(215 255 24);
+  --format-icon-ink: var(--format-accent);
+  --format-icon-surface: var(--format-soft-surface);
+  --format-state-ink: var(--format-surface);
+  --format-state-surface: var(--format-accent);
+  --format-matched-state-ink: var(--format-surface);
+  --format-matched-state-surface: var(--format-accent);
+  --format-invalid-state-ink: var(--format-ink);
+  --format-invalid-state-surface: var(--format-invalid-border);
   --format-focus: rgb(215 255 24);
   display: flex;
   flex: 1;
@@ -100,8 +108,8 @@
   height: 1.9rem;
   place-items: center;
   border-radius: 0.55rem;
-  color: var(--format-accent);
-  background: var(--format-soft-surface);
+  color: var(--format-icon-ink);
+  background: var(--format-icon-surface);
   font-family: var(--font-mono);
   font-size: 0.78rem;
   font-weight: 900;
@@ -123,16 +131,16 @@
   height: 1.1rem;
   padding: 0.18rem;
   border-radius: 999px;
-  color: var(--format-surface);
-  background: var(--format-accent);
+  color: var(--format-state-ink);
+  background: var(--format-state-surface);
 }
 .cardMatched .stateIcon {
-  color: var(--format-surface);
-  background: var(--format-accent);
+  color: var(--format-matched-state-ink);
+  background: var(--format-matched-state-surface);
 }
 .cardInvalid .stateIcon {
-  color: var(--format-ink);
-  background: var(--format-invalid-border);
+  color: var(--format-invalid-state-ink);
+  background: var(--format-invalid-state-surface);
 }
 .completedList {
   display: flex;
@@ -154,7 +162,7 @@
 .completedList svg {
   width: 0.8rem;
   height: 0.8rem;
-  color: var(--format-accent);
+  color: var(--format-icon-ink);
 }
 
 .pop {
@@ -173,6 +181,14 @@
   --format-invalid-border: var(--pop-color-danger);
   --format-invalid-surface: rgb(255 114 118 / 12%);
   --format-accent: var(--pop-color-brand);
+  --format-icon-ink: var(--pop-color-ink);
+  --format-icon-surface: var(--pop-color-surface-soft);
+  --format-state-ink: var(--pop-color-ink);
+  --format-state-surface: var(--pop-color-brand);
+  --format-matched-state-ink: var(--pop-color-ink);
+  --format-matched-state-surface: var(--pop-color-success);
+  --format-invalid-state-ink: var(--pop-color-ink);
+  --format-invalid-state-surface: var(--pop-color-danger);
   --format-focus: var(--pop-color-focus);
   margin-top: var(--pop-space-5);
 }

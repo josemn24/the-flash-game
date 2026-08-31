@@ -6,7 +6,18 @@ import { getChallengeById } from "@/data/challenges";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import type { AnswerValue, Question, QuestionVariant } from "@/types/game";
 
-const migratedTypes = new Set(["multiple-choice", "true-false", "odd-one-out", "matching"]);
+const migratedTypes = new Set([
+  "multiple-choice",
+  "true-false",
+  "odd-one-out",
+  "matching",
+  "ordering",
+  "progressive-image",
+  "heat-map",
+  "estimation",
+  "classification",
+  "anagram",
+]);
 
 function renderQuestion(question: Question, variant: QuestionVariant) {
   return renderToStaticMarkup(
@@ -26,12 +37,12 @@ function renderQuestion(question: Question, variant: QuestionVariant) {
 }
 
 describe("question format visual variants", () => {
-  it("forwards default and Flash Pop variants to the four migrated formats", () => {
+  it("forwards default and Flash Pop variants to all ten migrated formats", () => {
     const challenge = getChallengeById("tabarnia-flash-01");
     if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");
 
     const questions = challenge.questions.filter((question) => migratedTypes.has(question.type));
-    expect(questions).toHaveLength(9);
+    expect(questions).toHaveLength(16);
 
     questions.forEach((question) => {
       const defaultMarkup = renderQuestion(question, "default");

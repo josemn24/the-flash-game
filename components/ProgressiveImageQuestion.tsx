@@ -9,7 +9,7 @@ import {
   PROGRESSIVE_IMAGE_INITIAL_BLUR,
   PROGRESSIVE_IMAGE_INITIAL_SCALE,
 } from "@/lib/progressiveImage";
-import type { ImageSurface } from "@/types/game";
+import type { ImageSurface, QuestionVariant } from "@/types/game";
 import styles from "@/components/ProgressiveImageQuestion.module.css";
 
 type ProgressiveImageQuestionProps = {
@@ -20,6 +20,7 @@ type ProgressiveImageQuestionProps = {
   locked: boolean;
   onSubmit: (answer: string) => void;
   onTimedResponseStart: () => void;
+  variant?: QuestionVariant;
 };
 
 type ImageState = "loading" | "ready" | "error";
@@ -36,6 +37,7 @@ export function ProgressiveImageQuestion({
   locked,
   onSubmit,
   onTimedResponseStart,
+  variant = "default",
 }: ProgressiveImageQuestionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
@@ -111,7 +113,11 @@ export function ProgressiveImageQuestion({
   const unavailable = locked || imageState !== "ready";
 
   return (
-    <section className={styles.root} aria-label="Imagen progresivamente revelada">
+    <section
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      data-variant={variant}
+      aria-label="Imagen progresivamente revelada"
+    >
       <div className={styles.progressHeader}>
         <span>Revelado</span>
         <strong>{progressPercentage} %</strong>
@@ -161,7 +167,7 @@ export function ProgressiveImageQuestion({
           <div className={styles.errorPanel} role="alert">
             <strong>No se pudo cargar la imagen.</strong>
             <span>El tiempo todavía no ha comenzado.</span>
-            <MotionButton type="button" onClick={retryLoad}>
+            <MotionButton className={styles.retryButton} type="button" onClick={retryLoad}>
               Reintentar
             </MotionButton>
           </div>
@@ -186,6 +192,7 @@ export function ProgressiveImageQuestion({
             autoComplete="off"
           />
           <MotionButton
+            className={styles.submitButton}
             type="submit"
             disabled={unavailable || !answer.trim()}
             aria-label="Enviar respuesta"

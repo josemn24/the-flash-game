@@ -1,5 +1,16 @@
 .root {
+  --format-ink: rgba(255, 255, 255, 0.92);
+  --format-muted: rgba(255, 255, 255, 0.68);
+  --format-faint: rgba(255, 255, 255, 0.35);
+  --format-surface: rgba(255, 255, 255, 0.05);
+  --format-surface-raised: rgba(9, 11, 14, 0.86);
+  --format-border: rgba(255, 255, 255, 0.14);
+  --format-accent: rgb(53 232 255);
+  --format-focus: rgb(53 232 255);
+  --format-danger: rgb(255 133 138);
+  --format-track: rgba(255, 255, 255, 0.1);
   display: grid;
+  min-width: 0;
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
@@ -8,7 +19,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: rgb(255 255 255 / 55%);
+  color: var(--format-muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
@@ -17,37 +28,36 @@
 }
 
 .progressHeader strong {
-  color: var(--cyan);
+  color: var(--format-accent);
 }
 
 .progressTrack {
   height: 0.25rem;
   overflow: hidden;
   border-radius: 999px;
-  background: rgb(255 255 255 / 10%);
+  background: var(--format-track);
 }
 
 .progressTrack span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--cyan);
+  background: var(--format-accent);
   transition: width 100ms linear;
 }
 
 .imageFrame {
   --progressive-image-max-height: min(48svh, 28rem);
-
   position: relative;
   isolation: isolate;
   width: min(100%, calc(var(--progressive-image-max-height) * var(--progressive-image-ratio)));
   max-height: var(--progressive-image-max-height);
-  justify-self: center;
   min-height: 13rem;
+  justify-self: center;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 14%);
+  border: 1px solid var(--format-border);
   border-radius: 1.25rem;
-  background: #090b0e;
+  background: var(--format-surface-raised);
 }
 
 .imageFrame img {
@@ -73,8 +83,8 @@
   display: grid;
   place-content: center;
   margin: 0;
-  background: rgb(9 11 14 / 86%);
-  color: rgb(255 255 255 / 68%);
+  background: color-mix(in srgb, var(--format-surface-raised) 86%, transparent);
+  color: var(--format-muted);
   text-align: center;
 }
 
@@ -93,47 +103,70 @@
 }
 
 .errorPanel strong {
-  color: white;
+  color: var(--format-danger);
 }
 
 .errorPanel span {
   margin-bottom: 0.5rem;
-  color: rgb(255 255 255 / 55%);
+  color: var(--format-muted);
   font-size: 0.875rem;
+}
+
+.retryButton,
+.submitButton {
+  border: 1px solid var(--format-accent);
+  border-radius: 0.8rem;
+  color: var(--format-ink);
+  background: var(--format-accent);
+}
+
+.retryButton {
+  min-height: 2.75rem;
+  width: auto;
+  padding-inline: 1rem;
 }
 
 .answerPanel {
   display: grid;
+  min-width: 0;
   gap: 0.65rem;
   margin-top: 0.5rem;
 }
 
 .answerPanel label {
-  color: rgb(255 255 255 / 65%);
+  color: var(--format-muted);
   font-size: 0.875rem;
   font-weight: 700;
 }
 
 .answerRow {
   display: grid;
+  min-width: 0;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.65rem;
 }
 
 .answerRow input {
   min-width: 0;
-  border: 1px solid rgb(255 255 255 / 18%);
+  border: 1px solid var(--format-border);
   border-radius: 0.9rem;
   outline: 0;
-  background: rgb(255 255 255 / 5%);
   padding: 0.95rem 1rem;
-  color: white;
+  color: var(--format-ink);
+  background: var(--format-surface);
   font: inherit;
 }
 
-.answerRow input:focus-visible {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px rgb(36 210 221 / 20%);
+.answerRow input::placeholder {
+  color: var(--format-faint);
+}
+
+.answerRow input:focus-visible,
+.retryButton:focus-visible,
+.submitButton:focus-visible {
+  border-color: var(--format-focus);
+  outline: 3px solid var(--format-focus);
+  outline-offset: 3px;
 }
 
 .answerRow input:disabled {
@@ -141,25 +174,31 @@
   opacity: 0.55;
 }
 
-.answerRow button {
+.answerRow .submitButton {
   min-width: 3.5rem;
 }
 
 .answerPanel > p {
   margin: 0;
-  color: rgb(255 255 255 / 35%);
+  color: var(--format-faint);
   font-size: 0.75rem;
   line-height: 1.5;
 }
 
+.retryButton:disabled,
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
 @media (max-width: 480px) {
   .root {
+    gap: 0.65rem;
     margin-top: 1.25rem;
   }
 
   .imageFrame {
     --progressive-image-max-height: min(38svh, 21rem);
-
     min-height: 10.5rem;
     border-radius: 1rem;
   }
@@ -170,4 +209,62 @@
   .imageFrame img {
     transition: none;
   }
+}
+
+.root.pop {
+  --format-ink: var(--pop-color-ink);
+  --format-muted: var(--pop-color-ink-muted);
+  --format-faint: var(--pop-color-ink-faint);
+  --format-surface: var(--pop-color-surface);
+  --format-surface-raised: var(--pop-color-surface-raised);
+  --format-border: var(--pop-color-border);
+  --format-accent: var(--pop-color-social);
+  --format-focus: var(--pop-color-focus);
+  --format-danger: var(--pop-color-danger);
+  --format-track: rgb(23 23 32 / 12%);
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .progressHeader,
+.pop .answerPanel label {
+  font-family: var(--pop-font-mono);
+}
+
+.pop .progressHeader strong {
+  color: var(--pop-color-social);
+}
+
+.pop .progressTrack span {
+  background: var(--pop-color-social);
+}
+
+.pop .imageFrame {
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-card);
+}
+
+.pop .answerRow input {
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-control);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .retryButton,
+.pop .submitButton {
+  border: var(--pop-border-flash);
+  border-radius: var(--pop-radius-control);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.pop .retryButton {
+  min-height: var(--pop-control-height);
+}
+
+.pop .submitButton {
+  min-height: var(--pop-control-height-icon);
 }

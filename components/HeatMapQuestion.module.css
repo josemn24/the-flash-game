@@ -1,19 +1,28 @@
 .challenge {
-  margin-top: 1.25rem;
+  --format-ink: rgba(255, 255, 255, 0.92);
+  --format-surface: #111419;
+  --format-border: rgba(255, 255, 255, 0.12);
+  --format-accent: rgb(215 255 24);
+  --format-focus: rgb(215 255 24);
+  --format-danger: rgb(255 117 133);
+  --format-line: rgba(255, 255, 255, 0.75);
   display: grid;
+  min-width: 0;
   gap: 0.8rem;
+  margin-top: 1.25rem;
 }
 
 .surface {
   position: relative;
   display: block;
   width: min(100%, 30rem);
+  min-width: 0;
   margin-inline: auto;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--format-border);
   border-radius: 1rem;
   padding: 0;
-  background: #111419;
+  background: var(--format-surface);
 }
 
 .surface img {
@@ -29,8 +38,8 @@
 
 .surfaceInteractive:hover,
 .surfaceInteractive:focus-visible {
-  border-color: rgba(215, 255, 24, 0.55);
-  outline: 2px solid rgba(215, 255, 24, 0.16);
+  border-color: var(--format-accent);
+  outline: 3px solid color-mix(in srgb, var(--format-focus) 18%, transparent);
   outline-offset: 2px;
 }
 
@@ -43,70 +52,74 @@
 }
 
 .toleranceArea {
-  fill: rgba(255, 79, 102, 0.08);
-  stroke: rgba(255, 117, 133, 0.35);
+  fill: color-mix(in srgb, var(--format-danger) 8%, transparent);
+  stroke: color-mix(in srgb, var(--format-danger) 35%, transparent);
   stroke-width: 3;
   stroke-dasharray: 9 8;
 }
 
 .targetArea {
-  fill: rgba(215, 255, 24, 0.11);
-  stroke: rgba(215, 255, 24, 0.72);
+  fill: color-mix(in srgb, var(--format-accent) 11%, transparent);
+  stroke: color-mix(in srgb, var(--format-accent) 72%, transparent);
   stroke-width: 4;
 }
 
 .distanceLine {
-  stroke: rgba(255, 255, 255, 0.75);
+  stroke: var(--format-line);
   stroke-width: 4;
   stroke-dasharray: 8 7;
 }
 
 .targetMarker circle {
-  fill: #0d1014;
-  stroke: var(--electric);
+  fill: var(--format-surface);
+  stroke: var(--format-accent);
   stroke-width: 5;
 }
 
 .targetMarker path {
-  stroke: var(--electric);
+  stroke: var(--format-accent);
   stroke-width: 4;
   stroke-linecap: round;
 }
 
 .selectedMarker circle:first-child {
-  fill: rgba(13, 16, 20, 0.85);
-  stroke: white;
+  fill: color-mix(in srgb, var(--format-surface) 85%, transparent);
+  stroke: var(--format-ink);
   stroke-width: 5;
 }
 
 .selectedMarker circle:last-child {
-  fill: white;
+  fill: var(--format-ink);
 }
 
 .confirmButton {
   display: flex;
   min-height: 3.25rem;
+  width: 100%;
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  border: 0;
+  border: 1px solid var(--format-accent);
   border-radius: 0.75rem;
-  color: var(--ink);
-  background: var(--electric);
+  color: var(--format-ink);
+  background: var(--format-accent);
   font-size: 0.78rem;
   font-weight: 900;
+  box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
 }
 
-.confirmButton:hover:not(:disabled),
+.confirmButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--format-accent) 82%, white);
+}
+
 .confirmButton:focus-visible {
-  background: #e4ff58;
-  outline: 2px solid rgba(215, 255, 24, 0.35);
-  outline-offset: 2px;
+  outline: 3px solid var(--format-focus);
+  outline-offset: 3px;
 }
 
 .confirmButton:disabled {
   cursor: not-allowed;
-  opacity: 0.25;
+  opacity: 0.35;
 }
 
 @media (min-width: 640px) {
@@ -118,4 +131,41 @@
     width: min(100%, 30rem);
     margin-inline: auto;
   }
+}
+
+.challenge.pop {
+  --format-ink: var(--pop-color-ink);
+  --format-surface: var(--pop-color-surface-raised);
+  --format-border: var(--pop-color-border);
+  --format-accent: var(--pop-color-social);
+  --format-focus: var(--pop-color-focus);
+  --format-danger: var(--pop-color-danger);
+  --format-line: var(--pop-color-ink-muted);
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .surface {
+  border: var(--pop-border-subtle);
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-card);
+}
+
+.pop .surfaceInteractive:hover,
+.pop .surfaceInteractive:focus-visible {
+  border-color: var(--pop-color-social);
+}
+
+.pop .confirmButton {
+  min-height: var(--pop-control-height);
+  border: var(--pop-border-flash);
+  border-radius: var(--pop-radius-control);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.pop .confirmButton:hover:not(:disabled) {
+  background: #e5ff55;
 }

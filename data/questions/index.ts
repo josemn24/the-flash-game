@@ -633,8 +633,7 @@ export const questionsById = {
       cognitiveSkills: ["memory"],
       formatSkills: ["recall"],
     },
-    question:
-      "¿Qué cultura celebra el año 2026 específicamente como el Año del Caballo de Fuego, un evento que ocurre solo una vez cada 60 años?",
+    question: "¿Qué cultura celebra en 2026 el Año del Caballo de Fuego, que se repite cada 60 años?",
     media: {
       type: "image",
       src: "/visuals/sbr/horse-fire.jpg",
