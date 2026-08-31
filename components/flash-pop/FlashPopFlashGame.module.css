@@ -285,7 +285,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 18px 24px;
+  min-width: 0;
+  min-height: 104px;
+  padding: 14px 16px;
 }
 
 .accuracyCard .eyebrow {
@@ -294,22 +296,22 @@
 
 .accuracyCard strong {
   display: block;
-  margin: 10px 0 3px;
+  margin-top: 8px;
   font-family: var(--pop-font-display);
   font-size: 34px;
 }
 
-.accuracyCard span {
-  color: var(--pop-color-ink-muted);
-  font-size: 11px;
-  font-weight: 700;
+.summaryStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .accuracyRing {
   position: relative;
   display: grid;
-  width: 78px;
-  height: 78px;
+  width: 56px;
+  height: 56px;
   place-items: center;
   flex: 0 0 auto;
   border-radius: 50%;
@@ -318,19 +320,24 @@
 
 .accuracyRing::before {
   position: absolute;
-  width: 62px;
-  height: 62px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--pop-color-surface);
   content: "";
 }
 
-.accuracyRing span { position: relative; font-family: var(--pop-font-mono); font-size: 10px; font-weight: 900; }
-
-.statGrid {
+.answerStats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.answerStats .statCard,
+.summaryStats .statCard {
+  min-width: 0;
+  min-height: 104px;
+  padding: 14px;
 }
 
 .statCard {
@@ -402,7 +409,10 @@
   .introStats div { padding: 10px; }
   .introStats strong { font-size: 17px; }
   .introStats span { font-size: 8px; }
-  .statGrid { gap: 7px; }
+  .summaryStats,
+  .answerStats { gap: 7px; }
+  .answerStats .statCard,
+  .summaryStats .statCard { padding: 14px 12px; }
   .reviewTitle small { max-width: 150px; }
 }
 

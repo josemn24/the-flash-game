@@ -236,7 +236,6 @@ function ResultStage({
   onReplay: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
-  const partial = results.filter((result) => result.status === "partial").length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
   const accuracyContribution = results.reduce(
@@ -275,21 +274,26 @@ function ResultStage({
         </PopCard>
 
         <div className={styles.resultStats}>
-          <PopCard className={styles.accuracyCard}>
-            <div>
-              <p className={styles.eyebrow}>Precisión</p>
-              <strong>{accuracy}%</strong>
-              <span>{correct} correctas · {partial} parciales</span>
+          <div className={styles.summaryStats}>
+            <PopCard className={styles.accuracyCard}>
+              <div>
+                <p className={styles.eyebrow}>Precisión</p>
+                <strong>{accuracy}%</strong>
+              </div>
+              <div
+                className={styles.accuracyRing}
+                style={{ "--accuracy": `${accuracy * 3.6}deg` } as React.CSSProperties}
+                aria-hidden="true"
+              />
+            </PopCard>
+            <div className={styles.timeStat}>
+              <StatCard icon={<ClockIcon />} value={formatTime(totalTime)} label="Tiempo total" />
             </div>
-            <div className={styles.accuracyRing} style={{ "--accuracy": `${accuracy * 3.6}deg` } as React.CSSProperties}>
-              <span>{accuracy}%</span>
-            </div>
-          </PopCard>
-          <div className={styles.statGrid}>
+          </div>
+          <div className={styles.answerStats}>
             <StatCard icon={<CheckIcon />} value={correct} label="Correctas" tone="success" />
             <StatCard icon={<CrossIcon />} value={incorrect} label="Falladas" tone="danger" />
             <StatCard icon={<ClockIcon />} value={unanswered} label="Sin contestar" />
-            <StatCard icon={<ClockIcon />} value={formatTime(totalTime)} label="Tiempo total" />
           </div>
         </div>
       </div>
