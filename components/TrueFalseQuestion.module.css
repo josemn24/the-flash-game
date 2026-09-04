@@ -13,15 +13,15 @@
 }
 
 .pop {
-  --format-ink: var(--pop-color-ink);
-  --format-muted: var(--pop-color-ink-muted);
-  --format-surface: var(--pop-color-surface-raised);
-  --format-border: var(--pop-color-border);
-  --format-focus: var(--pop-color-focus);
-  --format-accent: var(--pop-color-brand);
-  --format-danger: #b3264d;
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-5);
+  --format-ink: var(--color-ink);
+  --format-muted: var(--color-ink-muted);
+  --format-surface: var(--color-surface-raised);
+  --format-border: var(--color-border);
+  --format-focus: var(--color-focus);
+  --format-accent: var(--color-brand);
+  --format-danger: var(--color-danger);
+  gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
 .button {
@@ -37,7 +37,10 @@
   background: var(--button-surface, var(--format-surface));
   font-size: 0.95rem;
   font-weight: 900;
-  transition: border-color 160ms, background 160ms, color 160ms;
+  transition:
+    border-color 160ms,
+    background 160ms,
+    color 160ms;
 }
 
 .button svg {
@@ -56,13 +59,13 @@
 }
 
 .pop .trueButton {
-  --button-accent: #007a66;
-  --button-surface: #e1f6f0;
+  --button-accent: var(--color-success);
+  --button-surface: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
 }
 
 .pop .falseButton {
   --button-accent: var(--format-danger);
-  --button-surface: #fff0f2;
+  --button-surface: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
 }
 
 .button svg,
@@ -88,9 +91,9 @@
 .pop .button {
   min-height: 84px;
   padding: 1rem 1.25rem;
-  border-radius: var(--pop-radius-control);
-  box-shadow: var(--pop-shadow-control);
-  font-family: var(--pop-font-display);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-control);
+  font-family: var(--type-display);
   font-size: 1.1rem;
 }
 

@@ -345,19 +345,19 @@
 }
 
 .root.pop {
-  --format-ink: var(--pop-color-ink);
-  --format-muted: var(--pop-color-ink-muted);
-  --format-surface: var(--pop-color-surface);
-  --format-surface-raised: var(--pop-color-surface-raised);
-  --format-border: var(--pop-color-border);
-  --format-accent: var(--pop-color-social);
-  --format-focus: var(--pop-color-focus);
-  --format-hover-surface: var(--pop-color-surface-raised);
-  --format-hover-border: var(--pop-color-social);
-  --format-selected-surface: rgb(105 87 232 / 10%);
-  --format-selected-border: var(--pop-color-social);
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+  --format-ink: var(--color-ink);
+  --format-muted: var(--color-ink-muted);
+  --format-surface: var(--color-surface);
+  --format-surface-raised: var(--color-surface-raised);
+  --format-border: var(--color-border);
+  --format-accent: var(--color-social);
+  --format-focus: var(--color-focus);
+  --format-hover-surface: var(--color-surface-raised);
+  --format-hover-border: var(--color-social);
+  --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+  --format-selected-border: var(--color-social);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .root.pop .progressTrack {
@@ -366,48 +366,48 @@
 
 .pop .matrix,
 .pop .binaryList {
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-card);
-  padding: var(--pop-space-2);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+  border: var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
 .pop .matrixHeader,
 .pop .binaryHeader {
-  background: var(--pop-color-surface);
+  background: var(--color-surface);
 }
 
 .pop .row,
 .pop .binaryRow {
-  border: var(--pop-border-subtle);
-  background: var(--pop-color-surface);
+  border: var(--border-subtle);
+  background: var(--color-surface);
 }
 
 .pop .choiceButton,
 .pop .binaryChoice {
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-sm);
-  background: var(--pop-color-surface-raised);
+  border: var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
 }
 
 .pop .choiceButtonSelected,
 .pop .binaryChoiceSelected {
-  border-color: var(--pop-color-social);
-  color: var(--pop-color-social);
-  background: rgb(105 87 232 / 10%);
-  box-shadow: 0 0 0 2px rgb(105 87 232 / 12%);
+  border-color: var(--color-social);
+  color: var(--color-social);
+  background: color-mix(in srgb, var(--color-social) 10%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-social) 12%, transparent);
 }
 
 .pop .confirmButton {
-  min-height: var(--pop-control-height);
-  border: var(--pop-border-flash);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+  min-height: var(--control-height);
+  border: var(--border-flash);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
 }
 
 .pop .confirmButton:hover:not(:disabled) {
-  background: #e5ff55;
+  background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
 }

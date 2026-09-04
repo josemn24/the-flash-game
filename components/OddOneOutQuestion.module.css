@@ -59,25 +59,25 @@
 }
 
 .pop {
-  --format-ink: var(--pop-color-ink);
-  --format-surface: var(--pop-color-surface-raised);
-  --format-border: var(--pop-color-border);
-  --format-hover-ink: var(--pop-color-ink);
-  --format-hover-surface: var(--pop-color-surface);
-  --format-hover-border: var(--pop-color-social);
-  --format-selected-surface: rgb(105 87 232 / 10%);
-  --format-accent: var(--pop-color-social);
-  --format-focus: var(--pop-color-focus);
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-5);
+  --format-ink: var(--color-ink);
+  --format-surface: var(--color-surface-raised);
+  --format-border: var(--color-border);
+  --format-hover-ink: var(--color-ink);
+  --format-hover-surface: var(--color-surface);
+  --format-hover-border: var(--color-social);
+  --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+  --format-accent: var(--color-social);
+  --format-focus: var(--color-focus);
+  gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
 .pop .card {
   min-height: 72px;
   border-width: 1px;
   border-style: solid;
-  border-radius: var(--pop-radius-control);
-  box-shadow: var(--pop-shadow-control);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-control);
 }
 
 .pop .label {
@@ -98,6 +98,6 @@
 
 .pop[data-item-count="3"] .card:last-child {
   grid-column: 1 / -1;
-  width: calc((100% - var(--pop-space-3)) / 2);
+  width: calc((100% - var(--space-3)) / 2);
   justify-self: center;
 }

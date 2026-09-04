@@ -73,24 +73,24 @@
 }
 
 .option.pop {
-  --format-ink: var(--pop-color-ink);
-  --format-surface: var(--pop-color-surface-raised);
-  --format-border: var(--pop-color-border);
-  --format-hover-ink: var(--pop-color-ink);
-  --format-hover-surface: var(--pop-color-surface);
-  --format-hover-border: var(--pop-color-social);
-  --format-selected-ink: var(--pop-color-ink);
-  --format-selected-surface: rgb(105 87 232 / 10%);
-  --format-selected-border: var(--pop-color-social);
-  --format-accent: var(--pop-color-brand);
-  --format-key-ink: var(--pop-color-ink-muted);
-  --format-key-surface: var(--pop-color-surface);
-  --format-key-border: rgb(23 23 32 / 18%);
-  --format-selected-key-ink: var(--pop-color-ink);
+  --format-ink: var(--color-ink);
+  --format-surface: var(--color-surface-raised);
+  --format-border: var(--color-border);
+  --format-hover-ink: var(--color-ink);
+  --format-hover-surface: var(--color-surface);
+  --format-hover-border: var(--color-social);
+  --format-selected-ink: var(--color-ink);
+  --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+  --format-selected-border: var(--color-social);
+  --format-accent: var(--color-brand);
+  --format-key-ink: var(--color-ink-muted);
+  --format-key-surface: var(--color-surface);
+  --format-key-border: color-mix(in srgb, var(--color-ink) 18%, transparent);
+  --format-selected-key-ink: var(--color-ink);
   min-height: 72px;
   border-width: 1px;
   border-style: solid;
-  border-radius: var(--pop-radius-control);
-  padding: var(--pop-space-3) var(--pop-space-4);
-  box-shadow: var(--pop-shadow-control);
+  border-radius: var(--radius-control);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-control);
 }

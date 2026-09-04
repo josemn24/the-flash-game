@@ -212,59 +212,59 @@
 }
 
 .root.pop {
-  --format-ink: var(--pop-color-ink);
-  --format-muted: var(--pop-color-ink-muted);
-  --format-faint: var(--pop-color-ink-faint);
-  --format-surface: var(--pop-color-surface);
-  --format-surface-raised: var(--pop-color-surface-raised);
-  --format-border: var(--pop-color-border);
-  --format-accent: var(--pop-color-social);
-  --format-focus: var(--pop-color-focus);
-  --format-danger: var(--pop-color-danger);
-  --format-track: rgb(23 23 32 / 12%);
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+  --format-ink: var(--color-ink);
+  --format-muted: var(--color-ink-muted);
+  --format-faint: var(--color-ink-faint);
+  --format-surface: var(--color-surface);
+  --format-surface-raised: var(--color-surface-raised);
+  --format-border: var(--color-border);
+  --format-accent: var(--color-social);
+  --format-focus: var(--color-focus);
+  --format-danger: var(--color-danger);
+  --format-track: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .pop .progressHeader,
 .pop .answerPanel label {
-  font-family: var(--pop-font-mono);
+  font-family: var(--type-mono);
 }
 
 .pop .progressHeader strong {
-  color: var(--pop-color-social);
+  color: var(--color-social);
 }
 
 .pop .progressTrack span {
-  background: var(--pop-color-social);
+  background: var(--color-social);
 }
 
 .pop .imageFrame {
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+  border: var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
 .pop .answerRow input {
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
 .pop .retryButton,
 .pop .submitButton {
-  border: var(--pop-border-flash);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+  border: var(--border-flash);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
 }
 
 .pop .retryButton {
-  min-height: var(--pop-control-height);
+  min-height: var(--control-height);
 }
 
 .pop .submitButton {
-  min-height: var(--pop-control-height-icon);
+  min-height: var(--control-height-icon);
 }

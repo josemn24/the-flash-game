@@ -134,38 +134,38 @@
 }
 
 .challenge.pop {
-  --format-ink: var(--pop-color-ink);
-  --format-surface: var(--pop-color-surface-raised);
-  --format-border: var(--pop-color-border);
-  --format-accent: var(--pop-color-social);
-  --format-focus: var(--pop-color-focus);
-  --format-danger: var(--pop-color-danger);
-  --format-line: var(--pop-color-ink-muted);
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+  --format-ink: var(--color-ink);
+  --format-surface: var(--color-surface-raised);
+  --format-border: var(--color-border);
+  --format-accent: var(--color-social);
+  --format-focus: var(--color-focus);
+  --format-danger: var(--color-danger);
+  --format-line: var(--color-ink-muted);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .pop .surface {
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+  border: var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
 .pop .surfaceInteractive:hover,
 .pop .surfaceInteractive:focus-visible {
-  border-color: var(--pop-color-social);
+  border-color: var(--color-social);
 }
 
 .pop .confirmButton {
-  min-height: var(--pop-control-height);
-  border: var(--pop-border-flash);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+  min-height: var(--control-height);
+  border: var(--border-flash);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
 }
 
 .pop .confirmButton:hover:not(:disabled) {
-  background: #e5ff55;
+  background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
 }

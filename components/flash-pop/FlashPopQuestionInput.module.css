@@ -1,178 +1,181 @@
 .flashPopFormat {
   width: 100%;
   min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--type-ui);
+}
+
+.legacyCompatFormat {
   --electric: var(--pop-color-brand);
   --cyan: var(--pop-color-social);
-  --coral: #ff7276;
+  --coral: var(--pop-color-danger);
   --font-body: var(--pop-font-ui);
   --font-display: var(--pop-font-display);
   --font-mono: var(--pop-font-mono);
   --surface-subtle: var(--pop-color-surface-raised);
-  color: var(--pop-color-ink);
-  font-family: var(--pop-font-ui);
 }
 
 .themeAwareFormat {
   --format-theme-owned: 1;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button:focus-visible),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(input:focus-visible) {
+.legacyCompatFormat :global(button:focus-visible),
+.legacyCompatFormat :global(input:focus-visible) {
   outline: 3px solid var(--pop-color-focus);
   outline-offset: 3px;
 }
 
-/* The shared format components also power the dark game. These overrides keep
-   their Flash Pop presentation readable on the light diorama surface. */
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button) {
+/* Shared format components still power the dark game. Keep these compatibility
+   overrides scoped while the remaining formats are migrated one by one. */
+.legacyCompatFormat :global(button) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface-raised) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button:hover:not(:disabled)) {
+.legacyCompatFormat :global(button:hover:not(:disabled)) {
   border-color: var(--pop-color-social) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface-soft) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button[aria-pressed="true"]),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button[type="submit"]) {
+.legacyCompatFormat :global(button[aria-pressed="true"]),
+.legacyCompatFormat :global(button[type="submit"]) {
   border-color: var(--pop-color-social) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-brand) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button[type="submit"]:disabled) {
+.legacyCompatFormat :global(button[type="submit"]:disabled) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink-muted) !important;
   background: var(--pop-color-surface-soft) !important;
   opacity: 1 !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(input) {
+.legacyCompatFormat :global(input) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(input)::placeholder {
+.legacyCompatFormat :global(input)::placeholder {
   color: var(--pop-color-ink-faint) !important;
   opacity: 1;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(form) {
+.legacyCompatFormat :global(form) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface-raised) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(h3),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(label),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(p),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(strong),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="gridcell"]),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="status"]) {
+.legacyCompatFormat :global(h3),
+.legacyCompatFormat :global(label),
+.legacyCompatFormat :global(p),
+.legacyCompatFormat :global(strong),
+.legacyCompatFormat :global([role="gridcell"]),
+.legacyCompatFormat :global([role="status"]) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="alert"]) {
-  color: #8f2633 !important;
+.legacyCompatFormat :global([role="alert"]) {
+  color: var(--pop-color-danger) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="grid"]) {
+.legacyCompatFormat :global([role="grid"]) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface-soft) !important;
   box-shadow: var(--pop-shadow-card) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global([role="gridcell"] button) {
+.legacyCompatFormat :global([role="gridcell"] button) {
   background: transparent !important;
 }
 
-.flashPopFormat :global(section[aria-label="Intentos de Mini-Wordle"]) {
+.legacyCompatFormat :global(section[aria-label="Intentos de Mini-Wordle"]) {
   border: 1px solid var(--pop-color-border) !important;
   border-radius: var(--pop-radius-control);
   padding: var(--pop-space-3);
   background: var(--pop-color-surface-soft) !important;
 }
 
-.flashPopFormat
+.legacyCompatFormat
   :global(section[aria-label="Intentos de Mini-Wordle"])
   :global([data-state="empty"]) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface) !important;
 }
 
-.flashPopFormat
+.legacyCompatFormat
   :global(section[aria-label="Intentos de Mini-Wordle"])
   :global([data-state="absent"]) {
   border-color: var(--pop-color-ink-faint) !important;
   color: var(--pop-color-ink-muted) !important;
-  background: #e2dfe8 !important;
+  background: var(--pop-color-surface-soft) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(form) > :global(div:last-child) {
+.legacyCompatFormat :global(form) > :global(div:last-child) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(form) > :global(div:last-child) :global(span) {
+.legacyCompatFormat :global(form) > :global(div:last-child) :global(span) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) > :global(div:first-child) {
+.legacyCompatFormat > :global(div:first-child) {
   color: var(--pop-color-ink-muted) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(ol li) {
+.legacyCompatFormat :global(ol li) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface-raised) !important;
 }
 
 /* Electric yellow is reserved for filled controls here; these small accents
    need the darker focus token to remain readable on white. */
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(ol li > span),
-.flashPopFormat:not(.themeAwareFormat):not([data-format="multiple-choice"]):not([data-format="true-false"]):not([data-format="odd-one-out"]):not([data-format="matching"]) :global(button span) {
+.legacyCompatFormat :global(ol li > span),
+.legacyCompatFormat :global(button span) {
   color: var(--pop-color-focus) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat) > :global(section) {
+.legacyCompatFormat > :global(section) {
   background: var(--pop-color-surface-soft);
 }
 
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] > :global(div:nth-child(3)) {
+.legacyCompatFormat[data-format="classification"] > :global(div:nth-child(3)) {
   border-color: var(--pop-color-border) !important;
   background: var(--pop-color-surface-soft) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] > :global(div:nth-child(3)) > :global(div) {
+.legacyCompatFormat[data-format="classification"] > :global(div:nth-child(3)) > :global(div) {
   border-color: var(--pop-color-border) !important;
   color: var(--pop-color-ink) !important;
   background: var(--pop-color-surface) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] :global([data-role="classification-category"]) {
+.legacyCompatFormat[data-format="classification"] :global([data-role="classification-category"]) {
   color: var(--pop-color-focus) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] :global(button[aria-pressed="true"]),
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] :global(button[aria-pressed="true"]:hover) {
+.legacyCompatFormat[data-format="classification"] :global(button[aria-pressed="true"]),
+.legacyCompatFormat[data-format="classification"] :global(button[aria-pressed="true"]:hover) {
   border-color: var(--pop-color-focus) !important;
-  color: #ffffff !important;
+  color: var(--pop-color-surface) !important;
   background: var(--pop-color-focus) !important;
   box-shadow: 0 0 0 2px rgb(77 59 209 / 18%) !important;
 }
 
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] :global(button[aria-pressed="true"] span),
-.flashPopFormat:not(.themeAwareFormat)[data-format="classification"] :global(button[aria-pressed="true"] svg) {
-  color: #ffffff !important;
+.legacyCompatFormat[data-format="classification"] :global(button[aria-pressed="true"] span),
+.legacyCompatFormat[data-format="classification"] :global(button[aria-pressed="true"] svg) {
+  color: var(--pop-color-surface) !important;
 }
 
-.flashPopFormat[data-format="word-hashtag"] :global(strong) {
+.legacyCompatFormat[data-format="word-hashtag"] :global(strong) {
   color: var(--pop-color-focus) !important;
 }
 
-.flashPopFormat[data-format="word-hashtag"]
+.legacyCompatFormat[data-format="word-hashtag"]
   :global([role="grid"][aria-label^="Hashtag de palabras"])
   :global(button[data-state="correct"]) {
   border-color: var(--pop-color-success) !important;
@@ -180,7 +183,7 @@
   background: var(--pop-color-success) !important;
 }
 
-.flashPopFormat[data-format="word-hashtag"]
+.legacyCompatFormat[data-format="word-hashtag"]
   :global([role="grid"][aria-label^="Hashtag de palabras"])
   :global(button[data-state="displaced"]) {
   border-color: var(--pop-color-brand) !important;
@@ -188,57 +191,57 @@
   background: var(--pop-color-brand) !important;
 }
 
-.flashPopFormat[data-format="word-hashtag"]
+.legacyCompatFormat[data-format="word-hashtag"]
   :global([role="grid"][aria-label^="Hashtag de palabras"])
   :global(button[data-state="selected"]),
-.flashPopFormat[data-format="word-hashtag"]
+.legacyCompatFormat[data-format="word-hashtag"]
   :global([role="grid"][aria-label^="Hashtag de palabras"])
   :global(button[data-state="selected"]:hover) {
   border-color: var(--pop-color-focus) !important;
-  color: #ffffff !important;
+  color: var(--pop-color-surface) !important;
   background: var(--pop-color-focus) !important;
   box-shadow: 0 0 0 3px rgb(77 59 209 / 22%) !important;
 }
 
-.flashPopFormat[data-format="word-hashtag"]
+.legacyCompatFormat[data-format="word-hashtag"]
   :global([role="grid"][aria-label^="Hashtag de palabras"])
   :global(button[data-state="target"]) {
   border-color: var(--pop-color-social) !important;
-  color: #ffffff !important;
+  color: var(--pop-color-surface) !important;
   background: var(--pop-color-social) !important;
   box-shadow: 0 0 0 3px rgb(105 87 232 / 22%) !important;
 }
 
-.flashPopFormat
+.legacyCompatFormat
   :global([role="grid"][aria-label^="Sopa de letras"])
   :global([role="gridcell"][data-state="found"]) {
   border-color: var(--pop-color-focus) !important;
-  color: #ffffff !important;
+  color: var(--pop-color-surface) !important;
   background: var(--pop-color-focus) !important;
   box-shadow:
     inset 0 0 0 2px rgb(255 255 255 / 28%),
     0 0 0 1px var(--pop-color-focus) !important;
 }
 
-.flashPopFormat
+.legacyCompatFormat
   :global([role="grid"][aria-label^="Sopa de letras"])
   :global([role="gridcell"][data-state="found"] button),
-.flashPopFormat
+.legacyCompatFormat
   :global([role="grid"][aria-label^="Sopa de letras"])
   :global([role="gridcell"][data-state="found"] button span) {
-  color: #ffffff !important;
+  color: var(--pop-color-surface) !important;
 }
 
 .choiceInput {
   display: grid;
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
 }
 
 .choiceGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-3);
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 @media (max-width: 520px) {
@@ -248,16 +251,16 @@
 }
 
 .unsupported {
-  margin: var(--pop-space-6) 0 0;
-  padding: var(--pop-space-4);
-  border-radius: var(--pop-radius-control);
-  background: rgb(255 114 118 / 12%);
-  color: #a22d38;
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
   font-weight: 700;
 }
 
 @media (max-width: 390px) {
   .choiceGrid {
-    gap: var(--pop-space-2);
+    gap: var(--space-2);
   }
 }

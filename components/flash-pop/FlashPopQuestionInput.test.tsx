@@ -91,4 +91,46 @@ describe("Flash Pop question adapter", () => {
     expect(markup).toContain('data-format="anagram"');
     expect(markup).toContain('data-format="progressive-image"');
   });
+
+  it("keeps native Flash formats separate from legacy compatibility formats", () => {
+    const challenge = getChallengeById("tabarnia-flash-01");
+    if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");
+
+    const nativeFormats = new Set([
+      "true-false",
+      "odd-one-out",
+      "multiple-choice",
+      "ordering",
+      "matching",
+      "progressive-image",
+      "heat-map",
+      "estimation",
+      "classification",
+      "anagram",
+    ]);
+
+    for (const question of challenge.questions) {
+      const markup = renderToStaticMarkup(
+        <FlashPopQuestionInput
+          question={question}
+          locked={false}
+          onSubmit={vi.fn()}
+          onProgress={vi.fn()}
+          onIncorrectAttempt={vi.fn()}
+          onProgressiveClueReveal={vi.fn()}
+          onCodeAttempt={vi.fn(() => false)}
+          onTimedResponseStart={vi.fn()}
+        />,
+      );
+
+      expect(markup).toContain(`data-format="${question.type}"`);
+      if (nativeFormats.has(question.type)) {
+        expect(markup).toContain("themeAwareFormat");
+        expect(markup).not.toContain("legacyCompatFormat");
+      } else {
+        expect(markup).toContain("legacyCompatFormat");
+        expect(markup).not.toContain("themeAwareFormat");
+      }
+    }
+  });
 });
