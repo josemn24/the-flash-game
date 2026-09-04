@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { FlashPopPyramidGame } from "@/components/flash-pop/FlashPopPyramidGame.client";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getChallengeById } from "@/data/challenges";
 import {
   FLASH_POP_PREVIEW_CHALLENGE_IDS,
@@ -29,5 +28,5 @@ export default async function FlashPopChallengePage({ params }: Props) {
     notFound();
   }
 
-  return <FlashPopPyramidGame challenge={challenge} />;
+  permanentRedirect(`/desafios/${challengeId}`);
 }

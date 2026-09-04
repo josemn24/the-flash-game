@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { PopTheme } from "@/components/flash-pop/PopTheme";
+import { isFlashPopPreviewChallenge } from "@/features/flash-pop/demoSocial";
 import type { Challenge } from "@/types/game";
 
 const AlphabetGameApp = dynamic(() =>
@@ -11,6 +12,11 @@ const FlashGameApp = dynamic(() =>
 const FlashPopFlashGame = dynamic(() =>
   import("@/components/flash-pop/FlashPopFlashGame.client").then(
     (module) => module.FlashPopFlashGame,
+  ),
+);
+const FlashPopPyramidGame = dynamic(() =>
+  import("@/components/flash-pop/FlashPopPyramidGame.client").then(
+    (module) => module.FlashPopPyramidGame,
   ),
 );
 const NarrativeGameApp = dynamic(() =>
@@ -26,6 +32,13 @@ const SurvivalGameApp = dynamic(() =>
 export function GameApp({ challenge }: { challenge: Challenge }) {
   if (challenge.mode === "alphabet") return <AlphabetGameApp challenge={challenge} />;
   if (challenge.mode === "narrative") return <NarrativeGameApp challenge={challenge} />;
+  if (challenge.mode === "pyramid" && isFlashPopPreviewChallenge(challenge.id)) {
+    return (
+      <PopTheme>
+        <FlashPopPyramidGame challenge={challenge} />
+      </PopTheme>
+    );
+  }
   if (challenge.mode === "pyramid") return <PyramidGameApp challenge={challenge} />;
   if (challenge.mode === "survival") return <SurvivalGameApp challenge={challenge} />;
   if (challenge.mode === "flash") {

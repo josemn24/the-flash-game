@@ -78,8 +78,23 @@ function LevelMap({ levels, currentIndex }: { levels: PyramidLevel[]; currentInd
   );
 }
 
-function Topbar({ timer }: { timer?: React.ReactNode }) {
-  return <PopGameHeader title="La Pirámide" timer={timer} />;
+function Topbar({
+  timer,
+  mobileLabel,
+  mobileLabelAriaLabel,
+}: {
+  timer?: React.ReactNode;
+  mobileLabel?: React.ReactNode;
+  mobileLabelAriaLabel?: string;
+}) {
+  return (
+    <PopGameHeader
+      title="La Pirámide"
+      timer={timer}
+      mobileLabel={mobileLabel}
+      mobileLabelAriaLabel={mobileLabelAriaLabel}
+    />
+  );
 }
 
 function Intro({
@@ -102,7 +117,7 @@ function Intro({
       <Topbar />
       <PopCard as="section" className={styles.introCard} aria-labelledby="flash-pop-intro-title">
         <div className={styles.introIllustration} aria-hidden="true" />
-        <PopChip tone="social">Reto de hoy · Demo</PopChip>
+        <PopChip tone="social">Reto de hoy · Pirámide</PopChip>
         <h1 id="flash-pop-intro-title">{challenge.title}</h1>
         <p className={styles.introLead}>{challenge.subtitle}</p>
 
@@ -253,6 +268,12 @@ function Question({
   return (
     <div className={styles.question}>
       <Topbar
+        mobileLabel={
+          <>
+            Nivel {levelIndex + 1} <span className={styles.mobileLabelMuted}>de {levelCount}</span>
+          </>
+        }
+        mobileLabelAriaLabel={`Nivel ${levelIndex + 1} de ${levelCount}`}
         timer={
           <PopTimer
             duration={question.timeLimit}
@@ -383,7 +404,7 @@ function Result({
     <div className={styles.result}>
       <Topbar />
       <PopCard as="section" className={styles.resultCard} aria-labelledby="result-title">
-        <PopChip variant="reward">Resultado · Demo</PopChip>
+        <PopChip variant="reward">Resultado</PopChip>
         <p className={styles.resultChallenge}>{challenge.title}</p>
         <h1 id="result-title">{summit ? "Cima conquistada" : "Ascenso terminado"}</h1>
         <p className={styles.resultSubtitle}>{challenge.subtitle}</p>
@@ -434,7 +455,7 @@ function Result({
         </div>
 
         <PopButtonLink
-          href="/flash-pop"
+          href="/"
           size="hero"
           fullWidth
           trailingIcon={<ArrowIcon />}
@@ -470,7 +491,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
         <PopCard>
           <h1>Reto no disponible</h1>
           <p>Este preview requiere los siete niveles de La Pirámide.</p>
-          <PopButtonLink href="/flash-pop" className={styles.action}>
+          <PopButtonLink href="/" className={styles.action}>
             Volver al lobby
           </PopButtonLink>
         </PopCard>

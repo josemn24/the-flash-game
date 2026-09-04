@@ -565,6 +565,16 @@
   }
 }
 
+@media (max-width: 520px) {
+  .mobileLabelMuted {
+    color: var(--pop-color-ink-muted);
+  }
+
+  .levelIndicator {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .answerTile {
     transition: none;
