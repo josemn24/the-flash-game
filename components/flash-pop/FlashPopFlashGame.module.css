@@ -390,6 +390,34 @@
 .reviewTitle strong { font-size: 11px; }
 .reviewTitle small { overflow: hidden; color: var(--pop-color-ink-muted); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .reviewBody { padding: 0 18px 18px; }
+
+/* QuestionReviewContent is shared with the dark Flash UI. Re-skin its review
+   surfaces here so labels and answers remain readable on the light Pop card. */
+.reviewBody :global([class*="answerBox"]),
+.reviewBody :global([class*="classificationReview"]),
+.reviewBody :global([class*="reviewGrid"]) {
+  color: var(--pop-color-ink);
+  border-color: var(--pop-color-border);
+  background: var(--pop-color-surface);
+}
+
+.reviewBody :global([class*="answerBox"] span),
+.reviewBody :global([class*="answerBox"] small),
+.reviewBody :global([class*="classificationReview"] small) {
+  color: var(--pop-color-ink-muted);
+}
+
+.reviewBody :global([class*="answerBox"] strong),
+.reviewBody :global([class*="answerBox"] b),
+.reviewBody :global([class*="classificationReview"] b) {
+  color: var(--pop-color-ink);
+}
+
+.reviewBody :global([class*="answerBoxCorrect"] strong),
+.reviewBody :global([class*="classificationValueCorrect"]) {
+  color: var(--pop-color-focus);
+}
+
 .reviewMeta { display: flex; justify-content: space-between; margin-top: 14px; color: var(--pop-color-ink-muted); font-family: var(--pop-font-mono); font-size: 10px; }
 .reviewMeta strong { color: var(--pop-color-social); }
 .explanation { margin: 12px 0 0; color: var(--pop-color-ink-muted); font-size: 12px; line-height: 1.5; }

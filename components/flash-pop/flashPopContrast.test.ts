@@ -29,6 +29,8 @@ describe("Flash Pop token contrast", () => {
     ["ink on brand", "pop-color-ink", "pop-color-brand"],
     ["ink on surface", "pop-color-ink", "pop-color-surface"],
     ["muted on canvas", "pop-color-ink-muted", "pop-color-canvas"],
+    ["muted on surface", "pop-color-ink-muted", "pop-color-surface"],
+    ["focus on surface", "pop-color-focus", "pop-color-surface"],
     ["surface on social", "pop-color-surface", "pop-color-social"],
     ["ink on reward", "pop-color-ink", "pop-color-reward"],
     ["ink on success", "pop-color-ink", "pop-color-success"],
