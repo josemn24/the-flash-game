@@ -6,6 +6,10 @@
   gap: var(--pop-space-4);
 }
 
+.mobileLabel {
+  display: none;
+}
+
 .brand,
 .actions {
   display: flex;
@@ -71,5 +75,23 @@
 
   .title {
     max-width: 130px;
+  }
+
+  .compactOnMobile .brand {
+    display: none;
+  }
+
+  .compactOnMobile .mobileLabel {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--pop-color-ink);
+    font-family: var(--pop-font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 }

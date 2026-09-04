@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopFlashGame } from "@/components/flash-pop/FlashPopFlashGame.client";
 import { getChallengeById } from "@/data/challenges";
+import { FLASH_POP_FLASH_PILOT_ID as FLASH_POP_FLASH_PILOT } from "@/features/flash-pop/demoSocial";
 
-export const FLASH_POP_FLASH_PILOT_ID = "tabarnia-flash-01";
+export const FLASH_POP_FLASH_PILOT_ID = FLASH_POP_FLASH_PILOT;
 export const dynamicParams = false;
 
 export function generateStaticParams() {

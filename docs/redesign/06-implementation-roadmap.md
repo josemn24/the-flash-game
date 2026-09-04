@@ -263,10 +263,21 @@ El vertical slice está terminado cuando:
 
 La extensión a todos los formatos requiere además la prueba social real; no forma parte de la Definition of done técnica del primer slice.
 
+## Estado del primer corte Flash Pop
+
+El primer corte se integra sin feature flag en `/` y en el desafío Flash piloto
+`/desafios/tabarnia-flash-01`. El lobby consume los resúmenes de `demoRoom`,
+mantiene la disponibilidad de temporada y expone el piloto mediante `openable`.
+La sesión, el scoring, la persistencia, el feedback, el resultado y la revisión
+siguen siendo los contratos existentes.
+
+Estos modos permanecen temporalmente en el shell legacy: Alfabeto, Pirámide,
+Supervivencia y Narrativa. Los 13 formatos no adaptados tampoco forman parte de
+este corte; si un futuro desafío Flash los solicita, el adaptador Pop muestra un
+estado explícito de formato no disponible.
+
 ## Próximo hito ejecutable
 
-La siguiente tarea de implementación debe limitarse a:
-
-> Crear el adaptador social demo y convertir el shell estático del lobby en una pantalla dirigida por estados, sin modificar todavía el flujo de preguntas ni la persistencia del intento.
-
-Este hito inicia la Fase 2 sobre los fundamentos ya validados y mantiene la migración de preguntas para la Fase 3.
+Completar la migración progresiva de formatos y shells restantes, eliminando los
+aliases `--pop-*` y los overrides de compatibilidad cuando ya no tengan
+consumidores.

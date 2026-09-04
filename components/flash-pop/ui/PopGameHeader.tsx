@@ -7,13 +7,17 @@ export function PopGameHeader({
   title,
   timer,
   action,
+  mobileLabel,
+  mobileLabelAriaLabel,
 }: {
   title: string;
   timer?: ReactNode;
   action?: ReactNode;
+  mobileLabel?: ReactNode;
+  mobileLabelAriaLabel?: string;
 }) {
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${mobileLabel ? styles.compactOnMobile : ""}`}>
       <div className={styles.brand} aria-label="Flash Pop">
         <span className={styles.brandMark}>
           <BoltIcon />
@@ -24,6 +28,11 @@ export function PopGameHeader({
         </span>
         <span className={styles.title}>{title}</span>
       </div>
+      {mobileLabel ? (
+        <span className={styles.mobileLabel} aria-label={mobileLabelAriaLabel}>
+          {mobileLabel}
+        </span>
+      ) : null}
       <div className={styles.actions}>
         {timer}
         {action}

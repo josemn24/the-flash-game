@@ -444,6 +444,16 @@
   .reviewTitle small { max-width: 150px; }
 }
 
+@media (max-width: 520px) {
+  .mobileLabelMuted {
+    color: var(--pop-color-ink-muted);
+  }
+
+  .questionIndicator {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scoreTrack span { transition: none; }
 }

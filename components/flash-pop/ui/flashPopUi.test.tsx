@@ -8,6 +8,7 @@ import {
   PopCard,
   PopChip,
   PopIconButton,
+  PopGameHeader,
   PopTimerDisplay,
 } from "@/components/flash-pop/ui";
 
@@ -79,5 +80,14 @@ describe("Flash Pop UI primitives", () => {
     expect(timer).toContain('role="timer"');
     expect(timer).toContain('data-state="urgent"');
     expect(timer).toContain('aria-label="4 segundos restantes"');
+  });
+
+  it("supports a mobile-only game progress label", () => {
+    const markup = renderToStaticMarkup(
+      <PopGameHeader title="Flash clásico" mobileLabel="Pregunta 04 de 16" />,
+    );
+
+    expect(markup).toContain("Pregunta 04 de 16");
+    expect(markup).toContain("compactOnMobile");
   });
 });

@@ -2,9 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const theme = readFileSync(new URL("./FlashPopTheme.module.css", import.meta.url), "utf8");
+const globals = readFileSync(new URL("../../app/globals.css", import.meta.url), "utf8");
 
 function token(name: string) {
-  const match = theme.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`));
+  const match = globals.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`));
   if (!match) throw new Error(`Missing hex token --${name}`);
   return match[1];
 }
@@ -26,17 +27,37 @@ function contrast(foreground: string, background: string) {
 
 describe("Flash Pop token contrast", () => {
   it.each([
-    ["ink on brand", "pop-color-ink", "pop-color-brand"],
-    ["ink on surface", "pop-color-ink", "pop-color-surface"],
-    ["muted on canvas", "pop-color-ink-muted", "pop-color-canvas"],
-    ["muted on surface", "pop-color-ink-muted", "pop-color-surface"],
-    ["focus on surface", "pop-color-focus", "pop-color-surface"],
-    ["surface on social", "pop-color-surface", "pop-color-social"],
-    ["ink on reward", "pop-color-ink", "pop-color-reward"],
-    ["ink on success", "pop-color-ink", "pop-color-success"],
-    ["ink on danger", "pop-color-ink", "pop-color-danger"],
-    ["ink on info", "pop-color-ink", "pop-color-info"],
+    ["ink on brand", "ink", "brand"],
+    ["ink on surface", "ink", "surface"],
+    ["muted on canvas", "ink-muted", "canvas"],
+    ["muted on surface", "ink-muted", "surface"],
+    ["focus on surface", "focus", "surface"],
+    ["surface on social", "surface", "social"],
+    ["ink on reward", "ink", "reward"],
+    ["ink on success", "ink", "success"],
+    ["ink on danger", "ink", "danger"],
+    ["ink on info", "ink", "info"],
   ])("keeps %s at WCAG AA for normal text", (_label, foreground, background) => {
     expect(contrast(token(foreground), token(background))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps Pop aliases wired to the semantic API", () => {
+    expect(theme).toContain("--pop-color-brand: var(--color-brand)");
+    expect(theme).toContain("--pop-space-6: var(--space-6)");
+    expect(theme).toContain("--pop-font-ui: var(--type-ui)");
+  });
+
+  it("publishes the complete semantic token groups", () => {
+    for (const tokenName of [
+      "color-canvas",
+      "type-ui",
+      "border-subtle",
+      "radius-card",
+      "shadow-card",
+      "space-6",
+      "motion-press-in",
+    ]) {
+      expect(globals).toMatch(new RegExp(`--${tokenName}:`));
+    }
   });
 });

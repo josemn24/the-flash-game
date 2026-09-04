@@ -1,6 +1,60 @@
 @import "tailwindcss";
 
 :root {
+  /* Canonical semantic design tokens. Pop aliases are declared in its theme. */
+  --color-canvas: #f4f1ea;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fbfaf6;
+  --color-surface-soft: #eae7ff;
+  --color-ink: #171720;
+  --color-ink-muted: #686872;
+  --color-ink-faint: #94949c;
+  --color-brand: #d7ff19;
+  --color-social: #6957e8;
+  --color-success: #13b89a;
+  --color-danger: #ff7276;
+  --color-info: #74a7f5;
+  --color-reward: #ffd85a;
+  --color-focus: #4d3bd1;
+  --color-border: rgb(23 23 32 / 14%);
+  --border-subtle: 1px solid rgb(23 23 32 / 12%);
+  --border-flash: 1.5px solid rgb(23 23 32 / 36%);
+  --border-action: 2px solid rgb(23 23 32 / 78%);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --radius-sm: 12px;
+  --radius-control: 18px;
+  --radius-card: 24px;
+  --radius-hero: 30px;
+  --radius-pill: 999px;
+
+  --shadow-control: 0 3px 0 rgb(23 23 32 / 18%);
+  --shadow-card: 0 8px 22px rgb(35 30 70 / 12%);
+  --shadow-hero: 0 18px 48px rgb(35 30 70 / 18%);
+  --shadow-dialog: 0 28px 80px rgb(23 23 32 / 28%);
+
+  --type-ui: var(--font-flash-pop-ui), Manrope, sans-serif;
+  --type-display: var(--font-flash-pop-display), Fredoka, sans-serif;
+  --type-mono: var(--font-flash-pop-mono), "IBM Plex Mono", monospace;
+
+  --control-height: 56px;
+  --control-height-hero: 64px;
+  --control-height-icon: 48px;
+  --motion-press-in: 90ms;
+  --motion-press-out: 140ms;
+  --motion-card-enter: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Legacy app tokens remain available to modes outside this migration. */
   --ink: #060709;
   --panel: #101216;
   --panel-light: #171a1f;

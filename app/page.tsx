@@ -1,5 +1,5 @@
-import { SpeedBackground } from "@/components/SpeedBackground";
-import { StartScreen } from "@/components/StartScreen";
+import { FlashPopHome } from "@/components/flash-pop/FlashPopHome.client";
+import { PopTheme } from "@/components/flash-pop/PopTheme";
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
 import { getNarrativeQuestionIds, getPyramidQuestionIds } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
@@ -66,8 +66,11 @@ export default function Home() {
         availableUntil: scheduledChallenge.availableUntil,
         availabilityStatus,
         playable: definition.mode === "pyramid" || availabilityStatus === "available",
+        openable: scheduledChallenge.id === "tabarnia-flash-01",
         implementationStatus:
-          definition.mode === "narrative"
+          scheduledChallenge.id === "tabarnia-flash-01"
+            ? "prototype"
+            : definition.mode === "narrative"
             ? definition.implementationStatus
             : definition.mode === "pyramid"
               ? "prototype"
@@ -77,16 +80,13 @@ export default function Home() {
   );
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ink)] text-white selection:bg-[var(--electric)] selection:text-black">
-      <SpeedBackground />
-      <div className="relative z-10">
-        <StartScreen
-          roomTitle={demoRoom.title}
-          seasonTitle={activeSeason.title}
-          seasonStatus={activeSeason.status}
-          challenges={challengeSummaries}
-        />
-      </div>
-    </main>
+    <PopTheme>
+      <FlashPopHome
+        roomTitle={demoRoom.title}
+        seasonTitle={activeSeason.title}
+        seasonStatus={activeSeason.status}
+        challenges={challengeSummaries}
+      />
+    </PopTheme>
   );
 }

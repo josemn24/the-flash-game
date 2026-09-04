@@ -1,0 +1,218 @@
+.content {
+  width: min(100%, 1180px);
+}
+
+.welcome,
+.identity,
+.cardMeta,
+.stats,
+.sectionHeading,
+.challengeCard {
+  display: flex;
+  align-items: center;
+}
+
+.welcome {
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin: var(--space-10) 0 var(--space-6);
+}
+
+.eyebrow,
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  color: var(--color-social);
+  font-family: var(--type-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow svg,
+.nextIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.welcome h1,
+.heroBody h2,
+.seasonCard h2,
+.nextCard h2,
+.sectionHeading h2,
+.challengeCopy h3 {
+  margin: 0;
+  font-family: var(--type-display);
+  letter-spacing: -0.04em;
+}
+
+.welcome h1 {
+  max-width: 640px;
+  font-size: clamp(38px, 5vw, 68px);
+  line-height: 0.96;
+}
+
+.lead,
+.heroBody > p,
+.seasonCard p,
+.nextCard p,
+.challengeCopy p {
+  color: var(--color-ink-muted);
+  line-height: 1.55;
+}
+
+.lead {
+  max-width: 580px;
+  margin: var(--space-4) 0 0;
+  font-size: 16px;
+}
+
+.identity {
+  flex: 0 0 auto;
+  gap: 10px;
+  padding: 10px 14px 10px 10px;
+  border: var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 64%);
+}
+
+.identity span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.identity strong { font-size: 13px; }
+.identity small { color: var(--color-ink-muted); font-size: 11px; }
+
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
+  gap: var(--space-6);
+}
+
+.heroCard {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+  min-height: 390px;
+  overflow: hidden;
+}
+
+.heroArt {
+  position: relative;
+  min-height: 260px;
+  overflow: hidden;
+  background: var(--color-social);
+}
+
+.heroArt::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, rgb(105 87 232 / 12%), rgb(23 23 32 / 38%));
+  content: "";
+}
+
+.heroArt img { object-fit: cover; }
+
+.heroStamp {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 1;
+  color: var(--color-brand);
+  font-family: var(--type-display);
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 0.8;
+}
+
+.heroBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(var(--space-6), 4vw, var(--space-10));
+}
+
+.cardMeta {
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.heroBody h2 {
+  margin-top: var(--space-5);
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 0.95;
+}
+
+.heroBody > p { margin: var(--space-3) 0 0; font-size: 15px; }
+
+.stats {
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
+  font-size: 11px;
+}
+
+.stats span { display: inline-flex; align-items: center; gap: 6px; }
+.stats strong { color: var(--color-ink); font-size: 18px; }
+.stats svg { width: 15px; height: 15px; color: var(--color-social); }
+
+.sideColumn { display: grid; gap: var(--space-6); }
+.seasonCard, .nextCard { min-height: 0; }
+.seasonCard h2 { margin-top: var(--space-5); font-size: 30px; line-height: 1; }
+.seasonCard p { margin: var(--space-3) 0 var(--space-5); font-size: 13px; }
+.progressTrack { height: 12px; overflow: hidden; border-radius: var(--radius-pill); background: rgb(23 23 32 / 11%); }
+.progressTrack span { display: block; height: 100%; border-radius: inherit; background: var(--color-social); }
+.progressValue { display: block; margin-top: var(--space-3); font-family: var(--type-mono); font-size: 11px; }
+
+.nextCard { display: flex; gap: var(--space-4); align-items: flex-start; }
+.nextIcon { display: grid; flex: 0 0 auto; width: 42px; height: 42px; place-items: center; border-radius: 14px; background: var(--color-brand); box-shadow: var(--shadow-control); }
+.nextCard h2 { font-size: 22px; line-height: 1.02; }
+.nextCard p { margin: var(--space-2) 0 0; font-size: 12px; }
+
+.challengeSection { margin-top: var(--space-12); }
+.sectionHeading { justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.sectionHeading h2 { font-size: 30px; }
+.sectionHeading > span { color: var(--color-ink-muted); font-family: var(--type-mono); font-size: 11px; }
+.challengeGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.challengeCard { gap: var(--space-3); min-width: 0; }
+.challengeNumber { color: var(--color-social); font-family: var(--type-mono); font-size: 18px; font-weight: 700; }
+.challengeCopy { min-width: 0; flex: 1; }
+.challengeCopy .cardMeta { justify-content: flex-start; gap: var(--space-3); font-size: 9px; }
+.challengeCopy h3 { margin-top: 6px; font-size: 20px; line-height: 1; }
+.challengeCopy p { overflow: hidden; margin: 6px 0 0; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.challengeCard a { flex: 0 0 auto; width: 46px; min-height: 46px; padding: 0; }
+.challengeCard a svg { width: 17px; }
+.locked { color: var(--color-ink-faint); font-family: var(--type-mono); font-size: 22px; }
+
+@media (max-width: 900px) {
+  .dashboard { grid-template-columns: 1fr; }
+  .sideColumn { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .welcome { align-items: flex-start; flex-direction: column; margin-top: var(--space-8); }
+  .identity { margin-top: -4px; }
+  .heroCard { grid-template-columns: 1fr; }
+  .heroArt { min-height: 190px; }
+  .heroBody { padding: var(--space-6); }
+  .sideColumn, .challengeGrid { grid-template-columns: 1fr; }
+  .challengeSection { margin-top: var(--space-10); }
+}
+
+@media (max-width: 374px) {
+  .welcome h1 { font-size: 36px; }
+  .heroBody h2 { font-size: 34px; }
+  .heroBody { padding: var(--space-5); }
+}

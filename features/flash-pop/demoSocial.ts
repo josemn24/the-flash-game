@@ -4,6 +4,7 @@ import type {
   PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
 
+export const FLASH_POP_FLASH_PILOT_ID = "tabarnia-flash-01";
 export const FLASH_POP_CHALLENGE_ID = "tabarnia-challenge-05";
 export const FLASH_POP_SECONDARY_CHALLENGE_ID = "tabarnia-challenge-06";
 export const FLASH_POP_PREVIEW_CHALLENGE_IDS = [

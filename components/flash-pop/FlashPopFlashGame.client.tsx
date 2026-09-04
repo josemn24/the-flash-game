@@ -24,12 +24,12 @@ import {
 } from "@/components/flash-pop/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { useGameSession } from "@/features/game/useGameSession";
+import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { AnswerResult, AnswerStatus, FlashChallenge, Question, QuestionMedia as QuestionMediaType } from "@/types/game";
 import styles from "./FlashPopFlashGame.module.css";
 
-const PILOT_CHALLENGE_ID = "tabarnia-flash-01";
 const FLASH_POP_FEEDBACK_DURATION = {
   correct: 1100,
   partial: 1100,
@@ -151,6 +151,7 @@ function QuestionStage({
     question.type === "progressive-image";
   const [timedResponseStarted, setTimedResponseStarted] = useState(!delayedTimer);
   const prompt = getPromptCopy(question.question);
+  const questionPosition = `${String(questionIndex + 1).padStart(2, "0")} de ${String(challenge.questions.length).padStart(2, "0")}`;
   const startTimedResponse = () => {
     setTimedResponseStarted(true);
     onTimedResponseStart();
@@ -160,6 +161,12 @@ function QuestionStage({
     <div className={styles.stage}>
       <PopGameHeader
         title="Flash clásico"
+        mobileLabel={
+          <>
+            Pregunta {String(questionIndex + 1).padStart(2, "0")} <span className={styles.mobileLabelMuted}>de {String(challenge.questions.length).padStart(2, "0")}</span>
+          </>
+        }
+        mobileLabelAriaLabel={`Pregunta ${questionPosition}`}
         timer={
           <PopTimer
             duration={question.timeLimit}
@@ -362,7 +369,7 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
   });
   const lastResult = session.results[session.results.length - 1];
 
-  if (challenge.id !== PILOT_CHALLENGE_ID) {
+  if (challenge.id !== FLASH_POP_FLASH_PILOT_ID) {
     return (
       <MotionConfig reducedMotion="user">
         <PopCanvas maxWidth="content"><PopCard><h1>Preview no disponible</h1><p>Este piloto está limitado a tabarnia-flash-01.</p><PopButtonLink href="/flash-pop">Volver al lobby</PopButtonLink></PopCard></PopCanvas>
