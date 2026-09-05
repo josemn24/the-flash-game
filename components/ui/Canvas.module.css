@@ -1,0 +1,56 @@
+.canvas {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 8% 12%,
+      color-mix(in srgb, var(--color-social) 10%, transparent),
+      transparent 32%
+    ),
+    var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--type-ui);
+}
+
+.pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  background-image: radial-gradient(var(--color-social) 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, black, transparent 68%);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2 * var(--space-6), 1180px);
+  margin: 0 auto;
+  padding: max(var(--space-6), env(safe-area-inset-top))
+    max(var(--space-8), env(safe-area-inset-right))
+    max(var(--space-12), env(safe-area-inset-bottom)) max(var(--space-8), env(safe-area-inset-left));
+}
+
+.wide {
+  max-width: 1180px;
+}
+
+.contentWidth {
+  max-width: 860px;
+}
+
+.none {
+  max-width: none;
+}
+
+@media (max-width: 640px) {
+  .content {
+    width: 100%;
+    padding: max(var(--space-4), env(safe-area-inset-top))
+      max(var(--space-5), env(safe-area-inset-right))
+      max(var(--space-10), env(safe-area-inset-bottom))
+      max(var(--space-5), env(safe-area-inset-left));
+  }
+}

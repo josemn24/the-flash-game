@@ -14,7 +14,7 @@
 .eyebrow {
   margin: 0;
   color: rgb(255 255 255 / 45%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -39,7 +39,7 @@
 .sequenceRow {
   gap: clamp(0.45rem, 2.4vw, 1rem);
   color: white;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(1.45rem, 7vw, 2.7rem);
   font-weight: 900;
   line-height: 1;
@@ -54,8 +54,8 @@
 
 .differenceRow {
   gap: clamp(0.75rem, 4vw, 1.6rem);
-  color: var(--cyan);
-  font-family: var(--font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: clamp(0.82rem, 3.3vw, 1.05rem);
   font-weight: 800;
   line-height: 1;
@@ -73,25 +73,25 @@
   }
 }
 
-.prompt.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
-  padding: var(--pop-space-4);
+.prompt {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
+  padding: var(--space-4);
   box-shadow: none;
 }
 
-.prompt.pop .eyebrow {
-  color: var(--pop-color-ink-muted);
+.prompt .eyebrow {
+  color: var(--color-ink-muted);
 }
 
-.prompt.pop .sequenceRow {
-  color: var(--pop-color-ink);
+.prompt .sequenceRow {
+  color: var(--color-ink);
   font-size: clamp(1.4rem, 7vw, 2.3rem);
 }
 
-.prompt.pop .differenceRow {
-  color: var(--pop-color-social);
+.prompt .differenceRow {
+  color: var(--color-social);
 }

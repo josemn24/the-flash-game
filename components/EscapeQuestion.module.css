@@ -12,7 +12,7 @@
   justify-content: space-between;
   gap: 1rem;
   color: rgb(255 255 255 / 48%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.7rem;
   font-weight: 850;
   letter-spacing: 0.08em;
@@ -20,7 +20,7 @@
 }
 
 .header strong {
-  color: var(--cyan);
+  color: var(--color-social);
   white-space: nowrap;
 }
 
@@ -69,8 +69,8 @@
   width: 1.7rem;
   height: calc(100% / 6);
   place-items: center;
-  color: var(--electric);
-  font-family: var(--font-mono);
+  color: var(--color-brand);
+  font-family: var(--type-mono);
   font-size: clamp(1.2rem, 6vw, 2rem);
   font-weight: 950;
   filter: drop-shadow(0 0 0.35rem rgb(215 255 24 / 42%));
@@ -88,7 +88,7 @@
   place-items: center;
   border: 2px solid rgb(255 255 255 / 34%);
   color: white;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(0.78rem, 4vw, 1.25rem);
   font-weight: 950;
   box-shadow:
@@ -150,14 +150,14 @@ button.block:disabled {
 
 .selected {
   z-index: 6;
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: 2px;
   filter: brightness(1.12);
 }
 
 .block:focus-visible {
   z-index: 7;
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: 3px;
 }
 
@@ -195,12 +195,12 @@ button.block:disabled {
 }
 
 .actions button:hover:not(:disabled) {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   background: rgb(53 232 255 / 11%);
 }
 
 .actions button:focus-visible {
-  outline: 2px solid var(--electric);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
 

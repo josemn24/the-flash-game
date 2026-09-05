@@ -3,74 +3,61 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const questionInputCss = readFileSync(
-  new URL("./FlashPopQuestionInput.module.css", import.meta.url),
-  "utf8",
+const roots = ["app", "components", "features", "data", "lib"].map((directory) =>
+  fileURLToPath(new URL(`../../${directory}`, import.meta.url)),
 );
 
-const nativeFormatStyles = [
-  "AnswerOption.module.css",
-  "AnagramQuestion.module.css",
-  "ClassificationQuestion.module.css",
-  "EstimationQuestion.module.css",
-  "HeatMapQuestion.module.css",
-  "MatchingQuestion.module.css",
-  "OddOneOutQuestion.module.css",
-  "OrderingQuestion.module.css",
-  "ProgressiveImageQuestion.module.css",
-  "TrueFalseQuestion.module.css",
-].map((filename) => ({
-  filename,
-  css: readFileSync(new URL(`../${filename}`, import.meta.url), "utf8"),
-}));
+function collect(directory: string, files: string[]) {
+  for (const entry of readdirSync(directory)) {
+    const path = join(directory, entry);
+    if (
+      path.includes("/flash-pop-concepts/") ||
+      path.includes("/flash-pop-typography/") ||
+      path.includes("/flash-pop/ui-kit/")
+    ) {
+      continue;
+    }
+    if (statSync(path).isDirectory()) collect(path, files);
+    else if (/\.(?:tsx?|css)$/.test(path) && !path.includes(".test.")) files.push(path);
+  }
+}
 
-describe("Flash Pop token boundary", () => {
-  it("keeps the public UI imports on the canonical barrel", () => {
-    const roots = ["app", "components", "features", "data", "lib"].map((directory) =>
-      fileURLToPath(new URL(`../../${directory}`, import.meta.url)),
+describe("product design-system boundaries", () => {
+  it("uses Flash Pop as the only product theme", () => {
+    const layout = readFileSync(
+      fileURLToPath(new URL("../../app/layout.tsx", import.meta.url)),
+      "utf8",
     );
+
+    expect(layout).toContain('data-theme="flash-pop"');
+    expect(layout).not.toContain("legacy-dark");
+  });
+
+  it("keeps product code on the canonical UI and token APIs", () => {
     const sourceFiles: string[] = [];
+    roots.forEach((root) => collect(root, sourceFiles));
+    const productFiles = sourceFiles;
 
-    function collect(directory: string) {
-      for (const entry of readdirSync(directory)) {
-        const path = join(directory, entry);
-        if (
-          path.includes("/components/ui/") ||
-          path.includes("/components/flash-pop/ui/") ||
-          path.includes("/flash-pop-concepts/") ||
-          path.includes("/flash-pop-typography/") ||
-          path.includes("/flash-pop/ui-kit/")
-        ) {
-          continue;
-        }
-        if (statSync(path).isDirectory()) collect(path);
-        else if (/\.(?:tsx?|css)$/.test(path) && !path.includes(".test.")) sourceFiles.push(path);
-      }
-    }
+    const forbiddenImportFiles = productFiles.filter((path) =>
+      readFileSync(path, "utf8").includes("@/components/flash-pop/ui"),
+    );
+    const forbiddenTokenFiles = productFiles.filter((path) =>
+      /--pop-|--(?:ink|panel|panel-light|electric|cyan|coral|muted|surface-subtle|surface-panel|text-muted|font-body|font-display)/.test(
+        readFileSync(path, "utf8"),
+      ),
+    );
+    const forbiddenIdentifierFiles = productFiles.filter((path) =>
+      /\bPop(?:Avatar|Button|ButtonLink|Chip|Card|Canvas|IconButton|Timer|TimerDisplay|GameHeader)\b|legacyCompatFormat/.test(
+        readFileSync(path, "utf8"),
+      ),
+    );
+    const forbiddenThemeFiles = productFiles.filter((path) =>
+      /LegacyTheme|legacy-dark/.test(readFileSync(path, "utf8")),
+    );
 
-    roots.forEach(collect);
-    const directLegacyImports = sourceFiles.flatMap((path) => {
-      const source = readFileSync(path, "utf8");
-      return source.includes("@/components/flash-pop/ui") ? [path] : [];
-    });
-
-    expect(directLegacyImports).toEqual([]);
-  });
-
-  it("scopes every important compatibility override to legacy formats", () => {
-    expect(questionInputCss).not.toMatch(/\.flashPopFormat:not\(/);
-
-    for (const rule of questionInputCss.split("}")) {
-      if (rule.includes("!important")) {
-        expect(rule.split("{", 1)[0]).toContain(".legacyCompatFormat");
-      }
-    }
-  });
-
-  it("keeps native format styles on canonical semantic tokens", () => {
-    for (const { filename, css } of nativeFormatStyles) {
-      expect(css, filename).not.toContain("var(--pop-");
-      expect(css, filename).not.toContain("!important");
-    }
+    expect(forbiddenImportFiles).toEqual([]);
+    expect(forbiddenTokenFiles).toEqual([]);
+    expect(forbiddenIdentifierFiles).toEqual([]);
+    expect(forbiddenThemeFiles).toEqual([]);
   });
 });

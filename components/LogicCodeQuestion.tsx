@@ -87,7 +87,7 @@ export function LogicCodeQuestion({
   };
 
   return (
-    <div className={`${styles.challenge} ${variant === "flash-pop" ? styles.pop : ""}`}>
+    <div className={`${styles.challenge}`}>
       <div className={styles.clues} aria-label="Pistas del código">
         {clues.map((clue) => (
           <div className={styles.clue} key={clue.code}>

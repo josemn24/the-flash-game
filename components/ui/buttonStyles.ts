@@ -1,4 +1,4 @@
-import styles from "@/components/flash-pop/ui/PopControls.module.css";
+import styles from "./Controls.module.css";
 
 export type ButtonVariant = "primary" | "secondary";
 export type ButtonSize = "default" | "hero";

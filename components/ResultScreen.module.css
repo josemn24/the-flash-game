@@ -1,5 +1,5 @@
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.19em;
@@ -14,7 +14,7 @@
 .timeCard,
 .tipCard {
   border: var(--border-subtle);
-  background: var(--surface-panel);
+  background: var(--color-surface);
   backdrop-filter: blur(18px);
 }
 .scorePanel {
@@ -33,7 +33,7 @@
 .scoreDisplay span {
   position: relative;
   z-index: 2;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(4.7rem, 21vw, 7.5rem);
   font-weight: 950;
   letter-spacing: -0.08em;
@@ -44,7 +44,7 @@
   z-index: 2;
   margin-top: 0.6rem;
   color: rgba(255, 255, 255, 0.35);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -81,10 +81,10 @@
   border-radius: 999px;
   background:
     radial-gradient(circle at center, #121418 61%, transparent 63%),
-    conic-gradient(var(--electric) var(--accuracy), rgba(255, 255, 255, 0.07) 0);
+    conic-gradient(var(--color-brand) var(--accuracy), rgba(255, 255, 255, 0.07) 0);
 }
 .accuracyRing span {
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.3rem;
   font-weight: 950;
 }
@@ -102,7 +102,7 @@
 .resultStatCard strong {
   margin-top: 0.4rem;
   color: white;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.7rem;
   font-weight: 950;
 }
@@ -112,16 +112,16 @@
   font-weight: 700;
 }
 .resultStatCorrect {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 .resultStatWrong {
-  color: var(--coral);
+  color: var(--color-danger);
 }
 .resultStatPartial {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 .approximationMark {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 1.25rem !important;
   font-weight: 900 !important;
 }

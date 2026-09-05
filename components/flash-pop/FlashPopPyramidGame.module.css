@@ -2,9 +2,9 @@
   display: flex;
   min-height: 100dvh;
   flex-direction: column;
-  gap: var(--pop-space-6);
-  padding-top: max(var(--pop-space-4), env(safe-area-inset-top));
-  padding-bottom: max(var(--pop-space-10), env(safe-area-inset-bottom));
+  gap: var(--space-6);
+  padding-top: max(var(--space-4), env(safe-area-inset-top));
+  padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
 }
 
 .topbar,
@@ -26,13 +26,13 @@
 }
 
 .topbar {
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .levelIndicator {
   margin: 0;
-  color: var(--pop-color-ink);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -40,7 +40,7 @@
 }
 
 .levelIndicator span {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 
 .levelMap {
@@ -49,7 +49,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  margin: calc(var(--pop-space-3) * -1) 0 0;
+  margin: calc(var(--space-3) * -1) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -60,19 +60,19 @@
   grid-template-columns: 24px 1fr 24px;
   align-items: center;
   padding: 6px 12px;
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink-muted);
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  color: var(--color-ink-muted);
   background: rgb(255 255 255 / 30%);
   font-size: 13px;
   transition:
-    width var(--pop-motion-press-out) var(--pop-ease-out),
-    background var(--pop-motion-press-out) ease,
-    border-color var(--pop-motion-press-out) ease;
+    width var(--motion-press-out) var(--ease-out),
+    background var(--motion-press-out) ease,
+    border-color var(--motion-press-out) ease;
 }
 
 .levelTier > span {
-  font-family: var(--pop-font-mono);
+  font-family: var(--type-mono);
   font-size: 11px;
   font-weight: 800;
 }
@@ -93,15 +93,15 @@
 
 .levelTierCleared {
   border-color: rgb(185 220 18 / 70%);
-  color: var(--pop-color-social);
+  color: var(--color-social);
   background: rgb(215 255 24 / 14%);
 }
 
 .levelTierCurrent {
-  border-color: var(--pop-color-brand);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+  border-color: var(--color-brand);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
 }
 
 .levelTierLocked {
@@ -110,7 +110,7 @@
 
 .topbarLeft,
 .topbarRight {
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
 }
 
 .brandMark {
@@ -119,9 +119,9 @@
   height: 44px;
   place-items: center;
   border-radius: 14px;
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
-  color: var(--pop-color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
+  color: var(--color-ink);
 }
 
 .brandMark svg {
@@ -143,14 +143,14 @@
 }
 
 .brandCopy strong {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: 19px;
   line-height: 1;
 }
 
 .metaLabel {
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -163,7 +163,7 @@
 .result,
 .review {
   display: grid;
-  gap: var(--pop-space-6);
+  gap: var(--space-6);
   margin: auto 0;
 }
 
@@ -180,21 +180,21 @@
 .confirmCard,
 .resultCard,
 .reviewCard {
-  border-radius: var(--pop-radius-hero);
+  border-radius: var(--radius-hero);
 }
 
 .introCard,
 .briefingCard,
 .resultCard,
 .reviewCard {
-  border: var(--pop-border-subtle);
-  background: var(--pop-color-surface);
-  box-shadow: var(--pop-shadow-hero);
+  border: var(--border-subtle);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
 }
 
 .confirmCard {
   display: grid;
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
   text-align: center;
 }
 
@@ -204,7 +204,7 @@
 .resultCard h1,
 .reviewCard h1 {
   margin: 8px 0 0;
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: clamp(34px, 10vw, 56px);
   font-weight: 700;
   letter-spacing: -0.05em;
@@ -216,7 +216,7 @@
 .resultLead,
 .reviewCopy {
   margin: 12px 0 0;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.5;
@@ -224,8 +224,8 @@
 
 .briefingFormat {
   margin: 12px 0 0;
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -235,9 +235,9 @@
 .introIllustration {
   width: 100%;
   min-height: 160px;
-  margin-bottom: var(--pop-space-6);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-soft) url("/flash-pop/concepts/pyramid-soft-diorama.webp")
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-soft) url("/flash-pop/concepts/pyramid-soft-diorama.webp")
     center / cover;
 }
 
@@ -245,8 +245,8 @@
 .briefingStats,
 .resultMeta {
   display: grid;
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-6);
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
 .rules {
@@ -260,9 +260,9 @@
   min-width: 0;
   flex-direction: column;
   gap: 5px;
-  padding: var(--pop-space-4);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
 .rule strong,
@@ -275,7 +275,7 @@
 .rule span,
 .briefingStat span,
 .resultStat span {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
@@ -283,13 +283,13 @@
 
 .action {
   width: 100%;
-  margin-top: var(--pop-space-6);
+  margin-top: var(--space-6);
 }
 
 .attemptNote,
 .storageWarning {
-  margin: var(--pop-space-3) 0 0;
-  color: var(--pop-color-ink-muted);
+  margin: var(--space-3) 0 0;
+  color: var(--color-ink-muted);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
@@ -297,8 +297,8 @@
 }
 
 .storageWarning {
-  padding: var(--pop-space-3);
-  border-radius: var(--pop-radius-control);
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
   background: rgb(255 114 118 / 12%);
   color: #a22d38;
 }
@@ -314,7 +314,7 @@
 
 .briefingAction {
   width: 100%;
-  margin-top: var(--pop-space-6);
+  margin-top: var(--space-6);
 }
 
 .questionCard {
@@ -333,9 +333,9 @@
 
 .questionPrompt,
 .screen .questionCard .questionPrompt {
-  margin-top: var(--pop-space-3);
-  color: var(--pop-color-ink);
-  font-family: var(--pop-font-display);
+  margin-top: var(--space-3);
+  color: var(--color-ink);
+  font-family: var(--type-display);
   font-size: clamp(24px, 6.4vw, 32px);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -360,26 +360,26 @@
 .answerGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-6);
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
 .answerTile {
   display: grid;
   min-height: 72px;
   place-items: center;
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-control);
-  color: var(--pop-color-ink);
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+  color: var(--color-ink);
   font-size: 22px;
   font-weight: 800;
   transition:
-    transform var(--pop-motion-press-out) var(--pop-ease-out),
-    box-shadow var(--pop-motion-press-out) var(--pop-ease-out),
-    border-color var(--pop-motion-press-out) ease,
-    background var(--pop-motion-press-out) ease;
+    transform var(--motion-press-out) var(--ease-out),
+    box-shadow var(--motion-press-out) var(--ease-out),
+    border-color var(--motion-press-out) ease,
+    background var(--motion-press-out) ease;
 }
 
 .answerContent {
@@ -396,25 +396,25 @@
 
 .answerTile:last-child {
   grid-column: 1 / -1;
-  width: calc((100% - var(--pop-space-3)) / 2);
+  width: calc((100% - var(--space-3)) / 2);
   justify-self: center;
 }
 
 .answerTile:hover:not(:disabled) {
-  border-color: var(--pop-color-social);
+  border-color: var(--color-social);
   transform: translateY(-2px);
 }
 
 .answerTile:active:not(:disabled),
 .answerTile.selected {
-  border-color: var(--pop-color-social);
+  border-color: var(--color-social);
   background: rgb(105 87 232 / 10%);
   box-shadow: none;
   transform: translateY(3px);
 }
 
 .answerTile:focus-visible {
-  outline: 3px solid var(--pop-color-focus);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 
@@ -428,9 +428,9 @@
 }
 
 .resultChallenge {
-  margin: var(--pop-space-4) 0 0;
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  margin: var(--space-4) 0 0;
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -439,14 +439,14 @@
 
 .resultSubtitle {
   margin: 8px 0 0;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 13px;
   font-weight: 600;
 }
 
 .resultScore {
-  margin-top: var(--pop-space-6);
-  font-family: var(--pop-font-display);
+  margin-top: var(--space-6);
+  font-family: var(--type-display);
   font-size: clamp(72px, 24vw, 132px);
   font-weight: 700;
   letter-spacing: -0.08em;
@@ -455,8 +455,8 @@
 
 .resultScoreLabel {
   margin-top: 10px;
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -464,17 +464,17 @@
 }
 
 .xpCallout {
-  margin-top: var(--pop-space-5);
-  padding: var(--pop-space-4);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-reward);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-reward);
   font-weight: 800;
 }
 
 .ranking {
   display: grid;
   gap: 8px;
-  margin-top: var(--pop-space-6);
+  margin-top: var(--space-6);
   text-align: left;
 }
 
@@ -485,16 +485,16 @@
 }
 
 .rankingRow {
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
   min-height: 52px;
   padding: 8px 10px;
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
 .rankingRow.current {
-  border: 2px solid var(--pop-color-brand);
-  background: var(--pop-color-canvas);
+  border: 2px solid var(--color-brand);
+  background: var(--color-canvas);
 }
 
 .rankingName {
@@ -505,16 +505,16 @@
 }
 
 .rankingScore {
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 700;
 }
 
 .rankingPosition {
   width: 28px;
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 700;
 }
@@ -524,7 +524,7 @@
 }
 
 .reviewHeader {
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
 }
 
 .reviewHeader h1 {
@@ -532,24 +532,24 @@
 }
 
 .reviewAnswer {
-  margin-top: var(--pop-space-5);
-  padding: var(--pop-space-4);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
   font-size: 18px;
   font-weight: 800;
 }
 
 .reviewExplanation {
-  margin-top: var(--pop-space-3);
-  color: var(--pop-color-ink-muted);
+  margin-top: var(--space-3);
+  color: var(--color-ink-muted);
   font-size: 15px;
   line-height: 1.5;
 }
 
 @media (min-width: 720px) {
   .screen {
-    gap: var(--pop-space-8);
+    gap: var(--space-8);
   }
 
   .intro,
@@ -567,7 +567,7 @@
 
 @media (max-width: 520px) {
   .mobileLabelMuted {
-    color: var(--pop-color-ink-muted);
+    color: var(--color-ink-muted);
   }
 
   .levelIndicator {

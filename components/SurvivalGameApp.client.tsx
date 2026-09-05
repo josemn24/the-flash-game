@@ -19,7 +19,7 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ink)] text-white selection:bg-[var(--electric)] selection:text-black">
+      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
         <SpeedBackground />
         <div className="relative z-10">
           <AnimatePresence mode="wait">

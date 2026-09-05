@@ -5,8 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { CrossIcon, RotateIcon } from "@/components/icons";
 import styles from "@/components/PlayableFormatExample.module.css";
 import { QuestionMedia } from "@/components/QuestionMedia";
-import { Timer } from "@/components/Timer";
-import { Badge, MotionButton } from "@/components/ui";
+import { Chip, MotionButton, Timer } from "@/components/ui";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
@@ -168,7 +167,7 @@ export function PlayableFormatExample({
       <div className={styles.launcher}>
         <span className={styles.launcherTitle}>{title}</span>
         <div className={styles.launcherMeta}>
-          <Badge>{question.category}</Badge>
+          <Chip>{question.category}</Chip>
           <span>
             {question.timeLimit} s · {question.points} pts
           </span>
@@ -211,7 +210,7 @@ export function PlayableFormatExample({
 
           {phase === "ready" && (
             <div className={styles.readyPanel}>
-              <Badge>{question.category}</Badge>
+              <Chip>{question.category}</Chip>
               <h2 id={titleId}>{question.question}</h2>
               <p>
                 {question.type === "mini-wordle" ? (
@@ -251,7 +250,7 @@ export function PlayableFormatExample({
           {phase === "playing" && (
             <div className={styles.playPanel} key={attempt}>
               <div className={styles.questionHeader}>
-                <Badge>{question.category}</Badge>
+                <Chip>{question.category}</Chip>
                 {!hasDelayedTimedResponse(question) || timedResponseStarted ? (
                   <Timer
                     key={`timer-${attempt}`}

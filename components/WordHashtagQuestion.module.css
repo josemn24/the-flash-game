@@ -13,7 +13,7 @@
   justify-content: space-between;
   gap: 1rem;
   color: rgb(255 255 255 / 48%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.07em;
@@ -22,7 +22,7 @@
 
 .header strong,
 .progress strong {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .board {
@@ -63,7 +63,7 @@
 }
 
 .tile b {
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(1.35rem, 7vw, 2.4rem);
   font-weight: 950;
   line-height: 1;
@@ -80,7 +80,7 @@
   border-radius: 999px;
   color: #11150a;
   background: rgb(255 255 255 / 68%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(0.48rem, 1.8vw, 0.66rem);
   font-weight: 950;
 }
@@ -106,7 +106,7 @@
 
 .selected {
   z-index: 2;
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   box-shadow:
     0 0.28rem 0 rgb(0 0 0 / 32%),
     0 0 0 3px rgb(53 232 255 / 30%);
@@ -121,7 +121,7 @@
 
 .tile:focus-visible {
   z-index: 3;
-  outline: 3px solid var(--cyan);
+  outline: 3px solid var(--color-social);
   outline-offset: 3px;
 }
 
@@ -149,65 +149,65 @@
   }
 }
 
-.root.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
-.pop .header,
-.pop .progress {
-  color: var(--pop-color-ink-muted);
+.header,
+.progress {
+  color: var(--color-ink-muted);
 }
 
-.pop .header strong,
-.pop .progress strong {
-  color: var(--pop-state-selected);
+.header strong,
+.progress strong {
+  color: var(--state-selected);
 }
 
-.pop .board {
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+.board {
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
-.pop .tile {
-  border-color: var(--pop-color-border);
-  color: var(--pop-color-ink);
-  box-shadow: var(--pop-shadow-control);
+.tile {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-control);
 }
 
-.pop .correct {
-  border-color: var(--pop-state-correct);
-  color: var(--pop-color-surface);
-  background: var(--pop-state-correct);
+.correct {
+  border-color: var(--state-correct);
+  color: var(--color-surface);
+  background: var(--state-correct);
 }
 
-.pop .displaced {
-  border-color: var(--pop-state-movable);
-  color: var(--pop-color-ink);
-  background: var(--pop-state-movable);
+.displaced {
+  border-color: var(--state-movable);
+  color: var(--color-ink);
+  background: var(--state-movable);
 }
 
-.pop .selected {
-  border-color: var(--pop-state-selected);
+.selected {
+  border-color: var(--state-selected);
   box-shadow:
-    var(--pop-shadow-control),
-    0 0 0 3px color-mix(in srgb, var(--pop-state-selected) 22%, transparent);
+    var(--shadow-control),
+    0 0 0 3px color-mix(in srgb, var(--state-selected) 22%, transparent);
 }
 
-.pop .dragTarget {
-  border-color: var(--pop-state-selected);
+.dragTarget {
+  border-color: var(--state-selected);
 }
 
-.pop .tile:focus-visible {
-  outline-color: var(--pop-state-focus);
+.tile:focus-visible {
+  outline-color: var(--state-focus);
 }
 
-.pop .tile small {
-  color: var(--pop-color-ink);
+.tile small {
+  color: var(--color-ink);
   background: rgb(255 255 255 / 78%);
 }
 
-.pop .instructions {
-  color: var(--pop-color-ink-muted);
+.instructions {
+  color: var(--color-ink-muted);
 }

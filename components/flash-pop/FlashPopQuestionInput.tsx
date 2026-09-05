@@ -422,7 +422,7 @@ export function FlashPopQuestionInput({
     default:
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <QuestionInput

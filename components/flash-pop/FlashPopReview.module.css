@@ -1,10 +1,10 @@
 .card {
   display: grid;
-  gap: var(--pop-space-5);
-  border-radius: var(--pop-radius-hero);
-  border: var(--pop-border-subtle);
-  background: var(--pop-color-surface);
-  box-shadow: var(--pop-shadow-hero);
+  gap: var(--space-5);
+  border-radius: var(--radius-hero);
+  border: var(--border-subtle);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
 }
 
 .heading,
@@ -20,13 +20,13 @@
 .meta {
   align-items: center;
   justify-content: space-between;
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
 }
 
 .eyebrow {
   margin: 0;
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -35,31 +35,31 @@
 
 .heading h1 {
   margin: 6px 0 0;
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: clamp(32px, 8vw, 48px);
   line-height: 0.98;
 }
 
 .levels {
   display: grid;
-  gap: var(--pop-space-2);
+  gap: var(--space-2);
 }
 
 .level {
   overflow: hidden;
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
 .level summary {
   display: flex;
   min-height: 56px;
   align-items: center;
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
   cursor: pointer;
   list-style: none;
-  padding: var(--pop-space-2) var(--pop-space-3);
+  padding: var(--space-2) var(--space-3);
 }
 
 .level summary::-webkit-details-marker {
@@ -72,10 +72,10 @@
   height: 32px;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: var(--pop-radius-pill);
-  color: var(--pop-color-social);
-  background: var(--pop-color-surface);
-  font-family: var(--pop-font-mono);
+  border-radius: var(--radius-pill);
+  color: var(--color-social);
+  background: var(--color-surface);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 700;
 }
@@ -93,7 +93,7 @@
 
 .levelTitle small {
   overflow: hidden;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -102,7 +102,7 @@
 .levelStatus {
   align-items: center;
   gap: 5px;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 11px;
   font-weight: 700;
 }
@@ -113,23 +113,23 @@
 }
 
 .reached .levelStatus {
-  color: var(--pop-color-success);
+  color: var(--color-success);
 }
 
 .locked .levelStatus {
-  color: var(--pop-color-ink-faint);
+  color: var(--color-ink-faint);
 }
 
 .levelBody {
   display: grid;
-  gap: var(--pop-space-3);
-  border-top: var(--pop-border-subtle);
-  padding: var(--pop-space-4);
+  gap: var(--space-3);
+  border-top: var(--border-subtle);
+  padding: var(--space-4);
 }
 
 .levelBody p {
   margin: 0;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -138,37 +138,37 @@
 .levelBody :global([class*="answerBox"]),
 .levelBody :global([class*="classificationReview"]),
 .levelBody :global([class*="reviewGrid"]) {
-  color: var(--pop-color-ink);
-  border-color: var(--pop-color-border);
-  background: var(--pop-color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .levelBody :global([class*="answerBox"] span),
 .levelBody :global([class*="answerBox"] small) {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 
 .levelBody :global([class*="answerBox"] strong),
 .levelBody :global([class*="answerBox"] b) {
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
 }
 
 .meta {
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 11px;
 }
 
 .meta strong {
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
 }
 
 .lockedBody {
   align-items: center;
-  gap: var(--pop-space-2);
-  border-top: var(--pop-border-subtle);
-  padding: var(--pop-space-4);
-  color: var(--pop-color-ink-muted);
+  gap: var(--space-2);
+  border-top: var(--border-subtle);
+  padding: var(--space-4);
+  color: var(--color-ink-muted);
   font-size: 12px;
   line-height: 1.4;
 }

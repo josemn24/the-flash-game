@@ -8,8 +8,8 @@
 .launcherTitle {
   display: block;
   margin-bottom: 0.75rem;
-  color: var(--cyan);
-  font-family: var(--font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 0.6rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -25,7 +25,7 @@
 
 .launcherMeta > span {
   color: rgba(255, 255, 255, 0.35);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -36,7 +36,7 @@
 .readyPanel h2,
 .questionTitle,
 .feedbackPanel h2 {
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-weight: 950;
   letter-spacing: -0.045em;
   line-height: 1.05;
@@ -117,8 +117,8 @@
 
 .dialogEyebrow,
 .explanation > span {
-  color: var(--cyan);
-  font-family: var(--font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -184,7 +184,7 @@
   line-height: 1.5;
 }
 .readyRules li::marker {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .questionHeader {
@@ -220,14 +220,14 @@
 
 .resultBanner strong {
   grid-row: span 2;
-  color: var(--electric);
-  font-family: var(--font-display);
+  color: var(--color-brand);
+  font-family: var(--type-display);
   font-size: 1.8rem;
 }
 
 .resultBanner small {
   color: rgba(255, 255, 255, 0.4);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
 }
 
 .resultBanner.incorrect,
@@ -237,7 +237,7 @@
 
 .resultBanner.incorrect strong,
 .resultBanner.unanswered strong {
-  color: var(--coral);
+  color: var(--color-danger);
 }
 
 .resultBanner.partial {
@@ -245,7 +245,7 @@
 }
 
 .resultBanner.partial strong {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 
 .explanation {
@@ -257,7 +257,7 @@
 }
 
 .explanation > span {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .explanation p {

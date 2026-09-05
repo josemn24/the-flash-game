@@ -1,11 +1,11 @@
 .page {
   display: grid;
-  gap: var(--pop-space-12);
+  gap: var(--space-12);
 }
 
 .hero {
   max-width: 720px;
-  padding: var(--pop-space-8) 0 var(--pop-space-4);
+  padding: var(--space-8) 0 var(--space-4);
 }
 
 .hero h1,
@@ -14,8 +14,8 @@
 }
 
 .hero h1 {
-  margin-top: var(--pop-space-3);
-  font-family: var(--pop-font-display);
+  margin-top: var(--space-3);
+  font-family: var(--type-display);
   font-size: clamp(44px, 7vw, 72px);
   font-weight: 700;
   letter-spacing: -0.055em;
@@ -24,15 +24,15 @@
 
 .hero p {
   max-width: 650px;
-  margin-top: var(--pop-space-4);
-  color: var(--pop-color-ink-muted);
+  margin-top: var(--space-4);
+  color: var(--color-ink-muted);
   font-size: 16px;
   line-height: 1.55;
 }
 
 .section {
   display: grid;
-  gap: var(--pop-space-5);
+  gap: var(--space-5);
 }
 
 .sectionHeading p,
@@ -41,8 +41,8 @@
 }
 
 .sectionHeading p {
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -50,7 +50,7 @@
 }
 
 .sectionHeading h2 {
-  margin-top: var(--pop-space-1);
+  margin-top: var(--space-1);
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -59,7 +59,7 @@
 .swatchGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
 }
 
 .swatchCard {
@@ -73,8 +73,8 @@
   width: 38px;
   height: 38px;
   flex: 0 0 auto;
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-sm);
+  border: var(--border-subtle);
+  border-radius: var(--radius-sm);
   background: var(--swatch-color);
 }
 
@@ -89,14 +89,14 @@
 
 .swatchCard small {
   margin-top: 2px;
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 8px;
 }
 
 .typeSpecimen {
   display: grid;
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .typeSpecimen p {
@@ -104,7 +104,7 @@
 }
 
 .displayType {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: clamp(38px, 6vw, 58px);
   font-weight: 700;
   letter-spacing: -0.05em;
@@ -118,8 +118,8 @@
 }
 
 .monoType {
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 700;
 }
@@ -127,12 +127,12 @@
 .foundationGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .tokenPanel {
   display: grid;
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .tokenPanel h3 {
@@ -144,7 +144,7 @@
 .elevationSpecimens {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .radiusSpecimens > span,
@@ -152,13 +152,13 @@
   display: grid;
   justify-items: center;
   gap: 3px;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 9px;
 }
 
 .radiusSpecimens strong,
 .elevationSpecimens strong {
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
   font-size: 10px;
 }
 
@@ -167,8 +167,8 @@
   display: block;
   width: 48px;
   height: 38px;
-  border: var(--pop-border-subtle);
-  background: var(--pop-color-surface-soft);
+  border: var(--border-subtle);
+  background: var(--color-surface-soft);
 }
 
 .radiusShape {
@@ -176,27 +176,27 @@
 }
 
 .elevationShape {
-  border-radius: var(--pop-radius-sm);
-  background: var(--pop-color-surface);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   box-shadow: var(--sample-shadow);
 }
 
 .controlGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--pop-space-5);
+  gap: var(--space-5);
 }
 
 .controlGrid > div {
   display: grid;
   align-content: start;
-  gap: var(--pop-space-2);
+  gap: var(--space-2);
 }
 
 .controlGrid small,
 .timerStates small {
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -214,33 +214,33 @@
 }
 
 .inlineControls {
-  gap: var(--pop-space-2);
+  gap: var(--space-2);
 }
 
 .longButton {
-  margin-top: var(--pop-space-6);
+  margin-top: var(--space-6);
 }
 
 .chipRow {
   flex-wrap: wrap;
-  gap: var(--pop-space-3);
+  gap: var(--space-3);
 }
 
 .avatarExamples {
   flex-wrap: wrap;
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .stackExamples {
   flex-wrap: wrap;
-  gap: var(--pop-space-8);
-  margin-top: var(--pop-space-6);
+  gap: var(--space-8);
+  margin-top: var(--space-6);
 }
 
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--pop-space-4);
+  gap: var(--space-4);
 }
 
 .cardGrid strong {
@@ -248,28 +248,28 @@
 }
 
 .cardGrid p {
-  margin: var(--pop-space-2) 0 0;
-  color: var(--pop-color-ink-muted);
+  margin: var(--space-2) 0 0;
+  color: var(--color-ink-muted);
   font-size: 13px;
   line-height: 1.45;
 }
 
 .timerStates {
   flex-wrap: wrap;
-  gap: var(--pop-space-8);
+  gap: var(--space-8);
 }
 
 .timerStates > span {
   display: grid;
   justify-items: center;
-  gap: var(--pop-space-2);
+  gap: var(--space-2);
 }
 
 .liveTimer {
-  gap: var(--pop-space-4);
-  margin-top: var(--pop-space-8);
-  padding-top: var(--pop-space-6);
-  border-top: var(--pop-border-subtle);
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: var(--border-subtle);
 }
 
 .liveTimer > div {
@@ -288,7 +288,7 @@
 
 .liveTimer div > span {
   margin-top: 3px;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 11px;
 }
 
@@ -306,11 +306,11 @@
 
 @media (max-width: 480px) {
   .page {
-    gap: var(--pop-space-10);
+    gap: var(--space-10);
   }
 
   .hero {
-    padding-top: var(--pop-space-4);
+    padding-top: var(--space-4);
   }
 
   .hero h1 {

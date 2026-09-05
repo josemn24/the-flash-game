@@ -10,14 +10,14 @@
   justify-content: space-between;
   gap: 0.6rem 1rem;
   color: rgba(255, 255, 255, 0.58);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .header strong {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 .meta {
   justify-content: flex-start;
@@ -40,7 +40,7 @@
   color: rgba(255, 255, 255, 0.85);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
-    var(--surface-subtle);
+    var(--color-surface-soft);
   transition:
     border-color 150ms,
     background 150ms,
@@ -51,7 +51,7 @@
   transform: translateY(-1px);
 }
 .tile:focus-visible {
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: 2px;
 }
 .tileRevealed {
@@ -96,7 +96,7 @@
 }
 .tileBack {
   color: rgba(255, 255, 255, 0.24);
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.8rem;
   font-weight: 900;
 }
@@ -108,7 +108,7 @@
   height: 1rem;
 }
 .tileMatched .stateIcon {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 .tileMismatched .stateIcon {
   color: #ff858a;

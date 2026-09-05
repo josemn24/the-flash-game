@@ -23,7 +23,7 @@
   border-right: 1px solid rgb(255 255 255 / 0.18);
   border-bottom: 1px solid rgb(255 255 255 / 0.18);
   color: white;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(1.45rem, 7vw, 2.15rem);
   font-weight: 800;
 }
@@ -65,7 +65,7 @@
   text-align: center;
 }
 .progress {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.78rem;
   font-weight: 700;
   color: rgb(255 255 255 / 0.72);
@@ -95,7 +95,7 @@
   min-height: 3.25rem;
   background: rgb(255 255 255 / 0.11);
   color: white;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 1.25rem;
 }
 .key:hover:not(:disabled),

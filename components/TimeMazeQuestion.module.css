@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   color: rgb(255 255 255 / 48%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -19,7 +19,7 @@
 }
 
 .header strong {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 
 .board {
@@ -34,7 +34,7 @@
 }
 
 .boardInteractive:focus-visible {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
 }
 
@@ -71,7 +71,7 @@
   width: 0.28rem;
   height: 0.28rem;
   border-radius: 50%;
-  background: var(--electric);
+  background: var(--color-brand);
   content: "";
 }
 
@@ -81,7 +81,7 @@
   top: 0.22rem;
   left: 0.28rem;
   color: rgb(255 255 255 / 55%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(0.48rem, 1.8vw, 0.65rem);
   font-weight: 900;
 }
@@ -95,7 +95,7 @@
   place-items: center;
   border-radius: 50%;
   color: #090b04;
-  background: var(--electric);
+  background: var(--color-brand);
   box-shadow: 0 0 1rem rgb(215 255 24 / 42%);
 }
 
@@ -117,12 +117,12 @@
 }
 
 .playerRoute {
-  stroke: var(--electric);
+  stroke: var(--color-brand);
   stroke-width: 3;
 }
 
 .optimalRoute {
-  stroke: var(--cyan);
+  stroke: var(--color-social);
   stroke-width: 2;
   stroke-dasharray: 5 5;
 }
@@ -151,7 +151,7 @@
 }
 
 .controls button:hover:not(:disabled) {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   background: rgb(53 232 255 / 10%);
 }
 

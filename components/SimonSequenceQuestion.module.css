@@ -8,14 +8,14 @@
   justify-content: space-between;
   gap: 1rem;
   color: rgba(255, 255, 255, 0.64);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .phaseHeader strong {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 .instructions {
   margin: 0;
@@ -37,7 +37,7 @@
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 1.25rem;
   color: white;
-  background: var(--surface-subtle);
+  background: var(--color-surface-soft);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
   transition:
     transform 120ms,
@@ -78,7 +78,7 @@
   background: linear-gradient(145deg, #1c966e, #10513d);
 }
 .padActive {
-  border-color: var(--electric);
+  border-color: var(--color-brand);
   filter: brightness(1.5);
   box-shadow:
     0 0 0 0.25rem rgba(215, 255, 24, 0.22),

@@ -1,0 +1,52 @@
+.timer {
+  display: inline-flex;
+  min-width: 72px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: var(--border-action);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+  color: var(--color-ink);
+  font-family: var(--type-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.value {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.unit {
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.normal {
+  background: var(--color-brand);
+}
+
+.urgent {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+}
+
+.finished {
+  background: var(--color-ink);
+  color: var(--color-text-on-social);
+}
+
+.finished .unit {
+  color: var(--color-text-on-social);
+}
+
+.compact {
+  min-width: 58px;
+  border-width: 1px;
+}
+
+.compact .value {
+  font-size: 0.95rem;
+}

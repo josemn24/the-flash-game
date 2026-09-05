@@ -203,12 +203,11 @@ Orden recomendado si se aprueba el slice:
 ## Orden de componentes
 
 ```text
-PopTheme
-→ PopButton / PopIconButton
+Button / IconButton
 → Avatar / AvatarStack
 → StatusChip / RewardChip
 → ChallengeHeroCard
-→ PopTimer / ProgressRail
+→ Timer / ProgressRail
 → AnswerTile
 → FeedbackBanner
 → ResultHero
@@ -279,5 +278,5 @@ estado explícito de formato no disponible.
 ## Próximo hito ejecutable
 
 Completar la migración progresiva de formatos y shells restantes, eliminando los
-aliases `--pop-*` y los overrides de compatibilidad cuando ya no tengan
+aliases temporales y los overrides de compatibilidad cuando ya no tengan
 consumidores.

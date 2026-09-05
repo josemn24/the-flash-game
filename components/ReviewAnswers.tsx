@@ -11,7 +11,7 @@ import {
 } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import styles from "@/components/ReviewAnswers.module.css";
-import { AppHeader, MotionButton } from "@/components/ui";
+import { GameHeader, MotionButton } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import type {
   AnswerResult,
@@ -58,7 +58,7 @@ export function ReviewAnswers({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
     >
-      <AppHeader
+      <GameHeader
         className="mb-9"
         left={<Logo />}
         right={
@@ -88,13 +88,13 @@ export function ReviewAnswers({
       />
 
       <div className="mb-7 sm:mb-9">
-        <p className={`${styles.eyebrow} text-[var(--electric)]`}>
+        <p className={`${styles.eyebrow} text-[var(--color-brand)]`}>
           {narrative ? "Análisis de misión" : "Análisis de carrera"}
         </p>
-        <h1 className="mt-2 text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
+        <h1 className="mt-2 text-4xl font-black tracking-[-0.05em] text-[var(--color-ink)] sm:text-5xl">
           Revisa tus respuestas
         </h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-white/45">
+        <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--color-ink-muted)]">
           {narrative
             ? "Contrasta tus respuestas con el registro científico y consulta el cuaderno completo."
             : "Aquí sí: descubre qué acertaste, dónde fallaste y cuánto sumó cada decisión."}
@@ -124,10 +124,10 @@ export function ReviewAnswers({
               <summary>
                 <span className={styles.reviewNumber}>{String(index + 1).padStart(2, "0")}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="mb-1 block font-mono text-[9px] font-black tracking-[0.15em] text-white/35 uppercase">
+                  <span className="mb-1 block font-mono text-[9px] font-black tracking-[0.15em] text-[var(--color-ink-faint)] uppercase">
                     {question.category}
                   </span>
-                  <span className="block text-sm font-bold leading-5 text-white sm:text-base">
+                  <span className="block text-sm font-bold leading-5 text-[var(--color-ink)] sm:text-base">
                     {question.question}
                   </span>
                 </span>
@@ -143,32 +143,38 @@ export function ReviewAnswers({
                   )}
                   <span className="hidden sm:inline">{statusLabel(result)}</span>
                 </span>
-                <ChevronIcon className={`${styles.reviewChevron} h-5 w-5 text-white/25`} />
+                <ChevronIcon
+                  className={`${styles.reviewChevron} h-5 w-5 text-[var(--color-ink-faint)]`}
+                />
               </summary>
 
               <div className={styles.reviewContent}>
                 <QuestionReviewContent question={question} result={result} />
-                <div className="mt-3 rounded-xl bg-white/[0.035] p-4">
-                  <p className="text-sm leading-6 text-white/55">{question.explanation}</p>
+                <div className="mt-3 rounded-xl bg-[var(--color-surface-raised)] p-4">
+                  <p className="text-sm leading-6 text-[var(--color-ink-muted)]">
+                    {question.explanation}
+                  </p>
                 </div>
                 <div className="mt-3 flex items-center gap-4 font-mono text-[10px] font-bold tracking-wide uppercase">
-                  <span className="text-white/35">Tiempo: {result.timeUsed.toFixed(1)} s</span>
+                  <span className="text-[var(--color-ink-faint)]">
+                    Tiempo: {result.timeUsed.toFixed(1)} s
+                  </span>
                   {logicDetails && (
-                    <span className="text-white/35">
+                    <span className="text-[var(--color-ink-faint)]">
                       Intentos: {logicDetails.submittedCodes.length}
                     </span>
                   )}
                   {estimationDetails && (
-                    <span className="text-[var(--cyan)]">
+                    <span className="text-[var(--color-social)]">
                       Cercanía: {Math.round(estimationDetails.proximity * 100)}%
                     </span>
                   )}
                   {matchingDetails && (
                     <>
-                      <span className="text-[var(--cyan)]">
+                      <span className="text-[var(--color-social)]">
                         Parejas: {matchingDetails.correctPairs}/{matchingDetails.totalPairs}
                       </span>
-                      <span className="text-white/35">
+                      <span className="text-[var(--color-ink-faint)]">
                         Fallos: {matchingDetails.incorrectAttempts}
                       </span>
                     </>
@@ -176,10 +182,10 @@ export function ReviewAnswers({
                   <span
                     className={
                       result.points > 0
-                        ? "text-[var(--electric)]"
+                        ? "text-[var(--color-brand)]"
                         : result.points < 0
-                          ? "text-[var(--coral)]"
-                          : "text-white/35"
+                          ? "text-[var(--color-danger)]"
+                          : "text-[var(--color-ink-faint)]"
                     }
                   >
                     {result.points > 0 ? "+" : ""}

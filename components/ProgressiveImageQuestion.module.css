@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   color: var(--format-muted);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -89,7 +89,7 @@
 }
 
 .loading {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -211,7 +211,7 @@
   }
 }
 
-.root.pop {
+.root {
   --format-ink: var(--color-ink);
   --format-muted: var(--color-ink-muted);
   --format-faint: var(--color-ink-faint);
@@ -226,34 +226,34 @@
   margin-top: var(--space-4);
 }
 
-.pop .progressHeader,
-.pop .answerPanel label {
+.progressHeader,
+.answerPanel label {
   font-family: var(--type-mono);
 }
 
-.pop .progressHeader strong {
+.progressHeader strong {
   color: var(--color-social);
 }
 
-.pop .progressTrack span {
+.progressTrack span {
   background: var(--color-social);
 }
 
-.pop .imageFrame {
+.imageFrame {
   border: var(--border-subtle);
   border-radius: var(--radius-card);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-card);
 }
 
-.pop .answerRow input {
+.answerRow input {
   border: var(--border-subtle);
   border-radius: var(--radius-control);
   background: var(--color-surface-raised);
 }
 
-.pop .retryButton,
-.pop .submitButton {
+.retryButton,
+.submitButton {
   border: var(--border-flash);
   border-radius: var(--radius-control);
   color: var(--color-ink);
@@ -261,10 +261,10 @@
   box-shadow: var(--shadow-control);
 }
 
-.pop .retryButton {
+.retryButton {
   min-height: var(--control-height);
 }
 
-.pop .submitButton {
+.submitButton {
   min-height: var(--control-height-icon);
 }

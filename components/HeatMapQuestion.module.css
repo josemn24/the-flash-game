@@ -133,7 +133,7 @@
   }
 }
 
-.challenge.pop {
+.challenge {
   --format-ink: var(--color-ink);
   --format-surface: var(--color-surface-raised);
   --format-border: var(--color-border);
@@ -145,19 +145,19 @@
   margin-top: var(--space-4);
 }
 
-.pop .surface {
+.surface {
   border: var(--border-subtle);
   border-radius: var(--radius-card);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-card);
 }
 
-.pop .surfaceInteractive:hover,
-.pop .surfaceInteractive:focus-visible {
+.surfaceInteractive:hover,
+.surfaceInteractive:focus-visible {
   border-color: var(--color-social);
 }
 
-.pop .confirmButton {
+.confirmButton {
   min-height: var(--control-height);
   border: var(--border-flash);
   border-radius: var(--radius-control);
@@ -166,6 +166,6 @@
   box-shadow: var(--shadow-control);
 }
 
-.pop .confirmButton:hover:not(:disabled) {
+.confirmButton:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
 }

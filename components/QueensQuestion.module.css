@@ -33,13 +33,13 @@
 }
 .toolbar button kbd {
   color: rgb(255 255 255 / 0.3);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
 }
 .toolbar .toolActive {
   border-color: rgb(215 255 24 / 0.4);
   color: #111;
-  background: var(--electric);
+  background: var(--color-brand);
 }
 .toolActive kbd {
   color: rgb(0 0 0 / 0.45) !important;
@@ -47,7 +47,7 @@
 .toolbar button:focus-visible,
 .cell:focus-visible {
   z-index: 4;
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: 2px;
 }
 .board {
@@ -159,8 +159,8 @@ button.cell {
   padding: 0.08rem 0.28rem;
   border-radius: 999px;
   color: #11151a;
-  background: var(--electric);
-  font-family: var(--font-mono);
+  background: var(--color-brand);
+  font-family: var(--type-mono);
   font-size: clamp(0.42rem, 1.8vw, 0.56rem);
   font-weight: 900;
   line-height: 1.2;
@@ -200,21 +200,21 @@ button.cell {
   stroke-width: 2.5;
 }
 /* Keep the card surface readable when the board is rendered in Flash Pop. */
-.pop .queensCrownIcon {
-  color: var(--pop-color-ink);
+.queensCrownIcon {
+  color: var(--color-ink);
   filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.6)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.14));
 }
-.pop .cell {
+.cell {
   border: 0;
 }
-.pop .prefilledQueen {
+.prefilledQueen {
   box-shadow:
     inset 0 0 0 3px rgb(23 23 32 / 58%),
     0 1px 2px rgb(23 23 32 / 16%);
 }
-.pop .conflict {
+.conflict {
   box-shadow:
-    inset 0 0 0 4px var(--pop-state-error),
+    inset 0 0 0 4px var(--state-error),
     0 1px 2px rgb(23 23 32 / 16%);
 }
 .progress {
@@ -222,7 +222,7 @@ button.cell {
   justify-content: center;
   gap: 0.7rem;
   color: rgb(255 255 255 / 0.45);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -262,42 +262,42 @@ button.cell {
   }
 }
 
-.root.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
-.pop .toolbar {
+.toolbar {
   border: 0;
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
-.pop .toolbar button {
+.toolbar button {
   min-height: 44px;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 
-.pop .toolbar .toolActive {
-  border-color: var(--pop-state-selected);
-  color: var(--pop-color-surface);
-  background: var(--pop-state-selected);
+.toolbar .toolActive {
+  border-color: var(--state-selected);
+  color: var(--color-surface);
+  background: var(--state-selected);
 }
 
-.pop .board {
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+.board {
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
-.pop .progress {
-  color: var(--pop-color-ink-muted);
+.progress {
+  color: var(--color-ink-muted);
 }
 
-.pop .progress strong {
-  color: var(--pop-color-ink);
+.progress strong {
+  color: var(--color-ink);
 }
 
-.pop .instructions {
-  color: var(--pop-color-ink-muted);
+.instructions {
+  color: var(--color-ink-muted);
 }

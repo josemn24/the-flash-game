@@ -102,7 +102,7 @@
   max-width: 20rem;
   overflow: hidden;
   color: rgb(255 255 255 / 72%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.66rem;
   font-weight: 850;
   letter-spacing: 0.1em;
@@ -115,7 +115,7 @@
   padding-left: 0.75rem;
   border-left: 1px solid rgb(255 255 255 / 12%);
   color: rgb(255 255 255 / 36%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 800;
   white-space: nowrap;
@@ -191,7 +191,7 @@
 .storyArticle .sceneReaction::before {
   color: #8fe7ea;
   content: "REGISTRO ACTUALIZADO";
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -222,7 +222,7 @@
 .tapeSignal span {
   margin-right: auto;
   color: rgb(255 255 255 / 72%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -264,7 +264,7 @@
 .questionContext {
   margin-top: 1.25rem;
   color: rgb(255 255 255 / 48%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.1em;
@@ -278,7 +278,7 @@
 
 .questionMeta > span {
   color: #8fe7ea;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -306,7 +306,7 @@
 
 .recordTransition span {
   color: white;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -320,7 +320,7 @@
 
 .eyebrow {
   color: #8fe7ea;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -397,7 +397,7 @@
 .introStats span,
 .resultStats span {
   color: rgb(255 255 255 / 0.4);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -519,7 +519,7 @@
 
 .epilogueTitle {
   color: #fff;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(2.8rem, 9vw, 7rem);
   font-weight: 950;
   letter-spacing: 0.08em;
@@ -536,7 +536,7 @@
   gap: 0.45rem;
   margin-top: 1rem;
   color: rgb(255 255 255 / 0.62);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -565,7 +565,7 @@
   border-radius: 50%;
   background: #8fe7ea;
   color: #071319;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.6rem;
 }
 
@@ -606,7 +606,7 @@
 .notebookHeader span,
 .notebookEntries small {
   color: #746c47;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -665,7 +665,7 @@
 
 .notebookEntries li > span {
   color: #9a573f;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.64rem;
   font-weight: 900;
 }
@@ -711,7 +711,7 @@
 
 .scoreValue strong {
   color: #8fe7ea;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(4.3rem, 11vw, 7rem);
   line-height: 1;
 }
@@ -781,7 +781,7 @@
 
 .answerStates span {
   color: rgb(255 255 255 / 0.48);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -797,7 +797,7 @@
 }
 
 .answerStates li[data-status="partial"] strong {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 
 .resultNotebook {
@@ -820,7 +820,7 @@
 .resultNotebook small,
 .timeSummary span {
   color: rgb(255 255 255 / 0.36);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 850;
   letter-spacing: 0.1em;
@@ -842,7 +842,7 @@
 }
 
 .timeSummary strong {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
 }
 
 .resultNotice {
@@ -939,6 +939,192 @@
   }
 }
 
+/* Narrative is also a product mode: the immersive treatment may vary, but its
+   surfaces, text and interaction states come from the global theme. */
+.gameRoot {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+}
+.polarBackground {
+  background:
+    radial-gradient(
+      circle at 72% 12%,
+      color-mix(in srgb, var(--color-social) 12%, transparent),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-canvas) 0%,
+      var(--color-surface-soft) 66%,
+      var(--color-canvas) 100%
+    );
+}
+.questionPhase .polarBackground {
+  background:
+    radial-gradient(
+      circle at 72% 12%,
+      color-mix(in srgb, var(--color-social) 12%, transparent),
+      transparent 36%
+    ),
+    var(--color-canvas);
+}
+.horizon {
+  background: var(--color-social);
+}
+.snow {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-ink) 26%, transparent) 0 1px,
+    transparent 1.5px
+  );
+}
+.blackoutPhase {
+  background: var(--color-canvas);
+}
+.pageIdentity > span {
+  color: var(--color-ink);
+}
+.pageIdentity small,
+.questionContext,
+.recordTransition p,
+.description,
+.resultNotice,
+.scoreValue span,
+.timeSummary span {
+  color: var(--color-ink-muted);
+}
+.storyFolio,
+.storyCaption,
+.untimedLabel,
+.resultNotebook small {
+  color: var(--color-ink-faint);
+}
+.storyPage,
+.storyPageText,
+.storyPageArtifact {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.storyVisual {
+  background: var(--color-surface-soft);
+}
+.storyArticle .sceneParagraph,
+.storyArticle .sceneDialogue,
+.sceneParagraph {
+  color: var(--color-ink-muted);
+}
+.storyArticle .sceneDialogue,
+.sceneDialogue,
+.sceneEmphasis,
+.storyArticle h1,
+.questionArticle h1,
+.introCopy h1,
+.resultScore h1,
+.epilogueTitle {
+  color: var(--color-ink);
+}
+.storyArticle .sceneReaction {
+  border-left-color: var(--color-social);
+  background: color-mix(in srgb, var(--color-social) 8%, transparent);
+}
+.storyArticle .sceneReaction .sceneParagraph,
+.storyArticle .sceneReaction .sceneDialogue {
+  color: var(--color-ink-muted);
+}
+.storyArticle .sceneReaction::before,
+.sceneDialogue [aria-hidden="true"],
+.eyebrow,
+.subtitle,
+.questionMeta > span,
+.recordTransition svg,
+.scoreValue strong,
+.resultLead strong {
+  color: var(--color-social);
+}
+.tapeSignal,
+.notebookTrigger,
+.backLink,
+.resultNotebook {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+.tapeSignal span,
+.notebookTrigger,
+.resultNotebook strong {
+  color: var(--color-ink);
+}
+.tapeSignal i {
+  background: var(--color-social);
+}
+.continueButton {
+  border-color: var(--color-border-hover) !important;
+  background: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+  box-shadow: var(--shadow-control) !important;
+}
+.continueButton:hover {
+  border-color: var(--color-focus) !important;
+  background: var(--color-surface-raised) !important;
+}
+.notebookTrigger strong {
+  background: var(--color-social);
+  color: var(--color-text-on-social);
+}
+.resultDetails,
+.introPanel {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.introStats,
+.resultStats div,
+.answerStates li {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+}
+.introStats div + div {
+  border-color: var(--color-border);
+}
+.introStats strong,
+.resultStats strong,
+.answerStates li {
+  color: var(--color-ink);
+}
+.introStats span,
+.resultStats span,
+.answerStates span {
+  color: var(--color-ink-faint);
+}
+.introRules {
+  color: var(--color-ink-muted);
+}
+.introRules li::before {
+  background: var(--color-social);
+}
+.answerStates strong {
+  color: var(--state-correct);
+}
+.answerStates li[data-status="incorrect"] strong,
+.answerStates li[data-status="unanswered"] strong {
+  color: var(--state-error);
+}
+.resultNotebook {
+  border-color: color-mix(in srgb, var(--color-social) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-social) 8%, var(--color-surface));
+}
+.timeSummary {
+  border-top-color: var(--color-border);
+}
+.epilogueScreen {
+  background: var(--color-canvas);
+}
+.notebookTriggerCompact {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aurora,
   .snow,
@@ -990,7 +1176,7 @@
   bottom: 1.35rem;
   left: 1.5rem;
   color: rgb(255 255 255 / 0.48);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -1040,7 +1226,7 @@
   bottom: 1.35rem;
   max-width: min(26rem, 64vw);
   color: rgb(255 255 255 / 0.68);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -1090,7 +1276,7 @@
 .sceneEmphasis {
   max-width: 28ch;
   color: white;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(1.45rem, 3vw, 2.7rem);
   font-weight: 850;
   letter-spacing: -0.035em;
@@ -1384,4 +1570,106 @@
     right: 0.7rem;
     left: 0.7rem;
   }
+}
+
+/* Final theme layer for the immersive variants declared above. */
+.gameRoot,
+.storyPage,
+.storyPageText,
+.storyPageArtifact {
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+.storyArticle h1,
+.questionArticle h1,
+.storyArticle .sceneDialogue,
+.sceneEmphasis {
+  color: var(--color-ink);
+}
+.storyArticle .sceneParagraph,
+.storyArticle .sceneDialogue,
+.sceneParagraph {
+  color: var(--color-ink-muted);
+}
+.storyArticle .sceneReaction .sceneParagraph,
+.storyArticle .sceneReaction .sceneDialogue {
+  color: var(--color-ink-muted);
+}
+.storyArticle .sceneReaction {
+  border-left-color: var(--color-social);
+  background: color-mix(in srgb, var(--color-social) 8%, transparent);
+}
+.continueButton {
+  border-color: var(--color-border-hover) !important;
+  background: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+  box-shadow: var(--shadow-control) !important;
+}
+.continueButton:hover {
+  border-color: var(--color-focus) !important;
+  background: var(--color-surface-raised) !important;
+}
+.storyFolio,
+.storyCaption,
+.questionContext,
+.scoreValue span,
+.timeSummary span,
+.resultNotice {
+  color: var(--color-ink-muted);
+}
+.notebookTriggerCompact,
+.tapeSignal,
+.backLink,
+.resultNotebook {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+.notebookTrigger strong {
+  background: var(--color-social);
+  color: var(--color-text-on-social);
+}
+.introPanel,
+.resultDetails {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.introStats,
+.resultStats div,
+.answerStates li {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+}
+.introStats div + div {
+  border-color: var(--color-border);
+}
+.introStats strong,
+.resultStats strong,
+.answerStates li {
+  color: var(--color-ink);
+}
+.introStats span,
+.resultStats span,
+.answerStates span {
+  color: var(--color-ink-faint);
+}
+.introRules {
+  color: var(--color-ink-muted);
+}
+.introRules li::before {
+  background: var(--color-social);
+}
+.answerStates strong {
+  color: var(--state-correct);
+}
+.answerStates li[data-status="incorrect"] strong,
+.answerStates li[data-status="unanswered"] strong {
+  color: var(--state-error);
+}
+.timeSummary {
+  border-top-color: var(--color-border);
+}
+.epilogueScreen {
+  background: var(--color-canvas);
 }

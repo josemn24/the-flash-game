@@ -1,15 +1,15 @@
 import Image from "next/image";
-import styles from "./PopAvatar.module.css";
+import styles from "./Avatar.module.css";
 
-export type PopAvatarTone = "social" | "coral" | "blue" | "aqua" | "ink" | "reward";
-export type PopAvatarSize = "sm" | "md" | "lg";
+export type AvatarTone = "social" | "coral" | "blue" | "aqua" | "ink" | "reward";
+export type AvatarSize = "sm" | "md" | "lg";
 
-export type PopAvatarProps = {
+export type AvatarProps = {
   name: string;
   src?: string;
   initials?: string;
-  tone?: PopAvatarTone;
-  size?: PopAvatarSize;
+  tone?: AvatarTone;
+  size?: AvatarSize;
   className?: string;
 };
 
@@ -22,14 +22,14 @@ function getInitials(name: string) {
     .join("");
 }
 
-export function PopAvatar({
+export function Avatar({
   name,
   src,
   initials,
   tone = "social",
   size = "md",
   className,
-}: PopAvatarProps) {
+}: AvatarProps) {
   return (
     <span
       className={`${styles.avatar} ${styles[size]} ${styles[tone]} ${className ?? ""}`}
@@ -45,23 +45,23 @@ export function PopAvatar({
   );
 }
 
-export type PopAvatarData = Omit<PopAvatarProps, "size" | "className"> & { id: string };
+export type AvatarData = Omit<AvatarProps, "size" | "className"> & { id: string };
 
-export type PopAvatarStackProps = {
-  items: PopAvatarData[];
+export type AvatarStackProps = {
+  items: AvatarData[];
   label: string;
   maxVisible?: number;
-  size?: PopAvatarSize;
+  size?: AvatarSize;
   className?: string;
 };
 
-export function PopAvatarStack({
+export function AvatarStack({
   items,
   label,
   maxVisible = 4,
   size = "sm",
   className,
-}: PopAvatarStackProps) {
+}: AvatarStackProps) {
   const visible = items.slice(0, Math.max(0, maxVisible));
   const overflow = Math.max(0, items.length - visible.length);
 
@@ -69,10 +69,10 @@ export function PopAvatarStack({
     <span className={`${styles.group} ${className ?? ""}`} aria-label={label}>
       <span className={styles.stack} aria-hidden="true">
         {visible.map(({ id, ...avatar }) => (
-          <PopAvatar {...avatar} key={id} size={size} className={styles.stackedAvatar} />
+          <Avatar {...avatar} key={id} size={size} className={styles.stackedAvatar} />
         ))}
         {overflow > 0 ? (
-          <PopAvatar
+          <Avatar
             name={`${overflow} personas más`}
             initials={`+${overflow}`}
             tone="ink"

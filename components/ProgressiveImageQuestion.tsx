@@ -114,7 +114,7 @@ export function ProgressiveImageQuestion({
 
   return (
     <section
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      className={`${styles.root}`}
       data-variant={variant}
       aria-label="Imagen progresivamente revelada"
     >

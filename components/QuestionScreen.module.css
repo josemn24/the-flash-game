@@ -5,7 +5,7 @@
   place-items: center;
   border-radius: 0.45rem;
   color: #080907;
-  background: var(--electric);
+  background: var(--color-brand);
   box-shadow: 0 0 24px rgba(215, 255, 24, 0.22);
   transform: skewX(-7deg);
 }
@@ -20,7 +20,7 @@
   background: rgb(0 0 0 / 0.25);
   padding: 0.55rem 0.72rem;
   color: rgb(255 255 255 / 0.72);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 800;
   transition:
@@ -36,7 +36,7 @@
   color: white;
 }
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.19em;
@@ -44,7 +44,7 @@
 }
 .questionTitle {
   max-width: 44rem;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(1.9rem, 7vw, 3.15rem);
   font-weight: 950;
   letter-spacing: -0.05em;
@@ -84,7 +84,7 @@
     transform 180ms;
 }
 .lifeHeartActive {
-  color: var(--coral);
+  color: var(--color-danger);
   fill: currentColor;
   filter: drop-shadow(0 0 8px rgba(255, 93, 100, 0.3));
 }
@@ -126,7 +126,7 @@
   place-items: center;
   border-radius: 1rem;
   color: #080a05;
-  background: var(--electric);
+  background: var(--color-brand);
 }
 .textSubmitButton:disabled {
   opacity: 0.24;

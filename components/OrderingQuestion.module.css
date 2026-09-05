@@ -36,7 +36,7 @@
   gap: 0.35rem;
   padding: 0.05rem 0.65rem 0.55rem;
   color: var(--format-muted);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.57rem;
   font-weight: 900;
   letter-spacing: 0.15em;
@@ -106,7 +106,7 @@
   border-radius: 0.65rem;
   color: var(--format-accent);
   background: var(--format-accent-soft);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.75rem;
   font-weight: 900;
 }
@@ -241,7 +241,7 @@
   }
 }
 
-.root.pop {
+.root {
   --format-ink: var(--color-ink);
   --format-muted: var(--color-social);
   --format-surface: var(--color-surface);
@@ -257,7 +257,7 @@
   margin-top: var(--space-4);
 }
 
-.pop .shell {
+.shell {
   border: var(--border-subtle);
   border-radius: var(--radius-card);
   padding: var(--space-3);
@@ -265,7 +265,7 @@
   box-shadow: none;
 }
 
-.pop .sequence::before {
+.sequence::before {
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--color-social) 18%, transparent),
@@ -275,7 +275,7 @@
   box-shadow: none;
 }
 
-.pop .card {
+.card {
   min-height: 60px;
   border: var(--border-subtle);
   border-radius: var(--radius-control);
@@ -284,13 +284,13 @@
   box-shadow: var(--shadow-control);
 }
 
-.pop .position {
+.position {
   border-color: color-mix(in srgb, var(--color-ink) 16%, transparent);
   color: var(--color-social);
   background: var(--format-surface-raised);
 }
 
-.pop .control {
+.control {
   width: 44px;
   height: 44px;
   border-color: var(--color-border);
@@ -298,25 +298,25 @@
   background: var(--format-surface-raised);
 }
 
-.pop .control:hover:not(:disabled) {
+.control:hover:not(:disabled) {
   border-color: var(--color-social);
   color: var(--color-social);
   background: var(--format-surface);
 }
 
-.pop .control:disabled {
+.control:disabled {
   border-color: color-mix(in srgb, var(--color-ink) 8%, transparent);
   color: var(--color-ink-faint);
   background: var(--format-surface-raised);
 }
 
-.pop .movePulse {
+.movePulse {
   border-color: var(--color-brand);
   background: color-mix(in srgb, var(--color-brand) 16%, transparent);
   box-shadow: none;
 }
 
-.pop .confirmButton {
+.confirmButton {
   min-height: var(--control-height);
   border: var(--border-flash);
   border-radius: var(--radius-control);
@@ -325,6 +325,6 @@
   box-shadow: var(--shadow-control);
 }
 
-.pop .confirmButton:hover:not(:disabled) {
+.confirmButton:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
 }

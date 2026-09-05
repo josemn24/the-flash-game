@@ -18,7 +18,7 @@
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 1rem;
   color: white;
-  background: var(--surface-subtle);
+  background: var(--color-surface-soft);
 }
 .cell > span {
   font-size: clamp(1.6rem, 7vw, 2.5rem);
@@ -33,7 +33,7 @@
 .emptyCell {
   border-style: dashed;
   border-color: rgba(215, 255, 24, 0.62);
-  color: var(--electric);
+  color: var(--color-brand);
   background: rgba(215, 255, 24, 0.08);
 }
 .instructions {
@@ -56,7 +56,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 0.95rem;
   color: rgba(255, 255, 255, 0.88);
-  background: var(--surface-subtle);
+  background: var(--color-surface-soft);
   transition:
     border-color 150ms,
     background 150ms,
@@ -68,7 +68,7 @@
   background: rgba(215, 255, 24, 0.08);
 }
 .option:focus-visible {
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: 2px;
 }
 .option > span {
@@ -91,51 +91,51 @@
   overflow: visible;
 }
 
-.root.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
-.pop .matrix {
-  gap: var(--pop-space-2);
-  border-radius: var(--pop-radius-card);
-  padding: var(--pop-space-2);
-  background: var(--pop-color-surface-raised);
+.matrix {
+  gap: var(--space-2);
+  border-radius: var(--radius-card);
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
 }
 
-.pop .cell {
+.cell {
   border: 1px solid rgb(23 23 32 / 16%);
-  border-radius: var(--pop-radius-sm);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: var(--color-surface);
   box-shadow: 0 1px 0 rgb(23 23 32 / 6%);
 }
 
-.pop .cell small {
-  color: var(--pop-color-ink-muted);
+.cell small {
+  color: var(--color-ink-muted);
 }
 
-.pop .emptyCell {
-  border: 2px dashed var(--pop-state-selected);
-  color: var(--pop-state-selected);
-  background: var(--pop-state-neutral);
+.emptyCell {
+  border: 2px dashed var(--state-selected);
+  color: var(--state-selected);
+  background: var(--state-neutral);
 }
 
-.pop .instructions {
-  color: var(--pop-color-ink-muted);
+.instructions {
+  color: var(--color-ink-muted);
 }
 
-.pop .option {
+.option {
   min-height: 72px;
-  border: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-control);
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
 }
 
-.pop .option:hover:not(:disabled) {
-  border-color: var(--pop-state-selected);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface);
+.option:hover:not(:disabled) {
+  border-color: var(--state-selected);
+  color: var(--color-ink);
+  background: var(--color-surface);
 }

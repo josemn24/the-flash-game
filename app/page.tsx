@@ -1,5 +1,4 @@
 import { FlashPopHome } from "@/components/flash-pop/FlashPopHome.client";
-import { PopTheme } from "@/components/flash-pop/PopTheme";
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
 import { getNarrativeQuestionIds, getPyramidQuestionIds } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";
@@ -80,13 +79,11 @@ export default function Home() {
   );
 
   return (
-    <PopTheme>
-      <FlashPopHome
-        roomTitle={demoRoom.title}
-        seasonTitle={activeSeason.title}
-        seasonStatus={activeSeason.status}
-        challenges={challengeSummaries}
-      />
-    </PopTheme>
+    <FlashPopHome
+      roomTitle={demoRoom.title}
+      seasonTitle={activeSeason.title}
+      seasonStatus={activeSeason.status}
+      challenges={challengeSummaries}
+    />
   );
 }

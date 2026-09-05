@@ -62,10 +62,7 @@ export function OrderingQuestion({
   };
 
   return (
-    <div
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
-      data-variant={variant ?? "default"}
-    >
+    <div className={`${styles.root}`} data-variant={variant ?? "default"}>
       <div className={styles.shell}>
         <div className={styles.directionLabel} aria-hidden="true">
           <span>{directionLabels.start}</span>

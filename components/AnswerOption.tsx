@@ -25,7 +25,7 @@ export function AnswerOption({
   return (
     <motion.button
       type="button"
-      className={`${styles.option} ${selected ? styles.selected : ""} ${variant === "flash-pop" ? styles.pop : ""}`}
+      className={`${styles.option} ${selected ? styles.selected : ""}`}
       onClick={onSelect}
       disabled={disabled}
       aria-pressed={selected}

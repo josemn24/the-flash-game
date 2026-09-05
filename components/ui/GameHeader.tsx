@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { BoltIcon } from "@/components/icons";
-import styles from "@/components/flash-pop/ui/PopGameHeader.module.css";
+import styles from "./GameHeader.module.css";
 
 export type GameHeaderProps = {
   left?: ReactNode;

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Canonical semantic design tokens. Pop aliases are declared in its theme. */
+  /* Canonical semantic design tokens shared by the whole product. */
   --color-canvas: #f4f1ea;
   --color-surface: #ffffff;
   --color-surface-raised: #fbfaf6;
@@ -27,6 +27,7 @@
   --color-text-on-reward: var(--color-ink);
   --color-disabled-opacity: 0.55;
   --color-overlay-ink: rgb(23 23 32 / 84%);
+  --color-overlay-border: rgb(255 255 255 / 16%);
   --state-correct: var(--color-success);
   --state-movable: var(--color-brand);
   --state-selected: var(--color-social);
@@ -69,76 +70,6 @@
   --motion-press-out: 140ms;
   --motion-card-enter: 320ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Temporary aliases for the Pop primitives while call sites migrate. */
-  --pop-color-canvas: var(--color-canvas);
-  --pop-color-surface: var(--color-surface);
-  --pop-color-surface-raised: var(--color-surface-raised);
-  --pop-color-surface-soft: var(--color-surface-soft);
-  --pop-color-ink: var(--color-ink);
-  --pop-color-ink-muted: var(--color-ink-muted);
-  --pop-color-ink-faint: var(--color-ink-faint);
-  --pop-color-brand: var(--color-brand);
-  --pop-color-social: var(--color-social);
-  --pop-color-success: var(--color-success);
-  --pop-color-danger: var(--color-danger);
-  --pop-color-info: var(--color-info);
-  --pop-color-reward: var(--color-reward);
-  --pop-color-focus: var(--color-focus);
-  --pop-color-border: var(--color-border);
-  --pop-state-correct: var(--state-correct);
-  --pop-state-movable: var(--state-movable);
-  --pop-state-selected: var(--state-selected);
-  --pop-state-neutral: var(--state-neutral);
-  --pop-state-error: var(--state-error);
-  --pop-state-focus: var(--state-focus);
-  --pop-border-subtle: var(--border-subtle);
-  --pop-border-flash: var(--border-flash);
-  --pop-border-action: var(--border-action);
-  --pop-space-1: var(--space-1);
-  --pop-space-2: var(--space-2);
-  --pop-space-3: var(--space-3);
-  --pop-space-4: var(--space-4);
-  --pop-space-5: var(--space-5);
-  --pop-space-6: var(--space-6);
-  --pop-space-8: var(--space-8);
-  --pop-space-10: var(--space-10);
-  --pop-space-12: var(--space-12);
-  --pop-radius-sm: var(--radius-sm);
-  --pop-radius-control: var(--radius-control);
-  --pop-radius-card: var(--radius-card);
-  --pop-radius-hero: var(--radius-hero);
-  --pop-radius-pill: var(--radius-pill);
-  --pop-shadow-control: var(--shadow-control);
-  --pop-shadow-card: var(--shadow-card);
-  --pop-shadow-hero: var(--shadow-hero);
-  --pop-shadow-dialog: var(--shadow-dialog);
-  --pop-font-ui: var(--type-ui);
-  --pop-font-display: var(--type-display);
-  --pop-font-mono: var(--type-mono);
-  --pop-control-height: var(--control-height);
-  --pop-control-height-hero: var(--control-height-hero);
-  --pop-control-height-icon: var(--control-height-icon);
-  --pop-motion-press-in: var(--motion-press-in);
-  --pop-motion-press-out: var(--motion-press-out);
-  --pop-motion-card-enter: var(--motion-card-enter);
-  --pop-ease-out: var(--ease-out);
-
-  /* Temporary compatibility aliases. They resolve to Flash Pop by default;
-     LegacyTheme overrides them only for explicit dark-mode screens. */
-  --ink: var(--color-ink);
-  --panel: var(--color-surface);
-  --panel-light: var(--color-surface-raised);
-  --electric: var(--color-brand);
-  --cyan: var(--color-social);
-  --coral: var(--color-danger);
-  --muted: var(--color-ink-muted);
-  --surface-subtle: var(--color-surface-soft);
-  --surface-panel: var(--color-surface);
-  --text-muted: var(--color-ink-muted);
-  --font-display: var(--type-display);
-  --font-body: var(--type-ui);
-  --font-mono: var(--type-mono);
 }
 
 @theme inline {

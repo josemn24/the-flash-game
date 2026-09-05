@@ -1,40 +1,20 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BellIcon, BoltIcon } from "@/components/icons";
-import { Avatar, Button, Card, Chip, GameHeader, IconButton, TimerDisplay } from "@/components/ui";
 import {
-  PopAvatarStack,
-  PopButton,
-  PopButtonLink,
-  PopCard,
-  PopChip,
-  PopIconButton,
-  PopGameHeader,
-  PopTimerDisplay,
-} from "@/components/ui";
-import {
-  PopAvatar as LegacyPopAvatar,
-  PopButton as LegacyPopButton,
-  PopCard as LegacyPopCard,
-  PopChip as LegacyPopChip,
-  PopGameHeader as LegacyPopGameHeader,
-  PopIconButton as LegacyPopIconButton,
-  PopTimerDisplay as LegacyPopTimerDisplay,
+  AvatarStack,
+  Button,
+  ButtonLink,
+  Card,
+  Chip,
+  GameHeader,
+  IconButton,
+  TimerDisplay,
 } from ".";
 
-describe("Flash Pop UI primitives", () => {
-  it("keeps compatibility aliases on the canonical implementations", () => {
-    expect(Button).toBe(LegacyPopButton);
-    expect(Chip).toBe(LegacyPopChip);
-    expect(Card).toBe(LegacyPopCard);
-    expect(Avatar).toBe(LegacyPopAvatar);
-    expect(IconButton).toBe(LegacyPopIconButton);
-    expect(TimerDisplay).toBe(LegacyPopTimerDisplay);
-    expect(GameHeader).toBe(LegacyPopGameHeader);
-  });
-
+describe("canonical UI primitives", () => {
   it("renders loading buttons as disabled and busy", () => {
-    const markup = renderToStaticMarkup(<PopButton loading>Guardando</PopButton>);
+    const markup = renderToStaticMarkup(<Button loading>Guardando</Button>);
 
     expect(markup).toContain("disabled");
     expect(markup).toContain('aria-busy="true"');
@@ -43,9 +23,9 @@ describe("Flash Pop UI primitives", () => {
 
   it("renders button links with their destination and trailing icon", () => {
     const markup = renderToStaticMarkup(
-      <PopButtonLink href="/flash-pop" trailingIcon={<BoltIcon />}>
+      <ButtonLink href="/flash-pop" trailingIcon={<BoltIcon />}>
         Abrir
-      </PopButtonLink>,
+      </ButtonLink>,
     );
 
     expect(markup).toContain('href="/flash-pop"');
@@ -55,9 +35,9 @@ describe("Flash Pop UI primitives", () => {
 
   it("requires an accessible label for icon buttons", () => {
     const markup = renderToStaticMarkup(
-      <PopIconButton label="Notificaciones">
+      <IconButton label="Notificaciones">
         <BellIcon />
-      </PopIconButton>,
+      </IconButton>,
     );
 
     expect(markup).toContain('aria-label="Notificaciones"');
@@ -65,8 +45,8 @@ describe("Flash Pop UI primitives", () => {
   });
 
   it("renders semantic chip variants", () => {
-    const status = renderToStaticMarkup(<PopChip tone="success">Completado</PopChip>);
-    const reward = renderToStaticMarkup(<PopChip variant="reward">+120 ⚡</PopChip>);
+    const status = renderToStaticMarkup(<Chip tone="success">Completado</Chip>);
+    const reward = renderToStaticMarkup(<Chip variant="reward">+120 ⚡</Chip>);
 
     expect(status).toContain("success");
     expect(reward).toContain("reward");
@@ -74,7 +54,7 @@ describe("Flash Pop UI primitives", () => {
 
   it("renders avatar fallback, overflow and associated text", () => {
     const markup = renderToStaticMarkup(
-      <PopAvatarStack
+      <AvatarStack
         maxVisible={2}
         label="4 ya jugaron"
         items={[
@@ -93,8 +73,8 @@ describe("Flash Pop UI primitives", () => {
   });
 
   it("keeps card semantics and deterministic timer states", () => {
-    const card = renderToStaticMarkup(<PopCard as="section">Contenido</PopCard>);
-    const timer = renderToStaticMarkup(<PopTimerDisplay duration={20} remaining={4} />);
+    const card = renderToStaticMarkup(<Card as="section">Contenido</Card>);
+    const timer = renderToStaticMarkup(<TimerDisplay duration={20} remaining={4} />);
 
     expect(card).toContain("<section");
     expect(timer).toContain('role="timer"');
@@ -104,7 +84,7 @@ describe("Flash Pop UI primitives", () => {
 
   it("supports a mobile-only game progress label", () => {
     const markup = renderToStaticMarkup(
-      <PopGameHeader title="Flash clásico" mobileLabel="Pregunta 04 de 16" />,
+      <GameHeader title="Flash clásico" mobileLabel="Pregunta 04 de 16" />,
     );
 
     expect(markup).toContain("Pregunta 04 de 16");

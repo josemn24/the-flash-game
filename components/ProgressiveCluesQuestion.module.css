@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -18,7 +18,7 @@
 }
 
 .scoreRow strong {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .clues {
@@ -39,11 +39,11 @@
 }
 
 .clues li > span {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .clues p {
@@ -71,7 +71,7 @@
 
 .revealButton span {
   margin-left: 0.35rem;
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .revealButton:hover:not(:disabled),
@@ -128,7 +128,7 @@
   font-size: 0.9rem;
   font-weight: 700;
   color: white;
-  caret-color: var(--electric);
+  caret-color: var(--color-brand);
 }
 
 .answerRow input:focus-visible {
@@ -143,8 +143,8 @@
   place-items: center;
   border: 0;
   border-radius: 0.72rem;
-  color: var(--ink);
-  background: var(--electric);
+  color: var(--color-ink);
+  background: var(--color-brand);
 }
 
 .answerRow button:focus-visible {
@@ -181,103 +181,103 @@
   }
 }
 
-.challenge.pop {
-  gap: var(--pop-space-4);
-  margin-top: var(--pop-space-4);
+.challenge {
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
-.pop .scoreRow {
-  color: var(--pop-color-ink-muted);
+.scoreRow {
+  color: var(--color-ink-muted);
 }
 
-.pop .scoreRow strong {
-  color: var(--pop-state-selected);
+.scoreRow strong {
+  color: var(--state-selected);
 }
 
-.pop .clues li {
-  border-color: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+.clues li {
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
-.pop .clues li > span {
-  color: var(--pop-state-focus);
+.clues li > span {
+  color: var(--state-focus);
 }
 
-.pop .clues p {
-  color: var(--pop-color-ink);
+.clues p {
+  color: var(--color-ink);
 }
 
-.pop .revealButton {
-  border-color: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-control);
+.revealButton {
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
 }
 
-.pop .revealButton span {
-  color: var(--pop-state-focus);
+.revealButton span {
+  color: var(--state-focus);
 }
 
-.pop .revealButton:hover:not(:disabled),
-.pop .revealButton:focus-visible {
-  border-color: var(--pop-state-selected);
-  background: var(--pop-color-surface);
-  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+.revealButton:hover:not(:disabled),
+.revealButton:focus-visible {
+  border-color: var(--state-selected);
+  background: var(--color-surface);
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 
-.pop .allRevealed {
-  border-color: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink-muted);
-  background: var(--pop-color-surface-raised);
+.allRevealed {
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-control);
+  color: var(--color-ink-muted);
+  background: var(--color-surface-raised);
 }
 
-.pop .answerPanel {
-  border-color: color-mix(in srgb, var(--pop-state-selected) 22%, transparent);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
+.answerPanel {
+  border-color: color-mix(in srgb, var(--state-selected) 22%, transparent);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
 }
 
-.pop .answerPanel label {
-  color: var(--pop-color-ink-muted);
+.answerPanel label {
+  color: var(--color-ink-muted);
 }
 
-.pop .answerRow input {
-  border-color: var(--pop-border-subtle);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface);
-  caret-color: var(--pop-state-focus);
+.answerRow input {
+  border-color: var(--border-subtle);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  caret-color: var(--state-focus);
 }
 
-.pop .answerRow input:focus-visible {
-  border-color: var(--pop-state-focus);
-  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+.answerRow input:focus-visible {
+  border-color: var(--state-focus);
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 
-.pop .answerRow button {
+.answerRow button {
   border: 0;
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
 }
 
-.pop .answerRow button:hover:not(:disabled) {
-  background: var(--pop-color-brand);
+.answerRow button:hover:not(:disabled) {
+  background: var(--color-brand);
 }
 
-.pop .answerRow button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+.answerRow button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 
-.pop .answerRow button:disabled {
-  color: var(--pop-color-ink-muted);
-  background: var(--pop-color-surface-soft);
+.answerRow button:disabled {
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
   box-shadow: none;
   opacity: 1;
 }
 
-.pop .answerPanel > p {
-  color: var(--pop-color-ink-muted);
+.answerPanel > p {
+  color: var(--color-ink-muted);
 }

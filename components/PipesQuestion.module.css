@@ -13,7 +13,7 @@
   justify-content: space-between;
   gap: 1rem;
   color: rgb(255 255 255 / 48%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -22,7 +22,7 @@
 
 .header strong,
 .progress strong {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 
 .board {
@@ -77,7 +77,7 @@ button.cell {
 }
 
 .connected .pipe {
-  stroke: var(--cyan);
+  stroke: var(--color-social);
   filter: drop-shadow(0 0 0.25rem rgb(53 232 255 / 55%));
 }
 
@@ -95,14 +95,14 @@ button.cell {
 }
 
 .sourceCore {
-  fill: var(--electric);
+  fill: var(--color-brand);
   stroke: #f9ffbd;
   stroke-width: 3;
 }
 
 .cell:focus-visible {
   z-index: 1;
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: -3px;
 }
 
@@ -122,7 +122,7 @@ button.cell {
 }
 
 .actions button:hover:not(:disabled) {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   background: rgb(53 232 255 / 11%);
 }
 

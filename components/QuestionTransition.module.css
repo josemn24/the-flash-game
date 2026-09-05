@@ -6,17 +6,17 @@
   place-items: center;
   border-radius: 1.5rem;
   color: #080a05;
-  background: var(--electric);
+  background: var(--color-brand);
   box-shadow: 0 0 55px rgba(215, 255, 24, 0.18);
   transform: skewX(-4deg);
 }
 .iconTime {
   color: white;
-  background: var(--coral);
+  background: var(--color-danger);
   box-shadow: 0 0 55px rgba(255, 93, 100, 0.18);
 }
 .iconPartial {
   color: #061018;
-  background: var(--cyan);
+  background: var(--color-social);
   box-shadow: 0 0 55px rgba(53, 232, 255, 0.16);
 }

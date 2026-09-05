@@ -1,9 +1,9 @@
 .eyebrow {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--type-mono), monospace;
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.16em;
-  color: var(--electric);
+  color: var(--color-brand);
   text-transform: uppercase;
 }
 
@@ -70,7 +70,7 @@
   width: 1.35rem;
   height: 1.35rem;
   flex: 0 0 auto;
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .rules span,
@@ -115,7 +115,7 @@
 
 .introPyramid > p {
   margin-top: 1.15rem;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--type-mono), monospace;
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -162,7 +162,7 @@
 }
 
 .pyramidMap li > span {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--type-mono), monospace;
   font-size: 0.62rem;
   font-weight: 900;
 }
@@ -177,14 +177,14 @@
 
 .tierCleared {
   border-color: rgba(215, 255, 24, 0.35) !important;
-  color: var(--electric) !important;
+  color: var(--color-brand) !important;
   background: rgba(215, 255, 24, 0.11) !important;
 }
 
 .tierCurrent {
-  border-color: var(--electric) !important;
-  color: var(--ink) !important;
-  background: var(--electric) !important;
+  border-color: var(--color-brand) !important;
+  color: var(--color-ink) !important;
+  background: var(--color-brand) !important;
   box-shadow: 0 0 22px rgba(215, 255, 24, 0.18);
 }
 
@@ -223,7 +223,7 @@
 .dialogIcon {
   width: 2rem;
   height: 2rem;
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .confirmDialog h2 {
@@ -281,12 +281,12 @@
   height: 2.5rem;
 }
 .transitionMarkSuccess {
-  color: var(--ink);
-  background: var(--electric);
+  color: var(--color-ink);
+  background: var(--color-brand);
 }
 .transitionMarkFailure {
   color: white;
-  background: var(--coral);
+  background: var(--color-danger);
 }
 
 .transitionContent h1 {
@@ -338,8 +338,8 @@
 
 .briefingFormat {
   margin-top: 0.7rem;
-  color: var(--electric);
-  font-family: var(--font-mono), monospace;
+  color: var(--color-brand);
+  font-family: var(--type-mono), monospace;
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -396,7 +396,7 @@
   font-size: clamp(2.4rem, 6vw, 4.5rem);
 }
 .resultLead strong {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .resultStats {
@@ -462,18 +462,96 @@
   width: 2.5rem;
   height: 2.5rem;
   margin-bottom: 1rem;
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .loading {
   align-content: center;
   gap: 0.5rem;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--type-mono), monospace;
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.14em;
   color: rgba(255, 255, 255, 0.42);
   text-transform: uppercase;
+}
+
+/* Pyramid is a product mode and inherits the global Flash Pop surfaces. */
+.subtitle,
+.description,
+.resultLead,
+.briefingDescription,
+.persistenceNotice {
+  color: var(--color-ink-muted);
+}
+.rules > div,
+.reviewLocked,
+.storageWarning,
+.introPyramid,
+.resultPyramid,
+.briefingCard,
+.resultCard,
+.briefingStats > div,
+.resultStats > div {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.rules strong,
+.reviewLocked strong,
+.briefingStats strong,
+.resultStats strong {
+  color: var(--color-ink);
+}
+.introPyramid,
+.resultPyramid,
+.briefingCard {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in srgb, var(--color-brand) 12%, transparent),
+      transparent 46%
+    ),
+    var(--color-surface);
+}
+.introPyramid > p,
+.briefingStats span,
+.resultStats span,
+.backLink {
+  color: var(--color-ink-faint);
+}
+.pyramidMap li {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  background: var(--color-surface-raised);
+}
+.tierCleared {
+  border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border)) !important;
+  background: color-mix(in srgb, var(--color-brand) 14%, var(--color-surface)) !important;
+}
+.tierFailed {
+  border-color: color-mix(in srgb, var(--state-error) 55%, var(--color-border)) !important;
+  color: var(--state-error) !important;
+  background: color-mix(in srgb, var(--state-error) 12%, var(--color-surface)) !important;
+}
+.dialogBackdrop {
+  background: var(--color-overlay-ink);
+}
+.confirmDialog {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-dialog);
+}
+.confirmDialog p,
+.transitionContent > p:last-child {
+  color: var(--color-ink-muted);
+}
+.transitionMarkFailure {
+  color: var(--color-text-on-danger);
+}
+.loading {
+  color: var(--color-ink-muted);
 }
 
 @media (min-width: 800px) {

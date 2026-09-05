@@ -7,8 +7,8 @@
   padding: 1.25rem 1.25rem 3.5rem;
 }
 .eyebrow {
-  color: var(--cyan);
-  font-family: var(--font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 0.65rem;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -17,7 +17,7 @@
 .title {
   max-width: 50rem;
   margin: 0.65rem 0 0;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(2.7rem, 8vw, 5.5rem);
   font-weight: 950;
   letter-spacing: -0.065em;
@@ -55,14 +55,14 @@
 }
 .cardNumber {
   color: rgba(53, 232, 255, 0.7);
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 2.3rem;
   font-weight: 950;
   letter-spacing: -0.06em;
 }
 .card h2 {
   margin: 1.3rem 0 0.5rem;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.8rem;
   font-weight: 950;
   letter-spacing: -0.045em;
@@ -83,14 +83,14 @@
 }
 .cardMeta span:first-child {
   color: rgba(255, 255, 255, 0.33);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .cardMeta span:last-child {
-  color: var(--cyan);
+  color: var(--color-social);
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -103,7 +103,7 @@
 }
 .detailIndex {
   color: rgba(53, 232, 255, 0.8);
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(4rem, 14vw, 8rem);
   font-weight: 950;
   letter-spacing: -0.08em;
@@ -111,7 +111,7 @@
 }
 .detailTitle {
   margin: 0.55rem 0 0;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(3rem, 9vw, 6rem);
   font-weight: 950;
   letter-spacing: -0.065em;
@@ -138,7 +138,7 @@
 }
 .section h2 {
   margin: 0 0 0.9rem;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.45rem;
   font-weight: 950;
   letter-spacing: -0.035em;
@@ -162,10 +162,10 @@
   padding-left: 1.1rem;
 }
 .sectionGood li::marker {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 .sectionAvoid li::marker {
-  color: var(--coral);
+  color: var(--color-danger);
 }
 .scoringPanel {
   border-color: rgba(215, 255, 24, 0.2);
@@ -182,7 +182,7 @@
   padding: 0.45rem 0.7rem;
   color: rgba(255, 255, 255, 0.55);
   background: rgba(255, 255, 255, 0.055);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -210,7 +210,7 @@
 .pager small {
   display: block;
   color: rgba(255, 255, 255, 0.3);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.55rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -248,4 +248,64 @@
   .examplesGrid:has(> :nth-child(2)) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* The library is part of the product surface and uses the global light theme. */
+.page {
+  color: var(--color-ink);
+}
+
+.lead,
+.detailSummary,
+.card p,
+.section p,
+.section li {
+  color: var(--color-ink-muted);
+}
+
+.card,
+.section,
+.pager a {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.card:hover,
+.pager a:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-raised);
+}
+
+.cardNumber,
+.detailIndex,
+.cardMeta span:last-child {
+  color: var(--color-social);
+}
+
+.cardMeta span:first-child,
+.pager small {
+  color: var(--color-ink-faint);
+}
+
+.detailHero {
+  border-color: var(--color-border);
+}
+
+.scoringPanel {
+  border-color: color-mix(in srgb, var(--color-brand) 36%, var(--color-border));
+  background: color-mix(in srgb, var(--color-brand) 10%, var(--color-surface));
+}
+
+.scoringFlags span {
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
+}
+
+.sectionGood li::marker {
+  color: var(--state-correct);
+}
+
+.sectionAvoid li::marker {
+  color: var(--state-error);
 }

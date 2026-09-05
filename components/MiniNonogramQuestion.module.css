@@ -31,7 +31,7 @@
   display: flex;
   gap: 0.15rem;
   color: rgb(255 255 255 / 0.72);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -99,7 +99,7 @@
 }
 .progress {
   color: rgb(255 255 255 / 0.72);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.78rem;
   font-weight: 700;
 }

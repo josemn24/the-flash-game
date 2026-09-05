@@ -58,19 +58,20 @@ describe("Flash Pop token contrast", () => {
     expect(contrast(token(foreground), token(background))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("keeps Pop compatibility aliases wired to the semantic API", () => {
-    expect(globals).toContain("--pop-color-brand: var(--color-brand)");
-    expect(globals).toContain("--pop-space-6: var(--space-6)");
-    expect(globals).toContain("--pop-font-ui: var(--type-ui)");
+  it("keeps the canonical tokens free of Pop aliases", () => {
+    expect(globals).not.toContain("--pop-");
+    expect(globals).toContain("--color-brand:");
+    expect(globals).toContain("--space-6:");
+    expect(globals).toContain("--type-ui:");
   });
 
   it("publishes the shared puzzle state roles", () => {
     for (const state of ["correct", "movable", "selected", "neutral", "error", "focus"]) {
-      expect(globals).toContain(`--pop-state-${state}: var(--state-${state})`);
+      expect(globals).toContain(`--state-${state}:`);
     }
   });
 
-  it("uses state roles in every migrated state-bearing Pop format", () => {
+  it("uses state roles in every state-bearing format", () => {
     const requiredTokensByFormat = new Map([
       ["MiniWordleQuestion.module.css", ["correct", "movable", "neutral", "focus"]],
       ["WordHashtagQuestion.module.css", ["correct", "movable", "selected", "focus"]],
@@ -85,7 +86,7 @@ describe("Flash Pop token contrast", () => {
     for (const { filename, css } of stateStyles) {
       const formatFilename = filename.split("/").pop();
       for (const state of requiredTokensByFormat.get(formatFilename ?? "") ?? []) {
-        expect(css, filename).toContain(`var(--pop-state-${state})`);
+        expect(css, filename).toContain(`var(--state-${state})`);
       }
     }
   });
@@ -94,14 +95,12 @@ describe("Flash Pop token contrast", () => {
     const miniWordle = stateStyles.find(({ filename }) =>
       filename.endsWith("MiniWordleQuestion.module.css"),
     );
-    expect(miniWordle?.css).toMatch(
-      /\.pop \.empty \{[\s\S]*background: var\(--pop-color-surface\);/,
-    );
+    expect(miniWordle?.css).toMatch(/\.empty \{[\s\S]*background: var\(--color-surface\);/);
   });
 
   it("keeps Classification selections visible without overpowering the table", () => {
     expect(classificationStyles).toContain(
-      ".pop .matrix,\n.pop .binaryList {\n  border: var(--border-subtle);\n  border-radius: var(--radius-card);\n  padding: var(--space-2);\n  background: var(--color-surface);",
+      ".matrix,\n.binaryList {\n  border: var(--border-subtle);\n  border-radius: var(--radius-card);\n  padding: var(--space-2);\n  background: var(--color-surface);",
     );
     expect(classificationStyles).toContain("border: 1px solid rgb(23 23 32 / 17%);");
     expect(classificationStyles).toContain("box-shadow: 0 1px 2px rgb(23 23 32 / 5%);");
@@ -112,7 +111,7 @@ describe("Flash Pop token contrast", () => {
       "color-mix(in srgb, var(--color-social) 14%, transparent)",
     );
     expect(classificationStyles).toContain(
-      ".pop .choiceButtonSelected:focus-visible,\n.pop .binaryChoiceSelected:focus-visible",
+      ".choiceButtonSelected:focus-visible,\n.binaryChoiceSelected:focus-visible",
     );
   });
 

@@ -16,7 +16,7 @@ export function TrueFalseQuestion({
 }) {
   return (
     <div
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
+      className={`${styles.root}`}
       data-variant={variant}
       role="group"
       aria-label="Opciones de respuesta"

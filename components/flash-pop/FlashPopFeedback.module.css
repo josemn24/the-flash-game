@@ -11,20 +11,20 @@
 
 .card {
   display: grid;
-  gap: var(--pop-space-4);
-  border: 1px solid color-mix(in srgb, var(--pop-color-success) 42%, transparent);
+  gap: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-success) 42%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--pop-color-success) 7%, transparent),
-    var(--pop-color-surface) 42%
+    color-mix(in srgb, var(--color-success) 7%, transparent),
+    var(--color-surface) 42%
   );
-  box-shadow: 0 18px 48px color-mix(in srgb, var(--pop-color-success) 14%, transparent);
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--color-success) 14%, transparent);
   text-align: center;
 }
 
 .failure {
   border-color: rgb(255 114 118 / 48%);
-  background: linear-gradient(180deg, rgb(255 114 118 / 7%), var(--pop-color-surface) 42%);
+  background: linear-gradient(180deg, rgb(255 114 118 / 7%), var(--color-surface) 42%);
   box-shadow: 0 18px 48px rgb(255 114 118 / 14%);
 }
 
@@ -34,16 +34,16 @@
   height: 104px;
   margin: 0 auto;
   place-items: center;
-  border-radius: var(--pop-radius-pill);
-  background: var(--pop-color-success);
-  color: var(--pop-color-surface);
+  border-radius: var(--radius-pill);
+  background: var(--color-success);
+  color: var(--color-surface);
   box-shadow:
-    0 0 0 12px color-mix(in srgb, var(--pop-color-success) 10%, transparent),
-    0 0 38px color-mix(in srgb, var(--pop-color-success) 24%, transparent);
+    0 0 0 12px color-mix(in srgb, var(--color-success) 10%, transparent),
+    0 0 38px color-mix(in srgb, var(--color-success) 24%, transparent);
 }
 
 .failure .icon {
-  background: var(--pop-color-danger);
+  background: var(--color-danger);
   box-shadow:
     0 0 0 12px rgb(255 114 118 / 10%),
     0 0 38px rgb(255 114 118 / 24%);
@@ -56,8 +56,8 @@
 
 .eyebrow {
   margin: 0;
-  color: var(--pop-color-success);
-  font-family: var(--pop-font-mono);
+  color: var(--color-success);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -65,12 +65,12 @@
 }
 
 .failure .eyebrow {
-  color: var(--pop-color-danger);
+  color: var(--color-danger);
 }
 
 .card h1 {
   margin: 0;
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: clamp(32px, 8vw, 48px);
   font-weight: 800;
   letter-spacing: -0.055em;
@@ -79,7 +79,7 @@
 
 .card > p:not(.eyebrow):not(.points) {
   margin: 0;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 15px;
   font-weight: 600;
   line-height: 1.5;
@@ -87,7 +87,7 @@
 
 .points {
   margin: 0;
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
   font-size: 18px;
   font-weight: 800;
 }

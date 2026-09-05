@@ -13,15 +13,7 @@ import {
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { FlashPopFeedback } from "@/components/flash-pop/FlashPopFeedback";
 import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
-import {
-  PopButton,
-  PopButtonLink,
-  PopCard,
-  PopCanvas,
-  PopChip,
-  PopGameHeader,
-  PopTimer,
-} from "@/components/ui";
+import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
@@ -82,13 +74,13 @@ function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () 
 
   return (
     <div className={styles.stage}>
-      <PopGameHeader title="Flash clásico" action={<PopChip tone="social">Preview</PopChip>} />
-      <PopCard as="section" className={styles.introCard} aria-labelledby="flash-pop-flash-title">
+      <GameHeader title="Flash clásico" action={<Chip tone="social">Preview</Chip>} />
+      <Card as="section" className={styles.introCard} aria-labelledby="flash-pop-flash-title">
         <div className={styles.introAccent} aria-hidden="true">
           <span>16</span>
           <small>retos</small>
         </div>
-        <PopChip tone="social">Reto de hoy · Flash</PopChip>
+        <Chip tone="social">Reto de hoy · Flash</Chip>
         <h1 id="flash-pop-flash-title">{challenge.title}</h1>
         <p className={styles.lead}>{challenge.subtitle}</p>
         <p className={styles.description}>{challenge.description}</p>
@@ -110,19 +102,19 @@ function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () 
 
         <div className={styles.formatList} aria-label="Formatos incluidos">
           {formats.map((format) => (
-            <PopChip key={format} variant="data">
+            <Chip key={format} variant="data">
               {format}
-            </PopChip>
+            </Chip>
           ))}
         </div>
 
-        <PopButton size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
+        <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
           Empezar desafío
-        </PopButton>
+        </Button>
         <p className={styles.note}>
           La sesión conserva el mismo scoring, reloj y replay que Flash normal.
         </p>
-      </PopCard>
+      </Card>
     </div>
   );
 }
@@ -169,7 +161,7 @@ function QuestionStage({
 
   return (
     <div className={styles.stage}>
-      <PopGameHeader
+      <GameHeader
         title="Flash clásico"
         mobileLabel={
           <>
@@ -181,7 +173,7 @@ function QuestionStage({
         }
         mobileLabelAriaLabel={`Pregunta ${questionPosition}`}
         timer={
-          <PopTimer
+          <Timer
             duration={question.timeLimit}
             active={!locked && timedResponseStarted}
             onTimeUp={onTimeUp}
@@ -289,13 +281,9 @@ function ResultStage({
 
   return (
     <div className={styles.stage}>
-      <PopGameHeader title="Flash clásico" action={<PopChip tone="success">Completado</PopChip>} />
+      <GameHeader title="Flash clásico" action={<Chip tone="success">Completado</Chip>} />
       <div className={styles.resultLayout}>
-        <PopCard
-          as="section"
-          className={styles.resultCard}
-          aria-labelledby="flash-pop-result-title"
-        >
+        <Card as="section" className={styles.resultCard} aria-labelledby="flash-pop-result-title">
           <p className={styles.eyebrow}>Desafío completado</p>
           <h1 id="flash-pop-result-title">{message}</h1>
           <div className={styles.scoreDisplay}>
@@ -312,18 +300,18 @@ function ResultStage({
             <span style={{ width: `${maxScore ? Math.min(100, (score / maxScore) * 100) : 0}%` }} />
           </div>
           <div className={styles.resultActions}>
-            <PopButton fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
+            <Button fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
               Volver a jugar
-            </PopButton>
-            <PopButton variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
+            </Button>
+            <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
               Ver respuestas
-            </PopButton>
+            </Button>
           </div>
-        </PopCard>
+        </Card>
 
         <div className={styles.resultStats}>
           <div className={styles.summaryStats}>
-            <PopCard className={styles.accuracyCard}>
+            <Card className={styles.accuracyCard}>
               <div>
                 <p className={styles.eyebrow}>Precisión</p>
                 <strong>{accuracy}%</strong>
@@ -333,7 +321,7 @@ function ResultStage({
                 style={{ "--accuracy": `${accuracy * 3.6}deg` } as React.CSSProperties}
                 aria-hidden="true"
               />
-            </PopCard>
+            </Card>
             <div className={styles.timeStat}>
               <StatCard icon={<ClockIcon />} value={formatTime(totalTime)} label="Tiempo total" />
             </div>
@@ -361,7 +349,7 @@ function StatCard({
   tone?: "success" | "danger";
 }) {
   return (
-    <PopCard
+    <Card
       className={`${styles.statCard} ${tone === "success" ? styles.statSuccess : tone === "danger" ? styles.statDanger : ""}`}
     >
       <div className={styles.statHeader}>
@@ -369,7 +357,7 @@ function StatCard({
         {icon}
       </div>
       <strong>{value}</strong>
-    </PopCard>
+    </Card>
   );
 }
 
@@ -386,23 +374,23 @@ function ReviewStage({
 }) {
   return (
     <div className={styles.stage}>
-      <PopGameHeader
+      <GameHeader
         title="Revisión"
         action={
-          <PopButtonLink href="/flash-pop" variant="secondary">
+          <ButtonLink href="/flash-pop" variant="secondary">
             Lobby
-          </PopButtonLink>
+          </ButtonLink>
         }
       />
-      <PopCard as="section" className={styles.reviewCard} aria-labelledby="flash-pop-review-title">
+      <Card as="section" className={styles.reviewCard} aria-labelledby="flash-pop-review-title">
         <div className={styles.reviewHeading}>
           <div>
             <p className={styles.eyebrow}>Revisión · Flash</p>
             <h1 id="flash-pop-review-title">Tus respuestas</h1>
           </div>
-          <PopChip tone="social">
+          <Chip tone="social">
             {results.length}/{challenge.questions.length}
-          </PopChip>
+          </Chip>
         </div>
         <div className={styles.reviewList}>
           {challenge.questions.map((question, index) => {
@@ -420,9 +408,9 @@ function ReviewStage({
                     <small>{question.question}</small>
                   </span>
                   {result ? (
-                    <PopChip tone={statusTone(result.status)}>{statusLabel(result.status)}</PopChip>
+                    <Chip tone={statusTone(result.status)}>{statusLabel(result.status)}</Chip>
                   ) : (
-                    <PopChip variant="data">No alcanzada</PopChip>
+                    <Chip variant="data">No alcanzada</Chip>
                   )}
                 </summary>
                 {result ? (
@@ -443,14 +431,14 @@ function ReviewStage({
           })}
         </div>
         <div className={styles.reviewActions}>
-          <PopButton variant="secondary" fullWidth onClick={onBack}>
+          <Button variant="secondary" fullWidth onClick={onBack}>
             Volver al resultado
-          </PopButton>
-          <PopButton fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
+          </Button>
+          <Button fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
             Jugar de nuevo
-          </PopButton>
+          </Button>
         </div>
-      </PopCard>
+      </Card>
     </div>
   );
 }
@@ -465,20 +453,20 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
   if (challenge.id !== FLASH_POP_FLASH_PILOT_ID) {
     return (
       <MotionConfig reducedMotion="user">
-        <PopCanvas maxWidth="content">
-          <PopCard>
+        <Canvas maxWidth="content">
+          <Card>
             <h1>Preview no disponible</h1>
             <p>Este piloto está limitado a tabarnia-flash-01.</p>
-            <PopButtonLink href="/flash-pop">Volver al lobby</PopButtonLink>
-          </PopCard>
-        </PopCanvas>
+            <ButtonLink href="/flash-pop">Volver al lobby</ButtonLink>
+          </Card>
+        </Canvas>
       </MotionConfig>
     );
   }
 
   return (
     <MotionConfig reducedMotion="user">
-      <PopCanvas contentClassName={styles.screen}>
+      <Canvas contentClassName={styles.screen}>
         <AnimatePresence mode="wait">
           {session.phase === "intro" ? (
             <motion.div
@@ -561,7 +549,7 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </PopCanvas>
+      </Canvas>
     </MotionConfig>
   );
 }

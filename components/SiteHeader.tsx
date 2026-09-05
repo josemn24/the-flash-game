@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { AppHeader } from "@/components/ui";
+import { GameHeader } from "@/components/ui";
 
 export function SiteHeader() {
   return (
-    <AppHeader
+    <GameHeader
       left={
         <Link href="/" aria-label="Ir al inicio">
           <Logo />
@@ -22,7 +22,7 @@ export function SiteHeader() {
             Desafíos
           </Link>
           <Link
-            className="text-[var(--cyan)] transition-colors hover:text-white focus-visible:text-white"
+            className="text-[var(--color-social)] transition-colors hover:text-white focus-visible:text-white"
             href="/formatos"
           >
             Formatos

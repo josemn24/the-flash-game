@@ -8,10 +8,7 @@ type NumberSequencePromptProps = {
 
 export function NumberSequencePrompt({ prompt, variant }: NumberSequencePromptProps) {
   return (
-    <section
-      className={`${styles.prompt} ${variant === "flash-pop" ? styles.pop : ""}`}
-      aria-label={prompt.eyebrow ?? "Secuencia numérica"}
-    >
+    <section className={`${styles.prompt}`} aria-label={prompt.eyebrow ?? "Secuencia numérica"}>
       {prompt.eyebrow && <p className={styles.eyebrow}>{prompt.eyebrow}</p>}
       <div className={styles.sequenceRow} aria-label={`Secuencia: ${prompt.sequence.join(", ")}`}>
         {prompt.sequence.map((item, index) => (

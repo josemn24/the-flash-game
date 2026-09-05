@@ -34,7 +34,7 @@
 .kicker {
   margin: 0;
   color: #d7ff19;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -80,7 +80,7 @@
   border-radius: 999px;
   background: #d7ff19;
   color: #171720;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -108,7 +108,7 @@
   border-radius: 14px;
   background: rgb(255 255 255 / 6%);
   color: #d7ff19;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 16px;
   font-weight: 900;
 }
@@ -117,8 +117,8 @@
   --canvas: #f7f5ed;
   --surface: #fff;
   --surface-soft: #efede5;
-  --ink: #171720;
-  --muted: #686872;
+  --color-ink: #171720;
+  --color-ink-muted: #686872;
   --flash: #d7ff19;
   --social: #6957e8;
   --gold: #ffd85a;
@@ -136,8 +136,8 @@
   border-radius: 44px;
   background: var(--canvas);
   box-shadow: 0 28px 90px rgb(0 0 0 / 42%);
-  color: var(--ink);
-  font-family: var(--font-pop-ui, var(--font-body));
+  color: var(--color-ink);
+  font-family: var(--font-pop-ui, var(--type-ui));
   isolation: isolate;
 }
 
@@ -185,7 +185,7 @@
 .userAvatar {
   width: 44px;
   height: 44px;
-  border-color: var(--ink);
+  border-color: var(--color-ink);
   background: var(--social);
   color: #fff;
   box-shadow: 0 2px 0 rgb(23 23 32 / 18%);
@@ -204,7 +204,7 @@
 
 .room {
   margin-top: 2px;
-  color: var(--muted);
+  color: var(--color-ink-muted);
   font-size: 11px;
   font-weight: 650;
 }
@@ -228,7 +228,7 @@
   gap: 4px;
   padding: 0 11px;
   border-radius: 999px;
-  font-family: var(--font-pop-mono, var(--font-mono));
+  font-family: var(--font-pop-mono, var(--type-mono));
   font-size: 11px;
   font-weight: 850;
 }
@@ -304,7 +304,7 @@
   padding: 7px 10px;
   background: rgb(23 23 32 / 82%);
   color: #fff;
-  font-family: var(--font-pop-mono, var(--font-mono));
+  font-family: var(--font-pop-mono, var(--type-mono));
   backdrop-filter: blur(8px);
 }
 
@@ -334,7 +334,7 @@
 }
 
 .heroBody h3 {
-  font-family: var(--font-pop-display, var(--font-display));
+  font-family: var(--font-pop-display, var(--type-display));
   font-size: 28px;
   font-weight: 950;
   letter-spacing: -0.055em;
@@ -343,7 +343,7 @@
 
 .challengeCopy {
   margin-top: 4px;
-  color: var(--muted);
+  color: var(--color-ink-muted);
   font-size: 13px;
   font-weight: 650;
 }
@@ -383,12 +383,12 @@
 }
 
 .avatarMore {
-  background: var(--ink);
+  background: var(--color-ink);
 }
 
 .played {
   margin-left: 8px;
-  color: var(--muted);
+  color: var(--color-ink-muted);
   font-size: 10px;
   font-weight: 700;
 }
@@ -397,8 +397,8 @@
   margin-left: auto;
   padding: 7px 9px;
   background: var(--gold);
-  color: var(--ink);
-  font-family: var(--font-pop-mono, var(--font-mono));
+  color: var(--color-ink);
+  font-family: var(--font-pop-mono, var(--type-mono));
 }
 
 .primaryCta {
@@ -408,11 +408,11 @@
   gap: 8px;
   width: 100%;
   height: 52px;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--color-ink);
   border-radius: var(--control-radius);
   background: var(--flash);
   box-shadow: var(--control-shadow);
-  color: var(--ink);
+  color: var(--color-ink);
   font-size: 15px;
   font-weight: 900;
 }
@@ -441,8 +441,8 @@
 }
 
 .eyebrow {
-  color: var(--muted);
-  font-family: var(--font-pop-mono, var(--font-mono));
+  color: var(--color-ink-muted);
+  font-family: var(--font-pop-mono, var(--type-mono));
   font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.08em;
@@ -457,7 +457,7 @@
 
 .seasonXp {
   color: var(--social);
-  font-family: var(--font-pop-mono, var(--font-mono));
+  font-family: var(--font-pop-mono, var(--type-mono));
   font-size: 11px;
   font-weight: 850;
 }
@@ -515,7 +515,7 @@
 .activityCard div > span {
   display: block;
   margin-top: 2px;
-  color: var(--muted);
+  color: var(--color-ink-muted);
   font-size: 9px;
 }
 
@@ -537,13 +537,13 @@
   --card-radius: 24px;
   --control-radius: 12px;
   --card-shadow: 0 5px 0 rgb(23 23 32 / 12%);
-  --control-shadow: 0 4px 0 var(--ink);
+  --control-shadow: 0 4px 0 var(--color-ink);
 }
 
 .graphic .heroCard,
 .graphic .seasonCard,
 .graphic .activityCard {
-  border: 2px solid var(--ink);
+  border: 2px solid var(--color-ink);
 }
 
 .graphic .heroArt {
@@ -551,7 +551,7 @@
 }
 
 .graphic .heroBody {
-  border-top: 2px solid var(--ink);
+  border-top: 2px solid var(--color-ink);
 }
 
 .graphic .primaryCta {
@@ -607,8 +607,8 @@
 
 .arena .levelPill,
 .arena .iconButton {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: var(--color-ink);
+  background: var(--color-ink);
   color: #fff;
 }
 
@@ -619,12 +619,12 @@
 .arena .heroCard,
 .arena .seasonCard,
 .arena .activityCard {
-  border: 2px solid var(--ink);
+  border: 2px solid var(--color-ink);
 }
 
 .arena .heroArt {
   height: 250px;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--color-ink);
 }
 
 .arena .modeLabel {
@@ -636,7 +636,7 @@
 }
 
 .arena .progressTrack {
-  border: 1px solid var(--ink);
+  border: 1px solid var(--color-ink);
   background: #fff;
 }
 

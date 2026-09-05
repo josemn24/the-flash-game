@@ -1,4 +1,4 @@
-import type { PopAvatarTone } from "@/components/ui";
+import type { AvatarTone } from "@/components/ui";
 import type {
   PyramidAttemptRecord,
   PyramidAttemptSummary,
@@ -22,7 +22,7 @@ export type FlashPopPlayer = {
   id: string;
   displayName: string;
   initials: string;
-  tone: PopAvatarTone;
+  tone: AvatarTone;
 };
 
 export type FlashPopActivity = {

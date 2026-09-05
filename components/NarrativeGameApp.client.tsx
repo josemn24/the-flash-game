@@ -17,9 +17,8 @@ import {
 import { Logo } from "@/components/Logo";
 import { QuestionMedia } from "@/components/QuestionMedia";
 import { ReviewAnswers } from "@/components/ReviewAnswers";
-import { Timer } from "@/components/Timer";
 import { QuestionTransition } from "@/components/QuestionTransition";
-import { AppHeader, Badge, MotionButton } from "@/components/ui";
+import { GameHeader, Chip, MotionButton, Timer } from "@/components/ui";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
 import styles from "@/components/NarrativeGame.module.css";
@@ -125,13 +124,13 @@ function NarrativeIntro({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -18 }}
     >
-      <AppHeader
+      <GameHeader
         left={
           <Link href="/" aria-label="Volver a los desafíos">
             <Logo />
           </Link>
         }
-        right={<Badge>Cuento en tres capítulos</Badge>}
+        right={<Chip>Cuento en tres capítulos</Chip>}
       />
 
       <div className={styles.introContent}>
@@ -414,13 +413,13 @@ function NarrativeResult({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
     >
-      <AppHeader
+      <GameHeader
         left={
           <Link href="/" aria-label="Volver a los desafíos">
             <Logo />
           </Link>
         }
-        right={<Badge>Misión completada</Badge>}
+        right={<Chip>Misión completada</Chip>}
       />
       <div className={styles.resultGrid}>
         <div className={styles.resultScore}>

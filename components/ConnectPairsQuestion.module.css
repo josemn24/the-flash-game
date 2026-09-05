@@ -12,7 +12,7 @@
   justify-content: space-between;
   gap: 1rem;
   color: rgb(255 255 255 / 48%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -20,7 +20,7 @@
 }
 
 .header strong {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 
 .board {
@@ -37,7 +37,7 @@
 }
 
 .board:focus-visible {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
 }
 
@@ -52,7 +52,7 @@
   background:
     radial-gradient(circle at 50% 50%, rgb(255 255 255 / 5%) 0 0.08rem, transparent 0.09rem),
     rgb(255 255 255 / 3%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-weight: 900;
 }
 
@@ -71,7 +71,7 @@
 }
 
 .cellButton:focus-visible {
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: -4px;
 }
 
@@ -85,9 +85,9 @@
 
 .active.endpoint .symbol {
   box-shadow:
-    inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--cyan)) 92%, #071011),
-    0 0 0 3px color-mix(in srgb, var(--pair-color, var(--cyan)) 28%, transparent),
-    0 0 1.2rem color-mix(in srgb, var(--pair-color, var(--cyan)) 45%, transparent);
+    inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--color-social)) 92%, #071011),
+    0 0 0 3px color-mix(in srgb, var(--pair-color, var(--color-social)) 28%, transparent),
+    0 0 1.2rem color-mix(in srgb, var(--pair-color, var(--color-social)) 45%, transparent);
 }
 
 .symbol {
@@ -99,11 +99,11 @@
   place-items: center;
   border-radius: 999px;
   color: #071011;
-  background: color-mix(in srgb, var(--pair-color, var(--cyan)) 76%, white);
+  background: color-mix(in srgb, var(--pair-color, var(--color-social)) 76%, white);
   font-size: clamp(0.8rem, 3vw, 1.1rem);
   box-shadow:
-    inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--cyan)) 92%, #071011),
-    0 0 0.75rem color-mix(in srgb, var(--pair-color, var(--cyan)) 32%, transparent);
+    inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--color-social)) 92%, #071011),
+    0 0 0.75rem color-mix(in srgb, var(--pair-color, var(--color-social)) 32%, transparent);
 }
 
 .routeOverlay {
@@ -118,12 +118,12 @@
 
 .routeLine {
   fill: none;
-  stroke: color-mix(in srgb, var(--pair-color, var(--cyan)) 86%, white);
+  stroke: color-mix(in srgb, var(--pair-color, var(--color-social)) 86%, white);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 0.28;
   filter: drop-shadow(
-    0 0 0.08rem color-mix(in srgb, var(--pair-color, var(--cyan)) 54%, transparent)
+    0 0 0.08rem color-mix(in srgb, var(--pair-color, var(--color-social)) 54%, transparent)
   );
 }
 
@@ -145,7 +145,7 @@
 }
 
 .actions button:hover:not(:disabled) {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   background: rgb(53 232 255 / 10%);
 }
 
@@ -183,52 +183,52 @@
   }
 }
 
-.root.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
-.pop .header {
-  color: var(--pop-color-ink-muted);
+.header {
+  color: var(--color-ink-muted);
 }
 
-.pop .header strong {
-  color: var(--pop-state-selected);
+.header strong {
+  color: var(--state-selected);
 }
 
-.pop .board {
+.board {
   border-color: rgb(23 23 32 / 16%);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
-.pop .board:focus-visible {
-  border-color: var(--pop-state-focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pop-state-focus) 22%, transparent);
+.board:focus-visible {
+  border-color: var(--state-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
 }
 
-.pop .cell {
+.cell {
   border-color: rgb(23 23 32 / 8%);
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
   background:
     radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
-    var(--pop-color-surface);
+    var(--color-surface);
 }
 
-.pop .empty .cellButton,
-.pop .endpoint .cellButton {
+.empty .cellButton,
+.endpoint .cellButton {
   background: rgb(23 23 32 / 3%);
 }
 
-.pop .instructions,
-.pop .statusText {
-  color: var(--pop-color-ink-muted);
+.instructions,
+.statusText {
+  color: var(--color-ink-muted);
 }
 
-.pop .actions button {
+.actions button {
   min-height: 44px;
-  border-color: var(--pop-border-subtle);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface-raised);
+  border-color: var(--border-subtle);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
 }

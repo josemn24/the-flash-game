@@ -2,9 +2,9 @@
 
 import type { CSSProperties } from "react";
 import { useCountdown } from "@/features/game/useCountdown";
-import styles from "./PopTimer.module.css";
+import styles from "./Timer.module.css";
 
-export type PopTimerDisplayProps = {
+export type TimerDisplayProps = {
   duration: number;
   remaining: number;
   state?: "auto" | "normal" | "urgent" | "finished";
@@ -12,13 +12,13 @@ export type PopTimerDisplayProps = {
   className?: string;
 };
 
-export function PopTimerDisplay({
+export function TimerDisplay({
   duration,
   remaining,
   state = "auto",
   size = "default",
   className,
-}: PopTimerDisplayProps) {
+}: TimerDisplayProps) {
   const safeDuration = Math.max(0, duration);
   const safeRemaining = Math.min(safeDuration, Math.max(0, remaining));
   const ratio = safeDuration > 0 ? safeRemaining / safeDuration : 0;
@@ -47,7 +47,7 @@ export function PopTimerDisplay({
   );
 }
 
-export type PopTimerProps = {
+export type TimerProps = {
   duration: number;
   active: boolean;
   onTimeUp: () => void;
@@ -58,7 +58,7 @@ export type PopTimerProps = {
   className?: string;
 };
 
-export function PopTimer({
+export function Timer({
   duration,
   active,
   onTimeUp,
@@ -67,7 +67,7 @@ export function PopTimer({
   deadlineAt,
   size = "default",
   className,
-}: PopTimerProps) {
+}: TimerProps) {
   const { remaining, urgent, finished } = useCountdown({
     duration,
     active,
@@ -79,7 +79,7 @@ export function PopTimer({
   });
 
   return (
-    <PopTimerDisplay
+    <TimerDisplay
       duration={duration}
       remaining={remaining}
       state={finished ? "finished" : urgent ? "urgent" : "normal"}

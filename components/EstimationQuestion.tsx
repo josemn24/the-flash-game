@@ -36,10 +36,7 @@ export function EstimationQuestion({
   const progress = ((value - min) / (max - min)) * 100;
 
   return (
-    <div
-      className={`${styles.challenge} ${variant === "flash-pop" ? styles.pop : ""}`}
-      data-variant={variant}
-    >
+    <div className={`${styles.challenge}`} data-variant={variant}>
       <div className={styles.valueDisplay} aria-live="polite">
         <span>Tu estimación</span>
         <strong>

@@ -1,16 +1,16 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import {
-  PopAvatar,
-  PopAvatarStack,
-  PopButton,
-  PopButtonLink,
-  PopCanvas,
-  PopCard,
-  PopChip,
-  PopIconButton,
-  PopTimerDisplay,
-  type PopAvatarData,
+  Avatar,
+  AvatarStack,
+  Button,
+  ButtonLink,
+  Canvas,
+  Card,
+  Chip,
+  IconButton,
+  TimerDisplay,
+  type AvatarData,
 } from "@/components/ui";
 import { ArrowIcon, BellIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LiveTimerDemo } from "./LiveTimerDemo.client";
@@ -22,34 +22,34 @@ export const metadata: Metadata = {
 };
 
 const colors = [
-  ["Canvas", "--pop-color-canvas", "#f4f1ea"],
-  ["Surface", "--pop-color-surface", "#ffffff"],
-  ["Raised", "--pop-color-surface-raised", "#fbfaf6"],
-  ["Soft", "--pop-color-surface-soft", "#eae7ff"],
-  ["Ink", "--pop-color-ink", "#171720"],
-  ["Flash", "--pop-color-brand", "#d7ff19"],
-  ["Social", "--pop-color-social", "#6957e8"],
-  ["Success", "--pop-color-success", "#0f766e"],
-  ["Danger", "--pop-color-danger", "#ff7276"],
-  ["Info", "--pop-color-info", "#74a7f5"],
-  ["Reward", "--pop-color-reward", "#ffd85a"],
+  ["Canvas", "--color-canvas", "#f4f1ea"],
+  ["Surface", "--color-surface", "#ffffff"],
+  ["Raised", "--color-surface-raised", "#fbfaf6"],
+  ["Soft", "--color-surface-soft", "#eae7ff"],
+  ["Ink", "--color-ink", "#171720"],
+  ["Flash", "--color-brand", "#d7ff19"],
+  ["Social", "--color-social", "#6957e8"],
+  ["Success", "--color-success", "#0f766e"],
+  ["Danger", "--color-danger", "#ff7276"],
+  ["Info", "--color-info", "#74a7f5"],
+  ["Reward", "--color-reward", "#ffd85a"],
 ] as const;
 
 const radii = [
-  ["Sm", "--pop-radius-sm", "12 px"],
-  ["Control", "--pop-radius-control", "18 px"],
-  ["Card", "--pop-radius-card", "24 px"],
-  ["Hero", "--pop-radius-hero", "30 px"],
-  ["Pill", "--pop-radius-pill", "999 px"],
+  ["Sm", "--radius-sm", "12 px"],
+  ["Control", "--radius-control", "18 px"],
+  ["Card", "--radius-card", "24 px"],
+  ["Hero", "--radius-hero", "30 px"],
+  ["Pill", "--radius-pill", "999 px"],
 ] as const;
 
 const elevations = [
-  ["Control", "--pop-shadow-control"],
-  ["Card", "--pop-shadow-card"],
-  ["Hero", "--pop-shadow-hero"],
+  ["Control", "--shadow-control"],
+  ["Card", "--shadow-card"],
+  ["Hero", "--shadow-hero"],
 ] as const;
 
-const players: PopAvatarData[] = [
+const players: AvatarData[] = [
   { id: "ana", name: "Ana Moreno", initials: "AM", tone: "coral" },
   { id: "luis", name: "Luis Úbeda", initials: "LU", tone: "blue" },
   { id: "rocio", name: "Rocío", tone: "aqua" },
@@ -77,9 +77,9 @@ function SectionHeading({
 
 export default function FlashPopUiKitPage() {
   return (
-    <PopCanvas maxWidth="content" contentClassName={styles.page}>
+    <Canvas maxWidth="content" contentClassName={styles.page}>
       <header className={styles.hero}>
-        <PopChip tone="social">Laboratorio aislado</PopChip>
+        <Chip tone="social">Laboratorio aislado</Chip>
         <h1>Flash Pop UI Kit</h1>
         <p>
           Tokens, primitivas y estados aprobados para el vertical slice. Usa Tab para comprobar el
@@ -93,7 +93,7 @@ export default function FlashPopUiKitPage() {
         </SectionHeading>
         <div className={styles.swatchGrid}>
           {colors.map(([name, token, value]) => (
-            <PopCard key={token} padding="compact" elevation="flat" className={styles.swatchCard}>
+            <Card key={token} padding="compact" elevation="flat" className={styles.swatchCard}>
               <span
                 className={styles.swatch}
                 style={{ "--swatch-color": `var(${token})` } as CSSProperties}
@@ -102,18 +102,18 @@ export default function FlashPopUiKitPage() {
                 <strong>{name}</strong>
                 <small>{value}</small>
               </span>
-            </PopCard>
+            </Card>
           ))}
         </div>
-        <PopCard className={styles.typeSpecimen}>
+        <Card className={styles.typeSpecimen}>
           <p className={styles.displayType}>Hoy toca subir.</p>
           <p className={styles.uiType}>
             Manrope mantiene clara la interfaz incluso cuando aumenta la densidad de información.
           </p>
           <p className={styles.monoType}>02:14 · 680 / 900 ⚡ · NIVEL 4</p>
-        </PopCard>
+        </Card>
         <div className={styles.foundationGrid}>
-          <PopCard elevation="flat" className={styles.tokenPanel}>
+          <Card elevation="flat" className={styles.tokenPanel}>
             <h3>Radios</h3>
             <div className={styles.radiusSpecimens}>
               {radii.map(([name, token, value]) => (
@@ -127,8 +127,8 @@ export default function FlashPopUiKitPage() {
                 </span>
               ))}
             </div>
-          </PopCard>
-          <PopCard elevation="flat" className={styles.tokenPanel}>
+          </Card>
+          <Card elevation="flat" className={styles.tokenPanel}>
             <h3>Elevación</h3>
             <div className={styles.elevationSpecimens}>
               {elevations.map(([name, token]) => (
@@ -141,7 +141,7 @@ export default function FlashPopUiKitPage() {
                 </span>
               ))}
             </div>
-          </PopCard>
+          </Card>
         </div>
       </section>
 
@@ -149,88 +149,88 @@ export default function FlashPopUiKitPage() {
         <SectionHeading id="buttons-title" eyebrow="02 · Controles">
           Botones
         </SectionHeading>
-        <PopCard>
+        <Card>
           <div className={styles.controlGrid}>
             <div>
               <small>Primary</small>
-              <PopButton trailingIcon={<ArrowIcon />}>Jugar ahora</PopButton>
+              <Button trailingIcon={<ArrowIcon />}>Jugar ahora</Button>
             </div>
             <div>
               <small>Secondary</small>
-              <PopButton variant="secondary" leadingIcon={<BoltIcon />}>
+              <Button variant="secondary" leadingIcon={<BoltIcon />}>
                 Ver progreso
-              </PopButton>
+              </Button>
             </div>
             <div>
               <small>Hero link</small>
-              <PopButtonLink href="/flash-pop" size="hero" trailingIcon={<ArrowIcon />}>
+              <ButtonLink href="/flash-pop" size="hero" trailingIcon={<ArrowIcon />}>
                 Volver al lobby
-              </PopButtonLink>
+              </ButtonLink>
             </div>
             <div>
               <small>Loading</small>
-              <PopButton loading>Guardando</PopButton>
+              <Button loading>Guardando</Button>
             </div>
             <div>
               <small>Disabled</small>
-              <PopButton disabled>Reto cerrado</PopButton>
+              <Button disabled>Reto cerrado</Button>
             </div>
             <div>
               <small>Icon buttons</small>
               <span className={styles.inlineControls}>
-                <PopIconButton label="Notificaciones">
+                <IconButton label="Notificaciones">
                   <BellIcon />
-                </PopIconButton>
-                <PopIconButton label="Progreso social" variant="social">
+                </IconButton>
+                <IconButton label="Progreso social" variant="social">
                   <BoltIcon />
-                </PopIconButton>
+                </IconButton>
               </span>
             </div>
           </div>
-          <PopButton fullWidth className={styles.longButton}>
+          <Button fullWidth className={styles.longButton}>
             Continuar con este texto deliberadamente más largo
-          </PopButton>
-        </PopCard>
+          </Button>
+        </Card>
       </section>
 
       <section className={styles.section} aria-labelledby="chips-title">
         <SectionHeading id="chips-title" eyebrow="03 · Metadatos">
           Chips
         </SectionHeading>
-        <PopCard>
+        <Card>
           <div className={styles.chipRow}>
-            <PopChip>Disponible</PopChip>
-            <PopChip tone="social">Nuevo</PopChip>
-            <PopChip tone="info">En progreso</PopChip>
-            <PopChip tone="success" icon={<CheckIcon />}>
+            <Chip>Disponible</Chip>
+            <Chip tone="social">Nuevo</Chip>
+            <Chip tone="info">En progreso</Chip>
+            <Chip tone="success" icon={<CheckIcon />}>
               Completado
-            </PopChip>
-            <PopChip tone="danger" icon={<CrossIcon />}>
+            </Chip>
+            <Chip tone="danger" icon={<CrossIcon />}>
               Cerrado
-            </PopChip>
-            <PopChip variant="data">2 h 14 min</PopChip>
-            <PopChip variant="reward">Hasta +120 ⚡</PopChip>
+            </Chip>
+            <Chip variant="data">2 h 14 min</Chip>
+            <Chip variant="reward">Hasta +120 ⚡</Chip>
           </div>
-        </PopCard>
+        </Card>
       </section>
 
       <section className={styles.section} aria-labelledby="avatars-title">
         <SectionHeading id="avatars-title" eyebrow="04 · Presencia">
           Avatares
         </SectionHeading>
-        <PopCard>
+        <Card>
           <div className={styles.avatarExamples}>
-            <PopAvatar name="Javi Moreno" size="lg" />
-            <PopAvatar name="Ana Moreno" tone="coral" />
-            <PopAvatar name="Luis Úbeda" tone="blue" />
-            <PopAvatar name="Rocío" tone="aqua" />
-            <PopAvatar name="Jugador destacado" initials="01" tone="reward" />
+            <Avatar name="Javi Moreno" size="lg" />
+            <Avatar name="Ana Moreno" tone="coral" />
+            <Avatar name="Luis Úbeda" tone="blue" />
+            <Avatar name="Rocío" tone="aqua" />
+            <Avatar name="Jugador destacado" initials="01" tone="reward" />
           </div>
           <div className={styles.stackExamples}>
-            <PopAvatarStack items={players.slice(0, 2)} label="2 ya jugaron" />
-            <PopAvatarStack items={players} maxVisible={4} label="6 ya jugaron" />
+            <AvatarStack items={players.slice(0, 2)} label="2 ya jugaron" />
+            <AvatarStack items={players} maxVisible={4} label="6 ya jugaron" />
           </div>
-        </PopCard>
+        </Card>
       </section>
 
       <section className={styles.section} aria-labelledby="cards-title">
@@ -238,18 +238,18 @@ export default function FlashPopUiKitPage() {
           Cards
         </SectionHeading>
         <div className={styles.cardGrid}>
-          <PopCard elevation="flat">
+          <Card elevation="flat">
             <strong>Flat surface</strong>
             <p>Para elementos contenidos que no necesitan profundidad adicional.</p>
-          </PopCard>
-          <PopCard>
+          </Card>
+          <Card>
             <strong>Card elevation</strong>
             <p>Superficie estándar para progreso y actividad.</p>
-          </PopCard>
-          <PopCard surface="soft" elevation="hero">
+          </Card>
+          <Card surface="soft" elevation="hero">
             <strong>Soft hero</strong>
             <p>Máxima jerarquía sin abandonar la paleta clara.</p>
-          </PopCard>
+          </Card>
         </div>
       </section>
 
@@ -257,28 +257,28 @@ export default function FlashPopUiKitPage() {
         <SectionHeading id="timer-title" eyebrow="06 · Tiempo">
           Timer
         </SectionHeading>
-        <PopCard>
+        <Card>
           <div className={styles.timerStates}>
             <span>
-              <PopTimerDisplay duration={20} remaining={14} />
+              <TimerDisplay duration={20} remaining={14} />
               <small>Normal</small>
             </span>
             <span>
-              <PopTimerDisplay duration={20} remaining={4} />
+              <TimerDisplay duration={20} remaining={4} />
               <small>Urgente</small>
             </span>
             <span>
-              <PopTimerDisplay duration={20} remaining={0} />
+              <TimerDisplay duration={20} remaining={0} />
               <small>Finalizado</small>
             </span>
             <span>
-              <PopTimerDisplay duration={20} remaining={20} size="compact" />
+              <TimerDisplay duration={20} remaining={20} size="compact" />
               <small>Compacto</small>
             </span>
           </div>
           <LiveTimerDemo />
-        </PopCard>
+        </Card>
       </section>
-    </PopCanvas>
+    </Canvas>
   );
 }

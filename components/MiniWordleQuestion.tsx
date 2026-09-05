@@ -133,9 +133,7 @@ export function MiniWordleQuestion({
   };
 
   return (
-    <div
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
-    >
+    <div className={`${styles.root} ${className ?? ""}`}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
       <section

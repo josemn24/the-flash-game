@@ -16,7 +16,7 @@ import {
   RotateIcon,
   WarningIcon,
 } from "@/components/icons";
-import { AppHeader, Badge, MotionButton } from "@/components/ui";
+import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import type { PyramidAttemptOutcome } from "@/features/pyramid/pyramidAttempt";
@@ -86,13 +86,13 @@ function ScreenShell({ children }: { children: React.ReactNode }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <AppHeader
+      <GameHeader
         left={
           <Link href="/" aria-label="Volver a los desafíos">
             <Logo />
           </Link>
         }
-        right={<Badge>Modo Pirámide</Badge>}
+        right={<Chip>Modo Pirámide</Chip>}
       />
       {children}
     </motion.section>
@@ -340,7 +340,7 @@ function PyramidResults({
           />
         </div>
         <div className={styles.resultCard}>
-          <Badge>{summit ? "Cima conquistada" : "Partida terminada"}</Badge>
+          <Chip>{summit ? "Cima conquistada" : "Partida terminada"}</Chip>
           <h1>{summit ? "Has llegado a lo más alto." : "Ascenso terminado."}</h1>
           <p className={styles.resultLead}>
             Has superado <strong>{levelsCleared}</strong> de los {challenge.levels.length} niveles.
@@ -390,7 +390,7 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ink)] text-white selection:bg-[var(--electric)] selection:text-black">
+      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
         <SpeedBackground />
         <div className="relative z-10">
           <AnimatePresence mode="wait">

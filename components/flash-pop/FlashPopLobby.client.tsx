@@ -3,14 +3,14 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
-  PopAvatar,
-  PopAvatarStack,
-  PopButtonLink,
-  PopCanvas,
-  PopCard,
-  PopChip,
-  PopIconButton,
-  type PopAvatarData,
+  Avatar,
+  AvatarStack,
+  ButtonLink,
+  Canvas,
+  Card,
+  Chip,
+  IconButton,
+  type AvatarData,
 } from "@/components/ui";
 import { ArrowIcon, BellIcon, BoltIcon, TrophyIcon } from "@/components/icons";
 import {
@@ -27,7 +27,7 @@ import {
 import type { PyramidChallenge } from "@/types/game";
 import styles from "@/app/flash-pop/FlashPop.module.css";
 
-const players: PopAvatarData[] = flashPopPlayers.slice(1).map((player) => ({
+const players: AvatarData[] = flashPopPlayers.slice(1).map((player) => ({
   id: player.id,
   name: player.displayName,
   initials: player.initials,
@@ -111,7 +111,7 @@ export function FlashPopLobby({
   const playerById = (id: string) => flashPopPlayers.find((player) => player.id === id)!;
 
   return (
-    <PopCanvas contentClassName={styles.shell}>
+    <Canvas contentClassName={styles.shell}>
       <header className={styles.appHeader}>
         <div className={styles.brand} aria-label="Flash Pop">
           <span className={styles.brandMark}>
@@ -121,7 +121,7 @@ export function FlashPopLobby({
         </div>
 
         <div className={styles.identity}>
-          <PopAvatar name="Javi Moreno" initials="JM" tone="social" size="md" />
+          <Avatar name="Javi Moreno" initials="JM" tone="social" size="md" />
           <span className={styles.identityCopy}>
             <strong>Hola, Javi</strong>
             <small>Tabarnia · Día 7</small>
@@ -129,13 +129,13 @@ export function FlashPopLobby({
         </div>
 
         <div className={styles.headerActions}>
-          <PopChip tone="social" className={styles.previewBadge}>
+          <Chip tone="social" className={styles.previewBadge}>
             Preview
-          </PopChip>
-          <PopChip icon={<BoltIcon />}>Nv. 4</PopChip>
-          <PopIconButton label="Notificaciones" className={styles.notificationButton}>
+          </Chip>
+          <Chip icon={<BoltIcon />}>Nv. 4</Chip>
+          <IconButton label="Notificaciones" className={styles.notificationButton}>
             <BellIcon />
-          </PopIconButton>
+          </IconButton>
         </div>
       </header>
 
@@ -148,7 +148,7 @@ export function FlashPopLobby({
       </section>
 
       <div className={styles.dashboard}>
-        <PopCard
+        <Card
           as="section"
           elevation="hero"
           padding="none"
@@ -165,10 +165,10 @@ export function FlashPopLobby({
               className={styles.heroImage}
             />
             <div className={styles.heroBadges}>
-              <PopChip tone={primaryModel.status === "completed" ? "success" : "social"}>
+              <Chip tone={primaryModel.status === "completed" ? "success" : "social"}>
                 {getStatusLabel(primaryModel.status)}
-              </PopChip>
-              <PopChip variant="data">Preview</PopChip>
+              </Chip>
+              <Chip variant="data">Preview</Chip>
             </div>
           </div>
 
@@ -185,31 +185,31 @@ export function FlashPopLobby({
               </p>
             ) : null}
             <div className={styles.socialRow}>
-              <PopAvatarStack
+              <AvatarStack
                 items={players}
                 maxVisible={3}
                 label={`${primaryModel.participants.length} ya jugaron`}
               />
-              <PopChip variant="reward" icon={<BoltIcon />} className={styles.rewardChip}>
+              <Chip variant="reward" icon={<BoltIcon />} className={styles.rewardChip}>
                 Hasta +120
-              </PopChip>
+              </Chip>
             </div>
-            <PopButtonLink
+            <ButtonLink
               href={`/flash-pop/desafios/${primaryModel.id}`}
               size="hero"
               fullWidth
               trailingIcon={<ArrowIcon />}
             >
               {actionLabel}
-            </PopButtonLink>
+            </ButtonLink>
             <p className={styles.attemptNote}>
               7 niveles · Tu primer acceso inicia el único intento oficial.
             </p>
           </div>
-        </PopCard>
+        </Card>
 
         <aside className={styles.sideColumn} aria-label="Temporada y actividad">
-          <PopCard as="section" className={styles.seasonCard}>
+          <Card as="section" className={styles.seasonCard}>
             <div className={styles.cardHeading}>
               <div>
                 <p className={styles.eyebrow}>Temporada</p>
@@ -230,9 +230,9 @@ export function FlashPopLobby({
               {Math.max(0, primaryModel.seasonXp.nextLevelAt - primaryModel.seasonXp.current)} rayos
               para alcanzar el siguiente nivel.
             </p>
-          </PopCard>
+          </Card>
 
-          <PopCard as="section" className={styles.secondaryChallengeCard}>
+          <Card as="section" className={styles.secondaryChallengeCard}>
             <div className={styles.secondaryChallengeArt}>
               <Image
                 src="/flash-pop/concepts/pyramid-soft-diorama.webp"
@@ -245,9 +245,9 @@ export function FlashPopLobby({
             <div className={styles.secondaryChallengeBody}>
               <div className={styles.cardHeading}>
                 <p className={styles.eyebrow}>Siguiente preview</p>
-                <PopChip tone={secondaryModel.status === "completed" ? "success" : "social"}>
+                <Chip tone={secondaryModel.status === "completed" ? "success" : "social"}>
                   {getStatusLabel(secondaryModel.status)}
-                </PopChip>
+                </Chip>
               </div>
               <h2>{secondaryModel.title}</h2>
               <p className={styles.challengeCopy}>{secondaryModel.subtitle}</p>
@@ -257,52 +257,52 @@ export function FlashPopLobby({
                   Nivel {Math.min(secondaryModel.currentLevelIndex + 1, 7)} de 7
                 </p>
               ) : null}
-              <PopButtonLink
+              <ButtonLink
                 href={`/flash-pop/desafios/${secondaryModel.id}`}
                 fullWidth
                 trailingIcon={<ArrowIcon />}
               >
                 {getActionLabel(secondaryModel.status)}
-              </PopButtonLink>
+              </ButtonLink>
             </div>
-          </PopCard>
+          </Card>
 
-          <PopCard as="section" className={styles.classicPreviewCard}>
+          <Card as="section" className={styles.classicPreviewCard}>
             <p className={styles.eyebrow}>Nuevo preview</p>
             <h2>Flash clásico, en versión Pop</h2>
             <p className={styles.challengeCopy}>
               Juega las 16 preguntas del reto original con la nueva presentación clara y eléctrica.
             </p>
-            <PopButtonLink
+            <ButtonLink
               href="/flash-pop/flash/tabarnia-flash-01"
               variant="secondary"
               fullWidth
               trailingIcon={<ArrowIcon />}
             >
               Probar Flash clásico
-            </PopButtonLink>
-          </PopCard>
+            </ButtonLink>
+          </Card>
 
-          <PopCard as="section" className={styles.activitySection}>
+          <Card as="section" className={styles.activitySection}>
             <div className={styles.cardHeading}>
               <div>
                 <p className={styles.eyebrow}>Tu grupo</p>
                 <h2>Actividad reciente</h2>
               </div>
-              <PopChip tone="social">Demo</PopChip>
+              <Chip tone="social">Demo</Chip>
             </div>
             <div className={styles.activityList}>
               {primaryModel.activities.map((activity) => {
                 const player = playerById(activity.playerId);
                 return (
-                  <PopCard
+                  <Card
                     as="article"
                     elevation="flat"
                     padding="compact"
                     className={styles.activityItem}
                     key={activity.id}
                   >
-                    <PopAvatar
+                    <Avatar
                       name={player.displayName}
                       initials={player.initials}
                       tone={player.tone}
@@ -315,13 +315,13 @@ export function FlashPopLobby({
                     <span className={styles.activityIcon}>
                       {activity.icon === "trophy" ? <TrophyIcon /> : <BoltIcon />}
                     </span>
-                  </PopCard>
+                  </Card>
                 );
               })}
             </div>
-          </PopCard>
+          </Card>
         </aside>
       </div>
-    </PopCanvas>
+    </Canvas>
   );
 }

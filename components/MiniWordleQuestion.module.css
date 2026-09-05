@@ -5,7 +5,7 @@
 }
 
 .hint {
-  border-left: 2px solid var(--cyan);
+  border-left: 2px solid var(--color-social);
   padding-left: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.88rem;
@@ -32,7 +32,7 @@
   place-items: center;
   border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 0.72rem;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.35rem;
   font-weight: 900;
 }
@@ -41,7 +41,7 @@
   position: absolute;
   right: 0.3rem;
   bottom: 0.2rem;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.58rem;
   line-height: 1;
 }
@@ -53,13 +53,13 @@
 .correct {
   border-color: rgba(215, 255, 24, 0.72);
   color: #151908;
-  background: var(--electric);
+  background: var(--color-brand);
 }
 
 .present {
   border-color: rgba(53, 232, 255, 0.7);
   color: #07191c;
-  background: var(--cyan);
+  background: var(--color-social);
 }
 
 .absent {
@@ -117,7 +117,7 @@
   padding: 0.8rem 1rem;
   color: white;
   background: rgba(255, 255, 255, 0.06);
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.1rem;
   font-weight: 900;
   letter-spacing: 0.2em;
@@ -125,7 +125,7 @@
 }
 
 .inputRow input:focus-visible {
-  border-color: var(--cyan);
+  border-color: var(--color-social);
   outline: 2px solid rgba(53, 232, 255, 0.25);
   outline-offset: 2px;
 }
@@ -170,105 +170,105 @@
   }
 }
 
-.root.pop {
-  gap: var(--pop-space-4);
-  margin-top: var(--pop-space-4);
+.root {
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
-.pop .hint {
-  border-left-color: var(--pop-state-selected);
-  color: var(--pop-color-ink-muted);
+.hint {
+  border-left-color: var(--state-selected);
+  color: var(--color-ink-muted);
 }
 
-.pop .tile {
+.tile {
   border-color: rgb(23 23 32 / 16%);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface-raised);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
 }
 
-.pop .empty {
-  background: var(--pop-color-surface);
+.empty {
+  background: var(--color-surface);
 }
 
-.pop .correct {
-  border-color: var(--pop-state-correct);
-  color: var(--pop-color-surface);
-  background: var(--pop-state-correct);
+.correct {
+  border-color: var(--state-correct);
+  color: var(--color-surface);
+  background: var(--state-correct);
 }
 
-.pop .present {
-  border-color: var(--pop-state-movable);
-  color: var(--pop-color-ink);
-  background: var(--pop-state-movable);
+.present {
+  border-color: var(--state-movable);
+  color: var(--color-ink);
+  background: var(--state-movable);
 }
 
-.pop .absent {
-  border-color: var(--pop-color-border);
-  color: var(--pop-color-ink-muted);
-  background: var(--pop-state-neutral);
+.absent {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  background: var(--state-neutral);
 }
 
-.pop .form {
+.form {
   border: 0;
   padding: 0;
   background: transparent;
 }
 
-.pop .form label {
-  color: var(--pop-color-ink-muted);
+.form label {
+  color: var(--color-ink-muted);
 }
 
-.pop .dictionaryStatus {
-  border-color: var(--pop-color-border);
-  color: var(--pop-color-ink-muted);
-  background: var(--pop-color-surface-soft);
+.dictionaryStatus {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
 }
 
-.pop .dictionaryError {
-  border-color: color-mix(in srgb, var(--pop-state-error) 42%, transparent);
-  color: var(--pop-state-error);
-  background: color-mix(in srgb, var(--pop-state-error) 10%, transparent);
+.dictionaryError {
+  border-color: color-mix(in srgb, var(--state-error) 42%, transparent);
+  color: var(--state-error);
+  background: color-mix(in srgb, var(--state-error) 10%, transparent);
 }
 
-.pop .inputRow input {
-  border-color: var(--pop-color-border);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface);
-  caret-color: var(--pop-state-focus);
+.inputRow input {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  caret-color: var(--state-focus);
 }
 
-.pop .inputRow input:focus-visible {
-  border-color: var(--pop-state-focus);
-  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+.inputRow input:focus-visible {
+  border-color: var(--state-focus);
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 
-.pop .inputRow button {
-  border-color: var(--pop-color-brand);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+.inputRow button {
+  border-color: var(--color-brand);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
 }
 
-.pop .inputRow button:hover:not(:disabled) {
-  background: var(--pop-color-brand);
+.inputRow button:hover:not(:disabled) {
+  background: var(--color-brand);
 }
 
-.pop .inputRow button:disabled {
-  border-color: var(--pop-color-border);
-  color: var(--pop-color-ink-muted);
-  background: var(--pop-color-surface-soft);
+.inputRow button:disabled {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
   box-shadow: none;
   opacity: 1;
 }
 
-.pop .answerRow button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+.answerRow button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 
-.pop .formMeta {
-  color: var(--pop-color-ink-muted);
+.formMeta {
+  color: var(--color-ink-muted);
 }
 
-.pop .error {
-  color: var(--pop-state-error);
+.error {
+  color: var(--state-error);
 }

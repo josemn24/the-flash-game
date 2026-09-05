@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/icons";
-import { PopCard } from "@/components/ui";
+import { Card } from "@/components/ui";
 import type { AnswerStatus } from "@/types/game";
 import styles from "./FlashPopFeedback.module.css";
 
@@ -30,7 +30,7 @@ export function FlashPopFeedback({ status, eyebrow, title, body, points }: Props
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
       >
-        <PopCard className={`${styles.card} ${failure ? styles.failure : ""}`}>
+        <Card className={`${styles.card} ${failure ? styles.failure : ""}`}>
           <motion.span
             className={styles.icon}
             aria-hidden="true"
@@ -58,7 +58,7 @@ export function FlashPopFeedback({ status, eyebrow, title, body, points }: Props
               {points} puntos
             </motion.p>
           ) : null}
-        </PopCard>
+        </Card>
       </motion.div>
     </div>
   );

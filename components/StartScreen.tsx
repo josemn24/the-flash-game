@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import styles from "@/components/StartScreen.module.css";
-import { AppHeader, Badge } from "@/components/ui";
+import { GameHeader, Chip } from "@/components/ui";
 import type { ChallengeSummary, SeasonStatus } from "@/types/game";
 
 type StartScreenProps = {
@@ -73,21 +73,21 @@ export function StartScreen({
     <section
       className={`${styles.homeEntrance} relative mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10`}
     >
-      <AppHeader
+      <GameHeader
         left={<Logo />}
         right={
-          <Badge variant="status" dot>
+          <Chip variant="status" icon={<span aria-hidden="true">•</span>}>
             {formatSeasonStatus(seasonStatus)}
-          </Badge>
+          </Chip>
         }
       />
 
       <div className="flex flex-1 flex-col justify-center py-10 sm:py-12">
         <div className="relative z-10">
           <div
-            className={`${styles.eyebrowEntrance} mb-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-[var(--electric)] uppercase`}
+            className={`${styles.eyebrowEntrance} mb-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-[var(--color-brand)] uppercase`}
           >
-            <span className="h-px w-8 bg-[var(--electric)]" />
+            <span className="h-px w-8 bg-[var(--color-brand)]" />
             Tu próximo desafío
           </div>
 
@@ -117,7 +117,7 @@ export function StartScreen({
                 </span>
                 <span className={styles.stageSelectContent}>
                   <span className="flex w-full items-center justify-between gap-3">
-                    <Badge>{getChallengeStatusLabel(challenge)}</Badge>
+                    <Chip>{getChallengeStatusLabel(challenge)}</Chip>
                     <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-white/35 uppercase">
                       {getChallengeCountLabel(challenge)}
                     </span>

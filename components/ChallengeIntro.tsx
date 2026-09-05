@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { ArrowIcon, BoltIcon, ClockIcon, HeartIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
-import { AppHeader, Badge, MotionButton } from "@/components/ui";
+import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/ChallengeIntro.module.css";
@@ -30,7 +30,7 @@ export function ChallengeIntro({
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <AppHeader
+      <GameHeader
         left={
           <Link href="/" aria-label="Volver a los desafíos">
             <Logo />
@@ -38,7 +38,7 @@ export function ChallengeIntro({
         }
         right={
           <Link
-            className="font-mono text-[10px] font-black tracking-[0.12em] text-white/40 uppercase transition-colors hover:text-white"
+            className="font-mono text-[10px] font-black tracking-[0.12em] text-[var(--color-ink-muted)] uppercase transition-colors hover:text-[var(--color-ink)]"
             href="/"
           >
             Volver a desafíos
@@ -52,31 +52,33 @@ export function ChallengeIntro({
           <div className="relative z-10 p-5 sm:p-8 md:p-10">
             <div className="mb-7 flex items-start justify-between gap-4">
               <div>
-                <p className={`${styles.eyebrow} mb-3 text-[var(--electric)]`}>
+                <p className={`${styles.eyebrow} mb-3 text-[var(--color-brand)]`}>
                   {isSurvival ? "Modo supervivencia" : "Siguiente carrera"}
                 </p>
-                <h1 className="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
+                <h1 className="text-4xl font-black tracking-[-0.05em] text-[var(--color-ink)] sm:text-5xl">
                   {challenge.title}
                 </h1>
-                <p className="mt-2 text-base font-bold text-white/45">{challenge.subtitle}</p>
+                <p className="mt-2 text-base font-bold text-[var(--color-ink-muted)]">
+                  {challenge.subtitle}
+                </p>
               </div>
               <div className={styles.stageNumber}>{String(challenge.number).padStart(2, "0")}</div>
             </div>
 
-            <p className="max-w-xl text-sm leading-6 text-white/55 sm:text-base">
+            <p className="max-w-xl text-sm leading-6 text-[var(--color-ink-muted)] sm:text-base">
               {challenge.description}
             </p>
 
-            <div className="my-7 grid grid-cols-4 overflow-hidden rounded-2xl border border-white/9 bg-black/20 sm:my-8">
+            <div className="my-7 grid grid-cols-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] sm:my-8">
               <div className={styles.stageStat}>
                 <strong>{challenge.questions.length}</strong>
                 <span>Retos</span>
               </div>
-              <div className={`${styles.stageStat} border-x border-white/9`}>
+              <div className={`${styles.stageStat} border-x border-[var(--color-border)]`}>
                 <strong>{CHALLENGE_MAX_SCORE}</strong>
                 <span>Puntos</span>
               </div>
-              <div className={`${styles.stageStat} border-r border-white/9`}>
+              <div className={`${styles.stageStat} border-r border-[var(--color-border)]`}>
                 <strong>{isSurvival ? challenge.lives : "≈ 2"}</strong>
                 <span>{isSurvival ? "Vidas" : "Minutos"}</span>
               </div>
@@ -87,17 +89,19 @@ export function ChallengeIntro({
             </div>
 
             <div className="mb-7 flex flex-wrap items-center gap-2" aria-label="Formatos incluidos">
-              <span className="mr-1 font-mono text-[10px] font-bold tracking-[0.14em] text-white/30 uppercase">
+              <span className="mr-1 font-mono text-[10px] font-bold tracking-[0.14em] text-[var(--color-ink-faint)] uppercase">
                 Incluye
               </span>
               {formats.map((format) => (
-                <Badge key={format}>{format}</Badge>
+                <Chip key={format}>{format}</Chip>
               ))}
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               <div className={styles.ruleCard}>
-                <div className={`${styles.ruleIcon} bg-[var(--electric)] text-black`}>
+                <div
+                  className={`${styles.ruleIcon} bg-[var(--color-brand)] text-[var(--color-text-on-brand)]`}
+                >
                   {isSurvival ? (
                     <HeartIcon className="h-5 w-5" />
                   ) : (
@@ -105,10 +109,10 @@ export function ChallengeIntro({
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-black text-white">
+                  <p className="text-sm font-black text-[var(--color-ink)]">
                     {isSurvival ? "Tres vidas" : "Primero, acierta"}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-white/40">
+                  <p className="mt-1 text-xs leading-5 text-[var(--color-ink-muted)]">
                     {isSurvival
                       ? "Cada fallo claro o timeout consume una vida."
                       : "Después, responde rápido para sumar más."}
@@ -116,14 +120,16 @@ export function ChallengeIntro({
                 </div>
               </div>
               <div className={styles.ruleCard}>
-                <div className={`${styles.ruleIcon} bg-white/10 text-white`}>
+                <div
+                  className={`${styles.ruleIcon} bg-[var(--color-surface-soft)] text-[var(--color-ink)]`}
+                >
                   <ClockIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-white">
+                  <p className="text-sm font-black text-[var(--color-ink)]">
                     {isSurvival ? "Llega al reto 20" : "Sin pausas"}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-white/40">
+                  <p className="mt-1 text-xs leading-5 text-[var(--color-ink-muted)]">
                     {isSurvival
                       ? "Los parciales puntúan y no restan vida."
                       : "Una vez empieces, el temporizador no se detiene."}

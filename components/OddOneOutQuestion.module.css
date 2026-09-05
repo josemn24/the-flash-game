@@ -58,7 +58,7 @@
   }
 }
 
-.pop {
+.grid {
   --format-ink: var(--color-ink);
   --format-surface: var(--color-surface-raised);
   --format-border: var(--color-border);
@@ -72,7 +72,7 @@
   margin-top: var(--space-5);
 }
 
-.pop .card {
+.card {
   min-height: 72px;
   border-width: 1px;
   border-style: solid;
@@ -80,7 +80,7 @@
   box-shadow: var(--shadow-control);
 }
 
-.pop .label {
+.label {
   min-height: 72px;
   display: inline-flex;
   align-items: center;
@@ -90,13 +90,13 @@
   font-weight: 700;
 }
 
-.pop .label svg {
+.label svg {
   width: 18px;
   height: 18px;
   stroke-width: 2.5;
 }
 
-.pop[data-item-count="3"] .card:last-child {
+[data-item-count="3"] .card:last-child {
   grid-column: 1 / -1;
   width: calc((100% - var(--space-3)) / 2);
   justify-self: center;

@@ -55,7 +55,7 @@
   border-radius: 999px;
   color: white;
   background: #111419;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.55rem;
 }
 
@@ -92,7 +92,7 @@
   border-radius: 999px;
   color: white;
   background: #111419;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.55rem;
 }
 
@@ -122,11 +122,11 @@
   border: 0.25rem solid white;
   border-radius: 999px;
   color: #111419;
-  background: var(--electric);
+  background: var(--color-brand);
   box-shadow:
     0 0 0 0.3rem rgba(13, 16, 20, 0.72),
     0 0.4rem 1.2rem rgba(0, 0, 0, 0.38);
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.55rem;
   font-weight: 950;
 }
@@ -139,12 +139,12 @@
 .anchor:hover:not(:disabled),
 .anchor:focus-visible,
 .anchorSelected {
-  outline: 3px solid var(--electric);
+  outline: 3px solid var(--color-brand);
   outline-offset: 2px;
 }
 
 .anchorAssigned {
-  border-color: var(--electric);
+  border-color: var(--color-brand);
   background: #f5ffc4;
 }
 
@@ -190,7 +190,7 @@
 
 .labelHeading h3 {
   color: rgba(255, 255, 255, 0.52);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -237,7 +237,7 @@
 
 .labelBank button:hover:not(:disabled),
 .labelBank button:focus-visible {
-  border-color: var(--electric);
+  border-color: var(--color-brand);
   outline: 2px solid rgba(215, 255, 24, 0.25);
 }
 
@@ -287,8 +287,8 @@
   gap: 0.55rem;
   border: 0;
   border-radius: 0.75rem;
-  color: var(--ink);
-  background: var(--electric);
+  color: var(--color-ink);
+  background: var(--color-brand);
   font-size: 0.78rem;
   font-weight: 900;
 }

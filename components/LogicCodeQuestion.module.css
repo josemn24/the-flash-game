@@ -19,10 +19,10 @@
   background: rgba(255, 255, 255, 0.025);
 }
 .clue strong {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 1.05rem;
   letter-spacing: 0.14em;
-  color: var(--electric);
+  color: var(--color-brand);
 }
 .clue span {
   font-size: 0.72rem;
@@ -82,12 +82,12 @@
   padding: 0;
   color: white;
   background: rgba(255, 255, 255, 0.04);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 1.65rem;
   font-weight: 900;
   line-height: 1;
   text-align: center;
-  caret-color: var(--electric);
+  caret-color: var(--color-brand);
 }
 
 .digitInput:focus-visible {
@@ -99,7 +99,7 @@
 
 .digitInput.filled {
   border-color: rgba(215, 255, 24, 0.5);
-  color: var(--electric);
+  color: var(--color-brand);
   background: rgba(215, 255, 24, 0.055);
 }
 
@@ -112,8 +112,8 @@
   gap: 0.6rem;
   border: 0;
   border-radius: 0.75rem;
-  color: var(--ink);
-  background: var(--electric);
+  color: var(--color-ink);
+  background: var(--color-brand);
   font-size: 0.8rem;
   font-weight: 900;
   transition:
@@ -133,64 +133,64 @@
   opacity: 0.24;
 }
 
-.challenge.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+.challenge {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
-.pop .clue {
-  border-color: var(--pop-border-subtle);
-  border-radius: var(--pop-radius-control);
-  background: var(--pop-color-surface-raised);
+.clue {
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
 }
 
-.pop .clue strong {
-  color: var(--pop-state-selected);
+.clue strong {
+  color: var(--state-selected);
 }
 
-.pop .clue span {
-  color: var(--pop-color-ink-muted);
+.clue span {
+  color: var(--color-ink-muted);
 }
 
-.pop .entryPanel {
-  border-color: color-mix(in srgb, var(--pop-state-selected) 22%, transparent);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
+.entryPanel {
+  border-color: color-mix(in srgb, var(--state-selected) 22%, transparent);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
 }
 
-.pop .entryPanel > div > span:first-child {
-  color: var(--pop-color-ink);
+.entryPanel > div > span:first-child {
+  color: var(--color-ink);
 }
 
-.pop .entryPanel > div > span:last-child {
-  color: var(--pop-color-ink-muted);
+.entryPanel > div > span:last-child {
+  color: var(--color-ink-muted);
 }
 
-.pop .digitInput {
-  border-color: var(--pop-border-subtle);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface);
-  caret-color: var(--pop-state-focus);
+.digitInput {
+  border-color: var(--border-subtle);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  caret-color: var(--state-focus);
 }
 
-.pop .digitInput:focus-visible {
-  border-color: var(--pop-state-focus);
-  outline-color: color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+.digitInput:focus-visible {
+  border-color: var(--state-focus);
+  outline-color: color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 
-.pop .digitInput.filled {
-  border-color: var(--pop-state-selected);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-surface);
+.digitInput.filled {
+  border-color: var(--state-selected);
+  color: var(--color-ink);
+  background: var(--color-surface);
 }
 
-.pop .feedback {
-  color: var(--pop-color-ink-muted);
+.feedback {
+  color: var(--color-ink-muted);
 }
 
-.pop .submitButton {
-  min-height: var(--pop-control-height);
-  border-radius: var(--pop-radius-control);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
+.submitButton {
+  min-height: var(--control-height);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-brand);
 }

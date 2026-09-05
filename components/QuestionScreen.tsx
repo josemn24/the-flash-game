@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { BoltIcon, HeartIcon, NotebookIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
-import { AppHeader, Timer } from "@/components/ui";
+import { GameHeader, Timer } from "@/components/ui";
 import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/QuestionScreen.module.css";
@@ -98,7 +98,7 @@ export function QuestionScreen({
       exit={{ opacity: 0, x: -34 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
-      <AppHeader
+      <GameHeader
         className="mb-3 gap-4 sm:mb-4"
         left={
           <div className="min-w-0">
@@ -106,7 +106,9 @@ export function QuestionScreen({
               <span className={styles.brandMarkSmall}>
                 <BoltIcon className="h-3.5 w-3.5" />
               </span>
-              <p className={`${styles.eyebrow} truncate text-white/55`}>{displayChallengeTitle}</p>
+              <p className={`${styles.eyebrow} truncate text-[var(--color-ink-muted)]`}>
+                {displayChallengeTitle}
+              </p>
             </div>
           </div>
         }
@@ -143,15 +145,15 @@ export function QuestionScreen({
 
       <div className="grid gap-3">
         <div className="flex items-baseline justify-between gap-4">
-          <p className="font-mono text-sm font-bold tracking-wide text-white">
+          <p className="font-mono text-sm font-bold tracking-wide text-[var(--color-ink)]">
             {progressVariant === "pyramid" ? "Nivel" : "Pregunta"} {questionNumber}
-            <span className="text-white/35"> / {totalQuestions}</span>
+            <span className="text-[var(--color-ink-faint)]"> / {totalQuestions}</span>
           </p>
           <div className="flex min-w-0 items-center gap-2">
             {typeof livesRemaining === "number" && typeof totalLives === "number" && (
               <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
             )}
-            <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-white/35 uppercase">
+            <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-[var(--color-ink-faint)] uppercase">
               {QUESTION_FORMAT_LABELS[question.type]}
             </span>
           </div>

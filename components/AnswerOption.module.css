@@ -49,7 +49,7 @@
   border-radius: 0.55rem;
   color: var(--format-key-ink);
   background: var(--format-key-surface);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 800;
 }
@@ -72,7 +72,7 @@
   }
 }
 
-.option.pop {
+.option {
   --format-ink: var(--color-ink);
   --format-surface: var(--color-surface-raised);
   --format-border: var(--color-border);

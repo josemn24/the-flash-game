@@ -11,7 +11,7 @@ import {
   RotateIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/Logo";
-import { AppHeader, Badge, MotionButton } from "@/components/ui";
+import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import styles from "@/components/ResultScreen.module.css";
 import type { AnswerResult, FlashChallenge } from "@/types/game";
@@ -66,14 +66,14 @@ export function ResultScreen({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <AppHeader
+      <GameHeader
         className="mb-7"
         left={
           <Link href="/" aria-label="Volver a los desafíos">
             <Logo />
           </Link>
         }
-        right={<Badge>Meta cruzada</Badge>}
+        right={<Chip>Meta cruzada</Chip>}
       />
 
       <div className={styles.resultsGrid}>
@@ -83,8 +83,8 @@ export function ResultScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className={`${styles.eyebrow} text-[var(--electric)]`}>Desafío completado</p>
-          <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl">
+          <p className={`${styles.eyebrow} text-[var(--color-brand)]`}>Desafío completado</p>
+          <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-[var(--color-ink)] sm:text-4xl">
             {message}
           </h1>
 
@@ -101,15 +101,15 @@ export function ResultScreen({
           </div>
 
           <div className="mb-7">
-            <div className="mb-2 flex justify-between font-mono text-[10px] font-bold tracking-wider text-white/35 uppercase">
+            <div className="mb-2 flex justify-between font-mono text-[10px] font-bold tracking-wider text-[var(--color-ink-faint)] uppercase">
               <span>Rendimiento</span>
               <span>
                 {score} / {maxScore}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/8">
+            <div className="h-2 overflow-hidden rounded-full bg-[var(--color-surface-soft)]">
               <motion.div
-                className="h-full rounded-full bg-[var(--electric)]"
+                className="h-full rounded-full bg-[var(--color-brand)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${(score / maxScore) * 100}%` }}
                 transition={{ delay: 0.25, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -141,8 +141,8 @@ export function ResultScreen({
         >
           <div className={styles.accuracyCard}>
             <div>
-              <p className={`${styles.eyebrow} text-white/40`}>Precisión</p>
-              <p className="mt-2 text-sm text-white/45">
+              <p className={`${styles.eyebrow} text-[var(--color-ink-muted)]`}>Precisión</p>
+              <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
                 {partial > 0
                   ? `${correct} correctas · ${partial} aproximada${partial === 1 ? "" : "s"}`
                   : `Has acertado ${correct} de ${challenge.questions.length}`}
@@ -182,23 +182,27 @@ export function ResultScreen({
           </div>
 
           <div className={styles.timeCard}>
-            <div className={`${styles.ruleIcon} bg-white/8 text-white/65`}>
+            <div
+              className={`${styles.ruleIcon} bg-[var(--color-surface-soft)] text-[var(--color-ink-muted)]`}
+            >
               <ClockIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white/35">Tiempo total</p>
-              <p className="mt-0.5 text-xl font-black text-white">{formatTime(totalTime)}</p>
+              <p className="text-xs font-bold text-[var(--color-ink-faint)]">Tiempo total</p>
+              <p className="mt-0.5 text-xl font-black text-[var(--color-ink)]">
+                {formatTime(totalTime)}
+              </p>
             </div>
-            <span className="ml-auto font-mono text-xs font-bold text-[var(--electric)]">
+            <span className="ml-auto font-mono text-xs font-bold text-[var(--color-brand)]">
               SPRINT 01
             </span>
           </div>
 
           <div className={styles.tipCard}>
-            <span className="font-mono text-[10px] font-black tracking-widest text-[var(--electric)] uppercase">
+            <span className="font-mono text-[10px] font-black tracking-widest text-[var(--color-brand)] uppercase">
               Consejo flash
             </span>
-            <p className="mt-2 text-sm leading-6 text-white/55">
+            <p className="mt-2 text-sm leading-6 text-[var(--color-ink-muted)]">
               La velocidad suma, pero solo después de acertar. Lee una vez y confía en tu primera
               intuición.
             </p>

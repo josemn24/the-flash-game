@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   color: rgb(255 255 255 / 46%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.1em;
@@ -19,7 +19,7 @@
 }
 
 .header strong {
-  color: var(--cyan);
+  color: var(--color-social);
 }
 
 .wordList {
@@ -41,7 +41,7 @@
   padding: 0.35rem 0.62rem;
   color: rgb(255 255 255 / 64%);
   background: rgb(255 255 255 / 4%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.06em;
@@ -57,14 +57,14 @@
 
 .wordList .wordFound {
   border-color: rgb(215 255 24 / 38%);
-  color: var(--electric);
+  color: var(--color-brand);
   background:
     repeating-linear-gradient(135deg, transparent 0 6px, rgb(215 255 24 / 8%) 6px 9px),
     rgb(215 255 24 / 5%);
 }
 
 .wordList .wordFound > svg {
-  color: var(--electric);
+  color: var(--color-brand);
 }
 
 .board {
@@ -93,7 +93,7 @@
   border: 1px solid rgb(255 255 255 / 6%);
   color: rgb(255 255 255 / 82%);
   background: rgb(255 255 255 / 2%);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: clamp(0.8rem, 3.4vw, 1.28rem);
   font-weight: 950;
   isolation: isolate;
@@ -114,7 +114,7 @@
 
 .cell button:focus-visible {
   z-index: 5;
-  outline: 3px solid var(--cyan);
+  outline: 3px solid var(--color-social);
   outline-offset: -4px;
 }
 
@@ -122,12 +122,12 @@
   color: #101400;
   background:
     repeating-linear-gradient(135deg, transparent 0 7px, rgb(68 84 0 / 18%) 7px 10px),
-    var(--electric);
+    var(--color-brand);
 }
 
 .cellMissing {
-  box-shadow: inset 0 0 0 2px var(--cyan);
-  color: var(--cyan);
+  box-shadow: inset 0 0 0 2px var(--color-social);
+  color: var(--color-social);
   background:
     repeating-linear-gradient(45deg, transparent 0 6px, rgb(53 232 255 / 12%) 6px 9px),
     rgb(53 232 255 / 6%);
@@ -136,14 +136,14 @@
 .cellPreview {
   z-index: 1;
   color: #071011;
-  background: var(--cyan);
+  background: var(--color-social);
 }
 
 .cellInvalid {
   color: white;
   background:
     repeating-linear-gradient(135deg, transparent 0 6px, rgb(255 255 255 / 15%) 6px 9px),
-    var(--coral);
+    var(--color-danger);
   animation: invalid-selection 180ms ease-out;
 }
 
@@ -191,69 +191,69 @@
   }
 }
 
-.root.pop {
-  gap: var(--pop-space-3);
-  margin-top: var(--pop-space-4);
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
-.pop .header {
-  color: var(--pop-color-ink-muted);
+.header {
+  color: var(--color-ink-muted);
 }
 
-.pop .header strong {
-  color: var(--pop-state-selected);
+.header strong {
+  color: var(--state-selected);
 }
 
-.pop .board {
+.board {
   border-color: rgb(23 23 32 / 16%);
-  border-radius: var(--pop-radius-card);
-  background: var(--pop-color-surface-raised);
-  box-shadow: var(--pop-shadow-card);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
 
-.pop .cell {
+.cell {
   border-color: rgb(23 23 32 / 8%);
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
   background:
     radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
-    var(--pop-color-surface);
+    var(--color-surface);
 }
 
-.pop .cell button:focus-visible {
-  outline-color: var(--pop-state-focus);
+.cell button:focus-visible {
+  outline-color: var(--state-focus);
 }
 
-.pop .cellFound {
-  color: var(--pop-color-surface);
+.cellFound {
+  color: var(--color-surface);
   background:
     repeating-linear-gradient(135deg, transparent 0 7px, rgb(23 23 32 / 12%) 7px 10px),
-    var(--pop-state-correct);
+    var(--state-correct);
 }
 
-.pop .cellMissing {
-  box-shadow: inset 0 0 0 2px var(--pop-state-selected);
-  color: var(--pop-state-selected);
+.cellMissing {
+  box-shadow: inset 0 0 0 2px var(--state-selected);
+  color: var(--state-selected);
   background:
     repeating-linear-gradient(
       45deg,
       transparent 0 6px,
-      color-mix(in srgb, var(--pop-state-selected) 12%, transparent) 6px 9px
+      color-mix(in srgb, var(--state-selected) 12%, transparent) 6px 9px
     ),
-    var(--pop-state-neutral);
+    var(--state-neutral);
 }
 
-.pop .cellPreview {
-  color: var(--pop-color-surface);
-  background: var(--pop-state-selected);
+.cellPreview {
+  color: var(--color-surface);
+  background: var(--state-selected);
 }
 
-.pop .cellInvalid {
-  color: var(--pop-color-ink);
+.cellInvalid {
+  color: var(--color-ink);
   background:
     repeating-linear-gradient(135deg, transparent 0 6px, rgb(23 23 32 / 10%) 6px 9px),
-    var(--pop-state-error);
+    var(--state-error);
 }
 
-.pop .instructions {
-  color: var(--pop-color-ink-muted);
+.instructions {
+  color: var(--color-ink-muted);
 }

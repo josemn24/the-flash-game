@@ -193,7 +193,7 @@ export function WordHashtagQuestion({
 
   return (
     <section
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
+      className={`${styles.root} ${className ?? ""}`}
       aria-label="Hashtag de cuatro palabras"
       data-format="word-hashtag"
     >

@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
-import styles from "./PopCard.module.css";
+import styles from "./Card.module.css";
 
-export type PopCardProps = HTMLAttributes<HTMLElement> & {
+export type CardProps = HTMLAttributes<HTMLElement> & {
   as?: "div" | "section" | "article";
   surface?: "surface" | "soft";
   elevation?: "flat" | "card" | "hero";
@@ -9,7 +9,7 @@ export type PopCardProps = HTMLAttributes<HTMLElement> & {
   children: ReactNode;
 };
 
-export function PopCard({
+export function Card({
   as: Component = "div",
   surface = "surface",
   elevation = "card",
@@ -17,7 +17,7 @@ export function PopCard({
   className,
   children,
   ...props
-}: PopCardProps) {
+}: CardProps) {
   return (
     <Component
       {...props}

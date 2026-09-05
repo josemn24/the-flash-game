@@ -9,12 +9,12 @@
 .ambientOrbOne {
   right: -16rem;
   top: -15rem;
-  background: var(--electric);
+  background: var(--color-brand);
 }
 .ambientOrbTwo {
   bottom: -22rem;
   left: -18rem;
-  background: var(--cyan);
+  background: var(--color-social);
 }
 .speedGrid {
   position: absolute;

@@ -39,12 +39,12 @@
 }
 .step:focus-visible,
 .option:focus-visible {
-  outline: 2px solid var(--electric);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
 .stepSelected,
 .optionSelected {
-  border-color: var(--electric);
+  border-color: var(--color-brand);
   background: rgba(215, 255, 24, 0.1);
   color: white;
 }
@@ -56,9 +56,9 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 0.45rem;
-  color: var(--electric);
+  color: var(--color-brand);
   background: rgba(215, 255, 24, 0.1);
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.72rem;
   font-weight: 900;
 }

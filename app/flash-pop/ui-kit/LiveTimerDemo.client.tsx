@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PopButton, PopTimer } from "@/components/ui";
+import { Button, Timer } from "@/components/ui";
 import styles from "./UiKit.module.css";
 
 export function LiveTimerDemo() {
@@ -10,12 +10,12 @@ export function LiveTimerDemo() {
 
   return (
     <div className={styles.liveTimer}>
-      <PopTimer duration={20} active resetKey={resetKey} onTimeUp={() => setFinished(true)} />
+      <Timer duration={20} active resetKey={resetKey} onTimeUp={() => setFinished(true)} />
       <div>
         <strong>{finished ? "Tiempo agotado" : "Cuenta atrás real"}</strong>
         <span>Urgencia automática durante el último 25 %.</span>
       </div>
-      <PopButton
+      <Button
         variant="secondary"
         onClick={() => {
           setFinished(false);
@@ -23,7 +23,7 @@ export function LiveTimerDemo() {
         }}
       >
         Reiniciar
-      </PopButton>
+      </Button>
     </div>
   );
 }

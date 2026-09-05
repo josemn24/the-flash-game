@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import styles from "@/components/flash-pop/ui/PopControls.module.css";
+import styles from "./Controls.module.css";
 
 export type ChipProps = {
   children: ReactNode;

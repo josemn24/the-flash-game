@@ -12,8 +12,7 @@ import {
   EyeIcon,
   RotateIcon,
 } from "@/components/icons";
-import { Timer } from "@/components/Timer";
-import { Button } from "@/components/ui";
+import { Button, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
 import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";

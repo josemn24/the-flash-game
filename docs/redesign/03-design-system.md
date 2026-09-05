@@ -8,25 +8,25 @@ Este documento traduce Flash Pop a reglas implementables. Los nombres propuestos
 
 ```css
 [data-theme="flash-pop"] {
-  --pop-color-canvas: #f4f1ea;
-  --pop-color-surface: #ffffff;
-  --pop-color-surface-raised: #fbfaf6;
-  --pop-color-surface-soft: #eae7ff;
-  --pop-color-ink: #171720;
-  --pop-color-ink-muted: #686872;
-  --pop-color-ink-faint: #94949c;
+  --color-canvas: #f4f1ea;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fbfaf6;
+  --color-surface-soft: #eae7ff;
+  --color-ink: #171720;
+  --color-ink-muted: #686872;
+  --color-ink-faint: #94949c;
 
-  --pop-color-brand: #d7ff19;
-  --pop-color-social: #6957e8;
-  --pop-color-success: #13b89a;
-  --pop-color-danger: #ff7276;
-  --pop-color-info: #74a7f5;
-  --pop-color-reward: #ffd85a;
+  --color-brand: #d7ff19;
+  --color-social: #6957e8;
+  --color-success: #0f766e;
+  --color-danger: #ff7276;
+  --color-info: #74a7f5;
+  --color-reward: #ffd85a;
 
-  --pop-border-subtle: 1px solid rgb(23 23 32 / 12%);
-  --pop-border-flash: 1.5px solid rgb(23 23 32 / 36%);
-  --pop-border-action: 2px solid rgb(23 23 32 / 78%);
-  --pop-color-focus: #4d3bd1;
+  --border-subtle: 1px solid rgb(23 23 32 / 12%);
+  --border-flash: 1.5px solid rgb(23 23 32 / 36%);
+  --border-action: 2px solid rgb(23 23 32 / 78%);
+  --color-focus: #4d3bd1;
 }
 ```
 
@@ -129,22 +129,22 @@ No se usa `Arial Narrow` para cuerpo ni títulos principales del vertical slice.
 
 ## Componentes base
 
-Las primitivas de fundamentos se exportan desde `components/flash-pop/ui/index.ts`. Su documentación viva se encuentra en `/flash-pop/ui-kit`, una ruta de desarrollo que no aparece en la navegación pública.
+Las primitivas de fundamentos se exportan desde `components/ui/index.ts`. Su documentación viva se encuentra en `/flash-pop/ui-kit`, una ruta de desarrollo que no aparece en la navegación pública.
 
-| Primitiva         | Contrato público principal                                                            |
-| ----------------- | ------------------------------------------------------------------------------------- |
-| `PopCanvas`       | canvas claro, patrón, safe areas y ancho `wide \| content \| none`                    |
-| `PopButton`       | `primary \| secondary`, `default \| hero`, iconos, ancho completo, loading y disabled |
-| `PopButtonLink`   | mismo lenguaje visual para navegación                                                 |
-| `PopIconButton`   | 48 × 48 px, etiqueta accesible obligatoria y superficie `surface \| social`           |
-| `PopChip`         | unión tipada para estados semánticos, datos y recompensa                              |
-| `PopAvatar`       | imagen o iniciales, tamaños `sm \| md \| lg` y tonos controlados                      |
-| `PopAvatarStack`  | máximo visible configurable, overflow `+N` y etiqueta textual                         |
-| `PopCard`         | elemento semántico, superficies `surface \| soft`, tres elevaciones y tres densidades |
-| `PopTimerDisplay` | representación determinista normal, urgente y finalizada                              |
-| `PopTimer`        | API temporal compatible con el timer existente y urgencia durante el último 25 %      |
+| Primitiva      | Contrato público principal                                                            |
+| -------------- | ------------------------------------------------------------------------------------- |
+| `Canvas`       | canvas claro, patrón, safe areas y ancho `wide \| content \| none`                    |
+| `Button`       | `primary \| secondary`, `default \| hero`, iconos, ancho completo, loading y disabled |
+| `ButtonLink`   | mismo lenguaje visual para navegación                                                 |
+| `IconButton`   | 48 × 48 px, etiqueta accesible obligatoria y superficie `surface \| social`           |
+| `Chip`         | unión tipada para estados semánticos, datos y recompensa                              |
+| `Avatar`       | imagen o iniciales, tamaños `sm \| md \| lg` y tonos controlados                      |
+| `AvatarStack`  | máximo visible configurable, overflow `+N` y etiqueta textual                         |
+| `Card`         | elemento semántico, superficies `surface \| soft`, tres elevaciones y tres densidades |
+| `TimerDisplay` | representación determinista normal, urgente y finalizada                              |
+| `Timer`        | API temporal compatible con el timer existente y urgencia durante el último 25 %      |
 
-El timer oscuro y `PopTimer` comparten `useCountdown`. El timer oscuro conserva su API, markup y apariencia; el hook centraliza deadline, clamping a cero, reset y disparo único de `onTimeUp`.
+El timer oscuro y `Timer` comparten `useCountdown`. El timer oscuro conserva su API, markup y apariencia; el hook centraliza deadline, clamping a cero, reset y disparo único de `onTimeUp`.
 
 ### App shell
 

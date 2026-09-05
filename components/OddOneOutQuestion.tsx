@@ -18,7 +18,7 @@ export function OddOneOutQuestion({ items, locked, onSubmit, variant }: OddOneOu
   const [selected, setSelected] = useState<string | null>(null);
   return (
     <div
-      className={`${styles.grid} ${variant === "flash-pop" ? styles.pop : ""}`}
+      className={`${styles.grid}`}
       data-variant={variant ?? "default"}
       data-item-count={items.length}
       aria-label="Opciones: encuentra el intruso"

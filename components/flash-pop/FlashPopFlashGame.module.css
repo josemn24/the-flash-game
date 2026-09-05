@@ -15,7 +15,7 @@
   min-height: calc(100dvh - 48px);
   margin: 0 auto;
   align-content: start;
-  gap: var(--pop-space-6);
+  gap: var(--space-6);
 }
 
 .introCard,
@@ -41,15 +41,15 @@
   height: 76px;
   place-content: center;
   transform: rotate(7deg);
-  border: var(--pop-border-flash);
+  border: var(--border-flash);
   border-radius: 22px;
-  background: var(--pop-color-brand);
-  box-shadow: var(--pop-shadow-control);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
   text-align: center;
 }
 
 .introAccent span {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: 32px;
   font-weight: 900;
   line-height: 0.8;
@@ -57,7 +57,7 @@
 
 .introAccent small {
   margin-top: 7px;
-  font-family: var(--pop-font-mono);
+  font-family: var(--type-mono);
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -68,7 +68,7 @@
 .questionCard h1,
 .resultCard h1,
 .reviewCard h1 {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-weight: 800;
   letter-spacing: -0.055em;
   line-height: 0.98;
@@ -83,7 +83,7 @@
 .lead {
   max-width: 510px;
   margin: 16px 0 0;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 17px;
   font-weight: 700;
   line-height: 1.45;
@@ -91,7 +91,7 @@
 
 .description,
 .note {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   line-height: 1.55;
 }
 
@@ -112,13 +112,13 @@
   display: grid;
   gap: 4px;
   padding: 14px;
-  border: 1px solid var(--pop-color-border);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
-  background: var(--pop-color-surface-soft);
+  background: var(--color-surface-soft);
 }
 
 .introStats strong {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: 22px;
   letter-spacing: -0.04em;
 }
@@ -127,7 +127,7 @@
 .note,
 .promptContext,
 .eyebrow {
-  font-family: var(--pop-font-mono);
+  font-family: var(--type-mono);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -137,7 +137,7 @@
 .introStats span,
 .note,
 .promptContext {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 
 .formatList {
@@ -157,21 +157,21 @@
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--pop-color-surface-soft);
+  background: var(--color-surface-soft);
 }
 
 .scoreTrack span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--pop-color-brand);
+  background: var(--color-brand);
   transition: width 300ms ease;
 }
 
 .questionIndicator {
   margin: 0;
-  color: var(--pop-color-ink);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink);
+  font-family: var(--type-mono);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -179,7 +179,7 @@
 }
 
 .questionIndicator span {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 
 .questionCard {
@@ -196,10 +196,10 @@
   display: inline-block;
   max-width: 100%;
   margin: 0 0 16px;
-  border-left: 3px solid var(--pop-color-social);
+  border-left: 3px solid var(--color-social);
   border-radius: 0 8px 8px 0;
   padding: 6px 10px;
-  color: var(--pop-color-focus);
+  color: var(--color-focus);
   background: rgb(105 87 232 / 9%);
   font-size: clamp(0.64rem, 1.4vw, 0.75rem);
   font-weight: 900;
@@ -215,9 +215,9 @@
 .questionMedia {
   margin: 24px auto 4px;
   overflow: hidden;
-  border: 1px solid var(--pop-color-border);
+  border: 1px solid var(--color-border);
   border-radius: 18px;
-  background: var(--pop-color-surface-soft);
+  background: var(--color-surface-soft);
 }
 
 .questionCard > div:last-child {
@@ -226,7 +226,7 @@
 
 .eyebrow {
   margin: 22px 0 0;
-  color: var(--pop-color-social);
+  color: var(--color-social);
 }
 
 .resultLayout {
@@ -254,7 +254,7 @@
 }
 
 .scoreDisplay strong {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: clamp(70px, 10vw, 108px);
   font-weight: 900;
   letter-spacing: -0.08em;
@@ -262,8 +262,8 @@
 }
 
 .scoreDisplay span {
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 800;
 }
@@ -297,7 +297,7 @@
 .accuracyCard strong {
   display: block;
   margin-top: 8px;
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: 34px;
 }
 
@@ -315,10 +315,7 @@
   place-items: center;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: conic-gradient(
-    var(--pop-color-social) var(--accuracy),
-    var(--pop-color-surface-soft) 0
-  );
+  background: conic-gradient(var(--color-social) var(--accuracy), var(--color-surface-soft) 0);
 }
 
 .accuracyRing::before {
@@ -326,7 +323,7 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--pop-color-surface);
+  background: var(--color-surface);
   content: "";
 }
 
@@ -360,21 +357,21 @@
 }
 
 .statHeader span {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 10px;
   font-weight: 800;
 }
 
 .statCard svg {
   width: 19px;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 .statCard strong {
-  font-family: var(--pop-font-display);
+  font-family: var(--type-display);
   font-size: 25px;
 }
 .statSuccess svg {
-  color: var(--pop-color-success);
+  color: var(--color-success);
 }
 .statDanger svg {
   color: #c83d55;
@@ -404,9 +401,9 @@
 }
 .reviewItem {
   overflow: hidden;
-  border: 1px solid var(--pop-color-border);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
-  background: var(--pop-color-surface-soft);
+  background: var(--color-surface-soft);
 }
 .reviewItem summary {
   display: flex;
@@ -421,8 +418,8 @@
   display: none;
 }
 .reviewNumber {
-  color: var(--pop-color-social);
-  font-family: var(--pop-font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 900;
 }
@@ -437,7 +434,7 @@
 }
 .reviewTitle small {
   overflow: hidden;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 11px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -452,42 +449,42 @@
 .reviewBody :global([class*="answerBox"]),
 .reviewBody :global([class*="classificationReview"]),
 .reviewBody :global([class*="reviewGrid"]) {
-  color: var(--pop-color-ink);
-  border-color: var(--pop-color-border);
-  background: var(--pop-color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .reviewBody :global([class*="answerBox"] span),
 .reviewBody :global([class*="answerBox"] small),
 .reviewBody :global([class*="classificationReview"] small) {
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
 }
 
 .reviewBody :global([class*="answerBox"] strong),
 .reviewBody :global([class*="answerBox"] b),
 .reviewBody :global([class*="classificationReview"] b) {
-  color: var(--pop-color-ink);
+  color: var(--color-ink);
 }
 
 .reviewBody :global([class*="answerBoxCorrect"] strong),
 .reviewBody :global([class*="classificationValueCorrect"]) {
-  color: var(--pop-color-focus);
+  color: var(--color-focus);
 }
 
 .reviewMeta {
   display: flex;
   justify-content: space-between;
   margin-top: 14px;
-  color: var(--pop-color-ink-muted);
-  font-family: var(--pop-font-mono);
+  color: var(--color-ink-muted);
+  font-family: var(--type-mono);
   font-size: 10px;
 }
 .reviewMeta strong {
-  color: var(--pop-color-social);
+  color: var(--color-social);
 }
 .explanation {
   margin: 12px 0 0;
-  color: var(--pop-color-ink-muted);
+  color: var(--color-ink-muted);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -549,7 +546,7 @@
 
 @media (max-width: 520px) {
   .mobileLabelMuted {
-    color: var(--pop-color-ink-muted);
+    color: var(--color-ink-muted);
   }
 
   .questionIndicator {

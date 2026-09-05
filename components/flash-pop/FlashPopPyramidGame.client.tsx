@@ -3,16 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, BoltIcon, CheckIcon } from "@/components/icons";
-import {
-  PopAvatar,
-  PopButton,
-  PopButtonLink,
-  PopCanvas,
-  PopCard,
-  PopChip,
-  PopGameHeader,
-  PopTimer,
-} from "@/components/ui";
+import { Avatar, Button, ButtonLink, Canvas, Card, Chip, GameHeader, Timer } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/flash-pop/FlashPopFeedback";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
@@ -88,7 +79,7 @@ function Topbar({
   mobileLabelAriaLabel?: string;
 }) {
   return (
-    <PopGameHeader
+    <GameHeader
       title="La Pirámide"
       timer={timer}
       mobileLabel={mobileLabel}
@@ -115,9 +106,9 @@ function Intro({
   return (
     <div className={styles.intro}>
       <Topbar />
-      <PopCard as="section" className={styles.introCard} aria-labelledby="flash-pop-intro-title">
+      <Card as="section" className={styles.introCard} aria-labelledby="flash-pop-intro-title">
         <div className={styles.introIllustration} aria-hidden="true" />
-        <PopChip tone="social">Reto de hoy · Pirámide</PopChip>
+        <Chip tone="social">Reto de hoy · Pirámide</Chip>
         <h1 id="flash-pop-intro-title">{challenge.title}</h1>
         <p className={styles.introLead}>{challenge.subtitle}</p>
 
@@ -138,7 +129,7 @@ function Intro({
           </p>
         )}
 
-        <PopButton
+        <Button
           size="hero"
           fullWidth
           trailingIcon={<ArrowIcon />}
@@ -146,12 +137,12 @@ function Intro({
           onClick={onConfirm}
         >
           Empezar intento
-        </PopButton>
+        </Button>
         <p className={styles.attemptNote}>
           {challenge.levels.length} niveles · {formatTime(getChallengeTimeLimit(challenge))} · Hasta
           +120 ⚡
         </p>
-      </PopCard>
+      </Card>
 
       {confirming ? (
         <div
@@ -162,12 +153,12 @@ function Intro({
         >
           <h1 id="confirm-title">¿Listo para subir?</h1>
           <p>Tienes un único intento oficial. El reloj comienza al mostrar la pregunta.</p>
-          <PopButton size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
+          <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
             Confirmar intento
-          </PopButton>
-          <PopButton variant="secondary" fullWidth onClick={onCancel}>
+          </Button>
+          <Button variant="secondary" fullWidth onClick={onCancel}>
             Todavía no
-          </PopButton>
+          </Button>
         </div>
       ) : null}
     </div>
@@ -189,7 +180,7 @@ function Briefing({
     <div className={styles.briefing}>
       <Topbar />
       <LevelMap levels={levels} currentIndex={levelIndex} />
-      <PopCard as="section" className={styles.briefingCard} aria-labelledby="briefing-title">
+      <Card as="section" className={styles.briefingCard} aria-labelledby="briefing-title">
         <h1 id="briefing-title">{level.briefing.title}</h1>
         <p className={styles.briefingFormat}>{level.briefing.format}</p>
         <p className={styles.briefingDescription}>{level.briefing.description}</p>
@@ -203,7 +194,7 @@ function Briefing({
             <span>máximo del nivel</span>
           </div>
         </div>
-        <PopButton
+        <Button
           size="hero"
           fullWidth
           trailingIcon={<ArrowIcon />}
@@ -211,8 +202,8 @@ function Briefing({
           onClick={onStart}
         >
           Empezar nivel
-        </PopButton>
-      </PopCard>
+        </Button>
+      </Card>
     </div>
   );
 }
@@ -275,7 +266,7 @@ function Question({
         }
         mobileLabelAriaLabel={`Nivel ${levelIndex + 1} de ${levelCount}`}
         timer={
-          <PopTimer
+          <Timer
             duration={question.timeLimit}
             active={typeof deadlineAt === "number"}
             deadlineAt={deadlineAt ?? undefined}
@@ -285,7 +276,7 @@ function Question({
         }
       />
       <LevelIndicator levelIndex={levelIndex} levelCount={levelCount} />
-      <PopCard as="section" className={styles.questionCard} aria-labelledby="question-title">
+      <Card as="section" className={styles.questionCard} aria-labelledby="question-title">
         <h1 id="question-title" className={`${styles.questionPrompt} ${getPromptScale(question)}`}>
           {question.question}
         </h1>
@@ -305,7 +296,7 @@ function Question({
           progressiveCluesRevealed={progressiveCluesRevealed}
           attemptCount={attemptCount}
         />
-      </PopCard>
+      </Card>
     </div>
   );
 }
@@ -403,8 +394,8 @@ function Result({
   return (
     <div className={styles.result}>
       <Topbar />
-      <PopCard as="section" className={styles.resultCard} aria-labelledby="result-title">
-        <PopChip variant="reward">Resultado</PopChip>
+      <Card as="section" className={styles.resultCard} aria-labelledby="result-title">
+        <Chip variant="reward">Resultado</Chip>
         <p className={styles.resultChallenge}>{challenge.title}</p>
         <h1 id="result-title">{summit ? "Cima conquistada" : "Ascenso terminado"}</h1>
         <p className={styles.resultSubtitle}>{challenge.subtitle}</p>
@@ -440,7 +431,7 @@ function Result({
               key={row.player.id}
             >
               <span className={styles.rankingPosition}>{row.rank}.</span>
-              <PopAvatar
+              <Avatar
                 name={row.player.displayName}
                 initials={row.player.initials}
                 tone={row.player.tone}
@@ -454,7 +445,7 @@ function Result({
           ))}
         </div>
 
-        <PopButtonLink
+        <ButtonLink
           href="/"
           size="hero"
           fullWidth
@@ -462,11 +453,11 @@ function Result({
           className={styles.action}
         >
           Volver al lobby
-        </PopButtonLink>
-        <PopButton variant="secondary" fullWidth className={styles.action} onClick={onReview}>
+        </ButtonLink>
+        <Button variant="secondary" fullWidth className={styles.action} onClick={onReview}>
           Revisar respuesta
-        </PopButton>
-      </PopCard>
+        </Button>
+      </Card>
     </div>
   );
 }
@@ -487,15 +478,15 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
     !currentLevel
   ) {
     return (
-      <PopCanvas maxWidth="content">
-        <PopCard>
+      <Canvas maxWidth="content">
+        <Card>
           <h1>Reto no disponible</h1>
           <p>Este preview requiere los siete niveles de La Pirámide.</p>
-          <PopButtonLink href="/" className={styles.action}>
+          <ButtonLink href="/" className={styles.action}>
             Volver al lobby
-          </PopButtonLink>
-        </PopCard>
-      </PopCanvas>
+          </ButtonLink>
+        </Card>
+      </Canvas>
     );
   }
 
@@ -508,7 +499,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
 
   return (
     <MotionConfig reducedMotion="user">
-      <PopCanvas contentClassName={styles.screen}>
+      <Canvas contentClassName={styles.screen}>
         <AnimatePresence mode="wait">
           {session.phase === "loading" ? (
             <motion.div
@@ -518,10 +509,10 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               animate={{ opacity: 1 }}
             >
               <Topbar />
-              <PopCard className={styles.briefingCard}>
+              <Card className={styles.briefingCard}>
                 <BoltIcon />
                 <p>Preparando tu ascenso…</p>
-              </PopCard>
+              </Card>
             </motion.div>
           ) : null}
           {session.phase === "intro" || session.phase === "confirm" ? (
@@ -627,7 +618,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </PopCanvas>
+      </Canvas>
     </MotionConfig>
   );
 }

@@ -352,10 +352,7 @@ export function ConnectPairsQuestion({
   });
 
   return (
-    <section
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
-      aria-label="Conectar parejas"
-    >
+    <section className={`${styles.root}`} aria-label="Conectar parejas">
       <div className={styles.header}>
         <span>Conecta sin cruzar rutas</span>
         <strong>

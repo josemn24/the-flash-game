@@ -77,7 +77,7 @@
 .heroTitle {
   display: flex;
   flex-direction: column;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: clamp(3.8rem, 15vw, 7.7rem);
   font-stretch: condensed;
   font-weight: 950;
@@ -89,7 +89,7 @@
   color: rgba(255, 255, 255, 0.46);
 }
 .heroTitleAccent {
-  color: var(--electric);
+  color: var(--color-brand);
   text-shadow: 0 0 45px rgba(215, 255, 24, 0.2);
   transform: skewX(-4deg);
 }
@@ -138,8 +138,8 @@
 }
 .libraryCard small {
   display: block;
-  color: var(--cyan);
-  font-family: var(--font-mono);
+  color: var(--color-social);
+  font-family: var(--type-mono);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -148,7 +148,7 @@
 .libraryCard strong {
   display: block;
   margin-top: 0.35rem;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.65rem;
   font-weight: 950;
   letter-spacing: -0.045em;
@@ -165,7 +165,7 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 0.4rem;
-  color: var(--cyan);
+  color: var(--color-social);
   font-size: 0.75rem;
   font-weight: 900;
 }
@@ -196,7 +196,7 @@
   place-items: center;
   color: rgba(215, 255, 24, 0.84);
   background: rgba(215, 255, 24, 0.055);
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 2.55rem;
   font-weight: 950;
   letter-spacing: -0.06em;
@@ -212,7 +212,7 @@
 .stageSelectContent strong {
   margin-top: 0.75rem;
   color: white;
-  font-family: var(--font-display);
+  font-family: var(--type-display);
   font-size: 1.8rem;
   font-weight: 950;
   letter-spacing: -0.05em;
@@ -239,7 +239,7 @@
   gap: 0.35rem;
   margin-top: auto;
   padding-top: 0.8rem;
-  color: var(--electric);
+  color: var(--color-brand);
   font-size: 0.72rem;
   font-weight: 900;
 }

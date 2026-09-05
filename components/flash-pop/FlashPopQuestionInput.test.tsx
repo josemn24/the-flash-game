@@ -93,22 +93,9 @@ describe("Flash Pop question adapter", () => {
     expect(markup).toContain('data-format="progressive-image"');
   });
 
-  it("keeps native Flash formats separate from legacy compatibility formats", () => {
+  it("renders every Flash format on the shared theme", () => {
     const challenge = getChallengeById("tabarnia-flash-01");
     if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");
-
-    const nativeFormats = new Set([
-      "true-false",
-      "odd-one-out",
-      "multiple-choice",
-      "ordering",
-      "matching",
-      "progressive-image",
-      "heat-map",
-      "estimation",
-      "classification",
-      "anagram",
-    ]);
 
     for (const question of challenge.questions) {
       const markup = renderToStaticMarkup(
@@ -125,13 +112,8 @@ describe("Flash Pop question adapter", () => {
       );
 
       expect(markup).toContain(`data-format="${question.type}"`);
-      if (nativeFormats.has(question.type)) {
-        expect(markup).toContain("themeAwareFormat");
-        expect(markup).not.toContain("legacyCompatFormat");
-      } else {
-        expect(markup).toContain("legacyCompatFormat");
-        expect(markup).not.toContain("themeAwareFormat");
-      }
+      expect(markup).toContain("themeAwareFormat");
+      expect(markup).not.toContain("legacyCompatFormat");
     }
   });
 

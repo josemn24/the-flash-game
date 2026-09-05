@@ -1,21 +1,21 @@
 import type { HTMLAttributes, ReactNode } from "react";
-import styles from "./PopCanvas.module.css";
+import styles from "./Canvas.module.css";
 
-export type PopCanvasProps = HTMLAttributes<HTMLElement> & {
+export type CanvasProps = HTMLAttributes<HTMLElement> & {
   as?: "main" | "div" | "section";
   maxWidth?: "wide" | "content" | "none";
   contentClassName?: string;
   children: ReactNode;
 };
 
-export function PopCanvas({
+export function Canvas({
   as: Component = "main",
   maxWidth = "wide",
   className,
   contentClassName,
   children,
   ...props
-}: PopCanvasProps) {
+}: CanvasProps) {
   const widthClass = maxWidth === "content" ? styles.contentWidth : styles[maxWidth];
 
   return (

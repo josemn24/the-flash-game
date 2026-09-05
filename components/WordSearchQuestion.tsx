@@ -336,10 +336,7 @@ export function WordSearchQuestion({
   };
 
   return (
-    <section
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
-      aria-label="Sopa de letras"
-    >
+    <section className={`${styles.root} ${className ?? ""}`} aria-label="Sopa de letras">
       <div className={styles.header}>
         <span>Palabras</span>
         <strong>

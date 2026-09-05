@@ -47,11 +47,7 @@ export function ClassificationQuestion({
   };
 
   return (
-    <div
-      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""}`}
-      data-format="classification"
-      data-variant={variant}
-    >
+    <div className={`${styles.root}`} data-format="classification" data-variant={variant}>
       <div className={styles.progressHeader}>
         <span>Clasificación</span>
         <span>

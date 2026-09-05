@@ -1,20 +1,20 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import styles from "./PopControls.module.css";
+import styles from "./Controls.module.css";
 
-export type PopIconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label"> & {
+export type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label"> & {
   label: string;
   variant?: "surface" | "social";
   children: ReactNode;
 };
 
-export function PopIconButton({
+export function IconButton({
   label,
   variant = "surface",
   className,
   children,
   type = "button",
   ...props
-}: PopIconButtonProps) {
+}: IconButtonProps) {
   return (
     <button
       {...props}
