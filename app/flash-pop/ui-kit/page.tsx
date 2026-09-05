@@ -29,7 +29,7 @@ const colors = [
   ["Ink", "--pop-color-ink", "#171720"],
   ["Flash", "--pop-color-brand", "#d7ff19"],
   ["Social", "--pop-color-social", "#6957e8"],
-  ["Success", "--pop-color-success", "#13b89a"],
+  ["Success", "--pop-color-success", "#0f766e"],
   ["Danger", "--pop-color-danger", "#ff7276"],
   ["Info", "--pop-color-info", "#74a7f5"],
   ["Reward", "--pop-color-reward", "#ffd85a"],

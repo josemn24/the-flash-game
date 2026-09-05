@@ -224,7 +224,7 @@
 }
 
 .pop .cellFound {
-  color: var(--pop-color-ink);
+  color: var(--pop-color-surface);
   background:
     repeating-linear-gradient(135deg, transparent 0 7px, rgb(23 23 32 / 12%) 7px 10px),
     var(--pop-state-correct);

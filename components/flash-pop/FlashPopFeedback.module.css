@@ -12,9 +12,13 @@
 .card {
   display: grid;
   gap: var(--pop-space-4);
-  border: 1px solid rgb(19 184 154 / 42%);
-  background: linear-gradient(180deg, rgb(19 184 154 / 7%), var(--pop-color-surface) 42%);
-  box-shadow: 0 18px 48px rgb(19 184 154 / 14%);
+  border: 1px solid color-mix(in srgb, var(--pop-color-success) 42%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pop-color-success) 7%, transparent),
+    var(--pop-color-surface) 42%
+  );
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--pop-color-success) 14%, transparent);
   text-align: center;
 }
 
@@ -32,10 +36,10 @@
   place-items: center;
   border-radius: var(--pop-radius-pill);
   background: var(--pop-color-success);
-  color: var(--pop-color-ink);
+  color: var(--pop-color-surface);
   box-shadow:
-    0 0 0 12px rgb(19 184 154 / 10%),
-    0 0 38px rgb(19 184 154 / 24%);
+    0 0 0 12px color-mix(in srgb, var(--pop-color-success) 10%, transparent),
+    0 0 38px color-mix(in srgb, var(--pop-color-success) 24%, transparent);
 }
 
 .failure .icon {

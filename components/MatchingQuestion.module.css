@@ -185,7 +185,7 @@
   --format-icon-surface: var(--color-surface-soft);
   --format-state-ink: var(--color-ink);
   --format-state-surface: var(--color-brand);
-  --format-matched-state-ink: var(--color-ink);
+  --format-matched-state-ink: var(--color-surface);
   --format-matched-state-surface: var(--color-success);
   --format-invalid-state-ink: var(--color-ink);
   --format-invalid-state-surface: var(--color-danger);

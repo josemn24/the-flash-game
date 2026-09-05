@@ -48,7 +48,7 @@ describe("Flash Pop token contrast", () => {
     ["focus on surface", "focus", "surface"],
     ["surface on social", "surface", "social"],
     ["ink on reward", "ink", "reward"],
-    ["ink on success", "ink", "success"],
+    ["surface on success", "surface", "success"],
     ["ink on danger", "ink", "danger"],
     ["ink on info", "ink", "info"],
   ])("keeps %s at WCAG AA for normal text", (_label, foreground, background) => {

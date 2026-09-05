@@ -179,7 +179,7 @@
   :global([role="grid"][aria-label^="Hashtag de palabras"])
   :global(button[data-state="correct"]) {
   border-color: var(--pop-color-success) !important;
-  color: var(--pop-color-ink) !important;
+  color: var(--pop-color-surface) !important;
   background: var(--pop-color-success) !important;
 }
 

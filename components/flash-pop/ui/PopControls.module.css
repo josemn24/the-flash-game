@@ -192,6 +192,7 @@
 
 .success {
   background: var(--pop-color-success);
+  color: var(--pop-color-surface);
 }
 
 .danger {

@@ -192,7 +192,7 @@
 
 .pop .correct {
   border-color: var(--pop-state-correct);
-  color: var(--pop-color-ink);
+  color: var(--pop-color-surface);
   background: var(--pop-state-correct);
 }
 
