@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { BellIcon, BoltIcon } from "@/components/icons";
+import { BellIcon, BoltIcon } from "@/components/ui";
 import {
   AvatarStack,
   Button,

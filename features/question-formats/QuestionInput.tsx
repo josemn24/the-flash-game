@@ -3,39 +3,41 @@
 import { motion } from "motion/react";
 import type { ComponentType, FormEvent } from "react";
 import { useState } from "react";
-import { AnswerOption } from "@/components/AnswerOption";
-import { AnagramQuestion } from "@/components/AnagramQuestion";
-import { ClassificationQuestion } from "@/components/ClassificationQuestion";
-import { ConnectPairsQuestion } from "@/components/ConnectPairsQuestion";
-import { EstimationQuestion } from "@/components/EstimationQuestion";
-import { ErrorReconstructionQuestionInput } from "@/components/ErrorReconstructionQuestion";
-import { EscapeQuestion } from "@/components/EscapeQuestion";
-import { FlashMemoryQuestion } from "@/components/FlashMemoryQuestion";
-import { HeatMapQuestion } from "@/components/HeatMapQuestion";
-import { ImageLabelingQuestion } from "@/components/ImageLabelingQuestion";
-import { ArrowIcon } from "@/components/icons";
-import { LogicCodeQuestion } from "@/components/LogicCodeQuestion";
-import { LogicMatrixQuestion } from "@/components/LogicMatrixQuestion";
-import { MatchingQuestion } from "@/components/MatchingQuestion";
-import { MemoryPairsQuestion } from "@/components/MemoryPairsQuestion";
-import { MiniNonogramQuestion } from "@/components/MiniNonogramQuestion";
-import { MiniSudokuQuestion } from "@/components/MiniSudokuQuestion";
-import { MiniWordleQuestion } from "@/components/MiniWordleQuestion";
-import { NumberSequencePrompt } from "@/components/NumberSequencePrompt";
-import { OrderingQuestion } from "@/components/OrderingQuestion";
-import { OddOneOutQuestion } from "@/components/OddOneOutQuestion";
-import { ProgressiveCluesQuestion } from "@/components/ProgressiveCluesQuestion";
-import { ProgressiveImageQuestion } from "@/components/ProgressiveImageQuestion";
-import { QueensQuestion } from "@/components/QueensQuestion";
-import { SimonSequenceQuestion } from "@/components/SimonSequenceQuestion";
-import { SlidingPuzzleQuestion } from "@/components/SlidingPuzzleQuestion";
-import { TimeMazeQuestion } from "@/components/TimeMazeQuestion";
-import { TrueFalseQuestion } from "@/components/TrueFalseQuestion";
-import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
-import { WordSearchQuestion } from "@/components/WordSearchQuestion";
-import { ZipQuestion } from "@/components/ZipQuestion";
-import { PipesQuestion } from "@/components/PipesQuestion";
-import styles from "@/components/QuestionScreen.module.css";
+import {
+  AnswerOption,
+  AnagramQuestion,
+  ClassificationQuestion,
+  ConnectPairsQuestion,
+  EstimationQuestion,
+  ErrorReconstructionQuestionInput,
+  EscapeQuestion,
+  FlashMemoryQuestion,
+  HeatMapQuestion,
+  ImageLabelingQuestion,
+  LogicCodeQuestion,
+  LogicMatrixQuestion,
+  MatchingQuestion,
+  MemoryPairsQuestion,
+  MiniNonogramQuestion,
+  MiniSudokuQuestion,
+  MiniWordleQuestion,
+  NumberSequencePrompt,
+  OddOneOutQuestion,
+  OrderingQuestion,
+  PipesQuestion,
+  ProgressiveCluesQuestion,
+  ProgressiveImageQuestion,
+  QueensQuestion,
+  SimonSequenceQuestion,
+  SlidingPuzzleQuestion,
+  TimeMazeQuestion,
+  TrueFalseQuestion,
+  WordHashtagQuestion,
+  WordSearchQuestion,
+  ZipQuestion,
+} from "@/components/questions";
+import { ArrowIcon } from "@/components/ui";
+import styles from "@/components/game/shared/QuestionScreen.module.css";
 import { isQueensAnswer } from "@/lib/queens";
 import {
   isConnectPairsAnswer,
@@ -75,7 +77,7 @@ function MultipleChoiceInput({
   return (
     <>
       {question.promptVisual?.type === "number-sequence" && (
-        <NumberSequencePrompt prompt={question.promptVisual} />
+        <NumberSequencePrompt prompt={question.promptVisual} variant={variant} />
       )}
       <div
         className={`${question.promptVisual ? "mt-4" : "mt-7 sm:mt-8"} grid gap-2.5 sm:grid-cols-2 sm:gap-3`}
@@ -146,6 +148,7 @@ function ConnectPairsInput({
   initialAnswer,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"connect-pairs">>) {
   return (
     <ConnectPairsQuestion
@@ -159,6 +162,7 @@ function ConnectPairsInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -242,6 +246,7 @@ function ProgressiveCluesInput({
   locked,
   onProgressiveClueReveal,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"progressive-clues">>) {
   return (
     <ProgressiveCluesQuestion
@@ -252,6 +257,7 @@ function ProgressiveCluesInput({
       locked={locked}
       onReveal={onProgressiveClueReveal}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -373,6 +379,7 @@ function LogicMatrixInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"logic-matrix">>) {
   return (
     <LogicMatrixQuestion
@@ -382,6 +389,7 @@ function LogicMatrixInput({
       showPieceLabels={question.showPieceLabels}
       locked={locked}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -426,6 +434,7 @@ function QueensInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"queens">>) {
   return (
     <QueensQuestion
@@ -436,6 +445,7 @@ function QueensInput({
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -530,6 +540,7 @@ function LogicCodeInput({
   codeAttemptCount,
   onProgress,
   onCodeAttempt,
+  variant,
 }: QuestionInputProps<QuestionOfType<"logic-code">>) {
   return (
     <LogicCodeQuestion
@@ -540,6 +551,7 @@ function LogicCodeInput({
       attemptCount={codeAttemptCount}
       onProgress={onProgress}
       onAttempt={onCodeAttempt}
+      variant={variant}
     />
   );
 }
@@ -609,6 +621,7 @@ function WordHashtagInput({
   initialAnswer,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"word-hashtag">>) {
   return (
     <WordHashtagQuestion
@@ -618,6 +631,7 @@ function WordHashtagInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -629,6 +643,7 @@ function WordSearchInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"word-search">>) {
   return (
     <WordSearchQuestion
@@ -641,6 +656,7 @@ function WordSearchInput({
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -651,6 +667,7 @@ function MiniWordleInput({
   onProgress,
   onSubmit,
   onTimedResponseStart,
+  variant,
 }: QuestionInputProps<QuestionOfType<"mini-wordle">>) {
   return (
     <MiniWordleQuestion
@@ -663,6 +680,7 @@ function MiniWordleInput({
       onProgress={onProgress}
       onSubmit={onSubmit}
       onTimedResponseStart={onTimedResponseStart}
+      variant={variant}
     />
   );
 }

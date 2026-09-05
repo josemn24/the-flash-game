@@ -88,7 +88,7 @@ Cumplido: las primitivas cubren sus estados sin depender de una pantalla concret
 ### Impacto probable
 
 - `app/page.tsx`.
-- `components/StartScreen.tsx` o nuevo `LobbyScreen`.
+- `components/game/shared/StartScreen/StartScreen.tsx` o nuevo `LobbyScreen`.
 - Nuevos componentes visuales compartidos.
 - Datos mock adyacentes a `demoRoom` o en un módulo de presentación separado.
 

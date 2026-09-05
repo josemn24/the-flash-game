@@ -1,4 +1,4 @@
-import { FlashPopHome } from "@/components/flash-pop/FlashPopHome.client";
+import { FlashPopHome } from "@/components/game";
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
 import { getNarrativeQuestionIds, getPyramidQuestionIds } from "@/data/challenges";
 import { demoRoom } from "@/data/demoRoom";

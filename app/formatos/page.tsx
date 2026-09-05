@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowIcon } from "@/components/icons";
-import styles from "@/components/FormatLibrary.module.css";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SpeedBackground } from "@/components/SpeedBackground";
+import { ArrowIcon } from "@/components/ui";
+import styles from "@/components/library/FormatLibrary.module.css";
+import { SiteHeader } from "@/components/navigation";
+import { SpeedBackground } from "@/components/effects";
 import { questionFormats } from "@/features/question-formats/catalog";
 
 export const metadata: Metadata = {

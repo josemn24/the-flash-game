@@ -12,7 +12,7 @@ import {
   TimerDisplay,
   type AvatarData,
 } from "@/components/ui";
-import { ArrowIcon, BellIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
+import { ArrowIcon, BellIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/ui";
 import { LiveTimerDemo } from "./LiveTimerDemo.client";
 import styles from "./UiKit.module.css";
 

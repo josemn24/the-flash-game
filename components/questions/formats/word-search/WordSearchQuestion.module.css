@@ -1,0 +1,259 @@
+.root {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.header {
+  display: flex;
+  width: min(100%, 31rem);
+  align-items: center;
+  justify-content: space-between;
+  color: rgb(255 255 255 / 46%);
+  font-family: var(--type-mono);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.header strong {
+  color: var(--color-social);
+}
+
+.wordList {
+  display: flex;
+  width: min(100%, 31rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.wordList li {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 999px;
+  padding: 0.35rem 0.62rem;
+  color: rgb(255 255 255 / 64%);
+  background: rgb(255 255 255 / 4%);
+  font-family: var(--type-mono);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+}
+
+.wordList li > svg,
+.wordList li > span:first-child {
+  width: 0.78rem;
+  height: 0.78rem;
+  flex: 0 0 auto;
+  color: rgb(255 255 255 / 28%);
+}
+
+.wordList .wordFound {
+  border-color: rgb(215 255 24 / 38%);
+  color: var(--color-brand);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, rgb(215 255 24 / 8%) 6px 9px),
+    rgb(215 255 24 / 5%);
+}
+
+.wordList .wordFound > svg {
+  color: var(--color-brand);
+}
+
+.board {
+  --word-search-columns: 8;
+  display: grid;
+  width: min(100%, 31rem);
+  grid-template-columns: repeat(var(--word-search-columns), minmax(0, 1fr));
+  overflow: hidden;
+  border: 2px solid rgb(255 255 255 / 18%);
+  border-radius: 1rem;
+  background: #07090c;
+  box-shadow: 0 18px 55px rgb(0 0 0 / 28%);
+}
+
+.boardInteractive {
+  touch-action: none;
+  user-select: none;
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 6%);
+  color: rgb(255 255 255 / 82%);
+  background: rgb(255 255 255 / 2%);
+  font-family: var(--type-mono);
+  font-size: clamp(0.8rem, 3.4vw, 1.28rem);
+  font-weight: 950;
+  isolation: isolate;
+}
+
+.cell button {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.cell button:focus-visible {
+  z-index: 5;
+  outline: 3px solid var(--color-social);
+  outline-offset: -4px;
+}
+
+.cellFound {
+  color: #101400;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 7px, rgb(68 84 0 / 18%) 7px 10px),
+    var(--color-brand);
+}
+
+.cellMissing {
+  box-shadow: inset 0 0 0 2px var(--color-social);
+  color: var(--color-social);
+  background:
+    repeating-linear-gradient(45deg, transparent 0 6px, rgb(53 232 255 / 12%) 6px 9px),
+    rgb(53 232 255 / 6%);
+}
+
+.cellPreview {
+  z-index: 1;
+  color: #071011;
+  background: var(--color-social);
+}
+
+.cellInvalid {
+  color: white;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, rgb(255 255 255 / 15%) 6px 9px),
+    var(--color-danger);
+  animation: invalid-selection 180ms ease-out;
+}
+
+.instructions {
+  max-width: 31rem;
+  margin: 0;
+  color: rgb(255 255 255 / 42%);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@keyframes invalid-selection {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 390px) {
+  .root {
+    margin-top: 0.9rem;
+  }
+
+  .wordList {
+    gap: 0.3rem;
+  }
+
+  .wordList li {
+    min-height: 1.75rem;
+    padding: 0.25rem 0.48rem;
+    font-size: 0.59rem;
+  }
+
+  .board {
+    border-radius: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cellInvalid {
+    animation: none;
+  }
+}
+
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.root[data-variant="flash-pop"] .header {
+  color: var(--color-ink-muted);
+}
+
+.root[data-variant="flash-pop"] .header strong {
+  color: var(--state-selected);
+}
+
+.root[data-variant="flash-pop"] .board {
+  border-color: rgb(23 23 32 / 16%);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.root[data-variant="flash-pop"] .cell {
+  border-color: rgb(23 23 32 / 8%);
+  color: var(--color-ink);
+  background:
+    radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
+    var(--color-surface);
+}
+
+.root[data-variant="flash-pop"] .cell button:focus-visible {
+  outline-color: var(--state-focus);
+}
+
+.root[data-variant="flash-pop"] .cellFound {
+  color: var(--color-surface);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 7px, rgb(23 23 32 / 12%) 7px 10px),
+    var(--state-correct);
+}
+
+.root[data-variant="flash-pop"] .cellMissing {
+  box-shadow: inset 0 0 0 2px var(--state-selected);
+  color: var(--state-selected);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      color-mix(in srgb, var(--state-selected) 12%, transparent) 6px 9px
+    ),
+    var(--state-neutral);
+}
+
+.root[data-variant="flash-pop"] .cellPreview {
+  color: var(--color-surface);
+  background: var(--state-selected);
+}
+
+.root[data-variant="flash-pop"] .cellInvalid {
+  color: var(--color-ink);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, rgb(23 23 32 / 10%) 6px 9px),
+    var(--state-error);
+}
+
+.root[data-variant="flash-pop"] .instructions {
+  color: var(--color-ink-muted);
+}

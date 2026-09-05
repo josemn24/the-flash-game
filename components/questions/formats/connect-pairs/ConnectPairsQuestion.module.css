@@ -1,0 +1,234 @@
+.root {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  margin-top: 1.35rem;
+}
+
+.header {
+  display: flex;
+  width: min(100%, 31rem);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgb(255 255 255 / 48%);
+  font-family: var(--type-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header strong {
+  color: var(--color-social);
+}
+
+.board {
+  position: relative;
+  display: grid;
+  width: min(100%, 31rem);
+  overflow: hidden;
+  border: 2px solid rgb(255 255 255 / 18%);
+  border-radius: 1rem;
+  outline: 0;
+  background: #07090c;
+  touch-action: none;
+  user-select: none;
+}
+
+.board:focus-visible {
+  border-color: var(--color-social);
+  box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 5%);
+  color: white;
+  background:
+    radial-gradient(circle at 50% 50%, rgb(255 255 255 / 5%) 0 0.08rem, transparent 0.09rem),
+    rgb(255 255 255 / 3%);
+  font-family: var(--type-mono);
+  font-weight: 900;
+}
+
+.cellButton {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.cellButton:disabled {
+  cursor: default;
+}
+
+.cellButton:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: -4px;
+}
+
+.empty .cellButton {
+  background: rgb(255 255 255 / 2%);
+}
+
+.endpoint .cellButton {
+  background: rgb(255 255 255 / 2%);
+}
+
+.active.endpoint .symbol {
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--color-social)) 92%, #071011),
+    0 0 0 3px color-mix(in srgb, var(--pair-color, var(--color-social)) 28%, transparent),
+    0 0 1.2rem color-mix(in srgb, var(--pair-color, var(--color-social)) 45%, transparent);
+}
+
+.symbol {
+  position: relative;
+  z-index: 3;
+  display: inline-grid;
+  width: clamp(1.35rem, 6vw, 2.15rem);
+  height: clamp(1.35rem, 6vw, 2.15rem);
+  place-items: center;
+  border-radius: 999px;
+  color: #071011;
+  background: color-mix(in srgb, var(--pair-color, var(--color-social)) 76%, white);
+  font-size: clamp(0.8rem, 3vw, 1.1rem);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--color-social)) 92%, #071011),
+    0 0 0.75rem color-mix(in srgb, var(--pair-color, var(--color-social)) 32%, transparent);
+}
+
+.routeOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.routeLine {
+  fill: none;
+  stroke: color-mix(in srgb, var(--pair-color, var(--color-social)) 86%, white);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 0.28;
+  filter: drop-shadow(
+    0 0 0.08rem color-mix(in srgb, var(--pair-color, var(--color-social)) 54%, transparent)
+  );
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: center;
+}
+
+.actions button {
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  color: white;
+  background: rgb(255 255 255 / 6%);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.actions button:hover:not(:disabled) {
+  border-color: var(--color-social);
+  background: rgb(53 232 255 / 10%);
+}
+
+.actions button:disabled,
+.legendButton:disabled {
+  opacity: 0.45;
+}
+
+.instructions {
+  max-width: 31rem;
+  margin: 0;
+  color: rgb(255 255 255 / 38%);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.statusText {
+  min-height: 1.25rem;
+  max-width: 31rem;
+  margin: -0.35rem 0 0;
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .root {
+    gap: 0.8rem;
+  }
+
+  .board {
+    border-radius: 0.8rem;
+  }
+}
+
+.root {
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.root[data-variant="flash-pop"] .header {
+  color: var(--color-ink-muted);
+}
+
+.root[data-variant="flash-pop"] .header strong {
+  color: var(--state-selected);
+}
+
+.root[data-variant="flash-pop"] .board {
+  border-color: rgb(23 23 32 / 16%);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.root[data-variant="flash-pop"] .board:focus-visible {
+  border-color: var(--state-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
+}
+
+.root[data-variant="flash-pop"] .cell {
+  border-color: rgb(23 23 32 / 8%);
+  color: var(--color-ink);
+  background:
+    radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
+    var(--color-surface);
+}
+
+.root[data-variant="flash-pop"] .empty .cellButton,
+.root[data-variant="flash-pop"] .endpoint .cellButton {
+  background: rgb(23 23 32 / 3%);
+}
+
+.root[data-variant="flash-pop"] .instructions,
+.root[data-variant="flash-pop"] .statusText {
+  color: var(--color-ink-muted);
+}
+
+.root[data-variant="flash-pop"] .actions button {
+  min-height: 44px;
+  border-color: var(--border-subtle);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+}

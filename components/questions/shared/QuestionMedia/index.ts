@@ -1,0 +1,1 @@
+export { QuestionMedia } from "./QuestionMedia";

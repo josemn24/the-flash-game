@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FlashPopFlashGame } from "@/components/flash-pop/FlashPopFlashGame.client";
+import { FlashPopFlashGame } from "@/components/game";
 import { getChallengeById } from "@/data/challenges";
 import { FLASH_POP_FLASH_PILOT_ID as FLASH_POP_FLASH_PILOT } from "@/features/flash-pop/demoSocial";
 

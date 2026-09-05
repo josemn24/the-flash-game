@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BoltIcon } from "@/components/icons";
+import { BoltIcon } from "./icons";
 import styles from "./GameHeader.module.css";
 
 export type GameHeaderProps = {

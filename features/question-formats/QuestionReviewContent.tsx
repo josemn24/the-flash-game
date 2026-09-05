@@ -1,20 +1,22 @@
 import type { ComponentType, CSSProperties } from "react";
-import { HeatMapSurface } from "@/components/HeatMapQuestion";
-import { QuestionMedia } from "@/components/QuestionMedia";
-import { TimeMazeBoard } from "@/components/TimeMazeQuestion";
-import { ZipBoard } from "@/components/ZipQuestion";
-import { QueensBoard } from "@/components/QueensQuestion";
-import { EscapeBoard } from "@/components/EscapeQuestion";
-import { PipesBoard } from "@/components/PipesQuestion";
-import { WordSearchBoard } from "@/components/WordSearchQuestion";
-import wordSearchStyles from "@/components/WordSearchQuestion.module.css";
-import { CheckIcon } from "@/components/icons";
+import {
+  EscapeBoard,
+  HeatMapSurface,
+  PipesBoard,
+  QueensBoard,
+  QuestionMedia,
+  TimeMazeBoard,
+  WordSearchBoard,
+  ZipBoard,
+} from "@/components/questions";
+import wordSearchStyles from "@/components/questions/formats/word-search/WordSearchQuestion.module.css";
+import { CheckIcon } from "@/components/ui";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
   IdentifyOneImageLabelingReviewSurface,
-} from "@/components/ImageLabelingQuestion";
-import styles from "@/components/ReviewAnswers.module.css";
+} from "@/components/questions";
+import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import {
   isClassificationAnswer,
   isConnectPairsAnswer,
