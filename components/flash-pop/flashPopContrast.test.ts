@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 
 const theme = readFileSync(new URL("./FlashPopTheme.module.css", import.meta.url), "utf8");
 const globals = readFileSync(new URL("../../app/globals.css", import.meta.url), "utf8");
+const classificationStyles = readFileSync(
+  new URL("../ClassificationQuestion.module.css", import.meta.url),
+  "utf8",
+);
 const stateStyles = [
   "../MiniWordleQuestion.module.css",
   "../WordHashtagQuestion.module.css",
@@ -100,6 +104,23 @@ describe("Flash Pop token contrast", () => {
     );
     expect(miniWordle?.css).toMatch(
       /\.pop \.empty \{[\s\S]*background: var\(--pop-color-surface\);/,
+    );
+  });
+
+  it("keeps Classification selections visible without overpowering the table", () => {
+    expect(classificationStyles).toContain(
+      ".pop .matrix,\n.pop .binaryList {\n  border: var(--border-subtle);\n  border-radius: var(--radius-card);\n  padding: var(--space-2);\n  background: var(--color-surface);",
+    );
+    expect(classificationStyles).toContain("border: 1px solid rgb(23 23 32 / 17%);");
+    expect(classificationStyles).toContain("box-shadow: 0 1px 2px rgb(23 23 32 / 5%);");
+    expect(classificationStyles).toContain(
+      "background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));",
+    );
+    expect(classificationStyles).toContain(
+      "color-mix(in srgb, var(--color-social) 14%, transparent)",
+    );
+    expect(classificationStyles).toContain(
+      ".pop .choiceButtonSelected:focus-visible,\n.pop .binaryChoiceSelected:focus-visible",
     );
   });
 

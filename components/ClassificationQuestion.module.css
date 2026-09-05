@@ -369,7 +369,7 @@
   border: var(--border-subtle);
   border-radius: var(--radius-card);
   padding: var(--space-2);
-  background: var(--color-surface-raised);
+  background: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
 
@@ -386,17 +386,28 @@
 
 .pop .choiceButton,
 .pop .binaryChoice {
-  border: var(--border-subtle);
+  border: 1px solid rgb(23 23 32 / 17%);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
+  box-shadow: 0 1px 2px rgb(23 23 32 / 5%);
 }
 
 .pop .choiceButtonSelected,
-.pop .binaryChoiceSelected {
+.pop .binaryChoiceSelected,
+.pop .choiceButtonSelected:hover:not(:disabled),
+.pop .binaryChoiceSelected:hover:not(:disabled) {
   border-color: var(--color-social);
   color: var(--color-social);
-  background: color-mix(in srgb, var(--color-social) 10%, transparent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-social) 12%, transparent);
+  background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent);
+}
+
+.pop .choiceButtonSelected:focus-visible,
+.pop .binaryChoiceSelected:focus-visible {
+  background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--color-focus) 22%, transparent);
 }
 
 .pop .confirmButton {
