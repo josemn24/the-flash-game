@@ -6,19 +6,21 @@ export type {
   PopAvatarStackProps,
   PopAvatarTone,
 } from "./PopAvatar";
-export { PopButton, PopButtonLink } from "./PopButton";
+export { Button as PopButton, ButtonLink as PopButtonLink } from "@/components/ui/Button";
 export type {
-  PopButtonLinkProps,
-  PopButtonProps,
-  PopButtonSize,
-  PopButtonVariant,
-} from "./PopButton";
+  ButtonLinkProps as PopButtonLinkProps,
+  ButtonProps as PopButtonProps,
+} from "@/components/ui/Button";
+export type {
+  ButtonSize as PopButtonSize,
+  ButtonVariant as PopButtonVariant,
+} from "@/components/ui/buttonStyles";
 export { PopCanvas } from "./PopCanvas";
 export type { PopCanvasProps } from "./PopCanvas";
 export { PopCard } from "./PopCard";
 export type { PopCardProps } from "./PopCard";
-export { PopChip } from "./PopChip";
-export type { PopChipProps } from "./PopChip";
+export { Chip as PopChip } from "@/components/ui/Chip";
+export type { ChipProps as PopChipProps } from "@/components/ui/Chip";
 export { PopIconButton } from "./PopIconButton";
 export type { PopIconButtonProps } from "./PopIconButton";
 export { PopGameHeader, PopGameTimer } from "./PopGameHeader";

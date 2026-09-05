@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import styles from "@/components/ui/Badge.module.css";
+import { Chip } from "@/components/ui/Chip";
 
 type BadgeProps = {
   children: ReactNode;
@@ -8,11 +8,14 @@ type BadgeProps = {
   className?: string;
 };
 
-export function Badge({ children, variant = "category", dot = false, className }: BadgeProps) {
+export function Badge({ children, dot = false, className }: BadgeProps) {
   return (
-    <span className={`${styles.badge} ${styles[variant]} ${className ?? ""}`}>
-      {dot && <span className={styles.dot} aria-hidden="true" />}
+    <Chip
+      variant="status"
+      icon={dot ? <span aria-hidden="true">•</span> : undefined}
+      className={className}
+    >
       {children}
-    </span>
+    </Chip>
   );
 }

@@ -5,9 +5,8 @@ import { useEffect, useState } from "react";
 import { BoltIcon, HeartIcon, NotebookIcon } from "@/components/icons";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionMedia } from "@/components/QuestionMedia";
-import { Timer } from "@/components/Timer";
-import { AppHeader } from "@/components/ui/AppHeader";
-import { QuestionInput } from "@/features/question-formats/QuestionInput";
+import { AppHeader, Timer } from "@/components/ui";
+import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import styles from "@/components/QuestionScreen.module.css";
 import type { AnswerValue, Question } from "@/types/game";
@@ -176,17 +175,17 @@ export function QuestionScreen({
           </div>
         )}
 
-        <QuestionInput
+        <FlashPopQuestionInput
           question={question}
           locked={locked}
           onSubmit={onSubmit}
-          codeAttemptCount={codeAttemptCount}
           onCodeAttempt={onCodeAttempt}
           onProgress={onProgress}
           onIncorrectAttempt={onIncorrectAttempt}
           onProgressiveClueReveal={onProgressiveClueReveal}
           onTimedResponseStart={startTimedResponse}
           initialAnswer={initialAnswer}
+          attemptCount={codeAttemptCount}
         />
       </div>
     </motion.section>

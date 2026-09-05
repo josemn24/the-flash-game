@@ -44,7 +44,7 @@ describe("FlashPopHome", () => {
     );
 
     expect(markup).toContain("Elige tu próximo reto.");
-    expect(markup).toContain("href=\"/desafios/tabarnia-flash-01\"");
+    expect(markup).toContain('href="/desafios/tabarnia-flash-01"');
     expect(markup).toContain("Jugar ahora");
     expect(markup).toContain("1/2 retos accesibles");
   });

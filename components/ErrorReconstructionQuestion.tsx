@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import styles from "@/components/ErrorReconstructionQuestion.module.css";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import type { ErrorReconstructionAnswer, ErrorReconstructionQuestion } from "@/types/game";
 
 type Props = {

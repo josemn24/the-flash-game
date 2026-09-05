@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/icons";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import {
   calculateProgressiveImageReveal,
   PROGRESSIVE_IMAGE_INITIAL_BLUR,

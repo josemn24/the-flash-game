@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const theme = readFileSync(new URL("./FlashPopTheme.module.css", import.meta.url), "utf8");
 const globals = readFileSync(new URL("../../app/globals.css", import.meta.url), "utf8");
 const classificationStyles = readFileSync(
   new URL("../ClassificationQuestion.module.css", import.meta.url),
@@ -59,22 +58,15 @@ describe("Flash Pop token contrast", () => {
     expect(contrast(token(foreground), token(background))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("keeps Pop aliases wired to the semantic API", () => {
-    expect(theme).toContain("--pop-color-brand: var(--color-brand)");
-    expect(theme).toContain("--pop-space-6: var(--space-6)");
-    expect(theme).toContain("--pop-font-ui: var(--type-ui)");
+  it("keeps Pop compatibility aliases wired to the semantic API", () => {
+    expect(globals).toContain("--pop-color-brand: var(--color-brand)");
+    expect(globals).toContain("--pop-space-6: var(--space-6)");
+    expect(globals).toContain("--pop-font-ui: var(--type-ui)");
   });
 
   it("publishes the shared puzzle state roles", () => {
-    for (const [state, color] of [
-      ["correct", "success"],
-      ["movable", "brand"],
-      ["selected", "social"],
-      ["neutral", "surface-soft"],
-      ["error", "danger"],
-      ["focus", "focus"],
-    ]) {
-      expect(theme).toContain(`--pop-state-${state}: var(--pop-color-${color})`);
+    for (const state of ["correct", "movable", "selected", "neutral", "error", "focus"]) {
+      expect(globals).toContain(`--pop-state-${state}: var(--state-${state})`);
     }
   });
 

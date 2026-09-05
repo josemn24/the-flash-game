@@ -11,9 +11,14 @@
 }
 
 .brand,
-.actions {
+.actions,
+.customLeft {
   display: flex;
   align-items: center;
+}
+
+.customLeft {
+  min-width: 0;
 }
 
 .brand {

@@ -7,7 +7,13 @@ import {
   getTimedOutAnswer,
   isAnswerCorrect,
 } from "@/lib/scoring";
-import type { AnswerResult, AnswerStatus, AnswerValue, FlashChallenge, GamePhase } from "@/types/game";
+import type {
+  AnswerResult,
+  AnswerStatus,
+  AnswerValue,
+  FlashChallenge,
+  GamePhase,
+} from "@/types/game";
 
 const TRANSITION_DURATION = 650;
 
@@ -81,7 +87,8 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
   const correctTransitionDuration = options.transitionDuration?.correct ?? TRANSITION_DURATION;
   const partialTransitionDuration = options.transitionDuration?.partial ?? TRANSITION_DURATION;
   const incorrectTransitionDuration = options.transitionDuration?.incorrect ?? TRANSITION_DURATION;
-  const unansweredTransitionDuration = options.transitionDuration?.unanswered ?? TRANSITION_DURATION;
+  const unansweredTransitionDuration =
+    options.transitionDuration?.unanswered ?? TRANSITION_DURATION;
   const question = challenge.questions[state.questionIndex];
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);

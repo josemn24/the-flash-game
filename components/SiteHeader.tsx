@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { AppHeader } from "@/components/ui/AppHeader";
+import { AppHeader } from "@/components/ui";
 
 export function SiteHeader() {
   return (

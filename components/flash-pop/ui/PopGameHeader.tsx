@@ -1,45 +1,8 @@
-import type { ReactNode } from "react";
-import { BoltIcon } from "@/components/icons";
+import { GameHeader } from "@/components/ui/GameHeader";
 import { PopTimer } from "./PopTimer";
-import styles from "./PopGameHeader.module.css";
 
-export function PopGameHeader({
-  title,
-  timer,
-  action,
-  mobileLabel,
-  mobileLabelAriaLabel,
-}: {
-  title: string;
-  timer?: ReactNode;
-  action?: ReactNode;
-  mobileLabel?: ReactNode;
-  mobileLabelAriaLabel?: string;
-}) {
-  return (
-    <header className={`${styles.header} ${mobileLabel ? styles.compactOnMobile : ""}`}>
-      <div className={styles.brand} aria-label="Flash Pop">
-        <span className={styles.brandMark}>
-          <BoltIcon />
-        </span>
-        <span className={styles.brandName}>Flash Pop</span>
-        <span className={styles.separator} aria-hidden="true">
-          /
-        </span>
-        <span className={styles.title}>{title}</span>
-      </div>
-      {mobileLabel ? (
-        <span className={styles.mobileLabel} aria-label={mobileLabelAriaLabel}>
-          {mobileLabel}
-        </span>
-      ) : null}
-      <div className={styles.actions}>
-        {timer}
-        {action}
-      </div>
-    </header>
-  );
-}
+export { GameHeader as PopGameHeader };
+export type { GameHeaderProps as PopGameHeaderProps } from "@/components/ui/GameHeader";
 
 export function PopGameTimer({
   duration,

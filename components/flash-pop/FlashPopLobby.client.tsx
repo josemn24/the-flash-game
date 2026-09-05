@@ -11,7 +11,7 @@ import {
   PopChip,
   PopIconButton,
   type PopAvatarData,
-} from "@/components/flash-pop/ui";
+} from "@/components/ui";
 import { ArrowIcon, BellIcon, BoltIcon, TrophyIcon } from "@/components/icons";
 import {
   parsePyramidAttempt,

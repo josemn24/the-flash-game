@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/icons";
-import { PopButton, PopCard, PopChip } from "@/components/flash-pop/ui";
+import { PopButton, PopCard, PopChip } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import {
   isPyramidLevelPassed,
@@ -42,7 +42,7 @@ export function FlashPopReview({
     <PopCard as="section" className={styles.card} aria-labelledby="flash-pop-review-title">
       <div className={styles.heading}>
         <div>
-        <p className={styles.eyebrow}>Revisión</p>
+          <p className={styles.eyebrow}>Revisión</p>
           <h1 id="flash-pop-review-title">Tu ascenso</h1>
         </div>
         <PopChip tone={summary.outcome === "summit" ? "success" : "danger"}>

@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import { useState } from "react";
 import styles from "@/components/AnagramQuestion.module.css";
 import { RotateIcon, UndoIcon } from "@/components/icons";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import type { AnagramTile, QuestionVariant } from "@/types/game";
 
 type Props = {

@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/icons";
-import { PopCard } from "@/components/flash-pop/ui";
+import { PopCard } from "@/components/ui";
 import type { AnswerStatus } from "@/types/game";
 import styles from "./FlashPopFeedback.module.css";
 

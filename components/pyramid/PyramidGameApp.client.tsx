@@ -16,9 +16,7 @@ import {
   RotateIcon,
   WarningIcon,
 } from "@/components/icons";
-import { AppHeader } from "@/components/ui/AppHeader";
-import { Badge } from "@/components/ui/Badge";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { AppHeader, Badge, MotionButton } from "@/components/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import type { PyramidAttemptOutcome } from "@/features/pyramid/pyramidAttempt";

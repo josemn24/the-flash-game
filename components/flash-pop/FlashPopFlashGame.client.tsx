@@ -21,13 +21,19 @@ import {
   PopChip,
   PopGameHeader,
   PopTimer,
-} from "@/components/flash-pop/ui";
+} from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { AnswerResult, AnswerStatus, FlashChallenge, Question, QuestionMedia as QuestionMediaType } from "@/types/game";
+import type {
+  AnswerResult,
+  AnswerStatus,
+  FlashChallenge,
+  Question,
+  QuestionMedia as QuestionMediaType,
+} from "@/types/game";
 import styles from "./FlashPopFlashGame.module.css";
 
 const FLASH_POP_FEEDBACK_DURATION = {
@@ -70,7 +76,9 @@ function statusTone(status: AnswerStatus): "success" | "social" | "danger" {
 
 function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () => void }) {
   const totalTime = challenge.questions.reduce((total, question) => total + question.timeLimit, 0);
-  const formats = [...new Set(challenge.questions.map((question) => QUESTION_FORMAT_LABELS[question.type]))];
+  const formats = [
+    ...new Set(challenge.questions.map((question) => QUESTION_FORMAT_LABELS[question.type])),
+  ];
 
   return (
     <div className={styles.stage}>
@@ -111,7 +119,9 @@ function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () 
         <PopButton size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
           Empezar desafío
         </PopButton>
-        <p className={styles.note}>La sesión conserva el mismo scoring, reloj y replay que Flash normal.</p>
+        <p className={styles.note}>
+          La sesión conserva el mismo scoring, reloj y replay que Flash normal.
+        </p>
       </PopCard>
     </div>
   );
@@ -163,7 +173,10 @@ function QuestionStage({
         title="Flash clásico"
         mobileLabel={
           <>
-            Pregunta {String(questionIndex + 1).padStart(2, "0")} <span className={styles.mobileLabelMuted}>de {String(challenge.questions.length).padStart(2, "0")}</span>
+            Pregunta {String(questionIndex + 1).padStart(2, "0")}{" "}
+            <span className={styles.mobileLabelMuted}>
+              de {String(challenge.questions.length).padStart(2, "0")}
+            </span>
           </>
         }
         mobileLabelAriaLabel={`Pregunta ${questionPosition}`}
@@ -181,7 +194,8 @@ function QuestionStage({
         className={styles.questionIndicator}
         aria-label={`Pregunta ${questionIndex + 1} de ${challenge.questions.length}`}
       >
-        Pregunta {String(questionIndex + 1).padStart(2, "0")} <span>de {String(challenge.questions.length).padStart(2, "0")}</span>
+        Pregunta {String(questionIndex + 1).padStart(2, "0")}{" "}
+        <span>de {String(challenge.questions.length).padStart(2, "0")}</span>
       </p>
 
       <section className={styles.questionCard} aria-labelledby="flash-pop-question-title">
@@ -208,7 +222,15 @@ function QuestionStage({
   );
 }
 
-function Transition({ result, timedOut, isLast }: { result?: AnswerResult; timedOut: boolean; isLast: boolean }) {
+function Transition({
+  result,
+  timedOut,
+  isLast,
+}: {
+  result?: AnswerResult;
+  timedOut: boolean;
+  isLast: boolean;
+}) {
   const status = result?.status ?? (timedOut ? "unanswered" : "incorrect");
   const title = timedOut
     ? "Tiempo agotado"
@@ -217,7 +239,11 @@ function Transition({ result, timedOut, isLast }: { result?: AnswerResult; timed
       : status === "partial"
         ? "Aproximación válida"
         : "Respuesta fallada";
-  const body = isLast ? "Calculando tu resultado…" : status === "correct" ? "Siguiente pregunta en marcha." : "Sigue: aún quedan retos.";
+  const body = isLast
+    ? "Calculando tu resultado…"
+    : status === "correct"
+      ? "Siguiente pregunta en marcha."
+      : "Sigue: aún quedan retos.";
 
   return (
     <FlashPopFeedback
@@ -246,23 +272,38 @@ function ResultStage({
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
   const accuracyContribution = results.reduce(
-    (total, result) => total + (result.status === "correct" ? 1 : result.details?.type === "estimation" ? result.details.proximity : 0),
+    (total, result) =>
+      total +
+      (result.status === "correct"
+        ? 1
+        : result.details?.type === "estimation"
+          ? result.details.proximity
+          : 0),
     0,
   );
   const accuracy = Math.round((accuracyContribution / challenge.questions.length) * 100);
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
   const maxScore = challenge.questions.reduce((total, question) => total + question.points, 0);
-  const message = accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío duro.";
+  const message =
+    accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío duro.";
 
   return (
     <div className={styles.stage}>
       <PopGameHeader title="Flash clásico" action={<PopChip tone="success">Completado</PopChip>} />
       <div className={styles.resultLayout}>
-        <PopCard as="section" className={styles.resultCard} aria-labelledby="flash-pop-result-title">
+        <PopCard
+          as="section"
+          className={styles.resultCard}
+          aria-labelledby="flash-pop-result-title"
+        >
           <p className={styles.eyebrow}>Desafío completado</p>
           <h1 id="flash-pop-result-title">{message}</h1>
           <div className={styles.scoreDisplay}>
-            <motion.strong initial={{ scale: 0.7 }} animate={{ scale: 1 }} transition={{ type: "spring" }}>
+            <motion.strong
+              initial={{ scale: 0.7 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring" }}
+            >
               {score}
             </motion.strong>
             <span>/{maxScore} puntos</span>
@@ -308,9 +349,21 @@ function ResultStage({
   );
 }
 
-function StatCard({ icon, value, label, tone }: { icon: React.ReactNode; value: string | number; label: string; tone?: "success" | "danger" }) {
+function StatCard({
+  icon,
+  value,
+  label,
+  tone,
+}: {
+  icon: React.ReactNode;
+  value: string | number;
+  label: string;
+  tone?: "success" | "danger";
+}) {
   return (
-    <PopCard className={`${styles.statCard} ${tone === "success" ? styles.statSuccess : tone === "danger" ? styles.statDanger : ""}`}>
+    <PopCard
+      className={`${styles.statCard} ${tone === "success" ? styles.statSuccess : tone === "danger" ? styles.statDanger : ""}`}
+    >
       <div className={styles.statHeader}>
         <span>{label}</span>
         {icon}
@@ -320,32 +373,68 @@ function StatCard({ icon, value, label, tone }: { icon: React.ReactNode; value: 
   );
 }
 
-function ReviewStage({ challenge, results, onBack, onReplay }: { challenge: FlashChallenge; results: AnswerResult[]; onBack: () => void; onReplay: () => void }) {
+function ReviewStage({
+  challenge,
+  results,
+  onBack,
+  onReplay,
+}: {
+  challenge: FlashChallenge;
+  results: AnswerResult[];
+  onBack: () => void;
+  onReplay: () => void;
+}) {
   return (
     <div className={styles.stage}>
-      <PopGameHeader title="Revisión" action={<PopButtonLink href="/flash-pop" variant="secondary">Lobby</PopButtonLink>} />
+      <PopGameHeader
+        title="Revisión"
+        action={
+          <PopButtonLink href="/flash-pop" variant="secondary">
+            Lobby
+          </PopButtonLink>
+        }
+      />
       <PopCard as="section" className={styles.reviewCard} aria-labelledby="flash-pop-review-title">
         <div className={styles.reviewHeading}>
           <div>
             <p className={styles.eyebrow}>Revisión · Flash</p>
             <h1 id="flash-pop-review-title">Tus respuestas</h1>
           </div>
-          <PopChip tone="social">{results.length}/{challenge.questions.length}</PopChip>
+          <PopChip tone="social">
+            {results.length}/{challenge.questions.length}
+          </PopChip>
         </div>
         <div className={styles.reviewList}>
           {challenge.questions.map((question, index) => {
             const result = results[index];
             return (
-              <details className={styles.reviewItem} key={question.id} open={index === results.length - 1}>
+              <details
+                className={styles.reviewItem}
+                key={question.id}
+                open={index === results.length - 1}
+              >
                 <summary>
                   <span className={styles.reviewNumber}>{String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.reviewTitle}><strong>{QUESTION_FORMAT_LABELS[question.type]}</strong><small>{question.question}</small></span>
-                  {result ? <PopChip tone={statusTone(result.status)}>{statusLabel(result.status)}</PopChip> : <PopChip variant="data">No alcanzada</PopChip>}
+                  <span className={styles.reviewTitle}>
+                    <strong>{QUESTION_FORMAT_LABELS[question.type]}</strong>
+                    <small>{question.question}</small>
+                  </span>
+                  {result ? (
+                    <PopChip tone={statusTone(result.status)}>{statusLabel(result.status)}</PopChip>
+                  ) : (
+                    <PopChip variant="data">No alcanzada</PopChip>
+                  )}
                 </summary>
                 {result ? (
                   <div className={styles.reviewBody}>
                     <QuestionReviewContent question={question} result={result} />
-                    <div className={styles.reviewMeta}><span>{result.timeUsed.toFixed(1)} s</span><strong>{result.points > 0 ? "+" : ""}{result.points} pts</strong></div>
+                    <div className={styles.reviewMeta}>
+                      <span>{result.timeUsed.toFixed(1)} s</span>
+                      <strong>
+                        {result.points > 0 ? "+" : ""}
+                        {result.points} pts
+                      </strong>
+                    </div>
                     <p className={styles.explanation}>{question.explanation}</p>
                   </div>
                 ) : null}
@@ -354,8 +443,12 @@ function ReviewStage({ challenge, results, onBack, onReplay }: { challenge: Flas
           })}
         </div>
         <div className={styles.reviewActions}>
-          <PopButton variant="secondary" fullWidth onClick={onBack}>Volver al resultado</PopButton>
-          <PopButton fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>Jugar de nuevo</PopButton>
+          <PopButton variant="secondary" fullWidth onClick={onBack}>
+            Volver al resultado
+          </PopButton>
+          <PopButton fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
+            Jugar de nuevo
+          </PopButton>
         </div>
       </PopCard>
     </div>
@@ -372,7 +465,13 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
   if (challenge.id !== FLASH_POP_FLASH_PILOT_ID) {
     return (
       <MotionConfig reducedMotion="user">
-        <PopCanvas maxWidth="content"><PopCard><h1>Preview no disponible</h1><p>Este piloto está limitado a tabarnia-flash-01.</p><PopButtonLink href="/flash-pop">Volver al lobby</PopButtonLink></PopCard></PopCanvas>
+        <PopCanvas maxWidth="content">
+          <PopCard>
+            <h1>Preview no disponible</h1>
+            <p>Este piloto está limitado a tabarnia-flash-01.</p>
+            <PopButtonLink href="/flash-pop">Volver al lobby</PopButtonLink>
+          </PopCard>
+        </PopCanvas>
       </MotionConfig>
     );
   }
@@ -381,11 +480,86 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
     <MotionConfig reducedMotion="user">
       <PopCanvas contentClassName={styles.screen}>
         <AnimatePresence mode="wait">
-          {session.phase === "intro" ? <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Intro challenge={scoredChallenge} onStart={session.start} /></motion.div> : null}
-          {session.phase === "playing" && session.question ? <motion.div className={styles.stageFrame} key={session.question.id} initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -18 }}><QuestionStage challenge={scoredChallenge} question={session.question} questionIndex={session.questionIndex} locked={session.locked} onSubmit={session.submitAnswer} onTimeUp={session.handleTimeUp} onProgress={session.handleAnswerProgress} onIncorrectAttempt={session.handleIncorrectAttempt} onProgressiveClueReveal={session.handleProgressiveClueReveal} onCodeAttempt={session.handleCodeAttempt} onTimedResponseStart={session.handleTimedResponseStart} attemptCount={session.codeAttempts.length} /></motion.div> : null}
-          {session.phase === "transition" ? <motion.div key={`transition-${session.questionIndex}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Transition result={lastResult} timedOut={session.lastTimedOut} isLast={session.questionIndex === scoredChallenge.questions.length - 1} /></motion.div> : null}
-          {session.phase === "results" ? <motion.div className={styles.stageFrame} key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ResultStage challenge={scoredChallenge} results={session.results} score={session.score} onReview={session.showReview} onReplay={session.replay} /></motion.div> : null}
-          {session.phase === "review" ? <motion.div key="review" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ReviewStage challenge={scoredChallenge} results={session.results} onBack={session.showResults} onReplay={session.replay} /></motion.div> : null}
+          {session.phase === "intro" ? (
+            <motion.div
+              key="intro"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Intro challenge={scoredChallenge} onStart={session.start} />
+            </motion.div>
+          ) : null}
+          {session.phase === "playing" && session.question ? (
+            <motion.div
+              className={styles.stageFrame}
+              key={session.question.id}
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+            >
+              <QuestionStage
+                challenge={scoredChallenge}
+                question={session.question}
+                questionIndex={session.questionIndex}
+                locked={session.locked}
+                onSubmit={session.submitAnswer}
+                onTimeUp={session.handleTimeUp}
+                onProgress={session.handleAnswerProgress}
+                onIncorrectAttempt={session.handleIncorrectAttempt}
+                onProgressiveClueReveal={session.handleProgressiveClueReveal}
+                onCodeAttempt={session.handleCodeAttempt}
+                onTimedResponseStart={session.handleTimedResponseStart}
+                attemptCount={session.codeAttempts.length}
+              />
+            </motion.div>
+          ) : null}
+          {session.phase === "transition" ? (
+            <motion.div
+              key={`transition-${session.questionIndex}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Transition
+                result={lastResult}
+                timedOut={session.lastTimedOut}
+                isLast={session.questionIndex === scoredChallenge.questions.length - 1}
+              />
+            </motion.div>
+          ) : null}
+          {session.phase === "results" ? (
+            <motion.div
+              className={styles.stageFrame}
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <ResultStage
+                challenge={scoredChallenge}
+                results={session.results}
+                score={session.score}
+                onReview={session.showReview}
+                onReplay={session.replay}
+              />
+            </motion.div>
+          ) : null}
+          {session.phase === "review" ? (
+            <motion.div
+              key="review"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <ReviewStage
+                challenge={scoredChallenge}
+                results={session.results}
+                onBack={session.showResults}
+                onReplay={session.replay}
+              />
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       </PopCanvas>
     </MotionConfig>

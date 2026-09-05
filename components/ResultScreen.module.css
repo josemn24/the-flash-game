@@ -13,7 +13,7 @@
 .accuracyCard,
 .timeCard,
 .tipCard {
-  border: 1px solid var(--border-subtle);
+  border: var(--border-subtle);
   background: var(--surface-panel);
   backdrop-filter: blur(18px);
 }

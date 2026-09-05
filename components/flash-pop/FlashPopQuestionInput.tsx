@@ -19,6 +19,7 @@ import { QueensQuestion } from "@/components/QueensQuestion";
 import { TrueFalseQuestion } from "@/components/TrueFalseQuestion";
 import { WordHashtagQuestion } from "@/components/WordHashtagQuestion";
 import { WordSearchQuestion } from "@/components/WordSearchQuestion";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import {
   isClassificationAnswer,
   isConnectPairsAnswer,
@@ -420,9 +421,24 @@ export function FlashPopQuestionInput({
     }
     default:
       return (
-        <p className={styles.unsupported} role="alert">
-          Este nivel todavía no está disponible en Flash Pop.
-        </p>
+        <div
+          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          data-format={question.type}
+        >
+          <QuestionInput
+            question={question}
+            locked={locked}
+            initialAnswer={initialAnswer}
+            onSubmit={onSubmit}
+            onProgress={onProgress}
+            onIncorrectAttempt={onIncorrectAttempt}
+            onProgressiveClueReveal={onProgressiveClueReveal}
+            onCodeAttempt={onCodeAttempt}
+            onTimedResponseStart={onTimedResponseStart}
+            codeAttemptCount={attemptCount}
+            variant="flash-pop"
+          />
+        </div>
       );
   }
 }

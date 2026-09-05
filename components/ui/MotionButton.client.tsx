@@ -8,6 +8,7 @@ export type MotionButtonProps = HTMLMotionProps<"button"> & ButtonStyleProps;
 export function MotionButton({
   variant = "primary",
   size = "default",
+  fullWidth = false,
   className,
   type = "button",
   ...props
@@ -16,7 +17,7 @@ export function MotionButton({
     <motion.button
       {...props}
       type={type}
-      className={buttonClassName({ variant, size, className })}
+      className={buttonClassName({ variant, size, fullWidth, className })}
     />
   );
 }

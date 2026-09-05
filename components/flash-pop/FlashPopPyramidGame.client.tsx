@@ -12,7 +12,7 @@ import {
   PopChip,
   PopGameHeader,
   PopTimer,
-} from "@/components/flash-pop/ui";
+} from "@/components/ui";
 import { FlashPopFeedback } from "@/components/flash-pop/FlashPopFeedback";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { QuestionMedia } from "@/components/QuestionMedia";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import styles from "@/components/FlashMemoryQuestion.module.css";
 import type { FlashMemoryAnswer, FlashMemoryItem } from "@/types/game";
 

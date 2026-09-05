@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BellIcon, BoltIcon } from "@/components/icons";
+import { Avatar, Button, Card, Chip, GameHeader, IconButton, TimerDisplay } from "@/components/ui";
 import {
   PopAvatarStack,
   PopButton,
@@ -10,9 +11,28 @@ import {
   PopIconButton,
   PopGameHeader,
   PopTimerDisplay,
-} from "@/components/flash-pop/ui";
+} from "@/components/ui";
+import {
+  PopAvatar as LegacyPopAvatar,
+  PopButton as LegacyPopButton,
+  PopCard as LegacyPopCard,
+  PopChip as LegacyPopChip,
+  PopGameHeader as LegacyPopGameHeader,
+  PopIconButton as LegacyPopIconButton,
+  PopTimerDisplay as LegacyPopTimerDisplay,
+} from ".";
 
 describe("Flash Pop UI primitives", () => {
+  it("keeps compatibility aliases on the canonical implementations", () => {
+    expect(Button).toBe(LegacyPopButton);
+    expect(Chip).toBe(LegacyPopChip);
+    expect(Card).toBe(LegacyPopCard);
+    expect(Avatar).toBe(LegacyPopAvatar);
+    expect(IconButton).toBe(LegacyPopIconButton);
+    expect(TimerDisplay).toBe(LegacyPopTimerDisplay);
+    expect(GameHeader).toBe(LegacyPopGameHeader);
+  });
+
   it("renders loading buttons as disabled and busy", () => {
     const markup = renderToStaticMarkup(<PopButton loading>Guardando</PopButton>);
 

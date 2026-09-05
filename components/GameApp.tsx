@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { PopTheme } from "@/components/flash-pop/PopTheme";
+import { LegacyTheme } from "@/components/ui";
 import { isFlashPopPreviewChallenge } from "@/features/flash-pop/demoSocial";
 import type { Challenge } from "@/types/game";
 
@@ -30,8 +31,20 @@ const SurvivalGameApp = dynamic(() =>
 );
 
 export function GameApp({ challenge }: { challenge: Challenge }) {
-  if (challenge.mode === "alphabet") return <AlphabetGameApp challenge={challenge} />;
-  if (challenge.mode === "narrative") return <NarrativeGameApp challenge={challenge} />;
+  if (challenge.mode === "alphabet") {
+    return (
+      <LegacyTheme>
+        <AlphabetGameApp challenge={challenge} />
+      </LegacyTheme>
+    );
+  }
+  if (challenge.mode === "narrative") {
+    return (
+      <LegacyTheme>
+        <NarrativeGameApp challenge={challenge} />
+      </LegacyTheme>
+    );
+  }
   if (challenge.mode === "pyramid" && isFlashPopPreviewChallenge(challenge.id)) {
     return (
       <PopTheme>
@@ -39,8 +52,20 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
       </PopTheme>
     );
   }
-  if (challenge.mode === "pyramid") return <PyramidGameApp challenge={challenge} />;
-  if (challenge.mode === "survival") return <SurvivalGameApp challenge={challenge} />;
+  if (challenge.mode === "pyramid") {
+    return (
+      <LegacyTheme>
+        <PyramidGameApp challenge={challenge} />
+      </LegacyTheme>
+    );
+  }
+  if (challenge.mode === "survival") {
+    return (
+      <LegacyTheme>
+        <SurvivalGameApp challenge={challenge} />
+      </LegacyTheme>
+    );
+  }
   if (challenge.mode === "flash") {
     return (
       <PopTheme>
@@ -48,5 +73,9 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
       </PopTheme>
     );
   }
-  return <FlashGameApp challenge={challenge} />;
+  return (
+    <LegacyTheme>
+      <FlashGameApp challenge={challenge} />
+    </LegacyTheme>
+  );
 }

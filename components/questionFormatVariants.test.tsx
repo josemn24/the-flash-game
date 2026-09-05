@@ -69,7 +69,7 @@ describe("question format visual variants", () => {
       onSubmit: (answer) => answers.push(answer),
       variant: "flash-pop",
     }) as React.ReactElement<{ children: React.ReactElement[] }>;
-    const buttons = trueFalse.props.children;
+    const buttons = trueFalse.props.children as React.ReactElement<{ onClick: () => void }>[];
     buttons[0].props.onClick();
     buttons[1].props.onClick();
 

@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import styles from "@/components/MiniWordleQuestion.module.css";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import {
   getMiniWordleFeedback,
   getMiniWordleMaxAttempts,

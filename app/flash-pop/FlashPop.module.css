@@ -222,8 +222,7 @@
 .classicPreviewCard {
   border-color: var(--pop-color-social);
   background:
-    linear-gradient(135deg, rgb(105 87 232 / 8%), transparent 58%),
-    var(--pop-color-surface);
+    linear-gradient(135deg, rgb(105 87 232 / 8%), transparent 58%), var(--pop-color-surface);
 }
 
 .classicPreviewCard h2 {

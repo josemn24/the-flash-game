@@ -19,7 +19,7 @@
 }
 .reviewCard {
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
+  border: var(--border-subtle);
   border-left-width: 3px;
   border-radius: 1rem;
   background: rgba(18, 20, 24, 0.76);

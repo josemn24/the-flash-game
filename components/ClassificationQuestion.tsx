@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import { useState } from "react";
 import { CheckIcon } from "@/components/icons";
 import styles from "@/components/ClassificationQuestion.module.css";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import type { ClassificationAnswer, ClassificationItem, QuestionVariant } from "@/types/game";
 
 type ClassificationQuestionProps = {

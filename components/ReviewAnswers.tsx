@@ -11,8 +11,7 @@ import {
 } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import styles from "@/components/ReviewAnswers.module.css";
-import { AppHeader } from "@/components/ui/AppHeader";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { AppHeader, MotionButton } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import type {
   AnswerResult,

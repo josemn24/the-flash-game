@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PopButton, PopTimer } from "@/components/flash-pop/ui";
+import { PopButton, PopTimer } from "@/components/ui";
 import styles from "./UiKit.module.css";
 
 export function LiveTimerDemo() {

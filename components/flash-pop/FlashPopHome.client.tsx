@@ -1,6 +1,13 @@
 import Image from "next/image";
 import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/icons";
-import { PopAvatar, PopButtonLink, PopCard, PopCanvas, PopChip, PopGameHeader } from "@/components/flash-pop/ui";
+import {
+  PopAvatar,
+  PopButtonLink,
+  PopCard,
+  PopCanvas,
+  PopChip,
+  PopGameHeader,
+} from "@/components/ui";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import type { ChallengeSummary, SeasonStatus } from "@/types/game";
 import styles from "./FlashPopHome.module.css";
@@ -27,7 +34,9 @@ function actionLabel(challenge: ChallengeSummary) {
 }
 
 function dateLabel(value: string) {
-  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(
+    new Date(value),
+  );
 }
 
 function challengeHref(challenge: ChallengeSummary) {
@@ -46,8 +55,12 @@ export function FlashPopHome({
     challenges.find((challenge) => challenge.id === FLASH_POP_FLASH_PILOT_ID) ??
     challenges.find((challenge) => challenge.playable || challenge.openable) ??
     challenges[0];
-  const accessibleChallenges = challenges.filter((challenge) => challenge.playable || challenge.openable);
-  const progressPercent = challenges.length ? Math.round((accessibleChallenges.length / challenges.length) * 100) : 0;
+  const accessibleChallenges = challenges.filter(
+    (challenge) => challenge.playable || challenge.openable,
+  );
+  const progressPercent = challenges.length
+    ? Math.round((accessibleChallenges.length / challenges.length) * 100)
+    : 0;
 
   if (!primaryChallenge) return null;
 
@@ -55,23 +68,39 @@ export function FlashPopHome({
     <PopCanvas contentClassName={styles.content}>
       <PopGameHeader
         title={roomTitle}
-        action={<PopChip tone={seasonStatus === "active" ? "success" : "neutral"}>{seasonStatus === "active" ? "En directo" : "Temporada cerrada"}</PopChip>}
+        action={
+          <PopChip tone={seasonStatus === "active" ? "success" : "neutral"}>
+            {seasonStatus === "active" ? "En directo" : "Temporada cerrada"}
+          </PopChip>
+        }
       />
 
       <section className={styles.welcome} aria-labelledby="flash-pop-home-title">
         <div>
-          <p className={styles.eyebrow}><BoltIcon /> Sala de juego</p>
+          <p className={styles.eyebrow}>
+            <BoltIcon /> Sala de juego
+          </p>
           <h1 id="flash-pop-home-title">Elige tu próximo reto.</h1>
-          <p className={styles.lead}>Preguntas rápidas, feedback instantáneo y una temporada para jugar a tu ritmo.</p>
+          <p className={styles.lead}>
+            Preguntas rápidas, feedback instantáneo y una temporada para jugar a tu ritmo.
+          </p>
         </div>
         <div className={styles.identity} aria-label="Jugador actual">
           <PopAvatar name="Jugador" initials="TÚ" tone="social" size="md" />
-          <span><strong>Tu sala</strong><small>{seasonTitle}</small></span>
+          <span>
+            <strong>Tu sala</strong>
+            <small>{seasonTitle}</small>
+          </span>
         </div>
       </section>
 
       <div className={styles.dashboard}>
-        <PopCard as="section" elevation="hero" className={styles.heroCard} aria-labelledby="primary-challenge-title">
+        <PopCard
+          as="section"
+          elevation="hero"
+          className={styles.heroCard}
+          aria-labelledby="primary-challenge-title"
+        >
           <div className={styles.heroArt}>
             <Image
               src="/flash-pop/concepts/pyramid-soft-diorama.webp"
@@ -90,8 +119,12 @@ export function FlashPopHome({
             <h2 id="primary-challenge-title">{primaryChallenge.title}</h2>
             <p>{primaryChallenge.subtitle}</p>
             <div className={styles.stats} aria-label="Datos del reto">
-              <span><strong>{primaryChallenge.questionCount}</strong> preguntas</span>
-              <span><ClockIcon /> {dateLabel(primaryChallenge.availableUntil)}</span>
+              <span>
+                <strong>{primaryChallenge.questionCount}</strong> preguntas
+              </span>
+              <span>
+                <ClockIcon /> {dateLabel(primaryChallenge.availableUntil)}
+              </span>
             </div>
             <PopButtonLink
               href={challengeHref(primaryChallenge)}
@@ -105,21 +138,37 @@ export function FlashPopHome({
         </PopCard>
 
         <aside className={styles.sideColumn} aria-label="Estado de la temporada">
-          <PopCard as="section" surface="soft" className={styles.seasonCard} aria-labelledby="season-progress-title">
+          <PopCard
+            as="section"
+            surface="soft"
+            className={styles.seasonCard}
+            aria-labelledby="season-progress-title"
+          >
             <div className={styles.cardMeta}>
               <PopChip variant="data">Temporada</PopChip>
               <span>{accessibleChallenges.length} accesibles</span>
             </div>
             <h2 id="season-progress-title">{seasonTitle}</h2>
             <p>Tu progreso de acceso a los retos de esta sala.</p>
-            <div className={styles.progressTrack} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent} aria-label="Progreso de acceso a retos">
+            <div
+              className={styles.progressTrack}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercent}
+              aria-label="Progreso de acceso a retos"
+            >
               <span style={{ width: `${progressPercent}%` }} />
             </div>
-            <strong className={styles.progressValue}>{accessibleChallenges.length}/{challenges.length} retos accesibles</strong>
+            <strong className={styles.progressValue}>
+              {accessibleChallenges.length}/{challenges.length} retos accesibles
+            </strong>
           </PopCard>
 
           <PopCard as="section" className={styles.nextCard} aria-labelledby="next-challenge-title">
-            <div className={styles.nextIcon}><BoltIcon /></div>
+            <div className={styles.nextIcon}>
+              <BoltIcon />
+            </div>
             <div>
               <span className={styles.kicker}>Siguiente movimiento</span>
               <h2 id="next-challenge-title">16 preguntas. Una sola carrera.</h2>
@@ -141,18 +190,37 @@ export function FlashPopHome({
           {challenges.map((challenge) => {
             const canOpen = challenge.playable || challenge.openable;
             return (
-              <PopCard as="article" key={challenge.id} padding="compact" className={styles.challengeCard}>
-                <div className={styles.challengeNumber}>{String(challenge.number).padStart(2, "0")}</div>
+              <PopCard
+                as="article"
+                key={challenge.id}
+                padding="compact"
+                className={styles.challengeCard}
+              >
+                <div className={styles.challengeNumber}>
+                  {String(challenge.number).padStart(2, "0")}
+                </div>
                 <div className={styles.challengeCopy}>
-                  <div className={styles.cardMeta}><span>{statusLabel(challenge)}</span><span>{dateLabel(challenge.availableFrom)}</span></div>
+                  <div className={styles.cardMeta}>
+                    <span>{statusLabel(challenge)}</span>
+                    <span>{dateLabel(challenge.availableFrom)}</span>
+                  </div>
                   <h3>{challenge.title}</h3>
-                  <p>{challenge.questionCount ? `${challenge.questionCount} preguntas · ` : ""}{challenge.subtitle}</p>
+                  <p>
+                    {challenge.questionCount ? `${challenge.questionCount} preguntas · ` : ""}
+                    {challenge.subtitle}
+                  </p>
                 </div>
                 {canOpen ? (
-                  <PopButtonLink href={challengeHref(challenge)} variant="secondary" aria-label={`${actionLabel(challenge)}: ${challenge.title}`}>
+                  <PopButtonLink
+                    href={challengeHref(challenge)}
+                    variant="secondary"
+                    aria-label={`${actionLabel(challenge)}: ${challenge.title}`}
+                  >
                     <ArrowIcon />
                   </PopButtonLink>
-                ) : <span className={styles.locked}>—</span>}
+                ) : (
+                  <span className={styles.locked}>—</span>
+                )}
               </PopCard>
             );
           })}

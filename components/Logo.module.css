@@ -5,7 +5,7 @@
   place-items: center;
   border-radius: 0.55rem;
   color: #080907;
-  background: var(--electric);
-  box-shadow: 0 0 24px rgba(215, 255, 24, 0.22);
+  background: var(--color-brand);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-brand) 22%, transparent);
   transform: skewX(-7deg);
 }

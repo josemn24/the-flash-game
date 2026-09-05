@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/icons";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { MotionButton } from "@/components/ui";
 import styles from "@/components/OrderingQuestion.module.css";
 import type { QuestionVariant } from "@/types/game";
 

@@ -11,9 +11,7 @@ import {
   RotateIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/Logo";
-import { AppHeader } from "@/components/ui/AppHeader";
-import { Badge } from "@/components/ui/Badge";
-import { MotionButton } from "@/components/ui/MotionButton.client";
+import { AppHeader, Badge, MotionButton } from "@/components/ui";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import styles from "@/components/ResultScreen.module.css";
 import type { AnswerResult, FlashChallenge } from "@/types/game";

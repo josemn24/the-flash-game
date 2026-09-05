@@ -53,7 +53,7 @@
 }
 
 .primary:hover:not(:disabled):not([aria-disabled="true"]) {
-  background: #e1ff48;
+  background: var(--color-brand-hover);
   box-shadow: 0 5px 0 rgb(23 23 32 / 18%);
 }
 
@@ -92,7 +92,8 @@
   width: 100%;
 }
 
-.spinner {
+.spinner,
+.uiButtonSpinner {
   width: 18px;
   height: 18px;
   border: 2px solid currentColor;
@@ -129,7 +130,7 @@
 .iconSocial {
   border: 2px solid var(--pop-color-social);
   background: var(--pop-color-social);
-  color: #fff;
+  color: var(--color-text-on-social);
 }
 
 .iconButton:hover:not(:disabled) {
@@ -166,8 +167,8 @@
 
 .data {
   border: 1px solid rgb(255 255 255 / 16%);
-  background: rgb(23 23 32 / 84%);
-  color: #fff;
+  background: var(--color-overlay-ink);
+  color: var(--color-text-on-social);
   backdrop-filter: blur(8px);
   font-variant-numeric: tabular-nums;
 }
@@ -183,7 +184,7 @@
 
 .social {
   background: var(--pop-color-social);
-  color: #fff;
+  color: var(--color-text-on-social);
 }
 
 .info {
@@ -192,7 +193,7 @@
 
 .success {
   background: var(--pop-color-success);
-  color: var(--pop-color-surface);
+  color: var(--color-text-on-success);
 }
 
 .danger {

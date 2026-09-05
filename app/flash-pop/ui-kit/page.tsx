@@ -11,7 +11,7 @@ import {
   PopIconButton,
   PopTimerDisplay,
   type PopAvatarData,
-} from "@/components/flash-pop/ui";
+} from "@/components/ui";
 import { ArrowIcon, BellIcon, BoltIcon, CheckIcon, CrossIcon } from "@/components/icons";
 import { LiveTimerDemo } from "./LiveTimerDemo.client";
 import styles from "./UiKit.module.css";

@@ -1,4 +1,4 @@
-import type { PopAvatarTone } from "@/components/flash-pop/ui";
+import type { PopAvatarTone } from "@/components/ui";
 import type {
   PyramidAttemptRecord,
   PyramidAttemptSummary,

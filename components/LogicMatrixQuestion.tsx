@@ -34,22 +34,13 @@ function MatrixSymbol({ piece }: { piece: LogicMatrixPiece }) {
   const parsed = parseMatrixPieceId(piece.id);
 
   if (!parsed) {
-    return (
-      <span aria-hidden="true">{piece.symbol}</span>
-    );
+    return <span aria-hidden="true">{piece.symbol}</span>;
   }
 
   return (
-    <svg
-      className={styles.symbolGraphic}
-      viewBox="0 0 112 56"
-      aria-hidden="true"
-      focusable="false"
-    >
+    <svg className={styles.symbolGraphic} viewBox="0 0 112 56" aria-hidden="true" focusable="false">
       {parsed.shape === "circle" && <circle cx="24" cy="28" r="13" fill="currentColor" />}
-      {parsed.shape === "triangle" && (
-        <path d="m24 12 15 29H9l15-29Z" fill="currentColor" />
-      )}
+      {parsed.shape === "triangle" && <path d="m24 12 15 29H9l15-29Z" fill="currentColor" />}
       {parsed.shape === "square" && (
         <rect x="11" y="15" width="26" height="26" rx="2" fill="currentColor" />
       )}
@@ -57,25 +48,53 @@ function MatrixSymbol({ piece }: { piece: LogicMatrixPiece }) {
       {parsed.direction === "up" && (
         <>
           <path d="M72 44V12" fill="none" stroke="currentColor" strokeWidth="3.5" />
-          <path d="m58 26 14-14 14 14" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="m58 26 14-14 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </>
       )}
       {parsed.direction === "right" && (
         <>
           <path d="M54 28h36" fill="none" stroke="currentColor" strokeWidth="3.5" />
-          <path d="m78 16 14 12-14 12" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="m78 16 14 12-14 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </>
       )}
       {parsed.direction === "down" && (
         <>
           <path d="M72 12v32" fill="none" stroke="currentColor" strokeWidth="3.5" />
-          <path d="m58 30 14 14 14-14" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="m58 30 14 14 14-14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </>
       )}
       {parsed.direction === "left" && (
         <>
           <path d="M90 28H54" fill="none" stroke="currentColor" strokeWidth="3.5" />
-          <path d="m66 16-14 12 14 12" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="m66 16-14 12 14 12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </>
       )}
     </svg>

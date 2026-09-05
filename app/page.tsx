@@ -71,10 +71,10 @@ export default function Home() {
           scheduledChallenge.id === "tabarnia-flash-01"
             ? "prototype"
             : definition.mode === "narrative"
-            ? definition.implementationStatus
-            : definition.mode === "pyramid"
-              ? "prototype"
-              : undefined,
+              ? definition.implementationStatus
+              : definition.mode === "pyramid"
+                ? "prototype"
+                : undefined,
       };
     },
   );

@@ -11,7 +11,11 @@ export function generateStaticParams() {
   return [{ challengeId: FLASH_POP_FLASH_PILOT_ID }];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ challengeId: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ challengeId: string }>;
+}): Promise<Metadata> {
   const { challengeId } = await params;
   const challenge = getChallengeById(challengeId);
   return {
@@ -20,9 +24,14 @@ export async function generateMetadata({ params }: { params: Promise<{ challenge
   };
 }
 
-export default async function FlashPopFlashPage({ params }: { params: Promise<{ challengeId: string }> }) {
+export default async function FlashPopFlashPage({
+  params,
+}: {
+  params: Promise<{ challengeId: string }>;
+}) {
   const { challengeId } = await params;
   const challenge = getChallengeById(challengeId);
-  if (challengeId !== FLASH_POP_FLASH_PILOT_ID || !challenge || challenge.mode !== "flash") notFound();
+  if (challengeId !== FLASH_POP_FLASH_PILOT_ID || !challenge || challenge.mode !== "flash")
+    notFound();
   return <FlashPopFlashGame challenge={challenge} />;
 }

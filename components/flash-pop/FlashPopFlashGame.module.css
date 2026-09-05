@@ -315,7 +315,10 @@
   place-items: center;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: conic-gradient(var(--pop-color-social) var(--accuracy), var(--pop-color-surface-soft) 0);
+  background: conic-gradient(
+    var(--pop-color-social) var(--accuracy),
+    var(--pop-color-surface-soft) 0
+  );
 }
 
 .accuracyRing::before {
@@ -362,10 +365,20 @@
   font-weight: 800;
 }
 
-.statCard svg { width: 19px; color: var(--pop-color-ink-muted); }
-.statCard strong { font-family: var(--pop-font-display); font-size: 25px; }
-.statSuccess svg { color: var(--pop-color-success); }
-.statDanger svg { color: #c83d55; }
+.statCard svg {
+  width: 19px;
+  color: var(--pop-color-ink-muted);
+}
+.statCard strong {
+  font-family: var(--pop-font-display);
+  font-size: 25px;
+}
+.statSuccess svg {
+  color: var(--pop-color-success);
+}
+.statDanger svg {
+  color: #c83d55;
+}
 
 .reviewCard {
   max-width: 900px;
@@ -380,16 +393,59 @@
   gap: 14px;
 }
 
-.reviewCard h1 { margin: 10px 0 0; font-size: clamp(40px, 6vw, 62px); }
-.reviewList { display: grid; gap: 10px; margin-top: 28px; }
-.reviewItem { overflow: hidden; border: 1px solid var(--pop-color-border); border-radius: 16px; background: var(--pop-color-surface-soft); }
-.reviewItem summary { display: flex; min-height: 66px; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; list-style: none; }
-.reviewItem summary::-webkit-details-marker { display: none; }
-.reviewNumber { color: var(--pop-color-social); font-family: var(--pop-font-mono); font-size: 10px; font-weight: 900; }
-.reviewTitle { display: grid; min-width: 0; flex: 1; gap: 4px; }
-.reviewTitle strong { font-size: 11px; }
-.reviewTitle small { overflow: hidden; color: var(--pop-color-ink-muted); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.reviewBody { padding: 0 18px 18px; }
+.reviewCard h1 {
+  margin: 10px 0 0;
+  font-size: clamp(40px, 6vw, 62px);
+}
+.reviewList {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+}
+.reviewItem {
+  overflow: hidden;
+  border: 1px solid var(--pop-color-border);
+  border-radius: 16px;
+  background: var(--pop-color-surface-soft);
+}
+.reviewItem summary {
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.reviewItem summary::-webkit-details-marker {
+  display: none;
+}
+.reviewNumber {
+  color: var(--pop-color-social);
+  font-family: var(--pop-font-mono);
+  font-size: 10px;
+  font-weight: 900;
+}
+.reviewTitle {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+.reviewTitle strong {
+  font-size: 11px;
+}
+.reviewTitle small {
+  overflow: hidden;
+  color: var(--pop-color-ink-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reviewBody {
+  padding: 0 18px 18px;
+}
 
 /* QuestionReviewContent is shared with the dark Flash UI. Re-skin its review
    surfaces here so labels and answers remain readable on the light Pop card. */
@@ -418,30 +474,77 @@
   color: var(--pop-color-focus);
 }
 
-.reviewMeta { display: flex; justify-content: space-between; margin-top: 14px; color: var(--pop-color-ink-muted); font-family: var(--pop-font-mono); font-size: 10px; }
-.reviewMeta strong { color: var(--pop-color-social); }
-.explanation { margin: 12px 0 0; color: var(--pop-color-ink-muted); font-size: 12px; line-height: 1.5; }
+.reviewMeta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: var(--pop-color-ink-muted);
+  font-family: var(--pop-font-mono);
+  font-size: 10px;
+}
+.reviewMeta strong {
+  color: var(--pop-color-social);
+}
+.explanation {
+  margin: 12px 0 0;
+  color: var(--pop-color-ink-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
 
 @media (max-width: 700px) {
-  .stage { min-height: calc(100dvh - 32px); }
-  .resultLayout { grid-template-columns: 1fr; margin-top: 12px; }
-  .reviewItem summary { align-items: start; }
-  .reviewItem summary > :global(.card) { margin-left: auto; }
+  .stage {
+    min-height: calc(100dvh - 32px);
+  }
+  .resultLayout {
+    grid-template-columns: 1fr;
+    margin-top: 12px;
+  }
+  .reviewItem summary {
+    align-items: start;
+  }
+  .reviewItem summary > :global(.card) {
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 480px) {
-  .introCard h1 { margin-right: 0; padding-top: 72px; }
-  .introAccent { top: 22px; right: 22px; width: 64px; height: 64px; }
-  .introAccent span { font-size: 27px; }
-  .introStats { gap: 6px; }
-  .introStats div { padding: 10px; }
-  .introStats strong { font-size: 17px; }
-  .introStats span { font-size: 8px; }
+  .introCard h1 {
+    margin-right: 0;
+    padding-top: 72px;
+  }
+  .introAccent {
+    top: 22px;
+    right: 22px;
+    width: 64px;
+    height: 64px;
+  }
+  .introAccent span {
+    font-size: 27px;
+  }
+  .introStats {
+    gap: 6px;
+  }
+  .introStats div {
+    padding: 10px;
+  }
+  .introStats strong {
+    font-size: 17px;
+  }
+  .introStats span {
+    font-size: 8px;
+  }
   .summaryStats,
-  .answerStats { gap: 7px; }
+  .answerStats {
+    gap: 7px;
+  }
   .answerStats .statCard,
-  .summaryStats .statCard { padding: 14px 12px; }
-  .reviewTitle small { max-width: 150px; }
+  .summaryStats .statCard {
+    padding: 14px 12px;
+  }
+  .reviewTitle small {
+    max-width: 150px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -455,5 +558,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scoreTrack span { transition: none; }
+  .scoreTrack span {
+    transition: none;
+  }
 }

@@ -2,8 +2,7 @@ import Link from "next/link";
 import { ArrowIcon, ClockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import styles from "@/components/StartScreen.module.css";
-import { AppHeader } from "@/components/ui/AppHeader";
-import { Badge } from "@/components/ui/Badge";
+import { AppHeader, Badge } from "@/components/ui";
 import type { ChallengeSummary, SeasonStatus } from "@/types/game";
 
 type StartScreenProps = {
