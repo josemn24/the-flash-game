@@ -62,10 +62,7 @@ export function ProgressiveCluesQuestion({
   };
 
   return (
-    <div
-      className={`${styles.challenge} ${className ?? ""}`}
-      data-variant={variant ?? "default"}
-    >
+    <div className={`${styles.challenge} ${className ?? ""}`} data-variant={variant ?? "default"}>
       <div className={styles.scoreRow}>
         <span>
           {revealedClues} de {clues.length} {clues.length === 1 ? "pista" : "pistas"}

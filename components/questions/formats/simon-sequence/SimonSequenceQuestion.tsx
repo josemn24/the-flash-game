@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./SimonSequenceQuestion.module.css";
-import type { SimonSequencePad } from "@/types/game";
+import type { QuestionVariant, SimonSequencePad } from "@/types/game";
 
 const STEP_DURATION_MS = 560;
 const STEP_GAP_MS = 180;
@@ -14,6 +14,7 @@ type SimonSequenceQuestionProps = {
   locked: boolean;
   onSubmit: (answer: string[]) => void;
   onTimedResponseStart: () => void;
+  variant?: QuestionVariant;
 };
 
 export function SimonSequenceQuestion({
@@ -22,6 +23,7 @@ export function SimonSequenceQuestion({
   locked,
   onSubmit,
   onTimedResponseStart,
+  variant,
 }: SimonSequenceQuestionProps) {
   const [phase, setPhase] = useState<"playback" | "response">("playback");
   const [activePadId, setActivePadId] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export function SimonSequenceQuestion({
   };
 
   return (
-    <section className={styles.root} aria-live="polite">
+    <section className={styles.root} data-variant={variant ?? "default"} aria-live="polite">
       <div className={styles.phaseHeader}>
         <span>{phase === "playback" ? "Observa la secuencia" : "Repite la secuencia"}</span>
         {phase === "response" && (

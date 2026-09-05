@@ -8,7 +8,12 @@ import {
   rotatePipesTile,
   type PipeDirection,
 } from "@/lib/pipes";
-import type { PipesAnswer, PipesQuestion as PipesQuestionType, PipesTileKind } from "@/types/game";
+import type {
+  PipesAnswer,
+  PipesQuestion as PipesQuestionType,
+  PipesTileKind,
+  QuestionVariant,
+} from "@/types/game";
 import styles from "./PipesQuestion.module.css";
 
 const KIND_LABEL: Record<PipesTileKind, string> = {
@@ -53,6 +58,7 @@ export function PipesBoard({
   onRotate,
   onFocus,
   onKeyDown,
+  disabled = false,
 }: {
   question: PipesQuestionType;
   answer: PipesAnswer;
@@ -62,13 +68,14 @@ export function PipesBoard({
   onRotate?: (cell: number) => void;
   onFocus?: (cell: number) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>, cell: number) => void;
+  disabled?: boolean;
 }) {
   const metrics = useMemo(() => calculatePipesMetrics(question, answer), [answer, question]);
   const connectedCells = useMemo(
     () => (metrics.valid ? getPipesConnectedCells(question, answer.rotations) : new Set<number>()),
     [answer.rotations, metrics.valid, question],
   );
-  const interactive = Boolean(onRotate);
+  const interactive = Boolean(onRotate) && !disabled;
 
   return (
     <div className={styles.board} role="grid" aria-label={label}>
@@ -102,6 +109,7 @@ export function PipesBoard({
             role="gridcell"
             className={className}
             tabIndex={focusedCell === cell ? 0 : -1}
+            disabled={disabled}
             aria-label={`Fila ${row}, columna ${column}: ${KIND_LABEL[kind]}, conectada hacia ${directionLabel}${
               isSource ? ", fuente" : ""
             }`}
@@ -131,11 +139,13 @@ export function PipesQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: {
   question: PipesQuestionType;
   locked: boolean;
   onProgress: (answer: PipesAnswer) => void;
   onSubmit: (answer: PipesAnswer) => void;
+  variant?: QuestionVariant;
 }) {
   const [answer, setAnswer] = useState<PipesAnswer>({
     rotations: question.initialRotations,
@@ -189,7 +199,11 @@ export function PipesQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Tuberías, conecta toda la red">
+    <section
+      className={styles.root}
+      data-variant={variant ?? "default"}
+      aria-label="Tuberías, conecta toda la red"
+    >
       <div className={styles.header}>
         <span>Conecta toda la red</span>
         <strong>{answer.moves} giros</strong>
@@ -203,6 +217,7 @@ export function PipesQuestion({
         onRotate={rotate}
         onFocus={setFocusedCell}
         onKeyDown={handleKeyDown}
+        disabled={locked}
       />
       <div className={styles.progress} aria-live="polite">
         <strong>

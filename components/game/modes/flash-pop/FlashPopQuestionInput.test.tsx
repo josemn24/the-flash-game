@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
 import { getChallengeById } from "@/data/challenges";
 import { questionsById } from "@/data/questions";
+import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 
 describe("Flash Pop question adapter", () => {
   it("renders every format in tabarnia-challenge-05", () => {
@@ -114,6 +115,25 @@ describe("Flash Pop question adapter", () => {
       expect(markup).toContain(`data-format="${question.type}"`);
       expect(markup).toContain("themeAwareFormat");
       expect(markup).not.toContain("legacyCompatFormat");
+    }
+  });
+
+  it("passes Flash Pop into every format available in the library", () => {
+    for (const format of Object.values(QUESTION_FORMAT_CATALOG)) {
+      const markup = renderToStaticMarkup(
+        <FlashPopQuestionInput
+          question={format.examples[0].question}
+          locked={false}
+          onSubmit={vi.fn()}
+          onProgress={vi.fn()}
+          onIncorrectAttempt={vi.fn()}
+          onProgressiveClueReveal={vi.fn()}
+          onCodeAttempt={vi.fn(() => false)}
+          onTimedResponseStart={vi.fn()}
+        />,
+      );
+
+      expect(markup, format.id).toContain('data-variant="flash-pop"');
     }
   });
 

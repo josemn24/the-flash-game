@@ -17,7 +17,7 @@ export function TrueFalseQuestion({
   return (
     <div
       className={`${styles.root}`}
-      data-variant={variant}
+      data-variant={variant ?? "default"}
       role="group"
       aria-label="Opciones de respuesta"
     >

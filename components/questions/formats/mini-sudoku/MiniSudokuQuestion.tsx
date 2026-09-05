@@ -3,13 +3,14 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import styles from "./MiniSudokuQuestion.module.css";
-import type { MiniSudokuAnswer } from "@/types/game";
+import type { MiniSudokuAnswer, QuestionVariant } from "@/types/game";
 
 type MiniSudokuQuestionProps = {
   grid: Array<number | null>;
   locked: boolean;
   onProgress: (answer: MiniSudokuAnswer) => void;
   onSubmit: (answer: MiniSudokuAnswer) => void;
+  variant?: QuestionVariant;
 };
 
 export function MiniSudokuQuestion({
@@ -17,6 +18,7 @@ export function MiniSudokuQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: MiniSudokuQuestionProps) {
   const blankIndexes = useMemo(
     () => grid.flatMap((value, index) => (value === null ? [index] : [])),
@@ -45,7 +47,11 @@ export function MiniSudokuQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Mini-sudoku de cuatro por cuatro">
+    <section
+      className={styles.root}
+      data-variant={variant ?? "default"}
+      aria-label="Mini-sudoku de cuatro por cuatro"
+    >
       <div className={styles.grid} role="grid" aria-label="Cuadrícula de mini-sudoku">
         {grid.map((givenValue, index) => {
           const isBlank = givenValue === null;

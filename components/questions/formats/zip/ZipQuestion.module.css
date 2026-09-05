@@ -221,3 +221,52 @@
     filter: none;
   }
 }
+
+.root[data-variant="flash-pop"] .header,
+.root[data-variant="flash-pop"] .legend li,
+.root[data-variant="flash-pop"] .instructions {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .board {
+  border-color: var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+.root[data-variant="flash-pop"] .boardInteractive:focus-visible {
+  border-color: var(--state-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
+}
+.root[data-variant="flash-pop"] .cell {
+  border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+.root[data-variant="flash-pop"] .visited {
+  background: color-mix(in srgb, var(--color-brand) 12%, var(--color-surface));
+}
+.root[data-variant="flash-pop"] .current {
+  box-shadow: inset 0 0 0 2px var(--state-selected);
+}
+.root[data-variant="flash-pop"] .checkpoint {
+  background: color-mix(in srgb, var(--color-social) 12%, var(--color-surface));
+}
+.root[data-variant="flash-pop"] .checkpointMarker,
+.root[data-variant="flash-pop"] .legend span {
+  border-color: var(--color-social);
+  color: var(--color-surface);
+  background: var(--color-social);
+}
+.root[data-variant="flash-pop"] .cellButton:focus-visible {
+  outline-color: var(--state-focus);
+}
+.root[data-variant="flash-pop"] .actions button {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .actions button:hover:not(:disabled) {
+  border-color: var(--state-focus);
+  background: var(--color-surface);
+}

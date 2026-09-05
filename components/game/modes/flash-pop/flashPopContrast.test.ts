@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const globals = readFileSync(new URL("../../../../app/globals.css", import.meta.url), "utf8");
@@ -7,6 +7,25 @@ const classificationStyles = readFileSync(
     "../../../questions/formats/classification/ClassificationQuestion.module.css",
     import.meta.url,
   ),
+  "utf8",
+);
+const formatStylesRoot = new URL("../../../questions/formats/", import.meta.url);
+const formatStyles = readdirSync(formatStylesRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .flatMap((entry) => {
+    const directory = new URL(`${entry.name}/`, formatStylesRoot);
+    const filename = readdirSync(directory).find((file) => file.endsWith(".module.css"));
+    return filename
+      ? [
+          {
+            filename: `${entry.name}/${filename}`,
+            css: readFileSync(new URL(filename, directory), "utf8"),
+          },
+        ]
+      : [];
+  });
+const reviewStyles = readFileSync(
+  new URL("../../shared/ReviewAnswers.module.css", import.meta.url),
   "utf8",
 );
 const stateStyles = [
@@ -18,6 +37,18 @@ const stateStyles = [
   "../../../questions/formats/connect-pairs/ConnectPairsQuestion.module.css",
   "../../../questions/formats/logic-code/LogicCodeQuestion.module.css",
   "../../../questions/formats/progressive-clues/ProgressiveCluesQuestion.module.css",
+  "../../../questions/formats/image-labeling/ImageLabelingQuestion.module.css",
+  "../../../questions/formats/flash-memory/FlashMemoryQuestion.module.css",
+  "../../../questions/formats/memory-pairs/MemoryPairsQuestion.module.css",
+  "../../../questions/formats/simon-sequence/SimonSequenceQuestion.module.css",
+  "../../../questions/formats/mini-sudoku/MiniSudokuQuestion.module.css",
+  "../../../questions/formats/mini-nonogram/MiniNonogramQuestion.module.css",
+  "../../../questions/formats/sliding-puzzle/SlidingPuzzleQuestion.module.css",
+  "../../../questions/formats/escape/EscapeQuestion.module.css",
+  "../../../questions/formats/time-maze/TimeMazeQuestion.module.css",
+  "../../../questions/formats/zip/ZipQuestion.module.css",
+  "../../../questions/formats/pipes/PipesQuestion.module.css",
+  "../../../questions/formats/error-reconstruction/ErrorReconstructionQuestion.module.css",
 ].map((filename) => ({
   filename,
   css: readFileSync(new URL(filename, import.meta.url), "utf8"),
@@ -84,6 +115,18 @@ describe("Flash Pop token contrast", () => {
       ["ConnectPairsQuestion.module.css", ["selected", "focus"]],
       ["LogicCodeQuestion.module.css", ["selected", "focus"]],
       ["ProgressiveCluesQuestion.module.css", ["selected", "focus"]],
+      ["ImageLabelingQuestion.module.css", ["correct", "error", "focus"]],
+      ["FlashMemoryQuestion.module.css", ["selected", "focus"]],
+      ["MemoryPairsQuestion.module.css", ["selected", "correct", "error", "focus"]],
+      ["SimonSequenceQuestion.module.css", ["selected", "focus"]],
+      ["MiniSudokuQuestion.module.css", ["selected", "focus"]],
+      ["MiniNonogramQuestion.module.css", ["selected", "focus"]],
+      ["SlidingPuzzleQuestion.module.css", ["selected", "focus"]],
+      ["EscapeQuestion.module.css", ["movable", "focus"]],
+      ["TimeMazeQuestion.module.css", ["focus"]],
+      ["ZipQuestion.module.css", ["selected", "focus"]],
+      ["PipesQuestion.module.css", ["correct", "focus"]],
+      ["ErrorReconstructionQuestion.module.css", ["selected", "focus"]],
     ]);
 
     for (const { filename, css } of stateStyles) {
@@ -92,6 +135,22 @@ describe("Flash Pop token contrast", () => {
         expect(css, filename).toContain(`var(--state-${state})`);
       }
     }
+  });
+
+  it("scopes every format Flash Pop override and keeps review surfaces semantic", () => {
+    expect(formatStyles).toHaveLength(29);
+
+    for (const { filename, css } of formatStyles) {
+      for (const selector of css.match(/[^{}]*data-variant="flash-pop"[^{}]*\{/g) ?? []) {
+        expect(selector, filename).toContain('[data-variant="flash-pop"]');
+      }
+      expect(css, filename).not.toMatch(/--pop-|LegacyTheme|legacy-dark/);
+    }
+
+    expect(reviewStyles).toContain("background: var(--color-surface);");
+    expect(reviewStyles).toContain("color: var(--color-ink);");
+    expect(reviewStyles).toContain("var(--state-correct)");
+    expect(reviewStyles).toContain("var(--state-error)");
   });
 
   it("keeps empty Mini-Wordle tiles on the white surface", () => {

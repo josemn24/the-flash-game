@@ -98,6 +98,53 @@
   display: flex;
   gap: 0.65rem;
 }
+.textAnswerLabel {
+  display: block;
+  margin-bottom: 0.625rem;
+  color: rgb(255 255 255 / 65%);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.textAnswerHint {
+  margin-top: 0.75rem;
+  color: rgb(255 255 255 / 35%);
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+.textAnswerForm[data-variant="flash-pop"] .textAnswerLabel {
+  display: block;
+  margin-bottom: 0.625rem;
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.textAnswerForm[data-variant="flash-pop"] .textAnswerHint {
+  margin-top: 0.75rem;
+  color: var(--color-ink-faint);
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+.textAnswerForm[data-variant="flash-pop"] .textAnswerInput {
+  border: var(--border-subtle);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  caret-color: var(--state-focus);
+}
+.textAnswerForm[data-variant="flash-pop"] .textAnswerInput::placeholder {
+  color: var(--color-ink-faint);
+}
+.textAnswerForm[data-variant="flash-pop"] .textAnswerInput:focus {
+  border-color: var(--state-focus);
+  background: var(--color-surface);
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+}
+.textAnswerForm[data-variant="flash-pop"] .textSubmitButton {
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-control);
+}
 .textAnswerInput {
   min-width: 0;
   flex: 1;

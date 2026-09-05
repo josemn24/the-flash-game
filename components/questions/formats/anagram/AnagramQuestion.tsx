@@ -26,7 +26,7 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit, variant = "defa
   };
 
   return (
-    <div className={`${styles.root}`} data-variant={variant}>
+    <div className={`${styles.root}`} data-variant={variant ?? "default"}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
       <section className={styles.answer} aria-label="Palabra construida">
         <div className={styles.answerHeader}>

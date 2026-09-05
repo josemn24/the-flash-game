@@ -4,13 +4,14 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import styles from "./SlidingPuzzleQuestion.module.css";
-import type { SlidingPuzzleAnswer } from "@/types/game";
+import type { QuestionVariant, SlidingPuzzleAnswer } from "@/types/game";
 
 type SlidingPuzzleQuestionProps = {
   initialTiles: Array<number | null>;
   solution: Array<number | null>;
   locked: boolean;
   onSubmit: (answer: SlidingPuzzleAnswer) => void;
+  variant?: QuestionVariant;
 };
 
 function areAdjacent(firstIndex: number, secondIndex: number) {
@@ -26,6 +27,7 @@ export function SlidingPuzzleQuestion({
   solution,
   locked,
   onSubmit,
+  variant,
 }: SlidingPuzzleQuestionProps) {
   const [tiles, setTiles] = useState(initialTiles);
   const [moves, setMoves] = useState(0);
@@ -59,7 +61,11 @@ export function SlidingPuzzleQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Rompecabezas deslizante de tres por tres">
+    <section
+      className={styles.root}
+      data-variant={variant ?? "default"}
+      aria-label="Rompecabezas deslizante de tres por tres"
+    >
       <p className={styles.instructions}>
         Desliza las fichas junto al hueco hasta ordenarlas del 1 al 8. También puedes usar las
         flechas.

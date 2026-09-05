@@ -267,3 +267,63 @@ button.block:disabled {
     opacity: 0.35;
   }
 }
+
+.root[data-variant="flash-pop"] .header,
+.root[data-variant="flash-pop"] .instructions {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .board {
+  border-color: var(--color-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-raised);
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--color-social) 8%, transparent),
+      transparent 68%
+    );
+}
+.root[data-variant="flash-pop"] .board::after {
+  background: var(--color-surface-raised);
+}
+.root[data-variant="flash-pop"] .block {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .target {
+  border-color: var(--state-movable);
+  color: var(--color-ink);
+  background: var(--color-brand);
+}
+.root[data-variant="flash-pop"] .selected,
+.root[data-variant="flash-pop"] .block:focus-visible {
+  outline-color: var(--state-focus);
+}
+.root[data-variant="flash-pop"] .destinationGhost {
+  border-color: var(--state-movable);
+  background: color-mix(in srgb, var(--state-movable) 10%, transparent);
+}
+.root[data-variant="flash-pop"] .actions button {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .actions button:hover:not(:disabled) {
+  border-color: var(--state-focus);
+  background: var(--color-surface);
+}
+.root[data-variant="flash-pop"] .actions button:focus-visible {
+  outline-color: var(--state-focus);
+}

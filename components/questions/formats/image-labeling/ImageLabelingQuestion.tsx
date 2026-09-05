@@ -13,12 +13,14 @@ import type {
   ImageLabelingAnswer,
   ImageLabelingQuestion as ImageLabelingQuestionType,
   IdentifyOneImageLabelingQuestion,
+  QuestionVariant,
 } from "@/types/game";
 
 type Props = {
   question: ImageLabelingQuestionType;
   locked: boolean;
   onSubmit: (answer: ImageLabelingAnswer | string) => void;
+  variant?: QuestionVariant;
 };
 
 export function AssignAllImageLabelingReviewSurface({
@@ -156,10 +158,12 @@ function AssignAllImageLabelingQuestion({
   question,
   locked,
   onSubmit,
+  variant,
 }: {
   question: AssignAllImageLabelingQuestion;
   locked: boolean;
   onSubmit: (answer: ImageLabelingAnswer) => void;
+  variant?: QuestionVariant;
 }) {
   const [answer, setAnswer] = useState<ImageLabelingAnswer>({});
   const [selectedAnchorId, setSelectedAnchorId] = useState(question.anchors[0]?.id ?? null);
@@ -203,7 +207,7 @@ function AssignAllImageLabelingQuestion({
   const completed = question.anchors.every((anchor) => Boolean(answer[anchor.id]));
 
   return (
-    <div className={styles.challenge}>
+    <div className={styles.challenge} data-variant={variant ?? "default"}>
       <div
         className={styles.surface}
         style={{ aspectRatio: `${question.surface.width} / ${question.surface.height}` }}
@@ -303,10 +307,12 @@ function IdentifyOneImageLabelingQuestion({
   question,
   locked,
   onSubmit,
+  variant,
 }: {
   question: IdentifyOneImageLabelingQuestion;
   locked: boolean;
   onSubmit: (answer: string) => void;
+  variant?: QuestionVariant;
 }) {
   const [answer, setAnswer] = useState("");
   const submitText = (event: FormEvent<HTMLFormElement>) => {
@@ -316,7 +322,7 @@ function IdentifyOneImageLabelingQuestion({
   };
 
   return (
-    <div className={styles.challenge}>
+    <div className={styles.challenge} data-variant={variant ?? "default"}>
       <IdentifyOneSurface question={question} />
       {question.response.kind === "choice" ? (
         <div className={styles.choiceGrid}>
@@ -327,6 +333,7 @@ function IdentifyOneImageLabelingQuestion({
               index={index}
               disabled={locked}
               onSelect={() => onSubmit(option)}
+              variant={variant}
             />
           ))}
         </div>
@@ -368,12 +375,14 @@ export function ImageLabelingQuestion(props: Props) {
       question={props.question}
       locked={props.locked}
       onSubmit={props.onSubmit}
+      variant={props.variant}
     />
   ) : (
     <IdentifyOneImageLabelingQuestion
       question={props.question}
       locked={props.locked}
       onSubmit={props.onSubmit}
+      variant={props.variant}
     />
   );
 }

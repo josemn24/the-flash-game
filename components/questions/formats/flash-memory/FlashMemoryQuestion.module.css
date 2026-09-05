@@ -120,3 +120,45 @@
     min-height: 8.5rem;
   }
 }
+
+.root[data-variant="flash-pop"] .phaseHeader {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .helper,
+.root[data-variant="flash-pop"] .instructions {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .memoryCell,
+.root[data-variant="flash-pop"] .recallCell {
+  border-color: var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+.root[data-variant="flash-pop"] .recallCell {
+  color: var(--color-ink);
+}
+.root[data-variant="flash-pop"] .recallCell:hover:not(:disabled),
+.root[data-variant="flash-pop"] .recallCellFilled {
+  border-color: var(--state-selected);
+  background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+}
+.root[data-variant="flash-pop"] .recallCell:focus-visible,
+.root[data-variant="flash-pop"] .bankItem:focus-visible {
+  outline-color: var(--state-focus);
+}
+.root[data-variant="flash-pop"] .emptyCell {
+  color: var(--color-ink-faint);
+}
+.root[data-variant="flash-pop"] .bankItem {
+  border-color: var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .bankItemSelected {
+  border-color: var(--state-selected);
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--state-selected) 12%, var(--color-surface));
+}

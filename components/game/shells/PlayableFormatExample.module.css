@@ -127,6 +127,8 @@
 
 .closeButton {
   display: grid;
+  min-width: 44px;
+  min-height: 44px;
   width: 2.7rem;
   height: 2.7rem;
   flex: 0 0 auto;

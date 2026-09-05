@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import styles from "./MiniNonogramQuestion.module.css";
-import type { MiniNonogramAnswer } from "@/types/game";
+import type { MiniNonogramAnswer, QuestionVariant } from "@/types/game";
 
 type MiniNonogramQuestionProps = {
   rowClues: number[][];
@@ -11,6 +11,7 @@ type MiniNonogramQuestionProps = {
   locked: boolean;
   onProgress: (answer: MiniNonogramAnswer) => void;
   onSubmit: (answer: MiniNonogramAnswer) => void;
+  variant?: QuestionVariant;
 };
 
 export function MiniNonogramQuestion({
@@ -19,6 +20,7 @@ export function MiniNonogramQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: MiniNonogramQuestionProps) {
   const [answer, setAnswer] = useState<MiniNonogramAnswer>({});
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -43,7 +45,11 @@ export function MiniNonogramQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Mini-nonograma de cinco por cinco">
+    <section
+      className={styles.root}
+      data-variant={variant ?? "default"}
+      aria-label="Mini-nonograma de cinco por cinco"
+    >
       <div className={styles.board}>
         <div className={styles.corner} aria-hidden="true" />
         <div className={styles.columnClues} aria-label="Pistas de columnas">

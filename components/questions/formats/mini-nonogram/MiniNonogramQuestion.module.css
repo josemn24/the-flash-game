@@ -170,3 +170,55 @@
     font-size: 0.64rem;
   }
 }
+
+.root[data-variant="flash-pop"] .corner,
+.root[data-variant="flash-pop"] .columnClues,
+.root[data-variant="flash-pop"] .rowClues {
+  border-color: var(--color-border);
+}
+.root[data-variant="flash-pop"] .clue,
+.root[data-variant="flash-pop"] .rowClue,
+.root[data-variant="flash-pop"] .progress,
+.root[data-variant="flash-pop"] .instructions {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .grid {
+  border-color: var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+.root[data-variant="flash-pop"] .cell {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+}
+.root[data-variant="flash-pop"] .cell:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+.root[data-variant="flash-pop"] .cell:focus-visible,
+.root[data-variant="flash-pop"] .fillButton:focus-visible,
+.root[data-variant="flash-pop"] .clearButton:focus-visible,
+.root[data-variant="flash-pop"] .confirmButton:focus-visible {
+  outline-color: var(--state-focus);
+}
+.root[data-variant="flash-pop"] .filled {
+  background: color-mix(in srgb, var(--state-selected) 22%, var(--color-surface));
+}
+.root[data-variant="flash-pop"] .selected {
+  box-shadow: inset 0 0 0 3px var(--state-focus);
+}
+.root[data-variant="flash-pop"] .fillButton,
+.root[data-variant="flash-pop"] .clearButton,
+.root[data-variant="flash-pop"] .confirmButton {
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .fillButton,
+.root[data-variant="flash-pop"] .confirmButton {
+  background: var(--color-brand);
+}
+.root[data-variant="flash-pop"] .fillButton:hover:not(:disabled),
+.root[data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+  background: var(--color-brand-hover);
+}

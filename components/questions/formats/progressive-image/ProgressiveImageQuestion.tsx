@@ -115,7 +115,7 @@ export function ProgressiveImageQuestion({
   return (
     <section
       className={`${styles.root}`}
-      data-variant={variant}
+      data-variant={variant ?? "default"}
       aria-label="Imagen progresivamente revelada"
     >
       <div className={styles.progressHeader}>

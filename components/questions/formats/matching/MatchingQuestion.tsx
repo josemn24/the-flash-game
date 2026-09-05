@@ -93,7 +93,7 @@ export function MatchingQuestion({
   const matchedCount = Object.keys(matches).length;
 
   return (
-    <div className={`${styles.root}`} data-variant={variant}>
+    <div className={`${styles.root}`} data-variant={variant ?? "default"}>
       <div className={styles.columns}>
         <section className={styles.column} aria-labelledby="matching-left-heading">
           <h3 id="matching-left-heading">Conceptos</h3>

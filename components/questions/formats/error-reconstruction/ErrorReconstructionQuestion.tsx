@@ -4,7 +4,11 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import styles from "./ErrorReconstructionQuestion.module.css";
 import { MotionButton } from "@/components/ui";
-import type { ErrorReconstructionAnswer, ErrorReconstructionQuestion } from "@/types/game";
+import type {
+  ErrorReconstructionAnswer,
+  ErrorReconstructionQuestion,
+  QuestionVariant,
+} from "@/types/game";
 
 type Props = {
   question: ErrorReconstructionQuestion;
@@ -12,6 +16,7 @@ type Props = {
   locked: boolean;
   onProgress: (answer: ErrorReconstructionAnswer) => void;
   onSubmit: (answer: ErrorReconstructionAnswer) => void;
+  variant?: QuestionVariant;
 };
 
 export function ErrorReconstructionQuestionInput({
@@ -20,6 +25,7 @@ export function ErrorReconstructionQuestionInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: Props) {
   const [stepId, setStepId] = useState<string | undefined>(initialAnswer?.stepId);
   const [correction, setCorrection] = useState<string | undefined>(
@@ -31,7 +37,7 @@ export function ErrorReconstructionQuestionInput({
   }, [correction, onProgress, stepId]);
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-variant={variant ?? "default"}>
       <p className={styles.instruction}>
         {question.instruction ??
           "Selecciona el primer paso en el que el razonamiento deja de ser válido."}

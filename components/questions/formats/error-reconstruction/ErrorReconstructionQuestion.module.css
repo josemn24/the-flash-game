@@ -84,3 +84,43 @@
 .confirm {
   justify-self: start;
 }
+
+.root[data-variant="flash-pop"] .instruction {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .step,
+.root[data-variant="flash-pop"] .option {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .step:hover,
+.root[data-variant="flash-pop"] .option:hover {
+  border-color: var(--state-focus);
+  background: var(--color-surface);
+}
+.root[data-variant="flash-pop"] .step:focus-visible,
+.root[data-variant="flash-pop"] .option:focus-visible {
+  outline-color: var(--state-focus);
+}
+.root[data-variant="flash-pop"] .stepSelected,
+.root[data-variant="flash-pop"] .optionSelected {
+  border-color: var(--state-selected);
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--state-selected) 12%, var(--color-surface));
+}
+.root[data-variant="flash-pop"] .stepNumber,
+.root[data-variant="flash-pop"] .option > span {
+  color: var(--state-selected);
+  background: color-mix(in srgb, var(--state-selected) 12%, var(--color-surface));
+}
+.root[data-variant="flash-pop"] .correction {
+  border-top-color: var(--color-border);
+}
+.root[data-variant="flash-pop"] .correction legend {
+  color: var(--color-ink);
+}
+.root[data-variant="flash-pop"] .correction legend span {
+  color: var(--color-ink-muted);
+}

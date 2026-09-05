@@ -171,6 +171,7 @@ function ShortTextInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"short-text">>) {
   const [answer, setAnswer] = useState("");
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -180,11 +181,12 @@ function ShortTextInput({
   };
 
   return (
-    <form className="mt-8" onSubmit={submit}>
-      <label
-        className="mb-2.5 block text-sm font-bold text-white/65"
-        htmlFor={`answer-${question.id}`}
-      >
+    <form
+      className={`${styles.textAnswerForm} mt-8`}
+      data-variant={variant ?? "default"}
+      onSubmit={submit}
+    >
+      <label className={styles.textAnswerLabel} htmlFor={`answer-${question.id}`}>
         Escribe tu respuesta
       </label>
       <div className={styles.textAnswerRow}>
@@ -209,7 +211,7 @@ function ShortTextInput({
           <ArrowIcon className="h-6 w-6" />
         </motion.button>
       </div>
-      <p className="mt-3 text-xs leading-5 text-white/35">
+      <p className={styles.textAnswerHint}>
         No importan las mayúsculas, las tildes ni los espacios.
       </p>
     </form>
@@ -299,8 +301,16 @@ function ImageLabelingInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"image-labeling">>) {
-  return <ImageLabelingQuestion question={question} locked={locked} onSubmit={onSubmit} />;
+  return (
+    <ImageLabelingQuestion
+      question={question}
+      locked={locked}
+      onSubmit={onSubmit}
+      variant={variant}
+    />
+  );
 }
 
 function ClassificationInput({
@@ -326,6 +336,7 @@ function FlashMemoryInput({
   onProgress,
   onSubmit,
   onTimedResponseStart,
+  variant,
 }: QuestionInputProps<QuestionOfType<"flash-memory">>) {
   return (
     <FlashMemoryQuestion
@@ -336,6 +347,7 @@ function FlashMemoryInput({
       onProgress={onProgress}
       onSubmit={onSubmit}
       onTimedResponseStart={onTimedResponseStart}
+      variant={variant}
     />
   );
 }
@@ -345,6 +357,7 @@ function MemoryPairsInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"memory-pairs">>) {
   return (
     <MemoryPairsQuestion
@@ -354,6 +367,7 @@ function MemoryPairsInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -363,6 +377,7 @@ function SimonSequenceInput({
   locked,
   onSubmit,
   onTimedResponseStart,
+  variant,
 }: QuestionInputProps<QuestionOfType<"simon-sequence">>) {
   return (
     <SimonSequenceQuestion
@@ -371,6 +386,7 @@ function SimonSequenceInput({
       locked={locked}
       onSubmit={onSubmit}
       onTimedResponseStart={onTimedResponseStart}
+      variant={variant}
     />
   );
 }
@@ -399,6 +415,7 @@ function MiniSudokuInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"mini-sudoku">>) {
   return (
     <MiniSudokuQuestion
@@ -406,6 +423,7 @@ function MiniSudokuInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -415,6 +433,7 @@ function MiniNonogramInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"mini-nonogram">>) {
   return (
     <MiniNonogramQuestion
@@ -423,6 +442,7 @@ function MiniNonogramInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -454,6 +474,7 @@ function SlidingPuzzleInput({
   question,
   locked,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"sliding-puzzle">>) {
   return (
     <SlidingPuzzleQuestion
@@ -461,6 +482,7 @@ function SlidingPuzzleInput({
       solution={question.solution}
       locked={locked}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -470,6 +492,7 @@ function EscapeInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"escape">>) {
   return (
     <EscapeQuestion
@@ -478,6 +501,7 @@ function EscapeInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -487,6 +511,7 @@ function TimeMazeInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"time-maze">>) {
   return (
     <TimeMazeQuestion
@@ -495,6 +520,7 @@ function TimeMazeInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -504,6 +530,7 @@ function ZipInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"zip">>) {
   return (
     <ZipQuestion
@@ -512,6 +539,7 @@ function ZipInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -521,6 +549,7 @@ function PipesInput({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"pipes">>) {
   return (
     <PipesQuestion
@@ -529,6 +558,7 @@ function PipesInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }
@@ -582,6 +612,7 @@ function ErrorReconstructionInput({
   initialAnswer,
   onProgress,
   onSubmit,
+  variant,
 }: QuestionInputProps<QuestionOfType<"error-reconstruction">>) {
   return (
     <ErrorReconstructionQuestionInput
@@ -594,6 +625,7 @@ function ErrorReconstructionInput({
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}
+      variant={variant}
     />
   );
 }

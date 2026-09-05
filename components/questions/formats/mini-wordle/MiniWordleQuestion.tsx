@@ -133,10 +133,7 @@ export function MiniWordleQuestion({
   };
 
   return (
-    <div
-      className={`${styles.root} ${className ?? ""}`}
-      data-variant={variant ?? "default"}
-    >
+    <div className={`${styles.root} ${className ?? ""}`} data-variant={variant ?? "default"}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
       <section

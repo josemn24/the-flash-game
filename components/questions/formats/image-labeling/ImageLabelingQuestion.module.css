@@ -307,3 +307,73 @@
     margin-top: 1.5rem;
   }
 }
+
+.challenge[data-variant="flash-pop"] .surface {
+  border-color: var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+.challenge[data-variant="flash-pop"] .anchor,
+.challenge[data-variant="flash-pop"] .reviewAnchor {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+}
+.challenge[data-variant="flash-pop"] .anchor > span,
+.challenge[data-variant="flash-pop"] .reviewAnchor > span {
+  color: var(--color-surface);
+  background: var(--color-social);
+}
+.challenge[data-variant="flash-pop"] .reviewCorrect {
+  border-color: var(--state-correct);
+  background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+}
+.challenge[data-variant="flash-pop"] .reviewWrong {
+  border-color: var(--state-error);
+  background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+}
+.challenge[data-variant="flash-pop"] .singleTarget {
+  border-color: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow:
+    0 0 0 0.3rem color-mix(in srgb, var(--color-ink) 22%, transparent),
+    var(--shadow-card);
+}
+.challenge[data-variant="flash-pop"] .textForm > label,
+.challenge[data-variant="flash-pop"] .labelHeading h3,
+.challenge[data-variant="flash-pop"] .labelHeading button,
+.challenge[data-variant="flash-pop"] .assignmentList span,
+.challenge[data-variant="flash-pop"] .textForm > p {
+  color: var(--color-ink-muted);
+}
+.challenge[data-variant="flash-pop"] .labelBank button {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.challenge[data-variant="flash-pop"] .labelBank button:hover:not(:disabled),
+.challenge[data-variant="flash-pop"] .labelBank button:focus-visible {
+  border-color: var(--state-focus);
+  outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+}
+.challenge[data-variant="flash-pop"] .labelBank .labelAssigned {
+  border-color: var(--state-correct);
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+}
+.challenge[data-variant="flash-pop"] .assignmentList li {
+  background: var(--color-surface-raised);
+}
+.challenge[data-variant="flash-pop"] .assignmentList strong {
+  color: var(--color-ink);
+}
+.challenge[data-variant="flash-pop"] .confirmButton {
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-control);
+}
+.challenge[data-variant="flash-pop"] .confirmButton:focus-visible {
+  outline-color: var(--state-focus);
+}

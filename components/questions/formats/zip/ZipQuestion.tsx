@@ -17,7 +17,7 @@ import {
   ZIP_COLUMNS,
   ZIP_ROWS,
 } from "@/lib/zip";
-import type { ZipAnswer, ZipQuestion as ZipQuestionType } from "@/types/game";
+import type { QuestionVariant, ZipAnswer, ZipQuestion as ZipQuestionType } from "@/types/game";
 import styles from "./ZipQuestion.module.css";
 
 type Point = { x: number; y: number };
@@ -49,6 +49,7 @@ export function ZipBoard({
   onPointerMove,
   onPointerUp,
   label = "Tablero Zip.",
+  disabled = false,
 }: {
   question: ZipQuestionType;
   path: number[];
@@ -60,6 +61,7 @@ export function ZipBoard({
   onPointerMove?: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp?: (event: ReactPointerEvent<HTMLDivElement>) => void;
   label?: string;
+  disabled?: boolean;
 }) {
   const checkpoints = useMemo(
     () => new Map(question.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint])),
@@ -67,7 +69,7 @@ export function ZipBoard({
   );
   const visited = new Set(path);
   const current = path.at(-1);
-  const interactive = Boolean(onCellSelect);
+  const interactive = Boolean(onCellSelect) && !disabled;
 
   return (
     <div
@@ -115,6 +117,7 @@ export function ZipBoard({
               <button
                 type="button"
                 className={styles.cellButton}
+                disabled={disabled}
                 onClick={() => onCellSelect?.(cell)}
                 aria-label={`Seleccionar fila ${row}, columna ${column}${description}`}
               >
@@ -135,11 +138,13 @@ export function ZipQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: {
   question: ZipQuestionType;
   locked: boolean;
   onProgress: (answer: ZipAnswer) => void;
   onSubmit: (answer: ZipAnswer) => void;
+  variant?: QuestionVariant;
 }) {
   const start = question.checkpoints[0].cell;
   const boardRef = useRef<HTMLDivElement>(null);
@@ -256,7 +261,11 @@ export function ZipQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Zip, una línea">
+    <section
+      className={styles.root}
+      data-variant={variant ?? "default"}
+      aria-label="Zip, una línea"
+    >
       <div className={styles.header}>
         <strong>
           {metrics.coveredCells}/{metrics.totalCells} · {metrics.reachedCheckpoint}/
@@ -272,6 +281,7 @@ export function ZipQuestion({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        disabled={locked}
         label={
           question.boardLabel ??
           "Tablero Zip. Arrastra, toca una celda adyacente o usa las flechas para extender el camino."

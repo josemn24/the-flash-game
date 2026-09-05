@@ -35,6 +35,7 @@ export function QueensBoard({
   onCellAction,
   onCellFocus,
   onCellKeyDown,
+  disabled = false,
 }: {
   question: QueensQuestionType;
   answer: QueensAnswer;
@@ -44,6 +45,7 @@ export function QueensBoard({
   onCellAction?: (cell: number) => void;
   onCellFocus?: (cell: number) => void;
   onCellKeyDown?: (event: KeyboardEvent<HTMLButtonElement>, cell: number) => void;
+  disabled?: boolean;
 }) {
   const prefilledQueens = question.prefilledQueens ?? [];
   const visibleQueens = [...new Set([...prefilledQueens, ...answer.queens])].sort(
@@ -92,6 +94,7 @@ export function QueensBoard({
             className={className}
             tabIndex={focusedCell === cell ? 0 : -1}
             aria-label={`Fila ${row}, columna ${column}, región ${question.regions[cell] + 1}: ${state}${conflictLabel}`}
+            disabled={disabled}
             onClick={() => onCellAction?.(cell)}
             onFocus={() => onCellFocus?.(cell)}
             onKeyDown={(event) => onCellKeyDown?.(event, cell)}
@@ -285,6 +288,7 @@ export function QueensQuestion({
         onCellAction={applyTool}
         onCellFocus={setFocusedCell}
         onCellKeyDown={handleCellKeyDown}
+        disabled={locked}
       />
 
       <div className={styles.progress} aria-live="polite">

@@ -67,3 +67,33 @@
   font-weight: 800;
   text-align: center;
 }
+
+.root[data-variant="flash-pop"] .instructions,
+.root[data-variant="flash-pop"] .moves {
+  color: var(--color-ink-muted);
+}
+.root[data-variant="flash-pop"] .grid {
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+.root[data-variant="flash-pop"] .tile {
+  color: var(--color-ink);
+}
+.root[data-variant="flash-pop"] .movable {
+  background: var(--state-selected);
+  box-shadow: var(--shadow-control);
+}
+.root[data-variant="flash-pop"] .movable:hover:not(:disabled) {
+  background: var(--color-focus);
+}
+.root[data-variant="flash-pop"] .lockedTile {
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
+}
+.root[data-variant="flash-pop"] .tile:focus-visible {
+  outline-color: var(--state-focus);
+}
+.root[data-variant="flash-pop"] .blank {
+  border-color: var(--color-border);
+}

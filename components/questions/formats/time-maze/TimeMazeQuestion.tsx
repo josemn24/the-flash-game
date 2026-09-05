@@ -9,7 +9,11 @@ import {
   getTimeMazeStartIndex,
   type MazeDirection,
 } from "@/lib/timeMaze";
-import type { TimeMazeAnswer, TimeMazeQuestion as TimeMazeQuestionType } from "@/types/game";
+import type {
+  QuestionVariant,
+  TimeMazeAnswer,
+  TimeMazeQuestion as TimeMazeQuestionType,
+} from "@/types/game";
 import styles from "./TimeMazeQuestion.module.css";
 
 const DIRECTION_LABELS: Record<MazeDirection, string> = {
@@ -111,11 +115,13 @@ export function TimeMazeQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: {
   question: TimeMazeQuestionType;
   locked: boolean;
   onProgress: (answer: TimeMazeAnswer) => void;
   onSubmit: (answer: TimeMazeAnswer) => void;
+  variant?: QuestionVariant;
 }) {
   const start = getTimeMazeStartIndex(question);
   const exit = getTimeMazeExitIndex(question);
@@ -170,7 +176,11 @@ export function TimeMazeQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Laberinto contrarreloj">
+    <section
+      className={styles.root}
+      data-variant={variant ?? "default"}
+      aria-label="Laberinto contrarreloj"
+    >
       <div className={styles.header}>
         <span>Llega de S a E</span>
         <strong>{moves} movimientos</strong>

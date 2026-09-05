@@ -25,6 +25,19 @@ const migratedTypes = new Set([
   "word-hashtag",
   "word-search",
   "mini-wordle",
+  "short-text",
+  "image-labeling",
+  "flash-memory",
+  "memory-pairs",
+  "simon-sequence",
+  "mini-sudoku",
+  "mini-nonogram",
+  "sliding-puzzle",
+  "escape",
+  "time-maze",
+  "zip",
+  "pipes",
+  "error-reconstruction",
 ]);
 
 const migratedExamples = [...migratedTypes].map(
@@ -49,9 +62,31 @@ function renderQuestion(question: Question, variant: QuestionVariant) {
   );
 }
 
+function renderQuestionWithoutVariant(question: Question) {
+  return renderToStaticMarkup(
+    <QuestionInput
+      question={question}
+      locked={false}
+      onSubmit={vi.fn()}
+      codeAttemptCount={0}
+      onCodeAttempt={vi.fn(() => false)}
+      onProgress={vi.fn()}
+      onIncorrectAttempt={vi.fn()}
+      onProgressiveClueReveal={vi.fn()}
+      onTimedResponseStart={vi.fn()}
+    />,
+  );
+}
+
+function interactiveOpenings(markup: string) {
+  return [...markup.matchAll(/<(?:button|input|select|textarea)\b[^>]*>/g)].map(
+    ([opening]) => opening,
+  );
+}
+
 describe("question format visual variants", () => {
-  it("forwards default and Flash Pop variants to all eighteen migrated formats", () => {
-    expect(migratedExamples).toHaveLength(18);
+  it("forwards default and Flash Pop variants to all thirty-one migrated formats", () => {
+    expect(migratedExamples).toHaveLength(31);
 
     migratedExamples.forEach((question) => {
       const defaultMarkup = renderQuestion(question, "default");
@@ -59,6 +94,12 @@ describe("question format visual variants", () => {
       expect(defaultMarkup).toContain('data-variant="default"');
       expect(popMarkup).toContain('data-variant="flash-pop"');
       expect(popMarkup).not.toEqual(defaultMarkup);
+    });
+  });
+
+  it("defaults every renderer root to the legacy variant when omitted", () => {
+    migratedExamples.forEach((question) => {
+      expect(renderQuestionWithoutVariant(question)).toContain('data-variant="default"');
     });
   });
 
@@ -101,7 +142,13 @@ describe("question format visual variants", () => {
           onTimedResponseStart={vi.fn()}
         />,
       );
-      expect(markup).toContain("disabled");
+      const controls = interactiveOpenings(markup);
+      if (controls.length > 0) {
+        const enabledControls = controls.filter(
+          (opening) => !/\sdisabled(?:="")?(?=\s|>)/.test(opening),
+        );
+        expect(enabledControls, question.type).toEqual([]);
+      }
     });
   });
 });

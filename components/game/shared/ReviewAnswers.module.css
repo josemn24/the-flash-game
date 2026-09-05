@@ -608,3 +608,118 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Flash Pop feedback surfaces */
+.reviewCard {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.textButton {
+  color: var(--color-ink-muted);
+}
+.textButton:hover {
+  color: var(--color-ink);
+}
+.reviewNumber {
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
+}
+.statusCorrect {
+  color: var(--state-correct);
+  background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+}
+.statusWrong {
+  color: var(--state-error);
+  background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+}
+.statusPartial {
+  color: var(--state-selected);
+  background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+}
+.statusUnanswered {
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
+}
+.reviewContent {
+  border-top-color: var(--color-border);
+}
+.answerBox {
+  border: var(--border-subtle);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-control);
+}
+.answerBox span,
+.mazeLegend,
+.memoryGridLabel,
+.sudokuReviewCell small {
+  color: var(--color-ink-muted);
+}
+.sudokuReviewGrid,
+.sudokuReviewCell,
+.logicMatrixReviewGrid,
+.logicMatrixReviewCell,
+.nonogramReviewGrid,
+.nonogramReviewCell {
+  border-color: var(--color-border);
+}
+.sudokuGiven,
+.nonogramMissing,
+.nonogramEmpty {
+  color: var(--color-ink-muted);
+}
+.sudokuCorrect,
+.nonogramCorrect,
+.memoryPairsMatched,
+.wordle-correct {
+  color: var(--state-correct);
+}
+.sudokuWrong,
+.nonogramWrong,
+.wordle-present {
+  color: var(--state-error);
+}
+.logicReviewClues > div,
+.logicReviewAttempts b,
+.memoryCell,
+.memoryPairsCell,
+.puzzleReviewBoard,
+.puzzleTile,
+.puzzleBlank,
+.wordleReviewTile,
+.wordHashtagReviewTile {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+.logicReviewClues span,
+.logicReviewAttempts b,
+.memoryPairsSymbol,
+.wordle-absent {
+  color: var(--color-ink-muted);
+}
+.memoryPairsRevealed {
+  border-color: var(--state-selected);
+  background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+}
+.memoryPairsMatched {
+  border-color: var(--state-correct);
+  background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+}
+.wordle-correct {
+  color: var(--color-ink);
+  background: var(--state-correct);
+}
+.wordle-present {
+  color: var(--color-ink);
+  background: var(--state-movable);
+}
+.wordle-absent {
+  background: var(--state-neutral);
+}
+.wordHashtagReviewCorrect {
+  background: var(--state-correct);
+}
+.wordHashtagReviewDisplaced {
+  background: var(--state-movable);
+}

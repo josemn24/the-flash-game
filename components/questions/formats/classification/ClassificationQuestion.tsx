@@ -47,7 +47,11 @@ export function ClassificationQuestion({
   };
 
   return (
-    <div className={`${styles.root}`} data-format="classification" data-variant={variant}>
+    <div
+      className={`${styles.root}`}
+      data-format="classification"
+      data-variant={variant ?? "default"}
+    >
       <div className={styles.progressHeader}>
         <span>Clasificación</span>
         <span>

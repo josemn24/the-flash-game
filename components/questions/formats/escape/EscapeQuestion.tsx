@@ -20,6 +20,7 @@ import type {
   EscapeBlock,
   EscapeMove,
   EscapeQuestion as EscapeQuestionType,
+  QuestionVariant,
 } from "@/types/game";
 import styles from "./EscapeQuestion.module.css";
 
@@ -125,11 +126,13 @@ export function EscapeQuestion({
   locked,
   onProgress,
   onSubmit,
+  variant,
 }: {
   question: EscapeQuestionType;
   locked: boolean;
   onProgress: (answer: EscapeAnswer) => void;
   onSubmit: (answer: EscapeAnswer) => void;
+  variant?: QuestionVariant;
 }) {
   const symbols = useMemo(() => blockSymbols(question), [question]);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -303,6 +306,7 @@ export function EscapeQuestion({
   return (
     <section
       className={styles.root}
+      data-variant={variant ?? "default"}
       aria-label={question.boardLabel ?? "Escape, puzzle de bloques deslizantes"}
     >
       <div className={styles.header}>

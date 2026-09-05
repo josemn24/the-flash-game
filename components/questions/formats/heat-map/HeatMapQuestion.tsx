@@ -181,7 +181,7 @@ export function HeatMapQuestion({
   };
 
   return (
-    <div className={`${styles.challenge}`} data-variant={variant}>
+    <div className={`${styles.challenge}`} data-variant={variant ?? "default"}>
       <HeatMapSurface
         surface={question.surface}
         selectedPoint={answer ?? undefined}
