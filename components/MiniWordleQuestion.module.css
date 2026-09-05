@@ -169,3 +169,106 @@
     flex-direction: column;
   }
 }
+
+.root.pop {
+  gap: var(--pop-space-4);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .hint {
+  border-left-color: var(--pop-state-selected);
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .tile {
+  border-color: rgb(23 23 32 / 16%);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface-raised);
+}
+
+.pop .empty {
+  background: var(--pop-color-surface);
+}
+
+.pop .correct {
+  border-color: var(--pop-state-correct);
+  color: var(--pop-color-ink);
+  background: var(--pop-state-correct);
+}
+
+.pop .present {
+  border-color: var(--pop-state-movable);
+  color: var(--pop-color-ink);
+  background: var(--pop-state-movable);
+}
+
+.pop .absent {
+  border-color: var(--pop-color-border);
+  color: var(--pop-color-ink-muted);
+  background: var(--pop-state-neutral);
+}
+
+.pop .form {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.pop .form label {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .dictionaryStatus {
+  border-color: var(--pop-color-border);
+  color: var(--pop-color-ink-muted);
+  background: var(--pop-color-surface-soft);
+}
+
+.pop .dictionaryError {
+  border-color: color-mix(in srgb, var(--pop-state-error) 42%, transparent);
+  color: var(--pop-state-error);
+  background: color-mix(in srgb, var(--pop-state-error) 10%, transparent);
+}
+
+.pop .inputRow input {
+  border-color: var(--pop-color-border);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-surface);
+  caret-color: var(--pop-state-focus);
+}
+
+.pop .inputRow input:focus-visible {
+  border-color: var(--pop-state-focus);
+  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+}
+
+.pop .inputRow button {
+  border-color: var(--pop-color-brand);
+  color: var(--pop-color-ink);
+  background: var(--pop-color-brand);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.pop .inputRow button:hover:not(:disabled) {
+  background: var(--pop-color-brand);
+}
+
+.pop .inputRow button:disabled {
+  border-color: var(--pop-color-border);
+  color: var(--pop-color-ink-muted);
+  background: var(--pop-color-surface-soft);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.pop .answerRow button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
+}
+
+.pop .formMeta {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .error {
+  color: var(--pop-state-error);
+}

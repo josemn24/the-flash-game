@@ -104,10 +104,11 @@
 }
 
 .pop .cell {
-  border: var(--pop-border-subtle);
+  border: 1px solid rgb(23 23 32 / 16%);
   border-radius: var(--pop-radius-sm);
   color: var(--pop-color-ink);
   background: var(--pop-color-surface);
+  box-shadow: 0 1px 0 rgb(23 23 32 / 6%);
 }
 
 .pop .cell small {
@@ -115,9 +116,9 @@
 }
 
 .pop .emptyCell {
-  border: 2px dashed var(--pop-color-social);
-  color: var(--pop-color-social);
-  background: var(--pop-color-surface-soft);
+  border: 2px dashed var(--pop-state-selected);
+  color: var(--pop-state-selected);
+  background: var(--pop-state-neutral);
 }
 
 .pop .instructions {
@@ -134,7 +135,7 @@
 }
 
 .pop .option:hover:not(:disabled) {
-  border-color: var(--pop-color-social);
+  border-color: var(--pop-state-selected);
   color: var(--pop-color-ink);
   background: var(--pop-color-surface);
 }

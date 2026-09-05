@@ -162,7 +162,7 @@ export function FlashPopQuestionInput({
     case "progressive-clues":
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <ProgressiveCluesQuestion
@@ -176,6 +176,7 @@ export function FlashPopQuestionInput({
             onReveal={onProgressiveClueReveal}
             onProgress={(answer) => onProgress(answer)}
             onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
           />
         </div>
       );
@@ -271,7 +272,7 @@ export function FlashPopQuestionInput({
     case "mini-wordle": {
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <MiniWordleQuestion
@@ -289,6 +290,7 @@ export function FlashPopQuestionInput({
             onProgress={(answer) => onProgress(answer)}
             onSubmit={(answer) => onSubmit(answer)}
             onTimedResponseStart={onTimedResponseStart}
+            variant="flash-pop"
           />
         </div>
       );
@@ -301,7 +303,7 @@ export function FlashPopQuestionInput({
         : undefined;
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <WordSearchQuestion
@@ -311,6 +313,7 @@ export function FlashPopQuestionInput({
             onProgress={(answer) => onProgress(answer)}
             onIncorrectAttempt={onIncorrectAttempt}
             onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
           />
         </div>
       );
@@ -323,7 +326,7 @@ export function FlashPopQuestionInput({
         : undefined;
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <WordHashtagQuestion
@@ -332,6 +335,7 @@ export function FlashPopQuestionInput({
             locked={locked}
             onProgress={(answer) => onProgress(answer)}
             onSubmit={(answer) => onSubmit(answer)}
+            variant="flash-pop"
           />
         </div>
       );
@@ -339,7 +343,7 @@ export function FlashPopQuestionInput({
     case "logic-matrix":
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <LogicMatrixQuestion
@@ -361,7 +365,7 @@ export function FlashPopQuestionInput({
         : undefined;
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <ConnectPairsQuestion
@@ -378,7 +382,7 @@ export function FlashPopQuestionInput({
     case "logic-code":
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <LogicCodeQuestion
@@ -399,7 +403,7 @@ export function FlashPopQuestionInput({
         : undefined;
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.legacyCompatFormat}`}
+          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
           data-format={question.type}
         >
           <QueensQuestion

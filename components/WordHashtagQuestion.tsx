@@ -22,6 +22,7 @@ type Props = {
   onProgress: (answer: WordHashtagAnswer) => void;
   onSubmit: (answer: WordHashtagAnswer) => void;
   className?: string;
+  variant?: "flash-pop";
 };
 
 type DragState = {
@@ -51,6 +52,7 @@ export function WordHashtagQuestion({
   onProgress,
   onSubmit,
   className,
+  variant,
 }: Props) {
   const [answer, setAnswer] = useState<WordHashtagAnswer>(() => ({
     swaps: initialSwaps(question, initialAnswer),
@@ -191,7 +193,7 @@ export function WordHashtagQuestion({
 
   return (
     <section
-      className={`${styles.root} ${className ?? ""}`}
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
       aria-label="Hashtag de cuatro palabras"
       data-format="word-hashtag"
     >

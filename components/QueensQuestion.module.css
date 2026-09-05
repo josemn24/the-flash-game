@@ -214,7 +214,7 @@ button.cell {
 }
 .pop .conflict {
   box-shadow:
-    inset 0 0 0 4px #e22b3f,
+    inset 0 0 0 4px var(--pop-state-error),
     0 1px 2px rgb(23 23 32 / 16%);
 }
 .progress {
@@ -279,9 +279,9 @@ button.cell {
 }
 
 .pop .toolbar .toolActive {
-  border-color: var(--pop-color-brand);
-  color: var(--pop-color-ink);
-  background: var(--pop-color-brand);
+  border-color: var(--pop-state-selected);
+  color: var(--pop-color-surface);
+  background: var(--pop-state-selected);
 }
 
 .pop .board {

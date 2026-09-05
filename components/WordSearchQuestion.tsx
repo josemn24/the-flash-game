@@ -169,6 +169,7 @@ export function WordSearchQuestion({
   onIncorrectAttempt,
   onSubmit,
   className,
+  variant,
 }: {
   question: WordSearchQuestionType;
   initialAnswer?: WordSearchAnswer;
@@ -177,6 +178,7 @@ export function WordSearchQuestion({
   onIncorrectAttempt: () => void;
   onSubmit: (answer: WordSearchAnswer) => void;
   className?: string;
+  variant?: "flash-pop";
 }) {
   const validTargetIds = useMemo(
     () => new Set(question.targets.map((target) => target.id)),
@@ -334,7 +336,10 @@ export function WordSearchQuestion({
   };
 
   return (
-    <section className={`${styles.root} ${className ?? ""}`} aria-label="Sopa de letras">
+    <section
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
+      aria-label="Sopa de letras"
+    >
       <div className={styles.header}>
         <span>Palabras</span>
         <strong>

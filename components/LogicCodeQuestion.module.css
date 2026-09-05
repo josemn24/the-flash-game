@@ -145,7 +145,7 @@
 }
 
 .pop .clue strong {
-  color: var(--pop-color-social);
+  color: var(--pop-state-selected);
 }
 
 .pop .clue span {
@@ -153,7 +153,7 @@
 }
 
 .pop .entryPanel {
-  border-color: rgb(105 87 232 / 22%);
+  border-color: color-mix(in srgb, var(--pop-state-selected) 22%, transparent);
   border-radius: var(--pop-radius-card);
   background: var(--pop-color-surface-raised);
 }
@@ -170,16 +170,16 @@
   border-color: var(--pop-border-subtle);
   color: var(--pop-color-ink);
   background: var(--pop-color-surface);
-  caret-color: var(--pop-color-social);
+  caret-color: var(--pop-state-focus);
 }
 
 .pop .digitInput:focus-visible {
-  border-color: var(--pop-color-focus);
-  outline-color: rgb(77 59 209 / 18%);
+  border-color: var(--pop-state-focus);
+  outline-color: color-mix(in srgb, var(--pop-state-focus) 18%, transparent);
 }
 
 .pop .digitInput.filled {
-  border-color: var(--pop-color-social);
+  border-color: var(--pop-state-selected);
   color: var(--pop-color-ink);
   background: var(--pop-color-surface);
 }

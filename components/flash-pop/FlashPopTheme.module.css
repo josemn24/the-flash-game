@@ -16,6 +16,15 @@
   --pop-color-focus: var(--color-focus);
   --pop-color-border: var(--color-border);
 
+  /* Semantic puzzle states. Components should use these roles instead of
+     coupling a game state directly to a brand color. */
+  --pop-state-correct: var(--pop-color-success);
+  --pop-state-movable: var(--pop-color-brand);
+  --pop-state-selected: var(--pop-color-social);
+  --pop-state-neutral: var(--pop-color-surface-soft);
+  --pop-state-error: var(--pop-color-danger);
+  --pop-state-focus: var(--pop-color-focus);
+
   --pop-border-subtle: var(--border-subtle);
   --pop-border-flash: var(--border-flash);
   --pop-border-action: var(--border-action);

@@ -148,3 +148,66 @@
     transition: none;
   }
 }
+
+.root.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .header,
+.pop .progress {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .header strong,
+.pop .progress strong {
+  color: var(--pop-state-selected);
+}
+
+.pop .board {
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-card);
+}
+
+.pop .tile {
+  border-color: var(--pop-color-border);
+  color: var(--pop-color-ink);
+  box-shadow: var(--pop-shadow-control);
+}
+
+.pop .correct {
+  border-color: var(--pop-state-correct);
+  color: var(--pop-color-ink);
+  background: var(--pop-state-correct);
+}
+
+.pop .displaced {
+  border-color: var(--pop-state-movable);
+  color: var(--pop-color-ink);
+  background: var(--pop-state-movable);
+}
+
+.pop .selected {
+  border-color: var(--pop-state-selected);
+  box-shadow:
+    var(--pop-shadow-control),
+    0 0 0 3px color-mix(in srgb, var(--pop-state-selected) 22%, transparent);
+}
+
+.pop .dragTarget {
+  border-color: var(--pop-state-selected);
+}
+
+.pop .tile:focus-visible {
+  outline-color: var(--pop-state-focus);
+}
+
+.pop .tile small {
+  color: var(--pop-color-ink);
+  background: rgb(255 255 255 / 78%);
+}
+
+.pop .instructions {
+  color: var(--pop-color-ink-muted);
+}

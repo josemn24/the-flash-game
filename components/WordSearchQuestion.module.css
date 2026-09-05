@@ -190,3 +190,70 @@
     animation: none;
   }
 }
+
+.root.pop {
+  gap: var(--pop-space-3);
+  margin-top: var(--pop-space-4);
+}
+
+.pop .header {
+  color: var(--pop-color-ink-muted);
+}
+
+.pop .header strong {
+  color: var(--pop-state-selected);
+}
+
+.pop .board {
+  border-color: rgb(23 23 32 / 16%);
+  border-radius: var(--pop-radius-card);
+  background: var(--pop-color-surface-raised);
+  box-shadow: var(--pop-shadow-card);
+}
+
+.pop .cell {
+  border-color: rgb(23 23 32 / 8%);
+  color: var(--pop-color-ink);
+  background:
+    radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
+    var(--pop-color-surface);
+}
+
+.pop .cell button:focus-visible {
+  outline-color: var(--pop-state-focus);
+}
+
+.pop .cellFound {
+  color: var(--pop-color-ink);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 7px, rgb(23 23 32 / 12%) 7px 10px),
+    var(--pop-state-correct);
+}
+
+.pop .cellMissing {
+  box-shadow: inset 0 0 0 2px var(--pop-state-selected);
+  color: var(--pop-state-selected);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 6px,
+      color-mix(in srgb, var(--pop-state-selected) 12%, transparent) 6px 9px
+    ),
+    var(--pop-state-neutral);
+}
+
+.pop .cellPreview {
+  color: var(--pop-color-surface);
+  background: var(--pop-state-selected);
+}
+
+.pop .cellInvalid {
+  color: var(--pop-color-ink);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, rgb(23 23 32 / 10%) 6px 9px),
+    var(--pop-state-error);
+}
+
+.pop .instructions {
+  color: var(--pop-color-ink-muted);
+}

@@ -3,6 +3,19 @@ import { describe, expect, it } from "vitest";
 
 const theme = readFileSync(new URL("./FlashPopTheme.module.css", import.meta.url), "utf8");
 const globals = readFileSync(new URL("../../app/globals.css", import.meta.url), "utf8");
+const stateStyles = [
+  "../MiniWordleQuestion.module.css",
+  "../WordHashtagQuestion.module.css",
+  "../WordSearchQuestion.module.css",
+  "../LogicMatrixQuestion.module.css",
+  "../QueensQuestion.module.css",
+  "../ConnectPairsQuestion.module.css",
+  "../LogicCodeQuestion.module.css",
+  "../ProgressiveCluesQuestion.module.css",
+].map((filename) => ({
+  filename,
+  css: readFileSync(new URL(filename, import.meta.url), "utf8"),
+}));
 
 function token(name: string) {
   const match = globals.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`));
@@ -31,6 +44,7 @@ describe("Flash Pop token contrast", () => {
     ["ink on surface", "ink", "surface"],
     ["muted on canvas", "ink-muted", "canvas"],
     ["muted on surface", "ink-muted", "surface"],
+    ["muted on surface soft", "ink-muted", "surface-soft"],
     ["focus on surface", "focus", "surface"],
     ["surface on social", "surface", "social"],
     ["ink on reward", "ink", "reward"],
@@ -45,6 +59,48 @@ describe("Flash Pop token contrast", () => {
     expect(theme).toContain("--pop-color-brand: var(--color-brand)");
     expect(theme).toContain("--pop-space-6: var(--space-6)");
     expect(theme).toContain("--pop-font-ui: var(--type-ui)");
+  });
+
+  it("publishes the shared puzzle state roles", () => {
+    for (const [state, color] of [
+      ["correct", "success"],
+      ["movable", "brand"],
+      ["selected", "social"],
+      ["neutral", "surface-soft"],
+      ["error", "danger"],
+      ["focus", "focus"],
+    ]) {
+      expect(theme).toContain(`--pop-state-${state}: var(--pop-color-${color})`);
+    }
+  });
+
+  it("uses state roles in every migrated state-bearing Pop format", () => {
+    const requiredTokensByFormat = new Map([
+      ["MiniWordleQuestion.module.css", ["correct", "movable", "neutral", "focus"]],
+      ["WordHashtagQuestion.module.css", ["correct", "movable", "selected", "focus"]],
+      ["WordSearchQuestion.module.css", ["correct", "selected", "error", "focus"]],
+      ["LogicMatrixQuestion.module.css", ["selected"]],
+      ["QueensQuestion.module.css", ["selected", "error"]],
+      ["ConnectPairsQuestion.module.css", ["selected", "focus"]],
+      ["LogicCodeQuestion.module.css", ["selected", "focus"]],
+      ["ProgressiveCluesQuestion.module.css", ["selected", "focus"]],
+    ]);
+
+    for (const { filename, css } of stateStyles) {
+      const formatFilename = filename.split("/").pop();
+      for (const state of requiredTokensByFormat.get(formatFilename ?? "") ?? []) {
+        expect(css, filename).toContain(`var(--pop-state-${state})`);
+      }
+    }
+  });
+
+  it("keeps empty Mini-Wordle tiles on the white surface", () => {
+    const miniWordle = stateStyles.find(({ filename }) =>
+      filename.endsWith("MiniWordleQuestion.module.css"),
+    );
+    expect(miniWordle?.css).toMatch(
+      /\.pop \.empty \{[\s\S]*background: var\(--pop-color-surface\);/,
+    );
   });
 
   it("publishes the complete semantic token groups", () => {

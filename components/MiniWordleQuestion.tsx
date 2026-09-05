@@ -33,6 +33,7 @@ type Props = {
   onSubmit: (answer: MiniWordleAnswer) => void;
   onTimedResponseStart: () => void;
   className?: string;
+  variant?: "flash-pop";
 };
 
 const STATUS_LABELS = {
@@ -59,6 +60,7 @@ export function MiniWordleQuestion({
   onSubmit,
   onTimedResponseStart,
   className,
+  variant,
 }: Props) {
   const wordLength = getMiniWordleWordLength({ wordLength: configuredWordLength });
   const maxAttempts = getMiniWordleMaxAttempts({ maxAttempts: configuredMaxAttempts });
@@ -131,7 +133,9 @@ export function MiniWordleQuestion({
   };
 
   return (
-    <div className={`${styles.root} ${className ?? ""}`}>
+    <div
+      className={`${styles.root} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
+    >
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
       <section

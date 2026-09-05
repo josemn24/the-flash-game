@@ -17,6 +17,7 @@ type ProgressiveCluesQuestionProps = {
   onProgress?: (answer: string) => void;
   onSubmit: (answer: string) => void;
   className?: string;
+  variant?: "flash-pop";
 };
 
 export function ProgressiveCluesQuestion({
@@ -31,6 +32,7 @@ export function ProgressiveCluesQuestion({
   onProgress,
   onSubmit,
   className,
+  variant,
 }: ProgressiveCluesQuestionProps) {
   const [revealedClues, setRevealedClues] = useState(() =>
     Math.min(Math.max(1, initialRevealedClues ?? 1), clues.length),
@@ -59,7 +61,9 @@ export function ProgressiveCluesQuestion({
   };
 
   return (
-    <div className={`${styles.challenge} ${className ?? ""}`}>
+    <div
+      className={`${styles.challenge} ${variant === "flash-pop" ? styles.pop : ""} ${className ?? ""}`}
+    >
       <div className={styles.scoreRow}>
         <span>
           {revealedClues} de {clues.length} {clues.length === 1 ? "pista" : "pistas"}

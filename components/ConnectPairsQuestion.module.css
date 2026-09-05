@@ -193,7 +193,7 @@
 }
 
 .pop .header strong {
-  color: var(--pop-color-social);
+  color: var(--pop-state-selected);
 }
 
 .pop .board {
@@ -204,8 +204,8 @@
 }
 
 .pop .board:focus-visible {
-  border-color: var(--pop-color-focus);
-  box-shadow: 0 0 0 3px rgb(77 59 209 / 22%);
+  border-color: var(--pop-state-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pop-state-focus) 22%, transparent);
 }
 
 .pop .cell {

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { FlashPopQuestionInput } from "@/components/flash-pop/FlashPopQuestionInput";
 import { getChallengeById } from "@/data/challenges";
+import { questionsById } from "@/data/questions";
 
 describe("Flash Pop question adapter", () => {
   it("renders every format in tabarnia-challenge-05", () => {
@@ -132,5 +133,149 @@ describe("Flash Pop question adapter", () => {
         expect(markup).not.toContain("themeAwareFormat");
       }
     }
+  });
+
+  it("keeps the logic matrix on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["pyramid-shape-direction-matrix"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps connect pairs on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["pyramid-connect-pairs-trap"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps Queens on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["pyramid-summit-queens"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps the word search on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["abrahamic-word-search-biblical-characters"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps Mini-Wordle on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["abrahamic-mini-wordle-josue"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps logic code on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["pyramid-secret-code"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps word hashtag on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["abrahamic-word-hashtag-references"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
+  });
+
+  it("keeps progressive clues on its native Flash Pop theme", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopQuestionInput
+        question={questionsById["abrahamic-progressive-abraham"]}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("legacyCompatFormat");
   });
 });
