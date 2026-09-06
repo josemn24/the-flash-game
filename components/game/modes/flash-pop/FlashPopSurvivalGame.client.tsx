@@ -179,9 +179,7 @@ export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallen
               exit={{ opacity: 0, x: -18 }}
             >
               <QuestionScreen
-                variant="flash-pop"
                 question={session.question}
-                challengeTitle={scoredChallenge.title}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}
@@ -245,7 +243,6 @@ export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallen
               exit={{ opacity: 0, y: -12 }}
             >
               <ReviewAnswers
-                variant="flash-pop"
                 challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}

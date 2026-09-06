@@ -86,13 +86,13 @@
     font-size: 0.84rem;
   }
 
-  :global(html[data-theme="flash-pop"]) .storageWarning {
+  .storageWarning {
     margin-top: 0.75rem;
     border-color: rgba(255, 93, 100, 0.24);
     color: #ff9ca0;
   }
 
-  :global(html[data-theme="flash-pop"]) .storageWarning svg {
+  .storageWarning svg {
     color: #ff737a;
   }
   .primaryAction {
@@ -149,19 +149,6 @@
     list-style: none;
   }
 
-  .pyramidMap li {
-    display: grid;
-    min-height: 2.65rem;
-    grid-template-columns: 1.5rem 1fr 1.5rem;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 0.6rem 0.6rem 0.25rem 0.25rem;
-    padding-inline: 0.75rem;
-    color: rgba(255, 255, 255, 0.32);
-    background: rgba(255, 255, 255, 0.035);
-  }
-
   .pyramidMap li > span {
     font-family: var(--type-mono), monospace;
     font-size: 0.62rem;
@@ -176,12 +163,6 @@
     white-space: nowrap;
   }
 
-  .tierCleared {
-    border-color: rgb(var(--color-brand-rgb) / 0.35);
-    color: var(--color-brand);
-    background: rgb(var(--color-brand-rgb) / 0.11);
-  }
-
   .tierCurrent {
     border-color: var(--color-brand);
     color: var(--color-ink);
@@ -189,36 +170,10 @@
     box-shadow: 0 0 22px rgb(var(--color-brand-rgb) / 0.18);
   }
 
-  .tierFailed {
-    border-color: rgba(255, 93, 100, 0.48);
-    color: #ff9ca0;
-    background: rgba(255, 93, 100, 0.11);
-  }
-
   .tierIcon {
     width: 1rem;
     height: 1rem;
     justify-self: end;
-  }
-
-  .dialogBackdrop {
-    position: fixed;
-    z-index: 50;
-    display: grid;
-    inset: 0;
-    place-items: center;
-    padding: 1rem;
-    background: rgba(3, 5, 2, 0.8);
-    backdrop-filter: blur(14px);
-  }
-
-  .confirmDialog {
-    width: min(100%, 28rem);
-    border: 1px solid rgb(var(--color-brand-rgb) / 0.24);
-    border-radius: 1.6rem;
-    padding: 1.5rem;
-    background: #11150d;
-    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
   }
 
   .dialogIcon {
@@ -284,10 +239,6 @@
   .transitionMarkSuccess {
     color: var(--color-ink);
     background: var(--color-brand);
-  }
-  .transitionMarkFailure {
-    color: white;
-    background: var(--color-danger);
   }
 
   .transitionContent h1 {
@@ -392,7 +343,7 @@
     background: rgba(0, 0, 0, 0.22);
   }
 
-  :global(html[data-theme="flash-pop"]) .resultCard h1 {
+  .resultCard h1 {
     max-width: 11ch;
     font-size: clamp(2.4rem, 6vw, 4.5rem);
   }
@@ -425,7 +376,7 @@
     color: rgba(255, 255, 255, 0.35);
     text-transform: uppercase;
   }
-  :global(html[data-theme="flash-pop"]) .reviewLocked {
+  .reviewLocked {
     margin-top: 0.25rem;
   }
 
@@ -466,7 +417,7 @@
     color: var(--color-brand);
   }
 
-  :global(html[data-theme="flash-pop"]) .loading {
+  .loading {
     align-content: center;
     gap: 0.5rem;
     font-family: var(--type-mono), monospace;
@@ -478,36 +429,36 @@
   }
 
   /* Pyramid is a product mode and inherits the global Flash Pop surfaces. */
-  :global(html[data-theme="flash-pop"]) .subtitle,
-  :global(html[data-theme="flash-pop"]) .description,
-  :global(html[data-theme="flash-pop"]) .resultLead,
-  :global(html[data-theme="flash-pop"]) .briefingDescription,
-  :global(html[data-theme="flash-pop"]) .persistenceNotice {
+  .subtitle,
+  .description,
+  .resultLead,
+  .briefingDescription,
+  .persistenceNotice {
     color: var(--color-ink-muted);
   }
-  :global(html[data-theme="flash-pop"]) .rules > div,
-  :global(html[data-theme="flash-pop"]) .reviewLocked,
-  :global(html[data-theme="flash-pop"]) .storageWarning,
-  :global(html[data-theme="flash-pop"]) .introPyramid,
-  :global(html[data-theme="flash-pop"]) .resultPyramid,
-  :global(html[data-theme="flash-pop"]) .briefingCard,
-  :global(html[data-theme="flash-pop"]) .resultCard,
-  :global(html[data-theme="flash-pop"]) .briefingStats > div,
-  :global(html[data-theme="flash-pop"]) .resultStats > div {
+  .rules > div,
+  .reviewLocked,
+  .storageWarning,
+  .introPyramid,
+  .resultPyramid,
+  .briefingCard,
+  .resultCard,
+  .briefingStats > div,
+  .resultStats > div {
     border-color: var(--color-border);
     color: var(--color-ink-muted);
     background: var(--color-surface);
     box-shadow: var(--shadow-card);
   }
-  :global(html[data-theme="flash-pop"]) .rules strong,
-  :global(html[data-theme="flash-pop"]) .reviewLocked strong,
-  :global(html[data-theme="flash-pop"]) .briefingStats strong,
-  :global(html[data-theme="flash-pop"]) .resultStats strong {
+  .rules strong,
+  .reviewLocked strong,
+  .briefingStats strong,
+  .resultStats strong {
     color: var(--color-ink);
   }
-  :global(html[data-theme="flash-pop"]) .introPyramid,
-  :global(html[data-theme="flash-pop"]) .resultPyramid,
-  :global(html[data-theme="flash-pop"]) .briefingCard {
+  .introPyramid,
+  .resultPyramid,
+  .briefingCard {
     background:
       radial-gradient(
         circle at 50% 0%,
@@ -516,78 +467,99 @@
       ),
       var(--color-surface);
   }
-  :global(html[data-theme="flash-pop"]) .introPyramid > p,
-  :global(html[data-theme="flash-pop"]) .briefingStats span,
-  :global(html[data-theme="flash-pop"]) .resultStats span,
-  :global(html[data-theme="flash-pop"]) .backLink {
+  .introPyramid > p,
+  .briefingStats span,
+  .resultStats span,
+  .backLink {
     color: var(--color-ink-faint);
   }
-  :global(html[data-theme="flash-pop"]) .pyramidMap li {
+  .pyramidMap li {
+    display: grid;
+    min-height: 2.65rem;
+    grid-template-columns: 1.5rem 1fr 1.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 0.6rem 0.6rem 0.25rem 0.25rem;
+    padding-inline: 0.75rem;
     border-color: var(--color-border);
     color: var(--color-ink-muted);
     background: var(--color-surface-raised);
   }
-  :global(html[data-theme="flash-pop"]) .tierCleared {
+  .tierCleared {
+    color: var(--color-brand);
     border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
     background: color-mix(in srgb, var(--color-brand) 14%, var(--color-surface));
   }
-  :global(html[data-theme="flash-pop"]) .tierFailed {
+  .tierFailed {
     border-color: color-mix(in srgb, var(--state-error) 55%, var(--color-border));
     color: var(--state-error);
     background: color-mix(in srgb, var(--state-error) 12%, var(--color-surface));
   }
-  :global(html[data-theme="flash-pop"]) .dialogBackdrop {
+  .dialogBackdrop {
+    position: fixed;
+    z-index: 50;
+    display: grid;
+    inset: 0;
+    place-items: center;
+    padding: 1rem;
+    backdrop-filter: blur(14px);
     background: var(--color-overlay-ink);
   }
-  :global(html[data-theme="flash-pop"]) .confirmDialog {
+  .confirmDialog {
+    width: min(100%, 28rem);
+    border: 1px solid rgb(var(--color-brand-rgb) / 0.24);
+    border-radius: 1.6rem;
+    padding: 1.5rem;
     border-color: var(--color-border-hover);
     background: var(--color-surface);
     box-shadow: var(--shadow-dialog);
   }
-  :global(html[data-theme="flash-pop"]) .confirmDialog p,
-  :global(html[data-theme="flash-pop"]) .transitionContent > p:last-child {
+  .confirmDialog p,
+  .transitionContent > p:last-child {
     color: var(--color-ink-muted);
   }
-  :global(html[data-theme="flash-pop"]) .transitionMarkFailure {
+  .transitionMarkFailure {
+    background: var(--color-danger);
     color: var(--color-text-on-danger);
   }
 
   @media (min-width: 800px) {
-    :global(html[data-theme="flash-pop"]) .introGrid,
-    :global(html[data-theme="flash-pop"]) .resultsGrid {
+    .introGrid,
+    .resultsGrid {
       grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
     }
 
-    :global(html[data-theme="flash-pop"]) .resultsGrid {
+    .resultsGrid {
       grid-template-columns: minmax(20rem, 0.9fr) minmax(0, 1.1fr);
     }
   }
 
   @media (max-width: 639px) {
-    :global(html[data-theme="flash-pop"]) .introGrid {
+    .introGrid {
       gap: 1.5rem;
       padding-top: 2.5rem;
     }
-    :global(html[data-theme="flash-pop"]) .introPyramid {
+    .introPyramid {
       order: -1;
       padding-top: 1.25rem;
     }
-    :global(html[data-theme="flash-pop"]) .introCopy h1 {
+    .introCopy h1 {
       font-size: 2.65rem;
     }
-    :global(html[data-theme="flash-pop"]) .pyramidMap li {
+    .pyramidMap li {
       min-height: 2.15rem;
     }
-    :global(html[data-theme="flash-pop"]) .resultStats {
+    .resultStats {
       grid-template-columns: 1fr;
     }
-    :global(html[data-theme="flash-pop"]) .resultPyramid {
+    .resultPyramid {
       padding-inline: 0.7rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(html[data-theme="flash-pop"]) .pyramidMap li {
+    .pyramidMap li {
       transition: none;
     }
   }

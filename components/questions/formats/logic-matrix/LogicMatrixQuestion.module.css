@@ -1,9 +1,4 @@
 @layer app-formats {
-  .root {
-    display: grid;
-    gap: 1rem;
-    margin-top: 1.5rem;
-  }
   .matrix {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -92,19 +87,20 @@
     overflow: visible;
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
 
-  .root[data-variant="flash-pop"] .matrix {
+  .root .matrix {
     gap: var(--space-2);
     border-radius: var(--radius-card);
     padding: var(--space-2);
     background: var(--color-surface-raised);
   }
 
-  .root[data-variant="flash-pop"] .cell {
+  .root .cell {
     border: 1px solid rgb(23 23 32 / 16%);
     border-radius: var(--radius-sm);
     color: var(--color-ink);
@@ -112,21 +108,21 @@
     box-shadow: 0 1px 0 rgb(23 23 32 / 6%);
   }
 
-  .root[data-variant="flash-pop"] .cell small {
+  .root .cell small {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .emptyCell {
+  .root .emptyCell {
     border: 2px dashed var(--state-selected);
     color: var(--state-selected);
     background: var(--state-neutral);
   }
 
-  .root[data-variant="flash-pop"] .instructions {
+  .root .instructions {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .option {
+  .root .option {
     min-height: 72px;
     border: var(--border-subtle);
     border-radius: var(--radius-control);
@@ -135,7 +131,7 @@
     box-shadow: var(--shadow-control);
   }
 
-  .root[data-variant="flash-pop"] .option:hover:not(:disabled) {
+  .root .option:hover:not(:disabled) {
     border-color: var(--state-selected);
     color: var(--color-ink);
     background: var(--color-surface);

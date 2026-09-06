@@ -13,8 +13,7 @@ import {
 import type {
   WordHashtagAnswer,
   WordHashtagQuestion as WordHashtagQuestionType,
-  QuestionVariant,
-} from "@/types/game";
+  } from "@/types/game";
 
 type Props = {
   question: WordHashtagQuestionType;
@@ -23,7 +22,6 @@ type Props = {
   onProgress: (answer: WordHashtagAnswer) => void;
   onSubmit: (answer: WordHashtagAnswer) => void;
   className?: string;
-  variant?: QuestionVariant;
 };
 
 type DragState = {
@@ -53,7 +51,6 @@ export function WordHashtagQuestion({
   onProgress,
   onSubmit,
   className,
-  variant,
 }: Props) {
   const [answer, setAnswer] = useState<WordHashtagAnswer>(() => ({
     swaps: initialSwaps(question, initialAnswer),
@@ -197,7 +194,6 @@ export function WordHashtagQuestion({
       className={`${styles.root} ${className ?? ""}`}
       aria-label="Hashtag de cuatro palabras"
       data-format="word-hashtag"
-      data-variant={variant ?? "default"}
     >
       <div className={styles.header}>
         <span>Tablero de palabras</span>

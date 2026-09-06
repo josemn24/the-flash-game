@@ -1,19 +1,8 @@
 @layer app-formats {
+
   .root {
-    --format-ink: rgba(255, 255, 255, 0.9);
-    --format-muted: rgba(255, 255, 255, 0.55);
-    --format-surface: rgba(255, 255, 255, 0.035);
-    --format-border: rgba(255, 255, 255, 0.09);
-    --format-focus: var(--color-brand);
-    --format-accent: var(--color-brand);
-    --format-danger: #c83d55;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-
-  .root[data-variant="flash-pop"] {
     --format-ink: var(--color-ink);
     --format-muted: var(--color-ink-muted);
     --format-surface: var(--color-surface-raised);
@@ -25,56 +14,22 @@
     margin-top: var(--space-5);
   }
 
-  .button {
-    display: flex;
-    min-height: 8.5rem;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.8rem;
-    border: 1px solid var(--format-border);
-    border-radius: 1.25rem;
-    color: var(--format-ink);
-    background: var(--button-surface, var(--format-surface));
-    font-size: 0.95rem;
-    font-weight: 900;
-    transition:
-      border-color 160ms,
-      background 160ms,
-      color 160ms;
-  }
-
-  .button svg {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
   .trueButton {
-    --button-accent: var(--format-accent);
-    --button-surface: rgb(var(--color-brand-rgb) / 0.035);
-  }
-
-  .falseButton {
-    --button-accent: var(--format-danger);
-    --button-surface: rgba(255, 93, 100, 0.035);
-  }
-
-  [data-variant="flash-pop"] .trueButton {
     --button-accent: var(--color-success);
     --button-surface: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
   }
 
-  [data-variant="flash-pop"] .falseButton {
+  .falseButton {
     --button-accent: var(--format-danger);
     --button-surface: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
   }
 
-  [data-variant="flash-pop"] .button svg,
+  .button svg,
   .button:hover:not(:disabled) {
     color: var(--button-accent);
   }
 
-  [data-variant="flash-pop"] .button:hover:not(:disabled) {
+  .button:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--button-accent) 52%, var(--format-border));
     background: color-mix(in srgb, var(--button-accent) 8%, var(--format-surface));
   }
@@ -89,7 +44,20 @@
     opacity: 0.48;
   }
 
-  [data-variant="flash-pop"] .button {
+  .button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    border: 1px solid var(--format-border);
+    color: var(--format-ink);
+    background: var(--button-surface, var(--format-surface));
+    font-weight: 900;
+    transition:
+      border-color 160ms,
+      background 160ms,
+      color 160ms;
     min-height: 84px;
     padding: 1rem 1.25rem;
     border-radius: var(--radius-control);
@@ -98,23 +66,23 @@
     font-size: 1.1rem;
   }
 
-  [data-variant="flash-pop"] .button svg {
+  .button svg {
     width: 1.4rem;
     height: 1.4rem;
   }
 
   @media (min-width: 640px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       gap: 1rem;
     }
 
-    [data-variant="flash-pop"] .button {
+    .button {
       min-height: 96px;
     }
   }
 
   @media (max-width: 479px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       grid-template-columns: 1fr;
     }
   }

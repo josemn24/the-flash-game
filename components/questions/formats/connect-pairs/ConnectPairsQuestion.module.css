@@ -1,10 +1,4 @@
 @layer app-formats {
-  .root {
-    display: grid;
-    justify-items: center;
-    gap: 1rem;
-    margin-top: 1.35rem;
-  }
 
   .header {
     display: flex;
@@ -175,41 +169,43 @@
   }
 
   @media (max-width: 480px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       gap: 0.8rem;
     }
 
-    [data-variant="flash-pop"] .board {
+    .board {
       border-radius: 0.8rem;
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
+    justify-items: center;
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
 
-  .root[data-variant="flash-pop"] .header {
+  .root .header {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .header strong {
+  .root .header strong {
     color: var(--state-selected);
   }
 
-  .root[data-variant="flash-pop"] .board {
+  .root .board {
     border-color: rgb(23 23 32 / 16%);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
-  .root[data-variant="flash-pop"] .board:focus-visible {
+  .root .board:focus-visible {
     border-color: var(--state-focus);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
   }
 
-  .root[data-variant="flash-pop"] .cell {
+  .root .cell {
     border-color: rgb(23 23 32 / 8%);
     color: var(--color-ink);
     background:
@@ -217,17 +213,17 @@
       var(--color-surface);
   }
 
-  .root[data-variant="flash-pop"] .empty .cellButton,
-  .root[data-variant="flash-pop"] .endpoint .cellButton {
+  .root .empty .cellButton,
+  .root .endpoint .cellButton {
     background: rgb(23 23 32 / 3%);
   }
 
-  .root[data-variant="flash-pop"] .instructions,
-  .root[data-variant="flash-pop"] .statusText {
+  .root .instructions,
+  .root .statusText {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .actions button {
+  .root .actions button {
     min-height: 44px;
     border-color: var(--border-subtle);
     color: var(--color-ink);

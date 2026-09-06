@@ -12,8 +12,7 @@ import type {
   PipesAnswer,
   PipesQuestion as PipesQuestionType,
   PipesTileKind,
-  QuestionVariant,
-} from "@/types/game";
+  } from "@/types/game";
 import styles from "./PipesQuestion.module.css";
 
 const KIND_LABEL: Record<PipesTileKind, string> = {
@@ -139,13 +138,11 @@ export function PipesQuestion({
   locked,
   onProgress,
   onSubmit,
-  variant,
 }: {
   question: PipesQuestionType;
   locked: boolean;
   onProgress: (answer: PipesAnswer) => void;
   onSubmit: (answer: PipesAnswer) => void;
-  variant?: QuestionVariant;
 }) {
   const [answer, setAnswer] = useState<PipesAnswer>({
     rotations: question.initialRotations,
@@ -201,7 +198,6 @@ export function PipesQuestion({
   return (
     <section
       className={styles.root}
-      data-variant={variant ?? "default"}
       aria-label="Tuberías, conecta toda la red"
     >
       <div className={styles.header}>

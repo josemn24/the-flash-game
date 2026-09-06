@@ -1,17 +1,15 @@
 import styles from "./NumberSequencePrompt.module.css";
-import type { NumberSequencePromptVisual, QuestionVariant } from "@/types/game";
+import type { NumberSequencePromptVisual } from "@/types/game";
 
 type NumberSequencePromptProps = {
   prompt: NumberSequencePromptVisual;
-  variant?: QuestionVariant;
 };
 
-export function NumberSequencePrompt({ prompt, variant }: NumberSequencePromptProps) {
+export function NumberSequencePrompt({ prompt }: NumberSequencePromptProps) {
   return (
     <section
       className={`${styles.prompt}`}
       aria-label={prompt.eyebrow ?? "Secuencia numérica"}
-      data-variant={variant ?? "default"}
     >
       {prompt.eyebrow && <p className={styles.eyebrow}>{prompt.eyebrow}</p>}
       <div className={styles.sequenceRow} aria-label={`Secuencia: ${prompt.sequence.join(", ")}`}>

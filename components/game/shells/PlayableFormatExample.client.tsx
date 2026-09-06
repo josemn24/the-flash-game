@@ -271,7 +271,6 @@ export function PlayableFormatExample({
               <QuestionInput
                 key={`input-${attempt}`}
                 question={question}
-                variant="flash-pop"
                 locked={false}
                 onSubmit={submitAnswer}
                 codeAttemptCount={codeAttemptCount}

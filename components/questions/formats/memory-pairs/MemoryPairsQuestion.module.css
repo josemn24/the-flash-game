@@ -20,7 +20,7 @@
   .header strong {
     color: var(--color-brand);
   }
-  [data-variant="flash-pop"] .meta {
+  .meta {
     justify-content: flex-start;
     color: rgba(255, 255, 255, 0.4);
     font-size: 0.62rem;
@@ -95,7 +95,7 @@
     font-size: 0.8rem;
     line-height: 1.15;
   }
-  [data-variant="flash-pop"] .tileBack {
+  .tileBack {
     color: rgba(255, 255, 255, 0.24);
     font-family: var(--type-display);
     font-size: 1.8rem;
@@ -116,55 +116,55 @@
   }
 
   @media (min-width: 640px) {
-    .grid[data-variant="flash-pop"] {
+    .grid {
       gap: 0.7rem;
     }
-    [data-variant="flash-pop"] .tile {
+    .tile {
       min-height: 6.25rem;
     }
-    [data-variant="flash-pop"] .tileFace strong {
+    .tileFace strong {
       font-size: 0.86rem;
     }
-    [data-variant="flash-pop"] .tileSymbol {
+    .tileSymbol {
       font-size: 3.25rem;
     }
   }
 
-  .root[data-variant="flash-pop"] .header,
-  .root[data-variant="flash-pop"] .meta {
+  .root .header,
+  .root .meta {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .tile {
+  .root .tile {
     border-color: var(--color-border);
     color: var(--color-ink);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-control);
   }
-  .root[data-variant="flash-pop"] .tile:hover:not(:disabled) {
+  .root .tile:hover:not(:disabled) {
     border-color: var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .tile:focus-visible {
+  .root .tile:focus-visible {
     outline-color: var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .tileRevealed {
+  .root .tileRevealed {
     border-color: var(--state-selected);
     background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .tileMatched {
+  .root .tileMatched {
     border-color: var(--state-correct);
     background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .tileMismatched {
+  .root .tileMismatched {
     border-color: var(--state-error);
     background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .tileBack {
+  .root .tileBack {
     color: var(--color-ink-faint);
   }
-  .root[data-variant="flash-pop"] .tileMatched .stateIcon {
+  .root .tileMatched .stateIcon {
     color: var(--state-correct);
   }
-  .root[data-variant="flash-pop"] .tileMismatched .stateIcon {
+  .root .tileMismatched .stateIcon {
     color: var(--state-error);
   }
 }

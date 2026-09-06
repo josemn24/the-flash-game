@@ -26,9 +26,9 @@
     box-shadow: var(--shadow-hero);
   }
 
-  :global(html[data-theme="flash-pop"]) .introCard,
-  :global(html[data-theme="flash-pop"]) .resultCard,
-  :global(html[data-theme="flash-pop"]) .reviewCard {
+  .introCard,
+  .resultCard,
+  .reviewCard {
     display: grid;
     gap: var(--space-4);
   }
@@ -59,13 +59,13 @@
     line-height: 1.5;
   }
 
-  :global(html[data-theme="flash-pop"]) .lead {
+  .lead {
     margin-top: var(--space-3);
     font-size: 17px;
     font-weight: 700;
   }
 
-  :global(html[data-theme="flash-pop"]) .description {
+  .description {
     margin-top: var(--space-2);
     font-size: 14px;
   }
@@ -310,7 +310,7 @@
     font-size: 13px;
   }
 
-  :global(html[data-theme="flash-pop"]) .playing {
+  .playing {
     width: min(100%, 1040px);
     gap: var(--space-4);
   }
@@ -324,13 +324,13 @@
     align-items: center;
   }
 
-  :global(html[data-theme="flash-pop"]) .gameMeta,
-  :global(html[data-theme="flash-pop"]) .reviewHeading,
-  :global(html[data-theme="flash-pop"]) .rankingRow {
+  .gameMeta,
+  .reviewHeading,
+  .rankingRow {
     gap: var(--space-3);
   }
 
-  :global(html[data-theme="flash-pop"]) .gameMeta {
+  .gameMeta {
     color: var(--color-ink-muted);
     font-family: var(--type-mono);
     font-size: 11px;
@@ -341,12 +341,7 @@
     color: var(--color-ink);
   }
 
-  .playGrid {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  :global(html[data-theme="flash-pop"]) .boardCard {
+  .boardCard {
     place-items: center;
     display: grid;
     width: min(100%, 32rem);
@@ -416,14 +411,14 @@
     gap: var(--space-3);
   }
 
-  :global(html[data-theme="flash-pop"]) .answerForm > p {
+  .answerForm > p {
     margin: 0;
     font-size: 11px;
     line-height: 1.45;
   }
 
-  :global(html[data-theme="flash-pop"]) .resultCard,
-  :global(html[data-theme="flash-pop"]) .reviewCard {
+  .resultCard,
+  .reviewCard {
     text-align: center;
   }
 
@@ -456,7 +451,7 @@
   }
 
   .scoreLabel,
-  :global(html[data-theme="flash-pop"]) .tieBreak {
+  .tieBreak {
     margin: 0;
     font-family: var(--type-mono);
     font-size: 10px;
@@ -492,7 +487,7 @@
     text-transform: uppercase;
   }
 
-  :global(html[data-theme="flash-pop"]) .rankingRow {
+  .rankingRow {
     min-height: 48px;
     padding: 7px 9px;
     border-radius: var(--radius-control);
@@ -526,12 +521,12 @@
     font-weight: 700;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewHeading {
+  .reviewHeading {
     justify-content: space-between;
     text-align: left;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewHeading > div {
+  .reviewHeading > div {
     align-items: flex-start;
     flex-direction: column;
     gap: var(--space-2);
@@ -542,7 +537,7 @@
     font-size: clamp(32px, 8vw, 48px);
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewLead {
+  .reviewLead {
     text-align: left;
     font-size: 14px;
   }
@@ -652,31 +647,31 @@
     line-height: 1.5;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewActions {
+  .reviewActions {
     display: grid;
     gap: var(--space-2);
   }
 
   @media (min-width: 720px) {
-    :global(html[data-theme="flash-pop"]) .introLayout,
-    :global(html[data-theme="flash-pop"]) .playGrid {
+    .introLayout,
+    .playGrid {
       grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
     }
 
-    :global(html[data-theme="flash-pop"]) .playGrid {
+    .playGrid {
       align-items: stretch;
     }
-    :global(html[data-theme="flash-pop"]) .boardCard {
+    .boardCard {
       min-height: 100%;
     }
-    :global(html[data-theme="flash-pop"]) .reviewActions {
+    .reviewActions {
       grid-template-columns: 1fr 1fr;
     }
   }
 
   @media (max-width: 520px) {
-    :global(html[data-theme="flash-pop"]) .stats,
-    :global(html[data-theme="flash-pop"]) .resultStats {
+    .stats,
+    .resultStats {
       grid-template-columns: 1fr;
     }
     .gameMeta > span:first-child {
@@ -685,13 +680,14 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(html[data-theme="flash-pop"]) .letterCell {
+    .letterCell {
       transition: none;
     }
   }
 
   /* Keep the original gameplay geometry while using the Flash Pop palette. */
-  :global(html[data-theme="flash-pop"]) .playGrid {
+  .playGrid {
+    display: grid;
     width: min(100%, 58rem);
     grid-template-columns: 1fr;
     align-content: start;

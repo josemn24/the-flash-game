@@ -25,7 +25,7 @@
     border-radius: 28px;
   }
 
-  :global(html[data-theme="flash-pop"]) .introCard {
+  .introCard {
     position: relative;
     max-width: 680px;
     margin: clamp(12px, 7vh, 72px) auto 0;
@@ -75,7 +75,7 @@
     line-height: 0.98;
   }
 
-  :global(html[data-theme="flash-pop"]) .introCard h1 {
+  .introCard h1 {
     max-width: 510px;
     margin: 16px 100px 0 0;
     font-size: clamp(42px, 7vw, 72px);
@@ -96,7 +96,7 @@
     line-height: 1.55;
   }
 
-  :global(html[data-theme="flash-pop"]) .description {
+  .description {
     max-width: 600px;
     margin: 10px 0 0;
     font-size: 13px;
@@ -125,7 +125,7 @@
   }
 
   .introStats span,
-  :global(html[data-theme="flash-pop"]) .note,
+  .note,
   .promptContext,
   .eyebrow {
     font-family: var(--type-mono);
@@ -135,9 +135,9 @@
     text-transform: uppercase;
   }
 
-  :global(html[data-theme="flash-pop"]) .introStats span,
-  :global(html[data-theme="flash-pop"]) .note,
-  :global(html[data-theme="flash-pop"]) .promptContext {
+  .introStats span,
+  .note,
+  .promptContext {
     color: var(--color-ink-muted);
   }
 
@@ -148,7 +148,7 @@
     margin-bottom: 24px;
   }
 
-  :global(html[data-theme="flash-pop"]) .note {
+  .note {
     margin: 11px 0 0;
     font-size: 9px;
     text-align: center;
@@ -193,7 +193,7 @@
     box-shadow: none;
   }
 
-  :global(html[data-theme="flash-pop"]) .promptContext {
+  .promptContext {
     display: inline-block;
     max-width: 100%;
     margin: 0 0 16px;
@@ -207,7 +207,7 @@
     letter-spacing: 0.07em;
   }
 
-  :global(html[data-theme="flash-pop"]) .questionCard h1 {
+  .questionCard h1 {
     max-width: 720px;
     margin: 0;
     font-size: clamp(24px, 6.4vw, 32px);
@@ -225,7 +225,7 @@
     margin-top: 28px;
   }
 
-  :global(html[data-theme="flash-pop"]) .eyebrow {
+  .eyebrow {
     margin: 22px 0 0;
     color: var(--color-social);
   }
@@ -238,11 +238,11 @@
     margin-top: 34px;
   }
 
-  :global(html[data-theme="flash-pop"]) .resultCard {
+  .resultCard {
     padding: clamp(24px, 4vw, 38px);
   }
 
-  :global(html[data-theme="flash-pop"]) .resultCard h1 {
+  .resultCard h1 {
     margin: 12px 0 0;
     font-size: clamp(38px, 5vw, 58px);
   }
@@ -378,7 +378,7 @@
     color: #c83d55;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewCard {
+  .reviewCard {
     max-width: 900px;
     margin: 34px auto 0;
     padding: clamp(20px, 4vw, 38px);
@@ -391,7 +391,7 @@
     gap: 14px;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewCard h1 {
+  .reviewCard h1 {
     margin: 10px 0 0;
     font-size: clamp(40px, 6vw, 62px);
   }
@@ -491,14 +491,14 @@
   }
 
   @media (max-width: 700px) {
-    :global(html[data-theme="flash-pop"]) .stage {
+    .stage {
       min-height: calc(100dvh - 32px);
     }
-    :global(html[data-theme="flash-pop"]) .resultLayout {
+    .resultLayout {
       grid-template-columns: 1fr;
       margin-top: 12px;
     }
-    :global(html[data-theme="flash-pop"]) .reviewItem summary {
+    .reviewItem summary {
       align-items: start;
     }
     .reviewItem summary > :global(.card) {
@@ -507,40 +507,40 @@
   }
 
   @media (max-width: 480px) {
-    :global(html[data-theme="flash-pop"]) .introCard h1 {
+    .introCard h1 {
       margin-right: 0;
       padding-top: 72px;
     }
-    :global(html[data-theme="flash-pop"]) .introAccent {
+    .introAccent {
       top: 22px;
       right: 22px;
       width: 64px;
       height: 64px;
     }
-    :global(html[data-theme="flash-pop"]) .introAccent span {
+    .introAccent span {
       font-size: 27px;
     }
-    :global(html[data-theme="flash-pop"]) .introStats {
+    .introStats {
       gap: 6px;
     }
-    :global(html[data-theme="flash-pop"]) .introStats div {
+    .introStats div {
       padding: 10px;
     }
-    :global(html[data-theme="flash-pop"]) .introStats strong {
+    .introStats strong {
       font-size: 17px;
     }
-    :global(html[data-theme="flash-pop"]) .introStats span {
+    .introStats span {
       font-size: 8px;
     }
-    :global(html[data-theme="flash-pop"]) .summaryStats,
-    :global(html[data-theme="flash-pop"]) .answerStats {
+    .summaryStats,
+    .answerStats {
       gap: 7px;
     }
-    :global(html[data-theme="flash-pop"]) .answerStats .statCard,
-    :global(html[data-theme="flash-pop"]) .summaryStats .statCard {
+    .answerStats .statCard,
+    .summaryStats .statCard {
       padding: 14px 12px;
     }
-    :global(html[data-theme="flash-pop"]) .reviewTitle small {
+    .reviewTitle small {
       max-width: 150px;
     }
   }
@@ -550,13 +550,13 @@
       color: var(--color-ink-muted);
     }
 
-    :global(html[data-theme="flash-pop"]) .questionIndicator {
+    .questionIndicator {
       display: none;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(html[data-theme="flash-pop"]) .scoreTrack span {
+    .scoreTrack span {
       transition: none;
     }
   }

@@ -6,26 +6,6 @@
     letter-spacing: 0.19em;
     text-transform: uppercase;
   }
-  .textButton {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--color-ink-muted);
-    font-size: 0.7rem;
-    font-weight: 800;
-    transition: color 160ms;
-  }
-  .textButton:hover {
-    color: white;
-  }
-  .reviewCard {
-    overflow: hidden;
-    border: var(--border-subtle);
-    border-left-width: 3px;
-    border-radius: 1rem;
-    background: rgba(18, 20, 24, 0.76);
-    backdrop-filter: blur(16px);
-  }
   .reviewCorrect {
     border-left-color: var(--color-brand);
   }
@@ -50,19 +30,6 @@
   .reviewCard summary::-webkit-details-marker {
     display: none;
   }
-  .reviewNumber {
-    display: grid;
-    width: 2.25rem;
-    height: 2.25rem;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 0.65rem;
-    color: rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.05);
-    font-family: var(--type-mono);
-    font-size: 0.7rem;
-    font-weight: 800;
-  }
   .reviewStatus {
     display: flex;
     flex: 0 0 auto;
@@ -73,41 +40,12 @@
     font-size: 0.6rem;
     font-weight: 800;
   }
-  .statusCorrect {
-    color: var(--color-brand);
-    background: rgb(var(--color-brand-rgb) / 0.08);
-  }
-  .statusWrong {
-    color: #ff858a;
-    background: rgba(255, 93, 100, 0.08);
-  }
-  .statusPartial {
-    color: var(--color-social);
-    background: rgba(53, 232, 255, 0.08);
-  }
-  .statusUnanswered {
-    color: #a1a5ad;
-    background: rgba(255, 255, 255, 0.05);
-  }
   .reviewChevron {
     flex: 0 0 auto;
     transition: transform 180ms;
   }
   .reviewCard[open] .reviewChevron {
     transform: rotate(90deg);
-  }
-  .reviewContent {
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 1rem;
-  }
-  .answerBox {
-    display: flex;
-    min-height: 4.3rem;
-    flex-direction: column;
-    justify-content: center;
-    border-radius: 0.8rem;
-    padding: 0.8rem;
-    background: var(--color-surface-soft);
   }
   .answerBox span {
     color: rgba(255, 255, 255, 0.3);
@@ -290,7 +228,7 @@
   }
 
   @media (min-width: 720px) {
-    [data-variant="flash-pop"] .queensReviewPair {
+    .queensReviewPair {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
@@ -348,15 +286,6 @@
     color: rgba(255, 255, 255, 0.42);
     background: rgba(255, 255, 255, 0.025);
     text-align: center;
-  }
-  .memoryPairsRevealed {
-    border-style: solid;
-    color: rgba(255, 255, 255, 0.82);
-    background: rgba(53, 232, 255, 0.07);
-  }
-  .memoryPairsMatched {
-    border-color: rgb(var(--color-brand-rgb) / 0.58);
-    background: rgb(var(--color-brand-rgb) / 0.08);
   }
   .memoryPairsCell > div {
     width: 100%;
@@ -439,38 +368,9 @@
   .nonogramEmpty {
     color: rgba(255, 255, 255, 0.3);
   }
-  .connectPairsReviewGrid {
-    display: grid;
-    width: min(100%, 18rem);
-    overflow: hidden;
-    border: 1px solid rgb(255 255 255 / 14%);
-    border-radius: 0.75rem;
-    background: #07090c;
-  }
-  .connectPairsReviewCell {
-    display: grid;
-    aspect-ratio: 1;
-    place-items: center;
-    border: 1px solid rgb(255 255 255 / 5%);
-    color: rgb(255 255 255 / 62%);
-    background: rgb(255 255 255 / 4%);
-    font-family: var(--type-mono);
-    font-size: 0.9rem;
-    font-weight: 900;
-  }
   .connectPairsReviewRoute {
     color: var(--color-social);
     background: rgb(53 232 255 / 12%);
-  }
-  .connectPairsReviewEndpoint {
-    color: #071011;
-    background: var(--color-brand);
-  }
-  .connectPairsReviewEndpointMissing {
-    color: rgb(255 255 255 / 58%);
-    background: rgb(255 255 255 / 8%);
-    outline: 1px dashed rgb(255 255 255 / 28%);
-    outline-offset: -0.25rem;
   }
   .puzzleReviewPair {
     display: grid;
@@ -502,11 +402,11 @@
     font-size: 0.7rem;
     font-weight: 900;
   }
-  [data-variant="flash-pop"] .puzzleTile {
+  .puzzleTile {
     color: var(--color-ink);
     background: var(--color-brand);
   }
-  [data-variant="flash-pop"] .puzzleBlank {
+  .puzzleBlank {
     border: 1px dashed rgba(255, 255, 255, 0.28);
     border-color: var(--color-border-hover);
   }
@@ -538,18 +438,6 @@
     font-family: var(--type-mono);
     font-size: 0.5rem;
   }
-  .wordle-correct {
-    color: #151908;
-    background: var(--color-brand);
-  }
-  .wordle-present {
-    color: #07191c;
-    background: var(--color-social);
-  }
-  .wordle-absent {
-    color: rgba(255, 255, 255, 0.68);
-    background: rgba(255, 255, 255, 0.09);
-  }
   .wordHashtagReviewPair {
     display: grid;
     gap: 1rem;
@@ -560,16 +448,6 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: clamp(0.18rem, 1vw, 0.4rem);
     margin-top: 0.5rem;
-  }
-  .wordHashtagReviewTile {
-    position: relative;
-    display: grid;
-    min-width: 0;
-    aspect-ratio: 1;
-    place-items: center;
-    border-radius: clamp(0.35rem, 1vw, 0.58rem);
-    color: #11150a;
-    box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
   }
   .wordHashtagReviewTile b {
     font-family: var(--type-display);
@@ -583,172 +461,219 @@
     font-size: clamp(0.38rem, 1.2vw, 0.55rem);
     font-weight: 950;
   }
-  .wordHashtagReviewCorrect {
-    background: #74c900;
-  }
-  .wordHashtagReviewDisplaced {
-    background: #ffc400;
-  }
   @media (min-width: 640px) {
-    [data-variant="flash-pop"] .reviewCard summary {
+    .reviewCard summary {
       gap: 1rem;
       padding: 1rem 1.2rem;
     }
-    [data-variant="flash-pop"] .reviewContent {
+    .reviewContent {
       padding: 1.2rem;
     }
-    [data-variant="flash-pop"] .memoryGridPair {
+    .memoryGridPair {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    [data-variant="flash-pop"] .puzzleReviewPair {
+    .puzzleReviewPair {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    [data-variant="flash-pop"] .escapeReviewPair {
+    .escapeReviewPair {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    [data-variant="flash-pop"] .wordHashtagReviewPair {
+    .wordHashtagReviewPair {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   /* Flash Pop feedback surfaces */
-  [data-variant="flash-pop"] .reviewCard {
+  .reviewCard {
+    overflow: hidden;
+    border: var(--border-subtle);
+    border-left-width: 3px;
+    border-radius: 1rem;
+    backdrop-filter: blur(16px);
     border-color: var(--color-border);
     background: var(--color-surface);
     box-shadow: var(--shadow-card);
   }
-  [data-variant="flash-pop"] .textButton {
+  .textButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    transition: color 160ms;
     color: var(--color-ink-muted);
   }
-  [data-variant="flash-pop"] .textButton:hover {
+  .textButton:hover {
     color: var(--color-ink);
   }
-  [data-variant="flash-pop"] .reviewNumber {
+  .reviewNumber {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.65rem;
+    font-family: var(--type-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
   }
-  [data-variant="flash-pop"] .statusCorrect {
+  .statusCorrect {
     color: var(--state-correct);
     background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
   }
-  [data-variant="flash-pop"] .statusWrong {
+  .statusWrong {
     color: var(--state-error);
     background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
   }
-  [data-variant="flash-pop"] .statusPartial {
+  .statusPartial {
     color: var(--state-selected);
     background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
   }
-  [data-variant="flash-pop"] .statusUnanswered {
+  .statusUnanswered {
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
   }
-  [data-variant="flash-pop"] .reviewContent {
+  .reviewContent {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1rem;
     border-top-color: var(--color-border);
   }
-  [data-variant="flash-pop"] .answerBox {
+  .answerBox {
+    display: flex;
+    min-height: 4.3rem;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 0.8rem;
+    padding: 0.8rem;
     border: var(--border-subtle);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-control);
   }
-  [data-variant="flash-pop"] .answerBox span,
-  [data-variant="flash-pop"] .mazeLegend,
-  [data-variant="flash-pop"] .memoryGridLabel,
-  [data-variant="flash-pop"] .sudokuReviewCell small {
+  .answerBox span,
+  .mazeLegend,
+  .memoryGridLabel,
+  .sudokuReviewCell small {
     color: var(--color-ink-muted);
   }
-  [data-variant="flash-pop"] .sudokuReviewGrid,
-  [data-variant="flash-pop"] .sudokuReviewCell,
-  [data-variant="flash-pop"] .logicMatrixReviewGrid,
-  [data-variant="flash-pop"] .logicMatrixReviewCell,
-  [data-variant="flash-pop"] .nonogramReviewGrid,
-  [data-variant="flash-pop"] .nonogramReviewCell {
+  .sudokuReviewGrid,
+  .sudokuReviewCell,
+  .logicMatrixReviewGrid,
+  .logicMatrixReviewCell,
+  .nonogramReviewGrid,
+  .nonogramReviewCell {
     border-color: var(--color-border);
   }
-  [data-variant="flash-pop"] .sudokuGiven,
-  [data-variant="flash-pop"] .nonogramMissing,
-  [data-variant="flash-pop"] .nonogramEmpty {
+  .sudokuGiven,
+  .nonogramMissing,
+  .nonogramEmpty {
     color: var(--color-ink-muted);
   }
-  [data-variant="flash-pop"] .sudokuCorrect,
-  [data-variant="flash-pop"] .nonogramCorrect,
-  [data-variant="flash-pop"] .memoryPairsMatched,
-  [data-variant="flash-pop"] .wordle-correct {
+  .sudokuCorrect,
+  .nonogramCorrect,
+  .memoryPairsMatched,
+  .wordle-correct {
     color: var(--state-correct);
   }
-  [data-variant="flash-pop"] .sudokuWrong,
-  [data-variant="flash-pop"] .nonogramWrong,
-  [data-variant="flash-pop"] .wordle-present {
+  .sudokuWrong,
+  .nonogramWrong,
+  .wordle-present {
     color: var(--state-error);
   }
-  [data-variant="flash-pop"] .logicReviewClues > div,
-  [data-variant="flash-pop"] .logicReviewAttempts b,
-  [data-variant="flash-pop"] .memoryCell,
-  [data-variant="flash-pop"] .memoryPairsCell,
-  [data-variant="flash-pop"] .puzzleReviewBoard,
-  [data-variant="flash-pop"] .puzzleTile,
-  [data-variant="flash-pop"] .puzzleBlank,
-  [data-variant="flash-pop"] .wordleReviewTile,
-  [data-variant="flash-pop"] .wordHashtagReviewTile {
+  .logicReviewClues > div,
+  .logicReviewAttempts b,
+  .memoryCell,
+  .memoryPairsCell,
+  .puzzleReviewBoard,
+  .puzzleTile,
+  .puzzleBlank,
+  .wordleReviewTile,
+  .wordHashtagReviewTile {
     border-color: var(--color-border);
     background: var(--color-surface-raised);
     color: var(--color-ink);
   }
-  [data-variant="flash-pop"] .logicReviewClues span,
-  [data-variant="flash-pop"] .logicReviewAttempts b,
-  [data-variant="flash-pop"] .memoryPairsSymbol,
-  [data-variant="flash-pop"] .wordle-absent {
+  .logicReviewClues span,
+  .logicReviewAttempts b,
+  .memoryPairsSymbol,
+  .wordle-absent {
     color: var(--color-ink-muted);
   }
-  [data-variant="flash-pop"] .memoryPairsRevealed {
+  .memoryPairsRevealed {
+    border-style: solid;
+    color: rgba(255, 255, 255, 0.82);
     border-color: var(--state-selected);
     background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
   }
-  [data-variant="flash-pop"] .memoryPairsMatched {
+  .memoryPairsMatched {
     border-color: var(--state-correct);
     background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
   }
-  [data-variant="flash-pop"] .wordle-correct {
+  .wordle-correct {
     color: var(--color-ink);
     background: var(--state-correct);
   }
-  [data-variant="flash-pop"] .wordle-present {
+  .wordle-present {
     color: var(--color-ink);
     background: var(--state-movable);
   }
-  [data-variant="flash-pop"] .wordle-absent {
+  .wordle-absent {
+    color: rgba(255, 255, 255, 0.68);
     background: var(--state-neutral);
   }
-  [data-variant="flash-pop"] .wordHashtagReviewCorrect {
+  .wordHashtagReviewCorrect {
     background: var(--state-correct);
   }
-  [data-variant="flash-pop"] .wordHashtagReviewDisplaced {
+  .wordHashtagReviewDisplaced {
     background: var(--state-movable);
   }
 
   /* Keep every specialized review renderer on the Pop palette. */
-  [data-variant="flash-pop"] .connectPairsReviewGrid {
+  .connectPairsReviewGrid {
+    display: grid;
+    width: min(100%, 18rem);
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 0.75rem;
     border-color: var(--color-border);
     background: var(--color-surface);
   }
 
-  [data-variant="flash-pop"] .connectPairsReviewCell {
+  .connectPairsReviewCell {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 5%);
+    font-family: var(--type-mono);
+    font-size: 0.9rem;
+    font-weight: 900;
     border-color: var(--color-border);
     color: var(--color-ink-muted);
     background: var(--color-surface-raised);
   }
 
-  [data-variant="flash-pop"] .connectPairsReviewEndpoint {
+  .connectPairsReviewEndpoint {
+    background: var(--color-brand);
     color: var(--color-ink);
   }
 
-  [data-variant="flash-pop"] .connectPairsReviewEndpointMissing {
+  .connectPairsReviewEndpointMissing {
+    outline: 1px dashed rgb(255 255 255 / 28%);
+    outline-offset: -0.25rem;
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
     outline-color: var(--color-border-hover);
   }
 
-  [data-variant="flash-pop"] .wordHashtagReviewTile {
+  .wordHashtagReviewTile {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: clamp(0.35rem, 1vw, 0.58rem);
+    box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
     color: var(--color-ink);
   }
 }

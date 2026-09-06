@@ -3,14 +3,13 @@ import { describe, expect, it } from "vitest";
 import { getChallengeById } from "@/data/challenges";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 
-describe("ReviewAnswers variants", () => {
-  it("uses the Pop review surface and replay copy", () => {
+describe("ReviewAnswers", () => {
+  it("uses the Flash Pop review surface and replay copy", () => {
     const challenge = getChallengeById("tabarnia-challenge-03");
     if (challenge?.mode !== "survival") throw new Error("Expected survival challenge");
 
     const markup = renderToStaticMarkup(
       <ReviewAnswers
-        variant="flash-pop"
         challenge={challenge}
         results={[]}
         onBack={() => {}}
@@ -18,7 +17,7 @@ describe("ReviewAnswers variants", () => {
       />,
     );
 
-    expect(markup).toContain('data-variant="flash-pop"');
+    expect(markup).not.toContain(["data-variant", "flash-pop"].join('="') + '"');
     expect(markup).toContain("Jugar de nuevo");
   });
 });

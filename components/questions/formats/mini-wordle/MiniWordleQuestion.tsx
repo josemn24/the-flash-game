@@ -19,7 +19,7 @@ import {
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
 import { loadMiniWordleDictionary } from "@/lib/miniWordleDictionary";
-import type { MiniWordleAnswer, QuestionVariant } from "@/types/game";
+import type { MiniWordleAnswer } from "@/types/game";
 
 type Props = {
   correctAnswer: string;
@@ -33,7 +33,6 @@ type Props = {
   onSubmit: (answer: MiniWordleAnswer) => void;
   onTimedResponseStart: () => void;
   className?: string;
-  variant?: QuestionVariant;
 };
 
 const STATUS_LABELS = {
@@ -60,7 +59,6 @@ export function MiniWordleQuestion({
   onSubmit,
   onTimedResponseStart,
   className,
-  variant,
 }: Props) {
   const wordLength = getMiniWordleWordLength({ wordLength: configuredWordLength });
   const maxAttempts = getMiniWordleMaxAttempts({ maxAttempts: configuredMaxAttempts });
@@ -133,7 +131,7 @@ export function MiniWordleQuestion({
   };
 
   return (
-    <div className={`${styles.root} ${className ?? ""}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.root} ${className ?? ""}`}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
 
       <section

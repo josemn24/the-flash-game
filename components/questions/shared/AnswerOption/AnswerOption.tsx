@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import { CheckIcon } from "@/components/ui";
-import type { QuestionVariant } from "@/types/game";
 import styles from "./AnswerOption.module.css";
 
 type AnswerOptionProps = {
@@ -9,7 +8,6 @@ type AnswerOptionProps = {
   disabled: boolean;
   index: number;
   onSelect: () => void;
-  variant?: QuestionVariant;
 };
 
 export function AnswerOption({
@@ -18,7 +16,6 @@ export function AnswerOption({
   disabled,
   index,
   onSelect,
-  variant,
 }: AnswerOptionProps) {
   const shortcut = String.fromCharCode(65 + index);
 
@@ -29,7 +26,6 @@ export function AnswerOption({
       onClick={onSelect}
       disabled={disabled}
       aria-pressed={selected}
-      data-variant={variant ?? "default"}
       whileHover={disabled ? undefined : { x: 4 }}
       whileTap={disabled ? undefined : { scale: 0.985 }}
     >

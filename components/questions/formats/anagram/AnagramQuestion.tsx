@@ -6,17 +6,16 @@ import { useState } from "react";
 import styles from "./AnagramQuestion.module.css";
 import { RotateIcon, UndoIcon } from "@/components/ui";
 import { MotionButton } from "@/components/ui";
-import type { AnagramTile, QuestionVariant } from "@/types/game";
+import type { AnagramTile } from "@/types/game";
 
 type Props = {
   tiles: AnagramTile[];
   hint?: string;
   locked: boolean;
   onSubmit: (answer: string) => void;
-  variant?: QuestionVariant;
 };
 
-export function AnagramQuestion({ tiles, hint, locked, onSubmit, variant = "default" }: Props) {
+export function AnagramQuestion({ tiles, hint, locked, onSubmit }: Props) {
   const [chosenIds, setChosenIds] = useState<string[]>([]);
   const chosenTiles = chosenIds.map((id) => tiles.find((tile) => tile.id === id)!);
   const answer = chosenTiles.map((tile) => tile.value).join("");
@@ -26,7 +25,7 @@ export function AnagramQuestion({ tiles, hint, locked, onSubmit, variant = "defa
   };
 
   return (
-    <div className={`${styles.root}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.root}`}>
       {hint && <p className={styles.hint}>Pista: {hint}</p>}
       <section className={styles.answer} aria-label="Palabra construida">
         <div className={styles.answerHeader}>

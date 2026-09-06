@@ -7,8 +7,7 @@ import { MotionButton } from "@/components/ui";
 import type {
   ErrorReconstructionAnswer,
   ErrorReconstructionQuestion,
-  QuestionVariant,
-} from "@/types/game";
+  } from "@/types/game";
 
 type Props = {
   question: ErrorReconstructionQuestion;
@@ -16,7 +15,6 @@ type Props = {
   locked: boolean;
   onProgress: (answer: ErrorReconstructionAnswer) => void;
   onSubmit: (answer: ErrorReconstructionAnswer) => void;
-  variant?: QuestionVariant;
 };
 
 export function ErrorReconstructionQuestionInput({
@@ -25,7 +23,6 @@ export function ErrorReconstructionQuestionInput({
   locked,
   onProgress,
   onSubmit,
-  variant,
 }: Props) {
   const [stepId, setStepId] = useState<string | undefined>(initialAnswer?.stepId);
   const [correction, setCorrection] = useState<string | undefined>(
@@ -37,7 +34,7 @@ export function ErrorReconstructionQuestionInput({
   }, [correction, onProgress, stepId]);
 
   return (
-    <div className={styles.root} data-variant={variant ?? "default"}>
+    <div className={styles.root}>
       <p className={styles.instruction}>
         {question.instruction ??
           "Selecciona el primer paso en el que el razonamiento deja de ser válido."}

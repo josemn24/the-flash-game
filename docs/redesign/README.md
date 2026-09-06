@@ -4,7 +4,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 
 ## Estado
 
-- Estado de la especificación: dirección visual, tipografía, baseline, tema aislado, primitivas y laboratorio vivo aprobados. El vertical slice está integrado y la biblioteca de 31 formatos ya comparte el contrato visual `default`/`flash-pop`.
+- Estado de la especificación: dirección visual, tipografía, baseline, primitivas y laboratorio vivo aprobados. El vertical slice está integrado y la biblioteca de 31 formatos usa Flash Pop como sistema visual único.
 - Estado de QA: los quality gates automatizados de la Fase 4 están en verde. La revisión manual exhaustiva, VoiceOver completo y la comprobación forzada de `prefers-reduced-motion` siguen registradas como pendientes en [`../qa-fase-4.md`](../qa-fase-4.md).
 - Alcance de validación: lobby, pregunta, feedback, resultado y persistencia de intento único.
 - Plataforma inicial: web responsive, con prioridad móvil.
@@ -55,4 +55,4 @@ El rediseño conserva el motor actual de desafíos y formatos. La primera entreg
 - Las decisiones marcadas como **obligatorias** forman el contrato del vertical slice.
 - Las marcadas como **posteriores** no bloquean la primera validación.
 - Si una decisión de implementación contradice esta documentación, debe registrarse y actualizarse aquí.
-- El vertical slice se validó antes de migrar la biblioteca de formatos. La migración visual se aplica por variante, por lo que el shell `default` y sus estilos legacy permanecen disponibles.
+- El vertical slice y la biblioteca de formatos usan el mismo shell Flash Pop. No existe un shell de tema alternativo ni una capa de estilos de compatibilidad.

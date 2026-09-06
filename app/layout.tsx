@@ -34,7 +34,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="es"
-      data-theme="flash-pop"
       className={`${manrope.variable} ${fredoka.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>

@@ -10,12 +10,6 @@
     gap: var(--space-4);
   }
 
-  .header[data-tone="dark"] {
-    --header-ink: #fff;
-    --header-muted: rgb(255 255 255 / 82%);
-    --header-faint: rgb(255 255 255 / 62%);
-  }
-
   .mobileLabel {
     display: none;
   }

@@ -137,14 +137,17 @@ describe("Flash Pop token contrast", () => {
     }
   });
 
-  it("scopes every format Flash Pop override and keeps review surfaces semantic", () => {
+  it("keeps every format on the canonical Flash Pop surface", () => {
     expect(formatStyles).toHaveLength(29);
 
     for (const { filename, css } of formatStyles) {
-      for (const selector of css.match(/[^{}]*data-variant="flash-pop"[^{}]*\{/g) ?? []) {
-        expect(selector, filename).toContain('[data-variant="flash-pop"]');
-      }
-      expect(css, filename).not.toMatch(/--pop-|LegacyTheme|legacy-dark/);
+      expect(css, filename).not.toContain("data-variant");
+      expect(css, filename).not.toContain(["data", "theme"].join("-"));
+      expect(css, filename).not.toMatch(
+        new RegExp(
+          ["--pop-", ["Legacy", "Theme"].join(""), ["legacy", "-dark"].join("")].join("|"),
+        ),
+      );
     }
 
     expect(reviewStyles).toContain("background: var(--color-surface);");
@@ -162,7 +165,7 @@ describe("Flash Pop token contrast", () => {
 
   it("keeps Classification selections visible without overpowering the table", () => {
     expect(classificationStyles).toMatch(
-      /\[data-variant="flash-pop"\]\s+\.matrix,\s*\[data-variant="flash-pop"\]\s+\.binaryList\s*\{\s*border: var\(--border-subtle\);\s*border-radius: var\(--radius-card\);\s*padding: var\(--space-2\);\s*background: var\(--color-surface\);/s,
+      /\.matrix,\s*\.binaryList\s*\{[\s\S]*?border: var\(--border-subtle\);[\s\S]*?border-radius: var\(--radius-card\);[\s\S]*?padding: var\(--space-2\);[\s\S]*?background: var\(--color-surface\);/s,
     );
     expect(classificationStyles).toContain("border: 1px solid rgb(23 23 32 / 17%);");
     expect(classificationStyles).toContain("box-shadow: 0 1px 2px rgb(23 23 32 / 5%);");

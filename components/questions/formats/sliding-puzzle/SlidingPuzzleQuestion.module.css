@@ -32,7 +32,7 @@
     font-size: clamp(1.5rem, 8vw, 2.4rem);
     font-weight: 900;
   }
-  [data-variant="flash-pop"] .tile {
+  .tile {
     border: 0;
     color: #161616;
     transition:
@@ -56,7 +56,7 @@
     outline: 3px solid #facc15;
     outline-offset: 3px;
   }
-  [data-variant="flash-pop"] .blank {
+  .blank {
     border: 2px dashed rgb(255 255 255 / 0.28);
     color: transparent;
   }
@@ -69,33 +69,33 @@
     text-align: center;
   }
 
-  .root[data-variant="flash-pop"] .instructions,
-  .root[data-variant="flash-pop"] .moves {
+  .root .instructions,
+  .root .moves {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .grid {
+  .root .grid {
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
-  .root[data-variant="flash-pop"] .tile {
+  .root .tile {
     color: var(--color-ink);
   }
-  .root[data-variant="flash-pop"] .movable {
+  .root .movable {
     background: var(--state-selected);
     box-shadow: var(--shadow-control);
   }
-  .root[data-variant="flash-pop"] .movable:hover:not(:disabled) {
+  .root .movable:hover:not(:disabled) {
     background: var(--color-focus);
   }
-  .root[data-variant="flash-pop"] .lockedTile {
+  .root .lockedTile {
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
   }
-  .root[data-variant="flash-pop"] .tile:focus-visible {
+  .root .tile:focus-visible {
     outline-color: var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .blank {
+  .root .blank {
     border-color: var(--color-border);
   }
 }

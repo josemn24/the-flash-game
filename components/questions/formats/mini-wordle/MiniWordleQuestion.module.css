@@ -1,9 +1,4 @@
 @layer app-formats {
-  .root {
-    display: grid;
-    gap: 1rem;
-    margin-top: 1.75rem;
-  }
 
   .hint {
     border-left: 2px solid var(--color-social);
@@ -147,114 +142,115 @@
   }
 
   @media (max-width: 420px) {
-    [data-variant="flash-pop"] .row {
+    .row {
       grid-template-columns: repeat(var(--mini-wordle-columns), minmax(2.55rem, 3rem));
     }
 
-    [data-variant="flash-pop"] .inputRow {
+    .inputRow {
       grid-template-columns: 1fr;
     }
 
-    [data-variant="flash-pop"] .formMeta {
+    .formMeta {
       align-items: flex-start;
       flex-direction: column;
       gap: 0.25rem;
     }
 
-    [data-variant="flash-pop"] .error {
+    .error {
       text-align: left;
     }
 
-    [data-variant="flash-pop"] .dictionaryError {
+    .dictionaryError {
       align-items: stretch;
       flex-direction: column;
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
     gap: var(--space-4);
     margin-top: var(--space-4);
   }
 
-  .root[data-variant="flash-pop"] .hint {
+  .root .hint {
     border-left-color: var(--state-selected);
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .tile {
+  .root .tile {
     border-color: rgb(23 23 32 / 16%);
     color: var(--color-ink);
     background: var(--color-surface-raised);
   }
 
-  .root[data-variant="flash-pop"] .empty {
+  .root .empty {
     background: var(--color-surface);
   }
 
-  .root[data-variant="flash-pop"] .correct {
+  .root .correct {
     border-color: var(--state-correct);
     color: var(--color-surface);
     background: var(--state-correct);
   }
 
-  .root[data-variant="flash-pop"] .present {
+  .root .present {
     border-color: var(--state-movable);
     color: var(--color-ink);
     background: var(--state-movable);
   }
 
-  .root[data-variant="flash-pop"] .absent {
+  .root .absent {
     border-color: var(--color-border);
     color: var(--color-ink-muted);
     background: var(--state-neutral);
   }
 
-  .root[data-variant="flash-pop"] .form {
+  .root .form {
     border: 0;
     padding: 0;
     background: transparent;
   }
 
-  .root[data-variant="flash-pop"] .form label {
+  .root .form label {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .dictionaryStatus {
+  .root .dictionaryStatus {
     border-color: var(--color-border);
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
   }
 
-  .root[data-variant="flash-pop"] .dictionaryError {
+  .root .dictionaryError {
     border-color: color-mix(in srgb, var(--state-error) 42%, transparent);
     color: var(--state-error);
     background: color-mix(in srgb, var(--state-error) 10%, transparent);
   }
 
-  .root[data-variant="flash-pop"] .inputRow input {
+  .root .inputRow input {
     border-color: var(--color-border);
     color: var(--color-ink);
     background: var(--color-surface);
     caret-color: var(--state-focus);
   }
 
-  .root[data-variant="flash-pop"] .inputRow input:focus-visible {
+  .root .inputRow input:focus-visible {
     border-color: var(--state-focus);
     outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
 
-  .root[data-variant="flash-pop"] .inputRow button {
+  .root .inputRow button {
     border-color: var(--color-brand);
     color: var(--color-ink);
     background: var(--color-brand);
     box-shadow: var(--shadow-control);
   }
 
-  .root[data-variant="flash-pop"] .inputRow button:hover:not(:disabled) {
+  .root .inputRow button:hover:not(:disabled) {
     background: var(--color-brand);
   }
 
-  .root[data-variant="flash-pop"] .inputRow button:disabled {
+  .root .inputRow button:disabled {
     border-color: var(--color-border);
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
@@ -262,15 +258,15 @@
     opacity: 1;
   }
 
-  .root[data-variant="flash-pop"] .answerRow button:focus-visible {
+  .root .answerRow button:focus-visible {
     outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
 
-  .root[data-variant="flash-pop"] .formMeta {
+  .root .formMeta {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .error {
+  .root .error {
     color: var(--state-error);
   }
 }

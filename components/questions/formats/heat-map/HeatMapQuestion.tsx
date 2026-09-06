@@ -10,8 +10,7 @@ import type {
   HeatMapQuestion as HeatMapQuestionType,
   ImageSurface,
   NormalizedPoint,
-  QuestionVariant,
-} from "@/types/game";
+  } from "@/types/game";
 
 type HeatMapSurfaceProps = {
   surface: ImageSurface;
@@ -163,12 +162,10 @@ export function HeatMapQuestion({
   question,
   locked,
   onSubmit,
-  variant = "default",
 }: {
   question: HeatMapQuestionType;
   locked: boolean;
   onSubmit: (answer: HeatMapAnswer) => void;
-  variant?: QuestionVariant;
 }) {
   const [answer, setAnswer] = useState<HeatMapAnswer | null>(null);
   const [announcement, setAnnouncement] = useState("");
@@ -181,7 +178,7 @@ export function HeatMapQuestion({
   };
 
   return (
-    <div className={`${styles.challenge}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.challenge}`}>
       <HeatMapSurface
         surface={question.surface}
         selectedPoint={answer ?? undefined}

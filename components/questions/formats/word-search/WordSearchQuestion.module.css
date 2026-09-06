@@ -1,10 +1,4 @@
 @layer app-formats {
-  .root {
-    display: grid;
-    justify-items: center;
-    gap: 0.85rem;
-    margin-top: 1.25rem;
-  }
 
   .header {
     display: flex;
@@ -171,52 +165,54 @@
   }
 
   @media (max-width: 390px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       margin-top: 0.9rem;
     }
 
-    [data-variant="flash-pop"] .wordList {
+    .wordList {
       gap: 0.3rem;
     }
 
-    [data-variant="flash-pop"] .wordList li {
+    .wordList li {
       min-height: 1.75rem;
       padding: 0.25rem 0.48rem;
       font-size: 0.59rem;
     }
 
-    [data-variant="flash-pop"] .board {
+    .board {
       border-radius: 0.75rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-variant="flash-pop"] .cellInvalid {
+    .cellInvalid {
       animation: none;
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
+    justify-items: center;
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
 
-  .root[data-variant="flash-pop"] .header {
+  .root .header {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .header strong {
+  .root .header strong {
     color: var(--state-selected);
   }
 
-  .root[data-variant="flash-pop"] .board {
+  .root .board {
     border-color: rgb(23 23 32 / 16%);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
-  .root[data-variant="flash-pop"] .cell {
+  .root .cell {
     border-color: rgb(23 23 32 / 8%);
     color: var(--color-ink);
     background:
@@ -224,18 +220,18 @@
       var(--color-surface);
   }
 
-  .root[data-variant="flash-pop"] .cell button:focus-visible {
+  .root .cell button:focus-visible {
     outline-color: var(--state-focus);
   }
 
-  .root[data-variant="flash-pop"] .cellFound {
+  .root .cellFound {
     color: var(--color-surface);
     background:
       repeating-linear-gradient(135deg, transparent 0 7px, rgb(23 23 32 / 12%) 7px 10px),
       var(--state-correct);
   }
 
-  .root[data-variant="flash-pop"] .cellMissing {
+  .root .cellMissing {
     box-shadow: inset 0 0 0 2px var(--state-selected);
     color: var(--state-selected);
     background:
@@ -247,19 +243,19 @@
       var(--state-neutral);
   }
 
-  .root[data-variant="flash-pop"] .cellPreview {
+  .root .cellPreview {
     color: var(--color-surface);
     background: var(--state-selected);
   }
 
-  .root[data-variant="flash-pop"] .cellInvalid {
+  .root .cellInvalid {
     color: var(--color-ink);
     background:
       repeating-linear-gradient(135deg, transparent 0 6px, rgb(23 23 32 / 10%) 6px 9px),
       var(--state-error);
   }
 
-  .root[data-variant="flash-pop"] .instructions {
+  .root .instructions {
     color: var(--color-ink-muted);
   }
 }

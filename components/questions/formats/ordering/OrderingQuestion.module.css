@@ -1,33 +1,4 @@
 @layer app-formats {
-  .root {
-    --format-ink: rgba(255, 255, 255, 0.92);
-    --format-muted: rgba(255, 255, 255, 0.58);
-    --format-surface: rgba(16, 18, 22, 0.96);
-    --format-surface-raised: rgba(24, 27, 31, 0.88);
-    --format-border: rgba(255, 255, 255, 0.1);
-    --format-accent: var(--color-brand);
-    --format-accent-soft: rgb(var(--color-brand-rgb) / 0.09);
-    --format-hover-border: rgb(var(--color-brand-rgb) / 0.55);
-    --format-hover-surface: rgb(var(--color-brand-rgb) / 0.09);
-    --format-focus: var(--color-brand);
-    --format-disabled: rgba(255, 255, 255, 0.2);
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    flex-direction: column;
-    margin-top: 1rem;
-  }
-
-  .shell {
-    position: relative;
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--format-border);
-    border-radius: 1.25rem;
-    padding: 0.7rem;
-    background: var(--format-surface-raised);
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
-  }
 
   .directionLabel {
     position: relative;
@@ -63,55 +34,6 @@
     list-style: none;
   }
 
-  .sequence::before {
-    position: absolute;
-    top: -0.65rem;
-    bottom: -0.65rem;
-    left: 1.75rem;
-    width: 1px;
-    content: "";
-    background: linear-gradient(
-      to bottom,
-      rgb(var(--color-brand-rgb) / 0.12),
-      rgb(var(--color-brand-rgb) / 0.62),
-      rgba(53, 232, 255, 0.18)
-    );
-    box-shadow: 0 0 12px rgb(var(--color-brand-rgb) / 0.2);
-  }
-
-  .card {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    min-width: 0;
-    min-height: 4rem;
-    overflow: hidden;
-    align-items: center;
-    gap: 0.65rem;
-    border: 1px solid var(--format-border);
-    border-radius: 0.95rem;
-    padding: 0.55rem 0.6rem 0.55rem 0.65rem;
-    background: var(--format-surface);
-    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.16);
-  }
-
-  .position {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    width: 2.25rem;
-    height: 2.25rem;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid color-mix(in srgb, var(--format-accent) 42%, transparent);
-    border-radius: 0.65rem;
-    color: var(--format-accent);
-    background: var(--format-accent-soft);
-    font-family: var(--type-mono);
-    font-size: 0.75rem;
-    font-weight: 900;
-  }
-
   .itemLabel {
     position: relative;
     z-index: 2;
@@ -132,71 +54,15 @@
     gap: 0.45rem;
   }
 
-  .control {
-    display: grid;
-    width: 2.75rem;
-    height: 2.75rem;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid var(--format-border);
-    border-radius: 0.75rem;
-    color: var(--format-ink);
-    background: var(--format-surface-raised);
-    transition:
-      border-color 160ms,
-      color 160ms,
-      background 160ms,
-      opacity 160ms;
-  }
-
-  .control:hover:not(:disabled) {
-    border-color: var(--format-hover-border);
-    color: var(--format-accent);
-    background: var(--format-hover-surface);
-  }
-
   .control:focus-visible,
   .confirmButton:focus-visible {
     outline: 3px solid var(--format-focus);
     outline-offset: 3px;
   }
 
-  .control:disabled {
-    border-color: color-mix(in srgb, var(--format-border) 50%, transparent);
-    color: var(--format-disabled);
-    background: color-mix(in srgb, var(--format-surface-raised) 70%, transparent);
-    opacity: 0.7;
-  }
-
   .controlIcon {
     width: 1.2rem;
     height: 1.2rem;
-  }
-
-  .movePulse {
-    position: absolute;
-    z-index: 1;
-    inset: 0;
-    border: 1px solid color-mix(in srgb, var(--format-accent) 75%, transparent);
-    border-radius: inherit;
-    background: color-mix(in srgb, var(--format-accent) 8%, transparent);
-    box-shadow: 0 0 18px color-mix(in srgb, var(--format-accent) 8%, transparent);
-    pointer-events: none;
-  }
-
-  .confirmButton {
-    min-height: 3.65rem;
-    width: 100%;
-    margin-top: 1rem;
-    border: 1px solid var(--format-accent);
-    border-radius: 1rem;
-    color: var(--format-ink);
-    background: var(--format-accent);
-    box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
-  }
-
-  .confirmButton:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--format-accent) 82%, white);
   }
 
   .confirmButton:disabled {
@@ -205,44 +71,48 @@
   }
 
   @media (min-width: 640px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       margin-top: 1.25rem;
     }
 
-    [data-variant="flash-pop"] .shell {
+    .shell {
       padding: 0.85rem;
     }
 
-    [data-variant="flash-pop"] .itemLabel {
+    .itemLabel {
       font-size: 1rem;
     }
 
-    [data-variant="flash-pop"] .confirmButton {
+    .confirmButton {
       margin-top: 1.5rem;
     }
   }
 
   @media (max-width: 350px) {
-    [data-variant="flash-pop"] .shell {
+    .shell {
       padding: 0.55rem;
     }
 
-    [data-variant="flash-pop"] .card {
+    .card {
       gap: 0.45rem;
       padding-inline: 0.5rem;
     }
 
-    [data-variant="flash-pop"] .controls {
+    .controls {
       gap: 0.3rem;
     }
 
-    [data-variant="flash-pop"] .control {
+    .control {
       width: 2.5rem;
       height: 2.5rem;
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
     --format-ink: var(--color-ink);
     --format-muted: var(--color-social);
     --format-surface: var(--color-surface);
@@ -258,7 +128,10 @@
     margin-top: var(--space-4);
   }
 
-  [data-variant="flash-pop"] .shell {
+  .shell {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     padding: var(--space-3);
@@ -266,7 +139,13 @@
     box-shadow: none;
   }
 
-  [data-variant="flash-pop"] .sequence::before {
+  .sequence::before {
+    position: absolute;
+    top: -0.65rem;
+    bottom: -0.65rem;
+    left: 1.75rem;
+    width: 1px;
+    content: "";
     background: linear-gradient(
       to bottom,
       color-mix(in srgb, var(--color-social) 18%, transparent),
@@ -276,7 +155,14 @@
     box-shadow: none;
   }
 
-  [data-variant="flash-pop"] .card {
+  .card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-width: 0;
+    overflow: hidden;
+    align-items: center;
+    gap: 0.65rem;
     min-height: 60px;
     border: var(--border-subtle);
     border-radius: var(--radius-control);
@@ -285,13 +171,35 @@
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .position {
+  .position {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--format-accent) 42%, transparent);
+    border-radius: 0.65rem;
+    font-family: var(--type-mono);
+    font-size: 0.75rem;
+    font-weight: 900;
     border-color: color-mix(in srgb, var(--color-ink) 16%, transparent);
     color: var(--color-social);
     background: var(--format-surface-raised);
   }
 
-  [data-variant="flash-pop"] .control {
+  .control {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--format-border);
+    border-radius: 0.75rem;
+    transition:
+      border-color 160ms,
+      color 160ms,
+      background 160ms,
+      opacity 160ms;
     width: 44px;
     height: 44px;
     border-color: var(--color-border);
@@ -299,25 +207,34 @@
     background: var(--format-surface-raised);
   }
 
-  [data-variant="flash-pop"] .control:hover:not(:disabled) {
+  .control:hover:not(:disabled) {
     border-color: var(--color-social);
     color: var(--color-social);
     background: var(--format-surface);
   }
 
-  [data-variant="flash-pop"] .control:disabled {
+  .control:disabled {
+    opacity: 0.7;
     border-color: color-mix(in srgb, var(--color-ink) 8%, transparent);
     color: var(--color-ink-faint);
     background: var(--format-surface-raised);
   }
 
-  [data-variant="flash-pop"] .movePulse {
+  .movePulse {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    border: 1px solid color-mix(in srgb, var(--format-accent) 75%, transparent);
+    border-radius: inherit;
+    pointer-events: none;
     border-color: var(--color-brand);
     background: color-mix(in srgb, var(--color-brand) 16%, transparent);
     box-shadow: none;
   }
 
-  [data-variant="flash-pop"] .confirmButton {
+  .confirmButton {
+    width: 100%;
+    margin-top: 1rem;
     min-height: var(--control-height);
     border: var(--border-flash);
     border-radius: var(--radius-control);
@@ -326,7 +243,7 @@
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+  .confirmButton:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
   }
 }

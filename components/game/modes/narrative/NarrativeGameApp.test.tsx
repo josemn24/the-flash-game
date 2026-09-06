@@ -25,14 +25,13 @@ describe("Narrative Flash Pop migration", () => {
     expect(source).toContain("<Canvas");
     expect(source).toContain("<section className={styles.questionPage}>");
     expect(source).not.toContain("questionMeta");
-    expect(source).toContain("FlashPopQuestionInput");
+    expect(source).toContain("QuestionInput");
     expect(source).toContain("FlashPopFeedback");
     expect(source).toContain("getFlashPopFeedbackCopy");
     expect(source).toContain("feedbackStage");
     expect(source).toContain("key={`feedback-${session.stepIndex}`}");
     expect(source).toContain("exit={{ opacity: 0 }}");
     expect(source).not.toContain("Registro actualizado");
-    expect(source).toContain('data-variant="flash-pop"');
     expect(source).toContain("const isDarkPresentation");
     expect(source).toContain("styles.storyPageDark");
     expect(source).toContain("styles.darkStoryPhase");
@@ -42,9 +41,9 @@ describe("Narrative Flash Pop migration", () => {
   });
 
   it("does not fall back to the legacy question or transition surfaces", () => {
-    expect(source).not.toContain('from "@/features/question-formats/QuestionInput"');
+    expect(source).toContain('from "@/features/question-formats/QuestionInput"');
     expect(source).not.toContain("QuestionTransition");
-    expect(source).toContain('variant="flash-pop"');
+    expect(source).not.toContain('variant="flash-pop"');
   });
 
   it("keeps narrative-specific imagery without interactive notebook chrome", () => {
@@ -68,7 +67,7 @@ describe("Narrative Flash Pop migration", () => {
     expect(styles).toContain(".storyPage.storyPageDark");
     expect(styles).toContain(".darkStoryPhase .flashPopCanvas");
     expect(styles).toContain("border-radius: 0;");
-    expect(styles).toContain("border-radius: 14px;");
+    expect(styles).toContain("border-radius: var(--radius-card);");
     expect(styles).toContain("@media (prefers-reduced-motion: reduce)");
   });
 });

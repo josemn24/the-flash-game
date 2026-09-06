@@ -2,22 +2,18 @@
 
 import { motion } from "motion/react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
-import type { QuestionVariant } from "@/types/game";
 import styles from "./TrueFalseQuestion.module.css";
 
 export function TrueFalseQuestion({
   locked,
   onSubmit,
-  variant = "default",
 }: {
   locked: boolean;
   onSubmit: (answer: boolean) => void;
-  variant?: QuestionVariant;
 }) {
   return (
     <div
       className={`${styles.root}`}
-      data-variant={variant ?? "default"}
       role="group"
       aria-label="Opciones de respuesta"
     >

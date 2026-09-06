@@ -1,23 +1,4 @@
 @layer app-formats {
-  .challenge {
-    --format-ink: rgba(255, 255, 255, 0.92);
-    --format-muted: rgba(255, 255, 255, 0.48);
-    --format-faint: rgba(255, 255, 255, 0.3);
-    --format-surface: rgba(255, 255, 255, 0.05);
-    --format-surface-raised: rgba(10, 11, 14, 0.48);
-    --format-border: rgba(255, 255, 255, 0.12);
-    --format-accent: var(--color-brand);
-    --format-value-ink: var(--format-accent);
-    --format-interactive-ink: var(--format-accent);
-    --format-range-active: var(--format-accent);
-    --format-range-thumb: var(--format-accent);
-    --format-focus: rgb(53 232 255);
-    --format-track: rgba(255, 255, 255, 0.1);
-    display: grid;
-    min-width: 0;
-    gap: 0.8rem;
-    margin-top: 1.4rem;
-  }
 
   .valueDisplay {
     display: flex;
@@ -32,15 +13,6 @@
     font-weight: 800;
   }
 
-  .valueDisplay strong {
-    color: var(--format-value-ink);
-    font-family: var(--type-display);
-    font-size: 2.85rem;
-    font-weight: 950;
-    letter-spacing: -0.05em;
-    line-height: 1;
-  }
-
   .valueDisplay small {
     margin-left: 0.3rem;
     color: var(--format-muted);
@@ -53,29 +25,6 @@
     display: grid;
     gap: 0.8rem;
     margin-top: 0.2rem;
-  }
-
-  .adjustRow {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
-  }
-
-  .adjustButton {
-    display: flex;
-    min-height: 2.95rem;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--format-border);
-    border-radius: 0.85rem;
-    color: var(--format-ink);
-    background: var(--format-surface);
-    transition:
-      border-color 160ms,
-      color 160ms,
-      background 160ms,
-      opacity 160ms;
   }
 
   .adjustButton span {
@@ -177,27 +126,6 @@
     text-align: center;
   }
 
-  .submitButton {
-    display: flex;
-    width: 100%;
-    min-height: 3rem;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 0.1rem;
-    border: 1px solid var(--format-accent);
-    border-radius: 0.8rem;
-    color: var(--format-ink);
-    background: var(--format-accent);
-    font-size: 0.8rem;
-    font-weight: 900;
-    box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
-  }
-
-  .submitButton:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--format-accent) 82%, white);
-  }
-
   .submitButton:disabled {
     cursor: not-allowed;
     opacity: 0.35;
@@ -205,7 +133,7 @@
   }
 
   @media (min-width: 640px) {
-    .challenge[data-variant="flash-pop"] {
+    .challenge {
       margin-top: 1.25rem;
       border: 1px solid color-mix(in srgb, var(--format-accent) 14%, transparent);
       border-radius: 1rem;
@@ -214,17 +142,19 @@
       backdrop-filter: blur(14px);
     }
 
-    [data-variant="flash-pop"] .controls {
+    .controls {
       gap: 1rem;
     }
 
-    [data-variant="flash-pop"] .adjustRow {
+    .adjustRow {
       grid-template-columns: repeat(2, 4rem);
       justify-content: center;
     }
   }
 
-  .challenge[data-variant="flash-pop"] {
+  .challenge {
+    display: grid;
+    min-width: 0;
     width: 100%;
     --format-ink: var(--color-ink);
     --format-muted: var(--color-ink);
@@ -248,16 +178,33 @@
     backdrop-filter: none;
   }
 
-  [data-variant="flash-pop"] .adjustRow {
+  .adjustRow {
+    display: grid;
+    gap: 0.65rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
   }
 
-  [data-variant="flash-pop"] .valueDisplay strong {
+  .valueDisplay strong {
+    color: var(--format-value-ink);
+    font-size: 2.85rem;
+    font-weight: 950;
+    letter-spacing: -0.05em;
+    line-height: 1;
     font-family: var(--type-display);
   }
 
-  [data-variant="flash-pop"] .adjustButton {
+  .adjustButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--format-ink);
+    transition:
+      border-color 160ms,
+      color 160ms,
+      background 160ms,
+      opacity 160ms;
     min-height: var(--control-height-icon);
     border: var(--border-subtle);
     border-radius: var(--radius-control);
@@ -265,12 +212,20 @@
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .range::-webkit-slider-thumb,
-  [data-variant="flash-pop"] .range::-moz-range-thumb {
+  .range::-webkit-slider-thumb,
+  .range::-moz-range-thumb {
     border-color: var(--color-surface);
   }
 
-  [data-variant="flash-pop"] .submitButton {
+  .submitButton {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 0.1rem;
+    font-size: 0.8rem;
+    font-weight: 900;
     min-height: var(--control-height);
     border: var(--border-flash);
     border-radius: var(--radius-control);
@@ -279,7 +234,7 @@
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .submitButton:hover:not(:disabled) {
+  .submitButton:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
   }
 }

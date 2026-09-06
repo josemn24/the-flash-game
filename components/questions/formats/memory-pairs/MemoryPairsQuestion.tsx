@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import styles from "./MemoryPairsQuestion.module.css";
-import type { MemoryPairsAnswer, MemoryPairsTile, QuestionVariant } from "@/types/game";
+import type { MemoryPairsAnswer, MemoryPairsTile } from "@/types/game";
 
 type MemoryPairsQuestionProps = {
   grid: { rows: number; columns: number };
@@ -13,7 +13,6 @@ type MemoryPairsQuestionProps = {
   locked: boolean;
   onProgress: (answer: MemoryPairsAnswer) => void;
   onSubmit: (answer: MemoryPairsAnswer) => void;
-  variant?: QuestionVariant;
 };
 
 type VisibleMismatch = [string, string] | null;
@@ -29,7 +28,6 @@ export function MemoryPairsQuestion({
   locked,
   onProgress,
   onSubmit,
-  variant,
 }: MemoryPairsQuestionProps) {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
@@ -94,7 +92,6 @@ export function MemoryPairsQuestion({
   return (
     <section
       className={styles.root}
-      data-variant={variant ?? "default"}
       aria-label="Memoria de parejas"
     >
       <div className={styles.header}>

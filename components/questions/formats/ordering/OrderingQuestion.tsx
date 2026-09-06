@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui";
 import { MotionButton } from "@/components/ui";
 import styles from "./OrderingQuestion.module.css";
-import type { QuestionVariant } from "@/types/game";
 
 type OrderingQuestionProps = {
   items: string[];
@@ -17,7 +16,6 @@ type OrderingQuestionProps = {
   locked: boolean;
   onProgress?: (items: string[]) => void;
   onSubmit: (items: string[]) => void;
-  variant?: QuestionVariant;
 };
 
 type LastMove = {
@@ -33,7 +31,6 @@ export function OrderingQuestion({
   locked,
   onProgress,
   onSubmit,
-  variant,
 }: OrderingQuestionProps) {
   const [orderedItems, setOrderedItems] = useState(() =>
     initialItems?.length === items.length && initialItems.every((item) => items.includes(item))
@@ -62,7 +59,7 @@ export function OrderingQuestion({
   };
 
   return (
-    <div className={`${styles.root}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.root}`}>
       <div className={styles.shell}>
         <div className={styles.directionLabel} aria-hidden="true">
           <span>{directionLabels.start}</span>

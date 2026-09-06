@@ -26,51 +26,51 @@
     }
   }
   @keyframes home-slide-from-left {
-    :global(html[data-theme="flash-pop"]) from {
+    from {
       opacity: 0;
       transform: translateX(-16px);
     }
-    :global(html[data-theme="flash-pop"]) to {
+    to {
       opacity: 1;
       transform: translateX(0);
     }
   }
   @keyframes home-slide-from-bottom {
-    :global(html[data-theme="flash-pop"]) from {
+    from {
       opacity: 0;
       transform: translateY(30px);
     }
-    :global(html[data-theme="flash-pop"]) to {
+    to {
       opacity: 1;
       transform: translateY(0);
     }
   }
   @keyframes home-copy-in {
-    :global(html[data-theme="flash-pop"]) from {
+    from {
       opacity: 0;
       transform: translateY(16px);
     }
-    :global(html[data-theme="flash-pop"]) to {
+    to {
       opacity: 1;
       transform: translateY(0);
     }
   }
   @keyframes home-stage-list-in {
-    :global(html[data-theme="flash-pop"]) from {
+    from {
       opacity: 0;
       transform: translateY(20px);
     }
-    :global(html[data-theme="flash-pop"]) to {
+    to {
       opacity: 1;
       transform: translateY(0);
     }
   }
   @keyframes home-library-in {
-    :global(html[data-theme="flash-pop"]) from {
+    from {
       opacity: 0;
       transform: translateY(14px);
     }
-    :global(html[data-theme="flash-pop"]) to {
+    to {
       opacity: 1;
       transform: translateY(0);
     }
@@ -171,7 +171,7 @@
     font-weight: 900;
   }
   @media (max-width: 639px) {
-    :global(html[data-theme="flash-pop"]) .libraryCard {
+    .libraryCard {
       align-items: flex-start;
       flex-direction: column;
     }
@@ -245,14 +245,14 @@
     font-weight: 900;
   }
   @media (min-width: 640px) {
-    :global(html[data-theme="flash-pop"]) .stageSelector {
+    .stageSelector {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    :global(html[data-theme="flash-pop"]) .stageSelectCard {
+    .stageSelectCard {
       min-height: 13rem;
       flex-direction: column;
     }
-    :global(html[data-theme="flash-pop"]) .stageSelectNumber {
+    .stageSelectNumber {
       width: 100%;
       min-height: 3.3rem;
       justify-content: start;

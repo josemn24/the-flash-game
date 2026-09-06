@@ -7,7 +7,7 @@ import { Avatar, Button, ButtonLink, Canvas, Card, Chip, GameHeader, Timer } fro
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
-import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
 import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/demoSocial";
 import type { AnswerValue, PyramidChallenge, PyramidLevel } from "@/types/game";
@@ -266,7 +266,7 @@ function Question({
         <h1 id="question-title" className={`${styles.questionPrompt} ${getPromptScale(question)}`}>
           {question.question}
         </h1>
-        <FlashPopQuestionInput
+        <QuestionInput
           question={question}
           locked={locked}
           initialAnswer={initialAnswer}
@@ -280,7 +280,7 @@ function Question({
             onTimedResponseStart();
           }}
           progressiveCluesRevealed={progressiveCluesRevealed}
-          attemptCount={attemptCount}
+          codeAttemptCount={attemptCount}
         />
       </Card>
     </div>

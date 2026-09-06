@@ -17,7 +17,7 @@ import {
   ZIP_COLUMNS,
   ZIP_ROWS,
 } from "@/lib/zip";
-import type { QuestionVariant, ZipAnswer, ZipQuestion as ZipQuestionType } from "@/types/game";
+import type { ZipAnswer, ZipQuestion as ZipQuestionType } from "@/types/game";
 import styles from "./ZipQuestion.module.css";
 
 type Point = { x: number; y: number };
@@ -138,13 +138,11 @@ export function ZipQuestion({
   locked,
   onProgress,
   onSubmit,
-  variant,
 }: {
   question: ZipQuestionType;
   locked: boolean;
   onProgress: (answer: ZipAnswer) => void;
   onSubmit: (answer: ZipAnswer) => void;
-  variant?: QuestionVariant;
 }) {
   const start = question.checkpoints[0].cell;
   const boardRef = useRef<HTMLDivElement>(null);
@@ -263,7 +261,6 @@ export function ZipQuestion({
   return (
     <section
       className={styles.root}
-      data-variant={variant ?? "default"}
       aria-label="Zip, una línea"
     >
       <div className={styles.header}>

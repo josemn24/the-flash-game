@@ -1,9 +1,4 @@
 @layer app-formats {
-  .challenge {
-    margin-top: 1.25rem;
-    display: grid;
-    gap: 1rem;
-  }
 
   .clues {
     display: grid;
@@ -55,16 +50,16 @@
   }
 
   @media (min-width: 640px) {
-    .challenge[data-variant="flash-pop"] {
+    .challenge {
       margin-top: 1.5rem;
       grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
       align-items: start;
       gap: 1.25rem;
     }
-    [data-variant="flash-pop"] .clue {
+    .clue {
       padding: 0.7rem 0.8rem;
     }
-    [data-variant="flash-pop"] .entryPanel {
+    .entryPanel {
       padding: 1rem;
     }
   }
@@ -134,62 +129,63 @@
     opacity: 0.24;
   }
 
-  .challenge[data-variant="flash-pop"] {
+  .challenge {
+    display: grid;
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
 
-  .challenge[data-variant="flash-pop"] .clue {
+  .challenge .clue {
     border-color: var(--border-subtle);
     border-radius: var(--radius-control);
     background: var(--color-surface-raised);
   }
 
-  .challenge[data-variant="flash-pop"] .clue strong {
+  .challenge .clue strong {
     color: var(--state-selected);
   }
 
-  .challenge[data-variant="flash-pop"] .clue span {
+  .challenge .clue span {
     color: var(--color-ink-muted);
   }
 
-  .challenge[data-variant="flash-pop"] .entryPanel {
+  .challenge .entryPanel {
     border-color: color-mix(in srgb, var(--state-selected) 22%, transparent);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
   }
 
-  .challenge[data-variant="flash-pop"] .entryPanel > div > span:first-child {
+  .challenge .entryPanel > div > span:first-child {
     color: var(--color-ink);
   }
 
-  .challenge[data-variant="flash-pop"] .entryPanel > div > span:last-child {
+  .challenge .entryPanel > div > span:last-child {
     color: var(--color-ink-muted);
   }
 
-  .challenge[data-variant="flash-pop"] .digitInput {
+  .challenge .digitInput {
     border-color: var(--border-subtle);
     color: var(--color-ink);
     background: var(--color-surface);
     caret-color: var(--state-focus);
   }
 
-  .challenge[data-variant="flash-pop"] .digitInput:focus-visible {
+  .challenge .digitInput:focus-visible {
     border-color: var(--state-focus);
     outline-color: color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
 
-  .challenge[data-variant="flash-pop"] .digitInput.filled {
+  .challenge .digitInput.filled {
     border-color: var(--state-selected);
     color: var(--color-ink);
     background: var(--color-surface);
   }
 
-  .challenge[data-variant="flash-pop"] .feedback {
+  .challenge .feedback {
     color: var(--color-ink-muted);
   }
 
-  .challenge[data-variant="flash-pop"] .submitButton {
+  .challenge .submitButton {
     min-height: var(--control-height);
     border-radius: var(--radius-control);
     color: var(--color-ink);

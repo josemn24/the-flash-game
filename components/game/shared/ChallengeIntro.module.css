@@ -70,10 +70,10 @@
     border-radius: 0.75rem;
   }
   @media (min-width: 640px) {
-    :global(html[data-theme="flash-pop"]) .stageStat {
+    .stageStat {
       min-height: 6rem;
     }
-    :global(html[data-theme="flash-pop"]) .stageStat strong {
+    .stageStat strong {
       font-size: 2rem;
     }
   }

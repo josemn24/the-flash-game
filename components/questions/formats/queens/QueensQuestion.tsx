@@ -13,8 +13,7 @@ import {
 import type {
   QueensAnswer,
   QueensQuestion as QueensQuestionType,
-  QuestionVariant,
-} from "@/types/game";
+  } from "@/types/game";
 import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";
@@ -123,7 +122,6 @@ export function QueensQuestion({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-  variant,
 }: {
   question: QueensQuestionType;
   initialAnswer?: Partial<QueensAnswer>;
@@ -131,7 +129,6 @@ export function QueensQuestion({
   onProgress: (answer: QueensAnswer) => void;
   onIncorrectAttempt: () => void;
   onSubmit: (answer: QueensAnswer) => void;
-  variant?: QuestionVariant;
 }) {
   const prefilledQueens = useMemo(() => question.prefilledQueens ?? [], [question.prefilledQueens]);
   const [answer, setAnswer] = useState<QueensAnswer>(() => ({
@@ -256,7 +253,6 @@ export function QueensQuestion({
     <section
       className={`${styles.root}`}
       aria-label="Queens, puzzle de cinco coronas"
-      data-variant={variant ?? "default"}
     >
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button

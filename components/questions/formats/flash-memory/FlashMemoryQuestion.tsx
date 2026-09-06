@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { MotionButton } from "@/components/ui";
 import styles from "./FlashMemoryQuestion.module.css";
-import type { FlashMemoryAnswer, FlashMemoryItem, QuestionVariant } from "@/types/game";
+import type { FlashMemoryAnswer, FlashMemoryItem } from "@/types/game";
 
 type FlashMemoryQuestionProps = {
   items: FlashMemoryItem[];
@@ -14,7 +14,6 @@ type FlashMemoryQuestionProps = {
   onProgress: (answer: FlashMemoryAnswer) => void;
   onSubmit: (answer: FlashMemoryAnswer) => void;
   onTimedResponseStart: () => void;
-  variant?: QuestionVariant;
 };
 
 function MemoryTile({ item }: { item: FlashMemoryItem }) {
@@ -34,7 +33,6 @@ export function FlashMemoryQuestion({
   onProgress,
   onSubmit,
   onTimedResponseStart,
-  variant,
 }: FlashMemoryQuestionProps) {
   const [phase, setPhase] = useState<"memorize" | "recall">("memorize");
   const [remaining, setRemaining] = useState(revealDuration);
@@ -102,7 +100,7 @@ export function FlashMemoryQuestion({
 
   if (phase === "memorize") {
     return (
-      <section className={styles.root} data-variant={variant ?? "default"} aria-live="polite">
+      <section className={styles.root} aria-live="polite">
         <div className={styles.phaseHeader}>
           <span>Memoriza la composición</span>
           <strong>{Math.ceil(remaining)} s</strong>
@@ -127,7 +125,7 @@ export function FlashMemoryQuestion({
   }
 
   return (
-    <section className={styles.root} data-variant={variant ?? "default"} aria-live="polite">
+    <section className={styles.root} aria-live="polite">
       <div className={styles.phaseHeader}>
         <span>Reconstruye la composición</span>
         <strong>

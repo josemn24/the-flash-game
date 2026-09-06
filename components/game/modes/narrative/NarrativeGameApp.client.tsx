@@ -23,7 +23,7 @@ import {
   FlashPopFeedback,
   getFlashPopFeedbackCopy,
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
 import styles from "./NarrativeGame.module.css";
@@ -286,7 +286,7 @@ function NarrativeQuestionScreen({
               <QuestionMedia media={question.media} prominent />
             </div>
           )}
-          <FlashPopQuestionInput
+          <QuestionInput
             question={question}
             locked={locked}
             onSubmit={onSubmit}
@@ -295,6 +295,7 @@ function NarrativeQuestionScreen({
             onProgressiveClueReveal={() => undefined}
             onCodeAttempt={() => false}
             onTimedResponseStart={startTimedResponse}
+            codeAttemptCount={0}
           />
         </article>
       </section>
@@ -479,7 +480,6 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
     <MotionConfig reducedMotion="user">
       <main
         data-mode="narrative"
-        data-variant="flash-pop"
         className={`${styles.gameRoot} ${session.phase === "playing" ? styles.questionPhase : ""} ${isBlackoutScene ? styles.blackoutPhase : ""} ${isDarkStoryScene ? styles.darkStoryPhase : ""}`}
       >
         <PolarBackground />
@@ -567,7 +567,6 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                   results={session.results}
                   onBack={session.showResults}
                   onReplay={session.replay}
-                  variant="flash-pop"
                 />
               )}
             </AnimatePresence>

@@ -5,21 +5,19 @@ import { useState } from "react";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { CheckIcon } from "@/components/ui";
 import styles from "./OddOneOutQuestion.module.css";
-import type { OddOneOutItem, QuestionVariant } from "@/types/game";
+import type { OddOneOutItem } from "@/types/game";
 
 type OddOneOutQuestionProps = {
   items: OddOneOutItem[];
   locked: boolean;
   onSubmit: (answer: string) => void;
-  variant?: QuestionVariant;
 };
 
-export function OddOneOutQuestion({ items, locked, onSubmit, variant }: OddOneOutQuestionProps) {
+export function OddOneOutQuestion({ items, locked, onSubmit }: OddOneOutQuestionProps) {
   const [selected, setSelected] = useState<string | null>(null);
   return (
     <div
       className={`${styles.grid}`}
-      data-variant={variant ?? "default"}
       data-item-count={items.length}
       aria-label="Opciones: encuentra el intruso"
     >
@@ -39,9 +37,7 @@ export function OddOneOutQuestion({ items, locked, onSubmit, variant }: OddOneOu
         >
           {item.media && <QuestionMedia media={item.media} compact />}
           <span className={styles.label}>
-            {selected === item.id && variant === "flash-pop" ? (
-              <CheckIcon aria-hidden="true" />
-            ) : null}
+            {selected === item.id ? <CheckIcon aria-hidden="true" /> : null}
             {item.label}
           </span>
         </motion.button>

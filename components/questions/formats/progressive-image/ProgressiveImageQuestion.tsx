@@ -9,7 +9,7 @@ import {
   PROGRESSIVE_IMAGE_INITIAL_BLUR,
   PROGRESSIVE_IMAGE_INITIAL_SCALE,
 } from "@/lib/progressiveImage";
-import type { ImageSurface, QuestionVariant } from "@/types/game";
+import type { ImageSurface } from "@/types/game";
 import styles from "./ProgressiveImageQuestion.module.css";
 
 type ProgressiveImageQuestionProps = {
@@ -20,7 +20,6 @@ type ProgressiveImageQuestionProps = {
   locked: boolean;
   onSubmit: (answer: string) => void;
   onTimedResponseStart: () => void;
-  variant?: QuestionVariant;
 };
 
 type ImageState = "loading" | "ready" | "error";
@@ -37,7 +36,6 @@ export function ProgressiveImageQuestion({
   locked,
   onSubmit,
   onTimedResponseStart,
-  variant = "default",
 }: ProgressiveImageQuestionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
@@ -115,7 +113,6 @@ export function ProgressiveImageQuestion({
   return (
     <section
       className={`${styles.root}`}
-      data-variant={variant ?? "default"}
       aria-label="Imagen progresivamente revelada"
     >
       <div className={styles.progressHeader}>

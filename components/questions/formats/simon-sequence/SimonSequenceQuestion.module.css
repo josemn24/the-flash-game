@@ -87,27 +87,27 @@
     transform: scale(1.025);
   }
   @media (min-width: 640px) {
-    [data-variant="flash-pop"] .pad {
+    .pad {
       min-height: 10.5rem;
     }
-    [data-variant="flash-pop"] .symbol {
+    .symbol {
       font-size: 3rem;
     }
   }
 
-  .root[data-variant="flash-pop"] .phaseHeader,
-  .root[data-variant="flash-pop"] .instructions {
+  .root .phaseHeader,
+  .root .instructions {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .pad {
+  .root .pad {
     border-color: var(--color-border);
     color: var(--color-ink);
     box-shadow: var(--shadow-card);
   }
-  .root[data-variant="flash-pop"] .pad:focus-visible {
+  .root .pad:focus-visible {
     outline-color: var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .padActive {
+  .root .padActive {
     border-color: var(--state-selected);
     box-shadow:
       0 0 0 0.25rem color-mix(in srgb, var(--state-selected) 22%, transparent),

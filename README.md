@@ -97,7 +97,10 @@ Conectar parejas usa una cuadrícula 5 × 5 con rutas ortogonales entre símbolo
 
 Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos, emojis o imágenes y etiqueta accesible. Conserva el historial de intentos para la revisión, concede crédito por cada pareja encontrada y resta un 10 % de los puntos base por cada fallo.
 
-Todos los formatos de la biblioteca aceptan las variantes visuales `default` y `flash-pop`. `default` conserva la presentación legacy; `flash-pop` aplica el sistema claro de tokens y estados sin cambiar modelos, interacciones, puntuación, respuestas parciales ni timeouts. La cobertura automatizada y el estado de la revisión manual se mantienen en [`docs/qa-fase-4.md`](docs/qa-fase-4.md).
+Todos los formatos de la biblioteca usan Flash Pop directamente mediante el registry único
+`QuestionInput`. Las variantes que permanecen en los controles son semánticas (`primary`,
+`secondary`, `reward`, etc.) y no representan temas. La cobertura automatizada y el estado de la
+revisión manual se mantienen en [`docs/qa-fase-4.md`](docs/qa-fase-4.md).
 
 ## Rediseño Flash Pop
 

@@ -10,7 +10,6 @@ import {
   normalizeWordSearchText,
 } from "@/lib/wordSearch";
 import type {
-  QuestionVariant,
   WordSearchAnswer,
   WordSearchQuestion as WordSearchQuestionType,
 } from "@/types/game";
@@ -173,7 +172,6 @@ export function WordSearchQuestion({
   onIncorrectAttempt,
   onSubmit,
   className,
-  variant,
 }: {
   question: WordSearchQuestionType;
   initialAnswer?: WordSearchAnswer;
@@ -182,7 +180,6 @@ export function WordSearchQuestion({
   onIncorrectAttempt: () => void;
   onSubmit: (answer: WordSearchAnswer) => void;
   className?: string;
-  variant?: QuestionVariant;
 }) {
   const validTargetIds = useMemo(
     () => new Set(question.targets.map((target) => target.id)),
@@ -343,7 +340,6 @@ export function WordSearchQuestion({
     <section
       className={`${styles.root} ${className ?? ""}`}
       aria-label="Sopa de letras"
-      data-variant={variant ?? "default"}
     >
       <div className={styles.header}>
         <span>Palabras</span>

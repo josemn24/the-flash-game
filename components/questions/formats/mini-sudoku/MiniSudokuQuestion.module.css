@@ -65,13 +65,13 @@
     margin: 0;
     text-align: center;
   }
-  [data-variant="flash-pop"] .progress {
+  .progress {
     font-family: var(--type-mono);
     font-size: 0.78rem;
     font-weight: 700;
     color: rgb(255 255 255 / 0.72);
   }
-  [data-variant="flash-pop"] .instructions {
+  .instructions {
     color: rgb(255 255 255 / 0.5);
     font-size: 0.875rem;
     line-height: 1.45;
@@ -92,7 +92,7 @@
     font-weight: 800;
     cursor: pointer;
   }
-  [data-variant="flash-pop"] .key {
+  .key {
     min-height: 3.25rem;
     background: rgb(255 255 255 / 0.11);
     color: white;
@@ -103,7 +103,7 @@
   .clearButton:hover:not(:disabled) {
     background: rgb(255 255 255 / 0.2);
   }
-  [data-variant="flash-pop"] .clearButton {
+  .clearButton {
     grid-column: 1 / -1;
     min-height: 2.8rem;
     background: rgb(255 255 255 / 0.08);
@@ -115,7 +115,7 @@
     outline: 3px solid #facc15;
     outline-offset: 3px;
   }
-  [data-variant="flash-pop"] .confirmButton {
+  .confirmButton {
     width: min(100%, 25rem);
     min-height: 3.15rem;
     margin-inline: auto;
@@ -133,67 +133,67 @@
   }
 
   @media (max-width: 360px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       margin-top: 1.25rem;
     }
-    [data-variant="flash-pop"] .keypad {
+    .keypad {
       gap: 0.4rem;
     }
   }
 
-  .root[data-variant="flash-pop"] .grid {
+  .root .grid {
     border-color: var(--color-border);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
-  .root[data-variant="flash-pop"] .cell {
+  .root .cell {
     border-color: var(--color-border);
     color: var(--color-ink);
   }
-  .root[data-variant="flash-pop"] .blockRight,
-  .root[data-variant="flash-pop"] .blockBottom {
+  .root .blockRight,
+  .root .blockBottom {
     border-color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .given {
+  .root .given {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .editable {
+  .root .editable {
     color: var(--color-ink);
     background: color-mix(in srgb, var(--state-selected) 8%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .editable:hover:not(:disabled),
-  .root[data-variant="flash-pop"] .selected {
+  .root .editable:hover:not(:disabled),
+  .root .selected {
     background: color-mix(in srgb, var(--state-selected) 16%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .editable:focus-visible,
-  .root[data-variant="flash-pop"] .key:focus-visible,
-  .root[data-variant="flash-pop"] .clearButton:focus-visible,
-  .root[data-variant="flash-pop"] .confirmButton:focus-visible {
+  .root .editable:focus-visible,
+  .root .key:focus-visible,
+  .root .clearButton:focus-visible,
+  .root .confirmButton:focus-visible {
     outline-color: var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .progress {
+  .root .progress {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .instructions {
+  .root .instructions {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .key,
-  .root[data-variant="flash-pop"] .clearButton {
+  .root .key,
+  .root .clearButton {
     color: var(--color-ink);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-control);
   }
-  .root[data-variant="flash-pop"] .key:hover:not(:disabled),
-  .root[data-variant="flash-pop"] .clearButton:hover:not(:disabled) {
+  .root .key:hover:not(:disabled),
+  .root .clearButton:hover:not(:disabled) {
     background: var(--color-surface);
   }
-  .root[data-variant="flash-pop"] .confirmButton {
+  .root .confirmButton {
     color: var(--color-ink);
     background: var(--color-brand);
     box-shadow: var(--shadow-control);
   }
-  .root[data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+  .root .confirmButton:hover:not(:disabled) {
     background: var(--color-brand-hover);
   }
 }

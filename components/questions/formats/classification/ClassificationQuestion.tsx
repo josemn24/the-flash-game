@@ -6,7 +6,7 @@ import { useState } from "react";
 import { CheckIcon } from "@/components/ui";
 import styles from "./ClassificationQuestion.module.css";
 import { MotionButton } from "@/components/ui";
-import type { ClassificationAnswer, ClassificationItem, QuestionVariant } from "@/types/game";
+import type { ClassificationAnswer, ClassificationItem } from "@/types/game";
 
 type ClassificationQuestionProps = {
   items: ClassificationItem[];
@@ -15,7 +15,6 @@ type ClassificationQuestionProps = {
   locked: boolean;
   onProgress?: (answer: ClassificationAnswer) => void;
   onSubmit: (answer: ClassificationAnswer) => void;
-  variant?: QuestionVariant;
 };
 
 function categoryLabel(category: string) {
@@ -29,7 +28,6 @@ export function ClassificationQuestion({
   locked,
   onProgress,
   onSubmit,
-  variant = "default",
 }: ClassificationQuestionProps) {
   const [answers, setAnswers] = useState<ClassificationAnswer>(initialAnswer ?? {});
   const answeredCount = items.filter((item) => answers[item.label]).length;
@@ -50,7 +48,6 @@ export function ClassificationQuestion({
     <div
       className={`${styles.root}`}
       data-format="classification"
-      data-variant={variant ?? "default"}
     >
       <div className={styles.progressHeader}>
         <span>Clasificación</span>

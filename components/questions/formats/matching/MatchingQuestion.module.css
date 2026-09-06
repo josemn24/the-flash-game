@@ -1,35 +1,4 @@
 @layer app-formats {
-  .root {
-    --format-ink: rgba(255, 255, 255, 0.86);
-    --format-muted: rgba(255, 255, 255, 0.38);
-    --format-surface: rgba(255, 255, 255, 0.035);
-    --format-soft-surface: rgba(255, 255, 255, 0.05);
-    --format-border: rgba(255, 255, 255, 0.1);
-    --format-hover-border: rgb(var(--color-brand-rgb) / 0.72);
-    --format-hover-ink: rgba(255, 255, 255, 0.96);
-    --format-hover-surface: rgb(var(--color-brand-rgb) / 0.075);
-    --format-selected-border: rgb(var(--color-brand-rgb) / 0.72);
-    --format-selected-surface: rgb(var(--color-brand-rgb) / 0.075);
-    --format-matched-border: rgba(67, 222, 183, 0.55);
-    --format-matched-surface: rgba(67, 222, 183, 0.09);
-    --format-invalid-border: rgba(255, 99, 112, 0.8);
-    --format-invalid-surface: rgba(255, 99, 112, 0.12);
-    --format-accent: var(--color-brand);
-    --format-icon-ink: var(--format-accent);
-    --format-icon-surface: var(--format-soft-surface);
-    --format-state-ink: var(--format-surface);
-    --format-state-surface: var(--format-accent);
-    --format-matched-state-ink: var(--format-surface);
-    --format-matched-state-surface: var(--format-accent);
-    --format-invalid-state-ink: var(--format-ink);
-    --format-invalid-state-surface: var(--format-invalid-border);
-    --format-focus: var(--color-brand);
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    flex-direction: column;
-    margin-top: 1rem;
-  }
   .columns {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -166,7 +135,11 @@
     color: var(--format-icon-ink);
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
     --format-ink: var(--color-ink);
     --format-muted: var(--color-ink-muted);
     --format-surface: var(--color-surface-raised);
@@ -194,16 +167,16 @@
     margin-top: var(--space-5);
   }
   @media (min-width: 640px) {
-    [data-variant="flash-pop"] .columns {
+    .columns {
       gap: 1rem;
     }
-    [data-variant="flash-pop"] .column {
+    .column {
       gap: 0.7rem;
     }
-    [data-variant="flash-pop"] .cardLabel {
+    .cardLabel {
       font-size: 0.92rem;
     }
-    [data-variant="flash-pop"] .cardWithMedia .cardLabel {
+    .cardWithMedia .cardLabel {
       font-size: 0.78rem;
     }
   }

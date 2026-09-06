@@ -19,14 +19,14 @@
     align-items: center;
   }
 
-  :global(html[data-theme="flash-pop"]) .topbar,
-  :global(html[data-theme="flash-pop"]) .resultMeta,
-  :global(html[data-theme="flash-pop"]) .rankingRow,
-  :global(html[data-theme="flash-pop"]) .reviewHeader {
+  .topbar,
+  .resultMeta,
+  .rankingRow,
+  .reviewHeader {
     justify-content: space-between;
   }
 
-  :global(html[data-theme="flash-pop"]) .topbar {
+  .topbar {
     gap: var(--space-4);
   }
 
@@ -109,8 +109,8 @@
     opacity: 0.58;
   }
 
-  :global(html[data-theme="flash-pop"]) .topbarLeft,
-  :global(html[data-theme="flash-pop"]) .topbarRight {
+  .topbarLeft,
+  .topbarRight {
     gap: var(--space-3);
   }
 
@@ -141,9 +141,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  :global(html[data-theme="flash-pop"]) .brandCopy strong {
     font-family: var(--type-display);
     font-size: 19px;
     line-height: 1;
@@ -174,26 +171,19 @@
   .resultCard,
   .reviewCard {
     padding: clamp(20px, 5vw, 36px);
-  }
-
-  :global(html[data-theme="flash-pop"]) .introCard,
-  :global(html[data-theme="flash-pop"]) .briefingCard,
-  :global(html[data-theme="flash-pop"]) .confirmCard,
-  :global(html[data-theme="flash-pop"]) .resultCard,
-  :global(html[data-theme="flash-pop"]) .reviewCard {
     border-radius: var(--radius-hero);
   }
 
-  :global(html[data-theme="flash-pop"]) .introCard,
-  :global(html[data-theme="flash-pop"]) .briefingCard,
-  :global(html[data-theme="flash-pop"]) .resultCard,
-  :global(html[data-theme="flash-pop"]) .reviewCard {
+  .introCard,
+  .briefingCard,
+  .resultCard,
+  .reviewCard {
     border: var(--border-subtle);
     background: var(--color-surface);
     box-shadow: var(--shadow-hero);
   }
 
-  :global(html[data-theme="flash-pop"]) .confirmCard {
+  .confirmCard {
     display: grid;
     gap: var(--space-4);
     text-align: center;
@@ -244,13 +234,13 @@
 
   .rules,
   .briefingStats,
-  :global(html[data-theme="flash-pop"]) .resultMeta {
+  .resultMeta {
     display: grid;
     gap: var(--space-3);
     margin-top: var(--space-6);
   }
 
-  :global(html[data-theme="flash-pop"]) .rules {
+  .rules {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -297,19 +287,19 @@
     text-align: center;
   }
 
-  :global(html[data-theme="flash-pop"]) .storageWarning {
+  .storageWarning {
     padding: var(--space-3);
     border-radius: var(--radius-control);
     background: rgb(255 114 118 / 12%);
     color: #a22d38;
   }
 
-  :global(html[data-theme="flash-pop"]) .briefingCard {
+  .briefingCard {
     text-align: center;
   }
 
-  :global(html[data-theme="flash-pop"]) .briefingStats,
-  :global(html[data-theme="flash-pop"]) .resultMeta {
+  .briefingStats,
+  .resultMeta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -358,7 +348,7 @@
     line-height: 1.1;
   }
 
-  :global(html[data-theme="flash-pop"]) .answerGrid {
+  .answerGrid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
@@ -424,7 +414,7 @@
     opacity: 0.62;
   }
 
-  :global(html[data-theme="flash-pop"]) .resultCard {
+  .resultCard {
     text-align: center;
   }
 
@@ -485,7 +475,7 @@
     font-weight: 800;
   }
 
-  :global(html[data-theme="flash-pop"]) .rankingRow {
+  .rankingRow {
     gap: var(--space-3);
     min-height: 52px;
     padding: 8px 10px;
@@ -520,11 +510,11 @@
     font-weight: 700;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewCard {
+  .reviewCard {
     text-align: left;
   }
 
-  :global(html[data-theme="flash-pop"]) .reviewHeader {
+  .reviewHeader {
     gap: var(--space-3);
   }
 
@@ -549,19 +539,19 @@
   }
 
   @media (min-width: 720px) {
-    :global(html[data-theme="flash-pop"]) .screen {
+    .screen {
       gap: var(--space-8);
     }
 
-    :global(html[data-theme="flash-pop"]) .intro,
-    :global(html[data-theme="flash-pop"]) .briefing,
-    :global(html[data-theme="flash-pop"]) .question,
-    :global(html[data-theme="flash-pop"]) .result,
-    :global(html[data-theme="flash-pop"]) .review {
+    .intro,
+    .briefing,
+    .question,
+    .result,
+    .review {
       width: min(100%, 680px);
     }
 
-    :global(html[data-theme="flash-pop"]) .introIllustration {
+    .introIllustration {
       min-height: 260px;
     }
   }
@@ -571,19 +561,19 @@
       color: var(--color-ink-muted);
     }
 
-    :global(html[data-theme="flash-pop"]) .levelIndicator {
+    .levelIndicator {
       display: none;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :global(html[data-theme="flash-pop"]) .answerTile {
+    .answerTile {
       transition: none;
     }
 
-    :global(html[data-theme="flash-pop"]) .answerTile:hover:not(:disabled),
-    :global(html[data-theme="flash-pop"]) .answerTile:active:not(:disabled),
-    :global(html[data-theme="flash-pop"]) .answerTile.selected {
+    .answerTile:hover:not(:disabled),
+    .answerTile:active:not(:disabled),
+    .answerTile.selected {
       transform: none;
     }
   }

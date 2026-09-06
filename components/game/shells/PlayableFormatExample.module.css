@@ -45,7 +45,7 @@
     line-height: 1.05;
   }
 
-  :global(html[data-theme="flash-pop"]) .launcher h3 {
+  .launcher h3 {
     max-width: 45rem;
     margin: 1.25rem 0 0;
     font-size: clamp(1.9rem, 5vw, 3rem);
@@ -151,7 +151,7 @@
     padding: clamp(1.25rem, 4vw, 2.5rem);
   }
 
-  :global(html[data-theme="flash-pop"]) .readyPanel {
+  .readyPanel {
     display: flex;
     min-height: min(34rem, calc(100dvh - 6rem));
     flex-direction: column;
@@ -159,8 +159,8 @@
     justify-content: center;
   }
 
-  :global(html[data-theme="flash-pop"]) .readyPanel h2,
-  :global(html[data-theme="flash-pop"]) .questionTitle {
+  .readyPanel h2,
+  .questionTitle {
     max-width: 45rem;
     margin: 1.25rem 0 0;
     font-size: clamp(2rem, 6vw, 3.6rem);
@@ -201,7 +201,7 @@
     margin-top: 1.25rem;
   }
 
-  :global(html[data-theme="flash-pop"]) .feedbackPanel h2 {
+  .feedbackPanel h2 {
     margin: 1.5rem 0 1rem;
     font-size: clamp(1.8rem, 5vw, 2.7rem);
   }
@@ -259,7 +259,7 @@
     background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface-raised));
   }
 
-  :global(html[data-theme="flash-pop"]) .explanation > span {
+  .explanation > span {
     color: var(--color-brand);
   }
 
@@ -288,17 +288,17 @@
   }
 
   @media (min-width: 640px) {
-    :global(html[data-theme="flash-pop"]) .launchButton {
+    .launchButton {
       width: auto;
     }
 
-    :global(html[data-theme="flash-pop"]) .feedbackActions {
+    .feedbackActions {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (max-width: 639px) {
-    :global(html[data-theme="flash-pop"]) .dialog {
+    .dialog {
       width: 100%;
       height: 100dvh;
       max-height: none;
@@ -307,7 +307,7 @@
       border-radius: 0;
     }
 
-    :global(html[data-theme="flash-pop"]) .dialogSurface {
+    .dialogSurface {
       height: 100dvh;
       min-height: 100dvh;
       max-height: 100dvh;

@@ -196,7 +196,8 @@ Orden recomendado si se aprueba el slice:
 2. Mapa completo de Pirámide.
 3. Alfabeto y Narrativa.
 4. Revisión de respuestas.
-5. Biblioteca de formatos — migrada mediante `QuestionVariant`; pendiente de QA manual exhaustivo.
+5. Biblioteca de formatos — consolidada en `QuestionInput` con Flash Pop como presentación única;
+   pendiente de QA manual exhaustivo.
 6. Estados vacíos, errores y not-found.
 7. Tema oscuro especial.
 8. Backend social de producción cuando exista alcance de producto; la prueba social controlada ocurre antes de la extensión completa.
@@ -281,8 +282,7 @@ shell social completo.
 
 ## Próximo hito ejecutable
 
-La migración de los 31 formatos ya está integrada mediante `QuestionVariant`. El siguiente hito
-es cerrar la revisión manual de la Fase 4 —interacción exhaustiva, VoiceOver y
-`prefers-reduced-motion`— y resolver o aceptar explícitamente las incidencias registradas en
-[`../qa-fase-4.md`](../qa-fase-4.md). Los aliases y overrides de compatibilidad solo se
-eliminarán cuando no tengan consumidores.
+La migración de los 31 formatos ya está integrada en `QuestionInput` con Flash Pop como sistema
+visual único. El siguiente hito es cerrar la revisión manual de la Fase 4 —interacción exhaustiva,
+VoiceOver y `prefers-reduced-motion`— y resolver o aceptar explícitamente las incidencias
+registradas en [`../qa-fase-4.md`](../qa-fase-4.md).

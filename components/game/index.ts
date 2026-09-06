@@ -10,7 +10,6 @@ export {
   FlashPopPyramidGame,
   FlashPopSurvivalGame,
   FlashPopSurvivalResult,
-  FlashPopQuestionInput,
   FlashPopReview,
 } from "./modes/flash-pop";
 export { NarrativeGameApp } from "./modes/narrative/NarrativeGameApp.client";

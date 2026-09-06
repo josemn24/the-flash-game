@@ -1,9 +1,4 @@
 @layer app-formats {
-  .root {
-    display: grid;
-    gap: 0.9rem;
-    margin-top: 1.5rem;
-  }
   .toolbar {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -63,19 +58,6 @@
     box-shadow: 0 18px 55px rgb(0 0 0 / 0.28);
     overflow: hidden;
   }
-  .cell {
-    position: relative;
-    display: grid;
-    aspect-ratio: 1;
-    place-items: center;
-    min-width: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0.58rem;
-    color: #11151a;
-    box-shadow: 0 1px 2px rgb(17 21 26 / 0.12);
-    isolation: isolate;
-  }
   button.cell {
     cursor: pointer;
   }
@@ -128,28 +110,6 @@
   .cell:hover:not(:disabled) {
     filter: brightness(1.08);
   }
-  .queensCrownIcon {
-    position: relative;
-    z-index: 1;
-    width: clamp(2rem, 12vw, 3.35rem);
-    height: clamp(2rem, 12vw, 3.35rem);
-    color: #11151a;
-    filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.55))
-      drop-shadow(0 2px 3px rgb(17 21 26 / 0.18));
-  }
-  .markIcon {
-    position: relative;
-    z-index: 1;
-    width: clamp(1.55rem, 8vw, 2.4rem);
-    height: clamp(1.55rem, 8vw, 2.4rem);
-    filter: drop-shadow(0 2px 1px rgb(255 255 255 / 0.5));
-  }
-  .prefilledQueen {
-    box-shadow:
-      inset 0 0 0 3px rgb(17 21 26 / 0.72),
-      0 1px 2px rgb(17 21 26 / 0.12);
-    cursor: default;
-  }
   .prefilledQueen .queensCrownIcon {
     transform: translateY(-0.18rem);
   }
@@ -169,18 +129,14 @@
     text-transform: uppercase;
     transform: translateX(-50%);
   }
-  [data-variant="flash-pop"] .markIcon {
+  .markIcon {
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 1px rgb(255 255 255 / 0.5));
     width: clamp(1.2rem, 6vw, 1.8rem);
     height: clamp(1.2rem, 6vw, 1.8rem);
     color: rgb(17 21 26 / 0.52);
     stroke-width: 2.7;
-  }
-  .conflict {
-    border-radius: inherit;
-    box-shadow:
-      inset 0 0 0 4px #e22b3f,
-      0 1px 2px rgb(17 21 26 / 0.12);
-    animation: conflict-in 180ms ease-out;
   }
   .conflict::after {
     position: absolute;
@@ -206,19 +162,36 @@
     stroke-width: 2.5;
   }
   /* Keep the card surface readable when the board is rendered in Flash Pop. */
-  [data-variant="flash-pop"] .queensCrownIcon {
+  .queensCrownIcon {
+    position: relative;
+    z-index: 1;
+    width: clamp(2rem, 12vw, 3.35rem);
+    height: clamp(2rem, 12vw, 3.35rem);
     color: var(--color-ink);
     filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.6)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.14));
   }
-  [data-variant="flash-pop"] .cell {
+  .cell {
+    position: relative;
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    min-width: 0;
+    padding: 0;
+    border-radius: 0.58rem;
+    color: #11151a;
+    box-shadow: 0 1px 2px rgb(17 21 26 / 0.12);
+    isolation: isolate;
     border: 0;
   }
-  [data-variant="flash-pop"] .prefilledQueen {
+  .prefilledQueen {
+    cursor: default;
     box-shadow:
       inset 0 0 0 3px rgb(23 23 32 / 58%),
       0 1px 2px rgb(23 23 32 / 16%);
   }
-  [data-variant="flash-pop"] .conflict {
+  .conflict {
+    border-radius: inherit;
+    animation: conflict-in 180ms ease-out;
     box-shadow:
       inset 0 0 0 4px var(--state-error),
       0 1px 2px rgb(23 23 32 / 16%);
@@ -252,59 +225,60 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    [data-variant="flash-pop"] .conflict {
+    .conflict {
       animation: none;
     }
   }
   @media (max-width: 390px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       margin-top: 1rem;
     }
-    [data-variant="flash-pop"] .toolbar button {
+    .toolbar button {
       font-size: 0.7rem;
     }
-    [data-variant="flash-pop"] .toolbar button kbd {
+    .toolbar button kbd {
       display: none;
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
 
-  .root[data-variant="flash-pop"] .toolbar {
+  .root .toolbar {
     border: 0;
     border-radius: var(--radius-control);
     background: var(--color-surface-raised);
   }
 
-  .root[data-variant="flash-pop"] .toolbar button {
+  .root .toolbar button {
     min-height: 44px;
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .toolbar .toolActive {
+  .root .toolbar .toolActive {
     border-color: var(--state-selected);
     color: var(--color-surface);
     background: var(--state-selected);
   }
 
-  .root[data-variant="flash-pop"] .board {
+  .root .board {
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
-  .root[data-variant="flash-pop"] .progress {
+  .root .progress {
     color: var(--color-ink-muted);
   }
 
-  .root[data-variant="flash-pop"] .progress strong {
+  .root .progress strong {
     color: var(--color-ink);
   }
 
-  .root[data-variant="flash-pop"] .instructions {
+  .root .instructions {
     color: var(--color-ink-muted);
   }
 }

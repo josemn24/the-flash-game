@@ -33,7 +33,6 @@ export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
               <QuestionScreen
                 key={session.question.id}
                 question={session.question}
-                challengeTitle={scoredChallenge.title}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}

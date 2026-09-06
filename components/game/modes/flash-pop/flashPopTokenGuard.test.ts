@@ -27,11 +27,14 @@ function collect(directory: string, files: string[]) {
 }
 
 describe("product design-system boundaries", () => {
-  it("uses Flash Pop as the only product theme", () => {
+  it("uses the canonical Flash Pop tokens without theme attributes", () => {
     const layout = readFileSync(join(projectRoot, "app/layout.tsx"), "utf8");
+    const globals = readFileSync(join(projectRoot, "app/globals.css"), "utf8");
 
-    expect(layout).toContain('data-theme="flash-pop"');
-    expect(layout).not.toContain("legacy-dark");
+    expect(layout).not.toContain(["data", "theme"].join("-"));
+    expect(globals).toContain(":root {");
+    expect(globals).not.toContain(["data", "theme"].join("-"));
+    expect(globals).not.toContain("app-variants");
   });
 
   it("keeps product code on the canonical UI and token APIs", () => {
@@ -48,12 +51,26 @@ describe("product design-system boundaries", () => {
       ),
     );
     const forbiddenIdentifierFiles = productFiles.filter((path) =>
-      /\bPop(?:Avatar|Button|ButtonLink|Chip|Card|Canvas|IconButton|Timer|TimerDisplay|GameHeader)\b|legacyCompatFormat/.test(
+      new RegExp(
+        "\\bPop(?:Avatar|Button|ButtonLink|Chip|Card|Canvas|IconButton|Timer|TimerDisplay|GameHeader)\\b|" +
+          ["legacy", "Compat", "Format"].join(""),
+      ).test(
         readFileSync(path, "utf8"),
       ),
     );
     const forbiddenThemeFiles = productFiles.filter((path) =>
-      /LegacyTheme|legacy-dark/.test(readFileSync(path, "utf8")),
+      new RegExp(
+        [
+          ["Legacy", "Theme"].join(""),
+          ["legacy", "-dark"].join(""),
+          ["data", "theme"].join("-"),
+          ["data-variant", '\"(?:default|flash-pop)\"'].join("="),
+          ["Question", "Variant"].join(""),
+          ["legacy", "Compat", "Format"].join(""),
+        ].join("|"),
+      ).test(
+        readFileSync(path, "utf8"),
+      ),
     );
 
     expect(forbiddenImportFiles).toEqual([]);

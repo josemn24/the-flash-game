@@ -187,78 +187,78 @@
   }
 
   @media (max-width: 480px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       gap: 0.8rem;
       margin-top: 1.2rem;
     }
 
-    [data-variant="flash-pop"] .board {
+    .board {
       border-radius: 0.8rem;
     }
 
-    [data-variant="flash-pop"] .controls {
+    .controls {
       grid-template-columns: repeat(3, 3.35rem);
     }
 
-    [data-variant="flash-pop"] .controls button {
+    .controls button {
       width: 3.35rem;
       height: 3.35rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-variant="flash-pop"] .player {
+    .player {
       box-shadow: none;
     }
   }
 
-  .root[data-variant="flash-pop"] .header,
-  .root[data-variant="flash-pop"] .instructions {
+  .root .header,
+  .root .instructions {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .board {
+  .root .board {
     border-color: var(--color-border);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
-  .root[data-variant="flash-pop"] .boardInteractive:focus-visible {
+  .root .boardInteractive:focus-visible {
     border-color: var(--state-focus);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
   }
-  .root[data-variant="flash-pop"] .cell {
+  .root .cell {
     border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
     background: var(--color-surface);
   }
-  .root[data-variant="flash-pop"] .wall {
+  .root .wall {
     border-color: var(--color-border);
     background: var(--color-surface-soft);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
-  .root[data-variant="flash-pop"] .start {
+  .root .start {
     background: color-mix(in srgb, var(--color-social) 12%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .exit {
+  .root .exit {
     background: color-mix(in srgb, var(--color-brand) 16%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .marker {
+  .root .marker {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .player {
+  .root .player {
     color: var(--color-ink);
     background: var(--color-brand);
   }
-  .root[data-variant="flash-pop"] .controls button {
+  .root .controls button {
     border-color: var(--color-border);
     color: var(--color-ink);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-control);
   }
-  .root[data-variant="flash-pop"] .controls button:hover:not(:disabled) {
+  .root .controls button:hover:not(:disabled) {
     border-color: var(--state-focus);
     background: var(--color-surface);
   }
-  .root[data-variant="flash-pop"] .controls button:disabled {
+  .root .controls button:disabled {
     color: var(--color-ink-faint);
     background: var(--color-surface-soft);
   }

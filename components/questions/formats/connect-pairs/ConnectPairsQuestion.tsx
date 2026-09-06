@@ -21,8 +21,7 @@ import type {
   ConnectPairsAnswer,
   ConnectPairsPair,
   ConnectPairsQuestion as Question,
-  QuestionVariant,
-} from "@/types/game";
+  } from "@/types/game";
 import styles from "./ConnectPairsQuestion.module.css";
 
 const DEFAULT_COLORS = ["#35e8ff", "#d7ff18", "#ff6d73", "#43deb7", "#b994ff"];
@@ -85,14 +84,12 @@ export function ConnectPairsQuestion({
   locked,
   onProgress,
   onSubmit,
-  variant,
 }: {
   question: Question;
   initialAnswer?: ConnectPairsAnswer;
   locked: boolean;
   onProgress: (answer: ConnectPairsAnswer) => void;
   onSubmit: (answer: ConnectPairsAnswer) => void;
-  variant?: QuestionVariant;
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [paths, setPaths] = useState<Record<string, number[]>>(() =>
@@ -356,7 +353,6 @@ export function ConnectPairsQuestion({
     <section
       className={`${styles.root}`}
       aria-label="Conectar parejas"
-      data-variant={variant ?? "default"}
     >
       <div className={styles.header}>
         <span>Conecta sin cruzar rutas</span>

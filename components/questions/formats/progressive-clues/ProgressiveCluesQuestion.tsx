@@ -3,7 +3,6 @@
 import { motion } from "motion/react";
 import { FormEvent, useMemo, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
-import type { QuestionVariant } from "@/types/game";
 import styles from "./ProgressiveCluesQuestion.module.css";
 
 type ProgressiveCluesQuestionProps = {
@@ -18,7 +17,6 @@ type ProgressiveCluesQuestionProps = {
   onProgress?: (answer: string) => void;
   onSubmit: (answer: string) => void;
   className?: string;
-  variant?: QuestionVariant;
 };
 
 export function ProgressiveCluesQuestion({
@@ -33,7 +31,6 @@ export function ProgressiveCluesQuestion({
   onProgress,
   onSubmit,
   className,
-  variant,
 }: ProgressiveCluesQuestionProps) {
   const [revealedClues, setRevealedClues] = useState(() =>
     Math.min(Math.max(1, initialRevealedClues ?? 1), clues.length),
@@ -62,7 +59,7 @@ export function ProgressiveCluesQuestion({
   };
 
   return (
-    <div className={`${styles.challenge} ${className ?? ""}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.challenge} ${className ?? ""}`}>
       <div className={styles.scoreRow}>
         <span>
           {revealedClues} de {clues.length} {clues.length === 1 ? "pista" : "pistas"}

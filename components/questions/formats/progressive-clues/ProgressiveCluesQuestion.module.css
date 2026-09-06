@@ -1,9 +1,4 @@
 @layer app-formats {
-  .challenge {
-    margin-top: 1.25rem;
-    display: grid;
-    gap: 0.8rem;
-  }
 
   .scoreRow {
     display: flex;
@@ -167,50 +162,51 @@
   }
 
   @media (min-width: 640px) {
-    .challenge[data-variant="flash-pop"] {
+    .challenge {
       margin-top: 1.5rem;
       gap: 1rem;
     }
 
-    [data-variant="flash-pop"] .clues li {
+    .clues li {
       padding: 0.85rem 0.95rem;
     }
 
-    [data-variant="flash-pop"] .actions {
+    .actions {
       grid-template-columns: minmax(12rem, 0.72fr) minmax(0, 1.28fr);
       align-items: start;
     }
   }
 
-  .challenge[data-variant="flash-pop"] {
+  .challenge {
+    display: grid;
     gap: var(--space-4);
     margin-top: var(--space-4);
   }
 
-  .challenge[data-variant="flash-pop"] .scoreRow {
+  .challenge .scoreRow {
     color: var(--color-ink-muted);
   }
 
-  .challenge[data-variant="flash-pop"] .scoreRow strong {
+  .challenge .scoreRow strong {
     color: var(--state-selected);
   }
 
-  .challenge[data-variant="flash-pop"] .clues li {
+  .challenge .clues li {
     border-color: var(--border-subtle);
     border-radius: var(--radius-control);
     background: var(--color-surface-raised);
     box-shadow: none;
   }
 
-  .challenge[data-variant="flash-pop"] .clues li > span {
+  .challenge .clues li > span {
     color: var(--state-focus);
   }
 
-  .challenge[data-variant="flash-pop"] .clues p {
+  .challenge .clues p {
     color: var(--color-ink);
   }
 
-  .challenge[data-variant="flash-pop"] .revealButton {
+  .challenge .revealButton {
     border-color: color-mix(in srgb, var(--state-selected) 55%, var(--color-border));
     border-radius: var(--radius-control);
     color: var(--state-focus);
@@ -218,69 +214,69 @@
     box-shadow: var(--shadow-control);
   }
 
-  .challenge[data-variant="flash-pop"] .revealButton span {
+  .challenge .revealButton span {
     color: var(--state-focus);
   }
 
-  .challenge[data-variant="flash-pop"] .revealButton:hover:not(:disabled),
-  .challenge[data-variant="flash-pop"] .revealButton:focus-visible {
+  .challenge .revealButton:hover:not(:disabled),
+  .challenge .revealButton:focus-visible {
     border-color: var(--state-selected);
     background: color-mix(in srgb, var(--state-selected) 16%, var(--color-surface));
     outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
 
-  .challenge[data-variant="flash-pop"] .allRevealed {
+  .challenge .allRevealed {
     border-color: var(--border-subtle);
     border-radius: var(--radius-control);
     color: var(--color-ink-muted);
     background: var(--color-surface-raised);
   }
 
-  .challenge[data-variant="flash-pop"] .answerPanel {
+  .challenge .answerPanel {
     border-color: color-mix(in srgb, var(--state-selected) 22%, transparent);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
   }
 
-  .challenge[data-variant="flash-pop"] .answerPanel label {
+  .challenge .answerPanel label {
     color: var(--color-ink-muted);
   }
 
-  .challenge[data-variant="flash-pop"] .answerRow input {
+  .challenge .answerRow input {
     border-color: var(--border-subtle);
     color: var(--color-ink);
     background: var(--color-surface);
     caret-color: var(--state-focus);
   }
 
-  .challenge[data-variant="flash-pop"] .answerRow input:focus-visible {
+  .challenge .answerRow input:focus-visible {
     border-color: var(--state-focus);
     outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
 
-  .challenge[data-variant="flash-pop"] .answerRow button {
+  .challenge .answerRow button {
     border: 0;
     color: var(--color-ink);
     background: var(--color-brand);
     box-shadow: var(--shadow-control);
   }
 
-  .challenge[data-variant="flash-pop"] .answerRow button:hover:not(:disabled) {
+  .challenge .answerRow button:hover:not(:disabled) {
     background: var(--color-brand);
   }
 
-  .challenge[data-variant="flash-pop"] .answerRow button:focus-visible {
+  .challenge .answerRow button:focus-visible {
     outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
 
-  .challenge[data-variant="flash-pop"] .answerRow button:disabled {
+  .challenge .answerRow button:disabled {
     color: var(--color-ink-muted);
     background: var(--color-surface-soft);
     box-shadow: none;
     opacity: 1;
   }
 
-  .challenge[data-variant="flash-pop"] .answerPanel > p {
+  .challenge .answerPanel > p {
     color: var(--color-ink-muted);
   }
 }

@@ -1,40 +1,9 @@
 @layer app-formats {
-  .brandMarkSmall {
-    display: inline-grid;
-    width: 1.65rem;
-    height: 1.65rem;
-    place-items: center;
-    border-radius: 0.45rem;
-    color: #080907;
-    background: var(--color-brand);
-    box-shadow: 0 0 24px rgb(var(--color-brand-rgb) / 0.22);
-    transform: skewX(-7deg);
-  }
-
-  .notebookButton {
-    display: inline-flex;
-    min-height: 2.5rem;
-    align-items: center;
-    gap: 0.38rem;
-    border: 1px solid rgb(255 255 255 / 0.12);
-    border-radius: 999px;
-    background: rgb(0 0 0 / 0.25);
-    padding: 0.55rem 0.72rem;
-    color: rgb(255 255 255 / 0.72);
-    font-family: var(--type-mono);
-    font-size: 0.68rem;
-    font-weight: 800;
-    transition:
-      border-color 160ms ease,
-      background 160ms ease,
-      color 160ms ease;
-  }
-
-  .notebookButton:hover,
-  .notebookButton:focus-visible {
-    border-color: rgb(125 232 255 / 0.55);
-    background: rgb(125 232 255 / 0.1);
-    color: white;
+  .questionInput {
+    width: 100%;
+    min-width: 0;
+    color: var(--color-ink);
+    font-family: var(--type-ui);
   }
   .eyebrow {
     font-family: var(--type-mono);
@@ -42,22 +11,6 @@
     font-weight: 800;
     letter-spacing: 0.19em;
     text-transform: uppercase;
-  }
-  .questionTitle {
-    max-width: 44rem;
-    font-family: var(--type-display);
-    font-size: clamp(1.9rem, 7vw, 3.15rem);
-    font-weight: 950;
-    letter-spacing: -0.05em;
-    line-height: 1.05;
-  }
-  .questionContext {
-    max-width: 44rem;
-    margin-bottom: 0.55rem;
-    color: rgb(255 255 255 / 0.66);
-    font-size: clamp(0.8rem, 2.8vw, 0.98rem);
-    font-weight: 650;
-    line-height: 1.55;
   }
 
   .flashPopScreen {
@@ -122,16 +75,6 @@
     font-size: clamp(1.55rem, 5.5vw, 2.65rem);
     line-height: 1.04;
   }
-  .lifeHearts {
-    display: inline-flex;
-    min-height: 1.75rem;
-    align-items: center;
-    gap: 0.22rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 999px;
-    padding: 0.32rem 0.48rem;
-    background: rgba(255, 255, 255, 0.035);
-  }
   .lifeHeart {
     width: 1rem;
     height: 1rem;
@@ -142,55 +85,87 @@
       opacity 180ms,
       transform 180ms;
   }
-  .lifeHeartActive {
-    color: var(--color-danger);
-    fill: currentColor;
-    filter: drop-shadow(0 0 8px rgba(255, 93, 100, 0.3));
-  }
-  .lifeHeartLost {
-    color: rgba(255, 255, 255, 0.22);
-    fill: transparent;
-    opacity: 0.75;
-    transform: scale(0.92);
-  }
 
-  [data-variant="flash-pop"] .brandMarkSmall {
+  .brandMarkSmall {
+    display: inline-grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    border-radius: 0.45rem;
+    background: var(--color-brand);
+    transform: skewX(-7deg);
     color: var(--color-ink);
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .notebookButton {
+  .notebookButton {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.38rem;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 999px;
+    padding: 0.55rem 0.72rem;
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      color 160ms ease;
     border-color: var(--color-border);
     background: var(--color-surface);
     color: var(--color-ink-muted);
   }
 
-  [data-variant="flash-pop"] .notebookButton:hover,
-  [data-variant="flash-pop"] .notebookButton:focus-visible {
+  .notebookButton:hover,
+  .notebookButton:focus-visible {
     border-color: var(--color-social);
     background: var(--color-surface-raised);
     color: var(--color-ink);
   }
 
-  [data-variant="flash-pop"] .questionTitle {
+  .questionTitle {
+    max-width: 44rem;
+    font-family: var(--type-display);
+    font-size: clamp(1.9rem, 7vw, 3.15rem);
+    font-weight: 950;
+    letter-spacing: -0.05em;
+    line-height: 1.05;
     color: var(--color-ink);
   }
 
-  [data-variant="flash-pop"] .questionContext {
+  .questionContext {
+    max-width: 44rem;
+    margin-bottom: 0.55rem;
+    font-size: clamp(0.8rem, 2.8vw, 0.98rem);
+    font-weight: 650;
+    line-height: 1.55;
     color: var(--color-ink-muted);
   }
 
-  [data-variant="flash-pop"] .lifeHearts {
+  .lifeHearts {
+    display: inline-flex;
+    min-height: 1.75rem;
+    align-items: center;
+    gap: 0.22rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    padding: 0.32rem 0.48rem;
     border-color: var(--color-border);
     background: var(--color-surface);
   }
 
-  [data-variant="flash-pop"] .lifeHeartActive {
+  .lifeHeartActive {
+    color: var(--color-danger);
     fill: color-mix(in srgb, var(--color-danger) 18%, transparent);
     filter: none;
   }
 
-  [data-variant="flash-pop"] .lifeHeartLost {
+  .lifeHeartLost {
+    fill: transparent;
+    opacity: 0.75;
+    transform: scale(0.92);
     color: var(--color-ink-faint);
   }
   .textAnswerRow {
@@ -210,35 +185,35 @@
     font-size: 0.75rem;
     line-height: 1.25rem;
   }
-  .textAnswerForm[data-variant="flash-pop"] .textAnswerLabel {
+  .textAnswerForm.textAnswerLabel {
     display: block;
     margin-bottom: 0.625rem;
     color: var(--color-ink-muted);
     font-size: 0.875rem;
     font-weight: 700;
   }
-  .textAnswerForm[data-variant="flash-pop"] .textAnswerHint {
+  .textAnswerForm.textAnswerHint {
     margin-top: 0.75rem;
     color: var(--color-ink-faint);
     font-size: 0.75rem;
     line-height: 1.25rem;
   }
-  .textAnswerForm[data-variant="flash-pop"] .textAnswerInput {
+  .textAnswerForm.textAnswerInput {
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     color: var(--color-ink);
     background: var(--color-surface);
     caret-color: var(--state-focus);
   }
-  .textAnswerForm[data-variant="flash-pop"] .textAnswerInput::placeholder {
+  .textAnswerForm.textAnswerInput::placeholder {
     color: var(--color-ink-faint);
   }
-  .textAnswerForm[data-variant="flash-pop"] .textAnswerInput:focus {
+  .textAnswerForm.textAnswerInput:focus {
     border-color: var(--state-focus);
     background: var(--color-surface);
     outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
   }
-  .textAnswerForm[data-variant="flash-pop"] .textSubmitButton {
+  .textAnswerForm.textSubmitButton {
     border-radius: var(--radius-control);
     color: var(--color-ink);
     background: var(--color-brand);
@@ -278,7 +253,7 @@
     opacity: 0.24;
   }
   @media (max-width: 639px) {
-    :global(html[data-theme="flash-pop"]) .questionTitle {
+    .questionTitle {
       font-size: clamp(1.65rem, 6.2vw, 2.35rem);
       line-height: 1.12;
     }
@@ -288,7 +263,7 @@
       line-height: 1.1;
     }
 
-    :global(html[data-theme="flash-pop"]) .questionTitleFocused {
+    .questionTitleFocused {
       font-size: clamp(1.55rem, 5.5vw, 2rem);
       line-height: 1.08;
     }

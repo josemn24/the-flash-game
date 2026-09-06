@@ -34,7 +34,6 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
               <QuestionScreen
                 key={session.question.id}
                 question={session.question}
-                challengeTitle={scoredChallenge.title}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}

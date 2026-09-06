@@ -22,8 +22,8 @@
     display: flex;
   }
 
-  :global(html[data-theme="flash-pop"]) .heading,
-  :global(html[data-theme="flash-pop"]) .meta {
+  .heading,
+  .meta {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
@@ -86,7 +86,7 @@
     font-weight: 700;
   }
 
-  :global(html[data-theme="flash-pop"]) .levelTitle {
+  .levelTitle {
     min-width: 0;
     flex: 1;
     flex-direction: column;
@@ -105,7 +105,7 @@
     white-space: nowrap;
   }
 
-  :global(html[data-theme="flash-pop"]) .levelStatus {
+  .levelStatus {
     align-items: center;
     gap: 5px;
     color: var(--color-ink-muted);
@@ -159,7 +159,7 @@
     color: var(--color-ink);
   }
 
-  :global(html[data-theme="flash-pop"]) .meta {
+  .meta {
     color: var(--color-ink-muted);
     font-family: var(--type-mono);
     font-size: 11px;
@@ -169,7 +169,7 @@
     color: var(--color-ink);
   }
 
-  :global(html[data-theme="flash-pop"]) .lockedBody {
+  .lockedBody {
     align-items: center;
     gap: var(--space-2);
     border-top: var(--border-subtle);

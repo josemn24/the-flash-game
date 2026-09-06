@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
 import styles from "./MatchingQuestion.module.css";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
-import type { MatchingAnswer, MatchingItem, MatchingLeftItem, QuestionVariant } from "@/types/game";
+import type { MatchingAnswer, MatchingItem, MatchingLeftItem } from "@/types/game";
 
 type MatchingQuestionProps = {
   leftItems: MatchingLeftItem[];
@@ -15,7 +15,6 @@ type MatchingQuestionProps = {
   onProgress: (answer: MatchingAnswer) => void;
   onIncorrectAttempt: () => void;
   onSubmit: (answer: MatchingAnswer) => void;
-  variant?: QuestionVariant;
 };
 
 type InvalidPair = { leftId: string; rightId: string };
@@ -28,7 +27,6 @@ export function MatchingQuestion({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-  variant = "default",
 }: MatchingQuestionProps) {
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [matches, setMatches] = useState<MatchingAnswer>(() => {
@@ -93,7 +91,7 @@ export function MatchingQuestion({
   const matchedCount = Object.keys(matches).length;
 
   return (
-    <div className={`${styles.root}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.root}`}>
       <div className={styles.columns}>
         <section className={styles.column} aria-labelledby="matching-left-heading">
           <h3 id="matching-left-heading">Conceptos</h3>

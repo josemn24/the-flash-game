@@ -3,16 +3,14 @@ import { describe, expect, it } from "vitest";
 import { getChallengeById } from "@/data/challenges";
 import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
 
-describe("QuestionScreen variants", () => {
-  it("exposes the Flash Pop variant and remaining lives", () => {
+describe("QuestionScreen", () => {
+  it("uses the Flash Pop shell and exposes remaining lives", () => {
     const challenge = getChallengeById("tabarnia-challenge-03");
     if (challenge?.mode !== "survival") throw new Error("Expected survival challenge");
 
     const markup = renderToStaticMarkup(
       <QuestionScreen
-        variant="flash-pop"
         question={challenge.questions[0]}
-        challengeTitle={challenge.title}
         questionNumber={1}
         totalQuestions={challenge.questions.length}
         locked={false}
@@ -29,7 +27,7 @@ describe("QuestionScreen variants", () => {
       />,
     );
 
-    expect(markup).toContain('data-variant="flash-pop"');
+    expect(markup).not.toContain("data-variant");
     expect(markup).toContain("2 de 3 vidas restantes");
   });
 });

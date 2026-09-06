@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { ChangeEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
 import styles from "./LogicCodeQuestion.module.css";
-import type { LogicCodeClue, QuestionVariant } from "@/types/game";
+import type { LogicCodeClue } from "@/types/game";
 
 type LogicCodeQuestionProps = {
   clues: LogicCodeClue[];
@@ -14,7 +14,6 @@ type LogicCodeQuestionProps = {
   attemptCount: number;
   onProgress?: (code: string) => void;
   onAttempt: (code: string) => boolean;
-  variant?: QuestionVariant;
 };
 
 export function LogicCodeQuestion({
@@ -25,7 +24,6 @@ export function LogicCodeQuestion({
   attemptCount,
   onProgress,
   onAttempt,
-  variant,
 }: LogicCodeQuestionProps) {
   const [digits, setDigits] = useState<string[]>(() =>
     Array.from({ length: codeLength }, (_, index) => initialDraft?.[index] ?? ""),
@@ -87,7 +85,7 @@ export function LogicCodeQuestion({
   };
 
   return (
-    <div className={`${styles.challenge}`} data-variant={variant ?? "default"}>
+    <div className={`${styles.challenge}`}>
       <div className={styles.clues} aria-label="Pistas del código">
         {clues.map((clue) => (
           <div className={styles.clue} key={clue.code}>

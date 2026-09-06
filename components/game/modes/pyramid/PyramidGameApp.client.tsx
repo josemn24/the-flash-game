@@ -430,10 +430,8 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
               <QuestionScreen
                 key={session.currentLevel.question.id}
                 question={session.currentLevel.question}
-                challengeTitle={scoredChallenge.title}
                 questionNumber={currentIndex + 1}
                 totalQuestions={scoredChallenge.levels.length}
-                progressVariant="pyramid"
                 locked={session.locked}
                 deadlineAt={session.deadlineAt}
                 initialAnswer={session.initialAnswer}

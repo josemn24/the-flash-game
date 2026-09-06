@@ -23,7 +23,7 @@
     color: var(--color-ink-muted);
   }
 
-  :global(html[data-theme="flash-pop"]) .challenge {
+  .challenge {
     color: var(--color-social);
     font-family: var(--type-mono);
     font-size: 10px;
@@ -40,7 +40,7 @@
     line-height: 0.95;
   }
 
-  :global(html[data-theme="flash-pop"]) .subtitle {
+  .subtitle {
     font-size: 15px;
     font-weight: 600;
     line-height: 1.45;
@@ -56,8 +56,8 @@
     line-height: 0.78;
   }
 
-  :global(html[data-theme="flash-pop"]) .scoreLabel,
-  :global(html[data-theme="flash-pop"]) .breakdown {
+  .scoreLabel,
+  .breakdown {
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 700;
@@ -168,11 +168,11 @@
   }
 
   @media (min-width: 620px) {
-    :global(html[data-theme="flash-pop"]) .stage {
+    .stage {
       width: min(100%, 680px);
     }
 
-    :global(html[data-theme="flash-pop"]) .stats {
+    .stats {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }

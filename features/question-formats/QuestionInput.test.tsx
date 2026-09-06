@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { getChallengeById } from "@/data/challenges";
 import { questionsById } from "@/data/questions";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 
-describe("Flash Pop question adapter", () => {
+describe("canonical question renderer", () => {
   it("renders every format in tabarnia-challenge-05", () => {
     const challenge = getChallengeById("tabarnia-challenge-05");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
@@ -13,7 +13,7 @@ describe("Flash Pop question adapter", () => {
     const markup = challenge.levels
       .map((level) =>
         renderToStaticMarkup(
-          <FlashPopQuestionInput
+          <QuestionInput
             question={level.question}
             locked={false}
             onSubmit={vi.fn()}
@@ -41,7 +41,7 @@ describe("Flash Pop question adapter", () => {
     const markup = challenge.levels
       .map((level) =>
         renderToStaticMarkup(
-          <FlashPopQuestionInput
+          <QuestionInput
             question={level.question}
             locked={false}
             onSubmit={vi.fn()}
@@ -72,7 +72,7 @@ describe("Flash Pop question adapter", () => {
     const markup = challenge.questions
       .map((question) =>
         renderToStaticMarkup(
-          <FlashPopQuestionInput
+          <QuestionInput
             question={question}
             locked={false}
             onSubmit={vi.fn()}
@@ -94,13 +94,13 @@ describe("Flash Pop question adapter", () => {
     expect(markup).toContain('data-format="progressive-image"');
   });
 
-  it("renders every Flash format on the shared theme", () => {
+  it("renders every Flash format with a canonical format root", () => {
     const challenge = getChallengeById("tabarnia-flash-01");
     if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");
 
     for (const question of challenge.questions) {
       const markup = renderToStaticMarkup(
-        <FlashPopQuestionInput
+        <QuestionInput
           question={question}
           locked={false}
           onSubmit={vi.fn()}
@@ -113,15 +113,13 @@ describe("Flash Pop question adapter", () => {
       );
 
       expect(markup).toContain(`data-format="${question.type}"`);
-      expect(markup).toContain("flashPopFormat");
-      expect(markup).not.toContain("legacyCompatFormat");
     }
   });
 
-  it("passes Flash Pop into every format available in the library", () => {
+  it("renders every format available in the library without theme attributes", () => {
     for (const format of Object.values(QUESTION_FORMAT_CATALOG)) {
       const markup = renderToStaticMarkup(
-        <FlashPopQuestionInput
+        <QuestionInput
           question={format.examples[0].question}
           locked={false}
           onSubmit={vi.fn()}
@@ -133,13 +131,13 @@ describe("Flash Pop question adapter", () => {
         />,
       );
 
-      expect(markup, format.id).toContain('data-variant="flash-pop"');
+      expect(markup, format.id).not.toContain(["data-variant", "flash-pop"].join('="') + '"');
     }
   });
 
   it("keeps the logic matrix on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["pyramid-shape-direction-matrix"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -152,12 +150,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps connect pairs on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["pyramid-connect-pairs-trap"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -170,12 +167,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps Queens on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["pyramid-summit-queens"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -188,12 +184,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps the word search on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["abrahamic-word-search-biblical-characters"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -206,12 +201,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps Mini-Wordle on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["abrahamic-mini-wordle-josue"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -224,12 +218,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps logic code on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["pyramid-secret-code"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -242,12 +235,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps word hashtag on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["abrahamic-word-hashtag-references"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -260,12 +252,11 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 
   it("keeps progressive clues on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopQuestionInput
+      <QuestionInput
         question={questionsById["abrahamic-progressive-abraham"]}
         locked={false}
         onSubmit={vi.fn()}
@@ -278,6 +269,5 @@ describe("Flash Pop question adapter", () => {
     );
 
     expect(markup).not.toContain("themeAwareFormat");
-    expect(markup).not.toContain("legacyCompatFormat");
   });
 });

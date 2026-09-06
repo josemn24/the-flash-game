@@ -1,44 +1,4 @@
 @layer app-formats {
-  .root {
-    --format-ink: rgba(255, 255, 255, 0.92);
-    --format-muted: rgba(255, 255, 255, 0.48);
-    --format-faint: rgba(255, 255, 255, 0.24);
-    --format-surface: rgba(255, 255, 255, 0.035);
-    --format-surface-raised: rgba(255, 255, 255, 0.07);
-    --format-border: rgba(255, 255, 255, 0.15);
-    --format-accent: var(--color-brand);
-    --format-accent-contrast: rgb(23 27 11);
-    --format-focus: rgb(53 232 255);
-    --format-hover-border: rgba(53, 232, 255, 0.6);
-    --format-hover-surface: rgba(53, 232, 255, 0.12);
-    --format-disabled: rgba(255, 255, 255, 0.22);
-    --format-disabled-ink: var(--format-disabled);
-    --format-disabled-surface: var(--format-surface);
-    --format-disabled-border: var(--format-disabled);
-    --format-empty-ink: var(--format-faint);
-    display: grid;
-    min-width: 0;
-    gap: 0.9rem;
-    margin-top: 1.35rem;
-  }
-
-  .hint {
-    border-left: 2px solid var(--format-focus);
-    padding-left: 0.75rem;
-    color: var(--format-muted);
-    font-size: 0.86rem;
-    line-height: 1.4;
-  }
-
-  .answer {
-    display: grid;
-    min-width: 0;
-    gap: 0.65rem;
-    border: 1px solid var(--format-border);
-    border-radius: 0.9rem;
-    padding: 0.75rem;
-    background: var(--format-surface);
-  }
 
   .answerHeader {
     display: flex;
@@ -79,14 +39,14 @@
     font-weight: 900;
   }
 
-  [data-variant="flash-pop"] .chosenTile {
+  .chosenTile {
     color: var(--format-accent-contrast);
     background: var(--format-accent);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .emptySlot {
+  .emptySlot {
     border: 1px dashed var(--format-disabled-border);
     border-color: var(--format-disabled-border);
     color: var(--format-empty-ink);
@@ -101,7 +61,7 @@
     text-transform: uppercase;
   }
 
-  [data-variant="flash-pop"] .tile {
+  .tile {
     color: var(--format-ink);
     transition:
       border-color 160ms,
@@ -126,15 +86,6 @@
     outline-offset: 3px;
   }
 
-  .tileUsed {
-    border-style: dashed;
-    border-color: var(--format-disabled-border);
-    color: var(--format-disabled-ink);
-    background: var(--format-disabled-surface);
-    cursor: default;
-    opacity: 0.72;
-  }
-
   .actions {
     display: grid;
     gap: 0.6rem;
@@ -154,7 +105,7 @@
     font-weight: 900;
   }
 
-  [data-variant="flash-pop"] .secondaryAction {
+  .secondaryAction {
     min-height: var(--control-height);
     border: var(--border-subtle);
     color: var(--color-ink);
@@ -162,23 +113,13 @@
     box-shadow: var(--shadow-control);
   }
 
-  .secondaryAction:hover:not(:disabled) {
-    border-color: var(--format-hover-border);
-    color: var(--format-focus);
-    background: var(--format-hover-surface);
-  }
-
-  [data-variant="flash-pop"] .submitButton {
+  .submitButton {
     min-height: var(--control-height);
     border: var(--border-flash);
     border-radius: var(--radius-control);
     color: var(--color-ink);
     background: var(--color-brand);
     box-shadow: var(--shadow-control);
-  }
-
-  .submitButton:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--format-accent) 82%, white);
   }
 
   .secondaryAction:disabled,
@@ -196,27 +137,29 @@
   }
 
   @media (min-width: 640px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       gap: 1rem;
       margin-top: 1.6rem;
     }
 
-    [data-variant="flash-pop"] .answer {
+    .answer {
       padding: 0.9rem;
     }
 
-    [data-variant="flash-pop"] .chosenTile,
-    [data-variant="flash-pop"] .emptySlot,
-    [data-variant="flash-pop"] .tile {
+    .chosenTile,
+    .emptySlot,
+    .tile {
       height: 3rem;
     }
 
-    [data-variant="flash-pop"] .tiles {
+    .tiles {
       grid-template-columns: repeat(var(--tile-count), minmax(0, 1fr));
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
+    min-width: 0;
     --format-ink: var(--color-ink);
     --format-muted: var(--color-ink-muted);
     --format-faint: var(--color-ink-faint);
@@ -237,24 +180,35 @@
     margin-top: var(--space-4);
   }
 
-  [data-variant="flash-pop"] .hint {
+  .hint {
+    border-left: 2px solid var(--format-focus);
+    padding-left: 0.75rem;
+    color: var(--format-muted);
+    font-size: 0.86rem;
+    line-height: 1.4;
     border-left-color: var(--color-social);
   }
 
-  [data-variant="flash-pop"] .answer {
+  .answer {
+    display: grid;
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.75rem;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
-  [data-variant="flash-pop"] .emptySlot,
-  [data-variant="flash-pop"] .tile,
-  [data-variant="flash-pop"] .secondaryAction {
+  .emptySlot,
+  .tile,
+  .secondaryAction {
     border-radius: var(--radius-control);
   }
 
-  [data-variant="flash-pop"] .tileUsed {
+  .tileUsed {
+    border-style: dashed;
+    cursor: default;
     border-color: var(--format-disabled-border);
     color: var(--format-disabled-ink);
     background: var(--format-disabled-surface);
@@ -262,13 +216,13 @@
     box-shadow: none;
   }
 
-  [data-variant="flash-pop"] .secondaryAction:hover:not(:disabled) {
+  .secondaryAction:hover:not(:disabled) {
     border-color: var(--color-social);
     color: var(--color-social);
     background: var(--color-surface-soft);
   }
 
-  [data-variant="flash-pop"] .secondaryAction:disabled {
+  .secondaryAction:disabled {
     border-color: var(--format-disabled-border);
     color: var(--format-disabled-ink);
     background: var(--format-disabled-surface);
@@ -276,11 +230,11 @@
     box-shadow: none;
   }
 
-  [data-variant="flash-pop"] .submitButton:hover:not(:disabled) {
+  .submitButton:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
   }
 
-  [data-variant="flash-pop"] .submitButton:disabled {
+  .submitButton:disabled {
     border: var(--border-subtle);
     color: var(--format-disabled-ink);
     background: var(--format-disabled-surface);

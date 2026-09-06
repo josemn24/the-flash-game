@@ -5,7 +5,7 @@
  * Tailwind keeps its own framework layers; app styles must use one of these
  * layers and must never rely on an ad-hoc "overrides" layer.
  */
-@layer app-reset, app-tokens, app-base, app-components, app-formats, app-variants, app-utilities;
+@layer app-reset, app-tokens, app-base, app-components, app-formats, app-utilities;
 
 @layer app-tokens {
   :root {
@@ -82,34 +82,6 @@
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  [data-theme="flash-pop"] {
-    --color-canvas: #f4f1ea;
-    --color-surface: #ffffff;
-    --color-surface-raised: #fbfaf6;
-    --color-surface-soft: #eae7ff;
-    --color-ink: #171720;
-    --color-ink-muted: #686872;
-    --color-ink-faint: #94949c;
-    --color-brand: #d7ff19;
-    --color-brand-rgb: 215 255 25;
-    --color-social: #6957e8;
-    --color-success: #0f766e;
-    --color-danger: #ff7276;
-    --color-info: #74a7f5;
-    --color-reward: #ffd85a;
-    --color-focus: #4d3bd1;
-    --color-border: rgb(23 23 32 / 14%);
-    --color-brand-hover: #e1ff48;
-    --color-border-hover: rgb(23 23 32 / 28%);
-    --color-text-on-brand: var(--color-ink);
-    --color-text-on-social: #ffffff;
-    --color-text-on-success: #ffffff;
-    --color-text-on-danger: var(--color-ink);
-    --color-text-on-info: var(--color-ink);
-    --color-text-on-reward: var(--color-ink);
-    --color-overlay-ink: rgb(23 23 32 / 84%);
-    --color-overlay-border: rgb(255 255 255 / 16%);
-  }
 }
 
 @theme inline {

@@ -36,14 +36,14 @@
     font-size: 0.72rem;
     font-weight: 800;
   }
-  [data-variant="flash-pop"] .clue {
+  .clue {
     min-width: 0;
     flex-direction: column;
     align-items: center;
     justify-content: end;
     padding-bottom: 0.35rem;
   }
-  [data-variant="flash-pop"] .rowClue {
+  .rowClue {
     align-items: center;
     justify-content: end;
     padding-right: 0.45rem;
@@ -98,13 +98,13 @@
     margin: 0;
     text-align: center;
   }
-  [data-variant="flash-pop"] .progress {
+  .progress {
     color: rgb(255 255 255 / 0.72);
     font-family: var(--type-mono);
     font-size: 0.78rem;
     font-weight: 700;
   }
-  [data-variant="flash-pop"] .instructions {
+  .instructions {
     color: rgb(255 255 255 / 0.52);
     font-size: 0.875rem;
     line-height: 1.45;
@@ -125,11 +125,11 @@
     font-weight: 800;
     cursor: pointer;
   }
-  [data-variant="flash-pop"] .fillButton {
+  .fillButton {
     background: #a5b4fc;
     color: #171717;
   }
-  [data-variant="flash-pop"] .clearButton {
+  .clearButton {
     background: rgb(255 255 255 / 0.1);
     color: white;
   }
@@ -145,7 +145,7 @@
     outline: 3px solid #facc15;
     outline-offset: 3px;
   }
-  [data-variant="flash-pop"] .confirmButton {
+  .confirmButton {
     width: min(100%, 27rem);
     margin-inline: auto;
     background: #facc15;
@@ -162,65 +162,65 @@
     opacity: 0.45;
   }
   @media (max-width: 360px) {
-    [data-variant="flash-pop"] .board {
+    .board {
       grid-template-columns: 3.4rem minmax(0, 1fr);
       grid-template-rows: 3.4rem auto;
     }
-    [data-variant="flash-pop"] .clue,
-    [data-variant="flash-pop"] .rowClue {
+    .clue,
+    .rowClue {
       font-size: 0.64rem;
     }
   }
 
-  .root[data-variant="flash-pop"] .corner,
-  .root[data-variant="flash-pop"] .columnClues,
-  .root[data-variant="flash-pop"] .rowClues {
+  .root .corner,
+  .root .columnClues,
+  .root .rowClues {
     border-color: var(--color-border);
   }
-  .root[data-variant="flash-pop"] .clue,
-  .root[data-variant="flash-pop"] .rowClue,
-  .root[data-variant="flash-pop"] .progress,
-  .root[data-variant="flash-pop"] .instructions {
+  .root .clue,
+  .root .rowClue,
+  .root .progress,
+  .root .instructions {
     color: var(--color-ink-muted);
   }
-  .root[data-variant="flash-pop"] .grid {
+  .root .grid {
     border-color: var(--color-border);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
-  .root[data-variant="flash-pop"] .cell {
+  .root .cell {
     border-color: var(--color-border);
     color: var(--color-ink);
   }
-  .root[data-variant="flash-pop"] .cell:hover:not(:disabled) {
+  .root .cell:hover:not(:disabled) {
     background: var(--color-surface);
   }
-  .root[data-variant="flash-pop"] .cell:focus-visible,
-  .root[data-variant="flash-pop"] .fillButton:focus-visible,
-  .root[data-variant="flash-pop"] .clearButton:focus-visible,
-  .root[data-variant="flash-pop"] .confirmButton:focus-visible {
+  .root .cell:focus-visible,
+  .root .fillButton:focus-visible,
+  .root .clearButton:focus-visible,
+  .root .confirmButton:focus-visible {
     outline-color: var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .filled {
+  .root .filled {
     background: color-mix(in srgb, var(--state-selected) 22%, var(--color-surface));
   }
-  .root[data-variant="flash-pop"] .selected {
+  .root .selected {
     box-shadow: inset 0 0 0 3px var(--state-focus);
   }
-  .root[data-variant="flash-pop"] .fillButton,
-  .root[data-variant="flash-pop"] .clearButton,
-  .root[data-variant="flash-pop"] .confirmButton {
+  .root .fillButton,
+  .root .clearButton,
+  .root .confirmButton {
     color: var(--color-ink);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-control);
   }
-  .root[data-variant="flash-pop"] .fillButton,
-  .root[data-variant="flash-pop"] .confirmButton {
+  .root .fillButton,
+  .root .confirmButton {
     background: var(--color-brand);
   }
-  .root[data-variant="flash-pop"] .fillButton:hover:not(:disabled),
-  .root[data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+  .root .fillButton:hover:not(:disabled),
+  .root .confirmButton:hover:not(:disabled) {
     background: var(--color-brand-hover);
   }
 }

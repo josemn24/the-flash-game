@@ -1,20 +1,4 @@
 @layer app-formats {
-  .root {
-    --format-ink: rgba(255, 255, 255, 0.92);
-    --format-muted: rgba(255, 255, 255, 0.68);
-    --format-faint: rgba(255, 255, 255, 0.35);
-    --format-surface: rgba(255, 255, 255, 0.05);
-    --format-surface-raised: rgba(9, 11, 14, 0.86);
-    --format-border: rgba(255, 255, 255, 0.14);
-    --format-accent: rgb(53 232 255);
-    --format-focus: rgb(53 232 255);
-    --format-danger: rgb(255 133 138);
-    --format-track: rgba(255, 255, 255, 0.1);
-    display: grid;
-    min-width: 0;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-  }
 
   .progressHeader {
     display: flex;
@@ -28,37 +12,11 @@
     text-transform: uppercase;
   }
 
-  .progressHeader strong {
-    color: var(--format-accent);
-  }
-
   .progressTrack {
     height: 0.25rem;
     overflow: hidden;
     border-radius: 999px;
     background: var(--format-track);
-  }
-
-  .progressTrack span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--format-accent);
-    transition: width 100ms linear;
-  }
-
-  .imageFrame {
-    --progressive-image-max-height: min(48svh, 28rem);
-    position: relative;
-    isolation: isolate;
-    width: min(100%, calc(var(--progressive-image-max-height) * var(--progressive-image-ratio)));
-    max-height: var(--progressive-image-max-height);
-    min-height: 13rem;
-    justify-self: center;
-    overflow: hidden;
-    border: 1px solid var(--format-border);
-    border-radius: 1.25rem;
-    background: var(--format-surface-raised);
   }
 
   .imageFrame img {
@@ -89,7 +47,7 @@
     text-align: center;
   }
 
-  [data-variant="flash-pop"] .loading {
+  .loading {
     font-family: var(--type-mono);
     font-size: 0.75rem;
     font-weight: 700;
@@ -97,7 +55,7 @@
     text-transform: uppercase;
   }
 
-  [data-variant="flash-pop"] .errorPanel {
+  .errorPanel {
     justify-items: center;
     gap: 0.5rem;
     padding: 1.5rem;
@@ -113,15 +71,7 @@
     font-size: 0.875rem;
   }
 
-  .retryButton,
-  .submitButton {
-    border: 1px solid var(--format-accent);
-    border-radius: 0.8rem;
-    color: var(--format-ink);
-    background: var(--format-accent);
-  }
-
-  [data-variant="flash-pop"] .retryButton {
+  .retryButton {
     width: auto;
     padding-inline: 1rem;
     min-height: var(--control-height);
@@ -145,17 +95,6 @@
     min-width: 0;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.65rem;
-  }
-
-  .answerRow input {
-    min-width: 0;
-    border: 1px solid var(--format-border);
-    border-radius: 0.9rem;
-    outline: 0;
-    padding: 0.95rem 1rem;
-    color: var(--format-ink);
-    background: var(--format-surface);
-    font: inherit;
   }
 
   .answerRow input::placeholder {
@@ -193,12 +132,12 @@
   }
 
   @media (max-width: 480px) {
-    .root[data-variant="flash-pop"] {
+    .root {
       gap: 0.65rem;
       margin-top: 1.25rem;
     }
 
-    [data-variant="flash-pop"] .imageFrame {
+    .imageFrame {
       --progressive-image-max-height: min(38svh, 21rem);
       min-height: 10.5rem;
       border-radius: 1rem;
@@ -206,13 +145,15 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-variant="flash-pop"] .progressTrack span,
-    [data-variant="flash-pop"] .imageFrame img {
+    .progressTrack span,
+    .imageFrame img {
       transition: none;
     }
   }
 
-  .root[data-variant="flash-pop"] {
+  .root {
+    display: grid;
+    min-width: 0;
     --format-ink: var(--color-ink);
     --format-muted: var(--color-ink-muted);
     --format-faint: var(--color-ink-faint);
@@ -227,34 +168,51 @@
     margin-top: var(--space-4);
   }
 
-  [data-variant="flash-pop"] .progressHeader,
-  [data-variant="flash-pop"] .answerPanel label {
+  .progressHeader,
+  .answerPanel label {
     font-family: var(--type-mono);
   }
 
-  [data-variant="flash-pop"] .progressHeader strong {
+  .progressHeader strong {
     color: var(--color-social);
   }
 
-  [data-variant="flash-pop"] .progressTrack span {
+  .progressTrack span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 100ms linear;
     background: var(--color-social);
   }
 
-  [data-variant="flash-pop"] .imageFrame {
+  .imageFrame {
+    --progressive-image-max-height: min(48svh, 28rem);
+    position: relative;
+    isolation: isolate;
+    width: min(100%, calc(var(--progressive-image-max-height) * var(--progressive-image-ratio)));
+    max-height: var(--progressive-image-max-height);
+    min-height: 13rem;
+    justify-self: center;
+    overflow: hidden;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
-  [data-variant="flash-pop"] .answerRow input {
+  .answerRow input {
+    min-width: 0;
+    outline: 0;
+    padding: 0.95rem 1rem;
+    color: var(--format-ink);
+    font: inherit;
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     background: var(--color-surface-raised);
   }
 
-  [data-variant="flash-pop"] .retryButton,
-  [data-variant="flash-pop"] .submitButton {
+  .retryButton,
+  .submitButton {
     border: var(--border-flash);
     border-radius: var(--radius-control);
     color: var(--color-ink);
@@ -262,7 +220,7 @@
     box-shadow: var(--shadow-control);
   }
 
-  [data-variant="flash-pop"] .submitButton {
+  .submitButton {
     min-height: var(--control-height-icon);
   }
 }

@@ -8,7 +8,7 @@ import {
   FlashPopFeedback,
   getFlashPopFeedbackCopy,
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
+import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { useGameSession } from "@/features/game/useGameSession";
@@ -188,7 +188,7 @@ function QuestionStage({
             <QuestionMedia media={getMedia(question)!} prominent />
           </div>
         ) : null}
-        <FlashPopQuestionInput
+        <QuestionInput
           question={question}
           locked={locked}
           onSubmit={onSubmit}
@@ -197,7 +197,7 @@ function QuestionStage({
           onProgressiveClueReveal={onProgressiveClueReveal}
           onCodeAttempt={onCodeAttempt}
           onTimedResponseStart={startTimedResponse}
-          attemptCount={attemptCount}
+          codeAttemptCount={attemptCount}
         />
       </section>
     </div>

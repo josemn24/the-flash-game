@@ -1,34 +1,4 @@
 @layer app-formats {
-  .option {
-    --format-ink: rgba(255, 255, 255, 0.82);
-    --format-surface: rgba(255, 255, 255, 0.035);
-    --format-border: rgba(255, 255, 255, 0.09);
-    --format-hover-ink: rgba(255, 255, 255, 0.82);
-    --format-hover-surface: rgba(255, 255, 255, 0.055);
-    --format-hover-border: rgba(255, 255, 255, 0.22);
-    --format-selected-ink: rgba(255, 255, 255, 0.94);
-    --format-selected-surface: rgb(var(--color-brand-rgb) / 0.075);
-    --format-selected-border: rgb(var(--color-brand-rgb) / 0.75);
-    --format-accent: var(--color-brand);
-    --format-key-ink: rgba(255, 255, 255, 0.38);
-    --format-key-surface: transparent;
-    --format-key-border: rgba(255, 255, 255, 0.1);
-    --format-selected-key-ink: #0a0c06;
-    display: flex;
-    min-height: 4rem;
-    width: 100%;
-    align-items: center;
-    gap: 0.8rem;
-    border: 1px solid var(--format-border);
-    border-radius: 1rem;
-    padding: 0.75rem 0.9rem;
-    color: var(--format-ink);
-    background: var(--format-surface);
-    transition:
-      border-color 160ms,
-      color 160ms,
-      background 160ms;
-  }
   .option:hover:not(:disabled) {
     border-color: var(--format-hover-border);
     color: var(--format-hover-ink);
@@ -68,12 +38,23 @@
   }
 
   @media (min-width: 640px) {
-    [data-variant="flash-pop"] .label {
+    .label {
       font-size: 1rem;
     }
   }
 
-  .option[data-variant="flash-pop"] {
+  .option {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.8rem;
+    border: 1px solid var(--format-border);
+    color: var(--format-ink);
+    background: var(--format-surface);
+    transition:
+      border-color 160ms,
+      color 160ms,
+      background 160ms;
     --format-ink: var(--color-ink);
     --format-surface: var(--color-surface-raised);
     --format-border: var(--color-border);
