@@ -723,3 +723,38 @@
 .wordHashtagReviewDisplaced {
   background: var(--state-movable);
 }
+
+/* Keep every specialized review renderer on the Pop palette. */
+[data-variant="flash-pop"] .connectPairsReviewGrid {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+[data-variant="flash-pop"] .connectPairsReviewCell {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  background: var(--color-surface-raised);
+}
+
+[data-variant="flash-pop"] .connectPairsReviewEndpoint {
+  color: var(--color-ink);
+}
+
+[data-variant="flash-pop"] .connectPairsReviewEndpointMissing {
+  color: var(--color-ink-muted);
+  background: var(--color-surface-soft);
+  outline-color: var(--color-border-hover);
+}
+
+[data-variant="flash-pop"] .puzzleTile {
+  color: var(--color-ink);
+  background: var(--color-brand);
+}
+
+[data-variant="flash-pop"] .puzzleBlank {
+  border-color: var(--color-border-hover);
+}
+
+[data-variant="flash-pop"] .wordHashtagReviewTile {
+  color: var(--color-ink);
+}

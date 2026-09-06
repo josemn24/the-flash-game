@@ -271,8 +271,9 @@ mantiene la disponibilidad de temporada y expone el piloto mediante `openable`.
 La sesión, el scoring, la persistencia, el feedback, el resultado y la revisión
 siguen siendo los contratos existentes.
 
-Estos modos permanecen temporalmente en el shell legacy: Alfabeto, Pirámide,
-Supervivencia y Narrativa. Los 31 formatos de la biblioteca sí disponen ya de
+Estos modos permanecen temporalmente en el shell legacy: Alfabeto y Narrativa. Los
+shells Flash Pop de Pirámide y Supervivencia ya enrutan todos sus desafíos por el
+flujo nuevo, mientras que los 31 formatos de la biblioteca sí disponen ya de
 presentación `flash-pop`; esta migración no implica que todos formen parte de los
 desafíos publicados ni del shell social completo.
 

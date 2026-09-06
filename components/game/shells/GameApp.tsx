@@ -19,14 +19,14 @@ const FlashPopPyramidGame = dynamic(() =>
     (module) => module.FlashPopPyramidGame,
   ),
 );
+const FlashPopSurvivalGame = dynamic(() =>
+  import("@/components/game/modes/flash-pop/FlashPopSurvivalGame.client").then(
+    (module) => module.FlashPopSurvivalGame,
+  ),
+);
 const NarrativeGameApp = dynamic(() =>
   import("@/components/game/modes/narrative/NarrativeGameApp.client").then(
     (module) => module.NarrativeGameApp,
-  ),
-);
-const SurvivalGameApp = dynamic(() =>
-  import("@/components/game/shells/SurvivalGameApp.client").then(
-    (module) => module.SurvivalGameApp,
   ),
 );
 
@@ -41,7 +41,7 @@ export function GameApp({ challenge }: { challenge: Challenge }) {
     return <FlashPopPyramidGame challenge={challenge} />;
   }
   if (challenge.mode === "survival") {
-    return <SurvivalGameApp challenge={challenge} />;
+    return <FlashPopSurvivalGame challenge={challenge} />;
   }
   if (challenge.mode === "flash") {
     return <FlashPopFlashGame challenge={challenge} />;

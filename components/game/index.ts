@@ -7,6 +7,8 @@ export {
   FlashPopHome,
   FlashPopLobby,
   FlashPopPyramidGame,
+  FlashPopSurvivalGame,
+  FlashPopSurvivalResult,
   FlashPopQuestionInput,
   FlashPopReview,
 } from "./modes/flash-pop";

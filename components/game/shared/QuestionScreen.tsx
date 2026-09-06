@@ -29,6 +29,7 @@ type QuestionScreenProps = {
   deadlineAt?: number | null;
   onReady?: () => void;
   progressVariant?: "linear" | "pyramid";
+  variant?: "legacy" | "flash-pop";
   livesRemaining?: number;
   totalLives?: number;
   notebook?: {
@@ -68,6 +69,7 @@ export function QuestionScreen({
   deadlineAt,
   onReady,
   progressVariant = "linear",
+  variant = "legacy",
   livesRemaining,
   totalLives,
   notebook,
@@ -92,6 +94,7 @@ export function QuestionScreen({
 
   return (
     <motion.section
+      data-variant={variant}
       className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"
       initial={{ opacity: 0, x: 34 }}
       animate={{ opacity: 1, x: 0 }}

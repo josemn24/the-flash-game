@@ -29,6 +29,9 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 - `/flash-pop/desafios/tabarnia-challenge-05`: preview principal de La Pirámide.
 - `/formatos`: biblioteca con fichas y ejemplos jugables de los 31 formatos; cada renderer acepta `default` y `flash-pop`.
 - `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de La Pirámide: Biblia y religiones abrahámicas, con los formatos adaptados a Flash Pop.
+
+Nota temporal: Supervivencia ya usa el shell Flash Pop para cualquier desafío con `mode="survival"`. En este prototipo la sesión vive en memoria y ofrece replay explícito; todavía no existe enforcement de intento único en servidor ni ranking social real.
+
 - `/flash-pop/ui-kit`: documentación viva de tokens, variantes, estados y comportamiento responsive; no está enlazada desde la navegación de producto.
 - `components/ui/index.ts`: única entrada pública del sistema.
 - `features/game/useCountdown.ts`: lógica temporal compartida por el timer oscuro y `Timer`.

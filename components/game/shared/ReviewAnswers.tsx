@@ -34,12 +34,14 @@ export function ReviewAnswers({
   onBack,
   onReplay,
   notebook,
+  variant = "legacy",
 }: {
   challenge: FlashChallenge | SurvivalChallenge | NarrativeChallenge | PyramidChallenge;
   results: AnswerResult[];
   onBack: () => void;
   onReplay?: () => void;
   notebook?: { entryCount: number; onOpen: () => void };
+  variant?: "legacy" | "flash-pop";
 }) {
   const questions =
     challenge.mode === "narrative"
@@ -53,6 +55,7 @@ export function ReviewAnswers({
 
   return (
     <motion.section
+      data-variant={variant}
       className="mx-auto min-h-[100dvh] w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -205,7 +208,7 @@ export function ReviewAnswers({
         {onReplay && (
           <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
             <RotateIcon className="h-5 w-5" />
-            Volver a jugar
+            {variant === "flash-pop" ? "Jugar de nuevo" : "Volver a jugar"}
           </MotionButton>
         )}
       </div>

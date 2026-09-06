@@ -94,6 +94,46 @@
   opacity: 0.75;
   transform: scale(0.92);
 }
+
+[data-variant="flash-pop"] .brandMarkSmall {
+  color: var(--color-ink);
+  box-shadow: var(--shadow-control);
+}
+
+[data-variant="flash-pop"] .notebookButton {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+}
+
+[data-variant="flash-pop"] .notebookButton:hover,
+[data-variant="flash-pop"] .notebookButton:focus-visible {
+  border-color: var(--color-social);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+
+[data-variant="flash-pop"] .questionTitle {
+  color: var(--color-ink);
+}
+
+[data-variant="flash-pop"] .questionContext {
+  color: var(--color-ink-muted);
+}
+
+[data-variant="flash-pop"] .lifeHearts {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+[data-variant="flash-pop"] .lifeHeartActive {
+  fill: color-mix(in srgb, var(--color-danger) 18%, transparent);
+  filter: none;
+}
+
+[data-variant="flash-pop"] .lifeHeartLost {
+  color: var(--color-ink-faint);
+}
 .textAnswerRow {
   display: flex;
   gap: 0.65rem;
