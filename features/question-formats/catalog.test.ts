@@ -397,7 +397,6 @@ describe("question format catalog", () => {
         beat.steps.filter((step) => step.type === "question"),
       ),
     ).toHaveLength(8);
-    expect(narrativeChallenge?.notebookEntries).toHaveLength(8);
     if (narrativeChallenge?.mode !== "narrative") {
       throw new Error("Expected narrative challenge");
     }

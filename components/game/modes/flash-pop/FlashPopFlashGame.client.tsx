@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, CheckIcon, ClockIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
-import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import {
+  FlashPopFeedback,
+  getFlashPopFeedbackCopy,
+} from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
 import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
@@ -217,18 +220,7 @@ function Transition({
   isLast: boolean;
 }) {
   const status = result?.status ?? (timedOut ? "unanswered" : "incorrect");
-  const title = timedOut
-    ? "Tiempo agotado"
-    : status === "correct"
-      ? "Respuesta correcta"
-      : status === "partial"
-        ? "Aproximación válida"
-        : "Respuesta fallada";
-  const body = isLast
-    ? "Calculando tu resultado…"
-    : status === "correct"
-      ? "Siguiente pregunta en marcha."
-      : "Sigue: aún quedan retos.";
+  const { title, body } = getFlashPopFeedbackCopy({ status, timedOut, isLast });
 
   return (
     <FlashPopFeedback

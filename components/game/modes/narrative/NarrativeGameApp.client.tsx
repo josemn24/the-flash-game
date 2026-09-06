@@ -4,14 +4,12 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { FieldNotebook } from "@/components/game/modes/narrative/FieldNotebook.client";
 import {
   ArrowIcon,
   BoltIcon,
   CheckIcon,
   ClockIcon,
   CrossIcon,
-  NotebookIcon,
   RotateIcon,
   Card,
   Canvas,
@@ -21,7 +19,10 @@ import {
   Timer,
 } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
-import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import {
+  FlashPopFeedback,
+  getFlashPopFeedbackCopy,
+} from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
@@ -30,30 +31,20 @@ import type {
   AnswerResult,
   AnswerValue,
   NarrativeChallenge,
-  NarrativeNotebookEntry,
   NarrativeScene,
   NarrativeTextBlock,
   Question,
 } from "@/types/game";
 
-function NarrativeSceneChrome({
+function NarrativeSceneProgress({
   pageNumber,
   pageCount,
-  entryCount,
-  onOpenNotebook,
 }: {
   pageNumber: number;
   pageCount: number;
-  entryCount: number;
-  onOpenNotebook: () => void;
 }) {
   return (
     <div className={styles.storyChrome}>
-      <GameHeader
-        className={styles.storyHeader}
-        title="Narrativa"
-        action={<NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} compact />}
-      />
       <span className={styles.storyFolio} aria-label={`Página ${pageNumber} de ${pageCount}`}>
         {String(pageNumber).padStart(2, "0")} / {pageCount}
       </span>
@@ -90,29 +81,6 @@ function NarrativeBlocks({
         ),
       )}
     </div>
-  );
-}
-
-function NotebookButton({
-  entryCount,
-  onOpen,
-  compact = false,
-}: {
-  entryCount: number;
-  onOpen: () => void;
-  compact?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      className={`${styles.notebookTrigger} ${compact ? styles.notebookTriggerCompact : ""}`}
-      onClick={onOpen}
-      aria-label={`Abrir registro de evidencias, ${entryCount} ${entryCount === 1 ? "entrada" : "entradas"}`}
-    >
-      <NotebookIcon className="h-4 w-4" />
-      <span>{compact ? <span className="sr-only">Registro</span> : "Registro"}</span>
-      <strong>{entryCount}</strong>
-    </button>
   );
 }
 
@@ -176,19 +144,16 @@ function NarrativeSceneScreen({
   pageNumber,
   pageCount,
   reactionBlocks,
-  entryCount,
   onContinue,
-  onOpenNotebook,
 }: {
   scene: NarrativeScene;
   pageNumber: number;
   pageCount: number;
   reactionBlocks: NarrativeTextBlock[];
-  entryCount: number;
   onContinue: () => void;
-  onOpenNotebook: () => void;
 }) {
   const presentation = scene.presentation ?? "standard";
+  const isDarkPresentation = presentation === "chapter-opening" || presentation === "full-bleed";
   const presentationClass = {
     standard: styles.storyPageSplit,
     "chapter-opening": styles.storyPageChapter,
@@ -206,13 +171,10 @@ function NarrativeSceneScreen({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -28 }}
     >
-      <NarrativeSceneChrome
-        pageNumber={pageNumber}
-        pageCount={pageCount}
-        entryCount={entryCount}
-        onOpenNotebook={onOpenNotebook}
-      />
-      <div className={`${styles.storyPage} ${presentationClass}`}>
+      <NarrativeSceneProgress pageNumber={pageNumber} pageCount={pageCount} />
+      <div
+        className={`${styles.storyPage} ${presentationClass} ${isDarkPresentation ? styles.storyPageDark : ""}`}
+      >
         {scene.media?.type === "image" && (
           <div className={styles.storyVisual}>
             <Image
@@ -263,8 +225,6 @@ function NarrativeQuestionScreen({
   questionNumber,
   totalQuestions,
   locked,
-  entryCount,
-  onOpenNotebook,
   onSubmit,
   onTimeUp,
   onProgress,
@@ -275,8 +235,6 @@ function NarrativeQuestionScreen({
   questionNumber: number;
   totalQuestions: number;
   locked: boolean;
-  entryCount: number;
-  onOpenNotebook: () => void;
   onSubmit: (answer: AnswerValue) => void;
   onTimeUp: () => void;
   onProgress: (answer: AnswerValue) => void;
@@ -299,36 +257,26 @@ function NarrativeQuestionScreen({
     >
       <GameHeader
         className={styles.questionHud}
-        title="Narrativa"
-        mobileLabel={
-          <>
+        left={
+          <p className={styles.questionIndicator}>
             Prueba {String(questionNumber).padStart(2, "0")}{" "}
             <span>de {String(totalQuestions).padStart(2, "0")}</span>
-          </>
+          </p>
         }
-        mobileLabelAriaLabel={`Prueba ${questionNumber} de ${totalQuestions}`}
-        right={
-          <>
-            {!hasDelayedStart || timedResponseStarted ? (
-              <Timer
-                duration={question.timeLimit}
-                active={!locked && timedResponseStarted}
-                onTimeUp={onTimeUp}
-                resetKey={question.id}
-                size="compact"
-              />
-            ) : null}
-            <NotebookButton entryCount={entryCount} onOpen={onOpenNotebook} compact />
-          </>
+        timer={
+          !hasDelayedStart || timedResponseStarted ? (
+            <Timer
+              duration={question.timeLimit}
+              active={!locked && timedResponseStarted}
+              onTimeUp={onTimeUp}
+              resetKey={question.id}
+              size="compact"
+            />
+          ) : null
         }
       />
-      <Card as="section" className={`${styles.storyPage} ${styles.questionPage}`}>
+      <section className={styles.questionPage}>
         <article className={styles.questionArticle}>
-          <div className={styles.questionMeta}>
-            <span>
-              Prueba {questionNumber} de {totalQuestions}
-            </span>
-          </div>
           <h1>{question.question}</h1>
           {question.questionContext && (
             <p className={styles.questionContext}>{question.questionContext}</p>
@@ -349,7 +297,7 @@ function NarrativeQuestionScreen({
             onTimedResponseStart={startTimedResponse}
           />
         </article>
-      </Card>
+      </section>
     </motion.section>
   );
 }
@@ -397,19 +345,15 @@ function formatTime(seconds: number) {
 function NarrativeResult({
   challenge,
   results,
-  entries,
   score,
   onReview,
   onReplay,
-  onOpenNotebook,
 }: {
   challenge: NarrativeChallenge;
   results: AnswerResult[];
-  entries: NarrativeNotebookEntry[];
   score: number;
   onReview: () => void;
   onReplay: () => void;
-  onOpenNotebook: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
   const partial = results.filter((result) => result.status === "partial").length;
@@ -435,7 +379,7 @@ function NarrativeResult({
           </div>
           <div className={styles.resultActions}>
             <MotionButton onClick={onReview} whileTap={{ scale: 0.985 }}>
-              <NotebookIcon className="h-5 w-5" /> Revisar respuestas
+              <CheckIcon className="h-5 w-5" /> Revisar respuestas
             </MotionButton>
             <MotionButton variant="secondary" onClick={onReplay} whileTap={{ scale: 0.985 }}>
               <RotateIcon className="h-5 w-5" /> Volver a jugar
@@ -487,14 +431,6 @@ function NarrativeResult({
               );
             })}
           </ol>
-          <button type="button" className={styles.resultNotebook} onClick={onOpenNotebook}>
-            <NotebookIcon className="h-6 w-6" />
-            <span>
-              <small>Registro de evidencias</small>
-              <strong>{entries.length} entradas conservadas</strong>
-            </span>
-            <ArrowIcon className="ml-auto h-5 w-5" />
-          </button>
           <div className={styles.timeSummary}>
             <span>Tiempo competitivo</span>
             <strong>{formatTime(totalTime)}</strong>
@@ -525,13 +461,26 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
     session.phase === "scene" &&
     session.currentStep?.type === "scene" &&
     session.currentStep.scene.presentation === "blackout";
+  const isDarkStoryScene =
+    session.phase === "scene" &&
+    session.currentStep?.type === "scene" &&
+    (session.currentStep.scene.presentation === "chapter-opening" ||
+      session.currentStep.scene.presentation === "full-bleed");
+  const narrativeFeedbackStatus = session.lastTimedOut
+    ? "unanswered"
+    : (session.results.at(-1)?.status ?? "incorrect");
+  const narrativeFeedbackCopy = getFlashPopFeedbackCopy({
+    status: narrativeFeedbackStatus,
+    timedOut: session.lastTimedOut,
+    nextLabel: "escena",
+  });
 
   return (
     <MotionConfig reducedMotion="user">
       <main
         data-mode="narrative"
         data-variant="flash-pop"
-        className={`${styles.gameRoot} ${session.phase === "playing" ? styles.questionPhase : ""} ${isBlackoutScene ? styles.blackoutPhase : ""}`}
+        className={`${styles.gameRoot} ${session.phase === "playing" ? styles.questionPhase : ""} ${isBlackoutScene ? styles.blackoutPhase : ""} ${isDarkStoryScene ? styles.darkStoryPhase : ""}`}
       >
         <PolarBackground />
         <Canvas
@@ -564,9 +513,7 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                     pageNumber={session.stepIndex + 1}
                     pageCount={pageCount}
                     reactionBlocks={session.reactionBlocks}
-                    entryCount={session.unlockedEntries.length}
                     onContinue={session.continueScene}
-                    onOpenNotebook={session.openNotebook}
                   />
                 ))}
               {session.phase === "playing" && session.currentStep?.type === "question" && (
@@ -581,34 +528,32 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                   onProgress={session.handleAnswerProgress}
                   onIncorrectAttempt={session.handleIncorrectAttempt}
                   onTimedResponseStart={session.handleTimedResponseStart}
-                  entryCount={session.unlockedEntries.length}
-                  onOpenNotebook={session.openNotebook}
                 />
               )}
               {session.phase === "transition" && (
-                <FlashPopFeedback
-                  key={`narrative-transition-${session.stepIndex}`}
-                  status={
-                    session.lastTimedOut
-                      ? "unanswered"
-                      : (session.results.at(-1)?.status ?? "incorrect")
-                  }
-                  eyebrow="Registro actualizado"
-                  title={session.lastTimedOut ? "Tiempo agotado" : "Registro actualizado"}
-                  body="La evidencia queda anotada. La siguiente escena está lista."
-                  points={session.results.at(-1)?.points}
-                />
+                <div className={styles.feedbackStage}>
+                  <FlashPopFeedback
+                    key={`narrative-transition-${session.stepIndex}`}
+                    status={narrativeFeedbackStatus}
+                    title={narrativeFeedbackCopy.title}
+                    body={narrativeFeedbackCopy.body}
+                    points={
+                      narrativeFeedbackStatus === "correct" ||
+                      narrativeFeedbackStatus === "partial"
+                        ? session.results.at(-1)?.points
+                        : undefined
+                    }
+                  />
+                </div>
               )}
               {session.phase === "results" && (
                 <NarrativeResult
                   key="narrative-results"
                   challenge={challenge}
                   results={session.results}
-                  entries={session.unlockedEntries}
                   score={session.score}
                   onReview={session.showReview}
                   onReplay={session.replay}
-                  onOpenNotebook={session.openNotebook}
                 />
               )}
               {session.phase === "review" && (
@@ -619,20 +564,11 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                   onBack={session.showResults}
                   onReplay={session.replay}
                   variant="flash-pop"
-                  notebook={{
-                    entryCount: session.unlockedEntries.length,
-                    onOpen: session.openNotebook,
-                  }}
                 />
               )}
             </AnimatePresence>
           </div>
         </Canvas>
-        <FieldNotebook
-          open={session.notebookOpen}
-          entries={session.unlockedEntries}
-          onClose={session.closeNotebook}
-        />
       </main>
     </MotionConfig>
   );

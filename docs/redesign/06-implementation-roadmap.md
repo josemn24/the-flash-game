@@ -272,9 +272,9 @@ La sesión, el scoring, la persistencia, el feedback, el resultado y la revisió
 siguen siendo los contratos existentes.
 
 Todos los modos publicados ya enrutan sus desafíos por shells Flash Pop. Narrativa
-conserva una presentación inmersiva propia para escenas, imágenes, capítulos y
-cuaderno de evidencias, pero comparte con Flash Pop el chrome, las superficies,
-los estados de interacción, el feedback, los resultados y la revisión. Los 31
+conserva una presentación inmersiva propia para escenas, imágenes y capítulos,
+pero comparte con Flash Pop el chrome, las superficies, los estados de interacción,
+el feedback, los resultados y la revisión; no incluye cuaderno interactivo. Los 31
 formatos de la biblioteca también disponen de presentación `flash-pop`; esta
 migración no implica que todos formen parte de los desafíos publicados ni del
 shell social completo.

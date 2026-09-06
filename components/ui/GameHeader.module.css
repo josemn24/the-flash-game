@@ -1,9 +1,18 @@
 .header {
+  --header-ink: var(--color-ink);
+  --header-muted: var(--color-ink-muted);
+  --header-faint: var(--color-ink-faint);
   display: flex;
   min-height: 54px;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.header[data-tone="dark"] {
+  --header-ink: #fff;
+  --header-muted: rgb(255 255 255 / 82%);
+  --header-faint: rgb(255 255 255 / 62%);
 }
 
 .mobileLabel {
@@ -24,6 +33,7 @@
 .brand {
   min-width: 0;
   gap: 9px;
+  color: var(--header-ink);
   font-family: var(--type-display);
   font-weight: 800;
 }
@@ -50,14 +60,14 @@
 }
 
 .separator {
-  color: var(--color-ink-faint);
+  color: var(--header-faint);
   font-family: var(--type-mono);
   font-size: 12px;
 }
 
 .title {
   overflow: hidden;
-  color: var(--color-ink-muted);
+  color: var(--header-muted);
   font-family: var(--type-mono);
   font-size: 10px;
   font-weight: 700;
@@ -90,7 +100,7 @@
     display: block;
     min-width: 0;
     overflow: hidden;
-    color: var(--color-ink);
+    color: var(--header-ink);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;

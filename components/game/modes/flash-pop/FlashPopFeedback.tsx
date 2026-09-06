@@ -15,6 +15,33 @@ type Props = {
   variant?: "default" | "inline";
 };
 
+export function getFlashPopFeedbackCopy({
+  status,
+  timedOut = false,
+  isLast = false,
+  nextLabel = "pregunta",
+}: {
+  status: AnswerStatus;
+  timedOut?: boolean;
+  isLast?: boolean;
+  nextLabel?: "pregunta" | "escena";
+}) {
+  const title = timedOut
+    ? "Tiempo agotado"
+    : status === "correct"
+      ? "Respuesta correcta"
+      : status === "partial"
+        ? "Aproximación válida"
+        : "Respuesta fallada";
+  const body = isLast
+    ? "Calculando tu resultado…"
+    : status === "correct"
+      ? `Siguiente ${nextLabel} en marcha.`
+      : `Sigue: aún quedan ${nextLabel}s.`;
+
+  return { title, body };
+}
+
 type FeedbackIconAnimation = {
   initial: { opacity: number; scale: number; rotate: number };
   animate: { opacity: number; scale: number; rotate: number };

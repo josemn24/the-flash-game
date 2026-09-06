@@ -419,7 +419,6 @@ type ValidNarrativeChallengeDefinition = {
         {
           type: "question";
           questionId: "ross-sea-transantarctic-range";
-          unlockEntryIds: ["note-calibration"];
           reactions: {
             correct: [{ type: "narration"; text: "Correct" }];
             incorrect: [{ type: "narration"; text: "Incorrect" }];
@@ -429,11 +428,8 @@ type ValidNarrativeChallengeDefinition = {
       ];
     },
   ];
-  notebookEntries: [{ id: "note-calibration"; text: "Calibration"; relevance: "potential" }];
   questionPoints: { "ross-sea-transantarctic-range": 24 };
 };
-
-type NarrativeChallengeWithoutNotebook = Omit<ValidNarrativeChallengeDefinition, "notebookEntries">;
 
 type ValidPyramidChallengeDefinition = {
   id: "pyramid-test";
@@ -621,9 +617,6 @@ export type RejectsSingleImageLabelingWithoutAnswer = Assert<
 >;
 export type AcceptsValidNarrativeChallengeDefinition = Assert<
   IsAssignable<ValidNarrativeChallengeDefinition, ChallengeDefinition>
->;
-export type RejectsNarrativeChallengeWithoutNotebook = Assert<
-  IsNotAssignable<NarrativeChallengeWithoutNotebook, ChallengeDefinition>
 >;
 export type AcceptsValidPyramidChallengeDefinition = Assert<
   IsAssignable<ValidPyramidChallengeDefinition, ChallengeDefinition>

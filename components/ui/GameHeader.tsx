@@ -10,6 +10,7 @@ export type GameHeaderProps = {
   action?: ReactNode;
   mobileLabel?: ReactNode;
   mobileLabelAriaLabel?: string;
+  tone?: "light" | "dark";
   className?: string;
 };
 
@@ -21,12 +22,14 @@ export function GameHeader({
   action,
   mobileLabel,
   mobileLabelAriaLabel,
+  tone = "light",
   className,
 }: GameHeaderProps) {
   const branded = !left && Boolean(title);
 
   return (
     <header
+      data-tone={tone}
       className={`${styles.header} ${mobileLabel ? styles.compactOnMobile : ""} ${className ?? ""}`}
     >
       {branded ? (

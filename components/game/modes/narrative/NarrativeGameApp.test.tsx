@@ -23,10 +23,17 @@ describe("Narrative Flash Pop migration", () => {
       "zip",
     ]);
     expect(source).toContain("<Canvas");
-    expect(source).toContain('<Card as="section"');
+    expect(source).toContain('<section className={styles.questionPage}>');
+    expect(source).not.toContain("questionMeta");
     expect(source).toContain("FlashPopQuestionInput");
     expect(source).toContain("FlashPopFeedback");
+    expect(source).toContain("getFlashPopFeedbackCopy");
+    expect(source).toContain("feedbackStage");
+    expect(source).not.toContain("Registro actualizado");
     expect(source).toContain('data-variant="flash-pop"');
+    expect(source).toContain("const isDarkPresentation");
+    expect(source).toContain("styles.storyPageDark");
+    expect(source).toContain("styles.darkStoryPhase");
   });
 
   it("does not fall back to the legacy question or transition surfaces", () => {
@@ -35,12 +42,28 @@ describe("Narrative Flash Pop migration", () => {
     expect(source).toContain('variant="flash-pop"');
   });
 
-  it("keeps narrative-specific imagery and the themed notebook surfaces", () => {
+  it("keeps narrative-specific imagery without interactive notebook chrome", () => {
     expect(source).toContain("NarrativeSceneScreen");
-    expect(source).toContain("FieldNotebook");
+    expect(source).toContain("NarrativeSceneProgress");
+    expect(source).toContain("storyFolio");
+    expect(source).toContain("questionIndicator");
+    expect(source).not.toContain("FieldNotebook");
+    expect(source).not.toContain("NotebookButton");
+    expect(source).not.toContain("NotebookIcon");
+    expect(source).not.toContain("notebook=");
+    const sceneSource = source.slice(
+      source.indexOf("function NarrativeSceneScreen"),
+      source.indexOf("function NarrativeQuestionScreen"),
+    );
+    expect(sceneSource).not.toContain("GameHeader");
     expect(source).toContain("isBlackoutScene");
     expect(styles).toContain("var(--color-surface)");
     expect(styles).toContain("var(--shadow-hero)");
+    expect(styles).toContain("--story-muted");
+    expect(styles).toContain(".storyPage.storyPageDark");
+    expect(styles).toContain(".darkStoryPhase .flashPopCanvas");
+    expect(styles).toContain("border-radius: 0;");
+    expect(styles).toContain("border-radius: 14px;");
     expect(styles).toContain("@media (prefers-reduced-motion: reduce)");
   });
 });

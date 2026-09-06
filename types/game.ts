@@ -119,7 +119,6 @@ export type {
   NarrativeBeatDefinition,
   NarrativeChallenge,
   NarrativeChallengeDefinition,
-  NarrativeNotebookEntry,
   NarrativeOutcome,
   NarrativeQuestionStep,
   NarrativeQuestionStepDefinition,

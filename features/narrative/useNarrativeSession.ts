@@ -47,7 +47,6 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
       dispatch({
         type: "advance",
         nextStepType: nextStep?.type ?? null,
-        unlockEntryIds: nextStep?.type === "scene" ? nextStep.unlockEntryIds : undefined,
       });
     },
     [sequence],
@@ -88,7 +87,6 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
         type: "answer",
         result,
         timedOut,
-        unlockEntryIds: currentStep.unlockEntryIds,
       });
       advanceTimeout.current = setTimeout(
         () => prepareNextStep(state.stepIndex + 1),
@@ -138,10 +136,6 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     }
   }, [currentStep]);
 
-  const unlockedEntries = useMemo(
-    () => challenge.notebookEntries.filter((entry) => state.unlockedEntryIds.includes(entry.id)),
-    [challenge.notebookEntries, state.unlockedEntryIds],
-  );
   const questionSteps = useMemo(
     () => sequence.filter((step) => step.type === "question"),
     [sequence],
@@ -159,7 +153,6 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     currentStep,
     questionNumber,
     totalQuestions: questionSteps.length,
-    unlockedEntries,
     reactionBlocks,
     score: calculateTotalScore(state.results.map((result) => result.points)),
     start,
@@ -172,7 +165,5 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     handleAnswerProgress,
     handleIncorrectAttempt,
     handleTimedResponseStart,
-    openNotebook: () => dispatch({ type: "open-notebook" }),
-    closeNotebook: () => dispatch({ type: "close-notebook" }),
   };
 }

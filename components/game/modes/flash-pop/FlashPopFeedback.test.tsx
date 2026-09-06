@@ -1,6 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { FlashPopFeedback, getFlashPopFeedbackIconAnimation } from "./FlashPopFeedback";
+import {
+  FlashPopFeedback,
+  getFlashPopFeedbackCopy,
+  getFlashPopFeedbackIconAnimation,
+} from "./FlashPopFeedback";
 
 describe("FlashPopFeedback", () => {
   it("uses the Pyramid icon entrance for correct answers", () => {
@@ -42,6 +46,25 @@ describe("FlashPopFeedback", () => {
     expect(markup).toContain("¡Correcto!");
     expect(markup).toContain("Has acertado.");
     expect(markup).toContain("+5 puntos");
+  });
+
+  it("uses meaningful status copy for each transition", () => {
+    expect(getFlashPopFeedbackCopy({ status: "correct" })).toEqual({
+      title: "Respuesta correcta",
+      body: "Siguiente pregunta en marcha.",
+    });
+    expect(getFlashPopFeedbackCopy({ status: "partial", nextLabel: "escena" })).toEqual({
+      title: "Aproximación válida",
+      body: "Sigue: aún quedan escenas.",
+    });
+    expect(getFlashPopFeedbackCopy({ status: "incorrect", nextLabel: "escena" })).toEqual({
+      title: "Respuesta fallada",
+      body: "Sigue: aún quedan escenas.",
+    });
+    expect(getFlashPopFeedbackCopy({ status: "unanswered", timedOut: true })).toEqual({
+      title: "Tiempo agotado",
+      body: "Sigue: aún quedan preguntas.",
+    });
   });
 
   it("supports a compact inline layout without changing the default feedback", () => {

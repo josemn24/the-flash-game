@@ -454,7 +454,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "ross-sea-transantarctic-range",
-            unlockEntryIds: ["note-direction"],
             reactions: reactions(
               "La referencia del mapa quedó encajada: el registro procede del mar de Ross y la cordillera del fondo es la Transantártica. Nora hizo retroceder la cinta hasta el instante preciso del giro.",
               "Nora rebobinó unos segundos. La cordillera seguía sin nombre en la ficha; solo quedaban el mar de Ross a un lado y el interior al otro.",
@@ -502,7 +501,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "antarctic-circle-map",
-            unlockEntryIds: ["note-polar-context"],
             reactions: reactions(
               "Nora trazó el Círculo Polar Antártico en el margen del atlas. La estación quedaba dentro de la región polar; después volvió al registro de P-17.",
               "Nora volvió a extender el atlas. Antes de seguir las trayectorias, había que distinguir el límite polar de las líneas que cruzaban el hemisferio.",
@@ -531,7 +529,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "polar-fauna-classification",
-            unlockEntryIds: ["note-polar-fauna"],
           },
           {
             type: "scene",
@@ -600,7 +597,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "clear-camp-escape",
-            unlockEntryIds: ["note-intervention"],
             reactions: reactions(
               "La última pata del trípode desapareció por la salida de servicio. El corredor volvió a quedar abierto.",
               "Desde el lateral protegido, Nora terminó de retirar el trípode y ordenó al equipo que retrocediera.",
@@ -651,7 +647,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "p17-evidence-matrix",
-            unlockEntryIds: ["note-nadir"],
             reactions: reactions(
               "Las tres señales coincidieron en el candidato A. La identificación compatible quedó separada de cualquier explicación sobre su conducta.",
               "Nora volvió a recorrer las filas. Dos candidatos coincidían a medias; solo uno reunía los tres datos.",
@@ -728,7 +723,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "p17-route-zip",
-            unlockEntryIds: ["note-route"],
             reactions: reactions(
               "La última unión encajó sin contradecir ninguno de los seis registros. Una línea cruzó la mesa de extremo a extremo.",
               "Nora dejó a un lado los enlaces imposibles y acercó las fichas que aún podían compartir un mismo recorrido.",
@@ -775,7 +769,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "p17-observation-order",
-            unlockEntryIds: ["note-chronology"],
             reactions: reactions(
               "La última hora ocupó su lugar. La secuencia avanzaba sin saltos desde la colonia hasta la cámara final.",
               "Nora volvió a las marcas de tiempo y cambió de lugar dos hojas. El orden apareció sin necesidad de explicar la causa.",
@@ -810,7 +803,6 @@ export const challengeDefinitions = {
           {
             type: "question",
             questionId: "p17-final-record",
-            unlockEntryIds: ["note-final"],
             reactions: reactions(
               "Nora eligió la única conclusión que respetaba los registros: P-17 había recorrido la ruta observada, pero la causa de su trayectoria no pudo determinarse.",
               "Nora descartó la conclusión. Describía una intención de P-17 que ninguna cámara había podido registrar.",
@@ -853,48 +845,6 @@ export const challengeDefinitions = {
             },
           },
         ],
-      },
-    ],
-    notebookEntries: [
-      {
-        id: "note-direction",
-        text: "P-17: muesca blanca en el lado izquierdo del pecho. Registro 01 situado en el sector del mar de Ross. Dirección inicial: hacia el interior, frente a la Cordillera Transantártica.",
-        relevance: "context",
-      },
-      {
-        id: "note-polar-context",
-        text: "Contexto geográfico: el Círculo Polar Antártico delimita aproximadamente la región polar donde se encuentra la estación.",
-        relevance: "context",
-      },
-      {
-        id: "note-polar-fauna",
-        text: "Guía de fauna polar: pingüinos emperador y de Adelia, y foca de Weddell pertenecen a la fauna antártica; oso polar, morsa y zorro ártico, a la fauna del Ártico.",
-        relevance: "context",
-      },
-      {
-        id: "note-intervention",
-        text: "Intervención humana retirada antes del paso de P-17; sin contacto ni aproximación.",
-        relevance: "context",
-      },
-      {
-        id: "note-nadir",
-        text: "Nadir: el candidato A coincide con la marca, el rumbo y la ventana temporal; la identificación queda pendiente.",
-        relevance: "context",
-      },
-      {
-        id: "note-route",
-        text: "Recorrido reconstruido: colonia → desvío → base → H-3 → Nadir → interior.",
-        relevance: "context",
-      },
-      {
-        id: "note-chronology",
-        text: "Secuencia temporal verificada en cinco observaciones.",
-        relevance: "context",
-      },
-      {
-        id: "note-final",
-        text: "P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la trayectoria no pudo determinarse.",
-        relevance: "context",
       },
     ],
     questionPoints: {

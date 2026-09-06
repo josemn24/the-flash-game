@@ -99,7 +99,7 @@ export function ReviewAnswers({
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--color-ink-muted)]">
           {narrative
-            ? "Contrasta tus respuestas con el registro científico y consulta el cuaderno completo."
+            ? "Contrasta tus respuestas con el registro científico y revisa cada decisión."
             : "Aquí sí: descubre qué acertaste, dónde fallaste y cuánto sumó cada decisión."}
         </p>
       </div>

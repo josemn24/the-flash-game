@@ -273,7 +273,7 @@ La imagen se funde a negro.
 
 ## BUT WHY?
 
-## Entradas narrativas variables
+## Reacciones narrativas variables
 
 Cada prueba desemboca en la misma página del relato. La primera frase cambia según el resultado,
 pero siempre describe una acción dentro de la escena y evita el tono de corrección de interfaz.
@@ -381,7 +381,7 @@ Antártica`, `Montañas Prince Charles`.
 - **Explicación:** «El sector del mar de Ross está flanqueado por la Cordillera Transantártica, que
   marca el paso desde la costa hacia el interior antártico. El registro permite describir la
   dirección de P-17, no su intención.»
-- **Cuaderno:** «P-17: muesca blanca en el lado izquierdo del pecho. Registro 01 situado en el sector
+- **Registro narrativo:** «P-17: muesca blanca en el lado izquierdo del pecho. Registro 01 situado en el sector
   del mar de Ross. Dirección inicial: hacia el interior, frente a la Cordillera Transantártica.»
 - **Feedback correcto:** «La referencia del mapa quedó encajada: el registro procede del mar de Ross
   y la cordillera del fondo es la Transantártica. Nora hizo retroceder la cinta hasta el instante
@@ -406,7 +406,7 @@ Greenwich`.
 - **Puntos:** 10.
 - **Explicación:** «El Círculo Polar Antártico es la línea de latitud situada aproximadamente a 66
   grados y 33 minutos al sur del ecuador. Delimita la región polar antártica.»
-- **Cuaderno:** «Contexto geográfico: el Círculo Polar Antártico delimita aproximadamente la región
+- **Registro narrativo:** «Contexto geográfico: el Círculo Polar Antártico delimita aproximadamente la región
   polar donde se encuentra la estación.»
 - **Feedback correcto:** «Nora trazó el Círculo Polar Antártico en el margen del atlas. La estación
   quedaba dentro de la región polar; después volvió al registro de P-17.»
@@ -432,7 +432,7 @@ Greenwich`.
 - **Puntos:** 12, con crédito por cada elemento correctamente clasificado.
 - **Explicación:** «El pingüino emperador, el pingüino de Adelia y la foca de Weddell son especies
   antárticas. El oso polar, la morsa y el zorro ártico viven en la región ártica.»
-- **Cuaderno:** «Guía de fauna polar: pingüinos emperador y de Adelia, y foca de Weddell pertenecen
+- **Registro narrativo:** «Guía de fauna polar: pingüinos emperador y de Adelia, y foca de Weddell pertenecen
   a la fauna antártica; oso polar, morsa y zorro ártico, a la fauna del Ártico.»
 - **Feedback narrativo:** No se añade reacción; la historia continúa con la escena siguiente.
 
@@ -456,7 +456,7 @@ Greenwich`.
 - **Regla narrativa:** el pingüino no aparece como bloque ni puede ser manipulado.
 - **Explicación:** «Todo el movimiento ocurre dentro del equipo humano. Al retirar el trípode por
   la salida de servicio, el corredor queda como estaba antes de instalar el campamento.»
-- **Cuaderno:** «Intervención humana retirada antes del paso de P-17; sin contacto ni aproximación.»
+- **Registro narrativo:** «Intervención humana retirada antes del paso de P-17; sin contacto ni aproximación.»
 - **Feedback correcto:** «La última pata del trípode desapareció por la salida de servicio. El
   corredor volvió a quedar abierto.»
 - **Feedback incorrecto:** «Desde el lateral protegido, Nora terminó de retirar el trípode y ordenó
@@ -485,7 +485,7 @@ Greenwich`.
 - **Puntos:** 12, binarios y ajustados por velocidad.
 - **Explicación:** «El candidato A es la única fila que coincide en marca, rumbo y ventana temporal.
   La coincidencia permite continuar la identificación, pero no explica la conducta del animal.»
-- **Cuaderno:** «Nadir: el candidato A coincide con la marca, el rumbo y la ventana temporal; la
+- **Registro narrativo:** «Nadir: el candidato A coincide con la marca, el rumbo y la ventana temporal; la
   identificación queda pendiente.»
 - **Feedback correcto:** «Las tres señales coincidieron en el candidato A. La identificación compatible
   quedó separada de cualquier explicación sobre su conducta.»
@@ -515,7 +515,7 @@ Greenwich`.
   reconstrucción de sectores, no una escala geográfica.
 - **Explicación:** «La línea conecta todos los registros en orden y no contradice ninguna posición
   observada. Completarla no convierte el recorrido en una decisión.»
-- **Cuaderno:** «Recorrido reconstruido: colonia → desvío → base → H-3 → Nadir → interior.»
+- **Registro narrativo:** «Recorrido reconstruido: colonia → desvío → base → H-3 → Nadir → interior.»
 - **Feedback correcto:** «La última unión encajó sin contradecir ninguno de los seis registros. Una
   línea cruzó la mesa de extremo a extremo.»
 - **Feedback incorrecto:** «Nora dejó a un lado los enlaces imposibles y acercó las fichas que aún
@@ -538,7 +538,7 @@ Greenwich`.
 - **Puntos:** 12, con crédito por posición y ajuste por velocidad.
 - **Explicación:** «La cronología establece qué ocurrió antes y después. No establece enfermedad,
   pérdida de orientación ni intención.»
-- **Cuaderno:** «Secuencia temporal verificada en cinco observaciones.»
+- **Registro narrativo:** «Secuencia temporal verificada en cinco observaciones.»
 - **Feedback correcto:** «La última hora ocupó su lugar. La secuencia avanzaba sin saltos desde la
   colonia hasta la cámara final.»
 - **Feedback parcial o incorrecto:** «Nora volvió a las marcas de tiempo y cambió de lugar dos
@@ -568,7 +568,7 @@ Greenwich`.
   la puntuación, con ajuste por velocidad.
 - **Explicación:** «Todos los registros describen posiciones, dirección, tiempo e identidad
   compatible. Ninguno permite afirmar que P-17 estuviera perdido ni que hubiera decidido alejarse.»
-- **Cuaderno final:** «P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue
+- **Registro narrativo final:** «P-17 abandonó la dirección de la colonia, cruzó el campamento base, fue
   identificado de forma compatible en Nadir y continuó hacia las montañas. La causa de la
   trayectoria no pudo determinarse.»
 - **Feedback correcto:** «Las palabras “estaba perdido” desaparecieron del párrafo. En su lugar

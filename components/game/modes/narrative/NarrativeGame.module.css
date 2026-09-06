@@ -271,20 +271,6 @@
   text-transform: uppercase;
 }
 
-.questionMeta {
-  display: flex;
-  align-items: center;
-}
-
-.questionMeta > span {
-  color: #8fe7ea;
-  font-family: var(--type-mono);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
 .questionMedia {
   max-width: 46rem;
   margin-top: 1rem;
@@ -543,140 +529,6 @@
   text-transform: uppercase;
 }
 
-.notebookTrigger {
-  display: flex;
-  min-height: 2.6rem;
-  align-items: center;
-  gap: 0.48rem;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 999px;
-  background: rgb(0 0 0 / 0.22);
-  padding: 0.5rem 0.7rem;
-  color: rgb(255 255 255 / 0.72);
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.notebookTrigger strong {
-  display: grid;
-  width: 1.3rem;
-  height: 1.3rem;
-  place-items: center;
-  border-radius: 50%;
-  background: #8fe7ea;
-  color: #071319;
-  font-family: var(--type-mono);
-  font-size: 0.6rem;
-}
-
-.notebookDialog {
-  width: min(calc(100% - 1.5rem), 34rem);
-  max-height: calc(100dvh - 1.5rem);
-  margin: auto;
-  overflow: visible;
-  border: 0;
-  background: transparent;
-  color: #15241f;
-}
-
-.notebookDialog::backdrop {
-  background: rgb(1 8 11 / 0.72);
-  backdrop-filter: blur(8px);
-}
-
-.notebookSurface {
-  overflow: hidden;
-  border: 1px solid rgb(67 60 38 / 0.28);
-  border-radius: 1.3rem;
-  background:
-    linear-gradient(90deg, transparent 2.9rem, rgb(193 88 77 / 0.22) 3rem, transparent 3.08rem),
-    repeating-linear-gradient(0deg, #eef0d9 0 2rem, #d4decf 2.05rem 2.1rem);
-  box-shadow: 0 2rem 6rem rgb(0 0 0 / 0.5);
-}
-
-.notebookHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgb(67 60 38 / 0.18);
-  background: rgb(242 243 218 / 0.92);
-  padding: 1rem 1rem 1rem 3.8rem;
-}
-
-.notebookHeader span,
-.notebookEntries small {
-  color: #746c47;
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.notebookHeader h2 {
-  margin-top: 0.15rem;
-  font-size: 1.12rem;
-  font-weight: 950;
-}
-
-.notebookClose {
-  display: grid;
-  width: 2.6rem;
-  height: 2.6rem;
-  place-items: center;
-  border: 1px solid rgb(67 60 38 / 0.2);
-  border-radius: 50%;
-  color: #34463d;
-}
-
-.notebookEmpty {
-  display: grid;
-  min-height: 18rem;
-  place-items: center;
-  align-content: center;
-  gap: 0.6rem;
-  padding: 3rem 2rem 3rem 4.8rem;
-  text-align: center;
-}
-
-.notebookEmpty p {
-  max-width: 19rem;
-  color: #647069;
-  font-size: 0.8rem;
-  line-height: 1.55;
-}
-
-.notebookEntries {
-  min-height: 18rem;
-  padding: 1.25rem 1.25rem 2rem 3.8rem;
-  list-style: none;
-}
-
-.notebookEntries li {
-  display: grid;
-  grid-template-columns: 1.6rem 1fr;
-  gap: 0.75rem;
-  padding: 1rem 0;
-}
-
-.notebookEntries li + li {
-  border-top: 1px solid rgb(67 60 38 / 0.14);
-}
-
-.notebookEntries li > span {
-  color: #9a573f;
-  font-family: var(--type-mono);
-  font-size: 0.64rem;
-  font-weight: 900;
-}
-
-.notebookEntries p {
-  margin-top: 0.2rem;
-  font-size: 0.9rem;
-  font-weight: 750;
-  line-height: 1.55;
-}
-
 .resultGrid {
   display: grid;
   min-height: calc(100dvh - 6rem);
@@ -800,24 +652,6 @@
   color: var(--color-social);
 }
 
-.resultNotebook {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 0.8rem;
-  margin-top: 0.8rem;
-  border: 1px solid rgb(143 231 234 / 0.22);
-  border-radius: 0.9rem;
-  background: rgb(143 231 234 / 0.07);
-  padding: 1rem;
-  text-align: left;
-}
-
-.resultNotebook span {
-  display: grid;
-}
-
-.resultNotebook small,
 .timeSummary span {
   color: rgb(255 255 255 / 0.36);
   font-family: var(--type-mono);
@@ -825,11 +659,6 @@
   font-weight: 850;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-.resultNotebook strong {
-  margin-top: 0.2rem;
-  font-size: 0.84rem;
 }
 
 .timeSummary {
@@ -910,33 +739,6 @@
     margin-top: 1rem;
   }
 
-  .questionMeta {
-    gap: 0.55rem;
-  }
-}
-
-@media (max-width: 520px) {
-  .notebookTrigger span {
-    display: none;
-  }
-
-  .notebookHeader {
-    padding-left: 2.8rem;
-  }
-
-  .notebookEntries,
-  .notebookEmpty {
-    padding-left: 3.5rem;
-  }
-
-  .pageActions .notebookTrigger {
-    min-width: 2.6rem;
-    justify-content: center;
-  }
-
-  .pageActions .notebookTrigger strong {
-    display: none;
-  }
 }
 
 /* Narrative is also a product mode: the immersive treatment may vary, but its
@@ -995,8 +797,7 @@
 }
 .storyFolio,
 .storyCaption,
-.untimedLabel,
-.resultNotebook small {
+.untimedLabel {
   color: var(--color-ink-faint);
 }
 .storyPage,
@@ -1036,23 +837,18 @@
 .sceneDialogue [aria-hidden="true"],
 .eyebrow,
 .subtitle,
-.questionMeta > span,
 .recordTransition svg,
 .scoreValue strong,
 .resultLead strong {
   color: var(--color-social);
 }
 .tapeSignal,
-.notebookTrigger,
-.backLink,
-.resultNotebook {
+.backLink {
   border-color: var(--color-border);
   background: var(--color-surface-raised);
   color: var(--color-ink);
 }
-.tapeSignal span,
-.notebookTrigger,
-.resultNotebook strong {
+.tapeSignal span {
   color: var(--color-ink);
 }
 .tapeSignal i {
@@ -1067,10 +863,6 @@
 .continueButton:hover {
   border-color: var(--color-focus) !important;
   background: var(--color-surface-raised) !important;
-}
-.notebookTrigger strong {
-  background: var(--color-social);
-  color: var(--color-text-on-social);
 }
 .resultDetails,
 .introPanel {
@@ -1110,20 +902,11 @@
 .answerStates li[data-status="unanswered"] strong {
   color: var(--state-error);
 }
-.resultNotebook {
-  border-color: color-mix(in srgb, var(--color-social) 35%, var(--color-border));
-  background: color-mix(in srgb, var(--color-social) 8%, var(--color-surface));
-}
 .timeSummary {
   border-top-color: var(--color-border);
 }
 .epilogueScreen {
   background: var(--color-canvas);
-}
-
-.notebookTriggerCompact {
-  border-color: var(--color-border-hover);
-  background: var(--color-surface);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1181,20 +964,6 @@
   font-size: 0.62rem;
   font-weight: 850;
   letter-spacing: 0.12em;
-}
-
-.storyChrome .notebookTriggerCompact {
-  position: absolute;
-  top: 1.25rem;
-  right: 1.35rem;
-}
-
-.notebookTriggerCompact {
-  min-width: 3.25rem;
-  justify-content: center;
-  border-color: rgb(255 255 255 / 0.2);
-  background: rgb(2 10 13 / 0.68);
-  backdrop-filter: blur(14px);
 }
 
 .storyPage {
@@ -1552,18 +1321,9 @@
     left: 1rem;
   }
 
-  .storyChrome .notebookTriggerCompact {
-    top: 0.85rem;
-    right: 0.85rem;
-  }
-
   .continueButton {
     right: 0.85rem;
     bottom: 0.75rem;
-  }
-
-  .notebookTriggerCompact strong {
-    display: grid;
   }
 
   .questionHud {
@@ -1586,21 +1346,10 @@
   padding: 0;
 }
 
-.storyHeader {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-6);
-  left: var(--space-6);
-}
-
-.storyChrome .notebookTriggerCompact {
-  position: static;
-}
-
 .storyPage {
   padding: 0;
   border: var(--border-subtle);
-  border-radius: var(--radius-hero);
+  border-radius: 0;
   background: var(--color-surface);
   box-shadow: var(--shadow-hero);
 }
@@ -1621,19 +1370,33 @@
   justify-content: space-between;
 }
 
+.questionIndicator {
+  color: var(--color-ink);
+  font-family: var(--type-mono);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.questionIndicator span {
+  color: var(--color-ink-faint);
+}
+
 .questionHud .actions {
   gap: var(--space-2);
 }
 
-.questionHud .notebookTriggerCompact {
-  position: static;
+.feedbackStage {
+  width: min(calc(100% - 2 * var(--space-5)), 820px);
+  margin: 0 auto;
 }
 
 .questionPage {
   width: min(calc(100% - 2 * var(--space-8)), 980px);
   min-height: calc(100dvh - 2 * var(--space-8));
   margin: var(--space-8) auto;
-  border-radius: var(--radius-hero);
+  border-radius: 0;
   background: var(--color-surface);
   box-shadow: var(--shadow-hero);
 }
@@ -1647,7 +1410,7 @@
 .introPanel,
 .resultDetails {
   border: var(--border-subtle);
-  border-radius: var(--radius-hero);
+  border-radius: 14px;
   background: var(--color-surface);
   box-shadow: var(--shadow-hero);
 }
@@ -1659,71 +1422,18 @@
   background: var(--color-surface-raised);
 }
 
-.resultNotebook,
 .backLink {
   border-color: var(--color-border);
   background: var(--color-surface-raised);
   color: var(--color-ink);
 }
 
-.resultNotebook:hover,
 .backLink:hover {
   border-color: var(--color-focus);
   background: var(--color-surface);
 }
 
-.notebookDialog {
-  color: var(--color-ink);
-}
-
-.notebookDialog::backdrop {
-  background: color-mix(in srgb, var(--color-ink) 48%, transparent);
-}
-
-.notebookSurface {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.notebookHeader {
-  border-bottom-color: var(--color-border);
-  background: var(--color-surface-soft);
-}
-
-.notebookHeader span,
-.notebookEntries small {
-  color: var(--color-ink-faint);
-}
-
-.notebookClose {
-  border-color: var(--color-border);
-  color: var(--color-ink-muted);
-}
-
-.notebookClose:hover {
-  border-color: var(--color-focus);
-  color: var(--color-ink);
-}
-
-.notebookEmpty p {
-  color: var(--color-ink-muted);
-}
-
-.notebookEntries li + li {
-  border-top-color: var(--color-border);
-}
-
-.notebookEntries li > span {
-  color: var(--color-social);
-}
-
 @media (max-width: 799px) {
-  .storyHeader {
-    right: var(--space-4);
-    left: var(--space-4);
-  }
-
   .questionPage {
     width: calc(100% - 2 * var(--space-4));
     min-height: calc(100dvh - 2 * var(--space-6));
@@ -1733,6 +1443,80 @@
   .questionPage .questionArticle {
     padding: 5.5rem var(--space-4) var(--space-8);
   }
+}
+
+/* Dark image-led scenes own the full viewport, including the area that would
+   otherwise show through the rounded Flash Pop card corners. */
+.gameRoot.darkStoryPhase {
+  --narrative-dark-surface: #071319;
+  background: var(--narrative-dark-surface);
+  color: var(--story-ink, #fff);
+}
+
+.darkStoryPhase .polarBackground,
+.darkStoryPhase .flashPopCanvas {
+  background: var(--narrative-dark-surface);
+}
+
+.storyPage.storyPageDark {
+  border: 0;
+  border-radius: 0;
+  background: var(--narrative-dark-surface, #071319);
+  box-shadow: none;
+}
+
+/* Image-led scenes use a dark reading surface. The explicit tone keeps the
+   narrative copy legible without changing the shared Flash Pop palette. */
+.storyPage.storyPageDark {
+  --story-ink: #fff;
+  --story-muted: rgb(255 255 255 / 86%);
+  --story-faint: rgb(255 255 255 / 72%);
+  --story-accent: var(--color-brand);
+  color: var(--story-ink);
+  background: #071319;
+}
+
+.storyPageDark .storyArticle {
+  color: var(--story-ink);
+  text-shadow: 0 2px 16px rgb(0 0 0 / 44%);
+}
+
+.storyPageDark .storyArticle h1,
+.storyPageDark .storyArticle .sceneDialogue,
+.storyPageDark .sceneEmphasis {
+  color: var(--story-ink);
+}
+
+.storyPageDark .storyArticle .sceneParagraph {
+  color: var(--story-muted);
+}
+
+.storyPageDark .storyArticle .sceneDialogue [aria-hidden="true"] {
+  color: var(--story-accent);
+}
+
+.storyPageDark .eyebrow {
+  color: var(--story-accent);
+}
+
+.storyPageDark .storyArticle .sceneReaction {
+  border-left-color: var(--story-accent);
+  background: rgb(0 0 0 / 22%);
+}
+
+.storyPageDark .storyArticle .sceneReaction .sceneParagraph,
+.storyPageDark .storyArticle .sceneReaction .sceneDialogue {
+  color: var(--story-muted);
+}
+
+.storyPageDark .visualShade {
+  background:
+    linear-gradient(90deg, rgb(0 0 0 / 42%), rgb(0 0 0 / 16%) 68%, transparent),
+    linear-gradient(0deg, rgb(0 0 0 / 70%), transparent 72%);
+}
+
+.storyPageDark .storyCaption {
+  color: var(--story-faint);
 }
 
 /* Text-led scenes flow directly over the Pop canvas; the blackout epilogue
@@ -1789,17 +1573,11 @@
 .resultNotice {
   color: var(--color-ink-muted);
 }
-.notebookTriggerCompact,
 .tapeSignal,
-.backLink,
-.resultNotebook {
+.backLink {
   border-color: var(--color-border);
   background: var(--color-surface-raised);
   color: var(--color-ink);
-}
-.notebookTrigger strong {
-  background: var(--color-social);
-  color: var(--color-text-on-social);
 }
 .introPanel,
 .resultDetails {
@@ -1811,6 +1589,7 @@
 .resultStats div,
 .answerStates li {
   border-color: var(--color-border);
+  border-radius: 10px;
   background: var(--color-surface-raised);
 }
 .introStats div + div {
@@ -1858,22 +1637,10 @@
   padding: 0;
 }
 
-.storyHeader {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-6);
-  left: var(--space-6);
-}
-
-.storyChrome .notebookTriggerCompact,
-.questionHud .notebookTriggerCompact {
-  position: static;
-}
-
 .storyPage {
   padding: 0;
   border: var(--border-subtle);
-  border-radius: var(--radius-hero);
+  border-radius: 0;
   background: var(--color-surface);
   box-shadow: var(--shadow-hero);
 }
@@ -1896,25 +1663,30 @@
 }
 
 .questionPage {
-  width: min(calc(100% - 2 * var(--space-8)), 980px);
-  min-height: calc(100dvh - 2 * var(--space-8));
-  margin: var(--space-8) auto;
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
   padding: 0;
-  border-radius: var(--radius-hero);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .questionPage .questionArticle {
-  width: min(100%, 820px);
+  width: min(100%, 980px);
   margin: 0 auto;
   padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
+}
+
+.questionPage .questionArticle > div:last-child {
+  margin-top: 2rem;
 }
 
 .introPanel,
 .resultDetails {
   border: var(--border-subtle);
-  border-radius: var(--radius-hero);
+  border-radius: 14px;
   background: var(--color-surface);
   box-shadow: var(--shadow-hero);
 }
@@ -1926,75 +1698,22 @@
   background: var(--color-surface-raised);
 }
 
-.resultNotebook,
 .backLink {
   border-color: var(--color-border);
   background: var(--color-surface-raised);
   color: var(--color-ink);
 }
 
-.resultNotebook:hover,
 .backLink:hover {
   border-color: var(--color-focus);
   background: var(--color-surface);
 }
 
-.notebookDialog {
-  color: var(--color-ink);
-}
-
-.notebookDialog::backdrop {
-  background: color-mix(in srgb, var(--color-ink) 48%, transparent);
-}
-
-.notebookSurface {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.notebookHeader {
-  border-bottom-color: var(--color-border);
-  background: var(--color-surface-soft);
-}
-
-.notebookHeader span,
-.notebookEntries small {
-  color: var(--color-ink-faint);
-}
-
-.notebookClose {
-  border-color: var(--color-border);
-  color: var(--color-ink-muted);
-}
-
-.notebookClose:hover {
-  border-color: var(--color-focus);
-  color: var(--color-ink);
-}
-
-.notebookEmpty p {
-  color: var(--color-ink-muted);
-}
-
-.notebookEntries li + li {
-  border-top-color: var(--color-border);
-}
-
-.notebookEntries li > span {
-  color: var(--color-social);
-}
-
 @media (max-width: 799px) {
-  .storyHeader {
-    right: var(--space-4);
-    left: var(--space-4);
-  }
-
   .questionPage {
-    width: calc(100% - 2 * var(--space-4));
-    min-height: calc(100dvh - 2 * var(--space-6));
-    margin: var(--space-6) auto;
+    width: 100%;
+    min-height: 100dvh;
+    margin: 0;
   }
 
   .questionPage .questionArticle {
