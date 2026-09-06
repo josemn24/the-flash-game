@@ -13,7 +13,7 @@ export function LiveTimerDemo() {
       <Timer duration={20} active resetKey={resetKey} onTimeUp={() => setFinished(true)} />
       <div>
         <strong>{finished ? "Tiempo agotado" : "Cuenta atrás real"}</strong>
-        <span>Urgencia automática durante el último 25 %.</span>
+        <span>Urgencia automática durante los últimos 5 segundos por defecto.</span>
       </div>
       <Button
         variant="secondary"

@@ -92,7 +92,7 @@ Sonido sugerido: golpe suave descendente, sin buzzer agresivo.
 
 Secuencia:
 
-1. Timer pulsa en Coral durante el último 25 %.
+1. Timer pulsa en Coral durante los últimos 5 s por defecto.
 2. Al llegar a cero, se congela.
 3. Se revela la respuesta.
 4. Copy `¡Se escapó por poco!`.

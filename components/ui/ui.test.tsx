@@ -75,11 +75,17 @@ describe("canonical UI primitives", () => {
   it("keeps card semantics and deterministic timer states", () => {
     const card = renderToStaticMarkup(<Card as="section">Contenido</Card>);
     const timer = renderToStaticMarkup(<TimerDisplay duration={20} remaining={4} />);
+    const defaultLongTimer = renderToStaticMarkup(<TimerDisplay duration={135} remaining={30} />);
+    const ratioTimer = renderToStaticMarkup(
+      <TimerDisplay duration={135} remaining={30} urgency={{ type: "ratio", value: 0.25 }} />,
+    );
 
     expect(card).toContain("<section");
     expect(timer).toContain('role="timer"');
     expect(timer).toContain('data-state="urgent"');
     expect(timer).toContain('aria-label="4 segundos restantes"');
+    expect(defaultLongTimer).toContain('data-state="normal"');
+    expect(ratioTimer).toContain('data-state="urgent"');
   });
 
   it("supports a mobile-only game progress label", () => {

@@ -145,18 +145,18 @@ No se usa `Arial Narrow` para cuerpo ni títulos principales del vertical slice.
 
 Las primitivas de fundamentos se exportan desde `components/ui/index.ts`. Su documentación viva se encuentra en `/flash-pop/ui-kit`, una ruta de desarrollo que no aparece en la navegación pública.
 
-| Primitiva      | Contrato público principal                                                            |
-| -------------- | ------------------------------------------------------------------------------------- |
-| `Canvas`       | canvas claro, patrón, safe areas y ancho `wide \| content \| none`                    |
-| `Button`       | `primary \| secondary`, `default \| hero`, iconos, ancho completo, loading y disabled |
-| `ButtonLink`   | mismo lenguaje visual para navegación                                                 |
-| `IconButton`   | 48 × 48 px, etiqueta accesible obligatoria y superficie `surface \| social`           |
-| `Chip`         | unión tipada para estados semánticos, datos y recompensa                              |
-| `Avatar`       | imagen o iniciales, tamaños `sm \| md \| lg` y tonos controlados                      |
-| `AvatarStack`  | máximo visible configurable, overflow `+N` y etiqueta textual                         |
-| `Card`         | elemento semántico, superficies `surface \| soft`, tres elevaciones y tres densidades |
-| `TimerDisplay` | representación determinista normal, urgente y finalizada                              |
-| `Timer`        | API temporal compatible con el timer existente y urgencia durante el último 25 %      |
+| Primitiva      | Contrato público principal                                                               |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `Canvas`       | canvas claro, patrón, safe areas y ancho `wide \| content \| none`                       |
+| `Button`       | `primary \| secondary`, `default \| hero`, iconos, ancho completo, loading y disabled    |
+| `ButtonLink`   | mismo lenguaje visual para navegación                                                    |
+| `IconButton`   | 48 × 48 px, etiqueta accesible obligatoria y superficie `surface \| social`              |
+| `Chip`         | unión tipada para estados semánticos, datos y recompensa                                 |
+| `Avatar`       | imagen o iniciales, tamaños `sm \| md \| lg` y tonos controlados                         |
+| `AvatarStack`  | máximo visible configurable, overflow `+N` y etiqueta textual                            |
+| `Card`         | elemento semántico, superficies `surface \| soft`, tres elevaciones y tres densidades    |
+| `TimerDisplay` | representación determinista normal, urgente y finalizada                                 |
+| `Timer`        | API temporal compatible con el timer existente y urgencia por defecto en los últimos 5 s |
 
 El timer oscuro y `Timer` comparten `useCountdown`. El timer oscuro conserva su API, markup y apariencia; el hook centraliza deadline, clamping a cero, reset y disparo único de `onTimeUp`.
 
@@ -251,7 +251,8 @@ Estados:
 
 - Cápsula visible de al menos 48 px.
 - Número tabular.
-- De normal a urgencia solo en el último 25 %.
+- De normal a urgencia por defecto solo en los últimos 5 s.
+- La urgencia admite excepciones explícitas por segundos o ratio; en timers de 5 s o menos sin configuración se usa el 25 %.
 - La urgencia usa Coral, escala ligera y háptica opcional.
 - Nunca depende solo de un aro fino.
 

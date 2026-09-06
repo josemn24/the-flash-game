@@ -5,6 +5,17 @@ import { useEffect, useRef, useState } from "react";
 export type CountdownUrgency =
   { type: "seconds"; value: number } | { type: "ratio"; value: number };
 
+export const DEFAULT_COUNTDOWN_URGENCY = {
+  type: "seconds",
+  value: 5,
+} as const satisfies CountdownUrgency;
+
+export function getDefaultCountdownUrgency(duration: number): CountdownUrgency {
+  return duration > 0 && duration <= DEFAULT_COUNTDOWN_URGENCY.value
+    ? { type: "ratio", value: 0.25 }
+    : DEFAULT_COUNTDOWN_URGENCY;
+}
+
 export type CountdownMetrics = {
   remaining: number;
   ratio: number;
@@ -32,16 +43,17 @@ export function createCountdownCompletionGuard() {
 export function getCountdownMetrics(
   duration: number,
   remaining: number,
-  urgency: CountdownUrgency,
+  urgency?: CountdownUrgency,
 ): CountdownMetrics {
   const safeDuration = Math.max(0, duration);
   const safeRemaining = Math.min(safeDuration, Math.max(0, remaining));
   const ratio = safeDuration > 0 ? safeRemaining / safeDuration : 0;
+  const effectiveUrgency = urgency ?? getDefaultCountdownUrgency(safeDuration);
   const urgent =
     safeRemaining > 0 &&
-    (urgency.type === "seconds"
-      ? safeRemaining <= Math.max(0, urgency.value)
-      : ratio <= Math.min(1, Math.max(0, urgency.value)));
+    (effectiveUrgency.type === "seconds"
+      ? safeRemaining <= Math.max(0, effectiveUrgency.value)
+      : ratio <= Math.min(1, Math.max(0, effectiveUrgency.value)));
 
   return {
     remaining: safeRemaining,
@@ -65,7 +77,7 @@ type UseCountdownOptions = {
   onTick?: (remaining: number) => void;
   resetKey?: string | number;
   deadlineAt?: number;
-  urgency: CountdownUrgency;
+  urgency?: CountdownUrgency;
 };
 
 export function useCountdown({

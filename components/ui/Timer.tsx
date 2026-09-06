@@ -1,13 +1,20 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useCountdown } from "@/features/game/useCountdown";
+import {
+  getCountdownMetrics,
+  useCountdown,
+  type CountdownUrgency,
+} from "@/features/game/useCountdown";
 import styles from "./Timer.module.css";
+
+export type { CountdownUrgency } from "@/features/game/useCountdown";
 
 export type TimerDisplayProps = {
   duration: number;
   remaining: number;
   state?: "auto" | "normal" | "urgent" | "finished";
+  urgency?: CountdownUrgency;
   size?: "default" | "compact";
   className?: string;
 };
@@ -16,27 +23,26 @@ export function TimerDisplay({
   duration,
   remaining,
   state = "auto",
+  urgency,
   size = "default",
   className,
 }: TimerDisplayProps) {
-  const safeDuration = Math.max(0, duration);
-  const safeRemaining = Math.min(safeDuration, Math.max(0, remaining));
-  const ratio = safeDuration > 0 ? safeRemaining / safeDuration : 0;
+  const metrics = getCountdownMetrics(duration, remaining, urgency);
   const resolvedState =
     state === "auto"
-      ? safeRemaining <= 0
+      ? metrics.finished
         ? "finished"
-        : ratio <= 0.25
+        : metrics.urgent
           ? "urgent"
           : "normal"
       : state;
-  const display = Math.ceil(safeRemaining);
+  const display = metrics.display;
   const label = resolvedState === "finished" ? "Tiempo agotado" : `${display} segundos restantes`;
 
   return (
     <span
       className={`${styles.timer} ${styles[resolvedState]} ${size === "compact" ? styles.compact : ""} ${className ?? ""}`}
-      style={{ "--timer-ratio": ratio } as CSSProperties}
+      style={{ "--timer-ratio": metrics.ratio } as CSSProperties}
       role="timer"
       aria-label={label}
       data-state={resolvedState}
@@ -54,6 +60,7 @@ export type TimerProps = {
   onTick?: (remaining: number) => void;
   resetKey?: string | number;
   deadlineAt?: number;
+  urgency?: CountdownUrgency;
   size?: "default" | "compact";
   className?: string;
 };
@@ -65,6 +72,7 @@ export function Timer({
   onTick,
   resetKey,
   deadlineAt,
+  urgency,
   size = "default",
   className,
 }: TimerProps) {
@@ -75,7 +83,7 @@ export function Timer({
     onTick,
     resetKey,
     deadlineAt,
-    urgency: { type: "ratio", value: 0.25 },
+    urgency,
   });
 
   return (
@@ -83,6 +91,7 @@ export function Timer({
       duration={duration}
       remaining={remaining}
       state={finished ? "finished" : urgent ? "urgent" : "normal"}
+      urgency={urgency}
       size={size}
       className={className}
     />
