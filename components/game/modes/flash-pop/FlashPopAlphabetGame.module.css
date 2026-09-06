@@ -690,6 +690,7 @@
 .boardCard {
   display: grid;
   width: min(100%, 32rem);
+  min-height: auto;
   justify-self: center;
   padding: clamp(0.55rem, 1.2vw, 0.8rem);
 }

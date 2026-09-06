@@ -32,5 +32,6 @@ describe("FlashPopAlphabetGame", () => {
     expect(styles).toContain("grid-template-columns: repeat(6, minmax(0, 1fr));");
     expect(styles).toContain(".boardCard .boardCompact .letterCell");
     expect(styles).toContain("transform: none;");
+    expect(styles).toContain("min-height: auto;");
   });
 });
