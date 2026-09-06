@@ -21,7 +21,7 @@
   .resultCard,
   .reviewCard {
     border: var(--border-subtle);
-    border-radius: var(--radius-hero);
+    border-radius: var(--radius-card);
     background: var(--color-surface);
     box-shadow: var(--shadow-hero);
   }

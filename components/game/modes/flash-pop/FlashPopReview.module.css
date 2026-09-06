@@ -2,7 +2,7 @@
   .card {
     display: grid;
     gap: var(--space-5);
-    border-radius: var(--radius-hero);
+    border-radius: var(--radius-card);
     border: var(--border-subtle);
     background: var(--color-surface);
     box-shadow: var(--shadow-hero);
