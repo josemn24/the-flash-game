@@ -1,4 +1,5 @@
 export { FlashPopFeedback } from "./FlashPopFeedback";
+export { FlashPopAlphabetGame } from "./FlashPopAlphabetGame.client";
 export { FlashPopFlashGame } from "./FlashPopFlashGame.client";
 export { FlashPopHome } from "./FlashPopHome.client";
 export { FlashPopLobby } from "./FlashPopLobby.client";

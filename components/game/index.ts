@@ -2,6 +2,7 @@ export * from "./shared";
 export * from "./shells";
 export { AlphabetGameApp } from "./modes/alphabet/AlphabetGameApp.client";
 export {
+  FlashPopAlphabetGame,
   FlashPopFlashGame,
   FlashPopFeedback,
   FlashPopHome,

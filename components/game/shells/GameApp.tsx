@@ -1,9 +1,9 @@
 import dynamic from "next/dynamic";
 import type { Challenge } from "@/types/game";
 
-const AlphabetGameApp = dynamic(() =>
-  import("@/components/game/modes/alphabet/AlphabetGameApp.client").then(
-    (module) => module.AlphabetGameApp,
+const FlashPopAlphabetGame = dynamic(() =>
+  import("@/components/game/modes/flash-pop/FlashPopAlphabetGame.client").then(
+    (module) => module.FlashPopAlphabetGame,
   ),
 );
 const FlashGameApp = dynamic(() =>
@@ -32,7 +32,7 @@ const NarrativeGameApp = dynamic(() =>
 
 export function GameApp({ challenge }: { challenge: Challenge }) {
   if (challenge.mode === "alphabet") {
-    return <AlphabetGameApp challenge={challenge} />;
+    return <FlashPopAlphabetGame challenge={challenge} />;
   }
   if (challenge.mode === "narrative") {
     return <NarrativeGameApp challenge={challenge} />;
