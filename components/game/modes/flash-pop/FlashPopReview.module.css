@@ -7,6 +7,11 @@
   box-shadow: var(--shadow-hero);
 }
 
+.actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .heading,
 .heading > div,
 .levelTitle,

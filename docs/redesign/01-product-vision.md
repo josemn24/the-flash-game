@@ -11,7 +11,7 @@ La evolución **Flash Pop** convierte el producto en un juego social asíncrono,
 ### Fortalezas que se conservan
 
 - Loop de juego corto y fácil de entender.
-- Veinticinco formatos ya modelados y varios modos de desafío.
+- Treinta y un formatos ya modelados y varios modos de desafío.
 - Puntuación que combina precisión y velocidad.
 - Estados de introducción, juego, transición, resultado y revisión ya separados.
 - Soporte responsive, teclado, reducción de movimiento y semántica accesible.
@@ -62,7 +62,7 @@ The Flash será el lugar en el que un grupo de amigos entra cada día para resol
 ### Identidad, ilustración y validación
 
 - Flash Pop debe reconocerse sin depender del logotipo mediante sus invariantes visuales.
-- Los veinticinco formatos comparten seis familias visuales; no se producen veinticinco universos independientes.
+- Los treinta y un formatos comparten seis familias visuales; no se producen treinta y un universos independientes.
 - Los mocks sociales solo validan comprensión, jerarquía y percepción inicial.
 - Retención, confianza, rivalidad y valor social requieren una prueba posterior con grupos y resultados reales.
 
@@ -150,7 +150,8 @@ El primer corte debe demostrar el nuevo lenguaje con un recorrido completo:
 - Invitaciones funcionales.
 - Chat o mensajería.
 - Multijugador en tiempo real.
-- Migración de los veinticinco formatos.
+- Migración visual de los treinta y un formatos; se aborda como fase posterior al primer corte y
+  se completa por variantes sin alterar la mecánica.
 - Economía monetizada.
 - Personalización completa del avatar.
 - Repetición o modo práctica del reto completado.

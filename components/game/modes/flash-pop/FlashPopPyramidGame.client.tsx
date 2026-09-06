@@ -9,13 +9,7 @@ import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPopQuestionInput";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
-import {
-  FLASH_POP_LEVEL_COUNT,
-  FLASH_POP_STORAGE_NAMESPACE,
-  getFlashPopResult,
-  isFlashPopPreviewChallenge,
-  type FlashPopResult,
-} from "@/features/flash-pop/demoSocial";
+import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/demoSocial";
 import type { AnswerValue, PyramidChallenge, PyramidLevel } from "@/types/game";
 import styles from "./FlashPopPyramidGame.module.css";
 
@@ -90,14 +84,12 @@ function Topbar({
 
 function Intro({
   challenge,
-  storageAvailable,
   confirming,
   onConfirm,
   onCancel,
   onStart,
 }: {
   challenge: PyramidChallenge;
-  storageAvailable: boolean;
   confirming: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -114,20 +106,14 @@ function Intro({
 
         <div className={styles.rules}>
           <div className={styles.rule}>
-            <strong>Siete niveles</strong>
+            <strong>{challenge.levels.length} niveles</strong>
             <span>Una secuencia de formatos para llegar a la cima.</span>
           </div>
           <div className={styles.rule}>
-            <strong>Un intento</strong>
-            <span>Tu respuesta oficial no se puede repetir.</span>
+            <strong>Juega a tu ritmo</strong>
+            <span>Responde rápido, revisa tu ascenso y vuelve a intentarlo.</span>
           </div>
         </div>
-
-        {storageAvailable ? null : (
-          <p className={styles.storageWarning} role="alert">
-            Esta partida no se recuperará después de recargar la página.
-          </p>
-        )}
 
         <Button
           size="hero"
@@ -136,7 +122,7 @@ function Intro({
           className={styles.action}
           onClick={onConfirm}
         >
-          Empezar intento
+          Empezar partida
         </Button>
         <p className={styles.attemptNote}>
           {challenge.levels.length} niveles · {formatTime(getChallengeTimeLimit(challenge))} · Hasta
@@ -152,9 +138,9 @@ function Intro({
           aria-labelledby="confirm-title"
         >
           <h1 id="confirm-title">¿Listo para subir?</h1>
-          <p>Tienes un único intento oficial. El reloj comienza al mostrar la pregunta.</p>
+          <p>El reloj comienza al mostrar la pregunta. Podrás volver a jugar cuando termines.</p>
           <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
-            Confirmar intento
+            Confirmar partida
           </Button>
           <Button variant="secondary" fullWidth onClick={onCancel}>
             Todavía no
@@ -385,12 +371,14 @@ function Result({
   challenge,
   result,
   onReview,
+  onReplay,
 }: {
   challenge: PyramidChallenge;
   result: FlashPopResult;
   onReview: () => void;
+  onReplay: () => void;
 }) {
-  const summit = result.levelsCleared >= FLASH_POP_LEVEL_COUNT;
+  const summit = result.levelsCleared >= challenge.levels.length;
   return (
     <div className={styles.result}>
       <Topbar />
@@ -404,7 +392,7 @@ function Result({
         <div className={styles.resultMeta}>
           <div className={styles.resultStat}>
             <strong>
-              {result.levelsCleared} / {FLASH_POP_LEVEL_COUNT}
+              {result.levelsCleared} / {challenge.levels.length}
             </strong>
             <span>niveles superados</span>
           </div>
@@ -423,7 +411,10 @@ function Result({
 
         <div className={styles.ranking} aria-label="Clasificación demo">
           <h2>
-            Tu grupo <span className={styles.metaLabel}>· Demo</span>
+            Tu grupo
+            <span className={styles.metaLabel}>
+              · {result.socialSource === "demo" ? "Demo" : "En directo"}
+            </span>
           </h2>
           {result.peers.map((row) => (
             <div
@@ -457,6 +448,9 @@ function Result({
         <Button variant="secondary" fullWidth className={styles.action} onClick={onReview}>
           Revisar respuesta
         </Button>
+        <Button variant="secondary" fullWidth className={styles.action} onClick={onReplay}>
+          Jugar de nuevo
+        </Button>
       </Card>
     </div>
   );
@@ -465,23 +459,18 @@ function Result({
 export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge }) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
   const session = usePyramidSession(scoredChallenge, {
-    storageNamespace: FLASH_POP_STORAGE_NAMESPACE,
+    persistence: "memory",
     feedbackDuration: { correct: 1100, incorrect: 1800, unanswered: 1800 },
   });
   const currentLevel = session.currentLevel ?? challenge.levels[0];
   const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 
-  if (
-    !isFlashPopPreviewChallenge(challenge.id) ||
-    challenge.mode !== "pyramid" ||
-    challenge.levels.length !== FLASH_POP_LEVEL_COUNT ||
-    !currentLevel
-  ) {
+  if (challenge.mode !== "pyramid" || challenge.levels.length === 0 || !currentLevel) {
     return (
       <Canvas maxWidth="content">
         <Card>
           <h1>Reto no disponible</h1>
-          <p>Este preview requiere los siete niveles de La Pirámide.</p>
+          <p>Este reto no tiene niveles configurados.</p>
           <ButtonLink href="/" className={styles.action}>
             Volver al lobby
           </ButtonLink>
@@ -524,7 +513,6 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
             >
               <Intro
                 challenge={challenge}
-                storageAvailable={session.storageAvailable}
                 confirming={session.phase === "confirm"}
                 onConfirm={session.showConfirmation}
                 onCancel={session.hideConfirmation}
@@ -596,7 +584,12 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Result challenge={challenge} result={result} onReview={session.showReview} />
+              <Result
+                challenge={challenge}
+                result={result}
+                onReview={session.showReview}
+                onReplay={session.restart}
+              />
             </motion.div>
           ) : null}
           {session.phase === "review" && session.summary && session.record ? (
@@ -613,6 +606,7 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
                   results={session.record.results}
                   summary={session.summary}
                   onBack={session.showResults}
+                  onReplay={session.restart}
                 />
               </div>
             </motion.div>

@@ -4,7 +4,8 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 
 ## Estado
 
-- Estado de la especificación: fases 0 y 1 cerradas; dirección visual, tipografía, baseline, tema aislado, primitivas y laboratorio vivo aprobados. El vertical slice de la Fase 2 incluye el lobby y las dos previews de La Pirámide.
+- Estado de la especificación: dirección visual, tipografía, baseline, tema aislado, primitivas y laboratorio vivo aprobados. El vertical slice está integrado y la biblioteca de 31 formatos ya comparte el contrato visual `default`/`flash-pop`.
+- Estado de QA: los quality gates automatizados de la Fase 4 están en verde. La revisión manual exhaustiva, VoiceOver completo y la comprobación forzada de `prefers-reduced-motion` siguen registradas como pendientes en [`../qa-fase-4.md`](../qa-fase-4.md).
 - Alcance de validación: lobby, pregunta, feedback, resultado y persistencia de intento único.
 - Plataforma inicial: web responsive, con prioridad móvil.
 - Resolución de referencia móvil: 390 × 844 px.
@@ -26,7 +27,8 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 
 - `/flash-pop`: shell responsive aislado, ya construido con las primitivas públicas.
 - `/flash-pop/desafios/tabarnia-challenge-05`: preview principal de La Pirámide.
-- `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de La Pirámide: Biblia y religiones abrahámicas, con los siete formatos adaptados a Flash Pop.
+- `/formatos`: biblioteca con fichas y ejemplos jugables de los 31 formatos; cada renderer acepta `default` y `flash-pop`.
+- `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de La Pirámide: Biblia y religiones abrahámicas, con los formatos adaptados a Flash Pop.
 - `/flash-pop/ui-kit`: documentación viva de tokens, variantes, estados y comportamiento responsive; no está enlazada desde la navegación de producto.
 - `components/ui/index.ts`: única entrada pública del sistema.
 - `features/game/useCountdown.ts`: lógica temporal compartida por el timer oscuro y `Timer`.
@@ -40,7 +42,7 @@ El contrato aprobado para Flash Pop añade cinco decisiones:
 - Cada reto concede un único intento oficial. No existe repetición ni modo práctica para el jugador.
 - Los rayos son progreso de temporada, no moneda, energía ni puntuación de partida.
 - La identidad se apoya en color Flash, geometría diagonal, tipografía competitiva localizada, movimiento direccional y dioramas 2.5D eléctricos.
-- Los veinticinco formatos se agrupan en seis familias visuales para compartir un sistema de ilustración escalable.
+- Los treinta y un formatos se agrupan en seis familias visuales para compartir un sistema de ilustración escalable.
 - Los datos simulados validan comprensión y dirección visual; el valor social solo se valida con grupos y resultados reales.
 
 El rediseño conserva el motor actual de desafíos y formatos. La primera entrega usa datos sociales simulados porque el producto sigue siendo frontend, sin usuarios, persistencia ni backend. La arquitectura visual no debe prometer interacciones sociales que todavía no existen: los elementos simulados estarán identificados como demo durante desarrollo. Superar la prueba del vertical slice no valida por sí solo retención, rivalidad o deseo de volver; esas hipótesis requieren una prueba posterior con personas y resultados reales.
@@ -50,4 +52,4 @@ El rediseño conserva el motor actual de desafíos y formatos. La primera entreg
 - Las decisiones marcadas como **obligatorias** forman el contrato del vertical slice.
 - Las marcadas como **posteriores** no bloquean la primera validación.
 - Si una decisión de implementación contradice esta documentación, debe registrarse y actualizarse aquí.
-- El vertical slice se valida antes de migrar la biblioteca de formatos y el resto de modos.
+- El vertical slice se validó antes de migrar la biblioteca de formatos. La migración visual se aplica por variante, por lo que el shell `default` y sus estilos legacy permanecen disponibles.

@@ -2,7 +2,8 @@
 
 ## Estrategia
 
-Se construirá primero un vertical slice aislado y reversible. No se migrarán los veinticinco formatos ni se sustituirá el tema global hasta validar la nueva dirección.
+Se construirá primero un vertical slice aislado y reversible. La migración de los 31 formatos se
+realiza después por variante y sin sustituir el tema global, una vez validada la nueva dirección.
 
 El motor de sesión, scoring, validación, datos de preguntas y rutas actuales se consideran infraestructura estable. La primera intervención se concentra en presentación y datos mock sociales.
 
@@ -195,7 +196,7 @@ Orden recomendado si se aprueba el slice:
 2. Mapa completo de Pirámide.
 3. Alfabeto y Narrativa.
 4. Revisión de respuestas.
-5. Biblioteca de formatos.
+5. Biblioteca de formatos — migrada mediante `QuestionVariant`; pendiente de QA manual exhaustivo.
 6. Estados vacíos, errores y not-found.
 7. Tema oscuro especial.
 8. Backend social de producción cuando exista alcance de producto; la prueba social controlada ocurre antes de la extensión completa.
@@ -271,12 +272,14 @@ La sesión, el scoring, la persistencia, el feedback, el resultado y la revisió
 siguen siendo los contratos existentes.
 
 Estos modos permanecen temporalmente en el shell legacy: Alfabeto, Pirámide,
-Supervivencia y Narrativa. Los 13 formatos no adaptados tampoco forman parte de
-este corte; si un futuro desafío Flash los solicita, el adaptador Pop muestra un
-estado explícito de formato no disponible.
+Supervivencia y Narrativa. Los 31 formatos de la biblioteca sí disponen ya de
+presentación `flash-pop`; esta migración no implica que todos formen parte de los
+desafíos publicados ni del shell social completo.
 
 ## Próximo hito ejecutable
 
-Completar la migración progresiva de formatos y shells restantes, eliminando los
-aliases temporales y los overrides de compatibilidad cuando ya no tengan
-consumidores.
+La migración de los 31 formatos ya está integrada mediante `QuestionVariant`. El siguiente hito
+es cerrar la revisión manual de la Fase 4 —interacción exhaustiva, VoiceOver y
+`prefers-reduced-motion`— y resolver o aceptar explícitamente las incidencias registradas en
+[`../qa-fase-4.md`](../qa-fase-4.md). Los aliases y overrides de compatibilidad solo se
+eliminarán cuando no tengan consumidores.

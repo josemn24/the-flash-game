@@ -59,6 +59,7 @@ export type FlashPopRankRow = {
 };
 
 export type FlashPopResult = {
+  socialSource: "demo";
   score: number;
   levelsCleared: number;
   playerRank: number;
@@ -162,7 +163,7 @@ export function isFlashPopPreviewChallenge(id: string): id is FlashPopChallengeI
 }
 
 function getSocialFixture(id: string): FlashPopSocialFixture {
-  return socialFixtures[isFlashPopPreviewChallenge(id) ? id : FLASH_POP_CHALLENGE_ID];
+  return socialFixtures[id as FlashPopChallengeId] ?? socialFixtures[FLASH_POP_CHALLENGE_ID];
 }
 
 function getPlayer(id: string) {
@@ -220,6 +221,7 @@ export function getFlashPopResult(
   );
 
   return {
+    socialSource: "demo",
     score: summary.score,
     levelsCleared: summary.levelsCleared,
     playerRank: current.rank,

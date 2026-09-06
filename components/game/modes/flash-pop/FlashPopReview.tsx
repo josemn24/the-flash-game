@@ -32,11 +32,13 @@ export function FlashPopReview({
   results,
   summary,
   onBack,
+  onReplay,
 }: {
   challenge: PyramidChallenge;
   results: AnswerResult[];
   summary: PyramidAttemptSummary;
   onBack: () => void;
+  onReplay: () => void;
 }) {
   return (
     <Card as="section" className={styles.card} aria-labelledby="flash-pop-review-title">
@@ -94,9 +96,14 @@ export function FlashPopReview({
         })}
       </div>
 
-      <Button variant="secondary" fullWidth onClick={onBack}>
-        Volver al resultado
-      </Button>
+      <div className={styles.actions}>
+        <Button variant="secondary" fullWidth onClick={onBack}>
+          Volver al resultado
+        </Button>
+        <Button variant="secondary" fullWidth onClick={onReplay}>
+          Jugar de nuevo
+        </Button>
+      </div>
     </Card>
   );
 }

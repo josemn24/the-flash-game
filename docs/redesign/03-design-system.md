@@ -30,7 +30,21 @@ Este documento traduce Flash Pop a reglas implementables. Los nombres propuestos
 }
 ```
 
-Los tokens están implementados bajo `data-theme="flash-pop"` y el layout de `/flash-pop`; no sustituyen variables globales. Esto evita una migración accidental de los formatos oscuros durante el vertical slice.
+Los tokens están implementados bajo `data-theme="flash-pop"` y el layout de `/flash-pop`. En los formatos de preguntas, los overrides claros se activan de forma localizada mediante `data-variant="flash-pop"`; no sustituyen los estilos de `default` ni las variables globales. Esto permite migrar los 31 renderers sin alterar la apariencia legacy ni la lógica de juego.
+
+### Contrato de variante en los formatos
+
+`QuestionVariant` es el contrato opcional compartido por `QuestionInput` y todos los renderers:
+
+```ts
+type QuestionVariant = "default" | "flash-pop";
+```
+
+Cada root visual expone `data-variant`, con `default` como fallback cuando no se proporciona
+la prop. La variante solo controla presentación: modelos de pregunta, callbacks, scoring,
+respuestas parciales, bloqueo y timeouts deben permanecer iguales. Los overrides Flash Pop deben
+estar siempre scoped bajo `[data-variant="flash-pop"]` y los colores propios de una mecánica
+deben conservarse cuando tengan significado funcional.
 
 ## Economía visual: puntos y rayos
 

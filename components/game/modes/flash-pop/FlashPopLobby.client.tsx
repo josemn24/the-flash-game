@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
 import {
   Avatar,
   AvatarStack,
@@ -14,13 +13,8 @@ import {
 } from "@/components/ui";
 import { ArrowIcon, BellIcon, BoltIcon, TrophyIcon } from "@/components/ui";
 import {
-  parsePyramidAttempt,
-  getPyramidAttemptStorageKey,
-} from "@/features/pyramid/pyramidAttempt";
-import {
   FLASH_POP_CHALLENGE_ID,
   FLASH_POP_SECONDARY_CHALLENGE_ID,
-  FLASH_POP_STORAGE_NAMESPACE,
   getFlashPopLobbyChallenge,
   flashPopPlayers,
 } from "@/features/flash-pop/demoSocial";
@@ -59,49 +53,8 @@ export function FlashPopLobby({
   primaryChallenge: PyramidChallenge;
   secondaryChallenge: PyramidChallenge;
 }) {
-  const flashPopChallenges = useMemo(
-    () => ({ primary: primaryChallenge, secondary: secondaryChallenge }),
-    [primaryChallenge, secondaryChallenge],
-  );
-  const [primaryModel, setPrimaryModel] = useState(() =>
-    getFlashPopLobbyChallenge(null, FLASH_POP_CHALLENGE_ID),
-  );
-  const [secondaryModel, setSecondaryModel] = useState(() =>
-    getFlashPopLobbyChallenge(null, FLASH_POP_SECONDARY_CHALLENGE_ID),
-  );
-
-  useEffect(() => {
-    const storageEntries = (
-      [
-        {
-          challenge: flashPopChallenges.primary,
-          challengeId: FLASH_POP_CHALLENGE_ID,
-          setModel: setPrimaryModel,
-        },
-        {
-          challenge: flashPopChallenges.secondary,
-          challengeId: FLASH_POP_SECONDARY_CHALLENGE_ID,
-          setModel: setSecondaryModel,
-        },
-      ] as const
-    ).map((entry) => ({
-      ...entry,
-      storageKey: getPyramidAttemptStorageKey(entry.challenge, FLASH_POP_STORAGE_NAMESPACE),
-    }));
-
-    const sync = (entry: (typeof storageEntries)[number], serialized: string | null) => {
-      const record = serialized ? parsePyramidAttempt(serialized, entry.challenge) : null;
-      entry.setModel(getFlashPopLobbyChallenge(record, entry.challengeId));
-    };
-
-    storageEntries.forEach((entry) => sync(entry, window.localStorage.getItem(entry.storageKey)));
-    const onStorage = (event: StorageEvent) => {
-      const entry = storageEntries.find((candidate) => candidate.storageKey === event.key);
-      if (entry) sync(entry, event.newValue);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, [flashPopChallenges]);
+  const primaryModel = getFlashPopLobbyChallenge(null, FLASH_POP_CHALLENGE_ID);
+  const secondaryModel = getFlashPopLobbyChallenge(null, FLASH_POP_SECONDARY_CHALLENGE_ID);
 
   const actionLabel = getActionLabel(primaryModel.status);
   const progress = Math.min(
@@ -130,7 +83,7 @@ export function FlashPopLobby({
 
         <div className={styles.headerActions}>
           <Chip tone="social" className={styles.previewBadge}>
-            Preview
+            Demo
           </Chip>
           <Chip icon={<BoltIcon />}>Nv. 4</Chip>
           <IconButton label="Notificaciones" className={styles.notificationButton}>
@@ -144,7 +97,7 @@ export function FlashPopLobby({
           <p className={styles.eyebrow}>Reto disponible · Demo</p>
           <h1>Hoy toca subir.</h1>
         </div>
-        <p>Un solo intento. Llega tan alto como puedas y supera a tu grupo.</p>
+        <p>Llega tan alto como puedas, revisa tu ascenso y supera a tu grupo.</p>
       </section>
 
       <div className={styles.dashboard}>
@@ -168,7 +121,7 @@ export function FlashPopLobby({
               <Chip tone={primaryModel.status === "completed" ? "success" : "social"}>
                 {getStatusLabel(primaryModel.status)}
               </Chip>
-              <Chip variant="data">Preview</Chip>
+              <Chip variant="data">Demo</Chip>
             </div>
           </div>
 
@@ -181,7 +134,9 @@ export function FlashPopLobby({
             {primaryModel.status === "inProgress" &&
             typeof primaryModel.currentLevelIndex === "number" ? (
               <p className={styles.progressCopy}>
-                En curso · Nivel {Math.min(primaryModel.currentLevelIndex + 1, 7)} de 7
+                En curso · Nivel{" "}
+                {Math.min(primaryModel.currentLevelIndex + 1, primaryChallenge.levels.length)} de{" "}
+                {primaryChallenge.levels.length}
               </p>
             ) : null}
             <div className={styles.socialRow}>
@@ -203,7 +158,7 @@ export function FlashPopLobby({
               {actionLabel}
             </ButtonLink>
             <p className={styles.attemptNote}>
-              7 niveles · Tu primer acceso inicia el único intento oficial.
+              {primaryChallenge.levels.length} niveles · Puedes volver a jugar cuando quieras.
             </p>
           </div>
         </Card>
@@ -244,7 +199,7 @@ export function FlashPopLobby({
             </div>
             <div className={styles.secondaryChallengeBody}>
               <div className={styles.cardHeading}>
-                <p className={styles.eyebrow}>Siguiente preview</p>
+                <p className={styles.eyebrow}>Siguiente reto · Demo</p>
                 <Chip tone={secondaryModel.status === "completed" ? "success" : "social"}>
                   {getStatusLabel(secondaryModel.status)}
                 </Chip>
@@ -254,7 +209,9 @@ export function FlashPopLobby({
               {secondaryModel.status === "inProgress" &&
               typeof secondaryModel.currentLevelIndex === "number" ? (
                 <p className={styles.progressCopy}>
-                  Nivel {Math.min(secondaryModel.currentLevelIndex + 1, 7)} de 7
+                  Nivel{" "}
+                  {Math.min(secondaryModel.currentLevelIndex + 1, secondaryChallenge.levels.length)}{" "}
+                  de {secondaryChallenge.levels.length}
                 </p>
               ) : null}
               <ButtonLink

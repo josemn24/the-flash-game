@@ -4,10 +4,10 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border: var(--border-action);
+  border: 1px solid var(--color-border-hover);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
-  box-shadow: var(--shadow-control);
+  box-shadow: 0 2px 0 rgb(23 23 32 / 12%);
   color: var(--color-ink);
   font-family: var(--type-mono);
   font-variant-numeric: tabular-nums;
@@ -34,6 +34,7 @@
 }
 
 .finished {
+  border-color: var(--color-ink);
   background: var(--color-ink);
   color: var(--color-text-on-social);
 }

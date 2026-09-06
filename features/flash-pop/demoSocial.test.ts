@@ -42,9 +42,28 @@ describe("Flash Pop demo social adapter", () => {
     expect(result.peers[0]?.player.id).toBe("javi");
     expect(result.totalPlayers).toBe(8);
     expect(result.seasonXpEarned).toBe(120);
+    expect(result.socialSource).toBe("demo");
   });
 
-  it("shows an unsuccessful attempt as not completed without pretending it is replayable", () => {
+  it("uses the generic demo fixture for any pyramid challenge", () => {
+    const result = getFlashPopResult(
+      {
+        challengeId: "future-pyramid-challenge",
+        levelsCleared: 2,
+        score: 25,
+        timeUsed: 20,
+        outcome: "failed",
+        completedAt: 100,
+      },
+      { levelCount: 3, totalTimeLimit: 30 },
+    );
+
+    expect(result.socialSource).toBe("demo");
+    expect(result.totalPlayers).toBe(8);
+    expect(result.levelsCleared).toBe(2);
+  });
+
+  it("shows an unsuccessful attempt as not completed", () => {
     const result = getFlashPopResult({
       challengeId: "tabarnia-challenge-05",
       levelsCleared: 0,

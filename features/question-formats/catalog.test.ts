@@ -366,8 +366,8 @@ describe("question format catalog", () => {
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
     ).toEqual([
-      172_799_999, 172_799_999, 259_199_999, 777_599_999, 777_599_999, 86_399_999, 86_399_999,
-      86_399_999, 86_399_999,
+      1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999,
+      86_399_999, 86_399_999, 86_399_999,
     ]);
     expect(challenges).toHaveLength(6);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
