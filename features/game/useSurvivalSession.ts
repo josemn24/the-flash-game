@@ -15,7 +15,12 @@ import {
 } from "@/features/game/survivalRules";
 import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
 
-const TRANSITION_DURATION = 650;
+const TRANSITION_DURATION = {
+  correct: 1100,
+  partial: 1100,
+  incorrect: 1800,
+  unanswered: 1800,
+} as const;
 
 type SessionState = {
   phase: GamePhase;
@@ -186,6 +191,8 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
         survived,
       });
 
+      const transitionDuration = TRANSITION_DURATION[result.status];
+
       advanceTimeout.current = setTimeout(() => {
         if (eliminated || lastQuestion) {
           dispatch({ type: "finish" });
@@ -194,7 +201,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
         resetQuestionRefs();
         questionStartedAt.current = performance.now();
         dispatch({ type: "advance" });
-      }, TRANSITION_DURATION);
+      }, transitionDuration);
     },
     [
       challenge.questions.length,

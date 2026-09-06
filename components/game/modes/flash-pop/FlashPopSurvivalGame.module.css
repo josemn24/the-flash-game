@@ -7,6 +7,14 @@
   padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
 }
 
+.feedbackFrame {
+  display: flex;
+  width: 100%;
+  min-height: calc(100dvh - 48px);
+  align-items: stretch;
+  justify-content: center;
+}
+
 .stage {
   display: grid;
   width: min(100%, 680px);

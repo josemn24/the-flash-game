@@ -14,6 +14,22 @@ type Props = {
   points?: number;
 };
 
+type FeedbackIconAnimation = {
+  initial: { opacity: number; scale: number; rotate: number };
+  animate: { opacity: number; scale: number; rotate: number };
+  transition: { type: "spring"; stiffness: number; damping: number };
+};
+
+export function getFlashPopFeedbackIconAnimation(status: AnswerStatus): FeedbackIconAnimation {
+  const failure = status === "incorrect" || status === "unanswered";
+
+  return {
+    initial: { opacity: 0, scale: 0.45, rotate: failure ? 12 : -12 },
+    animate: { opacity: 1, scale: 1, rotate: 0 },
+    transition: { type: "spring", stiffness: 280, damping: 18 },
+  };
+}
+
 function FeedbackIcon({ status }: { status: AnswerStatus }) {
   if (status === "unanswered") return <ClockIcon aria-hidden="true" />;
   if (status === "incorrect") return <CrossIcon aria-hidden="true" />;
@@ -22,26 +38,18 @@ function FeedbackIcon({ status }: { status: AnswerStatus }) {
 
 export function FlashPopFeedback({ status, eyebrow, title, body, points }: Props) {
   const failure = status === "incorrect" || status === "unanswered";
+  const iconAnimation = getFlashPopFeedbackIconAnimation(status);
 
   return (
     <div className={styles.root} role="status" aria-live="polite" aria-atomic="true">
       <motion.div
         className={styles.stage}
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
       >
         <Card className={`${styles.card} ${failure ? styles.failure : ""}`}>
-          <motion.span
-            className={styles.icon}
-            aria-hidden="true"
-            initial={{ opacity: 0, scale: 0.72 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={
-              failure
-                ? { duration: 0.2 }
-                : { type: "spring", stiffness: 280, damping: 16, delay: 0.08 }
-            }
-          >
+          <motion.span className={styles.icon} aria-hidden="true" {...iconAnimation}>
             <FeedbackIcon status={status} />
           </motion.span>
           {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}

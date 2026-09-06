@@ -89,7 +89,6 @@ function Feedback({
   questionNumber,
   totalQuestions,
   livesRemaining,
-  totalLives,
   eliminated,
   survived,
 }: {
@@ -97,7 +96,6 @@ function Feedback({
   questionNumber: number;
   totalQuestions: number;
   livesRemaining: number;
-  totalLives: number;
   eliminated: boolean;
   survived: boolean;
 }) {
@@ -107,7 +105,7 @@ function Feedback({
     : survived
       ? "Has sobrevivido"
       : result.status === "correct"
-        ? "Bien visto"
+        ? "Respuesta correcta"
         : result.status === "partial"
           ? "Aproximación válida"
           : result.status === "unanswered"
@@ -116,17 +114,16 @@ function Feedback({
   const body = eliminated
     ? `Has llegado al reto ${questionNumber} de ${totalQuestions}.`
     : survived
-      ? `Has completado los ${totalQuestions} retos.`
+      ? "Calculando tu resultado…"
       : failure
         ? `Pierdes una vida. Te quedan ${livesRemaining}.`
         : result.status === "partial"
           ? `Sumas puntos y conservas tus ${livesRemaining} vidas.`
-          : "Conservas tus vidas. Siguiente reto en marcha.";
+          : "Siguiente reto en marcha.";
 
   return (
     <FlashPopFeedback
       status={result.status}
-      eyebrow={`Reto ${questionNumber} · ${livesRemaining}/${totalLives} vidas`}
       title={title}
       body={body}
       points={result.points > 0 ? result.points : undefined}
@@ -204,7 +201,8 @@ export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallen
 
           {session.phase === "transition" && latestResult ? (
             <motion.div
-              key="feedback"
+              className={styles.feedbackFrame}
+              key={`feedback-${session.questionIndex}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -214,7 +212,6 @@ export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallen
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 livesRemaining={session.livesRemaining}
-                totalLives={scoredChallenge.lives}
                 eliminated={session.eliminated}
                 survived={session.survived}
               />
