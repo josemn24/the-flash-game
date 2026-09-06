@@ -12,6 +12,7 @@ import { FlashPopQuestionInput } from "@/components/game/modes/flash-pop/FlashPo
 import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { useGameSession } from "@/features/game/useGameSession";
+import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
@@ -23,13 +24,6 @@ import type {
   QuestionMedia as QuestionMediaType,
 } from "@/types/game";
 import styles from "./FlashPopFlashGame.module.css";
-
-const FLASH_POP_FEEDBACK_DURATION = {
-  correct: 1100,
-  partial: 1100,
-  incorrect: 1800,
-  unanswered: 1800,
-} as const;
 
 function formatTime(seconds: number) {
   const rounded = Math.max(0, Math.round(seconds));

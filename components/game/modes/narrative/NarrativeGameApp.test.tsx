@@ -29,11 +29,16 @@ describe("Narrative Flash Pop migration", () => {
     expect(source).toContain("FlashPopFeedback");
     expect(source).toContain("getFlashPopFeedbackCopy");
     expect(source).toContain("feedbackStage");
+    expect(source).toContain('key={`feedback-${session.stepIndex}`}');
+    expect(source).toContain("exit={{ opacity: 0 }}");
     expect(source).not.toContain("Registro actualizado");
     expect(source).toContain('data-variant="flash-pop"');
     expect(source).toContain("const isDarkPresentation");
     expect(source).toContain("styles.storyPageDark");
     expect(source).toContain("styles.darkStoryPhase");
+    expect(source).toContain("styles.storyScreenImage");
+    expect(styles).toContain(".storyScreenImage .storyPage");
+    expect(styles).toContain(".storyScreenImage .storyPageArtifact .storyVisual");
   });
 
   it("does not fall back to the legacy question or transition surfaces", () => {

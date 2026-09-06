@@ -7,10 +7,9 @@ import {
   initialNarrativeSessionState,
   narrativeSessionReducer,
 } from "@/features/narrative/narrativeSession";
+import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
 import type { AnswerValue, NarrativeChallenge } from "@/types/game";
-
-const TRANSITION_DURATION = 900;
 
 export function useNarrativeSession(challenge: NarrativeChallenge) {
   const sequence = useMemo(() => getNarrativeSequence(challenge), [challenge]);
@@ -90,7 +89,7 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
       });
       advanceTimeout.current = setTimeout(
         () => prepareNextStep(state.stepIndex + 1),
-        TRANSITION_DURATION,
+        FLASH_POP_FEEDBACK_DURATION[result.status],
       );
     },
     [currentStep, prepareNextStep, state.phase, state.stepIndex],

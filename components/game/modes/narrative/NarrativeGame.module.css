@@ -1645,6 +1645,22 @@
   box-shadow: var(--shadow-hero);
 }
 
+.storyScreenImage {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+.storyScreenImage .storyPage {
+  border: 0;
+  box-shadow: none;
+}
+
+.storyScreenImage .storyPageArtifact .storyVisual {
+  margin: 0;
+  border: 0;
+}
+
 .storyPageText,
 .storyPageArtifact,
 .storyPage .storyVisual {

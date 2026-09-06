@@ -166,7 +166,7 @@ function NarrativeSceneScreen({
 
   return (
     <motion.section
-      className={styles.storyScreen}
+      className={`${styles.storyScreen} ${scene.media?.type === "image" ? styles.storyScreenImage : ""}`}
       initial={{ opacity: 0, x: 28 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -28 }}
@@ -531,9 +531,14 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                 />
               )}
               {session.phase === "transition" && (
-                <div className={styles.feedbackStage}>
+                <motion.div
+                  className={styles.feedbackStage}
+                  key={`feedback-${session.stepIndex}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
                   <FlashPopFeedback
-                    key={`narrative-transition-${session.stepIndex}`}
                     status={narrativeFeedbackStatus}
                     title={narrativeFeedbackCopy.title}
                     body={narrativeFeedbackCopy.body}
@@ -544,7 +549,7 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                         : undefined
                     }
                   />
-                </div>
+                </motion.div>
               )}
               {session.phase === "results" && (
                 <NarrativeResult
