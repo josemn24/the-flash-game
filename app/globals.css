@@ -48,10 +48,11 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  --radius-sm: 12px;
-  --radius-control: 18px;
-  --radius-card: 24px;
-  --radius-hero: 30px;
+  /* Angular surfaces; rounding is reserved for compact controls and status. */
+  --radius-sm: 8px;
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-hero: 0;
   --radius-pill: 999px;
 
   --shadow-control: 0 3px 0 rgb(23 23 32 / 18%);

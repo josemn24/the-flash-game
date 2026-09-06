@@ -89,12 +89,15 @@ Reglas:
 ## Radios
 
 ```text
-radius-sm       12 px   chips cuadrados y teclas
-radius-control  18 px   inputs y botones secundarios
-radius-card     24 px   tarjetas estándar
-radius-hero     30 px   reto destacado y resultado
+radius-sm        8 px   teclas y detalles compactos
+radius-control  10 px   inputs y botones
+radius-card     14 px   tarjetas estándar
+radius-hero      0 px   superficies principales y retos destacados
 radius-pill     999 px  chips, contadores y avatares
 ```
+
+La jerarquía visual es deliberadamente angular: las superficies principales no tienen radio, las
+tarjetas usan un radio pequeño y las cápsulas quedan reservadas para estados compactos.
 
 ## Bordes y elevación
 

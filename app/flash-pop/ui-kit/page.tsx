@@ -36,10 +36,10 @@ const colors = [
 ] as const;
 
 const radii = [
-  ["Sm", "--radius-sm", "12 px"],
-  ["Control", "--radius-control", "18 px"],
-  ["Card", "--radius-card", "24 px"],
-  ["Hero", "--radius-hero", "30 px"],
+  ["Sm", "--radius-sm", "8 px"],
+  ["Control", "--radius-control", "10 px"],
+  ["Card", "--radius-card", "14 px"],
+  ["Hero", "--radius-hero", "0 px"],
   ["Pill", "--radius-pill", "999 px"],
 ] as const;
 
