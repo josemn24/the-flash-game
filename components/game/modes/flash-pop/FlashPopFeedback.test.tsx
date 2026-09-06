@@ -43,4 +43,25 @@ describe("FlashPopFeedback", () => {
     expect(markup).toContain("Has acertado.");
     expect(markup).toContain("+5 puntos");
   });
+
+  it("supports a compact inline layout without changing the default feedback", () => {
+    const markup = renderToStaticMarkup(
+      <FlashPopFeedback
+        status="incorrect"
+        eyebrow="Vuelta 1"
+        title="Casi."
+        body="Prueba otra."
+        points={5}
+        variant="inline"
+      />,
+    );
+
+    expect(markup).toContain("inlineRoot");
+    expect(markup).toContain("inlineStage");
+    expect(markup).toContain("inlineCard");
+    expect(markup).toContain("Casi.");
+    expect(markup).not.toContain("Vuelta 1");
+    expect(markup).not.toContain("Prueba otra.");
+    expect(markup).not.toContain("+5 puntos");
+  });
 });

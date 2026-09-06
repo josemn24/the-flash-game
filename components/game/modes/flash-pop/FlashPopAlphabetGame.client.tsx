@@ -88,7 +88,9 @@ function AlphabetForm({
   const [answer, setAnswer] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => inputRef.current?.focus(), [question.id]);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -265,7 +267,7 @@ function Playing({
             </span>
             <Timer
               duration={challenge.timeLimit}
-              active={!locked}
+              active
               onTimeUp={session.finish}
               resetKey={`${challenge.id}-alphabet`}
               size="compact"
@@ -280,11 +282,13 @@ function Playing({
         <section className={styles.questionPanel} aria-labelledby="alphabet-question-title">
           <h1 id="alphabet-question-title">{entry.question.question}</h1>
           <AlphabetForm
+            key={entry.question.id}
             question={entry.question}
             locked={locked}
             onSubmit={session.submitAnswer}
             onPass={session.pass}
           />
+          {session.phase === "feedback" ? <Feedback session={session} /> : null}
         </section>
       </div>
     </div>
@@ -294,9 +298,10 @@ function Playing({
 function Feedback({ session }: { session: AlphabetSession }) {
   const correct = session.feedback === "correct";
   return (
-    <div className={styles.feedbackStage}>
+    <div className={styles.inlineFeedback}>
       <FlashPopFeedback
         status={correct ? "correct" : "incorrect"}
+        variant="inline"
         eyebrow={`Vuelta ${session.round} · ${session.correctAnswers} aciertos`}
         title={correct ? "Correcto" : "Casi."}
         body={
@@ -504,7 +509,7 @@ export function FlashPopAlphabetGame({ challenge }: { challenge: AlphabetChallen
           {session.phase === "countdown" ? (
             <Countdown key="countdown" onComplete={session.start} />
           ) : null}
-          {session.phase === "playing" ? (
+          {session.phase === "playing" || session.phase === "feedback" ? (
             <motion.div
               key="playing"
               initial={{ opacity: 0, x: 18 }}
@@ -512,16 +517,6 @@ export function FlashPopAlphabetGame({ challenge }: { challenge: AlphabetChallen
               exit={{ opacity: 0, x: -18 }}
             >
               <Playing challenge={challenge} session={session} />
-            </motion.div>
-          ) : null}
-          {session.phase === "feedback" ? (
-            <motion.div
-              key="feedback"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Feedback session={session} />
             </motion.div>
           ) : null}
           {session.phase === "results" ? (

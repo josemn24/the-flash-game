@@ -82,6 +82,28 @@ describe("FlashPopAlphabetGame", () => {
     expect(styles).not.toContain(".countdown > span");
   });
 
+  it("keeps feedback inline with the question and the global timer mounted", () => {
+    expect(source).toContain('session.phase === "playing" || session.phase === "feedback"');
+    expect(source).toContain('variant="inline"');
+    expect(source).toContain("active\n");
+    expect(source).not.toContain("active={!locked}");
+    expect(styles).toContain(".inlineFeedback {");
+  });
+
+  it("overlays feedback without adding vertical space to the question", () => {
+    expect(styles).toContain(".questionPanel {");
+    expect(styles).toContain("position: relative;");
+    expect(styles).toContain("position: absolute;");
+    expect(styles).toContain("inset: 0;");
+    expect(styles).toContain("pointer-events: none;");
+  });
+
+  it("clears the answer when the next letter becomes active", () => {
+    expect(source).toContain("key={entry.question.id}");
+    expect(source).toContain("useEffect(() => {");
+    expect(source).toContain("inputRef.current?.focus();");
+  });
+
   it("uses the Pop rotate icon and spacing for the pass action", () => {
     expect(source).toContain("className={styles.passButton}");
     expect(source).toContain("trailingIcon={<RotateIcon />}");

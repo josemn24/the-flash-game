@@ -12,6 +12,7 @@ type Props = {
   title: string;
   body: string;
   points?: number;
+  variant?: "default" | "inline";
 };
 
 type FeedbackIconAnimation = {
@@ -36,26 +37,46 @@ function FeedbackIcon({ status }: { status: AnswerStatus }) {
   return <CheckIcon aria-hidden="true" />;
 }
 
-export function FlashPopFeedback({ status, eyebrow, title, body, points }: Props) {
+export function FlashPopFeedback({
+  status,
+  eyebrow,
+  title,
+  body,
+  points,
+  variant = "default",
+}: Props) {
   const failure = status === "incorrect" || status === "unanswered";
+  const inline = variant === "inline";
   const iconAnimation = getFlashPopFeedbackIconAnimation(status);
 
   return (
-    <div className={styles.root} role="status" aria-live="polite" aria-atomic="true">
+    <div
+      className={`${styles.root} ${inline ? styles.inlineRoot : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <motion.div
-        className={styles.stage}
+        className={`${styles.stage} ${inline ? styles.inlineStage : ""}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <Card className={`${styles.card} ${failure ? styles.failure : ""}`}>
-          <motion.span className={styles.icon} aria-hidden="true" {...iconAnimation}>
+        <Card
+          padding={inline ? "compact" : "default"}
+          className={`${styles.card} ${inline ? styles.inlineCard : ""} ${failure ? styles.failure : ""}`}
+        >
+          <motion.span
+            className={`${styles.icon} ${inline ? styles.inlineIcon : ""}`}
+            aria-hidden="true"
+            {...iconAnimation}
+          >
             <FeedbackIcon status={status} />
           </motion.span>
-          {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+          {!inline && eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
           <h1>{title}</h1>
-          <p>{body}</p>
-          {typeof points === "number" ? (
+          {!inline ? <p>{body}</p> : null}
+          {!inline && typeof points === "number" ? (
             <motion.p
               className={styles.points}
               initial={{ opacity: 0, y: 8 }}

@@ -9,6 +9,15 @@
   align-items: center;
 }
 
+.inlineRoot {
+  min-height: 0;
+  align-items: stretch;
+}
+
+.inlineStage {
+  width: 100%;
+}
+
 .card {
   display: grid;
   gap: var(--space-4);
@@ -83,6 +92,32 @@
   font-size: 15px;
   font-weight: 600;
   line-height: 1.5;
+}
+
+.inlineCard {
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+}
+
+.inlineCard .icon {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.inlineCard .icon svg {
+  width: 22px;
+}
+
+.inlineCard h1 {
+  grid-column: auto;
+  font-size: clamp(20px, 5vw, 28px);
 }
 
 .points {
