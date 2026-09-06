@@ -1120,6 +1120,7 @@
 .epilogueScreen {
   background: var(--color-canvas);
 }
+
 .notebookTriggerCompact {
   border-color: var(--color-border-hover);
   background: var(--color-surface);
@@ -1572,6 +1573,177 @@
   }
 }
 
+/* Flash Pop shell layer: narrative imagery remains immersive, while the
+   surrounding chrome and interactive surfaces use the shared Pop contract. */
+.flashPopCanvas {
+  min-height: 100dvh;
+  background: transparent;
+}
+
+.flashPopCanvasContent {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+.storyHeader {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-6);
+  left: var(--space-6);
+}
+
+.storyChrome .notebookTriggerCompact {
+  position: static;
+}
+
+.storyPage {
+  padding: 0;
+  border: var(--border-subtle);
+  border-radius: var(--radius-hero);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.storyPageText,
+.storyPageArtifact {
+  background: var(--color-surface-soft);
+}
+
+.storyPage .storyVisual {
+  background: var(--color-surface-soft);
+}
+
+.questionHud {
+  top: var(--space-4);
+  right: max(var(--space-6), env(safe-area-inset-right));
+  left: max(var(--space-6), env(safe-area-inset-left));
+  justify-content: space-between;
+}
+
+.questionHud .actions {
+  gap: var(--space-2);
+}
+
+.questionHud .notebookTriggerCompact {
+  position: static;
+}
+
+.questionPage {
+  width: min(calc(100% - 2 * var(--space-8)), 980px);
+  min-height: calc(100dvh - 2 * var(--space-8));
+  margin: var(--space-8) auto;
+  border-radius: var(--radius-hero);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.questionPage .questionArticle {
+  width: min(100%, 820px);
+  margin: 0 auto;
+  padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
+}
+
+.introPanel,
+.resultDetails {
+  border: var(--border-subtle);
+  border-radius: var(--radius-hero);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.introStats,
+.resultStats div,
+.answerStates li {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+}
+
+.resultNotebook,
+.backLink {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+
+.resultNotebook:hover,
+.backLink:hover {
+  border-color: var(--color-focus);
+  background: var(--color-surface);
+}
+
+.notebookDialog {
+  color: var(--color-ink);
+}
+
+.notebookDialog::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 48%, transparent);
+}
+
+.notebookSurface {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.notebookHeader {
+  border-bottom-color: var(--color-border);
+  background: var(--color-surface-soft);
+}
+
+.notebookHeader span,
+.notebookEntries small {
+  color: var(--color-ink-faint);
+}
+
+.notebookClose {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+}
+
+.notebookClose:hover {
+  border-color: var(--color-focus);
+  color: var(--color-ink);
+}
+
+.notebookEmpty p {
+  color: var(--color-ink-muted);
+}
+
+.notebookEntries li + li {
+  border-top-color: var(--color-border);
+}
+
+.notebookEntries li > span {
+  color: var(--color-social);
+}
+
+@media (max-width: 799px) {
+  .storyHeader {
+    right: var(--space-4);
+    left: var(--space-4);
+  }
+
+  .questionPage {
+    width: calc(100% - 2 * var(--space-4));
+    min-height: calc(100dvh - 2 * var(--space-6));
+    margin: var(--space-6) auto;
+  }
+
+  .questionPage .questionArticle {
+    padding: 5.5rem var(--space-4) var(--space-8);
+  }
+}
+
+/* Text-led scenes flow directly over the Pop canvas; the blackout epilogue
+   keeps its own full-screen treatment. */
+.gameRoot:not(.blackoutPhase) .storyPageText {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 /* Final theme layer for the immersive variants declared above. */
 .gameRoot,
 .storyPage,
@@ -1672,4 +1844,160 @@
 }
 .epilogueScreen {
   background: var(--color-canvas);
+}
+
+/* The migration layer must remain last so it wins over legacy immersive rules. */
+.flashPopCanvas {
+  min-height: 100dvh;
+  background: transparent;
+}
+
+.flashPopCanvasContent {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+.storyHeader {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-6);
+  left: var(--space-6);
+}
+
+.storyChrome .notebookTriggerCompact,
+.questionHud .notebookTriggerCompact {
+  position: static;
+}
+
+.storyPage {
+  padding: 0;
+  border: var(--border-subtle);
+  border-radius: var(--radius-hero);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.storyPageText,
+.storyPageArtifact,
+.storyPage .storyVisual {
+  background: var(--color-surface-soft);
+}
+
+.questionHud {
+  top: var(--space-4);
+  right: max(var(--space-6), env(safe-area-inset-right));
+  left: max(var(--space-6), env(safe-area-inset-left));
+  justify-content: space-between;
+}
+
+.questionHud .actions {
+  gap: var(--space-2);
+}
+
+.questionPage {
+  width: min(calc(100% - 2 * var(--space-8)), 980px);
+  min-height: calc(100dvh - 2 * var(--space-8));
+  margin: var(--space-8) auto;
+  padding: 0;
+  border-radius: var(--radius-hero);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.questionPage .questionArticle {
+  width: min(100%, 820px);
+  margin: 0 auto;
+  padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
+}
+
+.introPanel,
+.resultDetails {
+  border: var(--border-subtle);
+  border-radius: var(--radius-hero);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.introStats,
+.resultStats div,
+.answerStates li {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+}
+
+.resultNotebook,
+.backLink {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+
+.resultNotebook:hover,
+.backLink:hover {
+  border-color: var(--color-focus);
+  background: var(--color-surface);
+}
+
+.notebookDialog {
+  color: var(--color-ink);
+}
+
+.notebookDialog::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 48%, transparent);
+}
+
+.notebookSurface {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-hero);
+}
+
+.notebookHeader {
+  border-bottom-color: var(--color-border);
+  background: var(--color-surface-soft);
+}
+
+.notebookHeader span,
+.notebookEntries small {
+  color: var(--color-ink-faint);
+}
+
+.notebookClose {
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+}
+
+.notebookClose:hover {
+  border-color: var(--color-focus);
+  color: var(--color-ink);
+}
+
+.notebookEmpty p {
+  color: var(--color-ink-muted);
+}
+
+.notebookEntries li + li {
+  border-top-color: var(--color-border);
+}
+
+.notebookEntries li > span {
+  color: var(--color-social);
+}
+
+@media (max-width: 799px) {
+  .storyHeader {
+    right: var(--space-4);
+    left: var(--space-4);
+  }
+
+  .questionPage {
+    width: calc(100% - 2 * var(--space-4));
+    min-height: calc(100dvh - 2 * var(--space-6));
+    margin: var(--space-6) auto;
+  }
+
+  .questionPage .questionArticle {
+    padding: 5.5rem var(--space-4) var(--space-8);
+  }
 }

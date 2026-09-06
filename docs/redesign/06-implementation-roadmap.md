@@ -271,11 +271,13 @@ mantiene la disponibilidad de temporada y expone el piloto mediante `openable`.
 La sesión, el scoring, la persistencia, el feedback, el resultado y la revisión
 siguen siendo los contratos existentes.
 
-Estos modos permanecen temporalmente en el shell legacy: Alfabeto y Narrativa. Los
-shells Flash Pop de Pirámide y Supervivencia ya enrutan todos sus desafíos por el
-flujo nuevo, mientras que los 31 formatos de la biblioteca sí disponen ya de
-presentación `flash-pop`; esta migración no implica que todos formen parte de los
-desafíos publicados ni del shell social completo.
+Todos los modos publicados ya enrutan sus desafíos por shells Flash Pop. Narrativa
+conserva una presentación inmersiva propia para escenas, imágenes, capítulos y
+cuaderno de evidencias, pero comparte con Flash Pop el chrome, las superficies,
+los estados de interacción, el feedback, los resultados y la revisión. Los 31
+formatos de la biblioteca también disponen de presentación `flash-pop`; esta
+migración no implica que todos formen parte de los desafíos publicados ni del
+shell social completo.
 
 ## Próximo hito ejecutable
 
