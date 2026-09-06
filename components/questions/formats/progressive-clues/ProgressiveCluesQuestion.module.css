@@ -198,6 +198,7 @@
   border-color: var(--border-subtle);
   border-radius: var(--radius-control);
   background: var(--color-surface-raised);
+  box-shadow: none;
 }
 
 .challenge[data-variant="flash-pop"] .clues li > span {
@@ -209,10 +210,10 @@
 }
 
 .challenge[data-variant="flash-pop"] .revealButton {
-  border-color: var(--border-subtle);
+  border-color: color-mix(in srgb, var(--state-selected) 55%, var(--color-border));
   border-radius: var(--radius-control);
-  color: var(--color-ink);
-  background: var(--color-surface-raised);
+  color: var(--state-focus);
+  background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
   box-shadow: var(--shadow-control);
 }
 
@@ -223,7 +224,7 @@
 .challenge[data-variant="flash-pop"] .revealButton:hover:not(:disabled),
 .challenge[data-variant="flash-pop"] .revealButton:focus-visible {
   border-color: var(--state-selected);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--state-selected) 16%, var(--color-surface));
   outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
 }
 

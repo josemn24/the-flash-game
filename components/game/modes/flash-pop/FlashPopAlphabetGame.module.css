@@ -17,7 +17,6 @@
 
 .introCard,
 .boardCard,
-.questionCard,
 .resultCard,
 .reviewCard {
   border: var(--border-subtle);
@@ -263,6 +262,12 @@
   text-align: center;
 }
 
+.countdownChip {
+  background: var(--color-focus);
+  color: var(--color-text-on-social);
+  font-weight: 800;
+}
+
 .countdown p {
   margin: 0;
   color: var(--color-ink-muted);
@@ -280,18 +285,17 @@
   line-height: 0.8;
 }
 
-.countdown > span {
+.countdownHint {
   color: var(--color-ink-muted);
   font-size: 13px;
 }
 
 .playing {
   width: min(100%, 1040px);
+  gap: var(--space-4);
 }
 
 .gameMeta,
-.progressMeta,
-.questionHeading,
 .reviewHeading,
 .reviewHeading > div,
 .rankingRow,
@@ -301,8 +305,6 @@
 }
 
 .gameMeta,
-.progressMeta,
-.questionHeading,
 .reviewHeading,
 .rankingRow {
   gap: var(--space-3);
@@ -315,18 +317,8 @@
   font-weight: 700;
 }
 
-.gameMeta strong,
-.progressMeta strong {
+.gameMeta strong {
   color: var(--color-ink);
-}
-
-.progressMeta {
-  justify-content: space-between;
-  color: var(--color-ink-muted);
-  font-family: var(--type-mono);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
 }
 
 .playGrid {
@@ -340,22 +332,14 @@
   place-items: center;
 }
 
-.questionCard {
+.questionPanel {
   display: grid;
+  width: 100%;
   gap: var(--space-3);
+  padding: var(--space-3) 0 0;
 }
 
-.questionHeading {
-  justify-content: space-between;
-}
-
-.questionHeading > span {
-  color: var(--color-ink-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.questionCard h1 {
+.questionPanel h1 {
   margin: 0;
   font-family: var(--type-display);
   font-size: clamp(28px, 7vw, 42px);
@@ -381,7 +365,7 @@
   border-radius: var(--radius-control);
   padding: 0 var(--space-4);
   color: var(--color-ink);
-  background: var(--color-surface-raised);
+  background: var(--color-surface);
   font-size: 16px;
   font-weight: 700;
 }
@@ -401,6 +385,11 @@
   display: grid;
   grid-template-columns: 0.72fr 1.28fr;
   gap: var(--space-2);
+}
+
+.passButton {
+  min-height: var(--control-height-hero);
+  gap: var(--space-3);
 }
 
 .answerForm > p {
@@ -684,7 +673,7 @@
   align-content: start;
   align-items: stretch;
   gap: 1.35rem;
-  padding: clamp(1.5rem, 4vw, 3.25rem) 0;
+  padding: 0;
 }
 
 .boardCard {

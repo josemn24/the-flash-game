@@ -34,4 +34,58 @@ describe("FlashPopAlphabetGame", () => {
     expect(styles).toContain("transform: none;");
     expect(styles).toContain("min-height: auto;");
   });
+
+  it("keeps the question panel full width outside the board card", () => {
+    expect(source).toContain("<section className={styles.questionPanel}");
+    expect(source).not.toContain("className={styles.questionCard}");
+    expect(styles).toContain(".questionPanel {");
+    expect(styles).toContain("width: 100%;");
+  });
+
+  it("starts the question directly below the board without format metadata", () => {
+    expect(source).not.toContain("questionHeading");
+    expect(source).not.toContain("entry.question.category");
+  });
+
+  it("keeps the gameplay header free of redundant progress metadata", () => {
+    expect(source).not.toContain("progressMeta");
+    expect(source).not.toContain("Quedan {pendingLetters} letras");
+    expect(source).not.toContain("Empieza por");
+    expect(styles).not.toContain(".progressMeta");
+  });
+
+  it("avoids duplicated vertical space before the gameplay grid", () => {
+    expect(styles).toContain("gap: var(--space-4);");
+    expect(styles).toContain("padding: 0;");
+  });
+
+  it("keeps the answer input bright against the Pop canvas", () => {
+    expect(styles).toContain(".answerForm input {");
+    expect(styles).toContain("background: var(--color-surface);");
+  });
+
+  it("gives the countdown pill a high-contrast Pop treatment", () => {
+    expect(source).toContain("className={styles.countdownChip}");
+    expect(styles).toContain(".countdownChip {");
+    expect(styles).toContain("background: var(--color-focus);");
+    expect(styles).toContain("color: var(--color-text-on-social);");
+  });
+
+  it("keeps the countdown opaque while the number animates", () => {
+    expect(source).toContain("initial={{ opacity: 1 }}");
+    expect(source).toContain("animate={{ opacity: 1 }}");
+  });
+
+  it("does not let the countdown hint override the pill text color", () => {
+    expect(source).toContain("className={styles.countdownHint}");
+    expect(styles).toContain(".countdownHint {");
+    expect(styles).not.toContain(".countdown > span");
+  });
+
+  it("uses the Pop rotate icon and spacing for the pass action", () => {
+    expect(source).toContain("className={styles.passButton}");
+    expect(source).toContain("trailingIcon={<RotateIcon />}");
+    expect(styles).toContain(".passButton {");
+    expect(styles).toContain("gap: var(--space-3);");
+  });
 });

@@ -109,9 +109,15 @@ function AlphabetForm({
         placeholder="Escribe tu respuesta…"
       />
       <div className={styles.answerActions}>
-        <Button variant="secondary" type="button" onClick={onPass} disabled={locked}>
+        <Button
+          variant="secondary"
+          type="button"
+          className={styles.passButton}
+          onClick={onPass}
+          disabled={locked}
+          trailingIcon={<RotateIcon />}
+        >
           Pasar
-          <span aria-hidden="true">↻</span>
         </Button>
         <Button type="submit" disabled={locked || !answer.trim()} trailingIcon={<ArrowIcon />}>
           Responder
@@ -208,13 +214,15 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   return (
     <motion.div
       className={styles.countdown}
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       role="status"
       aria-live="assertive"
     >
-      <Chip tone="social">Alfabeto</Chip>
+      <Chip tone="social" className={styles.countdownChip}>
+        Alfabeto
+      </Chip>
       <p>Prepárate</p>
       <AnimatePresence mode="popLayout">
         <motion.strong
@@ -226,7 +234,7 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
           {count}
         </motion.strong>
       </AnimatePresence>
-      <span>El tiempo empieza después de la cuenta atrás</span>
+      <span className={styles.countdownHint}>El tiempo empieza después de la cuenta atrás</span>
     </motion.div>
   );
 }
@@ -242,9 +250,6 @@ function Playing({
 }) {
   const entry = session.activeEntry;
   if (!entry || entry.question.type !== "short-text") return null;
-  const pendingLetters = session.letters.filter((letter) =>
-    ["unvisited", "active", "passed"].includes(letter.status),
-  ).length;
   const locked = session.phase === "feedback";
 
   return (
@@ -268,25 +273,11 @@ function Playing({
           </div>
         }
       />
-      <div className={styles.progressMeta}>
-        <span>Quedan {pendingLetters} letras</span>
-        <span>
-          Empieza por <strong>{entry.letter}</strong>
-        </span>
-      </div>
       <div className={styles.playGrid}>
         <Card className={styles.boardCard}>
           <AlphabetBoard letters={session.letters} compact />
         </Card>
-        <Card
-          as="section"
-          className={styles.questionCard}
-          aria-labelledby="alphabet-question-title"
-        >
-          <div className={styles.questionHeading}>
-            <Chip variant="data">{QUESTION_FORMAT_LABELS[entry.question.type]}</Chip>
-            <span>{entry.question.category}</span>
-          </div>
+        <section className={styles.questionPanel} aria-labelledby="alphabet-question-title">
           <h1 id="alphabet-question-title">{entry.question.question}</h1>
           <AlphabetForm
             question={entry.question}
@@ -294,7 +285,7 @@ function Playing({
             onSubmit={session.submitAnswer}
             onPass={session.pass}
           />
-        </Card>
+        </section>
       </div>
     </div>
   );
