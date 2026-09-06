@@ -161,8 +161,8 @@ describe("Flash Pop token contrast", () => {
   });
 
   it("keeps Classification selections visible without overpowering the table", () => {
-    expect(classificationStyles).toContain(
-      ".matrix,\n.binaryList {\n  border: var(--border-subtle);\n  border-radius: var(--radius-card);\n  padding: var(--space-2);\n  background: var(--color-surface);",
+    expect(classificationStyles).toMatch(
+      /\[data-variant="flash-pop"\]\s+\.matrix,\s*\[data-variant="flash-pop"\]\s+\.binaryList\s*\{\s*border: var\(--border-subtle\);\s*border-radius: var\(--radius-card\);\s*padding: var\(--space-2\);\s*background: var\(--color-surface\);/s,
     );
     expect(classificationStyles).toContain("border: 1px solid rgb(23 23 32 / 17%);");
     expect(classificationStyles).toContain("box-shadow: 0 1px 2px rgb(23 23 32 / 5%);");
@@ -172,8 +172,8 @@ describe("Flash Pop token contrast", () => {
     expect(classificationStyles).toContain(
       "color-mix(in srgb, var(--color-social) 14%, transparent)",
     );
-    expect(classificationStyles).toContain(
-      ".choiceButtonSelected:focus-visible,\n.binaryChoiceSelected:focus-visible",
+    expect(classificationStyles).toMatch(
+      /\.choiceButtonSelected:focus-visible,\s*\.binaryChoiceSelected:focus-visible/s,
     );
   });
 

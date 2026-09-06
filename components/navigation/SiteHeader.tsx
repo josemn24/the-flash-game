@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/navigation/Logo";
 import { GameHeader } from "@/components/ui";
+import styles from "./SiteHeader.module.css";
 
 export function SiteHeader() {
   return (
@@ -11,20 +12,11 @@ export function SiteHeader() {
         </Link>
       }
       right={
-        <nav
-          className="flex items-center gap-4 font-mono text-[10px] font-black tracking-[0.12em] uppercase sm:gap-6"
-          aria-label="Navegación principal"
-        >
-          <Link
-            className="text-white/45 transition-colors hover:text-white focus-visible:text-white"
-            href="/"
-          >
+        <nav className={styles.nav} aria-label="Navegación principal">
+          <Link className={styles.navLink} href="/">
             Desafíos
           </Link>
-          <Link
-            className="text-[var(--color-social)] transition-colors hover:text-white focus-visible:text-white"
-            href="/formatos"
-          >
+          <Link className={`${styles.navLink} ${styles.navLinkActive}`} href="/formatos">
             Formatos
           </Link>
         </nav>

@@ -74,19 +74,13 @@ export function FlashPopQuestionInput({
   switch (question.type) {
     case "true-false":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <TrueFalseQuestion locked={locked} onSubmit={onSubmit} variant="flash-pop" />
         </div>
       );
     case "odd-one-out":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <OddOneOutQuestion
             items={question.items}
             locked={locked}
@@ -98,7 +92,7 @@ export function FlashPopQuestionInput({
     case "multiple-choice":
       return (
         <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat} ${styles.choiceInput}`}
+          className={`${styles.flashPopFormat} ${styles.choiceInput}`}
           data-format={question.type}
         >
           {question.promptVisual?.type === "number-sequence" && (
@@ -120,10 +114,7 @@ export function FlashPopQuestionInput({
       );
     case "ordering":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <OrderingQuestion
             items={question.items}
             directionLabels={question.directionLabels}
@@ -145,10 +136,7 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as MatchingAnswer)
         : undefined;
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <MatchingQuestion
             leftItems={question.leftItems}
             rightItems={question.rightItems}
@@ -164,10 +152,7 @@ export function FlashPopQuestionInput({
     }
     case "progressive-clues":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <ProgressiveCluesQuestion
             questionId={question.id}
             clues={question.clues}
@@ -185,10 +170,7 @@ export function FlashPopQuestionInput({
       );
     case "progressive-image":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <ProgressiveImageQuestion
             key={question.id}
             surface={question.surface}
@@ -204,10 +186,7 @@ export function FlashPopQuestionInput({
       );
     case "heat-map":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <HeatMapQuestion
             question={question}
             locked={locked}
@@ -218,10 +197,7 @@ export function FlashPopQuestionInput({
       );
     case "estimation":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <EstimationQuestion
             min={question.min}
             max={question.max}
@@ -241,10 +217,7 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as ClassificationAnswer)
         : undefined;
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <ClassificationQuestion
             items={question.items}
             categories={question.categories}
@@ -259,10 +232,7 @@ export function FlashPopQuestionInput({
     }
     case "anagram":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <AnagramQuestion
             tiles={question.tiles}
             hint={question.hint}
@@ -274,10 +244,7 @@ export function FlashPopQuestionInput({
       );
     case "mini-wordle": {
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <MiniWordleQuestion
             correctAnswer={question.correctAnswer}
             additionalGuesses={question.additionalGuesses}
@@ -305,10 +272,7 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as WordSearchAnswer)
         : undefined;
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <WordSearchQuestion
             question={question}
             initialAnswer={wordSearchAnswer}
@@ -328,10 +292,7 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as WordHashtagAnswer)
         : undefined;
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <WordHashtagQuestion
             question={question}
             initialAnswer={wordHashtagAnswer}
@@ -345,10 +306,7 @@ export function FlashPopQuestionInput({
     }
     case "logic-matrix":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <LogicMatrixQuestion
             pieces={question.pieces}
             cells={question.cells}
@@ -367,10 +325,7 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as ConnectPairsAnswer)
         : undefined;
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <ConnectPairsQuestion
             question={question}
             initialAnswer={connectAnswer}
@@ -384,10 +339,7 @@ export function FlashPopQuestionInput({
     }
     case "logic-code":
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <LogicCodeQuestion
             clues={question.clues}
             codeLength={question.codeLength}
@@ -405,10 +357,7 @@ export function FlashPopQuestionInput({
         ? (initialAnswer as QueensAnswer)
         : undefined;
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <QueensQuestion
             question={question}
             initialAnswer={queensAnswer}
@@ -423,10 +372,7 @@ export function FlashPopQuestionInput({
     }
     default:
       return (
-        <div
-          className={`${styles.flashPopFormat} ${styles.themeAwareFormat}`}
-          data-format={question.type}
-        >
+        <div className={styles.flashPopFormat} data-format={question.type}>
           <QuestionInput
             question={question}
             locked={locked}

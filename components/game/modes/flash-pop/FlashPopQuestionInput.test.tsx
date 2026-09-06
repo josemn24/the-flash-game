@@ -113,7 +113,7 @@ describe("Flash Pop question adapter", () => {
       );
 
       expect(markup).toContain(`data-format="${question.type}"`);
-      expect(markup).toContain("themeAwareFormat");
+      expect(markup).toContain("flashPopFormat");
       expect(markup).not.toContain("legacyCompatFormat");
     }
   });
@@ -151,7 +151,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -169,7 +169,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -187,7 +187,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -205,7 +205,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -223,7 +223,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -241,7 +241,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -259,7 +259,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 
@@ -277,7 +277,7 @@ describe("Flash Pop question adapter", () => {
       />,
     );
 
-    expect(markup).toContain("themeAwareFormat");
+    expect(markup).not.toContain("themeAwareFormat");
     expect(markup).not.toContain("legacyCompatFormat");
   });
 });

@@ -10,6 +10,8 @@
     "dictionary:check": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 --check && node scripts/generate-mini-wordle-dictionary.mjs --length=5 --check",
     "test": "vitest run",
     "lint": "eslint",
+    "stylelint": "stylelint \"**/*.{css,module.css}\"",
+    "style-architecture": "node scripts/check-style-architecture.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -30,6 +32,7 @@
     "eslint-config-prettier": "^10.1.8",
     "nspell": "^2.1.5",
     "prettier": "^3.9.5",
+    "stylelint": "^17.15.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.7"

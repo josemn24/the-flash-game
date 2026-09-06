@@ -543,8 +543,7 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                     title={narrativeFeedbackCopy.title}
                     body={narrativeFeedbackCopy.body}
                     points={
-                      narrativeFeedbackStatus === "correct" ||
-                      narrativeFeedbackStatus === "partial"
+                      narrativeFeedbackStatus === "correct" || narrativeFeedbackStatus === "partial"
                         ? session.results.at(-1)?.points
                         : undefined
                     }

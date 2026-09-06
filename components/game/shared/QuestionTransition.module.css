@@ -1,22 +1,24 @@
-.icon {
-  display: grid;
-  width: 5rem;
-  height: 5rem;
-  margin-inline: auto;
-  place-items: center;
-  border-radius: 1.5rem;
-  color: #080a05;
-  background: var(--color-brand);
-  box-shadow: 0 0 55px rgba(215, 255, 24, 0.18);
-  transform: skewX(-4deg);
-}
-.iconTime {
-  color: white;
-  background: var(--color-danger);
-  box-shadow: 0 0 55px rgba(255, 93, 100, 0.18);
-}
-.iconPartial {
-  color: #061018;
-  background: var(--color-social);
-  box-shadow: 0 0 55px rgba(53, 232, 255, 0.16);
+@layer app-formats {
+  .icon {
+    display: grid;
+    width: 5rem;
+    height: 5rem;
+    margin-inline: auto;
+    place-items: center;
+    border-radius: 1.5rem;
+    color: #080a05;
+    background: var(--color-brand);
+    box-shadow: 0 0 55px rgb(var(--color-brand-rgb) / 0.18);
+    transform: skewX(-4deg);
+  }
+  .iconTime {
+    color: white;
+    background: var(--color-danger);
+    box-shadow: 0 0 55px rgba(255, 93, 100, 0.18);
+  }
+  .iconPartial {
+    color: #061018;
+    background: var(--color-social);
+    box-shadow: 0 0 55px rgba(53, 232, 255, 0.16);
+  }
 }

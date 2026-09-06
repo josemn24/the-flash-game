@@ -1,1738 +1,1578 @@
-.gameRoot {
-  position: relative;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  background: #071319;
-  color: white;
-  isolation: isolate;
-}
-
-.gameContent {
-  position: relative;
-  z-index: 2;
-}
-
-.polarBackground {
-  position: fixed;
-  z-index: 0;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 72% 12%, rgb(101 215 221 / 0.12), transparent 32%),
-    linear-gradient(180deg, #061319 0%, #0a222a 66%, #102e36 100%);
-}
-
-.aurora {
-  position: absolute;
-  top: -25%;
-  left: 10%;
-  width: 80%;
-  height: 55%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgb(109 239 212 / 0.12), transparent 68%);
-  filter: blur(35px);
-  transform: rotate(-8deg);
-  animation: auroraDrift 12s ease-in-out infinite alternate;
-}
-
-.horizon {
-  position: absolute;
-  right: -5%;
-  bottom: -2%;
-  width: 70%;
-  height: 18%;
-  background: #b8ced0;
-  clip-path: polygon(0 100%, 19% 42%, 34% 74%, 53% 10%, 69% 62%, 84% 31%, 100% 100%);
-  opacity: 0.12;
-}
-
-.snow {
-  position: absolute;
-  inset: 0;
-  opacity: 0.14;
-  background-image: radial-gradient(circle, white 0 1px, transparent 1.5px);
-  background-size: 37px 37px;
-  transform: skewX(-12deg) scale(1.15);
-  animation: snowDrift 16s linear infinite;
-}
-
-.questionPhase .polarBackground {
-  background: radial-gradient(circle at 72% 12%, rgb(101 215 221 / 0.12), transparent 36%), #071419;
-}
-
-.questionPhase .horizon {
-  display: none;
-}
-
-.blackoutPhase {
-  background: #000;
-}
-
-.blackoutPhase .polarBackground {
-  display: none;
-}
-
-.fullScreen {
-  width: min(100%, 72rem);
-  min-height: 100dvh;
-  margin: 0 auto;
-  padding: 1.25rem;
-}
-
-.storyScreen {
-  width: min(100%, 90rem);
-  min-height: 100dvh;
-  margin: 0 auto;
-  padding: 1.25rem;
-}
-
-.pageHeader {
-  gap: 1rem;
-}
-
-.pageIdentity,
-.pageActions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.pageIdentity > span {
-  max-width: 20rem;
-  overflow: hidden;
-  color: rgb(255 255 255 / 72%);
-  font-family: var(--type-mono);
-  font-size: 0.66rem;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.pageIdentity small {
-  padding-left: 0.75rem;
-  border-left: 1px solid rgb(255 255 255 / 12%);
-  color: rgb(255 255 255 / 36%);
-  font-family: var(--type-mono);
-  font-size: 0.62rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.storyPage {
-  display: grid;
-  min-height: calc(100dvh - 6.5rem);
-  grid-template-columns: minmax(0, 1.1fr) minmax(25rem, 0.9fr);
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 1.6rem;
-  background: rgb(3 15 20 / 82%);
-  box-shadow: 0 2.5rem 7rem rgb(0 0 0 / 32%);
-}
-
-.storyVisual {
-  position: relative;
-  min-height: 32rem;
-  overflow: hidden;
-  background: #14272c;
-}
-
-.storyImage {
-  object-fit: cover;
-}
-
-.storyImageContain {
-  object-fit: contain;
-}
-
-.visualShade {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, transparent 52%, rgb(3 15 20 / 42%) 100%),
-    linear-gradient(0deg, rgb(3 15 20 / 32%), transparent 42%);
-  pointer-events: none;
-}
-
-.storyArticle,
-.questionArticle {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(1.5rem, 4vw, 4rem);
-}
-
-.storyArticle h1,
-.questionArticle h1 {
-  max-width: 18ch;
-  margin-top: 0.7rem;
-  font-size: clamp(2rem, 4vw, 4rem);
-  font-weight: 950;
-  letter-spacing: -0.05em;
-  line-height: 0.98;
-}
-
-.storyArticle .sceneBlocks {
-  margin-top: 1.4rem;
-}
-
-.storyArticle .sceneReaction {
-  margin-top: 1.2rem;
-  border: 0;
-  border-radius: 0.8rem;
-  background: rgb(143 231 234 / 8%);
-  padding: 0.8rem 0.9rem;
-  color: #b9f3ef;
-}
-
-.storyArticle .sceneReaction::before {
-  color: #8fe7ea;
-  content: "REGISTRO ACTUALIZADO";
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-}
-
-.storyArticle .sceneReaction .sceneParagraph,
-.storyArticle .sceneReaction .sceneDialogue {
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
-.tapeSignal {
-  position: absolute;
-  right: 1.4rem;
-  bottom: 1.4rem;
-  left: 1.4rem;
-  display: flex;
-  min-height: 4rem;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid rgb(255 255 255 / 20%);
-  border-radius: 0.8rem;
-  background: rgb(4 17 21 / 70%);
-  padding: 0.8rem 1rem;
-  backdrop-filter: blur(12px);
-}
-
-.tapeSignal span {
-  margin-right: auto;
-  color: rgb(255 255 255 / 72%);
-  font-family: var(--type-mono);
-  font-size: 0.62rem;
-  font-weight: 850;
-  letter-spacing: 0.12em;
-}
-
-.tapeSignal i {
-  width: 2px;
-  height: 0.7rem;
-  background: #8fe7ea;
-  animation: tapeWave 1.2s ease-in-out infinite alternate;
-}
-
-.tapeSignal i:nth-of-type(3n) {
-  height: 1.8rem;
-}
-.tapeSignal i:nth-of-type(4n) {
-  height: 1.2rem;
-}
-.tapeSignal i:nth-of-type(2n) {
-  animation-delay: -0.6s;
-}
-
-.questionArticle {
-  width: min(100%, 58rem);
-  margin: 0 auto;
-  justify-content: flex-start;
-  overflow: visible;
-  padding-top: clamp(1.5rem, 3vw, 3rem);
-  padding-bottom: clamp(2rem, 4vw, 4rem);
-}
-
-.questionArticle h1 {
-  max-width: 34ch;
-  margin-top: 1.4rem;
-  font-size: clamp(1.45rem, 2.5vw, 2.2rem);
-  line-height: 1.04;
-}
-
-.questionContext {
-  margin-top: 1.25rem;
-  color: rgb(255 255 255 / 48%);
-  font-family: var(--type-mono);
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.questionMedia {
-  max-width: 46rem;
-  margin-top: 1rem;
-}
-
-.recordTransition {
-  display: grid;
-  min-height: 100dvh;
-  place-content: center;
-  justify-items: center;
-  gap: 0.75rem;
-  padding: 2rem;
-  text-align: center;
-}
-
-.recordTransition svg {
-  color: #8fe7ea;
-}
-
-.recordTransition span {
-  color: white;
-  font-family: var(--type-mono);
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.recordTransition p {
-  color: rgb(255 255 255 / 48%);
-  font-size: 0.86rem;
-}
-
-.eyebrow {
-  color: #8fe7ea;
-  font-family: var(--type-mono);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.introContent {
-  display: grid;
-  min-height: calc(100dvh - 6rem);
-  align-items: center;
-  gap: 2rem;
-  padding: 3rem 0 5rem;
-}
-
-.introCopy h1,
-.resultScore h1 {
-  max-width: 13ch;
-  margin-top: 0.75rem;
-  font-size: clamp(2.8rem, 8vw, 6.7rem);
-  font-weight: 950;
-  line-height: 0.9;
-  letter-spacing: -0.065em;
-}
-
-.subtitle {
-  margin-top: 1rem;
-  color: #8fe7ea;
-  font-size: 1.1rem;
-  font-weight: 850;
-}
-
-.description {
-  max-width: 38rem;
-  margin-top: 1rem;
-  color: rgb(255 255 255 / 0.58);
-  font-size: 0.98rem;
-  line-height: 1.75;
-}
-
-.introPanel,
-.resultDetails {
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 1.6rem;
-  background: rgb(3 15 20 / 0.76);
-  padding: 1.25rem;
-  box-shadow: 0 2rem 5rem rgb(0 0 0 / 0.24);
-  backdrop-filter: blur(20px);
-}
-
-.introStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 1rem;
-}
-
-.introStats div {
-  display: grid;
-  min-height: 5.2rem;
-  place-content: center;
-  text-align: center;
-}
-
-.introStats div + div {
-  border-left: 1px solid rgb(255 255 255 / 0.08);
-}
-
-.introStats strong {
-  font-size: 1.6rem;
-  font-weight: 950;
-}
-
-.introStats span,
-.resultStats span {
-  color: rgb(255 255 255 / 0.4);
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.introRules {
-  display: grid;
-  gap: 0.75rem;
-  margin: 1.25rem 0;
-  color: rgb(255 255 255 / 0.58);
-  font-size: 0.83rem;
-  line-height: 1.5;
-  list-style: none;
-}
-
-.introRules li {
-  position: relative;
-  padding-left: 1.25rem;
-}
-
-.introRules li::before {
-  position: absolute;
-  top: 0.55rem;
-  left: 0;
-  width: 0.38rem;
-  height: 0.38rem;
-  border-radius: 50%;
-  background: #8fe7ea;
-  content: "";
-}
-
-.sceneContent {
-  display: flex;
-  width: min(100%, 42rem);
-  min-height: calc(100dvh - 7rem);
-  align-items: center;
-  margin: 0 auto;
-  padding: 3rem 0 5rem;
-}
-
-.sceneArticle {
-  width: 100%;
-}
-
-.sceneContent h1 {
-  max-width: 18ch;
-  margin-top: 0.7rem;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  font-weight: 950;
-  line-height: 0.98;
-  letter-spacing: -0.045em;
-}
-
-.sceneBlocks {
-  display: grid;
-  max-width: 38rem;
-  gap: 1rem;
-  margin-top: 1.35rem;
-}
-
-.sceneParagraph,
-.sceneDialogue {
-  font-size: clamp(1.05rem, 2vw, 1.2rem);
-  line-height: 1.75;
-}
-
-.sceneParagraph {
-  color: rgb(255 255 255 / 0.7);
-}
-
-.sceneDialogue {
-  color: white;
-  font-weight: 700;
-}
-
-.sceneDialogue [aria-hidden="true"] {
-  margin-right: 0.22em;
-  color: #8fe7ea;
-}
-
-.speakerLabel {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.sceneReaction {
-  margin-top: 1.1rem;
-  border-left: 2px solid rgb(143 231 234 / 0.62);
-  padding-left: 1rem;
-}
-
-.sceneReaction + .sceneBlocks {
-  margin-top: 1.15rem;
-}
-
-.continueButton {
-  margin-top: 2rem;
-}
-
-.epilogueScreen {
-  display: grid;
-  min-height: 100dvh;
-  place-items: center;
-  background: #000;
-  padding: 1.5rem;
-  text-align: center;
-}
-
-.epilogueContent {
-  display: grid;
-  justify-items: center;
-}
-
-.epilogueTitle {
-  color: #fff;
-  font-family: var(--type-display);
-  font-size: clamp(2.8rem, 9vw, 7rem);
-  font-weight: 950;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
-.epilogueContinue {
-  margin-top: 3rem;
-}
-
-.untimedLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 1rem;
-  color: rgb(255 255 255 / 0.62);
-  font-family: var(--type-mono);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.resultGrid {
-  display: grid;
-  min-height: calc(100dvh - 6rem);
-  align-items: center;
-  gap: 2rem;
-  padding: 3rem 0 5rem;
-}
-
-.resultScore h1 {
-  max-width: 12ch;
-  font-size: clamp(2.5rem, 6vw, 4.8rem);
-}
-
-.resultReaction {
-  margin: 1rem 0 1.6rem;
-  border-left: 2px solid rgb(143 231 234 / 0.62);
-  padding-left: 1rem;
-}
-
-.resultReaction .sceneParagraph,
-.resultReaction .sceneDialogue {
-  font-size: 1rem;
-  line-height: 1.65;
-}
-
-.scoreValue {
-  display: flex;
-  align-items: baseline;
-  gap: 0.7rem;
-  margin-top: 2rem;
-}
-
-.scoreValue strong {
-  color: #8fe7ea;
-  font-family: var(--type-mono);
-  font-size: clamp(4.3rem, 11vw, 7rem);
-  line-height: 1;
-}
-
-.scoreValue span {
-  color: rgb(255 255 255 / 0.4);
-  font-weight: 800;
-}
-
-.resultActions {
-  display: grid;
-  max-width: 22rem;
-  gap: 0.7rem;
-  margin-top: 2rem;
-}
-
-.backLink {
-  display: grid;
-  min-height: 3rem;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 0.8rem;
-  color: rgb(255 255 255 / 0.65);
-  font-size: 0.82rem;
-  font-weight: 850;
-}
-
-.resultStats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
-}
-
-.resultStats div {
-  display: grid;
-  min-height: 6.5rem;
-  place-items: center;
-  align-content: center;
-  gap: 0.25rem;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 0.9rem;
-  background: rgb(255 255 255 / 0.035);
-}
-
-.resultStats strong {
-  font-size: 1.45rem;
-}
-
-.answerStates {
-  display: grid;
-  gap: 0.45rem;
-  margin-top: 0.8rem;
-  list-style: none;
-}
-
-.answerStates li {
-  display: flex;
-  min-height: 2.5rem;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 0.7rem;
-  background: rgb(255 255 255 / 0.025);
-  padding: 0.6rem 0.75rem;
-  font-size: 0.72rem;
-}
-
-.answerStates span {
-  color: rgb(255 255 255 / 0.48);
-  font-family: var(--type-mono);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.answerStates strong {
-  color: #8fe7ea;
-}
-
-.answerStates li[data-status="incorrect"] strong,
-.answerStates li[data-status="unanswered"] strong {
-  color: #f3bf78;
-}
-
-.answerStates li[data-status="partial"] strong {
-  color: var(--color-social);
-}
-
-.timeSummary span {
-  color: rgb(255 255 255 / 0.36);
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.timeSummary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.8rem;
-  border-top: 1px solid rgb(255 255 255 / 0.08);
-  padding-top: 1rem;
-}
-
-.timeSummary strong {
-  font-family: var(--type-mono);
-}
-
-.resultNotice {
-  margin-top: 1rem;
-  color: rgb(255 255 255 / 0.38);
-  font-size: 0.75rem;
-  line-height: 1.55;
-}
-
-@media (min-width: 800px) {
-  .fullScreen {
-    padding: 1.75rem 2rem;
+@layer app-formats {
+  .gameRoot {
+    position: relative;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background: #071319;
+    color: white;
+    isolation: isolate;
   }
 
-  .introContent,
-  .resultGrid {
-    grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 0.75fr);
-    gap: 4rem;
+  .gameContent {
+    position: relative;
+    z-index: 2;
   }
 
-  .introPanel,
-  .resultDetails {
-    padding: 1.5rem;
+  .polarBackground {
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 72% 12%, rgb(101 215 221 / 0.12), transparent 32%),
+      linear-gradient(180deg, #061319 0%, #0a222a 66%, #102e36 100%);
   }
 
-  .resultStats {
-    grid-template-columns: repeat(4, 1fr);
+  .aurora {
+    position: absolute;
+    top: -25%;
+    left: 10%;
+    width: 80%;
+    height: 55%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgb(109 239 212 / 0.12), transparent 68%);
+    filter: blur(35px);
+    transform: rotate(-8deg);
+    animation: auroraDrift 12s ease-in-out infinite alternate;
   }
-}
 
-@media (max-width: 799px) {
-  .storyScreen {
-    padding: 0.8rem;
+  .horizon {
+    position: absolute;
+    right: -5%;
+    bottom: -2%;
+    width: 70%;
+    height: 18%;
+    background: #b8ced0;
+    clip-path: polygon(0 100%, 19% 42%, 34% 74%, 53% 10%, 69% 62%, 84% 31%, 100% 100%);
+    opacity: 0.12;
   }
 
-  .pageIdentity > span {
-    max-width: 8.5rem;
+  .snow {
+    position: absolute;
+    inset: 0;
+    opacity: 0.14;
+    background-image: radial-gradient(circle, white 0 1px, transparent 1.5px);
+    background-size: 37px 37px;
+    transform: skewX(-12deg) scale(1.15);
+    animation: snowDrift 16s linear infinite;
   }
 
-  .pageIdentity small {
+  .questionPhase .polarBackground {
+    background:
+      radial-gradient(circle at 72% 12%, rgb(101 215 221 / 0.12), transparent 36%), #071419;
+  }
+
+  .questionPhase .horizon {
     display: none;
   }
 
-  .storyPage,
-  .questionPage {
-    min-height: calc(100dvh - 5.5rem);
-    grid-template-columns: 1fr;
-    border-radius: 1.1rem;
+  .blackoutPhase {
+    background: #000;
+  }
+
+  .blackoutPhase .polarBackground {
+    display: none;
+  }
+
+  .fullScreen {
+    width: min(100%, 72rem);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 1.25rem;
+  }
+
+  .storyScreen {
+    width: min(100%, 90rem);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 1.25rem;
+  }
+
+  .pageHeader {
+    gap: 1rem;
+  }
+
+  .pageIdentity,
+  .pageActions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .pageIdentity > span {
+    max-width: 20rem;
+    overflow: hidden;
+    color: rgb(255 255 255 / 72%);
+    font-family: var(--type-mono);
+    font-size: 0.66rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pageIdentity small {
+    padding-left: 0.75rem;
+    border-left: 1px solid rgb(255 255 255 / 12%);
+    color: rgb(255 255 255 / 36%);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .storyPage {
+    display: grid;
+    min-height: calc(100dvh - 6.5rem);
+    grid-template-columns: minmax(0, 1.1fr) minmax(25rem, 0.9fr);
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 1.6rem;
+    background: rgb(3 15 20 / 82%);
+    box-shadow: 0 2.5rem 7rem rgb(0 0 0 / 32%);
   }
 
   .storyVisual {
-    min-height: clamp(14rem, 42vh, 24rem);
+    position: relative;
+    min-height: 32rem;
+    overflow: hidden;
+    background: #14272c;
+  }
+
+  .storyImage {
+    object-fit: cover;
+  }
+
+  .storyImageContain {
+    object-fit: contain;
+  }
+
+  .visualShade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 52%, rgb(3 15 20 / 42%) 100%),
+      linear-gradient(0deg, rgb(3 15 20 / 32%), transparent 42%);
+    pointer-events: none;
   }
 
   .storyArticle,
   .questionArticle {
-    padding: 1.35rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.5rem, 4vw, 4rem);
   }
 
-  .storyArticle h1 {
-    font-size: clamp(2rem, 10vw, 3rem);
-  }
-
+  .storyArticle h1,
   .questionArticle h1 {
+    max-width: 18ch;
+    margin-top: 0.7rem;
+    font-size: clamp(2rem, 4vw, 4rem);
+    font-weight: 950;
+    letter-spacing: -0.05em;
+    line-height: 0.98;
+  }
+
+  .storyArticle .sceneBlocks {
+    margin-top: 1.4rem;
+  }
+
+  .storyArticle .sceneReaction {
+    margin-top: 1.2rem;
+    border: 0;
+    border-radius: 0.8rem;
+    background: rgb(143 231 234 / 8%);
+    padding: 0.8rem 0.9rem;
+    color: #b9f3ef;
+  }
+
+  .storyArticle .sceneReaction::before {
+    color: #8fe7ea;
+    content: "REGISTRO ACTUALIZADO";
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+  }
+
+  .storyArticle .sceneReaction .sceneParagraph,
+  .storyArticle .sceneReaction .sceneDialogue {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .tapeSignal {
+    position: absolute;
+    right: 1.4rem;
+    bottom: 1.4rem;
+    left: 1.4rem;
+    display: flex;
+    min-height: 4rem;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 0.8rem;
+    background: rgb(4 17 21 / 70%);
+    padding: 0.8rem 1rem;
+    backdrop-filter: blur(12px);
+  }
+
+  .tapeSignal span {
+    margin-right: auto;
+    color: rgb(255 255 255 / 72%);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+  }
+
+  .tapeSignal i {
+    width: 2px;
+    height: 0.7rem;
+    background: #8fe7ea;
+    animation: tapeWave 1.2s ease-in-out infinite alternate;
+  }
+
+  .tapeSignal i:nth-of-type(3n) {
+    height: 1.8rem;
+  }
+  .tapeSignal i:nth-of-type(4n) {
+    height: 1.2rem;
+  }
+  .tapeSignal i:nth-of-type(2n) {
+    animation-delay: -0.6s;
+  }
+
+  :global(html[data-theme="flash-pop"]) .questionArticle {
+    width: min(100%, 58rem);
+    margin: 0 auto;
+    justify-content: flex-start;
+    overflow: visible;
+    padding-top: clamp(1.5rem, 3vw, 3rem);
+    padding-bottom: clamp(2rem, 4vw, 4rem);
+  }
+
+  :global(html[data-theme="flash-pop"]) .questionArticle h1 {
+    max-width: 34ch;
+    margin-top: 1.4rem;
+    font-size: clamp(1.45rem, 2.5vw, 2.2rem);
+    line-height: 1.04;
+  }
+
+  .questionContext {
+    margin-top: 1.25rem;
+    color: rgb(255 255 255 / 48%);
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .questionMedia {
+    max-width: 46rem;
     margin-top: 1rem;
   }
 
-}
+  .recordTransition {
+    display: grid;
+    min-height: 100dvh;
+    place-content: center;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+  }
 
-/* Narrative is also a product mode: the immersive treatment may vary, but its
+  .recordTransition svg {
+    color: #8fe7ea;
+  }
+
+  .recordTransition span {
+    color: white;
+    font-family: var(--type-mono);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .recordTransition p {
+    color: rgb(255 255 255 / 48%);
+    font-size: 0.86rem;
+  }
+
+  .eyebrow {
+    color: #8fe7ea;
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .introContent {
+    display: grid;
+    min-height: calc(100dvh - 6rem);
+    align-items: center;
+    gap: 2rem;
+    padding: 3rem 0 5rem;
+  }
+
+  .introCopy h1,
+  .resultScore h1 {
+    max-width: 13ch;
+    margin-top: 0.75rem;
+    font-size: clamp(2.8rem, 8vw, 6.7rem);
+    font-weight: 950;
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+  }
+
+  .subtitle {
+    margin-top: 1rem;
+    color: #8fe7ea;
+    font-size: 1.1rem;
+    font-weight: 850;
+  }
+
+  .description {
+    max-width: 38rem;
+    margin-top: 1rem;
+    color: rgb(255 255 255 / 0.58);
+    font-size: 0.98rem;
+    line-height: 1.75;
+  }
+
+  .introPanel,
+  .resultDetails {
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 1.6rem;
+    background: rgb(3 15 20 / 0.76);
+    padding: 1.25rem;
+    box-shadow: 0 2rem 5rem rgb(0 0 0 / 0.24);
+    backdrop-filter: blur(20px);
+  }
+
+  .introStats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 1rem;
+  }
+
+  .introStats div {
+    display: grid;
+    min-height: 5.2rem;
+    place-content: center;
+    text-align: center;
+  }
+
+  .introStats div + div {
+    border-left: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .introStats strong {
+    font-size: 1.6rem;
+    font-weight: 950;
+  }
+
+  .introStats span,
+  .resultStats span {
+    color: rgb(255 255 255 / 0.4);
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .introRules {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+    color: rgb(255 255 255 / 0.58);
+    font-size: 0.83rem;
+    line-height: 1.5;
+    list-style: none;
+  }
+
+  .introRules li {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+
+  .introRules li::before {
+    position: absolute;
+    top: 0.55rem;
+    left: 0;
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 50%;
+    background: #8fe7ea;
+    content: "";
+  }
+
+  .sceneContent {
+    display: flex;
+    width: min(100%, 42rem);
+    min-height: calc(100dvh - 7rem);
+    align-items: center;
+    margin: 0 auto;
+    padding: 3rem 0 5rem;
+  }
+
+  .sceneArticle {
+    width: 100%;
+  }
+
+  .sceneContent h1 {
+    max-width: 18ch;
+    margin-top: 0.7rem;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 950;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+
+  .sceneBlocks {
+    display: grid;
+    max-width: 38rem;
+    gap: 1rem;
+    margin-top: 1.35rem;
+  }
+
+  .sceneParagraph,
+  .sceneDialogue {
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    line-height: 1.75;
+  }
+
+  :global(html[data-theme="flash-pop"]) .sceneParagraph {
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  :global(html[data-theme="flash-pop"]) .sceneDialogue {
+    color: white;
+    font-weight: 700;
+  }
+
+  .sceneDialogue [aria-hidden="true"] {
+    margin-right: 0.22em;
+    color: #8fe7ea;
+  }
+
+  .speakerLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .sceneReaction {
+    margin-top: 1.1rem;
+    border-left: 2px solid rgb(143 231 234 / 0.62);
+    padding-left: 1rem;
+  }
+
+  .sceneReaction + .sceneBlocks {
+    margin-top: 1.15rem;
+  }
+
+  .continueButton {
+    margin-top: 2rem;
+  }
+
+  .epilogueScreen {
+    display: grid;
+    min-height: 100dvh;
+    place-items: center;
+    background: #000;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .epilogueContent {
+    display: grid;
+    justify-items: center;
+  }
+
+  .epilogueTitle {
+    color: #fff;
+    font-family: var(--type-display);
+    font-size: clamp(2.8rem, 9vw, 7rem);
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+
+  .epilogueContinue {
+    margin-top: 3rem;
+  }
+
+  .untimedLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1rem;
+    color: rgb(255 255 255 / 0.62);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .resultGrid {
+    display: grid;
+    min-height: calc(100dvh - 6rem);
+    align-items: center;
+    gap: 2rem;
+    padding: 3rem 0 5rem;
+  }
+
+  :global(html[data-theme="flash-pop"]) .resultScore h1 {
+    max-width: 12ch;
+    font-size: clamp(2.5rem, 6vw, 4.8rem);
+  }
+
+  .resultReaction {
+    margin: 1rem 0 1.6rem;
+    border-left: 2px solid rgb(143 231 234 / 0.62);
+    padding-left: 1rem;
+  }
+
+  .resultReaction .sceneParagraph,
+  .resultReaction .sceneDialogue {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .scoreValue {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    margin-top: 2rem;
+  }
+
+  .scoreValue strong {
+    color: #8fe7ea;
+    font-family: var(--type-mono);
+    font-size: clamp(4.3rem, 11vw, 7rem);
+    line-height: 1;
+  }
+
+  .scoreValue span {
+    color: rgb(255 255 255 / 0.4);
+    font-weight: 800;
+  }
+
+  .resultActions {
+    display: grid;
+    max-width: 22rem;
+    gap: 0.7rem;
+    margin-top: 2rem;
+  }
+
+  .backLink {
+    display: grid;
+    min-height: 3rem;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 0.8rem;
+    color: rgb(255 255 255 / 0.65);
+    font-size: 0.82rem;
+    font-weight: 850;
+  }
+
+  .resultStats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  .resultStats div {
+    display: grid;
+    min-height: 6.5rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.25rem;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 0.035);
+  }
+
+  .resultStats strong {
+    font-size: 1.45rem;
+  }
+
+  .answerStates {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.8rem;
+    list-style: none;
+  }
+
+  .answerStates li {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 0.7rem;
+    background: rgb(255 255 255 / 0.025);
+    padding: 0.6rem 0.75rem;
+    font-size: 0.72rem;
+  }
+
+  .answerStates span {
+    color: rgb(255 255 255 / 0.48);
+    font-family: var(--type-mono);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .answerStates strong {
+    color: #8fe7ea;
+  }
+
+  .answerStates li[data-status="incorrect"] strong,
+  .answerStates li[data-status="unanswered"] strong {
+    color: #f3bf78;
+  }
+
+  .answerStates li[data-status="partial"] strong {
+    color: var(--color-social);
+  }
+
+  .timeSummary span {
+    color: rgb(255 255 255 / 0.36);
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .timeSummary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.8rem;
+    border-top: 1px solid rgb(255 255 255 / 0.08);
+    padding-top: 1rem;
+  }
+
+  .timeSummary strong {
+    font-family: var(--type-mono);
+  }
+
+  .resultNotice {
+    margin-top: 1rem;
+    color: rgb(255 255 255 / 0.38);
+    font-size: 0.75rem;
+    line-height: 1.55;
+  }
+
+  @media (min-width: 800px) {
+    :global(html[data-theme="flash-pop"]) .fullScreen {
+      padding: 1.75rem 2rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .introContent,
+    :global(html[data-theme="flash-pop"]) .resultGrid {
+      grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 0.75fr);
+      gap: 4rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .introPanel,
+    :global(html[data-theme="flash-pop"]) .resultDetails {
+      padding: 1.5rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .resultStats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (max-width: 799px) {
+    :global(html[data-theme="flash-pop"]) .storyScreen {
+      padding: 0.8rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .pageIdentity > span {
+      max-width: 8.5rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .pageIdentity small {
+      display: none;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyPage,
+    .questionPage {
+      min-height: calc(100dvh - 5.5rem);
+      grid-template-columns: 1fr;
+      border-radius: 1.1rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyVisual {
+      min-height: clamp(14rem, 42vh, 24rem);
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyArticle,
+    :global(html[data-theme="flash-pop"]) .questionArticle {
+      padding: 1.35rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyArticle h1 {
+      font-size: clamp(2rem, 10vw, 3rem);
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionArticle h1 {
+      margin-top: 1rem;
+    }
+  }
+
+  /* Narrative is also a product mode: the immersive treatment may vary, but its
    surfaces, text and interaction states come from the global theme. */
-.gameRoot {
-  color: var(--color-ink);
-  background: var(--color-canvas);
-}
-.polarBackground {
-  background:
-    radial-gradient(
-      circle at 72% 12%,
-      color-mix(in srgb, var(--color-social) 12%, transparent),
-      transparent 32%
-    ),
-    linear-gradient(
-      180deg,
-      var(--color-canvas) 0%,
-      var(--color-surface-soft) 66%,
-      var(--color-canvas) 100%
+  :global(html[data-theme="flash-pop"]) .gameRoot {
+    color: var(--color-ink);
+    background: var(--color-canvas);
+  }
+  :global(html[data-theme="flash-pop"]) .polarBackground {
+    background:
+      radial-gradient(
+        circle at 72% 12%,
+        color-mix(in srgb, var(--color-social) 12%, transparent),
+        transparent 32%
+      ),
+      linear-gradient(
+        180deg,
+        var(--color-canvas) 0%,
+        var(--color-surface-soft) 66%,
+        var(--color-canvas) 100%
+      );
+  }
+  :global(html[data-theme="flash-pop"]) .questionPhase .polarBackground {
+    background:
+      radial-gradient(
+        circle at 72% 12%,
+        color-mix(in srgb, var(--color-social) 12%, transparent),
+        transparent 36%
+      ),
+      var(--color-canvas);
+  }
+  :global(html[data-theme="flash-pop"]) .horizon {
+    background: var(--color-social);
+  }
+  :global(html[data-theme="flash-pop"]) .snow {
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-ink) 26%, transparent) 0 1px,
+      transparent 1.5px
     );
-}
-.questionPhase .polarBackground {
-  background:
-    radial-gradient(
-      circle at 72% 12%,
-      color-mix(in srgb, var(--color-social) 12%, transparent),
-      transparent 36%
-    ),
-    var(--color-canvas);
-}
-.horizon {
-  background: var(--color-social);
-}
-.snow {
-  background-image: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-ink) 26%, transparent) 0 1px,
-    transparent 1.5px
-  );
-}
-.blackoutPhase {
-  background: var(--color-canvas);
-}
-.pageIdentity > span {
-  color: var(--color-ink);
-}
-.pageIdentity small,
-.questionContext,
-.recordTransition p,
-.description,
-.resultNotice,
-.scoreValue span,
-.timeSummary span {
-  color: var(--color-ink-muted);
-}
-.storyFolio,
-.storyCaption,
-.untimedLabel {
-  color: var(--color-ink-faint);
-}
-.storyPage,
-.storyPageText,
-.storyPageArtifact {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-.storyVisual {
-  background: var(--color-surface-soft);
-}
-.storyArticle .sceneParagraph,
-.storyArticle .sceneDialogue,
-.sceneParagraph {
-  color: var(--color-ink-muted);
-}
-.storyArticle .sceneDialogue,
-.sceneDialogue,
-.sceneEmphasis,
-.storyArticle h1,
-.questionArticle h1,
-.introCopy h1,
-.resultScore h1,
-.epilogueTitle {
-  color: var(--color-ink);
-}
-.storyArticle .sceneReaction {
-  border-left-color: var(--color-social);
-  background: color-mix(in srgb, var(--color-social) 8%, transparent);
-}
-.storyArticle .sceneReaction .sceneParagraph,
-.storyArticle .sceneReaction .sceneDialogue {
-  color: var(--color-ink-muted);
-}
-.storyArticle .sceneReaction::before,
-.sceneDialogue [aria-hidden="true"],
-.eyebrow,
-.subtitle,
-.recordTransition svg,
-.scoreValue strong,
-.resultLead strong {
-  color: var(--color-social);
-}
-.tapeSignal,
-.backLink {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-  color: var(--color-ink);
-}
-.tapeSignal span {
-  color: var(--color-ink);
-}
-.tapeSignal i {
-  background: var(--color-social);
-}
-.continueButton {
-  border-color: var(--color-border-hover) !important;
-  background: var(--color-surface) !important;
-  color: var(--color-ink) !important;
-  box-shadow: var(--shadow-control) !important;
-}
-.continueButton:hover {
-  border-color: var(--color-focus) !important;
-  background: var(--color-surface-raised) !important;
-}
-.resultDetails,
-.introPanel {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-.introStats,
-.resultStats div,
-.answerStates li {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-}
-.introStats div + div {
-  border-color: var(--color-border);
-}
-.introStats strong,
-.resultStats strong,
-.answerStates li {
-  color: var(--color-ink);
-}
-.introStats span,
-.resultStats span,
-.answerStates span {
-  color: var(--color-ink-faint);
-}
-.introRules {
-  color: var(--color-ink-muted);
-}
-.introRules li::before {
-  background: var(--color-social);
-}
-.answerStates strong {
-  color: var(--state-correct);
-}
-.answerStates li[data-status="incorrect"] strong,
-.answerStates li[data-status="unanswered"] strong {
-  color: var(--state-error);
-}
-.timeSummary {
-  border-top-color: var(--color-border);
-}
-.epilogueScreen {
-  background: var(--color-canvas);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aurora,
-  .snow,
-  .tapeSignal i {
-    animation: none;
   }
-}
-
-@keyframes tapeWave {
-  to {
-    transform: scaleY(0.45);
-    opacity: 0.48;
+  :global(html[data-theme="flash-pop"]) .blackoutPhase {
+    background: var(--color-canvas);
   }
-}
-
-@keyframes auroraDrift {
-  to {
-    transform: translate3d(4%, 6%, 0) rotate(2deg);
+  :global(html[data-theme="flash-pop"]) .pageIdentity > span {
+    color: var(--color-ink);
   }
-}
-
-@keyframes snowDrift {
-  to {
-    background-position: 120px 180px;
+  :global(html[data-theme="flash-pop"]) .pageIdentity small,
+  :global(html[data-theme="flash-pop"]) .questionContext,
+  :global(html[data-theme="flash-pop"]) .recordTransition p,
+  :global(html[data-theme="flash-pop"]) .description,
+  :global(html[data-theme="flash-pop"]) .resultNotice,
+  :global(html[data-theme="flash-pop"]) .scoreValue span,
+  :global(html[data-theme="flash-pop"]) .timeSummary span {
+    color: var(--color-ink-muted);
   }
-}
+  .storyFolio,
+  .storyCaption,
+  :global(html[data-theme="flash-pop"]) .untimedLabel {
+    color: var(--color-ink-faint);
+  }
+  :global(html[data-theme="flash-pop"]) .storyPage,
+  .storyPageText,
+  .storyPageArtifact {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+  :global(html[data-theme="flash-pop"]) .storyVisual {
+    background: var(--color-surface-soft);
+    position: relative;
+    min-height: 100%;
+    overflow: hidden;
+  }
+  .storyArticle .sceneParagraph,
+  .storyArticle .sceneDialogue,
+  :global(html[data-theme="flash-pop"]) .sceneParagraph {
+    color: var(--color-ink-muted);
+  }
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneDialogue,
+  :global(html[data-theme="flash-pop"]) .sceneDialogue,
+  .sceneEmphasis,
+  :global(html[data-theme="flash-pop"]) .storyArticle h1,
+  :global(html[data-theme="flash-pop"]) .questionArticle h1,
+  :global(html[data-theme="flash-pop"]) .introCopy h1,
+  :global(html[data-theme="flash-pop"]) .resultScore h1,
+  :global(html[data-theme="flash-pop"]) .epilogueTitle {
+    color: var(--color-ink);
+  }
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneReaction {
+    position: relative;
+    margin: 0 0 1.35rem;
+    border: 0;
+    border-left: 1px solid rgb(143 231 234 / 0.55);
+    border-radius: 0;
+    padding: 0 0 0 1rem;
+    color: inherit;
+    border-left-color: var(--color-social);
+    background: color-mix(in srgb, var(--color-social) 8%, transparent);
+  }
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneReaction .sceneParagraph,
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneReaction .sceneDialogue {
+    font-size: clamp(0.9rem, 1.25vw, 1rem);
+    font-style: italic;
+    line-height: 1.65;
+    color: var(--color-ink-muted);
+  }
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneReaction::before,
+  :global(html[data-theme="flash-pop"]) .sceneDialogue [aria-hidden="true"],
+  :global(html[data-theme="flash-pop"]) .eyebrow,
+  :global(html[data-theme="flash-pop"]) .subtitle,
+  :global(html[data-theme="flash-pop"]) .recordTransition svg,
+  :global(html[data-theme="flash-pop"]) .scoreValue strong,
+  .resultLead strong {
+    color: var(--color-social);
+  }
+  :global(html[data-theme="flash-pop"]) .tapeSignal,
+  :global(html[data-theme="flash-pop"]) .backLink {
+    border-color: var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-ink);
+  }
+  :global(html[data-theme="flash-pop"]) .tapeSignal span {
+    color: var(--color-ink);
+  }
+  :global(html[data-theme="flash-pop"]) .tapeSignal i {
+    background: var(--color-social);
+  }
+  :global(html[data-theme="flash-pop"]) .continueButton {
+    position: fixed;
+    z-index: 35;
+    right: 1.35rem;
+    bottom: 1.15rem;
+    min-width: 0;
+    width: auto;
+    max-width: calc(100vw - 2rem);
+    min-height: 2.8rem;
+    margin: 0;
+    border: 1px solid rgb(255 255 255 / 0.24);
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    font-size: 0.74rem;
+    backdrop-filter: blur(14px);
+    border-color: var(--color-border-hover);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-control);
+  }
+  .continueButton:hover {
+    border-color: var(--color-focus);
+    background: var(--color-surface-raised);
+  }
+  :global(html[data-theme="flash-pop"]) .resultDetails,
+  :global(html[data-theme="flash-pop"]) .introPanel {
+    border: var(--border-subtle);
+    border-radius: 14px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hero);
+  }
+  :global(html[data-theme="flash-pop"]) .introStats,
+  :global(html[data-theme="flash-pop"]) .resultStats div,
+  :global(html[data-theme="flash-pop"]) .answerStates li {
+    border-radius: 10px;
+    border-color: var(--color-border);
+    background: var(--color-surface-raised);
+  }
+  :global(html[data-theme="flash-pop"]) .introStats div + div {
+    border-color: var(--color-border);
+  }
+  :global(html[data-theme="flash-pop"]) .introStats strong,
+  :global(html[data-theme="flash-pop"]) .resultStats strong,
+  :global(html[data-theme="flash-pop"]) .answerStates li {
+    color: var(--color-ink);
+  }
+  :global(html[data-theme="flash-pop"]) .introStats span,
+  :global(html[data-theme="flash-pop"]) .resultStats span,
+  :global(html[data-theme="flash-pop"]) .answerStates span {
+    color: var(--color-ink-faint);
+  }
+  :global(html[data-theme="flash-pop"]) .introRules {
+    color: var(--color-ink-muted);
+  }
+  :global(html[data-theme="flash-pop"]) .introRules li::before {
+    background: var(--color-social);
+  }
+  :global(html[data-theme="flash-pop"]) .answerStates strong {
+    color: var(--state-correct);
+  }
+  :global(html[data-theme="flash-pop"]) .answerStates li[data-status="incorrect"] strong,
+  :global(html[data-theme="flash-pop"]) .answerStates li[data-status="unanswered"] strong {
+    color: var(--state-error);
+  }
+  :global(html[data-theme="flash-pop"]) .timeSummary {
+    border-top-color: var(--color-border);
+  }
+  :global(html[data-theme="flash-pop"]) .epilogueScreen {
+    background: var(--color-canvas);
+  }
 
-/* Immersive story pages */
-.storyScreen {
-  position: relative;
-  width: 100%;
-  min-height: 100dvh;
-  padding: 0;
-}
+  @media (prefers-reduced-motion: reduce) {
+    :global(html[data-theme="flash-pop"]) .aurora,
+    :global(html[data-theme="flash-pop"]) .snow,
+    :global(html[data-theme="flash-pop"]) .tapeSignal i {
+      animation: none;
+    }
+  }
 
-.storyChrome {
-  position: fixed;
-  z-index: 30;
-  inset: 0;
-  pointer-events: none;
-}
+  @keyframes tapeWave {
+    to {
+      transform: scaleY(0.45);
+      opacity: 0.48;
+    }
+  }
 
-.storyChrome > * {
-  pointer-events: auto;
-}
+  @keyframes auroraDrift {
+    :global(html[data-theme="flash-pop"]) to {
+      transform: translate3d(4%, 6%, 0) rotate(2deg);
+    }
+  }
 
-.storyFolio {
-  position: absolute;
-  bottom: 1.35rem;
-  left: 1.5rem;
-  color: rgb(255 255 255 / 0.48);
-  font-family: var(--type-mono);
-  font-size: 0.62rem;
-  font-weight: 850;
-  letter-spacing: 0.12em;
-}
+  @keyframes snowDrift {
+    :global(html[data-theme="flash-pop"]) to {
+      background-position: 120px 180px;
+    }
+  }
 
-.storyPage {
-  position: relative;
-  display: grid;
-  width: 100%;
-  min-height: 100dvh;
-  overflow: hidden;
-  border: 0;
-  border-radius: 0;
-  background: #061419;
-  box-shadow: none;
-}
-
-.storyVisual {
-  position: relative;
-  min-height: 100%;
-  overflow: hidden;
-}
-
-.storyImage,
-.storyImageContain {
-  object-fit: cover;
-}
-
-.storyCaption {
-  position: absolute;
-  z-index: 3;
-  right: 1.5rem;
-  bottom: 1.35rem;
-  max-width: min(26rem, 64vw);
-  color: rgb(255 255 255 / 0.68);
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-align: right;
-  text-transform: uppercase;
-}
-
-.storyArticle {
-  position: relative;
-  z-index: 5;
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(4.5rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem) clamp(7rem, 10vw, 8rem);
-}
-
-.storyArticle h1 {
-  max-width: 20ch;
-  margin-top: 0.65rem;
-  font-size: clamp(1.8rem, 3.4vw, 3.25rem);
-  line-height: 1.02;
-}
-
-.storyArticle .sceneBlocks {
-  max-width: 42rem;
-  margin-top: 0;
-  gap: clamp(0.85rem, 2vh, 1.35rem);
-}
-
-.storyArticle h1 + .sceneBlocks,
-.storyArticle .eyebrow + h1 + .sceneBlocks {
-  margin-top: 1.5rem;
-}
-
-.storyArticle .sceneParagraph,
-.storyArticle .sceneDialogue {
-  color: rgb(255 255 255 / 0.76);
-  font-size: clamp(1rem, 1.55vw, 1.22rem);
-  line-height: 1.72;
-}
-
-.storyArticle .sceneDialogue {
-  color: white;
-}
-
-.sceneEmphasis {
-  max-width: 28ch;
-  color: white;
-  font-family: var(--type-display);
-  font-size: clamp(1.45rem, 3vw, 2.7rem);
-  font-weight: 850;
-  letter-spacing: -0.035em;
-  line-height: 1.12;
-}
-
-.storyArticle .sceneReaction {
-  position: relative;
-  margin: 0 0 1.35rem;
-  border: 0;
-  border-left: 1px solid rgb(143 231 234 / 0.55);
-  border-radius: 0;
-  background: transparent;
-  padding: 0 0 0 1rem;
-  color: inherit;
-}
-
-.storyArticle .sceneReaction::before {
-  content: none;
-}
-
-.storyArticle .sceneReaction .sceneParagraph,
-.storyArticle .sceneReaction .sceneDialogue {
-  color: #b9f3ef;
-  font-size: clamp(0.9rem, 1.25vw, 1rem);
-  font-style: italic;
-  line-height: 1.65;
-}
-
-.continueButton {
-  position: fixed;
-  z-index: 35;
-  right: 1.35rem;
-  bottom: 1.15rem;
-  min-width: 0;
-  width: auto !important;
-  max-width: calc(100vw - 2rem);
-  min-height: 2.8rem;
-  margin: 0;
-  border: 1px solid rgb(255 255 255 / 0.24) !important;
-  border-radius: 999px !important;
-  background: rgb(2 10 13 / 0.68) !important;
-  padding: 0.7rem 1rem !important;
-  color: rgb(255 255 255 / 0.88) !important;
-  box-shadow: none !important;
-  font-size: 0.74rem !important;
-  backdrop-filter: blur(14px);
-}
-
-.continueButton:hover {
-  border-color: rgb(143 231 234 / 0.6) !important;
-  background: rgb(11 35 40 / 0.88) !important;
-}
-
-.storyPageChapter,
-.storyPageFullBleed {
-  grid-template-columns: 1fr;
-}
-
-.storyPageChapter .storyVisual,
-.storyPageFullBleed .storyVisual {
-  position: absolute;
-  inset: 0;
-}
-
-.storyPageChapter .visualShade {
-  background:
-    linear-gradient(
-      90deg,
-      rgb(1 9 12 / 0.94) 0%,
-      rgb(1 9 12 / 0.68) 48%,
-      rgb(1 9 12 / 0.18) 78%,
-      transparent 94%
-    ),
-    linear-gradient(0deg, rgb(1 9 12 / 0.78), transparent 68%);
-}
-
-.storyPageFullBleed .visualShade {
-  background:
-    linear-gradient(
-      90deg,
-      rgb(1 9 12 / 0.92) 0%,
-      rgb(1 9 12 / 0.62) 50%,
-      rgb(1 9 12 / 0.16) 80%,
-      transparent 96%
-    ),
-    linear-gradient(0deg, rgb(1 9 12 / 0.78), transparent 70%);
-}
-
-.storyPageChapter .storyArticle,
-.storyPageFullBleed .storyArticle {
-  width: min(100%, 58rem);
-  align-self: end;
-  text-shadow: 0 2px 14px rgb(0 0 0 / 0.32);
-}
-
-.storyPageChapter .storyArticle h1 {
-  max-width: 12ch;
-  font-size: clamp(3.4rem, 9vw, 8rem);
-  letter-spacing: -0.06em;
-  line-height: 0.88;
-}
-
-.storyPageChapter .storyArticle .sceneBlocks {
-  max-width: 34rem;
-}
-
-.storyPageFullBleed .storyArticle {
-  justify-content: end;
-  padding-bottom: clamp(7.5rem, 14vh, 10rem);
-}
-
-.storyPageSplit {
-  grid-template-columns: minmax(0, 1.12fr) minmax(24rem, 0.88fr);
-}
-
-.storyPageSplit .visualShade {
-  background: linear-gradient(90deg, transparent 58%, rgb(3 15 20 / 0.5));
-}
-
-.storyPageText {
-  grid-template-columns: 1fr;
-  place-items: center;
-  background:
-    radial-gradient(circle at 18% 26%, rgb(143 231 234 / 0.07), transparent 28%),
-    linear-gradient(145deg, #07191f, #041014 72%);
-}
-
-.storyPageText .storyArticle {
-  width: min(100%, 58rem);
-}
-
-.storyPageText .sceneParagraph,
-.storyPageText .sceneDialogue {
-  font-size: clamp(1.12rem, 2vw, 1.5rem);
-}
-
-.storyPageArtifact {
-  grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.65fr);
-  background: #08171b;
-}
-
-.storyPageArtifact .storyVisual {
-  margin: clamp(1rem, 3vw, 2.5rem) 0 clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
-  border: 1px solid rgb(255 255 255 / 0.11);
-  box-shadow: 0 2rem 6rem rgb(0 0 0 / 0.3);
-}
-
-.storyPageArtifact .visualShade {
-  background: linear-gradient(90deg, transparent 74%, rgb(5 17 21 / 0.3));
-}
-
-.questionHud {
-  position: fixed;
-  z-index: 40;
-  top: 1rem;
-  right: 1rem;
-  left: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  pointer-events: none;
-}
-
-.questionHud > * {
-  pointer-events: auto;
-}
-
-.questionPage {
-  min-height: 100dvh;
-  grid-template-columns: minmax(0, 1fr);
-  padding-top: 0;
-}
-
-.questionPage .questionArticle {
-  padding-top: 6rem;
-}
-
-@media (max-width: 799px) {
-  .storyScreen {
+  /* Immersive story pages */
+  :global(html[data-theme="flash-pop"]) .storyScreen {
+    position: relative;
+    width: 100%;
+    min-height: 100dvh;
     padding: 0;
   }
 
-  .storyPage,
-  .questionPage {
-    min-height: 100dvh;
-    border-radius: 0;
+  .storyChrome {
+    position: fixed;
+    z-index: 30;
+    inset: 0;
+    pointer-events: none;
   }
 
-  .storyPageSplit,
-  .storyPageArtifact,
-  .questionPage {
+  .storyChrome > * {
+    pointer-events: auto;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyFolio {
+    position: absolute;
+    bottom: 1.35rem;
+    left: 1.5rem;
+    color: rgb(255 255 255 / 0.48);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyPage {
+    position: relative;
+    display: grid;
+    width: 100%;
+    min-height: 100dvh;
+    overflow: hidden;
+    padding: 0;
+    border: var(--border-subtle);
+    border-radius: 0;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hero);
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyImage,
+  :global(html[data-theme="flash-pop"]) .storyImageContain {
+    object-fit: cover;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyCaption {
+    position: absolute;
+    z-index: 3;
+    right: 1.5rem;
+    bottom: 1.35rem;
+    max-width: min(26rem, 64vw);
+    color: rgb(255 255 255 / 0.68);
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyArticle {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(4.5rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem) clamp(7rem, 10vw, 8rem);
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyArticle h1 {
+    max-width: 20ch;
+    margin-top: 0.65rem;
+    font-size: clamp(1.8rem, 3.4vw, 3.25rem);
+    line-height: 1.02;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneBlocks {
+    max-width: 42rem;
+    margin-top: 0;
+    gap: clamp(0.85rem, 2vh, 1.35rem);
+  }
+
+  .storyArticle h1 + .sceneBlocks,
+  .storyArticle .eyebrow + h1 + .sceneBlocks {
+    margin-top: 1.5rem;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneParagraph,
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneDialogue {
+    color: rgb(255 255 255 / 0.76);
+    font-size: clamp(1rem, 1.55vw, 1.22rem);
+    line-height: 1.72;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneDialogue {
+    color: white;
+  }
+
+  :global(html[data-theme="flash-pop"]) .sceneEmphasis {
+    max-width: 28ch;
+    color: white;
+    font-family: var(--type-display);
+    font-size: clamp(1.45rem, 3vw, 2.7rem);
+    font-weight: 850;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneReaction::before {
+    content: none;
+  }
+
+  :global(html[data-theme="flash-pop"]) .continueButton:hover {
+    border-color: var(--color-focus);
+    background: var(--color-surface-raised);
+  }
+
+  .storyPageChapter,
+  .storyPageFullBleed {
     grid-template-columns: 1fr;
   }
 
-  .storyPageSplit .storyVisual {
-    min-height: clamp(20rem, 48vh, 30rem);
+  .storyPageChapter .storyVisual,
+  .storyPageFullBleed .storyVisual {
+    position: absolute;
+    inset: 0;
   }
 
-  .storyPageArtifact .storyVisual {
-    min-height: clamp(19rem, 46vh, 28rem);
-    margin: 0;
-    border: 0;
+  .storyPageChapter .visualShade {
+    background:
+      linear-gradient(
+        90deg,
+        rgb(1 9 12 / 0.94) 0%,
+        rgb(1 9 12 / 0.68) 48%,
+        rgb(1 9 12 / 0.18) 78%,
+        transparent 94%
+      ),
+      linear-gradient(0deg, rgb(1 9 12 / 0.78), transparent 68%);
   }
 
-  .storyPageSplit .storyArticle,
-  .storyPageArtifact .storyArticle {
-    padding-top: 2.25rem;
+  .storyPageFullBleed .visualShade {
+    background:
+      linear-gradient(
+        90deg,
+        rgb(1 9 12 / 0.92) 0%,
+        rgb(1 9 12 / 0.62) 50%,
+        rgb(1 9 12 / 0.16) 80%,
+        transparent 96%
+      ),
+      linear-gradient(0deg, rgb(1 9 12 / 0.78), transparent 70%);
   }
 
   .storyPageChapter .storyArticle,
   .storyPageFullBleed .storyArticle {
-    min-height: 100dvh;
-    justify-content: end;
+    width: min(100%, 58rem);
+    align-self: end;
+    text-shadow: 0 2px 14px rgb(0 0 0 / 0.32);
   }
 
   .storyPageChapter .storyArticle h1 {
-    font-size: clamp(3rem, 17vw, 5.6rem);
+    max-width: 12ch;
+    font-size: clamp(3.4rem, 9vw, 8rem);
+    letter-spacing: -0.06em;
+    line-height: 0.88;
   }
 
-  .storyPageChapter .tapeSignal {
-    display: none;
+  .storyPageChapter .storyArticle .sceneBlocks {
+    max-width: 34rem;
   }
 
-  .storyPageChapter .storyCaption {
-    top: 1rem;
-    right: auto;
-    bottom: auto;
-    left: 1rem;
-    text-align: left;
+  :global(html[data-theme="flash-pop"]) .storyPageFullBleed .storyArticle {
+    justify-content: end;
+    padding-bottom: clamp(7.5rem, 14vh, 10rem);
   }
 
-  .storyArticle {
-    padding-right: 1.35rem;
-    padding-bottom: 7.5rem;
-    padding-left: 1.35rem;
+  .storyPageSplit {
+    grid-template-columns: minmax(0, 1.12fr) minmax(24rem, 0.88fr);
   }
 
-  .storyArticle .sceneParagraph,
-  .storyArticle .sceneDialogue,
+  .storyPageSplit .visualShade {
+    background: linear-gradient(90deg, transparent 58%, rgb(3 15 20 / 0.5));
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyPageText {
+    grid-template-columns: 1fr;
+    place-items: center;
+    background:
+      radial-gradient(circle at 18% 26%, rgb(143 231 234 / 0.07), transparent 28%),
+      linear-gradient(145deg, #07191f, #041014 72%);
+  }
+
+  .storyPageText .storyArticle {
+    width: min(100%, 58rem);
+  }
+
   .storyPageText .sceneParagraph,
   .storyPageText .sceneDialogue {
-    font-size: 1.05rem;
-    line-height: 1.72;
+    font-size: clamp(1.12rem, 2vw, 1.5rem);
   }
 
-  .storyCaption {
-    right: 1rem;
-    bottom: 1rem;
+  :global(html[data-theme="flash-pop"]) .storyPageArtifact {
+    grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.65fr);
+    background: #08171b;
   }
 
-  .storyPageSplit .storyCaption,
-  .storyPageArtifact .storyCaption {
-    top: 1rem;
-    right: 1rem;
-    bottom: auto;
+  .storyPageArtifact .storyVisual {
+    margin: clamp(1rem, 3vw, 2.5rem) 0 clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
+    border: 1px solid rgb(255 255 255 / 0.11);
+    box-shadow: 0 2rem 6rem rgb(0 0 0 / 0.3);
   }
 
-  .questionPage .questionArticle {
-    padding-top: 5rem;
+  .storyPageArtifact .visualShade {
+    background: linear-gradient(90deg, transparent 74%, rgb(5 17 21 / 0.3));
   }
 
   .questionHud {
     position: fixed;
-  }
-}
-
-@media (max-width: 520px) {
-  .storyFolio {
-    bottom: 1.15rem;
+    z-index: 40;
+    top: 1rem;
+    right: 1rem;
     left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    pointer-events: none;
   }
 
-  .continueButton {
-    right: 0.85rem;
-    bottom: 0.75rem;
+  .questionHud > * {
+    pointer-events: auto;
   }
 
-  .questionHud {
-    top: 0.7rem;
-    right: 0.7rem;
-    left: 0.7rem;
-  }
-}
-
-/* Flash Pop shell layer: narrative imagery remains immersive, while the
-   surrounding chrome and interactive surfaces use the shared Pop contract. */
-.flashPopCanvas {
-  min-height: 100dvh;
-  background: transparent;
-}
-
-.flashPopCanvasContent {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-}
-
-.storyPage {
-  padding: 0;
-  border: var(--border-subtle);
-  border-radius: 0;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.storyPageText,
-.storyPageArtifact {
-  background: var(--color-surface-soft);
-}
-
-.storyPage .storyVisual {
-  background: var(--color-surface-soft);
-}
-
-.questionHud {
-  top: var(--space-4);
-  right: max(var(--space-6), env(safe-area-inset-right));
-  left: max(var(--space-6), env(safe-area-inset-left));
-  justify-content: space-between;
-}
-
-.questionIndicator {
-  color: var(--color-ink);
-  font-family: var(--type-mono);
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.questionIndicator span {
-  color: var(--color-ink-faint);
-}
-
-.questionHud .actions {
-  gap: var(--space-2);
-}
-
-.feedbackStage {
-  width: min(calc(100% - 2 * var(--space-5)), 820px);
-  margin: 0 auto;
-}
-
-.questionPage {
-  width: min(calc(100% - 2 * var(--space-8)), 980px);
-  min-height: calc(100dvh - 2 * var(--space-8));
-  margin: var(--space-8) auto;
-  border-radius: 0;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.questionPage .questionArticle {
-  width: min(100%, 820px);
-  margin: 0 auto;
-  padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
-}
-
-.introPanel,
-.resultDetails {
-  border: var(--border-subtle);
-  border-radius: 14px;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.introStats,
-.resultStats div,
-.answerStates li {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-}
-
-.backLink {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-  color: var(--color-ink);
-}
-
-.backLink:hover {
-  border-color: var(--color-focus);
-  background: var(--color-surface);
-}
-
-@media (max-width: 799px) {
-  .questionPage {
-    width: calc(100% - 2 * var(--space-4));
-    min-height: calc(100dvh - 2 * var(--space-6));
-    margin: var(--space-6) auto;
-  }
-
-  .questionPage .questionArticle {
-    padding: 5.5rem var(--space-4) var(--space-8);
-  }
-}
-
-/* Dark image-led scenes own the full viewport, including the area that would
-   otherwise show through the rounded Flash Pop card corners. */
-.gameRoot.darkStoryPhase {
-  --narrative-dark-surface: #071319;
-  background: var(--narrative-dark-surface);
-  color: var(--story-ink, #fff);
-}
-
-.darkStoryPhase .polarBackground,
-.darkStoryPhase .flashPopCanvas {
-  background: var(--narrative-dark-surface);
-}
-
-.storyPage.storyPageDark {
-  border: 0;
-  border-radius: 0;
-  background: var(--narrative-dark-surface, #071319);
-  box-shadow: none;
-}
-
-/* Image-led scenes use a dark reading surface. The explicit tone keeps the
-   narrative copy legible without changing the shared Flash Pop palette. */
-.storyPage.storyPageDark {
-  --story-ink: #fff;
-  --story-muted: rgb(255 255 255 / 86%);
-  --story-faint: rgb(255 255 255 / 72%);
-  --story-accent: var(--color-brand);
-  color: var(--story-ink);
-  background: #071319;
-}
-
-.storyPageDark .storyArticle {
-  color: var(--story-ink);
-  text-shadow: 0 2px 16px rgb(0 0 0 / 44%);
-}
-
-.storyPageDark .storyArticle h1,
-.storyPageDark .storyArticle .sceneDialogue,
-.storyPageDark .sceneEmphasis {
-  color: var(--story-ink);
-}
-
-.storyPageDark .storyArticle .sceneParagraph {
-  color: var(--story-muted);
-}
-
-.storyPageDark .storyArticle .sceneDialogue [aria-hidden="true"] {
-  color: var(--story-accent);
-}
-
-.storyPageDark .eyebrow {
-  color: var(--story-accent);
-}
-
-.storyPageDark .storyArticle .sceneReaction {
-  border-left-color: var(--story-accent);
-  background: rgb(0 0 0 / 22%);
-}
-
-.storyPageDark .storyArticle .sceneReaction .sceneParagraph,
-.storyPageDark .storyArticle .sceneReaction .sceneDialogue {
-  color: var(--story-muted);
-}
-
-.storyPageDark .visualShade {
-  background:
-    linear-gradient(90deg, rgb(0 0 0 / 42%), rgb(0 0 0 / 16%) 68%, transparent),
-    linear-gradient(0deg, rgb(0 0 0 / 70%), transparent 72%);
-}
-
-.storyPageDark .storyCaption {
-  color: var(--story-faint);
-}
-
-/* Text-led scenes flow directly over the Pop canvas; the blackout epilogue
-   keeps its own full-screen treatment. */
-.gameRoot:not(.blackoutPhase) .storyPageText {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-/* Final theme layer for the immersive variants declared above. */
-.gameRoot,
-.storyPage,
-.storyPageText,
-.storyPageArtifact {
-  color: var(--color-ink);
-  background: var(--color-surface);
-}
-.storyArticle h1,
-.questionArticle h1,
-.storyArticle .sceneDialogue,
-.sceneEmphasis {
-  color: var(--color-ink);
-}
-.storyArticle .sceneParagraph,
-.storyArticle .sceneDialogue,
-.sceneParagraph {
-  color: var(--color-ink-muted);
-}
-.storyArticle .sceneReaction .sceneParagraph,
-.storyArticle .sceneReaction .sceneDialogue {
-  color: var(--color-ink-muted);
-}
-.storyArticle .sceneReaction {
-  border-left-color: var(--color-social);
-  background: color-mix(in srgb, var(--color-social) 8%, transparent);
-}
-.continueButton {
-  border-color: var(--color-border-hover) !important;
-  background: var(--color-surface) !important;
-  color: var(--color-ink) !important;
-  box-shadow: var(--shadow-control) !important;
-}
-.continueButton:hover {
-  border-color: var(--color-focus) !important;
-  background: var(--color-surface-raised) !important;
-}
-.storyFolio,
-.storyCaption,
-.questionContext,
-.scoreValue span,
-.timeSummary span,
-.resultNotice {
-  color: var(--color-ink-muted);
-}
-.tapeSignal,
-.backLink {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-  color: var(--color-ink);
-}
-.introPanel,
-.resultDetails {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-.introStats,
-.resultStats div,
-.answerStates li {
-  border-color: var(--color-border);
-  border-radius: 10px;
-  background: var(--color-surface-raised);
-}
-.introStats div + div {
-  border-color: var(--color-border);
-}
-.introStats strong,
-.resultStats strong,
-.answerStates li {
-  color: var(--color-ink);
-}
-.introStats span,
-.resultStats span,
-.answerStates span {
-  color: var(--color-ink-faint);
-}
-.introRules {
-  color: var(--color-ink-muted);
-}
-.introRules li::before {
-  background: var(--color-social);
-}
-.answerStates strong {
-  color: var(--state-correct);
-}
-.answerStates li[data-status="incorrect"] strong,
-.answerStates li[data-status="unanswered"] strong {
-  color: var(--state-error);
-}
-.timeSummary {
-  border-top-color: var(--color-border);
-}
-.epilogueScreen {
-  background: var(--color-canvas);
-}
-
-/* The migration layer must remain last so it wins over legacy immersive rules. */
-.flashPopCanvas {
-  min-height: 100dvh;
-  background: transparent;
-}
-
-.flashPopCanvasContent {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-}
-
-.storyPage {
-  padding: 0;
-  border: var(--border-subtle);
-  border-radius: 0;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.storyScreenImage {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-}
-
-.storyScreenImage .storyPage {
-  border: 0;
-  box-shadow: none;
-}
-
-.storyScreenImage .storyPageArtifact .storyVisual {
-  margin: 0;
-  border: 0;
-}
-
-.storyPageText,
-.storyPageArtifact,
-.storyPage .storyVisual {
-  background: var(--color-surface-soft);
-}
-
-.questionHud {
-  top: var(--space-4);
-  right: max(var(--space-6), env(safe-area-inset-right));
-  left: max(var(--space-6), env(safe-area-inset-left));
-  justify-content: space-between;
-}
-
-.questionHud .actions {
-  gap: var(--space-2);
-}
-
-.questionPage {
-  width: 100%;
-  min-height: 100dvh;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.questionPage .questionArticle {
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
-}
-
-.questionPage .questionArticle > div:last-child {
-  margin-top: 2rem;
-}
-
-.introPanel,
-.resultDetails {
-  border: var(--border-subtle);
-  border-radius: 14px;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
-
-.introStats,
-.resultStats div,
-.answerStates li {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-}
-
-.backLink {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-  color: var(--color-ink);
-}
-
-.backLink:hover {
-  border-color: var(--color-focus);
-  background: var(--color-surface);
-}
-
-@media (max-width: 799px) {
-  .questionPage {
+  :global(html[data-theme="flash-pop"]) .questionPage {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 0;
     width: 100%;
     min-height: 100dvh;
     margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .questionPage .questionArticle {
-    padding: 5.5rem var(--space-4) var(--space-8);
+    padding-top: 6rem;
+  }
+
+  @media (max-width: 799px) {
+    :global(html[data-theme="flash-pop"]) .storyScreen {
+      padding: 0;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyPage,
+    :global(html[data-theme="flash-pop"]) .questionPage {
+      min-height: 100dvh;
+      border-radius: 0;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyPageSplit,
+    :global(html[data-theme="flash-pop"]) .storyPageArtifact,
+    :global(html[data-theme="flash-pop"]) .questionPage {
+      grid-template-columns: 1fr;
+    }
+
+    .storyPageSplit .storyVisual {
+      min-height: clamp(20rem, 48vh, 30rem);
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyPageArtifact .storyVisual {
+      min-height: clamp(19rem, 46vh, 28rem);
+      margin: 0;
+      border: 0;
+    }
+
+    .storyPageSplit .storyArticle,
+    .storyPageArtifact .storyArticle {
+      padding-top: 2.25rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyPageChapter .storyArticle,
+    :global(html[data-theme="flash-pop"]) .storyPageFullBleed .storyArticle {
+      min-height: 100dvh;
+      justify-content: end;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyPageChapter .storyArticle h1 {
+      font-size: clamp(3rem, 17vw, 5.6rem);
+    }
+
+    .storyPageChapter .tapeSignal {
+      display: none;
+    }
+
+    .storyPageChapter .storyCaption {
+      top: 1rem;
+      right: auto;
+      bottom: auto;
+      left: 1rem;
+      text-align: left;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyArticle {
+      padding-right: 1.35rem;
+      padding-bottom: 7.5rem;
+      padding-left: 1.35rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyArticle .sceneParagraph,
+    :global(html[data-theme="flash-pop"]) .storyArticle .sceneDialogue,
+    :global(html[data-theme="flash-pop"]) .storyPageText .sceneParagraph,
+    :global(html[data-theme="flash-pop"]) .storyPageText .sceneDialogue {
+      font-size: 1.05rem;
+      line-height: 1.72;
+    }
+
+    :global(html[data-theme="flash-pop"]) .storyCaption {
+      right: 1rem;
+      bottom: 1rem;
+    }
+
+    .storyPageSplit .storyCaption,
+    .storyPageArtifact .storyCaption {
+      top: 1rem;
+      right: 1rem;
+      bottom: auto;
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionPage .questionArticle {
+      padding-top: 5rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionHud {
+      position: fixed;
+    }
+  }
+
+  @media (max-width: 520px) {
+    :global(html[data-theme="flash-pop"]) .storyFolio {
+      bottom: 1.15rem;
+      left: 1rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .continueButton {
+      right: 0.85rem;
+      bottom: 0.75rem;
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionHud {
+      top: 0.7rem;
+      right: 0.7rem;
+      left: 0.7rem;
+    }
+  }
+
+  /* Flash Pop shell layer: narrative imagery remains immersive, while the
+   surrounding chrome and interactive surfaces use the shared Pop contract. */
+  .flashPopCanvas {
+    min-height: 100dvh;
+    background: transparent;
+  }
+
+  .flashPopCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyPageText,
+  :global(html[data-theme="flash-pop"]) .storyPageArtifact {
+    background: var(--color-surface-soft);
+  }
+
+  .storyPage .storyVisual {
+    background: var(--color-surface-soft);
+  }
+
+  :global(html[data-theme="flash-pop"]) .questionHud {
+    top: var(--space-4);
+    right: max(var(--space-6), env(safe-area-inset-right));
+    left: max(var(--space-6), env(safe-area-inset-left));
+    justify-content: space-between;
+  }
+
+  .questionIndicator {
+    color: var(--color-ink);
+    font-family: var(--type-mono);
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .questionIndicator span {
+    color: var(--color-ink-faint);
+  }
+
+  .questionHud .actions {
+    gap: var(--space-2);
+  }
+
+  .feedbackStage {
+    width: min(calc(100% - 2 * var(--space-5)), 820px);
+    margin: 0 auto;
+  }
+
+  :global(html[data-theme="flash-pop"]) .questionPage .questionArticle {
+    width: min(100%, 980px);
+    margin: 0 auto;
+    padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
+  }
+
+  :global(html[data-theme="flash-pop"]) .backLink {
+    border-color: var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-ink);
+  }
+
+  .backLink:hover {
+    border-color: var(--color-focus);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 799px) {
+    :global(html[data-theme="flash-pop"]) .questionPage {
+      width: calc(100% - 2 * var(--space-4));
+      min-height: calc(100dvh - 2 * var(--space-6));
+      margin: var(--space-6) auto;
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionPage .questionArticle {
+      padding: 5.5rem var(--space-4) var(--space-8);
+    }
+  }
+
+  /* Dark image-led scenes own the full viewport, including the area that would
+   otherwise show through the rounded Flash Pop card corners. */
+  .gameRoot.darkStoryPhase {
+    --narrative-dark-surface: #071319;
+    background: var(--narrative-dark-surface);
+    color: var(--story-ink, #fff);
+  }
+
+  .darkStoryPhase .polarBackground,
+  .darkStoryPhase .flashPopCanvas {
+    background: var(--narrative-dark-surface);
+  }
+
+  .storyPage.storyPageDark {
+    border: 0;
+    border-radius: 0;
+    background: var(--narrative-dark-surface, #071319);
+    box-shadow: none;
+  }
+
+  /* Image-led scenes use a dark reading surface. The explicit tone keeps the
+   narrative copy legible without changing the shared Flash Pop palette. */
+  :global(html[data-theme="flash-pop"]) .storyPage.storyPageDark {
+    --story-ink: #fff;
+    --story-muted: rgb(255 255 255 / 86%);
+    --story-faint: rgb(255 255 255 / 72%);
+    --story-accent: var(--color-brand);
+    color: var(--story-ink);
+    background: #071319;
+  }
+
+  .storyPageDark .storyArticle {
+    color: var(--story-ink);
+    text-shadow: 0 2px 16px rgb(0 0 0 / 44%);
+  }
+
+  .storyPageDark .storyArticle h1,
+  .storyPageDark .storyArticle .sceneDialogue,
+  .storyPageDark .sceneEmphasis {
+    color: var(--story-ink);
+  }
+
+  .storyPageDark .storyArticle .sceneParagraph {
+    color: var(--story-muted);
+  }
+
+  .storyPageDark .storyArticle .sceneDialogue [aria-hidden="true"] {
+    color: var(--story-accent);
+  }
+
+  .storyPageDark .eyebrow {
+    color: var(--story-accent);
+  }
+
+  .storyPageDark .storyArticle .sceneReaction {
+    border-left-color: var(--story-accent);
+    background: rgb(0 0 0 / 22%);
+  }
+
+  .storyPageDark .storyArticle .sceneReaction .sceneParagraph,
+  .storyPageDark .storyArticle .sceneReaction .sceneDialogue {
+    color: var(--story-muted);
+  }
+
+  .storyPageDark .visualShade {
+    background:
+      linear-gradient(90deg, rgb(0 0 0 / 42%), rgb(0 0 0 / 16%) 68%, transparent),
+      linear-gradient(0deg, rgb(0 0 0 / 70%), transparent 72%);
+  }
+
+  .storyPageDark .storyCaption {
+    color: var(--story-faint);
+  }
+
+  /* Text-led scenes flow directly over the Pop canvas; the blackout epilogue
+   keeps its own full-screen treatment. */
+  .gameRoot:not(.blackoutPhase) .storyPageText {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Final theme layer for the immersive variants declared above. */
+  :global(html[data-theme="flash-pop"]) .gameRoot,
+  :global(html[data-theme="flash-pop"]) .storyPage,
+  :global(html[data-theme="flash-pop"]) .storyPageText,
+  :global(html[data-theme="flash-pop"]) .storyPageArtifact {
+    color: var(--color-ink);
+    background: var(--color-surface);
+  }
+  :global(html[data-theme="flash-pop"]) .storyArticle h1,
+  :global(html[data-theme="flash-pop"]) .questionArticle h1,
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneDialogue,
+  :global(html[data-theme="flash-pop"]) .sceneEmphasis {
+    color: var(--color-ink);
+  }
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneParagraph,
+  :global(html[data-theme="flash-pop"]) .storyArticle .sceneDialogue,
+  :global(html[data-theme="flash-pop"]) .sceneParagraph {
+    color: var(--color-ink-muted);
+  }
+  :global(html[data-theme="flash-pop"]) .storyFolio,
+  :global(html[data-theme="flash-pop"]) .storyCaption,
+  :global(html[data-theme="flash-pop"]) .questionContext,
+  :global(html[data-theme="flash-pop"]) .scoreValue span,
+  :global(html[data-theme="flash-pop"]) .timeSummary span,
+  :global(html[data-theme="flash-pop"]) .resultNotice {
+    color: var(--color-ink-muted);
+  }
+
+  /* The migration layer must remain last so it wins over legacy immersive rules. */
+  :global(html[data-theme="flash-pop"]) .flashPopCanvas {
+    min-height: 100dvh;
+    background: transparent;
+  }
+
+  :global(html[data-theme="flash-pop"]) .flashPopCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .storyScreenImage {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .storyScreenImage .storyPage {
+    border: 0;
+    box-shadow: none;
+  }
+
+  .storyScreenImage .storyPageArtifact .storyVisual {
+    margin: 0;
+    border: 0;
+  }
+
+  :global(html[data-theme="flash-pop"]) .storyPageText,
+  :global(html[data-theme="flash-pop"]) .storyPageArtifact,
+  :global(html[data-theme="flash-pop"]) .storyPage .storyVisual {
+    background: var(--color-surface-soft);
+  }
+
+  :global(html[data-theme="flash-pop"]) .questionHud .actions {
+    gap: var(--space-2);
+  }
+
+  .questionPage .questionArticle > div:last-child {
+    margin-top: 2rem;
+  }
+
+  :global(html[data-theme="flash-pop"]) .backLink:hover {
+    border-color: var(--color-focus);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 799px) {
+    :global(html[data-theme="flash-pop"]) .questionPage {
+      width: 100%;
+      min-height: 100dvh;
+      margin: 0;
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionPage .questionArticle {
+      padding: 5.5rem var(--space-4) var(--space-8);
+    }
   }
 }

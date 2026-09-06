@@ -1,99 +1,101 @@
-.root {
-  display: grid;
-  gap: 0.9rem;
-  margin-top: 1.75rem;
-}
-.instructions {
-  max-width: 28rem;
-  margin: 0 auto;
-  color: rgb(255 255 255 / 0.55);
-  font-size: 0.9rem;
-  line-height: 1.45;
-  text-align: center;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: min(100%, 25rem);
-  margin-inline: auto;
-  gap: 0.45rem;
-  border-radius: 1rem;
-  padding: 0.45rem;
-  background: rgb(255 255 255 / 0.07);
-}
-.tile,
-.blank {
-  display: grid;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 0.8rem;
-  font-family: var(--type-mono);
-  font-size: clamp(1.5rem, 8vw, 2.4rem);
-  font-weight: 900;
-}
-.tile {
-  border: 0;
-  color: #161616;
-  transition:
-    transform 150ms ease,
-    background-color 150ms ease;
-}
-.movable {
-  cursor: pointer;
-  background: #a5b4fc;
-  box-shadow: 0 0.3rem 0 #6366f1;
-}
-.movable:hover:not(:disabled) {
-  background: #c7d2fe;
-}
-.lockedTile {
-  cursor: not-allowed;
-  background: rgb(255 255 255 / 0.22);
-  color: rgb(255 255 255 / 0.65);
-}
-.tile:focus-visible {
-  outline: 3px solid #facc15;
-  outline-offset: 3px;
-}
-.blank {
-  border: 2px dashed rgb(255 255 255 / 0.28);
-  color: transparent;
-}
-.moves {
-  margin: 0;
-  color: rgb(255 255 255 / 0.72);
-  font-family: var(--type-mono);
-  font-size: 0.82rem;
-  font-weight: 800;
-  text-align: center;
-}
+@layer app-formats {
+  .root {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1.75rem;
+  }
+  .instructions {
+    max-width: 28rem;
+    margin: 0 auto;
+    color: rgb(255 255 255 / 0.55);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: min(100%, 25rem);
+    margin-inline: auto;
+    gap: 0.45rem;
+    border-radius: 1rem;
+    padding: 0.45rem;
+    background: rgb(255 255 255 / 0.07);
+  }
+  .tile,
+  .blank {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 0.8rem;
+    font-family: var(--type-mono);
+    font-size: clamp(1.5rem, 8vw, 2.4rem);
+    font-weight: 900;
+  }
+  [data-variant="flash-pop"] .tile {
+    border: 0;
+    color: #161616;
+    transition:
+      transform 150ms ease,
+      background-color 150ms ease;
+  }
+  .movable {
+    cursor: pointer;
+    background: #a5b4fc;
+    box-shadow: 0 0.3rem 0 #6366f1;
+  }
+  .movable:hover:not(:disabled) {
+    background: #c7d2fe;
+  }
+  .lockedTile {
+    cursor: not-allowed;
+    background: rgb(255 255 255 / 0.22);
+    color: rgb(255 255 255 / 0.65);
+  }
+  .tile:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 3px;
+  }
+  [data-variant="flash-pop"] .blank {
+    border: 2px dashed rgb(255 255 255 / 0.28);
+    color: transparent;
+  }
+  .moves {
+    margin: 0;
+    color: rgb(255 255 255 / 0.72);
+    font-family: var(--type-mono);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-align: center;
+  }
 
-.root[data-variant="flash-pop"] .instructions,
-.root[data-variant="flash-pop"] .moves {
-  color: var(--color-ink-muted);
-}
-.root[data-variant="flash-pop"] .grid {
-  border-radius: var(--radius-card);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-card);
-}
-.root[data-variant="flash-pop"] .tile {
-  color: var(--color-ink);
-}
-.root[data-variant="flash-pop"] .movable {
-  background: var(--state-selected);
-  box-shadow: var(--shadow-control);
-}
-.root[data-variant="flash-pop"] .movable:hover:not(:disabled) {
-  background: var(--color-focus);
-}
-.root[data-variant="flash-pop"] .lockedTile {
-  color: var(--color-ink-muted);
-  background: var(--color-surface-soft);
-}
-.root[data-variant="flash-pop"] .tile:focus-visible {
-  outline-color: var(--state-focus);
-}
-.root[data-variant="flash-pop"] .blank {
-  border-color: var(--color-border);
+  .root[data-variant="flash-pop"] .instructions,
+  .root[data-variant="flash-pop"] .moves {
+    color: var(--color-ink-muted);
+  }
+  .root[data-variant="flash-pop"] .grid {
+    border-radius: var(--radius-card);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-card);
+  }
+  .root[data-variant="flash-pop"] .tile {
+    color: var(--color-ink);
+  }
+  .root[data-variant="flash-pop"] .movable {
+    background: var(--state-selected);
+    box-shadow: var(--shadow-control);
+  }
+  .root[data-variant="flash-pop"] .movable:hover:not(:disabled) {
+    background: var(--color-focus);
+  }
+  .root[data-variant="flash-pop"] .lockedTile {
+    color: var(--color-ink-muted);
+    background: var(--color-surface-soft);
+  }
+  .root[data-variant="flash-pop"] .tile:focus-visible {
+    outline-color: var(--state-focus);
+  }
+  .root[data-variant="flash-pop"] .blank {
+    border-color: var(--color-border);
+  }
 }

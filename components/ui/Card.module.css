@@ -1,36 +1,38 @@
-.card {
-  border-radius: var(--radius-card);
-  color: var(--color-ink);
-  border: var(--border-subtle);
-  background: var(--color-surface);
-}
+@layer app-components {
+  .card {
+    border-radius: var(--radius-card);
+    color: var(--color-ink);
+    border: var(--border-subtle);
+    background: var(--color-surface);
+  }
 
-.soft {
-  background: var(--color-surface-soft);
-}
+  .soft {
+    background: var(--color-surface-soft);
+  }
 
-.flat {
-  box-shadow: none;
-}
+  .flat {
+    box-shadow: none;
+  }
 
-.cardElevation {
-  box-shadow: var(--shadow-card);
-}
+  .cardElevation {
+    box-shadow: var(--shadow-card);
+  }
 
-.hero {
-  border-radius: var(--radius-hero);
-  box-shadow: var(--shadow-hero);
-}
+  .hero {
+    border-radius: var(--radius-hero);
+    box-shadow: var(--shadow-hero);
+  }
 
-.none {
-  padding: 0;
-}
+  .none {
+    padding: 0;
+  }
 
-.compact {
-  padding: var(--space-3);
-  border-radius: var(--radius-control);
-}
+  .compact {
+    padding: var(--space-3);
+    border-radius: var(--radius-control);
+  }
 
-.default {
-  padding: var(--space-6);
+  .default {
+    padding: var(--space-6);
+  }
 }

@@ -7,9 +7,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
       <span className={styles.brandMark}>
         <BoltIcon className="h-4 w-4" />
       </span>
-      {!compact && (
-        <span className="text-sm font-black tracking-[0.18em] text-white uppercase">The Flash</span>
-      )}
+      {!compact && <span className={styles.brandLabel}>The Flash</span>}
     </div>
   );
 }

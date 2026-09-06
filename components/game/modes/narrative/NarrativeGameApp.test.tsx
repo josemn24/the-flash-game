@@ -23,13 +23,13 @@ describe("Narrative Flash Pop migration", () => {
       "zip",
     ]);
     expect(source).toContain("<Canvas");
-    expect(source).toContain('<section className={styles.questionPage}>');
+    expect(source).toContain("<section className={styles.questionPage}>");
     expect(source).not.toContain("questionMeta");
     expect(source).toContain("FlashPopQuestionInput");
     expect(source).toContain("FlashPopFeedback");
     expect(source).toContain("getFlashPopFeedbackCopy");
     expect(source).toContain("feedbackStage");
-    expect(source).toContain('key={`feedback-${session.stepIndex}`}');
+    expect(source).toContain("key={`feedback-${session.stepIndex}`}");
     expect(source).toContain("exit={{ opacity: 0 }}");
     expect(source).not.toContain("Registro actualizado");
     expect(source).toContain('data-variant="flash-pop"');

@@ -1,76 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  /* Canonical semantic design tokens shared by the whole product. */
-  --color-canvas: #f4f1ea;
-  --color-surface: #ffffff;
-  --color-surface-raised: #fbfaf6;
-  --color-surface-soft: #eae7ff;
-  --color-ink: #171720;
-  --color-ink-muted: #686872;
-  --color-ink-faint: #94949c;
-  --color-brand: #d7ff19;
-  --color-social: #6957e8;
-  --color-success: #0f766e;
-  --color-danger: #ff7276;
-  --color-info: #74a7f5;
-  --color-reward: #ffd85a;
-  --color-focus: #4d3bd1;
-  --color-border: rgb(23 23 32 / 14%);
-  --color-brand-hover: #e1ff48;
-  --color-border-hover: rgb(23 23 32 / 28%);
-  --color-text-on-brand: var(--color-ink);
-  --color-text-on-social: #ffffff;
-  --color-text-on-success: #ffffff;
-  --color-text-on-danger: var(--color-ink);
-  --color-text-on-info: var(--color-ink);
-  --color-text-on-reward: var(--color-ink);
-  --color-disabled-opacity: 0.55;
-  --color-overlay-ink: rgb(23 23 32 / 84%);
-  --color-overlay-border: rgb(255 255 255 / 16%);
-  --state-correct: var(--color-success);
-  --state-movable: var(--color-brand);
-  --state-selected: var(--color-social);
-  --state-neutral: var(--color-surface-soft);
-  --state-error: var(--color-danger);
-  --state-focus: var(--color-focus);
-  --border-subtle: 1px solid rgb(23 23 32 / 12%);
-  --border-flash: 1.5px solid rgb(23 23 32 / 36%);
-  --border-action: 2px solid rgb(23 23 32 / 78%);
+/*
+ * Application-owned cascade contract.
+ * Tailwind keeps its own framework layers; app styles must use one of these
+ * layers and must never rely on an ad-hoc "overrides" layer.
+ */
+@layer app-reset, app-tokens, app-base, app-components, app-formats, app-variants, app-utilities;
 
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
+@layer app-tokens {
+  :root {
+    /* Canonical semantic design tokens shared by the whole product. */
+    --color-canvas: #f4f1ea;
+    --color-surface: #ffffff;
+    --color-surface-raised: #fbfaf6;
+    --color-surface-soft: #eae7ff;
+    --color-ink: #171720;
+    --color-ink-muted: #686872;
+    --color-ink-faint: #94949c;
+    --color-brand: #d7ff19;
+    --color-brand-rgb: 215 255 25;
+    --color-social: #6957e8;
+    --color-success: #0f766e;
+    --color-danger: #ff7276;
+    --color-info: #74a7f5;
+    --color-reward: #ffd85a;
+    --color-focus: #4d3bd1;
+    --color-border: rgb(23 23 32 / 14%);
+    --color-brand-hover: #e1ff48;
+    --color-border-hover: rgb(23 23 32 / 28%);
+    --color-text-on-brand: var(--color-ink);
+    --color-text-on-social: #ffffff;
+    --color-text-on-success: #ffffff;
+    --color-text-on-danger: var(--color-ink);
+    --color-text-on-info: var(--color-ink);
+    --color-text-on-reward: var(--color-ink);
+    --color-disabled-opacity: 0.55;
+    --color-overlay-ink: rgb(23 23 32 / 84%);
+    --color-overlay-border: rgb(255 255 255 / 16%);
+    --state-correct: var(--color-success);
+    --state-movable: var(--color-brand);
+    --state-selected: var(--color-social);
+    --state-neutral: var(--color-surface-soft);
+    --state-error: var(--color-danger);
+    --state-focus: var(--color-focus);
+    --border-subtle: 1px solid rgb(23 23 32 / 12%);
+    --border-flash: 1.5px solid rgb(23 23 32 / 36%);
+    --border-action: 2px solid rgb(23 23 32 / 78%);
 
-  /* Angular surfaces; rounding is reserved for compact controls and status. */
-  --radius-sm: 8px;
-  --radius-control: 10px;
-  --radius-card: 14px;
-  --radius-hero: 0;
-  --radius-pill: 999px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
 
-  --shadow-control: 0 3px 0 rgb(23 23 32 / 18%);
-  --shadow-card: 0 8px 22px rgb(35 30 70 / 12%);
-  --shadow-hero: 0 18px 48px rgb(35 30 70 / 18%);
-  --shadow-dialog: 0 28px 80px rgb(23 23 32 / 28%);
+    /* Angular surfaces; rounding is reserved for compact controls and status. */
+    --radius-sm: 8px;
+    --radius-control: 10px;
+    --radius-card: 14px;
+    --radius-hero: 0;
+    --radius-pill: 999px;
 
-  --type-ui: var(--font-flash-pop-ui), Manrope, sans-serif;
-  --type-display: var(--font-flash-pop-display), Fredoka, sans-serif;
-  --type-mono: var(--font-flash-pop-mono), "IBM Plex Mono", monospace;
+    --shadow-control: 0 3px 0 rgb(23 23 32 / 18%);
+    --shadow-card: 0 8px 22px rgb(35 30 70 / 12%);
+    --shadow-hero: 0 18px 48px rgb(35 30 70 / 18%);
+    --shadow-dialog: 0 28px 80px rgb(23 23 32 / 28%);
 
-  --control-height: 56px;
-  --control-height-hero: 64px;
-  --control-height-icon: 48px;
-  --motion-press-in: 90ms;
-  --motion-press-out: 140ms;
-  --motion-card-enter: 320ms;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --type-ui: var(--font-flash-pop-ui), Manrope, sans-serif;
+    --type-display: var(--font-flash-pop-display), Fredoka, sans-serif;
+    --type-mono: var(--font-flash-pop-mono), "IBM Plex Mono", monospace;
+
+    --control-height: 56px;
+    --control-height-hero: 64px;
+    --control-height-icon: 48px;
+    --motion-press-in: 90ms;
+    --motion-press-out: 140ms;
+    --motion-card-enter: 320ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-theme="flash-pop"] {
+    --color-canvas: #f4f1ea;
+    --color-surface: #ffffff;
+    --color-surface-raised: #fbfaf6;
+    --color-surface-soft: #eae7ff;
+    --color-ink: #171720;
+    --color-ink-muted: #686872;
+    --color-ink-faint: #94949c;
+    --color-brand: #d7ff19;
+    --color-brand-rgb: 215 255 25;
+    --color-social: #6957e8;
+    --color-success: #0f766e;
+    --color-danger: #ff7276;
+    --color-info: #74a7f5;
+    --color-reward: #ffd85a;
+    --color-focus: #4d3bd1;
+    --color-border: rgb(23 23 32 / 14%);
+    --color-brand-hover: #e1ff48;
+    --color-border-hover: rgb(23 23 32 / 28%);
+    --color-text-on-brand: var(--color-ink);
+    --color-text-on-social: #ffffff;
+    --color-text-on-success: #ffffff;
+    --color-text-on-danger: var(--color-ink);
+    --color-text-on-info: var(--color-ink);
+    --color-text-on-reward: var(--color-ink);
+    --color-overlay-ink: rgb(23 23 32 / 84%);
+    --color-overlay-border: rgb(255 255 255 / 16%);
+  }
 }
 
 @theme inline {
@@ -80,47 +119,58 @@
   --font-mono: var(--type-mono);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  background: var(--color-canvas);
-  color-scheme: light;
-}
-
-body {
-  margin: 0;
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  font-family: var(--type-ui);
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-a:focus-visible,
-summary:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
-}
-
-button:disabled {
-  cursor: not-allowed;
-}
-
-@media (prefers-reduced-motion: reduce) {
+@layer app-reset {
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    box-sizing: border-box;
+  }
+}
+
+@layer app-base {
+  html {
+    background: var(--color-canvas);
+    color-scheme: light;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--type-ui);
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer app-base {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      /* Accessibility exception: motion must win over component defaults. */
+      /* stylelint-disable declaration-no-important */
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      /* stylelint-enable declaration-no-important */
+    }
   }
 }

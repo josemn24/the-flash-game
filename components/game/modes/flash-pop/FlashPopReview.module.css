@@ -1,184 +1,186 @@
-.card {
-  display: grid;
-  gap: var(--space-5);
-  border-radius: var(--radius-hero);
-  border: var(--border-subtle);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-hero);
-}
+@layer app-formats {
+  .card {
+    display: grid;
+    gap: var(--space-5);
+    border-radius: var(--radius-hero);
+    border: var(--border-subtle);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hero);
+  }
 
-.actions {
-  display: grid;
-  gap: var(--space-3);
-}
+  .actions {
+    display: grid;
+    gap: var(--space-3);
+  }
 
-.heading,
-.heading > div,
-.levelTitle,
-.levelStatus,
-.meta,
-.lockedBody {
-  display: flex;
-}
+  .heading,
+  .heading > div,
+  .levelTitle,
+  .levelStatus,
+  .meta,
+  .lockedBody {
+    display: flex;
+  }
 
-.heading,
-.meta {
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
+  :global(html[data-theme="flash-pop"]) .heading,
+  :global(html[data-theme="flash-pop"]) .meta {
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
 
-.eyebrow {
-  margin: 0;
-  color: var(--color-social);
-  font-family: var(--type-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+  .eyebrow {
+    margin: 0;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
 
-.heading h1 {
-  margin: 6px 0 0;
-  font-family: var(--type-display);
-  font-size: clamp(32px, 8vw, 48px);
-  line-height: 0.98;
-}
+  .heading h1 {
+    margin: 6px 0 0;
+    font-family: var(--type-display);
+    font-size: clamp(32px, 8vw, 48px);
+    line-height: 0.98;
+  }
 
-.levels {
-  display: grid;
-  gap: var(--space-2);
-}
+  .levels {
+    display: grid;
+    gap: var(--space-2);
+  }
 
-.level {
-  overflow: hidden;
-  border: var(--border-subtle);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-raised);
-}
+  .level {
+    overflow: hidden;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+  }
 
-.level summary {
-  display: flex;
-  min-height: 56px;
-  align-items: center;
-  gap: var(--space-3);
-  cursor: pointer;
-  list-style: none;
-  padding: var(--space-2) var(--space-3);
-}
+  .level summary {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    gap: var(--space-3);
+    cursor: pointer;
+    list-style: none;
+    padding: var(--space-2) var(--space-3);
+  }
 
-.level summary::-webkit-details-marker {
-  display: none;
-}
+  .level summary::-webkit-details-marker {
+    display: none;
+  }
 
-.levelNumber {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: var(--radius-pill);
-  color: var(--color-social);
-  background: var(--color-surface);
-  font-family: var(--type-mono);
-  font-size: 12px;
-  font-weight: 700;
-}
+  .levelNumber {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    color: var(--color-social);
+    background: var(--color-surface);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
 
-.levelTitle {
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 2px;
-}
+  :global(html[data-theme="flash-pop"]) .levelTitle {
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
 
-.levelTitle strong {
-  font-size: 14px;
-}
+  .levelTitle strong {
+    font-size: 14px;
+  }
 
-.levelTitle small {
-  overflow: hidden;
-  color: var(--color-ink-muted);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .levelTitle small {
+    overflow: hidden;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-.levelStatus {
-  align-items: center;
-  gap: 5px;
-  color: var(--color-ink-muted);
-  font-size: 11px;
-  font-weight: 700;
-}
+  :global(html[data-theme="flash-pop"]) .levelStatus {
+    align-items: center;
+    gap: 5px;
+    color: var(--color-ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
 
-.levelStatus svg {
-  width: 18px;
-  height: 18px;
-}
+  .levelStatus svg {
+    width: 18px;
+    height: 18px;
+  }
 
-.reached .levelStatus {
-  color: var(--color-success);
-}
+  .reached .levelStatus {
+    color: var(--color-success);
+  }
 
-.locked .levelStatus {
-  color: var(--color-ink-faint);
-}
+  .locked .levelStatus {
+    color: var(--color-ink-faint);
+  }
 
-.levelBody {
-  display: grid;
-  gap: var(--space-3);
-  border-top: var(--border-subtle);
-  padding: var(--space-4);
-}
+  .levelBody {
+    display: grid;
+    gap: var(--space-3);
+    border-top: var(--border-subtle);
+    padding: var(--space-4);
+  }
 
-.levelBody p {
-  margin: 0;
-  color: var(--color-ink-muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
+  .levelBody p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
 
-/* QuestionReviewContent keeps its shared renderer; these overrides give it the Pop surface. */
-.levelBody :global([class*="answerBox"]),
-.levelBody :global([class*="classificationReview"]),
-.levelBody :global([class*="reviewGrid"]) {
-  color: var(--color-ink);
-  border-color: var(--color-border);
-  background: var(--color-surface);
-}
+  /* QuestionReviewContent keeps its shared renderer; these overrides give it the Pop surface. */
+  .levelBody :global([class*="answerBox"]),
+  .levelBody :global([class*="classificationReview"]),
+  .levelBody :global([class*="reviewGrid"]) {
+    color: var(--color-ink);
+    border-color: var(--color-border);
+    background: var(--color-surface);
+  }
 
-.levelBody :global([class*="answerBox"] span),
-.levelBody :global([class*="answerBox"] small) {
-  color: var(--color-ink-muted);
-}
+  .levelBody :global([class*="answerBox"] span),
+  .levelBody :global([class*="answerBox"] small) {
+    color: var(--color-ink-muted);
+  }
 
-.levelBody :global([class*="answerBox"] strong),
-.levelBody :global([class*="answerBox"] b) {
-  color: var(--color-ink);
-}
+  .levelBody :global([class*="answerBox"] strong),
+  .levelBody :global([class*="answerBox"] b) {
+    color: var(--color-ink);
+  }
 
-.meta {
-  color: var(--color-ink-muted);
-  font-family: var(--type-mono);
-  font-size: 11px;
-}
+  :global(html[data-theme="flash-pop"]) .meta {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+  }
 
-.meta strong {
-  color: var(--color-ink);
-}
+  .meta strong {
+    color: var(--color-ink);
+  }
 
-.lockedBody {
-  align-items: center;
-  gap: var(--space-2);
-  border-top: var(--border-subtle);
-  padding: var(--space-4);
-  color: var(--color-ink-muted);
-  font-size: 12px;
-  line-height: 1.4;
-}
+  :global(html[data-theme="flash-pop"]) .lockedBody {
+    align-items: center;
+    gap: var(--space-2);
+    border-top: var(--border-subtle);
+    padding: var(--space-4);
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
 
-.lockedBody svg {
-  width: 18px;
-  flex: 0 0 auto;
+  .lockedBody svg {
+    width: 18px;
+    flex: 0 0 auto;
+  }
 }

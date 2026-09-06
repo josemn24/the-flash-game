@@ -1,171 +1,173 @@
-.challenge {
-  --format-ink: rgba(255, 255, 255, 0.92);
-  --format-surface: #111419;
-  --format-border: rgba(255, 255, 255, 0.12);
-  --format-accent: rgb(215 255 24);
-  --format-focus: rgb(215 255 24);
-  --format-danger: rgb(255 117 133);
-  --format-line: rgba(255, 255, 255, 0.75);
-  display: grid;
-  min-width: 0;
-  gap: 0.8rem;
-  margin-top: 1.25rem;
-}
-
-.surface {
-  position: relative;
-  display: block;
-  width: min(100%, 30rem);
-  min-width: 0;
-  margin-inline: auto;
-  overflow: hidden;
-  border: 1px solid var(--format-border);
-  border-radius: 1rem;
-  padding: 0;
-  background: var(--format-surface);
-}
-
-.surface img {
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-}
-
-.surfaceInteractive {
-  cursor: crosshair;
-  touch-action: manipulation;
-}
-
-.surfaceInteractive:hover,
-.surfaceInteractive:focus-visible {
-  border-color: var(--format-accent);
-  outline: 3px solid color-mix(in srgb, var(--format-focus) 18%, transparent);
-  outline-offset: 2px;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.toleranceArea {
-  fill: color-mix(in srgb, var(--format-danger) 8%, transparent);
-  stroke: color-mix(in srgb, var(--format-danger) 35%, transparent);
-  stroke-width: 3;
-  stroke-dasharray: 9 8;
-}
-
-.targetArea {
-  fill: color-mix(in srgb, var(--format-accent) 11%, transparent);
-  stroke: color-mix(in srgb, var(--format-accent) 72%, transparent);
-  stroke-width: 4;
-}
-
-.distanceLine {
-  stroke: var(--format-line);
-  stroke-width: 4;
-  stroke-dasharray: 8 7;
-}
-
-.targetMarker circle {
-  fill: var(--format-surface);
-  stroke: var(--format-accent);
-  stroke-width: 5;
-}
-
-.targetMarker path {
-  stroke: var(--format-accent);
-  stroke-width: 4;
-  stroke-linecap: round;
-}
-
-.selectedMarker circle:first-child {
-  fill: color-mix(in srgb, var(--format-surface) 85%, transparent);
-  stroke: var(--format-ink);
-  stroke-width: 5;
-}
-
-.selectedMarker circle:last-child {
-  fill: var(--format-ink);
-}
-
-.confirmButton {
-  display: flex;
-  min-height: 3.25rem;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  border: 1px solid var(--format-accent);
-  border-radius: 0.75rem;
-  color: var(--format-ink);
-  background: var(--format-accent);
-  font-size: 0.78rem;
-  font-weight: 900;
-  box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
-}
-
-.confirmButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--format-accent) 82%, white);
-}
-
-.confirmButton:focus-visible {
-  outline: 3px solid var(--format-focus);
-  outline-offset: 3px;
-}
-
-.confirmButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.35;
-}
-
-@media (min-width: 640px) {
+@layer app-formats {
   .challenge {
-    margin-top: 1.5rem;
+    --format-ink: rgba(255, 255, 255, 0.92);
+    --format-surface: #111419;
+    --format-border: rgba(255, 255, 255, 0.12);
+    --format-accent: var(--color-brand);
+    --format-focus: var(--color-brand);
+    --format-danger: rgb(255 117 133);
+    --format-line: rgba(255, 255, 255, 0.75);
+    display: grid;
+    min-width: 0;
+    gap: 0.8rem;
+    margin-top: 1.25rem;
+  }
+
+  .surface {
+    position: relative;
+    display: block;
+    width: min(100%, 30rem);
+    min-width: 0;
+    margin-inline: auto;
+    overflow: hidden;
+    border: 1px solid var(--format-border);
+    border-radius: 1rem;
+    padding: 0;
+    background: var(--format-surface);
+  }
+
+  .surface img {
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .surfaceInteractive {
+    cursor: crosshair;
+    touch-action: manipulation;
+  }
+
+  .surfaceInteractive:hover,
+  .surfaceInteractive:focus-visible {
+    border-color: var(--format-accent);
+    outline: 3px solid color-mix(in srgb, var(--format-focus) 18%, transparent);
+    outline-offset: 2px;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .toleranceArea {
+    fill: color-mix(in srgb, var(--format-danger) 8%, transparent);
+    stroke: color-mix(in srgb, var(--format-danger) 35%, transparent);
+    stroke-width: 3;
+    stroke-dasharray: 9 8;
+  }
+
+  .targetArea {
+    fill: color-mix(in srgb, var(--format-accent) 11%, transparent);
+    stroke: color-mix(in srgb, var(--format-accent) 72%, transparent);
+    stroke-width: 4;
+  }
+
+  .distanceLine {
+    stroke: var(--format-line);
+    stroke-width: 4;
+    stroke-dasharray: 8 7;
+  }
+
+  .targetMarker circle {
+    fill: var(--format-surface);
+    stroke: var(--format-accent);
+    stroke-width: 5;
+  }
+
+  .targetMarker path {
+    stroke: var(--format-accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+
+  .selectedMarker circle:first-child {
+    fill: color-mix(in srgb, var(--format-surface) 85%, transparent);
+    stroke: var(--format-ink);
+    stroke-width: 5;
+  }
+
+  .selectedMarker circle:last-child {
+    fill: var(--format-ink);
   }
 
   .confirmButton {
-    width: min(100%, 30rem);
-    margin-inline: auto;
+    display: flex;
+    min-height: 3.25rem;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border: 1px solid var(--format-accent);
+    border-radius: 0.75rem;
+    color: var(--format-ink);
+    background: var(--format-accent);
+    font-size: 0.78rem;
+    font-weight: 900;
+    box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
   }
-}
 
-.challenge {
-  --format-ink: var(--color-ink);
-  --format-surface: var(--color-surface-raised);
-  --format-border: var(--color-border);
-  --format-accent: var(--color-social);
-  --format-focus: var(--color-focus);
-  --format-danger: var(--color-danger);
-  --format-line: var(--color-ink-muted);
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
+  .confirmButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--format-accent) 82%, white);
+  }
 
-.surface {
-  border: var(--border-subtle);
-  border-radius: var(--radius-card);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-card);
-}
+  .confirmButton:focus-visible {
+    outline: 3px solid var(--format-focus);
+    outline-offset: 3px;
+  }
 
-.surfaceInteractive:hover,
-.surfaceInteractive:focus-visible {
-  border-color: var(--color-social);
-}
+  .confirmButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
 
-.confirmButton {
-  min-height: var(--control-height);
-  border: var(--border-flash);
-  border-radius: var(--radius-control);
-  color: var(--color-ink);
-  background: var(--color-brand);
-  box-shadow: var(--shadow-control);
-}
+  @media (min-width: 640px) {
+    .challenge[data-variant="flash-pop"] {
+      margin-top: 1.5rem;
+    }
 
-.confirmButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+    [data-variant="flash-pop"] .confirmButton {
+      width: min(100%, 30rem);
+      margin-inline: auto;
+    }
+  }
+
+  .challenge[data-variant="flash-pop"] {
+    --format-ink: var(--color-ink);
+    --format-surface: var(--color-surface-raised);
+    --format-border: var(--color-border);
+    --format-accent: var(--color-social);
+    --format-focus: var(--color-focus);
+    --format-danger: var(--color-danger);
+    --format-line: var(--color-ink-muted);
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  [data-variant="flash-pop"] .surface {
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-card);
+  }
+
+  [data-variant="flash-pop"] .surfaceInteractive:hover,
+  [data-variant="flash-pop"] .surfaceInteractive:focus-visible {
+    border-color: var(--color-social);
+  }
+
+  [data-variant="flash-pop"] .confirmButton {
+    min-height: var(--control-height);
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  [data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+  }
 }

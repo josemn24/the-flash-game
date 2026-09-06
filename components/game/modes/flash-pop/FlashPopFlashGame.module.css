@@ -1,561 +1,563 @@
-.screen {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-}
+@layer app-formats {
+  .screen {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
 
-.stageFrame {
-  width: 100%;
-  min-width: 0;
-}
+  .stageFrame {
+    width: 100%;
+    min-width: 0;
+  }
 
-.stage {
-  display: grid;
-  width: min(100%, 820px);
-  min-height: calc(100dvh - 48px);
-  margin: 0 auto;
-  align-content: start;
-  gap: var(--space-6);
-}
-
-.introCard,
-.resultCard,
-.reviewCard {
-  border-radius: 28px;
-}
-
-.introCard {
-  position: relative;
-  max-width: 680px;
-  margin: clamp(12px, 7vh, 72px) auto 0;
-  overflow: hidden;
-  padding: clamp(24px, 5vw, 52px);
-}
-
-.introAccent {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  display: grid;
-  width: 76px;
-  height: 76px;
-  place-content: center;
-  transform: rotate(7deg);
-  border: var(--border-flash);
-  border-radius: 22px;
-  background: var(--color-brand);
-  box-shadow: var(--shadow-control);
-  text-align: center;
-}
-
-.introAccent span {
-  font-family: var(--type-display);
-  font-size: 32px;
-  font-weight: 900;
-  line-height: 0.8;
-}
-
-.introAccent small {
-  margin-top: 7px;
-  font-family: var(--type-mono);
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.introCard h1,
-.questionCard h1,
-.resultCard h1,
-.reviewCard h1 {
-  font-family: var(--type-display);
-  font-weight: 800;
-  letter-spacing: -0.055em;
-  line-height: 0.98;
-}
-
-.introCard h1 {
-  max-width: 510px;
-  margin: 16px 100px 0 0;
-  font-size: clamp(42px, 7vw, 72px);
-}
-
-.lead {
-  max-width: 510px;
-  margin: 16px 0 0;
-  color: var(--color-ink-muted);
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.45;
-}
-
-.description,
-.note {
-  color: var(--color-ink-muted);
-  line-height: 1.55;
-}
-
-.description {
-  max-width: 600px;
-  margin: 10px 0 0;
-  font-size: 13px;
-}
-
-.introStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin: 28px 0 18px;
-}
-
-.introStats div {
-  display: grid;
-  gap: 4px;
-  padding: 14px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: var(--color-surface-soft);
-}
-
-.introStats strong {
-  font-family: var(--type-display);
-  font-size: 22px;
-  letter-spacing: -0.04em;
-}
-
-.introStats span,
-.note,
-.promptContext,
-.eyebrow {
-  font-family: var(--type-mono);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.introStats span,
-.note,
-.promptContext {
-  color: var(--color-ink-muted);
-}
-
-.formatList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 24px;
-}
-
-.note {
-  margin: 11px 0 0;
-  font-size: 9px;
-  text-align: center;
-}
-
-.scoreTrack {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--color-surface-soft);
-}
-
-.scoreTrack span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--color-brand);
-  transition: width 300ms ease;
-}
-
-.questionIndicator {
-  margin: 0;
-  color: var(--color-ink);
-  font-family: var(--type-mono);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.questionIndicator span {
-  color: var(--color-ink-muted);
-}
-
-.questionCard {
-  align-self: center;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.promptContext {
-  display: inline-block;
-  max-width: 100%;
-  margin: 0 0 16px;
-  border-left: 3px solid var(--color-social);
-  border-radius: 0 8px 8px 0;
-  padding: 6px 10px;
-  color: var(--color-focus);
-  background: rgb(105 87 232 / 9%);
-  font-size: clamp(0.64rem, 1.4vw, 0.75rem);
-  font-weight: 900;
-  letter-spacing: 0.07em;
-}
-
-.questionCard h1 {
-  max-width: 720px;
-  margin: 0;
-  font-size: clamp(24px, 6.4vw, 32px);
-}
-
-.questionMedia {
-  margin: 24px auto 4px;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: var(--color-surface-soft);
-}
-
-.questionCard > div:last-child {
-  margin-top: 28px;
-}
-
-.eyebrow {
-  margin: 22px 0 0;
-  color: var(--color-social);
-}
-
-.resultLayout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
-  gap: 18px;
-  align-items: start;
-  margin-top: 34px;
-}
-
-.resultCard {
-  padding: clamp(24px, 4vw, 38px);
-}
-
-.resultCard h1 {
-  margin: 12px 0 0;
-  font-size: clamp(38px, 5vw, 58px);
-}
-
-.scoreDisplay {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  margin: 30px 0 17px;
-}
-
-.scoreDisplay strong {
-  font-family: var(--type-display);
-  font-size: clamp(70px, 10vw, 108px);
-  font-weight: 900;
-  letter-spacing: -0.08em;
-  line-height: 0.8;
-}
-
-.scoreDisplay span {
-  color: var(--color-ink-muted);
-  font-family: var(--type-mono);
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.resultActions,
-.reviewActions {
-  display: grid;
-  gap: 10px;
-  margin-top: 28px;
-}
-
-.resultStats {
-  display: grid;
-  gap: 12px;
-}
-
-.accuracyCard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  min-width: 0;
-  min-height: 104px;
-  padding: 14px 16px;
-}
-
-.accuracyCard .eyebrow {
-  margin-top: 0;
-}
-
-.accuracyCard strong {
-  display: block;
-  margin-top: 8px;
-  font-family: var(--type-display);
-  font-size: 34px;
-}
-
-.summaryStats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.accuracyRing {
-  position: relative;
-  display: grid;
-  width: 56px;
-  height: 56px;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: conic-gradient(var(--color-social) var(--accuracy), var(--color-surface-soft) 0);
-}
-
-.accuracyRing::before {
-  position: absolute;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--color-surface);
-  content: "";
-}
-
-.answerStats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.answerStats .statCard,
-.summaryStats .statCard {
-  min-width: 0;
-  min-height: 104px;
-  padding: 14px;
-}
-
-.statCard {
-  display: flex;
-  min-height: 112px;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 16px;
-}
-
-.statHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.statHeader span {
-  color: var(--color-ink-muted);
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.statCard svg {
-  width: 19px;
-  color: var(--color-ink-muted);
-}
-.statCard strong {
-  font-family: var(--type-display);
-  font-size: 25px;
-}
-.statSuccess svg {
-  color: var(--color-success);
-}
-.statDanger svg {
-  color: #c83d55;
-}
-
-.reviewCard {
-  max-width: 900px;
-  margin: 34px auto 0;
-  padding: clamp(20px, 4vw, 38px);
-}
-
-.reviewHeading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.reviewCard h1 {
-  margin: 10px 0 0;
-  font-size: clamp(40px, 6vw, 62px);
-}
-.reviewList {
-  display: grid;
-  gap: 10px;
-  margin-top: 28px;
-}
-.reviewItem {
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: var(--color-surface-soft);
-}
-.reviewItem summary {
-  display: flex;
-  min-height: 66px;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  list-style: none;
-}
-.reviewItem summary::-webkit-details-marker {
-  display: none;
-}
-.reviewNumber {
-  color: var(--color-social);
-  font-family: var(--type-mono);
-  font-size: 10px;
-  font-weight: 900;
-}
-.reviewTitle {
-  display: grid;
-  min-width: 0;
-  flex: 1;
-  gap: 4px;
-}
-.reviewTitle strong {
-  font-size: 11px;
-}
-.reviewTitle small {
-  overflow: hidden;
-  color: var(--color-ink-muted);
-  font-size: 11px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.reviewBody {
-  padding: 0 18px 18px;
-}
-
-/* QuestionReviewContent is shared with the dark Flash UI. Re-skin its review
-   surfaces here so labels and answers remain readable on the light Pop card. */
-.reviewBody :global([class*="answerBox"]),
-.reviewBody :global([class*="classificationReview"]),
-.reviewBody :global([class*="reviewGrid"]) {
-  color: var(--color-ink);
-  border-color: var(--color-border);
-  background: var(--color-surface);
-}
-
-.reviewBody :global([class*="answerBox"] span),
-.reviewBody :global([class*="answerBox"] small),
-.reviewBody :global([class*="classificationReview"] small) {
-  color: var(--color-ink-muted);
-}
-
-.reviewBody :global([class*="answerBox"] strong),
-.reviewBody :global([class*="answerBox"] b),
-.reviewBody :global([class*="classificationReview"] b) {
-  color: var(--color-ink);
-}
-
-.reviewBody :global([class*="answerBoxCorrect"] strong),
-.reviewBody :global([class*="classificationValueCorrect"]) {
-  color: var(--color-focus);
-}
-
-.reviewMeta {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 14px;
-  color: var(--color-ink-muted);
-  font-family: var(--type-mono);
-  font-size: 10px;
-}
-.reviewMeta strong {
-  color: var(--color-social);
-}
-.explanation {
-  margin: 12px 0 0;
-  color: var(--color-ink-muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-@media (max-width: 700px) {
   .stage {
-    min-height: calc(100dvh - 32px);
+    display: grid;
+    width: min(100%, 820px);
+    min-height: calc(100dvh - 48px);
+    margin: 0 auto;
+    align-content: start;
+    gap: var(--space-6);
   }
-  .resultLayout {
-    grid-template-columns: 1fr;
-    margin-top: 12px;
-  }
-  .reviewItem summary {
-    align-items: start;
-  }
-  .reviewItem summary > :global(.card) {
-    margin-left: auto;
-  }
-}
 
-@media (max-width: 480px) {
-  .introCard h1 {
-    margin-right: 0;
-    padding-top: 72px;
+  .introCard,
+  .resultCard,
+  .reviewCard {
+    border-radius: 28px;
   }
+
+  :global(html[data-theme="flash-pop"]) .introCard {
+    position: relative;
+    max-width: 680px;
+    margin: clamp(12px, 7vh, 72px) auto 0;
+    overflow: hidden;
+    padding: clamp(24px, 5vw, 52px);
+  }
+
   .introAccent {
-    top: 22px;
-    right: 22px;
-    width: 64px;
-    height: 64px;
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-content: center;
+    transform: rotate(7deg);
+    border: var(--border-flash);
+    border-radius: 22px;
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+    text-align: center;
   }
-  .introAccent span {
-    font-size: 27px;
-  }
-  .introStats {
-    gap: 6px;
-  }
-  .introStats div {
-    padding: 10px;
-  }
-  .introStats strong {
-    font-size: 17px;
-  }
-  .introStats span {
-    font-size: 8px;
-  }
-  .summaryStats,
-  .answerStats {
-    gap: 7px;
-  }
-  .answerStats .statCard,
-  .summaryStats .statCard {
-    padding: 14px 12px;
-  }
-  .reviewTitle small {
-    max-width: 150px;
-  }
-}
 
-@media (max-width: 520px) {
-  .mobileLabelMuted {
+  .introAccent span {
+    font-family: var(--type-display);
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 0.8;
+  }
+
+  .introAccent small {
+    margin-top: 7px;
+    font-family: var(--type-mono);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .introCard h1,
+  .questionCard h1,
+  .resultCard h1,
+  .reviewCard h1 {
+    font-family: var(--type-display);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.98;
+  }
+
+  :global(html[data-theme="flash-pop"]) .introCard h1 {
+    max-width: 510px;
+    margin: 16px 100px 0 0;
+    font-size: clamp(42px, 7vw, 72px);
+  }
+
+  .lead {
+    max-width: 510px;
+    margin: 16px 0 0;
+    color: var(--color-ink-muted);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .description,
+  .note {
+    color: var(--color-ink-muted);
+    line-height: 1.55;
+  }
+
+  :global(html[data-theme="flash-pop"]) .description {
+    max-width: 600px;
+    margin: 10px 0 0;
+    font-size: 13px;
+  }
+
+  .introStats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 28px 0 18px;
+  }
+
+  .introStats div {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-surface-soft);
+  }
+
+  .introStats strong {
+    font-family: var(--type-display);
+    font-size: 22px;
+    letter-spacing: -0.04em;
+  }
+
+  .introStats span,
+  :global(html[data-theme="flash-pop"]) .note,
+  .promptContext,
+  .eyebrow {
+    font-family: var(--type-mono);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :global(html[data-theme="flash-pop"]) .introStats span,
+  :global(html[data-theme="flash-pop"]) .note,
+  :global(html[data-theme="flash-pop"]) .promptContext {
     color: var(--color-ink-muted);
   }
 
+  .formatList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 24px;
+  }
+
+  :global(html[data-theme="flash-pop"]) .note {
+    margin: 11px 0 0;
+    font-size: 9px;
+    text-align: center;
+  }
+
+  .scoreTrack {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+  }
+
+  .scoreTrack span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-brand);
+    transition: width 300ms ease;
+  }
+
   .questionIndicator {
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .questionIndicator span {
+    color: var(--color-ink-muted);
+  }
+
+  .questionCard {
+    align-self: center;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :global(html[data-theme="flash-pop"]) .promptContext {
+    display: inline-block;
+    max-width: 100%;
+    margin: 0 0 16px;
+    border-left: 3px solid var(--color-social);
+    border-radius: 0 8px 8px 0;
+    padding: 6px 10px;
+    color: var(--color-focus);
+    background: rgb(105 87 232 / 9%);
+    font-size: clamp(0.64rem, 1.4vw, 0.75rem);
+    font-weight: 900;
+    letter-spacing: 0.07em;
+  }
+
+  :global(html[data-theme="flash-pop"]) .questionCard h1 {
+    max-width: 720px;
+    margin: 0;
+    font-size: clamp(24px, 6.4vw, 32px);
+  }
+
+  .questionMedia {
+    margin: 24px auto 4px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface-soft);
+  }
+
+  .questionCard > div:last-child {
+    margin-top: 28px;
+  }
+
+  :global(html[data-theme="flash-pop"]) .eyebrow {
+    margin: 22px 0 0;
+    color: var(--color-social);
+  }
+
+  .resultLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+    gap: 18px;
+    align-items: start;
+    margin-top: 34px;
+  }
+
+  :global(html[data-theme="flash-pop"]) .resultCard {
+    padding: clamp(24px, 4vw, 38px);
+  }
+
+  :global(html[data-theme="flash-pop"]) .resultCard h1 {
+    margin: 12px 0 0;
+    font-size: clamp(38px, 5vw, 58px);
+  }
+
+  .scoreDisplay {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    margin: 30px 0 17px;
+  }
+
+  .scoreDisplay strong {
+    font-family: var(--type-display);
+    font-size: clamp(70px, 10vw, 108px);
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    line-height: 0.8;
+  }
+
+  .scoreDisplay span {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .resultActions,
+  .reviewActions {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .resultStats {
+    display: grid;
+    gap: 12px;
+  }
+
+  .accuracyCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-width: 0;
+    min-height: 104px;
+    padding: 14px 16px;
+  }
+
+  .accuracyCard .eyebrow {
+    margin-top: 0;
+  }
+
+  .accuracyCard strong {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--type-display);
+    font-size: 34px;
+  }
+
+  .summaryStats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .accuracyRing {
+    position: relative;
+    display: grid;
+    width: 56px;
+    height: 56px;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: conic-gradient(var(--color-social) var(--accuracy), var(--color-surface-soft) 0);
+  }
+
+  .accuracyRing::before {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    content: "";
+  }
+
+  .answerStats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .answerStats .statCard,
+  .summaryStats .statCard {
+    min-width: 0;
+    min-height: 104px;
+    padding: 14px;
+  }
+
+  .statCard {
+    display: flex;
+    min-height: 112px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 16px;
+  }
+
+  .statHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .statHeader span {
+    color: var(--color-ink-muted);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .statCard svg {
+    width: 19px;
+    color: var(--color-ink-muted);
+  }
+  .statCard strong {
+    font-family: var(--type-display);
+    font-size: 25px;
+  }
+  .statSuccess svg {
+    color: var(--color-success);
+  }
+  .statDanger svg {
+    color: #c83d55;
+  }
+
+  :global(html[data-theme="flash-pop"]) .reviewCard {
+    max-width: 900px;
+    margin: 34px auto 0;
+    padding: clamp(20px, 4vw, 38px);
+  }
+
+  .reviewHeading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  :global(html[data-theme="flash-pop"]) .reviewCard h1 {
+    margin: 10px 0 0;
+    font-size: clamp(40px, 6vw, 62px);
+  }
+  .reviewList {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .reviewItem {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-surface-soft);
+  }
+  .reviewItem summary {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .reviewItem summary::-webkit-details-marker {
     display: none;
   }
-}
+  .reviewNumber {
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 900;
+  }
+  .reviewTitle {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 4px;
+  }
+  .reviewTitle strong {
+    font-size: 11px;
+  }
+  .reviewTitle small {
+    overflow: hidden;
+    color: var(--color-ink-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .reviewBody {
+    padding: 0 18px 18px;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  .scoreTrack span {
-    transition: none;
+  /* QuestionReviewContent is shared with the dark Flash UI. Re-skin its review
+   surfaces here so labels and answers remain readable on the light Pop card. */
+  .reviewBody :global([class*="answerBox"]),
+  .reviewBody :global([class*="classificationReview"]),
+  .reviewBody :global([class*="reviewGrid"]) {
+    color: var(--color-ink);
+    border-color: var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .reviewBody :global([class*="answerBox"] span),
+  .reviewBody :global([class*="answerBox"] small),
+  .reviewBody :global([class*="classificationReview"] small) {
+    color: var(--color-ink-muted);
+  }
+
+  .reviewBody :global([class*="answerBox"] strong),
+  .reviewBody :global([class*="answerBox"] b),
+  .reviewBody :global([class*="classificationReview"] b) {
+    color: var(--color-ink);
+  }
+
+  .reviewBody :global([class*="answerBoxCorrect"] strong),
+  .reviewBody :global([class*="classificationValueCorrect"]) {
+    color: var(--color-focus);
+  }
+
+  .reviewMeta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+  }
+  .reviewMeta strong {
+    color: var(--color-social);
+  }
+  .explanation {
+    margin: 12px 0 0;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 700px) {
+    :global(html[data-theme="flash-pop"]) .stage {
+      min-height: calc(100dvh - 32px);
+    }
+    :global(html[data-theme="flash-pop"]) .resultLayout {
+      grid-template-columns: 1fr;
+      margin-top: 12px;
+    }
+    :global(html[data-theme="flash-pop"]) .reviewItem summary {
+      align-items: start;
+    }
+    .reviewItem summary > :global(.card) {
+      margin-left: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    :global(html[data-theme="flash-pop"]) .introCard h1 {
+      margin-right: 0;
+      padding-top: 72px;
+    }
+    :global(html[data-theme="flash-pop"]) .introAccent {
+      top: 22px;
+      right: 22px;
+      width: 64px;
+      height: 64px;
+    }
+    :global(html[data-theme="flash-pop"]) .introAccent span {
+      font-size: 27px;
+    }
+    :global(html[data-theme="flash-pop"]) .introStats {
+      gap: 6px;
+    }
+    :global(html[data-theme="flash-pop"]) .introStats div {
+      padding: 10px;
+    }
+    :global(html[data-theme="flash-pop"]) .introStats strong {
+      font-size: 17px;
+    }
+    :global(html[data-theme="flash-pop"]) .introStats span {
+      font-size: 8px;
+    }
+    :global(html[data-theme="flash-pop"]) .summaryStats,
+    :global(html[data-theme="flash-pop"]) .answerStats {
+      gap: 7px;
+    }
+    :global(html[data-theme="flash-pop"]) .answerStats .statCard,
+    :global(html[data-theme="flash-pop"]) .summaryStats .statCard {
+      padding: 14px 12px;
+    }
+    :global(html[data-theme="flash-pop"]) .reviewTitle small {
+      max-width: 150px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .mobileLabelMuted {
+      color: var(--color-ink-muted);
+    }
+
+    :global(html[data-theme="flash-pop"]) .questionIndicator {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html[data-theme="flash-pop"]) .scoreTrack span {
+      transition: none;
+    }
   }
 }

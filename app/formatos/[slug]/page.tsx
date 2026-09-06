@@ -105,7 +105,7 @@ export default async function FormatDetailPage({ params }: Props) {
           <section className={styles.section}>
             <h2>Tiempo recomendado</h2>
             <p>
-              <strong className="text-white">{format.timing.recommendedSeconds}</strong>
+              <strong className={styles.timingValue}>{format.timing.recommendedSeconds}</strong>
             </p>
             <p>{format.timing.notes}</p>
           </section>

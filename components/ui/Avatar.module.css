@@ -1,77 +1,79 @@
-.avatar {
-  display: inline-grid;
-  flex: 0 0 auto;
-  place-items: center;
-  overflow: hidden;
-  border: 2px solid var(--color-surface);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-on-social);
-  font-family: var(--type-ui);
-  font-size: 0.72rem;
-  font-weight: 900;
-  line-height: 1;
-}
+@layer app-components {
+  .avatar {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    overflow: hidden;
+    border: 2px solid var(--color-surface);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-on-social);
+    font-family: var(--type-ui);
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+  }
 
-.sm {
-  width: 32px;
-  height: 32px;
-}
+  .sm {
+    width: 32px;
+    height: 32px;
+  }
 
-.md {
-  width: 42px;
-  height: 42px;
-}
+  .md {
+    width: 42px;
+    height: 42px;
+  }
 
-.lg {
-  width: 56px;
-  height: 56px;
-  font-size: 0.86rem;
-}
+  .lg {
+    width: 56px;
+    height: 56px;
+    font-size: 0.86rem;
+  }
 
-.image {
-  object-fit: cover;
-}
+  .image {
+    object-fit: cover;
+  }
 
-.social {
-  background: var(--color-social);
-}
+  .social {
+    background: var(--color-social);
+  }
 
-.coral {
-  background: var(--color-danger);
-}
+  .coral {
+    background: var(--color-danger);
+  }
 
-.blue,
-.aqua {
-  background: var(--color-info);
-}
+  .blue,
+  .aqua {
+    background: var(--color-info);
+  }
 
-.ink {
-  background: var(--color-ink);
-}
+  .ink {
+    background: var(--color-ink);
+  }
 
-.reward {
-  background: var(--color-reward);
-  color: var(--color-text-on-reward);
-}
+  .reward {
+    background: var(--color-reward);
+    color: var(--color-text-on-reward);
+  }
 
-.group {
-  display: inline-flex;
-  align-items: center;
-}
+  .group {
+    display: inline-flex;
+    align-items: center;
+  }
 
-.stack {
-  display: inline-flex;
-  padding-left: 4px;
-}
+  .stack {
+    display: inline-flex;
+    padding-left: 4px;
+  }
 
-.stackedAvatar {
-  margin-left: -4px;
-}
+  .stackedAvatar {
+    margin-left: -4px;
+  }
 
-.label {
-  margin-left: var(--space-2);
-  color: var(--color-ink-muted);
-  font-family: var(--type-ui);
-  font-size: 0.75rem;
-  font-weight: 700;
+  .label {
+    margin-left: var(--space-2);
+    color: var(--color-ink-muted);
+    font-family: var(--type-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
 }

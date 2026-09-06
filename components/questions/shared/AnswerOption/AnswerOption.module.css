@@ -1,96 +1,98 @@
-.option {
-  --format-ink: rgba(255, 255, 255, 0.82);
-  --format-surface: rgba(255, 255, 255, 0.035);
-  --format-border: rgba(255, 255, 255, 0.09);
-  --format-hover-ink: rgba(255, 255, 255, 0.82);
-  --format-hover-surface: rgba(255, 255, 255, 0.055);
-  --format-hover-border: rgba(255, 255, 255, 0.22);
-  --format-selected-ink: rgba(255, 255, 255, 0.94);
-  --format-selected-surface: rgba(215, 255, 24, 0.075);
-  --format-selected-border: rgba(215, 255, 24, 0.75);
-  --format-accent: rgb(215 255 24);
-  --format-key-ink: rgba(255, 255, 255, 0.38);
-  --format-key-surface: transparent;
-  --format-key-border: rgba(255, 255, 255, 0.1);
-  --format-selected-key-ink: #0a0c06;
-  display: flex;
-  min-height: 4rem;
-  width: 100%;
-  align-items: center;
-  gap: 0.8rem;
-  border: 1px solid var(--format-border);
-  border-radius: 1rem;
-  padding: 0.75rem 0.9rem;
-  color: var(--format-ink);
-  background: var(--format-surface);
-  transition:
-    border-color 160ms,
-    color 160ms,
-    background 160ms;
-}
-.option:hover:not(:disabled) {
-  border-color: var(--format-hover-border);
-  color: var(--format-hover-ink);
-  background: var(--format-hover-surface);
-}
-.selected {
-  border-color: var(--format-selected-border);
-  color: var(--format-selected-ink);
-  background: var(--format-selected-surface);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--format-accent) 15%, transparent);
-}
-.key {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--format-key-border);
-  border-radius: 0.55rem;
-  color: var(--format-key-ink);
-  background: var(--format-key-surface);
-  font-family: var(--type-mono);
-  font-size: 0.68rem;
-  font-weight: 800;
-}
-.selected .key {
-  border-color: var(--format-accent);
-  color: var(--format-selected-key-ink);
-  background: var(--format-accent);
-}
-
-.label {
-  min-width: 0;
-  text-align: left;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-@media (min-width: 640px) {
-  .label {
-    font-size: 1rem;
+@layer app-formats {
+  .option {
+    --format-ink: rgba(255, 255, 255, 0.82);
+    --format-surface: rgba(255, 255, 255, 0.035);
+    --format-border: rgba(255, 255, 255, 0.09);
+    --format-hover-ink: rgba(255, 255, 255, 0.82);
+    --format-hover-surface: rgba(255, 255, 255, 0.055);
+    --format-hover-border: rgba(255, 255, 255, 0.22);
+    --format-selected-ink: rgba(255, 255, 255, 0.94);
+    --format-selected-surface: rgb(var(--color-brand-rgb) / 0.075);
+    --format-selected-border: rgb(var(--color-brand-rgb) / 0.75);
+    --format-accent: var(--color-brand);
+    --format-key-ink: rgba(255, 255, 255, 0.38);
+    --format-key-surface: transparent;
+    --format-key-border: rgba(255, 255, 255, 0.1);
+    --format-selected-key-ink: #0a0c06;
+    display: flex;
+    min-height: 4rem;
+    width: 100%;
+    align-items: center;
+    gap: 0.8rem;
+    border: 1px solid var(--format-border);
+    border-radius: 1rem;
+    padding: 0.75rem 0.9rem;
+    color: var(--format-ink);
+    background: var(--format-surface);
+    transition:
+      border-color 160ms,
+      color 160ms,
+      background 160ms;
   }
-}
+  .option:hover:not(:disabled) {
+    border-color: var(--format-hover-border);
+    color: var(--format-hover-ink);
+    background: var(--format-hover-surface);
+  }
+  .selected {
+    border-color: var(--format-selected-border);
+    color: var(--format-selected-ink);
+    background: var(--format-selected-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--format-accent) 15%, transparent);
+  }
+  .key {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--format-key-border);
+    border-radius: 0.55rem;
+    color: var(--format-key-ink);
+    background: var(--format-key-surface);
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+  .selected .key {
+    border-color: var(--format-accent);
+    color: var(--format-selected-key-ink);
+    background: var(--format-accent);
+  }
 
-.option {
-  --format-ink: var(--color-ink);
-  --format-surface: var(--color-surface-raised);
-  --format-border: var(--color-border);
-  --format-hover-ink: var(--color-ink);
-  --format-hover-surface: var(--color-surface);
-  --format-hover-border: var(--color-social);
-  --format-selected-ink: var(--color-ink);
-  --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
-  --format-selected-border: var(--color-social);
-  --format-accent: var(--color-brand);
-  --format-key-ink: var(--color-ink-muted);
-  --format-key-surface: var(--color-surface);
-  --format-key-border: color-mix(in srgb, var(--color-ink) 18%, transparent);
-  --format-selected-key-ink: var(--color-ink);
-  min-height: 72px;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: var(--radius-control);
-  padding: var(--space-3) var(--space-4);
-  box-shadow: var(--shadow-control);
+  .label {
+    min-width: 0;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  @media (min-width: 640px) {
+    [data-variant="flash-pop"] .label {
+      font-size: 1rem;
+    }
+  }
+
+  .option[data-variant="flash-pop"] {
+    --format-ink: var(--color-ink);
+    --format-surface: var(--color-surface-raised);
+    --format-border: var(--color-border);
+    --format-hover-ink: var(--color-ink);
+    --format-hover-surface: var(--color-surface);
+    --format-hover-border: var(--color-social);
+    --format-selected-ink: var(--color-ink);
+    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+    --format-selected-border: var(--color-social);
+    --format-accent: var(--color-brand);
+    --format-key-ink: var(--color-ink-muted);
+    --format-key-surface: var(--color-surface);
+    --format-key-border: color-mix(in srgb, var(--color-ink) 18%, transparent);
+    --format-selected-key-ink: var(--color-ink);
+    min-height: 72px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: var(--radius-control);
+    padding: var(--space-3) var(--space-4);
+    box-shadow: var(--shadow-control);
+  }
 }

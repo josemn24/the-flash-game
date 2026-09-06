@@ -1,424 +1,429 @@
-.root {
-  --format-ink: rgba(255, 255, 255, 0.9);
-  --format-muted: rgba(255, 255, 255, 0.42);
-  --format-surface: rgba(255, 255, 255, 0.025);
-  --format-surface-raised: rgba(22, 24, 28, 0.93);
-  --format-border: rgba(255, 255, 255, 0.1);
-  --format-accent: rgb(215 255 24);
-  --format-focus: rgb(53 232 255);
-  --format-hover-surface: rgba(215, 255, 24, 0.05);
-  --format-hover-border: rgba(215, 255, 24, 0.35);
-  --format-selected-surface: rgba(215, 255, 24, 0.1);
-  --format-selected-border: rgba(215, 255, 24, 0.78);
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-  margin-top: 0.9rem;
-}
-
-.progressHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  color: var(--format-muted);
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.progressTrack {
-  height: 0.3rem;
-  overflow: hidden;
-  margin-top: 0.5rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--format-border) 65%, transparent);
-}
-
-.progressValue {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--format-accent), var(--format-focus));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--format-accent) 20%, transparent);
-}
-
-.matrix,
-.binaryList {
-  min-width: 0;
-  margin-top: 0.7rem;
-  border: 1px solid var(--format-border);
-  border-radius: 1.15rem;
-  padding: 0.45rem;
-  background: var(--format-surface-raised);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
-}
-
-.matrixHeader,
-.row {
-  display: grid;
-  min-width: 0;
-  grid-template-columns: minmax(6.5rem, 1.45fr) repeat(
-      var(--category-count),
-      minmax(2.75rem, 0.55fr)
-    );
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.matrixHeader,
-.binaryHeader {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  min-height: 2.55rem;
-  border-radius: 0.7rem;
-  padding-inline: 0.45rem;
-  color: var(--format-muted);
-  background: color-mix(in srgb, var(--format-surface-raised) 92%, var(--format-surface));
-  font-family: var(--type-mono);
-  font-size: 0.52rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.categoryHeading {
-  display: grid;
-  min-width: 0;
-  min-height: 2.1rem;
-  align-items: center;
-  padding-inline: 0.15rem;
-  color: color-mix(in srgb, var(--format-accent) 58%, var(--format-muted));
-  line-height: 1.05;
-  text-align: center;
-  text-wrap: balance;
-  white-space: normal;
-  hyphens: auto;
-  overflow-wrap: anywhere;
-}
-
-.rows {
-  display: grid;
-  gap: 0.38rem;
-  margin-top: 0.38rem;
-}
-
-.row,
-.binaryRow {
-  min-height: 3.25rem;
-  border: 1px solid color-mix(in srgb, var(--format-border) 75%, transparent);
-  border-radius: 0.8rem;
-  padding: 0.22rem 0.3rem 0.22rem 0.55rem;
-  background: var(--format-surface);
-}
-
-.itemLabel,
-.binaryItemLabel {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: var(--format-ink);
-  font-size: 0.72rem;
-  font-weight: 850;
-  line-height: 1.1;
-}
-
-.choiceButton,
-.binaryChoice {
-  display: grid;
-  width: 100%;
-  min-width: 0;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid var(--format-border);
-  border-radius: 0.68rem;
-  color: var(--format-muted);
-  background: var(--format-surface);
-  transition:
-    border-color 150ms,
-    color 150ms,
-    background 150ms,
-    box-shadow 150ms,
-    opacity 150ms;
-}
-
-.choiceButton:hover:not(:disabled),
-.binaryChoice:hover:not(:disabled) {
-  border-color: var(--format-hover-border);
-  color: var(--format-accent);
-  background: var(--format-hover-surface);
-}
-
-.choiceButton:focus-visible,
-.binaryChoice:focus-visible,
-.confirmButton:focus-visible {
-  outline: 3px solid var(--format-focus);
-  outline-offset: 3px;
-}
-
-.choiceButtonSelected,
-.binaryChoiceSelected {
-  border-color: var(--format-selected-border);
-  color: var(--format-accent);
-  background: var(--format-selected-surface);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--format-accent) 8%, transparent);
-}
-
-.choiceButton:disabled,
-.binaryChoice:disabled,
-.confirmButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.38;
-}
-
-.checkIcon,
-.binaryCheckIcon {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.emptyChoice {
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.binaryList {
-  display: grid;
-  gap: 0.38rem;
-}
-
-.binaryHeader,
-.binaryRow {
-  display: grid;
-  min-width: 0;
-  grid-template-columns: minmax(6.5rem, 1.45fr) repeat(2, minmax(4rem, 0.7fr));
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.binaryHeader {
-  min-height: 2rem;
-}
-
-.confirmButton {
-  min-height: 3.65rem;
-  width: 100%;
-  margin-top: 0.8rem;
-  border: 1px solid var(--format-accent);
-  border-radius: 1rem;
-  color: var(--format-ink);
-  background: var(--format-accent);
-  font-size: 0.92rem;
-  font-weight: 900;
-  box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
-}
-
-.confirmButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--format-accent) 82%, white);
-}
-
-@media (min-width: 390px) {
-  .itemLabel,
-  .binaryItemLabel {
-    font-size: 0.8rem;
-  }
-}
-
-@media (min-width: 640px) {
+@layer app-formats {
   .root {
-    margin-top: 1.15rem;
+    --format-ink: rgba(255, 255, 255, 0.9);
+    --format-muted: rgba(255, 255, 255, 0.42);
+    --format-surface: rgba(255, 255, 255, 0.025);
+    --format-surface-raised: rgba(22, 24, 28, 0.93);
+    --format-border: rgba(255, 255, 255, 0.1);
+    --format-accent: var(--color-brand);
+    --format-focus: rgb(53 232 255);
+    --format-hover-surface: rgb(var(--color-brand-rgb) / 0.05);
+    --format-hover-border: rgb(var(--color-brand-rgb) / 0.35);
+    --format-selected-surface: rgb(var(--color-brand-rgb) / 0.1);
+    --format-selected-border: rgb(var(--color-brand-rgb) / 0.78);
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    margin-top: 0.9rem;
   }
 
   .progressHeader {
-    font-size: 0.62rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--format-muted);
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .progressTrack {
+    height: 0.3rem;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--format-border) 65%, transparent);
+  }
+
+  .progressValue {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--format-accent), var(--format-focus));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--format-accent) 20%, transparent);
   }
 
   .matrix,
   .binaryList {
-    padding: 0.6rem;
+    min-width: 0;
+    margin-top: 0.7rem;
+    border: 1px solid var(--format-border);
+    border-radius: 1.15rem;
+    padding: 0.45rem;
+    background: var(--format-surface-raised);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
   }
 
   .matrixHeader,
   .row {
-    grid-template-columns: minmax(9rem, 1.4fr) repeat(var(--category-count), minmax(4.5rem, 0.6fr));
-    gap: 0.5rem;
-  }
-
-  .matrixHeader {
-    font-size: 0.57rem;
-  }
-
-  .row {
-    padding-inline: 0.75rem 0.4rem;
-  }
-
-  .itemLabel {
-    font-size: 0.9rem;
-  }
-
-  .choiceButton {
-    height: 3rem;
-  }
-
-  .binaryItemLabel {
-    font-size: 0.9rem;
-  }
-
-  .binaryHeader,
-  .binaryRow {
-    grid-template-columns: minmax(9rem, 1.4fr) repeat(2, minmax(4.5rem, 0.6fr));
-    gap: 0.5rem;
-  }
-
-  .binaryHeader {
-    font-size: 0.57rem;
-  }
-
-  .binaryRow {
-    padding-inline: 0.75rem 0.4rem;
-  }
-
-  .binaryChoice {
-    height: 3rem;
-  }
-
-  .confirmButton {
-    margin-top: 1rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .matrixHeader,
-  .row {
-    grid-template-columns: minmax(5.75rem, 1.2fr) repeat(
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(6.5rem, 1.45fr) repeat(
         var(--category-count),
-        minmax(3.1rem, 0.75fr)
+        minmax(2.75rem, 0.55fr)
       );
-    column-gap: 0.35rem;
+    align-items: center;
+    gap: 0.3rem;
   }
 
-  .matrixHeader {
-    min-height: 3.1rem;
-    padding-inline: 0.25rem;
+  [data-variant="flash-pop"] .matrixHeader,
+  .binaryHeader {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    min-height: 2.55rem;
+    border-radius: 0.7rem;
+    padding-inline: 0.45rem;
+    color: var(--format-muted);
+    background: color-mix(in srgb, var(--format-surface-raised) 92%, var(--format-surface));
+    font-family: var(--type-mono);
+    font-size: 0.52rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
-}
 
-@media (max-width: 340px) {
-  .matrix,
-  .binaryList {
-    padding: 0.35rem;
+  .categoryHeading {
+    display: grid;
+    min-width: 0;
+    min-height: 2.1rem;
+    align-items: center;
+    padding-inline: 0.15rem;
+    color: color-mix(in srgb, var(--format-accent) 58%, var(--format-muted));
+    line-height: 1.05;
+    text-align: center;
+    text-wrap: balance;
+    white-space: normal;
+    hyphens: auto;
+    overflow-wrap: anywhere;
   }
 
-  .matrixHeader {
-    padding-inline: 0.25rem;
-    font-size: 0.48rem;
+  .rows {
+    display: grid;
+    gap: 0.38rem;
+    margin-top: 0.38rem;
   }
 
-  .row {
-    padding-left: 0.4rem;
+  [data-variant="flash-pop"] .row,
+  .binaryRow {
+    min-height: 3.25rem;
+    border: 1px solid color-mix(in srgb, var(--format-border) 75%, transparent);
+    border-radius: 0.8rem;
+    padding: 0.22rem 0.3rem 0.22rem 0.55rem;
+    background: var(--format-surface);
   }
 
   .itemLabel,
   .binaryItemLabel {
-    font-size: 0.68rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--format-ink);
+    font-size: 0.72rem;
+    font-weight: 850;
+    line-height: 1.1;
   }
 
-  .binaryHeader,
-  .binaryRow {
-    grid-template-columns: minmax(5.75rem, 1.35fr) repeat(2, minmax(3rem, 0.6fr));
-    gap: 0.2rem;
+  .choiceButton,
+  .binaryChoice {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    place-items: center;
+    border: 1px solid var(--format-border);
+    border-radius: 0.68rem;
+    color: var(--format-muted);
+    background: var(--format-surface);
+    transition:
+      border-color 150ms,
+      color 150ms,
+      background 150ms,
+      box-shadow 150ms,
+      opacity 150ms;
   }
 
-  .binaryHeader {
-    padding-inline: 0.35rem;
-    font-size: 0.48rem;
+  .choiceButton:hover:not(:disabled),
+  .binaryChoice:hover:not(:disabled) {
+    border-color: var(--format-hover-border);
+    color: var(--format-accent);
+    background: var(--format-hover-surface);
   }
 
-  .binaryRow {
-    padding-left: 0.4rem;
+  .choiceButton:focus-visible,
+  .binaryChoice:focus-visible,
+  .confirmButton:focus-visible {
+    outline: 3px solid var(--format-focus);
+    outline-offset: 3px;
   }
-}
 
-.root {
-  --format-ink: var(--color-ink);
-  --format-muted: var(--color-ink-muted);
-  --format-surface: var(--color-surface);
-  --format-surface-raised: var(--color-surface-raised);
-  --format-border: var(--color-border);
-  --format-accent: var(--color-social);
-  --format-focus: var(--color-focus);
-  --format-hover-surface: var(--color-surface-raised);
-  --format-hover-border: var(--color-social);
-  --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
-  --format-selected-border: var(--color-social);
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
+  .choiceButtonSelected,
+  .binaryChoiceSelected {
+    border-color: var(--format-selected-border);
+    color: var(--format-accent);
+    background: var(--format-selected-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--format-accent) 8%, transparent);
+  }
 
-.root .progressTrack {
-  display: none;
-}
+  .choiceButton:disabled,
+  .binaryChoice:disabled,
+  .confirmButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+  }
 
-.matrix,
-.binaryList {
-  border: var(--border-subtle);
-  border-radius: var(--radius-card);
-  padding: var(--space-2);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
+  .checkIcon,
+  .binaryCheckIcon {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
 
-.matrixHeader,
-.binaryHeader {
-  background: var(--color-surface);
-}
+  .emptyChoice {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: currentColor;
+  }
 
-.row,
-.binaryRow {
-  border: var(--border-subtle);
-  background: var(--color-surface);
-}
+  [data-variant="flash-pop"] .binaryList {
+    display: grid;
+    gap: 0.38rem;
+  }
 
-.choiceButton,
-.binaryChoice {
-  border: 1px solid rgb(23 23 32 / 17%);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  box-shadow: 0 1px 2px rgb(23 23 32 / 5%);
-}
+  [data-variant="flash-pop"] .binaryHeader,
+  [data-variant="flash-pop"] .binaryRow {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(6.5rem, 1.45fr) repeat(2, minmax(4rem, 0.7fr));
+    align-items: center;
+    gap: 0.3rem;
+  }
 
-.choiceButtonSelected,
-.binaryChoiceSelected,
-.choiceButtonSelected:hover:not(:disabled),
-.binaryChoiceSelected:hover:not(:disabled) {
-  border-color: var(--color-social);
-  color: var(--color-social);
-  background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent);
-}
+  [data-variant="flash-pop"] .binaryHeader {
+    min-height: 2rem;
+  }
 
-.choiceButtonSelected:focus-visible,
-.binaryChoiceSelected:focus-visible {
-  background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent),
-    0 0 0 5px color-mix(in srgb, var(--color-focus) 22%, transparent);
-}
+  .confirmButton {
+    min-height: 3.65rem;
+    width: 100%;
+    margin-top: 0.8rem;
+    border: 1px solid var(--format-accent);
+    border-radius: 1rem;
+    color: var(--format-ink);
+    background: var(--format-accent);
+    font-size: 0.92rem;
+    font-weight: 900;
+    box-shadow: 0 12px 38px color-mix(in srgb, var(--format-accent) 12%, transparent);
+  }
 
-.confirmButton {
-  min-height: var(--control-height);
-  border: var(--border-flash);
-  border-radius: var(--radius-control);
-  color: var(--color-ink);
-  background: var(--color-brand);
-  box-shadow: var(--shadow-control);
-}
+  .confirmButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--format-accent) 82%, white);
+  }
 
-.confirmButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+  @media (min-width: 390px) {
+    [data-variant="flash-pop"] .itemLabel,
+    [data-variant="flash-pop"] .binaryItemLabel {
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .root[data-variant="flash-pop"] {
+      margin-top: 1.15rem;
+    }
+
+    [data-variant="flash-pop"] .progressHeader {
+      font-size: 0.62rem;
+    }
+
+    [data-variant="flash-pop"] .matrix,
+    [data-variant="flash-pop"] .binaryList {
+      padding: 0.6rem;
+    }
+
+    [data-variant="flash-pop"] .matrixHeader,
+    [data-variant="flash-pop"] .row {
+      grid-template-columns: minmax(9rem, 1.4fr) repeat(
+          var(--category-count),
+          minmax(4.5rem, 0.6fr)
+        );
+      gap: 0.5rem;
+    }
+
+    [data-variant="flash-pop"] .matrixHeader {
+      font-size: 0.57rem;
+    }
+
+    [data-variant="flash-pop"] .row {
+      padding-inline: 0.75rem 0.4rem;
+    }
+
+    [data-variant="flash-pop"] .itemLabel {
+      font-size: 0.9rem;
+    }
+
+    [data-variant="flash-pop"] .choiceButton {
+      height: 3rem;
+    }
+
+    [data-variant="flash-pop"] .binaryItemLabel {
+      font-size: 0.9rem;
+    }
+
+    [data-variant="flash-pop"] .binaryHeader,
+    [data-variant="flash-pop"] .binaryRow {
+      grid-template-columns: minmax(9rem, 1.4fr) repeat(2, minmax(4.5rem, 0.6fr));
+      gap: 0.5rem;
+    }
+
+    [data-variant="flash-pop"] .binaryHeader {
+      font-size: 0.57rem;
+    }
+
+    [data-variant="flash-pop"] .binaryRow {
+      padding-inline: 0.75rem 0.4rem;
+    }
+
+    [data-variant="flash-pop"] .binaryChoice {
+      height: 3rem;
+    }
+
+    [data-variant="flash-pop"] .confirmButton {
+      margin-top: 1rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    [data-variant="flash-pop"] .matrixHeader,
+    [data-variant="flash-pop"] .row {
+      grid-template-columns: minmax(5.75rem, 1.2fr) repeat(
+          var(--category-count),
+          minmax(3.1rem, 0.75fr)
+        );
+      column-gap: 0.35rem;
+    }
+
+    [data-variant="flash-pop"] .matrixHeader {
+      min-height: 3.1rem;
+      padding-inline: 0.25rem;
+    }
+  }
+
+  @media (max-width: 340px) {
+    [data-variant="flash-pop"] .matrix,
+    [data-variant="flash-pop"] .binaryList {
+      padding: 0.35rem;
+    }
+
+    [data-variant="flash-pop"] .matrixHeader {
+      padding-inline: 0.25rem;
+      font-size: 0.48rem;
+    }
+
+    [data-variant="flash-pop"] .row {
+      padding-left: 0.4rem;
+    }
+
+    [data-variant="flash-pop"] .itemLabel,
+    [data-variant="flash-pop"] .binaryItemLabel {
+      font-size: 0.68rem;
+    }
+
+    [data-variant="flash-pop"] .binaryHeader,
+    [data-variant="flash-pop"] .binaryRow {
+      grid-template-columns: minmax(5.75rem, 1.35fr) repeat(2, minmax(3rem, 0.6fr));
+      gap: 0.2rem;
+    }
+
+    [data-variant="flash-pop"] .binaryHeader {
+      padding-inline: 0.35rem;
+      font-size: 0.48rem;
+    }
+
+    [data-variant="flash-pop"] .binaryRow {
+      padding-left: 0.4rem;
+    }
+  }
+
+  .root[data-variant="flash-pop"] {
+    --format-ink: var(--color-ink);
+    --format-muted: var(--color-ink-muted);
+    --format-surface: var(--color-surface);
+    --format-surface-raised: var(--color-surface-raised);
+    --format-border: var(--color-border);
+    --format-accent: var(--color-social);
+    --format-focus: var(--color-focus);
+    --format-hover-surface: var(--color-surface-raised);
+    --format-hover-border: var(--color-social);
+    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+    --format-selected-border: var(--color-social);
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .root .progressTrack {
+    display: none;
+  }
+
+  [data-variant="flash-pop"] .matrix,
+  [data-variant="flash-pop"] .binaryList {
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    padding: var(--space-2);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+
+  [data-variant="flash-pop"] .matrixHeader,
+  [data-variant="flash-pop"] .binaryHeader {
+    background: var(--color-surface);
+  }
+
+  [data-variant="flash-pop"] .row,
+  [data-variant="flash-pop"] .binaryRow {
+    border: var(--border-subtle);
+    background: var(--color-surface);
+  }
+
+  [data-variant="flash-pop"] .choiceButton,
+  [data-variant="flash-pop"] .binaryChoice {
+    border: 1px solid rgb(23 23 32 / 17%);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    box-shadow: 0 1px 2px rgb(23 23 32 / 5%);
+  }
+
+  [data-variant="flash-pop"] .choiceButtonSelected,
+  [data-variant="flash-pop"] .binaryChoiceSelected,
+  .choiceButtonSelected:hover:not(:disabled),
+  .binaryChoiceSelected:hover:not(:disabled) {
+    border-color: var(--color-social);
+    color: var(--color-social);
+    background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent);
+  }
+
+  .choiceButtonSelected:focus-visible,
+  .binaryChoiceSelected:focus-visible {
+    background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent),
+      0 0 0 5px color-mix(in srgb, var(--color-focus) 22%, transparent);
+  }
+
+  [data-variant="flash-pop"] .confirmButton {
+    min-height: var(--control-height);
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  [data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+  }
 }

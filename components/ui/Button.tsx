@@ -16,7 +16,8 @@ export type ButtonProps = Omit<ComponentPropsWithoutRef<"button">, "children"> &
 
 export function Button({
   variant = "primary",
-  size = "default",
+  size = "md",
+  appearance = "default",
   fullWidth = false,
   leadingIcon,
   trailingIcon,
@@ -27,13 +28,24 @@ export function Button({
   type = "button",
   ...props
 }: ButtonProps) {
+  const resolvedAppearance = size === "hero" ? "hero" : appearance;
+
   return (
     <button
       {...props}
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={buttonClassName({ variant, size, fullWidth, className })}
+      data-variant={variant}
+      data-size={size}
+      data-appearance={resolvedAppearance}
+      className={buttonClassName({
+        variant,
+        size,
+        appearance: resolvedAppearance,
+        fullWidth,
+        className,
+      })}
     >
       {loading ? <span className="uiButtonSpinner" aria-hidden="true" /> : leadingIcon}
       <span>{children}</span>
@@ -48,7 +60,8 @@ export type ButtonLinkProps = Omit<ComponentPropsWithoutRef<typeof Link>, "child
 
 export function ButtonLink({
   variant = "primary",
-  size = "default",
+  size = "md",
+  appearance = "default",
   fullWidth = false,
   leadingIcon,
   trailingIcon,
@@ -56,8 +69,22 @@ export function ButtonLink({
   children,
   ...props
 }: ButtonLinkProps) {
+  const resolvedAppearance = size === "hero" ? "hero" : appearance;
+
   return (
-    <Link {...props} className={buttonClassName({ variant, size, fullWidth, className })}>
+    <Link
+      {...props}
+      data-variant={variant}
+      data-size={size}
+      data-appearance={resolvedAppearance}
+      className={buttonClassName({
+        variant,
+        size,
+        appearance: resolvedAppearance,
+        fullWidth,
+        className,
+      })}
+    >
       {leadingIcon}
       <span>{children}</span>
       {trailingIcon}

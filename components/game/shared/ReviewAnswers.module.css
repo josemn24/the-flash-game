@@ -1,760 +1,754 @@
-.eyebrow {
-  font-family: var(--type-mono);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.19em;
-  text-transform: uppercase;
-}
-.textButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: var(--color-ink-muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  transition: color 160ms;
-}
-.textButton:hover {
-  color: white;
-}
-.reviewCard {
-  overflow: hidden;
-  border: var(--border-subtle);
-  border-left-width: 3px;
-  border-radius: 1rem;
-  background: rgba(18, 20, 24, 0.76);
-  backdrop-filter: blur(16px);
-}
-.reviewCorrect {
-  border-left-color: var(--color-brand);
-}
-.reviewWrong {
-  border-left-color: var(--color-danger);
-}
-.reviewPartial {
-  border-left-color: var(--color-social);
-}
-.reviewUnanswered {
-  border-left-color: #6f7580;
-}
-.reviewCard summary {
-  display: flex;
-  min-height: 5.6rem;
-  cursor: pointer;
-  list-style: none;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 0.9rem;
-}
-.reviewCard summary::-webkit-details-marker {
-  display: none;
-}
-.reviewNumber {
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 0.65rem;
-  color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.05);
-  font-family: var(--type-mono);
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-.reviewStatus {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 0.35rem;
-  border-radius: 999px;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.6rem;
-  font-weight: 800;
-}
-.statusCorrect {
-  color: var(--color-brand);
-  background: rgba(215, 255, 24, 0.08);
-}
-.statusWrong {
-  color: #ff858a;
-  background: rgba(255, 93, 100, 0.08);
-}
-.statusPartial {
-  color: var(--color-social);
-  background: rgba(53, 232, 255, 0.08);
-}
-.statusUnanswered {
-  color: #a1a5ad;
-  background: rgba(255, 255, 255, 0.05);
-}
-.reviewChevron {
-  flex: 0 0 auto;
-  transition: transform 180ms;
-}
-.reviewCard[open] .reviewChevron {
-  transform: rotate(90deg);
-}
-.reviewContent {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 1rem;
-}
-.answerBox {
-  display: flex;
-  min-height: 4.3rem;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: 0.8rem;
-  padding: 0.8rem;
-  background: var(--color-surface-soft);
-}
-.answerBox span {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 0.62rem;
-  font-weight: 700;
-}
-.answerBox strong {
-  margin-top: 0.3rem;
-  font-size: 0.84rem;
-}
-.answerBoxCorrect strong {
-  color: var(--color-brand);
-}
-.mazeLegend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem 1rem;
-  color: rgba(255, 255, 255, 0.48);
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-.mazeLegend span {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-.mazeLegend i {
-  display: inline-block;
-  width: 2rem;
-  border-top-width: 3px;
-}
-.mazePlayerLine {
-  border-top-style: solid;
-  border-top-color: var(--color-brand);
-}
-.mazeOptimalLine {
-  border-top-style: dashed;
-  border-top-color: var(--color-social);
-}
-
-.zipPlayerLine {
-  background: var(--color-brand);
-}
-
-.zipSolutionLine {
-  border-top: 2px dashed var(--color-social);
-  background: transparent;
-}
-.sudokuReviewGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  border-radius: 0.8rem;
-}
-.sudokuReviewCell {
-  display: grid;
-  min-height: 3.65rem;
-  place-items: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.14);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  font-family: var(--type-mono);
-  font-weight: 800;
-}
-.sudokuReviewCell:nth-child(4n + 2) {
-  border-right: 2px solid rgba(255, 255, 255, 0.55);
-}
-.sudokuReviewCell:nth-child(n + 5):nth-child(-n + 8) {
-  border-bottom: 2px solid rgba(255, 255, 255, 0.55);
-}
-.sudokuReviewCell small {
-  color: rgba(255, 255, 255, 0.46);
-  font-family: inherit;
-  font-size: 0.58rem;
-  font-weight: 700;
-}
-.sudokuGiven {
-  color: rgba(255, 255, 255, 0.52);
-}
-.sudokuCorrect {
-  color: var(--color-brand);
-}
-.sudokuWrong {
-  color: #ff858a;
-}
-.logicReviewClues {
-  display: grid;
-  gap: 0.4rem;
-}
-.logicReviewClues > div {
-  display: grid;
-  grid-template-columns: 3.5rem 1fr;
-  align-items: center;
-  gap: 0.65rem;
-  border-radius: 0.65rem;
-  padding: 0.5rem 0.65rem;
-  background: rgba(255, 255, 255, 0.03);
-}
-.logicReviewClues strong {
-  font-family: var(--type-mono);
-  letter-spacing: 0.12em;
-  color: var(--color-brand);
-}
-.logicReviewClues span {
-  font-size: 0.72rem;
-  line-height: 1.15rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-.logicReviewAttempts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.logicReviewAttempts b {
-  border-radius: 0.4rem;
-  padding: 0.25rem 0.45rem;
-  background: rgba(255, 255, 255, 0.07);
-  font-family: var(--type-mono);
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.6);
-}
-.logicReviewAttempts .logicReviewLast {
-  outline: 1px solid rgba(215, 255, 24, 0.5);
-  color: var(--color-brand);
-}
-.classificationReviewList {
-  display: grid;
-  gap: 0.55rem;
-}
-.classificationReviewRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr));
-  align-items: center;
-  gap: 0.65rem;
-  border-radius: 0.8rem;
-  padding: 0.75rem;
-  background: var(--color-surface-soft);
-}
-.classificationReviewRow > strong {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 0.8rem;
-}
-.classificationReviewRow > span {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-.classificationReviewRow small {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 0.55rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.classificationReviewRow b {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 0.72rem;
-}
-.classificationValueCorrect {
-  color: var(--color-brand);
-}
-.classificationValueWrong {
-  color: #ff858a;
-}
-.memoryGridPair {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.queensReviewPair {
-  display: grid;
-  gap: 1rem;
-}
-
-.queensReviewPair > div {
-  min-width: 0;
-}
-
-@media (min-width: 720px) {
-  .queensReviewPair {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@layer app-formats {
+  .eyebrow {
+    font-family: var(--type-mono);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.19em;
+    text-transform: uppercase;
   }
-}
-.memoryGridLabel {
-  display: block;
-  margin-bottom: 0.45rem;
-  color: rgba(255, 255, 255, 0.48);
-  font-family: var(--type-mono);
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.memoryGrid {
-  display: grid;
-  gap: 0.45rem;
-}
-.memoryCell {
-  display: grid;
-  min-height: 5rem;
-  place-items: center;
-  gap: 0.25rem;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0.75rem;
-  padding: 0.45rem;
-  color: rgba(255, 255, 255, 0.82);
-  background: rgba(255, 255, 255, 0.035);
-  font-size: 0.72rem;
-  text-align: center;
-}
-.memoryCell > div {
-  width: 100%;
-  height: 2.5rem;
-}
-.memoryCell > div img,
-.memoryCell > div svg {
-  max-height: 100%;
-}
-.memoryPairsGrid {
-  display: grid;
-  gap: 0.45rem;
-}
-.memoryPairsCell {
-  display: grid;
-  aspect-ratio: 1;
-  min-height: 4.4rem;
-  place-items: center;
-  align-content: center;
-  gap: 0.2rem;
-  overflow: hidden;
-  border: 1px dashed rgba(255, 255, 255, 0.16);
-  border-radius: 0.75rem;
-  padding: 0.4rem;
-  color: rgba(255, 255, 255, 0.42);
-  background: rgba(255, 255, 255, 0.025);
-  text-align: center;
-}
-.memoryPairsRevealed {
-  border-style: solid;
-  color: rgba(255, 255, 255, 0.82);
-  background: rgba(53, 232, 255, 0.07);
-}
-.memoryPairsMatched {
-  border-color: rgba(215, 255, 24, 0.58);
-  background: rgba(215, 255, 24, 0.08);
-}
-.memoryPairsCell > div {
-  width: 100%;
-  height: 2.4rem;
-}
-.memoryPairsCell > div img,
-.memoryPairsCell > div svg {
-  max-height: 100%;
-}
-.memoryPairsSymbol {
-  font-size: 2rem;
-  line-height: 1;
-}
-.memoryPairsCell strong {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 0.72rem;
-}
-.memoryPairsCell small {
-  color: rgba(255, 255, 255, 0.38);
-  font-family: var(--type-mono);
-  font-size: 0.52rem;
-  font-weight: 800;
-}
-.logicMatrixReviewGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.45rem;
-  max-width: 24rem;
-}
-.logicMatrixReviewCell {
-  display: grid;
-  min-height: 4.25rem;
-  place-items: center;
-  align-content: center;
-  gap: 0.2rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0.75rem;
-  padding: 0.35rem;
-  background: rgba(255, 255, 255, 0.035);
-  text-align: center;
-}
-.logicMatrixReviewCell > span {
-  font-size: 1.35rem;
-  line-height: 1;
-}
-.logicMatrixReviewCell small {
-  color: rgba(255, 255, 255, 0.56);
-  font-size: 0.55rem;
-  font-weight: 800;
-}
-.nonogramReviewGrid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  max-width: 20rem;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 0.7rem;
-}
-.nonogramReviewCell {
-  display: grid;
-  aspect-ratio: 1;
-  place-items: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  font-size: 1rem;
-}
-.nonogramCorrect {
-  color: var(--color-brand);
-  background: rgba(215, 255, 24, 0.16);
-}
-.nonogramWrong {
-  color: #ff858a;
-  background: rgba(255, 93, 100, 0.18);
-}
-.nonogramMissing {
-  color: #ffcf66;
-  background: rgba(255, 207, 102, 0.12);
-}
-.nonogramEmpty {
-  color: rgba(255, 255, 255, 0.3);
-}
-.connectPairsReviewGrid {
-  display: grid;
-  width: min(100%, 18rem);
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 14%);
-  border-radius: 0.75rem;
-  background: #07090c;
-}
-.connectPairsReviewCell {
-  display: grid;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 5%);
-  color: rgb(255 255 255 / 62%);
-  background: rgb(255 255 255 / 4%);
-  font-family: var(--type-mono);
-  font-size: 0.9rem;
-  font-weight: 900;
-}
-.connectPairsReviewRoute {
-  color: var(--color-social);
-  background: rgb(53 232 255 / 12%);
-}
-.connectPairsReviewEndpoint {
-  color: #071011;
-  background: var(--color-brand);
-}
-.connectPairsReviewEndpointMissing {
-  color: rgb(255 255 255 / 58%);
-  background: rgb(255 255 255 / 8%);
-  outline: 1px dashed rgb(255 255 255 / 28%);
-  outline-offset: -0.25rem;
-}
-.puzzleReviewPair {
-  display: grid;
-  gap: 0.7rem;
-}
-.escapeReviewPair {
-  display: grid;
-  gap: 0.9rem;
-}
-.escapeReviewPair > div {
-  min-width: 0;
-}
-.puzzleReviewBoard {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.18rem;
-  max-width: 8rem;
-  padding: 0.18rem;
-  border-radius: 0.55rem;
-  background: rgba(255, 255, 255, 0.08);
-}
-.puzzleTile,
-.puzzleBlank {
-  display: grid;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 0.3rem;
-  font-family: var(--type-mono);
-  font-size: 0.7rem;
-  font-weight: 900;
-}
-.puzzleTile {
-  color: #171717;
-  background: #a5b4fc;
-}
-.puzzleBlank {
-  border: 1px dashed rgba(255, 255, 255, 0.28);
-}
-.wordleReview {
-  --mini-wordle-columns: 4;
-  display: grid;
-  justify-content: start;
-  gap: 0.35rem;
-}
-.wordleReviewRow {
-  display: grid;
-  grid-template-columns: repeat(var(--mini-wordle-columns), 2.65rem);
-  gap: 0.35rem;
-}
-.wordleReviewTile {
-  position: relative;
-  display: grid;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0.55rem;
-  font-family: var(--type-display);
-  font-weight: 900;
-}
-.wordleReviewTile small {
-  position: absolute;
-  right: 0.2rem;
-  bottom: 0.12rem;
-  font-family: var(--type-mono);
-  font-size: 0.5rem;
-}
-.wordle-correct {
-  color: #151908;
-  background: var(--color-brand);
-}
-.wordle-present {
-  color: #07191c;
-  background: var(--color-social);
-}
-.wordle-absent {
-  color: rgba(255, 255, 255, 0.68);
-  background: rgba(255, 255, 255, 0.09);
-}
-.wordHashtagReviewPair {
-  display: grid;
-  gap: 1rem;
-}
-.wordHashtagReviewBoard {
-  display: grid;
-  width: min(100%, 18rem);
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: clamp(0.18rem, 1vw, 0.4rem);
-  margin-top: 0.5rem;
-}
-.wordHashtagReviewTile {
-  position: relative;
-  display: grid;
-  min-width: 0;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: clamp(0.35rem, 1vw, 0.58rem);
-  color: #11150a;
-  box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
-}
-.wordHashtagReviewTile b {
-  font-family: var(--type-display);
-  font-size: clamp(0.78rem, 3vw, 1.35rem);
-  font-weight: 950;
-}
-.wordHashtagReviewTile small {
-  position: absolute;
-  right: 0.12rem;
-  bottom: 0.08rem;
-  font-size: clamp(0.38rem, 1.2vw, 0.55rem);
-  font-weight: 950;
-}
-.wordHashtagReviewCorrect {
-  background: #74c900;
-}
-.wordHashtagReviewDisplaced {
-  background: #ffc400;
-}
-@media (min-width: 640px) {
+  .textButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--color-ink-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    transition: color 160ms;
+  }
+  .textButton:hover {
+    color: white;
+  }
+  .reviewCard {
+    overflow: hidden;
+    border: var(--border-subtle);
+    border-left-width: 3px;
+    border-radius: 1rem;
+    background: rgba(18, 20, 24, 0.76);
+    backdrop-filter: blur(16px);
+  }
+  .reviewCorrect {
+    border-left-color: var(--color-brand);
+  }
+  .reviewWrong {
+    border-left-color: var(--color-danger);
+  }
+  .reviewPartial {
+    border-left-color: var(--color-social);
+  }
+  .reviewUnanswered {
+    border-left-color: #6f7580;
+  }
   .reviewCard summary {
-    gap: 1rem;
-    padding: 1rem 1.2rem;
+    display: flex;
+    min-height: 5.6rem;
+    cursor: pointer;
+    list-style: none;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem;
+  }
+  .reviewCard summary::-webkit-details-marker {
+    display: none;
+  }
+  .reviewNumber {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.65rem;
+    color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.05);
+    font-family: var(--type-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+  .reviewStatus {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.6rem;
+    font-weight: 800;
+  }
+  .statusCorrect {
+    color: var(--color-brand);
+    background: rgb(var(--color-brand-rgb) / 0.08);
+  }
+  .statusWrong {
+    color: #ff858a;
+    background: rgba(255, 93, 100, 0.08);
+  }
+  .statusPartial {
+    color: var(--color-social);
+    background: rgba(53, 232, 255, 0.08);
+  }
+  .statusUnanswered {
+    color: #a1a5ad;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .reviewChevron {
+    flex: 0 0 auto;
+    transition: transform 180ms;
+  }
+  .reviewCard[open] .reviewChevron {
+    transform: rotate(90deg);
   }
   .reviewContent {
-    padding: 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1rem;
+  }
+  .answerBox {
+    display: flex;
+    min-height: 4.3rem;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 0.8rem;
+    padding: 0.8rem;
+    background: var(--color-surface-soft);
+  }
+  .answerBox span {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.62rem;
+    font-weight: 700;
+  }
+  .answerBox strong {
+    margin-top: 0.3rem;
+    font-size: 0.84rem;
+  }
+  .answerBoxCorrect strong {
+    color: var(--color-brand);
+  }
+  .mazeLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1rem;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .mazeLegend span {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .mazeLegend i {
+    display: inline-block;
+    width: 2rem;
+    border-top-width: 3px;
+  }
+  .mazePlayerLine {
+    border-top-style: solid;
+    border-top-color: var(--color-brand);
+  }
+  .mazeOptimalLine {
+    border-top-style: dashed;
+    border-top-color: var(--color-social);
+  }
+
+  .zipPlayerLine {
+    background: var(--color-brand);
+  }
+
+  .zipSolutionLine {
+    border-top: 2px dashed var(--color-social);
+    background: transparent;
+  }
+  .sudokuReviewGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    border-radius: 0.8rem;
+  }
+  .sudokuReviewCell {
+    display: grid;
+    min-height: 3.65rem;
+    place-items: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-family: var(--type-mono);
+    font-weight: 800;
+  }
+  .sudokuReviewCell:nth-child(4n + 2) {
+    border-right: 2px solid rgba(255, 255, 255, 0.55);
+  }
+  .sudokuReviewCell:nth-child(n + 5):nth-child(-n + 8) {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.55);
+  }
+  .sudokuReviewCell small {
+    color: rgba(255, 255, 255, 0.46);
+    font-family: inherit;
+    font-size: 0.58rem;
+    font-weight: 700;
+  }
+  .sudokuGiven {
+    color: rgba(255, 255, 255, 0.52);
+  }
+  .sudokuCorrect {
+    color: var(--color-brand);
+  }
+  .sudokuWrong {
+    color: #ff858a;
+  }
+  .logicReviewClues {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .logicReviewClues > div {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    align-items: center;
+    gap: 0.65rem;
+    border-radius: 0.65rem;
+    padding: 0.5rem 0.65rem;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .logicReviewClues strong {
+    font-family: var(--type-mono);
+    letter-spacing: 0.12em;
+    color: var(--color-brand);
+  }
+  .logicReviewClues span {
+    font-size: 0.72rem;
+    line-height: 1.15rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .logicReviewAttempts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .logicReviewAttempts b {
+    border-radius: 0.4rem;
+    padding: 0.25rem 0.45rem;
+    background: rgba(255, 255, 255, 0.07);
+    font-family: var(--type-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .logicReviewAttempts .logicReviewLast {
+    outline: 1px solid rgb(var(--color-brand-rgb) / 0.5);
+    color: var(--color-brand);
+  }
+  .classificationReviewList {
+    display: grid;
+    gap: 0.55rem;
+  }
+  .classificationReviewRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.65rem;
+    border-radius: 0.8rem;
+    padding: 0.75rem;
+    background: var(--color-surface-soft);
+  }
+  .classificationReviewRow > strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.8rem;
+  }
+  .classificationReviewRow > span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .classificationReviewRow small {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .classificationReviewRow b {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.72rem;
+  }
+  .classificationValueCorrect {
+    color: var(--color-brand);
+  }
+  .classificationValueWrong {
+    color: #ff858a;
   }
   .memoryGridPair {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .queensReviewPair {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .queensReviewPair > div {
+    min-width: 0;
+  }
+
+  @media (min-width: 720px) {
+    [data-variant="flash-pop"] .queensReviewPair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .memoryGridLabel {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: rgba(255, 255, 255, 0.48);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .memoryGrid {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .memoryCell {
+    display: grid;
+    min-height: 5rem;
+    place-items: center;
+    gap: 0.25rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.75rem;
+    padding: 0.45rem;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.035);
+    font-size: 0.72rem;
+    text-align: center;
+  }
+  .memoryCell > div {
+    width: 100%;
+    height: 2.5rem;
+  }
+  .memoryCell > div img,
+  .memoryCell > div svg {
+    max-height: 100%;
+  }
+  .memoryPairsGrid {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .memoryPairsCell {
+    display: grid;
+    aspect-ratio: 1;
+    min-height: 4.4rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.2rem;
+    overflow: hidden;
+    border: 1px dashed rgba(255, 255, 255, 0.16);
+    border-radius: 0.75rem;
+    padding: 0.4rem;
+    color: rgba(255, 255, 255, 0.42);
+    background: rgba(255, 255, 255, 0.025);
+    text-align: center;
+  }
+  .memoryPairsRevealed {
+    border-style: solid;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(53, 232, 255, 0.07);
+  }
+  .memoryPairsMatched {
+    border-color: rgb(var(--color-brand-rgb) / 0.58);
+    background: rgb(var(--color-brand-rgb) / 0.08);
+  }
+  .memoryPairsCell > div {
+    width: 100%;
+    height: 2.4rem;
+  }
+  .memoryPairsCell > div img,
+  .memoryPairsCell > div svg {
+    max-height: 100%;
+  }
+  .memoryPairsSymbol {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  .memoryPairsCell strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.72rem;
+  }
+  .memoryPairsCell small {
+    color: rgba(255, 255, 255, 0.38);
+    font-family: var(--type-mono);
+    font-size: 0.52rem;
+    font-weight: 800;
+  }
+  .logicMatrixReviewGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+    max-width: 24rem;
+  }
+  .logicMatrixReviewCell {
+    display: grid;
+    min-height: 4.25rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.75rem;
+    padding: 0.35rem;
+    background: rgba(255, 255, 255, 0.035);
+    text-align: center;
+  }
+  .logicMatrixReviewCell > span {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+  .logicMatrixReviewCell small {
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.55rem;
+    font-weight: 800;
+  }
+  .nonogramReviewGrid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    max-width: 20rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 0.7rem;
+  }
+  .nonogramReviewCell {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 1rem;
+  }
+  .nonogramCorrect {
+    color: var(--color-brand);
+    background: rgb(var(--color-brand-rgb) / 0.16);
+  }
+  .nonogramWrong {
+    color: #ff858a;
+    background: rgba(255, 93, 100, 0.18);
+  }
+  .nonogramMissing {
+    color: #ffcf66;
+    background: rgba(255, 207, 102, 0.12);
+  }
+  .nonogramEmpty {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  .connectPairsReviewGrid {
+    display: grid;
+    width: min(100%, 18rem);
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 0.75rem;
+    background: #07090c;
+  }
+  .connectPairsReviewCell {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 5%);
+    color: rgb(255 255 255 / 62%);
+    background: rgb(255 255 255 / 4%);
+    font-family: var(--type-mono);
+    font-size: 0.9rem;
+    font-weight: 900;
+  }
+  .connectPairsReviewRoute {
+    color: var(--color-social);
+    background: rgb(53 232 255 / 12%);
+  }
+  .connectPairsReviewEndpoint {
+    color: #071011;
+    background: var(--color-brand);
+  }
+  .connectPairsReviewEndpointMissing {
+    color: rgb(255 255 255 / 58%);
+    background: rgb(255 255 255 / 8%);
+    outline: 1px dashed rgb(255 255 255 / 28%);
+    outline-offset: -0.25rem;
   }
   .puzzleReviewPair {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    gap: 0.7rem;
   }
   .escapeReviewPair {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .escapeReviewPair > div {
+    min-width: 0;
+  }
+  .puzzleReviewBoard {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.18rem;
+    max-width: 8rem;
+    padding: 0.18rem;
+    border-radius: 0.55rem;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .puzzleTile,
+  .puzzleBlank {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 0.3rem;
+    font-family: var(--type-mono);
+    font-size: 0.7rem;
+    font-weight: 900;
+  }
+  [data-variant="flash-pop"] .puzzleTile {
+    color: var(--color-ink);
+    background: var(--color-brand);
+  }
+  [data-variant="flash-pop"] .puzzleBlank {
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    border-color: var(--color-border-hover);
+  }
+  .wordleReview {
+    --mini-wordle-columns: 4;
+    display: grid;
+    justify-content: start;
+    gap: 0.35rem;
+  }
+  .wordleReviewRow {
+    display: grid;
+    grid-template-columns: repeat(var(--mini-wordle-columns), 2.65rem);
+    gap: 0.35rem;
+  }
+  .wordleReviewTile {
+    position: relative;
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.55rem;
+    font-family: var(--type-display);
+    font-weight: 900;
+  }
+  .wordleReviewTile small {
+    position: absolute;
+    right: 0.2rem;
+    bottom: 0.12rem;
+    font-family: var(--type-mono);
+    font-size: 0.5rem;
+  }
+  .wordle-correct {
+    color: #151908;
+    background: var(--color-brand);
+  }
+  .wordle-present {
+    color: #07191c;
+    background: var(--color-social);
+  }
+  .wordle-absent {
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.09);
   }
   .wordHashtagReviewPair {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    gap: 1rem;
   }
-}
+  .wordHashtagReviewBoard {
+    display: grid;
+    width: min(100%, 18rem);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(0.18rem, 1vw, 0.4rem);
+    margin-top: 0.5rem;
+  }
+  .wordHashtagReviewTile {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: clamp(0.35rem, 1vw, 0.58rem);
+    color: #11150a;
+    box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
+  }
+  .wordHashtagReviewTile b {
+    font-family: var(--type-display);
+    font-size: clamp(0.78rem, 3vw, 1.35rem);
+    font-weight: 950;
+  }
+  .wordHashtagReviewTile small {
+    position: absolute;
+    right: 0.12rem;
+    bottom: 0.08rem;
+    font-size: clamp(0.38rem, 1.2vw, 0.55rem);
+    font-weight: 950;
+  }
+  .wordHashtagReviewCorrect {
+    background: #74c900;
+  }
+  .wordHashtagReviewDisplaced {
+    background: #ffc400;
+  }
+  @media (min-width: 640px) {
+    [data-variant="flash-pop"] .reviewCard summary {
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+    }
+    [data-variant="flash-pop"] .reviewContent {
+      padding: 1.2rem;
+    }
+    [data-variant="flash-pop"] .memoryGridPair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    [data-variant="flash-pop"] .puzzleReviewPair {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    [data-variant="flash-pop"] .escapeReviewPair {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    [data-variant="flash-pop"] .wordHashtagReviewPair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 
-/* Flash Pop feedback surfaces */
-.reviewCard {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-.textButton {
-  color: var(--color-ink-muted);
-}
-.textButton:hover {
-  color: var(--color-ink);
-}
-.reviewNumber {
-  color: var(--color-ink-muted);
-  background: var(--color-surface-soft);
-}
-.statusCorrect {
-  color: var(--state-correct);
-  background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
-}
-.statusWrong {
-  color: var(--state-error);
-  background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
-}
-.statusPartial {
-  color: var(--state-selected);
-  background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
-}
-.statusUnanswered {
-  color: var(--color-ink-muted);
-  background: var(--color-surface-soft);
-}
-.reviewContent {
-  border-top-color: var(--color-border);
-}
-.answerBox {
-  border: var(--border-subtle);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-control);
-}
-.answerBox span,
-.mazeLegend,
-.memoryGridLabel,
-.sudokuReviewCell small {
-  color: var(--color-ink-muted);
-}
-.sudokuReviewGrid,
-.sudokuReviewCell,
-.logicMatrixReviewGrid,
-.logicMatrixReviewCell,
-.nonogramReviewGrid,
-.nonogramReviewCell {
-  border-color: var(--color-border);
-}
-.sudokuGiven,
-.nonogramMissing,
-.nonogramEmpty {
-  color: var(--color-ink-muted);
-}
-.sudokuCorrect,
-.nonogramCorrect,
-.memoryPairsMatched,
-.wordle-correct {
-  color: var(--state-correct);
-}
-.sudokuWrong,
-.nonogramWrong,
-.wordle-present {
-  color: var(--state-error);
-}
-.logicReviewClues > div,
-.logicReviewAttempts b,
-.memoryCell,
-.memoryPairsCell,
-.puzzleReviewBoard,
-.puzzleTile,
-.puzzleBlank,
-.wordleReviewTile,
-.wordHashtagReviewTile {
-  border-color: var(--color-border);
-  background: var(--color-surface-raised);
-  color: var(--color-ink);
-}
-.logicReviewClues span,
-.logicReviewAttempts b,
-.memoryPairsSymbol,
-.wordle-absent {
-  color: var(--color-ink-muted);
-}
-.memoryPairsRevealed {
-  border-color: var(--state-selected);
-  background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
-}
-.memoryPairsMatched {
-  border-color: var(--state-correct);
-  background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
-}
-.wordle-correct {
-  color: var(--color-ink);
-  background: var(--state-correct);
-}
-.wordle-present {
-  color: var(--color-ink);
-  background: var(--state-movable);
-}
-.wordle-absent {
-  background: var(--state-neutral);
-}
-.wordHashtagReviewCorrect {
-  background: var(--state-correct);
-}
-.wordHashtagReviewDisplaced {
-  background: var(--state-movable);
-}
+  /* Flash Pop feedback surfaces */
+  [data-variant="flash-pop"] .reviewCard {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+  [data-variant="flash-pop"] .textButton {
+    color: var(--color-ink-muted);
+  }
+  [data-variant="flash-pop"] .textButton:hover {
+    color: var(--color-ink);
+  }
+  [data-variant="flash-pop"] .reviewNumber {
+    color: var(--color-ink-muted);
+    background: var(--color-surface-soft);
+  }
+  [data-variant="flash-pop"] .statusCorrect {
+    color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+  }
+  [data-variant="flash-pop"] .statusWrong {
+    color: var(--state-error);
+    background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+  }
+  [data-variant="flash-pop"] .statusPartial {
+    color: var(--state-selected);
+    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+  }
+  [data-variant="flash-pop"] .statusUnanswered {
+    color: var(--color-ink-muted);
+    background: var(--color-surface-soft);
+  }
+  [data-variant="flash-pop"] .reviewContent {
+    border-top-color: var(--color-border);
+  }
+  [data-variant="flash-pop"] .answerBox {
+    border: var(--border-subtle);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-control);
+  }
+  [data-variant="flash-pop"] .answerBox span,
+  [data-variant="flash-pop"] .mazeLegend,
+  [data-variant="flash-pop"] .memoryGridLabel,
+  [data-variant="flash-pop"] .sudokuReviewCell small {
+    color: var(--color-ink-muted);
+  }
+  [data-variant="flash-pop"] .sudokuReviewGrid,
+  [data-variant="flash-pop"] .sudokuReviewCell,
+  [data-variant="flash-pop"] .logicMatrixReviewGrid,
+  [data-variant="flash-pop"] .logicMatrixReviewCell,
+  [data-variant="flash-pop"] .nonogramReviewGrid,
+  [data-variant="flash-pop"] .nonogramReviewCell {
+    border-color: var(--color-border);
+  }
+  [data-variant="flash-pop"] .sudokuGiven,
+  [data-variant="flash-pop"] .nonogramMissing,
+  [data-variant="flash-pop"] .nonogramEmpty {
+    color: var(--color-ink-muted);
+  }
+  [data-variant="flash-pop"] .sudokuCorrect,
+  [data-variant="flash-pop"] .nonogramCorrect,
+  [data-variant="flash-pop"] .memoryPairsMatched,
+  [data-variant="flash-pop"] .wordle-correct {
+    color: var(--state-correct);
+  }
+  [data-variant="flash-pop"] .sudokuWrong,
+  [data-variant="flash-pop"] .nonogramWrong,
+  [data-variant="flash-pop"] .wordle-present {
+    color: var(--state-error);
+  }
+  [data-variant="flash-pop"] .logicReviewClues > div,
+  [data-variant="flash-pop"] .logicReviewAttempts b,
+  [data-variant="flash-pop"] .memoryCell,
+  [data-variant="flash-pop"] .memoryPairsCell,
+  [data-variant="flash-pop"] .puzzleReviewBoard,
+  [data-variant="flash-pop"] .puzzleTile,
+  [data-variant="flash-pop"] .puzzleBlank,
+  [data-variant="flash-pop"] .wordleReviewTile,
+  [data-variant="flash-pop"] .wordHashtagReviewTile {
+    border-color: var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-ink);
+  }
+  [data-variant="flash-pop"] .logicReviewClues span,
+  [data-variant="flash-pop"] .logicReviewAttempts b,
+  [data-variant="flash-pop"] .memoryPairsSymbol,
+  [data-variant="flash-pop"] .wordle-absent {
+    color: var(--color-ink-muted);
+  }
+  [data-variant="flash-pop"] .memoryPairsRevealed {
+    border-color: var(--state-selected);
+    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+  }
+  [data-variant="flash-pop"] .memoryPairsMatched {
+    border-color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+  }
+  [data-variant="flash-pop"] .wordle-correct {
+    color: var(--color-ink);
+    background: var(--state-correct);
+  }
+  [data-variant="flash-pop"] .wordle-present {
+    color: var(--color-ink);
+    background: var(--state-movable);
+  }
+  [data-variant="flash-pop"] .wordle-absent {
+    background: var(--state-neutral);
+  }
+  [data-variant="flash-pop"] .wordHashtagReviewCorrect {
+    background: var(--state-correct);
+  }
+  [data-variant="flash-pop"] .wordHashtagReviewDisplaced {
+    background: var(--state-movable);
+  }
 
-/* Keep every specialized review renderer on the Pop palette. */
-[data-variant="flash-pop"] .connectPairsReviewGrid {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-}
+  /* Keep every specialized review renderer on the Pop palette. */
+  [data-variant="flash-pop"] .connectPairsReviewGrid {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+  }
 
-[data-variant="flash-pop"] .connectPairsReviewCell {
-  border-color: var(--color-border);
-  color: var(--color-ink-muted);
-  background: var(--color-surface-raised);
-}
+  [data-variant="flash-pop"] .connectPairsReviewCell {
+    border-color: var(--color-border);
+    color: var(--color-ink-muted);
+    background: var(--color-surface-raised);
+  }
 
-[data-variant="flash-pop"] .connectPairsReviewEndpoint {
-  color: var(--color-ink);
-}
+  [data-variant="flash-pop"] .connectPairsReviewEndpoint {
+    color: var(--color-ink);
+  }
 
-[data-variant="flash-pop"] .connectPairsReviewEndpointMissing {
-  color: var(--color-ink-muted);
-  background: var(--color-surface-soft);
-  outline-color: var(--color-border-hover);
-}
+  [data-variant="flash-pop"] .connectPairsReviewEndpointMissing {
+    color: var(--color-ink-muted);
+    background: var(--color-surface-soft);
+    outline-color: var(--color-border-hover);
+  }
 
-[data-variant="flash-pop"] .puzzleTile {
-  color: var(--color-ink);
-  background: var(--color-brand);
-}
-
-[data-variant="flash-pop"] .puzzleBlank {
-  border-color: var(--color-border-hover);
-}
-
-[data-variant="flash-pop"] .wordHashtagReviewTile {
-  color: var(--color-ink);
+  [data-variant="flash-pop"] .wordHashtagReviewTile {
+    color: var(--color-ink);
+  }
 }

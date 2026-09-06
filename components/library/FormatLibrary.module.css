@@ -1,311 +1,258 @@
-.page {
-  position: relative;
-  z-index: 1;
-  width: min(100%, 72rem);
-  min-height: 100dvh;
-  margin: 0 auto;
-  padding: 1.25rem 1.25rem 3.5rem;
-}
-.eyebrow {
-  color: var(--color-social);
-  font-family: var(--type-mono);
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-.title {
-  max-width: 50rem;
-  margin: 0.65rem 0 0;
-  font-family: var(--type-display);
-  font-size: clamp(2.7rem, 8vw, 5.5rem);
-  font-weight: 950;
-  letter-spacing: -0.065em;
-  line-height: 0.9;
-  text-transform: uppercase;
-}
-.lead {
-  max-width: 42rem;
-  margin-top: 1.25rem;
-  color: rgba(255, 255, 255, 0.5);
-  line-height: 1.75;
-}
-.grid {
-  display: grid;
-  gap: 0.9rem;
-  margin-top: 2.5rem;
-}
-.card {
-  display: flex;
-  min-height: 15rem;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 1.4rem;
-  padding: 1.35rem;
-  color: white;
-  text-decoration: none;
-  background: linear-gradient(145deg, rgba(24, 27, 31, 0.95), rgba(9, 10, 12, 0.98));
-  transition:
-    transform 180ms,
-    border-color 180ms;
-}
-.card:hover {
-  border-color: rgba(53, 232, 255, 0.45);
-  transform: translateY(-3px);
-}
-.cardNumber {
-  color: rgba(53, 232, 255, 0.7);
-  font-family: var(--type-display);
-  font-size: 2.3rem;
-  font-weight: 950;
-  letter-spacing: -0.06em;
-}
-.card h2 {
-  margin: 1.3rem 0 0.5rem;
-  font-family: var(--type-display);
-  font-size: 1.8rem;
-  font-weight: 950;
-  letter-spacing: -0.045em;
-}
-.card p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.44);
-  font-size: 0.82rem;
-  line-height: 1.6;
-}
-.cardMeta {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: auto;
-  padding-top: 1.25rem;
-}
-.cardMeta span:first-child {
-  color: rgba(255, 255, 255, 0.33);
-  font-family: var(--type-mono);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.cardMeta span:last-child {
-  color: var(--color-social);
-  font-size: 0.72rem;
-  font-weight: 900;
-}
-.detailHero {
-  display: grid;
-  gap: 2rem;
-  align-items: end;
-  padding: 3.5rem 0 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.detailIndex {
-  color: rgba(53, 232, 255, 0.8);
-  font-family: var(--type-display);
-  font-size: clamp(4rem, 14vw, 8rem);
-  font-weight: 950;
-  letter-spacing: -0.08em;
-  line-height: 0.7;
-}
-.detailTitle {
-  margin: 0.55rem 0 0;
-  font-family: var(--type-display);
-  font-size: clamp(3rem, 9vw, 6rem);
-  font-weight: 950;
-  letter-spacing: -0.065em;
-  line-height: 0.86;
-  text-transform: uppercase;
-}
-.detailSummary {
-  max-width: 42rem;
-  margin: 1.25rem 0 0;
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 1rem;
-  line-height: 1.75;
-}
-.contentGrid {
-  display: grid;
-  gap: 1.2rem;
-  margin-top: 1.5rem;
-}
-.section {
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 1.25rem;
-  padding: 1.35rem;
-  background: rgba(16, 18, 22, 0.76);
-}
-.section h2 {
-  margin: 0 0 0.9rem;
-  font-family: var(--type-display);
-  font-size: 1.45rem;
-  font-weight: 950;
-  letter-spacing: -0.035em;
-}
-.section p,
-.section li {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  line-height: 1.7;
-}
-.section p {
-  margin: 0 0 0.75rem;
-}
-.section p:last-child {
-  margin-bottom: 0;
-}
-.section ul {
-  display: grid;
-  gap: 0.55rem;
-  margin: 0;
-  padding-left: 1.1rem;
-}
-.sectionGood li::marker {
-  color: var(--color-brand);
-}
-.sectionAvoid li::marker {
-  color: var(--color-danger);
-}
-.scoringPanel {
-  border-color: rgba(215, 255, 24, 0.2);
-  background: linear-gradient(145deg, rgba(215, 255, 24, 0.07), rgba(16, 18, 22, 0.82));
-}
-.scoringFlags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-.scoringFlags span {
-  border-radius: 99px;
-  padding: 0.45rem 0.7rem;
-  color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.055);
-  font-family: var(--type-mono);
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.examplesGrid {
-  display: grid;
-  gap: 1rem;
-}
-.pager {
-  display: grid;
-  gap: 0.7rem;
-  margin-top: 1.5rem;
-}
-.pager a {
-  display: flex;
-  justify-content: space-between;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
-  padding: 1rem;
-  color: white;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.025);
-}
-.pager small {
-  display: block;
-  color: rgba(255, 255, 255, 0.3);
-  font-family: var(--type-mono);
-  font-size: 0.55rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.pager strong {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: 0.85rem;
-}
-@media (min-width: 640px) {
+@layer app-components {
   .page {
-    padding: 1.75rem 2rem 4rem;
+    position: relative;
+    z-index: 1;
+    width: min(100%, 72rem);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 3.5rem;
+  }
+  .eyebrow {
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .title {
+    max-width: 50rem;
+    margin: 0.65rem 0 0;
+    font-family: var(--type-display);
+    font-size: clamp(2.7rem, 8vw, 5.5rem);
+    font-weight: 950;
+    letter-spacing: -0.065em;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+  .lead {
+    max-width: 42rem;
+    margin-top: 1.25rem;
+    color: var(--color-ink-muted);
+    line-height: 1.75;
   }
   .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 2.5rem;
   }
-  .pager {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .card {
+    display: flex;
+    min-height: 15rem;
+    flex-direction: column;
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    padding: 1.35rem;
+    color: var(--color-ink);
+    text-decoration: none;
+    background: var(--color-surface);
+    transition:
+      transform 180ms,
+      border-color 180ms;
   }
-}
-@media (min-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .card:hover {
+    border-color: var(--color-border-hover);
+    background: var(--color-surface-raised);
+    transform: translateY(-3px);
+  }
+  .cardNumber {
+    color: var(--color-social);
+    font-family: var(--type-display);
+    font-size: 2.3rem;
+    font-weight: 950;
+    letter-spacing: -0.06em;
+  }
+  .card h2 {
+    margin: 1.3rem 0 0.5rem;
+    font-family: var(--type-display);
+    font-size: 1.8rem;
+    font-weight: 950;
+    letter-spacing: -0.045em;
+  }
+  .card p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .cardMeta {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 1.25rem;
+  }
+  .cardMeta span:first-child {
+    color: var(--color-ink-faint);
+    font-family: var(--type-mono);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .cardMeta span:last-child {
+    color: var(--color-social);
+    font-size: 0.72rem;
+    font-weight: 900;
   }
   .detailHero {
-    grid-template-columns: auto 1fr;
+    display: grid;
+    gap: 2rem;
+    align-items: end;
+    padding: 3.5rem 0 2rem;
+    border-bottom: var(--border-subtle);
+  }
+  .detailIndex {
+    color: var(--color-social);
+    font-family: var(--type-display);
+    font-size: clamp(4rem, 14vw, 8rem);
+    font-weight: 950;
+    letter-spacing: -0.08em;
+    line-height: 0.7;
+  }
+  .detailTitle {
+    margin: 0.55rem 0 0;
+    font-family: var(--type-display);
+    font-size: clamp(3rem, 9vw, 6rem);
+    font-weight: 950;
+    letter-spacing: -0.065em;
+    line-height: 0.86;
+    text-transform: uppercase;
+  }
+  .detailSummary {
+    max-width: 42rem;
+    margin: 1.25rem 0 0;
+    color: var(--color-ink-muted);
+    font-size: 1rem;
+    line-height: 1.75;
   }
   .contentGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    gap: 1.2rem;
+    margin-top: 1.5rem;
   }
-  .wide {
-    grid-column: 1 / -1;
+  .section {
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    padding: 1.35rem;
+    background: var(--color-surface);
   }
-  .examplesGrid:has(> :nth-child(2)) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .section h2 {
+    margin: 0 0 0.9rem;
+    font-family: var(--type-display);
+    font-size: 1.45rem;
+    font-weight: 950;
+    letter-spacing: -0.035em;
   }
-}
-
-/* The library is part of the product surface and uses the global light theme. */
-.page {
-  color: var(--color-ink);
-}
-
-.lead,
-.detailSummary,
-.card p,
-.section p,
-.section li {
-  color: var(--color-ink-muted);
-}
-
-.card,
-.section,
-.pager a {
-  border-color: var(--color-border);
-  color: var(--color-ink);
-  background: var(--color-surface);
-}
-
-.card:hover,
-.pager a:hover {
-  border-color: var(--color-border-hover);
-  background: var(--color-surface-raised);
-}
-
-.cardNumber,
-.detailIndex,
-.cardMeta span:last-child {
-  color: var(--color-social);
-}
-
-.cardMeta span:first-child,
-.pager small {
-  color: var(--color-ink-faint);
-}
-
-.detailHero {
-  border-color: var(--color-border);
-}
-
-.scoringPanel {
-  border-color: color-mix(in srgb, var(--color-brand) 36%, var(--color-border));
-  background: color-mix(in srgb, var(--color-brand) 10%, var(--color-surface));
-}
-
-.scoringFlags span {
-  color: var(--color-ink-muted);
-  background: var(--color-surface-soft);
-}
-
-.sectionGood li::marker {
-  color: var(--state-correct);
-}
-
-.sectionAvoid li::marker {
-  color: var(--state-error);
+  .section p,
+  .section li {
+    color: var(--color-ink-muted);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+  .section p {
+    margin: 0 0 0.75rem;
+  }
+  .section p:last-child {
+    margin-bottom: 0;
+  }
+  .section ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .sectionGood li::marker {
+    color: var(--color-brand);
+  }
+  .sectionAvoid li::marker {
+    color: var(--color-danger);
+  }
+  .scoringPanel {
+    border-color: color-mix(in srgb, var(--color-brand) 36%, var(--color-border));
+    background: color-mix(in srgb, var(--color-brand) 10%, var(--color-surface));
+  }
+  .scoringFlags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .scoringFlags span {
+    border-radius: 99px;
+    padding: 0.45rem 0.7rem;
+    color: var(--color-ink-muted);
+    background: var(--color-surface-soft);
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .examplesGrid {
+    display: grid;
+    gap: 1rem;
+  }
+  .pager {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 1.5rem;
+  }
+  .pager a {
+    display: flex;
+    justify-content: space-between;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    padding: 1rem;
+    color: var(--color-ink);
+    text-decoration: none;
+    background: var(--color-surface);
+  }
+  .pager small {
+    display: block;
+    color: var(--color-ink-faint);
+    font-family: var(--type-mono);
+    font-size: 0.55rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .pager strong {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+  }
+  .timingValue {
+    color: var(--color-social);
+    font-family: var(--type-mono);
+  }
+  @media (min-width: 640px) {
+    .page {
+      padding: 1.75rem 2rem 4rem;
+    }
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .pager {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .detailHero {
+      grid-template-columns: auto 1fr;
+    }
+    .contentGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .wide {
+      grid-column: 1 / -1;
+    }
+    .examplesGrid:has(> :nth-child(2)) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 }

@@ -18,7 +18,16 @@ describe("canonical UI primitives", () => {
 
     expect(markup).toContain("disabled");
     expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('data-variant="primary"');
+    expect(markup).toContain('data-size="md"');
     expect(markup).toContain("Guardando");
+  });
+
+  it("normalizes the legacy hero size into the explicit appearance contract", () => {
+    const markup = renderToStaticMarkup(<Button size="hero">Abrir</Button>);
+
+    expect(markup).toContain('data-size="hero"');
+    expect(markup).toContain('data-appearance="hero"');
   });
 
   it("renders button links with their destination and trailing icon", () => {
@@ -81,6 +90,9 @@ describe("canonical UI primitives", () => {
     );
 
     expect(card).toContain("<section");
+    expect(card).toContain('data-surface="surface"');
+    expect(card).toContain('data-elevation="card"');
+    expect(card).toContain('data-density="default"');
     expect(timer).toContain('role="timer"');
     expect(timer).toContain('data-state="urgent"');
     expect(timer).toContain('aria-label="4 segundos restantes"');

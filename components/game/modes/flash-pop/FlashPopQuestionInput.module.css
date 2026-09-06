@@ -1,15 +1,13 @@
-.flashPopFormat {
-  width: 100%;
-  min-width: 0;
-  color: var(--color-ink);
-  font-family: var(--type-ui);
-}
+@layer app-formats {
+  .flashPopFormat {
+    width: 100%;
+    min-width: 0;
+    color: var(--color-ink);
+    font-family: var(--type-ui);
+  }
 
-.themeAwareFormat {
-  --format-theme-owned: 1;
-}
-
-.choiceGrid {
-  display: grid;
-  gap: var(--space-3);
+  .choiceGrid {
+    display: grid;
+    gap: var(--space-3);
+  }
 }

@@ -1,224 +1,226 @@
-.root {
-  display: grid;
-  gap: 0.9rem;
-  margin-top: 1.75rem;
-}
-.board {
-  display: grid;
-  grid-template-columns: 4.25rem minmax(0, 1fr);
-  grid-template-rows: 4.25rem auto;
-  width: min(100%, 27rem);
-  margin-inline: auto;
-}
-.corner {
-  border-bottom: 2px solid rgb(255 255 255 / 0.6);
-  border-right: 2px solid rgb(255 255 255 / 0.6);
-}
-.columnClues {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  min-width: 0;
-  border-bottom: 2px solid rgb(255 255 255 / 0.6);
-}
-.rowClues {
-  display: grid;
-  grid-template-rows: repeat(5, minmax(0, 1fr));
-  min-height: 0;
-  border-right: 2px solid rgb(255 255 255 / 0.6);
-}
-.clue,
-.rowClue {
-  display: flex;
-  gap: 0.15rem;
-  color: rgb(255 255 255 / 0.72);
-  font-family: var(--type-mono);
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-.clue {
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  justify-content: end;
-  padding-bottom: 0.35rem;
-}
-.rowClue {
-  align-items: center;
-  justify-content: end;
-  padding-right: 0.45rem;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  overflow: hidden;
-  border: 2px solid rgb(255 255 255 / 0.72);
-  border-radius: 0.2rem;
-  background: rgb(255 255 255 / 0.05);
-}
-.cell {
-  display: grid;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 0;
-  border-right: 1px solid rgb(255 255 255 / 0.22);
-  border-bottom: 1px solid rgb(255 255 255 / 0.22);
-  background: transparent;
-  color: #171717;
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    box-shadow 150ms ease;
-}
-.cell:nth-child(5n) {
-  border-right: 0;
-}
-.cell:nth-last-child(-n + 5) {
-  border-bottom: 0;
-}
-.cell:hover:not(:disabled) {
-  background: rgb(255 255 255 / 0.13);
-}
-.cell:focus-visible {
-  outline: 3px solid #facc15;
-  outline-offset: -3px;
-  z-index: 1;
-}
-.filled {
-  background: #a5b4fc;
-}
-.filled span {
-  font-size: clamp(0.9rem, 4vw, 1.25rem);
-}
-.selected {
-  box-shadow: inset 0 0 0 3px #facc15;
-}
-.progress,
-.instructions {
-  margin: 0;
-  text-align: center;
-}
-.progress {
-  color: rgb(255 255 255 / 0.72);
-  font-family: var(--type-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-.instructions {
-  color: rgb(255 255 255 / 0.52);
-  font-size: 0.875rem;
-  line-height: 1.45;
-}
-.controls {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
-  width: min(100%, 27rem);
-  margin-inline: auto;
-}
-.fillButton,
-.clearButton,
-.confirmButton {
-  min-height: 3rem;
-  border: 0;
-  border-radius: 0.8rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-.fillButton {
-  background: #a5b4fc;
-  color: #171717;
-}
-.clearButton {
-  background: rgb(255 255 255 / 0.1);
-  color: white;
-}
-.fillButton:hover:not(:disabled) {
-  background: #c7d2fe;
-}
-.clearButton:hover:not(:disabled) {
-  background: rgb(255 255 255 / 0.2);
-}
-.fillButton:focus-visible,
-.clearButton:focus-visible,
-.confirmButton:focus-visible {
-  outline: 3px solid #facc15;
-  outline-offset: 3px;
-}
-.confirmButton {
-  width: min(100%, 27rem);
-  margin-inline: auto;
-  background: #facc15;
-  color: #171717;
-}
-.confirmButton:hover:not(:disabled) {
-  background: #fde047;
-}
-.fillButton:disabled,
-.clearButton:disabled,
-.confirmButton:disabled,
-.cell:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-@media (max-width: 360px) {
+@layer app-formats {
+  .root {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1.75rem;
+  }
   .board {
-    grid-template-columns: 3.4rem minmax(0, 1fr);
-    grid-template-rows: 3.4rem auto;
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    grid-template-rows: 4.25rem auto;
+    width: min(100%, 27rem);
+    margin-inline: auto;
+  }
+  .corner {
+    border-bottom: 2px solid rgb(255 255 255 / 0.6);
+    border-right: 2px solid rgb(255 255 255 / 0.6);
+  }
+  .columnClues {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-width: 0;
+    border-bottom: 2px solid rgb(255 255 255 / 0.6);
+  }
+  .rowClues {
+    display: grid;
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    min-height: 0;
+    border-right: 2px solid rgb(255 255 255 / 0.6);
   }
   .clue,
   .rowClue {
-    font-size: 0.64rem;
+    display: flex;
+    gap: 0.15rem;
+    color: rgb(255 255 255 / 0.72);
+    font-family: var(--type-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
   }
-}
+  [data-variant="flash-pop"] .clue {
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    padding-bottom: 0.35rem;
+  }
+  [data-variant="flash-pop"] .rowClue {
+    align-items: center;
+    justify-content: end;
+    padding-right: 0.45rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow: hidden;
+    border: 2px solid rgb(255 255 255 / 0.72);
+    border-radius: 0.2rem;
+    background: rgb(255 255 255 / 0.05);
+  }
+  .cell {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 0;
+    border-right: 1px solid rgb(255 255 255 / 0.22);
+    border-bottom: 1px solid rgb(255 255 255 / 0.22);
+    background: transparent;
+    color: #171717;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+  .cell:nth-child(5n) {
+    border-right: 0;
+  }
+  .cell:nth-last-child(-n + 5) {
+    border-bottom: 0;
+  }
+  .cell:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.13);
+  }
+  .cell:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: -3px;
+    z-index: 1;
+  }
+  .filled {
+    background: #a5b4fc;
+  }
+  .filled span {
+    font-size: clamp(0.9rem, 4vw, 1.25rem);
+  }
+  .selected {
+    box-shadow: inset 0 0 0 3px #facc15;
+  }
+  .progress,
+  .instructions {
+    margin: 0;
+    text-align: center;
+  }
+  [data-variant="flash-pop"] .progress {
+    color: rgb(255 255 255 / 0.72);
+    font-family: var(--type-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  [data-variant="flash-pop"] .instructions {
+    color: rgb(255 255 255 / 0.52);
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    width: min(100%, 27rem);
+    margin-inline: auto;
+  }
+  .fillButton,
+  .clearButton,
+  .confirmButton {
+    min-height: 3rem;
+    border: 0;
+    border-radius: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  [data-variant="flash-pop"] .fillButton {
+    background: #a5b4fc;
+    color: #171717;
+  }
+  [data-variant="flash-pop"] .clearButton {
+    background: rgb(255 255 255 / 0.1);
+    color: white;
+  }
+  .fillButton:hover:not(:disabled) {
+    background: #c7d2fe;
+  }
+  .clearButton:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.2);
+  }
+  .fillButton:focus-visible,
+  .clearButton:focus-visible,
+  .confirmButton:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 3px;
+  }
+  [data-variant="flash-pop"] .confirmButton {
+    width: min(100%, 27rem);
+    margin-inline: auto;
+    background: #facc15;
+    color: #171717;
+  }
+  .confirmButton:hover:not(:disabled) {
+    background: #fde047;
+  }
+  .fillButton:disabled,
+  .clearButton:disabled,
+  .confirmButton:disabled,
+  .cell:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  @media (max-width: 360px) {
+    [data-variant="flash-pop"] .board {
+      grid-template-columns: 3.4rem minmax(0, 1fr);
+      grid-template-rows: 3.4rem auto;
+    }
+    [data-variant="flash-pop"] .clue,
+    [data-variant="flash-pop"] .rowClue {
+      font-size: 0.64rem;
+    }
+  }
 
-.root[data-variant="flash-pop"] .corner,
-.root[data-variant="flash-pop"] .columnClues,
-.root[data-variant="flash-pop"] .rowClues {
-  border-color: var(--color-border);
-}
-.root[data-variant="flash-pop"] .clue,
-.root[data-variant="flash-pop"] .rowClue,
-.root[data-variant="flash-pop"] .progress,
-.root[data-variant="flash-pop"] .instructions {
-  color: var(--color-ink-muted);
-}
-.root[data-variant="flash-pop"] .grid {
-  border-color: var(--color-border);
-  border-radius: var(--radius-card);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-card);
-}
-.root[data-variant="flash-pop"] .cell {
-  border-color: var(--color-border);
-  color: var(--color-ink);
-}
-.root[data-variant="flash-pop"] .cell:hover:not(:disabled) {
-  background: var(--color-surface);
-}
-.root[data-variant="flash-pop"] .cell:focus-visible,
-.root[data-variant="flash-pop"] .fillButton:focus-visible,
-.root[data-variant="flash-pop"] .clearButton:focus-visible,
-.root[data-variant="flash-pop"] .confirmButton:focus-visible {
-  outline-color: var(--state-focus);
-}
-.root[data-variant="flash-pop"] .filled {
-  background: color-mix(in srgb, var(--state-selected) 22%, var(--color-surface));
-}
-.root[data-variant="flash-pop"] .selected {
-  box-shadow: inset 0 0 0 3px var(--state-focus);
-}
-.root[data-variant="flash-pop"] .fillButton,
-.root[data-variant="flash-pop"] .clearButton,
-.root[data-variant="flash-pop"] .confirmButton {
-  color: var(--color-ink);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-control);
-}
-.root[data-variant="flash-pop"] .fillButton,
-.root[data-variant="flash-pop"] .confirmButton {
-  background: var(--color-brand);
-}
-.root[data-variant="flash-pop"] .fillButton:hover:not(:disabled),
-.root[data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
-  background: var(--color-brand-hover);
+  .root[data-variant="flash-pop"] .corner,
+  .root[data-variant="flash-pop"] .columnClues,
+  .root[data-variant="flash-pop"] .rowClues {
+    border-color: var(--color-border);
+  }
+  .root[data-variant="flash-pop"] .clue,
+  .root[data-variant="flash-pop"] .rowClue,
+  .root[data-variant="flash-pop"] .progress,
+  .root[data-variant="flash-pop"] .instructions {
+    color: var(--color-ink-muted);
+  }
+  .root[data-variant="flash-pop"] .grid {
+    border-color: var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-card);
+  }
+  .root[data-variant="flash-pop"] .cell {
+    border-color: var(--color-border);
+    color: var(--color-ink);
+  }
+  .root[data-variant="flash-pop"] .cell:hover:not(:disabled) {
+    background: var(--color-surface);
+  }
+  .root[data-variant="flash-pop"] .cell:focus-visible,
+  .root[data-variant="flash-pop"] .fillButton:focus-visible,
+  .root[data-variant="flash-pop"] .clearButton:focus-visible,
+  .root[data-variant="flash-pop"] .confirmButton:focus-visible {
+    outline-color: var(--state-focus);
+  }
+  .root[data-variant="flash-pop"] .filled {
+    background: color-mix(in srgb, var(--state-selected) 22%, var(--color-surface));
+  }
+  .root[data-variant="flash-pop"] .selected {
+    box-shadow: inset 0 0 0 3px var(--state-focus);
+  }
+  .root[data-variant="flash-pop"] .fillButton,
+  .root[data-variant="flash-pop"] .clearButton,
+  .root[data-variant="flash-pop"] .confirmButton {
+    color: var(--color-ink);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-control);
+  }
+  .root[data-variant="flash-pop"] .fillButton,
+  .root[data-variant="flash-pop"] .confirmButton {
+    background: var(--color-brand);
+  }
+  .root[data-variant="flash-pop"] .fillButton:hover:not(:disabled),
+  .root[data-variant="flash-pop"] .confirmButton:hover:not(:disabled) {
+    background: var(--color-brand-hover);
+  }
 }

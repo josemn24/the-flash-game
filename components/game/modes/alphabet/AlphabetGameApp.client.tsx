@@ -156,7 +156,7 @@ function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: 
             </div>
           </div>
 
-          <Button className={styles.primaryButton} size="hero" onClick={onStart}>
+          <Button size="hero" onClick={onStart}>
             Comenzar desafío
             <ArrowIcon className="h-5 w-5" />
           </Button>
@@ -404,7 +404,7 @@ function Results({ challenge, session }: { challenge: AlphabetChallenge; session
           </p>
 
           <div className={styles.resultActions}>
-            <Button className={styles.primaryButton} onClick={session.replay}>
+            <Button onClick={session.replay}>
               <RotateIcon className="h-5 w-5" />
               Volver a jugar
             </Button>
@@ -522,7 +522,7 @@ function Review({ challenge, session }: { challenge: AlphabetChallenge; session:
         <Button variant="secondary" onClick={session.showResults}>
           Volver a resultados
         </Button>
-        <Button className={styles.primaryButton} onClick={session.replay}>
+        <Button onClick={session.replay}>
           <RotateIcon className="h-5 w-5" />
           Volver a jugar
         </Button>

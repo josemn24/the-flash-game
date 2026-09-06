@@ -7,17 +7,29 @@ export type MotionButtonProps = HTMLMotionProps<"button"> & ButtonStyleProps;
 
 export function MotionButton({
   variant = "primary",
-  size = "default",
+  size = "md",
+  appearance = "default",
   fullWidth = false,
   className,
   type = "button",
   ...props
 }: MotionButtonProps) {
+  const resolvedAppearance = size === "hero" ? "hero" : appearance;
+
   return (
     <motion.button
       {...props}
       type={type}
-      className={buttonClassName({ variant, size, fullWidth, className })}
+      data-variant={variant}
+      data-size={size}
+      data-appearance={resolvedAppearance}
+      className={buttonClassName({
+        variant,
+        size,
+        appearance: resolvedAppearance,
+        fullWidth,
+        className,
+      })}
     />
   );
 }
