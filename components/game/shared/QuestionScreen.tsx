@@ -75,6 +75,7 @@ export function QuestionScreen({
   notebook,
   presentation,
 }: QuestionScreenProps) {
+  const isFlashPop = variant === "flash-pop";
   const hasDelayedTimedResponse =
     question.type === "flash-memory" ||
     question.type === "simon-sequence" ||
@@ -86,7 +87,9 @@ export function QuestionScreen({
     onTimedResponseStart();
   };
   const displayChallengeTitle = challengeTitle.split(":")[0].trim();
-  const prompt = presentation?.splitPrompt
+  const splitPrompt = presentation?.splitPrompt ?? isFlashPop;
+  const prominentMedia = presentation?.prominentMedia ?? isFlashPop;
+  const prompt = splitPrompt
     ? splitQuestionPrompt(question.question)
     : { title: question.question };
 
@@ -95,28 +98,43 @@ export function QuestionScreen({
   return (
     <motion.section
       data-variant={variant}
-      className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"
+      className={`mx-auto flex min-h-[100dvh] w-full flex-col ${isFlashPop ? styles.flashPopScreen : "max-w-3xl px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6"}`}
       initial={{ opacity: 0, x: 34 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -34 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
       <GameHeader
-        className="mb-3 gap-4 sm:mb-4"
+        className={isFlashPop ? styles.flashPopHeader : "mb-3 gap-4 sm:mb-4"}
         left={
-          <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className={styles.brandMarkSmall}>
-                <BoltIcon className="h-3.5 w-3.5" />
-              </span>
-              <p className={`${styles.eyebrow} truncate text-[var(--color-ink-muted)]`}>
-                {displayChallengeTitle}
-              </p>
+          isFlashPop ? (
+            <p className={styles.flashPopQuestionIndicator}>
+              Pregunta {String(questionNumber).padStart(2, "0")}{" "}
+              <span>de {String(totalQuestions).padStart(2, "0")}</span>
+            </p>
+          ) : (
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className={styles.brandMarkSmall}>
+                  <BoltIcon className="h-3.5 w-3.5" />
+                </span>
+                <p className={`${styles.eyebrow} truncate text-[var(--color-ink-muted)]`}>
+                  {displayChallengeTitle}
+                </p>
+              </div>
             </div>
-          </div>
+          )
+        }
+        mobileLabel={
+          isFlashPop
+            ? undefined
+            : `Pregunta ${String(questionNumber).padStart(2, "0")} de ${String(totalQuestions).padStart(2, "0")}`
+        }
+        mobileLabelAriaLabel={
+          isFlashPop ? undefined : `Pregunta ${questionNumber} de ${totalQuestions}`
         }
         right={
-          <div className="flex items-center gap-2">
+          <div className={isFlashPop ? styles.flashPopHeaderActions : "flex items-center gap-2"}>
             {notebook && (
               <button
                 type="button"
@@ -127,6 +145,9 @@ export function QuestionScreen({
                 <NotebookIcon className="h-4 w-4" />
                 <span>{notebook.entryCount}</span>
               </button>
+            )}
+            {isFlashPop && typeof livesRemaining === "number" && typeof totalLives === "number" && (
+              <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
             )}
             {!hasDelayedTimedResponse || timedResponseStarted ? (
               <Timer
@@ -146,52 +167,58 @@ export function QuestionScreen({
         }
       />
 
-      <div className="grid gap-3">
-        <div className="flex items-baseline justify-between gap-4">
-          <p className="font-mono text-sm font-bold tracking-wide text-[var(--color-ink)]">
-            {progressVariant === "pyramid" ? "Nivel" : "Pregunta"} {questionNumber}
-            <span className="text-[var(--color-ink-faint)]"> / {totalQuestions}</span>
-          </p>
-          <div className="flex min-w-0 items-center gap-2">
-            {typeof livesRemaining === "number" && typeof totalLives === "number" && (
-              <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
-            )}
-            <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-[var(--color-ink-faint)] uppercase">
-              {QUESTION_FORMAT_LABELS[question.type]}
-            </span>
+      {!isFlashPop && (
+        <div className="grid gap-3">
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="font-mono text-sm font-bold tracking-wide text-[var(--color-ink)]">
+              {progressVariant === "pyramid" ? "Nivel" : "Pregunta"} {questionNumber}
+              <span className="text-[var(--color-ink-faint)]"> / {totalQuestions}</span>
+            </p>
+            <div className="flex min-w-0 items-center gap-2">
+              {typeof livesRemaining === "number" && typeof totalLives === "number" && (
+                <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
+              )}
+              <span className="min-w-0 text-right font-mono text-[11px] font-bold tracking-[0.14em] text-[var(--color-ink-faint)] uppercase">
+                {QUESTION_FORMAT_LABELS[question.type]}
+              </span>
+            </div>
           </div>
+          {progressVariant !== "pyramid" && (
+            <ProgressBar current={questionNumber} total={totalQuestions} />
+          )}
         </div>
-        {progressVariant !== "pyramid" && (
-          <ProgressBar current={questionNumber} total={totalQuestions} />
-        )}
-      </div>
+      )}
 
-      <div className="flex flex-1 flex-col pt-5 sm:pt-8">
+      <div
+        className={`flex flex-1 flex-col ${isFlashPop ? styles.flashPopQuestionBody : "pt-5 sm:pt-8"}`}
+      >
         {prompt.context && <p className={styles.questionContext}>{prompt.context}</p>}
         <h1
-          className={`${styles.questionTitle} ${presentation?.splitPrompt ? styles.questionTitleFocused : ""} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}
+          className={`${styles.questionTitle} ${splitPrompt ? styles.questionTitleFocused : ""} ${question.type === "ordering" || question.type === "logic-code" ? styles.questionTitleCompact : ""}`}
         >
           {prompt.title}
         </h1>
 
         {"media" in question && question.media && (
           <div className="mt-5 sm:mt-6">
-            <QuestionMedia media={question.media} prominent={presentation?.prominentMedia} />
+            <QuestionMedia media={question.media} prominent={prominentMedia} />
           </div>
         )}
 
-        <FlashPopQuestionInput
-          question={question}
-          locked={locked}
-          onSubmit={onSubmit}
-          onCodeAttempt={onCodeAttempt}
-          onProgress={onProgress}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onProgressiveClueReveal={onProgressiveClueReveal}
-          onTimedResponseStart={startTimedResponse}
-          initialAnswer={initialAnswer}
-          attemptCount={codeAttemptCount}
-        />
+        <div className={isFlashPop ? styles.flashPopInput : undefined}>
+          <FlashPopQuestionInput
+            question={question}
+            locked={locked}
+            onSubmit={onSubmit}
+            onCodeAttempt={onCodeAttempt}
+            onProgress={onProgress}
+            onIncorrectAttempt={onIncorrectAttempt}
+            onProgressiveClueReveal={onProgressiveClueReveal}
+            onTimedResponseStart={startTimedResponse}
+            initialAnswer={initialAnswer}
+            attemptCount={codeAttemptCount}
+          />
+        </div>
       </div>
     </motion.section>
   );
