@@ -76,6 +76,16 @@ export type RoomDetailModel = {
   dailyLeaderboard: RoomDailyLeaderboardEntry[];
 };
 
+export type RoomHistoryEntry = {
+  id: string;
+  challengeId: string;
+  title: string;
+  playedAt: string;
+  imageSrc: string;
+  playerCount: number;
+  winnerMemberId?: string;
+};
+
 export type Season = {
   id: string;
   title: string;

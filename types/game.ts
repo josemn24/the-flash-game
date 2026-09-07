@@ -147,6 +147,7 @@ export type {
   RoomCardModel,
   RoomMember,
   RoomDetailModel,
+  RoomHistoryEntry,
   Season,
   SeasonStatus,
 } from "@/types/room";

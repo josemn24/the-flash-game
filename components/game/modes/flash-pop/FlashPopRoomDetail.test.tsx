@@ -11,22 +11,29 @@ vi.mock("next/navigation", () => ({
 const now = new Date("2026-09-06T12:00:00.000Z");
 
 describe("FlashPopRoomDetail", () => {
-  it("renders the room summary, daily challenge and both leaderboards", () => {
+  it("renders the compact room summary, daily challenge and daily leaderboard", () => {
     const model = buildRoomDetailModel(demoRoom, now);
     const markup = renderToStaticMarkup(<FlashPopRoomDetail model={model} />);
 
-    expect(markup).toContain("Tabarnia.");
-    expect(markup).toContain("Mis gemas");
+    expect(markup).toContain("Tabarnia");
+    expect(markup).toContain("Gemas");
     expect(markup).toContain("136");
     expect(markup).toContain("#3");
     expect(markup).toContain("La Pirámide: Cumbre lógica");
-    expect(markup).toContain("Jugar desafío");
+    expect(markup).toContain("Jugar");
     expect(markup).toContain('href="/desafios/tabarnia-challenge-05"');
-    expect(markup).toContain("Ranking de sala");
-    expect(markup).toContain("Puntos del desafío");
+    expect(markup).toContain("Ranking de hoy");
+    expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
+    expect(markup).toContain('href="/salas/tabarnia-room/historial"');
+    expect(markup).toContain("Configuración de sala, próximamente");
     expect(markup).toContain("Tú");
     expect(markup).toContain("Pendiente");
     expect(markup).toContain("--:--:--");
+    expect(markup).not.toContain("Primera temporada");
+    expect(markup).not.toContain("En directo");
+    expect(markup).not.toContain("El reto de hoy y las posiciones de tu sala.");
+    expect(markup).not.toContain("Ranking de sala");
+    expect(markup).not.toContain("Puntos acumulados");
   });
 
   it("keeps the detail usable when no daily challenge exists", () => {
@@ -38,11 +45,12 @@ describe("FlashPopRoomDetail", () => {
       <FlashPopRoomDetail model={buildRoomDetailModel(room, now)} />,
     );
 
-    expect(markup).toContain("Sin reto hoy.");
-    expect(markup).toContain("Sala activa");
-    expect(markup).toContain("Ranking de sala");
-    expect(markup).not.toContain("Jugar desafío");
-    expect(markup).not.toContain("Termina en");
+    expect(markup).toContain("Sin reto hoy");
+    expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
+    expect(markup).toContain('href="/salas/tabarnia-room/historial"');
+    expect(markup).not.toContain("Jugar");
+    expect(markup).not.toContain("Tiempo restante");
+    expect(markup).not.toContain("Ranking de hoy");
   });
 
   it("does not add the season calendar, chat or activity feed", () => {

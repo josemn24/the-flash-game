@@ -1,0 +1,126 @@
+@layer app-formats {
+  .card {
+    min-width: 0;
+  }
+
+  .heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .eyebrow {
+    margin: 0 0 4px;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .heading h2 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: 28px;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .headingIcon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-social);
+  }
+
+  .list {
+    display: grid;
+    gap: 6px;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: var(--radius-control);
+  }
+
+  .current {
+    background: var(--color-surface-soft);
+  }
+
+  .rank {
+    width: 18px;
+    flex: 0 0 auto;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .name {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .name strong,
+  .name small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .name strong {
+    font-size: 13px;
+  }
+
+  .name small {
+    color: var(--color-ink-muted);
+    font-size: 10px;
+  }
+
+  .points {
+    flex: 0 0 auto;
+    font-family: var(--type-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .points small {
+    color: var(--color-ink-muted);
+    font-size: 9px;
+    font-weight: 600;
+  }
+
+  .compact {
+    padding-block: var(--space-5);
+  }
+
+  .compact .heading h2 {
+    font-size: 24px;
+  }
+
+  .compact .list {
+    margin-top: var(--space-4);
+  }
+
+  .compact .row {
+    padding-block: 6px;
+  }
+
+  .empty {
+    margin: var(--space-5) 0 0;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+}

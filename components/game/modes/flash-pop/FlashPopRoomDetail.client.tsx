@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   ArrowIcon,
   Avatar,
@@ -12,18 +12,15 @@ import {
   Canvas,
   Card,
   Chip,
+  IconButton,
+  RotateIcon,
+  SettingsIcon,
   TrophyIcon,
 } from "@/components/ui";
-import {
-  formatDailyCountdown,
-  getDailyCountdownSeconds,
-} from "@/lib/dailyCountdown";
+import { formatDailyCountdown, getDailyCountdownSeconds } from "@/lib/dailyCountdown";
 import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
-import type {
-  RoomDailyLeaderboardEntry,
-  RoomDetailModel,
-  RoomLeaderboardEntry,
-} from "@/types/game";
+import type { RoomDetailModel } from "@/types/game";
+import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomDetail.module.css";
 
 function DailyCountdown({ endsAt }: { endsAt: string }) {
@@ -48,90 +45,31 @@ function DailyCountdown({ endsAt }: { endsAt: string }) {
     return () => window.clearInterval(intervalId);
   }, [endsAt, router]);
 
-  const display = remaining === null ? "--:--:--" : formatDailyCountdown(remaining);
-
   return (
     <span className={styles.countdown} role="timer" aria-live="polite" aria-label="Tiempo restante">
-      <span className={styles.countdownIcon} aria-hidden="true">
-        ⏳
-      </span>
-      <span>{display}</span>
+      <span aria-hidden="true">⌛</span>
+      <span>{remaining === null ? "--:--:--" : formatDailyCountdown(remaining)}</span>
     </span>
   );
 }
 
-function LeaderboardRow({
-  entry,
-  currentUserId,
-  daily = false,
+function StatPill({
+  label,
+  value,
+  icon,
 }: {
-  entry: RoomLeaderboardEntry | RoomDailyLeaderboardEntry;
-  currentUserId: string;
-  daily?: boolean;
-}) {
-  const dailyEntry = daily ? (entry as RoomDailyLeaderboardEntry) : null;
-  const isCurrentUser = entry.memberId === currentUserId;
-
-  return (
-    <li className={`${styles.leaderboardRow} ${isCurrentUser ? styles.currentRow : ""}`}>
-      <span className={styles.rankNumber}>{entry.rank}</span>
-      <Avatar
-        name={entry.name}
-        initials={entry.initials}
-        tone={isCurrentUser ? "social" : "blue"}
-        size="sm"
-      />
-      <span className={styles.playerName}>
-        <strong>{isCurrentUser ? "Tú" : entry.name}</strong>
-        <small>
-          {daily ? (dailyEntry?.completed ? "Completado" : "Pendiente") : "Puntos de sala"}
-        </small>
-      </span>
-      <span className={styles.rowPoints}>
-        {entry.points} <small>gemas</small>
-      </span>
-    </li>
-  );
-}
-
-function LeaderboardCard({
-  title,
-  eyebrow,
-  entries,
-  currentUserId,
-  daily = false,
-}: {
-  title: string;
-  eyebrow: string;
-  entries: Array<RoomLeaderboardEntry | RoomDailyLeaderboardEntry>;
-  currentUserId: string;
-  daily?: boolean;
+  label: string;
+  value: string | number;
+  icon: ReactNode;
 }) {
   return (
-    <Card as="section" className={styles.leaderboardCard} aria-labelledby={`${daily ? "daily" : "room"}-leaderboard-title`}>
-      <div className={styles.cardHeading}>
-        <div>
-          <p className={styles.eyebrow}>{eyebrow}</p>
-          <h2 id={`${daily ? "daily" : "room"}-leaderboard-title`}>{title}</h2>
-        </div>
-        <TrophyIcon className={styles.headingIcon} />
-      </div>
-
-      {entries.length > 0 ? (
-        <ol className={styles.leaderboardList}>
-          {entries.map((entry) => (
-            <LeaderboardRow
-              entry={entry}
-              currentUserId={currentUserId}
-              daily={daily}
-              key={entry.memberId}
-            />
-          ))}
-        </ol>
-      ) : (
-        <p className={styles.emptyRanking}>Sin reto disponible hoy.</p>
-      )}
-    </Card>
+    <span className={styles.statPill} aria-label={`${label}: ${value}`}>
+      <span className={styles.statIcon} aria-hidden="true">
+        {icon}
+      </span>
+      <strong>{value}</strong>
+      <span className={styles.visuallyHidden}>{label}</span>
+    </span>
   );
 }
 
@@ -147,18 +85,11 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
             alt="Ilustración genérica de Flash Pop"
             fill
             priority
-            sizes="(max-width: 760px) 100vw, 58vw"
+            sizes="(max-width: 760px) 100vw, 760px"
           />
-        </div>
-        <div className={styles.challengeBody}>
-          <p className={styles.eyebrow}>
-            <BoltIcon /> Reto de hoy
-          </p>
-          <h2>Sin reto hoy.</h2>
-          <p className={styles.challengeCopy}>
-            No hay ningún desafío jugable disponible en esta sala.
-          </p>
-          <Chip tone="neutral">Sala activa</Chip>
+          <Chip className={styles.artBadge} variant="data">
+            Sin reto hoy
+          </Chip>
         </div>
       </Card>
     );
@@ -178,46 +109,25 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
           alt={`Ilustración del desafío ${challenge.title}`}
           fill
           priority
-          sizes="(max-width: 760px) 100vw, 58vw"
+          sizes="(max-width: 760px) 100vw, 760px"
         />
-        <Chip className={styles.artBadge} variant="data">
-          Desafío de hoy
-        </Chip>
-      </div>
-
-      <div className={styles.challengeBody}>
-        <div className={styles.challengeTopline}>
-          <p className={styles.eyebrow}>
-            <BoltIcon /> Reto de hoy
-          </p>
-          <Chip tone={model.currentUser.dailyCompleted ? "success" : "social"}>
+        <div className={styles.challengeOverlay}>
+          <Chip variant="data">
             {model.currentUser.dailyCompleted ? "Completado" : "Pendiente"}
           </Chip>
-        </div>
-        <h2 id="daily-challenge-title">{challenge.title}</h2>
-        <p className={styles.challengeCopy}>{challenge.subtitle}</p>
-
-        <div className={styles.challengeMeta}>
-          <span>
-            <strong>{challenge.questionCount}</strong> preguntas
-          </span>
-          <span>
-            <strong>{model.currentUser.dailyPoints}</strong> gemas
-          </span>
-        </div>
-
-        <div className={styles.challengeFooter}>
-          <span className={styles.expiresLabel}>Termina en</span>
           <DailyCountdown endsAt={challenge.endsAt} />
         </div>
+        <div className={styles.challengeTitleBadge}>
+          <h2 id="daily-challenge-title">{challenge.title}</h2>
+        </div>
+      </div>
 
-        <ButtonLink
-          href={challenge.href}
-          size="hero"
-          fullWidth
-          trailingIcon={<ArrowIcon />}
-        >
-          {model.currentUser.dailyCompleted ? "Volver a jugar" : "Jugar desafío"}
+      <div className={styles.challengeFooter}>
+        <span className={styles.questionCount}>
+          <strong>{challenge.questionCount}</strong> preguntas
+        </span>
+        <ButtonLink href={challenge.href} size="sm" trailingIcon={<ArrowIcon />}>
+          Jugar
         </ButtonLink>
       </div>
     </Card>
@@ -225,72 +135,67 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 }
 
 export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
-  const isActive = model.seasonStatus === "active";
+  const rankingHref = `/salas/${model.roomId}/ranking`;
+  const historyHref = `/salas/${model.roomId}/historial`;
 
   return (
     <Canvas contentClassName={styles.content}>
-      <header className={styles.pageHeader}>
-        <Link href="/" className={styles.backLink} aria-label="Volver a Tus salas">
-          <ArrowIcon />
-          <span>Tus salas</span>
+      <header className={styles.toolbar}>
+        <Link href="/" className={styles.toolbarIcon} aria-label="Volver a Tus salas">
+          <ArrowIcon className={styles.backIcon} />
         </Link>
 
-        <div className={styles.roomIdentity}>
-          <Avatar
-            name={model.title}
-            initials={model.title.slice(0, 2).toUpperCase()}
-            tone="social"
-            size="md"
-          />
-          <span>
-            <small>Sala</small>
-            <strong>{model.title}</strong>
-          </span>
+        <div className={styles.toolbarCenter}>
+          <Link
+            href={rankingHref}
+            className={styles.roomIdentity}
+            aria-label={`Ver ranking global de ${model.title}`}
+          >
+            <Avatar
+              name={model.title}
+              initials={model.title.slice(0, 2).toUpperCase()}
+              tone="social"
+              size="md"
+            />
+            <span className={styles.roomName}>{model.title}</span>
+          </Link>
+          <IconButton label="Configuración de sala, próximamente" disabled>
+            <SettingsIcon />
+          </IconButton>
         </div>
 
-        <Chip tone={isActive ? "success" : "neutral"}>
-          {isActive ? "En directo" : "Cerrada"}
-        </Chip>
+        <Link
+          href={historyHref}
+          className={`${styles.toolbarIcon} ${styles.historyLink}`}
+          aria-label={`Ver historial de ${model.title}`}
+        >
+          <RotateIcon />
+        </Link>
       </header>
 
-      <section className={styles.intro} aria-labelledby="room-detail-title">
-        <div>
-          <p className={styles.eyebrow}>{model.seasonTitle}</p>
-          <h1 id="room-detail-title">{model.title}.</h1>
-          <p className={styles.introCopy}>El reto de hoy y las posiciones de tu sala.</p>
-        </div>
+      <div className={styles.summary} aria-label="Resumen de la sala">
+        <StatPill label="Gemas" value={model.currentUser.totalPoints} icon={<BoltIcon />} />
+        <StatPill
+          label="Ranking global"
+          value={`#${model.currentUser.roomRank}`}
+          icon={<TrophyIcon />}
+        />
+      </div>
 
-        <div className={styles.summaryGrid} aria-label="Resumen de tu sala">
-          <Card as="div" padding="compact" className={styles.summaryCard}>
-            <span>Mis gemas</span>
-            <strong>{model.currentUser.totalPoints}</strong>
-          </Card>
-          <Card as="div" padding="compact" className={styles.summaryCard}>
-            <span>Ranking sala</span>
-            <strong>#{model.currentUser.roomRank}</strong>
-          </Card>
-        </div>
-      </section>
-
-      <main className={styles.detailGrid}>
+      <div className={styles.roomMain}>
+        <p className={styles.todayLabel}>HOY</p>
         <DailyChallengeCard model={model} />
 
-        <div className={styles.rankingsGrid}>
-          <LeaderboardCard
-            title="Ranking de sala"
-            eyebrow="Puntos acumulados"
-            entries={model.roomLeaderboard}
-            currentUserId={model.currentUser.id}
-          />
-          <LeaderboardCard
-            title="Reto de hoy"
-            eyebrow="Puntos del desafío"
+        {model.dailyChallenge && model.dailyLeaderboard.length > 0 ? (
+          <RoomLeaderboard
+            title="Ranking de hoy"
             entries={model.dailyLeaderboard}
             currentUserId={model.currentUser.id}
             daily
+            compact
           />
-        </div>
-      </main>
+        ) : null}
+      </div>
     </Canvas>
   );
 }
