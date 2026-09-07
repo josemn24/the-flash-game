@@ -1,28 +1,31 @@
 @layer app-formats {
   .content {
     width: min(100%, 760px);
+    padding-top: 0;
     padding-inline: 0;
   }
 
   .hero {
     position: relative;
-    min-height: 500px;
+    min-height: 430px;
     overflow: hidden;
-    border-radius: 0 0 48% 48% / 0 0 13% 13%;
-    background: var(--color-social);
-    color: var(--color-text-on-social);
-    box-shadow: 0 10px 0 rgb(23 23 32 / 8%);
+    border: 1px solid var(--color-line);
+    border-radius: 0 0 32px 32px;
+    background: linear-gradient(145deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-social) 8%, var(--color-surface)) 100%);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-hero);
   }
 
-  .hero::after {
+  .hero::before {
     position: absolute;
-    right: -12%;
-    bottom: -29%;
-    left: -12%;
-    height: 35%;
+    top: -130px;
+    right: -90px;
+    width: 300px;
+    height: 300px;
+    border: 22px solid color-mix(in srgb, var(--color-social) 12%, transparent);
     border-radius: 50%;
-    background: var(--color-canvas);
     content: "";
+    transform: rotate(-18deg);
   }
 
   .heroToolbar {
@@ -31,22 +34,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-6) var(--space-7);
+    padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--space-7) var(--space-5);
   }
 
   .backButton {
     display: inline-flex;
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: var(--color-ink);
-    color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    background: rgb(255 255 255 / 76%);
+    color: var(--color-ink);
     box-shadow: var(--shadow-control);
+    transition: transform 160ms ease, background 160ms ease;
   }
 
   .backButton:hover {
+    background: var(--color-surface);
     transform: translateY(-1px);
   }
 
@@ -57,14 +63,14 @@
   }
 
   .backIcon {
-    width: 25px;
+    width: 21px;
     transform: rotate(180deg);
   }
 
   .heroToolbar :global(.button) {
     border-color: var(--color-ink);
-    background: var(--color-ink);
-    color: var(--color-surface);
+    background: var(--color-brand);
+    color: var(--color-ink);
   }
 
   .heroContent {
@@ -73,14 +79,14 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding: var(--space-8) var(--space-6) 140px;
+    padding: var(--space-4) var(--space-6) var(--space-6);
   }
 
   .memberHero {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 130px;
+    min-height: 108px;
     padding-inline: 30px;
   }
 
@@ -103,14 +109,14 @@
   }
 
   .memberCount {
-    margin: var(--space-6) 0 var(--space-3);
+    margin: var(--space-4) 0 var(--space-2);
     font-size: 17px;
     font-weight: 700;
   }
 
   .heroContent h1 {
     margin: 0;
-    padding: 12px 42px;
+    padding: 10px 36px;
     border-radius: var(--radius-pill);
     background: var(--color-surface);
     color: var(--color-ink);
@@ -125,7 +131,7 @@
     position: relative;
     z-index: 2;
     width: min(100% - 2 * var(--space-6), 620px);
-    margin: -28px auto 0;
+    margin: var(--space-8) auto 0;
     padding-bottom: var(--space-10);
   }
 
@@ -259,12 +265,12 @@
 
   @media (max-width: 600px) {
     .hero {
-      min-height: 470px;
-      border-radius: 0 0 42% 42% / 0 0 9% 9%;
+      min-height: 380px;
+      border-radius: 0 0 26px 26px;
     }
 
     .heroToolbar {
-      padding-inline: var(--space-5);
+      padding: calc(var(--space-6) + env(safe-area-inset-top)) var(--space-5) var(--space-4);
     }
 
     .memberHero {
