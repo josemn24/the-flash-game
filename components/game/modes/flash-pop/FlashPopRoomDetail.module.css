@@ -19,7 +19,7 @@
   }
 
   .toolbarIcon,
-  .roomIdentity {
+  .statPill {
     display: inline-flex;
     align-items: center;
     text-decoration: none;
@@ -43,7 +43,7 @@
   }
 
   .toolbarIcon:focus-visible,
-  .roomIdentity:focus-visible {
+  .statPill:focus-visible {
     outline: 3px solid var(--color-brand);
     outline-offset: 3px;
   }
@@ -61,29 +61,34 @@
     justify-self: end;
   }
 
-  .roomIdentity {
+  .roomSettingsLink {
+    display: inline-flex;
+    width: 104px;
+    height: 50px;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 4px 12px 4px 4px;
+    padding: 4px 10px 4px 4px;
     border: 1px solid var(--color-line);
-    border-radius: var(--radius-pill);
-    background: rgb(255 255 255 / 82%);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
     color: var(--color-ink);
     box-shadow: var(--shadow-control);
     transition: transform 160ms ease;
   }
 
-  .roomIdentity:hover {
+  .roomSettingsLink:hover {
     transform: translateY(-1px);
   }
 
-  .roomName {
-    max-width: 150px;
-    overflow: hidden;
-    font-family: var(--type-display);
-    font-size: 17px;
-    letter-spacing: -0.04em;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .roomSettingsLink:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .roomSettingsLink svg {
+    width: 21px;
+    height: 21px;
   }
 
   .summary {
@@ -94,16 +99,38 @@
   }
 
   .statPill {
-    display: inline-flex;
-    min-height: 42px;
+    display: flex;
+    width: fit-content;
+    min-height: 48px;
     align-items: center;
-    gap: 7px;
-    padding: 6px 14px 6px 9px;
+    gap: 0;
+    padding: 5px 9px;
     border: 1px solid var(--color-line);
     border-radius: var(--radius-pill);
     background: rgb(255 255 255 / 88%);
+    color: var(--color-ink);
     box-shadow: var(--shadow-control);
     font-family: var(--type-mono);
+    margin: var(--space-3) auto var(--space-6);
+    transition: transform 160ms ease, background 160ms ease;
+  }
+
+  .statPill:hover {
+    background: var(--color-surface);
+    transform: translateY(-1px);
+  }
+
+  .statItem {
+    display: inline-flex;
+    min-width: 104px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding-inline: 9px;
+  }
+
+  .statItem + .statItem {
+    border-left: 1px solid var(--color-line);
   }
 
   .statIcon {
@@ -122,7 +149,7 @@
     height: 15px;
   }
 
-  .statPill strong {
+  .statItem strong {
     font-size: 15px;
   }
 
@@ -151,7 +178,7 @@
   .challengeArt {
     position: relative;
     aspect-ratio: 1.45;
-    overflow: hidden;
+    overflow: visible;
     background: var(--color-surface-soft);
   }
 
@@ -263,16 +290,13 @@
       min-height: 64px;
     }
 
-    .roomName {
-      display: none;
-    }
-
-    .roomIdentity {
-      padding: 3px;
-    }
-
     .summary {
       margin-bottom: var(--space-5);
+    }
+
+    .statItem {
+      min-width: 88px;
+      padding-inline: 6px;
     }
 
     .challengeArt {

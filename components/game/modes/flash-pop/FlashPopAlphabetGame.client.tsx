@@ -11,9 +11,15 @@ import {
   getFlashPopAlphabetResult,
   type FlashPopAlphabetSummary,
 } from "@/features/flash-pop/alphabetSocial";
+import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
+import type {
+  AlphabetChallenge,
+  ChallengeCompletion,
+  GameRoomContext,
+  ShortTextQuestion,
+} from "@/types/game";
 import styles from "./FlashPopAlphabetGame.module.css";
 
 const STATUS_LABELS: Record<AlphabetLetterStatus, string> = {
@@ -331,9 +337,13 @@ function summaryFor(
 function Results({
   challenge,
   session,
+  roomContext,
+  returnTo,
 }: {
   challenge: AlphabetChallenge;
   session: AlphabetSession;
+  roomContext?: GameRoomContext;
+  returnTo: string;
 }) {
   const summary = summaryFor(challenge, session);
   const result = getFlashPopAlphabetResult(summary, { timeLimit: challenge.timeLimit });
@@ -368,10 +378,12 @@ function Results({
             <strong>{session.round}</strong>
             <span>vueltas</span>
           </div>
-          <div>
-            <strong>{result.playerRank}.º</strong>
-            <span>posición · {result.totalPlayers}</span>
-          </div>
+          {!roomContext ? (
+            <div>
+              <strong>{result.playerRank}.º</strong>
+              <span>posición · {result.totalPlayers}</span>
+            </div>
+          ) : null}
         </div>
         <p className={styles.tieBreak}>
           Último acierto:{" "}
@@ -380,31 +392,38 @@ function Results({
         <p className={styles.xpCallout}>
           +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
         </p>
-        <div className={styles.ranking} aria-label="Clasificación demo">
-          <h2>
-            Tu grupo <span>· Demo</span>
-          </h2>
-          {result.peers.map((row) => (
-            <div
-              className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
-              key={row.player.id}
-            >
-              <span className={styles.position}>{row.rank}.</span>
-              <Avatar
-                name={row.player.displayName}
-                initials={row.player.initials}
-                tone={row.player.tone}
-                size="sm"
-              />
-              <span className={styles.rankingName}>
-                {row.player.id === "javi" ? "Tú" : row.player.displayName}
-              </span>
-              <span className={styles.rankingScore}>{row.score} pts</span>
-            </div>
-          ))}
-        </div>
-        <ButtonLink href="/" size="hero" fullWidth trailingIcon={<ArrowIcon />}>
-          Volver al lobby
+        {roomContext ? (
+          <p className={styles.xpCallout}>
+            Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
+            volver.
+          </p>
+        ) : (
+          <div className={styles.ranking} aria-label="Clasificación demo">
+            <h2>
+              Tu grupo <span>· Demo</span>
+            </h2>
+            {result.peers.map((row) => (
+              <div
+                className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
+                key={row.player.id}
+              >
+                <span className={styles.position}>{row.rank}.</span>
+                <Avatar
+                  name={row.player.displayName}
+                  initials={row.player.initials}
+                  tone={row.player.tone}
+                  size="sm"
+                />
+                <span className={styles.rankingName}>
+                  {row.player.id === "javi" ? "Tú" : row.player.displayName}
+                </span>
+                <span className={styles.rankingScore}>{row.score} pts</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <ButtonLink href={returnTo} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
+          {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
         </ButtonLink>
         <Button
           variant="secondary"
@@ -490,8 +509,22 @@ function Review({
   );
 }
 
-export function FlashPopAlphabetGame({ challenge }: { challenge: AlphabetChallenge }) {
+export function FlashPopAlphabetGame({
+  challenge,
+  roomContext,
+  onComplete,
+}: {
+  challenge: AlphabetChallenge;
+  roomContext?: GameRoomContext;
+  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+}) {
   const session = useAlphabetSession(challenge);
+  useChallengeCompletionReporter(
+    session.phase === "results"
+      ? { challengeId: challenge.id, points: session.score, completed: true }
+      : null,
+    onComplete,
+  );
   return (
     <MotionConfig reducedMotion="user">
       <Canvas contentClassName={styles.screen}>
@@ -526,7 +559,12 @@ export function FlashPopAlphabetGame({ challenge }: { challenge: AlphabetChallen
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <Results challenge={challenge} session={session} />
+              <Results
+                challenge={challenge}
+                session={session}
+                roomContext={roomContext}
+                returnTo={roomContext?.returnTo ?? "/"}
+              />
             </motion.div>
           ) : null}
           {session.phase === "review" ? (

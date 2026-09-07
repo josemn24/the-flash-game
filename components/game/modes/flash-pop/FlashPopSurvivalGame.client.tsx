@@ -12,9 +12,15 @@ import {
   getFlashPopSurvivalResult,
   type FlashPopSurvivalSummary,
 } from "@/features/flash-pop/survivalSocial";
+import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { AnswerResult, SurvivalChallenge } from "@/types/game";
+import type {
+  AnswerResult,
+  ChallengeCompletion,
+  GameRoomContext,
+  SurvivalChallenge,
+} from "@/types/game";
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";
 
@@ -146,7 +152,15 @@ function toSummary(
   };
 }
 
-export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallenge }) {
+export function FlashPopSurvivalGame({
+  challenge,
+  roomContext,
+  onComplete,
+}: {
+  challenge: SurvivalChallenge;
+  roomContext?: GameRoomContext;
+  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+}) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useSurvivalSession(scoredChallenge);
   const latestResult = session.results.at(-1);
@@ -155,6 +169,13 @@ export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallen
   const result = summary
     ? getFlashPopSurvivalResult(summary, { totalTimeLimit: totalTimeLimit(scoredChallenge) })
     : null;
+
+  useChallengeCompletionReporter(
+    session.phase === "results" && result
+      ? { challengeId: challenge.id, points: result.score, completed: true }
+      : null,
+    onComplete,
+  );
 
   return (
     <MotionConfig reducedMotion="user">
@@ -231,6 +252,8 @@ export function FlashPopSurvivalGame({ challenge }: { challenge: SurvivalChallen
                 eliminated={session.eliminated}
                 onReview={session.showReview}
                 onReplay={session.replay}
+                returnTo={roomContext?.returnTo ?? "/"}
+                roomContext={roomContext}
               />
             </motion.div>
           ) : null}

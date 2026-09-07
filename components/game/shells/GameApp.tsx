@@ -1,5 +1,12 @@
 import dynamic from "next/dynamic";
-import type { Challenge } from "@/types/game";
+import type { Challenge, GameRoomContext } from "@/types/game";
+import type { ChallengeCompletion } from "@/types/game";
+
+type GameAppProps = {
+  challenge: Challenge;
+  roomContext?: GameRoomContext;
+  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+};
 
 const FlashPopAlphabetGame = dynamic(() =>
   import("@/components/game/modes/flash-pop/FlashPopAlphabetGame.client").then(
@@ -30,21 +37,21 @@ const NarrativeGameApp = dynamic(() =>
   ),
 );
 
-export function GameApp({ challenge }: { challenge: Challenge }) {
+export function GameApp({ challenge, roomContext, onComplete }: GameAppProps) {
   if (challenge.mode === "alphabet") {
-    return <FlashPopAlphabetGame challenge={challenge} />;
+    return <FlashPopAlphabetGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
   }
   if (challenge.mode === "narrative") {
-    return <NarrativeGameApp challenge={challenge} />;
+    return <NarrativeGameApp challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
   }
   if (challenge.mode === "pyramid") {
-    return <FlashPopPyramidGame challenge={challenge} />;
+    return <FlashPopPyramidGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
   }
   if (challenge.mode === "survival") {
-    return <FlashPopSurvivalGame challenge={challenge} />;
+    return <FlashPopSurvivalGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
   }
   if (challenge.mode === "flash") {
-    return <FlashPopFlashGame challenge={challenge} />;
+    return <FlashPopFlashGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
   }
   return <FlashGameApp challenge={challenge} />;
 }

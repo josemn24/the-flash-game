@@ -9,6 +9,7 @@ export {
   FlashPopRoomDetail,
   FlashPopRoomHistory,
   FlashPopRoomRanking,
+  FlashPopRoomSettings,
   FlashPopLobby,
   FlashPopPyramidGame,
   FlashPopSurvivalGame,

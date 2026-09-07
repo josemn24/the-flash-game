@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
 import { getDailyChallenge } from "@/lib/dailyChallenge";
-import { buildRoomDetailModel, getRoomById } from "@/lib/roomDetail";
+import {
+  applyRoomChallengeResult,
+  buildRoomDetailModel,
+  getRoomById,
+} from "@/lib/roomDetail";
 
 const now = new Date("2026-09-06T12:00:00.000Z");
 
@@ -21,7 +25,9 @@ describe("room detail model", () => {
       dailyCompleted: false,
     });
     expect(model.dailyChallenge?.id).toBe(dailyChallenge?.id);
-    expect(model.dailyChallenge?.href).toBe("/desafios/tabarnia-challenge-05");
+    expect(model.dailyChallenge?.href).toBe(
+      "/desafios/tabarnia-challenge-05?roomId=tabarnia-room",
+    );
     expect(model.dailyChallenge?.endsAt).toBe("2026-09-06T22:00:00.000Z");
     expect(model.roomLeaderboard[0]).toMatchObject({ memberId: "ches", points: 184, rank: 1 });
     expect(model.dailyLeaderboard).toHaveLength(demoRoom.members.length);
@@ -42,5 +48,39 @@ describe("room detail model", () => {
 
   it("returns no room for an unknown id", () => {
     expect(getRoomById("unknown-room")).toBeUndefined();
+  });
+
+  it("replaces the current user's daily result and recalculates both rankings", () => {
+    const model = buildRoomDetailModel(demoRoom, now);
+    const updated = applyRoomChallengeResult(model, {
+      roomId: "tabarnia-room",
+      challengeId: "tabarnia-challenge-05",
+      points: 200,
+      completed: true,
+    });
+
+    expect(updated.currentUser).toMatchObject({
+      totalPoints: 336,
+      dailyPoints: 200,
+      dailyCompleted: true,
+      roomRank: 1,
+    });
+    expect(updated.roomLeaderboard[0]).toMatchObject({ memberId: "player", points: 336, rank: 1 });
+    expect(updated.dailyLeaderboard[0]).toMatchObject({
+      memberId: "player",
+      points: 200,
+      completed: true,
+      rank: 1,
+    });
+
+    const replayed = applyRoomChallengeResult(updated, {
+      roomId: "tabarnia-room",
+      challengeId: "tabarnia-challenge-05",
+      points: 50,
+      completed: true,
+    });
+
+    expect(replayed.currentUser.totalPoints).toBe(186);
+    expect(replayed.currentUser.dailyPoints).toBe(50);
   });
 });

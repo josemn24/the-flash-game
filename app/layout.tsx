@@ -1,5 +1,6 @@
 import { Fredoka, IBM_Plex_Mono, Manrope } from "next/font/google";
 import type { Metadata } from "next";
+import { RoomSessionProvider } from "@/features/rooms/RoomSessionProvider.client";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       lang="es"
       className={`${manrope.variable} ${fredoka.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <RoomSessionProvider>{children}</RoomSessionProvider>
+      </body>
     </html>
   );
 }

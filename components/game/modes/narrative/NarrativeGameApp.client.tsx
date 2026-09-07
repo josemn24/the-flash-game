@@ -26,10 +26,13 @@ import {
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
+import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import styles from "./NarrativeGame.module.css";
 import type {
   AnswerResult,
   AnswerValue,
+  ChallengeCompletion,
+  GameRoomContext,
   NarrativeChallenge,
   NarrativeScene,
   NarrativeTextBlock,
@@ -349,12 +352,16 @@ function NarrativeResult({
   score,
   onReview,
   onReplay,
+  returnTo,
+  roomContext,
 }: {
   challenge: NarrativeChallenge;
   results: AnswerResult[];
   score: number;
   onReview: () => void;
   onReplay: () => void;
+  returnTo: string;
+  roomContext?: GameRoomContext;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
   const partial = results.filter((result) => result.status === "partial").length;
@@ -385,8 +392,8 @@ function NarrativeResult({
             <MotionButton variant="secondary" onClick={onReplay} whileTap={{ scale: 0.985 }}>
               <RotateIcon className="h-5 w-5" /> Volver a jugar
             </MotionButton>
-            <Link className={styles.backLink} href="/">
-              Volver a desafíos
+            <Link className={styles.backLink} href={returnTo}>
+              {roomContext ? "Volver a Tabarnia" : "Volver a desafíos"}
             </Link>
           </div>
         </div>
@@ -455,8 +462,22 @@ function PolarBackground() {
   );
 }
 
-export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge }) {
+export function NarrativeGameApp({
+  challenge,
+  roomContext,
+  onComplete,
+}: {
+  challenge: NarrativeChallenge;
+  roomContext?: GameRoomContext;
+  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+}) {
   const session = useNarrativeSession(challenge);
+  useChallengeCompletionReporter(
+    session.phase === "results"
+      ? { challengeId: challenge.id, points: session.score, completed: true }
+      : null,
+    onComplete,
+  );
   const pageCount = 1 + challenge.beats.reduce((total, beat) => total + beat.steps.length, 0);
   const isBlackoutScene =
     session.phase === "scene" &&
@@ -558,6 +579,8 @@ export function NarrativeGameApp({ challenge }: { challenge: NarrativeChallenge 
                   score={session.score}
                   onReview={session.showReview}
                   onReplay={session.replay}
+                  returnTo={roomContext?.returnTo ?? "/"}
+                  roomContext={roomContext}
                 />
               )}
               {session.phase === "review" && (

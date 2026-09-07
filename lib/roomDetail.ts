@@ -7,10 +7,53 @@ import {
   getChallengeQuestionCount,
 } from "@/lib/roomCard";
 import { getDailyLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
-import type { Room, RoomDetailModel } from "@/types/game";
+import type { ChallengeCompletion, Room, RoomDetailModel } from "@/types/game";
 
 export function getRoomById(roomId: string) {
   return demoRooms.find((room) => room.id === roomId);
+}
+
+function sortLeaderboardEntries<T extends { memberId: string; points: number }>(entries: T[]) {
+  return [...entries]
+    .sort((left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId))
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
+export function applyRoomChallengeResult(
+  model: RoomDetailModel,
+  result: ChallengeCompletion,
+): RoomDetailModel {
+  if (result.roomId !== model.roomId || model.dailyChallenge?.id !== result.challengeId) {
+    return model;
+  }
+
+  const totalPoints = model.currentUser.totalPoints - model.currentUser.dailyPoints + result.points;
+  const roomLeaderboard = sortLeaderboardEntries(
+    model.roomLeaderboard.map((entry) =>
+      entry.memberId === model.currentUser.id ? { ...entry, points: totalPoints } : entry,
+    ),
+  );
+  const dailyLeaderboard = sortLeaderboardEntries(
+    model.dailyLeaderboard.map((entry) =>
+      entry.memberId === model.currentUser.id
+        ? { ...entry, points: result.points, completed: result.completed }
+        : entry,
+    ),
+  );
+  const roomEntry = roomLeaderboard.find((entry) => entry.memberId === model.currentUser.id);
+
+  return {
+    ...model,
+    currentUser: {
+      ...model.currentUser,
+      totalPoints,
+      roomRank: roomEntry?.rank ?? model.currentUser.roomRank,
+      dailyPoints: result.points,
+      dailyCompleted: result.completed,
+    },
+    roomLeaderboard,
+    dailyLeaderboard,
+  };
 }
 
 export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailModel {
@@ -39,7 +82,7 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       imageSrc: getChallengeImage(dailyChallenge.id),
       questionCount: getChallengeQuestionCount(definition),
       endsAt: getNextDailyBoundary(now).toISOString(),
-      href: `/desafios/${dailyChallenge.id}`,
+      href: `/desafios/${dailyChallenge.id}?roomId=${encodeURIComponent(room.id)}`,
     };
   }
 

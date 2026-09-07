@@ -7,13 +7,13 @@ describe("GameApp routing", () => {
   it("routes every survival challenge to the Flash Pop shell", () => {
     expect(source).toContain("FlashPopSurvivalGame.client");
     expect(source).toContain('if (challenge.mode === "survival")');
-    expect(source).toContain("return <FlashPopSurvivalGame challenge={challenge} />");
+    expect(source).toContain("FlashPopSurvivalGame challenge={challenge}");
     expect(source).not.toContain("SurvivalGameApp");
   });
 
   it("keeps Narrative on its dedicated Flash Pop-compatible app", () => {
     expect(source).toContain("NarrativeGameApp.client");
     expect(source).toContain('if (challenge.mode === "narrative")');
-    expect(source).toContain("return <NarrativeGameApp challenge={challenge} />");
+    expect(source).toContain("NarrativeGameApp challenge={challenge}");
   });
 });

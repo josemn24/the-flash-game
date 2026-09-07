@@ -7,6 +7,19 @@ export type RoomChallengeResult = {
   completed: boolean;
 };
 
+export type ChallengeCompletion = {
+  roomId: string;
+  challengeId: string;
+  points: number;
+  completed: boolean;
+};
+
+export type GameRoomContext = {
+  roomId: string;
+  roomTitle: string;
+  returnTo: string;
+};
+
 export type RoomMember = {
   id: string;
   name: string;
@@ -74,6 +87,20 @@ export type RoomDetailModel = {
   } | null;
   roomLeaderboard: RoomLeaderboardEntry[];
   dailyLeaderboard: RoomDailyLeaderboardEntry[];
+};
+
+export type RoomSettingsModel = {
+  roomId: string;
+  title: string;
+  currentUserId: string;
+  memberCount: number;
+  members: Array<{
+    id: string;
+    name: string;
+    initials: string;
+    totalPoints: number;
+    isCurrentUser: boolean;
+  }>;
 };
 
 export type RoomHistoryEntry = {

@@ -7,7 +7,7 @@ describe("GameApp Alphabet routing", () => {
   it("routes all Alphabet challenges to Flash Pop", () => {
     expect(source).toContain("FlashPopAlphabetGame.client");
     expect(source).toContain('if (challenge.mode === "alphabet")');
-    expect(source).toContain("return <FlashPopAlphabetGame challenge={challenge} />");
+    expect(source).toContain("FlashPopAlphabetGame challenge={challenge}");
     expect(source).not.toContain("AlphabetGameApp");
   });
 });

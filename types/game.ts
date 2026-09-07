@@ -140,6 +140,8 @@ export type {
   SurvivalChallengeDefinition,
 } from "@/types/challenge";
 export type {
+  ChallengeCompletion,
+  GameRoomContext,
   Room,
   RoomChallengeResult,
   RoomDailyLeaderboardEntry,
@@ -148,6 +150,7 @@ export type {
   RoomMember,
   RoomDetailModel,
   RoomHistoryEntry,
+  RoomSettingsModel,
   Season,
   SeasonStatus,
 } from "@/types/room";

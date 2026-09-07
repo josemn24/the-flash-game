@@ -10,7 +10,14 @@ import { withPyramidScoring } from "@/lib/challengeScoring";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
 import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/demoSocial";
-import type { AnswerValue, PyramidChallenge, PyramidLevel } from "@/types/game";
+import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import type {
+  AnswerValue,
+  ChallengeCompletion,
+  GameRoomContext,
+  PyramidChallenge,
+  PyramidLevel,
+} from "@/types/game";
 import styles from "./FlashPopPyramidGame.module.css";
 
 function formatTime(seconds: number) {
@@ -372,11 +379,15 @@ function Result({
   result,
   onReview,
   onReplay,
+  returnTo,
+  roomContext,
 }: {
   challenge: PyramidChallenge;
   result: FlashPopResult;
   onReview: () => void;
   onReplay: () => void;
+  returnTo: string;
+  roomContext?: GameRoomContext;
 }) {
   const summit = result.levelsCleared >= challenge.levels.length;
   return (
@@ -396,10 +407,12 @@ function Result({
             </strong>
             <span>niveles superados</span>
           </div>
-          <div className={styles.resultStat}>
-            <strong>{result.playerRank}.º</strong>
-            <span>posición · {result.totalPlayers}</span>
-          </div>
+          {!roomContext ? (
+            <div className={styles.resultStat}>
+              <strong>{result.playerRank}.º</strong>
+              <span>posición · {result.totalPlayers}</span>
+            </div>
+          ) : null}
           <div className={styles.resultStat}>
             <strong>+{result.seasonXpEarned} ⚡</strong>
             <span>XP de temporada</span>
@@ -409,41 +422,48 @@ function Result({
           {result.seasonXpCurrent} / {result.nextLevelAt} ⚡ · Sigue subiendo
         </p>
 
-        <div className={styles.ranking} aria-label="Clasificación demo">
-          <h2>
-            Tu grupo
-            <span className={styles.metaLabel}>
-              · {result.socialSource === "demo" ? "Demo" : "En directo"}
-            </span>
-          </h2>
-          {result.peers.map((row) => (
-            <div
-              className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
-              key={row.player.id}
-            >
-              <span className={styles.rankingPosition}>{row.rank}.</span>
-              <Avatar
-                name={row.player.displayName}
-                initials={row.player.initials}
-                tone={row.player.tone}
-                size="sm"
-              />
-              <span className={styles.rankingName}>
-                {row.player.id === "javi" ? "Tú" : row.player.displayName}
+        {roomContext ? (
+          <p className={styles.xpCallout}>
+            Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
+            volver.
+          </p>
+        ) : (
+          <div className={styles.ranking} aria-label="Clasificación demo">
+            <h2>
+              Tu grupo
+              <span className={styles.metaLabel}>
+                · {result.socialSource === "demo" ? "Demo" : "En directo"}
               </span>
-              <span className={styles.rankingScore}>{row.score} pts</span>
-            </div>
-          ))}
-        </div>
+            </h2>
+            {result.peers.map((row) => (
+              <div
+                className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
+                key={row.player.id}
+              >
+                <span className={styles.rankingPosition}>{row.rank}.</span>
+                <Avatar
+                  name={row.player.displayName}
+                  initials={row.player.initials}
+                  tone={row.player.tone}
+                  size="sm"
+                />
+                <span className={styles.rankingName}>
+                  {row.player.id === "javi" ? "Tú" : row.player.displayName}
+                </span>
+                <span className={styles.rankingScore}>{row.score} pts</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         <ButtonLink
-          href="/"
+          href={returnTo}
           size="hero"
           fullWidth
           trailingIcon={<ArrowIcon />}
           className={styles.action}
         >
-          Volver al lobby
+          {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
         </ButtonLink>
         <Button variant="secondary" fullWidth className={styles.action} onClick={onReview}>
           Revisar respuesta
@@ -456,7 +476,15 @@ function Result({
   );
 }
 
-export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge }) {
+export function FlashPopPyramidGame({
+  challenge,
+  roomContext,
+  onComplete,
+}: {
+  challenge: PyramidChallenge;
+  roomContext?: GameRoomContext;
+  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+}) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
   const session = usePyramidSession(scoredChallenge, {
     persistence: "memory",
@@ -465,13 +493,20 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
   const currentLevel = session.currentLevel ?? challenge.levels[0];
   const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 
+  useChallengeCompletionReporter(
+    session.phase === "results" && session.summary
+      ? { challengeId: challenge.id, points: session.summary.score, completed: true }
+      : null,
+    onComplete,
+  );
+
   if (challenge.mode !== "pyramid" || challenge.levels.length === 0 || !currentLevel) {
     return (
       <Canvas maxWidth="content">
         <Card>
           <h1>Reto no disponible</h1>
           <p>Este reto no tiene niveles configurados.</p>
-          <ButtonLink href="/" className={styles.action}>
+          <ButtonLink href={roomContext?.returnTo ?? "/"} className={styles.action}>
             Volver al lobby
           </ButtonLink>
         </Card>
@@ -589,6 +624,8 @@ export function FlashPopPyramidGame({ challenge }: { challenge: PyramidChallenge
                 result={result}
                 onReview={session.showReview}
                 onReplay={session.restart}
+                returnTo={roomContext?.returnTo ?? "/"}
+                roomContext={roomContext}
               />
             </motion.div>
           ) : null}

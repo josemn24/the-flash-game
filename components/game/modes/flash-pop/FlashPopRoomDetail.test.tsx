@@ -21,11 +21,17 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain("#3");
     expect(markup).toContain("La Pirámide: Cumbre lógica");
     expect(markup).toContain("Jugar");
-    expect(markup).toContain('href="/desafios/tabarnia-challenge-05"');
+    expect(markup).toContain(
+      'href="/desafios/tabarnia-challenge-05?roomId=tabarnia-room"',
+    );
     expect(markup).toContain("Ranking de hoy");
     expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
-    expect(markup).toContain("Configuración de sala, próximamente");
+    expect(markup).toContain('href="/salas/tabarnia-room/ajustes"');
+    expect(markup.match(/href="\/salas\/tabarnia-room\/ranking"/g)).toHaveLength(1);
+    expect(markup).toContain(
+      'aria-label="Abrir ajustes de Tabarnia"',
+    );
     expect(markup).toContain("Tú");
     expect(markup).toContain("Pendiente");
     expect(markup).toContain("--:--:--");

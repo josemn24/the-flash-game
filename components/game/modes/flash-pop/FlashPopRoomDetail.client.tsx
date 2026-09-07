@@ -12,13 +12,14 @@ import {
   Canvas,
   Card,
   Chip,
-  IconButton,
   RotateIcon,
   SettingsIcon,
   TrophyIcon,
 } from "@/components/ui";
 import { formatDailyCountdown, getDailyCountdownSeconds } from "@/lib/dailyCountdown";
+import { applyRoomChallengeResult } from "@/lib/roomDetail";
 import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import type { RoomDetailModel } from "@/types/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomDetail.module.css";
@@ -53,7 +54,7 @@ function DailyCountdown({ endsAt }: { endsAt: string }) {
   );
 }
 
-function StatPill({
+function StatItem({
   label,
   value,
   icon,
@@ -63,7 +64,7 @@ function StatPill({
   icon: ReactNode;
 }) {
   return (
-    <span className={styles.statPill} aria-label={`${label}: ${value}`}>
+    <span className={styles.statItem}>
       <span className={styles.statIcon} aria-hidden="true">
         {icon}
       </span>
@@ -135,8 +136,21 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 }
 
 export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
-  const rankingHref = `/salas/${model.roomId}/ranking`;
-  const historyHref = `/salas/${model.roomId}/historial`;
+  const { getCompletion } = useRoomSession();
+  const completion = model.dailyChallenge
+    ? getCompletion(model.roomId, model.dailyChallenge.id)
+    : undefined;
+  const visibleModel = completion
+    ? applyRoomChallengeResult(model, {
+        roomId: model.roomId,
+        challengeId: model.dailyChallenge?.id ?? "",
+        points: completion.points,
+        completed: completion.completed,
+      })
+    : model;
+
+  const rankingHref = `/salas/${visibleModel.roomId}/ranking`;
+  const historyHref = `/salas/${visibleModel.roomId}/historial`;
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -147,21 +161,18 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
 
         <div className={styles.toolbarCenter}>
           <Link
-            href={rankingHref}
-            className={styles.roomIdentity}
-            aria-label={`Ver ranking global de ${model.title}`}
+            href={`/salas/${visibleModel.roomId}/ajustes`}
+            className={styles.roomSettingsLink}
+            aria-label={`Abrir ajustes de ${visibleModel.title}`}
           >
             <Avatar
-              name={model.title}
-              initials={model.title.slice(0, 2).toUpperCase()}
+              name={visibleModel.title}
+              initials={visibleModel.title.slice(0, 2).toUpperCase()}
               tone="social"
               size="md"
             />
-            <span className={styles.roomName}>{model.title}</span>
-          </Link>
-          <IconButton label="Configuración de sala, próximamente" disabled>
             <SettingsIcon />
-          </IconButton>
+          </Link>
         </div>
 
         <Link
@@ -173,24 +184,28 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         </Link>
       </header>
 
-      <div className={styles.summary} aria-label="Resumen de la sala">
-        <StatPill label="Gemas" value={model.currentUser.totalPoints} icon={<BoltIcon />} />
-        <StatPill
+      <Link
+        href={rankingHref}
+        className={styles.statPill}
+        aria-label={`Ver ranking global: ${visibleModel.currentUser.totalPoints} gemas, posición ${visibleModel.currentUser.roomRank}`}
+      >
+        <StatItem label="Gemas" value={visibleModel.currentUser.totalPoints} icon={<BoltIcon />} />
+        <StatItem
           label="Ranking global"
-          value={`#${model.currentUser.roomRank}`}
+          value={`#${visibleModel.currentUser.roomRank}`}
           icon={<TrophyIcon />}
         />
-      </div>
+      </Link>
 
       <div className={styles.roomMain}>
         <p className={styles.todayLabel}>HOY</p>
-        <DailyChallengeCard model={model} />
+        <DailyChallengeCard model={visibleModel} />
 
-        {model.dailyChallenge && model.dailyLeaderboard.length > 0 ? (
+        {visibleModel.dailyChallenge && visibleModel.dailyLeaderboard.length > 0 ? (
           <RoomLeaderboard
             title="Ranking de hoy"
-            entries={model.dailyLeaderboard}
-            currentUserId={model.currentUser.id}
+            entries={visibleModel.dailyLeaderboard}
+            currentUserId={visibleModel.currentUser.id}
             daily
             compact
           />

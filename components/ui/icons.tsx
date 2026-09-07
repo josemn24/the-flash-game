@@ -12,10 +12,12 @@ import {
   Heart,
   Lock,
   Notebook,
+  Pencil,
   RotateCcw,
   Settings,
   TriangleAlert,
   Trophy,
+  UserRoundPlus,
   Undo2,
   X,
 } from "lucide-react";
@@ -177,6 +179,14 @@ export function EyeIcon(props: IconProps) {
 
 export function NotebookIcon(props: IconProps) {
   return <Notebook {...baseProps} {...props} />;
+}
+
+export function PencilIcon(props: IconProps) {
+  return <Pencil {...baseProps} {...props} />;
+}
+
+export function UserPlusIcon(props: IconProps) {
+  return <UserRoundPlus {...baseProps} {...props} />;
 }
 
 export function RotateIcon(props: IconProps) {

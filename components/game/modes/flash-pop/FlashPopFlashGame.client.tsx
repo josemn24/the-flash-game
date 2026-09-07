@@ -14,12 +14,15 @@ import { QuestionReviewContent } from "@/features/question-formats/QuestionRevie
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
+import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AnswerResult,
   AnswerStatus,
+  ChallengeCompletion,
   FlashChallenge,
+  GameRoomContext,
   Question,
   QuestionMedia as QuestionMediaType,
 } from "@/types/game";
@@ -345,19 +348,23 @@ function ReviewStage({
   results,
   onBack,
   onReplay,
+  returnTo,
+  roomContext,
 }: {
   challenge: FlashChallenge;
   results: AnswerResult[];
   onBack: () => void;
   onReplay: () => void;
+  returnTo: string;
+  roomContext?: GameRoomContext;
 }) {
   return (
     <div className={styles.stage}>
       <GameHeader
         title="Revisión"
         action={
-          <ButtonLink href="/flash-pop" variant="secondary">
-            Lobby
+          <ButtonLink href={returnTo} variant="secondary">
+            {roomContext ? "Tabarnia" : "Lobby"}
           </ButtonLink>
         }
       />
@@ -422,12 +429,27 @@ function ReviewStage({
   );
 }
 
-export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) {
+export function FlashPopFlashGame({
+  challenge,
+  roomContext,
+  onComplete,
+}: {
+  challenge: FlashChallenge;
+  roomContext?: GameRoomContext;
+  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+}) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useGameSession(scoredChallenge, {
     transitionDuration: FLASH_POP_FEEDBACK_DURATION,
   });
   const lastResult = session.results[session.results.length - 1];
+
+  useChallengeCompletionReporter(
+    session.phase === "results"
+      ? { challengeId: challenge.id, points: session.score, completed: true }
+      : null,
+    onComplete,
+  );
 
   if (challenge.id !== FLASH_POP_FLASH_PILOT_ID) {
     return (
@@ -436,7 +458,9 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
           <Card>
             <h1>Preview no disponible</h1>
             <p>Este piloto está limitado a tabarnia-flash-01.</p>
-            <ButtonLink href="/flash-pop">Volver al lobby</ButtonLink>
+            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>
+              {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+            </ButtonLink>
           </Card>
         </Canvas>
       </MotionConfig>
@@ -524,6 +548,8 @@ export function FlashPopFlashGame({ challenge }: { challenge: FlashChallenge }) 
                 results={session.results}
                 onBack={session.showResults}
                 onReplay={session.replay}
+                returnTo={roomContext?.returnTo ?? "/flash-pop"}
+                roomContext={roomContext}
               />
             </motion.div>
           ) : null}

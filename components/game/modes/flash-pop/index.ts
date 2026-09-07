@@ -5,6 +5,7 @@ export { FlashPopHome } from "./FlashPopHome.client";
 export { FlashPopRoomDetail } from "./FlashPopRoomDetail.client";
 export { FlashPopRoomHistory } from "./FlashPopRoomHistory";
 export { FlashPopRoomRanking } from "./FlashPopRoomRanking";
+export { FlashPopRoomSettings } from "./FlashPopRoomSettings";
 export { RoomLeaderboard } from "./RoomLeaderboard";
 export { FlashPopLobby } from "./FlashPopLobby.client";
 export { FlashPopPyramidGame } from "./FlashPopPyramidGame.client";

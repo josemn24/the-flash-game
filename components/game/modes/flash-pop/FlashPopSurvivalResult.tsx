@@ -3,7 +3,7 @@
 import { ArrowIcon, HeartIcon, RotateIcon } from "@/components/ui";
 import { Avatar, Button, ButtonLink, Card, Chip, GameHeader } from "@/components/ui";
 import type { FlashPopSurvivalResult } from "@/features/flash-pop/survivalSocial";
-import type { AnswerResult, SurvivalChallenge } from "@/types/game";
+import type { AnswerResult, GameRoomContext, SurvivalChallenge } from "@/types/game";
 import styles from "./FlashPopSurvivalResult.module.css";
 
 function formatTime(seconds: number) {
@@ -22,6 +22,8 @@ export function FlashPopSurvivalResult({
   eliminated,
   onReview,
   onReplay,
+  returnTo,
+  roomContext,
 }: {
   challenge: SurvivalChallenge;
   result: FlashPopSurvivalResult;
@@ -30,6 +32,8 @@ export function FlashPopSurvivalResult({
   eliminated: boolean;
   onReview: () => void;
   onReplay: () => void;
+  returnTo: string;
+  roomContext?: GameRoomContext;
 }) {
   const correct = results.filter((item) => item.status === "correct").length;
   const partial = results.filter((item) => item.status === "partial").length;
@@ -77,10 +81,12 @@ export function FlashPopSurvivalResult({
             <strong>{formatTime(totalTime)}</strong>
             <span>tiempo total</span>
           </div>
-          <div>
-            <strong>{result.playerRank}.º</strong>
-            <span>posición · {result.totalPlayers}</span>
-          </div>
+          {!roomContext ? (
+            <div>
+              <strong>{result.playerRank}.º</strong>
+              <span>posición · {result.totalPlayers}</span>
+            </div>
+          ) : null}
         </div>
 
         <p className={styles.breakdown}>
@@ -90,32 +96,39 @@ export function FlashPopSurvivalResult({
           +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
         </p>
 
-        <div className={styles.ranking} aria-label="Clasificación demo">
-          <h2>
-            Tu grupo <span>· Demo</span>
-          </h2>
-          {result.peers.map((row) => (
-            <div
-              className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
-              key={row.player.id}
-            >
-              <span className={styles.position}>{row.rank}.</span>
-              <Avatar
-                name={row.player.displayName}
-                initials={row.player.initials}
-                tone={row.player.tone}
-                size="sm"
-              />
-              <span className={styles.name}>
-                {row.player.id === "javi" ? "Tú" : row.player.displayName}
-              </span>
-              <span className={styles.rowScore}>{row.score} pts</span>
-            </div>
-          ))}
-        </div>
+        {roomContext ? (
+          <p className={styles.xpCallout}>
+            Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
+            volver.
+          </p>
+        ) : (
+          <div className={styles.ranking} aria-label="Clasificación demo">
+            <h2>
+              Tu grupo <span>· Demo</span>
+            </h2>
+            {result.peers.map((row) => (
+              <div
+                className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
+                key={row.player.id}
+              >
+                <span className={styles.position}>{row.rank}.</span>
+                <Avatar
+                  name={row.player.displayName}
+                  initials={row.player.initials}
+                  tone={row.player.tone}
+                  size="sm"
+                />
+                <span className={styles.name}>
+                  {row.player.id === "javi" ? "Tú" : row.player.displayName}
+                </span>
+                <span className={styles.rowScore}>{row.score} pts</span>
+              </div>
+            ))}
+          </div>
+        )}
 
-        <ButtonLink href="/" size="hero" fullWidth trailingIcon={<ArrowIcon />}>
-          Volver al lobby
+        <ButtonLink href={returnTo} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
+          {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
         </ButtonLink>
         <Button variant="secondary" fullWidth onClick={onReview}>
           Revisar respuestas
