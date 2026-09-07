@@ -1,0 +1,423 @@
+@layer app-formats {
+  .content {
+    width: min(100%, 1180px);
+  }
+
+  .pageHeader,
+  .roomIdentity,
+  .intro,
+  .summaryGrid,
+  .cardHeading,
+  .challengeTopline,
+  .challengeMeta,
+  .challengeFooter,
+  .leaderboardRow {
+    display: flex;
+    align-items: center;
+  }
+
+  .pageHeader {
+    min-height: 62px;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .backLink {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .backLink:hover {
+    color: var(--color-ink);
+  }
+
+  .backLink svg {
+    width: 18px;
+    transform: rotate(180deg);
+  }
+
+  .roomIdentity {
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .roomIdentity span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .roomIdentity small {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .roomIdentity strong {
+    font-family: var(--type-display);
+    font-size: 20px;
+    letter-spacing: -0.04em;
+  }
+
+  .intro {
+    justify-content: space-between;
+    gap: var(--space-8);
+    margin: var(--space-10) 0 var(--space-8);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .eyebrow svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .intro h1,
+  .challengeBody h2,
+  .cardHeading h2 {
+    margin: 0;
+    font-family: var(--type-display);
+    letter-spacing: -0.05em;
+  }
+
+  .intro h1 {
+    margin-top: var(--space-2);
+    font-size: clamp(42px, 6vw, 70px);
+    line-height: 0.92;
+  }
+
+  .introCopy,
+  .challengeCopy,
+  .emptyRanking {
+    color: var(--color-ink-muted);
+    line-height: 1.5;
+  }
+
+  .introCopy {
+    margin: var(--space-3) 0 0;
+    font-size: 14px;
+  }
+
+  .summaryGrid {
+    gap: var(--space-3);
+  }
+
+  .summaryCard {
+    min-width: 126px;
+    background: rgb(255 255 255 / 72%);
+  }
+
+  .summaryCard span,
+  .summaryCard strong {
+    display: block;
+  }
+
+  .summaryCard span {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .summaryCard strong {
+    margin-top: 4px;
+    font-family: var(--type-display);
+    font-size: 30px;
+    line-height: 1;
+  }
+
+  .detailGrid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .challengeCard {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+    min-height: 430px;
+    overflow: hidden;
+  }
+
+  .challengeArt {
+    position: relative;
+    min-height: 430px;
+    overflow: hidden;
+    background: var(--color-surface-soft);
+  }
+
+  .challengeArt::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(145deg, rgb(105 87 232 / 10%), rgb(23 23 32 / 42%));
+    content: "";
+  }
+
+  .challengeArt img {
+    object-fit: cover;
+  }
+
+  .artBadge {
+    position: absolute;
+    z-index: 1;
+    top: var(--space-4);
+    left: var(--space-4);
+  }
+
+  .challengeBody {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(var(--space-6), 4vw, var(--space-10));
+  }
+
+  .challengeTopline {
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .challengeBody h2 {
+    max-width: 420px;
+    margin-top: var(--space-3);
+    font-size: clamp(32px, 4vw, 54px);
+    line-height: 0.95;
+  }
+
+  .challengeCopy {
+    max-width: 420px;
+    margin: var(--space-3) 0 0;
+    font-size: 14px;
+  }
+
+  .challengeMeta {
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin-top: var(--space-6);
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+  }
+
+  .challengeMeta span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .challengeMeta strong {
+    color: var(--color-ink);
+    font-size: 20px;
+  }
+
+  .challengeFooter {
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: var(--space-6) 0 var(--space-5);
+  }
+
+  .expiresLabel {
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .countdown {
+    display: inline-flex;
+    min-width: 116px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 11px;
+    border: var(--border-flash);
+    border-radius: var(--radius-pill);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+    font-family: var(--type-mono);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  .countdownIcon {
+    font-size: 13px;
+  }
+
+  .rankingsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+
+  .leaderboardCard {
+    min-width: 0;
+  }
+
+  .cardHeading {
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .cardHeading h2 {
+    margin-top: 4px;
+    font-size: 28px;
+    line-height: 0.95;
+  }
+
+  .headingIcon {
+    width: 25px;
+    height: 25px;
+    color: var(--color-social);
+  }
+
+  .leaderboardList {
+    display: grid;
+    gap: 6px;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .leaderboardRow {
+    min-width: 0;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: var(--radius-control);
+  }
+
+  .currentRow {
+    background: var(--color-surface-soft);
+  }
+
+  .rankNumber {
+    width: 18px;
+    flex: 0 0 auto;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .playerName {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .playerName strong,
+  .playerName small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .playerName strong {
+    font-size: 13px;
+  }
+
+  .playerName small {
+    color: var(--color-ink-muted);
+    font-size: 10px;
+  }
+
+  .rowPoints {
+    flex: 0 0 auto;
+    font-family: var(--type-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .rowPoints small {
+    color: var(--color-ink-muted);
+    font-size: 9px;
+    font-weight: 600;
+  }
+
+  .emptyRanking {
+    margin: var(--space-6) 0 0;
+    font-size: 13px;
+  }
+
+  @media (max-width: 860px) {
+    .challengeCard {
+      grid-template-columns: 1fr;
+    }
+
+    .challengeArt {
+      min-height: 280px;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .pageHeader {
+      flex-wrap: wrap;
+    }
+
+    .roomIdentity {
+      order: -1;
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .intro {
+      align-items: flex-start;
+      flex-direction: column;
+      margin-top: var(--space-8);
+    }
+
+    .summaryGrid,
+    .rankingsGrid {
+      width: 100%;
+    }
+
+    .summaryCard {
+      flex: 1;
+    }
+
+    .rankingsGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .challengeBody {
+      padding: var(--space-6);
+    }
+  }
+
+  @media (max-width: 390px) {
+    .backLink span {
+      font-size: 12px;
+    }
+
+    .pageHeader > .chip {
+      margin-left: auto;
+    }
+
+    .challengeTopline {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+}

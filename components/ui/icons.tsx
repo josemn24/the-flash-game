@@ -230,6 +230,15 @@ export function BellIcon(props: IconProps) {
   );
 }
 
+export function SettingsIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="m19.4 15 .1.1a1.7 1.7 0 0 1-2.4 2.4L17 17.4a1.7 1.7 0 0 0-2.9 1.2V19a1.7 1.7 0 0 1-3.4 0v-.4a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 0 1-2.4-2.4l.1-.1A1.7 1.7 0 0 0 6.2 12H6a1.7 1.7 0 0 1 0-3.4h.4A1.7 1.7 0 0 0 7.6 5.7l-.1-.1a1.7 1.7 0 0 1 2.4-2.4l.1.1A1.7 1.7 0 0 0 12.9 2.2V2a1.7 1.7 0 0 1 3.4 0v.4a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 0 1 2.4 2.4l-.1.1A1.7 1.7 0 0 0 20.4 9h.4a1.7 1.7 0 0 1 0 3.4h-.4a1.7 1.7 0 0 0-1 2.6Z" />
+    </svg>
+  );
+}
+
 export function TrophyIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

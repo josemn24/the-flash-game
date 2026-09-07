@@ -139,4 +139,14 @@ export type {
   SurvivalChallenge,
   SurvivalChallengeDefinition,
 } from "@/types/challenge";
-export type { Room, Season, SeasonStatus } from "@/types/room";
+export type {
+  Room,
+  RoomChallengeResult,
+  RoomDailyLeaderboardEntry,
+  RoomLeaderboardEntry,
+  RoomCardModel,
+  RoomMember,
+  RoomDetailModel,
+  Season,
+  SeasonStatus,
+} from "@/types/room";

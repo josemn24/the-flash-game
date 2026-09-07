@@ -6,6 +6,7 @@ export {
   FlashPopFlashGame,
   FlashPopFeedback,
   FlashPopHome,
+  FlashPopRoomDetail,
   FlashPopLobby,
   FlashPopPyramidGame,
   FlashPopSurvivalGame,

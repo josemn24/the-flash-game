@@ -3,365 +3,330 @@
     width: min(100%, 1180px);
   }
 
-  .welcome,
-  .identity,
-  .cardMeta,
-  .stats,
-  .sectionHeading,
-  .challengeCard {
+  .homeHeader,
+  .brand,
+  .headerActions,
+  .roomTopline,
+  .roomStats {
     display: flex;
     align-items: center;
   }
 
-  .welcome {
+  .homeHeader {
+    min-height: 62px;
     justify-content: space-between;
-    gap: var(--space-8);
-    margin: var(--space-10) 0 var(--space-6);
+    gap: var(--space-5);
   }
 
-  .eyebrow,
-  .kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-2);
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .eyebrow svg,
-  .nextIcon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .welcome h1,
-  .heroBody h2,
-  .seasonCard h2,
-  .nextCard h2,
-  .sectionHeading h2,
-  .challengeCopy h3 {
-    margin: 0;
-    font-family: var(--type-display);
-    letter-spacing: -0.04em;
-  }
-
-  .welcome h1 {
-    max-width: 640px;
-    font-size: clamp(38px, 5vw, 68px);
-    line-height: 0.96;
-  }
-
-  .lead,
-  .heroBody > p,
-  .seasonCard p,
-  .nextCard p,
-  .challengeCopy p {
-    color: var(--color-ink-muted);
-    line-height: 1.55;
-  }
-
-  .lead {
-    max-width: 580px;
-    margin: var(--space-4) 0 0;
-    font-size: 16px;
-  }
-
-  .identity {
-    flex: 0 0 auto;
+  .brand {
     gap: 10px;
-    padding: 10px 14px 10px 10px;
-    border: var(--border-subtle);
-    border-radius: var(--radius-pill);
-    background: rgb(255 255 255 / 64%);
-  }
-
-  .identity span {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .identity strong {
-    font-size: 13px;
-  }
-  .identity small {
-    color: var(--color-ink-muted);
-    font-size: 11px;
-  }
-
-  .dashboard {
-    display: grid;
-    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
-    gap: var(--space-6);
-  }
-
-  .heroCard {
-    display: grid;
-    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
-    min-height: 390px;
-    overflow: hidden;
-  }
-
-  .heroArt {
-    position: relative;
-    min-height: 260px;
-    overflow: hidden;
-    background: var(--color-social);
-  }
-
-  .heroArt::after {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(145deg, rgb(105 87 232 / 12%), rgb(23 23 32 / 38%));
-    content: "";
-  }
-
-  .heroArt img {
-    object-fit: cover;
-  }
-
-  .heroStamp {
-    position: absolute;
-    right: var(--space-4);
-    bottom: var(--space-4);
-    z-index: 1;
-    color: var(--color-brand);
     font-family: var(--type-display);
-    font-size: 60px;
+    font-size: 22px;
     font-weight: 700;
-    line-height: 0.8;
+    letter-spacing: -0.035em;
   }
 
-  .heroBody {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(var(--space-6), 4vw, var(--space-10));
-  }
-
-  .cardMeta {
-    justify-content: space-between;
-    gap: var(--space-3);
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .heroBody h2 {
-    margin-top: var(--space-5);
-    font-size: clamp(32px, 4vw, 54px);
-    line-height: 0.95;
-  }
-
-  .heroBody > p {
-    margin: var(--space-3) 0 0;
-    font-size: 15px;
-  }
-
-  .stats {
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    margin: var(--space-6) 0;
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 11px;
-  }
-
-  .stats span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .stats strong {
-    color: var(--color-ink);
-    font-size: 18px;
-  }
-  .stats svg {
-    width: 15px;
-    height: 15px;
-    color: var(--color-social);
-  }
-
-  .sideColumn {
+  .brandMark {
     display: grid;
-    gap: var(--space-6);
-  }
-  .seasonCard,
-  .nextCard {
-    min-height: 0;
-  }
-  .seasonCard h2 {
-    margin-top: var(--space-5);
-    font-size: 30px;
-    line-height: 1;
-  }
-  .seasonCard p {
-    margin: var(--space-3) 0 var(--space-5);
-    font-size: 13px;
-  }
-  .progressTrack {
-    height: 12px;
-    overflow: hidden;
-    border-radius: var(--radius-pill);
-    background: rgb(23 23 32 / 11%);
-  }
-  .progressTrack span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--color-social);
-  }
-  .progressValue {
-    display: block;
-    margin-top: var(--space-3);
-    font-family: var(--type-mono);
-    font-size: 11px;
-  }
-
-  .nextCard {
-    display: flex;
-    gap: var(--space-4);
-    align-items: flex-start;
-  }
-  .nextIcon {
-    display: grid;
-    flex: 0 0 auto;
     width: 42px;
     height: 42px;
     place-items: center;
-    border-radius: 14px;
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
     background: var(--color-brand);
     box-shadow: var(--shadow-control);
   }
-  .nextCard h2 {
-    font-size: 22px;
-    line-height: 1.02;
-  }
-  .nextCard p {
-    margin: var(--space-2) 0 0;
-    font-size: 12px;
+
+  .brandMark svg {
+    width: 21px;
   }
 
-  .challengeSection {
-    margin-top: var(--space-12);
+  .brandName {
+    white-space: nowrap;
   }
-  .sectionHeading {
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
+
+  .headerActions {
+    gap: var(--space-2);
   }
-  .sectionHeading h2 {
-    font-size: 30px;
+
+  .profileButton {
+    padding: 0;
   }
-  .sectionHeading > span {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 11px;
+
+  .roomsSection {
+    margin-top: var(--space-8);
   }
-  .challengeGrid {
+
+  .roomsSection > h1 {
+    margin: 0 0 var(--space-5);
+    font-family: var(--type-display);
+    font-size: clamp(34px, 5vw, 54px);
+    font-weight: 700;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .roomGrid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-3);
+    gap: var(--space-6);
   }
-  .challengeCard {
-    gap: var(--space-3);
+
+  .roomLink {
+    display: block;
     min-width: 0;
+    color: inherit;
+    text-decoration: none;
   }
-  .challengeNumber {
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 18px;
-    font-weight: 700;
+
+  .roomLink:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 5px;
+    border-radius: var(--radius-hero);
   }
-  .challengeCopy {
-    min-width: 0;
-    flex: 1;
-  }
-  .challengeCopy .cardMeta {
-    justify-content: flex-start;
-    gap: var(--space-3);
-    font-size: 9px;
-  }
-  .challengeCopy h3 {
-    margin-top: 6px;
-    font-size: 20px;
-    line-height: 1;
-  }
-  .challengeCopy p {
+
+  .roomCard {
+    min-height: 0;
     overflow: hidden;
-    margin: 6px 0 0;
-    font-size: 12px;
+    transition:
+      transform var(--motion-press-out) var(--ease-out),
+      box-shadow var(--motion-press-out) var(--ease-out);
+  }
+
+  .roomLink:hover .roomCard {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hero);
+  }
+
+  .roomArt {
+    position: relative;
+    aspect-ratio: 1.72;
+    overflow: visible;
+    background: var(--color-social);
+  }
+
+  .roomArt::after {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(145deg, rgb(105 87 232 / 8%), rgb(23 23 32 / 30%));
+    content: "";
+    pointer-events: none;
+  }
+
+  .roomArt img {
+    object-fit: cover;
+  }
+
+  .artStatus {
+    position: absolute;
+    z-index: 2;
+    top: var(--space-4);
+    left: var(--space-4);
+  }
+
+  .memberStack {
+    position: absolute;
+    z-index: 3;
+    bottom: -16px;
+    left: var(--space-5);
+  }
+
+  .memberStack > span:last-child {
+    display: none;
+  }
+
+  .roomBody {
+    padding: var(--space-6) var(--space-6) var(--space-5);
+  }
+
+  .roomTopline {
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .roomTitles {
+    min-width: 0;
+  }
+
+  .roomTitles h2,
+  .roomTitles p {
+    margin: 0;
+  }
+
+  .roomTitles h2 {
+    font-family: var(--type-display);
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .roomTitles p {
+    overflow: hidden;
+    margin-top: 7px;
+    color: var(--color-ink-muted);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .challengeCard a {
+
+  .roomArrow {
+    display: grid;
+    width: 48px;
+    height: 48px;
     flex: 0 0 auto;
-    width: 46px;
-    min-height: 46px;
-    padding: 0;
+    place-items: center;
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+    transition: transform var(--motion-press-out) var(--ease-out);
   }
-  .challengeCard a svg {
-    width: 17px;
+
+  .roomLink:hover .roomArrow {
+    transform: translateX(2px);
   }
-  .locked {
-    color: var(--color-ink-faint);
+
+  .roomArrow svg {
+    width: 19px;
+  }
+
+  .roomStats {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+
+  .statBadge {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: var(--color-text-on-social);
     font-family: var(--type-mono);
-    font-size: 22px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  .statBadge:first-child svg {
+    color: var(--color-brand);
+  }
+
+  .statBadge:last-child svg {
+    color: var(--color-reward);
+  }
+
+  .statBadge svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .emptyState {
+    display: grid;
+    max-width: 620px;
+    gap: var(--space-3);
+    justify-items: start;
+  }
+
+  .emptyState > svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-social);
+  }
+
+  .emptyState h2,
+  .emptyState p {
+    margin: 0;
+  }
+
+  .emptyState h2 {
+    font-family: var(--type-display);
+    font-size: 30px;
+    letter-spacing: -0.04em;
+  }
+
+  .emptyState p {
+    color: var(--color-ink-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (max-width: 900px) {
-    .dashboard {
+    .roomGrid {
       grid-template-columns: 1fr;
-    }
-    .sideColumn {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  @media (max-width: 760px) {
-    .welcome {
-      align-items: flex-start;
-      flex-direction: column;
-      margin-top: var(--space-8);
+  @media (max-width: 640px) {
+    .homeHeader {
+      min-height: 54px;
     }
-    .identity {
-      margin-top: -4px;
+
+    .brand {
+      font-size: 20px;
     }
-    .heroCard {
-      grid-template-columns: 1fr;
+
+    .brandMark {
+      width: 40px;
+      height: 40px;
     }
-    .heroArt {
-      min-height: 190px;
+
+    .roomsSection {
+      margin-top: var(--space-6);
     }
-    .heroBody {
-      padding: var(--space-6);
+
+    .roomsSection > h1 {
+      margin-bottom: var(--space-4);
+      font-size: 38px;
     }
-    .sideColumn,
-    .challengeGrid {
-      grid-template-columns: 1fr;
+
+    .roomArt {
+      aspect-ratio: 1.55;
     }
-    .challengeSection {
-      margin-top: var(--space-10);
+
+    .roomBody {
+      padding: var(--space-5);
+    }
+
+    .memberStack {
+      left: var(--space-4);
     }
   }
 
   @media (max-width: 374px) {
-    .welcome h1 {
-      font-size: 36px;
+    .brandName {
+      font-size: 18px;
     }
-    .heroBody h2 {
-      font-size: 34px;
+
+    .roomTitles h2 {
+      font-size: 30px;
     }
-    .heroBody {
-      padding: var(--space-5);
+
+    .roomTitles p {
+      font-size: 13px;
+    }
+
+    .roomArrow {
+      width: 44px;
+      height: 44px;
     }
   }
 }

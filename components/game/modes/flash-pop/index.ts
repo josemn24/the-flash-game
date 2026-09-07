@@ -2,6 +2,7 @@ export { FlashPopFeedback } from "./FlashPopFeedback";
 export { FlashPopAlphabetGame } from "./FlashPopAlphabetGame.client";
 export { FlashPopFlashGame } from "./FlashPopFlashGame.client";
 export { FlashPopHome } from "./FlashPopHome.client";
+export { FlashPopRoomDetail } from "./FlashPopRoomDetail.client";
 export { FlashPopLobby } from "./FlashPopLobby.client";
 export { FlashPopPyramidGame } from "./FlashPopPyramidGame.client";
 export { FlashPopSurvivalGame } from "./FlashPopSurvivalGame.client";

@@ -1,223 +1,136 @@
 import Image from "next/image";
-import { ArrowIcon, BoltIcon, ClockIcon } from "@/components/ui";
-import { Avatar, ButtonLink, Card, Canvas, Chip, GameHeader } from "@/components/ui";
-import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
-import type { ChallengeSummary, SeasonStatus } from "@/types/game";
+import Link from "next/link";
+import {
+  ArrowIcon,
+  Avatar,
+  AvatarStack,
+  BoltIcon,
+  Card,
+  Canvas,
+  Chip,
+  IconButton,
+  SettingsIcon,
+  TrophyIcon,
+} from "@/components/ui";
+import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import type { RoomCardModel } from "@/types/game";
 import styles from "./FlashPopHome.module.css";
 
 type FlashPopHomeProps = {
-  roomTitle: string;
-  seasonTitle: string;
-  seasonStatus: SeasonStatus;
-  challenges: ChallengeSummary[];
+  rooms: RoomCardModel[];
 };
 
-function statusLabel(challenge: ChallengeSummary) {
-  if (challenge.implementationStatus === "prototype") return "Piloto Pop";
-  if (challenge.availabilityStatus === "available") return "Disponible";
-  if (challenge.availabilityStatus === "locked") return "Próximamente";
-  return "Cerrado";
-}
-
-function actionLabel(challenge: ChallengeSummary) {
-  if (challenge.id === FLASH_POP_FLASH_PILOT_ID) return "Jugar ahora";
-  if (challenge.playable) return "Jugar reto";
-  if (challenge.openable) return "Ver preview";
-  return "No disponible";
-}
-
-function dateLabel(value: string) {
-  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(
-    new Date(value),
-  );
-}
-
-function challengeHref(challenge: ChallengeSummary) {
-  return challenge.id === FLASH_POP_FLASH_PILOT_ID
-    ? "/desafios/tabarnia-flash-01"
-    : `/desafios/${challenge.id}`;
-}
-
-export function FlashPopHome({
-  roomTitle,
-  seasonTitle,
-  seasonStatus,
-  challenges,
-}: FlashPopHomeProps) {
-  const primaryChallenge =
-    challenges.find((challenge) => challenge.id === FLASH_POP_FLASH_PILOT_ID) ??
-    challenges.find((challenge) => challenge.playable || challenge.openable) ??
-    challenges[0];
-  const accessibleChallenges = challenges.filter(
-    (challenge) => challenge.playable || challenge.openable,
-  );
-  const progressPercent = challenges.length
-    ? Math.round((accessibleChallenges.length / challenges.length) * 100)
-    : 0;
-
-  if (!primaryChallenge) return null;
-
+export function FlashPopHome({ rooms }: FlashPopHomeProps) {
   return (
     <Canvas contentClassName={styles.content}>
-      <GameHeader
-        title={roomTitle}
-        action={
-          <Chip tone={seasonStatus === "active" ? "success" : "neutral"}>
-            {seasonStatus === "active" ? "En directo" : "Temporada cerrada"}
-          </Chip>
-        }
-      />
-
-      <section className={styles.welcome} aria-labelledby="flash-pop-home-title">
-        <div>
-          <p className={styles.eyebrow}>
-            <BoltIcon /> Sala de juego
-          </p>
-          <h1 id="flash-pop-home-title">Elige tu próximo reto.</h1>
-          <p className={styles.lead}>
-            Preguntas rápidas, feedback instantáneo y una temporada para jugar a tu ritmo.
-          </p>
-        </div>
-        <div className={styles.identity} aria-label="Jugador actual">
-          <Avatar name="Jugador" initials="TÚ" tone="social" size="md" />
-          <span>
-            <strong>Tu sala</strong>
-            <small>{seasonTitle}</small>
+      <header className={styles.homeHeader}>
+        <div className={styles.brand} aria-label="Flash Pop">
+          <span className={styles.brandMark}>
+            <BoltIcon />
           </span>
+          <span className={styles.brandName}>Flash Pop</span>
         </div>
-      </section>
 
-      <div className={styles.dashboard}>
-        <Card
-          as="section"
-          elevation="hero"
-          className={styles.heroCard}
-          aria-labelledby="primary-challenge-title"
-        >
-          <div className={styles.heroArt}>
-            <Image
-              src="/flash-pop/concepts/pyramid-soft-diorama.webp"
-              alt="Ilustración abstracta del reto Flash Pop"
-              fill
-              priority
-              sizes="(max-width: 760px) 100vw, 52vw"
-            />
-            <span className={styles.heroStamp}>01</span>
-          </div>
-          <div className={styles.heroBody}>
-            <div className={styles.cardMeta}>
-              <Chip tone="social">Reto principal</Chip>
-              <span>{statusLabel(primaryChallenge)}</span>
-            </div>
-            <h2 id="primary-challenge-title">{primaryChallenge.title}</h2>
-            <p>{primaryChallenge.subtitle}</p>
-            <div className={styles.stats} aria-label="Datos del reto">
-              <span>
-                <strong>{primaryChallenge.questionCount}</strong> preguntas
-              </span>
-              <span>
-                <ClockIcon /> {dateLabel(primaryChallenge.availableUntil)}
-              </span>
-            </div>
-            <ButtonLink
-              href={challengeHref(primaryChallenge)}
-              size="hero"
-              fullWidth
-              trailingIcon={<ArrowIcon />}
-            >
-              {actionLabel(primaryChallenge)}
-            </ButtonLink>
-          </div>
-        </Card>
+        <nav className={styles.headerActions} aria-label="Acciones de cuenta">
+          <IconButton label="Perfil" className={styles.profileButton}>
+            <Avatar name="Jugador" initials="TÚ" tone="social" size="sm" />
+          </IconButton>
+          <IconButton label="Configuración">
+            <SettingsIcon />
+          </IconButton>
+        </nav>
+      </header>
 
-        <aside className={styles.sideColumn} aria-label="Estado de la temporada">
-          <Card
-            as="section"
-            surface="soft"
-            className={styles.seasonCard}
-            aria-labelledby="season-progress-title"
-          >
-            <div className={styles.cardMeta}>
-              <Chip variant="data">Temporada</Chip>
-              <span>{accessibleChallenges.length} accesibles</span>
-            </div>
-            <h2 id="season-progress-title">{seasonTitle}</h2>
-            <p>Tu progreso de acceso a los retos de esta sala.</p>
-            <div
-              className={styles.progressTrack}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={progressPercent}
-              aria-label="Progreso de acceso a retos"
-            >
-              <span style={{ width: `${progressPercent}%` }} />
-            </div>
-            <strong className={styles.progressValue}>
-              {accessibleChallenges.length}/{challenges.length} retos accesibles
-            </strong>
+      <section className={styles.roomsSection} aria-labelledby="rooms-title">
+        <h1 id="rooms-title">Mis salas</h1>
+
+        {rooms.length > 0 ? (
+          <div className={styles.roomGrid}>
+            {rooms.map((room, index) => {
+              const challenge = room.dailyChallenge;
+              const imageSrc = challenge?.imageSrc ?? ROOM_ART_FALLBACK;
+              const imageAlt = challenge
+                ? `Ilustración del desafío ${challenge.title}`
+                : `Ilustración de la sala ${room.title}`;
+              const isClosed = room.seasonStatus !== "active";
+
+              return (
+                <Link
+                  href={room.href}
+                  key={room.roomId}
+                  className={styles.roomLink}
+                  aria-label={
+                    challenge
+                      ? `Abrir sala ${room.title}. ${challenge.title}`
+                      : `Abrir sala ${room.title}. Sin reto hoy`
+                  }
+                >
+                  <Card as="article" elevation="hero" padding="none" className={styles.roomCard}>
+                    <div className={styles.roomArt}>
+                      <Image
+                        src={imageSrc}
+                        alt={imageAlt}
+                        fill
+                        priority={index === 0}
+                        sizes="(max-width: 760px) 100vw, 50vw"
+                      />
+                      {isClosed || !challenge ? (
+                        <Chip
+                          variant="data"
+                          tone={isClosed ? "neutral" : "danger"}
+                          className={styles.artStatus}
+                        >
+                          {isClosed ? "Cerrada" : "Sin reto hoy"}
+                        </Chip>
+                      ) : null}
+                      <AvatarStack
+                        items={room.memberPreviews}
+                        maxVisible={4}
+                        size="sm"
+                        label={`${room.memberCount} jugadores`}
+                        className={styles.memberStack}
+                      />
+                    </div>
+
+                    <div className={styles.roomBody}>
+                      <div className={styles.roomTopline}>
+                        <div className={styles.roomTitles}>
+                          <h2>{room.title}</h2>
+                          <p>{challenge?.title ?? "Sin reto hoy"}</p>
+                        </div>
+                        <span className={styles.roomArrow} aria-hidden="true">
+                          <ArrowIcon />
+                        </span>
+                      </div>
+
+                      <div
+                        className={styles.roomStats}
+                        aria-label={`Estadísticas de ${room.title}`}
+                      >
+                        <span className={styles.statBadge}>
+                          <BoltIcon aria-hidden="true" />
+                          <strong>{room.currentUser.totalPoints}</strong>
+                          <span className={styles.visuallyHidden}> gemas</span>
+                        </span>
+                        <span className={styles.statBadge}>
+                          <TrophyIcon aria-hidden="true" />
+                          <strong>#{room.currentUser.roomRank}</strong>
+                          <span className={styles.visuallyHidden}> ranking</span>
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <Card as="section" surface="soft" className={styles.emptyState}>
+            <BoltIcon />
+            <h2>No tienes salas.</h2>
+            <p>Cuando te unas a una sala, aparecerá aquí.</p>
           </Card>
-
-          <Card as="section" className={styles.nextCard} aria-labelledby="next-challenge-title">
-            <div className={styles.nextIcon}>
-              <BoltIcon />
-            </div>
-            <div>
-              <span className={styles.kicker}>Siguiente movimiento</span>
-              <h2 id="next-challenge-title">16 preguntas. Una sola carrera.</h2>
-              <p>Responde antes de que se agote el tiempo.</p>
-            </div>
-          </Card>
-        </aside>
-      </div>
-
-      <section className={styles.challengeSection} aria-labelledby="all-challenges-title">
-        <div className={styles.sectionHeading}>
-          <div>
-            <span className={styles.kicker}>Calendario</span>
-            <h2 id="all-challenges-title">Retos de la sala</h2>
-          </div>
-          <span>{challenges.length} en temporada</span>
-        </div>
-        <div className={styles.challengeGrid}>
-          {challenges.map((challenge) => {
-            const canOpen = challenge.playable || challenge.openable;
-            return (
-              <Card
-                as="article"
-                key={challenge.id}
-                padding="compact"
-                className={styles.challengeCard}
-              >
-                <div className={styles.challengeNumber}>
-                  {String(challenge.number).padStart(2, "0")}
-                </div>
-                <div className={styles.challengeCopy}>
-                  <div className={styles.cardMeta}>
-                    <span>{statusLabel(challenge)}</span>
-                    <span>{dateLabel(challenge.availableFrom)}</span>
-                  </div>
-                  <h3>{challenge.title}</h3>
-                  <p>
-                    {challenge.questionCount ? `${challenge.questionCount} preguntas · ` : ""}
-                    {challenge.subtitle}
-                  </p>
-                </div>
-                {canOpen ? (
-                  <ButtonLink
-                    href={challengeHref(challenge)}
-                    variant="secondary"
-                    aria-label={`${actionLabel(challenge)}: ${challenge.title}`}
-                  >
-                    <ArrowIcon />
-                  </ButtonLink>
-                ) : (
-                  <span className={styles.locked}>—</span>
-                )}
-              </Card>
-            );
-          })}
-        </div>
+        )}
       </section>
     </Canvas>
   );
