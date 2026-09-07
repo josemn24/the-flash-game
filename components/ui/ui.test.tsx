@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { BellIcon, BoltIcon } from "@/components/ui";
+import { BellIcon, BoltIcon, CheckIcon, QueensCrownIcon } from "@/components/ui";
 import {
   AvatarStack,
   Button,
@@ -13,6 +13,18 @@ import {
 } from ".";
 
 describe("canonical UI primitives", () => {
+  it("keeps shared icons consistent and customizable", () => {
+    const icon = renderToStaticMarkup(<CheckIcon className="h-4 w-4" />);
+    const customIcon = renderToStaticMarkup(<QueensCrownIcon className="h-8 w-8" />);
+
+    expect(icon).toContain("<svg");
+    expect(icon).toContain('aria-hidden="true"');
+    expect(icon).toContain("h-4 w-4");
+    expect(icon).toContain('stroke-width="2"');
+    expect(customIcon).toContain("<svg");
+    expect(customIcon).toContain('class="h-8 w-8"');
+  });
+
   it("renders loading buttons as disabled and busy", () => {
     const markup = renderToStaticMarkup(<Button loading>Guardando</Button>);
 

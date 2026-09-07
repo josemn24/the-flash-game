@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ArrowIcon, BellIcon, BoltIcon } from "@/components/ui";
 import styles from "./FlashPopConcepts.module.css";
 
 export type LobbyConceptProps = {
@@ -11,44 +12,6 @@ export type LobbyConceptProps = {
   artAlt: string;
   fontClassName?: string;
 };
-
-function BoltIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M13.2 2 4.8 13h6.1L9.8 22l8.9-12h-6.3L13.2 2Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 8h18c0-1-3-1-3-8ZM10 20h4"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="m9 5 7 7-7 7"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.5"
-      />
-    </svg>
-  );
-}
 
 export function LobbyConcept({
   id,
