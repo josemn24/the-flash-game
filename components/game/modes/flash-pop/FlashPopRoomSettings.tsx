@@ -104,7 +104,7 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
                 />
                 <span className={styles.memberName}>
                   <strong>{member.isCurrentUser ? "Tú" : member.name}</strong>
-                  <small>{member.totalPoints} gemas</small>
+                  <small>{member.totalPoints} Flash Points</small>
                 </span>
               </li>
             ))}

@@ -1,4 +1,7 @@
-import { Avatar, Card, TrophyIcon } from "@/components/ui";
+"use client";
+
+import { useState } from "react";
+import { Avatar, BoltIcon, Card, ChevronIcon, TrophyIcon } from "@/components/ui";
 import type { RoomDailyLeaderboardEntry, RoomLeaderboardEntry } from "@/types/game";
 import styles from "./RoomLeaderboard.module.css";
 
@@ -9,6 +12,10 @@ export type RoomLeaderboardProps = {
   currentUserId: string;
   daily?: boolean;
   compact?: boolean;
+  bare?: boolean;
+  headingLevel?: "h1" | "h2";
+  variant?: "rows" | "cards";
+  onEntrySelect?: (entry: RoomLeaderboardEntry | RoomDailyLeaderboardEntry) => void;
 };
 
 export function RoomLeaderboard({
@@ -18,17 +25,21 @@ export function RoomLeaderboard({
   currentUserId,
   daily = false,
   compact = false,
+  bare = false,
+  headingLevel = "h2",
+  variant = "rows",
+  onEntrySelect,
 }: RoomLeaderboardProps) {
-  return (
-    <Card
-      as="section"
-      className={`${styles.card} ${compact ? styles.compact : ""}`}
-      aria-labelledby={`${daily ? "daily" : "room"}-leaderboard-title`}
-    >
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const isCards = variant === "cards";
+  const titleId = `${daily ? "daily" : "room"}-leaderboard-title`;
+  const Heading = headingLevel;
+  const content = (
+    <>
       <div className={styles.heading}>
         <div>
           {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-          <h2 id={`${daily ? "daily" : "room"}-leaderboard-title`}>{title}</h2>
+          <Heading id={titleId}>{title}</Heading>
         </div>
         <TrophyIcon className={styles.headingIcon} />
       </div>
@@ -40,33 +51,95 @@ export function RoomLeaderboard({
             const isCurrentUser = entry.memberId === currentUserId;
 
             return (
-              <li
-                className={`${styles.row} ${isCurrentUser ? styles.current : ""}`}
-                key={entry.memberId}
-              >
-                <span className={styles.rank}>{entry.rank}</span>
-                <Avatar
-                  name={entry.name}
-                  initials={entry.initials}
-                  tone={isCurrentUser ? "social" : "blue"}
-                  size="sm"
-                />
-                <span className={styles.name}>
-                  <strong>{isCurrentUser ? "Tú" : entry.name}</strong>
-                  {daily ? (
-                    <small>{dailyEntry?.completed ? "Completado" : "Pendiente"}</small>
-                  ) : null}
-                </span>
-                <span className={styles.points}>
-                  {entry.points} <small>gemas</small>
-                </span>
-              </li>
+              variant === "cards" ? (
+                <li className={styles.cardItem} key={entry.memberId}>
+                  <button
+                    type="button"
+                    className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
+                    aria-label={`Ver detalle de ${isCurrentUser ? "Tú" : entry.name}, ${entry.points} Flash Points`}
+                    aria-pressed={selectedMemberId === entry.memberId}
+                    data-rank={entry.rank}
+                    onClick={() => {
+                      const isSelected = selectedMemberId === entry.memberId;
+                      setSelectedMemberId(isSelected ? null : entry.memberId);
+                      if (!isSelected) onEntrySelect?.(entry);
+                    }}
+                  >
+                    <span className={styles.cardRank}>#{entry.rank}</span>
+                    <Avatar
+                      name={entry.name}
+                      initials={entry.initials}
+                      tone={isCurrentUser ? "social" : "blue"}
+                      size="md"
+                    />
+                    <span className={styles.cardName}>
+                      <strong>{isCurrentUser ? "Tú" : entry.name}</strong>
+                      {daily ? (
+                        <small>{dailyEntry?.completed ? "Completado" : "Pendiente"}</small>
+                      ) : null}
+                    </span>
+                    <span className={styles.cardPoints}>
+                      <BoltIcon aria-hidden="true" />
+                      <strong>{entry.points}</strong>
+                    </span>
+                    <ChevronIcon className={styles.cardArrow} aria-hidden="true" />
+                  </button>
+                </li>
+              ) : (
+                <li
+                  className={`${styles.row} ${isCurrentUser ? styles.current : ""}`}
+                  key={entry.memberId}
+                >
+                  <span className={styles.rank}>{entry.rank}</span>
+                  <Avatar
+                    name={entry.name}
+                    initials={entry.initials}
+                    tone={isCurrentUser ? "social" : "blue"}
+                    size="sm"
+                  />
+                  <span className={styles.name}>
+                    <strong>{isCurrentUser ? "Tú" : entry.name}</strong>
+                    {daily ? (
+                      <small>{dailyEntry?.completed ? "Completado" : "Pendiente"}</small>
+                    ) : null}
+                  </span>
+                  <span
+                    className={styles.points}
+                    role="img"
+                    aria-label={`${entry.points} Flash Points`}
+                  >
+                    <BoltIcon aria-hidden="true" />
+                    <strong>{entry.points}</strong>
+                  </span>
+                </li>
+              )
             );
           })}
         </ol>
       ) : (
         <p className={styles.empty}>Sin reto disponible hoy.</p>
       )}
+    </>
+  );
+
+  if (bare || isCards) {
+    return (
+      <section
+        className={`${styles.bare} ${isCards ? styles.cardsSection : ""}`}
+        aria-labelledby={titleId}
+      >
+        {content}
+      </section>
+    );
+  }
+
+  return (
+    <Card
+      as="section"
+      className={`${styles.card} ${compact ? styles.compact : ""}`}
+      aria-labelledby={titleId}
+    >
+      {content}
     </Card>
   );
 }

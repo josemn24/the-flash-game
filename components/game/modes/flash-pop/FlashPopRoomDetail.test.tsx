@@ -16,7 +16,7 @@ describe("FlashPopRoomDetail", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomDetail model={model} />);
 
     expect(markup).toContain("Tabarnia");
-    expect(markup).toContain("Gemas");
+    expect(markup).toContain("Flash Points");
     expect(markup).toContain("136");
     expect(markup).toContain("#3");
     expect(markup).toContain("La Pirámide: Cumbre lógica");
@@ -25,6 +25,8 @@ describe("FlashPopRoomDetail", () => {
       'href="/desafios/tabarnia-challenge-05?roomId=tabarnia-room"',
     );
     expect(markup).toContain("Ranking de hoy");
+    expect(markup).not.toContain(">Flash points<");
+    expect(markup).toContain('aria-label="Ver detalle de Tú, 0 Flash Points"');
     expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
     expect(markup).toContain('href="/salas/tabarnia-room/ajustes"');

@@ -14,7 +14,7 @@ describe("FlashPopRoomSettings", () => {
     expect(markup).toContain("5 miembros");
     expect(markup).toContain("Miembros");
     expect(markup).toContain("CHES");
-    expect(markup).toContain("136 gemas");
+    expect(markup).toContain("136 Flash Points");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).toContain('aria-label="Invitar a la sala, próximamente"');
     expect(markup).toContain('aria-label="Editar perfil, próximamente"');

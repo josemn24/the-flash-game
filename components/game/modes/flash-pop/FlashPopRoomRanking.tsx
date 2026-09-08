@@ -23,19 +23,16 @@ export function FlashPopRoomRanking({
         </Link>
         <div className={styles.roomIdentity}>
           <Avatar name={roomTitle} initials={roomTitle.slice(0, 2).toUpperCase()} tone="social" size="md" />
-          <span>{roomTitle}</span>
+          <span className={styles.roomName}>{roomTitle}</span>
         </div>
       </header>
 
-      <div className={styles.pageIntro}>
-        <p className={styles.eyebrow}>TABARNIA</p>
-        <h1>Ranking global</h1>
-      </div>
-
       <RoomLeaderboard
-        title="Clasificación de la sala"
+        title={`Ranking de ${roomTitle}`}
         entries={entries}
         currentUserId={currentUserId}
+        bare
+        headingLevel="h1"
       />
     </Canvas>
   );

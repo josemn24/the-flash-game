@@ -187,11 +187,11 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       <Link
         href={rankingHref}
         className={styles.statPill}
-        aria-label={`Ver ranking global: ${visibleModel.currentUser.totalPoints} gemas, posición ${visibleModel.currentUser.roomRank}`}
+        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalPoints} Flash Points, posición ${visibleModel.currentUser.roomRank}`}
       >
-        <StatItem label="Gemas" value={visibleModel.currentUser.totalPoints} icon={<BoltIcon />} />
+        <StatItem label="Flash Points" value={visibleModel.currentUser.totalPoints} icon={<BoltIcon />} />
         <StatItem
-          label="Ranking global"
+          label="Posición"
           value={`#${visibleModel.currentUser.roomRank}`}
           icon={<TrophyIcon />}
         />
@@ -208,6 +208,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
             currentUserId={visibleModel.currentUser.id}
             daily
             compact
+            variant="cards"
           />
         ) : null}
       </div>

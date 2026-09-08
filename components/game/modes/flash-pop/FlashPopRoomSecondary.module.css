@@ -145,7 +145,7 @@
       padding: 3px;
     }
 
-    .roomIdentity > span {
+    .roomName {
       display: none;
     }
 

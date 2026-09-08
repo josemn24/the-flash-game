@@ -110,7 +110,7 @@ export function FlashPopHome({ rooms }: FlashPopHomeProps) {
                         <span className={styles.statBadge}>
                           <BoltIcon aria-hidden="true" />
                           <strong>{room.currentUser.totalPoints}</strong>
-                          <span className={styles.visuallyHidden}> gemas</span>
+                          <span className={styles.visuallyHidden}> Flash Points</span>
                         </span>
                         <span className={styles.statBadge}>
                           <TrophyIcon aria-hidden="true" />

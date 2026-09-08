@@ -21,11 +21,13 @@ describe("room ranking route", () => {
       />,
     );
 
-    expect(markup).toContain("Ranking global");
+    expect(markup).toContain("Ranking de Tabarnia");
     expect(markup).toContain("CHES");
     expect(markup).toContain("184");
     expect(markup).toContain("Tú");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).not.toContain("Ranking de hoy");
+    expect(markup).not.toContain("Clasificación de la sala");
+    expect(markup).toContain('aria-label="184 Flash Points"');
   });
 });
