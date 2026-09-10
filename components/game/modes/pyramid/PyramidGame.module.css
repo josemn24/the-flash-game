@@ -176,30 +176,6 @@
     justify-self: end;
   }
 
-  .dialogIcon {
-    width: 2rem;
-    height: 2rem;
-    color: var(--color-brand);
-  }
-
-  .confirmDialog h2 {
-    margin-top: 1rem;
-    font-size: 1.7rem;
-    font-weight: 950;
-    letter-spacing: -0.04em;
-  }
-
-  .confirmDialog p {
-    margin-block: 0.75rem 1.25rem;
-    color: rgba(255, 255, 255, 0.48);
-    font-size: 0.88rem;
-    line-height: 1.6;
-  }
-
-  .confirmDialog button + button {
-    margin-top: 0.6rem;
-  }
-
   .transitionScreen,
   .loading {
     display: grid;
@@ -251,7 +227,7 @@
 
   .transitionContent > p:last-child {
     margin-top: 0.8rem;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--color-ink-muted);
   }
 
   .briefingScreen {
@@ -495,29 +471,6 @@
     border-color: color-mix(in srgb, var(--state-error) 55%, var(--color-border));
     color: var(--state-error);
     background: color-mix(in srgb, var(--state-error) 12%, var(--color-surface));
-  }
-  .dialogBackdrop {
-    position: fixed;
-    z-index: 50;
-    display: grid;
-    inset: 0;
-    place-items: center;
-    padding: 1rem;
-    backdrop-filter: blur(14px);
-    background: var(--color-overlay-ink);
-  }
-  .confirmDialog {
-    width: min(100%, 28rem);
-    border: 1px solid rgb(var(--color-brand-rgb) / 0.24);
-    border-radius: 1.6rem;
-    padding: 1.5rem;
-    border-color: var(--color-border-hover);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-dialog);
-  }
-  .confirmDialog p,
-  .transitionContent > p:last-child {
-    color: var(--color-ink-muted);
   }
   .transitionMarkFailure {
     background: var(--color-danger);

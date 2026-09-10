@@ -19,6 +19,7 @@ describe("FlashPopRoomMemberDetail", () => {
     expect(markup).toContain("Completado");
     expect(markup).toContain("Historial de respuestas");
     expect(markup).toContain("Respuesta correcta");
+    expect(markup).toContain("4/4 parejas correctas");
     expect(markup).toContain("details");
     expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
     expect(markup).not.toContain("gemas");

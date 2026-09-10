@@ -146,13 +146,11 @@ function NarrativeSceneScreen({
   scene,
   pageNumber,
   pageCount,
-  reactionBlocks,
   onContinue,
 }: {
   scene: NarrativeScene;
   pageNumber: number;
   pageCount: number;
-  reactionBlocks: NarrativeTextBlock[];
   onContinue: () => void;
 }) {
   const presentation = scene.presentation ?? "standard";
@@ -206,7 +204,6 @@ function NarrativeSceneScreen({
         <article className={styles.storyArticle}>
           {scene.eyebrow && <p className={styles.eyebrow}>{scene.eyebrow}</p>}
           {scene.title && <h1>{scene.title}</h1>}
-          <NarrativeBlocks blocks={reactionBlocks} className={styles.sceneReaction} />
           <NarrativeBlocks blocks={scene.blocks} />
         </article>
         <MotionButton
@@ -538,7 +535,6 @@ export function NarrativeGameApp({
                     scene={session.currentStep.scene}
                     pageNumber={session.stepIndex + 1}
                     pageCount={pageCount}
-                    reactionBlocks={session.reactionBlocks}
                     onContinue={session.continueScene}
                   />
                 ))}

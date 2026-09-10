@@ -90,16 +90,34 @@
   .answerRow[open] summary::after { content: "−"; }
   .questionNumber { color: var(--color-social); font-family: var(--type-display); font-size: 24px; }
   .questionTitle { display: grid; min-width: 0; gap: 3px; }
-  .questionTitle strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .questionTitle small { overflow: hidden; color: var(--color-ink-muted); text-overflow: ellipsis; white-space: nowrap; }
-  .answerStatus { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }
+  .questionTitle strong,
+  .questionTitle small {
+    display: -webkit-box;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .questionTitle small { color: var(--color-ink-muted); }
+  .answerStatus {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-pill);
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
   .answerStatus svg { width: 16px; }
   .status_correct { color: var(--color-success); }
   .status_partial { color: var(--color-social); }
   .status_incorrect { color: var(--color-danger); }
   .status_unanswered { color: var(--color-ink-muted); }
   .answerBody { display: grid; gap: var(--space-4); padding: 0 14px 16px 68px; }
-  .answerMeta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: var(--color-ink-muted); font-family: var(--type-mono); font-size: 11px; }
+  .answerMeta { color: var(--color-ink); font-family: var(--type-mono); font-size: 12px; font-weight: 800; line-height: 1.4; }
   .explanation { margin: 0; color: var(--color-ink-muted); font-size: 13px; line-height: 1.45; }
 
   @media (max-width: 600px) {
@@ -109,9 +127,10 @@
     .profile h1 { font-size: 46px; }
     .stats { grid-template-columns: 1fr 1fr; }
     .stats > div:last-child { grid-column: 1 / -1; }
-    .answerRow summary { grid-template-columns: 36px minmax(0, 1fr); }
-    .answerStatus { grid-column: 2; }
-    .answerRow summary::after { grid-column: 2; grid-row: 1; justify-self: end; }
+    .answerRow summary { grid-template-columns: 36px minmax(0, 1fr) 32px; }
+    .answerStatus { grid-column: 2 / -1; justify-self: start; }
+    .answerRow summary::after { grid-column: 3; grid-row: 1; justify-self: end; }
     .answerBody { padding-left: 14px; }
+    .answerMeta { font-size: 11px; }
   }
 }

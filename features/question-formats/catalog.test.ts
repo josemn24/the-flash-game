@@ -407,9 +407,9 @@ describe("question format catalog", () => {
       10, 10, 12, 12, 12, 14, 12, 18,
     ]);
     expect(narrativeQuestions.map((question) => question.timeLimit)).toEqual([
-      24, 25, 35, 45, 35, 45, 35, 40,
+      24, 25, 35, 40, 35, 45, 35, 40,
     ]);
-    expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(284);
+    expect(narrativeQuestions.reduce((total, question) => total + question.timeLimit, 0)).toBe(279);
 
     const direction = narrativeQuestions[0];
     expect(direction.type).toBe("multiple-choice");
@@ -452,7 +452,7 @@ describe("question format catalog", () => {
     expect(corridor.type).toBe("escape");
     if (corridor.type !== "escape") throw new Error("Expected escape");
     expect(isValidEscapeConfiguration(corridor)).toBe(true);
-    expect(corridor.optimalMoves).toBe(4);
+    expect(corridor.optimalMoves).toBe(10);
     expect(corridor.initialBlocks.some((block) => block.id === "p17")).toBe(false);
     expect(
       evaluateAnswer({

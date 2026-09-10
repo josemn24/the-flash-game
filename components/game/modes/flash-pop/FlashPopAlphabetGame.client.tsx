@@ -132,7 +132,7 @@ function AlphabetForm({
           Responder
         </Button>
       </div>
-      <p>No importan las mayúsculas ni las tildes. Se admite una letra final repetida.</p>
+      <p>No importan las mayúsculas ni las tildes.</p>
     </form>
   );
 }

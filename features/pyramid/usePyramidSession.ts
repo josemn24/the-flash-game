@@ -35,7 +35,7 @@ export type PyramidSessionOptions = {
 };
 
 export type PyramidSessionPhase =
-  "loading" | "intro" | "confirm" | "briefing" | "playing" | "transition" | "results" | "review";
+  "loading" | "intro" | "briefing" | "playing" | "transition" | "results" | "review";
 
 function storageIsAvailable() {
   try {
@@ -373,8 +373,6 @@ export function usePyramidSession(
     codeAttempts: record?.submittedCodes ?? [],
     initialAnswer: record?.draftAnswer ?? null,
     deadlineAt: record?.deadlineAt ?? null,
-    showConfirmation: () => setPhase("confirm"),
-    hideConfirmation: () => setPhase("intro"),
     start,
     beginLevel,
     restart,

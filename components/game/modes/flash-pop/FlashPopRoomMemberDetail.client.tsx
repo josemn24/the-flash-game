@@ -60,6 +60,23 @@ function formatPlayedAt(value?: string) {
   }).format(new Date(value));
 }
 
+function formatSeconds(value: number) {
+  return value.toLocaleString("es-ES", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+function answerSummary(answer: AnswerReview) {
+  const summary: string[] = [];
+  if (answer.details?.type === "matching") {
+    summary.push(`${answer.details.correctPairs}/${answer.details.totalPairs} parejas correctas`);
+  }
+  summary.push(answer.points === undefined ? "Puntos no desglosados" : `${answer.points} puntos`);
+  if (answer.timeUsed !== undefined) summary.push(`${formatSeconds(answer.timeUsed)} s`);
+  return summary.join(" · ");
+}
+
 function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: NonNullable<RoomMemberDetailModel["result"]>["attempt"] }) {
   if (!attempt) return null;
   const answers = new Map(attempt.answers.map((answer) => [answer.questionId, answer]));
@@ -97,9 +114,8 @@ function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: 
               </summary>
               <div className={styles.answerBody}>
                 <QuestionReviewContent question={question} result={result} />
-                <div className={styles.answerMeta}>
-                  <span>{answer.points === undefined ? "Puntos no desglosados" : `${answer.points} Flash points`}</span>
-                  {answer.timeUsed !== undefined ? <span>{answer.timeUsed.toFixed(1)} s</span> : null}
+                <div className={styles.answerMeta} aria-label="Resumen de la respuesta">
+                  {answerSummary(answer)}
                 </div>
                 <p className={styles.explanation}>{question.explanation}</p>
               </div>

@@ -303,22 +303,22 @@ export const challengeDefinitions = {
       },
       {
         id: "patriarch",
-        label: "Patriarca",
+        label: "Adivinanza",
         questionId: "abrahamic-progressive-abraham",
         briefing: {
           title: "Sigue las pistas",
           format: "Adivinanza por pistas",
-          description: "Identifica una figura compartida por las tres tradiciones.",
+          description: "Identifica una figura bíblica",
         },
       },
       {
         id: "torah",
-        label: "Torá",
+        label: "Secuencia",
         questionId: "abrahamic-order-torah-books",
         briefing: {
           title: "Ordena los libros",
           format: "Ordenación",
-          description: "Reconstruye el orden tradicional de los cinco libros de la Torá.",
+          description: "Reconstruye el orden tradicional de los siguientes libros",
         },
       },
       {

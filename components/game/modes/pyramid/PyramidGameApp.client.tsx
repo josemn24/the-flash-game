@@ -102,16 +102,10 @@ function ScreenShell({ children }: { children: React.ReactNode }) {
 function PyramidIntro({
   challenge,
   storageAvailable,
-  confirming,
-  onConfirm,
-  onCancel,
   onStart,
 }: {
   challenge: PyramidChallenge;
   storageAvailable: boolean;
-  confirming: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
   onStart: () => void;
 }) {
   return (
@@ -149,7 +143,7 @@ function PyramidIntro({
 
           <MotionButton
             className={styles.primaryAction}
-            onClick={onConfirm}
+            onClick={onStart}
             whileTap={{ scale: 0.98 }}
           >
             Preparar ascenso
@@ -164,31 +158,6 @@ function PyramidIntro({
         </div>
       </div>
 
-      {confirming && (
-        <div className={styles.dialogBackdrop} role="presentation">
-          <motion.div
-            className={styles.confirmDialog}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pyramid-confirm-title"
-            initial={{ opacity: 0, scale: 0.94, y: 18 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-          >
-            <WarningIcon className={styles.dialogIcon} />
-            <h2 id="pyramid-confirm-title">¿Listo para ascender?</h2>
-            <p>
-              El reloj comenzará al aparecer el primer nivel. Si fallas, podrás revisar la solución
-              y comenzar una nueva partida.
-            </p>
-            <MotionButton autoFocus onClick={onStart} whileTap={{ scale: 0.98 }}>
-              Empezar partida
-            </MotionButton>
-            <MotionButton variant="secondary" onClick={onCancel} whileTap={{ scale: 0.98 }}>
-              Todavía no
-            </MotionButton>
-          </motion.div>
-        </div>
-      )}
     </ScreenShell>
   );
 }
@@ -405,14 +374,11 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
                 <span>Preparando La Pirámide…</span>
               </motion.div>
             )}
-            {(session.phase === "intro" || session.phase === "confirm") && (
+            {session.phase === "intro" && (
               <PyramidIntro
                 key="intro"
                 challenge={scoredChallenge}
                 storageAvailable={session.storageAvailable}
-                confirming={session.phase === "confirm"}
-                onConfirm={session.showConfirmation}
-                onCancel={session.hideConfirmation}
                 onStart={session.start}
               />
             )}

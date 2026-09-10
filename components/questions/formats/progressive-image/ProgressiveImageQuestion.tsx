@@ -197,7 +197,7 @@ export function ProgressiveImageQuestion({
             <ArrowIcon className="h-6 w-6" />
           </MotionButton>
         </div>
-        <p>Solo tienes un intento. No importan las mayúsculas, las tildes ni los espacios.</p>
+        <p>No importan las mayúsculas, las tildes ni los espacios.</p>
       </form>
     </section>
   );

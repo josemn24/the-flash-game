@@ -50,7 +50,7 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    margin: calc(var(--space-3) * -1) 0 0;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -93,9 +93,9 @@
   }
 
   .levelTierCleared {
-    border-color: rgb(185 220 18 / 70%);
-    color: var(--color-social);
-    background: rgb(var(--color-brand-rgb) / 14%);
+    border-color: color-mix(in srgb, var(--state-correct) 55%, var(--color-border));
+    color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 10%, var(--color-surface));
   }
 
   .levelTierCurrent {
@@ -167,26 +167,13 @@
 
   .introCard,
   .briefingCard,
-  .confirmCard,
   .resultCard,
   .reviewCard {
     padding: clamp(20px, 5vw, 36px);
     border-radius: var(--radius-card);
-  }
-
-  .introCard,
-  .briefingCard,
-  .resultCard,
-  .reviewCard {
     border: var(--border-subtle);
     background: var(--color-surface);
     box-shadow: var(--shadow-hero);
-  }
-
-  .confirmCard {
-    display: grid;
-    gap: var(--space-4);
-    text-align: center;
   }
 
   .introCard h1,
@@ -214,7 +201,7 @@
   }
 
   .briefingFormat {
-    margin: 12px 0 0;
+    margin: 0;
     color: var(--color-social);
     font-family: var(--type-mono);
     font-size: 12px;
@@ -233,7 +220,6 @@
   }
 
   .rules,
-  .briefingStats,
   .resultMeta {
     display: grid;
     gap: var(--space-3);
@@ -298,7 +284,31 @@
     text-align: center;
   }
 
-  .briefingStats,
+  .briefingStats {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-top: var(--space-5);
+    padding: var(--space-3) 0;
+    border-block: var(--border-subtle);
+  }
+
+  .briefingStat {
+    flex: 1;
+    align-items: center;
+    padding: 0 var(--space-3);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .briefingStat + .briefingStat {
+    border-inline-start: var(--border-subtle);
+  }
+
+  .briefingStat strong {
+    font-size: 20px;
+  }
+
   .resultMeta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

@@ -57,7 +57,7 @@
     font-size: 0.84rem;
   }
   .answerBoxCorrect strong {
-    color: var(--color-brand);
+    color: var(--color-success);
   }
   .mazeLegend {
     display: flex;
@@ -197,7 +197,7 @@
     gap: 0.2rem;
   }
   .classificationReviewRow small {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--color-ink-muted);
     font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -207,11 +207,28 @@
     overflow-wrap: anywhere;
     font-size: 0.72rem;
   }
+  .classificationValue {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .classificationValue svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex: 0 0 auto;
+    stroke-width: 2.5;
+  }
   .classificationValueCorrect {
-    color: var(--color-brand);
+    color: var(--color-success);
   }
   .classificationValueWrong {
     color: #ff858a;
+  }
+  @media (max-width: 600px) {
+    .classificationReviewRow {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
   .memoryGridPair {
     display: grid;

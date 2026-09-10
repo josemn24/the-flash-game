@@ -91,15 +91,9 @@ function Topbar({
 
 function Intro({
   challenge,
-  confirming,
-  onConfirm,
-  onCancel,
   onStart,
 }: {
   challenge: PyramidChallenge;
-  confirming: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
   onStart: () => void;
 }) {
   return (
@@ -127,7 +121,7 @@ function Intro({
           fullWidth
           trailingIcon={<ArrowIcon />}
           className={styles.action}
-          onClick={onConfirm}
+          onClick={onStart}
         >
           Empezar partida
         </Button>
@@ -137,23 +131,6 @@ function Intro({
         </p>
       </Card>
 
-      {confirming ? (
-        <div
-          className={styles.confirmCard}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="confirm-title"
-        >
-          <h1 id="confirm-title">¿Listo para subir?</h1>
-          <p>El reloj comienza al mostrar la pregunta. Podrás volver a jugar cuando termines.</p>
-          <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
-            Confirmar partida
-          </Button>
-          <Button variant="secondary" fullWidth onClick={onCancel}>
-            Todavía no
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -171,20 +148,19 @@ function Briefing({
 }) {
   return (
     <div className={styles.briefing}>
-      <Topbar />
       <LevelMap levels={levels} currentIndex={levelIndex} />
       <Card as="section" className={styles.briefingCard} aria-labelledby="briefing-title">
-        <h1 id="briefing-title">{level.briefing.title}</h1>
         <p className={styles.briefingFormat}>{level.briefing.format}</p>
+        <h1 id="briefing-title">{level.briefing.title}</h1>
         <p className={styles.briefingDescription}>{level.briefing.description}</p>
         <div className={styles.briefingStats} aria-label="Condiciones del nivel">
           <div className={styles.briefingStat}>
             <strong>{formatTime(level.question.timeLimit)}</strong>
-            <span>tiempo</span>
+            <span>tiempo límite</span>
           </div>
           <div className={styles.briefingStat}>
             <strong>{level.question.points} pts</strong>
-            <span>máximo del nivel</span>
+            <span>máximo</span>
           </div>
         </div>
         <Button
@@ -544,7 +520,7 @@ export function FlashPopPyramidGame({
               </Card>
             </motion.div>
           ) : null}
-          {session.phase === "intro" || session.phase === "confirm" ? (
+          {session.phase === "intro" ? (
             <motion.div
               key="intro"
               initial={{ opacity: 0 }}
@@ -553,9 +529,6 @@ export function FlashPopPyramidGame({
             >
               <Intro
                 challenge={challenge}
-                confirming={session.phase === "confirm"}
-                onConfirm={session.showConfirmation}
-                onCancel={session.hideConfirmation}
                 onStart={session.start}
               />
             </motion.div>

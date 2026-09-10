@@ -10,7 +10,7 @@ import {
   ZipBoard,
 } from "@/components/questions";
 import wordSearchStyles from "@/components/questions/formats/word-search/WordSearchQuestion.module.css";
-import { CheckIcon } from "@/components/ui";
+import { CheckIcon, CrossIcon } from "@/components/ui";
 import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
@@ -130,17 +130,23 @@ function MatchingReview({ question, result }: ReviewProps<QuestionOfType<"matchi
             <strong>{item.label}</strong>
             <span>
               <small>Emparejada</small>
-              <b
-                className={
-                  correct ? styles.classificationValueCorrect : styles.classificationValueWrong
-                }
-              >
-                {chosenLabel ?? "Sin emparejar"}
-              </b>
+              <span className={styles.classificationValue}>
+                {correct ? <CheckIcon aria-hidden="true" /> : <CrossIcon aria-hidden="true" />}
+                <b
+                  className={
+                    correct ? styles.classificationValueCorrect : styles.classificationValueWrong
+                  }
+                >
+                  {chosenLabel ?? "Sin emparejar"}
+                </b>
+              </span>
             </span>
             <span>
               <small>Correcta</small>
-              <b className={styles.classificationValueCorrect}>{correctLabel}</b>
+              <span className={styles.classificationValue}>
+                <CheckIcon aria-hidden="true" />
+                <b className={styles.classificationValueCorrect}>{correctLabel}</b>
+              </span>
             </span>
           </div>
         );

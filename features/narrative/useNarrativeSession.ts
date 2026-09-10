@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import {
-  getNarrativeReaction,
   getNarrativeSequence,
   initialNarrativeSessionState,
   narrativeSessionReducer,
@@ -143,16 +142,11 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     currentStep?.type === "question"
       ? sequence.slice(0, state.stepIndex + 1).filter((step) => step.type === "question").length
       : 0;
-  const lastResult = state.results.at(-1);
-  const reactionStep = state.phase === "scene" ? sequence[state.stepIndex - 1] : undefined;
-  const reactionBlocks = getNarrativeReaction(reactionStep, lastResult, state.lastTimedOut);
-
   return {
     ...state,
     currentStep,
     questionNumber,
     totalQuestions: questionSteps.length,
-    reactionBlocks,
     score: calculateTotalScore(state.results.map((result) => result.points)),
     start,
     continueScene,

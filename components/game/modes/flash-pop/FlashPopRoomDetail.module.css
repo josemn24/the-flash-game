@@ -34,12 +34,21 @@
     background: rgb(255 255 255 / 76%);
     color: var(--color-ink);
     box-shadow: var(--shadow-control);
-    transition: transform 160ms ease, background 160ms ease;
+    transition:
+      transform var(--motion-press-out) var(--ease-out),
+      box-shadow var(--motion-press-out) var(--ease-out),
+      background var(--motion-press-out) ease;
   }
 
   .toolbarIcon:hover {
     background: var(--color-surface);
     transform: translateY(-1px);
+  }
+
+  .toolbarIcon:active {
+    transform: translateY(3px);
+    box-shadow: none;
+    transition-duration: var(--motion-press-in);
   }
 
   .toolbarIcon:focus-visible,
@@ -74,11 +83,19 @@
     background: var(--color-surface);
     color: var(--color-ink);
     box-shadow: var(--shadow-control);
-    transition: transform 160ms ease;
+    transition:
+      transform var(--motion-press-out) var(--ease-out),
+      box-shadow var(--motion-press-out) var(--ease-out);
   }
 
   .roomSettingsLink:hover {
     transform: translateY(-1px);
+  }
+
+  .roomSettingsLink:active {
+    transform: translateY(3px);
+    box-shadow: none;
+    transition-duration: var(--motion-press-in);
   }
 
   .roomSettingsLink:focus-visible {
@@ -112,12 +129,21 @@
     box-shadow: var(--shadow-control);
     font-family: var(--type-mono);
     margin: var(--space-3) auto var(--space-6);
-    transition: transform 160ms ease, background 160ms ease;
+    transition:
+      transform var(--motion-press-out) var(--ease-out),
+      box-shadow var(--motion-press-out) var(--ease-out),
+      background var(--motion-press-out) ease;
   }
 
   .statPill:hover {
     background: var(--color-surface);
     transform: translateY(-1px);
+  }
+
+  .statPill:active {
+    transform: translateY(3px);
+    box-shadow: none;
+    transition-duration: var(--motion-press-in);
   }
 
   .statItem {
@@ -168,6 +194,23 @@
     font-weight: 800;
     letter-spacing: 0.28em;
     text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toolbarIcon,
+    .roomSettingsLink,
+    .statPill {
+      transition: none;
+    }
+
+    .toolbarIcon:hover,
+    .toolbarIcon:active,
+    .roomSettingsLink:hover,
+    .roomSettingsLink:active,
+    .statPill:hover,
+    .statPill:active {
+      transform: none;
+    }
   }
 
   .challengeCard {
