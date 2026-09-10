@@ -3,6 +3,7 @@ export { FlashPopAlphabetGame } from "./FlashPopAlphabetGame.client";
 export { FlashPopFlashGame } from "./FlashPopFlashGame.client";
 export { FlashPopHome } from "./FlashPopHome.client";
 export { FlashPopRoomDetail } from "./FlashPopRoomDetail.client";
+export { FlashPopRoomMemberDetail } from "./FlashPopRoomMemberDetail.client";
 export { FlashPopRoomHistory } from "./FlashPopRoomHistory";
 export { FlashPopRoomRanking } from "./FlashPopRoomRanking";
 export { FlashPopRoomSettings } from "./FlashPopRoomSettings";

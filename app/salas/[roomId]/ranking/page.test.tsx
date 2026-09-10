@@ -22,9 +22,13 @@ describe("room ranking route", () => {
     );
 
     expect(markup).toContain("Ranking de Tabarnia");
-    expect(markup).toContain("CHES");
+    expect(markup).toContain("Dark");
+    expect(markup).toContain("Jackobo");
+    expect(markup).toContain("Rielbe");
+    expect(markup).toContain("Palmera");
     expect(markup).toContain("184");
-    expect(markup).toContain("Tú");
+    expect(markup).toContain("Kike");
+    expect(markup).not.toContain(">Tú<");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).not.toContain("Ranking de hoy");
     expect(markup).not.toContain("Clasificación de la sala");

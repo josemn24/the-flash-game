@@ -11,6 +11,7 @@ const tabarnia: RoomCardModel = {
   dailyChallenge: {
     id: "tabarnia-flash-01",
     title: "Steel Ball Run: primera etapa",
+    formatLabel: "Flash",
     subtitle: "Carrera, ingenio y reflejos",
     availableUntil: "2026-09-20T21:59:59.999Z",
     questionCount: 16,
@@ -18,10 +19,10 @@ const tabarnia: RoomCardModel = {
   },
   currentUser: { totalPoints: 136, roomRank: 3 },
   memberPreviews: [
-    { id: "player", name: "Jugador", initials: "TÚ" },
-    { id: "ches", name: "CHES", initials: "CH" },
-    { id: "marta", name: "Marta", initials: "MA" },
-    { id: "alex", name: "Alex", initials: "AL" },
+    { id: "player", name: "Kike", initials: "KI" },
+    { id: "ches", name: "Dark", initials: "DA" },
+    { id: "marta", name: "Jackobo", initials: "JA" },
+    { id: "alex", name: "Rielbe", initials: "RI" },
   ],
   memberCount: 5,
   href: "/salas/tabarnia-room",

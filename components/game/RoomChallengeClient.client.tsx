@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { GameApp } from "@/components/game/shells/GameApp";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import type { Challenge, ChallengeCompletion, GameRoomContext } from "@/types/game";
+import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/game";
 
 export function RoomChallengeClient({
   challenge,
@@ -14,7 +14,7 @@ export function RoomChallengeClient({
 }) {
   const { recordCompletion } = useRoomSession();
   const onComplete = useCallback(
-    (result: Omit<ChallengeCompletion, "roomId">) => {
+    (result: ChallengeCompletionResult) => {
       if (!roomContext) return;
       recordCompletion({ ...result, roomId: roomContext.roomId });
     },

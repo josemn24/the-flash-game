@@ -25,7 +25,7 @@ describe("room history route", () => {
     expect(markup).toContain("5 sept");
     expect(markup).toContain("4 jugadores");
     expect(markup).toContain("Ganador:");
-    expect(markup).toContain("CHES");
+    expect(markup).toContain("Dark");
     expect(markup).toContain('href="/salas/tabarnia-room"');
   });
 });

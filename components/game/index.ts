@@ -7,6 +7,7 @@ export {
   FlashPopFeedback,
   FlashPopHome,
   FlashPopRoomDetail,
+  FlashPopRoomMemberDetail,
   FlashPopRoomHistory,
   FlashPopRoomRanking,
   FlashPopRoomSettings,

@@ -7,6 +7,7 @@ import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon, EyeIcon, RotateIcon } from "
 import { Avatar, Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
+import { buildAlphabetAnswerReviews } from "@/features/alphabet/alphabetReview";
 import {
   getFlashPopAlphabetResult,
   type FlashPopAlphabetSummary,
@@ -16,7 +17,7 @@ import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeed
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AlphabetChallenge,
-  ChallengeCompletion,
+  ChallengeCompletionResult,
   GameRoomContext,
   ShortTextQuestion,
 } from "@/types/game";
@@ -516,12 +517,17 @@ export function FlashPopAlphabetGame({
 }: {
   challenge: AlphabetChallenge;
   roomContext?: GameRoomContext;
-  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+  onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const session = useAlphabetSession(challenge);
   useChallengeCompletionReporter(
     session.phase === "results"
-      ? { challengeId: challenge.id, points: session.score, completed: true }
+      ? {
+          challengeId: challenge.id,
+          points: session.score,
+          completed: true,
+          answers: buildAlphabetAnswerReviews(challenge, session.letters),
+        }
       : null,
     onComplete,
   );

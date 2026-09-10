@@ -9,8 +9,9 @@ export const demoRoom = {
   members: [
     {
       id: "player",
-      name: "Jugador",
-      initials: "TÚ",
+      name: "Kike",
+      initials: "KI",
+      avatarSrc: "/flash-pop/avatars/player.jpeg",
       totalPoints: 136,
       challengeResults: {
         "tabarnia-flash-01": { points: 42, completed: true },
@@ -23,8 +24,9 @@ export const demoRoom = {
     },
     {
       id: "ches",
-      name: "CHES",
-      initials: "CH",
+      name: "Dark",
+      initials: "DA",
+      avatarSrc: "/flash-pop/avatars/ches.jpeg",
       totalPoints: 184,
       challengeResults: {
         "tabarnia-flash-01": { points: 54, completed: true },
@@ -37,8 +39,9 @@ export const demoRoom = {
     },
     {
       id: "marta",
-      name: "Marta",
-      initials: "MA",
+      name: "Jackobo",
+      initials: "JA",
+      avatarSrc: "/flash-pop/avatars/marta.jpeg",
       totalPoints: 161,
       challengeResults: {
         "tabarnia-flash-01": { points: 47, completed: true },
@@ -51,8 +54,9 @@ export const demoRoom = {
     },
     {
       id: "alex",
-      name: "Alex",
-      initials: "AL",
+      name: "Rielbe",
+      initials: "RI",
+      avatarSrc: "/flash-pop/avatars/alex.jpeg",
       totalPoints: 119,
       challengeResults: {
         "tabarnia-flash-01": { points: 38, completed: true },
@@ -65,8 +69,9 @@ export const demoRoom = {
     },
     {
       id: "laura",
-      name: "Laura",
-      initials: "LA",
+      name: "Palmera",
+      initials: "PA",
+      avatarSrc: "/flash-pop/avatars/laura.jpeg",
       totalPoints: 98,
       challengeResults: {
         "tabarnia-flash-01": { points: 0, completed: false },

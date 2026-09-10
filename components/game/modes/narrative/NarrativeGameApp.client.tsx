@@ -31,7 +31,7 @@ import styles from "./NarrativeGame.module.css";
 import type {
   AnswerResult,
   AnswerValue,
-  ChallengeCompletion,
+  ChallengeCompletionResult,
   GameRoomContext,
   NarrativeChallenge,
   NarrativeScene,
@@ -469,12 +469,17 @@ export function NarrativeGameApp({
 }: {
   challenge: NarrativeChallenge;
   roomContext?: GameRoomContext;
-  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+  onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const session = useNarrativeSession(challenge);
   useChallengeCompletionReporter(
     session.phase === "results"
-      ? { challengeId: challenge.id, points: session.score, completed: true }
+      ? {
+          challengeId: challenge.id,
+          points: session.score,
+          completed: true,
+          answers: session.results,
+        }
       : null,
     onComplete,
   );

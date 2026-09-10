@@ -1,11 +1,11 @@
 import dynamic from "next/dynamic";
 import type { Challenge, GameRoomContext } from "@/types/game";
-import type { ChallengeCompletion } from "@/types/game";
+import type { ChallengeCompletionResult } from "@/types/game";
 
 type GameAppProps = {
   challenge: Challenge;
   roomContext?: GameRoomContext;
-  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+  onComplete?: (result: ChallengeCompletionResult) => void;
 };
 
 const FlashPopAlphabetGame = dynamic(() =>

@@ -17,7 +17,7 @@ import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AnswerResult,
-  ChallengeCompletion,
+  ChallengeCompletionResult,
   GameRoomContext,
   SurvivalChallenge,
 } from "@/types/game";
@@ -159,7 +159,7 @@ export function FlashPopSurvivalGame({
 }: {
   challenge: SurvivalChallenge;
   roomContext?: GameRoomContext;
-  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+  onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useSurvivalSession(scoredChallenge);
@@ -172,7 +172,12 @@ export function FlashPopSurvivalGame({
 
   useChallengeCompletionReporter(
     session.phase === "results" && result
-      ? { challengeId: challenge.id, points: result.score, completed: true }
+      ? {
+          challengeId: challenge.id,
+          points: result.score,
+          completed: true,
+          answers: session.results,
+        }
       : null,
     onComplete,
   );

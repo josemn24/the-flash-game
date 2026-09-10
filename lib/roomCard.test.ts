@@ -10,9 +10,11 @@ describe("buildRoomCardModel", () => {
 
     expect(model.roomId).toBe("tabarnia-room");
     expect(model.dailyChallenge?.id).toBe("tabarnia-challenge-05");
-    expect(model.dailyChallenge?.title).toBe("La Pirámide: Cumbre lógica");
+    expect(model.dailyChallenge?.title).toBe("Cumbre lógica");
+    expect(model.dailyChallenge?.formatLabel).toBe("La Pirámide");
     expect(model.currentUser).toEqual({ totalPoints: 136, roomRank: 3 });
     expect(model.memberPreviews).toHaveLength(4);
+    expect(model.memberPreviews[0].src).toBe("/flash-pop/avatars/player.jpeg");
     expect(model.memberCount).toBe(5);
     expect(model.href).toBe("/salas/tabarnia-room");
   });

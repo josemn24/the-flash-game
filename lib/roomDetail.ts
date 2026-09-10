@@ -3,6 +3,8 @@ import { demoRooms } from "@/data/demoRoom";
 import { getDailyChallenge } from "@/lib/dailyChallenge";
 import { getNextDailyBoundary } from "@/lib/dailyCountdown";
 import {
+  getChallengeDisplayTitle,
+  getChallengeFormatLabel,
   getChallengeImage,
   getChallengeQuestionCount,
 } from "@/lib/roomCard";
@@ -23,7 +25,11 @@ export function applyRoomChallengeResult(
   model: RoomDetailModel,
   result: ChallengeCompletion,
 ): RoomDetailModel {
-  if (result.roomId !== model.roomId || model.dailyChallenge?.id !== result.challengeId) {
+  if (
+    result.roomId !== model.roomId ||
+    model.dailyChallenge?.id !== result.challengeId ||
+    !result.completed
+  ) {
     return model;
   }
 
@@ -33,13 +39,23 @@ export function applyRoomChallengeResult(
       entry.memberId === model.currentUser.id ? { ...entry, points: totalPoints } : entry,
     ),
   );
-  const dailyLeaderboard = sortLeaderboardEntries(
-    model.dailyLeaderboard.map((entry) =>
-      entry.memberId === model.currentUser.id
-        ? { ...entry, points: result.points, completed: result.completed }
-        : entry,
-    ),
+  const currentDailyEntry = model.dailyLeaderboard.find(
+    (entry) => entry.memberId === model.currentUser.id,
   );
+  const dailyLeaderboard = sortLeaderboardEntries([
+    ...model.dailyLeaderboard.filter((entry) => entry.memberId !== model.currentUser.id),
+    currentDailyEntry
+      ? { ...currentDailyEntry, points: result.points, completed: result.completed }
+      : {
+          memberId: model.currentUser.id,
+          name: model.currentUser.name,
+          initials: model.currentUser.initials,
+          avatarSrc: model.currentUser.avatarSrc,
+          points: result.points,
+          completed: result.completed,
+          rank: 0,
+        },
+  ]);
   const roomEntry = roomLeaderboard.find((entry) => entry.memberId === model.currentUser.id);
 
   return {
@@ -77,7 +93,8 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
     dailyLeaderboard = getDailyLeaderboard(room, dailyChallenge.id);
     dailyChallengeModel = {
       id: dailyChallenge.id,
-      title: definition.title,
+      title: getChallengeDisplayTitle(definition),
+      formatLabel: getChallengeFormatLabel(definition.mode),
       subtitle: definition.subtitle,
       imageSrc: getChallengeImage(dailyChallenge.id),
       questionCount: getChallengeQuestionCount(definition),
@@ -102,6 +119,7 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       id: member.id,
       name: member.name,
       initials: member.initials,
+      avatarSrc: member.avatarSrc,
       totalPoints: member.totalPoints,
       roomRank: roomEntry.rank,
       dailyPoints: dailyEntry?.points ?? 0,

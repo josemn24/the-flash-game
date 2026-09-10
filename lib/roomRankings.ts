@@ -16,6 +16,7 @@ function buildLeaderboard(
       memberId: member.id,
       name: member.name,
       initials: member.initials,
+      avatarSrc: member.avatarSrc,
       points: getPoints(member),
     }));
 }
@@ -25,7 +26,8 @@ export function getRoomLeaderboard(room: Room) {
 }
 
 export function getDailyLeaderboard(room: Room, challengeId: string) {
-  return [...room.members]
+  return room.members
+    .filter((member) => member.challengeResults[challengeId]?.completed)
     .sort(
       (left, right) =>
         (right.challengeResults[challengeId]?.points ?? 0) -
@@ -36,7 +38,8 @@ export function getDailyLeaderboard(room: Room, challengeId: string) {
       memberId: member.id,
       name: member.name,
       initials: member.initials,
+      avatarSrc: member.avatarSrc,
       points: member.challengeResults[challengeId]?.points ?? 0,
-      completed: member.challengeResults[challengeId]?.completed ?? false,
+      completed: true,
     }));
 }

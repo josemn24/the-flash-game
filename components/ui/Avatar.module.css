@@ -1,5 +1,6 @@
 @layer app-components {
   .avatar {
+    position: relative;
     display: inline-grid;
     flex: 0 0 auto;
     place-items: center;

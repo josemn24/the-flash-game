@@ -20,7 +20,7 @@ import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AnswerResult,
   AnswerStatus,
-  ChallengeCompletion,
+  ChallengeCompletionResult,
   FlashChallenge,
   GameRoomContext,
   Question,
@@ -436,7 +436,7 @@ export function FlashPopFlashGame({
 }: {
   challenge: FlashChallenge;
   roomContext?: GameRoomContext;
-  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+  onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useGameSession(scoredChallenge, {
@@ -446,7 +446,12 @@ export function FlashPopFlashGame({
 
   useChallengeCompletionReporter(
     session.phase === "results"
-      ? { challengeId: challenge.id, points: session.score, completed: true }
+      ? {
+          challengeId: challenge.id,
+          points: session.score,
+          completed: true,
+          answers: session.results,
+        }
       : null,
     onComplete,
   );

@@ -33,7 +33,7 @@ export function FlashPopHome({ rooms }: FlashPopHomeProps) {
 
         <nav className={styles.headerActions} aria-label="Acciones de cuenta">
           <IconButton label="Perfil" className={styles.profileButton}>
-            <Avatar name="Jugador" initials="TÚ" tone="social" size="sm" />
+            <Avatar name="Kike" initials="KI" tone="social" size="sm" />
           </IconButton>
           <IconButton label="Configuración">
             <SettingsIcon />

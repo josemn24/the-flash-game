@@ -19,14 +19,15 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain("Flash Points");
     expect(markup).toContain("136");
     expect(markup).toContain("#3");
-    expect(markup).toContain("La Pirámide: Cumbre lógica");
+    expect(markup).toContain("Cumbre lógica");
+    expect(markup).toContain("La Pirámide");
+    expect(markup).not.toContain("7 preguntas");
     expect(markup).toContain("Jugar");
     expect(markup).toContain(
       'href="/desafios/tabarnia-challenge-05?roomId=tabarnia-room"',
     );
     expect(markup).toContain("Ranking de hoy");
     expect(markup).not.toContain(">Flash points<");
-    expect(markup).toContain('aria-label="Ver detalle de Tú, 0 Flash Points"');
     expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
     expect(markup).toContain('href="/salas/tabarnia-room/ajustes"');
@@ -34,8 +35,8 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain(
       'aria-label="Abrir ajustes de Tabarnia"',
     );
-    expect(markup).toContain("Tú");
-    expect(markup).toContain("Pendiente");
+    expect(markup).toContain("Todavía no ha jugado nadie.");
+    expect(markup).toContain("5 pendientes por jugar");
     expect(markup).toContain("--:--:--");
     expect(markup).not.toContain("Primera temporada");
     expect(markup).not.toContain("En directo");

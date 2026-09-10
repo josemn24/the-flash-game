@@ -124,9 +124,7 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
       </div>
 
       <div className={styles.challengeFooter}>
-        <span className={styles.questionCount}>
-          <strong>{challenge.questionCount}</strong> preguntas
-        </span>
+        <span className={styles.challengeFormat}>{challenge.formatLabel}</span>
         <ButtonLink href={challenge.href} size="sm" trailingIcon={<ArrowIcon />}>
           Jugar
         </ButtonLink>
@@ -146,11 +144,17 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         challengeId: model.dailyChallenge?.id ?? "",
         points: completion.points,
         completed: completion.completed,
+        playedAt: completion.attempt?.playedAt ?? new Date().toISOString(),
+        answers: completion.attempt?.answers ?? [],
       })
     : model;
 
   const rankingHref = `/salas/${visibleModel.roomId}/ranking`;
   const historyHref = `/salas/${visibleModel.roomId}/historial`;
+  const pendingCount = Math.max(
+    0,
+    visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length,
+  );
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -201,7 +205,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         <p className={styles.todayLabel}>HOY</p>
         <DailyChallengeCard model={visibleModel} />
 
-        {visibleModel.dailyChallenge && visibleModel.dailyLeaderboard.length > 0 ? (
+        {visibleModel.dailyChallenge ? (
           <RoomLeaderboard
             title="Ranking de hoy"
             entries={visibleModel.dailyLeaderboard}
@@ -209,6 +213,8 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
             daily
             compact
             variant="cards"
+            pendingCount={pendingCount}
+            memberHrefBase={`/salas/${visibleModel.roomId}/ranking`}
           />
         ) : null}
       </div>

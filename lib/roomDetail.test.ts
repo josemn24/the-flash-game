@@ -8,6 +8,14 @@ import {
 } from "@/lib/roomDetail";
 
 const now = new Date("2026-09-06T12:00:00.000Z");
+const completion = (points: number) => ({
+  roomId: "tabarnia-room",
+  challengeId: "tabarnia-challenge-05",
+  points,
+  completed: true,
+  playedAt: "2026-09-06T12:00:00.000Z",
+  answers: [],
+});
 
 describe("room detail model", () => {
   it("builds Tabarnia with the shared daily challenge and both rankings", () => {
@@ -18,7 +26,7 @@ describe("room detail model", () => {
     expect(model.title).toBe("Tabarnia");
     expect(model.currentUser).toMatchObject({
       id: "player",
-      name: "Jugador",
+      name: "Kike",
       totalPoints: 136,
       roomRank: 3,
       dailyPoints: 0,
@@ -30,7 +38,7 @@ describe("room detail model", () => {
     );
     expect(model.dailyChallenge?.endsAt).toBe("2026-09-06T22:00:00.000Z");
     expect(model.roomLeaderboard[0]).toMatchObject({ memberId: "ches", points: 184, rank: 1 });
-    expect(model.dailyLeaderboard).toHaveLength(demoRoom.members.length);
+    expect(model.dailyLeaderboard).toHaveLength(0);
   });
 
   it("keeps the room rankings available without a daily challenge", () => {
@@ -52,12 +60,7 @@ describe("room detail model", () => {
 
   it("replaces the current user's daily result and recalculates both rankings", () => {
     const model = buildRoomDetailModel(demoRoom, now);
-    const updated = applyRoomChallengeResult(model, {
-      roomId: "tabarnia-room",
-      challengeId: "tabarnia-challenge-05",
-      points: 200,
-      completed: true,
-    });
+    const updated = applyRoomChallengeResult(model, completion(200));
 
     expect(updated.currentUser).toMatchObject({
       totalPoints: 336,
@@ -73,12 +76,7 @@ describe("room detail model", () => {
       rank: 1,
     });
 
-    const replayed = applyRoomChallengeResult(updated, {
-      roomId: "tabarnia-room",
-      challengeId: "tabarnia-challenge-05",
-      points: 50,
-      completed: true,
-    });
+    const replayed = applyRoomChallengeResult(updated, completion(50));
 
     expect(replayed.currentUser.totalPoints).toBe(186);
     expect(replayed.currentUser.dailyPoints).toBe(50);

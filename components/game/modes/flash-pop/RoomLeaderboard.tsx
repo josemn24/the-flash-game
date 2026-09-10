@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Avatar, BoltIcon, Card, ChevronIcon, TrophyIcon } from "@/components/ui";
 import type { RoomDailyLeaderboardEntry, RoomLeaderboardEntry } from "@/types/game";
 import styles from "./RoomLeaderboard.module.css";
@@ -15,7 +16,9 @@ export type RoomLeaderboardProps = {
   bare?: boolean;
   headingLevel?: "h1" | "h2";
   variant?: "rows" | "cards";
+  pendingCount?: number;
   onEntrySelect?: (entry: RoomLeaderboardEntry | RoomDailyLeaderboardEntry) => void;
+  memberHrefBase?: string;
 };
 
 export function RoomLeaderboard({
@@ -28,7 +31,9 @@ export function RoomLeaderboard({
   bare = false,
   headingLevel = "h2",
   variant = "rows",
+  pendingCount = 0,
   onEntrySelect,
+  memberHrefBase,
 }: RoomLeaderboardProps) {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const isCards = variant === "cards";
@@ -45,18 +50,41 @@ export function RoomLeaderboard({
       </div>
 
       {entries.length > 0 ? (
-        <ol className={styles.list}>
-          {entries.map((entry) => {
-            const dailyEntry = daily ? (entry as RoomDailyLeaderboardEntry) : null;
-            const isCurrentUser = entry.memberId === currentUserId;
+        <>
+          <ol className={styles.list}>
+            {entries.map((entry) => {
+              const isCurrentUser = entry.memberId === currentUserId;
 
-            return (
-              variant === "cards" ? (
+              return variant === "cards" ? (
                 <li className={styles.cardItem} key={entry.memberId}>
-                  <button
+                  {memberHrefBase ? (
+                    <Link
+                      href={`${memberHrefBase}/${entry.memberId}`}
+                      className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""}`}
+                      aria-label={`Ver detalle de ${entry.name}, ${entry.points} Flash Points`}
+                      data-rank={entry.rank}
+                    >
+                      <span className={styles.cardRank}>#{entry.rank}</span>
+                      <Avatar
+                        name={entry.name}
+                        src={entry.avatarSrc}
+                        initials={entry.initials}
+                        tone={isCurrentUser ? "social" : "blue"}
+                        size="md"
+                      />
+                      <span className={styles.cardName}>
+                        <strong>{entry.name}</strong>
+                      </span>
+                      <span className={styles.cardPoints}>
+                        <BoltIcon aria-hidden="true" />
+                        <strong>{entry.points}</strong>
+                      </span>
+                      <ChevronIcon className={styles.cardArrow} aria-hidden="true" />
+                    </Link>
+                  ) : <button
                     type="button"
                     className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
-                    aria-label={`Ver detalle de ${isCurrentUser ? "Tú" : entry.name}, ${entry.points} Flash Points`}
+                    aria-label={`Ver detalle de ${entry.name}, ${entry.points} Flash Points`}
                     aria-pressed={selectedMemberId === entry.memberId}
                     data-rank={entry.rank}
                     onClick={() => {
@@ -68,22 +96,20 @@ export function RoomLeaderboard({
                     <span className={styles.cardRank}>#{entry.rank}</span>
                     <Avatar
                       name={entry.name}
+                      src={entry.avatarSrc}
                       initials={entry.initials}
                       tone={isCurrentUser ? "social" : "blue"}
                       size="md"
                     />
                     <span className={styles.cardName}>
-                      <strong>{isCurrentUser ? "Tú" : entry.name}</strong>
-                      {daily ? (
-                        <small>{dailyEntry?.completed ? "Completado" : "Pendiente"}</small>
-                      ) : null}
+                      <strong>{entry.name}</strong>
                     </span>
                     <span className={styles.cardPoints}>
                       <BoltIcon aria-hidden="true" />
                       <strong>{entry.points}</strong>
                     </span>
                     <ChevronIcon className={styles.cardArrow} aria-hidden="true" />
-                  </button>
+                  </button>}
                 </li>
               ) : (
                 <li
@@ -93,15 +119,13 @@ export function RoomLeaderboard({
                   <span className={styles.rank}>{entry.rank}</span>
                   <Avatar
                     name={entry.name}
+                    src={entry.avatarSrc}
                     initials={entry.initials}
                     tone={isCurrentUser ? "social" : "blue"}
                     size="sm"
                   />
                   <span className={styles.name}>
-                    <strong>{isCurrentUser ? "Tú" : entry.name}</strong>
-                    {daily ? (
-                      <small>{dailyEntry?.completed ? "Completado" : "Pendiente"}</small>
-                    ) : null}
+                    <strong>{entry.name}</strong>
                   </span>
                   <span
                     className={styles.points}
@@ -112,12 +136,22 @@ export function RoomLeaderboard({
                     <strong>{entry.points}</strong>
                   </span>
                 </li>
-              )
-            );
-          })}
-        </ol>
+              );
+            })}
+          </ol>
+          {isCards && pendingCount > 0 ? (
+            <p className={styles.pendingSummary}>{formatPendingCount(pendingCount)}</p>
+          ) : null}
+        </>
       ) : (
-        <p className={styles.empty}>Sin reto disponible hoy.</p>
+        <>
+          <p className={styles.empty}>
+            {daily ? "Todavía no ha jugado nadie." : "Sin reto disponible hoy."}
+          </p>
+          {isCards && pendingCount > 0 ? (
+            <p className={styles.pendingSummary}>{formatPendingCount(pendingCount)}</p>
+          ) : null}
+        </>
       )}
     </>
   );
@@ -142,4 +176,8 @@ export function RoomLeaderboard({
       {content}
     </Card>
   );
+}
+
+function formatPendingCount(count: number) {
+  return `${count} ${count === 1 ? "pendiente" : "pendientes"} por jugar`;
 }

@@ -21,7 +21,7 @@ export function FlashPopRoomHistory({
 }: {
   roomId: string;
   roomTitle: string;
-  members: Pick<RoomMember, "id" | "name" | "initials">[];
+  members: Pick<RoomMember, "id" | "name" | "initials" | "avatarSrc">[];
   entries: RoomHistoryEntry[];
 }) {
   return (
@@ -64,7 +64,13 @@ export function FlashPopRoomHistory({
                   <h2>{entry.title}</h2>
                   {winner ? (
                     <p className={styles.winner}>
-                      <Avatar name={winner.name} initials={winner.initials} size="sm" tone="reward" />
+                    <Avatar
+                      name={winner.name}
+                      src={winner.avatarSrc}
+                      initials={winner.initials}
+                      size="sm"
+                      tone="reward"
+                    />
                       Ganador: <strong>{winner.name}</strong>
                     </p>
                   ) : null}

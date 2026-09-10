@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { ChallengeCompletion } from "@/types/game";
-
-type CompletionPayload = Omit<ChallengeCompletion, "roomId">;
+import type { ChallengeCompletionInput, ChallengeCompletionResult } from "@/types/game";
 
 export function useChallengeCompletionReporter(
-  result: CompletionPayload | null,
-  onComplete?: (result: CompletionPayload) => void,
+  result: ChallengeCompletionInput | null,
+  onComplete?: (result: ChallengeCompletionResult) => void,
 ) {
   const reportedKey = useRef<string | null>(null);
 
@@ -21,6 +19,6 @@ export function useChallengeCompletionReporter(
     if (reportedKey.current === key) return;
 
     reportedKey.current = key;
-    onComplete?.(result);
+    onComplete?.({ ...result, playedAt: new Date().toISOString() });
   }, [onComplete, result]);
 }

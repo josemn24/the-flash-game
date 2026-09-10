@@ -13,7 +13,7 @@ import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/dem
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import type {
   AnswerValue,
-  ChallengeCompletion,
+  ChallengeCompletionResult,
   GameRoomContext,
   PyramidChallenge,
   PyramidLevel,
@@ -483,7 +483,7 @@ export function FlashPopPyramidGame({
 }: {
   challenge: PyramidChallenge;
   roomContext?: GameRoomContext;
-  onComplete?: (result: Omit<ChallengeCompletion, "roomId">) => void;
+  onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
   const session = usePyramidSession(scoredChallenge, {
@@ -495,7 +495,12 @@ export function FlashPopPyramidGame({
 
   useChallengeCompletionReporter(
     session.phase === "results" && session.summary
-      ? { challengeId: challenge.id, points: session.summary.score, completed: true }
+      ? {
+          challengeId: challenge.id,
+          points: session.summary.score,
+          completed: true,
+          answers: session.record?.results ?? [],
+        }
       : null,
     onComplete,
   );

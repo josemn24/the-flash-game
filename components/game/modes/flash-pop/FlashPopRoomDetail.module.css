@@ -256,15 +256,11 @@
     padding: 30px var(--space-5) var(--space-5);
   }
 
-  .questionCount {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 11px;
-  }
-
-  .questionCount strong {
+  .challengeFormat {
     color: var(--color-ink);
-    font-size: 17px;
+    font-family: var(--type-display);
+    font-size: clamp(20px, 3vw, 26px);
+    letter-spacing: -0.04em;
   }
 
   .artBadge {

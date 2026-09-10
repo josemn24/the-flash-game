@@ -16,6 +16,13 @@ export function upsertRoomSessionResult(
       [completion.challengeId]: {
         points: completion.points,
         completed: completion.completed,
+        attempt: {
+          challengeId: completion.challengeId,
+          playedAt: completion.playedAt,
+          points: completion.points,
+          completed: completion.completed,
+          answers: completion.answers,
+        },
       },
     },
   };

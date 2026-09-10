@@ -65,6 +65,7 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
               <Avatar
                 key={member.id}
                 name={member.name}
+                src={member.avatarSrc}
                 initials={member.initials}
                 tone={member.isCurrentUser ? "social" : index % 2 === 0 ? "blue" : "coral"}
                 size={member.isCurrentUser ? "lg" : "md"}
@@ -98,12 +99,13 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
                 <span className={styles.memberRank}>{index + 1}</span>
                 <Avatar
                   name={member.name}
+                  src={member.avatarSrc}
                   initials={member.initials}
                   tone={member.isCurrentUser ? "social" : "blue"}
                   size="sm"
                 />
                 <span className={styles.memberName}>
-                  <strong>{member.isCurrentUser ? "Tú" : member.name}</strong>
+                  <strong>{member.name}</strong>
                   <small>{member.totalPoints} Flash Points</small>
                 </span>
               </li>

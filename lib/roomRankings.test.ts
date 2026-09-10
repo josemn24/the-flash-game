@@ -18,6 +18,7 @@ describe("room rankings", () => {
       [4, "alex", 119],
       [5, "laura", 98],
     ]);
+    expect(getRoomLeaderboard(demoRoom)[0].avatarSrc).toBe("/flash-pop/avatars/ches.jpeg");
   });
 
   it("ranks members by the selected daily challenge, independently of total points", () => {
@@ -32,11 +33,10 @@ describe("room rankings", () => {
       [2, "marta", 47],
       [3, "player", 42],
       [4, "alex", 38],
-      [5, "laura", 0],
     ]);
   });
 
-  it("uses zero points for members without a result", () => {
+  it("excludes members without a completed result from the daily ranking", () => {
     const room = roomWithMembers([
       {
         id: "player",
@@ -56,11 +56,14 @@ describe("room rankings", () => {
       },
     ]);
 
-    expect(getDailyLeaderboard(room, "daily-challenge")[1]).toMatchObject({
-      memberId: "player",
-      points: 0,
-      completed: false,
-    });
+    expect(getDailyLeaderboard(room, "daily-challenge")).toEqual([
+      expect.objectContaining({
+        rank: 1,
+        memberId: "ches",
+        points: 12,
+        completed: true,
+      }),
+    ]);
   });
 
   it("breaks ties deterministically by member id", () => {

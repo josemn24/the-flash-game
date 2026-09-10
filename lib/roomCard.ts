@@ -1,7 +1,7 @@
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
 import { getDailyChallenge } from "@/lib/dailyChallenge";
 import { getRoomLeaderboard } from "@/lib/roomRankings";
-import type { ChallengeDefinition, Room, RoomCardModel } from "@/types/game";
+import type { ChallengeDefinition, GameMode, Room, RoomCardModel } from "@/types/game";
 
 export const ROOM_ART_FALLBACK = "/flash-pop/concepts/pyramid-soft-diorama.webp";
 
@@ -29,6 +29,26 @@ export function getChallengeImage(challengeId: string) {
   return ROOM_ART_FALLBACK;
 }
 
+export function getChallengeFormatLabel(mode: GameMode) {
+  const labels: Record<GameMode, string> = {
+    flash: "Flash",
+    alphabet: "Alfabeto",
+    survival: "Supervivencia",
+    narrative: "Narrativa",
+    pyramid: "La Pirámide",
+  };
+
+  return labels[mode];
+}
+
+export function getChallengeDisplayTitle(definition: ChallengeDefinition) {
+  const formatLabel = getChallengeFormatLabel(definition.mode);
+  const prefix = `${formatLabel}:`;
+  return definition.title.startsWith(prefix)
+    ? definition.title.slice(prefix.length).trim()
+    : definition.title;
+}
+
 export function buildRoomCardModel(room: Room, now = new Date()): RoomCardModel {
   const dailyChallenge = getDailyChallenge(room, now);
   const leaderboard = getRoomLeaderboard(room);
@@ -47,7 +67,8 @@ export function buildRoomCardModel(room: Room, now = new Date()): RoomCardModel 
 
     dailyChallengeModel = {
       id: dailyChallenge.id,
-      title: definition.title,
+      title: getChallengeDisplayTitle(definition),
+      formatLabel: getChallengeFormatLabel(definition.mode),
       subtitle: definition.subtitle,
       availableUntil: dailyChallenge.availableUntil,
       questionCount: getChallengeQuestionCount(definition),
@@ -65,10 +86,11 @@ export function buildRoomCardModel(room: Room, now = new Date()): RoomCardModel 
       totalPoints: currentUser.points,
       roomRank: currentUser.rank,
     },
-    memberPreviews: room.members.slice(0, 4).map(({ id, name, initials }) => ({
+    memberPreviews: room.members.slice(0, 4).map(({ id, name, initials, avatarSrc }) => ({
       id,
       name,
       initials,
+      src: avatarSrc,
     })),
     memberCount: room.members.length,
     href: `/salas/${room.id}`,
