@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 const cardStyles = readFileSync(new URL("../../../ui/Card.module.css", import.meta.url), "utf8");
 const standardSurfaceStyles = [
   "./FlashPopAlphabetGame.module.css",
-  "./FlashPopReview.module.css",
   "./FlashPopSurvivalGame.module.css",
   "./FlashPopSurvivalResult.module.css",
   "./FlashPopPyramidGame.module.css",

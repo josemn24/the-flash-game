@@ -20,8 +20,7 @@
   }
 
   .introCard,
-  .resultCard,
-  .reviewCard {
+  .resultCard {
     border-radius: 28px;
   }
 
@@ -67,8 +66,7 @@
 
   .introCard h1,
   .questionCard h1,
-  .resultCard h1,
-  .reviewCard h1 {
+  .resultCard h1 {
     font-family: var(--type-display);
     font-weight: 800;
     letter-spacing: -0.055em;
@@ -269,8 +267,7 @@
     font-weight: 800;
   }
 
-  .resultActions,
-  .reviewActions {
+  .resultActions {
     display: grid;
     gap: 10px;
     margin-top: 28px;
@@ -378,118 +375,6 @@
     color: #c83d55;
   }
 
-  .reviewCard {
-    max-width: 900px;
-    margin: 34px auto 0;
-    padding: clamp(20px, 4vw, 38px);
-  }
-
-  .reviewHeading {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 14px;
-  }
-
-  .reviewCard h1 {
-    margin: 10px 0 0;
-    font-size: clamp(40px, 6vw, 62px);
-  }
-  .reviewList {
-    display: grid;
-    gap: 10px;
-    margin-top: 28px;
-  }
-  .reviewItem {
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
-    background: var(--color-surface-soft);
-  }
-  .reviewItem summary {
-    display: flex;
-    min-height: 66px;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    cursor: pointer;
-    list-style: none;
-  }
-  .reviewItem summary::-webkit-details-marker {
-    display: none;
-  }
-  .reviewNumber {
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 900;
-  }
-  .reviewTitle {
-    display: grid;
-    min-width: 0;
-    flex: 1;
-    gap: 4px;
-  }
-  .reviewTitle strong {
-    font-size: 11px;
-  }
-  .reviewTitle small {
-    overflow: hidden;
-    color: var(--color-ink-muted);
-    font-size: 11px;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .reviewBody {
-    padding: 0 18px 18px;
-  }
-
-  /* QuestionReviewContent is shared with the dark Flash UI. Re-skin its review
-   surfaces here so labels and answers remain readable on the light Pop card. */
-  .reviewBody :global([class*="answerBox"]),
-  .reviewBody :global([class*="classificationReview"]),
-  .reviewBody :global([class*="reviewGrid"]) {
-    color: var(--color-ink);
-    border-color: var(--color-border);
-    background: var(--color-surface);
-  }
-
-  .reviewBody :global([class*="answerBox"] span),
-  .reviewBody :global([class*="answerBox"] small),
-  .reviewBody :global([class*="classificationReview"] small) {
-    color: var(--color-ink-muted);
-  }
-
-  .reviewBody :global([class*="answerBox"] strong),
-  .reviewBody :global([class*="answerBox"] b),
-  .reviewBody :global([class*="classificationReview"] b) {
-    color: var(--color-ink);
-  }
-
-  .reviewBody :global([class*="answerBoxCorrect"] strong),
-  .reviewBody :global([class*="classificationValueCorrect"]) {
-    color: var(--color-focus);
-  }
-
-  .reviewMeta {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 14px;
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-  }
-  .reviewMeta strong {
-    color: var(--color-social);
-  }
-  .explanation {
-    margin: 12px 0 0;
-    color: var(--color-ink-muted);
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
   @media (max-width: 700px) {
     .stage {
       min-height: calc(100dvh - 32px);
@@ -497,12 +382,6 @@
     .resultLayout {
       grid-template-columns: 1fr;
       margin-top: 12px;
-    }
-    .reviewItem summary {
-      align-items: start;
-    }
-    .reviewItem summary > :global(.card) {
-      margin-left: auto;
     }
   }
 

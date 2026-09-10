@@ -2,42 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowIcon, Avatar, BoltIcon, Card, Canvas, CheckIcon, Chip, ClockIcon, CrossIcon } from "@/components/ui";
-import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
+import { ArrowIcon, Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
+import { ReviewAnswerList, reviewQuestionsFor } from "@/components/game/shared";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { applyRoomMemberChallengeResult } from "@/lib/roomMemberDetail";
-import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { AnswerReview, AnswerResult, Challenge, Question, RoomMemberDetailModel } from "@/types/game";
+import type { AnswerReview, AnswerResult, Challenge, RoomMemberDetailModel } from "@/types/game";
 import styles from "./FlashPopRoomMemberDetail.module.css";
-
-function questionsFor(challenge: Challenge | null): Question[] {
-  if (!challenge) return [];
-  switch (challenge.mode) {
-    case "alphabet":
-      return challenge.entries.map((entry) => entry.question);
-    case "narrative":
-      return challenge.beats.flatMap((beat) =>
-        beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
-      );
-    case "pyramid":
-      return challenge.levels.map((level) => level.question);
-    default:
-      return challenge.questions;
-  }
-}
-
-function statusLabel(status: AnswerReview["status"]) {
-  if (status === "correct") return "Correcta";
-  if (status === "partial") return "Parcial";
-  if (status === "incorrect") return "Incorrecta";
-  return "Sin responder";
-}
-
-function statusIcon(status: AnswerReview["status"]) {
-  if (status === "correct") return <CheckIcon aria-hidden="true" />;
-  if (status === "unanswered") return <ClockIcon aria-hidden="true" />;
-  return <CrossIcon aria-hidden="true" />;
-}
 
 function toAnswerResult(answer: AnswerReview): AnswerResult {
   return {
@@ -60,26 +30,24 @@ function formatPlayedAt(value?: string) {
   }).format(new Date(value));
 }
 
-function formatSeconds(value: number) {
-  return value.toLocaleString("es-ES", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
-
-function answerSummary(answer: AnswerReview) {
-  const summary: string[] = [];
-  if (answer.details?.type === "matching") {
-    summary.push(`${answer.details.correctPairs}/${answer.details.totalPairs} parejas correctas`);
-  }
-  summary.push(answer.points === undefined ? "Puntos no desglosados" : `${answer.points} puntos`);
-  if (answer.timeUsed !== undefined) summary.push(`${formatSeconds(answer.timeUsed)} s`);
-  return summary.join(" · ");
-}
-
 function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: NonNullable<RoomMemberDetailModel["result"]>["attempt"] }) {
   if (!attempt) return null;
   const answers = new Map(attempt.answers.map((answer) => [answer.questionId, answer]));
+  const entries = reviewQuestionsFor(challenge).map((question, index) => {
+    const answer = answers.get(question.id) ?? {
+      questionId: question.id,
+      answer: null,
+      status: "unanswered" as const,
+      isCorrect: false,
+    };
+
+    return {
+      id: question.id,
+      question,
+      result: toAnswerResult(answer),
+      marker: String(index + 1).padStart(2, "0"),
+    };
+  });
 
   return (
     <section className={styles.history} aria-labelledby="answer-history-title">
@@ -90,39 +58,7 @@ function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: 
         </div>
         <Chip variant="data">{attempt.answers.length} respuestas</Chip>
       </div>
-      <div className={styles.answerList}>
-        {questionsFor(challenge).map((question, index) => {
-          const answer = answers.get(question.id) ?? {
-            questionId: question.id,
-            answer: null,
-            status: "unanswered" as const,
-            isCorrect: false,
-          };
-          const result = toAnswerResult(answer);
-          return (
-            <details className={styles.answerRow} key={question.id} open={index === 0}>
-              <summary>
-                <span className={styles.questionNumber}>{String(index + 1).padStart(2, "0")}</span>
-                <span className={styles.questionTitle}>
-                  <strong>{QUESTION_FORMAT_LABELS[question.type]}</strong>
-                  <small>{question.category}</small>
-                </span>
-                <span className={`${styles.answerStatus} ${styles[`status_${answer.status}`]}`}>
-                  {statusIcon(answer.status)}
-                  <span>{statusLabel(answer.status)}</span>
-                </span>
-              </summary>
-              <div className={styles.answerBody}>
-                <QuestionReviewContent question={question} result={result} />
-                <div className={styles.answerMeta} aria-label="Resumen de la respuesta">
-                  {answerSummary(answer)}
-                </div>
-                <p className={styles.explanation}>{question.explanation}</p>
-              </div>
-            </details>
-          );
-        })}
-      </div>
+      <ReviewAnswerList entries={entries} />
     </section>
   );
 }

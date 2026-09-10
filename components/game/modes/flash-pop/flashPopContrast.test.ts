@@ -163,6 +163,15 @@ describe("Flash Pop token contrast", () => {
     expect(miniWordle?.css).toMatch(/\.empty \{[\s\S]*background: var\(--color-surface\);/);
   });
 
+  it("uses white text on solid green review tiles", () => {
+    expect(reviewStyles).toContain(
+      ".wordle-correct {\n    color: var(--color-text-on-success);",
+    );
+    expect(reviewStyles).toContain(
+      ".wordHashtagReviewCorrect {\n    color: var(--color-text-on-success);",
+    );
+  });
+
   it("keeps Classification selections visible without overpowering the table", () => {
     expect(classificationStyles).toMatch(
       /\.matrix,\s*\.binaryList\s*\{[\s\S]*?border: var\(--border-subtle\);[\s\S]*?border-radius: var\(--radius-card\);[\s\S]*?padding: var\(--space-2\);[\s\S]*?background: var\(--color-surface\);/s,

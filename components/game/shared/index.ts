@@ -4,5 +4,11 @@ export { QuestionScreen } from "./QuestionScreen";
 export { QuestionTransition } from "./QuestionTransition";
 export { ResultScreen } from "./ResultScreen";
 export { ReviewAnswers } from "./ReviewAnswers";
+export { ReviewAnswerList, buildReviewAnswerEntries, reviewQuestionsFor } from "./ReviewAnswerList";
+export type {
+  ReviewAnswerEntry,
+  ReviewAnswerVisualStatus,
+} from "./ReviewAnswerList";
+export { ReviewAnswerPanel } from "./ReviewAnswerPanel";
 export { StartScreen } from "./StartScreen/StartScreen";
 export { SurvivalResultScreen } from "./SurvivalResultScreen/SurvivalResultScreen";

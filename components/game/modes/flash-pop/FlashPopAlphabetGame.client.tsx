@@ -14,9 +14,11 @@ import {
 } from "@/features/flash-pop/alphabetSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import { ReviewAnswerPanel } from "@/components/game/shared";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AlphabetChallenge,
+  AnswerStatus,
   ChallengeCompletionResult,
   GameRoomContext,
   ShortTextQuestion,
@@ -449,63 +451,44 @@ function Review({
   challenge: AlphabetChallenge;
   session: AlphabetSession;
 }) {
+  const entries = challenge.entries.map((entry, index) => {
+    const letter = session.letters[index];
+    const status: AnswerStatus =
+      letter?.status === "correct"
+        ? "correct"
+        : letter?.status === "incorrect"
+          ? "incorrect"
+          : "unanswered";
+
+    return {
+      id: entry.question.id,
+      question: entry.question,
+      result: {
+        questionId: entry.question.id,
+        answer: letter?.answer ?? null,
+        status,
+        isCorrect: status === "correct",
+        points: 0,
+        timeUsed: 0,
+      },
+      marker: entry.letter,
+      title: entry.question.question,
+      subtitle: `Letra ${entry.letter}`,
+      showMeta: false,
+    };
+  });
+
   return (
     <div className={styles.stage}>
       <GameHeader title="Alfabeto" />
-      <Card as="section" className={styles.reviewCard} aria-labelledby="alphabet-review-title">
-        <div className={styles.reviewHeading}>
-          <div>
-            <Chip tone="social">Revisión</Chip>
-            <h1 id="alphabet-review-title">Letra por letra</h1>
-          </div>
-          <Button variant="secondary" onClick={session.showResults}>
-            Resultado
-          </Button>
-        </div>
-        <p className={styles.reviewLead}>
-          Consulta tu respuesta, la solución aceptada y la explicación de cada letra.
-        </p>
-        <div className={styles.reviewList}>
-          {challenge.entries.map((entry, index) => {
-            const letter = session.letters[index];
-            if (!letter || entry.question.type !== "short-text") return null;
-            return (
-              <details
-                className={`${styles.reviewItem} ${styles[`status_${letter.status}`]}`}
-                key={entry.letter}
-                open={index === 0}
-              >
-                <summary>
-                  <span className={styles.reviewLetter}>{entry.letter}</span>
-                  <span>
-                    <strong>{entry.question.question}</strong>
-                    <small>{STATUS_LABELS[letter.status]}</small>
-                  </span>
-                </summary>
-                <div className={styles.reviewBody}>
-                  <div>
-                    <span>Tu respuesta</span>
-                    <strong>{letter.answer ?? "Sin responder"}</strong>
-                  </div>
-                  <div>
-                    <span>Solución</span>
-                    <strong>{entry.question.correctAnswer}</strong>
-                  </div>
-                  <p>{entry.question.explanation}</p>
-                </div>
-              </details>
-            );
-          })}
-        </div>
-        <div className={styles.reviewActions}>
-          <Button variant="secondary" onClick={session.showResults}>
-            Volver al resultado
-          </Button>
-          <Button onClick={session.replay} leadingIcon={<RotateIcon />}>
-            Jugar de nuevo
-          </Button>
-        </div>
-      </Card>
+      <ReviewAnswerPanel
+        entries={entries}
+        countLabel={`${entries.length} respuestas`}
+        title="Historial de respuestas"
+        description="Consulta tu respuesta, la solución aceptada y la explicación de cada letra."
+        onBack={session.showResults}
+        onReplay={session.replay}
+      />
     </div>
   );
 }

@@ -10,16 +10,15 @@ import {
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
-import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
+import { ReviewAnswerPanel } from "@/components/game/shared";
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
-import { withChallengeScoring } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import { withChallengeScoring } from "@/lib/challengeScoring";
 import type {
   AnswerResult,
-  AnswerStatus,
   ChallengeCompletionResult,
   FlashChallenge,
   GameRoomContext,
@@ -44,19 +43,6 @@ function getPromptCopy(prompt: string) {
   const start = prompt.lastIndexOf("¿");
   if (start <= 0) return { title: prompt };
   return { context: prompt.slice(0, start).trim(), title: prompt.slice(start).trim() };
-}
-
-function statusLabel(status: AnswerStatus) {
-  if (status === "correct") return "Correcta";
-  if (status === "partial") return "Parcial";
-  if (status === "unanswered") return "Sin respuesta";
-  return "Fallada";
-}
-
-function statusTone(status: AnswerStatus): "success" | "social" | "danger" {
-  if (status === "correct") return "success";
-  if (status === "partial") return "social";
-  return "danger";
 }
 
 function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () => void }) {
@@ -358,6 +344,14 @@ function ReviewStage({
   returnTo: string;
   roomContext?: GameRoomContext;
 }) {
+  const resultByQuestionId = new Map(results.map((result) => [result.questionId, result]));
+  const entries = challenge.questions.map((question, index) => ({
+    id: question.id,
+    question,
+    result: resultByQuestionId.get(question.id),
+    marker: String(index + 1).padStart(2, "0"),
+  }));
+
   return (
     <div className={styles.stage}>
       <GameHeader
@@ -368,63 +362,14 @@ function ReviewStage({
           </ButtonLink>
         }
       />
-      <Card as="section" className={styles.reviewCard} aria-labelledby="flash-pop-review-title">
-        <div className={styles.reviewHeading}>
-          <div>
-            <p className={styles.eyebrow}>Revisión · Flash</p>
-            <h1 id="flash-pop-review-title">Tus respuestas</h1>
-          </div>
-          <Chip tone="social">
-            {results.length}/{challenge.questions.length}
-          </Chip>
-        </div>
-        <div className={styles.reviewList}>
-          {challenge.questions.map((question, index) => {
-            const result = results[index];
-            return (
-              <details
-                className={styles.reviewItem}
-                key={question.id}
-                open={index === results.length - 1}
-              >
-                <summary>
-                  <span className={styles.reviewNumber}>{String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.reviewTitle}>
-                    <strong>{QUESTION_FORMAT_LABELS[question.type]}</strong>
-                    <small>{question.question}</small>
-                  </span>
-                  {result ? (
-                    <Chip tone={statusTone(result.status)}>{statusLabel(result.status)}</Chip>
-                  ) : (
-                    <Chip variant="data">No alcanzada</Chip>
-                  )}
-                </summary>
-                {result ? (
-                  <div className={styles.reviewBody}>
-                    <QuestionReviewContent question={question} result={result} />
-                    <div className={styles.reviewMeta}>
-                      <span>{result.timeUsed.toFixed(1)} s</span>
-                      <strong>
-                        {result.points > 0 ? "+" : ""}
-                        {result.points} pts
-                      </strong>
-                    </div>
-                    <p className={styles.explanation}>{question.explanation}</p>
-                  </div>
-                ) : null}
-              </details>
-            );
-          })}
-        </div>
-        <div className={styles.reviewActions}>
-          <Button variant="secondary" fullWidth onClick={onBack}>
-            Volver al resultado
-          </Button>
-          <Button fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
-            Jugar de nuevo
-          </Button>
-        </div>
-      </Card>
+      <ReviewAnswerPanel
+        entries={entries}
+        countLabel={`${results.length} respuestas`}
+        title="Historial de respuestas"
+        description="Consulta tu respuesta, la solución aceptada y la explicación de cada desafío."
+        onBack={onBack}
+        onReplay={onReplay}
+      />
     </div>
   );
 }

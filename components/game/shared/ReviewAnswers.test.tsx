@@ -4,7 +4,7 @@ import { getChallengeById } from "@/data/challenges";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 
 describe("ReviewAnswers", () => {
-  it("uses the Flash Pop review surface and replay copy", () => {
+  it("uses the common history heading, statuses and replay copy", () => {
     const challenge = getChallengeById("tabarnia-challenge-03");
     if (challenge?.mode !== "survival") throw new Error("Expected survival challenge");
 
@@ -17,7 +17,8 @@ describe("ReviewAnswers", () => {
       />,
     );
 
-    expect(markup).not.toContain(["data-variant", "flash-pop"].join('="') + '"');
+    expect(markup).toContain("Historial de respuestas");
+    expect(markup).toContain("Sin responder");
     expect(markup).toContain("Jugar de nuevo");
   });
 });

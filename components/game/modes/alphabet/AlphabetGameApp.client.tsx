@@ -12,10 +12,11 @@ import {
   EyeIcon,
   RotateIcon,
 } from "@/components/ui";
+import { ReviewAnswerPanel } from "@/components/game/shared";
 import { Button, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
+import type { AlphabetChallenge, AnswerStatus, ShortTextQuestion } from "@/types/game";
 import styles from "./AlphabetGameApp.module.css";
 
 const STATUS_LABELS: Record<AlphabetLetterStatus, string> = {
@@ -465,6 +466,33 @@ function Results({ challenge, session }: { challenge: AlphabetChallenge; session
 }
 
 function Review({ challenge, session }: { challenge: AlphabetChallenge; session: GameSession }) {
+  const entries = challenge.entries.map((entry, index) => {
+    const letter = session.letters[index];
+    const status: AnswerStatus =
+      letter?.status === "correct"
+        ? "correct"
+        : letter?.status === "incorrect"
+          ? "incorrect"
+          : "unanswered";
+
+    return {
+      id: entry.question.id,
+      question: entry.question,
+      result: {
+        questionId: entry.question.id,
+        answer: letter?.answer ?? null,
+        status,
+        isCorrect: status === "correct",
+        points: 0,
+        timeUsed: 0,
+      },
+      marker: entry.letter,
+      title: entry.question.question,
+      subtitle: `Letra ${entry.letter}`,
+      showMeta: false,
+    };
+  });
+
   return (
     <motion.section
       className={styles.screen}
@@ -480,53 +508,16 @@ function Review({ challenge, session }: { challenge: AlphabetChallenge; session:
           </button>
         }
       />
-      <div className={styles.reviewHeader}>
-        <p className={styles.eyebrow}>Revisión</p>
-        <h1>Letra por letra</h1>
-        <p>Consulta tu respuesta, la solución aceptada y el dato que resolvía cada definición.</p>
-      </div>
-      <div className={styles.reviewList}>
-        {challenge.entries.map((entry, index) => {
-          const result = session.letters[index];
-          if (!result || entry.question.type !== "short-text") return null;
-          return (
-            <article key={entry.letter} className={styles.reviewCard}>
-              <div
-                className={`${styles.reviewLetter} ${styles[`status_${result.status}`]}`}
-                aria-label={`${entry.letter}: ${STATUS_LABELS[result.status]}`}
-              >
-                {entry.letter}
-              </div>
-              <div>
-                <p className={styles.reviewClue}>
-                  <span>Empieza por {entry.letter}</span>
-                  {entry.question.question}
-                </p>
-                <div className={styles.reviewAnswers}>
-                  <p>
-                    <span>Tu respuesta</span>
-                    <strong>{result.answer ?? "Sin responder"}</strong>
-                  </p>
-                  <p>
-                    <span>Solución</span>
-                    <strong>{entry.question.correctAnswer}</strong>
-                  </p>
-                </div>
-                <p className={styles.explanation}>{entry.question.explanation}</p>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-      <div className={styles.reviewFooter}>
-        <Button variant="secondary" onClick={session.showResults}>
-          Volver a resultados
-        </Button>
-        <Button onClick={session.replay}>
-          <RotateIcon className="h-5 w-5" />
-          Volver a jugar
-        </Button>
-      </div>
+      <ReviewAnswerPanel
+        entries={entries}
+        countLabel={`${entries.length} respuestas`}
+        title="Historial de respuestas"
+        description="Consulta tu respuesta, la solución aceptada y la explicación de cada letra."
+        onBack={session.showResults}
+        onReplay={session.replay}
+        backLabel="Volver a resultados"
+        replayLabel="Volver a jugar"
+      />
     </motion.section>
   );
 }

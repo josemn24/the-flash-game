@@ -18,8 +18,7 @@
 
   .introCard,
   .boardCard,
-  .resultCard,
-  .reviewCard {
+  .resultCard {
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     background: var(--color-surface);
@@ -27,8 +26,7 @@
   }
 
   .introCard,
-  .resultCard,
-  .reviewCard {
+  .resultCard {
     display: grid;
     gap: var(--space-4);
   }
@@ -40,8 +38,7 @@
   }
 
   .introCard h1,
-  .resultCard h1,
-  .reviewCard h1 {
+  .resultCard h1 {
     margin: var(--space-2) 0 0;
     font-family: var(--type-display);
     font-size: clamp(38px, 10vw, 64px);
@@ -52,7 +49,6 @@
 
   .lead,
   .description,
-  .reviewLead,
   .tieBreak {
     margin: 0;
     color: var(--color-ink-muted);
@@ -316,10 +312,7 @@
   }
 
   .gameMeta,
-  .reviewHeading,
-  .reviewHeading > div,
-  .rankingRow,
-  .reviewActions {
+  .rankingRow {
     display: flex;
     align-items: center;
   }
@@ -417,8 +410,7 @@
     line-height: 1.45;
   }
 
-  .resultCard,
-  .reviewCard {
+  .resultCard {
     text-align: center;
   }
 
@@ -521,137 +513,6 @@
     font-weight: 700;
   }
 
-  .reviewHeading {
-    justify-content: space-between;
-    text-align: left;
-  }
-
-  .reviewHeading > div {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .reviewHeading h1 {
-    margin: 0;
-    font-size: clamp(32px, 8vw, 48px);
-  }
-
-  .reviewLead {
-    text-align: left;
-    font-size: 14px;
-  }
-
-  .reviewList {
-    display: grid;
-    gap: var(--space-2);
-    text-align: left;
-  }
-
-  .reviewItem {
-    overflow: hidden;
-    border: var(--border-subtle);
-    border-left: 3px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
-  }
-
-  .reviewItem.status_correct {
-    border-left-color: var(--state-correct);
-  }
-  .reviewItem.status_incorrect {
-    border-left-color: var(--state-error);
-  }
-  .reviewItem.status_passed {
-    border-left-color: var(--color-reward);
-  }
-
-  .reviewItem summary {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    min-height: 60px;
-    padding: var(--space-2) var(--space-3);
-    cursor: pointer;
-    list-style: none;
-  }
-
-  .reviewItem summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .reviewLetter {
-    display: grid;
-    width: 36px;
-    height: 36px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: var(--radius-pill);
-    color: var(--color-social);
-    background: var(--color-surface);
-    font-family: var(--type-display);
-    font-weight: 900;
-  }
-
-  .reviewItem summary > span:last-child {
-    display: grid;
-    min-width: 0;
-    gap: 3px;
-  }
-
-  .reviewItem summary strong {
-    overflow: hidden;
-    font-size: 13px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .reviewItem summary small {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .reviewBody {
-    display: grid;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border-top: var(--border-subtle);
-  }
-
-  .reviewBody > div {
-    display: grid;
-    gap: 4px;
-    padding: var(--space-3);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-  }
-
-  .reviewBody span {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-
-  .reviewBody strong {
-    overflow-wrap: anywhere;
-  }
-  .reviewBody p {
-    margin: 0;
-    color: var(--color-ink-muted);
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .reviewActions {
-    display: grid;
-    gap: var(--space-2);
-  }
-
   @media (min-width: 720px) {
     .introLayout,
     .playGrid {
@@ -663,9 +524,6 @@
     }
     .boardCard {
       min-height: 100%;
-    }
-    .reviewActions {
-      grid-template-columns: 1fr 1fr;
     }
   }
 
