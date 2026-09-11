@@ -100,8 +100,8 @@
     color: var(--color-social);
     font-family: var(--type-display);
     font-size: 25px;
-    font-weight: 800;
-    letter-spacing: -0.07em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 1;
     text-align: center;
   }

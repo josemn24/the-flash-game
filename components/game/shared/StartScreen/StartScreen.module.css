@@ -81,7 +81,7 @@
     font-family: var(--type-display);
     font-size: clamp(3.8rem, 15vw, 7.7rem);
     font-stretch: condensed;
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.075em;
     line-height: 0.77;
     text-transform: uppercase;
@@ -151,7 +151,7 @@
     margin-top: 0.35rem;
     font-family: var(--type-display);
     font-size: 1.65rem;
-    font-weight: 950;
+    font-weight: var(--type-display-soft-weight);
     letter-spacing: -0.045em;
   }
   .libraryCard p {
@@ -199,7 +199,7 @@
     background: rgb(var(--color-brand-rgb) / 0.055);
     font-family: var(--type-display);
     font-size: 2.55rem;
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.06em;
   }
   .stageSelectContent {
@@ -215,7 +215,7 @@
     color: white;
     font-family: var(--type-display);
     font-size: 1.8rem;
-    font-weight: 950;
+    font-weight: var(--type-display-soft-weight);
     letter-spacing: -0.05em;
     line-height: 0.95;
   }

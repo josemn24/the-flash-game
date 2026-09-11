@@ -20,8 +20,8 @@
     margin: 0.65rem 0 0;
     font-family: var(--type-display);
     font-size: clamp(2.7rem, 8vw, 5.5rem);
-    font-weight: 950;
-    letter-spacing: -0.065em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.9;
     text-transform: uppercase;
   }
@@ -59,15 +59,15 @@
     color: var(--color-social);
     font-family: var(--type-display);
     font-size: 2.3rem;
-    font-weight: 950;
-    letter-spacing: -0.06em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
   }
   .card h2 {
     margin: 1.3rem 0 0.5rem;
     font-family: var(--type-display);
     font-size: 1.8rem;
-    font-weight: 950;
-    letter-spacing: -0.045em;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
   }
   .card p {
     margin: 0;
@@ -107,16 +107,16 @@
     color: var(--color-social);
     font-family: var(--type-display);
     font-size: clamp(4rem, 14vw, 8rem);
-    font-weight: 950;
-    letter-spacing: -0.08em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.7;
   }
   .detailTitle {
     margin: 0.55rem 0 0;
     font-family: var(--type-display);
     font-size: clamp(3rem, 9vw, 6rem);
-    font-weight: 950;
-    letter-spacing: -0.065em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.86;
     text-transform: uppercase;
   }
@@ -142,8 +142,8 @@
     margin: 0 0 0.9rem;
     font-family: var(--type-display);
     font-size: 1.45rem;
-    font-weight: 950;
-    letter-spacing: -0.035em;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
   }
   .section p,
   .section li {

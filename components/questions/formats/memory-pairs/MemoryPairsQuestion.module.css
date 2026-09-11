@@ -13,7 +13,7 @@
     color: rgba(255, 255, 255, 0.58);
     font-family: var(--type-mono);
     font-size: 0.68rem;
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -99,7 +99,7 @@
     color: rgba(255, 255, 255, 0.24);
     font-family: var(--type-display);
     font-size: 1.8rem;
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
   }
   .stateIcon {
     position: absolute;

@@ -82,8 +82,8 @@
     margin: 0;
     font-family: var(--type-display);
     font-size: clamp(32px, 8vw, 48px);
-    font-weight: 800;
-    letter-spacing: -0.055em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 1;
   }
 

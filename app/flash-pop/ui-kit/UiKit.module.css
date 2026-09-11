@@ -107,9 +107,17 @@
   .displayType {
     font-family: var(--type-display);
     font-size: clamp(38px, 6vw, 58px);
-    font-weight: 700;
-    letter-spacing: -0.05em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.95;
+  }
+
+  .displayTypeSoft {
+    font-family: var(--type-display);
+    font-size: clamp(30px, 5vw, 46px);
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
+    line-height: var(--type-display-soft-line-height);
   }
 
   .uiType {

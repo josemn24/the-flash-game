@@ -88,8 +88,8 @@
     margin-top: 0.85rem;
     font-family: var(--type-display);
     font-size: clamp(3rem, 7vw, 5.6rem);
-    font-weight: 950;
-    letter-spacing: -0.065em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.9;
   }
 
@@ -194,8 +194,8 @@
     margin: 0.35rem 0;
     font-family: var(--type-display);
     font-size: clamp(2rem, 5vw, 4rem);
-    font-weight: 950;
-    letter-spacing: -0.05em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
   }
 
   .status_passed {
@@ -230,7 +230,7 @@
     padding: 0.08em 0.04em;
     font-family: var(--type-display);
     font-size: clamp(9rem, 28vw, 18rem);
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.08em;
     line-height: 1;
     background: linear-gradient(135deg, white, var(--color-brand), var(--color-social));
@@ -299,8 +299,8 @@
     margin-top: 1.25rem;
     font-family: var(--type-display);
     font-size: clamp(2.35rem, 5.2vw, 4.25rem);
-    font-weight: 950;
-    letter-spacing: -0.05em;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
     line-height: 1.02;
   }
 
@@ -413,7 +413,7 @@
     padding: 0.08em 0.04em 0.04em 0;
     font-family: var(--type-display);
     font-size: clamp(6rem, 14vw, 10rem);
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.09em;
     line-height: 1;
     background: linear-gradient(135deg, white 12%, var(--color-brand) 58%, var(--color-social));
@@ -910,7 +910,7 @@
     border-radius: 50%;
     font-family: var(--type-display);
     font-size: 1.05rem;
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     transform: translate(-50%, -50%)
       rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
       translateY(calc(min(17vw, 12.5rem) * -1))

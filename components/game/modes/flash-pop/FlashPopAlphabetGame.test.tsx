@@ -15,9 +15,10 @@ describe("FlashPopAlphabetGame", () => {
     const markup = renderToStaticMarkup(<FlashPopAlphabetGame challenge={challenge} />);
 
     expect(markup).toContain("Alfabeto");
-    expect(markup).toContain("18 letras");
-    expect(markup).toContain("Comenzar desafío");
-    expect(markup).toContain("Estado de las letras");
+    expect(markup).toContain(">18</strong>");
+    expect(markup).toContain("Empezar desafío");
+    expect(markup).toContain("Resumen del desafío");
+    expect(markup).not.toContain("Estado de las letras");
   });
 
   it("does not depend on the legacy Alphabet shell or dark effects", () => {

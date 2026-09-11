@@ -8,6 +8,12 @@
     padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
   }
 
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
   .topbar,
   .topbarLeft,
   .topbarRight,
@@ -155,7 +161,6 @@
     text-transform: uppercase;
   }
 
-  .intro,
   .briefing,
   .question,
   .result,
@@ -165,7 +170,6 @@
     margin: auto 0;
   }
 
-  .introCard,
   .briefingCard,
   .resultCard,
   .reviewCard {
@@ -176,7 +180,6 @@
     box-shadow: var(--shadow-hero);
   }
 
-  .introCard h1,
   .briefingCard h1,
   .questionCard h1,
   .resultCard h1,
@@ -189,7 +192,6 @@
     line-height: 0.98;
   }
 
-  .introLead,
   .briefingDescription,
   .resultLead,
   .reviewCopy {
@@ -210,27 +212,13 @@
     text-transform: uppercase;
   }
 
-  .introIllustration {
-    width: 100%;
-    min-height: 160px;
-    margin-bottom: var(--space-6);
-    border-radius: var(--radius-card);
-    background: var(--color-surface-soft) url("/flash-pop/concepts/pyramid-soft-diorama.webp")
-      center / cover;
-  }
-
-  .rules,
   .resultMeta {
     display: grid;
     gap: var(--space-3);
     margin-top: var(--space-6);
-  }
-
-  .rules {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .rule,
   .briefingStat,
   .resultStat {
     display: flex;
@@ -242,14 +230,12 @@
     background: var(--color-surface-raised);
   }
 
-  .rule strong,
   .briefingStat strong,
   .resultStat strong {
     font-size: 17px;
     font-weight: 800;
   }
 
-  .rule span,
   .briefingStat span,
   .resultStat span {
     color: var(--color-ink-muted);
@@ -261,23 +247,6 @@
   .action {
     width: 100%;
     margin-top: var(--space-6);
-  }
-
-  .attemptNote,
-  .storageWarning {
-    margin: var(--space-3) 0 0;
-    color: var(--color-ink-muted);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.4;
-    text-align: center;
-  }
-
-  .storageWarning {
-    padding: var(--space-3);
-    border-radius: var(--radius-control);
-    background: rgb(255 114 118 / 12%);
-    color: #a22d38;
   }
 
   .briefingCard {
@@ -307,10 +276,6 @@
 
   .briefingStat strong {
     font-size: 20px;
-  }
-
-  .resultMeta {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .briefingAction {
@@ -553,16 +518,11 @@
       gap: var(--space-8);
     }
 
-    .intro,
     .briefing,
     .question,
     .result,
     .review {
       width: min(100%, 680px);
-    }
-
-    .introIllustration {
-      min-height: 260px;
     }
   }
 

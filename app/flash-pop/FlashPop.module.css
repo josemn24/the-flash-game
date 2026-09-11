@@ -25,8 +25,8 @@
     gap: 10px;
     font-family: var(--type-display);
     font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.035em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
   }
 
   .brandMark {
@@ -96,13 +96,13 @@
   .welcome h1,
   .challengeBody h2 {
     font-family: var(--type-display);
-    font-weight: 700;
+    font-weight: var(--type-display-strong-weight);
   }
 
   .welcome h1 {
     margin-top: var(--space-1);
     font-size: clamp(40px, 5vw, 64px);
-    letter-spacing: -0.05em;
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.95;
   }
 
@@ -185,7 +185,7 @@
   .challengeBody h2 {
     margin-top: 7px;
     font-size: clamp(36px, 4vw, 52px);
-    letter-spacing: -0.05em;
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.96;
   }
 
@@ -230,9 +230,9 @@
     margin: 7px 0 0;
     font-family: var(--type-display);
     font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
+    line-height: var(--type-display-soft-line-height);
   }
 
   .classicPreviewCard .challengeCopy {
@@ -370,9 +370,9 @@
     margin: 7px 0 0;
     font-family: var(--type-display);
     font-size: 23px;
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 0.98;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
+    line-height: var(--type-display-soft-line-height);
   }
 
   .secondaryChallengeBody .challengeCopy {

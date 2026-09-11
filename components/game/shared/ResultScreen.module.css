@@ -36,7 +36,7 @@
     z-index: 2;
     font-family: var(--type-display);
     font-size: clamp(4.7rem, 21vw, 7.5rem);
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.08em;
     line-height: 0.85;
   }
@@ -87,7 +87,7 @@
   .accuracyRing span {
     font-family: var(--type-display);
     font-size: 1.3rem;
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
   }
   .resultStatCard {
     display: flex;
@@ -105,7 +105,7 @@
     color: white;
     font-family: var(--type-display);
     font-size: 1.7rem;
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
   }
   .resultStatCard span {
     margin-top: 0.1rem;

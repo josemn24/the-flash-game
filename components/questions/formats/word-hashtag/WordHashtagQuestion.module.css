@@ -60,7 +60,7 @@
   .tile b {
     font-family: var(--type-display);
     font-size: clamp(1.35rem, 7vw, 2.4rem);
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
     line-height: 1;
   }
 

@@ -5,6 +5,7 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, BoltIcon, CheckIcon } from "@/components/ui";
 import { Avatar, Button, ButtonLink, Canvas, Card, Chip, GameHeader, Timer } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
@@ -89,50 +90,8 @@ function Topbar({
   );
 }
 
-function Intro({
-  challenge,
-  onStart,
-}: {
-  challenge: PyramidChallenge;
-  onStart: () => void;
-}) {
-  return (
-    <div className={styles.intro}>
-      <Topbar />
-      <Card as="section" className={styles.introCard} aria-labelledby="flash-pop-intro-title">
-        <div className={styles.introIllustration} aria-hidden="true" />
-        <Chip tone="social">Reto de hoy · Pirámide</Chip>
-        <h1 id="flash-pop-intro-title">{challenge.title}</h1>
-        <p className={styles.introLead}>{challenge.subtitle}</p>
-
-        <div className={styles.rules}>
-          <div className={styles.rule}>
-            <strong>{challenge.levels.length} niveles</strong>
-            <span>Una secuencia de formatos para llegar a la cima.</span>
-          </div>
-          <div className={styles.rule}>
-            <strong>Juega a tu ritmo</strong>
-            <span>Responde rápido, revisa tu ascenso y vuelve a intentarlo.</span>
-          </div>
-        </div>
-
-        <Button
-          size="hero"
-          fullWidth
-          trailingIcon={<ArrowIcon />}
-          className={styles.action}
-          onClick={onStart}
-        >
-          Empezar partida
-        </Button>
-        <p className={styles.attemptNote}>
-          {challenge.levels.length} niveles · {formatTime(getChallengeTimeLimit(challenge))} · Hasta
-          +120 ⚡
-        </p>
-      </Card>
-
-    </div>
-  );
+function Intro({ challenge, onStart }: { challenge: PyramidChallenge; onStart: () => void }) {
+  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
 }
 
 function Briefing({
@@ -504,7 +463,10 @@ export function FlashPopPyramidGame({
 
   return (
     <MotionConfig reducedMotion="user">
-      <Canvas contentClassName={styles.screen}>
+      <Canvas
+        maxWidth={session.phase === "intro" ? "none" : "wide"}
+        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
+      >
         <AnimatePresence mode="wait">
           {session.phase === "loading" ? (
             <motion.div
@@ -527,10 +489,7 @@ export function FlashPopPyramidGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Intro
-                challenge={challenge}
-                onStart={session.start}
-              />
+              <Intro challenge={challenge} onStart={session.start} />
             </motion.div>
           ) : null}
           {session.phase === "briefing" ? (

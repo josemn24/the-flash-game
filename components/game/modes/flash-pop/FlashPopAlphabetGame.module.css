@@ -8,6 +8,12 @@
     padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
   }
 
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
   .stage,
   .playing {
     display: grid;
@@ -16,7 +22,6 @@
     margin: auto 0;
   }
 
-  .introCard,
   .boardCard,
   .resultCard {
     border: var(--border-subtle);
@@ -25,48 +30,27 @@
     box-shadow: var(--shadow-hero);
   }
 
-  .introCard,
   .resultCard {
     display: grid;
     gap: var(--space-4);
+    text-align: center;
   }
 
-  .introLayout {
-    display: grid;
-    align-items: center;
-    gap: var(--space-6);
-  }
-
-  .introCard h1,
   .resultCard h1 {
     margin: var(--space-2) 0 0;
     font-family: var(--type-display);
     font-size: clamp(38px, 10vw, 64px);
-    font-weight: 800;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.065em;
     line-height: 0.94;
   }
 
-  .lead,
-  .description,
   .tieBreak {
     margin: 0;
     color: var(--color-ink-muted);
     line-height: 1.5;
   }
 
-  .lead {
-    margin-top: var(--space-3);
-    font-size: 17px;
-    font-weight: 700;
-  }
-
-  .description {
-    margin-top: var(--space-2);
-    font-size: 14px;
-  }
-
-  .stats,
   .resultStats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -74,7 +58,6 @@
     margin-top: var(--space-5);
   }
 
-  .stats > div,
   .resultStats > div {
     display: grid;
     gap: 4px;
@@ -83,47 +66,15 @@
     background: var(--color-surface-raised);
   }
 
-  .stats strong,
   .resultStats strong {
     font-size: 18px;
     font-weight: 800;
   }
 
-  .stats span,
   .resultStats span {
     color: var(--color-ink-muted);
     font-size: 11px;
     font-weight: 600;
-  }
-
-  .rules {
-    display: grid;
-    gap: var(--space-2);
-    margin-top: var(--space-5);
-  }
-
-  .rules p {
-    margin: 0;
-    color: var(--color-ink-muted);
-    font-size: 13px;
-    line-height: 1.45;
-  }
-
-  .rules strong {
-    color: var(--color-ink);
-  }
-
-  .formatList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  .introBoard {
-    position: relative;
-    display: grid;
-    min-height: 250px;
-    place-items: center;
   }
 
   .board {
@@ -151,7 +102,7 @@
     box-shadow: var(--shadow-control);
     font-family: var(--type-display);
     font-size: 0.95rem;
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
     transform: translate(-50%, -50%)
       rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
       translateY(calc(min(32vw, 7.8rem) * -1))
@@ -214,41 +165,6 @@
     border-style: dashed;
     color: var(--color-ink-faint);
     background: var(--color-surface-soft);
-  }
-
-  .boardCenter {
-    position: absolute;
-    z-index: 1;
-    display: grid;
-    width: 43%;
-    aspect-ratio: 1;
-    place-content: center;
-    border: var(--border-subtle);
-    border-radius: var(--radius-pill);
-    background: var(--color-surface-soft);
-    text-align: center;
-  }
-
-  .boardCenter svg {
-    width: 20px;
-    margin: 0 auto var(--space-1);
-    color: var(--color-brand);
-  }
-
-  .boardCenter span,
-  .boardCenter small {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .boardCenter strong {
-    margin: 3px 0;
-    font-family: var(--type-display);
-    font-size: clamp(22px, 5vw, 34px);
   }
 
   .countdown {
@@ -410,10 +326,6 @@
     line-height: 1.45;
   }
 
-  .resultCard {
-    text-align: center;
-  }
-
   .resultChallenge {
     margin: 0;
     color: var(--color-social);
@@ -514,12 +426,8 @@
   }
 
   @media (min-width: 720px) {
-    .introLayout,
     .playGrid {
       grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
-    }
-
-    .playGrid {
       align-items: stretch;
     }
     .boardCard {
@@ -528,7 +436,6 @@
   }
 
   @media (max-width: 520px) {
-    .stats,
     .resultStats {
       grid-template-columns: 1fr;
     }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { ArrowIcon, CheckIcon, ClockIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
+import { CheckIcon, ClockIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import {
   FlashPopFeedback,
@@ -11,11 +11,11 @@ import {
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import { ReviewAnswerPanel } from "@/components/game/shared";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
-import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import type {
   AnswerResult,
@@ -46,56 +46,7 @@ function getPromptCopy(prompt: string) {
 }
 
 function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () => void }) {
-  const totalTime = challenge.questions.reduce((total, question) => total + question.timeLimit, 0);
-  const formats = [
-    ...new Set(challenge.questions.map((question) => QUESTION_FORMAT_LABELS[question.type])),
-  ];
-
-  return (
-    <div className={styles.stage}>
-      <GameHeader title="Flash clásico" action={<Chip tone="social">Preview</Chip>} />
-      <Card as="section" className={styles.introCard} aria-labelledby="flash-pop-flash-title">
-        <div className={styles.introAccent} aria-hidden="true">
-          <span>16</span>
-          <small>retos</small>
-        </div>
-        <Chip tone="social">Reto de hoy · Flash</Chip>
-        <h1 id="flash-pop-flash-title">{challenge.title}</h1>
-        <p className={styles.lead}>{challenge.subtitle}</p>
-        <p className={styles.description}>{challenge.description}</p>
-
-        <div className={styles.introStats} aria-label="Resumen del desafío">
-          <div>
-            <strong>{challenge.questions.length}</strong>
-            <span>preguntas</span>
-          </div>
-          <div>
-            <strong>{formatTime(totalTime)}</strong>
-            <span>tiempo máximo</span>
-          </div>
-          <div>
-            <strong>{formats.length}</strong>
-            <span>formatos</span>
-          </div>
-        </div>
-
-        <div className={styles.formatList} aria-label="Formatos incluidos">
-          {formats.map((format) => (
-            <Chip key={format} variant="data">
-              {format}
-            </Chip>
-          ))}
-        </div>
-
-        <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
-          Empezar desafío
-        </Button>
-        <p className={styles.note}>
-          La sesión conserva el mismo scoring, reloj y replay que Flash normal.
-        </p>
-      </Card>
-    </div>
-  );
+  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
 }
 
 function QuestionStage({
@@ -419,7 +370,10 @@ export function FlashPopFlashGame({
 
   return (
     <MotionConfig reducedMotion="user">
-      <Canvas contentClassName={styles.screen}>
+      <Canvas
+        maxWidth={session.phase === "intro" ? "none" : "wide"}
+        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
+      >
         <AnimatePresence mode="wait">
           {session.phase === "intro" ? (
             <motion.div

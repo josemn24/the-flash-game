@@ -5,6 +5,12 @@
     justify-content: center;
   }
 
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
   .stageFrame {
     width: 100%;
     min-width: 0;
@@ -19,137 +25,27 @@
     gap: var(--space-6);
   }
 
-  .introCard,
   .resultCard {
     border-radius: 28px;
+    padding: clamp(24px, 4vw, 38px);
   }
 
-  .introCard {
-    position: relative;
-    max-width: 680px;
-    margin: clamp(12px, 7vh, 72px) auto 0;
-    overflow: hidden;
-    padding: clamp(24px, 5vw, 52px);
-  }
-
-  .introAccent {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    display: grid;
-    width: 76px;
-    height: 76px;
-    place-content: center;
-    transform: rotate(7deg);
-    border: var(--border-flash);
-    border-radius: 22px;
-    background: var(--color-brand);
-    box-shadow: var(--shadow-control);
-    text-align: center;
-  }
-
-  .introAccent span {
-    font-family: var(--type-display);
-    font-size: 32px;
-    font-weight: 900;
-    line-height: 0.8;
-  }
-
-  .introAccent small {
-    margin-top: 7px;
-    font-family: var(--type-mono);
-    font-size: 8px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .introCard h1,
   .questionCard h1,
   .resultCard h1 {
     font-family: var(--type-display);
-    font-weight: 800;
-    letter-spacing: -0.055em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.98;
   }
 
-  .introCard h1 {
-    max-width: 510px;
-    margin: 16px 100px 0 0;
-    font-size: clamp(42px, 7vw, 72px);
-  }
-
-  .lead {
-    max-width: 510px;
-    margin: 16px 0 0;
-    color: var(--color-ink-muted);
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 1.45;
-  }
-
-  .description,
-  .note {
-    color: var(--color-ink-muted);
-    line-height: 1.55;
-  }
-
-  .description {
-    max-width: 600px;
-    margin: 10px 0 0;
-    font-size: 13px;
-  }
-
-  .introStats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 28px 0 18px;
-  }
-
-  .introStats div {
-    display: grid;
-    gap: 4px;
-    padding: 14px;
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
-    background: var(--color-surface-soft);
-  }
-
-  .introStats strong {
-    font-family: var(--type-display);
-    font-size: 22px;
-    letter-spacing: -0.04em;
-  }
-
-  .introStats span,
-  .note,
-  .promptContext,
   .eyebrow {
+    margin: 22px 0 0;
+    color: var(--color-social);
     font-family: var(--type-mono);
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-  }
-
-  .introStats span,
-  .note,
-  .promptContext {
-    color: var(--color-ink-muted);
-  }
-
-  .formatList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-bottom: 24px;
-  }
-
-  .note {
-    margin: 11px 0 0;
-    font-size: 9px;
-    text-align: center;
   }
 
   .scoreTrack {
@@ -200,9 +96,11 @@
     padding: 6px 10px;
     color: var(--color-focus);
     background: rgb(105 87 232 / 9%);
+    font-family: var(--type-mono);
     font-size: clamp(0.64rem, 1.4vw, 0.75rem);
     font-weight: 900;
     letter-spacing: 0.07em;
+    text-transform: uppercase;
   }
 
   .questionCard h1 {
@@ -223,21 +121,12 @@
     margin-top: 28px;
   }
 
-  .eyebrow {
-    margin: 22px 0 0;
-    color: var(--color-social);
-  }
-
   .resultLayout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
     gap: 18px;
     align-items: start;
     margin-top: 34px;
-  }
-
-  .resultCard {
-    padding: clamp(24px, 4vw, 38px);
   }
 
   .resultCard h1 {
@@ -255,7 +144,7 @@
   .scoreDisplay strong {
     font-family: var(--type-display);
     font-size: clamp(70px, 10vw, 108px);
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: -0.08em;
     line-height: 0.8;
   }
@@ -386,31 +275,6 @@
   }
 
   @media (max-width: 480px) {
-    .introCard h1 {
-      margin-right: 0;
-      padding-top: 72px;
-    }
-    .introAccent {
-      top: 22px;
-      right: 22px;
-      width: 64px;
-      height: 64px;
-    }
-    .introAccent span {
-      font-size: 27px;
-    }
-    .introStats {
-      gap: 6px;
-    }
-    .introStats div {
-      padding: 10px;
-    }
-    .introStats strong {
-      font-size: 17px;
-    }
-    .introStats span {
-      font-size: 8px;
-    }
     .summaryStats,
     .answerStats {
       gap: 7px;

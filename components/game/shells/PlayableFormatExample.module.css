@@ -40,8 +40,8 @@
   .questionTitle,
   .feedbackPanel h2 {
     font-family: var(--type-display);
-    font-weight: 950;
-    letter-spacing: -0.045em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 1.05;
   }
 

@@ -773,7 +773,7 @@
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 0.55rem;
     font-family: var(--type-display);
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
   }
   .wordleReviewTile small {
     position: absolute;
@@ -796,7 +796,7 @@
   .wordHashtagReviewTile b {
     font-family: var(--type-display);
     font-size: clamp(0.78rem, 3vw, 1.35rem);
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
   }
   .wordHashtagReviewTile small {
     position: absolute;

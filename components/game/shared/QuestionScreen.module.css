@@ -129,9 +129,9 @@
     max-width: 44rem;
     font-family: var(--type-display);
     font-size: clamp(1.9rem, 7vw, 3.15rem);
-    font-weight: 950;
-    letter-spacing: -0.05em;
-    line-height: 1.05;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
+    line-height: var(--type-display-soft-line-height);
     color: var(--color-ink);
   }
 

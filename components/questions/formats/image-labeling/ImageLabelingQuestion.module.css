@@ -129,7 +129,7 @@
       0 0.4rem 1.2rem rgba(0, 0, 0, 0.38);
     font-family: var(--type-display);
     font-size: 1.55rem;
-    font-weight: 950;
+    font-weight: var(--type-display-strong-weight);
   }
 
   .singleReviewAnchor {

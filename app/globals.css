@@ -72,6 +72,11 @@
     --type-ui: var(--font-flash-pop-ui), Manrope, sans-serif;
     --type-display: var(--font-flash-pop-display), Fredoka, sans-serif;
     --type-mono: var(--font-flash-pop-mono), "IBM Plex Mono", monospace;
+    --type-display-strong-weight: 700;
+    --type-display-strong-tracking: -0.025em;
+    --type-display-soft-weight: 500;
+    --type-display-soft-tracking: 0.015em;
+    --type-display-soft-line-height: 1.08;
 
     --control-height: 56px;
     --control-height-hero: 64px;
@@ -128,6 +133,24 @@
 
   button:disabled {
     cursor: not-allowed;
+  }
+}
+
+@layer app-utilities {
+  .type-display-strong,
+  .type-display-soft {
+    font-family: var(--type-display);
+  }
+
+  .type-display-strong {
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+  }
+
+  .type-display-soft {
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
+    line-height: var(--type-display-soft-line-height);
   }
 }
 

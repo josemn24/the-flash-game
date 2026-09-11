@@ -337,9 +337,9 @@
   .heroBody h3 {
     font-family: var(--font-pop-display, var(--type-display));
     font-size: 28px;
-    font-weight: 950;
-    letter-spacing: -0.055em;
-    line-height: 1;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 1.04;
   }
 
   .challengeCopy {

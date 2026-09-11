@@ -3,7 +3,7 @@
 import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { ArrowIcon, BoltIcon, CheckIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
+import { ArrowIcon, CheckIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
 import { Avatar, Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
@@ -14,8 +14,8 @@ import {
 } from "@/features/flash-pop/alphabetSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { ReviewAnswerPanel } from "@/components/game/shared";
-import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AlphabetChallenge,
   AnswerStatus,
@@ -140,75 +140,7 @@ function AlphabetForm({
 }
 
 function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: () => void }) {
-  const previewLetters = challenge.entries.map((entry) => ({
-    letter: entry.letter,
-    questionId: entry.question.id,
-    status: "unvisited" as const,
-    answer: null,
-  }));
-  const formats = [
-    ...new Set(challenge.entries.map((entry) => QUESTION_FORMAT_LABELS[entry.question.type])),
-  ];
-
-  return (
-    <div className={styles.stage}>
-      <GameHeader title="Alfabeto" />
-      <Card as="section" className={styles.introCard} aria-labelledby="alphabet-intro-title">
-        <div className={styles.introLayout}>
-          <div>
-            <Chip tone="social">Reto de hoy · Alfabeto</Chip>
-            <h1 id="alphabet-intro-title">{challenge.title}</h1>
-            <p className={styles.lead}>{challenge.subtitle}</p>
-            <p className={styles.description}>{challenge.description}</p>
-            <div className={styles.stats} aria-label="Resumen del desafío">
-              <div>
-                <strong>{challenge.entries.length}</strong>
-                <span>letras</span>
-              </div>
-              <div>
-                <strong>100</strong>
-                <span>puntos</span>
-              </div>
-              <div>
-                <strong>{formatTime(challenge.timeLimit)}</strong>
-                <span>tiempo máximo</span>
-              </div>
-            </div>
-            <div className={styles.rules}>
-              <p>
-                <strong>Responde</strong> con una palabra que empiece por la letra activa.
-              </p>
-              <p>
-                <strong>Pasa</strong> si necesitas pensarlo: la letra volverá en otra vuelta.
-              </p>
-              <p>
-                <strong>Desempate:</strong> más aciertos y después el último acierto más rápido.
-              </p>
-            </div>
-            <Button size="hero" fullWidth onClick={onStart} trailingIcon={<ArrowIcon />}>
-              Comenzar desafío
-            </Button>
-          </div>
-          <div className={styles.introBoard}>
-            <div className={styles.boardCenter} aria-hidden="true">
-              <BoltIcon />
-              <span>Modo</span>
-              <strong>Alfabeto</strong>
-              <small>{challenge.entries.length} letras</small>
-            </div>
-            <AlphabetBoard letters={previewLetters} />
-          </div>
-        </div>
-        <div className={styles.formatList} aria-label="Formatos incluidos">
-          {formats.map((format) => (
-            <Chip key={format} variant="data">
-              {format}
-            </Chip>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
+  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
 }
 
 function Countdown({ onComplete }: { onComplete: () => void }) {
@@ -516,7 +448,10 @@ export function FlashPopAlphabetGame({
   );
   return (
     <MotionConfig reducedMotion="user">
-      <Canvas contentClassName={styles.screen}>
+      <Canvas
+        maxWidth={session.phase === "intro" ? "none" : "wide"}
+        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
+      >
         <AnimatePresence mode="wait">
           {session.phase === "intro" ? (
             <motion.div

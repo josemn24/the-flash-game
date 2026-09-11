@@ -107,6 +107,7 @@ export default function FlashPopUiKitPage() {
         </div>
         <Card className={styles.typeSpecimen}>
           <p className={styles.displayType}>Hoy toca subir.</p>
+          <p className={styles.displayTypeSoft}>La Pirámide se abre.</p>
           <p className={styles.uiType}>
             Manrope mantiene clara la interfaz incluso cuando aumenta la densidad de información.
           </p>

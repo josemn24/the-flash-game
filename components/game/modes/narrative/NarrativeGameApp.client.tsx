@@ -25,6 +25,7 @@ import {
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import styles from "./NarrativeGame.module.css";
@@ -89,57 +90,12 @@ function NarrativeBlocks({
 
 function NarrativeIntro({
   challenge,
-  questionCount,
   onStart,
 }: {
   challenge: NarrativeChallenge;
-  questionCount: number;
   onStart: () => void;
 }) {
-  return (
-    <motion.section
-      className={styles.fullScreen}
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -18 }}
-    >
-      <GameHeader title="Narrativa" action={<Chip tone="social">Cuento en tres capítulos</Chip>} />
-
-      <div className={styles.introContent}>
-        <div className={styles.introCopy}>
-          <p className={styles.eyebrow}>Narrativa competitiva</p>
-          <h1>{challenge.title}</h1>
-          <p className={styles.subtitle}>{challenge.subtitle}</p>
-          <p className={styles.description}>{challenge.description}</p>
-        </div>
-
-        <Card as="section" className={styles.introPanel}>
-          <div className={styles.introStats}>
-            <div>
-              <strong>{questionCount}</strong>
-              <span>Pruebas</span>
-            </div>
-            <div>
-              <strong>{challenge.maxScore}</strong>
-              <span>Puntos</span>
-            </div>
-            <div>
-              <strong>≈ 9–11</strong>
-              <span>Minutos</span>
-            </div>
-          </div>
-          <ul className={styles.introRules}>
-            <li>El registro conserva la evidencia aunque falles la prueba.</li>
-            <li>Lee cada página antes de intervenir en los registros.</li>
-          </ul>
-          <MotionButton size="hero" onClick={onStart} whileTap={{ scale: 0.985 }}>
-            Abrir el relato
-            <ArrowIcon className="h-5 w-5" />
-          </MotionButton>
-        </Card>
-      </div>
-    </motion.section>
-  );
+  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
 }
 
 function NarrativeSceneScreen({
@@ -518,7 +474,6 @@ export function NarrativeGameApp({
                 <NarrativeIntro
                   key="narrative-intro"
                   challenge={challenge}
-                  questionCount={session.totalQuestions}
                   onStart={session.start}
                 />
               )}

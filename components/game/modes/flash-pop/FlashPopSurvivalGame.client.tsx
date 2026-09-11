@@ -2,9 +2,9 @@
 
 import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { ArrowIcon, HeartIcon } from "@/components/ui";
-import { Button, Card, Canvas, Chip, GameHeader } from "@/components/ui";
+import { Canvas } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useSurvivalSession } from "@/features/game/useSurvivalSession";
@@ -14,7 +14,6 @@ import {
 } from "@/features/flash-pop/survivalSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type {
   AnswerResult,
   ChallengeCompletionResult,
@@ -24,70 +23,12 @@ import type {
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";
 
-function formatTime(seconds: number) {
-  const rounded = Math.max(0, Math.round(seconds));
-  if (rounded < 60) return `${rounded} s`;
-  const minutes = Math.floor(rounded / 60);
-  const rest = rounded % 60;
-  return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
-}
-
 function totalTimeLimit(challenge: SurvivalChallenge) {
   return challenge.questions.reduce((total, question) => total + question.timeLimit, 0);
 }
 
 function Intro({ challenge, onStart }: { challenge: SurvivalChallenge; onStart: () => void }) {
-  const formats = [
-    ...new Set(challenge.questions.map((question) => QUESTION_FORMAT_LABELS[question.type])),
-  ];
-
-  return (
-    <div className={styles.stage}>
-      <GameHeader title="Supervivencia" />
-      <Card as="section" className={styles.introCard} aria-labelledby="survival-intro-title">
-        <div className={styles.introAccent} aria-hidden="true">
-          <HeartIcon />
-          <strong>{challenge.lives}</strong>
-          <small>vidas</small>
-        </div>
-        <Chip tone="social">Reto de hoy · Supervivencia</Chip>
-        <h1 id="survival-intro-title">{challenge.title}</h1>
-        <p className={styles.lead}>{challenge.subtitle}</p>
-        <p className={styles.description}>{challenge.description}</p>
-
-        <div className={styles.stats} aria-label="Resumen del desafío">
-          <div>
-            <strong>{challenge.questions.length}</strong>
-            <span>preguntas</span>
-          </div>
-          <div>
-            <strong>{challenge.lives}</strong>
-            <span>vidas</span>
-          </div>
-          <div>
-            <strong>{formatTime(totalTimeLimit(challenge))}</strong>
-            <span>tiempo máximo</span>
-          </div>
-        </div>
-
-        <div className={styles.formats} aria-label="Formatos incluidos">
-          {formats.map((format) => (
-            <Chip key={format} variant="data">
-              {format}
-            </Chip>
-          ))}
-        </div>
-
-        <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={onStart}>
-          Empezar partida
-        </Button>
-        <p className={styles.note}>
-          Acierto: conservas vida · parcial: sumas puntos · fallo o timeout: pierdes una vida ·
-          hasta +120 ⚡
-        </p>
-      </Card>
-    </div>
-  );
+  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
 }
 
 function Feedback({
@@ -184,7 +125,10 @@ export function FlashPopSurvivalGame({
 
   return (
     <MotionConfig reducedMotion="user">
-      <Canvas contentClassName={styles.screen}>
+      <Canvas
+        maxWidth={session.phase === "intro" ? "none" : "wide"}
+        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
+      >
         <AnimatePresence mode="wait">
           {session.phase === "intro" ? (
             <motion.div

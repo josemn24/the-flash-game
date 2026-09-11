@@ -30,7 +30,7 @@
     border-radius: 0.72rem;
     font-family: var(--type-display);
     font-size: 1.35rem;
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
   }
 
   .tile small {
@@ -115,7 +115,7 @@
     background: rgba(255, 255, 255, 0.06);
     font-family: var(--type-display);
     font-size: 1.1rem;
-    font-weight: 900;
+    font-weight: var(--type-display-strong-weight);
     letter-spacing: 0.2em;
     text-transform: uppercase;
   }

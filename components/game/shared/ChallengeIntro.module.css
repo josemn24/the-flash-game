@@ -1,80 +1,208 @@
 @layer app-formats {
-  .eyebrow {
-    font-family: var(--type-mono);
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.19em;
-    text-transform: uppercase;
-  }
-  .stageCard {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1.75rem;
-    background: linear-gradient(145deg, rgba(22, 24, 28, 0.96), rgba(10, 11, 13, 0.98));
-    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.36);
-  }
-  .stageCardStripe {
-    position: absolute;
-    top: 0;
-    right: 8%;
-    width: 8rem;
-    height: 100%;
-    transform: skewX(-20deg);
-    background: linear-gradient(to bottom, rgb(var(--color-brand-rgb) / 0.07), transparent 70%);
-  }
-  .stageNumber {
-    color: rgba(255, 255, 255, 0.055);
-    font-family: var(--type-display);
-    font-size: 4rem;
-    font-weight: 950;
-    line-height: 1;
-  }
-  .stageStat {
+  .screen {
     display: flex;
-    min-height: 5.2rem;
+    width: 100%;
+    min-height: 100dvh;
     flex-direction: column;
+    gap: var(--space-6);
+    padding: var(--space-5) var(--space-4) max(var(--space-10), env(safe-area-inset-bottom));
+    background-image: radial-gradient(var(--color-social) 0.7px, transparent 0.7px);
+    background-size: 18px 18px;
+  }
+
+  .headerLeft {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .headerMode {
+    overflow: hidden;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .backLink {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color var(--motion-press-out) ease;
+  }
+
+  .backLink:hover {
+    color: var(--color-ink);
+  }
+
+  .content {
+    display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 0.25rem;
+    padding: var(--space-5) 0;
+  }
+
+  .stageCard {
+    width: min(100%, 680px);
+    border: var(--border-subtle);
+    border-radius: calc(var(--radius-card) * 2);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hero);
+  }
+
+  .cardContent {
+    display: grid;
+    gap: var(--space-5);
+    padding: clamp(24px, 5vw, 52px);
+  }
+
+  .cardContent h1 {
+    max-width: 590px;
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(42px, 9vw, 72px);
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 0.95;
+    overflow-wrap: anywhere;
+  }
+
+  .note,
+  .notice {
+    margin: 0;
+    color: var(--color-ink-muted);
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+  }
+
+  .metric {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+    min-height: 78px;
+    align-content: center;
+    padding: var(--space-3) var(--space-2);
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
     text-align: center;
   }
-  .stageStat strong {
+
+  .metric strong {
+    overflow: hidden;
     font-family: var(--type-display);
-    font-size: 1.65rem;
-    font-weight: 950;
-    letter-spacing: -0.04em;
+    font-size: clamp(18px, 4vw, 28px);
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .stageStat span {
-    margin-top: 0.15rem;
-    color: rgba(255, 255, 255, 0.32);
-    font-size: 0.62rem;
-    font-weight: 700;
+
+  .metric span,
+  .note,
+  .notice {
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
-  .ruleCard {
-    display: flex;
-    min-height: 5.5rem;
-    align-items: center;
-    gap: 0.9rem;
-    border: 1px solid rgba(255, 255, 255, 0.075);
-    border-radius: 1rem;
-    padding: 0.9rem;
-    background: rgba(255, 255, 255, 0.025);
+
+  .metric span,
+  .note {
+    color: var(--color-ink-muted);
   }
-  .ruleIcon {
+
+  .rules {
     display: grid;
-    width: 2.6rem;
-    height: 2.6rem;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 0.75rem;
+    gap: var(--space-3);
+    margin: var(--space-1) 0 0;
+    padding: 0;
+    list-style: none;
   }
-  @media (min-width: 640px) {
-    .stageStat {
-      min-height: 6rem;
+
+  .rules li {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .rules li strong {
+    display: inline;
+    margin-right: 0.35rem;
+    color: var(--color-ink);
+    font-weight: 850;
+  }
+
+  .ruleIndex {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    color: var(--color-ink);
+    background: var(--color-surface-soft);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .notice {
+    border-left: 3px solid var(--color-social);
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-ink);
+    background: rgb(105 87 232 / 9%);
+    line-height: 1.5;
+    text-transform: none;
+  }
+
+  .note {
+    text-align: center;
+    line-height: 1.5;
+    text-transform: none;
+  }
+
+  @media (max-width: 520px) {
+    .screen {
+      padding-top: var(--space-4);
     }
-    .stageStat strong {
-      font-size: 2rem;
+
+    .backLink {
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric {
+      min-height: 70px;
+      padding-inline: 4px;
+    }
+
+    .metric span {
+      font-size: 8px;
+      letter-spacing: 0.04em;
     }
   }
 }

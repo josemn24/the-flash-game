@@ -339,8 +339,8 @@
     color: #fff;
     font-family: var(--type-display);
     font-size: clamp(2.8rem, 9vw, 7rem);
-    font-weight: 950;
-    letter-spacing: 0.08em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 1;
   }
 
@@ -926,8 +926,8 @@
     color: white;
     font-family: var(--type-display);
     font-size: clamp(1.45rem, 3vw, 2.7rem);
-    font-weight: 850;
-    letter-spacing: -0.035em;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
     line-height: 1.12;
   }
 
@@ -1222,8 +1222,8 @@
     margin-top: 0;
     font-family: var(--type-display);
     font-size: clamp(1.55rem, 5.5vw, 2.65rem);
-    font-weight: 950;
-    letter-spacing: -0.05em;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: var(--type-display-soft-tracking);
     line-height: 1.04;
   }
 

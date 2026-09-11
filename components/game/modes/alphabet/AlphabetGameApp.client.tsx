@@ -13,6 +13,7 @@ import {
   RotateIcon,
 } from "@/components/ui";
 import { ReviewAnswerPanel } from "@/components/game/shared";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { Button, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
@@ -98,82 +99,7 @@ function AlphabetTopbar({
 }
 
 function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: () => void }) {
-  const letterCount = challenge.entries.length;
-  const previewLetters = challenge.entries.map((entry) => ({
-    letter: entry.letter,
-    questionId: entry.question.id,
-    status: "unvisited" as const,
-    answer: null,
-  }));
-
-  return (
-    <motion.section
-      className={styles.screen}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-    >
-      <AlphabetTopbar challengeTitle={challenge.title} />
-      <div className={styles.introGrid}>
-        <div className={styles.introCopy}>
-          <p className={styles.eyebrow}>Desafío {String(challenge.number).padStart(2, "0")}</p>
-          <h1>{challenge.title}</h1>
-          <p className={styles.subtitle}>{challenge.subtitle}</p>
-          <p className={styles.description}>{challenge.description}</p>
-
-          <div className={styles.introStats}>
-            <div>
-              <strong>{letterCount}</strong>
-              <span>Letras</span>
-            </div>
-            <div>
-              <strong>100</strong>
-              <span>Puntos</span>
-            </div>
-            <div>
-              <strong>{challenge.timeLimit}</strong>
-              <span>Segundos</span>
-            </div>
-          </div>
-
-          <div className={styles.rules}>
-            <div>
-              <span>01</span>
-              <p>
-                <strong>Responde</strong> un animal que empiece por la letra activa.
-              </p>
-            </div>
-            <div>
-              <span>02</span>
-              <p>
-                <strong>Pasa</strong> si necesitas pensarlo: volverá en la siguiente vuelta.
-              </p>
-            </div>
-            <div>
-              <span>03</span>
-              <p>
-                <strong>Acierta más.</strong> En empate, cuenta cuándo lograste tu último acierto.
-              </p>
-            </div>
-          </div>
-
-          <Button size="hero" onClick={onStart}>
-            Comenzar desafío
-            <ArrowIcon className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <div className={styles.introBoard}>
-          <div className={styles.boardCenter}>
-            <span>Modo</span>
-            <strong>Alfabeto</strong>
-            <small>{letterCount} letras</small>
-          </div>
-          <AlphabetBoard letters={previewLetters} />
-        </div>
-      </div>
-    </motion.section>
-  );
+  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
 }
 
 function Countdown({ onComplete }: { onComplete: () => void }) {

@@ -4,18 +4,11 @@ import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Link from "next/link";
 import { Logo } from "@/components/navigation/Logo";
+import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { SpeedBackground } from "@/components/effects/SpeedBackground";
-import {
-  ArrowIcon,
-  CheckIcon,
-  CrossIcon,
-  CrownIcon,
-  EyeIcon,
-  RotateIcon,
-  WarningIcon,
-} from "@/components/ui";
+import { ArrowIcon, CheckIcon, CrossIcon, CrownIcon, EyeIcon, RotateIcon } from "@/components/ui";
 import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
@@ -109,56 +102,15 @@ function PyramidIntro({
   onStart: () => void;
 }) {
   return (
-    <ScreenShell>
-      <div className={styles.introGrid}>
-        <div className={styles.introCopy}>
-          <p className={styles.eyebrow}>Desafío {String(challenge.number).padStart(2, "0")}</p>
-          <h1>{challenge.title}</h1>
-          <p className={styles.subtitle}>{challenge.subtitle}</p>
-          <p className={styles.description}>{challenge.description}</p>
-
-          <div className={styles.rules}>
-            <div>
-              <CrossIcon />
-              <span>
-                <strong>Un fallo termina el ascenso</strong>
-                Solo una respuesta completamente correcta abre el siguiente nivel.
-              </span>
-            </div>
-            <div>
-              <CrownIcon />
-              <span>
-                <strong>Prototipo rejugable</strong>
-                Puedes volver a intentarlo tantas veces como quieras.
-              </span>
-            </div>
-          </div>
-
-          {!storageAvailable && (
-            <div className={styles.storageWarning} role="alert">
-              <WarningIcon />
-              El progreso de esta partida no sobrevivirá a una recarga, pero puedes jugarla.
-            </div>
-          )}
-
-          <MotionButton
-            className={styles.primaryAction}
-            onClick={onStart}
-            whileTap={{ scale: 0.98 }}
-          >
-            Preparar ascenso
-            <ArrowIcon className="h-5 w-5" />
-          </MotionButton>
-        </div>
-
-        <div className={styles.introPyramid}>
-          <div className={styles.summitGlow} aria-hidden="true" />
-          <PyramidMap levels={challenge.levels} cleared={0} />
-          <p>Siete pruebas. 100 puntos. Repite cuando quieras.</p>
-        </div>
-      </div>
-
-    </ScreenShell>
+    <ChallengeIntro
+      challenge={challenge}
+      onStart={onStart}
+      notice={
+        !storageAvailable
+          ? "El progreso de esta partida no sobrevivirá a una recarga, pero puedes jugarla."
+          : undefined
+      }
+    />
   );
 }
 

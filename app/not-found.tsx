@@ -7,7 +7,7 @@ export default function NotFound() {
         <p className="font-mono text-xs font-black tracking-[.2em] text-[var(--color-danger)] uppercase">
           Error 404
         </p>
-        <h1 className="mt-3 font-[var(--type-display)] text-5xl font-black tracking-[-.06em] uppercase sm:text-7xl">
+        <h1 className="type-display-strong mt-3 text-5xl uppercase sm:text-7xl">
           Ruta fuera de pista
         </h1>
         <p className="mx-auto mt-4 max-w-md leading-7 text-[var(--color-ink-muted)]">

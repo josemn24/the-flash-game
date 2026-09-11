@@ -188,8 +188,8 @@
   .valueDisplay strong {
     color: var(--format-value-ink);
     font-size: 2.85rem;
-    font-weight: 950;
-    letter-spacing: -0.05em;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
     line-height: 1;
     font-family: var(--type-display);
   }
