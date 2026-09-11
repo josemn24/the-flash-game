@@ -1886,7 +1886,7 @@ export const questionsById = {
     ],
     optimalMoves: 10,
     objectiveLabel: "Retira el trípode por la salida de servicio",
-    instruction: "Mueve únicamente el equipo humano sobre su eje. P-17 no forma parte del tablero.",
+    hideInstruction: true,
     completionMessage: "Corredor despejado. El trípode ha salido por el acceso de servicio.",
     boardLabel: "Plano del corredor del campamento con trípode, cajas y trineo",
     timeLimit: 40,

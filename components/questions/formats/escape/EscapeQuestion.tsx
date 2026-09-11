@@ -390,9 +390,11 @@ export function EscapeQuestion({
           <RotateIcon /> Reiniciar
         </button>
       </div>
-      <p className={styles.instructions}>
-        {question.instruction ?? "Arrastra los bloques sobre su eje para despejar la salida."}
-      </p>
+      {!question.hideInstruction && (
+        <p className={styles.instructions}>
+          {question.instruction ?? "Arrastra los bloques sobre su eje para despejar la salida."}
+        </p>
+      )}
       <p className={styles.srStatus} aria-live="polite">
         {announcement}
       </p>
