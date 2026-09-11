@@ -61,6 +61,7 @@
   .stats svg { flex: 0 0 auto; width: 18px; color: var(--color-social); }
   .stats strong,
   .stats time { overflow: hidden; font-family: var(--type-mono); font-size: 18px; font-weight: 700; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+  .stats time { font-family: var(--type-ui); font-size: 14px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .stats span { color: var(--color-ink-muted); font-size: 11px; }
 
   .emptyState { padding: var(--space-5); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-control); background: var(--color-surface-soft); }
@@ -84,7 +85,7 @@
     .stats svg { width: 16px; }
     .stats strong,
     .stats time { font-size: 16px; }
-    .stats time { font-size: 13px; line-height: 1.2; white-space: normal; }
+    .stats time { font-size: 12px; line-height: 1.15; }
     .stats span { font-size: 10px; }
     .history { gap: var(--space-3); margin-top: var(--space-4); }
     .sectionHeading { gap: var(--space-2); }
