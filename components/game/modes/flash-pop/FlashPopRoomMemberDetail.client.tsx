@@ -88,10 +88,6 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
         <Link href={`/salas/${model.roomId}/ranking`} className={styles.backLink} aria-label="Volver al ranking de hoy">
           <ArrowIcon className={styles.backIcon} />
         </Link>
-        <div className={styles.roomIdentity}>
-          <Avatar name={model.roomTitle} initials={model.roomTitle.slice(0, 2).toUpperCase()} tone="social" size="md" />
-          <span>{model.roomTitle}</span>
-        </div>
       </header>
 
       <div>

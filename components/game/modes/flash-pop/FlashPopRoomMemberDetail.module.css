@@ -2,27 +2,22 @@
   .content { width: min(100%, 820px); }
 
   .toolbar {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     min-height: 72px;
     align-items: center;
   }
 
-  .backLink,
-  .roomIdentity {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid var(--color-line);
-    background: rgb(255 255 255 / 82%);
-    box-shadow: var(--shadow-control);
-  }
-
   .backLink {
+    display: inline-flex;
     width: 44px;
     height: 44px;
+    align-items: center;
     justify-content: center;
+    border: 1px solid var(--color-line);
     border-radius: 50%;
+    background: rgb(255 255 255 / 82%);
     color: var(--color-ink);
+    box-shadow: var(--shadow-control);
   }
 
   .backLink:focus-visible {
@@ -31,15 +26,6 @@
   }
 
   .backIcon { width: 21px; transform: rotate(180deg); }
-
-  .roomIdentity {
-    gap: 8px;
-    padding: 4px 12px 4px 4px;
-    border-radius: var(--radius-pill);
-    font-family: var(--type-display);
-    font-size: 17px;
-    letter-spacing: -0.04em;
-  }
 
   .profile {
     display: flex;
@@ -82,8 +68,6 @@
   .history { display: grid; gap: var(--space-4); margin-top: var(--space-6); }
   .sectionHeading h2 { font-size: clamp(28px, 5vw, 42px); }
   @media (max-width: 600px) {
-    .roomIdentity { padding: 3px; }
-    .roomIdentity span { display: none; }
     .profile { margin-top: var(--space-6); }
     .profile h1 { font-size: 46px; }
     .stats { grid-template-columns: 1fr 1fr; }
