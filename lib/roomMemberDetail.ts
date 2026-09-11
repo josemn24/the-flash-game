@@ -40,7 +40,9 @@ export function buildRoomMemberDetailModel(
   const result = baseResult && roomModel.dailyChallenge
     ? {
         ...baseResult,
-        attempt: buildMockRoomChallengeAttempt(roomModel.dailyChallenge.id, baseResult),
+        attempt: buildMockRoomChallengeAttempt(roomModel.dailyChallenge.id, baseResult, {
+          seed: member.id,
+        }),
       }
     : baseResult;
 

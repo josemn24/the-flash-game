@@ -3,37 +3,65 @@ import styles from "./FlashPopConcepts.module.css";
 import { LobbyConcept } from "./LobbyConcept";
 
 export const metadata: Metadata = {
-  title: "Flash Pop — Direcciones de lobby",
-  description: "Tres propuestas comparables para la dirección visual de Flash Pop.",
+  title: "Flash Pop — Arte de formatos",
+  description: "Una dirección visual para cada formato de Flash Pop.",
 };
 
 const concepts = [
   {
-    id: "A",
-    name: "Graphic Voltage",
-    summary: "Más editorial, nítida y propia",
+    id: "01",
+    name: "Flash",
+    summary: "Velocidad, reflejos y respuesta inmediata",
     theme: "graphic",
     selected: false,
-    art: "/flash-pop/concepts/pyramid-graphic-voltage.webp",
-    artAlt: "Torre geométrica atravesada por un rayo amarillo",
+    art: "/flash-pop/concepts/flash-floating-cards.webp",
+    artAlt: "Tarjetas de colores y un reloj atravesados por un rayo amarillo",
+    heroTitle: "Flash",
+    heroSubtitle: "Responde antes de que se escape",
   },
   {
-    id: "B",
-    name: "Soft Diorama",
-    summary: "Más cálida, social y cercana a Playus",
+    id: "02",
+    name: "Alfabeto",
+    summary: "Recorrido, variedad y una cuenta atrás",
+    theme: "soft",
+    selected: false,
+    art: "/flash-pop/concepts/alphabet-letter-path.webp",
+    artAlt: "Camino curvo de fichas de colores con una ficha brillante pendiente",
+    heroTitle: "Alfabeto",
+    heroSubtitle: "Una letra, una respuesta",
+  },
+  {
+    id: "03",
+    name: "Supervivencia",
+    summary: "Resistencia, tensión y vidas limitadas",
+    theme: "arena",
+    selected: false,
+    art: "/flash-pop/concepts/survival-last-beacon.webp",
+    artAlt: "Faro luminoso sobre una isla rodeada de olas y tres luces",
+    heroTitle: "Supervivencia",
+    heroSubtitle: "Conserva tus tres vidas",
+  },
+  {
+    id: "04",
+    name: "Narrativa",
+    summary: "Historias, escenas y decisiones",
+    theme: "soft",
+    selected: false,
+    art: "/flash-pop/concepts/narrative-story-trail.webp",
+    artAlt: "Libro abierto convertido en un paisaje atravesado por un camino luminoso",
+    heroTitle: "Narrativa",
+    heroSubtitle: "Cada respuesta abre una escena",
+  },
+  {
+    id: "05",
+    name: "La Pirámide",
+    summary: "Una única imagen para el formato de ascenso",
     theme: "soft",
     selected: true,
     art: "/flash-pop/concepts/pyramid-soft-diorama.webp",
     artAlt: "Diorama suave de una pirámide rodeada por energía amarilla",
-  },
-  {
-    id: "C",
-    name: "Electric Arena",
-    summary: "Más competitiva, intensa y arcade",
-    theme: "arena",
-    selected: false,
-    art: "/flash-pop/concepts/pyramid-electric-arena.webp",
-    artAlt: "Pirámide de arena oscura abierta por un rayo amarillo",
+    heroTitle: "La Pirámide",
+    heroSubtitle: "¿Hasta dónde puedes subir?",
   },
 ] as const;
 
@@ -42,10 +70,10 @@ export default function FlashPopConceptsPage() {
     <main className={styles.page}>
       <header className={styles.pageHeader}>
         <p className={styles.kicker}>Flash Pop · Fase visual</p>
-        <h1>Tres direcciones, el mismo lobby</h1>
+        <h1>Un arte para cada formato</h1>
         <p>
-          El contenido, la jerarquía y el viewport son idénticos. Solo cambian la expresión gráfica,
-          la profundidad y la intensidad competitiva.
+          La misma familia visual acompaña cada forma de jugar. La Pirámide conserva una única
+          imagen; los demás formatos tienen un símbolo propio y reconocible.
         </p>
       </header>
 

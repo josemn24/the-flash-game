@@ -12,6 +12,7 @@ describe("buildRoomCardModel", () => {
     expect(model.dailyChallenge?.id).toBe("tabarnia-challenge-05");
     expect(model.dailyChallenge?.title).toBe("Cumbre lógica");
     expect(model.dailyChallenge?.formatLabel).toBe("La Pirámide");
+    expect(model.dailyChallenge?.imageSrc).toBe(ROOM_ART_FALLBACK);
     expect(model.currentUser).toEqual({ totalPoints: 136, roomRank: 3 });
     expect(model.memberPreviews).toHaveLength(4);
     expect(model.memberPreviews[0].src).toBe("/flash-pop/avatars/player.jpeg");
@@ -19,7 +20,7 @@ describe("buildRoomCardModel", () => {
     expect(model.href).toBe("/salas/tabarnia-room");
   });
 
-  it("uses the fallback artwork when a challenge has no specific artwork", () => {
+  it("uses the format artwork for a challenge with a known mode", () => {
     const room = {
       ...demoRoom,
       activeSeason: {
@@ -28,7 +29,9 @@ describe("buildRoomCardModel", () => {
       },
     };
 
-    expect(buildRoomCardModel(room, now).dailyChallenge?.imageSrc).toBe(ROOM_ART_FALLBACK);
+    expect(buildRoomCardModel(room, now).dailyChallenge?.imageSrc).toBe(
+      "/flash-pop/concepts/flash-floating-cards.webp",
+    );
   });
 
   it("keeps the room model available when there is no daily challenge", () => {

@@ -10,6 +10,8 @@ export type LobbyConceptProps = {
   selected?: boolean;
   art: string;
   artAlt: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
   fontClassName?: string;
 };
 
@@ -21,6 +23,8 @@ export function LobbyConcept({
   selected = false,
   art,
   artAlt,
+  heroTitle = "La Pirámide",
+  heroSubtitle = "¿Hasta dónde puedes subir?",
   fontClassName = "",
 }: LobbyConceptProps) {
   return (
@@ -78,8 +82,8 @@ export function LobbyConcept({
               <BoltIcon />
               Reto de hoy
             </div>
-            <h3>La Pirámide</h3>
-            <p className={styles.challengeCopy}>¿Hasta dónde puedes subir?</p>
+            <h3>{heroTitle}</h3>
+            <p className={styles.challengeCopy}>{heroSubtitle}</p>
 
             <div className={styles.socialRow}>
               <div className={styles.avatarStack} aria-label="Seis personas ya jugaron">

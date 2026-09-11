@@ -96,7 +96,7 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       title: getChallengeDisplayTitle(definition),
       formatLabel: getChallengeFormatLabel(definition.mode),
       subtitle: definition.subtitle,
-      imageSrc: getChallengeImage(dailyChallenge.id),
+      imageSrc: getChallengeImage(dailyChallenge.id, definition.mode),
       questionCount: getChallengeQuestionCount(definition),
       endsAt: getNextDailyBoundary(now).toISOString(),
       href: `/desafios/${dailyChallenge.id}?roomId=${encodeURIComponent(room.id)}`,

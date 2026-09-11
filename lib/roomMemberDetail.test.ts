@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
 import { getChallengeById } from "@/data/challenges";
+import { isAnswerCorrect } from "@/lib/scoring";
 import { buildMockRoomChallengeAttempt } from "@/lib/roomAttempts";
 import {
   applyRoomMemberChallengeResult,
@@ -41,6 +42,73 @@ describe("room member detail model", () => {
     expect(model?.result?.attempt?.answers.length).toBeGreaterThan(0);
     expect(model?.roomRank).toBe(1);
     expect(model?.dailyRank).toBe(1);
+  });
+
+  it("keeps mock answer states and points coherent for every completed result", () => {
+    for (const member of demoRoom.members) {
+      const resultPoints = Object.values(member.challengeResults).reduce(
+        (total, result) => total + result.points,
+        0,
+      );
+      expect(resultPoints).toBe(member.totalPoints);
+
+      for (const [challengeId, result] of Object.entries(member.challengeResults)) {
+        if (!result.completed) continue;
+        const challenge = getChallengeById(challengeId);
+        if (!challenge) throw new Error(`Expected challenge ${challengeId}`);
+        const attempt = buildMockRoomChallengeAttempt(challengeId, result, { seed: member.id });
+        if (!attempt) throw new Error(`Expected attempt for ${member.id}/${challengeId}`);
+
+        const expectedAnswerCount = challenge.mode === "alphabet"
+          ? challenge.entries.length
+          : challenge.mode === "narrative"
+            ? challenge.beats.flatMap((beat) => beat.steps.filter((step) => step.type === "question")).length
+            : challenge.mode === "pyramid"
+              ? challenge.levels.length
+              : challenge.questions.length;
+        expect(attempt.answers).toHaveLength(expectedAnswerCount);
+        expect(attempt.answers.reduce((total, answer) => total + (answer.points ?? 0), 0)).toBe(result.points);
+        expect(new Set(attempt.answers.map((answer) => answer.status))).toEqual(
+          new Set(["correct", "incorrect", "unanswered"]),
+        );
+
+        for (const answer of attempt.answers) {
+          const question = challenge.mode === "alphabet"
+            ? challenge.entries.find((entry) => entry.question.id === answer.questionId)?.question
+            : challenge.mode === "narrative"
+              ? challenge.beats
+                .flatMap((beat) => beat.steps)
+                .find((step) => step.type === "question" && step.question.id === answer.questionId)?.question
+              : challenge.mode === "pyramid"
+                ? challenge.levels.find((level) => level.question.id === answer.questionId)?.question
+                : challenge.questions.find((candidate) => candidate.id === answer.questionId);
+          if (!question) throw new Error(`Expected question ${answer.questionId}`);
+          expect(isAnswerCorrect(question, answer.answer as NonNullable<typeof answer.answer>)).toBe(answer.isCorrect);
+
+          if (answer.status === "correct") {
+            expect(answer.isCorrect).toBe(true);
+            expect(answer.points).toBeGreaterThan(0);
+          } else {
+            expect(answer.isCorrect).toBe(false);
+            expect(answer.points ?? 0).toBe(0);
+          }
+        }
+      }
+    }
+  });
+
+  it("does not collapse Rielbe's Steel Ball Run score into the first answer", () => {
+    const member = demoRoom.members.find((candidate) => candidate.id === "alex");
+    if (!member) throw new Error("Expected Rielbe");
+    const result = member.challengeResults["tabarnia-flash-01"];
+    const attempt = buildMockRoomChallengeAttempt("tabarnia-flash-01", result, { seed: member.id });
+    if (!attempt) throw new Error("Expected Rielbe attempt");
+
+    expect(attempt.answers.filter((answer) => (answer.points ?? 0) > 0).length).toBeGreaterThan(1);
+    expect(attempt.answers.map((answer) => answer.points)).not.toEqual([
+      result.points,
+      ...Array(attempt.answers.length - 1).fill(0),
+    ]);
   });
 
   it("keeps pending players without an answer history", () => {

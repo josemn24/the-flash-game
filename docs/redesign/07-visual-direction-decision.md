@@ -54,15 +54,15 @@ La implementación del lobby usa Soft Diorama con estas reglas:
 8. No se añaden caras a los objetos, mascotas infantiles, brillo plástico excesivo ni fondos violetas universales.
 9. Los momentos especiales pueden adoptar la intensidad de Electric Arena sin cambiar la arquitectura general.
 
-## Activos de exploración
+## Activos de formatos
 
-- `public/flash-pop/concepts/pyramid-graphic-voltage.webp`
+- `public/flash-pop/concepts/flash-floating-cards.webp`
+- `public/flash-pop/concepts/alphabet-letter-path.webp`
+- `public/flash-pop/concepts/survival-last-beacon.webp`
+- `public/flash-pop/concepts/narrative-story-trail.webp`
 - `public/flash-pop/concepts/pyramid-soft-diorama.webp`
-- `public/flash-pop/concepts/pyramid-electric-arena.webp`
 
-Las versiones de trabajo se almacenan a 1152 × 864 px en WebP para mantener suficiente resolución en pantallas de alta densidad sin incorporar los PNG originales al repositorio.
-
-Estos activos son exploratorios. Soft Diorama puede usarse durante el vertical slice, pero deberá reemplazarse o aprobarse expresamente antes de considerarlo arte final de producción.
+Cada formato tiene un único arte reutilizable en tarjetas y pantallas del lobby. La Pirámide conserva exclusivamente `pyramid-soft-diorama.webp`; el resto de variantes de exploración se retiraron del directorio.
 
 ## Consecuencia para el roadmap
 

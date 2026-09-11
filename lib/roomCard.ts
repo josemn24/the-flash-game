@@ -5,6 +5,14 @@ import type { ChallengeDefinition, GameMode, Room, RoomCardModel } from "@/types
 
 export const ROOM_ART_FALLBACK = "/flash-pop/concepts/pyramid-soft-diorama.webp";
 
+export const ROOM_ART_BY_MODE: Record<GameMode, string> = {
+  flash: "/flash-pop/concepts/flash-floating-cards.webp",
+  alphabet: "/flash-pop/concepts/alphabet-letter-path.webp",
+  survival: "/flash-pop/concepts/survival-last-beacon.webp",
+  narrative: "/flash-pop/concepts/narrative-story-trail.webp",
+  pyramid: ROOM_ART_FALLBACK,
+};
+
 export function getChallengeQuestionCount(definition: ChallengeDefinition) {
   if (definition.mode === "alphabet") return definition.entries.length;
   if (definition.mode === "narrative") {
@@ -17,13 +25,12 @@ export function getChallengeQuestionCount(definition: ChallengeDefinition) {
   return definition.questionIds.length;
 }
 
-export function getChallengeImage(challengeId: string) {
-  if (challengeId === "tabarnia-challenge-05") {
-    return "/flash-pop/concepts/pyramid-electric-arena.webp";
-  }
+export function getChallengeImage(challengeId: string, mode?: GameMode) {
+  if (mode) return ROOM_ART_BY_MODE[mode];
 
-  if (challengeId === "tabarnia-challenge-06") {
-    return "/flash-pop/concepts/pyramid-graphic-voltage.webp";
+  // Keep unknown/legacy calls safe until their challenge definition is available.
+  if (challengeId === "tabarnia-challenge-05" || challengeId === "tabarnia-challenge-06") {
+    return ROOM_ART_BY_MODE.pyramid;
   }
 
   return ROOM_ART_FALLBACK;
@@ -72,7 +79,7 @@ export function buildRoomCardModel(room: Room, now = new Date()): RoomCardModel 
       subtitle: definition.subtitle,
       availableUntil: dailyChallenge.availableUntil,
       questionCount: getChallengeQuestionCount(definition),
-      imageSrc: getChallengeImage(dailyChallenge.id),
+      imageSrc: getChallengeImage(dailyChallenge.id, definition.mode),
     };
   }
 
