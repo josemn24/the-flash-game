@@ -31,7 +31,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    margin: var(--space-8) 0 var(--space-5);
+    margin: var(--space-6) 0 var(--space-4);
   }
 
   .profile h1,
@@ -43,20 +43,20 @@
     line-height: 0.95;
   }
 
-  .profile h1 { font-size: clamp(42px, 8vw, 68px); }
-  .profileMeta { margin: 8px 0 0; color: var(--color-ink-muted); font-family: var(--type-mono); font-size: 12px; }
+  .profile h1 { font-size: clamp(40px, 8vw, 64px); }
+  .profileMeta { margin: 6px 0 0; color: var(--color-ink-muted); font-family: var(--type-mono); font-size: 12px; }
   .eyebrow { margin: 0; color: var(--color-social); font-family: var(--type-mono); font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
 
-  .summary { display: grid; gap: var(--space-5); }
+  .summary { display: grid; gap: var(--space-4); padding: var(--space-5); }
   .summaryHeader,
   .sectionHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
-  .summary h2 { font-size: clamp(28px, 5vw, 42px); }
+  .summary h2 { font-size: clamp(28px, 5vw, 40px); }
 
-  .challengePreview { position: relative; min-height: 160px; overflow: hidden; border-radius: var(--radius-card); background: var(--color-surface-soft); }
+  .challengePreview { position: relative; min-height: 144px; overflow: hidden; border-radius: var(--radius-card); background: var(--color-surface-soft); }
   .challengePreview img { object-fit: cover; }
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
-  .stats > div { display: grid; gap: 4px; min-width: 0; padding: 12px; border-radius: var(--radius-control); background: var(--color-surface-soft); }
+  .stats > div { display: grid; gap: 4px; min-width: 0; padding: 10px; border-radius: var(--radius-control); background: var(--color-surface-soft); }
   .stats svg { width: 18px; color: var(--color-social); }
   .stats strong { overflow: hidden; font-family: var(--type-mono); font-size: 18px; text-overflow: ellipsis; white-space: nowrap; }
   .stats span { color: var(--color-ink-muted); font-size: 11px; }
@@ -65,12 +65,25 @@
   .emptyState p { margin: 0; font-family: var(--type-display); font-size: 24px; }
   .emptyState span { display: block; margin-top: 4px; color: var(--color-ink-muted); font-size: 13px; }
 
-  .history { display: grid; gap: var(--space-4); margin-top: var(--space-6); }
+  .history { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
   .sectionHeading h2 { font-size: clamp(28px, 5vw, 42px); }
   @media (max-width: 600px) {
-    .profile { margin-top: var(--space-6); }
-    .profile h1 { font-size: 46px; }
-    .stats { grid-template-columns: 1fr 1fr; }
-    .stats > div:last-child { grid-column: 1 / -1; }
+    .toolbar { min-height: 56px; }
+    .profile { gap: var(--space-3); margin: var(--space-4) 0; }
+    .profile h1 { font-size: 42px; }
+    .profileMeta { margin-top: 4px; font-size: 11px; }
+    .summary { gap: var(--space-3); padding: var(--space-4); }
+    .summaryHeader { gap: var(--space-3); }
+    .summary h2 { font-size: 32px; }
+    .challengePreview { min-height: 112px; border-radius: var(--radius-control); }
+    .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+    .stats > div { gap: 2px; padding: 10px 8px; border-radius: var(--radius-sm); }
+    .stats svg { width: 16px; }
+    .stats strong { font-size: 16px; }
+    .stats > div:last-child strong { font-size: 13px; line-height: 1.2; white-space: normal; }
+    .stats span { font-size: 10px; }
+    .history { gap: var(--space-3); margin-top: var(--space-4); }
+    .sectionHeading { gap: var(--space-2); }
+    .sectionHeading h2 { font-size: 30px; }
   }
 }

@@ -1217,6 +1217,16 @@
     padding: clamp(5.5rem, 10vw, 7rem) clamp(var(--space-5), 7vw, 6rem);
   }
 
+  .questionPage .questionArticle h1 {
+    max-width: 38rem;
+    margin-top: 0;
+    font-family: var(--type-display);
+    font-size: clamp(1.55rem, 5.5vw, 2.65rem);
+    font-weight: 950;
+    letter-spacing: -0.05em;
+    line-height: 1.04;
+  }
+
   .backLink {
     display: grid;
     min-height: 3rem;
@@ -1398,7 +1408,7 @@
   }
 
   .questionPage .questionArticle > div:last-child {
-    margin-top: 2rem;
+    margin-top: 1.75rem;
   }
 
   .backLink:hover {
@@ -1415,6 +1425,11 @@
 
     .questionPage .questionArticle {
       padding: 5.5rem var(--space-4) var(--space-8);
+    }
+
+    .questionPage .questionArticle h1 {
+      font-size: clamp(1.55rem, 5.5vw, 2rem);
+      line-height: 1.08;
     }
   }
 }
