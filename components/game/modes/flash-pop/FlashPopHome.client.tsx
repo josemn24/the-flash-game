@@ -1,3 +1,6 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,14 +16,59 @@ import {
   TrophyIcon,
 } from "@/components/ui";
 import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/game";
+import type { UserProfile } from "@/types/user";
+import { FlashPopProfileDialog } from "./FlashPopProfileDialog.client";
 import styles from "./FlashPopHome.module.css";
 
 type FlashPopHomeProps = {
   rooms: RoomCardModel[];
+  initialProfile: UserProfile;
 };
 
-export function FlashPopHome({ rooms }: FlashPopHomeProps) {
+export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
+  const [profile, setProfile] = useState(initialProfile);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const profileTriggerRef = useRef<HTMLButtonElement>(null);
+  const hasOpenedProfile = useRef(false);
+
+  const visibleRooms = useMemo(
+    () =>
+      rooms.map((room) => ({
+        ...room,
+        memberPreviews: room.memberPreviews.map((member) =>
+          member.id === profile.id
+            ? {
+                ...member,
+                name: profile.name,
+                initials: getProfileInitials(profile.name),
+                src: profile.avatarSrc,
+              }
+            : member,
+        ),
+      })),
+    [profile, rooms],
+  );
+
+  useEffect(() => {
+    if (profileOpen) {
+      hasOpenedProfile.current = true;
+      return;
+    }
+
+    if (hasOpenedProfile.current) {
+      profileTriggerRef.current?.focus();
+    }
+  }, [profileOpen]);
+
+  const handleProfileSave = useCallback((nextProfile: UserProfile) => {
+    setProfile(nextProfile);
+    setProfileOpen(false);
+    setStatusMessage("Cambios guardados.");
+  }, []);
+
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.homeHeader}>
@@ -32,8 +80,19 @@ export function FlashPopHome({ rooms }: FlashPopHomeProps) {
         </div>
 
         <nav className={styles.headerActions} aria-label="Acciones de cuenta">
-          <IconButton label="Perfil" className={styles.profileButton}>
-            <Avatar name="Kike" initials="KI" tone="social" size="sm" />
+          <IconButton
+            ref={profileTriggerRef}
+            label="Perfil"
+            className={styles.profileButton}
+            aria-expanded={profileOpen}
+            aria-haspopup="dialog"
+            aria-controls="flash-pop-profile-dialog"
+            onClick={() => {
+              setStatusMessage("");
+              setProfileOpen(true);
+            }}
+          >
+            <Avatar name={profile.name} src={profile.avatarSrc} tone="social" size="sm" />
           </IconButton>
           <IconButton label="Configuración">
             <SettingsIcon />
@@ -46,7 +105,7 @@ export function FlashPopHome({ rooms }: FlashPopHomeProps) {
 
         {rooms.length > 0 ? (
           <div className={styles.roomGrid}>
-            {rooms.map((room, index) => {
+            {visibleRooms.map((room, index) => {
               const challenge = room.dailyChallenge;
               const imageSrc = challenge?.imageSrc ?? ROOM_ART_FALLBACK;
               const imageAlt = challenge
@@ -132,6 +191,17 @@ export function FlashPopHome({ rooms }: FlashPopHomeProps) {
           </Card>
         )}
       </section>
+
+      <span className={styles.visuallyHidden} aria-live="polite">
+        {statusMessage}
+      </span>
+
+      <FlashPopProfileDialog
+        open={profileOpen}
+        profile={profile}
+        onClose={() => setProfileOpen(false)}
+        onSave={handleProfileSave}
+      />
     </Canvas>
   );
 }

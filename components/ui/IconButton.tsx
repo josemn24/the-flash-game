@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import styles from "./Controls.module.css";
 
 export type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label"> & {
@@ -7,17 +7,14 @@ export type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ari
   children: ReactNode;
 };
 
-export function IconButton({
-  label,
-  variant = "surface",
-  className,
-  children,
-  type = "button",
-  ...props
-}: IconButtonProps) {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+  { label, variant = "surface", className, children, type = "button", ...props },
+  ref,
+) {
   return (
     <button
       {...props}
+      ref={ref}
       type={type}
       aria-label={label}
       className={`${styles.iconButton} ${variant === "social" ? styles.iconSocial : styles.iconSurface} ${className ?? ""}`}
@@ -25,4 +22,4 @@ export function IconButton({
       {children}
     </button>
   );
-}
+});

@@ -37,7 +37,14 @@ export function Avatar({
       aria-label={name}
     >
       {src ? (
-        <Image src={src} alt="" fill sizes="56px" className={styles.image} />
+        <Image
+          src={src}
+          alt=""
+          fill
+          sizes="56px"
+          className={styles.image}
+          unoptimized={src.startsWith("data:")}
+        />
       ) : (
         <span aria-hidden="true">{initials ?? getInitials(name)}</span>
       )}
