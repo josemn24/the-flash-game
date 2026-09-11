@@ -1411,6 +1411,10 @@
     margin-top: 1.75rem;
   }
 
+  .questionPage .questionArticle > [data-format="ordering"] > div {
+    margin-top: 0;
+  }
+
   .backLink:hover {
     border-color: var(--color-focus);
     background: var(--color-surface);

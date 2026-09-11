@@ -30,6 +30,20 @@ function formatPlayedAt(value?: string) {
   }).format(new Date(value));
 }
 
+function formatPlayedAtCompact(value?: string) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Europe/Madrid",
+  })
+    .format(new Date(value))
+    .replace(",", " ·");
+}
+
 function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: NonNullable<RoomMemberDetailModel["result"]>["attempt"] }) {
   if (!attempt) return null;
   const answers = new Map(attempt.answers.map((answer) => [answer.questionId, answer]));
@@ -116,9 +130,22 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           ) : null}
 
           <div className={styles.stats}>
-            <div><BoltIcon aria-hidden="true" /><strong>{result?.points ?? 0}</strong><span>Flash points</span></div>
-            <div><strong>#{visibleModel.roomRank}</strong><span>ranking de sala</span></div>
-            <div><strong>{isComplete ? formatPlayedAt(attempt?.playedAt) : "—"}</strong><span>jugado</span></div>
+            <div>
+              <div className={styles.statValue}><BoltIcon aria-hidden="true" /><strong>{result?.points ?? 0}</strong></div>
+              <span>Flash points</span>
+            </div>
+            <div>
+              <div className={styles.statValue}><strong>#{visibleModel.roomRank}</strong></div>
+              <span>ranking de sala</span>
+            </div>
+            <div>
+              <div className={styles.statValue}>
+                <time dateTime={isComplete ? attempt?.playedAt : undefined} aria-label={isComplete ? `Jugado el ${formatPlayedAt(attempt?.playedAt)}` : undefined}>
+                  {isComplete ? formatPlayedAtCompact(attempt?.playedAt) : "—"}
+                </time>
+              </div>
+              <span>jugado</span>
+            </div>
           </div>
 
           {!isComplete ? (

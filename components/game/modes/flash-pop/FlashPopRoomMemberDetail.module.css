@@ -57,8 +57,10 @@
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
   .stats > div { display: grid; gap: 4px; min-width: 0; padding: 10px; border-radius: var(--radius-control); background: var(--color-surface-soft); }
-  .stats svg { width: 18px; color: var(--color-social); }
-  .stats strong { overflow: hidden; font-family: var(--type-mono); font-size: 18px; text-overflow: ellipsis; white-space: nowrap; }
+  .statValue { display: flex; min-width: 0; align-items: center; gap: 8px; }
+  .stats svg { flex: 0 0 auto; width: 18px; color: var(--color-social); }
+  .stats strong,
+  .stats time { overflow: hidden; font-family: var(--type-mono); font-size: 18px; font-weight: 700; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
   .stats span { color: var(--color-ink-muted); font-size: 11px; }
 
   .emptyState { padding: var(--space-5); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-control); background: var(--color-surface-soft); }
@@ -78,9 +80,11 @@
     .challengePreview { min-height: 112px; border-radius: var(--radius-control); }
     .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
     .stats > div { gap: 2px; padding: 10px 8px; border-radius: var(--radius-sm); }
+    .statValue { gap: 6px; }
     .stats svg { width: 16px; }
-    .stats strong { font-size: 16px; }
-    .stats > div:last-child strong { font-size: 13px; line-height: 1.2; white-space: normal; }
+    .stats strong,
+    .stats time { font-size: 16px; }
+    .stats time { font-size: 13px; line-height: 1.2; white-space: normal; }
     .stats span { font-size: 10px; }
     .history { gap: var(--space-3); margin-top: var(--space-4); }
     .sectionHeading { gap: var(--space-2); }
