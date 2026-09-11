@@ -33,7 +33,7 @@ function reactions(correct: string, incorrect: string, timeout: string): Narrati
 export const challengeDefinitions = {
   "demo-challenge-definition": {
     id: "demo-challenge-definition",
-    title: "Steel Ball Run: primera etapa",
+    title: "Steel Ball Run",
     subtitle: "Carrera, ingenio y reflejos",
     description:
       "Dieciséis retos rápidos sin spoilers inspirados en la carrera transcontinental de Steel Ball Run.",

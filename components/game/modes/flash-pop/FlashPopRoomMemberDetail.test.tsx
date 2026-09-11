@@ -20,8 +20,9 @@ describe("FlashPopRoomMemberDetail", () => {
     expect(markup).toContain("Flash points");
     expect(markup).toContain("puntos del reto");
     expect(markup).toContain("ranking de hoy");
-    expect(markup).toContain("Completado");
-    expect(markup).toContain("Historial de respuestas");
+    expect(markup).not.toContain("Completado");
+    expect(markup).toContain("Respuestas");
+    expect(markup).not.toContain("Desglose completo");
     expect(markup).toContain("Respuesta correcta");
     expect(markup).toContain("4/4 parejas correctas");
     expect(markup).toContain("details");
@@ -36,7 +37,7 @@ describe("FlashPopRoomMemberDetail", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomMemberDetail model={model} />);
 
     expect(markup).toContain("Palmera");
-    expect(markup).toContain("Pendiente");
+    expect(markup).not.toContain("Pendiente");
     expect(markup).toContain("Todavía no ha jugado");
     expect(markup).not.toContain("Historial de respuestas");
   });

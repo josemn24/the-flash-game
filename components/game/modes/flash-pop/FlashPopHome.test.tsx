@@ -10,7 +10,7 @@ const tabarnia: RoomCardModel = {
   seasonStatus: "active",
   dailyChallenge: {
     id: "tabarnia-flash-01",
-    title: "Steel Ball Run: primera etapa",
+    title: "Steel Ball Run",
     formatLabel: "Flash",
     subtitle: "Carrera, ingenio y reflejos",
     availableUntil: "2026-09-20T21:59:59.999Z",
@@ -34,7 +34,7 @@ describe("FlashPopHome", () => {
 
     expect(markup).toContain("Mis salas");
     expect(markup).toContain("Tabarnia");
-    expect(markup).toContain("Steel Ball Run: primera etapa");
+    expect(markup).toContain("Steel Ball Run");
     expect(markup).toContain("136");
     expect(markup).toContain("#3");
     expect(markup).toContain('aria-label="5 jugadores"');

@@ -52,9 +52,6 @@
   .sectionHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
   .summary h2 { font-size: clamp(28px, 5vw, 40px); }
 
-  .challengePreview { position: relative; min-height: 144px; overflow: hidden; border-radius: var(--radius-card); background: var(--color-surface-soft); }
-  .challengePreview img { object-fit: cover; }
-
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
   .stats > div { display: grid; gap: 4px; min-width: 0; padding: 10px; border-radius: var(--radius-control); background: var(--color-surface-soft); }
   .statValue { display: flex; min-width: 0; align-items: center; gap: 8px; }
@@ -68,7 +65,7 @@
   .emptyState p { margin: 0; font-family: var(--type-display); font-size: 24px; }
   .emptyState span { display: block; margin-top: 4px; color: var(--color-ink-muted); font-size: 13px; }
 
-  .history { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
+  .history { display: grid; gap: var(--space-4); margin-top: var(--space-10); }
   .sectionHeading h2 { font-size: clamp(28px, 5vw, 42px); }
   @media (max-width: 600px) {
     .toolbar { min-height: 56px; }
@@ -78,7 +75,6 @@
     .summary { gap: var(--space-3); padding: var(--space-4); }
     .summaryHeader { gap: var(--space-3); }
     .summary h2 { font-size: 32px; }
-    .challengePreview { min-height: 112px; border-radius: var(--radius-control); }
     .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
     .stats > div { gap: 2px; padding: 10px 8px; border-radius: var(--radius-sm); }
     .statValue { gap: 6px; }
@@ -87,7 +83,7 @@
     .stats time { font-size: 16px; }
     .stats time { font-size: 12px; line-height: 1.15; }
     .stats span { font-size: 10px; }
-    .history { gap: var(--space-3); margin-top: var(--space-4); }
+    .history { gap: var(--space-3); margin-top: var(--space-8); }
     .sectionHeading { gap: var(--space-2); }
     .sectionHeading h2 { font-size: 30px; }
   }

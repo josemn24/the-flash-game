@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowIcon, Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
 import { ReviewAnswerList, reviewQuestionsFor } from "@/components/game/shared";
@@ -67,8 +66,7 @@ function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: 
     <section className={styles.history} aria-labelledby="answer-history-title">
       <div className={styles.sectionHeading}>
         <div>
-          <p className={styles.eyebrow}>Desglose completo</p>
-          <h2 id="answer-history-title">Historial de respuestas</h2>
+          <h2 id="answer-history-title">Respuestas</h2>
         </div>
         <Chip variant="data">{attempt.answers.length} respuestas</Chip>
       </div>
@@ -120,14 +118,7 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
               <p className={styles.eyebrow}>Reto de hoy</p>
               <h2 id="attempt-summary-title">{visibleModel.dailyChallenge?.title ?? "Sin reto hoy"}</h2>
             </div>
-            <Chip tone={isComplete ? "success" : "social"}>{isComplete ? "Completado" : "Pendiente"}</Chip>
           </div>
-
-          {visibleModel.dailyChallenge ? (
-            <div className={styles.challengePreview}>
-              <Image src={visibleModel.dailyChallenge.imageSrc} alt="" fill sizes="180px" />
-            </div>
-          ) : null}
 
           <div className={styles.stats}>
             <div>
