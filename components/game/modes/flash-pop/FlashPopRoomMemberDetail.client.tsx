@@ -110,7 +110,7 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           <div>
             <p className={styles.eyebrow}>{model.roomTitle}</p>
             <h1 id="member-detail-title">{visibleModel.member.name}</h1>
-            <p className={styles.profileMeta}>#{visibleModel.dailyRank ?? "—"} hoy · #{visibleModel.roomRank} en la sala</p>
+            <p className={styles.profileMeta}>{visibleModel.member.totalPoints} Flash points · #{visibleModel.roomRank} en la sala</p>
           </div>
         </section>
 
@@ -132,11 +132,11 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           <div className={styles.stats}>
             <div>
               <div className={styles.statValue}><BoltIcon aria-hidden="true" /><strong>{result?.points ?? 0}</strong></div>
-              <span>Flash points</span>
+              <span>puntos del reto</span>
             </div>
             <div>
-              <div className={styles.statValue}><strong>#{visibleModel.roomRank}</strong></div>
-              <span>ranking de sala</span>
+              <div className={styles.statValue}><strong>#{visibleModel.dailyRank ?? "—"}</strong></div>
+              <span>ranking de hoy</span>
             </div>
             <div>
               <div className={styles.statValue}>

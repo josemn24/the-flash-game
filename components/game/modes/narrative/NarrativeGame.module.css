@@ -1407,11 +1407,11 @@
     gap: var(--space-2);
   }
 
-  .questionPage .questionArticle > div:last-child {
+  .questionPage .questionArticle > [data-format] {
     margin-top: 1.75rem;
   }
 
-  .questionPage .questionArticle > [data-format="ordering"] > div {
+  .questionPage .questionArticle > [data-format] > :first-child {
     margin-top: 0;
   }
 
