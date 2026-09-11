@@ -301,7 +301,9 @@ export function EscapeQuestion({
       aria-label={question.boardLabel ?? "Escape, puzzle de bloques deslizantes"}
     >
       <div className={styles.header}>
-        <span>{question.objectiveLabel ?? "Saca el bloque amarillo"}</span>
+        {!question.hideObjectiveLabel && (
+          <span>{question.objectiveLabel ?? "Saca el bloque amarillo"}</span>
+        )}
         <strong>
           {moves.length} {moves.length === 1 ? "movimiento" : "movimientos"}
         </strong>

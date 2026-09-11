@@ -1886,6 +1886,7 @@ export const questionsById = {
     ],
     optimalMoves: 10,
     objectiveLabel: "Retira el trípode por la salida de servicio",
+    hideObjectiveLabel: true,
     hideInstruction: true,
     completionMessage: "Corredor despejado. El trípode ha salido por el acceso de servicio.",
     boardLabel: "Plano del corredor del campamento con trípode, cajas y trineo",

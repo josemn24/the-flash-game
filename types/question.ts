@@ -381,6 +381,7 @@ export type EscapeQuestion = BaseQuestion & {
   instruction?: string;
   hideInstruction?: boolean;
   objectiveLabel?: string;
+  hideObjectiveLabel?: boolean;
   completionMessage?: string;
   boardLabel?: string;
 };
