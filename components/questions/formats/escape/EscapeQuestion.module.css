@@ -77,16 +77,12 @@
     filter: drop-shadow(0 0 0.35rem rgb(var(--color-brand-rgb) / 42%));
   }
 
-  .block,
-  .destinationGhost {
-    position: absolute;
-    border-radius: clamp(0.42rem, 1.8vw, 0.72rem);
-  }
-
   .block {
+    position: absolute;
     z-index: 4;
     display: grid;
     place-items: center;
+    border-radius: clamp(0.42rem, 1.8vw, 0.72rem);
     border: 2px solid rgb(255 255 255 / 34%);
     color: white;
     font-family: var(--type-mono);
@@ -160,12 +156,6 @@
     z-index: 7;
     outline: 3px solid var(--color-brand);
     outline-offset: 3px;
-  }
-
-  .destinationGhost {
-    z-index: 1;
-    border: 2px dashed rgb(var(--color-brand-rgb) / 38%);
-    background: rgb(var(--color-brand-rgb) / 6%);
   }
 
   .actions {
@@ -307,10 +297,6 @@
   .root .selected,
   .root .block:focus-visible {
     outline-color: var(--state-focus);
-  }
-  .root .destinationGhost {
-    border-color: var(--state-movable);
-    background: color-mix(in srgb, var(--state-movable) 10%, transparent);
   }
   .root .actions button {
     border-color: var(--color-border);

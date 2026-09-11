@@ -145,11 +145,6 @@ export function EscapeQuestion({
     "Selecciona un bloque y muévelo sobre su eje. Con teclado, usa las flechas compatibles.",
   );
 
-  const selectedBlock = blocks.find((block) => block.id === selectedId);
-  const selectedDestinations = selectedBlock
-    ? getEscapeLegalDestinations(question, blocks, selectedId)
-    : [];
-
   const publishMove = (move: EscapeMove) => {
     if (locked || completed) return;
     const nextBlocks = applyEscapeMove(question, blocksRef.current, move);
@@ -326,23 +321,6 @@ export function EscapeQuestion({
           >
             →
           </span>
-          {selectedBlock &&
-            selectedDestinations.map((destination) => {
-              const ghost = {
-                ...selectedBlock,
-                ...(selectedBlock.orientation === "horizontal"
-                  ? { column: destination }
-                  : { row: destination }),
-              };
-              return (
-                <span
-                  key={destination}
-                  className={styles.destinationGhost}
-                  style={blockStyle(question, ghost)}
-                  aria-hidden="true"
-                />
-              );
-            })}
           {blocks.map((block, index) => {
             const dragging = dragVisual?.blockId === block.id;
             return (
