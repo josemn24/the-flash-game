@@ -13,10 +13,10 @@ describe("room rankings", () => {
     expect(
       getRoomLeaderboard(demoRoom).map((entry) => [entry.rank, entry.memberId, entry.points]),
     ).toEqual([
-      [1, "ches", 184],
-      [2, "marta", 161],
-      [3, "player", 136],
-      [4, "alex", 119],
+      [1, "ches", 242],
+      [2, "marta", 225],
+      [3, "player", 169],
+      [4, "alex", 158],
       [5, "laura", 98],
     ]);
     expect(getRoomLeaderboard(demoRoom)[0].avatarSrc).toBe("/flash-pop/avatars/ches.jpeg");
@@ -54,7 +54,7 @@ describe("room rankings", () => {
       "alex",
       "player",
     ]);
-    expect(getDailyLeaderboard(demoRoom, "tabarnia-challenge-05")).toEqual([]);
+    expect(getDailyLeaderboard(demoRoom, "tabarnia-challenge-05")).toHaveLength(4);
   });
 
   it("excludes members without a completed result from the daily ranking", () => {
@@ -105,6 +105,8 @@ describe("room rankings", () => {
       },
     ]);
 
-    expect(getRoomLeaderboard(room).map((entry) => entry.memberId)).toEqual(["alpha", "zeta"]);
+    const ranking = getRoomLeaderboard(room);
+    expect(ranking.map((entry) => entry.memberId)).toEqual(["alpha", "zeta"]);
+    expect(ranking.map((entry) => entry.rank)).toEqual([1, 1]);
   });
 });

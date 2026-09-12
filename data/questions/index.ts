@@ -1,5 +1,6 @@
 import type { Question } from "@/types/game";
 
+/** @deprecated Catálogo completo del prototipo; usa `mockDomainStore.questionVersions`. */
 export const questionsById = {
   "capital-canada": {
     id: "capital-canada",

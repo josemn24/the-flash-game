@@ -17,24 +17,20 @@ describe("FlashPopRoomDetail", () => {
 
     expect(markup).toContain("Tabarnia");
     expect(markup).toContain("Flash Points");
-    expect(markup).toContain("136");
+    expect(markup).toContain("169");
     expect(markup).toContain("#3");
-    expect(markup).toContain("Cumbre lógica");
+    expect(markup).toContain("Biblia y religiones abrahámicas");
     expect(markup).toContain("La Pirámide");
     expect(markup).not.toContain("7 preguntas");
     expect(markup).toContain("Jugar");
-    expect(markup).toContain(
-      'href="/desafios/tabarnia-challenge-05?roomId=tabarnia-room"',
-    );
+    expect(markup).toContain('href="/desafios/tabarnia-challenge-06?roomId=tabarnia-room"');
     expect(markup).toContain("Ranking de hoy");
     expect(markup).not.toContain(">Flash points<");
     expect(markup).toContain('href="/salas/tabarnia-room/ranking"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
     expect(markup).toContain('href="/salas/tabarnia-room/ajustes"');
     expect(markup.match(/href="\/salas\/tabarnia-room\/ranking"/g)).toHaveLength(1);
-    expect(markup).toContain(
-      'aria-label="Abrir ajustes de Tabarnia"',
-    );
+    expect(markup).toContain('aria-label="Abrir ajustes de Tabarnia"');
     expect(markup).toContain("Todavía no ha jugado nadie.");
     expect(markup).toContain("5 pendientes por jugar");
     expect(markup).toContain("--:--:--");

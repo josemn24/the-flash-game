@@ -2,8 +2,9 @@
 
 ## Objetivo
 
-La fase 2 separa los contratos del prototipo de los tipos que podrán respaldar una API y una base de
-datos. Esta organización no cambia todavía los mocks, las rutas ni el comportamiento de juego.
+La fase 2 separó los contratos del prototipo de los tipos que podrán respaldar una API y una base de
+datos. Desde la fase 3, los mocks sociales y competitivos usan esas entidades mediante un almacén
+normalizado, sin cambiar las rutas públicas.
 
 ## Capas
 
@@ -61,8 +62,9 @@ marcados como obsoletos:
 - `Challenge` continúa siendo el desafío resuelto con preguntas completas.
 
 El código nuevo debe importar desde `@/types/domain`, `@/types/contracts`, `@/types/gameplay` o
-`@/types/view-models`. Los mocks y sus IDs legibles seguirán usando `string` hasta la fase 3; no se
-deben forzar conversiones a IDs opacos ni añadir constructores de UUID en esta fase.
+`@/types/view-models`. El almacén mock usa IDs opacos UUID v5 y resuelve las rutas legibles mediante
+aliases. Los constructores deterministas pertenecen exclusivamente a `data/mock`; no forman parte
+del dominio ni anticipan los adaptadores reales de Supabase.
 
 ## Comprobaciones
 

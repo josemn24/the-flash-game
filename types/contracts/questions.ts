@@ -422,8 +422,20 @@ export type AuthoringQuestion = {
   [Type in QuestionType]: AuthoringQuestionOfType<Type>;
 }[QuestionType];
 
+export type StoredPublicQuestionPayload<Type extends QuestionType> = Omit<
+  PublicQuestionOfType<Type>,
+  "id" | "type"
+>;
+
+export type StoredPrivateQuestionPayload<Type extends QuestionType> = {
+  readonly solution: Omit<QuestionSolutionOfType<Type>, "questionVersionId" | "type">;
+  readonly reveals: readonly (QuestionContractMap[Type]["reveal"] extends never
+    ? never
+    : QuestionContractMap[Type]["reveal"])[];
+};
+
 export type TypedQuestionVersion<Type extends QuestionType = QuestionType> = QuestionVersion<
   Type,
-  QuestionContractMap[Type]["public"],
-  QuestionContractMap[Type]["solution"]
+  StoredPublicQuestionPayload<Type>,
+  StoredPrivateQuestionPayload<Type>
 >;

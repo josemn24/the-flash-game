@@ -15,7 +15,7 @@ describe("room settings model", () => {
     expect(model.members).toHaveLength(5);
     expect(model.members.find((member) => member.id === "player")).toMatchObject({
       name: "Kike",
-      totalPoints: 136,
+      totalPoints: 169,
       isCurrentUser: true,
     });
     expect(model.members.filter((member) => member.isCurrentUser)).toHaveLength(1);

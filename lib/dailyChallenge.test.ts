@@ -25,9 +25,10 @@ describe("getDailyChallenge", () => {
     );
   });
 
-  it("can select a different challenge on a different local date", () => {
-    expect(getDailyChallenge(demoRoom, midday)?.id).not.toBe(
-      getDailyChallenge(demoRoom, new Date("2026-09-07T12:00:00.000Z"))?.id,
+  it("keeps the explicitly open publication throughout its window", () => {
+    expect(getDailyChallenge(demoRoom, midday)?.id).toBe("tabarnia-challenge-06");
+    expect(getDailyChallenge(demoRoom, new Date("2026-09-07T12:00:00.000Z"))?.id).toBe(
+      "tabarnia-challenge-06",
     );
   });
 
@@ -52,10 +53,15 @@ describe("getDailyChallenge", () => {
       throw new Error("Expected the demo flash challenge to exist.");
     }
 
+    const availableChallenge = {
+      ...validChallenge,
+      availableFrom: "2026-09-05T22:00:00.000Z",
+      availableUntil: "2026-09-20T22:00:00.000Z",
+    };
     const candidates = roomWithChallenges(demoRoom, [
-      validChallenge,
+      availableChallenge,
       {
-        ...validChallenge,
+        ...availableChallenge,
         id: "unknown-definition",
         challengeDefinitionId: "missing-definition",
       },
@@ -86,7 +92,7 @@ describe("getDailyChallenge", () => {
       },
     ]);
 
-    expect(getDailyChallenge(candidates, midday)?.id).toBe(validChallenge.id);
+    expect(getDailyChallenge(candidates, midday)?.id).toBe(availableChallenge.id);
   });
 
   it("returns null when no eligible challenge exists", () => {

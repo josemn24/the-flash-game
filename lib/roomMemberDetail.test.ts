@@ -6,7 +6,7 @@ import { buildMockRoomChallengeAttempt } from "@/lib/roomAttempts";
 import type { NarrativeQuestionStep, NarrativeStep } from "@/types/game";
 import { applyRoomMemberChallengeResult, buildRoomMemberDetailModel } from "@/lib/roomMemberDetail";
 
-const now = new Date("2026-09-08T12:00:00.000Z");
+const now = new Date("2026-09-01T12:00:00.000Z");
 
 function isNarrativeQuestionStep(step: NarrativeStep): step is NarrativeQuestionStep {
   return step.type === "question";
@@ -146,8 +146,8 @@ describe("room member detail model", () => {
 
     expect(updated.result?.attempt?.playedAt).toBe("2026-09-08T16:00:00.000Z");
     expect(updated.result?.points).toBe(88);
-    expect(updated.member.totalPoints).toBe(182);
-    expect(model.member.totalPoints).toBe(136);
-    expect(demoRoom.members[0].totalPoints).toBe(136);
+    expect(updated.member.totalPoints).toBe(215);
+    expect(model.member.totalPoints).toBe(169);
+    expect(demoRoom.members[0].totalPoints).toBe(169);
   });
 });

@@ -4,7 +4,7 @@ import { demoRoom } from "@/data/demoRoom";
 import { buildRoomMemberDetailModel } from "@/lib/roomMemberDetail";
 import { FlashPopRoomMemberDetail } from "./FlashPopRoomMemberDetail.client";
 
-const now = new Date("2026-09-08T12:00:00.000Z");
+const now = new Date("2026-09-01T12:00:00.000Z");
 
 describe("FlashPopRoomMemberDetail", () => {
   it("renders the attempt summary and expandable answer history", () => {
@@ -14,7 +14,7 @@ describe("FlashPopRoomMemberDetail", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomMemberDetail model={model} />);
 
     expect(markup).toContain("Dark");
-    expect(markup).toContain("184 Flash points");
+    expect(markup).toContain("242 Flash points");
     expect(markup).toContain("#1 en la sala");
     expect(markup).toContain("54");
     expect(markup).toContain("Flash points");

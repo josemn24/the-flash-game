@@ -4,4 +4,5 @@ export type * from "@/types/domain/identifiers";
 export type * from "@/types/domain/player";
 export type * from "@/types/domain/room";
 export type * from "@/types/domain/season";
+export type * from "@/types/domain/store";
 export type * from "@/types/domain/values";

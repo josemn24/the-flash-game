@@ -1,45 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { demoSeasonScheduledChallenges } from "@/data/scheduledChallenges";
-import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import type { PlayableScheduledChallenge } from "@/types/game";
 
-const availableFrom = "2026-09-05T22:00:00.000Z";
-const availableUntil = "2026-09-20T21:59:59.999Z";
-
 describe("demo season challenge availability", () => {
-  it("keeps every implemented challenge available through September 20", () => {
+  it("keeps only the six implemented publications in chronological windows", () => {
     const playableChallenges = demoSeasonScheduledChallenges.filter(
       (challenge): challenge is PlayableScheduledChallenge => "challengeDefinitionId" in challenge,
     );
 
     expect(playableChallenges).toHaveLength(6);
-    expect(
-      playableChallenges.every(
-        (challenge) =>
-          challenge.availableFrom === availableFrom && challenge.availableUntil === availableUntil,
-      ),
-    ).toBe(true);
+    expect(playableChallenges.map(({ id }) => id)).toEqual([
+      "tabarnia-flash-01",
+      "tabarnia-challenge-02",
+      "tabarnia-challenge-03",
+      "tabarnia-challenge-04",
+      "tabarnia-challenge-05",
+      "tabarnia-challenge-06",
+    ]);
   });
 
-  it("makes the implemented challenges available at both date boundaries", () => {
+  it("does not overlap publication windows", () => {
     const playableChallenges = demoSeasonScheduledChallenges.filter(
       (challenge): challenge is PlayableScheduledChallenge => "challengeDefinitionId" in challenge,
     );
 
-    expect(
-      playableChallenges.every(
-        (challenge) =>
-          getChallengeAvailabilityStatus(
-            challenge.availableFrom,
-            challenge.availableUntil,
-            new Date(availableFrom),
-          ) === "available" &&
-          getChallengeAvailabilityStatus(
-            challenge.availableFrom,
-            challenge.availableUntil,
-            new Date(availableUntil),
-          ) === "available",
-      ),
-    ).toBe(true);
+    for (let index = 1; index < playableChallenges.length; index += 1) {
+      expect(playableChallenges[index - 1]?.availableUntil).toBe(
+        playableChallenges[index]?.availableFrom,
+      );
+    }
   });
 });

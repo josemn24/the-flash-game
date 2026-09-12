@@ -31,6 +31,7 @@ function reactions(correct: string, incorrect: string, timeout: string): Narrati
   };
 }
 
+/** @deprecated Definiciones anidadas; usa las tablas normalizadas de `@/data/mock`. */
 export const challengeDefinitions = {
   "demo-challenge-definition": {
     id: "demo-challenge-definition",

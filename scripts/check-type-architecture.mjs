@@ -3,6 +3,13 @@ import path from "node:path";
 import process from "node:process";
 
 const TYPES_ROOT = path.join(process.cwd(), "types");
+const MOCK_ROOT = path.join(process.cwd(), "data", "mock");
+const LEGACY_MOCK_BOUNDARIES = new Set([
+  "challengeFixtures.ts",
+  "legacyAdapters.ts",
+  "legacyChallengeAdapter.ts",
+  "questionFixtures.ts",
+]);
 const LAYERS = ["domain", "contracts", "gameplay", "view-models", "legacy"];
 const FORBIDDEN_PROJECT_AREAS = ["data", "lib", "features", "components", "app"];
 const ALLOWED_TYPE_DEPENDENCIES = {
@@ -72,11 +79,35 @@ for (const file of files) {
   }
 }
 
+const mockFiles = await collectTypeScriptFiles(MOCK_ROOT);
+for (const file of mockFiles) {
+  const source = await readFile(file, "utf8");
+  const allowsLegacyDependencies = LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
+  for (const imported of importsIn(source)) {
+    if (
+      (!allowsLegacyDependencies &&
+        (imported.specifier === "@/types/game" ||
+          imported.specifier.startsWith("@/types/gameplay") ||
+          imported.specifier.startsWith("@/types/legacy") ||
+          imported.specifier.startsWith("@/types/question") ||
+          imported.specifier.startsWith("@/types/view-models"))) ||
+      imported.specifier.startsWith("@/components/") ||
+      imported.specifier.startsWith("@/app/")
+    ) {
+      violations.push(
+        `${path.relative(process.cwd(), file)} imports forbidden ${imported.specifier}`,
+      );
+    }
+  }
+}
+
 if (violations.length > 0) {
   console.error(
     "Type architecture violations:\n" + violations.map((item) => `- ${item}`).join("\n"),
   );
   process.exitCode = 1;
 } else {
-  console.log(`Type architecture OK (${files.length} files checked).`);
+  console.log(
+    `Type architecture OK (${files.length} type files and ${mockFiles.length} mock files checked).`,
+  );
 }

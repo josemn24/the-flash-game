@@ -66,7 +66,7 @@ describe("P-17 proofs", () => {
     expect(answer["Oso polar"]).toBe("Ártico");
   });
 
-  it("clears the camp in four moves with the tripod as the target", () => {
+  it("clears the camp in ten moves with the tripod as the target", () => {
     const question = getP17Questions()[3];
     expect(question.type).toBe("escape");
     if (question.type !== "escape") throw new Error("Expected escape");
@@ -74,8 +74,8 @@ describe("P-17 proofs", () => {
 
     expect(question.initialBlocks.find((block) => block.kind === "target")?.id).toBe("tripod");
     expect(question.initialBlocks.some((block) => block.id === "p17")).toBe(false);
-    expect(question.referenceSolution).toHaveLength(4);
-    expect(replay).toMatchObject({ valid: true, escaped: true, appliedMoves: 4 });
+    expect(question.referenceSolution).toHaveLength(10);
+    expect(replay).toMatchObject({ valid: true, escaped: true, appliedMoves: 10 });
   });
 
   it("identifies P-17 as the only compatible evidence row", () => {

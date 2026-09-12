@@ -1,7 +1,6 @@
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
 import { demoRooms } from "@/data/demoRoom";
 import { getDailyChallenge } from "@/lib/dailyChallenge";
-import { getNextDailyBoundary } from "@/lib/dailyCountdown";
 import {
   getChallengeDisplayTitle,
   getChallengeFormatLabel,
@@ -17,7 +16,9 @@ export function getRoomById(roomId: string) {
 
 function sortLeaderboardEntries<T extends { memberId: string; points: number }>(entries: T[]) {
   return [...entries]
-    .sort((left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId))
+    .sort(
+      (left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId),
+    )
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
 
@@ -98,7 +99,7 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       subtitle: definition.subtitle,
       imageSrc: getChallengeImage(dailyChallenge.id, definition.mode),
       questionCount: getChallengeQuestionCount(definition),
-      endsAt: getNextDailyBoundary(now).toISOString(),
+      endsAt: dailyChallenge.availableUntil,
       href: `/desafios/${dailyChallenge.id}?roomId=${encodeURIComponent(room.id)}`,
     };
   }

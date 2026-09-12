@@ -5,7 +5,7 @@ describe("room history mock", () => {
   it("provides previous games for Tabarnia", () => {
     const entries = getRoomHistory("tabarnia-room");
 
-    expect(entries).toHaveLength(3);
+    expect(entries).toHaveLength(5);
     expect(entries[0]).toMatchObject({
       challengeId: "tabarnia-challenge-05",
       playerCount: 4,
@@ -20,7 +20,7 @@ describe("room history mock", () => {
 
   it("finds a historical challenge by its challenge id", () => {
     expect(getRoomHistoryEntry("tabarnia-room", "tabarnia-challenge-04")).toMatchObject({
-      title: "P-17: Señales en la nieve",
+      title: "El que caminaba hacia las montañas",
     });
     expect(getRoomHistoryEntry("tabarnia-room", "unknown-challenge")).toBeUndefined();
   });

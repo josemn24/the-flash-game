@@ -1,19 +1,11 @@
-import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
-import { demoRoom } from "@/data/demoRoom";
-import { getQuestionsByIds, questionsById } from "@/data/questions";
-import {
-  getConfiguredChallengeQuestionPointValues,
-  withChallengeQuestionPoints,
-} from "@/lib/challengeScoring";
+import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
+import { questionsById } from "@/data/questions";
+import { getConfiguredChallengeQuestionPointValues } from "@/lib/challengeScoring";
 import type {
-  Challenge,
   NarrativeChallengeDefinition,
   NarrativeOutcome,
-  NarrativeQuestionStep,
   NarrativeScene,
-  PlayableScheduledChallenge,
   PyramidChallengeDefinition,
-  ScheduledChallenge,
 } from "@/types/game";
 
 const narrativeOutcomes = [
@@ -35,12 +27,6 @@ function validateNarrativeBlocks(blocks: NarrativeScene["blocks"], context: stri
       throw new Error(`${context} contains dialogue without a speaker at index ${index}.`);
     }
   });
-}
-
-function isPlayableScheduledChallenge(
-  scheduledChallenge: ScheduledChallenge,
-): scheduledChallenge is PlayableScheduledChallenge {
-  return "challengeDefinitionId" in scheduledChallenge;
 }
 
 export function getNarrativeQuestionIds<QuestionId extends string>(
@@ -179,116 +165,8 @@ export function validatePyramidChallengeDefinition<QuestionId extends string>(
   getConfiguredChallengeQuestionPointValues(questionIds, definition.questionPoints);
 }
 
-function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChallenge): Challenge {
-  const definition = getChallengeDefinitionById(scheduledChallenge.challengeDefinitionId);
-  if (!definition) {
-    throw new Error(
-      `Missing challenge definition for scheduled challenge "${scheduledChallenge.id}"`,
-    );
-  }
-
-  const base = {
-    id: scheduledChallenge.id,
-    definitionId: definition.id,
-    number: scheduledChallenge.number,
-    title: definition.title,
-    subtitle: definition.subtitle,
-    description: definition.description,
-  };
-
-  if (definition.mode === "alphabet") {
-    const questions = getQuestionsByIds(definition.entries.map((entry) => entry.questionId));
-    return {
-      ...base,
-      mode: "alphabet",
-      timeLimit: definition.timeLimit,
-      entries: definition.entries.map((entry, index) => ({
-        letter: entry.letter,
-        question: questions[index],
-      })),
-    };
-  }
-
-  if (definition.mode === "survival") {
-    return {
-      ...base,
-      mode: "survival",
-      lives: definition.lives,
-      questions: getQuestionsByIds(definition.questionIds),
-      questionPoints: definition.questionPoints,
-    };
-  }
-
-  if (definition.mode === "pyramid") {
-    validatePyramidChallengeDefinition(definition);
-    const questions = getQuestionsByIds(getPyramidQuestionIds(definition));
-    return {
-      ...base,
-      mode: "pyramid",
-      attemptVersion: definition.attemptVersion,
-      availableFrom: scheduledChallenge.availableFrom,
-      availableUntil: scheduledChallenge.availableUntil,
-      levels: definition.levels.map((level, index) => ({
-        id: level.id,
-        label: level.label,
-        question: questions[index],
-        briefing: level.briefing,
-      })),
-      questionPoints: definition.questionPoints,
-    };
-  }
-
-  if (definition.mode === "narrative") {
-    validateNarrativeChallengeDefinition(definition);
-    const questionIds = getNarrativeQuestionIds(definition);
-    const questions = getQuestionsByIds(questionIds);
-    const pointValues = getConfiguredChallengeQuestionPointValues(
-      questionIds,
-      definition.questionPoints,
-      definition.maxScore,
-    );
-    const resolvedQuestions = new Map(
-      questions.map((question, index) => [
-        question.id,
-        withChallengeQuestionPoints(question, pointValues[index] ?? 0),
-      ]),
-    );
-
-    return {
-      ...base,
-      mode: "narrative",
-      implementationStatus: definition.implementationStatus,
-      maxScore: definition.maxScore,
-      prologue: definition.prologue,
-      beats: definition.beats.map((beat) => ({
-        ...beat,
-        steps: beat.steps.map((step) => {
-          if (step.type === "scene") return step;
-          const question = resolvedQuestions.get(step.questionId);
-          if (!question) {
-            throw new Error(`Missing narrative question "${step.questionId}".`);
-          }
-          return {
-            type: "question",
-            question,
-            reactions: step.reactions,
-          } satisfies NarrativeQuestionStep;
-        }),
-      })),
-    };
-  }
-
-  return {
-    ...base,
-    mode: "flash",
-    questions: getQuestionsByIds(definition.questionIds),
-    questionPoints: definition.questionPoints,
-  };
-}
-
-export const challenges = demoRoom.activeSeason.scheduledChallenges
-  .filter(isPlayableScheduledChallenge)
-  .map(resolveScheduledChallenge);
+/** @deprecated Proyección gameplay completa; usa los selectores de `@/data/mock`. */
+export const challenges = [...legacyChallenges];
 
 export function getChallengeById(id: string) {
   return challenges.find((challenge) => challenge.id === id);

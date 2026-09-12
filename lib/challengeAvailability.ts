@@ -10,6 +10,6 @@ export function getChallengeAvailabilityStatus(
   const nowTime = now.getTime();
 
   if (nowTime < fromTime) return "locked";
-  if (nowTime > untilTime) return "expired";
+  if (nowTime >= untilTime) return "expired";
   return "available";
 }

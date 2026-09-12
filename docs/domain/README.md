@@ -51,6 +51,8 @@ son fuentes de verdad independientes en la primera versión.
    evaluación y puntuación autoritativas en servidor.
 7. [`type-model.md`](type-model.md): capas de tipos, API canónica y compatibilidad temporal con el
    prototipo.
+8. [`mock-data.md`](mock-data.md): almacén normalizado, aliases, datos reconciliados, selectores y
+   controles de integridad.
 
 ## Jerarquía documental
 

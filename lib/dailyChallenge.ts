@@ -40,27 +40,15 @@ function isPlayableScheduledChallenge(
   );
 }
 
-function hashString(value: string) {
-  let hash = 0;
-
-  for (const character of value) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return hash;
-}
-
 export function getDailyChallenge(room: Room, now = new Date()) {
   if (room.activeSeason.status !== "active") return null;
 
   const candidates = room.activeSeason.scheduledChallenges
     .filter((challenge) => isPlayableScheduledChallenge(challenge, now))
-    .sort((left, right) => left.id.localeCompare(right.id));
+    .sort(
+      (left, right) =>
+        left.availableFrom.localeCompare(right.availableFrom) || left.number - right.number,
+    );
 
-  if (candidates.length === 0) return null;
-
-  const dateKey = getDailyChallengeDateKey(now);
-  const candidateIndex = hashString(`${room.id}:${dateKey}`) % candidates.length;
-
-  return candidates[candidateIndex];
+  return candidates[0] ?? null;
 }

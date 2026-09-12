@@ -9,11 +9,11 @@ describe("buildRoomCardModel", () => {
     const model = buildRoomCardModel(demoRoom, now);
 
     expect(model.roomId).toBe("tabarnia-room");
-    expect(model.dailyChallenge?.id).toBe("tabarnia-challenge-05");
-    expect(model.dailyChallenge?.title).toBe("Cumbre lógica");
+    expect(model.dailyChallenge?.id).toBe("tabarnia-challenge-06");
+    expect(model.dailyChallenge?.title).toBe("Biblia y religiones abrahámicas");
     expect(model.dailyChallenge?.formatLabel).toBe("La Pirámide");
     expect(model.dailyChallenge?.imageSrc).toBe(ROOM_ART_FALLBACK);
-    expect(model.currentUser).toEqual({ totalPoints: 136, roomRank: 3 });
+    expect(model.currentUser).toEqual({ totalPoints: 169, roomRank: 3 });
     expect(model.memberPreviews).toHaveLength(4);
     expect(model.memberPreviews[0].src).toBe("/flash-pop/avatars/player.jpeg");
     expect(model.memberCount).toBe(5);
@@ -29,9 +29,9 @@ describe("buildRoomCardModel", () => {
       },
     };
 
-    expect(buildRoomCardModel(room, now).dailyChallenge?.imageSrc).toBe(
-      "/flash-pop/concepts/flash-floating-cards.webp",
-    );
+    expect(
+      buildRoomCardModel(room, new Date("2026-09-01T12:00:00.000Z")).dailyChallenge?.imageSrc,
+    ).toBe("/flash-pop/concepts/flash-floating-cards.webp");
   });
 
   it("keeps the room model available when there is no daily challenge", () => {

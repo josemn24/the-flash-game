@@ -35,6 +35,6 @@ describe("room history route", () => {
     expect(markup).toContain("Dark");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial/tabarnia-challenge-05"');
-    expect(markup.match(/Ver ranking/g)).toHaveLength(3);
+    expect(markup.match(/Ver ranking/g)).toHaveLength(5);
   });
 });

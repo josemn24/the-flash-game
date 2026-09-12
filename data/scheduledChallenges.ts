@@ -1,82 +1,38 @@
+import { challengeDefinitions, challengeVersions } from "@/data/mock/challengeFixtures";
+import {
+  scheduledChallengeRouteAliases,
+  type ScheduledChallengeRouteKey,
+} from "@/data/mock/constants";
+import { scheduledChallenges } from "@/data/mock/socialFixtures";
 import type { ScheduledChallenge } from "@/types/game";
 
-export const demoSeasonScheduledChallenges = [
-  {
-    id: "tabarnia-flash-01",
-    number: 1,
-    seasonId: "tabarnia-season-1",
-    challengeDefinitionId: "demo-challenge-definition",
-    availableFrom: "2026-09-05T22:00:00.000Z",
-    availableUntil: "2026-09-20T21:59:59.999Z",
+const routeById = new Map(
+  Object.entries(scheduledChallengeRouteAliases).map(([routeKey, id]) => [
+    id,
+    routeKey as ScheduledChallengeRouteKey,
+  ]),
+);
+const challengeVersionById = new Map(challengeVersions.map((version) => [version.id, version]));
+const definitionById = new Map(
+  challengeDefinitions.map((definition) => [definition.id, definition]),
+);
+
+/** @deprecated Proyección para la UI actual. Usa `mockDomainStore.scheduledChallenges`. */
+export const demoSeasonScheduledChallenges: ScheduledChallenge[] = scheduledChallenges.map(
+  (scheduledChallenge) => {
+    const routeKey = routeById.get(scheduledChallenge.id);
+    const version = challengeVersionById.get(scheduledChallenge.challengeVersionId);
+    const definition = version ? definitionById.get(version.challengeDefinitionId) : undefined;
+    if (!routeKey || !definition) {
+      throw new Error(`Cannot project scheduled challenge "${scheduledChallenge.id}".`);
+    }
+    return {
+      id: routeKey,
+      number: scheduledChallenge.number,
+      seasonId: "tabarnia-season-1",
+      challengeDefinitionId: definition.slug,
+      availableFrom: scheduledChallenge.opensAt,
+      availableUntil: scheduledChallenge.closesAt,
+    };
   },
-  {
-    id: "tabarnia-challenge-02",
-    number: 2,
-    seasonId: "tabarnia-season-1",
-    challengeDefinitionId: "animals-alphabet-definition",
-    availableFrom: "2026-09-05T22:00:00.000Z",
-    availableUntil: "2026-09-20T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-03",
-    number: 3,
-    seasonId: "tabarnia-season-1",
-    challengeDefinitionId: "spain-survival-definition",
-    availableFrom: "2026-09-05T22:00:00.000Z",
-    availableUntil: "2026-09-20T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-04",
-    number: 4,
-    seasonId: "tabarnia-season-1",
-    challengeDefinitionId: "antarctica-narrative-definition",
-    availableFrom: "2026-09-05T22:00:00.000Z",
-    availableUntil: "2026-09-20T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-05",
-    number: 5,
-    seasonId: "tabarnia-season-1",
-    challengeDefinitionId: "pyramid-logic-definition",
-    availableFrom: "2026-09-05T22:00:00.000Z",
-    availableUntil: "2026-09-20T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-06",
-    number: 6,
-    seasonId: "tabarnia-season-1",
-    challengeDefinitionId: "pyramid-abrahamic-definition",
-    availableFrom: "2026-09-05T22:00:00.000Z",
-    availableUntil: "2026-09-20T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-07",
-    number: 7,
-    seasonId: "tabarnia-season-1",
-    title: "Desafío 07",
-    subtitle: "Próximamente",
-    mode: "flash",
-    availableFrom: "2026-08-14T22:00:00.000Z",
-    availableUntil: "2026-08-15T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-08",
-    number: 8,
-    seasonId: "tabarnia-season-1",
-    title: "Desafío 08",
-    subtitle: "Próximamente",
-    mode: "flash",
-    availableFrom: "2026-08-15T22:00:00.000Z",
-    availableUntil: "2026-08-16T21:59:59.999Z",
-  },
-  {
-    id: "tabarnia-challenge-09",
-    number: 9,
-    seasonId: "tabarnia-season-1",
-    title: "Desafío 09",
-    subtitle: "Próximamente",
-    mode: "flash",
-    availableFrom: "2026-08-16T22:00:00.000Z",
-    availableUntil: "2026-08-17T21:59:59.999Z",
-  },
-] satisfies ScheduledChallenge[];
+);

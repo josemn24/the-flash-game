@@ -31,22 +31,12 @@ import {
 } from "@/lib/wordHashtag";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
-import type {
-  PlaceholderScheduledChallenge,
-  PlayableScheduledChallenge,
-  ScheduledChallenge,
-} from "@/types/game";
+import type { PlayableScheduledChallenge, ScheduledChallenge } from "@/types/game";
 
 function isPlayableScheduledChallenge(
   challenge: ScheduledChallenge,
 ): challenge is PlayableScheduledChallenge {
   return typeof challenge.challengeDefinitionId === "string";
-}
-
-function isPlaceholderScheduledChallenge(
-  challenge: ScheduledChallenge,
-): challenge is PlaceholderScheduledChallenge {
-  return !isPlayableScheduledChallenge(challenge);
 }
 
 describe("question format catalog", () => {
@@ -329,7 +319,7 @@ describe("question format catalog", () => {
     expect(demoRoom.title).toBe("Tabarnia");
     expect(demoRoom.activeSeason.title).toBe("Primera temporada");
     expect(demoRoom.activeSeason.status).toBe("active");
-    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(9);
+    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(6);
     expect(demoRoom.activeSeason.scheduledChallenges.map((challenge) => challenge.id)).toEqual([
       "tabarnia-flash-01",
       "tabarnia-challenge-02",
@@ -337,9 +327,6 @@ describe("question format catalog", () => {
       "tabarnia-challenge-04",
       "tabarnia-challenge-05",
       "tabarnia-challenge-06",
-      "tabarnia-challenge-07",
-      "tabarnia-challenge-08",
-      "tabarnia-challenge-09",
     ]);
     expect(
       demoRoom.activeSeason.scheduledChallenges.every(
@@ -352,23 +339,10 @@ describe("question format catalog", () => {
         .every((challenge) => challenge.challengeDefinitionId in challengeDefinitions),
     ).toBe(true);
     expect(
-      demoRoom.activeSeason.scheduledChallenges
-        .filter(isPlaceholderScheduledChallenge)
-        .every(
-          (challenge) =>
-            typeof challenge.title === "string" &&
-            challenge.title.startsWith("Desafío ") &&
-            challenge.subtitle === "Próximamente",
-        ),
-    ).toBe(true);
-    expect(
       demoRoom.activeSeason.scheduledChallenges.map(
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
-    ).toEqual([
-      1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999,
-      86_399_999, 86_399_999, 86_399_999,
-    ]);
+    ).toEqual([86_400_000, 86_400_000, 86_400_000, 86_400_000, 86_400_000, 1_296_000_000]);
     expect(challenges).toHaveLength(6);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
     const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");

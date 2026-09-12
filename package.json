@@ -9,6 +9,7 @@
     "dictionary:generate": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 && node scripts/generate-mini-wordle-dictionary.mjs --length=5",
     "dictionary:check": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 --check && node scripts/generate-mini-wordle-dictionary.mjs --length=5 --check",
     "test": "vitest run",
+    "mock-data:check": "vitest run data/mock/store.test.ts",
     "typecheck": "tsc --noEmit",
     "type-architecture": "node scripts/check-type-architecture.mjs",
     "lint": "eslint",
