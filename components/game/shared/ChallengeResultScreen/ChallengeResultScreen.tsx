@@ -11,7 +11,6 @@ import {
   ClockIcon,
   EyeIcon,
   GameHeader,
-  RotateIcon,
 } from "@/components/ui";
 import {
   formatResultTime,
@@ -31,9 +30,8 @@ function toneClass(tone: ResultMetricTone | undefined) {
 export function ChallengeResultScreen({
   model,
   onReview,
-  onReplay,
   returnTo,
-  returnLabel = "Volver al lobby",
+  returnLabel = "Volver",
 }: ChallengeResultScreenProps) {
   const maxScore = Number.isFinite(model.maxScore) && model.maxScore > 0 ? model.maxScore : 100;
   const score = normalizeResultScore(model.score, maxScore);
@@ -70,22 +68,19 @@ export function ChallengeResultScreen({
               />
             </div>
             <div className={styles.resultActions}>
-              <Button fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
-                Volver a jugar
-              </Button>
-              <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
-                Ver respuestas
-              </Button>
               {returnTo ? (
                 <ButtonLink
                   href={returnTo}
-                  variant="secondary"
+                  variant="primary"
                   fullWidth
                   trailingIcon={<ArrowIcon />}
                 >
                   {returnLabel}
                 </ButtonLink>
               ) : null}
+              <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
+                Ver respuestas
+              </Button>
             </div>
           </Card>
         </motion.div>

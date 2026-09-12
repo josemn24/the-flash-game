@@ -22,7 +22,7 @@ function getModel(metricCount: 3 | 4 = 3) {
 describe("ChallengeResultScreen", () => {
   it("renders the shared score, progress, accuracy and time", () => {
     const markup = renderToStaticMarkup(
-      <ChallengeResultScreen model={getModel()} onReview={vi.fn()} onReplay={vi.fn()} />,
+      <ChallengeResultScreen model={getModel()} onReview={vi.fn()} returnTo="/desafios" />,
     );
 
     expect(markup).toContain("Sprint brutal.");
@@ -31,16 +31,17 @@ describe("ChallengeResultScreen", () => {
     expect(markup).toContain('aria-label="78 de 100 puntos"');
     expect(markup).toContain("93%");
     expect(markup).toContain("2 min 17 s");
-    expect(markup).toContain("Volver a jugar");
+    expect(markup).toContain("Volver");
     expect(markup).toContain("Ver respuestas");
+    expect(markup).not.toContain("Volver a jugar");
   });
 
   it("supports three and four mode-specific metrics", () => {
     const three = renderToStaticMarkup(
-      <ChallengeResultScreen model={getModel(3)} onReview={() => {}} onReplay={() => {}} />,
+      <ChallengeResultScreen model={getModel(3)} onReview={() => {}} />,
     );
     const four = renderToStaticMarkup(
-      <ChallengeResultScreen model={getModel(4)} onReview={() => {}} onReplay={() => {}} />,
+      <ChallengeResultScreen model={getModel(4)} onReview={() => {}} />,
     );
 
     expect(three).toContain('data-count="3"');
@@ -53,14 +54,13 @@ describe("ChallengeResultScreen", () => {
       <ChallengeResultScreen
         model={getModel()}
         onReview={() => {}}
-        onReplay={() => {}}
         returnTo="/sala/demo"
-        returnLabel="Volver a la sala"
+        returnLabel="Volver"
       />,
     );
 
     expect(markup).toContain('href="/sala/demo"');
-    expect(markup).toContain("Volver a la sala");
+    expect(markup).toContain("Volver");
     expect(markup).not.toContain("Clasificación");
   });
 });

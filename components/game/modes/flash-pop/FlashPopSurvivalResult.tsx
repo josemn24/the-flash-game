@@ -8,7 +8,7 @@ import {
 } from "@/features/game/resultSummary";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import type { FlashPopSurvivalResult } from "@/features/flash-pop/survivalSocial";
-import type { AnswerResult, GameRoomContext, SurvivalChallenge } from "@/types/game";
+import type { AnswerResult, SurvivalChallenge } from "@/types/game";
 
 export function FlashPopSurvivalResult({
   challenge,
@@ -17,9 +17,7 @@ export function FlashPopSurvivalResult({
   totalTime,
   eliminated,
   onReview,
-  onReplay,
   returnTo,
-  roomContext,
 }: {
   challenge: SurvivalChallenge;
   result: FlashPopSurvivalResult;
@@ -27,9 +25,7 @@ export function FlashPopSurvivalResult({
   totalTime: number;
   eliminated: boolean;
   onReview: () => void;
-  onReplay: () => void;
   returnTo: string;
-  roomContext?: GameRoomContext;
 }) {
   const mistakes = results.filter(
     (item) => item.status === "incorrect" || item.status === "unanswered",
@@ -73,9 +69,8 @@ export function FlashPopSurvivalResult({
         ],
       }}
       onReview={onReview}
-      onReplay={onReplay}
       returnTo={returnTo}
-      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+      returnLabel="Volver"
     />
   );
 }

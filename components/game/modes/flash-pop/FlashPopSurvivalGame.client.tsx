@@ -216,9 +216,7 @@ export function FlashPopSurvivalGame({
                 totalTime={summary?.totalTime ?? 0}
                 eliminated={session.eliminated}
                 onReview={session.showReview}
-                onReplay={session.replay}
                 returnTo={roomContext?.returnTo ?? "/"}
-                roomContext={roomContext}
               />
             </motion.div>
           ) : null}

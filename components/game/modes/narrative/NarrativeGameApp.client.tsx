@@ -303,16 +303,12 @@ function NarrativeResult({
   results,
   score,
   onReview,
-  onReplay,
   returnTo,
-  roomContext,
 }: {
   results: AnswerResult[];
   score: number;
   onReview: () => void;
-  onReplay: () => void;
   returnTo: string;
-  roomContext?: GameRoomContext;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
   const partial = results.filter((result) => result.status === "partial").length;
@@ -340,9 +336,8 @@ function NarrativeResult({
         ],
       }}
       onReview={onReview}
-      onReplay={onReplay}
       returnTo={returnTo}
-      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver a desafíos"}
+      returnLabel="Volver"
     />
   );
 }
@@ -476,9 +471,7 @@ export function NarrativeGameApp({
                   results={session.results}
                   score={session.score}
                   onReview={session.showReview}
-                  onReplay={session.replay}
                   returnTo={roomContext?.returnTo ?? "/"}
-                  roomContext={roomContext}
                 />
               )}
               {session.phase === "review" && (

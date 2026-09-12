@@ -329,7 +329,6 @@ function Result({
   results,
   totalTime,
   onReview,
-  onReplay,
   returnTo,
   roomContext,
 }: {
@@ -338,7 +337,6 @@ function Result({
   results: AnswerResult[];
   totalTime: number;
   onReview: () => void;
-  onReplay: () => void;
   returnTo: string;
   roomContext?: GameRoomContext;
 }) {
@@ -382,9 +380,8 @@ function Result({
         ],
       }}
       onReview={onReview}
-      onReplay={onReplay}
       returnTo={returnTo}
-      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+      returnLabel="Volver"
     />
   );
 }
@@ -544,7 +541,6 @@ export function FlashPopPyramidGame({
                 results={session.record?.results ?? []}
                 totalTime={session.summary?.timeUsed ?? 0}
                 onReview={session.showReview}
-                onReplay={session.restart}
                 returnTo={roomContext?.returnTo ?? "/"}
                 roomContext={roomContext}
               />

@@ -218,12 +218,10 @@ function Feedback({ session }: { session: AlphabetSession }) {
 function Results({
   challenge,
   session,
-  roomContext,
   returnTo,
 }: {
   challenge: AlphabetChallenge;
   session: AlphabetSession;
-  roomContext?: GameRoomContext;
   returnTo: string;
 }) {
   const accuracy = calculateResultAccuracy([
@@ -263,9 +261,8 @@ function Results({
         ],
       }}
       onReview={session.showReview}
-      onReplay={session.replay}
       returnTo={returnTo}
-      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+      returnLabel="Volver"
     />
   );
 }
@@ -384,7 +381,6 @@ export function FlashPopAlphabetGame({
               <Results
                 challenge={challenge}
                 session={session}
-                roomContext={roomContext}
                 returnTo={roomContext?.returnTo ?? "/"}
               />
             </motion.div>

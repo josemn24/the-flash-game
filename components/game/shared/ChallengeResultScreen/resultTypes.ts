@@ -24,7 +24,6 @@ export type ChallengeResultModel = {
 export type ChallengeResultScreenProps = {
   model: ChallengeResultModel;
   onReview: () => void;
-  onReplay: () => void;
   returnTo?: string;
   returnLabel?: string;
 };

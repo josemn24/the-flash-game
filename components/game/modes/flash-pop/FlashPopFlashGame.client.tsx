@@ -280,9 +280,7 @@ export function FlashPopFlashGame({
           <Card>
             <h1>Preview no disponible</h1>
             <p>Este piloto está limitado a tabarnia-flash-01.</p>
-            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>
-              {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
-            </ButtonLink>
+            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>"Volver"</ButtonLink>
           </Card>
         </Canvas>
       </MotionConfig>
@@ -362,9 +360,7 @@ export function FlashPopFlashGame({
               <ChallengeResultScreen
                 model={buildResultModel(session.results, session.score)}
                 onReview={session.showReview}
-                onReplay={session.replay}
-                returnTo={roomContext?.returnTo}
-                returnLabel="Volver a la sala"
+                returnTo={roomContext?.returnTo ?? "/flash-pop"}
               />
             </motion.div>
           ) : null}
