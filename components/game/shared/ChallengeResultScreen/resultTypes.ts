@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import type { AvatarTone } from "@/components/ui";
-
 export type ResultMetricTone = "default" | "success" | "danger" | "social";
 
 export type ResultMetric = {
@@ -21,7 +19,6 @@ export type ChallengeResultModel = {
   accuracy: number;
   totalTime: number;
   metrics: ResultMetric[];
-  supplementalContent?: ReactNode;
 };
 
 export type ChallengeResultScreenProps = {
@@ -30,20 +27,4 @@ export type ChallengeResultScreenProps = {
   onReplay: () => void;
   returnTo?: string;
   returnLabel?: string;
-};
-
-export type ResultRankingRow = {
-  id: string;
-  rank: number;
-  name: string;
-  initials: string;
-  tone: AvatarTone;
-  score: ReactNode;
-  current?: boolean;
-};
-
-export type ResultRankingProps = {
-  rows: ResultRankingRow[];
-  title?: string;
-  meta?: string;
 };

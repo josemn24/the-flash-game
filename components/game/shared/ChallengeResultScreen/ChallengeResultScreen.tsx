@@ -1,10 +1,9 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { motion } from "motion/react";
 import {
   ArrowIcon,
-  Avatar,
   Button,
   ButtonLink,
   Card,
@@ -19,11 +18,7 @@ import {
   getResultProgress,
   normalizeResultScore,
 } from "@/features/game/resultSummary";
-import type {
-  ChallengeResultScreenProps,
-  ResultMetricTone,
-  ResultRankingProps,
-} from "./resultTypes";
+import type { ChallengeResultScreenProps, ResultMetricTone } from "./resultTypes";
 import styles from "./ChallengeResultScreen.module.css";
 
 function toneClass(tone: ResultMetricTone | undefined) {
@@ -133,37 +128,10 @@ export function ChallengeResultScreen({
               </Card>
             ))}
           </div>
-
-          {model.supplementalContent ? (
-            <div className={styles.supplementalContent}>{model.supplementalContent}</div>
-          ) : null}
         </motion.div>
       </div>
     </div>
   );
 }
 
-export function ResultCallout({ children }: { children: ReactNode }) {
-  return <p className={styles.resultCallout}>{children}</p>;
-}
-
-export function ResultRanking({ rows, title = "Tu grupo", meta }: ResultRankingProps) {
-  return (
-    <div className={styles.ranking} aria-label="Clasificación">
-      <h2>
-        {title} {meta ? <span>· {meta}</span> : null}
-      </h2>
-      {rows.map((row) => (
-        <div className={`${styles.rankingRow} ${row.current ? styles.current : ""}`} key={row.id}>
-          <span className={styles.rankingPosition}>{row.rank}.</span>
-          <Avatar name={row.name} initials={row.initials} tone={row.tone} size="sm" />
-          <span className={styles.rankingName}>{row.name}</span>
-          <span className={styles.rankingScore}>{row.score}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export type { ChallengeResultModel, ChallengeResultScreenProps, ResultMetric } from "./resultTypes";
-export type { ResultRankingProps, ResultRankingRow } from "./resultTypes";

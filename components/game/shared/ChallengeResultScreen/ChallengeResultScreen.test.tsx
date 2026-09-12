@@ -48,10 +48,10 @@ describe("ChallengeResultScreen", () => {
     expect(four).toContain("Métrica 4");
   });
 
-  it("renders optional supplemental content and return navigation", () => {
+  it("renders return navigation without adding a second result section", () => {
     const markup = renderToStaticMarkup(
       <ChallengeResultScreen
-        model={{ ...getModel(), supplementalContent: <p>Clasificación demo</p> }}
+        model={getModel()}
         onReview={() => {}}
         onReplay={() => {}}
         returnTo="/sala/demo"
@@ -59,8 +59,8 @@ describe("ChallengeResultScreen", () => {
       />,
     );
 
-    expect(markup).toContain("Clasificación demo");
     expect(markup).toContain('href="/sala/demo"');
     expect(markup).toContain("Volver a la sala");
+    expect(markup).not.toContain("Clasificación");
   });
 });

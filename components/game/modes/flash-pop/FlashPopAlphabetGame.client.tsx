@@ -8,22 +8,12 @@ import { Button, Card, Canvas, GameHeader, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
 import { buildAlphabetAnswerReviews } from "@/features/alphabet/alphabetReview";
-import {
-  getFlashPopAlphabetResult,
-  type FlashPopAlphabetSummary,
-} from "@/features/flash-pop/alphabetSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { calculateResultAccuracy } from "@/features/game/resultSummary";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import {
-  ChallengeResultScreen,
-  ResultCallout,
-  ResultRanking,
-  ReviewAnswerPanel,
-  StartCountdown,
-} from "@/components/game/shared";
+import { ChallengeResultScreen, ReviewAnswerPanel, StartCountdown } from "@/components/game/shared";
 import type {
   AlphabetChallenge,
   AnswerStatus,
@@ -41,13 +31,6 @@ const STATUS_LABELS: Record<AlphabetLetterStatus, string> = {
   incorrect: "Incorrecta",
   unanswered: "Sin responder",
 };
-
-function formatTime(seconds: number) {
-  const total = Math.max(0, Math.round(seconds));
-  const minutes = Math.floor(total / 60);
-  const rest = total % 60;
-  return minutes > 0 ? `${minutes} min ${rest} s` : `${rest} s`;
-}
 
 function AlphabetMark({ status }: { status: AlphabetLetterStatus }) {
   if (status === "correct") return <CheckIcon className={styles.markIcon} />;
@@ -232,20 +215,6 @@ function Feedback({ session }: { session: AlphabetSession }) {
   );
 }
 
-function summaryFor(
-  challenge: AlphabetChallenge,
-  session: AlphabetSession,
-): FlashPopAlphabetSummary {
-  return {
-    challengeId: challenge.id,
-    score: session.score,
-    correctAnswers: session.correctAnswers,
-    totalLetters: challenge.entries.length,
-    elapsedTime: session.elapsedTime,
-    lastCorrectAt: session.lastCorrectAt,
-  };
-}
-
 function Results({
   challenge,
   session,
@@ -257,8 +226,6 @@ function Results({
   roomContext?: GameRoomContext;
   returnTo: string;
 }) {
-  const summary = summaryFor(challenge, session);
-  const result = getFlashPopAlphabetResult(summary, { timeLimit: challenge.timeLimit });
   const accuracy = calculateResultAccuracy([
     ...Array.from({ length: session.correctAnswers }, () => ({ status: "correct" as const })),
     ...Array.from({ length: Math.max(0, session.playedCount - session.correctAnswers) }, () => ({
@@ -294,36 +261,6 @@ function Results({
           },
           { icon: <ClockIcon />, label: "Letras sin resolver", value: session.unanswered },
         ],
-        supplementalContent: (
-          <>
-            <ResultCallout>
-              +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
-            </ResultCallout>
-            <ResultCallout>
-              {session.round} vueltas · Último acierto:{" "}
-              {session.lastCorrectAt === null ? "sin aciertos" : formatTime(session.lastCorrectAt)}
-            </ResultCallout>
-            {roomContext ? (
-              <ResultCallout>
-                Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
-                volver.
-              </ResultCallout>
-            ) : (
-              <ResultRanking
-                meta="Demo"
-                rows={result.peers.map((row) => ({
-                  id: row.player.id,
-                  rank: row.rank,
-                  name: row.player.id === "javi" ? "Tú" : row.player.displayName,
-                  initials: row.player.initials,
-                  tone: row.player.tone,
-                  score: `${row.score} pts`,
-                  current: row.player.id === "javi",
-                }))}
-              />
-            )}
-          </>
-        ),
       }}
       onReview={session.showReview}
       onReplay={session.replay}

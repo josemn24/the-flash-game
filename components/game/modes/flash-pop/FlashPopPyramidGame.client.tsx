@@ -5,7 +5,7 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, BoltIcon, CheckIcon } from "@/components/ui";
 import { Button, ButtonLink, Canvas, Card, GameHeader, Timer } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { ChallengeResultScreen, ResultCallout, ResultRanking } from "@/components/game/shared";
+import { ChallengeResultScreen } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { CHALLENGE_MAX_SCORE, withPyramidScoring } from "@/lib/challengeScoring";
@@ -380,32 +380,6 @@ function Result({
             tone: "social",
           },
         ],
-        supplementalContent: (
-          <>
-            <ResultCallout>
-              {result.seasonXpCurrent} / {result.nextLevelAt} ⚡ · Sigue subiendo
-            </ResultCallout>
-            {roomContext ? (
-              <ResultCallout>
-                Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
-                volver.
-              </ResultCallout>
-            ) : (
-              <ResultRanking
-                meta={result.socialSource === "demo" ? "Demo" : "En directo"}
-                rows={result.peers.map((row) => ({
-                  id: row.player.id,
-                  rank: row.rank,
-                  name: row.player.id === "javi" ? "Tú" : row.player.displayName,
-                  initials: row.player.initials,
-                  tone: row.player.tone,
-                  score: `${row.score} pts`,
-                  current: row.player.id === "javi",
-                }))}
-              />
-            )}
-          </>
-        ),
       }}
       onReview={onReview}
       onReplay={onReplay}

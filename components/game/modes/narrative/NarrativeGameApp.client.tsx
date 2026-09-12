@@ -338,26 +338,6 @@ function NarrativeResult({
           { icon: <CrossIcon />, label: "Falladas", value: incorrect, tone: "danger" },
           { icon: <ClockIcon />, label: "Sin respuesta", value: unanswered },
         ],
-        supplementalContent: (
-          <ol className={styles.answerStates} aria-label="Estado de las pruebas">
-            {results.map((result, index) => {
-              const label =
-                result.status === "correct"
-                  ? "Correcta"
-                  : result.status === "partial"
-                    ? "Parcial"
-                    : result.status === "unanswered"
-                      ? "Tiempo agotado"
-                      : "Fallada";
-              return (
-                <li key={result.questionId} data-status={result.status}>
-                  <span>Prueba {index + 1}</span>
-                  <strong>{label}</strong>
-                </li>
-              );
-            })}
-          </ol>
-        ),
       }}
       onReview={onReview}
       onReplay={onReplay}

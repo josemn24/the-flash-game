@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckIcon, CrossIcon, HeartIcon } from "@/components/ui";
-import { ChallengeResultScreen, ResultCallout, ResultRanking } from "@/components/game/shared";
+import { ChallengeResultScreen } from "@/components/game/shared";
 import {
   calculateResultAccuracy,
   getAnswerResultAccuracyUnit,
@@ -31,8 +31,6 @@ export function FlashPopSurvivalResult({
   returnTo: string;
   roomContext?: GameRoomContext;
 }) {
-  const correct = results.filter((item) => item.status === "correct").length;
-  const partial = results.filter((item) => item.status === "partial").length;
   const mistakes = results.filter(
     (item) => item.status === "incorrect" || item.status === "unanswered",
   ).length;
@@ -73,35 +71,6 @@ export function FlashPopSurvivalResult({
             tone: "social",
           },
         ],
-        supplementalContent: (
-          <>
-            <ResultCallout>
-              +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
-            </ResultCallout>
-            <ResultCallout>
-              {correct} aciertos · {partial} parciales · {mistakes} vidas consumidas
-            </ResultCallout>
-            {roomContext ? (
-              <ResultCallout>
-                Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
-                volver.
-              </ResultCallout>
-            ) : (
-              <ResultRanking
-                meta="Demo"
-                rows={result.peers.map((row) => ({
-                  id: row.player.id,
-                  rank: row.rank,
-                  name: row.player.id === "javi" ? "Tú" : row.player.displayName,
-                  initials: row.player.initials,
-                  tone: row.player.tone,
-                  score: `${row.score} pts`,
-                  current: row.player.id === "javi",
-                }))}
-              />
-            )}
-          </>
-        ),
       }}
       onReview={onReview}
       onReplay={onReplay}
