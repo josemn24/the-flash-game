@@ -1,79 +1,74 @@
-import { buildMockRoomChallengeAttempt } from "@/lib/roomAttempts";
+import { completedAttemptFixtures } from "@/data/mock/catalog/attempts";
 import { challengeItems } from "@/data/mock/challengeFixtures";
 import { playerRouteAliases, scheduledChallengeRouteAliases } from "@/data/mock/constants";
 import { durationMs, mockId, utc } from "@/data/mock/identity";
-import { demoScoreFixtures, scheduledChallenges } from "@/data/mock/socialFixtures";
+import { questionDefinitions, questionVersions } from "@/data/mock/questionFixtures";
+import { scheduledChallenges } from "@/data/mock/socialFixtures";
 import type { Attempt, AttemptAnswer, JsonValue } from "@/types/domain";
 
-const scheduleById = new Map(scheduledChallenges.map((schedule) => [schedule.id, schedule]));
-const itemByChallengeAndQuestion = new Map(
-  challengeItems.map((item) => [`${item.challengeVersionId}:${item.questionVersionId}`, item]),
+const scheduleByRouteKey = new Map(
+  Object.entries(scheduledChallengeRouteAliases).map(([routeKey, id]) => [
+    routeKey,
+    scheduledChallenges.find((schedule) => schedule.id === id),
+  ]),
+);
+const questionVersionBySlug = new Map(
+  questionDefinitions.map((definition) => [
+    definition.slug,
+    questionVersions.find((version) => version.questionDefinitionId === definition.id),
+  ]),
 );
 
-function json(value: unknown): JsonValue {
-  return value as JsonValue;
+function attemptKey(fixture: (typeof completedAttemptFixtures)[number]) {
+  return `${fixture.scheduledChallengeKey}:${fixture.playerKey}:${fixture.attemptNumber}`;
 }
 
-const attempts: Attempt[] = [];
-const answers: AttemptAnswer<JsonValue, JsonValue>[] = [];
+export const attemptFixtures: readonly Attempt[] = completedAttemptFixtures.map((fixture) => ({
+  id: mockId.attempt(attemptKey(fixture)),
+  playerId: playerRouteAliases[fixture.playerKey],
+  scheduledChallengeId: scheduledChallengeRouteAliases[fixture.scheduledChallengeKey],
+  attemptNumber: fixture.attemptNumber,
+  kind: fixture.kind,
+  status: fixture.status,
+  outcome: fixture.outcome,
+  startedAt: utc(fixture.startedAt),
+  deadlineAt: utc(fixture.deadlineAt),
+  completedAt: fixture.completedAt === null ? null : utc(fixture.completedAt),
+  score: fixture.score,
+  clientStateSchemaVersion: fixture.clientStateSchemaVersion,
+  lockVersion: fixture.lockVersion,
+  progressPayload: fixture.progressPayload,
+}));
 
-for (const fixture of demoScoreFixtures) {
-  const scheduledChallengeId = scheduledChallengeRouteAliases[fixture.scheduledChallengeKey];
-  const scheduledChallenge = scheduleById.get(scheduledChallengeId);
-  if (!scheduledChallenge) throw new Error(`Unknown schedule "${fixture.scheduledChallengeKey}".`);
-
-  const attemptKey = `${fixture.scheduledChallengeKey}:${fixture.playerKey}:1`;
-  const attemptId = mockId.attempt(attemptKey);
-  const legacyAttempt = buildMockRoomChallengeAttempt(
-    fixture.scheduledChallengeKey,
-    { points: fixture.score, completed: true },
-    { seed: attemptKey, playedAt: fixture.completedAt },
-  );
-  if (!legacyAttempt) throw new Error(`Could not build attempt "${attemptKey}".`);
-
-  const completedAtMs = Date.parse(fixture.completedAt);
-  const startedAt = utc(new Date(completedAtMs - 20 * 60_000).toISOString());
-  attempts.push({
-    id: attemptId,
-    playerId: playerRouteAliases[fixture.playerKey],
-    scheduledChallengeId,
-    attemptNumber: 1,
-    kind: "competitive",
-    status: "completed",
-    outcome: null,
-    startedAt,
-    deadlineAt: scheduledChallenge.closesAt,
-    completedAt: utc(fixture.completedAt),
-    score: fixture.score,
-    clientStateSchemaVersion: 1,
-    lockVersion: 1,
-    progressPayload: null,
-  });
-
-  for (const [answerIndex, answer] of legacyAttempt.answers.entries()) {
-    const item = itemByChallengeAndQuestion.get(
-      `${scheduledChallenge.challengeVersionId}:${mockId.questionVersion(`${answer.questionId}:v1`)}`,
-    );
-    if (!item) {
-      throw new Error(
-        `Attempt "${attemptKey}" references question "${answer.questionId}" outside its challenge.`,
+export const attemptAnswerFixtures: readonly AttemptAnswer<JsonValue, JsonValue>[] =
+  completedAttemptFixtures.flatMap((fixture) => {
+    const schedule = scheduleByRouteKey.get(fixture.scheduledChallengeKey);
+    if (!schedule) throw new Error(`Unknown schedule "${fixture.scheduledChallengeKey}".`);
+    const key = attemptKey(fixture);
+    const attemptId = mockId.attempt(key);
+    return fixture.answers.map((answer, index) => {
+      const questionVersion = questionVersionBySlug.get(answer.questionSlug);
+      const item = challengeItems.find(
+        (candidate) =>
+          candidate.challengeVersionId === schedule.challengeVersionId &&
+          candidate.questionVersionId === questionVersion?.id,
       );
-    }
-    const timedOut = answer.status === "unanswered";
-    answers.push({
-      id: mockId.attemptAnswer(`${attemptKey}:${answerIndex + 1}`),
-      attemptId,
-      challengeItemId: item.id,
-      status: timedOut ? "timeout" : answer.status,
-      answer: answer.answer == null ? null : json(answer.answer),
-      resultDetails: answer.details == null ? null : json(answer.details),
-      points: answer.points ?? 0,
-      presentedAt: startedAt,
-      submittedAt: timedOut ? null : utc(fixture.completedAt),
-      timeUsedMs: durationMs((answer.timeUsed ?? 0) * 1_000),
+      if (!item) {
+        throw new Error(
+          `Attempt "${key}" references question "${answer.questionSlug}" outside its challenge.`,
+        );
+      }
+      return {
+        id: mockId.attemptAnswer(`${key}:${index + 1}`),
+        attemptId,
+        challengeItemId: item.id,
+        status: answer.status,
+        answer: answer.answer,
+        resultDetails: answer.resultDetails,
+        points: answer.points,
+        presentedAt: utc(answer.presentedAt),
+        submittedAt: answer.submittedAt === null ? null : utc(answer.submittedAt),
+        timeUsedMs: durationMs(answer.timeUsedMs),
+      };
     });
-  }
-}
-
-export const attemptFixtures: readonly Attempt[] = attempts;
-export const attemptAnswerFixtures: readonly AttemptAnswer<JsonValue, JsonValue>[] = answers;
+  });

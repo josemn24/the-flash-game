@@ -5,10 +5,24 @@ import process from "node:process";
 const TYPES_ROOT = path.join(process.cwd(), "types");
 const MOCK_ROOT = path.join(process.cwd(), "data", "mock");
 const LEGACY_MOCK_BOUNDARIES = new Set([
-  "challengeFixtures.ts",
   "legacyAdapters.ts",
   "legacyChallengeAdapter.ts",
+  "legacyChallengeDefinitionAdapter.ts",
+  "legacyQuestionAdapter.ts",
+]);
+const CANONICAL_MOCK_FILES = new Set([
+  "attemptFixtures.ts",
+  "challengeFixtures.ts",
   "questionFixtures.ts",
+  "store.ts",
+]);
+const LEGACY_DATA_SOURCES = new Set([
+  "@/data/questions",
+  "@/data/challengeDefinitions",
+  "@/data/mock/legacyAdapters",
+  "@/data/mock/legacyChallengeAdapter",
+  "@/data/mock/legacyChallengeDefinitionAdapter",
+  "@/data/mock/legacyQuestionAdapter",
 ]);
 const LAYERS = ["domain", "contracts", "gameplay", "view-models", "legacy"];
 const FORBIDDEN_PROJECT_AREAS = ["data", "lib", "features", "components", "app"];
@@ -83,7 +97,15 @@ const mockFiles = await collectTypeScriptFiles(MOCK_ROOT);
 for (const file of mockFiles) {
   const source = await readFile(file, "utf8");
   const allowsLegacyDependencies = LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
+  const relativeFile = path.relative(MOCK_ROOT, file);
+  const isCanonicalFixture =
+    relativeFile.startsWith(`catalog${path.sep}`) || CANONICAL_MOCK_FILES.has(path.basename(file));
   for (const imported of importsIn(source)) {
+    if (isCanonicalFixture && LEGACY_DATA_SOURCES.has(imported.specifier)) {
+      violations.push(
+        `${path.relative(process.cwd(), file)} makes canonical fixtures depend on ${imported.specifier}`,
+      );
+    }
     if (
       (!allowsLegacyDependencies &&
         (imported.specifier === "@/types/game" ||

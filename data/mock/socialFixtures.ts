@@ -179,36 +179,3 @@ export const scheduledChallenges: readonly ScheduledChallenge[] = scheduleFixtur
     updatedAt: status === "closed" ? utc(closesAt) : CONTENT_PUBLISHED_AT,
   }),
 );
-
-export type DemoScoreFixture = {
-  readonly scheduledChallengeKey: ScheduledChallengeRouteKey;
-  readonly playerKey: PlayerRouteKey;
-  readonly score: number;
-  readonly completedAt: string;
-};
-
-const scores = {
-  "tabarnia-flash-01": { player: 42, ches: 54, marta: 47, alex: 38 },
-  "tabarnia-challenge-02": { player: 31, ches: 44, marta: 39, alex: 28, laura: 36 },
-  "tabarnia-challenge-03": { player: 27, ches: 38, marta: 35, alex: 29, laura: 31 },
-  "tabarnia-challenge-04": { player: 36, ches: 54, marta: 60, alex: 24, laura: 31 },
-  "tabarnia-challenge-05": { player: 33, ches: 52, marta: 44, alex: 39 },
-} as const;
-
-const completionTimes: Record<keyof typeof scores, string> = {
-  "tabarnia-flash-01": "2026-09-01T20:30:00.000Z",
-  "tabarnia-challenge-02": "2026-09-02T20:30:00.000Z",
-  "tabarnia-challenge-03": "2026-09-03T21:45:00.000Z",
-  "tabarnia-challenge-04": "2026-09-04T19:10:00.000Z",
-  "tabarnia-challenge-05": "2026-09-05T20:30:00.000Z",
-};
-
-export const demoScoreFixtures: readonly DemoScoreFixture[] = Object.entries(scores).flatMap(
-  ([scheduledChallengeKey, challengeScores]) =>
-    Object.entries(challengeScores).map(([playerKey, score]) => ({
-      scheduledChallengeKey: scheduledChallengeKey as keyof typeof scores,
-      playerKey: playerKey as PlayerRouteKey,
-      score,
-      completedAt: completionTimes[scheduledChallengeKey as keyof typeof scores],
-    })),
-);

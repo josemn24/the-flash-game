@@ -34,12 +34,16 @@ function answerFor(question: Question): AnswerValue | null {
     case "connect-pairs":
       return { paths: question.solutionPaths };
     case "flash-memory":
-      return Object.fromEntries(question.items.map((item) => [item.id, String(item.correctPosition)]));
+      return Object.fromEntries(
+        question.items.map((item) => [item.id, String(item.correctPosition)]),
+      );
     case "simon-sequence":
       return question.sequence;
     case "mini-sudoku":
       return Object.fromEntries(
-        question.grid.flatMap((value, index) => (value === null ? [[String(index), question.solution[index]]] : [])),
+        question.grid.flatMap((value, index) =>
+          value === null ? [[String(index), question.solution[index]]] : [],
+        ),
       );
     case "mini-nonogram":
       return Object.fromEntries(
@@ -106,7 +110,7 @@ type MockPath = {
 const DEFAULT_PLAYED_AT = "2026-09-08T17:39:00.000Z";
 
 function hashSeed(value: string) {
-  return [...value].reduce((hash, character) => ((hash * 31 + character.charCodeAt(0)) >>> 0), 7);
+  return [...value].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 7);
 }
 
 function timeFor(seed: string, question: Question, index: number, fraction: number) {
@@ -148,7 +152,11 @@ function scoredChallengeForMock(challenge: Challenge) {
   }
 }
 
-function answerForQuestion(question: Question, kind: MockCandidateKind, timeUsed: number): AnswerReview {
+function answerForQuestion(
+  question: Question,
+  kind: MockCandidateKind,
+  timeUsed: number,
+): AnswerReview {
   const correctAnswer = answerFor(question);
   if (kind === "timeout") {
     const evaluated = evaluateAnswer({
@@ -205,11 +213,7 @@ function failureCandidates(question: Question, seed: string, index: number): Moc
       answer: answerForQuestion(question, "timeout", question.timeLimit),
     },
   ];
-  const incorrect = answerForQuestion(
-    question,
-    "incorrect",
-    timeFor(seed, question, index, 0.65),
-  );
+  const incorrect = answerForQuestion(question, "incorrect", timeFor(seed, question, index, 0.65));
   if (incorrect.status === "incorrect" && !incorrect.isCorrect && incorrect.points === 0) {
     candidates.unshift({ kind: "incorrect", answer: incorrect });
   }
@@ -271,14 +275,15 @@ function findExactMockPath(questions: Question[], targetPoints: number, seed: st
     const leftQuality = pathQuality(left);
     const rightQuality = pathQuality(right);
     for (let index = 0; index < leftQuality.length; index += 1) {
-      if (leftQuality[index] !== rightQuality[index]) return rightQuality[index] - leftQuality[index];
+      if (leftQuality[index] !== rightQuality[index])
+        return rightQuality[index] - leftQuality[index];
     }
     return 0;
   })[0];
 }
 
 function buildProportionalFallback(questions: Question[], targetPoints: number, seed: string) {
-  const answers = questions.map((question, index) =>
+  const answers = questions.map((question) =>
     answerForQuestion(question, "timeout", question.timeLimit),
   );
   let remainingPoints = targetPoints;
@@ -291,11 +296,7 @@ function buildProportionalFallback(questions: Question[], targetPoints: number, 
     const question = questions[index];
     const points = Math.min(remainingPoints, Math.max(1, question.points));
     answers[index] = {
-      ...answerForQuestion(
-        question,
-        "correct",
-        timeFor(seed, question, index, 0.5),
-      ),
+      ...answerForQuestion(question, "correct", timeFor(seed, question, index, 0.5)),
       points,
     };
     remainingPoints -= points;
@@ -322,28 +323,30 @@ function buildAlphabetAttempt(
   const questions = challenge.entries.map((entry) => entry.question);
   const targetPoints = Math.max(0, result.points);
   const failedQuestions = targetPoints < 100 ? Math.max(2, Math.round(questions.length * 0.25)) : 0;
-  const correctCount = targetPoints > 0
-    ? Math.max(1, Math.min(questions.length - failedQuestions, Math.round((targetPoints / 100) * questions.length)))
-    : 0;
+  const correctCount =
+    targetPoints > 0
+      ? Math.max(
+          1,
+          Math.min(
+            questions.length - failedQuestions,
+            Math.round((targetPoints / 100) * questions.length),
+          ),
+        )
+      : 0;
   const pointsPerCorrect = correctCount > 0 ? Math.floor(targetPoints / correctCount) : 0;
   const extraPoints = correctCount > 0 ? targetPoints % correctCount : 0;
 
   const answers = questions.map((question, index) => {
     if (index < correctCount) {
-      const answer = answerForQuestion(
-        question,
-        "correct",
-        timeFor(seed, question, index, 0.35),
-      );
+      const answer = answerForQuestion(question, "correct", timeFor(seed, question, index, 0.35));
       return {
         ...answer,
         points: pointsPerCorrect + (index < extraPoints ? 1 : 0),
       };
     }
 
-    const kind: MockCandidateKind = (hashSeed(`${seed}:${question.id}`) + index) % 2 === 0
-      ? "incorrect"
-      : "timeout";
+    const kind: MockCandidateKind =
+      (hashSeed(`${seed}:${question.id}`) + index) % 2 === 0 ? "incorrect" : "timeout";
     return answerForQuestion(question, kind, question.timeLimit);
   });
 
@@ -360,15 +363,16 @@ export function buildMockRoomChallengeAttempt(
   const challenge = getChallengeById(challengeId);
   if (!challenge) return undefined;
 
-  const playedAt = typeof options === "string" ? options : options.playedAt ?? DEFAULT_PLAYED_AT;
-  const seed = typeof options === "string" ? challengeId : options.seed ?? challengeId;
+  const playedAt = typeof options === "string" ? options : (options.playedAt ?? DEFAULT_PLAYED_AT);
+  const seed = typeof options === "string" ? challengeId : (options.seed ?? challengeId);
   const targetPoints = Math.max(0, result.points);
   const scoredChallenge = scoredChallengeForMock(challenge);
   const questions = questionsFor(scoredChallenge);
-  const answers = challenge.mode === "alphabet"
-    ? buildAlphabetAttempt(challenge, result, seed)
-    : findExactMockPath(questions, targetPoints, seed)?.answers ??
-      buildProportionalFallback(questions, targetPoints, seed);
+  const answers =
+    challenge.mode === "alphabet"
+      ? buildAlphabetAttempt(challenge, result, seed)
+      : (findExactMockPath(questions, targetPoints, seed)?.answers ??
+        buildProportionalFallback(questions, targetPoints, seed));
 
   return {
     challengeId,

@@ -280,7 +280,7 @@ export function FlashPopFlashGame({
           <Card>
             <h1>Preview no disponible</h1>
             <p>Este piloto está limitado a tabarnia-flash-01.</p>
-            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>"Volver"</ButtonLink>
+            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>&quot;Volver&quot;</ButtonLink>
           </Card>
         </Canvas>
       </MotionConfig>

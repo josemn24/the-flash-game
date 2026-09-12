@@ -8,10 +8,14 @@ import {
   scheduledChallengeRouteAliases,
 } from "@/data/mock/constants";
 import { deterministicMockUuid, mockId } from "@/data/mock/identity";
+import { publishedChallengeFixtures } from "@/data/mock/catalog/challenges";
+import { publishedQuestionFixtures } from "@/data/mock/catalog/questions";
+import type { AnyMockPublishedQuestion } from "@/data/mock/catalog/questions/definition";
 import {
   normalizeLegacyQuestionFixture,
+  projectLegacyQuestion,
   reconstructLegacyQuestion,
-} from "@/data/mock/questionFixtures";
+} from "@/data/mock/legacyQuestionAdapter";
 import {
   resolvePlayerRouteKey,
   resolveRoomRouteKey,
@@ -51,6 +55,7 @@ describe("normalized mock domain store", () => {
     expect(mockDomainStore.roomInvitations).toEqual([]);
     expect(mockDomainStore.scheduledChallenges).toHaveLength(6);
     expect(mockDomainStore.attempts).toHaveLength(23);
+    expect(mockDomainStore.attemptAnswers).toHaveLength(322);
     expect(mockDomainStore.attempts.every((attempt) => attempt.attemptNumber === 1)).toBe(true);
     const unscheduledDefinition = mockDomainStore.challengeDefinitions.find(
       ({ slug }) => slug === "connections-challenge-definition",
@@ -75,6 +80,55 @@ describe("normalized mock domain store", () => {
     }
     for (const version of mockDomainStore.questionVersions) {
       expect(reconstructLegacyQuestion(version.id)?.id).toBeTruthy();
+    }
+  });
+
+  it("round-trips all 105 canonical questions through the exhaustive legacy adapter", () => {
+    for (const fixture of publishedQuestionFixtures) {
+      const normalized = normalizeLegacyQuestionFixture(projectLegacyQuestion(fixture));
+      expect(normalized).toEqual({
+        type: fixture.type,
+        publicPayload: fixture.publicPayload,
+        solutionPayload: fixture.privatePayload,
+      });
+    }
+  });
+
+  it("round-trips representative data for all 31 formats", () => {
+    expect(Object.values(QUESTION_FORMAT_CATALOG)).toHaveLength(31);
+    for (const format of Object.values(QUESTION_FORMAT_CATALOG)) {
+      const question = format.examples[0].question;
+      const normalized = normalizeLegacyQuestionFixture(question);
+      const fixture = {
+        slug: question.id,
+        practicePoints: question.points,
+        type: normalized.type,
+        publicPayload: normalized.publicPayload,
+        privatePayload: normalized.solutionPayload,
+      } as AnyMockPublishedQuestion;
+      expect(normalizeLegacyQuestionFixture(projectLegacyQuestion(fixture))).toEqual(normalized);
+    }
+  });
+
+  it("keeps canonical challenge identity, order and points stable", () => {
+    expect(publishedChallengeFixtures).toHaveLength(7);
+    for (const fixture of publishedChallengeFixtures) {
+      const definition = mockDomainStore.challengeDefinitions.find(
+        ({ slug }) => slug === fixture.slug,
+      );
+      const version = mockDomainStore.challengeVersions.find(
+        ({ challengeDefinitionId }) => challengeDefinitionId === definition?.id,
+      );
+      const items = mockDomainStore.challengeItems
+        .filter(({ challengeVersionId }) => challengeVersionId === version?.id)
+        .sort((left, right) => left.position - right.position);
+      expect(definition?.id).toBe(mockId.challengeDefinition(fixture.slug));
+      expect(version?.id).toBe(mockId.challengeVersion(`${fixture.slug}:v1`));
+      expect(items.map(({ position }) => position)).toEqual(
+        fixture.items.map((_, index) => index + 1),
+      );
+      expect(items.map(({ points }) => points)).toEqual(fixture.items.map(({ points }) => points));
+      expect(items.reduce((total, { points }) => total + points, 0)).toBe(100);
     }
   });
 

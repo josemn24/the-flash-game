@@ -39,13 +39,13 @@ describe("Flash Pop demo social adapter", () => {
 
     expect(result.playerRank).toBe(1);
     expect(result.levelsCleared).toBe(7);
-    expect(result.peers[0]?.player.id).toBe("javi");
-    expect(result.totalPlayers).toBe(8);
+    expect(result.peers[0]?.player.id).toBe("player");
+    expect(result.totalPlayers).toBe(4);
     expect(result.seasonXpEarned).toBe(120);
     expect(result.socialSource).toBe("demo");
   });
 
-  it("uses the generic demo fixture for any pyramid challenge", () => {
+  it("does not invent peers for a challenge without canonical attempts", () => {
     const result = getFlashPopResult(
       {
         challengeId: "future-pyramid-challenge",
@@ -59,7 +59,7 @@ describe("Flash Pop demo social adapter", () => {
     );
 
     expect(result.socialSource).toBe("demo");
-    expect(result.totalPlayers).toBe(8);
+    expect(result.totalPlayers).toBe(1);
     expect(result.levelsCleared).toBe(2);
   });
 
@@ -73,7 +73,7 @@ describe("Flash Pop demo social adapter", () => {
       completedAt: 100,
     });
 
-    expect(result.playerRank).toBe(8);
+    expect(result.playerRank).toBe(4);
     expect(result.seasonXpEarned).toBe(59);
     expect(
       getFlashPopLobbyChallenge({
@@ -88,5 +88,17 @@ describe("Flash Pop demo social adapter", () => {
         },
       }).status,
     ).toBe("notCompleted");
+  });
+
+  it("uses active Tabarnia memberships and leaves challenge 06 activity empty", () => {
+    const lobby = getFlashPopLobbyChallenge(null, "tabarnia-challenge-06");
+    expect(lobby.participants.map(({ displayName }) => displayName)).toEqual([
+      "Dark",
+      "Jackobo",
+      "Rielbe",
+      "Palmera",
+    ]);
+    expect(lobby.totalPlayers).toBe(5);
+    expect(lobby.activities).toEqual([]);
   });
 });

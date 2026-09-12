@@ -1,4 +1,10 @@
 import type { AvatarTone } from "@/components/ui";
+import {
+  canonicalCurrentPlayer,
+  canonicalSocialPlayers,
+  getCanonicalChallengeTitle,
+  getCanonicalSocialRows,
+} from "@/features/flash-pop/canonicalSocial";
 import type {
   PyramidAttemptRecord,
   PyramidAttemptSummary,
@@ -43,11 +49,7 @@ export type FlashPopLobbyChallenge = {
   playerScore?: number;
   playerRank?: number;
   totalPlayers: number;
-  seasonXp: {
-    current: number;
-    nextLevelAt: number;
-    maxEarnable: number;
-  };
+  seasonXp: { current: number; nextLevelAt: number; maxEarnable: number };
   activities: FlashPopActivity[];
 };
 
@@ -77,97 +79,26 @@ export type FlashPopScoringConfig = {
   nextLevelAt?: number;
 };
 
-type DemoPeerRow = { playerId: string; score: number; timeUsed: number };
-
-type FlashPopSocialFixture = {
-  title: string;
-  subtitle: string;
-  peerRows: DemoPeerRow[];
-  activities: FlashPopActivity[];
-};
-
-export const flashPopPlayers: FlashPopPlayer[] = [
-  { id: "javi", displayName: "Javi", initials: "JM", tone: "social" },
-  { id: "ana", displayName: "Ana", initials: "AM", tone: "coral" },
-  { id: "luis", displayName: "Luis", initials: "LU", tone: "blue" },
-  { id: "rocio", displayName: "Rocío", initials: "RO", tone: "aqua" },
-  { id: "joel", displayName: "Joel", initials: "JO", tone: "ink" },
-  { id: "marta", displayName: "Marta", initials: "MA", tone: "reward" },
-  { id: "ines", displayName: "Inés", initials: "IN", tone: "social" },
-  { id: "pablo", displayName: "Pablo", initials: "PA", tone: "blue" },
-];
-
-const socialFixtures: Record<FlashPopChallengeId, FlashPopSocialFixture> = {
-  [FLASH_POP_CHALLENGE_ID]: {
-    title: "La Pirámide",
-    subtitle: "Siete niveles. Un intento. Sube cuanto puedas.",
-    peerRows: [
-      { playerId: "ana", score: 92, timeUsed: 154 },
-      { playerId: "luis", score: 84, timeUsed: 177 },
-      { playerId: "rocio", score: 78, timeUsed: 185 },
-      { playerId: "joel", score: 70, timeUsed: 201 },
-      { playerId: "marta", score: 63, timeUsed: 212 },
-      { playerId: "ines", score: 56, timeUsed: 226 },
-      { playerId: "pablo", score: 48, timeUsed: 232 },
-    ],
-    activities: [
-      {
-        id: "ana-position",
-        playerId: "ana",
-        text: "subió al 1.º puesto",
-        meta: "Hace 12 min · 9 puntos",
-        icon: "trophy",
-      },
-      {
-        id: "luis-finished",
-        playerId: "luis",
-        text: "terminó La Pirámide",
-        meta: "Hace 26 min · +82 ⚡",
-        icon: "bolt",
-      },
-    ],
-  },
-  [FLASH_POP_SECONDARY_CHALLENGE_ID]: {
-    title: "La Pirámide: Biblia y religiones abrahámicas",
-    subtitle: "Siete niveles. Una herencia compartida.",
-    peerRows: [
-      { playerId: "ana", score: 96, timeUsed: 139 },
-      { playerId: "luis", score: 88, timeUsed: 162 },
-      { playerId: "rocio", score: 81, timeUsed: 173 },
-      { playerId: "joel", score: 73, timeUsed: 190 },
-      { playerId: "marta", score: 66, timeUsed: 207 },
-      { playerId: "ines", score: 59, timeUsed: 218 },
-      { playerId: "pablo", score: 51, timeUsed: 231 },
-    ],
-    activities: [
-      {
-        id: "rocio-abrahamic",
-        playerId: "rocio",
-        text: "llegó a Tradiciones",
-        meta: "Hace 18 min · 5 niveles",
-        icon: "bolt",
-      },
-      {
-        id: "ana-abrahamic",
-        playerId: "ana",
-        text: "conquistó la cima",
-        meta: "Hace 31 min · 96 puntos",
-        icon: "trophy",
-      },
-    ],
-  },
-};
+/** Configuración de avatar puramente presentacional proyectada sobre los jugadores canónicos. */
+export const flashPopPlayers: FlashPopPlayer[] = canonicalSocialPlayers.map((player) => ({
+  ...player,
+}));
 
 export function isFlashPopPreviewChallenge(id: string): id is FlashPopChallengeId {
   return (FLASH_POP_PREVIEW_CHALLENGE_IDS as readonly string[]).includes(id);
 }
 
-function getSocialFixture(id: string): FlashPopSocialFixture {
-  return socialFixtures[id as FlashPopChallengeId] ?? socialFixtures[FLASH_POP_CHALLENGE_ID];
-}
-
-function getPlayer(id: string) {
-  return flashPopPlayers.find((player) => player.id === id)!;
+function activitiesFor(challengeId: string): FlashPopActivity[] {
+  return getCanonicalSocialRows(challengeId)
+    .sort((left, right) => right.score - left.score || left.timeUsed - right.timeUsed)
+    .slice(0, 2)
+    .map((row, index) => ({
+      id: `${row.attempt.id}:activity`,
+      playerId: row.player.id,
+      text: index === 0 ? "lidera el desafío" : "terminó el desafío",
+      meta: `${row.score} puntos`,
+      icon: index === 0 ? "trophy" : "bolt",
+    }));
 }
 
 export function getFlashPopAttemptStatus(
@@ -200,20 +131,19 @@ export function getFlashPopResult(
   summary: PyramidAttemptSummary,
   config: FlashPopScoringConfig = {},
 ): FlashPopResult {
-  const fixture = getSocialFixture(summary.challengeId);
   const seasonXpCurrent = config.seasonXpCurrent ?? 680;
   const nextLevelAt = config.nextLevelAt ?? 900;
   const rows = [
-    { player: getPlayer("javi"), score: summary.score, timeUsed: summary.timeUsed },
-    ...fixture.peerRows.map(({ playerId, score, timeUsed }) => ({
-      player: getPlayer(playerId),
+    { player: canonicalCurrentPlayer, score: summary.score, timeUsed: summary.timeUsed },
+    ...getCanonicalSocialRows(summary.challengeId).map(({ player, score, timeUsed }) => ({
+      player,
       score,
       timeUsed,
     })),
-  ].sort((left, right) => right.score - left.score || left.timeUsed - right.timeUsed);
-
-  const ranked = rows.map((row, index) => ({ ...row, rank: index + 1 }));
-  const current = ranked.find((row) => row.player.id === "javi")!;
+  ]
+    .sort((left, right) => right.score - left.score || left.timeUsed - right.timeUsed)
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+  const current = rows.find(({ player }) => player.id === canonicalCurrentPlayer.id)!;
   const earned = calculateSeasonXp(
     summary,
     config.levelCount ?? FLASH_POP_LEVEL_COUNT,
@@ -225,11 +155,11 @@ export function getFlashPopResult(
     score: summary.score,
     levelsCleared: summary.levelsCleared,
     playerRank: current.rank,
-    totalPlayers: ranked.length,
+    totalPlayers: rows.length,
     seasonXpEarned: earned,
     seasonXpCurrent: Math.min(nextLevelAt, seasonXpCurrent + earned),
     nextLevelAt,
-    peers: ranked,
+    peers: rows,
   };
 }
 
@@ -240,17 +170,17 @@ export function getFlashPopLobbyChallenge(
     | undefined,
   challengeId: FlashPopChallengeId = FLASH_POP_CHALLENGE_ID,
 ): FlashPopLobbyChallenge {
-  const fixture = getSocialFixture(challengeId);
+  const { title, subtitle } = getCanonicalChallengeTitle(challengeId);
   const status = getFlashPopAttemptStatus(record);
   const result = record?.summary ? getFlashPopResult({ ...record.summary, challengeId }) : null;
 
   return {
     id: challengeId,
-    title: fixture.title,
-    subtitle: fixture.subtitle,
+    title,
+    subtitle,
     status,
     currentLevelIndex: record?.currentLevelIndex,
-    participants: flashPopPlayers.slice(1),
+    participants: flashPopPlayers.filter(({ id }) => id !== canonicalCurrentPlayer.id),
     playerScore: result?.score,
     playerRank: result?.playerRank,
     totalPlayers: result?.totalPlayers ?? flashPopPlayers.length,
@@ -259,6 +189,6 @@ export function getFlashPopLobbyChallenge(
       nextLevelAt: result?.nextLevelAt ?? 900,
       maxEarnable: 120,
     },
-    activities: fixture.activities,
+    activities: activitiesFor(challengeId),
   };
 }

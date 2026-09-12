@@ -11,10 +11,11 @@ temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
 
 ## Estado
 
-- Estado: aprobado para iniciar el modelado.
+- Estado: modelo aprobado y fase 3 de datos mock normalizados cerrada.
 - Versión: 1.
 - Fecha de la última revisión: 2026-09-12.
-- Alcance técnico actual: reglas y tipos TypeScript; todavía no define el esquema SQL.
+- Alcance técnico actual: reglas, tipos TypeScript, fixtures canónicos y store normalizado; todavía
+  no define backend ni esquema SQL.
 - Persistencia prevista: PostgreSQL, autenticación y almacenamiento mediante Supabase.
 
 ## Mapa conceptual

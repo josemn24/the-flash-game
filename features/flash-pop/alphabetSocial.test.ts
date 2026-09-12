@@ -11,7 +11,7 @@ describe("Flash Pop Alphabet social adapter", () => {
     ).toBe(120);
   });
 
-  it("uses a demo fallback for an unknown Alphabet challenge", () => {
+  it("does not invent peers for an unknown Alphabet challenge", () => {
     const result = getFlashPopAlphabetResult(
       {
         challengeId: "future-alphabet",
@@ -25,8 +25,8 @@ describe("Flash Pop Alphabet social adapter", () => {
     );
 
     expect(result.socialSource).toBe("demo");
-    expect(result.totalPlayers).toBe(7);
-    expect(result.peers.some((row) => row.player.id === "javi")).toBe(true);
+    expect(result.totalPlayers).toBe(1);
+    expect(result.peers.some((row) => row.player.id === "player")).toBe(true);
   });
 
   it("orders equal scores by the last correct answer time", () => {
@@ -40,6 +40,6 @@ describe("Flash Pop Alphabet social adapter", () => {
     });
 
     expect(result.playerRank).toBe(1);
-    expect(result.peers[0]?.player.id).toBe("javi");
+    expect(result.peers[0]?.player.id).toBe("player");
   });
 });

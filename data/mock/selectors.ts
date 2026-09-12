@@ -77,11 +77,24 @@ export function selectOpenScheduledChallenge(
   );
 }
 
-function isCompetitiveParticipant(playerId: PlayerId, roomId: RoomId, store: MockDomainStore) {
+function isSuperadmin(playerId: PlayerId, store: MockDomainStore) {
+  return store.platformRoleAssignments.some(
+    (assignment) => assignment.playerId === playerId && assignment.role === "superadmin",
+  );
+}
+
+function isCompetitiveParticipant(
+  playerId: PlayerId,
+  roomId: RoomId,
+  store: MockDomainStore,
+  at?: string,
+) {
   const membership = store.roomMemberships.find(
     (candidate) => candidate.roomId === roomId && candidate.playerId === playerId,
   );
-  return Boolean(membership && membership.role !== "spectator");
+  if (!membership || membership.role === "spectator" || isSuperadmin(playerId, store)) return false;
+  if (!at) return membership.status === "active";
+  return membership.joinedAt <= at && (membership.endedAt === null || at <= membership.endedAt);
 }
 
 function bestCompletedAttempts(
@@ -128,10 +141,12 @@ export function selectChallengeRanking(
 ) {
   const schedule = store.scheduledChallenges.find(({ id }) => id === scheduledChallengeId);
   const season = schedule ? store.seasons.find(({ id }) => id === schedule.seasonId) : undefined;
-  if (!season) return [];
+  if (!season || schedule?.status === "cancelled") return [];
   return rankEntries(
     bestCompletedAttempts(new Set([scheduledChallengeId]), store)
-      .filter((attempt) => isCompetitiveParticipant(attempt.playerId, season.roomId, store))
+      .filter((attempt) =>
+        isCompetitiveParticipant(attempt.playerId, season.roomId, store, attempt.startedAt),
+      )
       .map((attempt) => ({ playerId: attempt.playerId, points: attempt.score ?? 0 })),
   );
 }
@@ -141,12 +156,13 @@ export function selectSeasonRanking(seasonId: SeasonId, store: MockDomainStore =
   if (!season) return [];
   const scheduleIds = new Set(
     store.scheduledChallenges
-      .filter((schedule) => schedule.seasonId === seasonId)
+      .filter((schedule) => schedule.seasonId === seasonId && schedule.status !== "cancelled")
       .map((schedule) => schedule.id),
   );
   const totals = new Map<PlayerId, number>();
   for (const attempt of bestCompletedAttempts(scheduleIds, store)) {
-    if (!isCompetitiveParticipant(attempt.playerId, season.roomId, store)) continue;
+    if (!isCompetitiveParticipant(attempt.playerId, season.roomId, store, attempt.startedAt))
+      continue;
     totals.set(attempt.playerId, (totals.get(attempt.playerId) ?? 0) + (attempt.score ?? 0));
   }
   return rankEntries([...totals].map(([playerId, points]) => ({ playerId, points })));
@@ -170,6 +186,16 @@ export function selectRoomHistory(
     .filter((schedule) => seasonIds.has(schedule.seasonId) && schedule.status === "closed")
     .map((scheduledChallenge) => {
       const ranking = selectChallengeRanking(scheduledChallenge.id, store);
+      const participantIds = new Set(
+        store.attempts
+          .filter(
+            (attempt) =>
+              attempt.scheduledChallengeId === scheduledChallenge.id &&
+              attempt.kind === "competitive" &&
+              isCompetitiveParticipant(attempt.playerId, roomId, store, attempt.startedAt),
+          )
+          .map(({ playerId }) => playerId),
+      );
       const completedAt = store.attempts
         .filter(
           (attempt) =>
@@ -181,7 +207,7 @@ export function selectRoomHistory(
       return {
         scheduledChallenge,
         playedAt: completedAt ?? scheduledChallenge.closesAt,
-        participantCount: ranking.length,
+        participantCount: participantIds.size,
         ranking,
       };
     })

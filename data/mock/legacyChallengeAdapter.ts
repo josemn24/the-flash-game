@@ -7,7 +7,7 @@ import {
   scheduledChallengeRouteAliases,
   type ScheduledChallengeRouteKey,
 } from "@/data/mock/constants";
-import { reconstructLegacyQuestion } from "@/data/mock/questionFixtures";
+import { reconstructLegacyQuestion } from "@/data/mock/legacyQuestionAdapter";
 import { scheduledChallenges } from "@/data/mock/socialFixtures";
 import { withChallengeQuestionPoints } from "@/lib/challengeScoring";
 import type { ScheduledChallengeId } from "@/types/domain";
