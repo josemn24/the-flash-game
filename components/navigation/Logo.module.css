@@ -1,0 +1,21 @@
+@layer app-components {
+  .brandMark {
+    display: inline-grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 0.55rem;
+    color: var(--color-text-on-brand);
+    background: var(--color-brand);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--color-brand) 22%, transparent);
+    transform: skewX(-7deg);
+  }
+
+  .brandLabel {
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+}

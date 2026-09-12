@@ -246,21 +246,21 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
       getChallengeAvailabilityStatus(
         challenge.availableFrom,
         challenge.availableUntil,
-        new Date("2026-08-25T21:59:59.999Z"),
+        new Date("2026-09-05T21:59:59.999Z"),
       ),
     ).toBe("locked");
     expect(
       getChallengeAvailabilityStatus(
         challenge.availableFrom,
         challenge.availableUntil,
-        new Date("2026-08-26T10:00:00.000Z"),
+        new Date("2026-09-10T10:00:00.000Z"),
       ),
     ).toBe("available");
     expect(
       getChallengeAvailabilityStatus(
         challenge.availableFrom,
         challenge.availableUntil,
-        new Date("2026-08-26T22:00:00.000Z"),
+        new Date("2026-09-20T22:00:00.000Z"),
       ),
     ).toBe("expired");
   });

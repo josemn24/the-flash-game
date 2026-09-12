@@ -1,0 +1,183 @@
+@layer app-formats {
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+  .column {
+    display: grid;
+    align-content: start;
+    gap: 0.55rem;
+  }
+  .column h3 {
+    padding-inline: 0.25rem;
+    color: var(--format-muted);
+    font-family: var(--type-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .card {
+    position: relative;
+    min-height: 4.5rem;
+    overflow: hidden;
+    border: 1px solid var(--format-border);
+    border-radius: 0.95rem;
+    color: var(--format-ink);
+    background: var(--format-surface);
+    transition:
+      border-color 150ms,
+      color 150ms,
+      background 150ms,
+      opacity 150ms;
+  }
+  .card:hover:not(:disabled) {
+    border-color: var(--format-hover-border);
+    color: var(--format-hover-ink);
+    background: var(--format-hover-surface);
+  }
+  .cardSelected {
+    border-color: var(--format-selected-border);
+    color: var(--format-hover-ink);
+    background: var(--format-selected-surface);
+  }
+  .card:focus-visible {
+    outline: 3px solid var(--format-focus);
+    outline-offset: 2px;
+  }
+  .cardMatched {
+    border-color: var(--format-matched-border);
+    color: var(--format-hover-ink);
+    background: var(--format-matched-surface);
+    opacity: 0.68;
+  }
+  .cardInvalid {
+    border-color: var(--format-invalid-border);
+    background: var(--format-invalid-surface);
+  }
+  .cardLabel {
+    display: grid;
+    min-height: 4.5rem;
+    place-items: center;
+    padding: 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .cardLabelWithIcon {
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-content: start;
+    gap: 0.55rem;
+    text-align: left;
+  }
+  .cardIcon {
+    display: inline-grid;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    place-items: center;
+    border-radius: 0.55rem;
+    color: var(--format-icon-ink);
+    background: var(--format-icon-surface);
+    font-family: var(--type-mono);
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+  .cardWithMedia > div {
+    border-radius: 0.9rem 0.9rem 0 0;
+  }
+  .cardWithMedia .cardLabel {
+    min-height: 3.4rem;
+    border-top: 1px solid var(--format-border);
+    padding: 0.55rem 0.65rem 0.65rem;
+    font-size: 0.7rem;
+  }
+  .stateIcon {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    padding: 0.18rem;
+    border-radius: 999px;
+    color: var(--format-state-ink);
+    background: var(--format-state-surface);
+  }
+  .cardMatched .stateIcon {
+    color: var(--format-matched-state-ink);
+    background: var(--format-matched-state-surface);
+  }
+  .cardInvalid .stateIcon {
+    color: var(--format-invalid-state-ink);
+    background: var(--format-invalid-state-surface);
+  }
+  .completedList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+  }
+  .completedList span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 999px;
+    padding: 0.35rem 0.55rem;
+    color: var(--format-muted);
+    background: var(--format-soft-surface);
+    font-size: 0.62rem;
+    font-weight: 700;
+  }
+  .completedList svg {
+    width: 0.8rem;
+    height: 0.8rem;
+    color: var(--format-icon-ink);
+  }
+
+  .root {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    --format-ink: var(--color-ink);
+    --format-muted: var(--color-ink-muted);
+    --format-surface: var(--color-surface-raised);
+    --format-soft-surface: var(--color-surface-soft);
+    --format-border: var(--color-border);
+    --format-hover-border: var(--color-social);
+    --format-hover-ink: var(--color-ink);
+    --format-hover-surface: var(--color-surface);
+    --format-selected-border: var(--color-social);
+    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+    --format-matched-border: var(--color-success);
+    --format-matched-surface: color-mix(in srgb, var(--color-success) 12%, transparent);
+    --format-invalid-border: var(--color-danger);
+    --format-invalid-surface: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    --format-accent: var(--color-brand);
+    --format-icon-ink: var(--color-ink);
+    --format-icon-surface: var(--color-surface-soft);
+    --format-state-ink: var(--color-ink);
+    --format-state-surface: var(--color-brand);
+    --format-matched-state-ink: var(--color-surface);
+    --format-matched-state-surface: var(--color-success);
+    --format-invalid-state-ink: var(--color-ink);
+    --format-invalid-state-surface: var(--color-danger);
+    --format-focus: var(--color-focus);
+    margin-top: var(--space-5);
+  }
+  @media (min-width: 640px) {
+    .columns {
+      gap: 1rem;
+    }
+    .column {
+      gap: 0.7rem;
+    }
+    .cardLabel {
+      font-size: 0.92rem;
+    }
+    .cardWithMedia .cardLabel {
+      font-size: 0.78rem;
+    }
+  }
+}

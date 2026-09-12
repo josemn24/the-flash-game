@@ -81,22 +81,14 @@ export type NarrativeScene = {
   blocks: NarrativeTextBlock[];
 };
 
-export type NarrativeNotebookEntry = {
-  id: string;
-  text: string;
-  relevance: "context" | "potential";
-};
-
 export type NarrativeSceneStepDefinition = {
   type: "scene";
   scene: NarrativeScene;
-  unlockEntryIds?: string[];
 };
 
 export type NarrativeQuestionStepDefinition = {
   type: "question";
   questionId: QuestionId;
-  unlockEntryIds: string[];
   reactions?: NarrativeReactionMap;
 };
 
@@ -115,7 +107,6 @@ export type NarrativeChallengeDefinition = ChallengeDefinitionBase & {
   maxScore: number;
   prologue: NarrativeScene;
   beats: NarrativeBeatDefinition[];
-  notebookEntries: NarrativeNotebookEntry[];
   questionPoints: Record<string, number>;
 };
 
@@ -203,7 +194,6 @@ export type NarrativeSceneStep = NarrativeSceneStepDefinition;
 export type NarrativeQuestionStep = {
   type: "question";
   question: Question;
-  unlockEntryIds: string[];
   reactions?: NarrativeReactionMap;
 };
 
@@ -221,7 +211,6 @@ export type NarrativeChallenge = ChallengeBase & {
   maxScore: number;
   prologue: NarrativeScene;
   beats: NarrativeBeat[];
-  notebookEntries: NarrativeNotebookEntry[];
 };
 
 export type Challenge =

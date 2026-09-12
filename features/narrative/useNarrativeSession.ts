@@ -2,15 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import {
-  getNarrativeReaction,
   getNarrativeSequence,
   initialNarrativeSessionState,
   narrativeSessionReducer,
 } from "@/features/narrative/narrativeSession";
+import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
 import type { AnswerValue, NarrativeChallenge } from "@/types/game";
-
-const TRANSITION_DURATION = 900;
 
 export function useNarrativeSession(challenge: NarrativeChallenge) {
   const sequence = useMemo(() => getNarrativeSequence(challenge), [challenge]);
@@ -47,7 +45,6 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
       dispatch({
         type: "advance",
         nextStepType: nextStep?.type ?? null,
-        unlockEntryIds: nextStep?.type === "scene" ? nextStep.unlockEntryIds : undefined,
       });
     },
     [sequence],
@@ -88,11 +85,10 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
         type: "answer",
         result,
         timedOut,
-        unlockEntryIds: currentStep.unlockEntryIds,
       });
       advanceTimeout.current = setTimeout(
         () => prepareNextStep(state.stepIndex + 1),
-        TRANSITION_DURATION,
+        FLASH_POP_FEEDBACK_DURATION[result.status],
       );
     },
     [currentStep, prepareNextStep, state.phase, state.stepIndex],
@@ -138,10 +134,6 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     }
   }, [currentStep]);
 
-  const unlockedEntries = useMemo(
-    () => challenge.notebookEntries.filter((entry) => state.unlockedEntryIds.includes(entry.id)),
-    [challenge.notebookEntries, state.unlockedEntryIds],
-  );
   const questionSteps = useMemo(
     () => sequence.filter((step) => step.type === "question"),
     [sequence],
@@ -150,17 +142,11 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     currentStep?.type === "question"
       ? sequence.slice(0, state.stepIndex + 1).filter((step) => step.type === "question").length
       : 0;
-  const lastResult = state.results.at(-1);
-  const reactionStep = state.phase === "scene" ? sequence[state.stepIndex - 1] : undefined;
-  const reactionBlocks = getNarrativeReaction(reactionStep, lastResult, state.lastTimedOut);
-
   return {
     ...state,
     currentStep,
     questionNumber,
     totalQuestions: questionSteps.length,
-    unlockedEntries,
-    reactionBlocks,
     score: calculateTotalScore(state.results.map((result) => result.points)),
     start,
     continueScene,
@@ -172,7 +158,5 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
     handleAnswerProgress,
     handleIncorrectAttempt,
     handleTimedResponseStart,
-    openNotebook: () => dispatch({ type: "open-notebook" }),
-    closeNotebook: () => dispatch({ type: "close-notebook" }),
   };
 }

@@ -1,0 +1,291 @@
+@layer app-formats {
+  .screen {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+    padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
+  }
+
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .stage,
+  .playing {
+    display: grid;
+    width: min(100%, 760px);
+    gap: var(--space-6);
+    margin: auto 0;
+  }
+
+  .boardCard {
+    display: grid;
+    width: min(100%, 32rem);
+    min-height: auto;
+    place-items: center;
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hero);
+    justify-self: center;
+    padding: clamp(0.55rem, 1.2vw, 0.8rem);
+  }
+
+  .board {
+    position: relative;
+    width: min(100%, 270px);
+    aspect-ratio: 1;
+  }
+
+  .boardCompact {
+    width: min(100%, 240px);
+  }
+
+  .letterCell {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: clamp(2rem, 8vw, 2.8rem);
+    height: clamp(2rem, 8vw, 2.8rem);
+    place-items: center;
+    border: var(--border-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--color-ink-muted);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-control);
+    font-family: var(--type-display);
+    font-size: 0.95rem;
+    font-weight: var(--type-display-strong-weight);
+    transform: translate(-50%, -50%)
+      rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
+      translateY(calc(min(32vw, 7.8rem) * -1))
+      rotate(calc(var(--letter-index) * -360deg / var(--letter-count)));
+    transition:
+      color var(--motion-press-out),
+      border-color var(--motion-press-out),
+      background var(--motion-press-out);
+  }
+
+  .boardCompact .letterCell {
+    transform: translate(-50%, -50%)
+      rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
+      translateY(calc(min(28vw, 6.8rem) * -1))
+      rotate(calc(var(--letter-index) * -360deg / var(--letter-count)));
+  }
+
+  .markIcon,
+  .passMark,
+  .emptyMark {
+    position: absolute;
+    right: -0.1rem;
+    bottom: -0.1rem;
+    display: grid;
+    width: 1rem;
+    height: 1rem;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: var(--color-surface);
+    font-size: 0.58rem;
+  }
+
+  .status_active {
+    z-index: 2;
+    border-color: var(--color-brand);
+    color: var(--color-ink);
+    background: var(--color-brand);
+  }
+
+  .status_passed {
+    border-color: var(--color-reward);
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-reward) 24%, var(--color-surface));
+  }
+
+  .status_correct {
+    border-color: var(--state-correct);
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--state-correct) 20%, var(--color-surface));
+  }
+
+  .status_incorrect {
+    border-color: var(--state-error);
+    color: var(--state-error);
+    background: color-mix(in srgb, var(--state-error) 14%, var(--color-surface));
+  }
+
+  .status_unanswered {
+    border-style: dashed;
+    color: var(--color-ink-faint);
+    background: var(--color-surface-soft);
+  }
+
+  .inlineFeedback {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    padding: var(--space-4);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--color-canvas) 64%, transparent);
+    backdrop-filter: blur(5px);
+    pointer-events: none;
+  }
+
+  .inlineFeedback > div {
+    width: min(100%, 560px);
+  }
+
+  .playing {
+    width: min(100%, 1040px);
+    gap: var(--space-4);
+  }
+
+  .gameMeta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .reviewHeading {
+    gap: var(--space-3);
+  }
+
+  .gameMeta strong {
+    color: var(--color-ink);
+  }
+
+  .questionPanel {
+    position: relative;
+    display: grid;
+    width: 100%;
+    gap: var(--space-3);
+    padding: var(--space-3) 0 0;
+  }
+
+  .questionPanel h1 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(28px, 7vw, 42px);
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+  }
+
+  .answerForm {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  .answerForm label {
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .answerForm input {
+    min-height: 56px;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    padding: 0 var(--space-4);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .answerForm input::placeholder,
+  .answerForm > p {
+    color: var(--color-ink-faint);
+  }
+
+  .answerForm input:focus-visible {
+    border-color: var(--color-focus);
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .answerActions {
+    display: grid;
+    grid-template-columns: 0.72fr 1.28fr;
+    gap: var(--space-2);
+  }
+
+  .passButton {
+    min-height: var(--control-height-hero);
+    gap: var(--space-3);
+  }
+
+  .answerForm > p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  @media (min-width: 720px) {
+    .playGrid {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+      align-items: stretch;
+    }
+    .boardCard {
+      min-height: 100%;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .gameMeta > span:first-child {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .letterCell {
+      transition: none;
+    }
+  }
+
+  /* Keep the original gameplay geometry while using the Flash Pop palette. */
+  .playGrid {
+    display: grid;
+    width: min(100%, 58rem);
+    grid-template-columns: 1fr;
+    align-content: start;
+    align-items: stretch;
+    gap: 1.35rem;
+    padding: 0;
+  }
+
+  .boardCard .boardCompact {
+    display: grid;
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.38rem;
+  }
+
+  .boardCard .boardCompact .letterCell {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    aspect-ratio: 1;
+    border-radius: 0.62rem;
+    box-shadow: none;
+    font-size: 0.88rem;
+    transform: none;
+  }
+}

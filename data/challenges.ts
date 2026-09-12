@@ -62,11 +62,6 @@ export function validateNarrativeChallengeDefinition(definition: NarrativeChalle
     ),
   ];
   const beatIds = definition.beats.map((beat) => beat.id);
-  const notebookEntryIds = definition.notebookEntries.map((entry) => entry.id);
-  const unlockedEntryIds = definition.beats.flatMap((beat) =>
-    beat.steps.flatMap((step) => step.unlockEntryIds ?? []),
-  );
-
   validateNarrativeBlocks(
     definition.prologue.blocks,
     `Narrative scene "${definition.prologue.id}"`,
@@ -106,28 +101,11 @@ export function validateNarrativeChallengeDefinition(definition: NarrativeChalle
   if (duplicateIds(sceneIds).length > 0) {
     throw new Error("Narrative challenge scene IDs must be unique.");
   }
-  if (duplicateIds(notebookEntryIds).length > 0) {
-    throw new Error("Narrative challenge notebook entry IDs must be unique.");
-  }
-  if (duplicateIds(unlockedEntryIds).length > 0) {
-    throw new Error("Narrative challenge notebook entries must unlock exactly once.");
-  }
-
   const unknownQuestionIds = questionIds.filter((id) => !(id in questionsById));
   if (unknownQuestionIds.length > 0) {
     throw new Error(
       `Narrative challenge references unknown questions: ${unknownQuestionIds.join(", ")}`,
     );
-  }
-
-  const unknownEntryIds = unlockedEntryIds.filter((id) => !notebookEntryIds.includes(id));
-  if (unknownEntryIds.length > 0) {
-    throw new Error(`Narrative challenge references unknown notebook entries: ${unknownEntryIds}`);
-  }
-
-  const lockedEntryIds = notebookEntryIds.filter((id) => !unlockedEntryIds.includes(id));
-  if (lockedEntryIds.length > 0) {
-    throw new Error(`Narrative challenge never unlocks notebook entries: ${lockedEntryIds}`);
   }
 
   const unknownScoringIds = Object.keys(definition.questionPoints).filter(
@@ -274,7 +252,6 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
       implementationStatus: definition.implementationStatus,
       maxScore: definition.maxScore,
       prologue: definition.prologue,
-      notebookEntries: definition.notebookEntries,
       beats: definition.beats.map((beat) => ({
         ...beat,
         steps: beat.steps.map((step) => {
@@ -286,7 +263,6 @@ function resolveScheduledChallenge(scheduledChallenge: PlayableScheduledChalleng
           return {
             type: "question",
             question,
-            unlockEntryIds: step.unlockEntryIds,
             reactions: step.reactions,
           } satisfies NarrativeQuestionStep;
         }),

@@ -101,6 +101,7 @@ export function useAlphabetSession(challenge: AlphabetChallenge) {
       correctAnswers,
       incorrectAnswers,
       unanswered,
+      playedCount: state.playedCount,
       score,
       beginCountdown,
       start,

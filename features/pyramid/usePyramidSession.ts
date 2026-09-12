@@ -16,11 +16,26 @@ import {
 import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
 import type { AnswerValue, PyramidChallenge } from "@/types/game";
 
-const TRANSITION_DURATION = 900;
+const DEFAULT_TRANSITION_DURATION = 900;
+const DEFAULT_FEEDBACK_DURATIONS = {
+  correct: DEFAULT_TRANSITION_DURATION,
+  incorrect: 1500,
+  unanswered: 1500,
+} as const;
 const STORAGE_PROBE_KEY = "the-flash:pyramid-storage-probe";
 
+export type PyramidSessionOptions = {
+  persistence?: "local" | "memory";
+  storageNamespace?: string;
+  feedbackDuration?: Partial<{
+    correct: number;
+    incorrect: number;
+    unanswered: number;
+  }>;
+};
+
 export type PyramidSessionPhase =
-  "loading" | "intro" | "confirm" | "briefing" | "playing" | "transition" | "results" | "review";
+  "loading" | "intro" | "briefing" | "playing" | "transition" | "results" | "review";
 
 function storageIsAvailable() {
   try {
@@ -32,11 +47,16 @@ function storageIsAvailable() {
   }
 }
 
-export function usePyramidSession(challenge: PyramidChallenge) {
-  const storageKey = getPyramidAttemptStorageKey(challenge);
+export function usePyramidSession(
+  challenge: PyramidChallenge,
+  options: PyramidSessionOptions = {},
+) {
+  const persistence = options.persistence ?? "local";
+  const storageKey = getPyramidAttemptStorageKey(challenge, options.storageNamespace);
+  const feedbackDurations = { ...DEFAULT_FEEDBACK_DURATIONS, ...options.feedbackDuration };
   const [phase, setPhase] = useState<PyramidSessionPhase>("loading");
   const [record, setRecord] = useState<PyramidAttemptRecord | null>(null);
-  const [storageAvailable, setStorageAvailable] = useState(true);
+  const [storageAvailable, setStorageAvailable] = useState(persistence === "memory");
   const recordRef = useRef<PyramidAttemptRecord | null>(null);
   const answerLock = useRef(false);
   const transitionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,13 +65,14 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     (next: PyramidAttemptRecord) => {
       recordRef.current = next;
       setRecord(next);
+      if (persistence !== "local") return;
       try {
         window.localStorage.setItem(storageKey, JSON.stringify(next));
       } catch {
         setStorageAvailable(false);
       }
     },
-    [storageKey],
+    [persistence, storageKey],
   );
 
   const advanceFromTransition = useCallback(
@@ -86,6 +107,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
           submittedCodes: submittedCodes ?? current.submittedCodes,
           incorrectAttempts: current.incorrectAttempts,
           matchingIncorrectAttempts: current.incorrectAttempts,
+          progressiveCluesRevealed: current.progressiveCluesRevealed,
         }),
       );
       const passed = isPyramidLevelPassed(result);
@@ -94,7 +116,13 @@ export function usePyramidSession(challenge: PyramidChallenge) {
       if (!passed || lastLevel) {
         persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));
         setPhase("transition");
-        transitionTimeout.current = setTimeout(() => setPhase("results"), TRANSITION_DURATION);
+        const duration =
+          result.status === "correct"
+            ? feedbackDurations.correct
+            : result.status === "unanswered"
+              ? feedbackDurations.unanswered
+              : feedbackDurations.incorrect;
+        transitionTimeout.current = setTimeout(() => setPhase("results"), duration);
         return;
       }
 
@@ -106,15 +134,23 @@ export function usePyramidSession(challenge: PyramidChallenge) {
         draftAnswer: null,
         submittedCodes: [],
         incorrectAttempts: 0,
+        progressiveCluesRevealed: 1,
       };
       persist(next);
       setPhase("transition");
       transitionTimeout.current = setTimeout(
         () => advanceFromTransition(next),
-        TRANSITION_DURATION,
+        feedbackDurations.correct,
       );
     },
-    [advanceFromTransition, challenge.levels, persist],
+    [
+      advanceFromTransition,
+      challenge.levels,
+      feedbackDurations.correct,
+      feedbackDurations.incorrect,
+      feedbackDurations.unanswered,
+      persist,
+    ],
   );
 
   const applyLoadedRecord = useCallback(
@@ -161,6 +197,10 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
+      if (persistence !== "local") {
+        setPhase("intro");
+        return;
+      }
       const available = storageIsAvailable();
       setStorageAvailable(available);
       if (!available) {
@@ -182,9 +222,10 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     return () => {
       cancelled = true;
     };
-  }, [applyLoadedRecord, challenge, storageKey]);
+  }, [applyLoadedRecord, challenge, persistence, storageKey]);
 
   useEffect(() => {
+    if (persistence !== "local") return;
     const onStorage = (event: StorageEvent) => {
       if (event.key !== storageKey || !event.newValue) return;
       const loaded = parsePyramidAttempt(event.newValue, challenge);
@@ -192,7 +233,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [applyLoadedRecord, challenge, storageKey]);
+  }, [applyLoadedRecord, challenge, persistence, storageKey]);
 
   useEffect(
     () => () => {
@@ -204,7 +245,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
   const currentLevel = record ? challenge.levels[record.currentLevelIndex] : undefined;
 
   const start = useCallback(() => {
-    if (storageAvailable) {
+    if (persistence === "local" && storageAvailable) {
       const existing = window.localStorage.getItem(storageKey);
       if (existing) {
         const loaded = parsePyramidAttempt(existing, challenge);
@@ -217,7 +258,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     const next = createPyramidAttempt(challenge, Date.now());
     persist(next);
     setPhase("briefing");
-  }, [applyLoadedRecord, challenge, persist, storageAvailable, storageKey]);
+  }, [applyLoadedRecord, challenge, persistence, persist, storageAvailable, storageKey]);
 
   const beginLevel = useCallback(() => {
     const current = recordRef.current;
@@ -287,6 +328,18 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     persist({ ...current, incorrectAttempts: current.incorrectAttempts + 1 });
   }, [persist]);
 
+  const handleProgressiveClueReveal = useCallback(
+    (revealedClues: number) => {
+      const current = recordRef.current;
+      if (!current || current.status === "completed") return;
+      persist({
+        ...current,
+        progressiveCluesRevealed: Math.max(1, Math.round(revealedClues)),
+      });
+    },
+    [persist],
+  );
+
   const handleCodeAttempt = useCallback(
     (code: string) => {
       const current = recordRef.current;
@@ -320,8 +373,6 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     codeAttempts: record?.submittedCodes ?? [],
     initialAnswer: record?.draftAnswer ?? null,
     deadlineAt: record?.deadlineAt ?? null,
-    showConfirmation: () => setPhase("confirm"),
-    hideConfirmation: () => setPhase("intro"),
     start,
     beginLevel,
     restart,
@@ -330,6 +381,7 @@ export function usePyramidSession(challenge: PyramidChallenge) {
     handleTimeUp,
     handleAnswerProgress,
     handleIncorrectAttempt,
+    handleProgressiveClueReveal,
     handleCodeAttempt,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

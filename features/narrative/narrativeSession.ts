@@ -12,34 +12,27 @@ export type NarrativeSessionState = {
   phase: NarrativePhase;
   stepIndex: number;
   results: AnswerResult[];
-  unlockedEntryIds: string[];
   locked: boolean;
   lastTimedOut: boolean;
-  notebookOpen: boolean;
 };
 
 export type NarrativeSessionAction =
   | { type: "start" }
-  | { type: "answer"; result: AnswerResult; timedOut: boolean; unlockEntryIds: string[] }
+  | { type: "answer"; result: AnswerResult; timedOut: boolean }
   | {
       type: "advance";
       nextStepType: NarrativeStep["type"] | null;
-      unlockEntryIds?: string[];
     }
   | { type: "show-review" }
   | { type: "show-results" }
-  | { type: "open-notebook" }
-  | { type: "close-notebook" }
   | { type: "replay" };
 
 export const initialNarrativeSessionState: NarrativeSessionState = {
   phase: "intro",
   stepIndex: -1,
   results: [],
-  unlockedEntryIds: [],
   locked: false,
   lastTimedOut: false,
-  notebookOpen: false,
 };
 
 export function getNarrativeSequence(challenge: NarrativeChallenge): NarrativeStep[] {
@@ -77,12 +70,8 @@ export function narrativeSessionReducer(
         ...state,
         phase: "transition",
         results: [...state.results, action.result],
-        unlockedEntryIds: Array.from(
-          new Set([...state.unlockedEntryIds, ...action.unlockEntryIds]),
-        ),
         locked: true,
         lastTimedOut: action.timedOut,
-        notebookOpen: false,
       };
     case "advance":
       if (action.nextStepType === null) {
@@ -90,27 +79,18 @@ export function narrativeSessionReducer(
           ...state,
           phase: "results",
           locked: false,
-          notebookOpen: false,
         };
       }
       return {
         ...state,
         phase: action.nextStepType === "scene" ? "scene" : "playing",
         stepIndex: state.stepIndex + 1,
-        unlockedEntryIds: Array.from(
-          new Set([...state.unlockedEntryIds, ...(action.unlockEntryIds ?? [])]),
-        ),
         locked: false,
-        notebookOpen: false,
       };
     case "show-review":
-      return { ...state, phase: "review", notebookOpen: false };
+      return { ...state, phase: "review" };
     case "show-results":
-      return { ...state, phase: "results", notebookOpen: false };
-    case "open-notebook":
-      return { ...state, notebookOpen: true };
-    case "close-notebook":
-      return { ...state, notebookOpen: false };
+      return { ...state, phase: "results" };
     case "replay":
       return initialNarrativeSessionState;
   }
