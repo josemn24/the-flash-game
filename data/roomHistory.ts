@@ -9,7 +9,12 @@ export const demoRoomHistory: Record<string, RoomHistoryEntry[]> = {
       playedAt: "2026-09-05T20:30:00.000Z",
       imageSrc: "/flash-pop/concepts/pyramid-soft-diorama.webp",
       playerCount: 4,
-      winnerMemberId: "ches",
+      ranking: [
+        { memberId: "ches", points: 52 },
+        { memberId: "marta", points: 44 },
+        { memberId: "alex", points: 39 },
+        { memberId: "player", points: 33 },
+      ],
     },
     {
       id: "tabarnia-history-04",
@@ -18,7 +23,13 @@ export const demoRoomHistory: Record<string, RoomHistoryEntry[]> = {
       playedAt: "2026-09-04T19:10:00.000Z",
       imageSrc: "/flash-pop/concepts/narrative-story-trail.webp",
       playerCount: 5,
-      winnerMemberId: "marta",
+      ranking: [
+        { memberId: "marta", points: 60 },
+        { memberId: "ches", points: 54 },
+        { memberId: "player", points: 36 },
+        { memberId: "laura", points: 31 },
+        { memberId: "alex", points: 24 },
+      ],
     },
     {
       id: "tabarnia-history-03",
@@ -27,11 +38,21 @@ export const demoRoomHistory: Record<string, RoomHistoryEntry[]> = {
       playedAt: "2026-09-03T21:45:00.000Z",
       imageSrc: "/flash-pop/concepts/survival-last-beacon.webp",
       playerCount: 5,
-      winnerMemberId: "ches",
+      ranking: [
+        { memberId: "ches", points: 38 },
+        { memberId: "marta", points: 35 },
+        { memberId: "laura", points: 31 },
+        { memberId: "alex", points: 29 },
+        { memberId: "player", points: 27 },
+      ],
     },
   ],
 };
 
 export function getRoomHistory(roomId: string) {
   return demoRoomHistory[roomId] ?? [];
+}
+
+export function getRoomHistoryEntry(roomId: string, challengeId: string) {
+  return getRoomHistory(roomId).find((entry) => entry.challengeId === challengeId);
 }

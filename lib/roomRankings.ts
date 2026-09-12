@@ -1,6 +1,7 @@
 import type {
   Room,
   RoomDailyLeaderboardEntry,
+  RoomHistoryEntry,
   RoomLeaderboardEntry,
   RoomMember,
 } from "@/types/game";
@@ -40,6 +41,31 @@ export function getDailyLeaderboard(room: Room, challengeId: string) {
       initials: member.initials,
       avatarSrc: member.avatarSrc,
       points: member.challengeResults[challengeId]?.points ?? 0,
+      completed: true,
+    }));
+}
+
+export function getHistoryLeaderboard(room: Room, entry: RoomHistoryEntry) {
+  if (!entry.ranking) {
+    return getDailyLeaderboard(room, entry.challengeId);
+  }
+
+  const pointsByMemberId = new Map(entry.ranking.map((result) => [result.memberId, result.points]));
+
+  return room.members
+    .filter((member) => pointsByMemberId.has(member.id))
+    .sort(
+      (left, right) =>
+        (pointsByMemberId.get(right.id) ?? 0) - (pointsByMemberId.get(left.id) ?? 0) ||
+        left.id.localeCompare(right.id),
+    )
+    .map((member, index): RoomDailyLeaderboardEntry => ({
+      rank: index + 1,
+      memberId: member.id,
+      name: member.name,
+      initials: member.initials,
+      avatarSrc: member.avatarSrc,
+      points: pointsByMemberId.get(member.id) ?? 0,
       completed: true,
     }));
 }

@@ -15,7 +15,10 @@ export type AnswerReview = {
   details?: AnswerResultDetails;
 };
 
-export type AlphabetAnswerReview = Pick<AnswerReview, "questionId" | "answer" | "status" | "isCorrect">;
+export type AlphabetAnswerReview = Pick<
+  AnswerReview,
+  "questionId" | "answer" | "status" | "isCorrect"
+>;
 
 export type RoomChallengeAttempt = {
   challengeId: string;
@@ -163,7 +166,12 @@ export type RoomHistoryEntry = {
   playedAt: string;
   imageSrc: string;
   playerCount: number;
-  winnerMemberId?: string;
+  ranking?: RoomHistoryResult[];
+};
+
+export type RoomHistoryResult = {
+  memberId: string;
+  points: number;
 };
 
 export type Season = {

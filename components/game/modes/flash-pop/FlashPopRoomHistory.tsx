@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowIcon, Avatar, Canvas, Card, Chip } from "@/components/ui";
+import { ArrowIcon, Avatar, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
 import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
-import type { RoomHistoryEntry, RoomMember } from "@/types/game";
+import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
 import styles from "./FlashPopRoomSecondary.module.css";
 
 function formatHistoryDate(value: string) {
@@ -15,25 +15,23 @@ function formatHistoryDate(value: string) {
 
 export function FlashPopRoomHistory({
   roomId,
-  roomTitle,
-  members,
   entries,
+  rankings,
 }: {
   roomId: string;
-  roomTitle: string;
-  members: Pick<RoomMember, "id" | "name" | "initials" | "avatarSrc">[];
   entries: RoomHistoryEntry[];
+  rankings: Record<string, RoomDailyLeaderboardEntry[]>;
 }) {
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <Link href={`/salas/${roomId}`} className={styles.backLink} aria-label="Volver al detalle de la sala">
+        <Link
+          href={`/salas/${roomId}`}
+          className={styles.backLink}
+          aria-label="Volver al detalle de la sala"
+        >
           <ArrowIcon className={styles.backIcon} />
         </Link>
-        <div className={styles.roomIdentity}>
-          <Avatar name={roomTitle} initials={roomTitle.slice(0, 2).toUpperCase()} tone="social" size="md" />
-          <span>{roomTitle}</span>
-        </div>
       </header>
 
       <div className={styles.pageIntro}>
@@ -44,7 +42,7 @@ export function FlashPopRoomHistory({
       {entries.length > 0 ? (
         <div className={styles.historyList}>
           {entries.map((entry) => {
-            const winner = members.find((member) => member.id === entry.winnerMemberId);
+            const winner = rankings[entry.challengeId]?.[0];
 
             return (
               <Card as="article" padding="none" key={entry.id} className={styles.historyEntry}>
@@ -64,16 +62,25 @@ export function FlashPopRoomHistory({
                   <h2>{entry.title}</h2>
                   {winner ? (
                     <p className={styles.winner}>
-                    <Avatar
-                      name={winner.name}
-                      src={winner.avatarSrc}
-                      initials={winner.initials}
-                      size="sm"
-                      tone="reward"
-                    />
+                      <Avatar
+                        name={winner.name}
+                        src={winner.avatarSrc}
+                        initials={winner.initials}
+                        size="sm"
+                        tone="reward"
+                      />
                       Ganador: <strong>{winner.name}</strong>
                     </p>
                   ) : null}
+                  <ButtonLink
+                    href={`/salas/${roomId}/historial/${entry.challengeId}`}
+                    variant="secondary"
+                    size="sm"
+                    className={styles.historyAction}
+                    trailingIcon={<ChevronIcon aria-hidden="true" />}
+                  >
+                    Ver ranking
+                  </ButtonLink>
                 </div>
               </Card>
             );

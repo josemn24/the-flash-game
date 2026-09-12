@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
-import { getDailyLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
+import { getRoomHistory } from "@/data/roomHistory";
+import { getDailyLeaderboard, getHistoryLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
 import type { Room } from "@/types/game";
 
 function roomWithMembers(members: Room["members"]): Room {
@@ -34,6 +35,26 @@ describe("room rankings", () => {
       [3, "player", 42],
       [4, "alex", 38],
     ]);
+  });
+
+  it("ranks historical snapshots without changing current room results", () => {
+    const entries = getRoomHistory(demoRoom.id);
+
+    expect(getHistoryLeaderboard(demoRoom, entries[2])[0]).toMatchObject({
+      memberId: "ches",
+      points: 38,
+    });
+    expect(getHistoryLeaderboard(demoRoom, entries[1])[0]).toMatchObject({
+      memberId: "marta",
+      points: 60,
+    });
+    expect(getHistoryLeaderboard(demoRoom, entries[0]).map((entry) => entry.memberId)).toEqual([
+      "ches",
+      "marta",
+      "alex",
+      "player",
+    ]);
+    expect(getDailyLeaderboard(demoRoom, "tabarnia-challenge-05")).toEqual([]);
   });
 
   it("excludes members without a completed result from the daily ranking", () => {

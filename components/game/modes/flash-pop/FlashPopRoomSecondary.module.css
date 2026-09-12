@@ -4,8 +4,7 @@
   }
 
   .toolbar {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     min-height: 72px;
     align-items: center;
   }
@@ -35,20 +34,6 @@
   .backIcon {
     width: 21px;
     transform: rotate(180deg);
-  }
-
-  .roomIdentity {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px 4px 4px;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-pill);
-    background: rgb(255 255 255 / 82%);
-    box-shadow: var(--shadow-control);
-    font-family: var(--type-display);
-    font-size: 17px;
-    letter-spacing: -0.04em;
   }
 
   .pageIntro {
@@ -135,20 +120,27 @@
     color: var(--color-ink);
   }
 
+  .historyAction {
+    margin-top: var(--space-4);
+  }
+
+  .detailBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .detailRanking {
+    margin-top: var(--space-8);
+  }
+
   .emptyState h2 {
     margin: 0;
     font-family: var(--type-display);
   }
 
   @media (max-width: 600px) {
-    .roomIdentity {
-      padding: 3px;
-    }
-
-    .roomName {
-      display: none;
-    }
-
     .pageIntro {
       margin-top: var(--space-6);
     }

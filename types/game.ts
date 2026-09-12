@@ -157,6 +157,7 @@ export type {
   RoomMemberDetailModel,
   RoomDetailModel,
   RoomHistoryEntry,
+  RoomHistoryResult,
   RoomSettingsModel,
   Season,
   SeasonStatus,

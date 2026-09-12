@@ -4,6 +4,7 @@ import { FlashPopRoomHistory } from "@/components/game";
 import { demoRooms } from "@/data/demoRoom";
 import { getRoomHistory } from "@/data/roomHistory";
 import { getRoomById } from "@/lib/roomDetail";
+import { getHistoryLeaderboard } from "@/lib/roomRankings";
 
 type Props = {
   params: Promise<{ roomId: string }>;
@@ -32,12 +33,10 @@ export default async function RoomHistoryPage({ params }: Props) {
     notFound();
   }
 
-  return (
-    <FlashPopRoomHistory
-      roomId={room.id}
-      roomTitle={room.title}
-      members={room.members}
-      entries={getRoomHistory(room.id)}
-    />
+  const entries = getRoomHistory(room.id);
+  const rankings = Object.fromEntries(
+    entries.map((entry) => [entry.challengeId, getHistoryLeaderboard(room, entry)]),
   );
+
+  return <FlashPopRoomHistory roomId={room.id} entries={entries} rankings={rankings} />;
 }
