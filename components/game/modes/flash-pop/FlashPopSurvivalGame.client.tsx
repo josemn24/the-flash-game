@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { Canvas } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
+import { ChallengeIntro, StartCountdown } from "@/components/game/shared";
 import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useSurvivalSession } from "@/features/game/useSurvivalSession";
@@ -27,8 +27,16 @@ function totalTimeLimit(challenge: SurvivalChallenge) {
   return challenge.questions.reduce((total, question) => total + question.timeLimit, 0);
 }
 
-function Intro({ challenge, onStart }: { challenge: SurvivalChallenge; onStart: () => void }) {
-  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
+function Intro({
+  challenge,
+  onStart,
+  returnTo,
+}: {
+  challenge: SurvivalChallenge;
+  onStart: () => void;
+  returnTo?: string;
+}) {
+  return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
 function Feedback({
@@ -137,8 +145,16 @@ export function FlashPopSurvivalGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Intro challenge={scoredChallenge} onStart={session.start} />
+              <Intro
+                challenge={scoredChallenge}
+                onStart={session.beginCountdown}
+                returnTo={roomContext?.returnTo}
+              />
             </motion.div>
+          ) : null}
+
+          {session.phase === "countdown" ? (
+            <StartCountdown label="Supervivencia" key="countdown" onComplete={session.start} />
           ) : null}
 
           {session.phase === "playing" && session.question ? (

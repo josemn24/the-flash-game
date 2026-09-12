@@ -90,8 +90,16 @@ function Topbar({
   );
 }
 
-function Intro({ challenge, onStart }: { challenge: PyramidChallenge; onStart: () => void }) {
-  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
+function Intro({
+  challenge,
+  onStart,
+  returnTo,
+}: {
+  challenge: PyramidChallenge;
+  onStart: () => void;
+  returnTo?: string;
+}) {
+  return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
 function Briefing({
@@ -489,7 +497,11 @@ export function FlashPopPyramidGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Intro challenge={challenge} onStart={session.start} />
+              <Intro
+                challenge={challenge}
+                onStart={session.start}
+                returnTo={roomContext?.returnTo}
+              />
             </motion.div>
           ) : null}
           {session.phase === "briefing" ? (

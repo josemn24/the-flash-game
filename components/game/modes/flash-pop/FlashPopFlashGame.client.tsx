@@ -10,7 +10,7 @@ import {
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
-import { ReviewAnswerPanel } from "@/components/game/shared";
+import { ReviewAnswerPanel, StartCountdown } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
@@ -45,8 +45,16 @@ function getPromptCopy(prompt: string) {
   return { context: prompt.slice(0, start).trim(), title: prompt.slice(start).trim() };
 }
 
-function Intro({ challenge, onStart }: { challenge: FlashChallenge; onStart: () => void }) {
-  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
+function Intro({
+  challenge,
+  onStart,
+  returnTo,
+}: {
+  challenge: FlashChallenge;
+  onStart: () => void;
+  returnTo?: string;
+}) {
+  return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
 function QuestionStage({
@@ -382,8 +390,15 @@ export function FlashPopFlashGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Intro challenge={scoredChallenge} onStart={session.start} />
+              <Intro
+                challenge={scoredChallenge}
+                onStart={session.beginCountdown}
+                returnTo={roomContext?.returnTo}
+              />
             </motion.div>
+          ) : null}
+          {session.phase === "countdown" ? (
+            <StartCountdown label="Flash clásico" key="countdown" onComplete={session.start} />
           ) : null}
           {session.phase === "playing" && session.question ? (
             <motion.div

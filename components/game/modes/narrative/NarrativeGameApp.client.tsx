@@ -91,11 +91,13 @@ function NarrativeBlocks({
 function NarrativeIntro({
   challenge,
   onStart,
+  returnTo,
 }: {
   challenge: NarrativeChallenge;
   onStart: () => void;
+  returnTo?: string;
 }) {
-  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
+  return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
 function NarrativeSceneScreen({
@@ -475,6 +477,7 @@ export function NarrativeGameApp({
                   key="narrative-intro"
                   challenge={challenge}
                   onStart={session.start}
+                  returnTo={roomContext?.returnTo}
                 />
               )}
               {session.phase === "scene" &&

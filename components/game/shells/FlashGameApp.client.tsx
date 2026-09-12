@@ -10,9 +10,15 @@ import { SpeedBackground } from "@/components/effects/SpeedBackground";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import type { FlashChallenge } from "@/types/game";
+import type { FlashChallenge, GameRoomContext } from "@/types/game";
 
-export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
+export function FlashGameApp({
+  challenge,
+  roomContext,
+}: {
+  challenge: FlashChallenge;
+  roomContext?: GameRoomContext;
+}) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useGameSession(scoredChallenge);
 
@@ -27,6 +33,7 @@ export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
                 key={`intro-${challenge.id}`}
                 challenge={scoredChallenge}
                 onStart={session.start}
+                returnTo={roomContext?.returnTo}
               />
             )}
             {session.phase === "playing" && session.question && (

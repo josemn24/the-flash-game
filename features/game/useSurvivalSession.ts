@@ -31,6 +31,7 @@ type SessionState = {
 };
 
 type SessionAction =
+  | { type: "begin-countdown" }
   | { type: "start"; lives: number }
   | {
       type: "answer";
@@ -67,6 +68,8 @@ function getInitialState(lives: number): SessionState {
 
 function reducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
+    case "begin-countdown":
+      return { ...state, phase: "countdown" };
     case "start":
       return { ...getInitialState(action.lives), phase: "playing" };
     case "answer":
@@ -144,6 +147,12 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     questionStartedAt.current = performance.now();
     dispatch({ type: "start", lives: challenge.lives });
   }, [challenge.lives, clearAdvanceTimeout, resetQuestionRefs]);
+
+  const beginCountdown = useCallback(() => {
+    clearAdvanceTimeout();
+    resetQuestionRefs();
+    dispatch({ type: "begin-countdown" });
+  }, [clearAdvanceTimeout, resetQuestionRefs]);
 
   const replay = useCallback(() => {
     clearAdvanceTimeout();
@@ -281,6 +290,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     score,
     reachedQuestionCount: getSurvivalReachedQuestionCount(state.results.length),
     start,
+    beginCountdown,
     replay,
     submitAnswer,
     handleCodeAttempt,

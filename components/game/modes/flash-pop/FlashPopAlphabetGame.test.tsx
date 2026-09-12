@@ -6,6 +6,14 @@ import { FlashPopAlphabetGame } from "@/components/game/modes/flash-pop/FlashPop
 
 const source = readFileSync(new URL("./FlashPopAlphabetGame.client.tsx", import.meta.url), "utf8");
 const styles = readFileSync(new URL("./FlashPopAlphabetGame.module.css", import.meta.url), "utf8");
+const countdownSource = readFileSync(
+  new URL("../../shared/StartCountdown.client.tsx", import.meta.url),
+  "utf8",
+);
+const countdownStyles = readFileSync(
+  new URL("../../shared/StartCountdown.module.css", import.meta.url),
+  "utf8",
+);
 
 describe("FlashPopAlphabetGame", () => {
   it("renders the current Alphabet challenge with its real dimensions", () => {
@@ -66,21 +74,22 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("gives the countdown pill a high-contrast Pop treatment", () => {
-    expect(source).toContain("className={styles.countdownChip}");
-    expect(styles).toContain(".countdownChip {");
-    expect(styles).toContain("background: var(--color-focus);");
-    expect(styles).toContain("color: var(--color-text-on-social);");
+    expect(source).toContain("StartCountdown");
+    expect(countdownSource).toContain("className={styles.countdownChip}");
+    expect(countdownStyles).toContain(".countdownChip {");
+    expect(countdownStyles).toContain("background: var(--color-focus);");
+    expect(countdownStyles).toContain("color: var(--color-text-on-social);");
   });
 
   it("keeps the countdown opaque while the number animates", () => {
-    expect(source).toContain("initial={{ opacity: 1 }}");
-    expect(source).toContain("animate={{ opacity: 1 }}");
+    expect(countdownSource).toContain("initial={{ opacity: 1 }}");
+    expect(countdownSource).toContain("animate={{ opacity: 1 }}");
   });
 
   it("does not let the countdown hint override the pill text color", () => {
-    expect(source).toContain("className={styles.countdownHint}");
-    expect(styles).toContain(".countdownHint {");
-    expect(styles).not.toContain(".countdown > span");
+    expect(countdownSource).toContain("className={styles.countdownHint}");
+    expect(countdownStyles).toContain(".countdownHint {");
+    expect(countdownStyles).not.toContain(".countdown > span");
   });
 
   it("keeps feedback inline with the question and the global timer mounted", () => {

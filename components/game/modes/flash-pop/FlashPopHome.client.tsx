@@ -120,7 +120,7 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
                       : `Abrir sala ${room.title}. Sin reto hoy`
                   }
                 >
-                  <Card as="article" elevation="hero" padding="none" className={styles.roomCard}>
+                  <Card as="article" elevation="card" padding="none" className={styles.roomCard}>
                     <div className={styles.roomArt}>
                       <Image
                         src={imageSrc}

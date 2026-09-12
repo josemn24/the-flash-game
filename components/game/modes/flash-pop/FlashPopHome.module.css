@@ -82,7 +82,7 @@
   .roomLink:focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 5px;
-    border-radius: var(--radius-hero);
+    border-radius: var(--radius-card);
   }
 
   .roomCard {

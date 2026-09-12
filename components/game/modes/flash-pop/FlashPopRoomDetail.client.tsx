@@ -200,16 +200,18 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         <DailyChallengeCard model={visibleModel} />
 
         {visibleModel.dailyChallenge ? (
-          <RoomLeaderboard
-            title="Ranking de hoy"
-            entries={visibleModel.dailyLeaderboard}
-            currentUserId={visibleModel.currentUser.id}
-            daily
-            compact
-            variant="cards"
-            pendingCount={pendingCount}
-            memberHrefBase={`/salas/${visibleModel.roomId}/ranking`}
-          />
+          <div className={styles.dailyRanking}>
+            <RoomLeaderboard
+              title="Ranking de hoy"
+              entries={visibleModel.dailyLeaderboard}
+              currentUserId={visibleModel.currentUser.id}
+              daily
+              compact
+              variant="cards"
+              pendingCount={pendingCount}
+              memberHrefBase={`/salas/${visibleModel.roomId}/ranking`}
+            />
+          </div>
         ) : null}
       </div>
     </Canvas>

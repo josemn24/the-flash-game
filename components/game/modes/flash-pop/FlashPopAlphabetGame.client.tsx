@@ -15,7 +15,7 @@ import {
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { ReviewAnswerPanel } from "@/components/game/shared";
+import { ReviewAnswerPanel, StartCountdown } from "@/components/game/shared";
 import type {
   AlphabetChallenge,
   AnswerStatus,
@@ -139,47 +139,16 @@ function AlphabetForm({
   );
 }
 
-function Intro({ challenge, onStart }: { challenge: AlphabetChallenge; onStart: () => void }) {
-  return <ChallengeIntro challenge={challenge} onStart={onStart} />;
-}
-
-function Countdown({ onComplete }: { onComplete: () => void }) {
-  const [count, setCount] = useState(3);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (count === 1) onComplete();
-      else setCount((value) => value - 1);
-    }, 750);
-    return () => clearTimeout(timeout);
-  }, [count, onComplete]);
-
-  return (
-    <motion.div
-      className={styles.countdown}
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      role="status"
-      aria-live="assertive"
-    >
-      <Chip tone="social" className={styles.countdownChip}>
-        Alfabeto
-      </Chip>
-      <p>Prepárate</p>
-      <AnimatePresence mode="popLayout">
-        <motion.strong
-          key={count}
-          initial={{ opacity: 0, scale: 0.55 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.35 }}
-        >
-          {count}
-        </motion.strong>
-      </AnimatePresence>
-      <span className={styles.countdownHint}>El tiempo empieza después de la cuenta atrás</span>
-    </motion.div>
-  );
+function Intro({
+  challenge,
+  onStart,
+  returnTo,
+}: {
+  challenge: AlphabetChallenge;
+  onStart: () => void;
+  returnTo?: string;
+}) {
+  return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
 type AlphabetSession = ReturnType<typeof useAlphabetSession>;
@@ -460,11 +429,15 @@ export function FlashPopAlphabetGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Intro challenge={challenge} onStart={session.beginCountdown} />
+              <Intro
+                challenge={challenge}
+                onStart={session.beginCountdown}
+                returnTo={roomContext?.returnTo}
+              />
             </motion.div>
           ) : null}
           {session.phase === "countdown" ? (
-            <Countdown key="countdown" onComplete={session.start} />
+            <StartCountdown label="Alfabeto" key="countdown" onComplete={session.start} />
           ) : null}
           {session.phase === "playing" || session.phase === "feedback" ? (
             <motion.div

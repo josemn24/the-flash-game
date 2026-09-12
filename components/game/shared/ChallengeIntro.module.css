@@ -10,37 +10,47 @@
     background-size: 18px 18px;
   }
 
-  .headerLeft {
-    display: flex;
-    min-width: 0;
+  .backButton {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
     align-items: center;
-    gap: var(--space-3);
-  }
-
-  .headerMode {
-    overflow: hidden;
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-overflow: ellipsis;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .backLink {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color var(--motion-press-out) ease;
-  }
-
-  .backLink:hover {
+    justify-content: center;
+    border: 1px solid var(--color-line);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 76%);
     color: var(--color-ink);
+    box-shadow: var(--shadow-control);
+    text-decoration: none;
+    transition:
+      transform var(--motion-press-out) var(--ease-out),
+      box-shadow var(--motion-press-out) var(--ease-out),
+      background var(--motion-press-out) ease;
+  }
+
+  .backButton:hover {
+    background: var(--color-surface);
+    transform: translateY(-1px);
+  }
+
+  .backButton:active {
+    transform: translateY(3px);
+    box-shadow: none;
+    transition-duration: var(--motion-press-in);
+  }
+
+  .backButton:focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+
+  .backButton svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .backIcon {
+    transform: rotate(180deg);
   }
 
   .content {
@@ -186,13 +196,6 @@
   @media (max-width: 520px) {
     .screen {
       padding-top: var(--space-4);
-    }
-
-    .backLink {
-      max-width: 110px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .metric {

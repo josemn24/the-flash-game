@@ -27,6 +27,7 @@ type SessionState = {
 };
 
 type SessionAction =
+  | { type: "begin-countdown" }
   | { type: "start" }
   | { type: "answer"; result: AnswerResult; timedOut: boolean }
   | { type: "advance" }
@@ -51,6 +52,8 @@ const initialState: SessionState = {
 
 function reducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
+    case "begin-countdown":
+      return { ...state, phase: "countdown" };
     case "start":
       return { ...initialState, phase: "playing" };
     case "answer":
@@ -120,6 +123,16 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
     progressiveCluesRevealedRef.current = 1;
     questionStartedAt.current = performance.now();
     dispatch({ type: "start" });
+  }, [clearAdvanceTimeout]);
+
+  const beginCountdown = useCallback(() => {
+    clearAdvanceTimeout();
+    answerLock.current = false;
+    codeAttemptsRef.current = [];
+    draftAnswerRef.current = null;
+    incorrectAttemptsRef.current = 0;
+    progressiveCluesRevealedRef.current = 1;
+    dispatch({ type: "begin-countdown" });
   }, [clearAdvanceTimeout]);
 
   const replay = useCallback(() => {
@@ -247,6 +260,7 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
     question,
     score,
     start,
+    beginCountdown,
     replay,
     submitAnswer,
     handleCodeAttempt,

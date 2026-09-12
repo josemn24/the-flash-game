@@ -61,8 +61,24 @@ describe("ChallengeIntro", () => {
       expect(markup).toContain("Resumen del desafío");
       expect(markup).toContain("Reglas principales");
       expect(markup).toContain("Empezar desafío");
+      expect(markup).toContain('aria-label="Volver a desafíos"');
+      expect(markup).not.toContain("Volver a desafíos</a>");
+      expect(markup).not.toContain("ALFABETO");
       expect(markup).not.toContain("Estado de las letras");
       expect(markup).not.toContain("introIllustration");
     });
+  });
+
+  it("returns to the room when the challenge belongs to one", () => {
+    const challenge = challenges[0];
+    const markup = renderToStaticMarkup(
+      <ChallengeIntro
+        challenge={challenge}
+        onStart={() => undefined}
+        returnTo="/salas/tabarnia-room"
+      />,
+    );
+
+    expect(markup).toContain('href="/salas/tabarnia-room"');
   });
 });

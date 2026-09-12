@@ -53,5 +53,5 @@ export function GameApp({ challenge, roomContext, onComplete }: GameAppProps) {
   if (challenge.mode === "flash") {
     return <FlashPopFlashGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
   }
-  return <FlashGameApp challenge={challenge} />;
+  return <FlashGameApp challenge={challenge} roomContext={roomContext} />;
 }

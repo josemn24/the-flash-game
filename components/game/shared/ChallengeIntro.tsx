@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { Logo } from "@/components/navigation/Logo";
 import { ArrowIcon, Button, Chip, GameHeader } from "@/components/ui";
 import { buildChallengeIntroModel } from "@/lib/challengeIntro";
 import type { Challenge } from "@/types/game";
@@ -14,11 +13,13 @@ export function ChallengeIntro({
   onStart,
   note,
   notice,
+  returnTo = "/",
 }: {
   challenge: Challenge;
   onStart: () => void;
   note?: ReactNode;
   notice?: string;
+  returnTo?: string;
 }) {
   const model = buildChallengeIntroModel(challenge);
 
@@ -32,16 +33,8 @@ export function ChallengeIntro({
     >
       <GameHeader
         left={
-          <div className={styles.headerLeft}>
-            <Link href="/" aria-label="Volver a los desafíos">
-              <Logo compact />
-            </Link>
-            <span className={styles.headerMode}>{model.modeLabel}</span>
-          </div>
-        }
-        right={
-          <Link className={styles.backLink} href="/">
-            Volver a desafíos
+          <Link className={styles.backButton} href={returnTo} aria-label="Volver a desafíos">
+            <ArrowIcon className={styles.backIcon} />
           </Link>
         }
       />
