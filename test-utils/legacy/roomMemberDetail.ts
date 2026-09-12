@@ -1,6 +1,6 @@
 import { getChallengeById } from "@/data/challenges";
-import { buildRoomDetailModel } from "@/lib/roomDetail";
-import { buildMockRoomChallengeAttempt } from "@/lib/roomAttempts";
+import { buildRoomDetailModel } from "@/test-utils/legacy/roomDetail";
+import { buildMockRoomChallengeAttempt } from "@/test-utils/legacy/roomAttempts";
 import type {
   ChallengeCompletion,
   Room,
@@ -10,7 +10,9 @@ import type {
 
 function sortEntries<T extends { memberId: string; points: number }>(entries: T[]) {
   return [...entries]
-    .sort((left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId))
+    .sort(
+      (left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId),
+    )
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
 
@@ -37,14 +39,15 @@ export function buildRoomMemberDetailModel(
   const baseResult = roomModel.dailyChallenge
     ? (member.challengeResults[roomModel.dailyChallenge.id] ?? null)
     : null;
-  const result = baseResult && roomModel.dailyChallenge
-    ? {
-        ...baseResult,
-        attempt: buildMockRoomChallengeAttempt(roomModel.dailyChallenge.id, baseResult, {
-          seed: member.id,
-        }),
-      }
-    : baseResult;
+  const result =
+    baseResult && roomModel.dailyChallenge
+      ? {
+          ...baseResult,
+          attempt: buildMockRoomChallengeAttempt(roomModel.dailyChallenge.id, baseResult, {
+            seed: member.id,
+          }),
+        }
+      : baseResult;
 
   return withRanks({
     roomId: room.id,

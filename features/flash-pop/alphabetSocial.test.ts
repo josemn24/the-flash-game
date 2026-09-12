@@ -3,6 +3,7 @@ import {
   calculateAlphabetSeasonXp,
   getFlashPopAlphabetResult,
 } from "@/features/flash-pop/alphabetSocial";
+import { makeSocialSnapshot } from "@/features/flash-pop/socialSnapshot.test-utils";
 
 describe("Flash Pop Alphabet social adapter", () => {
   it("caps a complete fast run at 120 XP", () => {
@@ -21,6 +22,7 @@ describe("Flash Pop Alphabet social adapter", () => {
         elapsedTime: 80,
         lastCorrectAt: 70,
       },
+      makeSocialSnapshot(0),
       { timeLimit: 135 },
     );
 
@@ -30,14 +32,17 @@ describe("Flash Pop Alphabet social adapter", () => {
   });
 
   it("orders equal scores by the last correct answer time", () => {
-    const result = getFlashPopAlphabetResult({
-      challengeId: "future-alphabet",
-      score: 89,
-      correctAnswers: 16,
-      totalLetters: 18,
-      elapsedTime: 100,
-      lastCorrectAt: 90,
-    });
+    const result = getFlashPopAlphabetResult(
+      {
+        challengeId: "future-alphabet",
+        score: 89,
+        correctAnswers: 16,
+        totalLetters: 18,
+        elapsedTime: 100,
+        lastCorrectAt: 90,
+      },
+      makeSocialSnapshot(),
+    );
 
     expect(result.playerRank).toBe(1);
     expect(result.peers[0]?.player.id).toBe("player");

@@ -1,5 +1,5 @@
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
-import { getDailyChallenge } from "@/lib/dailyChallenge";
+import { getDailyChallenge } from "@/test-utils/legacy/dailyChallenge";
 import { getRoomLeaderboard } from "@/lib/roomRankings";
 import type { ChallengeDefinition, GameMode, Room, RoomCardModel } from "@/types/game";
 

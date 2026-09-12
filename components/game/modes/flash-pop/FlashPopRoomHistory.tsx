@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowIcon, Avatar, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
-import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
 import styles from "./FlashPopRoomSecondary.module.css";
 

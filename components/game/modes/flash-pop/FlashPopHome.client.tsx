@@ -14,7 +14,7 @@ import {
   IconButton,
   TrophyIcon,
 } from "@/components/ui";
-import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/game";
 import type { UserProfile } from "@/types/user";

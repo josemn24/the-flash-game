@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomSettings } from "@/components/game";
-import { demoRooms } from "@/data/demoRoom";
-import { getRoomById } from "@/lib/roomDetail";
-import { buildRoomSettingsModel } from "@/lib/roomSettings";
+import { getRoomSettingsPageModel } from "@/server/data-access";
 
 type Props = {
   params: Promise<{ roomId: string }>;
 };
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return demoRooms.map((room) => ({ roomId: room.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { roomId } = await params;
-  const room = getRoomById(roomId);
+  const room = await getRoomSettingsPageModel(roomId);
 
   return {
     title: room ? `Ajustes de ${room.title} — Flash Pop` : "Ajustes — Flash Pop",
@@ -26,11 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RoomSettingsPage({ params }: Props) {
   const { roomId } = await params;
-  const room = getRoomById(roomId);
+  const room = await getRoomSettingsPageModel(roomId);
 
   if (!room) {
     notFound();
   }
 
-  return <FlashPopRoomSettings model={buildRoomSettingsModel(room)} />;
+  return <FlashPopRoomSettings model={room} />;
 }

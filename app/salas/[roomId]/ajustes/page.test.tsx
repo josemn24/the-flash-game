@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import { FlashPopRoomSettings } from "@/components/game/modes/flash-pop/FlashPopRoomSettings";
 import { demoRoom } from "@/data/demoRoom";
 import { buildRoomSettingsModel } from "@/lib/roomSettings";
-import { generateMetadata, generateStaticParams } from "./page";
+import { dynamic, generateMetadata } from "./page";
 
 describe("room settings route", () => {
   it("exposes Tabarnia and its settings view", async () => {
-    expect(generateStaticParams()).toEqual([{ roomId: "tabarnia-room" }]);
-    await expect(generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) })).resolves.toMatchObject({
+    expect(dynamic).toBe("force-dynamic");
+    await expect(
+      generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
+    ).resolves.toMatchObject({
       title: "Ajustes de Tabarnia — Flash Pop",
     });
 

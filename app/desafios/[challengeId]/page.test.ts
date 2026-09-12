@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import ChallengePage, { generateStaticParams } from "./page";
+import ChallengePage, { dynamic } from "./page";
 
 vi.mock("next/navigation", () => ({
   notFound: () => {
@@ -39,7 +39,7 @@ describe("challenge route room context", () => {
     ).rejects.toThrow("NOT_FOUND");
   });
 
-  it("continues exposing every playable challenge", () => {
-    expect(generateStaticParams().length).toBeGreaterThanOrEqual(5);
+  it("does not enumerate challenge routes at build time", () => {
+    expect(dynamic).toBe("force-dynamic");
   });
 });

@@ -4,11 +4,11 @@ import { FlashPopRoomHistory } from "@/components/game/modes/flash-pop/FlashPopR
 import { demoRoom } from "@/data/demoRoom";
 import { getRoomHistory } from "@/data/roomHistory";
 import { getHistoryLeaderboard } from "@/lib/roomRankings";
-import { generateMetadata, generateStaticParams } from "./page";
+import { dynamic, generateMetadata } from "./page";
 
 describe("room history route", () => {
   it("exposes Tabarnia and renders previous games", async () => {
-    expect(generateStaticParams()).toEqual([{ roomId: "tabarnia-room" }]);
+    expect(dynamic).toBe("force-dynamic");
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({

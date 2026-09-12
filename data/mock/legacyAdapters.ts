@@ -27,7 +27,7 @@ function initials(displayName: string) {
     .slice(0, 2);
 }
 
-function toLegacyAttempt(
+export function projectLegacyAttempt(
   attemptId: string,
   store: MockDomainStore,
 ): RoomChallengeAttempt | undefined {
@@ -134,7 +134,7 @@ export function toLegacyRoomSnapshot(
                   {
                     points: ranked?.points ?? 0,
                     completed: Boolean(attempt),
-                    attempt: attempt ? toLegacyAttempt(attempt.id, store) : undefined,
+                    attempt: attempt ? projectLegacyAttempt(attempt.id, store) : undefined,
                   },
                 ],
               ];

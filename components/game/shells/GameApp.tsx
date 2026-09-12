@@ -1,11 +1,13 @@
 import dynamic from "next/dynamic";
 import type { Challenge, GameRoomContext } from "@/types/game";
 import type { ChallengeCompletionResult } from "@/types/game";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 type GameAppProps = {
   challenge: Challenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
+  socialSnapshot: FlashPopSocialSnapshot;
 };
 
 const FlashPopAlphabetGame = dynamic(() =>
@@ -37,21 +39,45 @@ const NarrativeGameApp = dynamic(() =>
   ),
 );
 
-export function GameApp({ challenge, roomContext, onComplete }: GameAppProps) {
+export function GameApp({ challenge, roomContext, onComplete, socialSnapshot }: GameAppProps) {
   if (challenge.mode === "alphabet") {
-    return <FlashPopAlphabetGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
+    return (
+      <FlashPopAlphabetGame
+        challenge={challenge}
+        roomContext={roomContext}
+        onComplete={onComplete}
+      />
+    );
   }
   if (challenge.mode === "narrative") {
-    return <NarrativeGameApp challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
+    return (
+      <NarrativeGameApp challenge={challenge} roomContext={roomContext} onComplete={onComplete} />
+    );
   }
   if (challenge.mode === "pyramid") {
-    return <FlashPopPyramidGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
+    return (
+      <FlashPopPyramidGame
+        challenge={challenge}
+        roomContext={roomContext}
+        onComplete={onComplete}
+        socialSnapshot={socialSnapshot}
+      />
+    );
   }
   if (challenge.mode === "survival") {
-    return <FlashPopSurvivalGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
+    return (
+      <FlashPopSurvivalGame
+        challenge={challenge}
+        roomContext={roomContext}
+        onComplete={onComplete}
+        socialSnapshot={socialSnapshot}
+      />
+    );
   }
   if (challenge.mode === "flash") {
-    return <FlashPopFlashGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />;
+    return (
+      <FlashPopFlashGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />
+    );
   }
   return <FlashGameApp challenge={challenge} roomContext={roomContext} />;
 }

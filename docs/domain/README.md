@@ -11,11 +11,11 @@ temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
 
 ## Estado
 
-- Estado: modelo aprobado y fase 3 de datos mock normalizados cerrada.
+- Estado: modelo aprobado y fases 3 y 4 cerradas.
 - Versión: 1.
 - Fecha de la última revisión: 2026-09-12.
-- Alcance técnico actual: reglas, tipos TypeScript, fixtures canónicos y store normalizado; todavía
-  no define backend ni esquema SQL.
+- Alcance técnico actual: reglas, tipos TypeScript, fixtures canónicos, store normalizado y capa de
+  consultas asíncrona server-only; todavía no define backend ni esquema SQL.
 - Persistencia prevista: PostgreSQL, autenticación y almacenamiento mediante Supabase.
 
 ## Mapa conceptual
@@ -54,6 +54,8 @@ son fuentes de verdad independientes en la primera versión.
    prototipo.
 8. [`mock-data.md`](mock-data.md): almacén normalizado, aliases, datos reconciliados, selectores y
    controles de integridad.
+9. [`data-access.md`](data-access.md): contratos de consultas, composición server-only,
+   autorización mock, DTOs y fronteras de dependencia.
 
 ## Jerarquía documental
 

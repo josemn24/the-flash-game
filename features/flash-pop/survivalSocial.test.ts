@@ -3,6 +3,7 @@ import {
   calculateSurvivalSeasonXp,
   getFlashPopSurvivalResult,
 } from "@/features/flash-pop/survivalSocial";
+import { makeSocialSnapshot } from "@/features/flash-pop/socialSnapshot.test-utils";
 
 describe("Flash Pop Survival social adapter", () => {
   it("caps a complete, fast survival run at 120 XP", () => {
@@ -22,6 +23,7 @@ describe("Flash Pop Survival social adapter", () => {
         totalTime: 48,
         survived: false,
       },
+      makeSocialSnapshot(0),
       { totalTimeLimit: 240 },
     );
 
@@ -31,15 +33,18 @@ describe("Flash Pop Survival social adapter", () => {
   });
 
   it("ranks equal scores by time used", () => {
-    const result = getFlashPopSurvivalResult({
-      challengeId: "future-survival",
-      score: 92,
-      questionsReached: 10,
-      totalQuestions: 10,
-      livesRemaining: 2,
-      totalTime: 100,
-      survived: true,
-    });
+    const result = getFlashPopSurvivalResult(
+      {
+        challengeId: "future-survival",
+        score: 92,
+        questionsReached: 10,
+        totalQuestions: 10,
+        livesRemaining: 2,
+        totalTime: 100,
+        survived: true,
+      },
+      makeSocialSnapshot(),
+    );
 
     expect(result.playerRank).toBe(1);
     expect(result.peers[0]?.player.id).toBe("player");

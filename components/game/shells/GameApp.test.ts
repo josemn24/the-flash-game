@@ -7,7 +7,7 @@ describe("GameApp routing", () => {
   it("routes every survival challenge to the Flash Pop shell", () => {
     expect(source).toContain("FlashPopSurvivalGame.client");
     expect(source).toContain('if (challenge.mode === "survival")');
-    expect(source).toContain("FlashPopSurvivalGame challenge={challenge}");
+    expect(source).toMatch(/<FlashPopSurvivalGame\s+[\s\S]*?challenge=\{challenge\}/);
     expect(source).not.toContain("SurvivalGameApp");
   });
 

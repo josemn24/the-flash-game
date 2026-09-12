@@ -24,7 +24,8 @@ The Flash es un juego de preguntas en solitario diseñado como un sprint contra 
 - Tailwind CSS 4.
 - Motion para transiciones y microinteracciones.
 
-La aplicación es 100 % frontend. No utiliza backend, base de datos, autenticación ni servicios externos.
+La aplicación no utiliza todavía backend, base de datos, autenticación real ni servicios externos.
+Sus Server Components leen una DAL asíncrona server-only respaldada por un store mock normalizado.
 
 ## Requisitos
 
@@ -65,14 +66,17 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 ## Estructura principal
 
 ```text
-app/          Rutas, layout, metadata y estilos globales
-components/   Pantallas, UI universal e islas interactivas
-data/         Sala demo, temporada activa, publicaciones, definiciones y tabla mock de preguntas
-features/     Sesión de juego y catálogo de formatos
-lib/          Puntuación, validación y utilidades
-types/        Tipos del dominio
-docs/         Estado funcional, evolución y arquitectura
-scripts/      Generadores deterministas de recursos versionados
+application/     Contratos de consultas y presentación independiente del framework
+app/             Rutas, layout, metadata y estilos globales
+components/      Pantallas, UI universal e islas interactivas
+data/            Fixtures canónicos, store normalizado y proyecciones legacy
+features/        Sesión de juego y catálogo de formatos
+infrastructure/  Adaptadores mock de los contratos de aplicación
+lib/             Puntuación, validación y utilidades puras
+server/          Fachada server-only usada por las rutas de producto
+types/           Dominio, contratos, gameplay y view models
+docs/            Estado funcional, evolución y arquitectura
+scripts/         Comprobaciones y generadores deterministas
 ```
 
 ## Modelo de dominio
@@ -91,7 +95,10 @@ temporadas, publicaciones, intentos, rankings y límites de seguridad, se mantie
 
 ## Alcance
 
-Esta versión está centrada exclusivamente en validar la experiencia individual dentro de una sala demo local con temporada activa y ejemplos jugables. No incluye usuarios, creación de salas, multijugador, rankings, panel de administración, backend, base de datos ni persistencia.
+Esta versión valida la experiencia individual y social simulada dentro de una sala local con
+temporada, miembros, rankings e historial derivados de datos canónicos. La capa de acceso de la
+fase 4 está cerrada, pero no incluye creación de salas, panel de administración, backend, base de
+datos, autenticación real ni persistencia de nuevos intentos.
 
 Los dos desafíos publicados conservan diez preguntas cada uno. La temporada apunta a publicaciones mock, cada publicación apunta a una definición reusable y cada definición resuelve su contenido desde `questionsById`. Los formatos que no aparecen en ellos, incluidos Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
 

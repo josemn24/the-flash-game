@@ -1,4 +1,4 @@
-import { DAILY_CHALLENGE_TIME_ZONE } from "@/lib/dailyChallenge";
+const DAILY_CHALLENGE_TIME_ZONE = "Europe/Madrid";
 
 type LocalDateTimeParts = {
   year: number;
@@ -77,10 +77,7 @@ function addLocalDays(parts: LocalDateTimeParts, days: number): LocalDateTimePar
   };
 }
 
-export function getNextDailyBoundary(
-  now = new Date(),
-  timeZone = DAILY_CHALLENGE_TIME_ZONE,
-) {
+export function getNextDailyBoundary(now = new Date(), timeZone = DAILY_CHALLENGE_TIME_ZONE) {
   const localNow = getLocalDateTimeParts(now, timeZone);
   let target = addLocalDays(localNow, 1);
   let boundary = getUtcForLocalDateTime(target, timeZone);

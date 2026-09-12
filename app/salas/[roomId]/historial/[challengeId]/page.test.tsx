@@ -2,18 +2,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopRoomHistoryDetail } from "@/components/game/modes/flash-pop/FlashPopRoomHistoryDetail";
 import { demoRoom } from "@/data/demoRoom";
-import { getRoomHistory, getRoomHistoryEntry } from "@/data/roomHistory";
+import { getRoomHistoryEntry } from "@/data/roomHistory";
 import { getHistoryLeaderboard } from "@/lib/roomRankings";
-import { generateMetadata, generateStaticParams } from "./page";
+import { dynamic, generateMetadata } from "./page";
 
 describe("room history detail route", () => {
   it("exposes historical challenge rankings", async () => {
-    expect(generateStaticParams()).toEqual(
-      getRoomHistory(demoRoom.id).map((entry) => ({
-        roomId: demoRoom.id,
-        challengeId: entry.challengeId,
-      })),
-    );
+    expect(dynamic).toBe("force-dynamic");
     await expect(
       generateMetadata({
         params: Promise.resolve({ roomId: demoRoom.id, challengeId: "tabarnia-challenge-05" }),

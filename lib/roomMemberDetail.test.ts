@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
 import { getChallengeById } from "@/data/challenges";
 import { isAnswerCorrect } from "@/lib/scoring";
-import { buildMockRoomChallengeAttempt } from "@/lib/roomAttempts";
+import { buildMockRoomChallengeAttempt } from "@/test-utils/legacy/roomAttempts";
 import type { NarrativeQuestionStep, NarrativeStep } from "@/types/game";
-import { applyRoomMemberChallengeResult, buildRoomMemberDetailModel } from "@/lib/roomMemberDetail";
+import {
+  applyRoomMemberChallengeResult,
+  buildRoomMemberDetailModel,
+} from "@/test-utils/legacy/roomMemberDetail";
 
 const now = new Date("2026-09-01T12:00:00.000Z");
 

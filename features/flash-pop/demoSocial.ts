@@ -1,14 +1,9 @@
 import type { AvatarTone } from "@/components/ui";
-import {
-  canonicalCurrentPlayer,
-  canonicalSocialPlayers,
-  getCanonicalChallengeTitle,
-  getCanonicalSocialRows,
-} from "@/features/flash-pop/canonicalSocial";
 import type {
   PyramidAttemptRecord,
   PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 export const FLASH_POP_FLASH_PILOT_ID = "tabarnia-flash-01";
 export const FLASH_POP_CHALLENGE_ID = "tabarnia-challenge-05";
@@ -79,21 +74,16 @@ export type FlashPopScoringConfig = {
   nextLevelAt?: number;
 };
 
-/** Configuración de avatar puramente presentacional proyectada sobre los jugadores canónicos. */
-export const flashPopPlayers: FlashPopPlayer[] = canonicalSocialPlayers.map((player) => ({
-  ...player,
-}));
-
 export function isFlashPopPreviewChallenge(id: string): id is FlashPopChallengeId {
   return (FLASH_POP_PREVIEW_CHALLENGE_IDS as readonly string[]).includes(id);
 }
 
-function activitiesFor(challengeId: string): FlashPopActivity[] {
-  return getCanonicalSocialRows(challengeId)
+function activitiesFor(snapshot: FlashPopSocialSnapshot): FlashPopActivity[] {
+  return [...snapshot.peers]
     .sort((left, right) => right.score - left.score || left.timeUsed - right.timeUsed)
     .slice(0, 2)
     .map((row, index) => ({
-      id: `${row.attempt.id}:activity`,
+      id: `${row.player.id}:${row.completedAt}:activity`,
       playerId: row.player.id,
       text: index === 0 ? "lidera el desafío" : "terminó el desafío",
       meta: `${row.score} puntos`,
@@ -129,13 +119,14 @@ export function calculateSeasonXp(
 
 export function getFlashPopResult(
   summary: PyramidAttemptSummary,
+  socialSnapshot: FlashPopSocialSnapshot,
   config: FlashPopScoringConfig = {},
 ): FlashPopResult {
   const seasonXpCurrent = config.seasonXpCurrent ?? 680;
   const nextLevelAt = config.nextLevelAt ?? 900;
   const rows = [
-    { player: canonicalCurrentPlayer, score: summary.score, timeUsed: summary.timeUsed },
-    ...getCanonicalSocialRows(summary.challengeId).map(({ player, score, timeUsed }) => ({
+    { player: socialSnapshot.currentPlayer, score: summary.score, timeUsed: summary.timeUsed },
+    ...socialSnapshot.peers.map(({ player, score, timeUsed }) => ({
       player,
       score,
       timeUsed,
@@ -143,7 +134,7 @@ export function getFlashPopResult(
   ]
     .sort((left, right) => right.score - left.score || left.timeUsed - right.timeUsed)
     .map((row, index) => ({ ...row, rank: index + 1 }));
-  const current = rows.find(({ player }) => player.id === canonicalCurrentPlayer.id)!;
+  const current = rows.find(({ player }) => player.id === socialSnapshot.currentPlayer.id)!;
   const earned = calculateSeasonXp(
     summary,
     config.levelCount ?? FLASH_POP_LEVEL_COUNT,
@@ -168,27 +159,30 @@ export function getFlashPopLobbyChallenge(
     | (Pick<PyramidAttemptRecord, "status" | "summary"> & { currentLevelIndex?: number })
     | null
     | undefined,
-  challengeId: FlashPopChallengeId = FLASH_POP_CHALLENGE_ID,
+  challengeId: FlashPopChallengeId,
+  socialSnapshot: FlashPopSocialSnapshot,
+  content: { title: string; subtitle: string },
 ): FlashPopLobbyChallenge {
-  const { title, subtitle } = getCanonicalChallengeTitle(challengeId);
   const status = getFlashPopAttemptStatus(record);
-  const result = record?.summary ? getFlashPopResult({ ...record.summary, challengeId }) : null;
+  const result = record?.summary
+    ? getFlashPopResult({ ...record.summary, challengeId }, socialSnapshot)
+    : null;
 
   return {
     id: challengeId,
-    title,
-    subtitle,
+    title: content.title,
+    subtitle: content.subtitle,
     status,
     currentLevelIndex: record?.currentLevelIndex,
-    participants: flashPopPlayers.filter(({ id }) => id !== canonicalCurrentPlayer.id),
+    participants: socialSnapshot.players.filter(({ id }) => id !== socialSnapshot.currentPlayer.id),
     playerScore: result?.score,
     playerRank: result?.playerRank,
-    totalPlayers: result?.totalPlayers ?? flashPopPlayers.length,
+    totalPlayers: result?.totalPlayers ?? socialSnapshot.players.length,
     seasonXp: {
       current: result?.seasonXpCurrent ?? 680,
       nextLevelAt: result?.nextLevelAt ?? 900,
       maxEarnable: 120,
     },
-    activities: activitiesFor(challengeId),
+    activities: activitiesFor(socialSnapshot),
   };
 }

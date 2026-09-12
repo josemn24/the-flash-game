@@ -5,9 +5,10 @@
 > [`domain/decisions.md`](domain/decisions.md). Si existe una contradicción, prevalece la
 > documentación de dominio.
 >
-> El estado técnico vigente está en [`domain/mock-data.md`](domain/mock-data.md): la fase de
-> fixtures canónicos y store normalizado quedó cerrada el 12 de septiembre de 2026. El esquema de
-> fases de este documento es anterior y no utiliza la misma numeración.
+> El estado técnico vigente está en [`domain/mock-data.md`](domain/mock-data.md) y
+> [`domain/data-access.md`](domain/data-access.md): las fases de fixtures canónicos/store
+> normalizado y de consultas server-only quedaron cerradas el 12 de septiembre de 2026. El esquema
+> de fases de este documento es anterior y no utiliza la misma numeración.
 
 ## Propósito
 

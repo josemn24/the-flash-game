@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
-import { getDailyChallenge } from "@/lib/dailyChallenge";
-import { applyRoomChallengeResult, buildRoomDetailModel, getRoomById } from "@/lib/roomDetail";
+import { getDailyChallenge } from "@/test-utils/legacy/dailyChallenge";
+import {
+  applyRoomChallengeResult,
+  buildRoomDetailModel,
+  getRoomById,
+} from "@/test-utils/legacy/roomDetail";
 
 const now = new Date("2026-09-06T12:00:00.000Z");
 const completion = (points: number) => ({

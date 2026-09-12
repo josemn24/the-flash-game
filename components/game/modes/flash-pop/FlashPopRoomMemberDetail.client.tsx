@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowIcon, Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
 import { ReviewAnswerList, reviewQuestionsFor } from "@/components/game/shared";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import { applyRoomMemberChallengeResult } from "@/lib/roomMemberDetail";
+import { applyRoomMemberChallengeResult } from "@/features/rooms/localResults";
 import type { AnswerReview, AnswerResult, Challenge, RoomMemberDetailModel } from "@/types/game";
 import styles from "./FlashPopRoomMemberDetail.module.css";
 
@@ -43,7 +43,13 @@ function formatPlayedAtCompact(value?: string) {
     .replace(",", " ·");
 }
 
-function AnswerHistory({ challenge, attempt }: { challenge: Challenge; attempt: NonNullable<RoomMemberDetailModel["result"]>["attempt"] }) {
+function AnswerHistory({
+  challenge,
+  attempt,
+}: {
+  challenge: Challenge;
+  attempt: NonNullable<RoomMemberDetailModel["result"]>["attempt"];
+}) {
   if (!attempt) return null;
   const answers = new Map(attempt.answers.map((answer) => [answer.questionId, answer]));
   const entries = reviewQuestionsFor(challenge).map((question, index) => {
@@ -97,18 +103,30 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <Link href={`/salas/${model.roomId}/ranking`} className={styles.backLink} aria-label="Volver al ranking de hoy">
+        <Link
+          href={`/salas/${model.roomId}/ranking`}
+          className={styles.backLink}
+          aria-label="Volver al ranking de hoy"
+        >
           <ArrowIcon className={styles.backIcon} />
         </Link>
       </header>
 
       <div>
         <section className={styles.profile} aria-labelledby="member-detail-title">
-          <Avatar name={visibleModel.member.name} src={visibleModel.member.avatarSrc} initials={visibleModel.member.initials} tone="social" size="lg" />
+          <Avatar
+            name={visibleModel.member.name}
+            src={visibleModel.member.avatarSrc}
+            initials={visibleModel.member.initials}
+            tone="social"
+            size="lg"
+          />
           <div>
             <p className={styles.eyebrow}>{model.roomTitle}</p>
             <h1 id="member-detail-title">{visibleModel.member.name}</h1>
-            <p className={styles.profileMeta}>{visibleModel.member.totalPoints} Flash points · #{visibleModel.roomRank} en la sala</p>
+            <p className={styles.profileMeta}>
+              {visibleModel.member.totalPoints} Flash points · #{visibleModel.roomRank} en la sala
+            </p>
           </div>
         </section>
 
@@ -116,22 +134,34 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           <div className={styles.summaryHeader}>
             <div>
               <p className={styles.eyebrow}>Reto de hoy</p>
-              <h2 id="attempt-summary-title">{visibleModel.dailyChallenge?.title ?? "Sin reto hoy"}</h2>
+              <h2 id="attempt-summary-title">
+                {visibleModel.dailyChallenge?.title ?? "Sin reto hoy"}
+              </h2>
             </div>
           </div>
 
           <div className={styles.stats}>
             <div>
-              <div className={styles.statValue}><BoltIcon aria-hidden="true" /><strong>{result?.points ?? 0}</strong></div>
+              <div className={styles.statValue}>
+                <BoltIcon aria-hidden="true" />
+                <strong>{result?.points ?? 0}</strong>
+              </div>
               <span>puntos del reto</span>
             </div>
             <div>
-              <div className={styles.statValue}><strong>#{visibleModel.dailyRank ?? "—"}</strong></div>
+              <div className={styles.statValue}>
+                <strong>#{visibleModel.dailyRank ?? "—"}</strong>
+              </div>
               <span>ranking de hoy</span>
             </div>
             <div>
               <div className={styles.statValue}>
-                <time dateTime={isComplete ? attempt?.playedAt : undefined} aria-label={isComplete ? `Jugado el ${formatPlayedAt(attempt?.playedAt)}` : undefined}>
+                <time
+                  dateTime={isComplete ? attempt?.playedAt : undefined}
+                  aria-label={
+                    isComplete ? `Jugado el ${formatPlayedAt(attempt?.playedAt)}` : undefined
+                  }
+                >
                   {isComplete ? formatPlayedAtCompact(attempt?.playedAt) : "—"}
                 </time>
               </div>

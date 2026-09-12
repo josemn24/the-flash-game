@@ -25,7 +25,17 @@ const LEGACY_DATA_SOURCES = new Set([
   "@/data/mock/legacyQuestionAdapter",
 ]);
 const LAYERS = ["domain", "contracts", "gameplay", "view-models", "legacy"];
-const FORBIDDEN_PROJECT_AREAS = ["data", "lib", "features", "components", "app"];
+const FORBIDDEN_PROJECT_AREAS = [
+  "application",
+  "app",
+  "components",
+  "data",
+  "features",
+  "infrastructure",
+  "lib",
+  "server",
+  "test-utils",
+];
 const ALLOWED_TYPE_DEPENDENCIES = {
   domain: ["domain"],
   contracts: ["contracts", "domain", "question"],
@@ -123,6 +133,87 @@ for (const file of mockFiles) {
   }
 }
 
+const PRODUCTION_LAYERS = [
+  "application",
+  "app",
+  "components",
+  "features",
+  "infrastructure",
+  "lib",
+  "server",
+];
+const productionFiles = (
+  await Promise.all(
+    PRODUCTION_LAYERS.map((layer) => collectTypeScriptFiles(path.join(process.cwd(), layer))),
+  )
+)
+  .flat()
+  .filter((file) => !/\.(?:test|spec)(?:-utils)?\.(?:ts|tsx)$/.test(path.basename(file)));
+
+function projectArea(specifier) {
+  return specifier.match(/^@\/([^/]+)/)?.[1] ?? null;
+}
+
+for (const file of productionFiles) {
+  const source = await readFile(file, "utf8");
+  const relative = path.relative(process.cwd(), file);
+  const layer = relative.split(path.sep)[0];
+
+  for (const imported of importsIn(source)) {
+    const area = projectArea(imported.specifier);
+
+    if (
+      layer === "application" &&
+      (["app", "components", "data", "features", "infrastructure", "server", "test-utils"].includes(
+        area,
+      ) ||
+        imported.specifier === "server-only")
+    ) {
+      violations.push(`${relative} makes application depend on ${imported.specifier}`);
+    }
+
+    if (layer === "app" && ["data", "infrastructure", "test-utils"].includes(area)) {
+      violations.push(`${relative} bypasses the server facade via ${imported.specifier}`);
+    }
+
+    if (
+      ["components", "features", "lib"].includes(layer) &&
+      ["data", "infrastructure", "server", "test-utils"].includes(area)
+    ) {
+      violations.push(`${relative} crosses a client-safe boundary via ${imported.specifier}`);
+    }
+
+    if (layer === "server" && ["data", "app", "components", "test-utils"].includes(area)) {
+      violations.push(`${relative} bypasses composition boundaries via ${imported.specifier}`);
+    }
+
+    if (
+      layer === "infrastructure" &&
+      area === "data" &&
+      !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`)
+    ) {
+      violations.push(`${relative} imports mock data outside infrastructure/mock`);
+    }
+
+    if (
+      layer === "infrastructure" &&
+      imported.specifier.startsWith("@/data/") &&
+      !imported.specifier.startsWith("@/data/mock/")
+    ) {
+      violations.push(`${relative} imports a legacy data projection ${imported.specifier}`);
+    }
+  }
+}
+
+const serverFacade = path.join(process.cwd(), "server", "data-access.ts");
+const serverFacadeSource = await readFile(serverFacade, "utf8");
+if (!/^import ["']server-only["'];/m.test(serverFacadeSource)) {
+  violations.push("server/data-access.ts is missing the server-only marker");
+}
+if (!/import\s+\{\s*cache\s*\}\s+from\s+["']react["']/.test(serverFacadeSource)) {
+  violations.push("server/data-access.ts does not use React request memoization");
+}
+
 if (violations.length > 0) {
   console.error(
     "Type architecture violations:\n" + violations.map((item) => `- ${item}`).join("\n"),
@@ -130,6 +221,6 @@ if (violations.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    `Type architecture OK (${files.length} type files and ${mockFiles.length} mock files checked).`,
+    `Type architecture OK (${files.length} type files, ${mockFiles.length} mock files and ${productionFiles.length} production files checked).`,
   );
 }

@@ -55,9 +55,9 @@ El superadministrador demo es un jugador con rol global, sin membresía ni inten
 
 `demoRoom`, `demoRooms`, `questionsById`, `questionGroups`, `challengeDefinitions`,
 `demoSeasonScheduledChallenges`, `challenges`, `getChallengeById` y el historial antiguo se
-mantienen como API obsoleta derivada. Páginas y componentes pueden seguir consumiéndola hasta la
-fase 4, pero los fixtures canónicos y el store no pueden importarla; la comprobación arquitectónica
-blinda esa dirección.
+mantienen como API obsoleta derivada para compatibilidad y tests. Ya no tienen consumidores de
+producción. Los generadores legacy exclusivos de pruebas están en `test-utils/legacy`; los fixtures
+canónicos y el store no pueden importarlos.
 
 La integridad se valida sin modificar archivos:
 
@@ -71,9 +71,13 @@ El primer comando comprueba UUID, slugs, autenticación, roles, membresías, inv
 ventanas, cancelaciones, puntos, intentos, respuestas, rankings, historial, round trips y separación
 del contenido público. Incluye escenarios negativos aislados de relaciones y estados temporales.
 
-## Límite de la fase 4
+## Fase 4 cerrada y límite actual
 
-La siguiente fase introducirá consultas asíncronas y una frontera autoritativa. Hasta entonces no
-hay repositorios, Route Handlers, autenticación real, SQL ni Supabase. Como limitación conocida de
-la PoC, las soluciones privadas siguen entrando en el bundle cliente a través de los adaptadores
-legacy; el backend deberá entregar solo contratos públicos y evaluar respuestas en servidor.
+Las rutas de producto acceden al store mediante contratos asíncronos, adaptadores mock y la fachada
+`server/data-access.ts`. Consulta [`data-access.md`](data-access.md) para la composición,
+autorización y DTOs.
+
+Todavía no hay repositorios de persistencia, Route Handlers, autenticación real, SQL ni Supabase.
+Como limitación conocida de la PoC, `PlayableChallengePageModel` sigue llevando las soluciones al
+cliente para puntuar localmente; el backend deberá separar contenido público y evaluación
+autoritativa.

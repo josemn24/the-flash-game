@@ -16,17 +16,9 @@ import {
   FLASH_POP_CHALLENGE_ID,
   FLASH_POP_SECONDARY_CHALLENGE_ID,
   getFlashPopLobbyChallenge,
-  flashPopPlayers,
 } from "@/features/flash-pop/demoSocial";
-import type { PyramidChallenge } from "@/types/game";
+import type { FlashPopLobbyPageModel } from "@/types/view-models";
 import styles from "@/app/flash-pop/FlashPop.module.css";
-
-const players: AvatarData[] = flashPopPlayers.slice(1).map((player) => ({
-  id: player.id,
-  name: player.displayName,
-  initials: player.initials,
-  tone: player.tone,
-}));
 
 function getActionLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["status"]) {
   return status === "available"
@@ -46,15 +38,31 @@ function getStatusLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["st
         : "Nuevo";
 }
 
-export function FlashPopLobby({
-  primaryChallenge,
-  secondaryChallenge,
-}: {
-  primaryChallenge: PyramidChallenge;
-  secondaryChallenge: PyramidChallenge;
-}) {
-  const primaryModel = getFlashPopLobbyChallenge(null, FLASH_POP_CHALLENGE_ID);
-  const secondaryModel = getFlashPopLobbyChallenge(null, FLASH_POP_SECONDARY_CHALLENGE_ID);
+export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
+  const primaryChallenge = model.primary.challenge;
+  const secondaryChallenge = model.secondary.challenge;
+  if (primaryChallenge.mode !== "pyramid" || secondaryChallenge.mode !== "pyramid") return null;
+  const flashPopPlayers = model.primary.socialSnapshot.players;
+  const players: AvatarData[] = flashPopPlayers
+    .filter(({ id }) => id !== model.primary.socialSnapshot.currentPlayer.id)
+    .map((player) => ({
+      id: player.id,
+      name: player.displayName,
+      initials: player.initials,
+      tone: player.tone,
+    }));
+  const primaryModel = getFlashPopLobbyChallenge(
+    null,
+    FLASH_POP_CHALLENGE_ID,
+    model.primary.socialSnapshot,
+    primaryChallenge,
+  );
+  const secondaryModel = getFlashPopLobbyChallenge(
+    null,
+    FLASH_POP_SECONDARY_CHALLENGE_ID,
+    model.secondary.socialSnapshot,
+    secondaryChallenge,
+  );
 
   const actionLabel = getActionLabel(primaryModel.status);
   const progress = Math.min(
@@ -74,9 +82,14 @@ export function FlashPopLobby({
         </div>
 
         <div className={styles.identity}>
-          <Avatar name="Javi Moreno" initials="JM" tone="social" size="md" />
+          <Avatar
+            name={model.currentViewer.name}
+            src={model.currentViewer.avatarSrc}
+            tone="social"
+            size="md"
+          />
           <span className={styles.identityCopy}>
-            <strong>Hola, Javi</strong>
+            <strong>Hola, {model.currentViewer.name}</strong>
             <small>Tabarnia · Día 7</small>
           </span>
         </div>
@@ -171,7 +184,7 @@ export function FlashPopLobby({
                 <h2>
                   {primaryModel.playerRank
                     ? `Vas ${primaryModel.playerRank}.º de ${primaryModel.totalPlayers}`
-                    : "Vas 4.º de 8"}
+                    : `Aún sin posición · ${primaryModel.totalPlayers} jugadores`}
                 </h2>
               </div>
               <span className={styles.seasonValue}>

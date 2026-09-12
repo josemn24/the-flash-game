@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
-import { buildRoomMemberDetailModel } from "@/lib/roomMemberDetail";
+import { buildRoomMemberDetailModel } from "@/test-utils/legacy/roomMemberDetail";
 import { FlashPopRoomMemberDetail } from "./FlashPopRoomMemberDetail.client";
 
 const now = new Date("2026-09-01T12:00:00.000Z");

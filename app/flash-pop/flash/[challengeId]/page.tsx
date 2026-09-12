@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopFlashGame } from "@/components/game";
-import { getChallengeById } from "@/data/challenges";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
+import { getPlayableChallengePageModel } from "@/server/data-access";
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return [{ challengeId: FLASH_POP_FLASH_PILOT_ID }];
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -16,9 +12,12 @@ export async function generateMetadata({
   params: Promise<{ challengeId: string }>;
 }): Promise<Metadata> {
   const { challengeId } = await params;
-  const challenge = getChallengeById(challengeId);
+  const model = await getPlayableChallengePageModel(challengeId);
   return {
-    title: challenge?.mode === "flash" ? `${challenge.title} — Flash Pop` : "Flash Pop — Preview",
+    title:
+      model?.challenge.mode === "flash"
+        ? `${model.challenge.title} — Flash Pop`
+        : "Flash Pop — Preview",
     description: "Preview del sistema Flash Pop aplicado al desafío Flash clásico.",
   };
 }
@@ -29,8 +28,7 @@ export default async function FlashPopFlashPage({
   params: Promise<{ challengeId: string }>;
 }) {
   const { challengeId } = await params;
-  const challenge = getChallengeById(challengeId);
-  if (challengeId !== FLASH_POP_FLASH_PILOT_ID || !challenge || challenge.mode !== "flash")
-    notFound();
-  return <FlashPopFlashGame challenge={challenge} />;
+  const model = await getPlayableChallengePageModel(challengeId);
+  if (challengeId !== FLASH_POP_FLASH_PILOT_ID || model?.challenge.mode !== "flash") notFound();
+  return <FlashPopFlashGame challenge={model.challenge} />;
 }

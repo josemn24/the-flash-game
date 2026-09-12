@@ -16,8 +16,8 @@ import {
   TrophyIcon,
 } from "@/components/ui";
 import { formatDailyCountdown, getDailyCountdownSeconds } from "@/lib/dailyCountdown";
-import { applyRoomChallengeResult } from "@/lib/roomDetail";
-import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
+import { applyRoomChallengeResult } from "@/features/rooms/localResults";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import type { RoomDetailModel } from "@/types/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
@@ -187,7 +187,11 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         className={styles.statPill}
         aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalPoints} Flash Points, posición ${visibleModel.currentUser.roomRank}`}
       >
-        <StatItem label="Flash Points" value={visibleModel.currentUser.totalPoints} icon={<BoltIcon />} />
+        <StatItem
+          label="Flash Points"
+          value={visibleModel.currentUser.totalPoints}
+          icon={<BoltIcon />}
+        />
         <StatItem
           label="Posición"
           value={`#${visibleModel.currentUser.roomRank}`}

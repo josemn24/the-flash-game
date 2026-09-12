@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
-import { getDailyChallenge, getDailyChallengeDateKey } from "@/lib/dailyChallenge";
+import { getDailyChallenge, getDailyChallengeDateKey } from "@/test-utils/legacy/dailyChallenge";
 import type { Room } from "@/types/game";
 
 const midday = new Date("2026-09-06T12:00:00.000Z");

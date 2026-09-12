@@ -20,6 +20,7 @@ import type {
   GameRoomContext,
   SurvivalChallenge,
 } from "@/types/game";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";
 
@@ -105,10 +106,12 @@ export function FlashPopSurvivalGame({
   challenge,
   roomContext,
   onComplete,
+  socialSnapshot,
 }: {
   challenge: SurvivalChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
+  socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useSurvivalSession(scoredChallenge);
@@ -116,7 +119,9 @@ export function FlashPopSurvivalGame({
   const finished = session.phase === "results" || session.phase === "review";
   const summary = finished ? toSummary(scoredChallenge, session) : null;
   const result = summary
-    ? getFlashPopSurvivalResult(summary, { totalTimeLimit: totalTimeLimit(scoredChallenge) })
+    ? getFlashPopSurvivalResult(summary, socialSnapshot, {
+        totalTimeLimit: totalTimeLimit(scoredChallenge),
+      })
     : null;
 
   useChallengeCompletionReporter(

@@ -1,9 +1,6 @@
 import { compareAlphabetResults } from "@/features/alphabet/alphabetGame";
-import {
-  canonicalCurrentPlayer,
-  getCanonicalSocialRows,
-} from "@/features/flash-pop/canonicalSocial";
 import type { FlashPopRankRow } from "@/features/flash-pop/demoSocial";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 export type FlashPopAlphabetSummary = {
   challengeId: string;
@@ -43,17 +40,18 @@ export function calculateAlphabetSeasonXp(
 
 export function getFlashPopAlphabetResult(
   summary: FlashPopAlphabetSummary,
+  socialSnapshot: FlashPopSocialSnapshot,
   options: { timeLimit?: number; seasonXpCurrent?: number; nextLevelAt?: number } = {},
 ): FlashPopAlphabetResult {
   const rows = [
     {
-      player: canonicalCurrentPlayer,
+      player: socialSnapshot.currentPlayer,
       correctAnswers: summary.correctAnswers,
       score: summary.score,
       lastCorrectAt: summary.lastCorrectAt,
       elapsedTime: summary.elapsedTime,
     },
-    ...getCanonicalSocialRows(summary.challengeId).map((row) => ({
+    ...socialSnapshot.peers.map((row) => ({
       player: row.player,
       correctAnswers: row.correctAnswers,
       score: row.score,
@@ -68,7 +66,7 @@ export function getFlashPopAlphabetResult(
       rank: index + 1,
       timeUsed: row.elapsedTime,
     }));
-  const current = rows.find((row) => row.player.id === canonicalCurrentPlayer.id);
+  const current = rows.find((row) => row.player.id === socialSnapshot.currentPlayer.id);
   const nextLevelAt = options.nextLevelAt ?? 1000;
   const earned = calculateAlphabetSeasonXp(summary, options.timeLimit ?? summary.elapsedTime);
 

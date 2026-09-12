@@ -1,52 +1,40 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomHistoryDetail } from "@/components/game";
-import { demoRooms } from "@/data/demoRoom";
-import { getRoomHistoryEntry, getRoomHistory } from "@/data/roomHistory";
-import { getRoomById } from "@/lib/roomDetail";
-import { getHistoryLeaderboard } from "@/lib/roomRankings";
+import { getRoomHistoryDetailPageModel } from "@/server/data-access";
 
 type Props = {
   params: Promise<{ roomId: string; challengeId: string }>;
 };
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return demoRooms.flatMap((room) =>
-    getRoomHistory(room.id).map((entry) => ({ roomId: room.id, challengeId: entry.challengeId })),
-  );
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { roomId, challengeId } = await params;
-  const room = getRoomById(roomId);
-  const entry = room ? getRoomHistoryEntry(room.id, challengeId) : undefined;
+  const model = await getRoomHistoryDetailPageModel(roomId, challengeId);
 
   return {
-    title:
-      room && entry
-        ? `Ranking de ${entry.title} — ${room.title} — Flash Pop`
-        : "Ranking — Flash Pop",
+    title: model
+      ? `Ranking de ${model.entry.title} — ${model.roomTitle} — Flash Pop`
+      : "Ranking — Flash Pop",
   };
 }
 
 export default async function RoomHistoryDetailPage({ params }: Props) {
   const { roomId, challengeId } = await params;
-  const room = getRoomById(roomId);
-  const entry = room ? getRoomHistoryEntry(room.id, challengeId) : undefined;
+  const model = await getRoomHistoryDetailPageModel(roomId, challengeId);
 
-  if (!room || !entry) {
+  if (!model) {
     notFound();
   }
 
   return (
     <FlashPopRoomHistoryDetail
-      roomId={room.id}
-      roomTitle={room.title}
-      entry={entry}
-      ranking={getHistoryLeaderboard(room, entry)}
-      currentUserId={room.currentUserId}
+      roomId={model.roomId}
+      roomTitle={model.roomTitle}
+      entry={model.entry}
+      ranking={model.ranking}
+      currentUserId={model.currentUserId}
     />
   );
 }

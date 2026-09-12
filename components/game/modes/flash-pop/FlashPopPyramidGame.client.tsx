@@ -25,6 +25,7 @@ import type {
   PyramidLevel,
   AnswerResult,
 } from "@/types/game";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import styles from "./FlashPopPyramidGame.module.css";
 
 function formatTime(seconds: number) {
@@ -390,10 +391,12 @@ export function FlashPopPyramidGame({
   challenge,
   roomContext,
   onComplete,
+  socialSnapshot,
 }: {
   challenge: PyramidChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
+  socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
   const session = usePyramidSession(scoredChallenge, {
@@ -430,7 +433,7 @@ export function FlashPopPyramidGame({
   }
 
   const result = session.summary
-    ? getFlashPopResult(session.summary, {
+    ? getFlashPopResult(session.summary, socialSnapshot, {
         levelCount: challenge.levels.length,
         totalTimeLimit: getChallengeTimeLimit(challenge),
       })

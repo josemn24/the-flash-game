@@ -6,16 +6,29 @@ import {
   getFlashPopResult,
   isFlashPopPreviewChallenge,
 } from "@/features/flash-pop/demoSocial";
+import { makeSocialSnapshot } from "@/features/flash-pop/socialSnapshot.test-utils";
+
+const challengeContent = { title: "La Pirámide", subtitle: "Cumbre lógica" };
 
 describe("Flash Pop demo social adapter", () => {
   it("derives lobby status from the canonical attempt state", () => {
     expect(getFlashPopAttemptStatus(null)).toBe("available");
     expect(getFlashPopAttemptStatus({ status: "in-progress" })).toBe("inProgress");
     expect(getFlashPopAttemptStatus({ status: "completed" })).toBe("completed");
-    expect(getFlashPopLobbyChallenge(null).status).toBe("available");
-    expect(getFlashPopLobbyChallenge(null, "tabarnia-challenge-06").title).toContain(
-      "Biblia y religiones abrahámicas",
-    );
+    expect(
+      getFlashPopLobbyChallenge(
+        null,
+        "tabarnia-challenge-05",
+        makeSocialSnapshot(),
+        challengeContent,
+      ).status,
+    ).toBe("available");
+    expect(
+      getFlashPopLobbyChallenge(null, "tabarnia-challenge-06", makeSocialSnapshot(), {
+        title: "Biblia y religiones abrahámicas",
+        subtitle: "Conexiones",
+      }).title,
+    ).toContain("Biblia y religiones abrahámicas");
     expect(isFlashPopPreviewChallenge("tabarnia-challenge-05")).toBe(true);
     expect(isFlashPopPreviewChallenge("tabarnia-challenge-06")).toBe(true);
     expect(isFlashPopPreviewChallenge("another-challenge")).toBe(false);
@@ -28,14 +41,17 @@ describe("Flash Pop demo social adapter", () => {
   });
 
   it("ranks the player by score and then time", () => {
-    const result = getFlashPopResult({
-      challengeId: "tabarnia-challenge-05",
-      levelsCleared: 7,
-      score: 100,
-      timeUsed: 0,
-      outcome: "summit",
-      completedAt: 100,
-    });
+    const result = getFlashPopResult(
+      {
+        challengeId: "tabarnia-challenge-05",
+        levelsCleared: 7,
+        score: 100,
+        timeUsed: 0,
+        outcome: "summit",
+        completedAt: 100,
+      },
+      makeSocialSnapshot(),
+    );
 
     expect(result.playerRank).toBe(1);
     expect(result.levelsCleared).toBe(7);
@@ -55,6 +71,7 @@ describe("Flash Pop demo social adapter", () => {
         outcome: "failed",
         completedAt: 100,
       },
+      makeSocialSnapshot(0),
       { levelCount: 3, totalTimeLimit: 30 },
     );
 
@@ -64,34 +81,46 @@ describe("Flash Pop demo social adapter", () => {
   });
 
   it("shows an unsuccessful attempt as not completed", () => {
-    const result = getFlashPopResult({
-      challengeId: "tabarnia-challenge-05",
-      levelsCleared: 0,
-      score: 0,
-      timeUsed: 12,
-      outcome: "failed",
-      completedAt: 100,
-    });
+    const result = getFlashPopResult(
+      {
+        challengeId: "tabarnia-challenge-05",
+        levelsCleared: 0,
+        score: 0,
+        timeUsed: 12,
+        outcome: "failed",
+        completedAt: 100,
+      },
+      makeSocialSnapshot(),
+    );
 
     expect(result.playerRank).toBe(4);
     expect(result.seasonXpEarned).toBe(59);
     expect(
-      getFlashPopLobbyChallenge({
-        status: "completed",
-        summary: {
-          challengeId: "tabarnia-challenge-05",
-          levelsCleared: 0,
-          score: 0,
-          timeUsed: 12,
-          outcome: "failed",
-          completedAt: 100,
+      getFlashPopLobbyChallenge(
+        {
+          status: "completed",
+          summary: {
+            challengeId: "tabarnia-challenge-05",
+            levelsCleared: 0,
+            score: 0,
+            timeUsed: 12,
+            outcome: "failed",
+            completedAt: 100,
+          },
         },
-      }).status,
+        "tabarnia-challenge-05",
+        makeSocialSnapshot(),
+        challengeContent,
+      ).status,
     ).toBe("notCompleted");
   });
 
   it("uses active Tabarnia memberships and leaves challenge 06 activity empty", () => {
-    const lobby = getFlashPopLobbyChallenge(null, "tabarnia-challenge-06");
+    const challenge06Snapshot = { ...makeSocialSnapshot(4), peers: [] };
+    const lobby = getFlashPopLobbyChallenge(null, "tabarnia-challenge-06", challenge06Snapshot, {
+      title: "Biblia y religiones abrahámicas",
+      subtitle: "Conexiones",
+    });
     expect(lobby.participants.map(({ displayName }) => displayName)).toEqual([
       "Dark",
       "Jackobo",

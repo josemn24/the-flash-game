@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 import { FlashPopRoomRanking } from "@/components/game/modes/flash-pop/FlashPopRoomRanking";
 import { demoRoom } from "@/data/demoRoom";
 import { getRoomLeaderboard } from "@/lib/roomRankings";
-import { generateMetadata, generateStaticParams } from "./page";
+import { dynamic, generateMetadata } from "./page";
 
 describe("room ranking route", () => {
   it("exposes Tabarnia and renders accumulated points", async () => {
-    expect(generateStaticParams()).toEqual([{ roomId: "tabarnia-room" }]);
+    expect(dynamic).toBe("force-dynamic");
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({

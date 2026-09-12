@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
-import { buildRoomCardModel, ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { buildRoomCardModel, ROOM_ART_FALLBACK } from "@/test-utils/legacy/roomCard";
 
 const now = new Date("2026-09-06T12:00:00.000Z");
 

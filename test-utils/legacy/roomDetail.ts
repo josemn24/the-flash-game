@@ -1,12 +1,12 @@
 import { getChallengeDefinitionById } from "@/data/challengeDefinitions";
 import { demoRooms } from "@/data/demoRoom";
-import { getDailyChallenge } from "@/lib/dailyChallenge";
+import { getDailyChallenge } from "@/test-utils/legacy/dailyChallenge";
 import {
   getChallengeDisplayTitle,
   getChallengeFormatLabel,
   getChallengeImage,
   getChallengeQuestionCount,
-} from "@/lib/roomCard";
+} from "@/test-utils/legacy/roomCard";
 import { getDailyLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
 import type { ChallengeCompletion, Room, RoomDetailModel } from "@/types/game";
 

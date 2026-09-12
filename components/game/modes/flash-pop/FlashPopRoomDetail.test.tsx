@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { demoRoom } from "@/data/demoRoom";
-import { buildRoomDetailModel } from "@/lib/roomDetail";
+import { buildRoomDetailModel } from "@/test-utils/legacy/roomDetail";
 import { FlashPopRoomDetail } from "@/components/game/modes/flash-pop/FlashPopRoomDetail.client";
 
 vi.mock("next/navigation", () => ({
