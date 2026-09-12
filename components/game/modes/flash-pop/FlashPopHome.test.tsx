@@ -52,7 +52,7 @@ describe("FlashPopHome", () => {
     expect(markup).toContain('aria-expanded="false"');
     expect(markup).toContain('aria-haspopup="dialog"');
     expect(markup).toContain('aria-controls="flash-pop-profile-dialog"');
-    expect(markup).toContain('aria-label="Configuración"');
+    expect(markup).not.toContain('aria-label="Configuración"');
     expect(markup).toContain("Tu perfil");
     expect(markup).toContain("Nombre visible");
     expect(markup).toContain("Cambiar imagen");

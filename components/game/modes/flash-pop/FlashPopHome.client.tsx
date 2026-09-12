@@ -12,7 +12,6 @@ import {
   Canvas,
   Chip,
   IconButton,
-  SettingsIcon,
   TrophyIcon,
 } from "@/components/ui";
 import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
@@ -94,9 +93,6 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
           >
             <Avatar name={profile.name} src={profile.avatarSrc} tone="social" size="sm" />
           </IconButton>
-          <IconButton label="Configuración">
-            <SettingsIcon />
-          </IconButton>
         </nav>
       </header>
 
@@ -155,7 +151,7 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
                       <div className={styles.roomTopline}>
                         <div className={styles.roomTitles}>
                           <h2>{room.title}</h2>
-                          <p>{challenge?.title ?? "Sin reto hoy"}</p>
+                          <p>{challenge?.formatLabel ?? "Sin reto hoy"}</p>
                         </div>
                         <span className={styles.roomArrow} aria-hidden="true">
                           <ArrowIcon />
