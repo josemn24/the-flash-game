@@ -1,18 +1,14 @@
 "use client";
 
-import { ArrowIcon, HeartIcon, RotateIcon } from "@/components/ui";
-import { Avatar, Button, ButtonLink, Card, Chip, GameHeader } from "@/components/ui";
+import { CheckIcon, CrossIcon, HeartIcon } from "@/components/ui";
+import { ChallengeResultScreen, ResultCallout, ResultRanking } from "@/components/game/shared";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
+import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import type { FlashPopSurvivalResult } from "@/features/flash-pop/survivalSocial";
 import type { AnswerResult, GameRoomContext, SurvivalChallenge } from "@/types/game";
-import styles from "./FlashPopSurvivalResult.module.css";
-
-function formatTime(seconds: number) {
-  const rounded = Math.max(0, Math.round(seconds));
-  if (rounded < 60) return `${rounded} s`;
-  const minutes = Math.floor(rounded / 60);
-  const rest = rounded % 60;
-  return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
-}
 
 export function FlashPopSurvivalResult({
   challenge,
@@ -41,102 +37,76 @@ export function FlashPopSurvivalResult({
     (item) => item.status === "incorrect" || item.status === "unanswered",
   ).length;
   const survived = !eliminated && result.questionsReached >= challenge.questions.length;
+  const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
 
   return (
-    <div className={styles.stage}>
-      <GameHeader title="Supervivencia" />
-      <Card as="section" className={styles.card} aria-labelledby="survival-result-title">
-        <Chip variant={survived ? "reward" : "data"}>
-          {survived ? "Supervivencia completada" : "Partida terminada"}
-        </Chip>
-        <p className={styles.challenge}>{challenge.title}</p>
-        <h1 id="survival-result-title">
-          {survived ? "Has sobrevivido" : eliminated ? "Sin vidas" : "Buen intento"}
-        </h1>
-        <p className={styles.subtitle}>
-          {survived
-            ? `Has completado los ${challenge.questions.length} retos.`
-            : `Has llegado al reto ${result.questionsReached} de ${challenge.questions.length}.`}
-        </p>
-
-        <div className={styles.score} aria-label={`${result.score} puntos`}>
-          {result.score}
-        </div>
-        <p className={styles.scoreLabel}>puntos de partida</p>
-
-        <div className={styles.stats} aria-label="Resumen de la partida">
-          <div>
-            <strong>
-              {result.questionsReached} / {challenge.questions.length}
-            </strong>
-            <span>retos alcanzados</span>
-          </div>
-          <div>
-            <strong className={styles.livesValue}>
-              <HeartIcon aria-hidden="true" /> {result.livesRemaining}
-            </strong>
-            <span>vidas restantes</span>
-          </div>
-          <div>
-            <strong>{formatTime(totalTime)}</strong>
-            <span>tiempo total</span>
-          </div>
-          {!roomContext ? (
-            <div>
-              <strong>{result.playerRank}.º</strong>
-              <span>posición · {result.totalPlayers}</span>
-            </div>
-          ) : null}
-        </div>
-
-        <p className={styles.breakdown}>
-          {correct} aciertos · {partial} parciales · {mistakes} vidas consumidas
-        </p>
-        <p className={styles.xpCallout}>
-          +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
-        </p>
-
-        {roomContext ? (
-          <p className={styles.xpCallout}>
-            Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
-            volver.
-          </p>
-        ) : (
-          <div className={styles.ranking} aria-label="Clasificación demo">
-            <h2>
-              Tu grupo <span>· Demo</span>
-            </h2>
-            {result.peers.map((row) => (
-              <div
-                className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
-                key={row.player.id}
-              >
-                <span className={styles.position}>{row.rank}.</span>
-                <Avatar
-                  name={row.player.displayName}
-                  initials={row.player.initials}
-                  tone={row.player.tone}
-                  size="sm"
-                />
-                <span className={styles.name}>
-                  {row.player.id === "javi" ? "Tú" : row.player.displayName}
-                </span>
-                <span className={styles.rowScore}>{row.score} pts</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <ButtonLink href={returnTo} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
-          {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
-        </ButtonLink>
-        <Button variant="secondary" fullWidth onClick={onReview}>
-          Revisar respuestas
-        </Button>
-        <Button variant="secondary" fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
-          Jugar de nuevo
-        </Button>
-      </Card>
-    </div>
+    <ChallengeResultScreen
+      model={{
+        gameTitle: "Supervivencia",
+        statusLabel: survived ? "Completado" : "Partida terminada",
+        eyebrow: "Supervivencia: España",
+        title: survived ? "Has sobrevivido" : eliminated ? "Sin vidas" : "Buen intento",
+        subtitle: survived
+          ? `Has completado los ${challenge.questions.length} retos.`
+          : `Has llegado al reto ${result.questionsReached} de ${challenge.questions.length}.`,
+        score: result.score,
+        maxScore: CHALLENGE_MAX_SCORE,
+        accuracy,
+        totalTime,
+        metrics: [
+          {
+            icon: <CheckIcon />,
+            label: "Retos alcanzados",
+            value: `${result.questionsReached} / ${challenge.questions.length}`,
+            tone: "success",
+          },
+          {
+            icon: <CrossIcon />,
+            label: "Vidas consumidas",
+            value: mistakes,
+            tone: "danger",
+          },
+          {
+            icon: <HeartIcon />,
+            label: "Vidas restantes",
+            value: result.livesRemaining,
+            tone: "social",
+          },
+        ],
+        supplementalContent: (
+          <>
+            <ResultCallout>
+              +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
+            </ResultCallout>
+            <ResultCallout>
+              {correct} aciertos · {partial} parciales · {mistakes} vidas consumidas
+            </ResultCallout>
+            {roomContext ? (
+              <ResultCallout>
+                Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
+                volver.
+              </ResultCallout>
+            ) : (
+              <ResultRanking
+                meta="Demo"
+                rows={result.peers.map((row) => ({
+                  id: row.player.id,
+                  rank: row.rank,
+                  name: row.player.id === "javi" ? "Tú" : row.player.displayName,
+                  initials: row.player.initials,
+                  tone: row.player.tone,
+                  score: `${row.score} pts`,
+                  current: row.player.id === "javi",
+                }))}
+              />
+            )}
+          </>
+        ),
+      }}
+      onReview={onReview}
+      onReplay={onReplay}
+      returnTo={returnTo}
+      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+    />
   );
 }

@@ -1,4 +1,16 @@
 export { ChallengeIntro } from "./ChallengeIntro";
+export {
+  ChallengeResultScreen,
+  ResultCallout,
+  ResultRanking,
+} from "./ChallengeResultScreen/ChallengeResultScreen";
+export type {
+  ChallengeResultModel,
+  ChallengeResultScreenProps,
+  ResultMetric,
+  ResultRankingProps,
+  ResultRankingRow,
+} from "./ChallengeResultScreen/ChallengeResultScreen";
 export { ProgressBar } from "./ProgressBar";
 export { QuestionScreen } from "./QuestionScreen";
 export { QuestionTransition } from "./QuestionTransition";

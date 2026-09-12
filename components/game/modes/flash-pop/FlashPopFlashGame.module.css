@@ -25,42 +25,14 @@
     gap: var(--space-6);
   }
 
-  .resultCard {
-    border-radius: 28px;
-    padding: clamp(24px, 4vw, 38px);
-  }
-
-  .questionCard h1,
-  .resultCard h1 {
+  .questionCard h1 {
+    max-width: 720px;
+    margin: 0;
     font-family: var(--type-display);
+    font-size: clamp(24px, 6.4vw, 32px);
     font-weight: var(--type-display-strong-weight);
     letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.98;
-  }
-
-  .eyebrow {
-    margin: 22px 0 0;
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .scoreTrack {
-    height: 8px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: var(--color-surface-soft);
-  }
-
-  .scoreTrack span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--color-brand);
-    transition: width 300ms ease;
   }
 
   .questionIndicator {
@@ -103,12 +75,6 @@
     text-transform: uppercase;
   }
 
-  .questionCard h1 {
-    max-width: 720px;
-    margin: 0;
-    font-size: clamp(24px, 6.4vw, 32px);
-  }
-
   .questionMedia {
     margin: 24px auto 4px;
     overflow: hidden;
@@ -121,170 +87,9 @@
     margin-top: 28px;
   }
 
-  .resultLayout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
-    gap: 18px;
-    align-items: start;
-    margin-top: 34px;
-  }
-
-  .resultCard h1 {
-    margin: 12px 0 0;
-    font-size: clamp(38px, 5vw, 58px);
-  }
-
-  .scoreDisplay {
-    display: flex;
-    align-items: baseline;
-    gap: 7px;
-    margin: 30px 0 17px;
-  }
-
-  .scoreDisplay strong {
-    font-family: var(--type-display);
-    font-size: clamp(70px, 10vw, 108px);
-    font-weight: var(--type-display-strong-weight);
-    letter-spacing: -0.08em;
-    line-height: 0.8;
-  }
-
-  .scoreDisplay span {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-  }
-
-  .resultActions {
-    display: grid;
-    gap: 10px;
-    margin-top: 28px;
-  }
-
-  .resultStats {
-    display: grid;
-    gap: 12px;
-  }
-
-  .accuracyCard {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    min-width: 0;
-    min-height: 104px;
-    padding: 14px 16px;
-  }
-
-  .accuracyCard .eyebrow {
-    margin-top: 0;
-  }
-
-  .accuracyCard strong {
-    display: block;
-    margin-top: 8px;
-    font-family: var(--type-display);
-    font-size: 34px;
-  }
-
-  .summaryStats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .accuracyRing {
-    position: relative;
-    display: grid;
-    width: 56px;
-    height: 56px;
-    place-items: center;
-    flex: 0 0 auto;
-    border-radius: 50%;
-    background: conic-gradient(var(--color-social) var(--accuracy), var(--color-surface-soft) 0);
-  }
-
-  .accuracyRing::before {
-    position: absolute;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: var(--color-surface);
-    content: "";
-  }
-
-  .answerStats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .answerStats .statCard,
-  .summaryStats .statCard {
-    min-width: 0;
-    min-height: 104px;
-    padding: 14px;
-  }
-
-  .statCard {
-    display: flex;
-    min-height: 112px;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 18px;
-    padding: 16px;
-  }
-
-  .statHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .statHeader span {
-    color: var(--color-ink-muted);
-    font-size: 10px;
-    font-weight: 800;
-  }
-
-  .statCard svg {
-    width: 19px;
-    color: var(--color-ink-muted);
-  }
-  .statCard strong {
-    font-family: var(--type-display);
-    font-size: 25px;
-  }
-  .statSuccess svg {
-    color: var(--color-success);
-  }
-  .statDanger svg {
-    color: #c83d55;
-  }
-
   @media (max-width: 700px) {
     .stage {
       min-height: calc(100dvh - 32px);
-    }
-    .resultLayout {
-      grid-template-columns: 1fr;
-      margin-top: 12px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .summaryStats,
-    .answerStats {
-      gap: 7px;
-    }
-    .answerStats .statCard,
-    .summaryStats .statCard {
-      padding: 14px 12px;
-    }
-    .reviewTitle small {
-      max-width: 150px;
     }
   }
 
@@ -295,12 +100,6 @@
 
     .questionIndicator {
       display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .scoreTrack span {
-      transition: none;
     }
   }
 }

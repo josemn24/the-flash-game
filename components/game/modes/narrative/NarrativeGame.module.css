@@ -1,5 +1,4 @@
 @layer app-formats {
-
   .gameContent {
     position: relative;
     z-index: 2;
@@ -192,8 +191,7 @@
     padding: 3rem 0 5rem;
   }
 
-  .introCopy h1,
-  .resultScore h1 {
+  .introCopy h1 {
     max-width: 13ch;
     margin-top: 0.75rem;
     font-size: clamp(2.8rem, 8vw, 6.7rem);
@@ -217,8 +215,7 @@
     line-height: 1.75;
   }
 
-  .introPanel,
-  .resultDetails {
+  .introPanel {
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     background: var(--color-surface);
@@ -246,8 +243,7 @@
     font-weight: 950;
   }
 
-  .introStats span,
-  .resultStats span {
+  .introStats span {
     color: rgb(255 255 255 / 0.4);
     font-family: var(--type-mono);
     font-size: 0.58rem;
@@ -361,78 +357,6 @@
     text-transform: uppercase;
   }
 
-  .resultGrid {
-    display: grid;
-    min-height: calc(100dvh - 6rem);
-    align-items: center;
-    gap: 2rem;
-    padding: 3rem 0 5rem;
-  }
-
-  .resultScore h1 {
-    max-width: 12ch;
-    font-size: clamp(2.5rem, 6vw, 4.8rem);
-  }
-
-  .resultReaction {
-    margin: 1rem 0 1.6rem;
-    border-left: 2px solid rgb(143 231 234 / 0.62);
-    padding-left: 1rem;
-  }
-
-  .resultReaction .sceneParagraph,
-  .resultReaction .sceneDialogue {
-    font-size: 1rem;
-    line-height: 1.65;
-  }
-
-  .scoreValue {
-    display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
-    margin-top: 2rem;
-  }
-
-  .scoreValue strong {
-    color: #8fe7ea;
-    font-family: var(--type-mono);
-    font-size: clamp(4.3rem, 11vw, 7rem);
-    line-height: 1;
-  }
-
-  .scoreValue span {
-    color: rgb(255 255 255 / 0.4);
-    font-weight: 800;
-  }
-
-  .resultActions {
-    display: grid;
-    max-width: 22rem;
-    gap: 0.7rem;
-    margin-top: 2rem;
-  }
-
-  .resultStats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
-  }
-
-  .resultStats div {
-    display: grid;
-    min-height: 6.5rem;
-    place-items: center;
-    align-content: center;
-    gap: 0.25rem;
-    border: 1px solid rgb(255 255 255 / 0.08);
-    border-radius: 0.9rem;
-    background: rgb(255 255 255 / 0.035);
-  }
-
-  .resultStats strong {
-    font-size: 1.45rem;
-  }
-
   .answerStates {
     display: grid;
     gap: 0.45rem;
@@ -464,44 +388,18 @@
     color: var(--color-social);
   }
 
-  .timeSummary span {
-    color: rgb(255 255 255 / 0.36);
-    font-family: var(--type-mono);
-    font-size: 0.58rem;
-    font-weight: 850;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .timeSummary strong {
-    font-family: var(--type-mono);
-  }
-
-  .resultNotice {
-    margin-top: 1rem;
-    color: rgb(255 255 255 / 0.38);
-    font-size: 0.75rem;
-    line-height: 1.55;
-  }
-
   @media (min-width: 800px) {
     .fullScreen {
       padding: 1.75rem 2rem;
     }
 
-    .introContent,
-    .resultGrid {
+    .introContent {
       grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 0.75fr);
       gap: 4rem;
     }
 
-    .introPanel,
-    .resultDetails {
+    .introPanel {
       padding: 1.5rem;
-    }
-
-    .resultStats {
-      grid-template-columns: repeat(4, 1fr);
     }
   }
 
@@ -622,10 +520,7 @@
   .pageIdentity small,
   .questionContext,
   .recordTransition p,
-  .description,
-  .resultNotice,
-  .scoreValue span,
-  .timeSummary span {
+  .description {
     color: var(--color-ink-muted);
   }
   .storyFolio,
@@ -652,7 +547,6 @@
   .storyArticle h1,
   .questionArticle h1,
   .introCopy h1,
-  .resultScore h1,
   .epilogueTitle {
     color: var(--color-ink);
   }
@@ -679,9 +573,7 @@
   .sceneDialogue [aria-hidden="true"],
   .eyebrow,
   .subtitle,
-  .recordTransition svg,
-  .scoreValue strong,
-  .resultLead strong {
+  .recordTransition svg {
     color: var(--color-social);
   }
   .tapeSignal,
@@ -726,7 +618,6 @@
     box-shadow: var(--shadow-control);
   }
   .introStats,
-  .resultStats div,
   .answerStates li {
     border-radius: 10px;
     border-color: var(--color-border);
@@ -737,12 +628,10 @@
     border-color: var(--color-border);
   }
   .introStats strong,
-  .resultStats strong,
   .answerStates li {
     color: var(--color-ink);
   }
   .introStats span,
-  .resultStats span,
   .answerStates span {
     color: var(--color-ink-faint);
   }
@@ -771,15 +660,6 @@
   .answerStates li[data-status="incorrect"] strong,
   .answerStates li[data-status="unanswered"] strong {
     color: var(--state-error);
-  }
-  .timeSummary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.8rem;
-    border-top: 1px solid rgb(255 255 255 / 0.08);
-    padding-top: 1rem;
-    border-top-color: var(--color-border);
   }
   .epilogueScreen {
     display: grid;
@@ -1362,10 +1242,7 @@
   }
   .storyFolio,
   .storyCaption,
-  .questionContext,
-  .scoreValue span,
-  .timeSummary span,
-  .resultNotice {
+  .questionContext {
     color: var(--color-ink-muted);
   }
 

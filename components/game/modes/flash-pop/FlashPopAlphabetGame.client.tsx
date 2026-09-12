@@ -3,8 +3,8 @@
 import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { ArrowIcon, CheckIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
-import { Avatar, Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
+import { ArrowIcon, CheckIcon, ClockIcon, CrossIcon, RotateIcon } from "@/components/ui";
+import { Button, Card, Canvas, GameHeader, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
 import { buildAlphabetAnswerReviews } from "@/features/alphabet/alphabetReview";
@@ -13,9 +13,17 @@ import {
   type FlashPopAlphabetSummary,
 } from "@/features/flash-pop/alphabetSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { calculateResultAccuracy } from "@/features/game/resultSummary";
+import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { ReviewAnswerPanel, StartCountdown } from "@/components/game/shared";
+import {
+  ChallengeResultScreen,
+  ResultCallout,
+  ResultRanking,
+  ReviewAnswerPanel,
+  StartCountdown,
+} from "@/components/game/shared";
 import type {
   AlphabetChallenge,
   AnswerStatus,
@@ -251,97 +259,77 @@ function Results({
 }) {
   const summary = summaryFor(challenge, session);
   const result = getFlashPopAlphabetResult(summary, { timeLimit: challenge.timeLimit });
+  const accuracy = calculateResultAccuracy([
+    ...Array.from({ length: session.correctAnswers }, () => ({ status: "correct" as const })),
+    ...Array.from({ length: Math.max(0, session.playedCount - session.correctAnswers) }, () => ({
+      status: "unanswered" as const,
+    })),
+  ]);
   return (
-    <div className={styles.stage}>
-      <GameHeader title="Alfabeto" />
-      <Card as="section" className={styles.resultCard} aria-labelledby="alphabet-result-title">
-        <Chip variant="reward">Resultado · Demo</Chip>
-        <p className={styles.resultChallenge}>{challenge.title}</p>
-        <h1 id="alphabet-result-title">
-          {session.correctAnswers === challenge.entries.length
+    <ChallengeResultScreen
+      model={{
+        gameTitle: "Alfabeto",
+        statusLabel: "Completado",
+        eyebrow: "Desafío completado",
+        title:
+          session.correctAnswers === challenge.entries.length
             ? "Alfabeto dominado"
-            : "Buen recorrido"}
-        </h1>
-        <div className={styles.score}>
-          {session.score}
-          <small>/ 100</small>
-        </div>
-        <p className={styles.scoreLabel}>puntos de partida</p>
-        <div className={styles.resultStats}>
-          <div>
-            <strong>
-              {session.correctAnswers} / {challenge.entries.length}
-            </strong>
-            <span>aciertos</span>
-          </div>
-          <div>
-            <strong>{formatTime(session.elapsedTime)}</strong>
-            <span>tiempo total</span>
-          </div>
-          <div>
-            <strong>{session.round}</strong>
-            <span>vueltas</span>
-          </div>
-          {!roomContext ? (
-            <div>
-              <strong>{result.playerRank}.º</strong>
-              <span>posición · {result.totalPlayers}</span>
-            </div>
-          ) : null}
-        </div>
-        <p className={styles.tieBreak}>
-          Último acierto:{" "}
-          {session.lastCorrectAt === null ? "sin aciertos" : formatTime(session.lastCorrectAt)}
-        </p>
-        <p className={styles.xpCallout}>
-          +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
-        </p>
-        {roomContext ? (
-          <p className={styles.xpCallout}>
-            Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
-            volver.
-          </p>
-        ) : (
-          <div className={styles.ranking} aria-label="Clasificación demo">
-            <h2>
-              Tu grupo <span>· Demo</span>
-            </h2>
-            {result.peers.map((row) => (
-              <div
-                className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
-                key={row.player.id}
-              >
-                <span className={styles.position}>{row.rank}.</span>
-                <Avatar
-                  name={row.player.displayName}
-                  initials={row.player.initials}
-                  tone={row.player.tone}
-                  size="sm"
-                />
-                <span className={styles.rankingName}>
-                  {row.player.id === "javi" ? "Tú" : row.player.displayName}
-                </span>
-                <span className={styles.rankingScore}>{row.score} pts</span>
-              </div>
-            ))}
-          </div>
-        )}
-        <ButtonLink href={returnTo} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
-          {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
-        </ButtonLink>
-        <Button
-          variant="secondary"
-          fullWidth
-          onClick={session.showReview}
-          leadingIcon={<EyeIcon />}
-        >
-          Revisar respuestas
-        </Button>
-        <Button variant="secondary" fullWidth onClick={session.replay} leadingIcon={<RotateIcon />}>
-          Jugar de nuevo
-        </Button>
-      </Card>
-    </div>
+            : "Buen recorrido",
+        score: session.score,
+        maxScore: CHALLENGE_MAX_SCORE,
+        accuracy,
+        totalTime: session.elapsedTime,
+        metrics: [
+          {
+            icon: <CheckIcon />,
+            label: "Aciertos",
+            value: session.correctAnswers,
+            tone: "success",
+          },
+          {
+            icon: <CrossIcon />,
+            label: "Errores",
+            value: session.incorrectAnswers,
+            tone: "danger",
+          },
+          { icon: <ClockIcon />, label: "Letras sin resolver", value: session.unanswered },
+        ],
+        supplementalContent: (
+          <>
+            <ResultCallout>
+              +{result.seasonXpEarned} ⚡ · {result.seasonXpCurrent} / {result.nextLevelAt} ⚡
+            </ResultCallout>
+            <ResultCallout>
+              {session.round} vueltas · Último acierto:{" "}
+              {session.lastCorrectAt === null ? "sin aciertos" : formatTime(session.lastCorrectAt)}
+            </ResultCallout>
+            {roomContext ? (
+              <ResultCallout>
+                Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
+                volver.
+              </ResultCallout>
+            ) : (
+              <ResultRanking
+                meta="Demo"
+                rows={result.peers.map((row) => ({
+                  id: row.player.id,
+                  rank: row.rank,
+                  name: row.player.id === "javi" ? "Tú" : row.player.displayName,
+                  initials: row.player.initials,
+                  tone: row.player.tone,
+                  score: `${row.score} pts`,
+                  current: row.player.id === "javi",
+                }))}
+              />
+            )}
+          </>
+        ),
+      }}
+      onReview={session.showReview}
+      onReplay={session.replay}
+      returnTo={returnTo}
+      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+    />
   );
 }
 

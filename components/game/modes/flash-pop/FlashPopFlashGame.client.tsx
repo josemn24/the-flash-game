@@ -2,21 +2,30 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { CheckIcon, ClockIcon, CrossIcon, EyeIcon, RotateIcon } from "@/components/ui";
+import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import {
   FlashPopFeedback,
   getFlashPopFeedbackCopy,
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
-import { Button, ButtonLink, Card, Canvas, Chip, GameHeader, Timer } from "@/components/ui";
-import { ReviewAnswerPanel, StartCountdown } from "@/components/game/shared";
+import { ButtonLink, Card, Canvas, GameHeader, Timer } from "@/components/ui";
+import {
+  ChallengeResultScreen,
+  ReviewAnswerPanel,
+  StartCountdown,
+  type ChallengeResultModel,
+} from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
-import { withChallengeScoring } from "@/lib/challengeScoring";
+import { CHALLENGE_MAX_SCORE, withChallengeScoring } from "@/lib/challengeScoring";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import type {
   AnswerResult,
   ChallengeCompletionResult,
@@ -26,14 +35,6 @@ import type {
   QuestionMedia as QuestionMediaType,
 } from "@/types/game";
 import styles from "./FlashPopFlashGame.module.css";
-
-function formatTime(seconds: number) {
-  const rounded = Math.max(0, Math.round(seconds));
-  if (rounded < 60) return `${rounded} s`;
-  const minutes = Math.floor(rounded / 60);
-  const rest = rounded % 60;
-  return rest ? `${minutes} min ${rest} s` : `${minutes} min`;
-}
 
 function getMedia(question: Question): QuestionMediaType | undefined {
   return "media" in question ? question.media : undefined;
@@ -174,118 +175,30 @@ function Transition({
   );
 }
 
-function ResultStage({
-  challenge,
-  results,
-  score,
-  onReview,
-  onReplay,
-}: {
-  challenge: FlashChallenge;
-  results: AnswerResult[];
-  score: number;
-  onReview: () => void;
-  onReplay: () => void;
-}) {
+function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
   const correct = results.filter((result) => result.status === "correct").length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
-  const accuracyContribution = results.reduce(
-    (total, result) =>
-      total +
-      (result.status === "correct"
-        ? 1
-        : result.details?.type === "estimation"
-          ? result.details.proximity
-          : 0),
-    0,
-  );
-  const accuracy = Math.round((accuracyContribution / challenge.questions.length) * 100);
+  const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
-  const maxScore = challenge.questions.reduce((total, question) => total + question.points, 0);
   const message =
     accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío duro.";
 
-  return (
-    <div className={styles.stage}>
-      <GameHeader title="Flash clásico" action={<Chip tone="success">Completado</Chip>} />
-      <div className={styles.resultLayout}>
-        <Card as="section" className={styles.resultCard} aria-labelledby="flash-pop-result-title">
-          <p className={styles.eyebrow}>Desafío completado</p>
-          <h1 id="flash-pop-result-title">{message}</h1>
-          <div className={styles.scoreDisplay}>
-            <motion.strong
-              initial={{ scale: 0.7 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring" }}
-            >
-              {score}
-            </motion.strong>
-            <span>/{maxScore} puntos</span>
-          </div>
-          <div className={styles.scoreTrack} aria-label={`${score} de ${maxScore} puntos`}>
-            <span style={{ width: `${maxScore ? Math.min(100, (score / maxScore) * 100) : 0}%` }} />
-          </div>
-          <div className={styles.resultActions}>
-            <Button fullWidth onClick={onReplay} leadingIcon={<RotateIcon />}>
-              Volver a jugar
-            </Button>
-            <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
-              Ver respuestas
-            </Button>
-          </div>
-        </Card>
-
-        <div className={styles.resultStats}>
-          <div className={styles.summaryStats}>
-            <Card className={styles.accuracyCard}>
-              <div>
-                <p className={styles.eyebrow}>Precisión</p>
-                <strong>{accuracy}%</strong>
-              </div>
-              <div
-                className={styles.accuracyRing}
-                style={{ "--accuracy": `${accuracy * 3.6}deg` } as React.CSSProperties}
-                aria-hidden="true"
-              />
-            </Card>
-            <div className={styles.timeStat}>
-              <StatCard icon={<ClockIcon />} value={formatTime(totalTime)} label="Tiempo total" />
-            </div>
-          </div>
-          <div className={styles.answerStats}>
-            <StatCard icon={<CheckIcon />} value={correct} label="Correctas" tone="success" />
-            <StatCard icon={<CrossIcon />} value={incorrect} label="Falladas" tone="danger" />
-            <StatCard icon={<ClockIcon />} value={unanswered} label="Sin contestar" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  value,
-  label,
-  tone,
-}: {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-  tone?: "success" | "danger";
-}) {
-  return (
-    <Card
-      className={`${styles.statCard} ${tone === "success" ? styles.statSuccess : tone === "danger" ? styles.statDanger : ""}`}
-    >
-      <div className={styles.statHeader}>
-        <span>{label}</span>
-        {icon}
-      </div>
-      <strong>{value}</strong>
-    </Card>
-  );
+  return {
+    gameTitle: "Flash clásico",
+    statusLabel: "Completado",
+    eyebrow: "Desafío completado",
+    title: message,
+    score,
+    maxScore: CHALLENGE_MAX_SCORE,
+    accuracy,
+    totalTime,
+    metrics: [
+      { icon: <CheckIcon />, label: "Correctas", value: correct, tone: "success" },
+      { icon: <CrossIcon />, label: "Falladas", value: incorrect, tone: "danger" },
+      { icon: <ClockIcon />, label: "Sin contestar", value: unanswered },
+    ],
+  };
 }
 
 function ReviewStage({
@@ -446,12 +359,12 @@ export function FlashPopFlashGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ResultStage
-                challenge={scoredChallenge}
-                results={session.results}
-                score={session.score}
+              <ChallengeResultScreen
+                model={buildResultModel(session.results, session.score)}
                 onReview={session.showReview}
                 onReplay={session.replay}
+                returnTo={roomContext?.returnTo}
+                returnLabel="Volver a la sala"
               />
             </motion.div>
           ) : null}

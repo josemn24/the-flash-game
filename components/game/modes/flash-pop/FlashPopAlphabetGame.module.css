@@ -22,59 +22,17 @@
     margin: auto 0;
   }
 
-  .boardCard,
-  .resultCard {
+  .boardCard {
+    display: grid;
+    width: min(100%, 32rem);
+    min-height: auto;
+    place-items: center;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     background: var(--color-surface);
     box-shadow: var(--shadow-hero);
-  }
-
-  .resultCard {
-    display: grid;
-    gap: var(--space-4);
-    text-align: center;
-  }
-
-  .resultCard h1 {
-    margin: var(--space-2) 0 0;
-    font-family: var(--type-display);
-    font-size: clamp(38px, 10vw, 64px);
-    font-weight: var(--type-display-strong-weight);
-    letter-spacing: -0.065em;
-    line-height: 0.94;
-  }
-
-  .tieBreak {
-    margin: 0;
-    color: var(--color-ink-muted);
-    line-height: 1.5;
-  }
-
-  .resultStats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-2);
-    margin-top: var(--space-5);
-  }
-
-  .resultStats > div {
-    display: grid;
-    gap: 4px;
-    padding: var(--space-3);
-    border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
-  }
-
-  .resultStats strong {
-    font-size: 18px;
-    font-weight: 800;
-  }
-
-  .resultStats span {
-    color: var(--color-ink-muted);
-    font-size: 11px;
-    font-weight: 600;
+    justify-self: center;
+    padding: clamp(0.55rem, 1.2vw, 0.8rem);
   }
 
   .board {
@@ -190,36 +148,22 @@
     gap: var(--space-4);
   }
 
-  .gameMeta,
-  .rankingRow {
+  .gameMeta {
     display: flex;
     align-items: center;
-  }
-
-  .gameMeta,
-  .reviewHeading,
-  .rankingRow {
     gap: var(--space-3);
-  }
-
-  .gameMeta {
     color: var(--color-ink-muted);
     font-family: var(--type-mono);
     font-size: 11px;
     font-weight: 700;
   }
 
-  .gameMeta strong {
-    color: var(--color-ink);
+  .reviewHeading {
+    gap: var(--space-3);
   }
 
-  .boardCard {
-    place-items: center;
-    display: grid;
-    width: min(100%, 32rem);
-    min-height: auto;
-    justify-self: center;
-    padding: clamp(0.55rem, 1.2vw, 0.8rem);
+  .gameMeta strong {
+    color: var(--color-ink);
   }
 
   .questionPanel {
@@ -289,105 +233,6 @@
     line-height: 1.45;
   }
 
-  .resultChallenge {
-    margin: 0;
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .score {
-    margin-top: var(--space-3);
-    color: var(--color-ink);
-    font-family: var(--type-display);
-    font-size: clamp(78px, 24vw, 136px);
-    font-weight: 700;
-    letter-spacing: -0.09em;
-    line-height: 0.75;
-  }
-
-  .score small {
-    margin-left: 8px;
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 14px;
-    letter-spacing: 0;
-  }
-
-  .scoreLabel,
-  .tieBreak {
-    margin: 0;
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .xpCallout {
-    margin: var(--space-2) 0;
-    padding: var(--space-3);
-    border-radius: var(--radius-control);
-    background: var(--color-reward);
-    font-weight: 800;
-  }
-
-  .ranking {
-    display: grid;
-    gap: 8px;
-    margin-top: var(--space-2);
-    text-align: left;
-  }
-
-  .ranking h2 {
-    margin: 0 0 2px;
-    font-size: 18px;
-  }
-
-  .ranking h2 span {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    text-transform: uppercase;
-  }
-
-  .rankingRow {
-    min-height: 48px;
-    padding: 7px 9px;
-    border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
-  }
-
-  .rankingRow.current {
-    border: 2px solid var(--color-brand);
-    background: var(--color-canvas);
-  }
-
-  .position {
-    width: 24px;
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 11px;
-    font-weight: 800;
-  }
-
-  .rankingName {
-    flex: 1;
-    min-width: 0;
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .rankingScore {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 11px;
-    font-weight: 700;
-  }
-
   @media (min-width: 720px) {
     .playGrid {
       grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
@@ -399,9 +244,6 @@
   }
 
   @media (max-width: 520px) {
-    .resultStats {
-      grid-template-columns: 1fr;
-    }
     .gameMeta > span:first-child {
       display: none;
     }

@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import {
   ArrowIcon,
@@ -10,10 +9,7 @@ import {
   CheckIcon,
   ClockIcon,
   CrossIcon,
-  RotateIcon,
-  Card,
   Canvas,
-  Chip,
   GameHeader,
   MotionButton,
   Timer,
@@ -26,8 +22,14 @@ import {
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
+import { ChallengeResultScreen } from "@/components/game/shared";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import styles from "./NarrativeGame.module.css";
 import type {
   AnswerResult,
@@ -297,12 +299,7 @@ function NarrativeEpilogueScreen({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-function formatTime(seconds: number) {
-  return `${seconds.toFixed(1)} s`;
-}
-
 function NarrativeResult({
-  challenge,
   results,
   score,
   onReview,
@@ -310,7 +307,6 @@ function NarrativeResult({
   returnTo,
   roomContext,
 }: {
-  challenge: NarrativeChallenge;
   results: AnswerResult[];
   score: number;
   onReview: () => void;
@@ -323,59 +319,26 @@ function NarrativeResult({
   const unanswered = results.filter((result) => result.status === "unanswered").length;
   const incorrect = results.length - correct - partial - unanswered;
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
+  const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
 
   return (
-    <motion.section
-      className={styles.fullScreen}
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-    >
-      <GameHeader title="Narrativa" action={<Chip tone="success">Misión completada</Chip>} />
-      <div className={styles.resultGrid}>
-        <div className={styles.resultScore}>
-          <p className={styles.eyebrow}>Tres capítulos completados</p>
-          <h1>El recorrido queda registrado.</h1>
-          <div className={styles.scoreValue}>
-            <strong>{score}</strong>
-            <span>/ {challenge.maxScore} puntos</span>
-          </div>
-          <div className={styles.resultActions}>
-            <MotionButton onClick={onReview} whileTap={{ scale: 0.985 }}>
-              <CheckIcon className="h-5 w-5" /> Revisar respuestas
-            </MotionButton>
-            <MotionButton variant="secondary" onClick={onReplay} whileTap={{ scale: 0.985 }}>
-              <RotateIcon className="h-5 w-5" /> Volver a jugar
-            </MotionButton>
-            <Link className={styles.backLink} href={returnTo}>
-              {roomContext ? "Volver a Tabarnia" : "Volver a desafíos"}
-            </Link>
-          </div>
-        </div>
-
-        <Card as="section" className={styles.resultDetails}>
-          <div className={styles.resultStats}>
-            <div>
-              <CheckIcon className="h-5 w-5" />
-              <strong>{correct}</strong>
-              <span>Correctas</span>
-            </div>
-            <div>
-              <BoltIcon className="h-5 w-5" />
-              <strong>{partial}</strong>
-              <span>Parciales</span>
-            </div>
-            <div>
-              <CrossIcon className="h-5 w-5" />
-              <strong>{incorrect}</strong>
-              <span>Falladas</span>
-            </div>
-            <div>
-              <ClockIcon className="h-5 w-5" />
-              <strong>{unanswered}</strong>
-              <span>Sin respuesta</span>
-            </div>
-          </div>
+    <ChallengeResultScreen
+      model={{
+        gameTitle: "Narrativa",
+        statusLabel: "Completado",
+        eyebrow: "Desafío completado",
+        title: "El recorrido queda registrado.",
+        score,
+        maxScore: CHALLENGE_MAX_SCORE,
+        accuracy,
+        totalTime,
+        metrics: [
+          { icon: <CheckIcon />, label: "Correctas", value: correct, tone: "success" },
+          { icon: <BoltIcon />, label: "Parciales", value: partial, tone: "social" },
+          { icon: <CrossIcon />, label: "Falladas", value: incorrect, tone: "danger" },
+          { icon: <ClockIcon />, label: "Sin respuesta", value: unanswered },
+        ],
+        supplementalContent: (
           <ol className={styles.answerStates} aria-label="Estado de las pruebas">
             {results.map((result, index) => {
               const label =
@@ -394,16 +357,13 @@ function NarrativeResult({
               );
             })}
           </ol>
-          <div className={styles.timeSummary}>
-            <span>Tiempo competitivo</span>
-            <strong>{formatTime(totalTime)}</strong>
-          </div>
-          <p className={styles.resultNotice}>
-            La trayectoria está documentada. Su causa permanece fuera del registro.
-          </p>
-        </Card>
-      </div>
-    </motion.section>
+        ),
+      }}
+      onReview={onReview}
+      onReplay={onReplay}
+      returnTo={returnTo}
+      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver a desafíos"}
+    />
   );
 }
 
@@ -533,7 +493,6 @@ export function NarrativeGameApp({
               {session.phase === "results" && (
                 <NarrativeResult
                   key="narrative-results"
-                  challenge={challenge}
                   results={session.results}
                   score={session.score}
                   onReview={session.showReview}

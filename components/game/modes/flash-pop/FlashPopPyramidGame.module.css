@@ -18,16 +18,12 @@
   .topbarLeft,
   .topbarRight,
   .answerGrid,
-  .resultMeta,
-  .rankingRow,
   .reviewHeader {
     display: flex;
     align-items: center;
   }
 
   .topbar,
-  .resultMeta,
-  .rankingRow,
   .reviewHeader {
     justify-content: space-between;
   }
@@ -163,7 +159,6 @@
 
   .briefing,
   .question,
-  .result,
   .review {
     display: grid;
     gap: var(--space-6);
@@ -171,7 +166,6 @@
   }
 
   .briefingCard,
-  .resultCard,
   .reviewCard {
     padding: clamp(20px, 5vw, 36px);
     border-radius: var(--radius-card);
@@ -182,7 +176,6 @@
 
   .briefingCard h1,
   .questionCard h1,
-  .resultCard h1,
   .reviewCard h1 {
     margin: 8px 0 0;
     font-family: var(--type-display);
@@ -193,7 +186,6 @@
   }
 
   .briefingDescription,
-  .resultLead,
   .reviewCopy {
     margin: 12px 0 0;
     color: var(--color-ink-muted);
@@ -212,15 +204,7 @@
     text-transform: uppercase;
   }
 
-  .resultMeta {
-    display: grid;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .briefingStat,
-  .resultStat {
+  .briefingStat {
     display: flex;
     min-width: 0;
     flex-direction: column;
@@ -230,14 +214,12 @@
     background: var(--color-surface-raised);
   }
 
-  .briefingStat strong,
-  .resultStat strong {
+  .briefingStat strong {
     font-size: 17px;
     font-weight: 800;
   }
 
-  .briefingStat span,
-  .resultStat span {
+  .briefingStat span {
     color: var(--color-ink-muted);
     font-size: 12px;
     font-weight: 600;
@@ -262,7 +244,7 @@
     border-block: var(--border-subtle);
   }
 
-  .briefingStat {
+  .briefingStats .briefingStat {
     flex: 1;
     align-items: center;
     padding: 0 var(--space-3);
@@ -274,7 +256,7 @@
     border-inline-start: var(--border-subtle);
   }
 
-  .briefingStat strong {
+  .briefingStats .briefingStat strong {
     font-size: 20px;
   }
 
@@ -389,102 +371,6 @@
     opacity: 0.62;
   }
 
-  .resultCard {
-    text-align: center;
-  }
-
-  .resultChallenge {
-    margin: var(--space-4) 0 0;
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .resultSubtitle {
-    margin: 8px 0 0;
-    color: var(--color-ink-muted);
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .resultScore {
-    margin-top: var(--space-6);
-    font-family: var(--type-display);
-    font-size: clamp(72px, 24vw, 132px);
-    font-weight: 700;
-    letter-spacing: -0.08em;
-    line-height: 0.8;
-  }
-
-  .resultScoreLabel {
-    margin-top: 10px;
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .xpCallout {
-    margin-top: var(--space-5);
-    padding: var(--space-4);
-    border-radius: var(--radius-control);
-    background: var(--color-reward);
-    font-weight: 800;
-  }
-
-  .ranking {
-    display: grid;
-    gap: 8px;
-    margin-top: var(--space-6);
-    text-align: left;
-  }
-
-  .ranking h2 {
-    margin: 0 0 4px;
-    font-size: 18px;
-    font-weight: 800;
-  }
-
-  .rankingRow {
-    gap: var(--space-3);
-    min-height: 52px;
-    padding: 8px 10px;
-    border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
-  }
-
-  .rankingRow.current {
-    border: 2px solid var(--color-brand);
-    background: var(--color-canvas);
-  }
-
-  .rankingName {
-    flex: 1;
-    min-width: 0;
-    font-size: 14px;
-    font-weight: 800;
-  }
-
-  .rankingScore {
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .rankingPosition {
-    width: 28px;
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 12px;
-    font-weight: 700;
-  }
-
   .reviewCard {
     text-align: left;
   }
@@ -520,7 +406,6 @@
 
     .briefing,
     .question,
-    .result,
     .review {
       width: min(100%, 680px);
     }

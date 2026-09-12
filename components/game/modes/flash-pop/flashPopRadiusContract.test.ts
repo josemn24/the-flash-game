@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 const cardStyles = readFileSync(new URL("../../../ui/Card.module.css", import.meta.url), "utf8");
 const standardSurfaceStyles = [
   "./FlashPopAlphabetGame.module.css",
-  "./FlashPopSurvivalResult.module.css",
   "./FlashPopPyramidGame.module.css",
+  "../../shared/ChallengeResultScreen/ChallengeResultScreen.module.css",
   "../../shared/ChallengeIntro.module.css",
 ].map((filename) => ({
   filename,

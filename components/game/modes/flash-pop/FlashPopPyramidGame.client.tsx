@@ -3,11 +3,16 @@
 import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, BoltIcon, CheckIcon } from "@/components/ui";
-import { Avatar, Button, ButtonLink, Canvas, Card, Chip, GameHeader, Timer } from "@/components/ui";
+import { Button, ButtonLink, Canvas, Card, GameHeader, Timer } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
+import { ChallengeResultScreen, ResultCallout, ResultRanking } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
-import { withPyramidScoring } from "@/lib/challengeScoring";
+import { CHALLENGE_MAX_SCORE, withPyramidScoring } from "@/lib/challengeScoring";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
 import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/demoSocial";
@@ -18,6 +23,7 @@ import type {
   GameRoomContext,
   PyramidChallenge,
   PyramidLevel,
+  AnswerResult,
 } from "@/types/game";
 import styles from "./FlashPopPyramidGame.module.css";
 
@@ -320,6 +326,8 @@ function Feedback({
 function Result({
   challenge,
   result,
+  results,
+  totalTime,
   onReview,
   onReplay,
   returnTo,
@@ -327,95 +335,83 @@ function Result({
 }: {
   challenge: PyramidChallenge;
   result: FlashPopResult;
+  results: AnswerResult[];
+  totalTime: number;
   onReview: () => void;
   onReplay: () => void;
   returnTo: string;
   roomContext?: GameRoomContext;
 }) {
   const summit = result.levelsCleared >= challenge.levels.length;
+  const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
   return (
-    <div className={styles.result}>
-      <Topbar />
-      <Card as="section" className={styles.resultCard} aria-labelledby="result-title">
-        <Chip variant="reward">Resultado</Chip>
-        <p className={styles.resultChallenge}>{challenge.title}</p>
-        <h1 id="result-title">{summit ? "Cima conquistada" : "Ascenso terminado"}</h1>
-        <p className={styles.resultSubtitle}>{challenge.subtitle}</p>
-        <div className={styles.resultScore}>{result.score}</div>
-        <p className={styles.resultScoreLabel}>puntos de partida</p>
-        <div className={styles.resultMeta}>
-          <div className={styles.resultStat}>
-            <strong>
-              {result.levelsCleared} / {challenge.levels.length}
-            </strong>
-            <span>niveles superados</span>
-          </div>
-          {!roomContext ? (
-            <div className={styles.resultStat}>
-              <strong>{result.playerRank}.º</strong>
-              <span>posición · {result.totalPlayers}</span>
-            </div>
-          ) : null}
-          <div className={styles.resultStat}>
-            <strong>+{result.seasonXpEarned} ⚡</strong>
-            <span>XP de temporada</span>
-          </div>
-        </div>
-        <p className={styles.xpCallout}>
-          {result.seasonXpCurrent} / {result.nextLevelAt} ⚡ · Sigue subiendo
-        </p>
-
-        {roomContext ? (
-          <p className={styles.xpCallout}>
-            Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
-            volver.
-          </p>
-        ) : (
-          <div className={styles.ranking} aria-label="Clasificación demo">
-            <h2>
-              Tu grupo
-              <span className={styles.metaLabel}>
-                · {result.socialSource === "demo" ? "Demo" : "En directo"}
-              </span>
-            </h2>
-            {result.peers.map((row) => (
-              <div
-                className={`${styles.rankingRow} ${row.player.id === "javi" ? styles.current : ""}`}
-                key={row.player.id}
-              >
-                <span className={styles.rankingPosition}>{row.rank}.</span>
-                <Avatar
-                  name={row.player.displayName}
-                  initials={row.player.initials}
-                  tone={row.player.tone}
-                  size="sm"
-                />
-                <span className={styles.rankingName}>
-                  {row.player.id === "javi" ? "Tú" : row.player.displayName}
-                </span>
-                <span className={styles.rankingScore}>{row.score} pts</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <ButtonLink
-          href={returnTo}
-          size="hero"
-          fullWidth
-          trailingIcon={<ArrowIcon />}
-          className={styles.action}
-        >
-          {roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
-        </ButtonLink>
-        <Button variant="secondary" fullWidth className={styles.action} onClick={onReview}>
-          Revisar respuesta
-        </Button>
-        <Button variant="secondary" fullWidth className={styles.action} onClick={onReplay}>
-          Jugar de nuevo
-        </Button>
-      </Card>
-    </div>
+    <ChallengeResultScreen
+      model={{
+        gameTitle: "La Pirámide",
+        statusLabel: "Completado",
+        eyebrow: "Desafío completado",
+        title: summit ? "Cima conquistada" : "Ascenso terminado",
+        subtitle: challenge.subtitle,
+        score: result.score,
+        maxScore: CHALLENGE_MAX_SCORE,
+        accuracy,
+        totalTime,
+        metrics: [
+          {
+            icon: <CheckIcon />,
+            label: "Niveles superados",
+            value: `${result.levelsCleared} / ${challenge.levels.length}`,
+            tone: "success",
+          },
+          ...(!roomContext
+            ? [
+                {
+                  icon: <BoltIcon />,
+                  label: "Posición",
+                  value: `${result.playerRank}.º / ${result.totalPlayers}`,
+                  tone: "social" as const,
+                },
+              ]
+            : []),
+          {
+            icon: <BoltIcon />,
+            label: "XP de temporada",
+            value: `+${result.seasonXpEarned} ⚡`,
+            tone: "social",
+          },
+        ],
+        supplementalContent: (
+          <>
+            <ResultCallout>
+              {result.seasonXpCurrent} / {result.nextLevelAt} ⚡ · Sigue subiendo
+            </ResultCallout>
+            {roomContext ? (
+              <ResultCallout>
+                Tu resultado se ha guardado en {roomContext.roomTitle}. Consulta la clasificación al
+                volver.
+              </ResultCallout>
+            ) : (
+              <ResultRanking
+                meta={result.socialSource === "demo" ? "Demo" : "En directo"}
+                rows={result.peers.map((row) => ({
+                  id: row.player.id,
+                  rank: row.rank,
+                  name: row.player.id === "javi" ? "Tú" : row.player.displayName,
+                  initials: row.player.initials,
+                  tone: row.player.tone,
+                  score: `${row.score} pts`,
+                  current: row.player.id === "javi",
+                }))}
+              />
+            )}
+          </>
+        ),
+      }}
+      onReview={onReview}
+      onReplay={onReplay}
+      returnTo={returnTo}
+      returnLabel={roomContext ? "Volver a Tabarnia" : "Volver al lobby"}
+    />
   );
 }
 
@@ -571,6 +567,8 @@ export function FlashPopPyramidGame({
               <Result
                 challenge={challenge}
                 result={result}
+                results={session.record?.results ?? []}
+                totalTime={session.summary?.timeUsed ?? 0}
                 onReview={session.showReview}
                 onReplay={session.restart}
                 returnTo={roomContext?.returnTo ?? "/"}

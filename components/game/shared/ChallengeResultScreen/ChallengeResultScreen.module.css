@@ -1,0 +1,355 @@
+@layer app-formats {
+  .stage {
+    display: grid;
+    width: min(100%, 820px);
+    min-height: calc(100dvh - 48px);
+    margin: 0 auto;
+    align-content: start;
+    gap: var(--space-6);
+  }
+
+  .resultLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .resultCard,
+  .accuracyCard,
+  .timeCard,
+  .metricCard {
+    border: var(--border-subtle);
+    background: var(--color-surface);
+  }
+
+  .resultCard {
+    border-radius: calc(var(--radius-card) * 2);
+    padding: clamp(24px, 4vw, 38px);
+  }
+
+  .resultCard h1 {
+    margin: 12px 0 0;
+    font-family: var(--type-display);
+    font-size: clamp(38px, 5vw, 58px);
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 0.98;
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    margin: 12px 0 0;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .scoreDisplay {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    margin: 30px 0 17px;
+  }
+
+  .scoreDisplay strong {
+    font-family: var(--type-display);
+    font-size: clamp(70px, 10vw, 108px);
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: -0.08em;
+    line-height: 0.8;
+  }
+
+  .scoreDisplay span {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .scoreTrack {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+  }
+
+  .scoreTrack span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-brand);
+    transition: width 300ms ease;
+  }
+
+  .resultActions {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .returnLink {
+    justify-self: center;
+    margin-top: 2px;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .resultStats {
+    display: grid;
+    gap: 12px;
+  }
+
+  .summaryStats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .accuracyCard {
+    display: flex;
+    min-width: 0;
+    min-height: 104px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .accuracyCard strong {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--type-display);
+    font-size: 34px;
+  }
+
+  .accuracyRing {
+    position: relative;
+    display: grid;
+    width: 56px;
+    height: 56px;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: conic-gradient(var(--color-social) var(--accuracy), var(--color-surface-soft) 0);
+  }
+
+  .accuracyRing::before {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    content: "";
+  }
+
+  .timeCard {
+    display: flex;
+    min-width: 0;
+    min-height: 104px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 16px;
+  }
+
+  .timeHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--color-ink-muted);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .timeHeader svg {
+    width: 19px;
+  }
+
+  .timeCard strong {
+    font-family: var(--type-display);
+    font-size: 25px;
+  }
+
+  .answerStats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .answerStats[data-count="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .metricCard {
+    display: flex;
+    min-width: 0;
+    min-height: 104px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px;
+  }
+
+  .metricHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--color-ink-muted);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .metricHeader svg {
+    width: 19px;
+    color: var(--color-ink-muted);
+  }
+
+  .metricCard strong {
+    overflow: hidden;
+    font-family: var(--type-display);
+    font-size: 25px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .metricSuccess .metricHeader svg {
+    color: var(--color-success);
+  }
+
+  .metricSuccess strong {
+    color: var(--color-success);
+  }
+
+  .metricDanger .metricHeader svg {
+    color: #c83d55;
+  }
+
+  .metricDanger strong {
+    color: #c83d55;
+  }
+
+  .metricSocial .metricHeader svg,
+  .metricSocial strong {
+    color: var(--color-social);
+  }
+
+  .supplementalContent {
+    display: grid;
+    gap: 12px;
+  }
+
+  .resultCallout {
+    margin: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-control);
+    background: var(--color-reward);
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .ranking {
+    display: grid;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .ranking h2 {
+    margin: 0 0 2px;
+    font-size: 18px;
+  }
+
+  .ranking h2 span {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rankingRow {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 7px 9px;
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+  }
+
+  .rankingRow.current {
+    border: 2px solid var(--color-brand);
+    background: var(--color-canvas);
+  }
+
+  .rankingPosition {
+    width: 25px;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .rankingName {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .rankingScore {
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 700px) {
+    .stage {
+      min-height: calc(100dvh - 32px);
+    }
+
+    .resultLayout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .summaryStats,
+    .answerStats {
+      gap: 7px;
+    }
+
+    .accuracyCard,
+    .timeCard,
+    .metricCard {
+      padding: 14px 12px;
+    }
+
+    .metricCard strong,
+    .timeCard strong {
+      font-size: 22px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scoreTrack span {
+      transition: none;
+    }
+  }
+}
