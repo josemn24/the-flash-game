@@ -1,5 +1,8 @@
 # Salas y temporadas
 
+> **Estado:** contexto de producto previo. Las decisiones vigentes y sus invariantes están en
+> [`domain/decisions.md`](domain/decisions.md).
+
 ## Propósito
 
 Este documento describe el loop social y competitivo principal previsto para The Flash. La idea base es que un usuario cree una sala privada, invite a sus amigos y todos compitan durante una temporada mediante desafíos periódicos jugados de forma asíncrona.

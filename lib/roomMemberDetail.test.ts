@@ -3,12 +3,14 @@ import { demoRoom } from "@/data/demoRoom";
 import { getChallengeById } from "@/data/challenges";
 import { isAnswerCorrect } from "@/lib/scoring";
 import { buildMockRoomChallengeAttempt } from "@/lib/roomAttempts";
-import {
-  applyRoomMemberChallengeResult,
-  buildRoomMemberDetailModel,
-} from "@/lib/roomMemberDetail";
+import type { NarrativeQuestionStep, NarrativeStep } from "@/types/game";
+import { applyRoomMemberChallengeResult, buildRoomMemberDetailModel } from "@/lib/roomMemberDetail";
 
 const now = new Date("2026-09-08T12:00:00.000Z");
+
+function isNarrativeQuestionStep(step: NarrativeStep): step is NarrativeQuestionStep {
+  return step.type === "question";
+}
 
 describe("room member detail model", () => {
   it("can create a review fixture for every implemented room mode", () => {
@@ -59,31 +61,41 @@ describe("room member detail model", () => {
         const attempt = buildMockRoomChallengeAttempt(challengeId, result, { seed: member.id });
         if (!attempt) throw new Error(`Expected attempt for ${member.id}/${challengeId}`);
 
-        const expectedAnswerCount = challenge.mode === "alphabet"
-          ? challenge.entries.length
-          : challenge.mode === "narrative"
-            ? challenge.beats.flatMap((beat) => beat.steps.filter((step) => step.type === "question")).length
-            : challenge.mode === "pyramid"
-              ? challenge.levels.length
-              : challenge.questions.length;
+        const expectedAnswerCount =
+          challenge.mode === "alphabet"
+            ? challenge.entries.length
+            : challenge.mode === "narrative"
+              ? challenge.beats.flatMap((beat) =>
+                  beat.steps.filter((step) => step.type === "question"),
+                ).length
+              : challenge.mode === "pyramid"
+                ? challenge.levels.length
+                : challenge.questions.length;
         expect(attempt.answers).toHaveLength(expectedAnswerCount);
-        expect(attempt.answers.reduce((total, answer) => total + (answer.points ?? 0), 0)).toBe(result.points);
+        expect(attempt.answers.reduce((total, answer) => total + (answer.points ?? 0), 0)).toBe(
+          result.points,
+        );
         expect(new Set(attempt.answers.map((answer) => answer.status))).toEqual(
           new Set(["correct", "incorrect", "unanswered"]),
         );
 
         for (const answer of attempt.answers) {
-          const question = challenge.mode === "alphabet"
-            ? challenge.entries.find((entry) => entry.question.id === answer.questionId)?.question
-            : challenge.mode === "narrative"
-              ? challenge.beats
-                .flatMap((beat) => beat.steps)
-                .find((step) => step.type === "question" && step.question.id === answer.questionId)?.question
-              : challenge.mode === "pyramid"
-                ? challenge.levels.find((level) => level.question.id === answer.questionId)?.question
-                : challenge.questions.find((candidate) => candidate.id === answer.questionId);
+          const question =
+            challenge.mode === "alphabet"
+              ? challenge.entries.find((entry) => entry.question.id === answer.questionId)?.question
+              : challenge.mode === "narrative"
+                ? challenge.beats
+                    .flatMap((beat) => beat.steps)
+                    .filter(isNarrativeQuestionStep)
+                    .find((step) => step.question.id === answer.questionId)?.question
+                : challenge.mode === "pyramid"
+                  ? challenge.levels.find((level) => level.question.id === answer.questionId)
+                      ?.question
+                  : challenge.questions.find((candidate) => candidate.id === answer.questionId);
           if (!question) throw new Error(`Expected question ${answer.questionId}`);
-          expect(isAnswerCorrect(question, answer.answer as NonNullable<typeof answer.answer>)).toBe(answer.isCorrect);
+          expect(
+            isAnswerCorrect(question, answer.answer as NonNullable<typeof answer.answer>),
+          ).toBe(answer.isCorrect);
 
           if (answer.status === "correct") {
             expect(answer.isCorrect).toBe(true);

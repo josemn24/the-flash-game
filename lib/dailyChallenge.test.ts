@@ -48,7 +48,7 @@ describe("getDailyChallenge", () => {
     const validChallenge = demoRoom.activeSeason.scheduledChallenges.find(
       (challenge) => challenge.id === "tabarnia-flash-01",
     );
-    if (!validChallenge || !("challengeDefinitionId" in validChallenge)) {
+    if (!validChallenge || typeof validChallenge.challengeDefinitionId !== "string") {
       throw new Error("Expected the demo flash challenge to exist.");
     }
 

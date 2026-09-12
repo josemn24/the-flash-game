@@ -53,6 +53,8 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 | ----------------------------- | --------------------------------------------------------- |
 | `npm run dev`                 | Inicia el servidor de desarrollo.                         |
 | `npm run lint`                | Comprueba la calidad estática del código.                 |
+| `npm run typecheck`           | Valida todos los contratos TypeScript sin emitir código.  |
+| `npm run type-architecture`   | Comprueba las dependencias entre las capas de tipos.      |
 | `npm test`                    | Ejecuta los tests unitarios con Vitest.                   |
 | `npm run build`               | Genera la compilación optimizada de producción.           |
 | `npm run start`               | Sirve localmente una compilación de producción.           |
@@ -72,6 +74,12 @@ types/        Tipos del dominio
 docs/         Estado funcional, evolución y arquitectura
 scripts/      Generadores deterministas de recursos versionados
 ```
+
+## Modelo de dominio
+
+Las reglas aprobadas para la futura persistencia con Supabase, incluidos usuarios, salas,
+temporadas, publicaciones, intentos, rankings y límites de seguridad, se mantienen en
+[`docs/domain/README.md`](docs/domain/README.md).
 
 ## Convenciones de estilos
 

@@ -1,5 +1,10 @@
 # Migración del modelo de datos
 
+> **Estado:** documento histórico de la evolución del prototipo. Las reglas normativas para el
+> modelo futuro están en [`domain/README.md`](domain/README.md) y
+> [`domain/decisions.md`](domain/decisions.md). Si existe una contradicción, prevalece la
+> documentación de dominio.
+
 ## Propósito
 
 Este documento propone una migración por fases desde el modelo mock actual de la PoC hasta el modelo objetivo descrito en `salas-y-temporadas.md` y `glosario.md`.

@@ -43,13 +43,17 @@ function isPlayableScheduledChallenge(
   return "challengeDefinitionId" in scheduledChallenge;
 }
 
-export function getNarrativeQuestionIds(definition: NarrativeChallengeDefinition) {
+export function getNarrativeQuestionIds<QuestionId extends string>(
+  definition: NarrativeChallengeDefinition<QuestionId>,
+) {
   return definition.beats.flatMap((beat) =>
     beat.steps.flatMap((step) => (step.type === "question" ? [step.questionId] : [])),
   );
 }
 
-export function validateNarrativeChallengeDefinition(definition: NarrativeChallengeDefinition) {
+export function validateNarrativeChallengeDefinition<QuestionId extends string>(
+  definition: NarrativeChallengeDefinition<QuestionId>,
+) {
   if (!Number.isInteger(definition.maxScore) || definition.maxScore <= 0) {
     throw new Error("Narrative challenge maxScore must be a positive integer.");
   }
@@ -124,11 +128,15 @@ export function validateNarrativeChallengeDefinition(definition: NarrativeChalle
   );
 }
 
-export function getPyramidQuestionIds(definition: PyramidChallengeDefinition) {
+export function getPyramidQuestionIds<QuestionId extends string>(
+  definition: PyramidChallengeDefinition<QuestionId>,
+) {
   return definition.levels.map((level) => level.questionId);
 }
 
-export function validatePyramidChallengeDefinition(definition: PyramidChallengeDefinition) {
+export function validatePyramidChallengeDefinition<QuestionId extends string>(
+  definition: PyramidChallengeDefinition<QuestionId>,
+) {
   if (!Number.isInteger(definition.attemptVersion) || definition.attemptVersion <= 0) {
     throw new Error("Pyramid challenge attemptVersion must be a positive integer.");
   }

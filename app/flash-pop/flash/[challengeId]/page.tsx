@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopFlashGame } from "@/components/game";
 import { getChallengeById } from "@/data/challenges";
-import { FLASH_POP_FLASH_PILOT_ID as FLASH_POP_FLASH_PILOT } from "@/features/flash-pop/demoSocial";
+import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 
-export const FLASH_POP_FLASH_PILOT_ID = FLASH_POP_FLASH_PILOT;
 export const dynamicParams = false;
 
 export function generateStaticParams() {

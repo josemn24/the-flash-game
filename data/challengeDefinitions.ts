@@ -5,6 +5,7 @@ import type {
   NarrativeTextBlock,
   QuestionMedia,
 } from "@/types/game";
+import type { KnownQuestionId } from "@/data/questions";
 
 const narration = (text: string): NarrativeTextBlock => ({ type: "narration", text });
 const dialogue = (speaker: string, text: string): NarrativeTextBlock => ({
@@ -858,7 +859,7 @@ export const challengeDefinitions = {
       "p17-final-record": 18,
     },
   },
-} satisfies Record<string, ChallengeDefinition>;
+} satisfies Record<string, ChallengeDefinition<KnownQuestionId>>;
 
 export type KnownChallengeDefinitionId = keyof typeof challengeDefinitions;
 

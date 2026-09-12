@@ -2433,9 +2433,12 @@ export const questionsById = {
   },
 } satisfies Record<string, Question>;
 
-export type QuestionId = keyof typeof questionsById;
+export type KnownQuestionId = keyof typeof questionsById;
 
-export function getQuestionsByIds(ids: readonly QuestionId[]) {
+/** @deprecated Usa `KnownQuestionId`; los IDs canónicos viven en `@/types/domain`. */
+export type QuestionId = KnownQuestionId;
+
+export function getQuestionsByIds(ids: readonly KnownQuestionId[]) {
   return ids.map((id) => questionsById[id]);
 }
 
@@ -2527,4 +2530,4 @@ export const questionGroups = {
     "p17-observation-order",
     "p17-final-record",
   ],
-} satisfies Record<string, QuestionId[]>;
+} satisfies Record<string, KnownQuestionId[]>;
