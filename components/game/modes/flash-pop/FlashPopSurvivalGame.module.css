@@ -1,0 +1,24 @@
+@layer app-formats {
+  .screen {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+    padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
+  }
+
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .feedbackFrame {
+    display: flex;
+    width: 100%;
+    min-height: calc(100dvh - 48px);
+    align-items: stretch;
+    justify-content: center;
+  }
+}

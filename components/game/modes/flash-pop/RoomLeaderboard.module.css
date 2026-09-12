@@ -1,0 +1,347 @@
+@layer app-formats {
+  .card {
+    min-width: 0;
+  }
+
+  .heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .eyebrow {
+    margin: 0 0 4px;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .heading h1,
+  .heading h2 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: 28px;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .headingIcon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-social);
+  }
+
+  .list {
+    display: grid;
+    gap: 6px;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: var(--radius-control);
+  }
+
+  .cardItem {
+    min-width: 0;
+  }
+
+  .playerCard {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px 12px 12px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-control);
+    color: var(--color-ink);
+    cursor: pointer;
+    text-align: left;
+    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  }
+
+  .playerCard:hover {
+    border-color: var(--color-social);
+    transform: translateY(-2px);
+  }
+
+  .playerCard:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .playerCard.current,
+  .playerCard.selected {
+    border-color: var(--color-social);
+    background: var(--color-surface-soft);
+  }
+
+  .playerCard.selected {
+    box-shadow: 0 0 0 2px var(--color-social), var(--shadow-control);
+  }
+
+  .cardRank {
+    width: 48px;
+    flex: 0 0 auto;
+    color: var(--color-social);
+    font-family: var(--type-display);
+    font-size: 25px;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 1;
+    text-align: center;
+  }
+
+  .playerCard[data-rank="1"] .cardRank {
+    color: var(--color-reward);
+  }
+
+  .playerCard[data-rank="2"] .cardRank {
+    color: var(--color-ink-muted);
+  }
+
+  .playerCard[data-rank="3"] .cardRank {
+    color: color-mix(in srgb, var(--color-reward) 55%, #a65a3a);
+  }
+
+  .cardName {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .cardName strong,
+  .cardName small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cardName strong {
+    font-family: var(--type-display);
+    font-size: 19px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .cardName small {
+    color: var(--color-ink-muted);
+    font-size: 11px;
+  }
+
+  .cardPoints {
+    display: inline-flex;
+    min-width: 64px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
+    font-family: var(--type-mono);
+  }
+
+  .cardPoints svg {
+    width: 17px;
+    height: 17px;
+    color: var(--color-social);
+  }
+
+  .cardPoints strong {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .cardArrow {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    color: var(--color-ink-muted);
+    transition: transform 160ms ease, color 160ms ease;
+  }
+
+  .playerCard:hover .cardArrow,
+  .playerCard.selected .cardArrow {
+    color: var(--color-social);
+    transform: translateX(2px);
+  }
+
+  .current {
+    background: var(--color-surface-soft);
+  }
+
+  .rank {
+    width: 18px;
+    flex: 0 0 auto;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .name {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .name strong,
+  .name small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .name strong {
+    font-size: 13px;
+  }
+
+  .name small {
+    color: var(--color-ink-muted);
+    font-size: 10px;
+  }
+
+  .points {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
+    font-family: var(--type-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .points svg {
+    width: 15px;
+    height: 15px;
+    color: var(--color-social);
+  }
+
+  .points strong {
+    font-weight: 800;
+  }
+
+  .compact {
+    padding-block: var(--space-5);
+  }
+
+  .compact .heading h2 {
+    font-size: 24px;
+  }
+
+  .bare {
+    width: 100%;
+  }
+
+  .cardsSection {
+    width: 100%;
+  }
+
+  .bare .heading h1 {
+    font-family: var(--type-display);
+    font-size: clamp(42px, 7vw, 68px);
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+  }
+
+  .bare .list {
+    gap: 0;
+    margin-top: var(--space-6);
+  }
+
+  .bare.cardsSection .list {
+    gap: var(--space-3);
+  }
+
+  .bare .row {
+    padding: 14px var(--space-3);
+    border-bottom: var(--border-subtle);
+    border-radius: 0;
+  }
+
+  .bare .row:last-child {
+    border-bottom: 0;
+  }
+
+  .bare .current {
+    border-radius: var(--radius-control);
+  }
+
+  .compact .list {
+    margin-top: var(--space-4);
+  }
+
+  .compact .playerCard {
+    padding-block: 10px;
+  }
+
+  .compact .row {
+    padding-block: 6px;
+  }
+
+  .empty {
+    margin: var(--space-5) 0 0;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  .pendingSummary {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 480px) {
+    .playerCard {
+      gap: 9px;
+      padding-right: 10px;
+    }
+
+    .cardRank {
+      width: 38px;
+      font-size: 21px;
+    }
+
+    .cardName strong {
+      font-size: 17px;
+    }
+
+    .cardPoints {
+      min-width: 58px;
+      padding-inline: 8px;
+    }
+
+    .cardArrow {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

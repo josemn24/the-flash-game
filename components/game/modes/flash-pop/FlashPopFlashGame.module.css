@@ -1,0 +1,105 @@
+@layer app-formats {
+  .screen {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
+  .stageFrame {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .stage {
+    display: grid;
+    width: min(100%, 820px);
+    min-height: calc(100dvh - 48px);
+    margin: 0 auto;
+    align-content: start;
+    gap: var(--space-6);
+  }
+
+  .questionCard h1 {
+    max-width: 720px;
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(24px, 6.4vw, 32px);
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 0.98;
+  }
+
+  .questionIndicator {
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .questionIndicator span {
+    color: var(--color-ink-muted);
+  }
+
+  .questionCard {
+    align-self: center;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .promptContext {
+    display: inline-block;
+    max-width: 100%;
+    margin: 0 0 16px;
+    border-left: 3px solid var(--color-social);
+    border-radius: 0 8px 8px 0;
+    padding: 6px 10px;
+    color: var(--color-focus);
+    background: rgb(105 87 232 / 9%);
+    font-family: var(--type-mono);
+    font-size: clamp(0.64rem, 1.4vw, 0.75rem);
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .questionMedia {
+    margin: 24px auto 4px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface-soft);
+  }
+
+  .questionCard > div:last-child {
+    margin-top: 28px;
+  }
+
+  @media (max-width: 700px) {
+    .stage {
+      min-height: calc(100dvh - 32px);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .mobileLabelMuted {
+      color: var(--color-ink-muted);
+    }
+
+    .questionIndicator {
+      display: none;
+    }
+  }
+}

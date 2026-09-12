@@ -100,6 +100,7 @@ export type {
 } from "@/types/question";
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";
 export type { GamePhase } from "@/types/session";
+export type { UserProfile } from "@/types/user";
 export type {
   AlphabetChallenge,
   AlphabetChallengeDefinition,
@@ -118,7 +119,6 @@ export type {
   NarrativeBeatDefinition,
   NarrativeChallenge,
   NarrativeChallengeDefinition,
-  NarrativeNotebookEntry,
   NarrativeOutcome,
   NarrativeQuestionStep,
   NarrativeQuestionStepDefinition,
@@ -140,4 +140,25 @@ export type {
   SurvivalChallenge,
   SurvivalChallengeDefinition,
 } from "@/types/challenge";
-export type { Room, Season, SeasonStatus } from "@/types/room";
+export type {
+  AlphabetAnswerReview,
+  AnswerReview,
+  ChallengeCompletion,
+  ChallengeCompletionInput,
+  ChallengeCompletionResult,
+  GameRoomContext,
+  Room,
+  RoomChallengeResult,
+  RoomChallengeAttempt,
+  RoomDailyLeaderboardEntry,
+  RoomLeaderboardEntry,
+  RoomCardModel,
+  RoomMember,
+  RoomMemberDetailModel,
+  RoomDetailModel,
+  RoomHistoryEntry,
+  RoomHistoryResult,
+  RoomSettingsModel,
+  Season,
+  SeasonStatus,
+} from "@/types/room";

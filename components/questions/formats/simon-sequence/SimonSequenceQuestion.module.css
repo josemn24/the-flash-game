@@ -1,0 +1,116 @@
+@layer app-formats {
+  .root {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+  }
+  .phaseHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: rgba(255, 255, 255, 0.64);
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .phaseHeader strong {
+    color: var(--color-brand);
+  }
+  .instructions {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+  .pads {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    max-width: 30rem;
+  }
+  .pad {
+    display: grid;
+    min-height: 8.75rem;
+    place-items: center;
+    gap: 0.45rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1.25rem;
+    color: white;
+    background: var(--color-surface-soft);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+    transition:
+      transform 120ms,
+      filter 120ms,
+      box-shadow 120ms,
+      border-color 120ms;
+  }
+  .pad:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+  }
+  .pad:not(:disabled):hover {
+    filter: brightness(1.14);
+    transform: translateY(-1px);
+  }
+  .pad:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 3px;
+  }
+  .symbol {
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+  .pad strong {
+    font-size: 0.83rem;
+    letter-spacing: 0.02em;
+  }
+  .pad0 {
+    background: linear-gradient(145deg, #2748c5, #17286d);
+  }
+  .pad1 {
+    background: linear-gradient(145deg, #a3379b, #602055);
+  }
+  .pad2 {
+    background: linear-gradient(145deg, #d27826, #7a3b12);
+  }
+  .pad3 {
+    background: linear-gradient(145deg, #1c966e, #10513d);
+  }
+  .padActive {
+    border-color: var(--color-brand);
+    filter: brightness(1.5);
+    box-shadow:
+      0 0 0 0.25rem rgb(var(--color-brand-rgb) / 0.22),
+      0 0 2rem rgb(var(--color-brand-rgb) / 0.4);
+    transform: scale(1.025);
+  }
+  @media (min-width: 640px) {
+    .pad {
+      min-height: 10.5rem;
+    }
+    .symbol {
+      font-size: 3rem;
+    }
+  }
+
+  .root .phaseHeader,
+  .root .instructions {
+    color: var(--color-ink-muted);
+  }
+  .root .pad {
+    border-color: var(--color-border);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-card);
+  }
+  .root .pad:focus-visible {
+    outline-color: var(--state-focus);
+  }
+  .root .padActive {
+    border-color: var(--state-selected);
+    box-shadow:
+      0 0 0 0.25rem color-mix(in srgb, var(--state-selected) 22%, transparent),
+      var(--shadow-card);
+  }
+}

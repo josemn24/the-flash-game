@@ -1,0 +1,170 @@
+@layer app-formats {
+  .root {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 1.4rem;
+  }
+  .header,
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+    color: rgba(255, 255, 255, 0.58);
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .header strong {
+    color: var(--color-brand);
+  }
+  .meta {
+    justify-content: flex-start;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.62rem;
+  }
+  .grid {
+    display: grid;
+    gap: 0.55rem;
+    max-width: 38rem;
+  }
+  .tile {
+    display: grid;
+    aspect-ratio: 1;
+    min-height: 4.8rem;
+    place-items: stretch;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.95rem;
+    color: rgba(255, 255, 255, 0.85);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+      var(--color-surface-soft);
+    transition:
+      border-color 150ms,
+      background 150ms,
+      transform 150ms;
+  }
+  .tile:hover:not(:disabled) {
+    border-color: rgb(var(--color-brand-rgb) / 0.55);
+    transform: translateY(-1px);
+  }
+  .tile:focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  .tileRevealed {
+    border-color: rgba(53, 232, 255, 0.62);
+    background: rgba(53, 232, 255, 0.08);
+  }
+  .tileMatched {
+    border-color: rgb(var(--color-brand-rgb) / 0.78);
+    background: rgb(var(--color-brand-rgb) / 0.1);
+  }
+  .tileMismatched {
+    border-color: rgba(255, 93, 100, 0.78);
+    background: rgba(255, 93, 100, 0.12);
+  }
+  .tileFace,
+  .tileBack {
+    position: relative;
+    display: grid;
+    place-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+    padding: 0.55rem;
+    text-align: center;
+  }
+  .tileFace > div {
+    width: 100%;
+    height: 2.8rem;
+  }
+  .tileFace > div img,
+  .tileFace > div svg {
+    max-height: 100%;
+  }
+  .tileSymbol {
+    font-size: 2.75rem;
+    line-height: 1;
+  }
+  .tileFace strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.8rem;
+    line-height: 1.15;
+  }
+  .tileBack {
+    color: rgba(255, 255, 255, 0.24);
+    font-family: var(--type-display);
+    font-size: 1.8rem;
+    font-weight: var(--type-display-strong-weight);
+  }
+  .stateIcon {
+    position: absolute;
+    right: 0.45rem;
+    bottom: 0.45rem;
+    width: 1rem;
+    height: 1rem;
+  }
+  .tileMatched .stateIcon {
+    color: var(--color-brand);
+  }
+  .tileMismatched .stateIcon {
+    color: #ff858a;
+  }
+
+  @media (min-width: 640px) {
+    .grid {
+      gap: 0.7rem;
+    }
+    .tile {
+      min-height: 6.25rem;
+    }
+    .tileFace strong {
+      font-size: 0.86rem;
+    }
+    .tileSymbol {
+      font-size: 3.25rem;
+    }
+  }
+
+  .root .header,
+  .root .meta {
+    color: var(--color-ink-muted);
+  }
+  .root .tile {
+    border-color: var(--color-border);
+    color: var(--color-ink);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-control);
+  }
+  .root .tile:hover:not(:disabled) {
+    border-color: var(--state-focus);
+  }
+  .root .tile:focus-visible {
+    outline-color: var(--state-focus);
+  }
+  .root .tileRevealed {
+    border-color: var(--state-selected);
+    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+  }
+  .root .tileMatched {
+    border-color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+  }
+  .root .tileMismatched {
+    border-color: var(--state-error);
+    background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+  }
+  .root .tileBack {
+    color: var(--color-ink-faint);
+  }
+  .root .tileMatched .stateIcon {
+    color: var(--state-correct);
+  }
+  .root .tileMismatched .stateIcon {
+    color: var(--state-error);
+  }
+}

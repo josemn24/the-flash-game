@@ -1,0 +1,82 @@
+@layer app-formats {
+  .card:hover:not(:disabled) {
+    border-color: var(--format-hover-border);
+    color: var(--format-hover-ink);
+    background: var(--format-hover-surface);
+  }
+  .card[aria-pressed="true"] {
+    border-color: var(--format-selected-border);
+    background: var(--format-selected-surface);
+  }
+  .card:focus-visible {
+    outline: 3px solid var(--format-focus);
+    outline-offset: 3px;
+  }
+  .card:disabled {
+    cursor: default;
+  }
+  @media (min-width: 640px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --format-ink: var(--color-ink);
+    --format-surface: var(--color-surface-raised);
+    --format-border: var(--color-border);
+    --format-hover-ink: var(--color-ink);
+    --format-hover-surface: var(--color-surface);
+    --format-hover-border: var(--color-social);
+    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
+    --format-accent: var(--color-social);
+    --format-focus: var(--color-focus);
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+
+  .card {
+    overflow: hidden;
+    border: 1px solid var(--format-border);
+    color: var(--format-ink);
+    background: var(--format-surface);
+    transition:
+      border-color 160ms,
+      color 160ms,
+      background 160ms;
+    min-height: 72px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-control);
+  }
+
+  .label {
+    place-items: center;
+    padding: 0.8rem;
+    text-align: center;
+    min-height: 72px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .label svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+  }
+
+  [data-item-count="3"] .card:last-child {
+    grid-column: 1 / -1;
+    width: calc((100% - var(--space-3)) / 2);
+    justify-self: center;
+  }
+}

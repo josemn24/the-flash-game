@@ -17,6 +17,7 @@ export type AlphabetState = {
   phase: AlphabetPhase;
   round: number;
   currentIndex: number;
+  playedCount: number;
   letters: AlphabetLetterState[];
   feedback: "correct" | "incorrect" | null;
   elapsedTime: number;
@@ -44,6 +45,7 @@ export function createAlphabetInitialState(challenge: AlphabetChallenge): Alphab
     phase: "intro",
     round: 1,
     currentIndex: 0,
+    playedCount: 0,
     letters: challenge.entries.map((entry) => ({
       letter: entry.letter,
       questionId: entry.question.id,
@@ -90,6 +92,7 @@ function activateNext(state: AlphabetState): AlphabetState {
   return {
     ...state,
     phase: "playing",
+    playedCount: state.playedCount + (state.letters[nextIndex]?.status === "unvisited" ? 1 : 0),
     round: state.round + (wrapped ? 1 : 0),
     currentIndex: nextIndex,
     feedback: null,
@@ -107,6 +110,7 @@ export function alphabetReducer(state: AlphabetState, action: AlphabetAction): A
       return {
         ...state,
         phase: "playing",
+        playedCount: 1,
         letters: state.letters.map((letter, index) =>
           index === 0 ? { ...letter, status: "active" } : letter,
         ),
@@ -159,6 +163,7 @@ export function alphabetReducer(state: AlphabetState, action: AlphabetAction): A
         phase: "intro",
         round: 1,
         currentIndex: 0,
+        playedCount: 0,
         letters: state.letters.map((letter) => ({
           ...letter,
           status: "unvisited",

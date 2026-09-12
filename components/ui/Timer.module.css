@@ -1,0 +1,55 @@
+@layer app-components {
+  .timer {
+    display: inline-flex;
+    min-width: 72px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px solid var(--color-border-hover);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: 0 2px 0 rgb(23 23 32 / 12%);
+    color: var(--color-ink);
+    font-family: var(--type-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .value {
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+
+  .unit {
+    color: var(--color-ink-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .normal {
+    background: var(--color-brand);
+  }
+
+  .urgent {
+    border-color: var(--color-danger);
+    background: var(--color-danger);
+  }
+
+  .finished {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-text-on-social);
+  }
+
+  .finished .unit {
+    color: var(--color-text-on-social);
+  }
+
+  .compact {
+    min-width: 58px;
+    border-width: 1px;
+  }
+
+  .compact .value {
+    font-size: 0.95rem;
+  }
+}
