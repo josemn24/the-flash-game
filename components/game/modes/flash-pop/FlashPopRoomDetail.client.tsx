@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import {
   ArrowIcon,
-  Avatar,
   BoltIcon,
   ButtonLink,
   Canvas,
@@ -169,12 +168,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
             className={styles.roomSettingsLink}
             aria-label={`Abrir ajustes de ${visibleModel.title}`}
           >
-            <Avatar
-              name={visibleModel.title}
-              initials={visibleModel.title.slice(0, 2).toUpperCase()}
-              tone="social"
-              size="md"
-            />
+            <span className={styles.roomSettingsLabel}>{visibleModel.title}</span>
             <SettingsIcon />
           </Link>
         </div>
