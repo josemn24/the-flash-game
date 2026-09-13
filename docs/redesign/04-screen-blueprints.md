@@ -37,7 +37,7 @@ La lógica actual de sesión se conserva. `ChallengeIntro` puede seguir existien
 - Cada reto ofrece un único intento por jugador.
 - El intento comienza cuando se presenta la primera pregunta.
 - Salir y regresar continúa el mismo estado; nunca reinicia tiempo, respuestas o puntuación.
-- Completar fija score, posición y rayos de temporada.
+- Completar fija Flash Points, posición y total de temporada.
 - No existe repetición ni modo práctica.
 - Un reto expirado sin resultado se muestra como `No completado`.
 - Desarrollo y QA pueden disponer de un reset fuera de la interfaz de producción.
@@ -63,7 +63,7 @@ Conseguir que una persona entienda qué jugar y sienta la presencia de su sala e
 │ │ La Pirámide                 │ │
 │ │ ¿Hasta dónde puedes subir?  │ │
 │ │ [A][B][C] +3 ya jugaron     │ │
-│ │ Hasta +120 ⚡                │ │
+│ │ Hasta +100 ⚡                │ │
 │ │ [      Jugar ahora       ]  │ │
 │ └─────────────────────────────┘ │
 │                                 │
@@ -92,7 +92,7 @@ Conseguir que una persona entienda qué jugar y sienta la presencia de su sala e
 - Reto destacado: La Pirámide: Cumbre lógica.
 - Mensaje: `¿Hasta dónde puedes subir?`.
 - Progreso simulado: nivel 4, `680 / 900 ⚡`.
-- Máximo de temporada anunciado: `Hasta +120 ⚡`.
+- Máximo del desafío anunciado: `Hasta +100 ⚡`.
 - Participantes simulados: tres avatares y `+3`.
 - Posición simulada: `4.º de 8`.
 
@@ -122,7 +122,7 @@ Contenido:
 - Nombre de modalidad.
 - Regla diferencial en una frase.
 - Tiempo aproximado.
-- Máximo de rayos de temporada.
+- Máximo de Flash Points del desafío.
 - Aviso `Tienes un único intento`.
 - CTA `Empezar intento`.
 
@@ -131,7 +131,7 @@ Para Pirámide:
 ```text
 Sube todo lo que puedas.
 Un fallo termina el ascenso.
-7 niveles · ≈ 2 min · Hasta +120 ⚡
+7 niveles · ≈ 2 min · Hasta +100 ⚡
 Tienes un único intento.
 ```
 
@@ -240,14 +240,14 @@ Celebrar, contextualizar el resultado socialmente y ofrecer una siguiente acció
 │                                 │
 │       [confeti + corona]        │
 │             84                  │
-│           puntos               │
+│        Flash Points            │
 │                                 │
 │      ¡Has quedado 2.º!          │
 │      ↑ Superaste a Marta        │
 │                                 │
 │ [A 91] [TÚ 84] [M 76]          │
 │                                 │
-│ +96 ⚡ de temporada · Nivel 4   │
+│ +96 Flash Points · Nivel 4     │
 │                                 │
 │ [      Ver clasificación     ]  │
 │ [      Revisar respuestas    ]  │
@@ -260,7 +260,7 @@ Celebrar, contextualizar el resultado socialmente y ofrecer una siguiente acció
 
 1. Celebración y puntuación.
 2. Posición relativa.
-3. Rayos y progreso de temporada.
+3. Flash Points y progreso de temporada.
 4. Próxima acción.
 5. Estadísticas detalladas.
 
@@ -268,7 +268,7 @@ Celebrar, contextualizar el resultado socialmente y ofrecer una siguiente acció
 
 | Situación           | Título                  | Apoyo                            |
 | ------------------- | ----------------------- | -------------------------------- |
-| Top 1               | ¡Te has puesto primero! | Aventajas a Ana por 12 puntos    |
+| Top 1               | ¡Te has puesto primero! | Aventajas a Ana por 12 Flash Points |
 | Hito de temporada   | ¡Nivel de temporada!    | Has desbloqueado un nuevo marco  |
 | Buen resultado      | ¡Sprint completado!     | Has quedado 4.º de 8             |
 | Resultado bajo      | Reto completado         | Mañana tendrás una nueva ocasión |
@@ -283,7 +283,7 @@ Celebrar, contextualizar el resultado socialmente y ofrecer una siguiente acció
 
 ### Criterios de aceptación
 
-- Posición, score y rayos de temporada visibles sin scroll.
+- Posición, Flash Points del desafío y total de temporada visibles sin scroll.
 - Existe una comparación humana concreta, no solo porcentaje.
 - La celebración se completa en menos de 2.5 s y no bloquea las acciones.
 - Con reducción de movimiento, el resultado aparece sin pérdida de información.
@@ -315,7 +315,7 @@ type LobbyChallengeSocialState = {
   playerScore?: number;
   playerRank?: number;
   totalPlayers: number;
-  seasonXp: { current: number; nextLevelAt: number; maxEarnable: number };
+  seasonFlashPoints: { current: number; nextMilestoneAt: number; maxEarnable: number };
   attemptStatus: "available" | "inProgress" | "completed" | "notCompleted";
 };
 ```

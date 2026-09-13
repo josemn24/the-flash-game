@@ -46,8 +46,9 @@ membresías, intentos y respuestas canónicos. El resultado local reemplaza el i
 jugador actual al formar un ranking. La publicación 06, que carece de intentos, muestra solo el
 resultado local y ninguna actividad social.
 
-Los totales de la temporada son Dark 242, Jackobo 225, Kike 169, Rielbe 158 y Palmera 98. XP,
-tonos de avatar y otras constantes decorativas permanecen como configuración de presentación.
+Los totales de Flash Points de la temporada son Dark 242, Jackobo 225, Kike 169, Rielbe 158 y
+Palmera 98. Los tonos de avatar y otras constantes decorativas permanecen como configuración de
+presentación.
 
 El superadministrador demo es un jugador con rol global, sin membresía ni intentos competitivos.
 

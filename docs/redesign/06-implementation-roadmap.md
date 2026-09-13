@@ -7,7 +7,9 @@ realiza después por variante y sin sustituir el tema global, una vez validada l
 
 El motor de sesión, scoring, validación, datos de preguntas y rutas actuales se consideran infraestructura estable. La primera intervención se concentra en presentación y datos mock sociales.
 
-Las decisiones de producto aprobadas son: un único intento oficial sin práctica, rayos como XP de temporada, cinco invariantes de marca, seis familias de ilustración y validación social real separada de la prueba visual.
+Las decisiones de producto aprobadas son: un único intento oficial sin práctica, Flash Points como
+puntuación del desafío y total de temporada, cinco invariantes de marca, seis familias de
+ilustración y validación social real separada de la prueba visual.
 
 ## Mapa actual relevante
 
@@ -130,7 +132,7 @@ Cumplido: las primitivas cubren sus estados sin depender de una pantalla concret
 
 - Crear result hero celebratorio.
 - Añadir posición simulada y comparación humana.
-- Añadir rayos de temporada y, si corresponde, un hito local de demo.
+- Añadir Flash Points de temporada y, si corresponde, un hito local de demo.
 - Mantener precisión, tiempo y revisión debajo.
 - Reflejar el estado completado al volver al lobby durante la misma sesión.
 
@@ -142,7 +144,7 @@ Cumplido: las primitivas cubren sus estados sin depender de una pantalla concret
 
 ### Criterio de cierre
 
-- Score, posición y rayos de temporada aparecen sin scroll.
+- Flash Points, posición y total de temporada aparecen sin scroll.
 - El jugador puede abrir clasificación, revisar respuestas o volver al lobby, pero no repetir.
 - La celebración no bloquea la navegación.
 
@@ -171,14 +173,14 @@ Se observa:
 - Efecto emocional de superar o ser superado por una persona conocida.
 - Utilidad de la actividad del grupo.
 - Deseo de comparar o compartir.
-- Comprensión y valor de los rayos de temporada.
+- Comprensión y valor de los Flash Points de temporada.
 
 ### Preguntas de decisión
 
 - ¿La nueva estética sigue pareciendo The Flash?
 - ¿La capa social resulta útil o decorativa?
 - ¿La ilustración mejora comprensión o solo ocupa espacio?
-- ¿Los rayos se entienden como progreso de temporada y motivan sin parecer moneda o energía?
+- ¿Los Flash Points se entienden como puntos acumulados de temporada sin parecer moneda o energía?
 - ¿El ritmo sigue siendo rápido?
 - ¿El intento único se percibe como claro y justo?
 
@@ -225,7 +227,7 @@ No se debe crear una abstracción universal antes de tener dos consumidores real
 | Parecer una copia de Playus          | Aplicar las cinco invariantes de marca y comprobar reconocimiento sin logotipo |
 | Romper los formatos existentes       | Tema y componentes aislados; migración por formato                             |
 | Prometer social sin backend          | Datos marcados como demo y módulos sin falsa interactividad                    |
-| Confundir rayos con moneda o energía | Separar score y XP, mostrar progreso de nivel y evitar saldos ambiguos         |
+| Confundir Flash Points con moneda o energía | Mostrar la acumulación de temporada y evitar saldos ambiguos         |
 | Explotar o reiniciar el intento      | Persistir y recuperar el mismo intento; reset exclusivo para desarrollo y QA   |
 | Exceso de ruido                      | Un hero, un CTA y una recompensa principal por viewport                        |
 | Contraste insuficiente del amarillo  | Amarillo como fondo con Ink, nunca texto pequeño sobre blanco                  |
@@ -255,7 +257,8 @@ El vertical slice está terminado cuando:
 
 1. El lobby presenta un reto jugable, progreso y presencia social demo.
 2. El jugador completa al menos una pregunta con feedback contextual.
-3. El resultado muestra score, posición y rayos de temporada como valores distintos.
+3. El resultado muestra los Flash Points del desafío, la posición y el total de temporada sin
+   presentarlos como monedas o energía.
 4. Regresar al lobby refleja el reto completado durante la sesión.
 5. Reabrir el reto continúa el intento o muestra su resultado; nunca crea un segundo intento.
 6. Toda la lógica de juego y puntuación sigue siendo correcta.

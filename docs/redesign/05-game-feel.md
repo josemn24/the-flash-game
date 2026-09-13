@@ -109,12 +109,12 @@ No se oscurece toda la pantalla ni se introduce vibración prolongada.
 
 ## Progreso y recompensas
 
-### Rayos de temporada
+### Flash Points de temporada
 
-- Se conceden una sola vez al terminar el intento oficial.
-- El resultado separa visualmente score y rayos.
-- El valor obtenido avanza la barra de temporada y muestra el siguiente hito.
-- Los rayos no se gastan y nunca se representan como energía, vidas o intentos.
+- Se acreditan una sola vez al terminar el intento oficial.
+- El resultado muestra los Flash Points obtenidos y su acumulación en la temporada.
+- El total obtenido puede avanzar la barra de temporada y mostrar el siguiente hito.
+- Los Flash Points no se gastan y nunca se representan como energía, vidas o intentos.
 - No existe animación de recompensa asociada a repetir o practicar.
 
 ### Subida de nivel
@@ -145,7 +145,7 @@ Secuencia recomendada:
 0–250 ms      entrada del panel
 250–1150 ms   score cuenta hasta el total
 650–1350 ms   posición se actualiza
-950–1700 ms   rayos e hito de temporada
+950–1700 ms   Flash Points e hito de temporada
 1200 ms       acciones ya habilitadas
 1700–2300 ms  partículas terminan
 ```

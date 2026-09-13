@@ -43,7 +43,8 @@ Nota temporal: Supervivencia y Narrativa ya usan el shell Flash Pop para cualqui
 El contrato aprobado para Flash Pop añade cinco decisiones:
 
 - Cada reto concede un único intento oficial. No existe repetición ni modo práctica para el jugador.
-- Los rayos son progreso de temporada, no moneda, energía ni puntuación de partida.
+- Los Flash Points son la puntuación obtenida en cada desafío y el progreso de la temporada, no una
+  moneda ni energía. El rayo puede mantenerse como recurso visual.
 - La identidad se apoya en color Flash, geometría diagonal, tipografía competitiva localizada, movimiento direccional y dioramas 2.5D eléctricos.
 - Los treinta y un formatos se agrupan en seis familias visuales para compartir un sistema de ilustración escalable.
 - Los datos simulados validan comprensión y dirección visual; el valor social solo se valida con grupos y resultados reales.

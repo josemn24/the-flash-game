@@ -47,20 +47,19 @@ Cada renderer produce Flash Pop directamente. Los modelos de pregunta, callbacks
 respuestas parciales, bloqueo y timeouts permanecen independientes de la presentación. Los
 colores propios de una mecánica se conservan cuando tienen significado funcional.
 
-## Economía visual: puntos y rayos
+## Economía visual: Flash Points
 
-Los dos valores no son intercambiables:
+Flash Points es el único valor funcional de puntuación. El rayo puede conservarse como icono o
+recurso visual, pero no representa una XP separada:
 
-| Valor      | Significado                    | Dónde aparece                            |
-| ---------- | ------------------------------ | ---------------------------------------- |
-| Puntos     | Rendimiento del intento actual | Juego, resultado y clasificación         |
-| Rayos `⚡` | XP acumulada de la temporada   | Lobby, resultado y progreso de temporada |
+| Valor               | Significado                                      | Dónde aparece                                  |
+| ------------------- | ------------------------------------------------ | ---------------------------------------------- |
+| Flash Points `⚡`   | Puntuación del desafío y total de la temporada   | Juego, resultado, lobby y ambos rankings       |
 
-- El intento oficial concede una base de 40 rayos por finalizar, hasta 60 por rendimiento y hasta 20 por velocidad.
-- El máximo orientativo anunciado es `Hasta +120 ⚡`; el valor definitivo lo calcula un adaptador de presentación a partir del resultado canónico.
-- Los rayos se conceden una sola vez y no se gastan.
+- El intento oficial acredita Flash Points una sola vez; el máximo es el del resultado canónico del desafío.
+- Los Flash Points no se gastan.
 - No se usa un contador como `⚡ 4`, porque puede interpretarse como energía o número de intentos.
-- Durante las preguntas se muestran puntos o tiempo, nunca el saldo de rayos.
+- Durante las preguntas se muestran el progreso, los puntos o el tiempo; no un saldo de energía.
 
 ## Espaciado
 
@@ -276,17 +275,18 @@ Estados:
 
 - Fondo Reward.
 - Icono propio, no emoji del sistema.
-- Valor corto: `+120`, `Cofre`, `x2`.
+- Valor corto: `+N Flash Points` o el nombre de un hito visual.
 - Se usa una sola recompensa protagonista por tarjeta.
 
-Cuando representa rayos, el chip usa el copy `Hasta +120 ⚡` antes de jugar y `+N ⚡ de temporada` en el resultado. No se presenta como moneda ni se mezcla con el score.
+Cuando representa Flash Points, el chip puede usar un copy como `Hasta +N ⚡` antes de jugar y
+`+N Flash Points de temporada` en el resultado. No se presenta como moneda ni como energía.
 
 ### Result hero
 
 - Mensaje de desempeño.
 - Puntuación animada.
 - Posición relativa.
-- Rayos obtenidos y, si corresponde, hito de temporada.
+- Flash Points obtenidos y, si corresponde, hito de temporada.
 - Una comparación social significativa.
 - CTA primario y secundario.
 
@@ -304,7 +304,7 @@ No existe CTA de repetición o práctica.
 
 - `Disponible`: todavía no se ha presentado la primera pregunta.
 - `En progreso`: existe un intento oficial recuperable.
-- `Completado`: resultado inmutable para clasificación y rayos.
+- `Completado`: resultado inmutable para clasificación y Flash Points.
 - `No completado`: el reto expiró antes de terminar.
 - Abrir un reto `En progreso` siempre continúa el mismo intento.
 - Reiniciar el intento solo es posible mediante una herramienta interna de desarrollo o QA, nunca desde la interfaz de producción.

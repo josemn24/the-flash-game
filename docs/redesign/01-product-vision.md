@@ -51,13 +51,13 @@ The Flash será el lugar en el que un grupo de amigos entra cada día para resol
 - Si el reto expira sin completarse, queda como `No completado`.
 - Los resets solo existen como herramienta interna de desarrollo y QA.
 
-### Rayos como progreso de temporada
+### Flash Points como progreso de temporada
 
 - La puntuación representa el rendimiento en una partida.
-- Los rayos representan XP y avance de temporada.
-- Completar el intento oficial concede rayos una sola vez: una base por finalizar y un bonus por rendimiento y velocidad, hasta el máximo anunciado.
-- Los rayos no se gastan, no son vidas y no limitan el acceso al reto diario.
-- Sus hitos pueden desbloquear títulos, marcos, celebraciones y formatos bonus, pero no una economía artificial.
+- Los Flash Points son la puntuación acreditada por el desafío y el avance de temporada.
+- Completar el intento oficial acredita Flash Points una sola vez, hasta el máximo del desafío.
+- Los Flash Points no se gastan, no son vidas y no limitan el acceso al reto diario.
+- Sus hitos pueden expresarse visualmente en la temporada, pero no implican una economía artificial.
 
 ### Identidad, ilustración y validación
 
@@ -140,7 +140,7 @@ El primer corte debe demostrar el nuevo lenguaje con un recorrido completo:
 2. Introducción ligera integrada en la tarjeta del reto.
 3. Una pregunta de elección o intruso.
 4. Feedback correcto, incorrecto y timeout.
-5. Resultado con puntuación, posición relativa y rayos de temporada.
+5. Resultado con puntuación, posición relativa y Flash Points de temporada.
 6. Regreso al lobby con el estado actualizado en memoria.
 
 ### Fuera del primer corte
@@ -173,5 +173,5 @@ En una prueba moderada, una persona que no conoce el producto debería poder:
 - Iniciar la partida sin ayuda.
 - Reconocer si acertó, falló o se quedó sin tiempo sin depender del texto.
 - Entender su posición respecto al grupo al terminar.
-- Diferenciar puntuación de partida y rayos de temporada.
+- Entender que los Flash Points del desafío se acumulan en el total de la temporada.
 - Señalar qué ocurrirá si vuelve al lobby.

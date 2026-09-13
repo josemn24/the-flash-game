@@ -47,5 +47,5 @@ Cada modo debe declarar explícitamente:
 - Partidas sincronizadas en tiempo real.
 - Ranking global entre salas.
 - Internacionalización del contenido.
-- XP, niveles de cuenta, economía o recompensas.
+- XP, niveles de cuenta, economía, monedas o recompensas adicionales a Flash Points.
 - Feed social completo y notificaciones.

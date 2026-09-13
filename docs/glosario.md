@@ -37,6 +37,7 @@ Una sala contiene temporadas. Una temporada publica desafíos periódicos. Cada 
 | Ranking de temporada        | Season Leaderboard    | Clasificación acumulada de una temporada.                                                                                                |
 | Puntuación                  | Score                 | Puntos obtenidos por un jugador.                                                                                                         |
 | Puntos                      | Points                | Unidades numéricas de puntuación.                                                                                                        |
+| Flash Points                | Flash Points          | Puntos obtenidos al jugar un desafío y acumulados en el total de la temporada activa de la sala. Es la única puntuación competitiva del producto. |
 | Racha                       | Streak                | Secuencia de aciertos consecutivos.                                                                                                      |
 | Temporizador                | Timer                 | Elemento o sistema que controla el tiempo disponible.                                                                                    |
 | Tiempo límite               | Time Limit            | Duración máxima para responder una prueba o completar un desafío.                                                                        |
@@ -82,7 +83,7 @@ Ejemplo:
 
 ```text
 Desafío: Flash - Cultura general
-Partida de Ana: 8 aciertos, 1.240 puntos, 58 segundos
+Partida de Ana: 8 aciertos, 1.240 Flash Points, 58 segundos
 ```
 
 ### Prueba vs pregunta

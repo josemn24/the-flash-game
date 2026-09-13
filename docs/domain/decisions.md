@@ -194,12 +194,15 @@
 - Un cambio futuro del algoritmo no recalcula automáticamente resultados anteriores.
 - Una corrección administrativa crea un ajuste auditado sin modificar silenciosamente respuestas
   originales.
-- Los puntos competitivos y una posible experiencia o XP son conceptos distintos. La XP queda fuera
-  del dominio inicial.
+- La puntuación competitiva se denomina **Flash Points**. Los Flash Points obtenidos al jugar un
+  desafío se suman al total de la temporada activa de la sala.
+- No existe un concepto funcional separado de XP, rayos acumulados, energía, monedas u otra
+  recompensa que compita con Flash Points.
 
 ## 11. Rankings
 
-- Hay un ranking por desafío programado y otro por temporada.
+- Hay exactamente dos rankings: uno por desafío programado y otro por temporada. No hay ranking
+  global, ranking acumulado de sala ni otros rankings funcionales.
 - Participan `owner`, `admin` y `member`.
 - No participan espectadores, superadministradores, intentos fantasma, intentos invalidados ni
   publicaciones canceladas.
