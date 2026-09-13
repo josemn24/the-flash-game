@@ -111,7 +111,7 @@ export const QUESTION_FORMAT_CATALOG = {
     rules: [
       "Hay un único intruso entre tres y seis elementos",
       "La respuesta se envía inmediatamente al tocar una tarjeta",
-      "Un fallo resta el 20 % y agotar el tiempo no puntúa",
+      "Un fallo resta el 20 % hasta un mínimo de cero y agotar el tiempo no puntúa",
     ],
     authoringTips: [
       "Define primero la relación exacta que comparten los elementos válidos",
@@ -180,7 +180,7 @@ export const QUESTION_FORMAT_CATALOG = {
     rules: [
       "Se selecciona una tarjeta de cada columna",
       "Las parejas correctas quedan bloqueadas y las incorrectas se liberan",
-      "Cada pareja incorrecta resta el 10 % de los puntos base",
+      "Cada pareja incorrecta resta el 10 % de los puntos base hasta un mínimo de cero",
       "Completar todas las parejas envía la respuesta automáticamente",
     ],
     authoringTips: [
@@ -461,7 +461,7 @@ export const QUESTION_FORMAT_CATALOG = {
     rules: [
       "Todos los elementos deben colocarse",
       "La secuencia completa debe ser exacta",
-      "Un orden incorrecto resta el 20 %",
+      "Un orden incorrecto resta el 20 % hasta un mínimo de cero",
     ],
     authoringTips: [
       "Explicita el sentido del orden",
@@ -726,7 +726,7 @@ export const QUESTION_FORMAT_CATALOG = {
     ],
     rules: [
       "La primera pista está visible y no consume puntos",
-      "Cada pista adicional resta una cantidad fija del máximo disponible",
+      "Cada pista adicional resta una cantidad fija del máximo disponible hasta un mínimo de cero",
       "Se puede responder en cualquier momento, pero solo hay un intento",
       "Una respuesta incorrecta o agotar el tiempo puntúa cero",
     ],
@@ -1235,7 +1235,7 @@ export const QUESTION_FORMAT_CATALOG = {
       "La matriz tiene nueve celdas y exactamente una está vacía",
       "Se elige una opción entre cuatro piezas",
       "Tocar una opción envía la respuesta inmediatamente",
-      "Un fallo resta el 20 % y agotar el tiempo no puntúa",
+      "Un fallo resta el 20 % hasta un mínimo de cero y agotar el tiempo no puntúa",
     ],
     authoringTips: [
       "Define una regla verificable por filas y columnas antes de crear las opciones",
@@ -1499,7 +1499,7 @@ export const QUESTION_FORMAT_CATALOG = {
     timing: {
       recommendedSeconds: "45–75 s",
       notes:
-        "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada colocación conflictiva resta un 5 % de los puntos base.",
+        "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada colocación conflictiva resta un 5 % de los puntos base hasta un mínimo de cero.",
     },
     scoring: SCORING_POLICIES.queens,
     examples: [

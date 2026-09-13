@@ -3,8 +3,8 @@
 ## Estado y alcance
 
 - Estado: aprobado.
-- Versión: 1.
-- Fecha: 2026-09-12.
+- Versión: 1.1.
+- Fecha: 2026-09-13.
 - Este documento define comportamiento e invariantes, no tablas SQL concretas.
 
 ## 1. Producto y participación
@@ -20,10 +20,21 @@
 - Todos los desafíos tienen un máximo común de 100 puntos enteros.
 - El modo determina cómo se distribuyen los puntos y sus reglas de intento, tiempo, finalización y
   desempate.
-- No jugar se representa mediante la ausencia de un intento; no se crea un resultado ficticio de
-  cero puntos.
-- Un intento finalizado sin superar completamente el desafío puede conceder crédito parcial si el
-  modo lo permite.
+- Mientras una publicación está disponible, no jugar se representa mediante la ausencia de un
+  intento; no se crea un resultado ficticio de cero puntos. Si la publicación termina antes de que
+  el jugador empiece, el estado visible es `expired`, sin intento jugado ni puntos.
+- La disponibilidad de la publicación (`available`, `locked`, `expired`) es independiente del ciclo
+  de vida del intento. `expired` no es un estado persistido de `Attempt`; identifica una publicación
+  cerrada antes de que el jugador iniciara.
+- Llegar al final reglamentario del flujo produce un intento `completed`, incluso con cero Flash
+  Points. En La Pirámide, tanto completar los siete niveles como fallar un nivel que termina el
+  modo constituyen una finalización reglamentaria y producen `completed`; no es necesario haber
+  jugado los siete niveles para ese estado. La interfaz puede mostrar feedback específico de
+  “desafío superado” solo al completar correctamente los siete niveles. No existe un estado
+  funcional global de desafío “superado” o “fallido”, ni ese feedback específico se convierte en
+  una propiedad de dominio.
+- Cerrar la pestaña, perder la conexión o abandonar voluntariamente un intento iniciado produce
+  `abandoned`; consume el intento y se proyecta como `notCompleted`.
 - La política predeterminada permite un único intento. Un modo puede sustituirla explícitamente y,
   si permite varios intentos, cuenta el mejor.
 
@@ -145,10 +156,15 @@
   temporada, contenido y reglas.
 - Para iniciar un intento el jugador debe tener una membresía competitiva activa.
 - Empezar consume uno de los intentos permitidos, aunque después se cierre o refresque el navegador.
-- Regresar al desafío reanuda el mismo intento; no crea otro.
-- Los estados son `in_progress`, `completed`, `abandoned`, `expired` e `invalidated`.
-- El resultado `passed` o `failed` es independiente del estado del ciclo de vida. Un intento fallido
-  puede estar correctamente completado y conservar puntos parciales.
+- Mientras el intento siga `in_progress`, regresar al desafío reanuda el mismo intento; no crea otro.
+  Si el cierre de la pestaña, la pérdida de conexión o el abandono voluntario se registran como
+  abandono, el intento pasa a ser terminal y no puede reanudarse.
+- Los estados del intento iniciado son `in_progress`, `completed`, `abandoned` e `invalidated`.
+  `expired` describe la publicación que termina antes de que el jugador cree un intento y no genera
+  respuestas, puntos ni resultado propio.
+- No existe un resultado funcional global `passed` o `failed`. Los modos pueden conservar estados o
+  feedback internos, como `summit` en La Pirámide, pero no deben usarse para determinar si el desafío
+  competitivo está completado.
 - El servidor asigna identificadores, timestamps, deadlines, estados y puntuaciones.
 - Crear o recuperar el intento es una operación atómica e idempotente.
 - Solo puede haber una sesión de juego activa por intento.
@@ -187,8 +203,11 @@
 
 - El servidor es la única autoridad sobre corrección y puntuación.
 - La puntuación de un desafío es un entero entre 0 y 100.
-- No se permiten puntuaciones negativas.
-- Cada modo define crédito parcial, penalizaciones y condición de éxito.
+- No se permiten puntuaciones negativas ni en el resultado final de una pregunta o prueba ni en el
+  total del desafío.
+- Cada modo define su crédito parcial, tratamiento del tiempo y penalizaciones. Una penalización
+  puede reducir la puntuación disponible de una pregunta o prueba, pero el resultado final de esa
+  unidad se limita a cero y no reduce el total acumulado por debajo de cero.
 - Si se permiten varios intentos, se acredita el mejor según el comparador del modo.
 - Las reglas de puntuación no tendrán inicialmente un sistema de versiones independiente.
 - La configuración de puntuación queda congelada dentro de la versión publicada y se almacenan los
@@ -210,12 +229,15 @@
 - Participan `owner`, `admin` y `member`.
 - No participan espectadores, superadministradores, intentos fantasma, intentos invalidados ni
   publicaciones canceladas.
-- El ranking del desafío incluye únicamente jugadores con un intento competitivo finalizado.
+- El ranking del desafío incluye únicamente jugadores con un intento competitivo completado, incluso
+  cuando su puntuación sea cero. Los intentos abandonados, expirados o invalidados quedan fuera.
 - El ranking de temporada suma el resultado acreditado de cada publicación en Flash Points.
 - Los miembros activos sin puntuación pueden mostrarse con cero Flash Points en la temporada.
 - Los antiguos miembros permanecen si consiguieron Flash Points, identificados como tales o
   anonimizados cuando corresponda.
 - Cada modo define el desempate de su desafío.
+- En Alfabeto cada respuesta correcta concede puntos y, a igualdad de Flash Points, desempata la
+  rapidez con que se obtuvieron los aciertos.
 - Si dos resultados siguen siendo iguales tras aplicar los criterios competitivos, comparten
   posición.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional

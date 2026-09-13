@@ -2,6 +2,7 @@ import type { ChallengeQueries } from "@/application/queries";
 import { projectLegacyAttempt } from "@/data/mock/legacyAdapters";
 import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
 import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
+import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import {
   getPlayerRouteKey,
   resolveRoomRouteKey,
@@ -126,12 +127,17 @@ export class MockChallengeQueries implements ChallengeQueries {
         : undefined;
       if (!room || !season || season.roomId !== room.id || !membership) return null;
       const competitiveAttempts = this.store.attempts.filter(
-          (attempt) =>
-            attempt.playerId === context.viewerId &&
-            attempt.scheduledChallengeId === schedule.id &&
-            attempt.kind === "competitive",
-        );
+        (attempt) =>
+          attempt.playerId === context.viewerId &&
+          attempt.scheduledChallengeId === schedule.id &&
+          attempt.kind === "competitive",
+      );
       const attemptStatus = getCompetitiveAttemptStatus(competitiveAttempts);
+      const availabilityStatus = getChallengeAvailabilityStatus(
+        schedule.opensAt,
+        schedule.closesAt,
+        new Date(context.now),
+      );
       const completedAttempt = competitiveAttempts.find(
         ({ status }) => status === "completed",
       );
@@ -145,6 +151,7 @@ export class MockChallengeQueries implements ChallengeQueries {
         roomTitle: room.title,
         returnTo: `/salas/${roomKey}`,
         memberId,
+        availabilityStatus,
         attemptStatus,
         result: attempt
           ? { flashPoints: attempt.flashPoints, completed: true, attempt }

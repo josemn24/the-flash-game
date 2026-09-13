@@ -11,13 +11,21 @@ documentación específica y, si afecta a todo el producto, a `decisions.md`.
 Cada modo debe declarar explícitamente:
 
 1. Duración total, duración por pregunta y posibles periodos de gracia.
-2. Condición exacta de finalización, éxito y fracaso.
+2. Condición exacta de finalización y cierre de cada modo. Para La Pirámide ya está confirmado que
+   completar los siete niveles o fallar un nivel que termina el modo produce un intento
+   `completed`; el feedback de “desafío superado” solo corresponde al primer caso. Para los demás
+   modos, no se define un estado funcional global de éxito o fracaso; cualquier feedback de modo es
+   específico de su interfaz.
 3. Número máximo de intentos; el valor predeterminado es uno.
-4. Si permite reintentos y en qué condiciones.
+4. Si algún modo futuro permite reintentos y en qué condiciones; la competición inicial no permite
+   repetir un intento terminal y los previews sin sala sí pueden repetirse.
 5. Cómo distribuye el máximo de 100 puntos.
-6. Cómo concede crédito parcial y aplica penalizaciones.
+6. Cómo concede crédito parcial, trata el tiempo y aplica penalizaciones. Las penalizaciones pueden
+   reducir la puntuación disponible de una pregunta o prueba, pero el resultado final de esa unidad
+   y el total del desafío deben quedar limitados a cero.
 7. Qué intento se acredita si admite varios; el valor predeterminado es el mejor.
-8. Comparador y desempate del ranking del desafío.
+8. Comparador y desempate del ranking del desafío. En Alfabeto ya está confirmado: puntos por cada
+   acierto y rapidez de los aciertos como desempate; los demás modos deben consolidarse.
 9. Qué checkpoints necesita para reanudarse sin permitir repetir contenido.
 10. Qué estado parcial debe persistirse en el servidor.
 11. Qué feedback puede mostrarse después de cada respuesta.

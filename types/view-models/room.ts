@@ -1,4 +1,7 @@
-import type { Challenge } from "@/types/gameplay/challenge";
+import type {
+  Challenge,
+  ChallengeAvailabilityStatus,
+} from "@/types/gameplay/challenge";
 import type { RoomChallengeResult } from "@/types/gameplay/completion";
 import type { LegacySeasonStatus } from "@/types/legacy/room";
 
@@ -9,6 +12,7 @@ export type GameRoomContext = {
   roomTitle: string;
   returnTo: string;
   memberId: string;
+  availabilityStatus: ChallengeAvailabilityStatus;
   attemptStatus: CompetitiveAttemptStatus;
   result?: RoomChallengeResult;
 };

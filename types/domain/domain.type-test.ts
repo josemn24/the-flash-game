@@ -57,7 +57,7 @@ type PublicationStatesAreExhaustive = Assert<
   IsEqual<PublicationStatus, "scheduled" | "open" | "closed" | "cancelled">
 >;
 type AttemptStatesAreExhaustive = Assert<
-  IsEqual<AttemptStatus, "in_progress" | "completed" | "abandoned" | "expired" | "invalidated">
+  IsEqual<AttemptStatus, "in_progress" | "completed" | "abandoned" | "invalidated">
 >;
 type AttemptOutcomesAreExhaustive = Assert<IsEqual<AttemptOutcome, "passed" | "failed" | null>>;
 type AnswerStatesAreExhaustive = Assert<

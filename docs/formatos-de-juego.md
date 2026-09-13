@@ -8,6 +8,13 @@ Este documento distingue las mecánicas ya disponibles de las candidatas para fu
 
 ## Estado actual
 
+> **Reconciliación funcional — 2026-09-13:** las reglas de dominio confirmadas permiten que cada
+> modo defina penalizaciones por errores, intentos o tiempo. Estas pueden reducir la puntuación
+> disponible de una pregunta o prueba, pero el resultado final de esa unidad y el total del desafío
+> nunca pueden ser negativos. Las líneas marcadas como “Puntuación actual” más abajo son una
+> fotografía del código; el motor central aplica el mínimo cero antes de cerrar la puntuación de la
+> unidad. Para el comportamiento objetivo, prevalece [`domain-requirements.md`](domain-requirements.md).
+
 La aplicación soporta de forma nativa:
 
 - elección múltiple, también con imagen o ilustración;
@@ -74,7 +81,7 @@ Se muestran varios elementos y el jugador identifica cuál rompe una relación: 
 - **Encaje:** reglas inmediatas, rondas de segundos y dificultad escalable.
 - **Ventaja:** coste de producción e implementación bajo; contenido muy reutilizable.
 - **Interacción actual:** entre tres y seis tarjetas de texto o imagen; tocar una tarjeta envía inmediatamente la respuesta.
-- **Puntuación actual:** acierto exacto ajustado por velocidad; un fallo resta el 20 % y agotar el tiempo no puntúa.
+- **Puntuación actual:** acierto exacto ajustado por velocidad; un fallo resta el 20 % hasta un mínimo de cero y agotar el tiempo no puntúa.
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 
 ### 3. Emparejar conceptos — Implementada
@@ -117,7 +124,7 @@ El jugador descubre losetas ocultas de una cuadrícula o mosaico irregular y deb
 
 - **Interacción actual:** tocar una loseta para revelarla y después tocar otra. Si forman pareja, ambas quedan descubiertas; si no coinciden, se vuelven a ocultar tras una pausa breve. Completar todas las parejas envía la respuesta automáticamente.
 - **Encaje:** aporta memoria visual pura con reglas universales y una tensión muy clara entre velocidad y precisión. Es más activo que memoria relámpago porque el jugador decide el orden de exploración y debe optimizar movimientos.
-- **Puntuación actual:** cada pareja encontrada aporta crédito parcial ajustado por velocidad; cada intento fallido resta un 10 % de los puntos base. El timeout conserva el historial de intentos y puede mantener crédito parcial si hay parejas encontradas.
+- **Puntuación actual:** cada pareja encontrada aporta crédito parcial ajustado por velocidad; cada intento fallido resta un 10 % de los puntos base hasta un mínimo de cero. El timeout conserva el historial de intentos y puede mantener crédito parcial si hay parejas encontradas.
 - **Uso recomendado:** entre cuatro y diez parejas para rondas rápidas, con tableros compactos y patrones muy distinguibles. Encaja especialmente como desafío especial de memoria visual dentro de la biblioteca.
 - **Accesibilidad:** las parejas no deben distinguirse solo por color; cada loseta necesita símbolo, emoji, patrón, icono, etiqueta accesible o sonido equivalente. La pausa antes de ocultar una pareja fallida debe ser suficiente para percibir ambas losetas.
 - **Evolución posible:** deshacer, pistas limitadas, losetas bloqueadas, siluetas irregulares, parejas temáticas o varias rondas con dificultad creciente.
@@ -178,7 +185,7 @@ El jugador descubre una palabra de cuatro letras en un máximo de cuatro intento
 
 - **Encaje:** conocido y fácil de entender.
 - **Interacción actual:** campo de texto nativo con envío por botón o Enter y validación mediante un vocabulario español general generado offline. El diccionario se carga antes de iniciar el cronómetro; los intentos inválidos no consumen oportunidades.
-- **Puntuación actual:** resolver recibe crédito ajustado por velocidad y cada intento fallido previo resta el 10 % de los puntos base. Agotar intentos o tiempo no puntúa.
+- **Puntuación actual:** resolver recibe crédito ajustado por velocidad y cada intento fallido previo resta el 10 % de los puntos base hasta un mínimo de cero. Agotar intentos o tiempo no puntúa.
 - **Uso recomendado:** desafío especial, por su duración mayor que una pregunta normal.
 
 ### 15. Simon o repetición de secuencias — Implementada
@@ -195,7 +202,7 @@ Una cuadrícula de símbolos o imágenes contiene una casilla vacía; el jugador
 
 - **Encaje:** aporta razonamiento abstracto y escala de niveles sencillos a exigentes.
 - **Interacción actual:** una matriz 3 × 3 presenta ocho símbolos y una casilla vacía. El jugador elige, entre cuatro opciones, la pieza que completa el patrón.
-- **Puntuación actual:** un acierto exacto premia la velocidad; un fallo resta el 20 % y el timeout no puntúa.
+- **Puntuación actual:** un acierto exacto premia la velocidad; un fallo resta el 20 % hasta un mínimo de cero y el timeout no puntúa.
 
 ### 17. Mini-nonograma — Implementada
 
@@ -300,7 +307,7 @@ Por ejemplo, para adivinar un personaje las pistas pueden revelar progresivament
 
 - **Interacción actual:** la primera pista de texto aparece al comenzar; el jugador puede revelar las siguientes o enviar una única respuesta abierta en cualquier momento. Un fallo termina la ronda.
 - **Encaje:** combina conocimiento, autoconfianza y gestión del riesgo con una regla fácil de comprender.
-- **Puntuación actual:** cada pista adicional resta una cantidad fija del máximo visible y la velocidad ajusta después los puntos restantes; un fallo o el timeout no puntúan.
+- **Puntuación actual:** cada pista adicional resta una cantidad fija del máximo visible hasta un mínimo de cero y la velocidad ajusta después los puntos restantes; un fallo o el timeout no puntúan.
 - **Uso actual:** tipo nativo y ejemplo jugable en la biblioteca; los dos desafíos existentes todavía no lo incluyen.
 - **Riesgo:** las primeras pistas deben ser difíciles pero útiles, y su orden debe calibrarse para que cada revelación reduzca de manera apreciable el espacio de respuestas posibles.
 
@@ -320,7 +327,7 @@ Se muestra una imagen o diagrama. El jugador puede asociar varias etiquetas a su
 
 - **Interacción actual:** en `assign-all`, seleccionar un anclaje y después una etiqueta textual, editar las asociaciones y confirmar el conjunto. En `identify-one`, responder a una única señal mediante elección inmediata o texto enviado por botón o teclado.
 - **Encaje:** separa la identificación discreta de partes de la localización continua propia de Mapa de calor.
-- **Puntuación actual:** el etiquetado múltiple concede crédito por asociación; la identificación única es binaria y premia velocidad. Una elección incorrecta resta el 20 %, un texto incorrecto no penaliza y el timeout puntúa cero.
+- **Puntuación actual:** el etiquetado múltiple concede crédito por asociación; la identificación única es binaria y premia velocidad. Una elección incorrecta resta el 20 % hasta un mínimo de cero, un texto incorrecto no penaliza y el timeout puntúa cero.
 - **Uso actual:** tipo nativo con dos ejemplos jugables —múltiple y único por elección— en la biblioteca; el contrato y la interfaz también admiten texto libre. Los dos desafíos existentes todavía no lo incluyen. La primera versión no ofrece arrastre, zoom, medios dentro de las etiquetas ni anclajes creados por el jugador.
 - **Riesgo:** los anclajes y textos deben mantenerse legibles y sin solapamientos en móvil; la numeración, el foco y el resumen textual deben permitir completar el ejercicio sin depender solo de la posición o el color.
 
@@ -425,7 +432,7 @@ O también:
 El jugador coloca cinco coronas en una cuadrícula 5 × 5 con una corona por fila, columna y región, sin que dos coronas se toquen.
 
 - **Interacción actual:** herramientas explícitas para colocar coronas o marcas X, edición reversible, control táctil y por teclado, conflictos anunciados inmediatamente y envío automático al resolver.
-- **Puntuación actual:** resolución binaria ajustada por velocidad; cada colocación que crea un conflicto resta un 5 % de los puntos base. Corregir coronas y editar marcas no penaliza.
+- **Puntuación actual:** resolución binaria ajustada por velocidad; cada colocación que crea un conflicto resta un 5 % de los puntos base hasta un mínimo de cero. Corregir coronas y editar marcas no penaliza.
 - **Accesibilidad:** las regiones combinan color, patrón y bordes; cada celda comunica fila, columna, región, estado y conflictos.
 - **Uso actual:** tipo nativo y ejemplo jugable curado en la biblioteca. Todavía no se publica en desafíos y no incluye generador ni pistas.
 
@@ -451,7 +458,7 @@ El jugador libera un bloque objetivo amarillo desplazando obstáculos horizontal
 El jugador intercambia fichas en una cuadrícula con forma de `#` hasta completar dos palabras horizontales y dos verticales de cinco letras. Las cuatro intersecciones hacen que una misma casilla participe en dos palabras.
 
 - **Interacción actual:** seleccionar dos fichas amarillas mediante toque o teclado, o arrastrar una sobre otra. Las letras verdes correctas quedan bloqueadas y cada intercambio válido consume un movimiento.
-- **Puntuación actual:** solo resolver concede puntos por velocidad; cada movimiento por encima del mínimo calculado resta un 10 % de los puntos base. El timeout conserva el tablero para revisión con cero puntos.
+- **Puntuación actual:** solo resolver concede puntos por velocidad; cada movimiento por encima del mínimo calculado resta un 10 % de los puntos base hasta un mínimo de cero. El timeout conserva el tablero para revisión con cero puntos.
 - **Accesibilidad:** los estados combinan color, símbolos `✓` y `↔`, etiquetas de posición, botones nativos, navegación por flechas y alternativa por dos toques al arrastre.
 - **Uso actual:** tipo nativo y ejemplo jugable fijo en la biblioteca. No está incluido en desafíos y no incorpora generador, diccionario en runtime ni longitudes variables.
 

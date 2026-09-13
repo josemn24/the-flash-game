@@ -26,7 +26,7 @@ describe("P-17 proofs", () => {
     });
     expect(evaluateAnswer({ question, answer: "Montes Ellsworth", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: -2,
+      points: 0,
     });
   });
 
@@ -47,7 +47,7 @@ describe("P-17 proofs", () => {
     });
     expect(
       evaluateAnswer({ question, answer: "Trópico de Capricornio", timeUsed: 0 }),
-    ).toMatchObject({ status: "incorrect", points: -2 });
+    ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
   it("classifies species by polar region", () => {
@@ -133,7 +133,7 @@ describe("P-17 proofs", () => {
     ).toMatchObject({ status: "correct", points: 18 });
     expect(evaluateAnswer({ question, answer: question.options[0], timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: -4,
+      points: 0,
     });
   });
 });

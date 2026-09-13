@@ -398,7 +398,7 @@ describe("question format catalog", () => {
     ).toMatchObject({ status: "correct", points: 10 });
     expect(
       evaluateAnswer({ question: direction, answer: "Montes Ellsworth", timeUsed: 0 }),
-    ).toMatchObject({ status: "incorrect", points: -2 });
+    ).toMatchObject({ status: "incorrect", points: 0 });
 
     const polarContext = narrativeQuestions[1];
     expect(polarContext.type).toBe("multiple-choice");

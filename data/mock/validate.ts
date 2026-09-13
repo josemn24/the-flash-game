@@ -290,7 +290,7 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
         (attempt.completedAt === null || attempt.score === null)) ||
       (attempt.status === "in_progress" &&
         (attempt.completedAt !== null || attempt.score !== null)) ||
-      ((attempt.status === "abandoned" || attempt.status === "expired") &&
+      (attempt.status === "abandoned" &&
         (attempt.completedAt === null || attempt.score !== null)) ||
       (attempt.status === "invalidated" && attempt.completedAt === null)
     ) {

@@ -45,7 +45,7 @@ describe("ReviewAnswerList", () => {
               answer: "Una respuesta suficientemente larga para no romper la tarjeta",
               status: "incorrect",
               isCorrect: false,
-              points: -2,
+              points: 0,
               timeUsed: 0.6,
             },
           },

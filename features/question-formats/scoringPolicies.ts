@@ -16,7 +16,8 @@ export const SCORING_POLICIES = {
   "multiple-choice": {
     id: QUESTION_SCORING_POLICY["multiple-choice"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    summary:
+      "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 % hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -24,7 +25,8 @@ export const SCORING_POLICIES = {
   "odd-one-out": {
     id: QUESTION_SCORING_POLICY["odd-one-out"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    summary:
+      "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 % hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -33,7 +35,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY.matching,
     label: "Crédito por pareja",
     summary:
-      "Cada pareja correcta aporta crédito ajustado por tiempo; cada intento incorrecto resta un 10 % de los puntos base.",
+      "Cada pareja correcta aporta crédito ajustado por tiempo; cada intento incorrecto resta un 10 % de los puntos base hasta un mínimo de cero.",
     partialCredit: true,
     incorrectPenalty: true,
     speedBonus: true,
@@ -61,7 +63,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["true-false"],
     label: "Riesgo alto",
     summary:
-      "Un acierto premia la velocidad y un fallo resta el 40 % por la probabilidad de acertar al azar.",
+      "Un acierto premia la velocidad y un fallo resta el 40 % por la probabilidad de acertar al azar, hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -144,7 +146,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["memory-pairs"],
     label: "Parejas, fallos y velocidad",
     summary:
-      "Cada pareja encontrada aporta crédito ajustado por tiempo; cada intento fallido resta un 10 % de los puntos base.",
+      "Cada pareja encontrada aporta crédito ajustado por tiempo; cada intento fallido resta un 10 % de los puntos base hasta un mínimo de cero.",
     partialCredit: true,
     incorrectPenalty: true,
     speedBonus: true,
@@ -163,7 +165,8 @@ export const SCORING_POLICIES = {
   "logic-matrix": {
     id: QUESTION_SCORING_POLICY["logic-matrix"],
     label: "Acierto y velocidad",
-    summary: "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 %.",
+    summary:
+      "Un acierto conserva entre el 60 % y el 100 % de los puntos; un fallo resta el 20 % hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -190,7 +193,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY.queens,
     label: "Resolución, errores y velocidad",
     summary:
-      "Solo resolver concede puntos ajustados por velocidad; cada corona colocada en conflicto resta un 5 % de los puntos base.",
+      "Solo resolver concede puntos ajustados por velocidad; cada corona colocada en conflicto resta un 5 % de los puntos base hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -246,7 +249,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["word-hashtag"],
     label: "Velocidad y eficiencia",
     summary:
-      "Resolver concede puntos por velocidad; cada intercambio por encima del mínimo resta un 10 % de los puntos base.",
+      "Resolver concede puntos por velocidad; cada intercambio por encima del mínimo resta un 10 % de los puntos base hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -266,7 +269,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["mini-wordle"],
     label: "Velocidad e intentos",
     summary:
-      "Resolver conserva puntos según el tiempo; cada intento incorrecto previo resta un 10 % de los puntos base.",
+      "Resolver conserva puntos según el tiempo; cada intento incorrecto previo resta un 10 % de los puntos base hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
@@ -276,7 +279,7 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY["logic-code"],
     label: "Velocidad e intentos",
     summary:
-      "Solo puntúa el código correcto; cada intento fallido resta un 10 % de los puntos base.",
+      "Solo puntúa el código correcto; cada intento fallido resta un 10 % de los puntos base hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,

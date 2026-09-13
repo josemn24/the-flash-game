@@ -47,6 +47,39 @@ function TerminalCompetitiveChallenge({
   );
 }
 
+function UnavailableCompetitiveChallenge({
+  roomContext,
+}: {
+  roomContext: GameRoomContext;
+}) {
+  const isExpired = roomContext.availabilityStatus === "expired";
+
+  return (
+    <Canvas maxWidth="content">
+      <Card as="section" aria-labelledby="unavailable-challenge-title" className="mx-auto mt-12">
+        <h1 id="unavailable-challenge-title">
+          {isExpired ? "Desafío cerrado" : "Desafío no disponible"}
+        </h1>
+        <p className="mt-3 text-[var(--color-ink-muted)]">
+          {isExpired
+            ? "La publicación terminó antes de que iniciaras este desafío. No se creó ningún intento competitivo."
+            : "Este desafío todavía no está disponible para jugar en la sala."}
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <ButtonLink href={roomContext.returnTo} variant="secondary" trailingIcon={<ArrowIcon />}>
+            Volver a la sala
+          </ButtonLink>
+          {isExpired ? (
+            <ButtonLink href={`${roomContext.returnTo}/ranking`} trailingIcon={<ArrowIcon />}>
+              Ver ranking
+            </ButtonLink>
+          ) : null}
+        </div>
+      </Card>
+    </Canvas>
+  );
+}
+
 export function RoomChallengeClient({
   challenge,
   roomContext,
@@ -77,6 +110,15 @@ export function RoomChallengeClient({
     },
     [recordCompletion, roomContext],
   );
+
+  if (
+    roomContext &&
+    !localCompletion &&
+    attemptStatus === "available" &&
+    roomContext.availabilityStatus !== "available"
+  ) {
+    return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
+  }
 
   if (
     roomContext &&

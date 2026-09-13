@@ -11,6 +11,9 @@ describe("competitive attempt status", () => {
       "completed",
     );
     expect(getCompetitiveAttemptStatus([{ status: "completed", outcome: "failed" }])).toBe(
+      "completed",
+    );
+    expect(getCompetitiveAttemptStatus([{ status: "abandoned", outcome: null }])).toBe(
       "notCompleted",
     );
     expect(getCompetitiveAttemptStatus([{ status: "invalidated", outcome: null }])).toBe(

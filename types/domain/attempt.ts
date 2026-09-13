@@ -7,7 +7,7 @@ import type {
 } from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 
-export type AttemptStatus = "in_progress" | "completed" | "abandoned" | "expired" | "invalidated";
+export type AttemptStatus = "in_progress" | "completed" | "abandoned" | "invalidated";
 export type AttemptOutcome = "passed" | "failed" | null;
 export type AttemptKind = "competitive" | "test";
 export type AnswerStatus = "correct" | "partial" | "incorrect" | "unanswered" | "timeout";

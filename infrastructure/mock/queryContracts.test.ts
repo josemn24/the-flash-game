@@ -6,6 +6,7 @@ import {
   playerRouteAliases,
   scheduledChallengeRouteAliases,
 } from "@/data/mock/constants";
+import { utc } from "@/data/mock/identity";
 import { mockDomainStore } from "@/data/mock/store";
 import type { DomainStore } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
@@ -81,7 +82,11 @@ function challengeContract(queries: ChallengeQueries) {
     await expect(
       queries.getPlayable("tabarnia-challenge-06", "tabarnia-room", ownerContext),
     ).resolves.toMatchObject({
-      roomContext: { attemptStatus: "available", memberId: "player" },
+      roomContext: {
+        availabilityStatus: "available",
+        attemptStatus: "available",
+        memberId: "player",
+      },
     });
     await expect(
       queries.getPlayable("tabarnia-challenge-06", "missing-room", ownerContext),
@@ -251,7 +256,7 @@ describe("MockRoomQueries contract", () => {
 describe("MockChallengeQueries contract", () => {
   challengeContract(new MockChallengeQueries(mockDomainStore));
 
-  it("projects terminal, in-progress and failed competitive attempts", async () => {
+  it("projects completed and in-progress competitive attempts", async () => {
     const completed = await new MockChallengeQueries(mockDomainStore).getPlayable(
       "tabarnia-challenge-05",
       "tabarnia-room",
@@ -277,16 +282,18 @@ describe("MockChallengeQueries contract", () => {
     ).getPlayable("tabarnia-challenge-05", "tabarnia-room", ownerContext);
     expect(inProgress?.roomContext?.attemptStatus).toBe("inProgress");
 
-    const expired = await new MockChallengeQueries(
+    const unavailable = await new MockChallengeQueries(
       withStore({
-        attempts: mockDomainStore.attempts.map((attempt) =>
-          attempt.id === playerAttempt.id
-            ? { ...attempt, status: "expired" as const, outcome: null }
-            : attempt,
-        ),
+        attempts: mockDomainStore.attempts.filter((attempt) => attempt.id !== playerAttempt.id),
       }),
-    ).getPlayable("tabarnia-challenge-05", "tabarnia-room", ownerContext);
-    expect(expired?.roomContext?.attemptStatus).toBe("notCompleted");
+    ).getPlayable("tabarnia-challenge-05", "tabarnia-room", {
+      ...ownerContext,
+      now: utc("2026-09-20T22:00:00.000Z"),
+    });
+    expect(unavailable?.roomContext).toMatchObject({
+      availabilityStatus: "expired",
+      attemptStatus: "available",
+    });
   });
 });
 

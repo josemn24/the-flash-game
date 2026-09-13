@@ -31,6 +31,9 @@ Una sala contiene temporadas. Una temporada publica desafíos periódicos. Cada 
 | Pregunta                | Question              | Unidad técnica actual del modelo de datos. También puede usarse cuando la prueba es claramente textual o interrogativa.                           |
 | Formato de pregunta     | Question Format       | Tipo de interacción de una prueba: elección múltiple, verdadero/falso, ordenar, estimación, mapa de calor, Mini-Wordle, laberinto, etc.           |
 | Intento                 | Attempt               | Ejecución de un jugador sobre un desafío o una prueba. Útil para rankings y resultados.                                                           |
+| Intento en progreso     | In-progress attempt   | Intento iniciado que todavía no ha terminado. Puede reanudarse mientras conserve ese estado.                                                        |
+| Abandono                | Abandoned             | Terminación de un intento iniciado antes de llegar al final; consume el intento único y no permite repetirlo.                                      |
+| Expirado                | Expired               | Publicación que termina antes de que el jugador inicie su intento. No equivale a abandono y no produce respuestas ni puntos.                       |
 | Partida                 | Run / Playthrough     | Sesión completa de un jugador dentro de un desafío. Usar con cuidado para no confundirlo con el desafío publicado para toda la sala.              |
 | Ranking / Clasificación | Leaderboard           | Tabla de posiciones. En producto puede usarse "ranking"; en inglés usar `leaderboard`, no `ranking`.                                              |
 | Ranking del desafío     | Challenge Leaderboard | Clasificación puntual de un desafío concreto.                                                                                                     |

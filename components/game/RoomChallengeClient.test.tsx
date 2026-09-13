@@ -20,6 +20,7 @@ describe("RoomChallengeClient", () => {
           roomTitle: "Tabarnia",
           returnTo: "/salas/tabarnia-room",
           memberId: "player",
+          availabilityStatus: "available",
           attemptStatus: "completed",
           result: {
             flashPoints: 80,
@@ -41,5 +42,26 @@ describe("RoomChallengeClient", () => {
     expect(markup).toContain("80 de 100 puntos");
     expect(markup).not.toContain("Empezar desafío");
     expect(markup).not.toContain("Volver a jugar");
+  });
+
+  it("does not create an attempt for a closed challenge that was never started", () => {
+    const markup = renderToStaticMarkup(
+      <RoomChallengeClient
+        challenge={challenge}
+        roomContext={{
+          roomId: "tabarnia-room",
+          roomTitle: "Tabarnia",
+          returnTo: "/salas/tabarnia-room",
+          memberId: "player",
+          availabilityStatus: "expired",
+          attemptStatus: "available",
+        }}
+        socialSnapshot={socialSnapshot}
+      />,
+    );
+
+    expect(markup).toContain("Desafío cerrado");
+    expect(markup).toContain("No se creó ningún intento competitivo");
+    expect(markup).not.toContain("Empezar desafío");
   });
 });

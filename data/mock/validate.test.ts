@@ -96,7 +96,7 @@ describe("mock domain store negative integrity scenarios", () => {
 
   it.each([
     ["in_progress", baseAttempt.completedAt, null],
-    ["expired", null, null],
+    ["abandoned", null, baseAttempt.score],
     ["invalidated", null, baseAttempt.score],
   ] as const)("rejects incoherent %s attempts", (status, completedAt, score) => {
     expectInvalid(

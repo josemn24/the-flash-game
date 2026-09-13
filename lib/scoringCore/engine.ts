@@ -1,6 +1,6 @@
 import type { AnswerResult, AnswerValue, Question } from "@/types/game";
 import { SCORING } from "@/lib/scoringCore/registry";
-import { clampTime } from "@/lib/scoringCore/shared";
+import { clampTime, normalizeScore } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
   EvaluationInput,
@@ -65,7 +65,7 @@ export function calculateAnswerScore(
     revealedClues,
   };
 
-  return scoring.evaluate(context).points;
+  return normalizeScore(scoring.evaluate(context).points);
 }
 
 export function evaluateAnswer({
@@ -147,7 +147,10 @@ export function evaluateAnswer({
     answer,
     ...evaluation,
     status: timedOutStatus ?? evaluation.status,
-    points: timedOut && !scoring.timeoutPolicy?.preservePoints ? 0 : evaluation.points,
+    points:
+      timedOut && !scoring.timeoutPolicy?.preservePoints
+        ? 0
+        : normalizeScore(evaluation.points),
     timeUsed: safeTime,
   };
 }

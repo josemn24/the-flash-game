@@ -74,6 +74,11 @@ autenticación y la gestión real de actores todavía no están implementadas.
   `narrative` y `pyramid`).
 - **Intento**: ejecución de un jugador sobre un desafío programado. Un intento competitivo conserva
   su ciclo de vida, respuestas, resultado y puntuación.
+- **Ciclo de vida del intento**: mientras un desafío está disponible puede no existir intento; al
+  iniciarse pasa a `inProgress`; si el jugador llega al final pasa a `completed`, incluso con cero
+  Flash Points; si se abandona antes de terminar pasa a `notCompleted` con causa `abandoned`. Si la
+  publicación se cierra antes de que el jugador lo inicie, la publicación se proyecta como
+  `expired`, sin crear un intento.
 - **Respuesta**: respuesta final de un elemento del desafío, con su evaluación, tiempo y detalles.
 - **Flash Points**: puntos que obtiene el jugador al jugar un desafío. El resultado del desafío se
   acredita una vez y se suma al total de Flash Points de la temporada activa de esa sala. No son una
@@ -140,15 +145,19 @@ autenticación y la gestión real de actores todavía no están implementadas.
   membresía competitiva activa y la publicación está disponible.
 - **FR-19 —** El inicio oficial consume el único intento competitivo del jugador para ese desafío.
   (**Objetivo confirmado para la primera producción**)
-- **FR-20 —** Una interrupción o reapertura debe reanudar el mismo intento en progreso; no debe crear
-  otro.
+- **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura autorizada debe
+  reanudar el mismo intento y no crear otro. Si el cierre de la pestaña, la pérdida de conexión o el
+  abandono voluntario se registra como `abandoned`, el intento es terminal y no puede reanudarse.
 - **FR-21 —** El desafío debe aplicar el tiempo total, los tiempos por pregunta y las reglas de
-  finalización propias del modo. El sistema debe manejar respuestas, errores, respuestas parciales
-  y expiración cuando el formato lo permita. (**Implementado/mock**, con contratos por modo aún
-  incompletos.)
-- **FR-22 —** Tras un intento competitivo terminal (`completed`, `expired`, `abandoned` o
-  `invalidated`) el jugador puede consultar el resultado, el ranking y la revisión de respuestas
-  cuando existan, pero no repetir ni practicar ese mismo desafío competitivo.
+  finalización propias del modo. El agotamiento del tiempo de una pregunta o ronda se registra como
+  una respuesta no contestada o como el estado equivalente definido por el modo; no implica por sí
+  mismo que el intento completo haya sido superado o fallado. (**Implementado/mock**, con contratos
+  por modo aún incompletos.)
+- **FR-22 —** Tras un intento competitivo terminal (`completed`, `abandoned` o `invalidated`) el
+  jugador puede consultar el resultado, el ranking y la revisión de respuestas cuando existan. Si
+  el intento se inició, la revisión puede mostrar las respuestas enviadas y las respuestas correctas.
+  Si la publicación expiró antes de iniciarse, no existe resultado ni revisión propios. No puede
+  repetir ni practicar ese mismo desafío competitivo.
 - **FR-23 —** Los resets de intento solo están previstos para herramientas internas de desarrollo y
   QA, nunca para la interfaz de producción.
 
@@ -158,6 +167,8 @@ autenticación y la gestión real de actores todavía no están implementadas.
   respuestas correctas, parciales, incorrectas y no contestadas. (**Implementado/mock**)
 - **FR-25 —** La evaluación debe producir una puntuación entera no negativa entre 0 y 100 para el
   desafío.
+- **FR-25a —** Completar un desafío con cero Flash Points es un resultado válido y no se considera
+  un intento no completado.
 - **FR-26 —** La puntuación acreditada del desafío se denomina **Flash Points**. Se suma una sola vez
   al total de la temporada activa de la sala después de jugar el desafío.
 - **FR-27 —** No existe un valor funcional separado de XP, rayos acumulados, energía, vidas como
@@ -171,11 +182,13 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - **FR-29 —** El producto tiene exactamente dos tipos de ranking: **ranking por desafío** y **ranking
   por temporada**. No hay ranking global, ranking acumulado de sala ni otros rankings funcionales.
 - **FR-30 —** El ranking por desafío incluye a los jugadores con un intento competitivo completado
-  para esa publicación; los intentos fantasma, de prueba, invalidados y las publicaciones canceladas
-  quedan fuera.
+  para esa publicación, incluidos los resultados con cero Flash Points; los intentos fantasma, de
+  prueba, invalidados y las publicaciones canceladas quedan fuera.
 - **FR-31 —** El ranking por temporada ordena por el total de Flash Points acreditados en esa
   temporada de la sala.
 - **FR-32 —** Los empates comparten posición según el comparador y desempate que defina el modo.
+  En Alfabeto se conceden puntos por cada respuesta correcta y, a igualdad de puntuación, gana la
+  ejecución que haya obtenido los aciertos más rápidamente.
 - **FR-33 —** Los miembros y espectadores pueden consultar los rankings de su sala; solo los roles
   competitivos pueden generar resultados nuevos.
 
@@ -200,14 +213,30 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - Las salas son privadas y la competición está delimitada por sala y temporada.
 - Solo `owner`, `admin` y `member` compiten. `spectator` consulta, pero no juega en competitivo.
 - Una publicación tiene apertura inclusiva y cierre exclusivo.
-- No jugar no crea un intento ni concede Flash Points.
+- Mientras la publicación está disponible, no jugar no crea un intento ni concede Flash Points. Si
+  la publicación termina antes de iniciar el desafío, el desafío se proyecta como `expired`: el
+  jugador no ha jugado, no consume un intento y no genera resultado.
 - Para producción inicial hay un único intento competitivo por jugador y desafío programado.
-- El intento en progreso se reanuda; repetir el desafío no crea una segunda oportunidad competitiva.
-- Un intento terminal consume el único intento aunque no se complete con éxito; sus estados visibles
-  son `completed` o `notCompleted`.
-- El resultado de un desafío es un entero de 0 a 100 y nunca negativo.
-- El crédito parcial, las penalizaciones, el éxito y los desempates dependen del modo y deben estar
-  definidos antes de cerrar cada modo.
+- Un intento que sigue `inProgress` puede reanudarse; repetir el desafío no crea una segunda
+  oportunidad competitiva. Si el cierre de la pestaña, la pérdida de conexión o el abandono
+  voluntario ya lo marcaron como `abandoned`, no puede reanudarse.
+- Cerrar la pestaña, perder la conexión o abandonar voluntariamente un intento iniciado lo termina
+  como `abandoned`; se proyecta como `notCompleted` y consume el intento único.
+- Llegar al final del flujo convierte el intento en `completed` aunque el resultado sea de cero
+  Flash Points. No existe un estado funcional global de desafío “superado” o “fallido”.
+- La Pirámide finaliza reglamentariamente cuando el jugador completa sus siete niveles o cuando
+  falla un nivel que termina el modo. En ambos casos el intento se registra como `completed`,
+  aunque el resultado tenga cero Flash Points o no se hayan jugado los siete niveles. La interfaz
+  puede mostrar un mensaje de desafío superado únicamente cuando se resuelven correctamente los
+  siete niveles; ese mensaje es feedback específico del modo, no una propiedad funcional global ni
+  un criterio adicional de ranking.
+- El resultado de un desafío es un entero de 0 a 100 y nunca negativo. Cada modo puede definir
+  penalizaciones por errores, intentos o tiempo: estas reducen la puntuación disponible de la
+  pregunta o prueba, pero su resultado final se limita a un mínimo de cero. La puntuación acumulada
+  del desafío tampoco puede ser negativa.
+- El crédito parcial y las reglas de tiempo dependen del modo. Los empates también dependen del
+  modo; en Alfabeto, a igualdad de Flash Points, se prioriza la rapidez con que se obtuvieron los
+  aciertos.
 - Los Flash Points obtenidos al jugar se suman al total de la temporada activa de esa sala; `⚡`
   puede representar ese valor en la interfaz.
 - La temporada no tiene niveles, hitos, metas, desbloqueos ni recompensas funcionales; el total
@@ -223,12 +252,18 @@ autenticación y la gestión real de actores todavía no están implementadas.
 
 ### Intento y experiencia de juego
 
-- Estado de dominio del intento: `in_progress`, `completed`, `abandoned`, `expired` o
-  `invalidated`.
-- Resultado del intento: `passed`, `failed` o todavía no establecido.
+- Estado de dominio del intento iniciado: `in_progress`, `completed`, `abandoned` o `invalidated`.
+- No existe un resultado global de intento `passed`/`failed` en el producto. Un modo puede mostrar
+  feedback propio, como la cima de La Pirámide tras completar sus siete niveles, pero el ciclo de
+  vida competitivo solo distingue si el intento sigue en progreso o cómo terminó.
 - Estados visibles en el juego: introducción, cuenta atrás, jugando, transición, resultado y
   revisión. Algunos modos añaden briefing, escenas, feedback o epílogo.
-- Estado visible del desafío en sala: disponible, en progreso, completado o no completado.
+- Estado visible del desafío en sala: disponible, en progreso, completado, no completado o expirado.
+- `expired` es un estado visible de la publicación para ese jugador: la publicación terminó antes
+  de que iniciara su intento. No es un estado de un intento creado, no es abandono y no produce
+  respuestas ni puntos.
+- `abandoned` significa que el jugador inició el intento, pero lo dejó sin llegar al final. Se
+  conserva la información que haya enviado y puede revisarla junto con la respuesta correcta.
 - Estado de respuesta observado: correcta, parcial, incorrecta, no contestada o timeout.
 
 ### Publicación, temporada y membresía
@@ -239,7 +274,10 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - Contenido: `draft`, `published` o `archived`.
 
 La implementación local usa en algunos puntos un booleano `completed` y un indicador separado de
-timeout; el ciclo de vida funcional de referencia es el anterior.
+timeout; el ciclo de vida funcional de referencia es el anterior. Los nombres `passed`/`failed` que
+aún aparecen en tipos y lógica de algunos modos son internos y no representan estados funcionales
+del producto. La disponibilidad de la publicación (`available`, `locked`, `expired`) se mantiene
+separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`, `invalidated`).
 
 ## 8. Permisos y restricciones conocidas
 
@@ -257,6 +295,19 @@ timeout; el ciclo de vida funcional de referencia es el anterior.
 
 - La aclaración del producto sustituye la terminología anterior de “rayos/XP”: **Flash Points** es
   la puntuación que se obtiene al jugar un desafío y el total de la temporada activa de la sala.
+- Completar el flujo de un desafío determina el estado `completed` aunque la puntuación sea cero;
+  la puntuación no determina si el intento está completado.
+- Cerrar la pestaña, perder la conexión o abandonar voluntariamente un intento iniciado equivale a
+  `abandoned` y se muestra como `notCompleted`.
+- `expired` se reserva para una publicación que termina antes de que el jugador inicie su intento;
+  no equivale a `abandoned`.
+- Los modos pueden definir penalizaciones por errores, intentos o tiempo. Estas reducen la puntuación
+  disponible de la pregunta o prueba, pero el resultado final de esa unidad se limita a cero; ni la
+  puntuación de una pregunta ni el total del desafío pueden ser negativos.
+- En Alfabeto cada respuesta correcta concede puntos y el desempate debe favorecer a quien obtiene
+  los aciertos más rápidamente.
+- El feedback de “desafío superado” de La Pirámide al completar sus siete niveles es específico de
+  la interfaz del modo y no crea un estado global `passed`.
 - `⚡` y “Flash Points” son equivalentes en la interfaz. El texto completo se conserva en títulos
   explicativos y etiquetas accesibles; la presentación compacta puede mostrar `N ⚡`.
 - Solo hay dos rankings funcionales: uno por desafío y otro por temporada.
@@ -274,11 +325,11 @@ timeout; el ciclo de vida funcional de referencia es el anterior.
 
 Estas cuestiones no cambian las decisiones confirmadas anteriores:
 
-- Duración exacta, finalización, éxito, fracaso, checkpoints, feedback y exposición de soluciones de
-  cada modo.
+- Duración exacta, finalización, checkpoints, feedback y exposición de soluciones de cada modo.
 - Si algún modo futuro podrá permitir más de un intento oficial y cómo se acreditaría; el valor
   inicial confirmado sigue siendo uno.
-- Comparador y desempate concretos de cada modo dentro del ranking por desafío.
+- Comparador y desempate concretos de los modos distintos de Alfabeto dentro del ranking por
+  desafío, a falta de consolidar sus reglas documentales con la implementación.
 - Duración, usos y flujo operativo de las invitaciones.
 - Políticas de recuperación o eliminación de salas, retención de eventos, moderación y anonimización.
 - Flujo de correcciones administrativas, toma de control de sesión y límites de frecuencia.
@@ -296,6 +347,23 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - **Resuelta (2026-09-13, prototipo):** la finalización competitiva es first-completion-wins para
   `(roomId, challengeId)` y la aplicación local de resultados es idempotente. La misma regla deberá
   validarse en servidor cuando exista backend.
+- **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
+  llegó al final del flujo y se incluye en el ranking del desafío.
+- **Resuelta (2026-09-13):** `abandoned` se reserva para un intento iniciado que se deja sin
+  finalizar; `expired` se reserva para una publicación que termina antes de que el jugador empiece.
+- **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la
+  expiración a partir de la ventana de la publicación cuando no existe un intento; la interfaz la
+  muestra como desafío cerrado sin resultado ni revisión propios.
+- **Resuelta (2026-09-13):** el motor y las pruebas de scoring conservan las penalizaciones por
+  error, intentos o tiempo, pero normalizan el resultado de cada pregunta o prueba a un mínimo de
+  cero antes de agregarlo al desafío. El total mantiene además una protección defensiva no negativa.
+- **Pendiente de alinear:** el ranking social de Alfabeto ordena actualmente por Flash Points y
+  tiempo transcurrido, mientras que otro comparador del modo usa respuestas correctas y tiempo hasta
+  el último acierto. La regla funcional confirmada es puntos por acierto y rapidez de los aciertos;
+  debe quedar un único comparador.
+- **Pendiente de alinear:** tipos y lógica de La Pirámide usan `failed`/`summit` y el modelo de
+  intento conserva `passed`/`failed`; deben tratarse como mecánica o feedback interno, no como estados
+  funcionales globales.
 - Los documentos históricos de contexto pueden conservar terminología o flujos anteriores; no son requisitos vigentes.
 - El detalle de sala puede mostrar el CTA `Jugar` a un espectador, aunque el acceso jugable lo
   rechaza. La presentación y la autorización deben alinearse.
@@ -308,7 +376,8 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - El ranking completo muestra filas no enlazadas al detalle de miembro, aunque existe la ruta de
   detalle y el ranking diario sí expone esos enlaces.
 - El modelo de respuestas contempla `timeout`, mientras que parte del juego legacy lo representa
-  con un estado distinto y `lastTimedOut`; debe unificarse antes de cerrar el contrato de modo.
+  con un estado distinto y `lastTimedOut`; debe unificarse antes de cerrar el contrato de modo. El
+  timeout de una pregunta no debe confundirse con `expired` del desafío ni con `abandoned` del intento.
 - El catálogo canónico del código contiene 31 formatos y los mocks contienen siete desafíos definidos
   y seis programados, mientras que documentos antiguos describen 25 formatos o solo dos desafíos.
   Esos documentos antiguos deben tratarse como históricos.

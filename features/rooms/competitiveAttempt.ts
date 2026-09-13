@@ -11,9 +11,7 @@ export function getCompetitiveAttemptStatus(
   const terminalAttempt = attempts.find(({ status }) => status !== "in_progress");
   if (!terminalAttempt) return "available";
 
-  return terminalAttempt.status === "completed" && terminalAttempt.outcome !== "failed"
-    ? "completed"
-    : "notCompleted";
+  return terminalAttempt.status === "completed" ? "completed" : "notCompleted";
 }
 
 export function isTerminalCompetitiveAttemptStatus(status: CompetitiveAttemptStatus) {
