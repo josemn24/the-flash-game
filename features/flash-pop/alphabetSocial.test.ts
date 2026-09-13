@@ -12,6 +12,7 @@ describe("Flash Pop Alphabet social adapter", () => {
         totalLetters: 18,
         elapsedTime: 0,
         lastCorrectAt: 0,
+        completedAt: "2026-09-01T12:00:00.000Z",
       },
       makeSocialSnapshot(0),
     );
@@ -29,6 +30,7 @@ describe("Flash Pop Alphabet social adapter", () => {
         totalLetters: 18,
         elapsedTime: 80,
         lastCorrectAt: 70,
+        completedAt: "2026-09-01T12:00:00.000Z",
       },
       makeSocialSnapshot(0),
       { seasonFlashPoints: 640 },
@@ -51,10 +53,11 @@ describe("Flash Pop Alphabet social adapter", () => {
         totalLetters: 18,
         elapsedTime: 100,
         lastCorrectAt: 90,
+        completedAt: "2026-09-02T12:00:00.000Z",
       },
       {
         ...snapshot,
-        peers: [{ ...peer, flashPoints: 89, timeUsed: 90 }],
+        peers: [{ ...peer, flashPoints: 89, timeUsed: 120, lastCorrectAt: 90 }],
       },
     );
 

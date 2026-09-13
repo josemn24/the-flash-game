@@ -1,4 +1,8 @@
 import type { FlashPopRankRow } from "@/features/flash-pop/demoSocial";
+import {
+  compareAlphabetResults,
+  type AlphabetCompetitiveResult,
+} from "@/features/alphabet/alphabetGame";
 import { normalizeFlashPoints } from "@/features/flash-pop/flashPoints";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
@@ -9,7 +13,10 @@ export type FlashPopAlphabetSummary = {
   totalLetters: number;
   elapsedTime: number;
   lastCorrectAt: number | null;
+  completedAt: string;
 };
+
+type FlashPopAlphabetRankRow = FlashPopRankRow & AlphabetCompetitiveResult;
 
 export type FlashPopAlphabetResult = {
   socialSource: "demo";
@@ -21,7 +28,7 @@ export type FlashPopAlphabetResult = {
   totalPlayers: number;
   flashPointsEarned: number;
   seasonFlashPoints: number;
-  peers: FlashPopRankRow[];
+  peers: FlashPopAlphabetRankRow[];
 };
 
 export function getFlashPopAlphabetResult(
@@ -35,14 +42,18 @@ export function getFlashPopAlphabetResult(
       player: socialSnapshot.currentPlayer,
       flashPoints: flashPointsEarned,
       timeUsed: summary.elapsedTime,
+      lastCorrectAt: summary.lastCorrectAt,
+      completedAt: summary.completedAt,
     },
     ...socialSnapshot.peers.map((row) => ({
       player: row.player,
       flashPoints: normalizeFlashPoints(row.flashPoints),
       timeUsed: row.timeUsed,
+      lastCorrectAt: row.lastCorrectAt,
+      completedAt: row.completedAt,
     })),
   ]
-    .sort((left, right) => right.flashPoints - left.flashPoints || left.timeUsed - right.timeUsed)
+    .sort((left, right) => compareAlphabetResults(left, right))
     .map((row, index) => ({
       ...row,
       rank: index + 1,

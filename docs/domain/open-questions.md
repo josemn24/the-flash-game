@@ -24,8 +24,9 @@ Cada modo debe declarar explícitamente:
    reducir la puntuación disponible de una pregunta o prueba, pero el resultado final de esa unidad
    y el total del desafío deben quedar limitados a cero.
 7. Qué intento se acredita si admite varios; el valor predeterminado es el mejor.
-8. Comparador y desempate del ranking del desafío. En Alfabeto ya está confirmado: puntos por cada
-   acierto y rapidez de los aciertos como desempate; los demás modos deben consolidarse.
+8. Comparador y desempate del ranking del desafío. En Alfabeto ya está confirmado: Flash Points,
+   menor tiempo hasta el último acierto y, si persiste el empate, menor momento de finalización. Los
+   demás modos deben consolidarse.
 9. Qué checkpoints necesita para reanudarse sin permitir repetir contenido.
 10. Qué estado parcial debe persistirse en el servidor.
 11. Qué feedback puede mostrarse después de cada respuesta.
@@ -41,6 +42,8 @@ Cada modo debe declarar explícitamente:
 - Interfaz y flujo de auditoría para correcciones de puntuación.
 - Límites de frecuencia por operación competitiva.
 - Política de toma de control de un intento desde un segundo dispositivo.
+- Intervalo del heartbeat, duración del lease y periodo de gracia para confirmar un abandono por
+  cierre de pestaña, pérdida de conexión o ausencia de actividad.
 - Momento en que un antiguo miembro deja de aparecer en listados no históricos.
 - Criterios para materializar rankings si el cálculo dinámico deja de ser suficiente.
 - Política de moderación para nombres visibles y avatares.

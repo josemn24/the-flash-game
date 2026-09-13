@@ -165,6 +165,13 @@
 - No existe un resultado funcional global `passed` o `failed`. Los modos pueden conservar estados o
   feedback internos, como `summit` en La Pirámide, pero no deben usarse para determinar si el desafío
   competitivo está completado.
+- Recomendación pendiente de implementación para detectar abandono: registrar una acción explícita
+  e idempotente de abandono, conservar checkpoints y renovar periódicamente la actividad del intento.
+  Los eventos `pagehide`, `visibilitychange` u `offline` solo deben enviar avisos auxiliares. Si el
+  servidor deja de recibir actividad durante el límite acordado, debe cerrar el intento como
+  `abandoned`; entonces se elimina el snapshot recuperable y no se permite reanudar ni repetir.
+- El intervalo del heartbeat, la duración del lease y el periodo de gracia para una desconexión son
+  cuestiones operativas aún abiertas; no se fija aquí un valor.
 - El servidor asigna identificadores, timestamps, deadlines, estados y puntuaciones.
 - Crear o recuperar el intento es una operación atómica e idempotente.
 - Solo puede haber una sesión de juego activa por intento.
@@ -236,8 +243,9 @@
 - Los antiguos miembros permanecen si consiguieron Flash Points, identificados como tales o
   anonimizados cuando corresponda.
 - Cada modo define el desempate de su desafío.
-- En Alfabeto cada respuesta correcta concede puntos y, a igualdad de Flash Points, desempata la
-  rapidez con que se obtuvieron los aciertos.
+- En Alfabeto cada respuesta correcta concede puntos. A igualdad de Flash Points, desempata el
+  menor tiempo hasta el último acierto; si persiste, desempata el menor momento de finalización. Si
+  los tres valores coinciden, los jugadores comparten posición.
 - Si dos resultados siguen siendo iguales tras aplicar los criterios competitivos, comparten
   posición.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional

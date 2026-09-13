@@ -206,19 +206,22 @@ export function calculateAlphabetScore(correctAnswers: number, totalLetters: num
 }
 
 export type AlphabetCompetitiveResult = {
-  correctAnswers: number;
+  flashPoints: number;
   lastCorrectAt: number | null;
+  completedAt: string;
 };
 
 export function compareAlphabetResults(
   left: AlphabetCompetitiveResult,
   right: AlphabetCompetitiveResult,
 ) {
-  if (left.correctAnswers !== right.correctAnswers) {
-    return right.correctAnswers - left.correctAnswers;
+  if (left.flashPoints !== right.flashPoints) {
+    return right.flashPoints - left.flashPoints;
   }
-  if (left.lastCorrectAt === right.lastCorrectAt) return 0;
-  if (left.lastCorrectAt === null) return 1;
-  if (right.lastCorrectAt === null) return -1;
-  return left.lastCorrectAt - right.lastCorrectAt;
+  if (left.lastCorrectAt !== right.lastCorrectAt) {
+    if (left.lastCorrectAt === null) return 1;
+    if (right.lastCorrectAt === null) return -1;
+    return left.lastCorrectAt - right.lastCorrectAt;
+  }
+  return Date.parse(left.completedAt) - Date.parse(right.completedAt);
 }

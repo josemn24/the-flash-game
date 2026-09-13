@@ -70,23 +70,29 @@ describe("alphabet scoring and ranking", () => {
     expect(calculateAlphabetScore(15, 15)).toBe(100);
   });
 
-  it("ranks by correct answers and then time to the last correct answer", () => {
+  it("ranks by Flash Points, last correct answer and completion time", () => {
     expect(
       compareAlphabetResults(
-        { correctAnswers: 12, lastCorrectAt: 80 },
-        { correctAnswers: 11, lastCorrectAt: 20 },
+        { flashPoints: 80, lastCorrectAt: 80, completedAt: "2026-09-01T12:00:00.000Z" },
+        { flashPoints: 70, lastCorrectAt: 20, completedAt: "2026-09-01T11:00:00.000Z" },
       ),
     ).toBeLessThan(0);
     expect(
       compareAlphabetResults(
-        { correctAnswers: 10, lastCorrectAt: 50 },
-        { correctAnswers: 10, lastCorrectAt: 65 },
+        { flashPoints: 70, lastCorrectAt: 50, completedAt: "2026-09-01T12:00:00.000Z" },
+        { flashPoints: 70, lastCorrectAt: 65, completedAt: "2026-09-01T11:00:00.000Z" },
       ),
     ).toBeLessThan(0);
     expect(
       compareAlphabetResults(
-        { correctAnswers: 0, lastCorrectAt: null },
-        { correctAnswers: 0, lastCorrectAt: null },
+        { flashPoints: 0, lastCorrectAt: null, completedAt: "2026-09-01T11:00:00.000Z" },
+        { flashPoints: 0, lastCorrectAt: null, completedAt: "2026-09-01T12:00:00.000Z" },
+      ),
+    ).toBeLessThan(0);
+    expect(
+      compareAlphabetResults(
+        { flashPoints: 70, lastCorrectAt: 50, completedAt: "2026-09-01T12:00:00.000Z" },
+        { flashPoints: 70, lastCorrectAt: 50, completedAt: "2026-09-01T12:00:00.000Z" },
       ),
     ).toBe(0);
   });

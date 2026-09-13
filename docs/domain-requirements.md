@@ -187,8 +187,9 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - **FR-31 —** El ranking por temporada ordena por el total de Flash Points acreditados en esa
   temporada de la sala.
 - **FR-32 —** Los empates comparten posición según el comparador y desempate que defina el modo.
-  En Alfabeto se conceden puntos por cada respuesta correcta y, a igualdad de puntuación, gana la
-  ejecución que haya obtenido los aciertos más rápidamente.
+  En Alfabeto se conceden puntos por cada respuesta correcta. A igualdad de Flash Points, gana la
+  ejecución con menor tiempo hasta el último acierto; si persiste el empate, gana quien completó el
+  desafío primero. Si los tres criterios coinciden, comparten posición.
 - **FR-33 —** Los miembros y espectadores pueden consultar los rankings de su sala; solo los roles
   competitivos pueden generar resultados nuevos.
 
@@ -235,8 +236,8 @@ autenticación y la gestión real de actores todavía no están implementadas.
   pregunta o prueba, pero su resultado final se limita a un mínimo de cero. La puntuación acumulada
   del desafío tampoco puede ser negativa.
 - El crédito parcial y las reglas de tiempo dependen del modo. Los empates también dependen del
-  modo; en Alfabeto, a igualdad de Flash Points, se prioriza la rapidez con que se obtuvieron los
-  aciertos.
+  modo; en Alfabeto se comparan, por este orden, Flash Points, tiempo hasta el último acierto y
+  momento de finalización.
 - Los Flash Points obtenidos al jugar se suman al total de la temporada activa de esa sala; `⚡`
   puede representar ese valor en la interfaz.
 - La temporada no tiene niveles, hitos, metas, desbloqueos ni recompensas funcionales; el total
@@ -279,6 +280,21 @@ aún aparecen en tipos y lógica de algunos modos son internos y no representan 
 del producto. La disponibilidad de la publicación (`available`, `locked`, `expired`) se mantiene
 separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`, `invalidated`).
 
+### Comportamiento recomendado pendiente de implementación
+
+- Al iniciar un desafío competitivo se debe crear o recuperar un único intento autoritativo en
+  `in_progress`.
+- El cliente debe enviar checkpoints de progreso y señales periódicas de actividad mientras el
+  intento siga abierto.
+- El abandono voluntario debe disponer de una operación explícita e idempotente que cambie el
+  intento a `abandoned`, conserve las respuestas ya enviadas y elimine el snapshot recuperable.
+- `pagehide`, `visibilitychange` u `offline` pueden enviar un aviso inmediato, pero son señales
+  auxiliares y no garantizan que el navegador o la red permitan completar la notificación.
+- Si no se recibe actividad dentro del límite acordado, el intento debe cerrarse como `abandoned`.
+  Una vez terminal, no se puede reanudar ni repetir.
+- La duración del heartbeat, el lease y el posible periodo de gracia aún deben concretarse antes de
+  implementar este comportamiento.
+
 ## 8. Permisos y restricciones conocidas
 
 - Una persona sin cuenta puede explorar ejemplos o previews, pero no participar en competición.
@@ -304,8 +320,9 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 - Los modos pueden definir penalizaciones por errores, intentos o tiempo. Estas reducen la puntuación
   disponible de la pregunta o prueba, pero el resultado final de esa unidad se limita a cero; ni la
   puntuación de una pregunta ni el total del desafío pueden ser negativos.
-- En Alfabeto cada respuesta correcta concede puntos y el desempate debe favorecer a quien obtiene
-  los aciertos más rápidamente.
+- En Alfabeto cada respuesta correcta concede puntos. El comparador del ranking usa, por este orden,
+  Flash Points, menor tiempo hasta el último acierto y menor momento de finalización. Si no hay
+  diferencia en ninguno, los jugadores comparten posición.
 - El feedback de “desafío superado” de La Pirámide al completar sus siete niveles es específico de
   la interfaz del modo y no crea un estado global `passed`.
 - `⚡` y “Flash Points” son equivalentes en la interfaz. El texto completo se conserva en títulos
@@ -341,9 +358,11 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - **Resuelta (2026-09-13):** la UI competitiva usa el estado del intento para mostrar `Jugar`,
   `Continuar` o `Ver resultado`, bloquea la entrada a desafíos terminales y oculta replay en el
   resultado y la revisión. Los previews sin `roomContext` conservan replay.
-- **Resuelta (2026-09-13, sesión de prototipo):** el proveedor conserva snapshots de los modos
-  competitivos mientras el intento está en progreso y los rehidrata al volver al desafío. Esta
-  recuperación no sustituye la persistencia ni la validación de servidor futuras.
+- **Parcialmente implementada (2026-09-13, sesión de prototipo):** el proveedor conserva snapshots
+  de los modos competitivos mientras el intento está en progreso y los rehidrata al volver al
+  desafío. Todavía no detecta ni registra el cierre de pestaña, la pérdida de conexión o el
+  abandono voluntario, y el estado en memoria se pierde al recargar o cerrar la pestaña. La
+  recuperación actual no sustituye la persistencia ni la validación de servidor futuras.
 - **Resuelta (2026-09-13, prototipo):** la finalización competitiva es first-completion-wins para
   `(roomId, challengeId)` y la aplicación local de resultados es idempotente. La misma regla deberá
   validarse en servidor cuando exista backend.
@@ -357,10 +376,13 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - **Resuelta (2026-09-13):** el motor y las pruebas de scoring conservan las penalizaciones por
   error, intentos o tiempo, pero normalizan el resultado de cada pregunta o prueba a un mínimo de
   cero antes de agregarlo al desafío. El total mantiene además una protección defensiva no negativa.
-- **Pendiente de alinear:** el ranking social de Alfabeto ordena actualmente por Flash Points y
-  tiempo transcurrido, mientras que otro comparador del modo usa respuestas correctas y tiempo hasta
-  el último acierto. La regla funcional confirmada es puntos por acierto y rapidez de los aciertos;
-  debe quedar un único comparador.
+- **Resuelta (2026-09-13):** Alfabeto tiene un comparador único para el modo y la vista social:
+  Flash Points, menor tiempo hasta el último acierto y, finalmente, menor momento de finalización.
+  `timeUsed` queda como métrica informativa y no como desempate.
+- **Pendiente de implementar:** el abandono automático de intentos. El comportamiento objetivo
+  requiere abandono explícito idempotente, checkpoints/heartbeat y cierre autoritativo tras perder
+  actividad; los eventos del navegador solo deben actuar como avisos auxiliares. El intervalo y el
+  periodo de gracia aún no están definidos.
 - **Pendiente de alinear:** tipos y lógica de La Pirámide usan `failed`/`summit` y el modelo de
   intento conserva `passed`/`failed`; deben tratarse como mecánica o feedback interno, no como estados
   funcionales globales.
