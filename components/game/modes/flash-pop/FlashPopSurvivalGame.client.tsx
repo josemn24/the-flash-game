@@ -8,6 +8,11 @@ import { ChallengeIntro, StartCountdown } from "@/components/game/shared";
 import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useSurvivalSession } from "@/features/game/useSurvivalSession";
+import type { SurvivalSessionSnapshot } from "@/features/game/useSurvivalSession";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import {
   getFlashPopSurvivalResult,
   type FlashPopSurvivalSummary,
@@ -110,7 +115,9 @@ export function FlashPopSurvivalGame({
   socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
-  const session = useSurvivalSession(scoredChallenge);
+  const resumeState = useRoomAttemptResume<SurvivalSessionSnapshot>(roomContext, challenge.id, "survival");
+  const session = useSurvivalSession(scoredChallenge, { resumeState });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "survival", session.phase, session.snapshot);
   const latestResult = session.results.at(-1);
   const finished = session.phase === "results" || session.phase === "review";
   const summary = finished ? toSummary(scoredChallenge, session) : null;

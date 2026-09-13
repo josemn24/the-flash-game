@@ -24,6 +24,11 @@ import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { ChallengeResultScreen } from "@/components/game/shared";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
+import type { NarrativeSessionState } from "@/features/narrative/narrativeSession";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import {
@@ -361,7 +366,13 @@ export function NarrativeGameApp({
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
-  const session = useNarrativeSession(challenge);
+  const resumeState = useRoomAttemptResume<NarrativeSessionState>(
+    roomContext,
+    challenge.id,
+    "narrative",
+  );
+  const session = useNarrativeSession(challenge, { resumeState });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "narrative", session.phase, session.snapshot);
   useChallengeCompletionReporter(
     session.phase === "results"
       ? {
@@ -480,7 +491,7 @@ export function NarrativeGameApp({
                   challenge={challenge}
                   results={session.results}
                   onBack={session.showResults}
-                  onReplay={session.replay}
+                  onReplay={roomContext ? undefined : session.replay}
                 />
               )}
             </AnimatePresence>

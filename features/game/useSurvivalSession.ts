@@ -16,7 +16,7 @@ import {
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
 
-type SessionState = {
+export type SurvivalSessionSnapshot = {
   phase: GamePhase;
   questionIndex: number;
   results: AnswerResult[];
@@ -29,6 +29,7 @@ type SessionState = {
   eliminated: boolean;
   survived: boolean;
 };
+type SessionState = SurvivalSessionSnapshot;
 
 type SessionAction =
   | { type: "begin-countdown" }
@@ -48,6 +49,7 @@ type SessionAction =
   | { type: "preview-life-penalty" }
   | { type: "show-review" }
   | { type: "show-results" }
+  | { type: "hydrate"; state: SurvivalSessionSnapshot }
   | { type: "replay"; lives: number };
 
 function getInitialState(lives: number): SessionState {
@@ -104,12 +106,17 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
       return { ...state, phase: "review" };
     case "show-results":
       return { ...state, phase: "results" };
+    case "hydrate":
+      return action.state;
     case "replay":
       return getInitialState(action.lives);
   }
 }
 
-export function useSurvivalSession(challenge: SurvivalChallenge) {
+export function useSurvivalSession(
+  challenge: SurvivalChallenge,
+  options: { resumeState?: SurvivalSessionSnapshot } = {},
+) {
   const [state, dispatch] = useReducer(reducer, challenge.lives, getInitialState);
   const question = challenge.questions[state.questionIndex];
   const questionStartedAt = useRef(0);
@@ -119,6 +126,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
   const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeApplied = useRef(false);
 
   const clearAdvanceTimeout = useCallback(() => {
     if (advanceTimeout.current) {
@@ -128,6 +136,16 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
   }, []);
 
   useEffect(() => clearAdvanceTimeout, [clearAdvanceTimeout]);
+
+  useEffect(() => {
+    if (!options.resumeState || resumeApplied.current) return;
+    resumeApplied.current = true;
+    clearAdvanceTimeout();
+    answerLock.current = false;
+    codeAttemptsRef.current = options.resumeState.codeAttempts;
+    questionStartedAt.current = performance.now();
+    dispatch({ type: "hydrate", state: options.resumeState });
+  }, [clearAdvanceTimeout, options.resumeState]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -285,6 +303,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
 
   return {
     ...state,
+    snapshot: state,
     question,
     livesRemaining: displayedLivesRemaining,
     score,

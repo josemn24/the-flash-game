@@ -20,10 +20,21 @@ export function applyRoomChallengeResult(
 ): RoomDetailModel {
   if (
     result.roomId !== model.roomId ||
-    model.dailyChallenge?.id !== result.challengeId ||
-    !result.completed
+    model.dailyChallenge?.id !== result.challengeId
   ) {
     return model;
+  }
+
+  if (model.currentUser.dailyAttemptStatus !== "available") return model;
+
+  if (!result.completed) {
+    return {
+      ...model,
+      currentUser: {
+        ...model.currentUser,
+        dailyAttemptStatus: "notCompleted",
+      },
+    };
   }
 
   const totalFlashPoints =
@@ -64,6 +75,7 @@ export function applyRoomChallengeResult(
       roomRank: roomEntry?.rank ?? model.currentUser.roomRank,
       dailyFlashPoints: result.flashPoints,
       dailyCompleted: result.completed,
+      dailyAttemptStatus: result.completed ? "completed" : "notCompleted",
     },
     roomLeaderboard,
     dailyLeaderboard,
@@ -89,7 +101,9 @@ export function applyRoomMemberChallengeResult(
     return model;
   }
 
-  const previousFlashPoints = model.result?.flashPoints ?? 0;
+  if (model.result) return model;
+
+  const previousFlashPoints = 0;
   const totalFlashPoints = model.member.totalFlashPoints - previousFlashPoints + result.flashPoints;
   const roomLeaderboard = sortEntries(
     model.roomLeaderboard.map((entry) =>

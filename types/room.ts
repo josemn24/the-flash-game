@@ -16,6 +16,7 @@ export type {
 } from "@/types/gameplay/completion";
 export type {
   GameRoomContext,
+  CompetitiveAttemptStatus,
   RoomCardModel,
   RoomDailyLeaderboardEntry,
   RoomDetailModel,

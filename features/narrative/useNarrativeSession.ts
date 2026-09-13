@@ -6,11 +6,15 @@ import {
   initialNarrativeSessionState,
   narrativeSessionReducer,
 } from "@/features/narrative/narrativeSession";
+import type { NarrativeSessionState } from "@/features/narrative/narrativeSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
 import type { AnswerValue, NarrativeChallenge } from "@/types/game";
 
-export function useNarrativeSession(challenge: NarrativeChallenge) {
+export function useNarrativeSession(
+  challenge: NarrativeChallenge,
+  options: { resumeState?: NarrativeSessionState } = {},
+) {
   const sequence = useMemo(() => getNarrativeSequence(challenge), [challenge]);
   const [state, dispatch] = useReducer(narrativeSessionReducer, initialNarrativeSessionState);
   const questionStartedAt = useRef(0);
@@ -18,6 +22,7 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
   const draftAnswerRef = useRef<AnswerValue | null>(null);
   const incorrectAttemptsRef = useRef(0);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeApplied = useRef(false);
   const currentStep = sequence[state.stepIndex];
 
   const clearAdvanceTimeout = useCallback(() => {
@@ -28,6 +33,15 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
   }, []);
 
   useEffect(() => clearAdvanceTimeout, [clearAdvanceTimeout]);
+
+  useEffect(() => {
+    if (!options.resumeState || resumeApplied.current) return;
+    resumeApplied.current = true;
+    clearAdvanceTimeout();
+    answerLock.current = false;
+    questionStartedAt.current = performance.now();
+    dispatch({ type: "hydrate", state: options.resumeState });
+  }, [clearAdvanceTimeout, options.resumeState]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -144,6 +158,7 @@ export function useNarrativeSession(challenge: NarrativeChallenge) {
       : 0;
   return {
     ...state,
+    snapshot: state,
     currentStep,
     questionNumber,
     totalQuestions: questionSteps.length,

@@ -6,6 +6,7 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, CheckIcon, ClockIcon, CrossIcon, RotateIcon } from "@/components/ui";
 import { Button, Card, Canvas, GameHeader, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
+import type { AlphabetState } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
 import { buildAlphabetAnswerReviews } from "@/features/alphabet/alphabetReview";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
@@ -14,6 +15,10 @@ import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { ChallengeResultScreen, ReviewAnswerPanel, StartCountdown } from "@/components/game/shared";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import type {
   AlphabetChallenge,
   AnswerStatus,
@@ -328,7 +333,9 @@ export function FlashPopAlphabetGame({
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
-  const session = useAlphabetSession(challenge);
+  const resumeState = useRoomAttemptResume<AlphabetState>(roomContext, challenge.id, "alphabet");
+  const session = useAlphabetSession(challenge, { resumeState });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "alphabet", session.phase, session.snapshot);
   useChallengeCompletionReporter(
     session.phase === "results"
       ? {

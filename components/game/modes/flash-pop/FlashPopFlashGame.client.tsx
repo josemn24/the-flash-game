@@ -17,7 +17,11 @@ import {
   type ChallengeResultModel,
 } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { useGameSession } from "@/features/game/useGameSession";
+import { useGameSession, type GameSessionSnapshot } from "@/features/game/useGameSession";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
@@ -257,9 +261,12 @@ export function FlashPopFlashGame({
   onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
+  const resumeState = useRoomAttemptResume<GameSessionSnapshot>(roomContext, challenge.id, "flash");
   const session = useGameSession(scoredChallenge, {
     transitionDuration: FLASH_POP_FEEDBACK_DURATION,
+    resumeState,
   });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "flash", session.phase, session.snapshot);
   const lastResult = session.results[session.results.length - 1];
 
   useChallengeCompletionReporter(

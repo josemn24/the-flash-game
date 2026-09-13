@@ -1,4 +1,5 @@
 import type { RoomQueries } from "@/application/queries";
+import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
 import { projectLegacyAttempt } from "@/data/mock/legacyAdapters";
 import {
   getPlayerRouteKey,
@@ -270,6 +271,16 @@ export class MockRoomQueries implements RoomQueries {
     );
     const dailyLeaderboard = daily ? this.dailyLeaderboard(daily.schedule) : [];
     const dailyEntry = dailyLeaderboard.find(({ memberId }) => memberId === current.routeKey);
+    const dailyAttemptStatus = daily
+      ? getCompetitiveAttemptStatus(
+          this.store.attempts.filter(
+            (attempt) =>
+              attempt.playerId === context.viewerId &&
+              attempt.scheduledChallengeId === daily.schedule.id &&
+              attempt.kind === "competitive",
+          ),
+        )
+      : "available";
     return {
       roomId: roomKey,
       title: access.room.title,
@@ -284,6 +295,7 @@ export class MockRoomQueries implements RoomQueries {
         roomRank: roomEntry?.rank ?? 0,
         dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
         dailyCompleted: dailyEntry?.completed ?? false,
+        dailyAttemptStatus,
       },
       dailyChallenge: daily
         ? {

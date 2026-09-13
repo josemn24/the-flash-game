@@ -9,7 +9,7 @@ describe("room session results", () => {
     answers: [],
   });
 
-  it("replaces a previous result without accumulating replay points", () => {
+  it("keeps the first terminal result and ignores a later completion", () => {
     const first = upsertRoomSessionResult(
       {},
       completion({
@@ -28,12 +28,12 @@ describe("room session results", () => {
     );
 
     expect(second["tabarnia-room"]["tabarnia-challenge-05"]).toEqual({
-      flashPoints: 42,
+      flashPoints: 80,
       completed: true,
       attempt: {
         challengeId: "tabarnia-challenge-05",
         playedAt: "2026-09-08T15:39:00.000Z",
-        flashPoints: 42,
+        flashPoints: 80,
         completed: true,
         answers: [],
       },

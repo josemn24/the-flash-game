@@ -79,6 +79,11 @@ function challengeContract(queries: ChallengeQueries) {
       queries.getPlayable("tabarnia-challenge-06", null, ownerContext),
     ).resolves.toMatchObject({ roomContext: undefined });
     await expect(
+      queries.getPlayable("tabarnia-challenge-06", "tabarnia-room", ownerContext),
+    ).resolves.toMatchObject({
+      roomContext: { attemptStatus: "available", memberId: "player" },
+    });
+    await expect(
       queries.getPlayable("tabarnia-challenge-06", "missing-room", ownerContext),
     ).resolves.toBeNull();
     await expect(queries.getPlayable("missing-challenge", null, ownerContext)).resolves.toBeNull();
@@ -245,6 +250,44 @@ describe("MockRoomQueries contract", () => {
 
 describe("MockChallengeQueries contract", () => {
   challengeContract(new MockChallengeQueries(mockDomainStore));
+
+  it("projects terminal, in-progress and failed competitive attempts", async () => {
+    const completed = await new MockChallengeQueries(mockDomainStore).getPlayable(
+      "tabarnia-challenge-05",
+      "tabarnia-room",
+      ownerContext,
+    );
+    expect(completed?.roomContext?.attemptStatus).toBe("completed");
+
+    const playerAttempt = mockDomainStore.attempts.find(
+      (attempt) =>
+        attempt.scheduledChallengeId === scheduledChallengeRouteAliases["tabarnia-challenge-05"] &&
+        attempt.playerId === ownerContext.viewerId,
+    );
+    if (!playerAttempt) throw new Error("Expected the viewer challenge 05 attempt fixture.");
+
+    const inProgress = await new MockChallengeQueries(
+      withStore({
+        attempts: mockDomainStore.attempts.map((attempt) =>
+          attempt.id === playerAttempt.id
+            ? { ...attempt, status: "in_progress" as const, outcome: null }
+            : attempt,
+        ),
+      }),
+    ).getPlayable("tabarnia-challenge-05", "tabarnia-room", ownerContext);
+    expect(inProgress?.roomContext?.attemptStatus).toBe("inProgress");
+
+    const expired = await new MockChallengeQueries(
+      withStore({
+        attempts: mockDomainStore.attempts.map((attempt) =>
+          attempt.id === playerAttempt.id
+            ? { ...attempt, status: "expired" as const, outcome: null }
+            : attempt,
+        ),
+      }),
+    ).getPlayable("tabarnia-challenge-05", "tabarnia-room", ownerContext);
+    expect(expired?.roomContext?.attemptStatus).toBe("notCompleted");
+  });
 });
 
 describe("MockCurrentViewerProvider", () => {

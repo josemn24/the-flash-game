@@ -27,6 +27,7 @@ const STORAGE_PROBE_KEY = "the-flash:pyramid-storage-probe";
 export type PyramidSessionOptions = {
   persistence?: "local" | "memory";
   storageNamespace?: string;
+  initialRecord?: PyramidAttemptRecord | null;
   feedbackDuration?: Partial<{
     correct: number;
     incorrect: number;
@@ -197,6 +198,10 @@ export function usePyramidSession(
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
+      if (options.initialRecord) {
+        applyLoadedRecord(options.initialRecord);
+        return;
+      }
       if (persistence !== "local") {
         setPhase("intro");
         return;
@@ -222,7 +227,7 @@ export function usePyramidSession(
     return () => {
       cancelled = true;
     };
-  }, [applyLoadedRecord, challenge, persistence, storageKey]);
+  }, [applyLoadedRecord, challenge, options.initialRecord, persistence, storageKey]);
 
   useEffect(() => {
     if (persistence !== "local") return;
@@ -365,6 +370,7 @@ export function usePyramidSession(
   return {
     phase,
     record,
+    snapshot: record,
     currentLevel,
     latestResult,
     summary,

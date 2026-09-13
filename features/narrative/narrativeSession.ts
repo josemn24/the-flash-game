@@ -25,6 +25,7 @@ export type NarrativeSessionAction =
     }
   | { type: "show-review" }
   | { type: "show-results" }
+  | { type: "hydrate"; state: NarrativeSessionState }
   | { type: "replay" };
 
 export const initialNarrativeSessionState: NarrativeSessionState = {
@@ -91,6 +92,8 @@ export function narrativeSessionReducer(
       return { ...state, phase: "review" };
     case "show-results":
       return { ...state, phase: "results" };
+    case "hydrate":
+      return action.state;
     case "replay":
       return initialNarrativeSessionState;
   }

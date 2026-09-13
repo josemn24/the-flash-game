@@ -146,8 +146,9 @@ autenticación y la gestión real de actores todavía no están implementadas.
   finalización propias del modo. El sistema debe manejar respuestas, errores, respuestas parciales
   y expiración cuando el formato lo permita. (**Implementado/mock**, con contratos por modo aún
   incompletos.)
-- **FR-22 —** Tras completar un desafío el jugador puede consultar el resultado, el ranking y la
-  revisión de respuestas, pero no repetir ni practicar ese mismo desafío competitivo.
+- **FR-22 —** Tras un intento competitivo terminal (`completed`, `expired`, `abandoned` o
+  `invalidated`) el jugador puede consultar el resultado, el ranking y la revisión de respuestas
+  cuando existan, pero no repetir ni practicar ese mismo desafío competitivo.
 - **FR-23 —** Los resets de intento solo están previstos para herramientas internas de desarrollo y
   QA, nunca para la interfaz de producción.
 
@@ -202,6 +203,8 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - No jugar no crea un intento ni concede Flash Points.
 - Para producción inicial hay un único intento competitivo por jugador y desafío programado.
 - El intento en progreso se reanuda; repetir el desafío no crea una segunda oportunidad competitiva.
+- Un intento terminal consume el único intento aunque no se complete con éxito; sus estados visibles
+  son `completed` o `notCompleted`.
 - El resultado de un desafío es un entero de 0 a 100 y nunca negativo.
 - El crédito parcial, las penalizaciones, el éxito y los desempates dependen del modo y deben estar
   definidos antes de cerrar cada modo.
@@ -259,8 +262,8 @@ timeout; el ciclo de vida funcional de referencia es el anterior.
 - Solo hay dos rankings funcionales: uno por desafío y otro por temporada.
 - No existen niveles ni hitos de temporada. Los niveles de La Pirámide y las vidas de
   Supervivencia son reglas internas de esos desafíos, no saldos ni progresión social.
-- La repetición visible actualmente pertenece al prototipo; la primera producción tendrá un único
-  intento competitivo por desafío.
+- `roomContext` delimita la competición: sus desafíos no ofrecen replay tras un intento terminal;
+  los previews sin sala sí pueden conservar replay.
 - Las decisiones generales de `docs/domain/decisions.md` siguen vigentes cuando no contradicen lo
   anterior: competición asíncrona, salas privadas, temporadas por sala, perfiles globales,
   contenido versionado y evaluación autoritativa.
@@ -284,8 +287,15 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 
 ## 11. Inconsistencias entre implementación, documentación y objetivo
 
-- Las previews no competitivas todavía conservan acciones de replay por su naturaleza de
-  exploración; la experiencia de sala competitiva ya no debe ofrecer replay tras completar.
+- **Resuelta (2026-09-13):** la UI competitiva usa el estado del intento para mostrar `Jugar`,
+  `Continuar` o `Ver resultado`, bloquea la entrada a desafíos terminales y oculta replay en el
+  resultado y la revisión. Los previews sin `roomContext` conservan replay.
+- **Resuelta (2026-09-13, sesión de prototipo):** el proveedor conserva snapshots de los modos
+  competitivos mientras el intento está en progreso y los rehidrata al volver al desafío. Esta
+  recuperación no sustituye la persistencia ni la validación de servidor futuras.
+- **Resuelta (2026-09-13, prototipo):** la finalización competitiva es first-completion-wins para
+  `(roomId, challengeId)` y la aplicación local de resultados es idempotente. La misma regla deberá
+  validarse en servidor cuando exista backend.
 - Los documentos históricos de contexto pueden conservar terminología o flujos anteriores; no son requisitos vigentes.
 - El detalle de sala puede mostrar el CTA `Jugar` a un espectador, aunque el acceso jugable lo
   rechaza. La presentación y la autorización deben alinearse.

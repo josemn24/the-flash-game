@@ -95,6 +95,18 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
     );
   }
 
+  const attemptStatus = model.currentUser.dailyAttemptStatus;
+  const resultHref = `/salas/${model.roomId}/ranking/${model.currentUser.id}`;
+  const actionHref = attemptStatus === "completed" || attemptStatus === "notCompleted"
+    ? resultHref
+    : challenge.href;
+  const actionLabel =
+    attemptStatus === "inProgress"
+      ? "Continuar"
+      : attemptStatus === "completed" || attemptStatus === "notCompleted"
+        ? "Ver resultado"
+        : "Jugar";
+
   return (
     <Card
       as="section"
@@ -113,7 +125,13 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
         />
         <div className={styles.challengeOverlay}>
           <Chip variant="data">
-            {model.currentUser.dailyCompleted ? "Completado" : "Pendiente"}
+            {attemptStatus === "completed"
+              ? "Completado"
+              : attemptStatus === "notCompleted"
+                ? "No completado"
+                : attemptStatus === "inProgress"
+                  ? "En progreso"
+                  : "Pendiente"}
           </Chip>
           <DailyCountdown endsAt={challenge.endsAt} />
         </div>
@@ -124,8 +142,8 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 
       <div className={styles.challengeFooter}>
         <span className={styles.challengeFormat}>{challenge.formatLabel}</span>
-        <ButtonLink href={challenge.href} size="sm" trailingIcon={<ArrowIcon />}>
-          Jugar
+        <ButtonLink href={actionHref} size="sm" trailingIcon={<ArrowIcon />}>
+          {actionLabel}
         </ButtonLink>
       </div>
     </Card>

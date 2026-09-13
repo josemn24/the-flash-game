@@ -67,7 +67,7 @@ export function FlashGameApp({
                 results={session.results}
                 score={session.score}
                 onReview={session.showReview}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
               />
             )}
             {session.phase === "review" && (
@@ -76,7 +76,7 @@ export function FlashGameApp({
                 challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
               />
             )}
           </AnimatePresence>

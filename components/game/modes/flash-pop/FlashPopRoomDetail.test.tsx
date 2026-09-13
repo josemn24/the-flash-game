@@ -67,4 +67,24 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).not.toContain("Chat");
     expect(markup).not.toContain("Actividad reciente");
   });
+
+  it.each([
+    ["available", "Jugar", "/desafios/tabarnia-challenge-06?roomId=tabarnia-room"],
+    ["inProgress", "Continuar", "/desafios/tabarnia-challenge-06?roomId=tabarnia-room"],
+    ["completed", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
+    ["notCompleted", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
+  ] as const)("uses the %s action for the current attempt", (status, label, href) => {
+    const model = buildRoomDetailModel(demoRoom, now);
+    const markup = renderToStaticMarkup(
+      <FlashPopRoomDetail
+        model={{
+          ...model,
+          currentUser: { ...model.currentUser, dailyAttemptStatus: status },
+        }}
+      />,
+    );
+
+    expect(markup).toContain(label);
+    expect(markup).toContain(`href="${href}"`);
+  });
 });

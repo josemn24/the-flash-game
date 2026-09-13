@@ -44,10 +44,10 @@ describe("ChallengeResultScreen", () => {
       />,
     );
 
-    expect(flashMarkup).toContain(">+84</strong>");
-    expect(flashMarkup).toContain("⚡");
-    expect(flashMarkup).toContain('aria-label="84 Flash Points"');
-    expect(flashMarkup).not.toContain("+84 Flash Points ⚡");
+    expect(flashMarkup).toContain(">84</strong>");
+    expect(flashMarkup).toContain("/100 puntos");
+    expect(flashMarkup).toContain('aria-label="84 de 100 puntos"');
+    expect(flashMarkup).not.toContain("+84");
     const three = renderToStaticMarkup(
       <ChallengeResultScreen model={getModel(3)} onReview={() => {}} />,
     );

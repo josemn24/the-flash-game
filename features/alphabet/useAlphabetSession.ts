@@ -7,15 +7,20 @@ import {
   createAlphabetInitialState,
   isAlphabetAnswerCorrect,
 } from "@/features/alphabet/alphabetGame";
+import type { AlphabetState } from "@/features/alphabet/alphabetGame";
 import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
 
 const FEEDBACK_DURATION = 500;
 
-export function useAlphabetSession(challenge: AlphabetChallenge) {
+export function useAlphabetSession(
+  challenge: AlphabetChallenge,
+  options: { resumeState?: AlphabetState } = {},
+) {
   const [state, dispatch] = useReducer(alphabetReducer, challenge, createAlphabetInitialState);
   const startedAt = useRef(0);
   const actionLocked = useRef(false);
   const feedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeApplied = useRef(false);
 
   const clearFeedbackTimeout = useCallback(() => {
     if (feedbackTimeout.current) {
@@ -25,6 +30,15 @@ export function useAlphabetSession(challenge: AlphabetChallenge) {
   }, []);
 
   useEffect(() => clearFeedbackTimeout, [clearFeedbackTimeout]);
+
+  useEffect(() => {
+    if (!options.resumeState || resumeApplied.current) return;
+    resumeApplied.current = true;
+    clearFeedbackTimeout();
+    actionLocked.current = false;
+    startedAt.current = performance.now();
+    dispatch({ type: "hydrate", state: options.resumeState });
+  }, [clearFeedbackTimeout, options.resumeState]);
 
   const beginCountdown = useCallback(() => {
     clearFeedbackTimeout();
@@ -97,6 +111,7 @@ export function useAlphabetSession(challenge: AlphabetChallenge) {
   return useMemo(
     () => ({
       ...state,
+      snapshot: state,
       activeEntry,
       correctAnswers,
       incorrectAnswers,

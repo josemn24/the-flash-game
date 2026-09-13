@@ -1,4 +1,6 @@
 import type { ChallengeQueries } from "@/application/queries";
+import { projectLegacyAttempt } from "@/data/mock/legacyAdapters";
+import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
 import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
 import {
   getPlayerRouteKey,
@@ -123,7 +125,31 @@ export class MockChallengeQueries implements ChallengeQueries {
           )
         : undefined;
       if (!room || !season || season.roomId !== room.id || !membership) return null;
-      roomContext = { roomId: roomKey, roomTitle: room.title, returnTo: `/salas/${roomKey}` };
+      const competitiveAttempts = this.store.attempts.filter(
+          (attempt) =>
+            attempt.playerId === context.viewerId &&
+            attempt.scheduledChallengeId === schedule.id &&
+            attempt.kind === "competitive",
+        );
+      const attemptStatus = getCompetitiveAttemptStatus(competitiveAttempts);
+      const completedAttempt = competitiveAttempts.find(
+        ({ status }) => status === "completed",
+      );
+      const attempt = completedAttempt
+        ? projectLegacyAttempt(completedAttempt.id, this.store)
+        : undefined;
+      const memberId = getPlayerRouteKey(context.viewerId);
+      if (!memberId) throw new Error(`Missing route alias for viewer "${context.viewerId}".`);
+      roomContext = {
+        roomId: roomKey,
+        roomTitle: room.title,
+        returnTo: `/salas/${roomKey}`,
+        memberId,
+        attemptStatus,
+        result: attempt
+          ? { flashPoints: attempt.flashPoints, completed: true, attempt }
+          : undefined,
+      };
     }
     return {
       challenge,

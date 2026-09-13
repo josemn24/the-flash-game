@@ -146,6 +146,7 @@ export type {
   ChallengeCompletion,
   ChallengeCompletionInput,
   ChallengeCompletionResult,
+  CompetitiveAttemptStatus,
   GameRoomContext,
   Room,
   RoomChallengeResult,

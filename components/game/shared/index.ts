@@ -1,4 +1,5 @@
 export { ChallengeIntro } from "./ChallengeIntro";
+export { CompetitiveResultScreen } from "./CompetitiveResultScreen";
 export { ChallengeResultScreen } from "./ChallengeResultScreen/ChallengeResultScreen";
 export type {
   ChallengeResultModel,

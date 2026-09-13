@@ -38,6 +38,7 @@ export type AlphabetAction =
   | { type: "finish"; elapsedTime: number }
   | { type: "show-review" }
   | { type: "show-results" }
+  | { type: "hydrate"; state: AlphabetState }
   | { type: "replay" };
 
 export function createAlphabetInitialState(challenge: AlphabetChallenge): AlphabetState {
@@ -157,6 +158,8 @@ export function alphabetReducer(state: AlphabetState, action: AlphabetAction): A
       return { ...state, phase: "review" };
     case "show-results":
       return { ...state, phase: "results" };
+    case "hydrate":
+      return action.state;
     case "replay":
       return {
         ...state,

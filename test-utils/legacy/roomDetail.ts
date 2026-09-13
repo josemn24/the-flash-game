@@ -9,6 +9,7 @@ import {
 } from "@/test-utils/legacy/roomCard";
 import { getDailyLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
 import type { ChallengeCompletion, Room, RoomDetailModel } from "@/types/game";
+import type { CompetitiveAttemptStatus } from "@/types/game";
 
 export function getRoomById(roomId: string) {
   return demoRooms.find((room) => room.id === roomId);
@@ -125,8 +126,9 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       avatarSrc: member.avatarSrc,
       totalFlashPoints: member.totalFlashPoints,
       roomRank: roomEntry.rank,
-      dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
-      dailyCompleted: dailyEntry?.completed ?? false,
+    dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
+    dailyCompleted: dailyEntry?.completed ?? false,
+    dailyAttemptStatus: dailyEntry?.completed ? "completed" : ("available" as CompetitiveAttemptStatus),
     },
     dailyChallenge: dailyChallengeModel,
     roomLeaderboard,

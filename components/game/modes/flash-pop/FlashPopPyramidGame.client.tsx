@@ -8,6 +8,11 @@ import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeed
 import { ChallengeResultScreen } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
+import type { PyramidAttemptRecord } from "@/features/pyramid/pyramidAttempt";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import { CHALLENGE_MAX_SCORE, withPyramidScoring } from "@/lib/challengeScoring";
 import {
   calculateResultAccuracy,
@@ -402,10 +407,17 @@ export function FlashPopPyramidGame({
   socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
+  const resumeRecord = useRoomAttemptResume<PyramidAttemptRecord>(
+    roomContext,
+    challenge.id,
+    "pyramid",
+  );
   const session = usePyramidSession(scoredChallenge, {
     persistence: "memory",
+    initialRecord: resumeRecord,
     feedbackDuration: { correct: 1100, incorrect: 1800, unanswered: 1800 },
   });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "pyramid", session.phase, session.record);
   const currentLevel = session.currentLevel ?? challenge.levels[0];
   const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 

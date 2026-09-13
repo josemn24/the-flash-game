@@ -2,10 +2,15 @@ import type { Challenge } from "@/types/gameplay/challenge";
 import type { RoomChallengeResult } from "@/types/gameplay/completion";
 import type { LegacySeasonStatus } from "@/types/legacy/room";
 
+export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
+
 export type GameRoomContext = {
   roomId: string;
   roomTitle: string;
   returnTo: string;
+  memberId: string;
+  attemptStatus: CompetitiveAttemptStatus;
+  result?: RoomChallengeResult;
 };
 
 export type RoomMemberViewModel = {
@@ -72,6 +77,7 @@ export type RoomDetailModel = {
     roomRank: number;
     dailyFlashPoints: number;
     dailyCompleted: boolean;
+    dailyAttemptStatus: CompetitiveAttemptStatus;
   };
   dailyChallenge: {
     id: string;
