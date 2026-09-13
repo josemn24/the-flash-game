@@ -69,22 +69,31 @@ describe("FlashPopRoomDetail", () => {
   });
 
   it.each([
-    ["available", "Jugar", "/desafios/tabarnia-challenge-06?roomId=tabarnia-room"],
-    ["inProgress", "Continuar", "/desafios/tabarnia-challenge-06?roomId=tabarnia-room"],
-    ["completed", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
-    ["notCompleted", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
-  ] as const)("uses the %s action for the current attempt", (status, label, href) => {
-    const model = buildRoomDetailModel(demoRoom, now);
-    const markup = renderToStaticMarkup(
-      <FlashPopRoomDetail
-        model={{
-          ...model,
-          currentUser: { ...model.currentUser, dailyAttemptStatus: status },
-        }}
-      />,
-    );
+    ["available", "Pendiente", "Jugar", "/desafios/tabarnia-challenge-06?roomId=tabarnia-room"],
+    [
+      "inProgress",
+      "En progreso",
+      "Continuar",
+      "/desafios/tabarnia-challenge-06?roomId=tabarnia-room",
+    ],
+    ["completed", "Completado", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
+    ["notCompleted", "No completado", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
+  ] as const)(
+    "uses the %s label and action for the current attempt",
+    (status, statusLabel, label, href) => {
+      const model = buildRoomDetailModel(demoRoom, now);
+      const markup = renderToStaticMarkup(
+        <FlashPopRoomDetail
+          model={{
+            ...model,
+            currentUser: { ...model.currentUser, dailyAttemptStatus: status },
+          }}
+        />,
+      );
 
-    expect(markup).toContain(label);
-    expect(markup).toContain(`href="${href}"`);
-  });
+      expect(markup).toContain(statusLabel);
+      expect(markup).toContain(label);
+      expect(markup).toContain(`href="${href}"`);
+    },
+  );
 });

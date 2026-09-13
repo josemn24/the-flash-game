@@ -383,9 +383,11 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   requiere abandono explícito idempotente, checkpoints/heartbeat y cierre autoritativo tras perder
   actividad; los eventos del navegador solo deben actuar como avisos auxiliares. El intervalo y el
   periodo de gracia aún no están definidos.
-- **Pendiente de alinear:** tipos y lógica de La Pirámide usan `failed`/`summit` y el modelo de
-  intento conserva `passed`/`failed`; deben tratarse como mecánica o feedback interno, no como estados
-  funcionales globales.
+- **Resuelta (2026-09-13):** La Pirámide conserva `summit` y `failed` como resultado interno del
+  modo. Ambos se proyectan como `completed` cuando la partida llega a su final reglamentario;
+  `failed` indica únicamente que terminó antes de alcanzar la cima y no equivale a `notCompleted`.
+- El modelo genérico de intento aún conserva nombres legacy como `passed`/`failed` en algunas
+  estructuras; no deben interpretarse como estados funcionales globales del desafío.
 - Los documentos históricos de contexto pueden conservar terminología o flujos anteriores; no son requisitos vigentes.
 - El detalle de sala puede mostrar el CTA `Jugar` a un espectador, aunque el acceso jugable lo
   rechaza. La presentación y la autorización deben alinearse.

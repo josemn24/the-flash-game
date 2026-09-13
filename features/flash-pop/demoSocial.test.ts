@@ -112,7 +112,7 @@ describe("Flash Pop demo social adapter", () => {
     expect(result.levelsCleared).toBe(2);
   });
 
-  it("shows an unsuccessful attempt as not completed", () => {
+  it("shows a failed-level attempt as completed", () => {
     const result = getFlashPopResult(
       {
         challengeId: "tabarnia-challenge-05",
@@ -144,7 +144,20 @@ describe("Flash Pop demo social adapter", () => {
         makeSocialSnapshot(),
         challengeContent,
       ).status,
-    ).toBe("notCompleted");
+    ).toBe("completed");
+    expect(
+      getFlashPopAttemptStatus({
+        status: "completed",
+        summary: {
+          challengeId: "tabarnia-challenge-05",
+          levelsCleared: 0,
+          score: 0,
+          timeUsed: 12,
+          outcome: "failed",
+          completedAt: 100,
+        },
+      }),
+    ).toBe("completed");
   });
 
   it("uses active Tabarnia memberships and leaves challenge 06 activity empty", () => {

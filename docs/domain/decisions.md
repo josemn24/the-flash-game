@@ -165,6 +165,9 @@
 - No existe un resultado funcional global `passed` o `failed`. Los modos pueden conservar estados o
   feedback internos, como `summit` en La Pirámide, pero no deben usarse para determinar si el desafío
   competitivo está completado.
+- En La Pirámide, `PyramidAttemptOutcome` (`summit`/`failed`) es feedback interno del modo. Ambos
+  corresponden a un intento `completed` cuando el modo termina reglamentariamente; `failed` no se
+  proyecta como `notCompleted`.
 - Recomendación pendiente de implementación para detectar abandono: registrar una acción explícita
   e idempotente de abandono, conservar checkpoints y renovar periódicamente la actividad del intento.
   Los eventos `pagehide`, `visibilitychange` u `offline` solo deben enviar avisos auxiliares. Si el

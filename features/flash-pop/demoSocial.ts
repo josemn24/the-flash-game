@@ -95,7 +95,7 @@ export function getFlashPopAttemptStatus(
 ): FlashPopAttemptStatus {
   if (!record) return "available";
   if (record.status !== "completed") return "inProgress";
-  return "summary" in record && record.summary?.outcome === "failed" ? "notCompleted" : "completed";
+  return "completed";
 }
 
 export function getFlashPopResult(
