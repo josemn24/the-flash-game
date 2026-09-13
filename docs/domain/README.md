@@ -57,7 +57,9 @@ son fuentes de verdad independientes en la primera versión.
 9. [`mock-data.md`](mock-data.md): almacén normalizado, aliases, datos reconciliados, selectores y
    controles de integridad.
 10. [`data-access.md`](data-access.md): contratos de consultas, composición server-only,
-   autorización mock, DTOs y fronteras de dependencia.
+    autorización mock, DTOs y fronteras de dependencia.
+11. [`mode-contracts.md`](mode-contracts.md): contrato funcional recomendado de inicio, tiempo,
+    finalización, reanudación, revisión y replay para cada modo de juego.
 
 ## Jerarquía documental
 

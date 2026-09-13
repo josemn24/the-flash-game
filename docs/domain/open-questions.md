@@ -8,6 +8,11 @@ documentación específica y, si afecta a todo el producto, a `decisions.md`.
 
 ## Contrato pendiente por modo
 
+La propuesta de contrato común y el detalle recomendado para cada modo están en
+[`mode-contracts.md`](mode-contracts.md). Las reglas marcadas allí como recomendación siguen siendo
+configurables hasta trasladarse a `decisions.md`; esta lista conserva únicamente los puntos que aún
+requieren cierre o implementación.
+
 Cada modo debe declarar explícitamente:
 
 1. Duración total, duración por pregunta y posibles periodos de gracia.

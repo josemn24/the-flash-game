@@ -151,8 +151,9 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - **FR-21 —** El desafío debe aplicar el tiempo total, los tiempos por pregunta y las reglas de
   finalización propias del modo. El agotamiento del tiempo de una pregunta o ronda se registra como
   una respuesta no contestada o como el estado equivalente definido por el modo; no implica por sí
-  mismo que el intento completo haya sido superado o fallado. (**Implementado/mock**, con contratos
-  por modo aún incompletos.)
+  mismo que el intento completo haya sido superado o fallado. (**Implementado/mock**; el detalle por
+  modo está consolidado en [`domain/mode-contracts.md`](domain/mode-contracts.md), con persistencia
+  autoritativa aún pendiente.)
 - **FR-22 —** Tras un intento competitivo terminal (`completed`, `abandoned` o `invalidated`) el
   jugador puede consultar el resultado, el ranking y la revisión de respuestas cuando existan. Si
   el intento se inició, la revisión puede mostrar las respuestas enviadas y las respuestas correctas.
