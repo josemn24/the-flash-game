@@ -1,15 +1,24 @@
 import { describe, expect, it } from "vitest";
-import {
-  calculateSurvivalSeasonXp,
-  getFlashPopSurvivalResult,
-} from "@/features/flash-pop/survivalSocial";
+import { getFlashPopSurvivalResult } from "@/features/flash-pop/survivalSocial";
 import { makeSocialSnapshot } from "@/features/flash-pop/socialSnapshot.test-utils";
 
 describe("Flash Pop Survival social adapter", () => {
-  it("caps a complete, fast survival run at 120 XP", () => {
-    expect(
-      calculateSurvivalSeasonXp({ questionsReached: 20, totalQuestions: 20, totalTime: 0 }, 600),
-    ).toBe(120);
+  it("uses the challenge score as Flash Points", () => {
+    const result = getFlashPopSurvivalResult(
+      {
+        challengeId: "future-survival",
+        score: 100,
+        questionsReached: 20,
+        totalQuestions: 20,
+        livesRemaining: 3,
+        totalTime: 0,
+        survived: true,
+      },
+      makeSocialSnapshot(0),
+    );
+
+    expect(result.flashPointsEarned).toBe(100);
+    expect(result.seasonFlashPoints).toBe(740);
   });
 
   it("does not invent peers for unknown challenges", () => {
@@ -24,7 +33,7 @@ describe("Flash Pop Survival social adapter", () => {
         survived: false,
       },
       makeSocialSnapshot(0),
-      { totalTimeLimit: 240 },
+      { seasonFlashPoints: 640 },
     );
 
     expect(result.socialSource).toBe("demo");

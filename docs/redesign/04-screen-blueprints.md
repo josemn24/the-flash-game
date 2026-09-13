@@ -82,7 +82,7 @@ Conseguir que una persona entienda qué jugar y sienta la presencia de su sala e
 
 1. Reto disponible y CTA.
 2. Personas que ya han jugado.
-3. Progreso de temporada.
+3. Total acumulado de Flash Points.
 4. Actividad y próximos retos.
 
 ### Contenido inicial demo
@@ -91,7 +91,7 @@ Conseguir que una persona entienda qué jugar y sienta la presencia de su sala e
 - Temporada: Primera temporada.
 - Reto destacado: La Pirámide: Cumbre lógica.
 - Mensaje: `¿Hasta dónde puedes subir?`.
-- Progreso simulado: nivel 4, `680 / 900 ⚡`.
+- Total simulado: `680 ⚡`.
 - Máximo del desafío anunciado: `Hasta +100 ⚡`.
 - Participantes simulados: tres avatares y `+3`.
 - Posición simulada: `4.º de 8`.
@@ -219,10 +219,9 @@ Concentrar la atención, comunicar el tiempo disponible y hacer que responder re
 
 La pantalla de transición actual se sustituye en el slice por feedback contextual dentro de la pregunta. Solo se usa transición a pantalla completa cuando:
 
-- Se completa un hito.
-- Se pierde la última vida.
-- Se desbloquea una recompensa.
 - Termina el desafío.
+- Se pierde la última vida en Supervivencia.
+- Se pierde la última vida en Supervivencia.
 
 Esto evita que cada respuesta rompa la continuidad del tablero.
 
@@ -247,7 +246,7 @@ Celebrar, contextualizar el resultado socialmente y ofrecer una siguiente acció
 │                                 │
 │ [A 91] [TÚ 84] [M 76]          │
 │                                 │
-│ +96 Flash Points · Nivel 4     │
+│ +96 ⚡ · Total de temporada 680 ⚡ │
 │                                 │
 │ [      Ver clasificación     ]  │
 │ [      Revisar respuestas    ]  │
@@ -260,19 +259,19 @@ Celebrar, contextualizar el resultado socialmente y ofrecer una siguiente acció
 
 1. Celebración y puntuación.
 2. Posición relativa.
-3. Flash Points y progreso de temporada.
+3. Flash Points del desafío y total de temporada.
 4. Próxima acción.
 5. Estadísticas detalladas.
 
 ### Estados de mensaje
 
-| Situación           | Título                  | Apoyo                            |
-| ------------------- | ----------------------- | -------------------------------- |
+| Situación           | Título                  | Apoyo                               |
+| ------------------- | ----------------------- | ----------------------------------- |
 | Top 1               | ¡Te has puesto primero! | Aventajas a Ana por 12 Flash Points |
-| Hito de temporada   | ¡Nivel de temporada!    | Has desbloqueado un nuevo marco  |
-| Buen resultado      | ¡Sprint completado!     | Has quedado 4.º de 8             |
-| Resultado bajo      | Reto completado         | Mañana tendrás una nueva ocasión |
-| Pirámide incompleta | Llegaste al nivel 5     | Estuviste a dos pasos de la cima |
+| Total de temporada  | Flash Points acumulados | 680 ⚡                              |
+| Buen resultado      | ¡Sprint completado!     | Has quedado 4.º de 8                |
+| Resultado bajo      | Reto completado         | Mañana tendrás una nueva ocasión    |
+| Pirámide incompleta | Llegaste al nivel 5     | Estuviste a dos pasos de la cima    |
 
 ### Acciones
 
@@ -312,10 +311,11 @@ type LobbyPlayer = {
 
 type LobbyChallengeSocialState = {
   participantIds: string[];
-  playerScore?: number;
+  playerFlashPoints?: number;
   playerRank?: number;
   totalPlayers: number;
-  seasonFlashPoints: { current: number; nextMilestoneAt: number; maxEarnable: number };
+  seasonFlashPoints: number;
+  maxFlashPoints: number;
   attemptStatus: "available" | "inProgress" | "completed" | "notCompleted";
 };
 ```

@@ -202,7 +202,7 @@
     margin: 22px 0 18px;
   }
 
-  .rewardChip {
+  .flashPointsChip {
     margin-left: auto;
   }
 
@@ -256,20 +256,11 @@
     font-size: 11px;
   }
 
-  .progressTrack {
-    height: 9px;
-    margin-top: var(--space-5);
-    overflow: hidden;
-    border-radius: var(--radius-pill);
-    background: var(--color-surface-soft);
-  }
-
-  .progressTrack span {
-    display: block;
-    width: 76%;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--color-brand);
+  .seasonValue svg {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    vertical-align: -2px;
   }
 
   .progressCopy {

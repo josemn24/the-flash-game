@@ -77,7 +77,8 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - **Respuesta**: respuesta final de un elemento del desafío, con su evaluación, tiempo y detalles.
 - **Flash Points**: puntos que obtiene el jugador al jugar un desafío. El resultado del desafío se
   acredita una vez y se suma al total de Flash Points de la temporada activa de esa sala. No son una
-  segunda moneda ni XP separada.
+  segunda moneda ni XP separada. El icono `⚡` es su representación visual equivalente y no
+  identifica otro saldo.
 - **Ranking de desafío**: clasificación de los jugadores que completaron ese desafío competitivo.
 - **Ranking de temporada**: clasificación de la sala por el total de Flash Points acreditados en la
   temporada.
@@ -158,8 +159,9 @@ autenticación y la gestión real de actores todavía no están implementadas.
   desafío.
 - **FR-26 —** La puntuación acreditada del desafío se denomina **Flash Points**. Se suma una sola vez
   al total de la temporada activa de la sala después de jugar el desafío.
-- **FR-27 —** No existe un valor funcional separado de XP, rayos acumulados, energía, monedas u otra
-  recompensa que compita con Flash Points.
+- **FR-27 —** No existe un valor funcional separado de XP, rayos acumulados, energía, vidas como
+  saldo, monedas, niveles, hitos, metas de temporada ni otra recompensa que compita con Flash
+  Points. Una temporada no tiene barra, denominador ni progreso funcional independiente.
 - **FR-28 —** Una corrección administrativa no debe borrar la respuesta original ni cambiar de forma
   silenciosa los puntos ya acreditados.
 
@@ -203,7 +205,10 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - El resultado de un desafío es un entero de 0 a 100 y nunca negativo.
 - El crédito parcial, las penalizaciones, el éxito y los desempates dependen del modo y deben estar
   definidos antes de cerrar cada modo.
-- Los Flash Points obtenidos al jugar se suman al total de la temporada activa de esa sala.
+- Los Flash Points obtenidos al jugar se suman al total de la temporada activa de esa sala; `⚡`
+  puede representar ese valor en la interfaz.
+- La temporada no tiene niveles, hitos, metas, desbloqueos ni recompensas funcionales; el total
+  es un número acumulado sin truncamiento ni denominador.
 - Solo existen los rankings por desafío y por temporada.
 - Los empates comparten posición; el comparador concreto depende del modo.
 - El contenido publicado y el contexto histórico deben permanecer estables para quienes ya jugaron.
@@ -249,7 +254,11 @@ timeout; el ciclo de vida funcional de referencia es el anterior.
 
 - La aclaración del producto sustituye la terminología anterior de “rayos/XP”: **Flash Points** es
   la puntuación que se obtiene al jugar un desafío y el total de la temporada activa de la sala.
+- `⚡` y “Flash Points” son equivalentes en la interfaz. El texto completo se conserva en títulos
+  explicativos y etiquetas accesibles; la presentación compacta puede mostrar `N ⚡`.
 - Solo hay dos rankings funcionales: uno por desafío y otro por temporada.
+- No existen niveles ni hitos de temporada. Los niveles de La Pirámide y las vidas de
+  Supervivencia son reglas internas de esos desafíos, no saldos ni progresión social.
 - La repetición visible actualmente pertenece al prototipo; la primera producción tendrá un único
   intento competitivo por desafío.
 - Las decisiones generales de `docs/domain/decisions.md` siguen vigentes cuando no contradicen lo
@@ -275,14 +284,9 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 
 ## 11. Inconsistencias entre implementación, documentación y objetivo
 
-- La UI de prototipo permite replay y muestra `Puedes volver a jugar cuando quieras`; contradice el
-  único intento competitivo confirmado para producción (`FlashPopLobby.client.tsx` y componentes de
-  juego).
-- El rediseño anterior separaba “Puntos” de “Rayos/XP”, incluso con una fórmula propia de rayos.
-  Esa separación queda sustituida por Flash Points; el rayo puede mantenerse como recurso visual,
-  pero no como concepto funcional independiente.
-- El código y algunos modelos de demo todavía conservan nombres como `seasonXp` y textos `XP de
-  temporada`; son nombres heredados del prototipo, no conceptos del dominio objetivo.
+- Las previews no competitivas todavía conservan acciones de replay por su naturaleza de
+  exploración; la experiencia de sala competitiva ya no debe ofrecer replay tras completar.
+- Los documentos históricos de contexto pueden conservar terminología o flujos anteriores; no son requisitos vigentes.
 - El detalle de sala puede mostrar el CTA `Jugar` a un espectador, aunque el acceso jugable lo
   rechaza. La presentación y la autorización deben alinearse.
 - El cliente actual recibe soluciones y calcula parte del resultado localmente; el requisito de
@@ -316,6 +320,7 @@ correspondiente y respetando los requisitos anteriores.
   [`domain/data-access.md`](domain/data-access.md): decisiones y modelo funcional aprobados.
 - [`redesign/README.md`](redesign/README.md), [`redesign/01-product-vision.md`](redesign/01-product-vision.md)
   y [`redesign/03-design-system.md`](redesign/03-design-system.md): intención de producto y estados
-  visuales, con la terminología de rayos/XP reconciliada en esta fase.
+  visuales, con la terminología de rayos/XP y la progresión de temporada reconciliadas en esta
+  fase.
 - [`formatos-de-juego.md`](formatos-de-juego.md) y [`the-flash-poc.md`](the-flash-poc.md): contexto
   anterior; cuando contradicen el modelo canónico se consideran históricos.

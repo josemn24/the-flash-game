@@ -49,7 +49,7 @@ La implementación del lobby usa Soft Diorama con estas reglas:
 3. Borde fuerte en CTA y controles competitivos; hero y superficies sociales usan bordes sutiles para conservar suavidad.
 4. Sombras suaves y amplias en hero; sombras físicas cortas en controles táctiles.
 5. El corte diagonal aparece en energía, progreso o CTA como firma secundaria, sin endurecer todas las tarjetas.
-6. Violeta para presencia social y navegación; Gold para hitos; ninguno compite con el CTA Flash.
+6. Violeta para presencia social y navegación; Gold para celebraciones; ninguno compite con el CTA Flash.
 7. Ink aparece en texto, bases, iconos y pequeños anclajes para evitar una estética pastel genérica.
 8. No se añaden caras a los objetos, mascotas infantiles, brillo plástico excesivo ni fondos violetas universales.
 9. Los momentos especiales pueden adoptar la intensidad de Electric Arena sin cambiar la arquitectura general.

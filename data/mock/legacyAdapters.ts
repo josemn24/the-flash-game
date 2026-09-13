@@ -70,7 +70,7 @@ export function projectLegacyAttempt(
   return {
     challengeId,
     playedAt: attempt.completedAt,
-    points: attempt.score,
+    flashPoints: attempt.score,
     completed: true,
     answers,
   };
@@ -92,7 +92,7 @@ export function toLegacyRoomSnapshot(
 
   const schedules = store.scheduledChallenges.filter((schedule) => schedule.seasonId === season.id);
   const totals = new Map(
-    selectSeasonRanking(season.id, store).map((entry) => [entry.playerId, entry.points]),
+    selectSeasonRanking(season.id, store).map((entry) => [entry.playerId, entry.flashPoints]),
   );
   const activeMemberships = store.roomMemberships.filter(
     (membership) => membership.roomId === roomId && membership.status === "active",
@@ -113,7 +113,7 @@ export function toLegacyRoomSnapshot(
           name: player.displayName,
           initials: initials(player.displayName),
           avatarSrc: player.avatarPath ?? undefined,
-          totalPoints: totals.get(player.id) ?? 0,
+          totalFlashPoints: totals.get(player.id) ?? 0,
           challengeResults: Object.fromEntries(
             schedules.flatMap((schedule) => {
               const challengeId = getScheduledChallengeRouteKey(schedule.id);
@@ -132,7 +132,7 @@ export function toLegacyRoomSnapshot(
                 [
                   challengeId,
                   {
-                    points: ranked?.points ?? 0,
+                    flashPoints: ranked?.flashPoints ?? 0,
                     completed: Boolean(attempt),
                     attempt: attempt ? projectLegacyAttempt(attempt.id, store) : undefined,
                   },
@@ -192,7 +192,7 @@ export function toLegacyRoomHistory(
         playerCount: entry.participantCount,
         ranking: entry.ranking.flatMap((ranked) => {
           const memberId = getPlayerRouteKey(ranked.playerId);
-          return memberId ? [{ memberId, points: ranked.points }] : [];
+          return memberId ? [{ memberId, flashPoints: ranked.flashPoints }] : [];
         }),
       },
     ];

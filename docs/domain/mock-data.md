@@ -50,6 +50,10 @@ Los totales de Flash Points de la temporada son Dark 242, Jackobo 225, Kike 169,
 Palmera 98. Los tonos de avatar y otras constantes decorativas permanecen como configuración de
 presentación.
 
+El mock no modela niveles, hitos, metas, barras ni denominadores de temporada. `seasonFlashPoints`
+es el total numérico acumulado; los rankings e históricos exponen `flashPoints`. El icono `⚡`
+solo representa visualmente Flash Points.
+
 El superadministrador demo es un jugador con rol global, sin membresía ni intentos competitivos.
 
 ## Compatibilidad y validación

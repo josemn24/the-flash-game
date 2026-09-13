@@ -321,20 +321,21 @@ function buildAlphabetAttempt(
   seed: string,
 ) {
   const questions = challenge.entries.map((entry) => entry.question);
-  const targetPoints = Math.max(0, result.points);
-  const failedQuestions = targetPoints < 100 ? Math.max(2, Math.round(questions.length * 0.25)) : 0;
+  const targetFlashPoints = Math.max(0, result.flashPoints);
+  const failedQuestions =
+    targetFlashPoints < 100 ? Math.max(2, Math.round(questions.length * 0.25)) : 0;
   const correctCount =
-    targetPoints > 0
+    targetFlashPoints > 0
       ? Math.max(
           1,
           Math.min(
             questions.length - failedQuestions,
-            Math.round((targetPoints / 100) * questions.length),
+            Math.round((targetFlashPoints / 100) * questions.length),
           ),
         )
       : 0;
-  const pointsPerCorrect = correctCount > 0 ? Math.floor(targetPoints / correctCount) : 0;
-  const extraPoints = correctCount > 0 ? targetPoints % correctCount : 0;
+  const pointsPerCorrect = correctCount > 0 ? Math.floor(targetFlashPoints / correctCount) : 0;
+  const extraPoints = correctCount > 0 ? targetFlashPoints % correctCount : 0;
 
   const answers = questions.map((question, index) => {
     if (index < correctCount) {
@@ -365,19 +366,19 @@ export function buildMockRoomChallengeAttempt(
 
   const playedAt = typeof options === "string" ? options : (options.playedAt ?? DEFAULT_PLAYED_AT);
   const seed = typeof options === "string" ? challengeId : (options.seed ?? challengeId);
-  const targetPoints = Math.max(0, result.points);
+  const targetFlashPoints = Math.max(0, result.flashPoints);
   const scoredChallenge = scoredChallengeForMock(challenge);
   const questions = questionsFor(scoredChallenge);
   const answers =
     challenge.mode === "alphabet"
       ? buildAlphabetAttempt(challenge, result, seed)
-      : (findExactMockPath(questions, targetPoints, seed)?.answers ??
-        buildProportionalFallback(questions, targetPoints, seed));
+      : (findExactMockPath(questions, targetFlashPoints, seed)?.answers ??
+        buildProportionalFallback(questions, targetFlashPoints, seed));
 
   return {
     challengeId,
     playedAt,
-    points: result.points,
+    flashPoints: result.flashPoints,
     completed: result.completed,
     answers,
   };

@@ -7,7 +7,7 @@ El game feel convierte cambios de estado en sensaciones. El vertical slice debe 
 ## Principios
 
 - Respuesta inmediata al contacto: menos de 100 ms.
-- Animación corta durante el juego y más generosa en hitos.
+- Animación corta durante el juego y más generosa al cerrar el desafío.
 - Una acción produce una reacción principal, no cinco efectos simultáneos.
 - Movimiento, sonido y háptica cuentan la misma historia.
 - Toda información sobrevive sin movimiento ni sonido.
@@ -20,7 +20,7 @@ El game feel convierte cambios de estado en sensaciones. El vertical slice debe 
 | 0     | Estado estático |                 0 ms | Color, icono, copy              |
 | 1     | Hover o press   |            80–160 ms | Desplazamiento, sombra          |
 | 2     | Respuesta       |          450–1200 ms | Pulso, puntos, sonido corto     |
-| 3     | Hito            |         1000–1800 ms | Partículas, escala, háptica     |
+| 3     | Celebración     |         1000–1800 ms | Partículas, escala, háptica     |
 | 4     | Final o récord  |         1600–2500 ms | Secuencia celebratoria completa |
 
 ## Curvas y duraciones
@@ -107,34 +107,32 @@ No se oscurece toda la pantalla ni se introduce vibración prolongada.
 - Puntos obtenidos visibles.
 - Copy explica qué parte fue válida.
 
-## Progreso y recompensas
+## Flash Points y cierre del desafío
 
-### Flash Points de temporada
+### Acumulación de Flash Points
 
 - Se acreditan una sola vez al terminar el intento oficial.
-- El resultado muestra los Flash Points obtenidos y su acumulación en la temporada.
-- El total obtenido puede avanzar la barra de temporada y mostrar el siguiente hito.
+- El resultado muestra los Flash Points obtenidos y el total acumulado de la temporada.
+- La interfaz usa `+N ⚡` para lo obtenido y `N ⚡` para el total; el nombre completo queda en
+  etiquetas accesibles y explicativas.
 - Los Flash Points no se gastan y nunca se representan como energía, vidas o intentos.
 - No existe animación de recompensa asociada a repetir o practicar.
 
-### Subida de nivel
+### Mecánicas internas de desafío
 
-- El nodo nuevo se ilumina.
-- El avatar o rayo avanza hasta él.
-- El mapa no ocupa toda la pantalla salvo en hitos.
+- La Pirámide puede celebrar el avance a un nivel propio del desafío.
+- Supervivencia puede celebrar la pérdida de la última vida como condición de finalización.
+- Ninguno de estos estados modifica el total de Flash Points ni crea una progresión de temporada.
 
-### Recompensa
+### Celebración de Flash Points
 
-- El objeto aparece desde el centro con escala.
-- El valor cuenta hacia arriba.
-- Se muestra dónde se almacena o qué desbloquea.
-- Si la recompensa es demo, no se simula una economía completa.
+No existe una recompensa funcional adicional. La celebración solo presenta el resultado y el total
+de temporada.
 
-### Hito de temporada
+### Celebración de resultado
 
-- Corona, marco o rayo dorado según el hito.
 - Confeti limitado a la zona superior.
-- Comparación explícita entre el progreso anterior y el nuevo.
+- Comparación explícita entre el resultado propio y los dos rankings.
 - La animación no se repite al volver desde revisión o clasificación.
 
 ## Resultado
@@ -145,7 +143,7 @@ Secuencia recomendada:
 0–250 ms      entrada del panel
 250–1150 ms   score cuenta hasta el total
 650–1350 ms   posición se actualiza
-950–1700 ms   Flash Points e hito de temporada
+950–1700 ms   Flash Points y total de temporada
 1200 ms       acciones ya habilitadas
 1700–2300 ms  partículas terminan
 ```
@@ -175,7 +173,7 @@ Posterior para web, pero documentada para una futura envoltura móvil:
 | Correcta         | Éxito corto                  |
 | Incorrecta       | Advertencia corta            |
 | Últimos segundos | Un pulso, no uno por segundo |
-| Hito temporada   | Éxito medio                  |
+| Fin de desafío   | Éxito medio                  |
 
 ## Reducción de movimiento
 

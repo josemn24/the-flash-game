@@ -5,7 +5,7 @@ import { getChallengeById } from "@/data/challenges";
 import type { AnswerResult } from "@/types/game";
 
 describe("FlashPopReview", () => {
-  it("exposes result navigation and an explicit replay action", () => {
+  it("exposes result navigation without a competitive replay action", () => {
     const challenge = getChallengeById("tabarnia-challenge-05");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
@@ -30,12 +30,11 @@ describe("FlashPopReview", () => {
           completedAt: 100,
         }}
         onBack={() => {}}
-        onReplay={() => {}}
       />,
     );
 
     expect(markup).toContain("Volver al resultado");
-    expect(markup).toContain("Jugar de nuevo");
+    expect(markup).not.toContain("Jugar de nuevo");
     expect(markup).toContain("Historial de respuestas");
     expect(markup).toContain("No alcanzado");
   });

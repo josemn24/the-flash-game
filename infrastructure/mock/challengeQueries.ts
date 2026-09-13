@@ -90,7 +90,7 @@ export class MockChallengeQueries implements ChallengeQueries {
       }
       return {
         player,
-        score: attempt.score ?? 0,
+        flashPoints: attempt.score ?? 0,
         timeUsed: elapsedMs / 1_000,
         correctAnswers: answers.filter(({ status }) => status === "correct").length,
         lastCorrectAt,

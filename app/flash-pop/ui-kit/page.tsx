@@ -111,7 +111,7 @@ export default function FlashPopUiKitPage() {
           <p className={styles.uiType}>
             Manrope mantiene clara la interfaz incluso cuando aumenta la densidad de información.
           </p>
-          <p className={styles.monoType}>02:14 · 680 / 900 ⚡ · NIVEL 4</p>
+          <p className={styles.monoType}>02:14 · 680 ⚡</p>
         </Card>
         <div className={styles.foundationGrid}>
           <Card elevation="flat" className={styles.tokenPanel}>
@@ -210,7 +210,9 @@ export default function FlashPopUiKitPage() {
               Cerrado
             </Chip>
             <Chip variant="data">2 h 14 min</Chip>
-            <Chip variant="reward">Hasta +120 ⚡</Chip>
+            <Chip variant="flashPoints" ariaLabel="Hasta +100 Flash Points">
+              Hasta +100 ⚡
+            </Chip>
           </div>
         </Card>
       </section>

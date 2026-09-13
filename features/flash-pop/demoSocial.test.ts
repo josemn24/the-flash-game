@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  calculateSeasonXp,
   getFlashPopAttemptStatus,
   getFlashPopLobbyChallenge,
   getFlashPopResult,
@@ -34,10 +33,27 @@ describe("Flash Pop demo social adapter", () => {
     expect(isFlashPopPreviewChallenge("another-challenge")).toBe(false);
   });
 
-  it("calculates capped season XP deterministically", () => {
-    expect(calculateSeasonXp({ levelsCleared: 0, timeUsed: 235 })).toBe(40);
-    expect(calculateSeasonXp({ levelsCleared: 7, timeUsed: 0 })).toBe(120);
-    expect(calculateSeasonXp({ levelsCleared: 99, timeUsed: -10 })).toBe(120);
+  it("uses the challenge score as normalized Flash Points", () => {
+    const baseSummary = {
+      challengeId: "tabarnia-challenge-05",
+      levelsCleared: 7,
+      timeUsed: 0,
+      outcome: "summit" as const,
+      completedAt: 100,
+    };
+
+    expect(
+      getFlashPopResult({ ...baseSummary, score: 0 }, makeSocialSnapshot(0)).flashPointsEarned,
+    ).toBe(0);
+    expect(
+      getFlashPopResult({ ...baseSummary, score: 100 }, makeSocialSnapshot(0)).flashPointsEarned,
+    ).toBe(100);
+    expect(
+      getFlashPopResult({ ...baseSummary, score: 150 }, makeSocialSnapshot(0)).flashPointsEarned,
+    ).toBe(100);
+    expect(
+      getFlashPopResult({ ...baseSummary, score: -10 }, makeSocialSnapshot(0)).flashPointsEarned,
+    ).toBe(0);
   });
 
   it("ranks the player by score and then time", () => {
@@ -57,8 +73,25 @@ describe("Flash Pop demo social adapter", () => {
     expect(result.levelsCleared).toBe(7);
     expect(result.peers[0]?.player.id).toBe("player");
     expect(result.totalPlayers).toBe(4);
-    expect(result.seasonXpEarned).toBe(120);
+    expect(result.flashPointsEarned).toBe(100);
     expect(result.socialSource).toBe("demo");
+  });
+
+  it("keeps the season total above the next visual milestone", () => {
+    const result = getFlashPopResult(
+      {
+        challengeId: "tabarnia-challenge-05",
+        levelsCleared: 7,
+        score: 100,
+        timeUsed: 0,
+        outcome: "summit",
+        completedAt: 100,
+      },
+      makeSocialSnapshot(0),
+      { seasonFlashPoints: 880 },
+    );
+
+    expect(result.seasonFlashPoints).toBe(980);
   });
 
   it("does not invent peers for a challenge without canonical attempts", () => {
@@ -72,7 +105,6 @@ describe("Flash Pop demo social adapter", () => {
         completedAt: 100,
       },
       makeSocialSnapshot(0),
-      { levelCount: 3, totalTimeLimit: 30 },
     );
 
     expect(result.socialSource).toBe("demo");
@@ -94,7 +126,7 @@ describe("Flash Pop demo social adapter", () => {
     );
 
     expect(result.playerRank).toBe(4);
-    expect(result.seasonXpEarned).toBe(59);
+    expect(result.flashPointsEarned).toBe(0);
     expect(
       getFlashPopLobbyChallenge(
         {

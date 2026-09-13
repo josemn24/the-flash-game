@@ -10,10 +10,10 @@ Tres palabras visuales: **eléctrico, táctil, humano**.
 
 Una pantalla debe seguir pareciendo The Flash aunque se oculte el logotipo. Son obligatorios:
 
-1. **Contraste Flash**: Canvas y Surface claros, Ink como estructura y amarillo eléctrico reservado para acción, energía y progreso.
+1. **Contraste Flash**: Canvas y Surface claros, Ink como estructura y amarillo eléctrico reservado para acción, Flash Points y marca.
 2. **Geometría de rayo**: cortes, muescas o divisiones diagonales con un ángulo común aproximado de 12° en componentes protagonistas, nunca en todas las superficies.
 3. **Tipografía dual**: display redondeada para juego y celebración; voz condensada o mono solo para cronómetros, niveles, puntuaciones y eventos competitivos.
-4. **Movimiento direccional**: entradas rápidas, una estela corta y un único destello; el rebote blando se reserva para premios.
+4. **Movimiento direccional**: entradas rápidas, una estela corta y un único destello; el rebote blando se reserva para celebraciones.
 5. **Diorama eléctrico**: escenas 2.5D geométricas atravesadas por una trayectoria de energía, sin recurrir a mascotas infantiles.
 
 ## Composición
@@ -36,22 +36,22 @@ Una pantalla debe seguir pareciendo The Flash aunque se oculte el logotipo. Son 
 | Surface          | `#FFFFFF`     | Tarjetas y controles elevados         |
 | Ink              | `#171720`     | Texto, iconos y contornos principales |
 | Ink muted        | `#686872`     | Texto secundario                      |
-| Flash            | `#D7FF19`     | CTA, progreso, energía y marca        |
+| Flash            | `#D7FF19`     | CTA, Flash Points y marca             |
 | Violet           | `#6957E8`     | Social, navegación y competición      |
 | Aqua             | `#13B89A`     | Éxito y cooperación                   |
 | Coral            | `#FF7276`     | Error, vidas y urgencia               |
 | Sky              | `#74A7F5`     | Información y ayudas                  |
-| Gold             | `#FFD85A`     | Premios, coronas y récords            |
+| Gold             | `#FFD85A`     | Celebraciones y récords               |
 
 Los valores son punto de partida. Antes de implementarlos como definitivos deben validarse en contraste, pantallas OLED y luz exterior.
 
 ### Roles obligatorios
 
-- **Flash**: acción primaria y progreso de temporada. Nunca texto pequeño sobre blanco.
+- **Flash**: acción primaria, Flash Points y marca. Nunca texto pequeño sobre blanco.
 - **Aqua**: respuesta correcta. Siempre acompañado de check o copy.
 - **Coral**: error o peligro. Nunca se usa como decoración en el mismo contexto.
 - **Violet**: presencia social, liga y navegación secundaria.
-- **Gold**: recompensa excepcional; no sustituye al CTA.
+- **Gold**: detalle excepcional de celebración; no sustituye al CTA.
 
 ### Modo oscuro
 

@@ -19,13 +19,13 @@ export type AlphabetAnswerReview = Pick<
 export type RoomChallengeAttempt = {
   challengeId: string;
   playedAt: string;
-  points: number;
+  flashPoints: number;
   completed: boolean;
   answers: AnswerReview[];
 };
 
 export type RoomChallengeResult = {
-  points: number;
+  flashPoints: number;
   completed: boolean;
   attempt?: RoomChallengeAttempt;
 };
@@ -33,7 +33,7 @@ export type RoomChallengeResult = {
 export type ChallengeCompletion = {
   roomId: string;
   challengeId: string;
-  points: number;
+  flashPoints: number;
   completed: boolean;
   playedAt: string;
   answers: AnswerReview[];

@@ -21,7 +21,7 @@ export function makeSocialSnapshot(peerCount = 3): FlashPopSocialSnapshot {
     players: [currentPlayer, ...selectedPlayers],
     peers: selectedPlayers.map((player, index) => ({
       player,
-      score: 80 - index * 20,
+      flashPoints: 80 - index * 20,
       timeUsed: 90 + index * 10,
       correctAnswers: 8 - index,
       lastCorrectAt: 80 + index * 10,

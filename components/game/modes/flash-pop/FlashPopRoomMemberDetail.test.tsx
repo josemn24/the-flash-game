@@ -14,11 +14,12 @@ describe("FlashPopRoomMemberDetail", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomMemberDetail model={model} />);
 
     expect(markup).toContain("Dark");
-    expect(markup).toContain("242 Flash points");
+    expect(markup).toContain("242 ⚡");
+    expect(markup).toContain("242 Flash Points");
     expect(markup).toContain("#1 en la sala");
     expect(markup).toContain("54");
-    expect(markup).toContain("Flash points");
-    expect(markup).toContain("puntos del reto");
+    expect(markup).toContain("Flash Points");
+    expect(markup).toContain("Flash Points del reto");
     expect(markup).toContain("ranking de hoy");
     expect(markup).not.toContain("Completado");
     expect(markup).toContain("Respuestas");

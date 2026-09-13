@@ -149,7 +149,7 @@ describe("normalized mock domain store", () => {
     expect(
       selectSeasonRanking(seasonId).map((entry) => [
         mockDomainStore.players.find((player) => player.id === entry.playerId)?.displayName,
-        entry.points,
+        entry.flashPoints,
       ]),
     ).toEqual([
       ["Dark", 242],
@@ -216,6 +216,8 @@ describe("normalized mock domain store", () => {
     expect(ranking.some(({ playerId }) => playerId === demoIdentity.superadminPlayerId)).toBe(
       false,
     );
-    expect(ranking.find(({ playerId }) => playerId === playerRouteAliases.player)?.points).toBe(54);
+    expect(
+      ranking.find(({ playerId }) => playerId === playerRouteAliases.player)?.flashPoints,
+    ).toBe(54);
   });
 });

@@ -8,7 +8,7 @@ export type LegacyRoomMember = {
   name: string;
   initials: string;
   avatarSrc?: string;
-  totalPoints: number;
+  totalFlashPoints: number;
   challengeResults: Record<string, RoomChallengeResult>;
 };
 

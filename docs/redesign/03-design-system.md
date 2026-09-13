@@ -49,17 +49,19 @@ colores propios de una mecánica se conservan cuando tienen significado funciona
 
 ## Economía visual: Flash Points
 
-Flash Points es el único valor funcional de puntuación. El rayo puede conservarse como icono o
-recurso visual, pero no representa una XP separada:
+Flash Points es el único valor funcional competitivo. `⚡` y “Flash Points” son equivalentes:
+el rayo representa visualmente el valor y no identifica una XP, energía o saldo distinto.
 
-| Valor               | Significado                                      | Dónde aparece                                  |
-| ------------------- | ------------------------------------------------ | ---------------------------------------------- |
-| Flash Points `⚡`   | Puntuación del desafío y total de la temporada   | Juego, resultado, lobby y ambos rankings       |
+| Valor             | Significado                                    | Dónde aparece                            |
+| ----------------- | ---------------------------------------------- | ---------------------------------------- |
+| Flash Points `⚡` | Puntuación del desafío y total de la temporada | Juego, resultado, lobby y ambos rankings |
 
 - El intento oficial acredita Flash Points una sola vez; el máximo es el del resultado canónico del desafío.
 - Los Flash Points no se gastan.
-- No se usa un contador como `⚡ 4`, porque puede interpretarse como energía o número de intentos.
-- Durante las preguntas se muestran el progreso, los puntos o el tiempo; no un saldo de energía.
+- La forma compacta recomendada es `N ⚡`, por ejemplo `680 ⚡` o `+84 ⚡`; no se repite
+  `Flash Points` junto al icono.
+- Durante las preguntas se muestran el progreso interno del desafío, los puntos del motor o el
+  tiempo; nunca un saldo social distinto de Flash Points.
 
 ## Espaciado
 
@@ -138,7 +140,7 @@ Un control pulsado reduce su sombra y se desplaza verticalmente. La animación n
 | Meta             | Manrope       | 13 px |      13 px |  650 |   1.3 |
 | Timer / score    | IBM Plex Mono | 20 px |      22 px |  700 |     1 |
 
-Fredoka se reserva para textos breves de alto impacto: nombres de retos, presentación de juegos, resultados, hitos y desbloqueos. Se usa normalmente desde 24 px, en peso 650–700 y con un máximo de uno o dos elementos por pantalla. No se usa en párrafos, navegación, formularios ni bloques densos.
+Fredoka se reserva para textos breves de alto impacto: nombres de retos, presentación de juegos, resultados y mensajes celebratorios. Se usa normalmente desde 24 px, en peso 650–700 y con un máximo de uno o dos elementos por pantalla. No se usa en párrafos, navegación, formularios ni bloques densos.
 
 IBM Plex Mono usa números tabulares cuando el dato cambia durante el juego. No se utiliza como recurso decorativo para sustituir a Manrope en etiquetas ordinarias.
 
@@ -154,7 +156,7 @@ Las primitivas de fundamentos se exportan desde `components/ui/index.ts`. Su doc
 | `Button`       | `primary \| secondary`, `default \| hero`, iconos, ancho completo, loading y disabled    |
 | `ButtonLink`   | mismo lenguaje visual para navegación                                                    |
 | `IconButton`   | 48 × 48 px, etiqueta accesible obligatoria y superficie `surface \| social`              |
-| `Chip`         | unión tipada para estados semánticos, datos y recompensa                                 |
+| `Chip`         | unión tipada para estados semánticos, datos y Flash Points                               |
 | `Avatar`       | imagen o iniciales, tamaños `sm \| md \| lg` y tonos controlados                         |
 | `AvatarStack`  | máximo visible configurable, overflow `+N` y etiqueta textual                            |
 | `Card`         | elemento semántico, superficies `surface \| soft`, tres elevaciones y tres densidades    |
@@ -167,7 +169,7 @@ El timer oscuro y `Timer` comparten `useCountdown`. El timer oscuro conserva su 
 
 - Fondo claro con patrón decorativo.
 - Safe areas respetadas en iOS.
-- Cabecera compacta con identidad del jugador, nivel de temporada y notificaciones.
+- Cabecera compacta con identidad del jugador, total de Flash Points y notificaciones.
 - Navegación inferior posterior al vertical slice; durante la validación puede existir solo inicio y perfil sin rutas reales.
 
 ### Botón primario
@@ -205,7 +207,7 @@ Estructura:
 2. Chip de estado y tiempo restante.
 3. Nombre y descripción de una línea.
 4. Avatares de participantes.
-5. Recompensa o progreso.
+5. Flash Points o progreso del desafío.
 6. CTA.
 
 Estados:
@@ -214,7 +216,7 @@ Estados:
 | ----------- | ----------------------------- | ------------------- |
 | Nuevo       | Badge Sky y arte completo     | Jugar ahora         |
 | Disponible  | Tiempo y participantes        | Jugar ahora         |
-| En progreso | Barra y nivel actual          | Continuar           |
+| En progreso | Estado y avance del desafío   | Continuar           |
 | Completado  | Score, posición y check       | Ver resultado       |
 | Próximo     | Arte atenuado, fecha visible  | Avisarme, posterior |
 | Bloqueado   | Candado y condición explícita | Sin CTA primario    |
@@ -261,8 +263,8 @@ Estados:
 
 ### Progress rail
 
-- Indica pregunta actual y total.
-- Permite hitos y recompensa final.
+- Indica pregunta actual y total dentro del desafío.
+- No representa progreso de temporada ni hitos, porque la temporada solo tiene un total acumulado.
 - En Pirámide se sustituye por un mini mapa persistente, no por una lista completa encima de cada pregunta.
 
 ### Avatar stack
@@ -271,22 +273,23 @@ Estados:
 - Etiqueta textual asociada: `6 ya jugaron`.
 - Las fotografías nunca son el único modo de identificar posición o estado.
 
-### Reward chip
+### Flash Points chip
 
-- Fondo Reward.
+- Fondo Flash Points.
 - Icono propio, no emoji del sistema.
-- Valor corto: `+N Flash Points` o el nombre de un hito visual.
-- Se usa una sola recompensa protagonista por tarjeta.
+- Valor corto: `Hasta +N ⚡` antes de jugar y `+N ⚡` en el resultado.
+- El nombre completo “Flash Points” se conserva en la etiqueta accesible.
+- Se usa una sola representación protagonista por tarjeta; no hay hitos ni recompensas de temporada.
 
-Cuando representa Flash Points, el chip puede usar un copy como `Hasta +N ⚡` antes de jugar y
-`+N Flash Points de temporada` en el resultado. No se presenta como moneda ni como energía.
+En el resultado se muestra `+N ⚡` y el total de temporada como `N ⚡`. No se presenta una
+meta, hito, desbloqueo o recompensa adicional.
 
 ### Result hero
 
 - Mensaje de desempeño.
 - Puntuación animada.
 - Posición relativa.
-- Flash Points obtenidos y, si corresponde, hito de temporada.
+- Flash Points obtenidos y total acumulado de temporada.
 - Una comparación social significativa.
 - CTA primario y secundario.
 
@@ -311,16 +314,16 @@ No existe CTA de repetición o práctica.
 
 ## Estados y semántica
 
-| Significado | Color  | Icono        | Ejemplo de copy    |
-| ----------- | ------ | ------------ | ------------------ |
-| Correcto    | Aqua   | Check        | ¡Bien visto!       |
-| Parcial     | Sky    | Aproximación | Muy cerca          |
-| Incorrecto  | Coral  | Cruz         | Casi. Era 27       |
-| Timeout     | Coral  | Reloj        | Se escapó por poco |
-| Nuevo       | Sky    | Destello     | Nuevo reto         |
-| Hito        | Gold   | Corona       | Nivel de temporada |
-| Progreso    | Flash  | Rayo         | 4 de 7             |
-| Social      | Violet | Personas     | 6 ya jugaron       |
+| Significado          | Color  | Icono        | Ejemplo de copy    |
+| -------------------- | ------ | ------------ | ------------------ |
+| Correcto             | Aqua   | Check        | ¡Bien visto!       |
+| Parcial              | Sky    | Aproximación | Muy cerca          |
+| Incorrecto           | Coral  | Cruz         | Casi. Era 27       |
+| Timeout              | Coral  | Reloj        | Se escapó por poco |
+| Nuevo                | Sky    | Destello     | Nuevo reto         |
+| Flash Points         | Flash  | Rayo         | N ⚡               |
+| Progreso del desafío | Flash  | Rayo         | 4 de 7             |
+| Social               | Violet | Personas     | 6 ya jugaron       |
 
 ## Responsive
 

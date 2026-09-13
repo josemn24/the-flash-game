@@ -42,7 +42,7 @@ Estado: **fase completada**. Soft Diorama es la base aprobada, el sistema tipogr
 ### Salida
 
 - Decisiones visuales cerradas.
-- Reglas de intento único y progreso de temporada reflejadas en flujo y copys.
+- Reglas de intento único y total acumulado de Flash Points reflejadas en flujo y copys.
 - Comparativa before/after reproducible.
 - Tema nuevo aislado del producto actual.
 
@@ -84,7 +84,7 @@ Cumplido: las primitivas cubren sus estados sin depender de una pantalla concret
 - Convertir la portada en lobby.
 - Implementar hero challenge card.
 - Agrupar desafíos cerrados en historial.
-- Añadir progreso de temporada y actividad mock no interactiva.
+- Añadir el total de Flash Points y actividad mock no interactiva.
 - Representar los estados disponible, en progreso, completado y no completado sin ofrecer repetición.
 - Mantener acceso a la biblioteca de formatos como enlace secundario.
 
@@ -132,7 +132,7 @@ Cumplido: las primitivas cubren sus estados sin depender de una pantalla concret
 
 - Crear result hero celebratorio.
 - Añadir posición simulada y comparación humana.
-- Añadir Flash Points de temporada y, si corresponde, un hito local de demo.
+- Añadir el total acumulado de Flash Points sin niveles, hitos ni metas de temporada.
 - Mantener precisión, tiempo y revisión debajo.
 - Reflejar el estado completado al volver al lobby durante la misma sesión.
 
@@ -144,7 +144,7 @@ Cumplido: las primitivas cubren sus estados sin depender de una pantalla concret
 
 ### Criterio de cierre
 
-- Flash Points, posición y total de temporada aparecen sin scroll.
+- Flash Points del desafío, posición y total de temporada aparecen sin scroll.
 - El jugador puede abrir clasificación, revisar respuestas o volver al lobby, pero no repetir.
 - La celebración no bloquea la navegación.
 
@@ -173,7 +173,7 @@ Se observa:
 - Efecto emocional de superar o ser superado por una persona conocida.
 - Utilidad de la actividad del grupo.
 - Deseo de comparar o compartir.
-- Comprensión y valor de los Flash Points de temporada.
+- Comprensión y valor del total de Flash Points de temporada.
 
 ### Preguntas de decisión
 
@@ -222,18 +222,18 @@ No se debe crear una abstracción universal antes de tener dos consumidores real
 
 ## Riesgos y mitigaciones
 
-| Riesgo                               | Mitigación                                                                     |
-| ------------------------------------ | ------------------------------------------------------------------------------ |
-| Parecer una copia de Playus          | Aplicar las cinco invariantes de marca y comprobar reconocimiento sin logotipo |
-| Romper los formatos existentes       | Tema y componentes aislados; migración por formato                             |
-| Prometer social sin backend          | Datos marcados como demo y módulos sin falsa interactividad                    |
-| Confundir Flash Points con moneda o energía | Mostrar la acumulación de temporada y evitar saldos ambiguos         |
-| Explotar o reiniciar el intento      | Persistir y recuperar el mismo intento; reset exclusivo para desarrollo y QA   |
-| Exceso de ruido                      | Un hero, un CTA y una recompensa principal por viewport                        |
-| Contraste insuficiente del amarillo  | Amarillo como fondo con Ink, nunca texto pequeño sobre blanco                  |
-| Animación lenta                      | Presupuesto de duración y acciones habilitadas antes de terminar partículas    |
-| Aumentar bundle con arte             | Assets optimizados, carga diferida y placeholders                              |
-| Duplicar componentes                 | Extraer solo tras dos usos equivalentes                                        |
+| Riesgo                                      | Mitigación                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------ |
+| Parecer una copia de Playus                 | Aplicar las cinco invariantes de marca y comprobar reconocimiento sin logotipo |
+| Romper los formatos existentes              | Tema y componentes aislados; migración por formato                             |
+| Prometer social sin backend                 | Datos marcados como demo y módulos sin falsa interactividad                    |
+| Confundir Flash Points con moneda o energía | Mostrar la acumulación de temporada y evitar saldos ambiguos                   |
+| Explotar o reiniciar el intento             | Persistir y recuperar el mismo intento; reset exclusivo para desarrollo y QA   |
+| Exceso de ruido                             | Un hero, un CTA y una recompensa principal por viewport                        |
+| Contraste insuficiente del amarillo         | Amarillo como fondo con Ink, nunca texto pequeño sobre blanco                  |
+| Animación lenta                             | Presupuesto de duración y acciones habilitadas antes de terminar partículas    |
+| Aumentar bundle con arte                    | Assets optimizados, carga diferida y placeholders                              |
+| Duplicar componentes                        | Extraer solo tras dos usos equivalentes                                        |
 
 ## Quality gates
 
@@ -255,7 +255,7 @@ Antes de considerar terminado el slice:
 
 El vertical slice está terminado cuando:
 
-1. El lobby presenta un reto jugable, progreso y presencia social demo.
+1. El lobby presenta un reto jugable, el total de Flash Points y presencia social demo.
 2. El jugador completa al menos una pregunta con feedback contextual.
 3. El resultado muestra los Flash Points del desafío, la posición y el total de temporada sin
    presentarlos como monedas o energía.

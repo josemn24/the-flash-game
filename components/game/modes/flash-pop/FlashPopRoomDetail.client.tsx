@@ -64,10 +64,10 @@ function StatItem({
 }) {
   return (
     <span className={styles.statItem}>
+      <strong>{value}</strong>
       <span className={styles.statIcon} aria-hidden="true">
         {icon}
       </span>
-      <strong>{value}</strong>
       <span className={styles.visuallyHidden}>{label}</span>
     </span>
   );
@@ -141,7 +141,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
     ? applyRoomChallengeResult(model, {
         roomId: model.roomId,
         challengeId: model.dailyChallenge?.id ?? "",
-        points: completion.points,
+        flashPoints: completion.flashPoints,
         completed: completion.completed,
         playedAt: completion.attempt?.playedAt ?? new Date().toISOString(),
         answers: completion.attempt?.answers ?? [],
@@ -185,11 +185,11 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       <Link
         href={rankingHref}
         className={styles.statPill}
-        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalPoints} Flash Points, posición ${visibleModel.currentUser.roomRank}`}
+        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalFlashPoints} Flash Points, posición ${visibleModel.currentUser.roomRank}`}
       >
         <StatItem
           label="Flash Points"
-          value={visibleModel.currentUser.totalPoints}
+          value={visibleModel.currentUser.totalFlashPoints}
           icon={<BoltIcon />}
         />
         <StatItem

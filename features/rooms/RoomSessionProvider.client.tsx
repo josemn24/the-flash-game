@@ -14,12 +14,12 @@ export function upsertRoomSessionResult(
     [completion.roomId]: {
       ...current[completion.roomId],
       [completion.challengeId]: {
-        points: completion.points,
+        flashPoints: completion.flashPoints,
         completed: completion.completed,
         attempt: {
           challengeId: completion.challengeId,
           playedAt: completion.playedAt,
-          points: completion.points,
+          flashPoints: completion.flashPoints,
           completed: completion.completed,
           answers: completion.answers,
         },
@@ -52,7 +52,10 @@ export function RoomSessionProvider({ children }: { children: ReactNode }) {
     [results],
   );
 
-  const value = useMemo(() => ({ recordCompletion, getCompletion }), [recordCompletion, getCompletion]);
+  const value = useMemo(
+    () => ({ recordCompletion, getCompletion }),
+    [recordCompletion, getCompletion],
+  );
 
   return <RoomSessionContext.Provider value={value}>{children}</RoomSessionContext.Provider>;
 }

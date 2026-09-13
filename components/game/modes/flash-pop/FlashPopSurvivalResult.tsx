@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, CrossIcon, HeartIcon } from "@/components/ui";
+import { BoltIcon, CheckIcon, CrossIcon, HeartIcon } from "@/components/ui";
 import { ChallengeResultScreen } from "@/components/game/shared";
 import {
   calculateResultAccuracy,
@@ -43,8 +43,9 @@ export function FlashPopSurvivalResult({
         subtitle: survived
           ? `Has completado los ${challenge.questions.length} retos.`
           : `Has llegado al reto ${result.questionsReached} de ${challenge.questions.length}.`,
-        score: result.score,
+        score: result.flashPointsEarned,
         maxScore: CHALLENGE_MAX_SCORE,
+        scoreUnit: "flashPoints",
         accuracy,
         totalTime,
         metrics: [
@@ -64,6 +65,12 @@ export function FlashPopSurvivalResult({
             icon: <HeartIcon />,
             label: "Vidas restantes",
             value: result.livesRemaining,
+            tone: "social",
+          },
+          {
+            icon: <BoltIcon />,
+            label: "Total de Flash Points",
+            value: `${result.seasonFlashPoints} ⚡`,
             tone: "social",
           },
         ],

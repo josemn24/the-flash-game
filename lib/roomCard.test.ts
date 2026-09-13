@@ -13,7 +13,7 @@ describe("buildRoomCardModel", () => {
     expect(model.dailyChallenge?.title).toBe("Biblia y religiones abrahámicas");
     expect(model.dailyChallenge?.formatLabel).toBe("La Pirámide");
     expect(model.dailyChallenge?.imageSrc).toBe(ROOM_ART_FALLBACK);
-    expect(model.currentUser).toEqual({ totalPoints: 169, roomRank: 3 });
+    expect(model.currentUser).toEqual({ totalFlashPoints: 169, roomRank: 3 });
     expect(model.memberPreviews).toHaveLength(4);
     expect(model.memberPreviews[0].src).toBe("/flash-pop/avatars/player.jpeg");
     expect(model.memberCount).toBe(5);

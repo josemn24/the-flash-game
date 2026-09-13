@@ -36,10 +36,6 @@ function formatTime(seconds: number) {
   return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
 }
 
-function getChallengeTimeLimit(challenge: PyramidChallenge) {
-  return challenge.levels.reduce((total, level) => total + level.question.timeLimit, 0);
-}
-
 function LevelIndicator({ levelIndex, levelCount }: { levelIndex: number; levelCount: number }) {
   return (
     <p className={styles.levelIndicator} aria-label={`Nivel ${levelIndex + 1} de ${levelCount}`}>
@@ -351,8 +347,9 @@ function Result({
         eyebrow: "Desafío completado",
         title: summit ? "Cima conquistada" : "Ascenso terminado",
         subtitle: challenge.subtitle,
-        score: result.score,
+        score: result.flashPointsEarned,
         maxScore: CHALLENGE_MAX_SCORE,
+        scoreUnit: "flashPoints",
         accuracy,
         totalTime,
         metrics: [
@@ -374,8 +371,14 @@ function Result({
             : []),
           {
             icon: <BoltIcon />,
-            label: "XP de temporada",
-            value: `+${result.seasonXpEarned} ⚡`,
+            label: "Flash Points obtenidos",
+            value: `+${result.flashPointsEarned} ⚡`,
+            tone: "social",
+          },
+          {
+            icon: <BoltIcon />,
+            label: "Total de Flash Points",
+            value: `${result.seasonFlashPoints} ⚡`,
             tone: "social",
           },
         ],
@@ -410,7 +413,7 @@ export function FlashPopPyramidGame({
     session.phase === "results" && session.summary
       ? {
           challengeId: challenge.id,
-          points: session.summary.score,
+          flashPoints: session.summary.score,
           completed: true,
           answers: session.record?.results ?? [],
         }
@@ -432,12 +435,7 @@ export function FlashPopPyramidGame({
     );
   }
 
-  const result = session.summary
-    ? getFlashPopResult(session.summary, socialSnapshot, {
-        levelCount: challenge.levels.length,
-        totalTimeLimit: getChallengeTimeLimit(challenge),
-      })
-    : null;
+  const result = session.summary ? getFlashPopResult(session.summary, socialSnapshot) : null;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -563,7 +561,7 @@ export function FlashPopPyramidGame({
                   results={session.record.results}
                   summary={session.summary}
                   onBack={session.showResults}
-                  onReplay={session.restart}
+                  onReplay={roomContext ? undefined : session.restart}
                 />
               </div>
             </motion.div>

@@ -90,7 +90,7 @@ export function buildRoomCardModel(room: Room, now = new Date()): RoomCardModel 
     seasonStatus: room.activeSeason.status,
     dailyChallenge: dailyChallengeModel,
     currentUser: {
-      totalPoints: currentUser.points,
+      totalFlashPoints: currentUser.flashPoints,
       roomRank: currentUser.rank,
     },
     memberPreviews: room.members.slice(0, 4).map(({ id, name, initials, avatarSrc }) => ({

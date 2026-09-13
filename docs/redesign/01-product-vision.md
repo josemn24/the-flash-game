@@ -4,7 +4,7 @@
 
 The Flash funciona hoy como un sprint individual de preguntas con una dirección visual oscura, técnica y competitiva. Esa identidad comunica precisión y dificultad, pero no comunica con suficiente fuerza diversión, comunidad, recompensa ni variedad.
 
-La evolución **Flash Pop** convierte el producto en un juego social asíncrono, táctil y expresivo. La interfaz debe invitar a jugar antes de explicar, mostrar personas antes que metadatos y celebrar el progreso antes de enseñar estadísticas.
+La evolución **Flash Pop** convierte el producto en un juego social asíncrono, táctil y expresivo. La interfaz debe invitar a jugar antes de explicar, mostrar personas antes que metadatos y celebrar el resultado antes de enseñar estadísticas.
 
 ## Diagnóstico actual
 
@@ -37,7 +37,7 @@ The Flash será el lugar en el que un grupo de amigos entra cada día para resol
 
 1. ¿Qué puedo jugar ahora?
 2. ¿Quién de mi grupo ya ha jugado?
-3. ¿Qué puedo ganar o desbloquear?
+3. ¿Cuántos Flash Points puedo obtener?
 4. ¿Cómo voy respecto a los demás?
 
 ## Decisiones de producto aprobadas
@@ -51,13 +51,15 @@ The Flash será el lugar en el que un grupo de amigos entra cada día para resol
 - Si el reto expira sin completarse, queda como `No completado`.
 - Los resets solo existen como herramienta interna de desarrollo y QA.
 
-### Flash Points como progreso de temporada
+### Flash Points como total de temporada
 
 - La puntuación representa el rendimiento en una partida.
-- Los Flash Points son la puntuación acreditada por el desafío y el avance de temporada.
-- Completar el intento oficial acredita Flash Points una sola vez, hasta el máximo del desafío.
+- Los Flash Points son la puntuación acreditada por el desafío y el total acumulado de la temporada.
+- Completar el intento oficial acredita Flash Points una sola vez, hasta el máximo de 100.
 - Los Flash Points no se gastan, no son vidas y no limitan el acceso al reto diario.
-- Sus hitos pueden expresarse visualmente en la temporada, pero no implican una economía artificial.
+- `⚡` y “Flash Points” son equivalentes: la interfaz puede mostrar `N ⚡`, mientras que el nombre
+  completo se reserva para explicaciones y etiquetas accesibles. No hay niveles, hitos, metas,
+  desbloqueos ni recompensas de temporada.
 
 ### Identidad, ilustración y validación
 
@@ -97,11 +99,14 @@ Avatares, posiciones y actividad reciente hacen visible la sala incluso cuando e
 
 ### 4. Cada acción responde
 
-Pulsar, acertar, fallar, subir de nivel y terminar deben producir respuestas visuales claras. El feedback no puede depender solo del color.
+Pulsar, acertar, fallar, avanzar dentro del desafío y terminar deben producir respuestas visuales claras. El feedback no puede depender solo del color.
 
-### 5. El progreso debe generar deseo
+### 5. La acumulación debe ser comprensible
 
-La interfaz muestra el siguiente hito, su recompensa y la distancia restante. Un nivel bloqueado explica cómo se abre.
+La interfaz muestra los Flash Points obtenidos y el total acumulado de temporada. No muestra metas,
+hitos, desbloqueos ni niveles de temporada.
+La celebración debe reforzar la actuación del jugador y su posición en los dos rankings, sin
+inventar una progresión adicional.
 
 ### 6. Profundidad con jerarquía
 
@@ -128,7 +133,7 @@ Entrar al lobby
 → recibir feedback durante la partida
 → descubrir el resultado relativo
 → reaccionar, compartir o revisar
-→ ver el próximo hito
+→ ver el total de temporada actualizado
 → volver al lobby
 ```
 
@@ -136,7 +141,7 @@ Entrar al lobby
 
 El primer corte debe demostrar el nuevo lenguaje con un recorrido completo:
 
-1. Lobby con reto destacado, presencia social y progreso.
+1. Lobby con reto destacado, presencia social y total de Flash Points.
 2. Introducción ligera integrada en la tarjeta del reto.
 3. Una pregunta de elección o intruso.
 4. Feedback correcto, incorrecto y timeout.

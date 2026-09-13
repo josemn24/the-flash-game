@@ -1,4 +1,5 @@
 import type { FlashPopRankRow } from "@/features/flash-pop/demoSocial";
+import { normalizeFlashPoints } from "@/features/flash-pop/flashPoints";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 export type FlashPopSurvivalSummary = {
@@ -13,57 +14,45 @@ export type FlashPopSurvivalSummary = {
 
 export type FlashPopSurvivalResult = {
   socialSource: "demo";
-  score: number;
   questionsReached: number;
   livesRemaining: number;
   playerRank: number;
   totalPlayers: number;
-  seasonXpEarned: number;
-  seasonXpCurrent: number;
-  nextLevelAt: number;
+  flashPointsEarned: number;
+  seasonFlashPoints: number;
   peers: FlashPopRankRow[];
 };
-
-export function calculateSurvivalSeasonXp(
-  summary: Pick<FlashPopSurvivalSummary, "questionsReached" | "totalQuestions" | "totalTime">,
-  totalTimeLimit: number,
-) {
-  const progress = Math.min(
-    1,
-    Math.max(0, summary.questionsReached / Math.max(1, summary.totalQuestions)),
-  );
-  const speed = Math.min(1, Math.max(0, 1 - summary.totalTime / Math.max(1, totalTimeLimit)));
-  return Math.min(120, Math.round(40 * progress + 60 * progress + 20 * speed));
-}
 
 export function getFlashPopSurvivalResult(
   summary: FlashPopSurvivalSummary,
   socialSnapshot: FlashPopSocialSnapshot,
-  options: { totalTimeLimit?: number; seasonXpCurrent?: number; nextLevelAt?: number } = {},
+  options: { seasonFlashPoints?: number } = {},
 ): FlashPopSurvivalResult {
+  const flashPointsEarned = normalizeFlashPoints(summary.score);
   const rows = [
-    { player: socialSnapshot.currentPlayer, score: summary.score, timeUsed: summary.totalTime },
-    ...socialSnapshot.peers.map(({ player, score, timeUsed }) => ({
+    {
+      player: socialSnapshot.currentPlayer,
+      flashPoints: flashPointsEarned,
+      timeUsed: summary.totalTime,
+    },
+    ...socialSnapshot.peers.map(({ player, flashPoints, timeUsed }) => ({
       player,
-      score,
+      flashPoints: normalizeFlashPoints(flashPoints),
       timeUsed,
     })),
   ]
-    .sort((left, right) => right.score - left.score || left.timeUsed - right.timeUsed)
+    .sort((left, right) => right.flashPoints - left.flashPoints || left.timeUsed - right.timeUsed)
     .map((row, index) => ({ ...row, rank: index + 1 }));
   const playerRank =
     rows.find((row) => row.player.id === socialSnapshot.currentPlayer.id)?.rank ?? rows.length;
-
   return {
     socialSource: "demo",
-    score: summary.score,
     questionsReached: summary.questionsReached,
     livesRemaining: summary.livesRemaining,
     playerRank,
     totalPlayers: rows.length,
-    seasonXpEarned: calculateSurvivalSeasonXp(summary, options.totalTimeLimit ?? summary.totalTime),
-    seasonXpCurrent: options.seasonXpCurrent ?? 640,
-    nextLevelAt: options.nextLevelAt ?? 1000,
+    flashPointsEarned,
+    seasonFlashPoints: (options.seasonFlashPoints ?? 640) + flashPointsEarned,
     peers: rows,
   };
 }

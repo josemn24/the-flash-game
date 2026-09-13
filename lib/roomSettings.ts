@@ -6,12 +6,12 @@ export function buildRoomSettingsModel(room: Room): RoomSettingsModel {
     title: room.title,
     currentUserId: room.currentUserId,
     memberCount: room.members.length,
-    members: room.members.map(({ id, name, initials, avatarSrc, totalPoints }) => ({
+    members: room.members.map(({ id, name, initials, avatarSrc, totalFlashPoints }) => ({
       id,
       name,
       initials,
       avatarSrc,
-      totalPoints,
+      totalFlashPoints,
       isCurrentUser: id === room.currentUserId,
     })),
   };

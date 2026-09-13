@@ -57,7 +57,7 @@ export type FlashPopSocialPlayerModel = {
 
 export type FlashPopSocialPeerModel = {
   readonly player: FlashPopSocialPlayerModel;
-  readonly score: number;
+  readonly flashPoints: number;
   readonly timeUsed: number;
   readonly correctAnswers: number;
   readonly lastCorrectAt: number | null;

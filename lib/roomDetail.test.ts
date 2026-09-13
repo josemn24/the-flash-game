@@ -8,10 +8,10 @@ import {
 } from "@/test-utils/legacy/roomDetail";
 
 const now = new Date("2026-09-06T12:00:00.000Z");
-const completion = (points: number) => ({
+const completion = (flashPoints: number) => ({
   roomId: "tabarnia-room",
   challengeId: "tabarnia-challenge-06",
-  points,
+  flashPoints,
   completed: true,
   playedAt: "2026-09-06T12:00:00.000Z",
   answers: [],
@@ -27,15 +27,19 @@ describe("room detail model", () => {
     expect(model.currentUser).toMatchObject({
       id: "player",
       name: "Kike",
-      totalPoints: 169,
+      totalFlashPoints: 169,
       roomRank: 3,
-      dailyPoints: 0,
+      dailyFlashPoints: 0,
       dailyCompleted: false,
     });
     expect(model.dailyChallenge?.id).toBe(dailyChallenge?.id);
     expect(model.dailyChallenge?.href).toBe("/desafios/tabarnia-challenge-06?roomId=tabarnia-room");
     expect(model.dailyChallenge?.endsAt).toBe("2026-09-20T22:00:00.000Z");
-    expect(model.roomLeaderboard[0]).toMatchObject({ memberId: "ches", points: 242, rank: 1 });
+    expect(model.roomLeaderboard[0]).toMatchObject({
+      memberId: "ches",
+      flashPoints: 242,
+      rank: 1,
+    });
     expect(model.dailyLeaderboard).toHaveLength(0);
   });
 
@@ -61,22 +65,26 @@ describe("room detail model", () => {
     const updated = applyRoomChallengeResult(model, completion(88));
 
     expect(updated.currentUser).toMatchObject({
-      totalPoints: 257,
-      dailyPoints: 88,
+      totalFlashPoints: 257,
+      dailyFlashPoints: 88,
       dailyCompleted: true,
       roomRank: 1,
     });
-    expect(updated.roomLeaderboard[0]).toMatchObject({ memberId: "player", points: 257, rank: 1 });
+    expect(updated.roomLeaderboard[0]).toMatchObject({
+      memberId: "player",
+      flashPoints: 257,
+      rank: 1,
+    });
     expect(updated.dailyLeaderboard[0]).toMatchObject({
       memberId: "player",
-      points: 88,
+      flashPoints: 88,
       completed: true,
       rank: 1,
     });
 
     const replayed = applyRoomChallengeResult(updated, completion(50));
 
-    expect(replayed.currentUser.totalPoints).toBe(219);
-    expect(replayed.currentUser.dailyPoints).toBe(50);
+    expect(replayed.currentUser.totalFlashPoints).toBe(219);
+    expect(replayed.currentUser.dailyFlashPoints).toBe(50);
   });
 });

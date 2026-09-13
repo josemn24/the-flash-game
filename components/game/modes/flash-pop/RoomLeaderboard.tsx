@@ -61,7 +61,7 @@ export function RoomLeaderboard({
                     <Link
                       href={`${memberHrefBase}/${entry.memberId}`}
                       className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""}`}
-                      aria-label={`Ver detalle de ${entry.name}, ${entry.points} Flash Points`}
+                      aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       data-rank={entry.rank}
                     >
                       <span className={styles.cardRank}>#{entry.rank}</span>
@@ -76,40 +76,42 @@ export function RoomLeaderboard({
                         <strong>{entry.name}</strong>
                       </span>
                       <span className={styles.cardPoints}>
+                        <strong>{entry.flashPoints}</strong>
                         <BoltIcon aria-hidden="true" />
-                        <strong>{entry.points}</strong>
                       </span>
                       <ChevronIcon className={styles.cardArrow} aria-hidden="true" />
                     </Link>
-                  ) : <button
-                    type="button"
-                    className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
-                    aria-label={`Ver detalle de ${entry.name}, ${entry.points} Flash Points`}
-                    aria-pressed={selectedMemberId === entry.memberId}
-                    data-rank={entry.rank}
-                    onClick={() => {
-                      const isSelected = selectedMemberId === entry.memberId;
-                      setSelectedMemberId(isSelected ? null : entry.memberId);
-                      if (!isSelected) onEntrySelect?.(entry);
-                    }}
-                  >
-                    <span className={styles.cardRank}>#{entry.rank}</span>
-                    <Avatar
-                      name={entry.name}
-                      src={entry.avatarSrc}
-                      initials={entry.initials}
-                      tone={isCurrentUser ? "social" : "blue"}
-                      size="md"
-                    />
-                    <span className={styles.cardName}>
-                      <strong>{entry.name}</strong>
-                    </span>
-                    <span className={styles.cardPoints}>
-                      <BoltIcon aria-hidden="true" />
-                      <strong>{entry.points}</strong>
-                    </span>
-                    <ChevronIcon className={styles.cardArrow} aria-hidden="true" />
-                  </button>}
+                  ) : (
+                    <button
+                      type="button"
+                      className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
+                      aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
+                      aria-pressed={selectedMemberId === entry.memberId}
+                      data-rank={entry.rank}
+                      onClick={() => {
+                        const isSelected = selectedMemberId === entry.memberId;
+                        setSelectedMemberId(isSelected ? null : entry.memberId);
+                        if (!isSelected) onEntrySelect?.(entry);
+                      }}
+                    >
+                      <span className={styles.cardRank}>#{entry.rank}</span>
+                      <Avatar
+                        name={entry.name}
+                        src={entry.avatarSrc}
+                        initials={entry.initials}
+                        tone={isCurrentUser ? "social" : "blue"}
+                        size="md"
+                      />
+                      <span className={styles.cardName}>
+                        <strong>{entry.name}</strong>
+                      </span>
+                      <span className={styles.cardPoints}>
+                        <strong>{entry.flashPoints}</strong>
+                        <BoltIcon aria-hidden="true" />
+                      </span>
+                      <ChevronIcon className={styles.cardArrow} aria-hidden="true" />
+                    </button>
+                  )}
                 </li>
               ) : (
                 <li
@@ -130,10 +132,10 @@ export function RoomLeaderboard({
                   <span
                     className={styles.points}
                     role="img"
-                    aria-label={`${entry.points} Flash Points`}
+                    aria-label={`${entry.flashPoints} Flash Points`}
                   >
+                    <strong aria-hidden="true">{entry.flashPoints}</strong>
                     <BoltIcon aria-hidden="true" />
-                    <strong>{entry.points}</strong>
                   </span>
                 </li>
               );

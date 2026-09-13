@@ -30,7 +30,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 - `/formatos`: biblioteca con fichas y ejemplos jugables de los 31 formatos; cada renderer acepta `default` y `flash-pop`.
 - `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de La Pirámide: Biblia y religiones abrahámicas, con los formatos adaptados a Flash Pop.
 
-Nota temporal: Supervivencia y Narrativa ya usan el shell Flash Pop para cualquier desafío con sus respectivos modos. Narrativa conserva sus escenas inmersivas como identidad de producto, sin cuaderno interactivo. En este prototipo la sesión vive en memoria y ofrece replay explícito; todavía no existe enforcement de intento único en servidor ni ranking social real.
+Nota temporal: Supervivencia y Narrativa ya usan el shell Flash Pop para cualquier desafío con sus respectivos modos. Narrativa conserva sus escenas inmersivas como identidad de producto, sin cuaderno interactivo. En este prototipo la sesión vive en memoria; las previews aisladas pueden ofrecer replay, pero la experiencia de sala competitiva no lo ofrece tras completar. Todavía no existe enforcement de intento único en servidor ni ranking social real.
 
 - `/flash-pop/ui-kit`: documentación viva de tokens, variantes, estados y comportamiento responsive; no está enlazada desde la navegación de producto.
 - `components/ui/index.ts`: única entrada pública del sistema.
@@ -43,8 +43,12 @@ Nota temporal: Supervivencia y Narrativa ya usan el shell Flash Pop para cualqui
 El contrato aprobado para Flash Pop añade cinco decisiones:
 
 - Cada reto concede un único intento oficial. No existe repetición ni modo práctica para el jugador.
-- Los Flash Points son la puntuación obtenida en cada desafío y el progreso de la temporada, no una
-  moneda ni energía. El rayo puede mantenerse como recurso visual.
+- Los Flash Points son la puntuación obtenida en cada desafío y el total acumulado de la temporada,
+  no una moneda ni energía.
+- `⚡` y “Flash Points” son equivalentes en la interfaz: la forma compacta es `N ⚡` y el nombre
+  completo queda reservado para explicación y accesibilidad.
+- No existen niveles, hitos, metas, desbloqueos ni recompensas de temporada; los niveles de Pirámide
+  y las vidas de Supervivencia solo pertenecen a sus respectivas mecánicas de desafío.
 - La identidad se apoya en color Flash, geometría diagonal, tipografía competitiva localizada, movimiento direccional y dioramas 2.5D eléctricos.
 - Los treinta y un formatos se agrupan en seis familias visuales para compartir un sistema de ilustración escalable.
 - Los datos simulados validan comprensión y dirección visual; el valor social solo se valida con grupos y resultados reales.

@@ -13,7 +13,7 @@ export type RoomMemberViewModel = {
   name: string;
   initials: string;
   avatarSrc?: string;
-  totalPoints: number;
+  totalFlashPoints: number;
   challengeResults: Record<string, RoomChallengeResult>;
 };
 
@@ -23,7 +23,7 @@ export type RoomLeaderboardEntry = {
   name: string;
   initials: string;
   avatarSrc?: string;
-  points: number;
+  flashPoints: number;
 };
 
 export type RoomDailyLeaderboardEntry = RoomLeaderboardEntry & {
@@ -45,7 +45,7 @@ export type RoomCardModel = {
     imageSrc: string;
   } | null;
   currentUser: {
-    totalPoints: number;
+    totalFlashPoints: number;
     roomRank: number;
   };
   memberPreviews: Array<{
@@ -68,9 +68,9 @@ export type RoomDetailModel = {
     name: string;
     initials: string;
     avatarSrc?: string;
-    totalPoints: number;
+    totalFlashPoints: number;
     roomRank: number;
-    dailyPoints: number;
+    dailyFlashPoints: number;
     dailyCompleted: boolean;
   };
   dailyChallenge: {
@@ -110,7 +110,7 @@ export type RoomSettingsModel = {
     name: string;
     initials: string;
     avatarSrc?: string;
-    totalPoints: number;
+    totalFlashPoints: number;
     isCurrentUser: boolean;
   }>;
 };
@@ -127,5 +127,5 @@ export type RoomHistoryEntry = {
 
 export type RoomHistoryResult = {
   memberId: string;
-  points: number;
+  flashPoints: number;
 };

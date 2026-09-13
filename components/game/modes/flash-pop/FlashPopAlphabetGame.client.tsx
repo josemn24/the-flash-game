@@ -242,6 +242,7 @@ function Results({
             : "Buen recorrido",
         score: session.score,
         maxScore: CHALLENGE_MAX_SCORE,
+        scoreUnit: "flashPoints",
         accuracy,
         totalTime: session.elapsedTime,
         metrics: [
@@ -270,9 +271,11 @@ function Results({
 function Review({
   challenge,
   session,
+  roomContext,
 }: {
   challenge: AlphabetChallenge;
   session: AlphabetSession;
+  roomContext?: GameRoomContext;
 }) {
   const entries = challenge.entries.map((entry, index) => {
     const letter = session.letters[index];
@@ -310,7 +313,7 @@ function Review({
         title="Historial de respuestas"
         description="Consulta tu respuesta, la solución aceptada y la explicación de cada letra."
         onBack={session.showResults}
-        onReplay={session.replay}
+        onReplay={roomContext ? undefined : session.replay}
       />
     </div>
   );
@@ -330,7 +333,7 @@ export function FlashPopAlphabetGame({
     session.phase === "results"
       ? {
           challengeId: challenge.id,
-          points: session.score,
+          flashPoints: session.score,
           completed: true,
           answers: buildAlphabetAnswerReviews(challenge, session.letters),
         }
@@ -392,7 +395,7 @@ export function FlashPopAlphabetGame({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <Review challenge={challenge} session={session} />
+              <Review challenge={challenge} session={session} roomContext={roomContext} />
             </motion.div>
           ) : null}
         </AnimatePresence>

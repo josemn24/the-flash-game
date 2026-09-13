@@ -37,6 +37,17 @@ describe("ChallengeResultScreen", () => {
   });
 
   it("supports three and four mode-specific metrics", () => {
+    const flashMarkup = renderToStaticMarkup(
+      <ChallengeResultScreen
+        model={{ ...getModel(), score: 84, scoreUnit: "flashPoints" }}
+        onReview={() => {}}
+      />,
+    );
+
+    expect(flashMarkup).toContain(">+84</strong>");
+    expect(flashMarkup).toContain("⚡");
+    expect(flashMarkup).toContain('aria-label="84 Flash Points"');
+    expect(flashMarkup).not.toContain("+84 Flash Points ⚡");
     const three = renderToStaticMarkup(
       <ChallengeResultScreen model={getModel(3)} onReview={() => {}} />,
     );

@@ -11,7 +11,7 @@ function roomWithMembers(members: Room["members"]): Room {
 describe("room rankings", () => {
   it("ranks members by accumulated room points", () => {
     expect(
-      getRoomLeaderboard(demoRoom).map((entry) => [entry.rank, entry.memberId, entry.points]),
+      getRoomLeaderboard(demoRoom).map((entry) => [entry.rank, entry.memberId, entry.flashPoints]),
     ).toEqual([
       [1, "ches", 242],
       [2, "marta", 225],
@@ -27,7 +27,7 @@ describe("room rankings", () => {
       getDailyLeaderboard(demoRoom, "tabarnia-flash-01").map((entry) => [
         entry.rank,
         entry.memberId,
-        entry.points,
+        entry.flashPoints,
       ]),
     ).toEqual([
       [1, "ches", 54],
@@ -42,11 +42,11 @@ describe("room rankings", () => {
 
     expect(getHistoryLeaderboard(demoRoom, entries[2])[0]).toMatchObject({
       memberId: "ches",
-      points: 38,
+      flashPoints: 38,
     });
     expect(getHistoryLeaderboard(demoRoom, entries[1])[0]).toMatchObject({
       memberId: "marta",
-      points: 60,
+      flashPoints: 60,
     });
     expect(getHistoryLeaderboard(demoRoom, entries[0]).map((entry) => entry.memberId)).toEqual([
       "ches",
@@ -63,16 +63,16 @@ describe("room rankings", () => {
         id: "player",
         name: "Jugador",
         initials: "TÚ",
-        totalPoints: 20,
+        totalFlashPoints: 20,
         challengeResults: {},
       },
       {
         id: "ches",
         name: "CHES",
         initials: "CH",
-        totalPoints: 10,
+        totalFlashPoints: 10,
         challengeResults: {
-          "daily-challenge": { points: 12, completed: true },
+          "daily-challenge": { flashPoints: 12, completed: true },
         },
       },
     ]);
@@ -81,7 +81,7 @@ describe("room rankings", () => {
       expect.objectContaining({
         rank: 1,
         memberId: "ches",
-        points: 12,
+        flashPoints: 12,
         completed: true,
       }),
     ]);
@@ -93,14 +93,14 @@ describe("room rankings", () => {
         id: "zeta",
         name: "Zeta",
         initials: "ZE",
-        totalPoints: 50,
+        totalFlashPoints: 50,
         challengeResults: {},
       },
       {
         id: "alpha",
         name: "Alpha",
         initials: "AL",
-        totalPoints: 50,
+        totalFlashPoints: 50,
         challengeResults: {},
       },
     ]);

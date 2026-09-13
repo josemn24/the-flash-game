@@ -191,6 +191,7 @@ function buildResultModel(results: AnswerResult[], score: number): ChallengeResu
     title: message,
     score,
     maxScore: CHALLENGE_MAX_SCORE,
+    scoreUnit: "flashPoints",
     accuracy,
     totalTime,
     metrics: [
@@ -212,7 +213,7 @@ function ReviewStage({
   challenge: FlashChallenge;
   results: AnswerResult[];
   onBack: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
   returnTo: string;
   roomContext?: GameRoomContext;
 }) {
@@ -265,7 +266,7 @@ export function FlashPopFlashGame({
     session.phase === "results"
       ? {
           challengeId: challenge.id,
-          points: session.score,
+          flashPoints: session.score,
           completed: true,
           answers: session.results,
         }
@@ -375,7 +376,7 @@ export function FlashPopFlashGame({
                 challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
                 returnTo={roomContext?.returnTo ?? "/flash-pop"}
                 roomContext={roomContext}
               />

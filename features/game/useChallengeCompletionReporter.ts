@@ -15,7 +15,7 @@ export function useChallengeCompletionReporter(
       return;
     }
 
-    const key = `${result.challengeId}:${result.points}:${result.completed}`;
+    const key = `${result.challengeId}:${result.flashPoints}:${result.completed}`;
     if (reportedKey.current === key) return;
 
     reportedKey.current = key;

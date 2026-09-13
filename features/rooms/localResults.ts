@@ -5,10 +5,11 @@ import type {
   RoomMemberDetailModel,
 } from "@/types/game";
 
-function sortEntries<T extends { memberId: string; points: number }>(entries: T[]) {
+function sortEntries<T extends { memberId: string; flashPoints: number }>(entries: T[]) {
   return [...entries]
     .sort(
-      (left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId),
+      (left, right) =>
+        right.flashPoints - left.flashPoints || left.memberId.localeCompare(right.memberId),
     )
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
@@ -25,10 +26,11 @@ export function applyRoomChallengeResult(
     return model;
   }
 
-  const totalPoints = model.currentUser.totalPoints - model.currentUser.dailyPoints + result.points;
+  const totalFlashPoints =
+    model.currentUser.totalFlashPoints - model.currentUser.dailyFlashPoints + result.flashPoints;
   const roomLeaderboard = sortEntries(
     model.roomLeaderboard.map((entry) =>
-      entry.memberId === model.currentUser.id ? { ...entry, points: totalPoints } : entry,
+      entry.memberId === model.currentUser.id ? { ...entry, flashPoints: totalFlashPoints } : entry,
     ),
   );
   const currentDailyEntry = model.dailyLeaderboard.find(
@@ -37,13 +39,17 @@ export function applyRoomChallengeResult(
   const dailyLeaderboard = sortEntries([
     ...model.dailyLeaderboard.filter((entry) => entry.memberId !== model.currentUser.id),
     currentDailyEntry
-      ? { ...currentDailyEntry, points: result.points, completed: result.completed }
+      ? {
+          ...currentDailyEntry,
+          flashPoints: result.flashPoints,
+          completed: result.completed,
+        }
       : {
           memberId: model.currentUser.id,
           name: model.currentUser.name,
           initials: model.currentUser.initials,
           avatarSrc: model.currentUser.avatarSrc,
-          points: result.points,
+          flashPoints: result.flashPoints,
           completed: result.completed,
           rank: 0,
         },
@@ -54,9 +60,9 @@ export function applyRoomChallengeResult(
     ...model,
     currentUser: {
       ...model.currentUser,
-      totalPoints,
+      totalFlashPoints,
       roomRank: roomEntry?.rank ?? model.currentUser.roomRank,
-      dailyPoints: result.points,
+      dailyFlashPoints: result.flashPoints,
       dailyCompleted: result.completed,
     },
     roomLeaderboard,
@@ -83,11 +89,11 @@ export function applyRoomMemberChallengeResult(
     return model;
   }
 
-  const previousPoints = model.result?.points ?? 0;
-  const totalPoints = model.member.totalPoints - previousPoints + result.points;
+  const previousFlashPoints = model.result?.flashPoints ?? 0;
+  const totalFlashPoints = model.member.totalFlashPoints - previousFlashPoints + result.flashPoints;
   const roomLeaderboard = sortEntries(
     model.roomLeaderboard.map((entry) =>
-      entry.memberId === model.member.id ? { ...entry, points: totalPoints } : entry,
+      entry.memberId === model.member.id ? { ...entry, flashPoints: totalFlashPoints } : entry,
     ),
   );
   const currentDailyEntry = model.dailyLeaderboard.find(
@@ -96,13 +102,17 @@ export function applyRoomMemberChallengeResult(
   const dailyLeaderboard = sortEntries([
     ...model.dailyLeaderboard.filter((entry) => entry.memberId !== model.member.id),
     currentDailyEntry
-      ? { ...currentDailyEntry, points: result.points, completed: result.completed }
+      ? {
+          ...currentDailyEntry,
+          flashPoints: result.flashPoints,
+          completed: result.completed,
+        }
       : {
           memberId: model.member.id,
           name: model.member.name,
           initials: model.member.initials,
           avatarSrc: model.member.avatarSrc,
-          points: result.points,
+          flashPoints: result.flashPoints,
           completed: result.completed,
           rank: 0,
         },
@@ -110,14 +120,14 @@ export function applyRoomMemberChallengeResult(
 
   return withRanks({
     ...model,
-    member: { ...model.member, totalPoints },
+    member: { ...model.member, totalFlashPoints },
     result: {
-      points: result.points,
+      flashPoints: result.flashPoints,
       completed: result.completed,
       attempt: {
         challengeId: result.challengeId,
         playedAt: result.playedAt,
-        points: result.points,
+        flashPoints: result.flashPoints,
         completed: result.completed,
         answers: result.answers,
       },

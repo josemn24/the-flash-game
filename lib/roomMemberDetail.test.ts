@@ -28,7 +28,7 @@ describe("room member detail model", () => {
     for (const challengeId of challengeIds) {
       const challenge = getChallengeById(challengeId);
       const attempt = buildMockRoomChallengeAttempt(challengeId, {
-        points: 42,
+        flashPoints: 42,
         completed: true,
       });
 
@@ -52,10 +52,10 @@ describe("room member detail model", () => {
   it("keeps mock answer states and points coherent for every completed result", () => {
     for (const member of demoRoom.members) {
       const resultPoints = Object.values(member.challengeResults).reduce(
-        (total, result) => total + result.points,
+        (total, result) => total + result.flashPoints,
         0,
       );
-      expect(resultPoints).toBe(member.totalPoints);
+      expect(resultPoints).toBe(member.totalFlashPoints);
 
       for (const [challengeId, result] of Object.entries(member.challengeResults)) {
         if (!result.completed) continue;
@@ -76,7 +76,7 @@ describe("room member detail model", () => {
                 : challenge.questions.length;
         expect(attempt.answers).toHaveLength(expectedAnswerCount);
         expect(attempt.answers.reduce((total, answer) => total + (answer.points ?? 0), 0)).toBe(
-          result.points,
+          result.flashPoints,
         );
         expect(new Set(attempt.answers.map((answer) => answer.status))).toEqual(
           new Set(["correct", "incorrect", "unanswered"]),
@@ -121,7 +121,7 @@ describe("room member detail model", () => {
 
     expect(attempt.answers.filter((answer) => (answer.points ?? 0) > 0).length).toBeGreaterThan(1);
     expect(attempt.answers.map((answer) => answer.points)).not.toEqual([
-      result.points,
+      result.flashPoints,
       ...Array(attempt.answers.length - 1).fill(0),
     ]);
   });
@@ -141,16 +141,16 @@ describe("room member detail model", () => {
     const updated = applyRoomMemberChallengeResult(model, {
       roomId: "tabarnia-room",
       challengeId: "tabarnia-flash-01",
-      points: 88,
+      flashPoints: 88,
       completed: true,
       playedAt: "2026-09-08T16:00:00.000Z",
       answers: model.result?.attempt?.answers ?? [],
     });
 
     expect(updated.result?.attempt?.playedAt).toBe("2026-09-08T16:00:00.000Z");
-    expect(updated.result?.points).toBe(88);
-    expect(updated.member.totalPoints).toBe(215);
-    expect(model.member.totalPoints).toBe(169);
-    expect(demoRoom.members[0].totalPoints).toBe(169);
+    expect(updated.result?.flashPoints).toBe(88);
+    expect(updated.member.totalFlashPoints).toBe(215);
+    expect(model.member.totalFlashPoints).toBe(169);
+    expect(demoRoom.members[0].totalFlashPoints).toBe(169);
   });
 });

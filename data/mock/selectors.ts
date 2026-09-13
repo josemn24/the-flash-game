@@ -122,16 +122,17 @@ function bestCompletedAttempts(
 export type MockRankingEntry = {
   readonly rank: number;
   readonly playerId: PlayerId;
-  readonly points: number;
+  readonly flashPoints: number;
 };
 
 function rankEntries(entries: Omit<MockRankingEntry, "rank">[]): MockRankingEntry[] {
   const ordered = entries.sort(
-    (left, right) => right.points - left.points || left.playerId.localeCompare(right.playerId),
+    (left, right) =>
+      right.flashPoints - left.flashPoints || left.playerId.localeCompare(right.playerId),
   );
   return ordered.map((entry) => ({
     ...entry,
-    rank: ordered.findIndex((candidate) => candidate.points === entry.points) + 1,
+    rank: ordered.findIndex((candidate) => candidate.flashPoints === entry.flashPoints) + 1,
   }));
 }
 
@@ -147,7 +148,7 @@ export function selectChallengeRanking(
       .filter((attempt) =>
         isCompetitiveParticipant(attempt.playerId, season.roomId, store, attempt.startedAt),
       )
-      .map((attempt) => ({ playerId: attempt.playerId, points: attempt.score ?? 0 })),
+      .map((attempt) => ({ playerId: attempt.playerId, flashPoints: attempt.score ?? 0 })),
   );
 }
 
@@ -165,7 +166,7 @@ export function selectSeasonRanking(seasonId: SeasonId, store: MockDomainStore =
       continue;
     totals.set(attempt.playerId, (totals.get(attempt.playerId) ?? 0) + (attempt.score ?? 0));
   }
-  return rankEntries([...totals].map(([playerId, points]) => ({ playerId, points })));
+  return rankEntries([...totals].map(([playerId, flashPoints]) => ({ playerId, flashPoints })));
 }
 
 export type MockHistoryEntry = {

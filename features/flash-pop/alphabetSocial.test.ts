@@ -1,15 +1,23 @@
 import { describe, expect, it } from "vitest";
-import {
-  calculateAlphabetSeasonXp,
-  getFlashPopAlphabetResult,
-} from "@/features/flash-pop/alphabetSocial";
+import { getFlashPopAlphabetResult } from "@/features/flash-pop/alphabetSocial";
 import { makeSocialSnapshot } from "@/features/flash-pop/socialSnapshot.test-utils";
 
 describe("Flash Pop Alphabet social adapter", () => {
-  it("caps a complete fast run at 120 XP", () => {
-    expect(
-      calculateAlphabetSeasonXp({ correctAnswers: 18, totalLetters: 18, elapsedTime: 0 }, 135),
-    ).toBe(120);
+  it("uses the challenge score as Flash Points", () => {
+    const result = getFlashPopAlphabetResult(
+      {
+        challengeId: "future-alphabet",
+        score: 100,
+        correctAnswers: 18,
+        totalLetters: 18,
+        elapsedTime: 0,
+        lastCorrectAt: 0,
+      },
+      makeSocialSnapshot(0),
+    );
+
+    expect(result.flashPointsEarned).toBe(100);
+    expect(result.seasonFlashPoints).toBe(740);
   });
 
   it("does not invent peers for an unknown Alphabet challenge", () => {
@@ -23,7 +31,7 @@ describe("Flash Pop Alphabet social adapter", () => {
         lastCorrectAt: 70,
       },
       makeSocialSnapshot(0),
-      { timeLimit: 135 },
+      { seasonFlashPoints: 640 },
     );
 
     expect(result.socialSource).toBe("demo");
@@ -31,7 +39,10 @@ describe("Flash Pop Alphabet social adapter", () => {
     expect(result.peers.some((row) => row.player.id === "player")).toBe(true);
   });
 
-  it("orders equal scores by the last correct answer time", () => {
+  it("ranks by Flash Points and uses time as the tie-breaker", () => {
+    const snapshot = makeSocialSnapshot(1);
+    const peer = snapshot.peers[0];
+    if (!peer) throw new Error("Expected a peer");
     const result = getFlashPopAlphabetResult(
       {
         challengeId: "future-alphabet",
@@ -41,10 +52,13 @@ describe("Flash Pop Alphabet social adapter", () => {
         elapsedTime: 100,
         lastCorrectAt: 90,
       },
-      makeSocialSnapshot(),
+      {
+        ...snapshot,
+        peers: [{ ...peer, flashPoints: 89, timeUsed: 90 }],
+      },
     );
 
-    expect(result.playerRank).toBe(1);
-    expect(result.peers[0]?.player.id).toBe("player");
+    expect(result.playerRank).toBe(2);
+    expect(result.peers[0]?.player.id).toBe("ches");
   });
 });

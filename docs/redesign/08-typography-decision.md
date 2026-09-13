@@ -24,7 +24,7 @@ Se selecciona porque mantiene claridad, madurez y consistencia cuando la interfa
 
 ### Fredoka · voz de marca
 
-Se utiliza en nombres de retos, presentación de juegos, titulares protagonistas, resultados, hitos, desbloqueos y mensajes celebratorios.
+Se utiliza en nombres de retos, presentación de juegos, titulares protagonistas, resultados y mensajes celebratorios.
 
 Se selecciona frente a Bricolage Grotesque porque su construcción redondeada acompaña mejor Soft Diorama y hace que el producto se perciba como juego casual, social y cercano. No sustituye a Manrope: aporta reconocimiento y emoción en momentos seleccionados sin convertir toda la interfaz en infantil.
 
@@ -39,7 +39,7 @@ Reglas obligatorias:
 
 ### IBM Plex Mono · dato competitivo
 
-Se reserva para temporizadores, puntuaciones, posiciones, niveles, progreso cuantificado y metadatos de sistema que se beneficien de anchura estable.
+Se reserva para temporizadores, puntuaciones, posiciones, avance cuantificado del desafío y metadatos de sistema que se beneficien de anchura estable.
 
 Se usa en peso 600–700 y con números tabulares cuando el valor cambia durante la partida. No debe extenderse a etiquetas ordinarias para simular una estética técnica.
 

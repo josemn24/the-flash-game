@@ -366,7 +366,7 @@ export function NarrativeGameApp({
     session.phase === "results"
       ? {
           challengeId: challenge.id,
-          points: session.score,
+          flashPoints: session.score,
           completed: true,
           answers: session.results,
         }

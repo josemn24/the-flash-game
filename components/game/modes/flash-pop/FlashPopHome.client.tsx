@@ -162,10 +162,13 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
                         className={styles.roomStats}
                         aria-label={`Estadísticas de ${room.title}`}
                       >
-                        <span className={styles.statBadge}>
+                        <span
+                          className={styles.statBadge}
+                          role="img"
+                          aria-label={`${room.currentUser.totalFlashPoints} Flash Points`}
+                        >
+                          <strong aria-hidden="true">{room.currentUser.totalFlashPoints}</strong>
                           <BoltIcon aria-hidden="true" />
-                          <strong>{room.currentUser.totalPoints}</strong>
-                          <span className={styles.visuallyHidden}> Flash Points</span>
                         </span>
                         <span className={styles.statBadge}>
                           <TrophyIcon aria-hidden="true" />

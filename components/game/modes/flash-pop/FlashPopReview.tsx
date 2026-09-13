@@ -1,7 +1,10 @@
 "use client";
 
 import { ReviewAnswerPanel } from "@/components/game/shared";
-import { isPyramidLevelPassed, type PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
+import {
+  isPyramidLevelPassed,
+  type PyramidAttemptSummary,
+} from "@/features/pyramid/pyramidAttempt";
 import type { AnswerResult, PyramidChallenge } from "@/types/game";
 
 export function FlashPopReview({
@@ -15,7 +18,7 @@ export function FlashPopReview({
   results: AnswerResult[];
   summary: PyramidAttemptSummary;
   onBack: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
 }) {
   const resultByQuestionId = new Map(results.map((result) => [result.questionId, result]));
   const entries = challenge.levels.map((level, index) => {

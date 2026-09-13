@@ -91,7 +91,7 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
         roomId: model.roomId,
         challengeId: completion.attempt.challengeId,
         playedAt: completion.attempt.playedAt,
-        points: completion.points,
+        flashPoints: completion.flashPoints,
         completed: completion.completed,
         answers: completion.attempt.answers,
       })
@@ -125,7 +125,10 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
             <p className={styles.eyebrow}>{model.roomTitle}</p>
             <h1 id="member-detail-title">{visibleModel.member.name}</h1>
             <p className={styles.profileMeta}>
-              {visibleModel.member.totalPoints} Flash points · #{visibleModel.roomRank} en la sala
+              <span role="img" aria-label={`${visibleModel.member.totalFlashPoints} Flash Points`}>
+                {visibleModel.member.totalFlashPoints} ⚡
+              </span>{" "}
+              · #{visibleModel.roomRank} en la sala
             </p>
           </div>
         </section>
@@ -144,9 +147,9 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
             <div>
               <div className={styles.statValue}>
                 <BoltIcon aria-hidden="true" />
-                <strong>{result?.points ?? 0}</strong>
+                <strong>{result?.flashPoints ?? 0}</strong>
               </div>
-              <span>puntos del reto</span>
+              <span>Flash Points del reto</span>
             </div>
             <div>
               <div className={styles.statValue}>

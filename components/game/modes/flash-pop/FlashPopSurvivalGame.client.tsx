@@ -24,10 +24,6 @@ import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";
 
-function totalTimeLimit(challenge: SurvivalChallenge) {
-  return challenge.questions.reduce((total, question) => total + question.timeLimit, 0);
-}
-
 function Intro({
   challenge,
   onStart,
@@ -118,17 +114,13 @@ export function FlashPopSurvivalGame({
   const latestResult = session.results.at(-1);
   const finished = session.phase === "results" || session.phase === "review";
   const summary = finished ? toSummary(scoredChallenge, session) : null;
-  const result = summary
-    ? getFlashPopSurvivalResult(summary, socialSnapshot, {
-        totalTimeLimit: totalTimeLimit(scoredChallenge),
-      })
-    : null;
+  const result = summary ? getFlashPopSurvivalResult(summary, socialSnapshot) : null;
 
   useChallengeCompletionReporter(
     session.phase === "results" && result
       ? {
           challengeId: challenge.id,
-          points: result.score,
+          flashPoints: result.flashPointsEarned,
           completed: true,
           answers: session.results,
         }
@@ -237,7 +229,7 @@ export function FlashPopSurvivalGame({
                 challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
               />
             </motion.div>
           ) : null}

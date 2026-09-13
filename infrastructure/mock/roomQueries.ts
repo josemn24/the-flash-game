@@ -48,11 +48,11 @@ function initials(displayName: string) {
     .slice(0, 2);
 }
 
-function rankByPoints<Entry extends { points: number }>(entries: Entry[]) {
-  const ordered = [...entries].sort((left, right) => right.points - left.points);
+function rankByFlashPoints<Entry extends { flashPoints: number }>(entries: Entry[]) {
+  const ordered = [...entries].sort((left, right) => right.flashPoints - left.flashPoints);
   return ordered.map((entry) => ({
     ...entry,
-    rank: ordered.findIndex((candidate) => candidate.points === entry.points) + 1,
+    rank: ordered.findIndex((candidate) => candidate.flashPoints === entry.flashPoints) + 1,
   }));
 }
 
@@ -94,16 +94,19 @@ export class MockRoomQueries implements RoomQueries {
   }
 
   private seasonLeaderboard(roomId: RoomId, season: Season): RoomLeaderboardEntry[] {
-    const pointsByPlayer = new Map(
-      selectSeasonRanking(season.id, this.store).map(({ playerId, points }) => [playerId, points]),
+    const flashPointsByPlayer = new Map(
+      selectSeasonRanking(season.id, this.store).map(({ playerId, flashPoints }) => [
+        playerId,
+        flashPoints,
+      ]),
     );
     const playerIds = new Set<PlayerId>([
       ...this.activePlayers(roomId)
         .filter(({ membership }) => membership.role !== "spectator")
         .map(({ player }) => player.id),
-      ...pointsByPlayer.keys(),
+      ...flashPointsByPlayer.keys(),
     ]);
-    return rankByPoints(
+    return rankByFlashPoints(
       [...playerIds].map((playerId) => {
         const { player, routeKey } = this.player(playerId);
         return {
@@ -111,7 +114,7 @@ export class MockRoomQueries implements RoomQueries {
           name: player.displayName,
           initials: initials(player.displayName),
           avatarSrc: player.avatarPath ?? undefined,
-          points: pointsByPlayer.get(playerId) ?? 0,
+          flashPoints: flashPointsByPlayer.get(playerId) ?? 0,
         };
       }),
     );
@@ -160,7 +163,7 @@ export class MockRoomQueries implements RoomQueries {
         name: player.displayName,
         initials: initials(player.displayName),
         avatarSrc: player.avatarPath ?? undefined,
-        points: entry.points,
+        flashPoints: entry.flashPoints,
         completed: true,
       };
     });
@@ -169,9 +172,9 @@ export class MockRoomQueries implements RoomQueries {
   private memberModel(player: Player, roomId: RoomId, season: Season): RoomMemberViewModel {
     const routeKey = getPlayerRouteKey(player.id);
     if (!routeKey) throw new Error(`Missing route alias for player "${player.id}".`);
-    const totalPoints =
+    const totalFlashPoints =
       selectSeasonRanking(season.id, this.store).find(({ playerId }) => playerId === player.id)
-        ?.points ?? 0;
+        ?.flashPoints ?? 0;
     const schedules = this.store.scheduledChallenges.filter(
       ({ seasonId }) => seasonId === season.id,
     );
@@ -180,7 +183,7 @@ export class MockRoomQueries implements RoomQueries {
       name: player.displayName,
       initials: initials(player.displayName),
       avatarSrc: player.avatarPath ?? undefined,
-      totalPoints,
+      totalFlashPoints,
       challengeResults: Object.fromEntries(
         schedules.map((schedule) => {
           const challengeKey = getScheduledChallengeRouteKey(schedule.id);
@@ -189,7 +192,7 @@ export class MockRoomQueries implements RoomQueries {
           return [
             challengeKey,
             {
-              points: attempt?.score ?? 0,
+              flashPoints: attempt?.score ?? 0,
               completed: Boolean(attempt),
               attempt: attempt ? projectLegacyAttempt(attempt.id, this.store) : undefined,
             },
@@ -228,7 +231,10 @@ export class MockRoomQueries implements RoomQueries {
             imageSrc: getChallengeImage(daily.version.mode),
           }
         : null,
-      currentUser: { totalPoints: viewer?.points ?? 0, roomRank: viewer?.rank ?? 0 },
+      currentUser: {
+        totalFlashPoints: viewer?.flashPoints ?? 0,
+        roomRank: viewer?.rank ?? 0,
+      },
       memberPreviews: members.slice(0, 4).map(({ player, routeKey }) => ({
         id: routeKey,
         name: player.displayName,
@@ -274,9 +280,9 @@ export class MockRoomQueries implements RoomQueries {
         name: current.player.displayName,
         initials: initials(current.player.displayName),
         avatarSrc: current.player.avatarPath ?? undefined,
-        totalPoints: roomEntry?.points ?? 0,
+        totalFlashPoints: roomEntry?.flashPoints ?? 0,
         roomRank: roomEntry?.rank ?? 0,
-        dailyPoints: dailyEntry?.points ?? 0,
+        dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
         dailyCompleted: dailyEntry?.completed ?? false,
       },
       dailyChallenge: daily
@@ -300,10 +306,10 @@ export class MockRoomQueries implements RoomQueries {
     const access = this.roomAccess(roomKey, context.viewerId);
     const season = access ? this.activeSeason(access.room.id) : null;
     if (!access || !season) return null;
-    const points = new Map(
-      this.seasonLeaderboard(access.room.id, season).map(({ memberId, points }) => [
+    const flashPoints = new Map(
+      this.seasonLeaderboard(access.room.id, season).map(({ memberId, flashPoints }) => [
         memberId,
-        points,
+        flashPoints,
       ]),
     );
     const currentKey = getPlayerRouteKey(context.viewerId);
@@ -313,7 +319,7 @@ export class MockRoomQueries implements RoomQueries {
       name: player.displayName,
       initials: initials(player.displayName),
       avatarSrc: player.avatarPath ?? undefined,
-      totalPoints: points.get(routeKey) ?? 0,
+      totalFlashPoints: flashPoints.get(routeKey) ?? 0,
       isCurrentUser: routeKey === currentKey,
     }));
     return {

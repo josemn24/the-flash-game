@@ -10,10 +10,10 @@ describe("room history mock", () => {
       challengeId: "tabarnia-challenge-05",
       playerCount: 4,
       ranking: [
-        { memberId: "ches", points: 52 },
-        { memberId: "marta", points: 44 },
-        { memberId: "alex", points: 39 },
-        { memberId: "player", points: 33 },
+        { memberId: "ches", flashPoints: 52 },
+        { memberId: "marta", flashPoints: 44 },
+        { memberId: "alex", flashPoints: 39 },
+        { memberId: "player", flashPoints: 33 },
       ],
     });
   });

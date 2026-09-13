@@ -13,13 +13,7 @@ import {
 import type { RoomSettingsModel } from "@/types/game";
 import styles from "./FlashPopRoomSettings.module.css";
 
-function SettingsAction({
-  label,
-  icon,
-}: {
-  label: string;
-  icon: ReactNode;
-}) {
+function SettingsAction({ label, icon }: { label: string; icon: ReactNode }) {
   return (
     <button
       type="button"
@@ -60,7 +54,10 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
         </header>
 
         <div className={styles.heroContent}>
-          <div className={styles.memberHero} aria-label={`${model.memberCount} miembros de ${model.title}`}>
+          <div
+            className={styles.memberHero}
+            aria-label={`${model.memberCount} miembros de ${model.title}`}
+          >
             {model.members.map((member, index) => (
               <Avatar
                 key={member.id}
@@ -106,7 +103,9 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
                 />
                 <span className={styles.memberName}>
                   <strong>{member.name}</strong>
-                  <small>{member.totalPoints} Flash Points</small>
+                  <small role="img" aria-label={`${member.totalFlashPoints} Flash Points`}>
+                    {member.totalFlashPoints} ⚡
+                  </small>
                 </span>
               </li>
             ))}

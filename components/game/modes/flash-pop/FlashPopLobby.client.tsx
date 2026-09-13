@@ -65,10 +65,6 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
   );
 
   const actionLabel = getActionLabel(primaryModel.status);
-  const progress = Math.min(
-    100,
-    Math.round((primaryModel.seasonXp.current / primaryModel.seasonXp.nextLevelAt) * 100),
-  );
   const playerById = (id: string) => flashPopPlayers.find((player) => player.id === id)!;
 
   return (
@@ -98,7 +94,6 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
           <Chip tone="social" className={styles.previewBadge}>
             Demo
           </Chip>
-          <Chip icon={<BoltIcon />}>Nv. 4</Chip>
           <IconButton label="Notificaciones" className={styles.notificationButton}>
             <BellIcon />
           </IconButton>
@@ -158,8 +153,13 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
                 maxVisible={3}
                 label={`${primaryModel.participants.length} ya jugaron`}
               />
-              <Chip variant="reward" icon={<BoltIcon />} className={styles.rewardChip}>
-                Hasta +120
+              <Chip
+                variant="flashPoints"
+                icon={<BoltIcon />}
+                className={styles.flashPointsChip}
+                ariaLabel={"Hasta +" + primaryModel.maxFlashPoints + " Flash Points"}
+              >
+                Hasta +{primaryModel.maxFlashPoints}
               </Chip>
             </div>
             <ButtonLink
@@ -171,7 +171,7 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
               {actionLabel}
             </ButtonLink>
             <p className={styles.attemptNote}>
-              {primaryChallenge.levels.length} niveles · Puedes volver a jugar cuando quieras.
+              {primaryChallenge.levels.length} niveles · Tienes un único intento.
             </p>
           </div>
         </Card>
@@ -187,17 +187,14 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
                     : `Aún sin posición · ${primaryModel.totalPlayers} jugadores`}
                 </h2>
               </div>
-              <span className={styles.seasonValue}>
-                {primaryModel.seasonXp.current} / {primaryModel.seasonXp.nextLevelAt} ⚡
+              <span
+                className={styles.seasonValue}
+                role="img"
+                aria-label={primaryModel.seasonFlashPoints + " Flash Points"}
+              >
+                {primaryModel.seasonFlashPoints} <BoltIcon aria-hidden="true" />
               </span>
             </div>
-            <div className={styles.progressTrack} aria-label={`${progress} % del nivel completado`}>
-              <span style={{ width: `${progress}%` }} />
-            </div>
-            <p className={styles.progressCopy}>
-              {Math.max(0, primaryModel.seasonXp.nextLevelAt - primaryModel.seasonXp.current)} rayos
-              para alcanzar el siguiente nivel.
-            </p>
           </Card>
 
           <Card as="section" className={styles.secondaryChallengeCard}>

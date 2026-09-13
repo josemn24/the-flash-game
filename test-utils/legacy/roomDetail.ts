@@ -14,10 +14,11 @@ export function getRoomById(roomId: string) {
   return demoRooms.find((room) => room.id === roomId);
 }
 
-function sortLeaderboardEntries<T extends { memberId: string; points: number }>(entries: T[]) {
+function sortLeaderboardEntries<T extends { memberId: string; flashPoints: number }>(entries: T[]) {
   return [...entries]
     .sort(
-      (left, right) => right.points - left.points || left.memberId.localeCompare(right.memberId),
+      (left, right) =>
+        right.flashPoints - left.flashPoints || left.memberId.localeCompare(right.memberId),
     )
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
@@ -34,10 +35,11 @@ export function applyRoomChallengeResult(
     return model;
   }
 
-  const totalPoints = model.currentUser.totalPoints - model.currentUser.dailyPoints + result.points;
+  const totalFlashPoints =
+    model.currentUser.totalFlashPoints - model.currentUser.dailyFlashPoints + result.flashPoints;
   const roomLeaderboard = sortLeaderboardEntries(
     model.roomLeaderboard.map((entry) =>
-      entry.memberId === model.currentUser.id ? { ...entry, points: totalPoints } : entry,
+      entry.memberId === model.currentUser.id ? { ...entry, flashPoints: totalFlashPoints } : entry,
     ),
   );
   const currentDailyEntry = model.dailyLeaderboard.find(
@@ -46,13 +48,13 @@ export function applyRoomChallengeResult(
   const dailyLeaderboard = sortLeaderboardEntries([
     ...model.dailyLeaderboard.filter((entry) => entry.memberId !== model.currentUser.id),
     currentDailyEntry
-      ? { ...currentDailyEntry, points: result.points, completed: result.completed }
+      ? { ...currentDailyEntry, flashPoints: result.flashPoints, completed: result.completed }
       : {
           memberId: model.currentUser.id,
           name: model.currentUser.name,
           initials: model.currentUser.initials,
           avatarSrc: model.currentUser.avatarSrc,
-          points: result.points,
+          flashPoints: result.flashPoints,
           completed: result.completed,
           rank: 0,
         },
@@ -63,9 +65,9 @@ export function applyRoomChallengeResult(
     ...model,
     currentUser: {
       ...model.currentUser,
-      totalPoints,
+      totalFlashPoints,
       roomRank: roomEntry?.rank ?? model.currentUser.roomRank,
-      dailyPoints: result.points,
+      dailyFlashPoints: result.flashPoints,
       dailyCompleted: result.completed,
     },
     roomLeaderboard,
@@ -121,9 +123,9 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       name: member.name,
       initials: member.initials,
       avatarSrc: member.avatarSrc,
-      totalPoints: member.totalPoints,
+      totalFlashPoints: member.totalFlashPoints,
       roomRank: roomEntry.rank,
-      dailyPoints: dailyEntry?.points ?? 0,
+      dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
       dailyCompleted: dailyEntry?.completed ?? false,
     },
     dailyChallenge: dailyChallengeModel,

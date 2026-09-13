@@ -76,8 +76,8 @@
 - Los superadministradores pueden inspeccionar salas, editar contenido y realizar pruebas.
 - Las operaciones administrativas sensibles se auditan.
 - Las partidas de prueba se ejecutan en modo fantasma y se marcan como no competitivas.
-- Un intento fantasma no consume intentos oficiales, no concede puntos, no aparece en rankings, no
-  cuenta como participación y no genera actividad social ordinaria.
+- Un intento fantasma no consume intentos oficiales, no concede Flash Points, no aparece en rankings,
+  no cuenta como participación y no genera actividad social ordinaria.
 
 ## 5. Temporadas
 
@@ -89,11 +89,13 @@
 - Una temporada en borrador puede editarse. Durante una temporada activa solo pueden cambiarse de
   forma controlada publicaciones futuras. Una temporada finalizada es inmutable salvo correcciones
   auditadas.
-- Cada temporada comienza con cero puntos y posee su propio ranking.
+- Cada temporada comienza con cero Flash Points y posee su propio ranking.
+- La temporada no tiene niveles, hitos, metas, desbloqueos ni recompensas funcionales; su progreso
+  se expresa únicamente como total acumulado, sin barra ni denominador.
 - No habrá un ranking acumulado global de la sala.
-- Un miembro que entra durante la temporada comienza con cero puntos y puede competir desde su
-  incorporación.
-- Los puntos conseguidos antes de abandonar permanecen en el ranking de la temporada.
+- Un miembro que entra durante la temporada comienza con cero Flash Points y puede competir desde
+  su incorporación.
+- Los Flash Points conseguidos antes de abandonar permanecen en el ranking de la temporada.
 - Al finalizar no se admiten nuevos intentos. Los iniciados válidamente pueden terminar dentro de
   su plazo individual y el resultado definitivo se cierra después de que todos hayan expirado.
 
@@ -196,8 +198,10 @@
   originales.
 - La puntuación competitiva se denomina **Flash Points**. Los Flash Points obtenidos al jugar un
   desafío se suman al total de la temporada activa de la sala.
-- No existe un concepto funcional separado de XP, rayos acumulados, energía, monedas u otra
-  recompensa que compita con Flash Points.
+- `⚡` y “Flash Points” son equivalentes como representación de interfaz. El texto completo se
+  conserva en documentación, títulos explicativos y etiquetas accesibles.
+- No existe un concepto funcional separado de XP, rayos acumulados, energía, vidas como saldo,
+  monedas, niveles, hitos ni otra recompensa que compita con Flash Points.
 
 ## 11. Rankings
 
@@ -207,14 +211,14 @@
 - No participan espectadores, superadministradores, intentos fantasma, intentos invalidados ni
   publicaciones canceladas.
 - El ranking del desafío incluye únicamente jugadores con un intento competitivo finalizado.
-- El ranking de temporada suma el resultado acreditado de cada publicación.
-- Los miembros activos sin puntuación pueden mostrarse con cero puntos en la temporada.
-- Los antiguos miembros permanecen si consiguieron puntos, identificados como tales o anonimizados
-  cuando corresponda.
+- El ranking de temporada suma el resultado acreditado de cada publicación en Flash Points.
+- Los miembros activos sin puntuación pueden mostrarse con cero Flash Points en la temporada.
+- Los antiguos miembros permanecen si consiguieron Flash Points, identificados como tales o
+  anonimizados cuando corresponda.
 - Cada modo define el desempate de su desafío.
 - Si dos resultados siguen siendo iguales tras aplicar los criterios competitivos, comparten
   posición.
-- En la temporada manda la suma de puntos. Los empates comparten posición y cualquier orden adicional
+- En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional
   es únicamente visual.
 - Los miembros y espectadores pueden consultar los rankings de su sala.
 - Inicialmente los rankings se derivan de intentos. Solo se materializarán si el volumen lo exige.

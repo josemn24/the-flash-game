@@ -209,7 +209,7 @@ describe("MockRoomQueries contract", () => {
       "tabarnia-challenge-05",
       ownerContext,
     );
-    const tiedRows = tied?.ranking.filter(({ points }) => points === first.score);
+    const tiedRows = tied?.ranking.filter(({ flashPoints }) => flashPoints === first.score);
     expect(tiedRows).toHaveLength(2);
     expect(new Set(tiedRows?.map(({ rank }) => rank)).size).toBe(1);
 

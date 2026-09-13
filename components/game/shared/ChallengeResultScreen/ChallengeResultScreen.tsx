@@ -39,6 +39,9 @@ export function ChallengeResultScreen({
     ? Math.min(100, Math.max(0, Math.round(model.accuracy)))
     : 0;
   const progress = getResultProgress(score, maxScore);
+  const scoreUnit = model.scoreUnit === "flashPoints" ? "Flash Points" : "puntos";
+  const scoreUnitMark = model.scoreUnit === "flashPoints" ? "⚡" : "puntos";
+  const isFlashPoints = model.scoreUnit === "flashPoints";
 
   return (
     <div className={styles.stage}>
@@ -56,11 +59,19 @@ export function ChallengeResultScreen({
             <p className={styles.eyebrow}>{model.eyebrow}</p>
             <h1 id="challenge-result-title">{model.title}</h1>
             {model.subtitle ? <p className={styles.subtitle}>{model.subtitle}</p> : null}
-            <div className={styles.scoreDisplay}>
-              <strong>{score}</strong>
-              <span>/{maxScore} puntos</span>
+            <div
+              className={styles.scoreDisplay}
+              role="img"
+              aria-label={
+                isFlashPoints ? `${score} Flash Points` : `${score} de ${maxScore} puntos`
+              }
+            >
+              <strong aria-hidden="true">{isFlashPoints ? `+${score}` : score}</strong>
+              <span aria-hidden="true">
+                {isFlashPoints ? scoreUnitMark : `/${maxScore} ${scoreUnitMark}`}
+              </span>
             </div>
-            <div className={styles.scoreTrack} aria-label={`${score} de ${maxScore} puntos`}>
+            <div className={styles.scoreTrack} aria-label={`${score} de ${maxScore} ${scoreUnit}`}>
               <motion.span
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}

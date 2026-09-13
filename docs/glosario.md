@@ -20,34 +20,40 @@ Una sala contiene temporadas. Una temporada publica desafíos periódicos. Cada 
 
 ## Términos principales
 
-| Español                     | Inglés                | Uso recomendado                                                                                                                          |
-| --------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Juego / Producto            | Game / Product        | The Flash completo. Evitar usar "juego" para desafíos o partidas concretas cuando pueda generar ambigüedad.                              |
-| Sala                        | Room                  | Grupo privado creado por un usuario para invitar amigos y competir juntos.                                                               |
-| Temporada                   | Season                | Ciclo competitivo dentro de una sala, con inicio, fin y ranking acumulado.                                                               |
-| Desafío                     | Challenge             | Evento jugable periódico publicado en una sala durante una temporada.                                                                    |
-| Modo de juego               | Game Mode             | Reglas globales del desafío, como Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza o Respuesta rara.            |
-| Prueba                      | Trial / Task          | Unidad jugable individual vista por el usuario. Es más amplia que "pregunta" y cubre puzzles, memoria, laberintos, estimaciones o mapas. |
-| Pregunta                    | Question              | Unidad técnica actual del modelo de datos. También puede usarse cuando la prueba es claramente textual o interrogativa.                  |
-| Formato de pregunta         | Question Format       | Tipo de interacción de una prueba: elección múltiple, verdadero/falso, ordenar, estimación, mapa de calor, Mini-Wordle, laberinto, etc.  |
-| Intento                     | Attempt               | Ejecución de un jugador sobre un desafío o una prueba. Útil para rankings y resultados.                                                  |
-| Partida                     | Run / Playthrough     | Sesión completa de un jugador dentro de un desafío. Usar con cuidado para no confundirlo con el desafío publicado para toda la sala.     |
-| Ranking / Clasificación     | Leaderboard           | Tabla de posiciones. En producto puede usarse "ranking"; en inglés usar `leaderboard`, no `ranking`.                                     |
-| Ranking del desafío         | Challenge Leaderboard | Clasificación puntual de un desafío concreto.                                                                                            |
-| Ranking de temporada        | Season Leaderboard    | Clasificación acumulada de una temporada.                                                                                                |
-| Puntuación                  | Score                 | Puntos obtenidos por un jugador.                                                                                                         |
-| Puntos                      | Points                | Unidades numéricas de puntuación.                                                                                                        |
-| Flash Points                | Flash Points          | Puntos obtenidos al jugar un desafío y acumulados en el total de la temporada activa de la sala. Es la única puntuación competitiva del producto. |
-| Racha                       | Streak                | Secuencia de aciertos consecutivos.                                                                                                      |
-| Temporizador                | Timer                 | Elemento o sistema que controla el tiempo disponible.                                                                                    |
-| Tiempo límite               | Time Limit            | Duración máxima para responder una prueba o completar un desafío.                                                                        |
-| Precisión                   | Accuracy              | Porcentaje o proporción de respuestas correctas.                                                                                         |
-| Progreso                    | Progress              | Avance dentro de una prueba, desafío, temporada o modo.                                                                                  |
-| Categoría / Dominio         | Domain                | Área principal de conocimiento, como matemáticas, geografía, historia o ciencias naturales.                                              |
-| Tema                        | Topic                 | Subtema relacionado con uno o varios dominios, como aritmética, capitales, astronomía o anatomía humana.                                 |
-| Etiqueta                    | Tag                   | Metadato de clasificación. Puede cubrir dominios, temas, habilidades cognitivas, operaciones de formato o habilidades prácticas.         |
-| Habilidad cognitiva         | Cognitive Skill       | Capacidad mental ejercitada por una prueba, como memoria, razonamiento lógico, pensamiento crítico o resolución de problemas.            |
-| Habilidad práctica / social | Life Skill            | Habilidad aplicada a la vida cotidiana o social, como finanzas personales, comunicación, competencia digital o salud.                    |
+| Español                 | Inglés                | Uso recomendado                                                                                                                                   |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Juego / Producto        | Game / Product        | The Flash completo. Evitar usar "juego" para desafíos o partidas concretas cuando pueda generar ambigüedad.                                       |
+| Sala                    | Room                  | Grupo privado creado por un usuario para invitar amigos y competir juntos.                                                                        |
+| Temporada               | Season                | Ciclo competitivo dentro de una sala, con inicio, fin y ranking acumulado.                                                                        |
+| Desafío                 | Challenge             | Evento jugable periódico publicado en una sala durante una temporada.                                                                             |
+| Modo de juego           | Game Mode             | Reglas globales del desafío, como Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza o Respuesta rara.                     |
+| Prueba                  | Trial / Task          | Unidad jugable individual vista por el usuario. Es más amplia que "pregunta" y cubre puzzles, memoria, laberintos, estimaciones o mapas.          |
+| Pregunta                | Question              | Unidad técnica actual del modelo de datos. También puede usarse cuando la prueba es claramente textual o interrogativa.                           |
+| Formato de pregunta     | Question Format       | Tipo de interacción de una prueba: elección múltiple, verdadero/falso, ordenar, estimación, mapa de calor, Mini-Wordle, laberinto, etc.           |
+| Intento                 | Attempt               | Ejecución de un jugador sobre un desafío o una prueba. Útil para rankings y resultados.                                                           |
+| Partida                 | Run / Playthrough     | Sesión completa de un jugador dentro de un desafío. Usar con cuidado para no confundirlo con el desafío publicado para toda la sala.              |
+| Ranking / Clasificación | Leaderboard           | Tabla de posiciones. En producto puede usarse "ranking"; en inglés usar `leaderboard`, no `ranking`.                                              |
+| Ranking del desafío     | Challenge Leaderboard | Clasificación puntual de un desafío concreto.                                                                                                     |
+| Ranking de temporada    | Season Leaderboard    | Clasificación acumulada de una temporada.                                                                                                         |
+| Puntuación              | Score                 | Puntos obtenidos por un jugador.                                                                                                                  |
+| Puntos                  | Points                | Unidades numéricas de puntuación.                                                                                                                 |
+| Flash Points            | Flash Points          | Puntos obtenidos al jugar un desafío y acumulados en el total de la temporada activa de la sala. Es la única puntuación competitiva del producto. |
+
+### Convención visual de Flash Points
+
+`⚡` y “Flash Points” son equivalentes. En interfaces compactas se muestra el número junto al
+icono, por ejemplo `680 ⚡`, `+84 ⚡` o `84 ⚡`; no se repite `Flash Points` junto al icono.
+El nombre completo se mantiene en títulos explicativos, documentación y etiquetas accesibles.
+| Racha | Streak | Secuencia de aciertos consecutivos. |
+| Temporizador | Timer | Elemento o sistema que controla el tiempo disponible. |
+| Tiempo límite | Time Limit | Duración máxima para responder una prueba o completar un desafío. |
+| Precisión | Accuracy | Porcentaje o proporción de respuestas correctas. |
+| Progreso | Progress | Avance dentro de una prueba, desafío, temporada o modo. |
+| Categoría / Dominio | Domain | Área principal de conocimiento, como matemáticas, geografía, historia o ciencias naturales. |
+| Tema | Topic | Subtema relacionado con uno o varios dominios, como aritmética, capitales, astronomía o anatomía humana. |
+| Etiqueta | Tag | Metadato de clasificación. Puede cubrir dominios, temas, habilidades cognitivas, operaciones de formato o habilidades prácticas. |
+| Habilidad cognitiva | Cognitive Skill | Capacidad mental ejercitada por una prueba, como memoria, razonamiento lógico, pensamiento crítico o resolución de problemas. |
+| Habilidad práctica / social | Life Skill | Habilidad aplicada a la vida cotidiana o social, como finanzas personales, comunicación, competencia digital o salud. |
 
 Las reglas editoriales para decidir dominios, temas y etiquetas se documentan en `reglas-etiquetado.md`.
 
