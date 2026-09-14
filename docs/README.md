@@ -50,4 +50,4 @@ decisiones y después los documentos afectados.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run style-architecture` completan correctamente.
 - `npm run format:check` mantiene avisos preexistentes y Stylelint mantiene una incidencia
-  preexistente; están registrados en [`current/qa/qa-fase-4.md`](current/qa/qa-fase-4.md).
+  preexistente; están registrados en [`current/qa.md`](current/qa.md).

@@ -1,7 +1,8 @@
 # Informe de QA — Fase 4
 
-> **Estado: parcial.** Los tests y el build pasan, pero el formato global y Stylelint conservan
-> incidencias pendientes. Este documento registra la fotografía actual, no una aprobación completa.
+> **Estado: histórico.** Informe de la migración histórica al diseño Flash Pop, revisada en el
+> commit `9afbb30` (2026-09-14). Se conserva como registro del trabajo realizado en esa fase y no
+> representa el estado actual de QA del proyecto.
 
 ## Alcance
 
@@ -34,9 +35,9 @@ timeouts, respuestas parciales y algoritmos de tableros.
 
 ### Registro automatizado
 
-| Fecha      | Resultado | Evidencia                                 |
-| ---------- | --------- | ----------------------------------------- |
-| 2026-09-05 | OK        | 35 archivos, 359 tests; build estático OK |
+| Fecha      | Resultado | Evidencia                                                                               |
+| ---------- | --------- | --------------------------------------------------------------------------------------- |
+| 2026-09-05 | OK        | 35 archivos, 359 tests; build estático OK                                               |
 | 2026-09-14 | Parcial   | 80 archivos, 530 tests; typecheck, lint y build OK; format:check y Stylelint pendientes |
 
 ## Matriz manual
@@ -97,18 +98,18 @@ En `feedback` usar correcto, incorrecto, parcial, sin respuesta o timeout según
 
 Registrar cada hallazgo con este formato:
 
-| ID     | Formato             | Viewport/estado | Descripción                                   | Severidad | Evidencia                 | Resolución |
-| ------ | ------------------- | --------------- | --------------------------------------------- | --------- | ------------------------- | ---------- |
-| QA-001 | Queens/Zip/Tuberías | locked          | Celdas del tablero no quedaban deshabilitadas | P1        | Test de variantes         | Corregido  |
-| QA-002 | Shell del ejemplo   | 390 × 844       | Cierre del modal medía 43×43 px               | P2        | Medición DOM en navegador | Corregido  |
-| QA-003 | Repositorio         | global          | Prettier avisa en 59 archivos; incidencia preexistente fuera del alcance documental | P2        | `npm run format:check` | Pendiente |
-| QA-004 | Flash Pop concepts  | CSS             | Selector `.iconButton` duplicado              | P2        | `npm run stylelint` | Pendiente |
+| ID     | Formato             | Viewport/estado | Descripción                                                                         | Severidad | Evidencia                 | Resolución |
+| ------ | ------------------- | --------------- | ----------------------------------------------------------------------------------- | --------- | ------------------------- | ---------- |
+| QA-001 | Queens/Zip/Tuberías | locked          | Celdas del tablero no quedaban deshabilitadas                                       | P1        | Test de variantes         | Corregido  |
+| QA-002 | Shell del ejemplo   | 390 × 844       | Cierre del modal medía 43×43 px                                                     | P2        | Medición DOM en navegador | Corregido  |
+| QA-003 | Repositorio         | global          | Prettier avisa en 59 archivos; incidencia preexistente fuera del alcance documental | P2        | `npm run format:check`    | Pendiente  |
+| QA-004 | Flash Pop concepts  | CSS             | Selector `.iconButton` duplicado                                                    | P2        | `npm run stylelint`       | Pendiente  |
 
 P0/P1 bloquea la salida. P2 debe corregirse o aceptarse explícitamente antes del cierre. P3 se
 documenta para backlog. Las comparativas visuales deben conservarse junto al informe o enlazarse
 desde la evidencia.
 
-## Registro manual actual
+## Registro manual de la fase
 
 - 31/31 fichas cargan correctamente en `320×568`, `390×844`, `768×1024` y `1440×900`.
 - 31/31 fichas no presentan overflow horizontal en esos cuatro viewports.
@@ -118,5 +119,5 @@ desde la evidencia.
 - El botón de cierre del modal cumple 44×44 px en móvil tras corregir una medición inicial de
   43×43 px.
 - Consola del navegador: 0 errores durante el barrido.
-- Pendiente de completar manualmente: la interacción exhaustiva de cada formato en los cuatro
-  viewports, VoiceOver completo y activación forzada de `prefers-reduced-motion`.
+- La interacción exhaustiva de cada formato en los cuatro viewports, VoiceOver completo y la
+  activación forzada de `prefers-reduced-motion` quedaron fuera del cierre de esta fase.

@@ -8,8 +8,8 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 ## Estado
 
 - Estado de la especificación: dirección visual, tipografía, baseline, primitivas y laboratorio vivo aprobados. El vertical slice está integrado y la biblioteca de 31 formatos usa Flash Pop como sistema visual único.
-- Estado de QA: este documento conserva la fotografía histórica de la Fase 4. El estado actual está
-  en [`../../current/qa/qa-fase-4.md`](../../current/qa/qa-fase-4.md).
+- Estado de QA: este documento conserva la fotografía histórica de la Fase 4 en
+  [`qa-fase-4.md`](qa-fase-4.md). El estado actual está en [`../../current/qa.md`](../../current/qa.md).
 - Alcance de validación: lobby, pregunta, feedback, resultado y persistencia de intento único.
 - Plataforma inicial: web responsive, con prioridad móvil.
 - Resolución de referencia móvil: 390 × 844 px.

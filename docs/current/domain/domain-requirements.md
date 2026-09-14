@@ -409,8 +409,8 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - El catálogo canónico del código contiene 31 formatos y los mocks contienen siete desafíos definidos
   y seis programados, mientras que documentos antiguos describen 25 formatos o solo dos desafíos.
   Esos documentos antiguos deben tratarse como históricos.
-- `docs/current/qa/qa-fase-4.md` declara `format:check` correcto, pero la comprobación actual detecta avisos en
-  varios archivos; es una discrepancia de estado documental, no una regla funcional.
+- El informe histórico [`../../archive/redesign/qa-fase-4.md`](../../archive/redesign/qa-fase-4.md) conserva cifras
+  de una migración anterior; el estado vigente de QA está en [`../qa.md`](../qa.md).
 
 ## Fuera de alcance de esta fase
 

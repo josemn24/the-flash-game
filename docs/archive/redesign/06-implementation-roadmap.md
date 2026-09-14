@@ -291,4 +291,4 @@ shell social completo.
 La migración de los 31 formatos ya está integrada en `QuestionInput` con Flash Pop como sistema
 visual único. El siguiente hito es cerrar la revisión manual de la Fase 4 —interacción exhaustiva,
 VoiceOver y `prefers-reduced-motion`— y resolver o aceptar explícitamente las incidencias
-registradas en [`../../current/qa/qa-fase-4.md`](../../current/qa/qa-fase-4.md).
+registradas en [`qa-fase-4.md`](qa-fase-4.md).

@@ -9,7 +9,7 @@ entender qué existe en el repositorio hoy.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`architecture/server-client-architecture.md`](architecture/server-client-architecture.md): límites
   entre servidor y cliente.
-- [`qa/qa-fase-4.md`](qa/qa-fase-4.md): validación automatizada y manual.
+- [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
 - [`glosario.md`](glosario.md): vocabulario del producto.
 
 Las decisiones normativas están en [`../decisions/README.md`](../decisions/README.md), no duplicadas

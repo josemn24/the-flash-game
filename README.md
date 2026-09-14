@@ -120,8 +120,9 @@ Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos
 Todos los formatos de la biblioteca usan Flash Pop directamente mediante el registry único
 `QuestionInput`. Las variantes que permanecen en los controles son semánticas (`primary`,
 `secondary`, `reward`, etc.) y no representan temas. La cobertura automatizada y el estado de la
-revisión manual se mantienen en [`docs/current/qa/qa-fase-4.md`](docs/current/qa/qa-fase-4.md).
+revisión manual se mantienen en [`docs/current/qa.md`](docs/current/qa.md). El informe manual de la
+migración Flash Pop se conserva como [`documentación histórica`](docs/archive/redesign/qa-fase-4.md).
 
 ## Rediseño Flash Pop
 
-La evolución visual y de experiencia hacia un juego más alegre, social, casual y cercano se conserva como proceso histórico en [`docs/archive/redesign/README.md`](docs/archive/redesign/README.md). El estado actual de sus quality gates está documentado en [`docs/current/qa/qa-fase-4.md`](docs/current/qa/qa-fase-4.md).
+La evolución visual y de experiencia hacia un juego más alegre, social, casual y cercano se conserva como proceso histórico en [`docs/archive/redesign/README.md`](docs/archive/redesign/README.md). El estado actual de sus comprobaciones está documentado en [`docs/current/qa.md`](docs/current/qa.md).
