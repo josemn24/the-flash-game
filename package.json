@@ -24,7 +24,8 @@
     "style-architecture": "node scripts/check-style-architecture.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "docs:check": "node scripts/check-doc-links.mjs"
+    "docs:check": "node scripts/check-doc-links.mjs",
+    "supabase:schema:test": "node scripts/check-supabase-schema.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.41.0",

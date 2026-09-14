@@ -6,6 +6,7 @@ select no_plan();
 
 create function pg_temp.test_id(label text) returns uuid language sql immutable
 as $$ select md5('flash-schema-rls-test:' || label)::uuid $$;
+grant execute on function pg_temp.test_id(text) to anon, authenticated, service_role;
 
 insert into auth.users (id)
 select pg_temp.test_id('auth-' || name)
@@ -33,8 +34,8 @@ from unnest(array['a', 'b']) suffix;
 insert into private.question_definitions (id, slug, created_by_player_id)
 values (pg_temp.test_id('question'), 'rls-test-question', pg_temp.test_id('superadmin'));
 insert into private.question_versions
-  (id, question_definition_id, version_number, type, public_payload, created_by_player_id)
-values (pg_temp.test_id('qv'), pg_temp.test_id('question'), 1, 'short-text', '{"prompt":"test"}', pg_temp.test_id('superadmin'));
+  (id, question_definition_id, version_number, type, time_limit_ms, public_payload, created_by_player_id)
+values (pg_temp.test_id('qv'), pg_temp.test_id('question'), 1, 'short-text', 60000, '{"prompt":"test"}', pg_temp.test_id('superadmin'));
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values (pg_temp.test_id('qv'), '{"answer":"private"}');
 update private.question_versions set status = 'published' where id = pg_temp.test_id('qv');
@@ -108,8 +109,22 @@ select throws_ok('delete from public.rooms', '42501', null, 'Client cannot delet
 select throws_ok('truncate public.rooms cascade', '42501', null, 'TRUNCATE is revoked separately from RLS');
 reset role;
 
--- Test the actual backend ACL, not just postgres ownership bypass.
-set local role service_role;
+-- This test-only trigger builds historical receipts; the command tests have no such bypass.
+create function pg_temp.fixture_receipt() returns trigger language plpgsql as $$
+begin
+  insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer,
+    received_at, presented_at, effective_submitted_at, time_used_ms, timed_out)
+  values(new.attempt_id, new.challenge_item_id, new.challenge_version_id, new.answer,
+    coalesce(new.submitted_at, new.presented_at), new.presented_at,
+    coalesce(new.submitted_at, new.presented_at), new.time_used_ms, false) returning id into new.receipt_id;
+  return new;
+end;
+$$;
+create trigger a_fixture_receipt before insert on private.attempt_answers
+  for each row execute function pg_temp.fixture_receipt();
+
+-- Historical structural fixtures run as the test owner; command ACLs are tested separately.
+reset role;
 select lives_ok($$insert into public.attempts
   (id, player_id, scheduled_challenge_id, challenge_version_id, kind, deadline_at, client_state_schema_version)
   values (pg_temp.test_id('attempt-owner'), pg_temp.test_id('owner'), pg_temp.test_id('sc-a'),
@@ -143,7 +158,7 @@ select lives_ok($$insert into private.attempt_answers
   (id, attempt_id, challenge_item_id, challenge_version_id, status, points, presented_at, submitted_at, time_used_ms, idempotency_key)
   values (pg_temp.test_id('answer-owner'), pg_temp.test_id('attempt-owner'), pg_temp.test_id('item-1'), pg_temp.test_id('cv-1'),
     'incorrect', 0, statement_timestamp(), statement_timestamp(), 0, 'answer-once')$$, 'Server records a final answer');
-select throws_ok($$update private.attempt_answers set points = 100$$, '42501', null, 'Backend ACL also prevents answer rewrites');
+select throws_ok($$update private.attempt_answers set points = 100$$, 'P0001', null, 'Historical answers cannot be rewritten');
 select throws_ok($$update public.attempts set score = 0, status = 'completed', completed_at = statement_timestamp()
   where id = pg_temp.test_id('attempt-owner')$$, 'P0001', null, 'Every attempt update must advance lock_version');
 select lives_ok($$update public.attempts set score = 0, status = 'completed', completed_at = statement_timestamp(), lock_version = lock_version + 1

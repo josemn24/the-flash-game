@@ -1,0 +1,340 @@
+{
+  "relations": {
+    "private.answer_receipts": {
+      "kind": "r"
+    },
+    "private.attempt_answers": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.attempt_sessions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.attempt_timing_units": {
+      "kind": "r"
+    },
+    "private.audit_log": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.challenge_definitions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.challenge_items": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.challenge_versions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.command_requests": {
+      "kind": "r"
+    },
+    "private.effective_results": {
+      "kind": "v",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
+    },
+    "private.flash_point_entries": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.interaction_intervals": {
+      "kind": "r"
+    },
+    "private.platform_role_assignments": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.question_definitions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.question_version_solutions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.question_versions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.room_invitations": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.attempts": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "columns": {
+          "id": ["SELECT"],
+          "player_id": ["SELECT"],
+          "scheduled_challenge_id": ["SELECT"],
+          "status": ["SELECT"],
+          "started_at": ["SELECT"],
+          "deadline_at": ["SELECT"],
+          "completed_at": ["SELECT"],
+          "score": ["SELECT"]
+        }
+      }
+    },
+    "public.players": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "columns": {
+          "id": ["SELECT"],
+          "display_name": ["SELECT", "UPDATE"],
+          "avatar_path": ["SELECT"],
+          "status": ["SELECT"]
+        }
+      }
+    },
+    "public.room_memberships": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.rooms": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.scheduled_challenges": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.seasons": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    }
+  },
+  "functions": {
+    "private.abandon_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.accept_invitation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.adjust_result": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.can_read_own_attempt": {
+      "arguments": "target_publication_id uuid, target_player_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.can_read_profile": {
+      "arguments": "target_player_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.command_actor": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.complete_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.current_player_id": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.execute_command": {
+      "arguments": "op text, input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.guard_answer": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_attempt": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_content_child": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_player": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_point_entry": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_publication": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_room": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_season": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_version": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.invalidate_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.is_room_member": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.lock_membership_room": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.next_attempt_item": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.pass_interaction": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.prepare_interaction": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.receive_answer": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.record_evaluation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.reject_rewrite": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.require_room_owner": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.secret_hash": {
+      "arguments": "secret text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.start_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.take_over_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.touch_updated_at": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "public.get_challenge_ranking": {
+      "arguments": "target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_season_ranking": {
+      "arguments": "target_season_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.read_evaluation_context": {
+      "arguments": "target_receipt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    }
+  }
+}

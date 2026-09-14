@@ -20,3 +20,6 @@ export type QuestionVersionId = EntityId<"QuestionVersionId">;
 export type ScheduledChallengeId = EntityId<"ScheduledChallengeId">;
 export type AttemptId = EntityId<"AttemptId">;
 export type AttemptAnswerId = EntityId<"AttemptAnswerId">;
+
+export type AttemptSessionId = EntityId<"AttemptSessionId">;
+export type AnswerReceiptId = EntityId<"AnswerReceiptId">;

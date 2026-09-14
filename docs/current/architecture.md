@@ -176,6 +176,18 @@ El puerto expone operaciones del comportamiento —por ejemplo `createOrGetAttem
 `submitAnswerIfCurrent`— cuando la atomicidad no puede expresarse con seguridad como una secuencia
 de lecturas y escrituras desde la aplicación.
 
+La frontera concreta está en [attempt-commands.ts](../../application/ports/attempt-commands.ts):
+inicio/recuperación, takeover, preparación, recepción, evaluación, cierre, invitaciones y correcciones.
+Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL futuro
+verificará Auth y establecerá identidad con claims locales a cada transacción. No se expone `private`
+por PostgREST ni se usa el propietario de las funciones como credencial de servidor.
+
+Preparar confirma el reloj antes de entregar contenido; recibir confirma payload e instante antes
+de evaluar. [evaluateReceipt](../../server/evaluation/evaluate-receipt.ts) adapta el tiempo persistido
+al evaluador existente en una frontera `server-only`. Corrección, puntos, identidad y marcas
+autoritativas no son inputs públicos. La UI conserva los mocks; estas operaciones no están conectadas.
+
 Adaptadores previstos:
 
 ```text
@@ -244,7 +256,7 @@ respuesta, finalización y acreditación deben ser síncronas y transaccionales.
 
 Un proceso asíncrono será necesario solo para tareas que no deben bloquear la respuesta de la UI:
 
-- detectar intentos sin heartbeat y cerrarlos como `abandoned` tras el lease y la gracia acordados;
+- detectar abandono automático solo si se aprueba posteriormente una política de heartbeat/lease;
 - enviar correos o notificaciones;
 - limpiar assets o datos después de anonimización/purga;
 - recalcular proyecciones materializadas si el volumen lo exige;
@@ -454,17 +466,18 @@ deben vivir en el servidor.
 
 - La matriz exacta de permisos de `owner` frente a `admin` y el alcance del rol editor aún no está
   cerrada.
-- Hay que concretar heartbeat, lease, periodo de gracia y toma de control de otro dispositivo.
+- Takeover explícito está implementado en SQL; heartbeat, lease y abandono automático quedan fuera
+  de la fase actual, pendientes de una política posterior.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,
   conflicto obsoleto y validación inválida sin filtrar información.
 - Supabase RLS debe diseñarse junto con las políticas de aplicación; no conviene asumir que una capa
   sustituye a la otra.
 - El envío de respuestas, checkpoints y señales de abandono necesita límites de frecuencia y una
   estrategia para reintentos de red.
-- El modelo de datos debe soportar transacciones de finalización y acreditación sin duplicar puntos.
+- Finalización/acreditación atómica está implementada y probada en SQL; falta conectar el adaptador.
 - Queda pendiente decidir cuándo materializar rankings/historial y cómo invalidar sus lecturas.
-- La revisión de intentos `invalidated`, correcciones, moderación y auditoría necesita una política
-  administrativa explícita.
+- Invalidación y corrección exigen superadmin, motivo y auditoría. La revisión de intentos
+  `invalidated`, inspección global y moderación siguen pendientes de política administrativa.
 - La anonimización debe coordinar identidad, avatar, actividad social y retención histórica.
 - Los medios y avatares requieren políticas de acceso, límites de tamaño y limpieza de objetos.
 - La aplicación debe conservar una experiencia útil si un servicio externo está temporalmente

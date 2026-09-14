@@ -21,7 +21,7 @@ export type Attempt = {
   readonly status: AttemptStatus;
   readonly outcome: AttemptOutcome;
   readonly startedAt: UtcIsoDateTime;
-  readonly deadlineAt: UtcIsoDateTime;
+  readonly deadlineAt: UtcIsoDateTime | null;
   readonly completedAt: UtcIsoDateTime | null;
   readonly score: number | null;
   readonly clientStateSchemaVersion: number;

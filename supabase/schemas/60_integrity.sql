@@ -200,7 +200,12 @@ language plpgsql set search_path = '' as $$
 begin
   if tg_op = 'INSERT' then
     if new.status <> 'in_progress' then raise exception 'An attempt must start in progress'; end if;
-    new.started_at := statement_timestamp();
+    new.started_at := clock_timestamp();
+    -- Derive the global clock from the exact persisted start, including very short limits.
+    -- Other modes have only question/level clocks; never accept a caller's global deadline.
+    select case when cv.mode = 'alphabet' then
+      new.started_at + cv.global_time_limit_ms * interval '1 millisecond' else null end
+      into new.deadline_at from private.challenge_versions cv where cv.id = new.challenge_version_id;
     if new.kind = 'competitive' then
       if exists (select 1 from private.platform_role_assignments where player_id = new.player_id) then
         raise exception 'Superadministrators only create test attempts';
@@ -234,6 +239,8 @@ begin
   end if;
   if new.lock_version <> old.lock_version + 1 then raise exception 'Expected next lock_version'; end if;
   if old.status <> 'in_progress' then
+    if new.status = old.status and (to_jsonb(new) - 'lock_version' - 'updated_at') =
+      (to_jsonb(old) - 'lock_version' - 'updated_at') then return new; end if;
     if old.status not in ('completed', 'abandoned') or new.status <> 'invalidated'
       or (to_jsonb(new) - 'status' - 'terminal_reason' - 'lock_version' - 'updated_at') <>
          (to_jsonb(old) - 'status' - 'terminal_reason' - 'lock_version' - 'updated_at') then
@@ -265,11 +272,20 @@ create trigger audit_append_only before update or delete on private.audit_log
 
 create function private.guard_answer() returns trigger
 language plpgsql set search_path = '' as $$
-declare a public.attempts%rowtype; item_points integer;
+declare a public.attempts%rowtype; item_points integer; r private.answer_receipts%rowtype;
 begin
   select * into a from public.attempts where id = new.attempt_id for update;
   if a.status is distinct from 'in_progress' then raise exception 'Attempt is not in progress'; end if;
-  -- Late timeout finalization is a server operation: never extend the original deadline.
+  select * into r from private.answer_receipts where id = new.receipt_id;
+  if not found or (r.attempt_id, r.challenge_item_id, r.challenge_version_id) is distinct from
+    (new.attempt_id, new.challenge_item_id, new.challenge_version_id) then
+    raise exception 'A final answer requires its immutable receipt';
+  end if;
+  new.presented_at := r.presented_at;
+  new.submitted_at := r.effective_submitted_at;
+  new.time_used_ms := r.time_used_ms;
+  new.answer := r.answer;
+  -- Late timeout finalization uses the previously recorded reception, not evaluation time.
   if new.presented_at < a.started_at or new.presented_at > a.deadline_at
     or (new.submitted_at is not null and new.submitted_at > a.deadline_at) then
     raise exception 'Answer timestamps outside attempt deadline';
@@ -343,3 +359,10 @@ create trigger z_touch before update on private.challenge_versions
   for each row execute function private.touch_updated_at();
 create trigger z_touch before update on private.challenge_items
   for each row execute function private.touch_updated_at();
+
+create trigger receipts_append_only before update or delete on private.answer_receipts
+  for each row execute function private.reject_rewrite();
+create trigger timing_units_immutable before update or delete on private.attempt_timing_units
+  for each row execute function private.reject_rewrite();
+create trigger requests_append_only before update or delete on private.command_requests
+  for each row execute function private.reject_rewrite();

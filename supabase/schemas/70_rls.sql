@@ -1,77 +1,77 @@
 -- Explicit object ACLs remove Supabase default grants, including TRUNCATE and REFERENCES.
--- No INSERT/DELETE policies for clients: all aggregate mutations require server commands.
+-- No direct domain DML for clients or service_role: mutations use private commands.
 -- RLS is also enabled on private tables as defense if exposure configuration changes.
 alter table public.players enable row level security;
 revoke all on table public.players from public, anon, authenticated, service_role;
-grant select, insert, update on table public.players to service_role;
+grant select on table public.players to service_role;
 
 alter table public.rooms enable row level security;
 revoke all on table public.rooms from public, anon, authenticated, service_role;
-grant select, insert, update on table public.rooms to service_role;
+grant select on table public.rooms to service_role;
 
 alter table public.room_memberships enable row level security;
 revoke all on table public.room_memberships from public, anon, authenticated, service_role;
-grant select, insert, update on table public.room_memberships to service_role;
+grant select on table public.room_memberships to service_role;
 
 alter table public.seasons enable row level security;
 revoke all on table public.seasons from public, anon, authenticated, service_role;
-grant select, insert, update on table public.seasons to service_role;
+grant select on table public.seasons to service_role;
 
 alter table public.scheduled_challenges enable row level security;
 revoke all on table public.scheduled_challenges from public, anon, authenticated, service_role;
-grant select, insert, update on table public.scheduled_challenges to service_role;
+grant select on table public.scheduled_challenges to service_role;
 
 alter table public.attempts enable row level security;
 revoke all on table public.attempts from public, anon, authenticated, service_role;
-grant select, insert, update on table public.attempts to service_role;
+grant select on table public.attempts to service_role;
 
 alter table private.platform_role_assignments enable row level security;
 revoke all on table private.platform_role_assignments from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.platform_role_assignments to service_role;
+grant select on table private.platform_role_assignments to service_role;
 
 alter table private.room_invitations enable row level security;
 revoke all on table private.room_invitations from public, anon, authenticated, service_role;
-grant select, insert, update on table private.room_invitations to service_role;
+grant select on table private.room_invitations to service_role;
 
 alter table private.question_definitions enable row level security;
 revoke all on table private.question_definitions from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.question_definitions to service_role;
+grant select on table private.question_definitions to service_role;
 
 alter table private.question_versions enable row level security;
 revoke all on table private.question_versions from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.question_versions to service_role;
+grant select on table private.question_versions to service_role;
 
 alter table private.question_version_solutions enable row level security;
 revoke all on table private.question_version_solutions from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.question_version_solutions to service_role;
+grant select on table private.question_version_solutions to service_role;
 
 alter table private.challenge_definitions enable row level security;
 revoke all on table private.challenge_definitions from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.challenge_definitions to service_role;
+grant select on table private.challenge_definitions to service_role;
 
 alter table private.challenge_versions enable row level security;
 revoke all on table private.challenge_versions from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.challenge_versions to service_role;
+grant select on table private.challenge_versions to service_role;
 
 alter table private.challenge_items enable row level security;
 revoke all on table private.challenge_items from public, anon, authenticated, service_role;
-grant select, insert, update, delete on table private.challenge_items to service_role;
+grant select on table private.challenge_items to service_role;
 
 alter table private.attempt_sessions enable row level security;
 revoke all on table private.attempt_sessions from public, anon, authenticated, service_role;
-grant select, insert, update on table private.attempt_sessions to service_role;
+grant select on table private.attempt_sessions to service_role;
 
 alter table private.attempt_answers enable row level security;
 revoke all on table private.attempt_answers from public, anon, authenticated, service_role;
-grant select, insert on table private.attempt_answers to service_role;
+grant select on table private.attempt_answers to service_role;
 
 alter table private.flash_point_entries enable row level security;
 revoke all on table private.flash_point_entries from public, anon, authenticated, service_role;
-grant select, insert on table private.flash_point_entries to service_role;
+grant select on table private.flash_point_entries to service_role;
 
 alter table private.audit_log enable row level security;
 revoke all on table private.audit_log from public, anon, authenticated, service_role;
-grant select, insert on table private.audit_log to service_role;
+grant select on table private.audit_log to service_role;
 
 -- Auth IDs, checkpoints, technical timestamps and terminal reasons have no client SELECT grant.
 grant usage on schema public to authenticated, service_role;

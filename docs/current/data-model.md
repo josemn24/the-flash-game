@@ -13,6 +13,11 @@ La propuesta parte de los casos de uso: identidad, acceso a salas, publicaciones
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
 actual continúa usando `data/mock/`; este modelo no implica que la persistencia real ya exista.
 
+El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
+comandos transaccionales competitivos en una base aislada de pruebas. La conexión productiva sigue
+pendiente. `service_role` no tiene DML directo; usa funciones privadas autorizadas y lecturas internas.
+El inventario de ACL y las pruebas de objetos futuros acompañan esas declaraciones.
+
 ## 1. Principios
 
 1. Las tablas conservan hechos del dominio, no modelos de pantalla.
@@ -240,6 +245,7 @@ Snapshot de título, modo, configuración y reglas de una definición.
 - `title text not null`, `subtitle text not null`, `description text not null`.
 - `max_score integer not null default 100`.
 - `mode_config jsonb not null`.
+- `global_time_limit_ms integer null`: positivo y obligatorio solo para Alfabeto publicado.
 - `created_by_player_id uuid not null references players(id)`.
 - `published_at timestamptz null`.
 - `created_at`, `updated_at`.
@@ -290,6 +296,7 @@ Metadatos y payload público de una versión concreta de pregunta.
 - `version_number integer not null`.
 - `status text not null`: `draft`, `published` o `archived`.
 - `type text not null`.
+- `time_limit_ms integer not null`, positivo: límite de pregunta o nivel en la versión publicada.
 - `public_payload jsonb not null`.
 - `created_by_player_id uuid not null references players(id)`.
 - `published_at timestamptz null`.
@@ -326,7 +333,7 @@ Raíz persistida de una ejecución competitiva o de prueba.
 - `status text not null`: `in_progress`, `completed`, `abandoned` o `invalidated`.
 - `outcome text null`: reservado para feedback interno de un modo, no para un estado global
   `passed`/`failed`.
-- `started_at timestamptz not null`, `deadline_at timestamptz not null`.
+- `started_at timestamptz not null`, `deadline_at timestamptz null` (solo Alfabeto tiene deadline global).
 - `completed_at timestamptz null`.
 - `score integer null`.
 - `client_state_schema_version integer not null`.
@@ -338,7 +345,7 @@ Raíz persistida de una ejecución competitiva o de prueba.
 
 Constraints y reglas:
 
-- `attempt_number > 0`, `lock_version > 0`, `deadline_at > started_at`.
+- `attempt_number > 0`, `lock_version > 0`, `deadline_at > started_at` cuando no es nulo.
 - `score` es nulo mientras no exista resultado y, cuando existe, está entre 0 y 100.
 - Un índice único parcial para V1 impone un intento competitivo como máximo por jugador y
   publicación: `unique (player_id, scheduled_challenge_id) where kind = 'competitive'`.
@@ -359,12 +366,35 @@ que deba llegar a la UI.
 - `id uuid primary key`.
 - `attempt_id uuid not null references attempts(id)`.
 - `session_token_hash text not null`.
-- `created_at`, `last_seen_at`, `expires_at timestamptz not null`.
+- `created_at`, `last_seen_at timestamptz not null`.
+- `expires_at timestamptz null`: coincide con el deadline global cuando existe.
 - `revoked_at timestamptz null`.
 
 Un índice único parcial sobre `attempt_id where revoked_at is null` garantiza una sesión activa. Se
 guardan hashes, nunca tokens reutilizables. Tomar el control revoca la sesión anterior y crea la
 nueva dentro de una transacción.
+No se añade heartbeat ni lease. El deadline impide nuevo juego, pero permite persistir el timeout,
+evaluar la recepción ya guardada y cerrar el intento con la sesión propietaria.
+
+### Estado temporal privado
+
+`attempt_timing_units` persiste inicio/deadline inmutables por item antes de devolver contenido;
+el scope es pregunta para Flash/Supervivencia/Narrativo, nivel para Pirámide e intento para
+Alfabeto. En Alfabeto todas las unidades comparten el deadline global configurado en
+`challenge_versions.global_time_limit_ms`; las demás modalidades no admiten ese límite global
+en una versión publicada.
+
+`interaction_intervals` conserva cada visita, con una sola abierta por intento. Pasar una letra
+cierra su intervalo; volver crea otro sin cambiar el deadline. La duración suma solo las visitas
+a esa letra, excluyendo transiciones y evaluación.
+
+`answer_receipts` guarda payload e instante de recepción PostgreSQL antes de evaluar, presentación,
+instante efectivo limitado por deadline, duración acumulada y timeout. El tiempo cliente es
+telemetría opcional. Una recepción por intento/item; las respuestas finales requieren su FK
+compuesta a la recepción y derivan de ella las marcas y el payload.
+
+`command_requests` conserva operación, contenido sin tokens reutilizables y resultado por
+actor/clave. Reintentos idénticos recuperan el resultado; contenido diferente produce conflicto.
 
 ### `attempt_answers`
 
@@ -373,6 +403,7 @@ Respuesta final a un `challenge_item` concreto.
 - `id uuid primary key`.
 - `attempt_id uuid not null references attempts(id)`.
 - `challenge_item_id uuid not null references challenge_items(id)`.
+- `receipt_id uuid not null`: recepción válida del mismo intento, item y versión.
 - `status text not null`: `correct`, `partial`, `incorrect`, `unanswered` o `timeout`.
 - `answer jsonb null`.
 - `result_details jsonb null`.
@@ -393,8 +424,8 @@ Constraints y reglas:
 - `answer` es el payload bruto recibido y `result_details` la evaluación concedida. Ninguno se
   reescribe para ocultar una corrección posterior.
 
-Los eventos o envíos intermedios de un formato no necesitan tabla en V1. Si un modo los requiere
-para auditoría, se añadirán como eventos append-only sin convertirlos en respuestas finales.
+Los intervalos de visita y las recepciones son estado técnico separado de la respuesta final. Los
+eventos adicionales de formatos concretos se validarán en servidor sin abrir DML genérico.
 
 ## 7. Acreditación y auditoría
 
@@ -522,21 +553,23 @@ el número es único y que la ventana no se solapa. La cancelación posterior re
 ### Iniciar o recuperar un intento
 
 Comprobar sesión, membresía, rol, publicación, temporada y reloj autoritativo; usar la unicidad del
-intento competitivo para que dos peticiones concurrentes creen o recuperen la misma fila; crear o
-renovar la sesión y el checkpoint inicial. La introducción o cuenta atrás no debe crear el intento
+intento competitivo para que dos peticiones concurrentes creen o recuperen la misma fila; crear la
+sesión al inicio. Recuperar con otro token requiere takeover explícito. La introducción o cuenta atrás no debe crear el intento
 antes de la señal oficial.
 
 ### Reanudar o tomar el control
 
-Bloquear el intento, validar `lock_version` y deadline, revocar la sesión anterior y crear la nueva.
+Reanudar conserva la sesión y los relojes. Tomar control bloquea el intento, valida `lock_version`
+y deadline, revoca la sesión anterior y crea la nueva.
 Una escritura obsoleta debe devolver conflicto, no sobrescribir el progreso más reciente.
 
 ### Enviar una respuesta
 
-Bloquear o actualizar condicionalmente el intento con su versión, comprobar sesión, elemento
-esperado, deadline e idempotencia, evaluar con la solución privada, insertar la respuesta y
-actualizar progreso/`lock_version`. Un reintento con la misma clave devuelve el mismo resultado sin
-duplicar puntos.
+Preparar y confirmar la persistencia temporal antes de entregar contenido. Recibir en otra
+transacción, bloquear el intento con su versión, comprobar sesión, elemento esperado e idempotencia
+y guardar payload/instante PostgreSQL. Evaluar después con la solución privada y registrar la
+respuesta final ligada a esa recepción. El procesamiento no incrementa el tiempo competitivo.
+Un reintento con la misma clave devuelve el mismo resultado sin duplicar puntos.
 
 ### Completar y acreditar
 
@@ -544,11 +577,11 @@ En una única transacción, validar el final reglamentario, calcular una puntuac
 100, congelar el intento, insertar como máximo una entrada inicial de Flash Points y emitir los
 hechos/auditoría necesarios. Si la petición se repite, la unicidad devuelve el resultado existente.
 
-### Abandonar o cerrar por inactividad
+### Abandonar
 
 Bloquear el intento, comprobar que sigue `in_progress`, conservar respuestas aceptadas, marcarlo
-`abandoned`, invalidar el progreso recuperable y revocar la sesión. Un scheduler futuro puede usar
-`last_activity_at`, lease y gracia, todavía pendientes de decisión.
+`abandoned`, invalidar el progreso recuperable y revocar la sesión. No se implementa abandono por
+inactividad, heartbeat ni una caducidad de sesión adicional.
 
 ### Invalidar o corregir
 
@@ -626,20 +659,19 @@ estancias históricas, se añadirá `room_membership_events` o episodios sin cam
 
 ### Cierre de publicaciones e intentos activos
 
-`closes_at` cierra nuevos inicios, pero un intento válido puede continuar hasta su deadline. La
+`closes_at` cierra nuevos inicios, pero un intento válido puede continuar con sus relojes de modo. La
 marca `results_locked_at` permite cerrar el historial de forma definitiva sin inventar un estado
 `expired` para intentos existentes. El criterio exacto para rellenarla depende del heartbeat y la
 gracia aún abiertos.
 
-Quedan por concretar antes del esquema SQL definitivo el lease y heartbeat, la matriz exacta de
-`owner` frente a `admin`, la política de retención/anonimización y si las correcciones de puntuación
-entran en la primera versión productiva.
+El esquema implementa takeover explícito y correcciones de superadmin con motivo y auditoría.
+Heartbeat, lease y abandono automático quedan fuera de esta fase; no son requisitos para ejecutar
+los comandos actuales. Siguen abiertas la matriz owner/admin y la política de retención/anonimización.
 
 ## 14. Evolución desde el repositorio actual
 
 1. Mantener `data/mock/store.ts` como adaptador que satisface los contratos actuales.
-2. Añadir contratos de persistencia en `application/ports/` orientados a operaciones, no una clase
-   genérica por tabla.
+2. Usar los contratos de comandos de `application/ports/`, ya orientados a operaciones atómicas.
 3. Implementar `infrastructure/supabase/` con consultas y transacciones que cumplan este modelo.
 4. Sustituir progresivamente `demoIdentity`, la evaluación cliente y los snapshots oficiales en
    memoria por casos de uso server-only.

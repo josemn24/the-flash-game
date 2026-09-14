@@ -276,13 +276,10 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
     if (!Number.isInteger(attempt.attemptNumber) || attempt.attemptNumber < 1) {
       errors.push(`Attempt ${attempt.id} has an invalid number.`);
     }
-    if (attempt.startedAt > attempt.deadlineAt || attempt.deadlineAt > (schedule?.closesAt ?? "")) {
+    if (attempt.deadlineAt !== null && attempt.startedAt > attempt.deadlineAt) {
       errors.push(`Attempt ${attempt.id} has an invalid deadline.`);
     }
-    if (
-      attempt.completedAt !== null &&
-      (attempt.completedAt < attempt.startedAt || attempt.completedAt > attempt.deadlineAt)
-    ) {
+    if (attempt.completedAt !== null && attempt.completedAt < attempt.startedAt) {
       errors.push(`Attempt ${attempt.id} has invalid completion times.`);
     }
     if (
@@ -337,14 +334,15 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
     }
     if (
       attempt &&
-      (answer.presentedAt < attempt.startedAt || answer.presentedAt > attempt.deadlineAt)
+      (answer.presentedAt < attempt.startedAt ||
+        (attempt.deadlineAt !== null && answer.presentedAt > attempt.deadlineAt))
     ) {
       errors.push(`Answer ${answer.id} was presented outside its attempt.`);
     }
     if (
       answer.submittedAt !== null &&
       (answer.submittedAt < answer.presentedAt ||
-        (attempt && answer.submittedAt > attempt.deadlineAt))
+        (attempt?.deadlineAt != null && answer.submittedAt > attempt.deadlineAt))
     ) {
       errors.push(`Answer ${answer.id} was submitted outside its attempt.`);
     }
