@@ -17,6 +17,7 @@ import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
 
 export type SurvivalSessionSnapshot = {
+  startedAt?: string;
   phase: GamePhase;
   questionIndex: number;
   results: AnswerResult[];
@@ -33,7 +34,7 @@ type SessionState = SurvivalSessionSnapshot;
 
 type SessionAction =
   | { type: "begin-countdown" }
-  | { type: "start"; lives: number }
+  | { type: "start"; lives: number; startedAt?: string }
   | {
       type: "answer";
       result: AnswerResult;
@@ -73,7 +74,11 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
     case "begin-countdown":
       return { ...state, phase: "countdown" };
     case "start":
-      return { ...getInitialState(action.lives), phase: "playing" };
+      return {
+        ...getInitialState(action.lives),
+        phase: "playing",
+        startedAt: action.startedAt,
+      };
     case "answer":
       return {
         ...state,
@@ -163,7 +168,7 @@ export function useSurvivalSession(
     clearAdvanceTimeout();
     resetQuestionRefs();
     questionStartedAt.current = performance.now();
-    dispatch({ type: "start", lives: challenge.lives });
+    dispatch({ type: "start", lives: challenge.lives, startedAt: new Date().toISOString() });
   }, [challenge.lives, clearAdvanceTimeout, resetQuestionRefs]);
 
   const beginCountdown = useCallback(() => {

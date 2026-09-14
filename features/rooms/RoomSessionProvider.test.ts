@@ -5,7 +5,9 @@ describe("room session results", () => {
   const completion = (overrides: { roomId: string; challengeId: string; flashPoints: number }) => ({
     ...overrides,
     completed: true,
+    startedAt: "2026-09-08T15:38:00.000Z",
     playedAt: "2026-09-08T15:39:00.000Z",
+    durationMs: 60_000,
     answers: [],
   });
 
@@ -32,9 +34,11 @@ describe("room session results", () => {
       completed: true,
       attempt: {
         challengeId: "tabarnia-challenge-05",
+        startedAt: "2026-09-08T15:38:00.000Z",
         playedAt: "2026-09-08T15:39:00.000Z",
         flashPoints: 80,
         completed: true,
+        durationMs: 60_000,
         answers: [],
       },
     });

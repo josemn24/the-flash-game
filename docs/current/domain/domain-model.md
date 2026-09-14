@@ -11,7 +11,7 @@ Es la referencia para hablar del dominio en las siguientes fases. Distingue las 
 de las cuestiones abiertas y no define tablas, schemas ORM, APIs, endpoints ni arquitectura de
 backend.
 
-Última actualización: 2026-09-13.
+Última actualización: 2026-09-14.
 
 ## 1. Visión general del modelo
 
@@ -314,10 +314,13 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
   debe nombrarlo o eliminar la sala antes de salir.
 - Una publicación cancelada conserva sus intentos para auditoría, pero no aparece como finalizada
   ordinaria ni suma al ranking.
-- Cada modo define sus reglas de tiempo, crédito parcial, penalizaciones, finalización y desempate.
+- Cada modo define sus reglas de tiempo, crédito parcial, penalizaciones y finalización. Los cinco
+  modos actuales comparten provisionalmente el comparador del ranking por desafío: más Flash Points,
+  menor duración efectiva (suma de `AttemptAnswer.timeUsedMs`) y `startedAt` más antiguo; los empates
+  completos comparten posición (`1, 1, 3`). El ranking de temporada solo usa Flash Points.
   Las penalizaciones no pueden producir puntuación negativa.
-- En Alfabeto el desempate es Flash Points, menor tiempo hasta el último acierto y menor momento de
-  finalización; si coinciden, se comparte posición.
+- `completedAt`, `lastCorrectAt` y otras marcas específicas se conservan para historial y métricas,
+  pero no son criterios del ranking común.
 - Al completar o abandonar un intento iniciado se permite revisar las respuestas y soluciones según
   la política aplicable; durante un intento en progreso no se revelan soluciones.
 - El replay es válido para previews aislados, pero no para un intento competitivo terminal.
@@ -429,7 +432,6 @@ El modelo no decide todavía:
 - qué checkpoints y borradores se conservan para cada modo y cómo se toma el control en otro
   dispositivo;
 - política de consulta y revisión de intentos `invalidated`;
-- comparadores y desempates de modos distintos de Alfabeto;
 - detalles de tiempo, finalización, feedback y exposición de soluciones de cada modo que no estén
   cerrados en sus contratos;
 - flujo de correcciones administrativas, moderación, auditoría y límites de frecuencia;

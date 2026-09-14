@@ -7,7 +7,7 @@ decisiones de dominio ya aprobadas. Es la fuente de verdad funcional para las fa
 junto con [`../../decisions/decisions.md`](../../decisions/decisions.md). Cuando una regla aún no está cerrada se
 marca como cuestión abierta; no se deduce una solución técnica a partir de ella.
 
-Última actualización: 2026-09-13.
+Última actualización: 2026-09-14.
 
 Las etiquetas indican la relación con la implementación actual:
 
@@ -187,10 +187,13 @@ autenticación y la gestión real de actores todavía no están implementadas.
   prueba, invalidados y las publicaciones canceladas quedan fuera.
 - **FR-31 —** El ranking por temporada ordena por el total de Flash Points acreditados en esa
   temporada de la sala.
-- **FR-32 —** Los empates comparten posición según el comparador y desempate que defina el modo.
-  En Alfabeto se conceden puntos por cada respuesta correcta. A igualdad de Flash Points, gana la
-  ejecución con menor tiempo hasta el último acierto; si persiste el empate, gana quien completó el
-  desafío primero. Si los tres criterios coinciden, comparten posición.
+- **FR-32 —** En el ranking por desafío, los cinco modos actuales ordenan por más Flash Points,
+  menor duración efectiva del intento —suma de `AttemptAnswer.timeUsedMs`, incluidas respuestas
+  temporizadas y no contestadas— y `startedAt` más antiguo. La cuenta atrás, las esperas externas y
+  la diferencia entre `completedAt` y `startedAt` no forman parte de esa duración. Si los tres
+  criterios coinciden, se comparte posición con ranking de competición (`1, 1, 3`). Un modo futuro
+  podrá sustituir este comparador mediante una decisión específica. El ranking de temporada solo
+  ordena por Flash Points acumulados.
 - **FR-33 —** Los miembros y espectadores pueden consultar los rankings de su sala; solo los roles
   competitivos pueden generar resultados nuevos.
 
@@ -236,15 +239,17 @@ autenticación y la gestión real de actores todavía no están implementadas.
   penalizaciones por errores, intentos o tiempo: estas reducen la puntuación disponible de la
   pregunta o prueba, pero su resultado final se limita a un mínimo de cero. La puntuación acumulada
   del desafío tampoco puede ser negativa.
-- El crédito parcial y las reglas de tiempo dependen del modo. Los empates también dependen del
-  modo; en Alfabeto se comparan, por este orden, Flash Points, tiempo hasta el último acierto y
-  momento de finalización.
+- El crédito parcial y las reglas de tiempo dependen del modo. Los cinco modos actuales comparten
+  provisionalmente el comparador del ranking por desafío: más Flash Points, menor duración efectiva
+  y `startedAt` más antiguo, con posiciones compartidas.
 - Los Flash Points obtenidos al jugar se suman al total de la temporada activa de esa sala; `⚡`
   puede representar ese valor en la interfaz.
 - La temporada no tiene niveles, hitos, metas, desbloqueos ni recompensas funcionales; el total
   es un número acumulado sin truncamiento ni denominador.
 - Solo existen los rankings por desafío y por temporada.
-- Los empates comparten posición; el comparador concreto depende del modo.
+- Los empates del ranking por desafío comparten posición tras aplicar el comparador común. La hora
+  absoluta de finalización y las métricas específicas del modo se conservan para revisión, historial
+  y métricas, pero no alteran el ranking.
 - El contenido publicado y el contexto histórico deben permanecer estables para quienes ya jugaron.
 - Los resultados válidos permanecen aunque el jugador abandone la sala; un intento fraudulento debe
   invalidarse explícitamente.
@@ -321,9 +326,8 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 - Los modos pueden definir penalizaciones por errores, intentos o tiempo. Estas reducen la puntuación
   disponible de la pregunta o prueba, pero el resultado final de esa unidad se limita a cero; ni la
   puntuación de una pregunta ni el total del desafío pueden ser negativos.
-- En Alfabeto cada respuesta correcta concede puntos. El comparador del ranking usa, por este orden,
-  Flash Points, menor tiempo hasta el último acierto y menor momento de finalización. Si no hay
-  diferencia en ninguno, los jugadores comparten posición.
+- En Alfabeto cada respuesta correcta concede puntos. `lastCorrectAt` y `completedAt` se conservan
+  para revisión e historial, pero no son criterios del ranking común.
 - El feedback de “desafío superado” de La Pirámide al completar sus siete niveles es específico de
   la interfaz del modo y no crea un estado global `passed`.
 - `⚡` y “Flash Points” son equivalentes en la interfaz. El texto completo se conserva en títulos
@@ -346,8 +350,6 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - Duración exacta, finalización, checkpoints, feedback y exposición de soluciones de cada modo.
 - Si algún modo futuro podrá permitir más de un intento oficial y cómo se acreditaría; el valor
   inicial confirmado sigue siendo uno.
-- Comparador y desempate concretos de los modos distintos de Alfabeto dentro del ranking por
-  desafío, a falta de consolidar sus reglas documentales con la implementación.
 - Duración, usos y flujo operativo de las invitaciones.
 - Políticas de recuperación o eliminación de salas, retención de eventos, moderación y anonimización.
 - Flujo de correcciones administrativas, toma de control de sesión y límites de frecuencia.
@@ -377,9 +379,10 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - **Resuelta (2026-09-13):** el motor y las pruebas de scoring conservan las penalizaciones por
   error, intentos o tiempo, pero normalizan el resultado de cada pregunta o prueba a un mínimo de
   cero antes de agregarlo al desafío. El total mantiene además una protección defensiva no negativa.
-- **Resuelta (2026-09-13):** Alfabeto tiene un comparador único para el modo y la vista social:
-  Flash Points, menor tiempo hasta el último acierto y, finalmente, menor momento de finalización.
-  `timeUsed` queda como métrica informativa y no como desempate.
+- **Resuelta (2026-09-14):** los cinco modos actuales comparten el comparador del ranking por
+  desafío: más Flash Points, menor duración efectiva —suma de `AttemptAnswer.timeUsedMs`— y
+  `startedAt` más antiguo, con posiciones compartidas. El ranking de temporada solo usa Flash
+  Points acumulados.
 - **Pendiente de implementar:** el abandono automático de intentos. El comportamiento objetivo
   requiere abandono explícito idempotente, checkpoints/heartbeat y cierre autoritativo tras perder
   actividad; los eventos del navegador solo deben actuar como avisos auxiliares. El intervalo y el

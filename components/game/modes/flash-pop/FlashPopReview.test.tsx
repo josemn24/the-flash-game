@@ -28,6 +28,7 @@ describe("FlashPopReview", () => {
           timeUsed: result.timeUsed,
           outcome: "failed",
           completedAt: 100,
+          startedAt: 0,
         }}
         onBack={() => {}}
       />,

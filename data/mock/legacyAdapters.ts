@@ -2,10 +2,12 @@ import {
   getPlayerRouteKey,
   getRoomRouteKey,
   getScheduledChallengeRouteKey,
+  selectBestCompletedAttempt,
   selectChallengeRanking,
   selectRoomHistory,
   selectSeasonRanking,
 } from "@/data/mock/selectors";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
 import type { PlayerId, RoomId } from "@/types/domain";
 import type { AnswerReview, RoomChallengeAttempt } from "@/types/gameplay";
@@ -66,10 +68,15 @@ export function projectLegacyAttempt(
         details: answer.resultDetails as AnswerReview["details"],
       };
     });
+  const durationMs = sumEffectiveDurationMs(
+    store.attemptAnswers.filter(({ attemptId }) => attemptId === attempt.id),
+  );
 
   return {
     challengeId,
+    startedAt: attempt.startedAt,
     playedAt: attempt.completedAt,
+    durationMs,
     flashPoints: attempt.score,
     completed: true,
     answers,
@@ -121,13 +128,7 @@ export function toLegacyRoomSnapshot(
               const ranked = selectChallengeRanking(schedule.id, store).find(
                 (entry) => entry.playerId === player.id,
               );
-              const attempt = store.attempts.find(
-                (candidate) =>
-                  candidate.playerId === player.id &&
-                  candidate.scheduledChallengeId === schedule.id &&
-                  candidate.kind === "competitive" &&
-                  candidate.status === "completed",
-              );
+              const attempt = selectBestCompletedAttempt(player.id, schedule.id, store);
               return [
                 [
                   challengeId,
@@ -192,7 +193,16 @@ export function toLegacyRoomHistory(
         playerCount: entry.participantCount,
         ranking: entry.ranking.flatMap((ranked) => {
           const memberId = getPlayerRouteKey(ranked.playerId);
-          return memberId ? [{ memberId, flashPoints: ranked.flashPoints }] : [];
+          return memberId
+            ? [
+                {
+                  memberId,
+                  flashPoints: ranked.flashPoints,
+                  durationMs: ranked.durationMs,
+                  startedAt: ranked.startedAt,
+                },
+              ]
+            : [];
         }),
       },
     ];

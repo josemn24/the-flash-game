@@ -374,10 +374,14 @@ export function buildMockRoomChallengeAttempt(
       ? buildAlphabetAttempt(challenge, result, seed)
       : (findExactMockPath(questions, targetFlashPoints, seed)?.answers ??
         buildProportionalFallback(questions, targetFlashPoints, seed));
+  const durationMs = answers.reduce((total, answer) => total + (answer.timeUsed ?? 0) * 1_000, 0);
+  const startedAt = new Date(Date.parse(playedAt) - durationMs).toISOString();
 
   return {
     challengeId,
+    startedAt,
     playedAt,
+    durationMs,
     flashPoints: result.flashPoints,
     completed: result.completed,
     answers,

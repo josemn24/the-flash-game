@@ -40,6 +40,7 @@ describe("Flash Pop demo social adapter", () => {
       timeUsed: 0,
       outcome: "summit" as const,
       completedAt: 100,
+      startedAt: 0,
     };
 
     expect(
@@ -61,10 +62,11 @@ describe("Flash Pop demo social adapter", () => {
       {
         challengeId: "tabarnia-challenge-05",
         levelsCleared: 7,
-        score: 100,
+        score: 80,
         timeUsed: 0,
         outcome: "summit",
         completedAt: 100,
+        startedAt: 0,
       },
       makeSocialSnapshot(),
     );
@@ -73,7 +75,7 @@ describe("Flash Pop demo social adapter", () => {
     expect(result.levelsCleared).toBe(7);
     expect(result.peers[0]?.player.id).toBe("player");
     expect(result.totalPlayers).toBe(4);
-    expect(result.flashPointsEarned).toBe(100);
+    expect(result.flashPointsEarned).toBe(80);
     expect(result.socialSource).toBe("demo");
   });
 
@@ -86,6 +88,7 @@ describe("Flash Pop demo social adapter", () => {
         timeUsed: 0,
         outcome: "summit",
         completedAt: 100,
+        startedAt: 0,
       },
       makeSocialSnapshot(0),
       { seasonFlashPoints: 880 },
@@ -103,6 +106,7 @@ describe("Flash Pop demo social adapter", () => {
         timeUsed: 20,
         outcome: "failed",
         completedAt: 100,
+        startedAt: 0,
       },
       makeSocialSnapshot(0),
     );
@@ -121,6 +125,7 @@ describe("Flash Pop demo social adapter", () => {
         timeUsed: 12,
         outcome: "failed",
         completedAt: 100,
+        startedAt: 0,
       },
       makeSocialSnapshot(),
     );
@@ -138,6 +143,7 @@ describe("Flash Pop demo social adapter", () => {
             timeUsed: 12,
             outcome: "failed",
             completedAt: 100,
+            startedAt: 0,
           },
         },
         "tabarnia-challenge-05",
@@ -155,6 +161,7 @@ describe("Flash Pop demo social adapter", () => {
           timeUsed: 12,
           outcome: "failed",
           completedAt: 100,
+          startedAt: 0,
         },
       }),
     ).toBe("completed");

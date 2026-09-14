@@ -26,7 +26,9 @@ export function upsertRoomSessionResult(
         completed: completion.completed,
         attempt: {
           challengeId: completion.challengeId,
+          startedAt: completion.startedAt,
           playedAt: completion.playedAt,
+          durationMs: completion.durationMs,
           flashPoints: completion.flashPoints,
           completed: completion.completed,
           answers: completion.answers,

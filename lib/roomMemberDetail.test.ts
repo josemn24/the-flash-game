@@ -143,7 +143,9 @@ describe("room member detail model", () => {
       challengeId: "tabarnia-flash-01",
       flashPoints: 88,
       completed: true,
+      startedAt: "2026-09-08T15:59:00.000Z",
       playedAt: "2026-09-08T16:00:00.000Z",
+      durationMs: 60_000,
       answers: model.result?.attempt?.answers ?? [],
     });
 

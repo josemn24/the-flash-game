@@ -5,6 +5,7 @@ import type {
   RoomLeaderboardEntry,
   RoomMember,
 } from "@/types/game";
+import { rankChallengeEntries } from "@/lib/challengeRanking";
 
 function sharedRank<T>(ordered: readonly T[], index: number, pointsFor: (entry: T) => number) {
   const points = pointsFor(ordered[index]);
@@ -34,26 +35,30 @@ export function getRoomLeaderboard(room: Room) {
 }
 
 export function getDailyLeaderboard(room: Room, challengeId: string) {
-  const ordered = room.members
+  const entries = room.members
     .filter((member) => member.challengeResults[challengeId]?.completed)
-    .sort(
-      (left, right) =>
-        (right.challengeResults[challengeId]?.flashPoints ?? 0) -
-          (left.challengeResults[challengeId]?.flashPoints ?? 0) || left.id.localeCompare(right.id),
-    );
-  return ordered.map((member, index): RoomDailyLeaderboardEntry => ({
-    rank: sharedRank(
-      ordered,
-      index,
-      (entry) => entry.challengeResults[challengeId]?.flashPoints ?? 0,
-    ),
-    memberId: member.id,
-    name: member.name,
-    initials: member.initials,
-    avatarSrc: member.avatarSrc,
-    flashPoints: member.challengeResults[challengeId]?.flashPoints ?? 0,
-    completed: true,
-  }));
+    .map((member) => {
+      const result = member.challengeResults[challengeId];
+      return {
+        member,
+        flashPoints: result?.flashPoints ?? 0,
+        durationMs: result?.attempt?.durationMs ?? Number.MAX_SAFE_INTEGER,
+        startedAt: result?.attempt?.startedAt ?? "9999-12-31T23:59:59.999Z",
+      };
+    });
+  return rankChallengeEntries(entries).map(
+    ({ member, flashPoints, durationMs, startedAt, rank }): RoomDailyLeaderboardEntry => ({
+      rank,
+      memberId: member.id,
+      name: member.name,
+      initials: member.initials,
+      avatarSrc: member.avatarSrc,
+      flashPoints,
+      completed: true,
+      durationMs,
+      startedAt,
+    }),
+  );
 }
 
 export function getHistoryLeaderboard(room: Room, entry: RoomHistoryEntry) {
@@ -65,20 +70,28 @@ export function getHistoryLeaderboard(room: Room, entry: RoomHistoryEntry) {
     entry.ranking.map((result) => [result.memberId, result.flashPoints]),
   );
 
-  const ordered = room.members
+  const entries = room.members
     .filter((member) => flashPointsByMemberId.has(member.id))
-    .sort(
-      (left, right) =>
-        (flashPointsByMemberId.get(right.id) ?? 0) - (flashPointsByMemberId.get(left.id) ?? 0) ||
-        left.id.localeCompare(right.id),
-    );
-  return ordered.map((member, index): RoomDailyLeaderboardEntry => ({
-    rank: sharedRank(ordered, index, (entry) => flashPointsByMemberId.get(entry.id) ?? 0),
-    memberId: member.id,
-    name: member.name,
-    initials: member.initials,
-    avatarSrc: member.avatarSrc,
-    flashPoints: flashPointsByMemberId.get(member.id) ?? 0,
-    completed: true,
-  }));
+    .map((member) => {
+      const result = entry.ranking?.find(({ memberId }) => memberId === member.id);
+      return {
+        member,
+        flashPoints: flashPointsByMemberId.get(member.id) ?? 0,
+        durationMs: result?.durationMs ?? Number.MAX_SAFE_INTEGER,
+        startedAt: result?.startedAt ?? "9999-12-31T23:59:59.999Z",
+      };
+    });
+  return rankChallengeEntries(entries).map(
+    ({ member, flashPoints, durationMs, startedAt, rank }): RoomDailyLeaderboardEntry => ({
+      rank,
+      memberId: member.id,
+      name: member.name,
+      initials: member.initials,
+      avatarSrc: member.avatarSrc,
+      flashPoints,
+      completed: true,
+      durationMs,
+      startedAt,
+    }),
+  );
 }

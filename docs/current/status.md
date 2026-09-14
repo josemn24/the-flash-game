@@ -21,6 +21,10 @@ la sesión de React.
 - Evaluación, puntuación, revisión y estados específicos por formato.
 - Shell visual Flash Pop para las experiencias publicadas y la biblioteca.
 - Acceso mock a sala, ranking, historial, detalle de miembro y ajustes.
+- El ranking por desafío de los cinco modos aplica el comparador común de Flash Points, duración
+  efectiva y `startedAt`, con posiciones compartidas; el ranking de temporada sigue usando solo
+  Flash Points acumulados. En el mock, la duración se deriva de los `AttemptAnswer.timeUsedMs` y la
+  aplicación está completa.
 
 ## Rutas principales
 
@@ -51,10 +55,10 @@ estática.
 
 Última verificación: 2026-09-14.
 
-- 80 archivos de test y 530 tests pasan con `npm test`.
+- 81 archivos de test y 535 tests pasan con `npm test`.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run style-architecture` pasan.
-- `npm run format:check` informa avisos en 59 archivos; quedan fuera del alcance de esta migración
+- `npm run format:check` informa avisos en 53 archivos; quedan fuera del alcance de este cambio
   documental.
 - `npm run stylelint` informa un selector duplicado en
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.

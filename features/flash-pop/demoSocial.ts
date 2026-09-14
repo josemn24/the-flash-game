@@ -4,6 +4,7 @@ import type {
   PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
 import { FLASH_POINTS_MAX, normalizeFlashPoints } from "@/features/flash-pop/flashPoints";
+import { compareChallengeRankingMetrics, rankChallengeEntries } from "@/lib/challengeRanking";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 export const FLASH_POP_FLASH_PILOT_ID = "tabarnia-flash-01";
@@ -53,6 +54,8 @@ export type FlashPopRankRow = {
   flashPoints: number;
   rank: number;
   timeUsed: number;
+  durationMs: number;
+  startedAt: string;
 };
 
 export type FlashPopResult = {
@@ -75,7 +78,12 @@ export function isFlashPopPreviewChallenge(id: string): id is FlashPopChallengeI
 
 function activitiesFor(snapshot: FlashPopSocialSnapshot): FlashPopActivity[] {
   return [...snapshot.peers]
-    .sort((left, right) => right.flashPoints - left.flashPoints || left.timeUsed - right.timeUsed)
+    .sort((left, right) =>
+      compareChallengeRankingMetrics(
+        { ...left, durationMs: left.timeUsed * 1_000 },
+        { ...right, durationMs: right.timeUsed * 1_000 },
+      ),
+    )
     .slice(0, 2)
     .map((row, index) => ({
       id: `${row.player.id}:${row.completedAt}:activity`,
@@ -110,25 +118,28 @@ export function getFlashPopResult(
       player: socialSnapshot.currentPlayer,
       flashPoints: flashPointsEarned,
       timeUsed: summary.timeUsed,
+      startedAt: new Date(summary.startedAt).toISOString(),
+      durationMs: summary.timeUsed * 1_000,
     },
-    ...socialSnapshot.peers.map(({ player, flashPoints, timeUsed }) => ({
+    ...socialSnapshot.peers.map(({ player, flashPoints, timeUsed, startedAt }) => ({
       player,
       flashPoints: normalizeFlashPoints(flashPoints),
       timeUsed,
+      startedAt,
+      durationMs: timeUsed * 1_000,
     })),
-  ]
-    .sort((left, right) => right.flashPoints - left.flashPoints || left.timeUsed - right.timeUsed)
-    .map((row, index) => ({ ...row, rank: index + 1 }));
-  const current = rows.find(({ player }) => player.id === socialSnapshot.currentPlayer.id)!;
+  ];
+  const rankedRows = rankChallengeEntries(rows);
+  const current = rankedRows.find(({ player }) => player.id === socialSnapshot.currentPlayer.id)!;
 
   return {
     socialSource: "demo",
     levelsCleared: summary.levelsCleared,
     playerRank: current.rank,
-    totalPlayers: rows.length,
+    totalPlayers: rankedRows.length,
     flashPointsEarned,
     seasonFlashPoints: seasonFlashPoints + flashPointsEarned,
-    peers: rows,
+    peers: rankedRows,
   };
 }
 

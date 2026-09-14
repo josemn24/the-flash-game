@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-09-13.
+Última actualización: 2026-09-14.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -49,6 +49,20 @@ Cada contrato debe distinguir tres relojes:
 No se recomienda añadir un tiempo total común a todos los modos sin que el contenido del modo lo
 requiera. Si existe, debe documentarse aparte del tiempo de respuesta.
 
+### Ranking por desafío
+
+Los cinco modos actuales usan provisionalmente el mismo comparador para el ranking de cada desafío:
+
+1. Más Flash Points.
+2. Menor duración efectiva del intento: la suma de `AttemptAnswer.timeUsedMs`, incluyendo respuestas
+   temporizadas o no contestadas, pero excluyendo cuenta atrás y esperas externas.
+3. `startedAt` más antiguo, conservado al reanudar el mismo intento.
+
+Si los tres valores coinciden, se comparte posición con ranking de competición (`1, 1, 3`). La hora
+absoluta de finalización (`completedAt`) y métricas como `lastCorrectAt` siguen disponibles para
+historial y análisis, pero no son criterios competitivos. El ranking de temporada solo usa Flash
+Points acumulados.
+
 ## 1. Flash clásico (`flash`)
 
 ### Contrato recomendado
@@ -72,6 +86,7 @@ requiera. Si existe, debe documentarse aparte del tiempo de respuesta.
   No debe contener la solución privada.
 - **Resultado y revisión:** mostrar Flash Points, desglose, tiempos y las respuestas del jugador
   junto con la solución cuando el intento sea terminal. No mostrar soluciones durante la partida.
+- **Ranking:** aplica el comparador común de ranking por desafío.
 - **Replay:** permitido en preview; oculto en competición con `roomContext`.
 
 ### Observación de implementación
@@ -101,9 +116,9 @@ preview. La persistencia autoritativa del checkpoint debe quedar para la fase de
 - **Checkpoint recomendado:** fase, vuelta, índice actual, estado y respuesta de cada letra,
   `playedCount`, tiempo transcurrido, deadline total y `lastCorrectAt`. El reloj autoritativo no
   debe depender de `performance.now()` del cliente.
-- **Resultado y ranking:** conceder puntos por cada acierto. Ordenar por Flash Points; en empate,
-  menor tiempo hasta el último acierto; después, menor momento de finalización. Si coinciden los
-  tres criterios, compartir posición.
+- **Resultado y ranking:** conceder puntos por cada acierto y aplicar el comparador común de ranking
+  por desafío. `lastCorrectAt` y `completedAt` se conservan para revisión e historial, no para
+  desempatar.
 - **Revisión:** mostrar cada letra, la respuesta enviada y la solución después de una finalización
   o abandono iniciado. No revelar soluciones durante la partida.
 - **Replay:** permitido en el preview independiente; oculto para el intento competitivo.
@@ -138,6 +153,7 @@ seguir aplicando la política de `roomContext`.
 - **Resultado y revisión:** mostrar Flash Points, preguntas alcanzadas, vidas restantes y desglose.
   Tras un intento iniciado se permiten las respuestas propias y correctas; durante la partida solo
   se muestra el feedback necesario para continuar.
+- **Ranking:** aplica el comparador común de ranking por desafío.
 - **Replay:** permitido en preview; oculto en competición después de `completed` o `abandoned`.
 
 ### Observación de implementación
@@ -170,6 +186,7 @@ automática de abandono y la validación autoritativa siguen pendientes.
 - **Resultado y revisión:** mostrar puntuación, precisión, tiempos y resumen de respuestas. Después de
   una finalización o abandono iniciado, permitir consultar las respuestas propias y las soluciones.
   Las soluciones no se muestran mientras la historia sigue activa.
+- **Ranking:** aplica el comparador común de ranking por desafío.
 - **Replay:** permitido en preview; oculto en competición con `roomContext`.
 
 ### Observación de implementación
@@ -206,6 +223,8 @@ sesiones o dispositivos.
 - **Resultado y feedback:** mostrar Flash Points y niveles alcanzados. “Cima conquistada” se reserva
   para `summit`; “Ascenso terminado” describe `failed` sin convertirlo en un fallo global. Tras un
   intento terminal iniciado, mostrar respuestas propias y soluciones.
+- **Ranking:** aplica el comparador común de ranking por desafío; `levelsCleared` y `outcome` son
+  métricas del modo, no criterios adicionales de desempate.
 - **Replay:** el preview independiente conserva replay; con `roomContext` el resultado y la revisión
   solo ofrecen navegación y consulta.
 

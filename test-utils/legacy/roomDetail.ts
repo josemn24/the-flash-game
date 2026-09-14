@@ -8,6 +8,7 @@ import {
   getChallengeQuestionCount,
 } from "@/test-utils/legacy/roomCard";
 import { getDailyLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
+import { rankChallengeEntries } from "@/lib/challengeRanking";
 import type { ChallengeCompletion, Room, RoomDetailModel } from "@/types/game";
 import type { CompetitiveAttemptStatus } from "@/types/game";
 
@@ -15,13 +16,28 @@ export function getRoomById(roomId: string) {
   return demoRooms.find((room) => room.id === roomId);
 }
 
-function sortLeaderboardEntries<T extends { memberId: string; flashPoints: number }>(entries: T[]) {
-  return [...entries]
-    .sort(
-      (left, right) =>
-        right.flashPoints - left.flashPoints || left.memberId.localeCompare(right.memberId),
-    )
-    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+function rankSeasonEntries<T extends { memberId: string; flashPoints: number }>(entries: T[]) {
+  const ordered = [...entries].sort(
+    (left, right) =>
+      right.flashPoints - left.flashPoints || left.memberId.localeCompare(right.memberId),
+  );
+  return ordered.map((entry) => ({
+    ...entry,
+    rank: ordered.findIndex((candidate) => candidate.flashPoints === entry.flashPoints) + 1,
+  }));
+}
+
+function rankChallengeEntriesWithStableOrder<
+  T extends {
+    memberId: string;
+    flashPoints: number;
+    durationMs: number;
+    startedAt: string;
+  },
+>(entries: T[]) {
+  return rankChallengeEntries(entries).sort(
+    (left, right) => left.rank - right.rank || left.memberId.localeCompare(right.memberId),
+  );
 }
 
 export function applyRoomChallengeResult(
@@ -38,7 +54,7 @@ export function applyRoomChallengeResult(
 
   const totalFlashPoints =
     model.currentUser.totalFlashPoints - model.currentUser.dailyFlashPoints + result.flashPoints;
-  const roomLeaderboard = sortLeaderboardEntries(
+  const roomLeaderboard = rankSeasonEntries(
     model.roomLeaderboard.map((entry) =>
       entry.memberId === model.currentUser.id ? { ...entry, flashPoints: totalFlashPoints } : entry,
     ),
@@ -46,10 +62,16 @@ export function applyRoomChallengeResult(
   const currentDailyEntry = model.dailyLeaderboard.find(
     (entry) => entry.memberId === model.currentUser.id,
   );
-  const dailyLeaderboard = sortLeaderboardEntries([
+  const dailyLeaderboard = rankChallengeEntriesWithStableOrder([
     ...model.dailyLeaderboard.filter((entry) => entry.memberId !== model.currentUser.id),
     currentDailyEntry
-      ? { ...currentDailyEntry, flashPoints: result.flashPoints, completed: result.completed }
+      ? {
+          ...currentDailyEntry,
+          flashPoints: result.flashPoints,
+          completed: result.completed,
+          durationMs: result.durationMs,
+          startedAt: result.startedAt,
+        }
       : {
           memberId: model.currentUser.id,
           name: model.currentUser.name,
@@ -57,6 +79,8 @@ export function applyRoomChallengeResult(
           avatarSrc: model.currentUser.avatarSrc,
           flashPoints: result.flashPoints,
           completed: result.completed,
+          durationMs: result.durationMs,
+          startedAt: result.startedAt,
           rank: 0,
         },
   ]);
@@ -126,9 +150,11 @@ export function buildRoomDetailModel(room: Room, now = new Date()): RoomDetailMo
       avatarSrc: member.avatarSrc,
       totalFlashPoints: member.totalFlashPoints,
       roomRank: roomEntry.rank,
-    dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
-    dailyCompleted: dailyEntry?.completed ?? false,
-    dailyAttemptStatus: dailyEntry?.completed ? "completed" : ("available" as CompetitiveAttemptStatus),
+      dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
+      dailyCompleted: dailyEntry?.completed ?? false,
+      dailyAttemptStatus: dailyEntry?.completed
+        ? "completed"
+        : ("available" as CompetitiveAttemptStatus),
     },
     dailyChallenge: dailyChallengeModel,
     roomLeaderboard,

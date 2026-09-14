@@ -90,9 +90,11 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
     ? applyRoomMemberChallengeResult(model, {
         roomId: model.roomId,
         challengeId: completion.attempt.challengeId,
+        startedAt: completion.attempt.startedAt,
         playedAt: completion.attempt.playedAt,
         flashPoints: completion.flashPoints,
         completed: completion.completed,
+        durationMs: completion.attempt.durationMs,
         answers: completion.attempt.answers,
       })
     : model;

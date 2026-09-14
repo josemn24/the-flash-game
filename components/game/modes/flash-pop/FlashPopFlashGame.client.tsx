@@ -25,6 +25,7 @@ import {
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { CHALLENGE_MAX_SCORE, withChallengeScoring } from "@/lib/challengeScoring";
 import {
   calculateResultAccuracy,
@@ -273,8 +274,13 @@ export function FlashPopFlashGame({
     session.phase === "results"
       ? {
           challengeId: challenge.id,
+          startedAt:
+            session.startedAt ??
+            roomContext?.result?.attempt?.startedAt ??
+            new Date().toISOString(),
           flashPoints: session.score,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.results),
           answers: session.results,
         }
       : null,

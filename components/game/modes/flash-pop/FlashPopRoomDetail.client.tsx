@@ -97,9 +97,8 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 
   const attemptStatus = model.currentUser.dailyAttemptStatus;
   const resultHref = `/salas/${model.roomId}/ranking/${model.currentUser.id}`;
-  const actionHref = attemptStatus === "completed" || attemptStatus === "notCompleted"
-    ? resultHref
-    : challenge.href;
+  const actionHref =
+    attemptStatus === "completed" || attemptStatus === "notCompleted" ? resultHref : challenge.href;
   const actionLabel =
     attemptStatus === "inProgress"
       ? "Continuar"
@@ -159,9 +158,11 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
     ? applyRoomChallengeResult(model, {
         roomId: model.roomId,
         challengeId: model.dailyChallenge?.id ?? "",
+        startedAt: completion.attempt?.startedAt ?? new Date().toISOString(),
         flashPoints: completion.flashPoints,
         completed: completion.completed,
         playedAt: completion.attempt?.playedAt ?? new Date().toISOString(),
+        durationMs: completion.attempt?.durationMs ?? 0,
         answers: completion.attempt?.answers ?? [],
       })
     : model;

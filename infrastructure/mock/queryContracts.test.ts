@@ -201,7 +201,7 @@ describe("MockRoomQueries contract", () => {
     expect(withoutAttempts?.entries.every(({ playerCount }) => playerCount === 0)).toBe(true);
   });
 
-  it("excludes invalidated attempts and cancelled publications and preserves tied ranks", async () => {
+  it("excludes invalidated attempts and applies the full challenge ranking comparator", async () => {
     const scheduleId = scheduledChallengeRouteAliases["tabarnia-challenge-05"];
     const challengeAttempts = mockDomainStore.attempts.filter(
       (attempt) => attempt.scheduledChallengeId === scheduleId,
@@ -221,7 +221,7 @@ describe("MockRoomQueries contract", () => {
     );
     const tiedRows = tied?.ranking.filter(({ flashPoints }) => flashPoints === first.score);
     expect(tiedRows).toHaveLength(2);
-    expect(new Set(tiedRows?.map(({ rank }) => rank)).size).toBe(1);
+    expect(new Set(tiedRows?.map(({ rank }) => rank)).size).toBe(2);
 
     const invalidatedAttempts = mockDomainStore.attempts.map((attempt) =>
       attempt.id === first.id

@@ -7,6 +7,7 @@ import {
   getPlayerRouteKey,
   resolveRoomRouteKey,
   resolveScheduledChallengeRouteKey,
+  selectBestCompletedAttempt,
 } from "@/data/mock/selectors";
 import type { DomainStore, PlayerId } from "@/types/domain";
 import type {
@@ -97,6 +98,7 @@ export class MockChallengeQueries implements ChallengeQueries {
         timeUsed: elapsedMs / 1_000,
         correctAnswers: answers.filter(({ status }) => status === "correct").length,
         lastCorrectAt,
+        startedAt: attempt.startedAt,
         completedAt: attempt.completedAt,
       };
     });
@@ -138,8 +140,10 @@ export class MockChallengeQueries implements ChallengeQueries {
         schedule.closesAt,
         new Date(context.now),
       );
-      const completedAttempt = competitiveAttempts.find(
-        ({ status }) => status === "completed",
+      const completedAttempt = selectBestCompletedAttempt(
+        context.viewerId,
+        schedule.id,
+        this.store,
       );
       const attempt = completedAttempt
         ? projectLegacyAttempt(completedAttempt.id, this.store)

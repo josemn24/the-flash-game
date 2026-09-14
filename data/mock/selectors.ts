@@ -7,6 +7,12 @@ import {
   type ScheduledChallengeRouteKey,
 } from "@/data/mock/constants";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
+import {
+  compareChallengeRankingMetrics,
+  rankChallengeEntries,
+  sumEffectiveDurationMs,
+  type ChallengeRankingMetrics,
+} from "@/lib/challengeRanking";
 import type {
   Attempt,
   PlayerId,
@@ -113,10 +119,26 @@ function bestCompletedAttempts(
     }
     const key = `${attempt.playerId}:${attempt.scheduledChallengeId}`;
     const current = bestByPlayerAndChallenge.get(key);
-    if (!current || (current.score ?? -1) < attempt.score)
+    if (
+      !current ||
+      compareChallengeRankingMetrics(
+        attemptRankingMetrics(attempt, store),
+        attemptRankingMetrics(current, store),
+      ) < 0
+    )
       bestByPlayerAndChallenge.set(key, attempt);
   }
   return [...bestByPlayerAndChallenge.values()];
+}
+
+function attemptRankingMetrics(attempt: Attempt, store: MockDomainStore): ChallengeRankingMetrics {
+  return {
+    flashPoints: attempt.score ?? 0,
+    durationMs: sumEffectiveDurationMs(
+      store.attemptAnswers.filter(({ attemptId }) => attemptId === attempt.id),
+    ),
+    startedAt: attempt.startedAt,
+  };
 }
 
 export type MockRankingEntry = {
@@ -125,8 +147,24 @@ export type MockRankingEntry = {
   readonly flashPoints: number;
 };
 
-function rankEntries(entries: Omit<MockRankingEntry, "rank">[]): MockRankingEntry[] {
-  const ordered = entries.sort(
+export type MockChallengeRankingEntry = MockRankingEntry & {
+  readonly durationMs: number;
+  readonly startedAt: string;
+};
+
+function rankChallengeEntriesWithStableOrder(
+  entries: Omit<MockChallengeRankingEntry, "rank">[],
+): MockChallengeRankingEntry[] {
+  const ordered = rankChallengeEntries(entries).sort(
+    (left, right) => left.rank - right.rank || left.playerId.localeCompare(right.playerId),
+  );
+  return ordered;
+}
+
+function rankSeasonEntries(
+  entries: Array<Pick<MockRankingEntry, "playerId" | "flashPoints">>,
+): MockRankingEntry[] {
+  const ordered = [...entries].sort(
     (left, right) =>
       right.flashPoints - left.flashPoints || left.playerId.localeCompare(right.playerId),
   );
@@ -143,12 +181,25 @@ export function selectChallengeRanking(
   const schedule = store.scheduledChallenges.find(({ id }) => id === scheduledChallengeId);
   const season = schedule ? store.seasons.find(({ id }) => id === schedule.seasonId) : undefined;
   if (!season || schedule?.status === "cancelled") return [];
-  return rankEntries(
+  return rankChallengeEntriesWithStableOrder(
     bestCompletedAttempts(new Set([scheduledChallengeId]), store)
       .filter((attempt) =>
         isCompetitiveParticipant(attempt.playerId, season.roomId, store, attempt.startedAt),
       )
-      .map((attempt) => ({ playerId: attempt.playerId, flashPoints: attempt.score ?? 0 })),
+      .map((attempt) => ({
+        playerId: attempt.playerId,
+        ...attemptRankingMetrics(attempt, store),
+      })),
+  );
+}
+
+export function selectBestCompletedAttempt(
+  playerId: PlayerId,
+  scheduledChallengeId: ScheduledChallengeId,
+  store: MockDomainStore = mockDomainStore,
+) {
+  return bestCompletedAttempts(new Set([scheduledChallengeId]), store).find(
+    (attempt) => attempt.playerId === playerId,
   );
 }
 
@@ -166,14 +217,16 @@ export function selectSeasonRanking(seasonId: SeasonId, store: MockDomainStore =
       continue;
     totals.set(attempt.playerId, (totals.get(attempt.playerId) ?? 0) + (attempt.score ?? 0));
   }
-  return rankEntries([...totals].map(([playerId, flashPoints]) => ({ playerId, flashPoints })));
+  return rankSeasonEntries(
+    [...totals].map(([playerId, flashPoints]) => ({ playerId, flashPoints })),
+  );
 }
 
 export type MockHistoryEntry = {
   readonly scheduledChallenge: ScheduledChallenge;
   readonly playedAt: string;
   readonly participantCount: number;
-  readonly ranking: readonly MockRankingEntry[];
+  readonly ranking: readonly MockChallengeRankingEntry[];
 };
 
 export function selectRoomHistory(

@@ -9,7 +9,9 @@ const completion = (flashPoints: number): ChallengeCompletion => ({
   challengeId: "tabarnia-challenge-06",
   flashPoints,
   completed: true,
+  startedAt: "2026-09-13T09:59:00.000Z",
   playedAt: "2026-09-13T10:00:00.000Z",
+  durationMs: 60_000,
   answers: [],
 });
 

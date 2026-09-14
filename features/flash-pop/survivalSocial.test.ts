@@ -13,6 +13,7 @@ describe("Flash Pop Survival social adapter", () => {
         livesRemaining: 3,
         totalTime: 0,
         survived: true,
+        startedAt: "2026-09-01T11:00:00.000Z",
       },
       makeSocialSnapshot(0),
     );
@@ -31,6 +32,7 @@ describe("Flash Pop Survival social adapter", () => {
         livesRemaining: 1,
         totalTime: 48,
         survived: false,
+        startedAt: "2026-09-01T11:00:00.000Z",
       },
       makeSocialSnapshot(0),
       { seasonFlashPoints: 640 },
@@ -45,17 +47,18 @@ describe("Flash Pop Survival social adapter", () => {
     const result = getFlashPopSurvivalResult(
       {
         challengeId: "future-survival",
-        score: 92,
+        score: 80,
         questionsReached: 10,
         totalQuestions: 10,
         livesRemaining: 2,
         totalTime: 100,
         survived: true,
+        startedAt: "2026-09-01T11:00:00.000Z",
       },
       makeSocialSnapshot(),
     );
 
-    expect(result.playerRank).toBe(1);
-    expect(result.peers[0]?.player.id).toBe("player");
+    expect(result.playerRank).toBe(2);
+    expect(result.peers[0]?.player.id).toBe("ches");
   });
 });

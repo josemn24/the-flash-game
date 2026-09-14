@@ -245,12 +245,16 @@
 - Los miembros activos sin puntuación pueden mostrarse con cero Flash Points en la temporada.
 - Los antiguos miembros permanecen si consiguieron Flash Points, identificados como tales o
   anonimizados cuando corresponda.
-- Cada modo define el desempate de su desafío.
-- En Alfabeto cada respuesta correcta concede puntos. A igualdad de Flash Points, desempata el
-  menor tiempo hasta el último acierto; si persiste, desempata el menor momento de finalización. Si
-  los tres valores coinciden, los jugadores comparten posición.
-- Si dos resultados siguen siendo iguales tras aplicar los criterios competitivos, comparten
-  posición.
+- **Decisión vigente provisional (2026-09-14):** los cinco modos actuales comparten el comparador del
+  ranking por desafío: primero más Flash Points, después menor duración efectiva del intento y,
+  finalmente, `startedAt` más antiguo. La duración efectiva es la suma autoritativa de
+  `AttemptAnswer.timeUsedMs`; no incluye cuenta atrás, pausas ni esperas externas.
+- Si los tres criterios coinciden, se comparte posición usando ranking de competición (`1, 1, 3`).
+  Un `playerId` puede ordenar visualmente una lista estable, pero nunca decide la competición.
+- El ranking de temporada solo ordena por Flash Points acumulados; la duración y `startedAt` no se
+  aplican allí.
+- Un modo futuro podrá sustituir esta regla mediante una decisión específica del modo, sin modificar
+  este comparador común ni los contratos de los demás modos.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional
   es únicamente visual.
 - Los miembros y espectadores pueden consultar los rankings de su sala.

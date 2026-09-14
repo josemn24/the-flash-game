@@ -1,5 +1,6 @@
 import type { FlashPopRankRow } from "@/features/flash-pop/demoSocial";
 import { normalizeFlashPoints } from "@/features/flash-pop/flashPoints";
+import { rankChallengeEntries } from "@/lib/challengeRanking";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 export type FlashPopSurvivalSummary = {
@@ -10,6 +11,7 @@ export type FlashPopSurvivalSummary = {
   livesRemaining: number;
   totalTime: number;
   survived: boolean;
+  startedAt: string;
 };
 
 export type FlashPopSurvivalResult = {
@@ -34,25 +36,29 @@ export function getFlashPopSurvivalResult(
       player: socialSnapshot.currentPlayer,
       flashPoints: flashPointsEarned,
       timeUsed: summary.totalTime,
+      startedAt: summary.startedAt,
+      durationMs: summary.totalTime * 1_000,
     },
-    ...socialSnapshot.peers.map(({ player, flashPoints, timeUsed }) => ({
+    ...socialSnapshot.peers.map(({ player, flashPoints, timeUsed, startedAt }) => ({
       player,
       flashPoints: normalizeFlashPoints(flashPoints),
       timeUsed,
+      startedAt,
+      durationMs: timeUsed * 1_000,
     })),
-  ]
-    .sort((left, right) => right.flashPoints - left.flashPoints || left.timeUsed - right.timeUsed)
-    .map((row, index) => ({ ...row, rank: index + 1 }));
+  ];
+  const rankedRows = rankChallengeEntries(rows);
   const playerRank =
-    rows.find((row) => row.player.id === socialSnapshot.currentPlayer.id)?.rank ?? rows.length;
+    rankedRows.find((row) => row.player.id === socialSnapshot.currentPlayer.id)?.rank ??
+    rankedRows.length;
   return {
     socialSource: "demo",
     questionsReached: summary.questionsReached,
     livesRemaining: summary.livesRemaining,
     playerRank,
-    totalPlayers: rows.length,
+    totalPlayers: rankedRows.length,
     flashPointsEarned,
     seasonFlashPoints: (options.seasonFlashPoints ?? 640) + flashPointsEarned,
-    peers: rows,
+    peers: rankedRows,
   };
 }

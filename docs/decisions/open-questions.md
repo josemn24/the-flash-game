@@ -31,14 +31,11 @@ Cada modo debe declarar explícitamente:
    reducir la puntuación disponible de una pregunta o prueba, pero el resultado final de esa unidad
    y el total del desafío deben quedar limitados a cero.
 7. Qué intento se acredita si admite varios; el valor predeterminado es el mejor.
-8. Comparador y desempate del ranking del desafío. En Alfabeto ya está confirmado: Flash Points,
-   menor tiempo hasta el último acierto y, si persiste el empate, menor momento de finalización. Los
-   demás modos deben consolidarse.
-9. Qué checkpoints necesita para reanudarse sin permitir repetir contenido.
-10. Qué estado parcial debe persistirse en el servidor.
-11. Qué feedback puede mostrarse después de cada respuesta.
-12. Cuándo puede mostrarse la solución completa.
-13. Qué eventos intermedios deben conservarse para evaluación o auditoría.
+8. Qué checkpoints necesita para reanudarse sin permitir repetir contenido.
+9. Qué estado parcial debe persistirse en el servidor.
+10. Qué feedback puede mostrarse después de cada respuesta.
+11. Cuándo puede mostrarse la solución completa.
+12. Qué eventos intermedios deben conservarse para evaluación o auditoría.
 
 ## Operación y políticas pendientes
 

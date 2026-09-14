@@ -49,7 +49,7 @@ export function useAlphabetSession(
   const start = useCallback(() => {
     startedAt.current = performance.now();
     actionLocked.current = false;
-    dispatch({ type: "start" });
+    dispatch({ type: "start", startedAt: new Date().toISOString() });
   }, []);
 
   const getElapsedTime = useCallback(

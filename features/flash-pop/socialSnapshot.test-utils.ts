@@ -25,6 +25,7 @@ export function makeSocialSnapshot(peerCount = 3): FlashPopSocialSnapshot {
       timeUsed: 90 + index * 10,
       correctAnswers: 8 - index,
       lastCorrectAt: 80 + index * 10,
+      startedAt: `2026-09-0${index + 1}T11:00:00.000Z`,
       completedAt: `2026-09-0${index + 1}T12:00:00.000Z`,
     })),
   };

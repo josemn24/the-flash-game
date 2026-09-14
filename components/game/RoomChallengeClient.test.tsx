@@ -27,9 +27,11 @@ describe("RoomChallengeClient", () => {
             completed: true,
             attempt: {
               challengeId: challenge.id,
+              startedAt: "2026-09-13T09:59:00.000Z",
               playedAt: "2026-09-13T10:00:00.000Z",
               flashPoints: 80,
               completed: true,
+              durationMs: 60_000,
               answers: [],
             },
           },

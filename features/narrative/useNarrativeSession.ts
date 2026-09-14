@@ -69,7 +69,7 @@ export function useNarrativeSession(
     answerLock.current = false;
     draftAnswerRef.current = null;
     incorrectAttemptsRef.current = 0;
-    dispatch({ type: "start" });
+    dispatch({ type: "start", startedAt: new Date().toISOString() });
   }, [clearAdvanceTimeout]);
 
   const continueScene = useCallback(() => {

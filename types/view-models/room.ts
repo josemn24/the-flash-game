@@ -1,7 +1,4 @@
-import type {
-  Challenge,
-  ChallengeAvailabilityStatus,
-} from "@/types/gameplay/challenge";
+import type { Challenge, ChallengeAvailabilityStatus } from "@/types/gameplay/challenge";
 import type { RoomChallengeResult } from "@/types/gameplay/completion";
 import type { LegacySeasonStatus } from "@/types/legacy/room";
 
@@ -37,6 +34,8 @@ export type RoomLeaderboardEntry = {
 
 export type RoomDailyLeaderboardEntry = RoomLeaderboardEntry & {
   completed: boolean;
+  durationMs: number;
+  startedAt: string;
 };
 
 export type RoomCardModel = {
@@ -138,4 +137,6 @@ export type RoomHistoryEntry = {
 export type RoomHistoryResult = {
   memberId: string;
   flashPoints: number;
+  durationMs: number;
+  startedAt: string;
 };

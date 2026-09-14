@@ -61,6 +61,7 @@ export type FlashPopSocialPeerModel = {
   readonly timeUsed: number;
   readonly correctAnswers: number;
   readonly lastCorrectAt: number | null;
+  readonly startedAt: string;
   readonly completedAt: string;
 };
 

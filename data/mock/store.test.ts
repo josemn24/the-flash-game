@@ -7,7 +7,7 @@ import {
   roomRouteAliases,
   scheduledChallengeRouteAliases,
 } from "@/data/mock/constants";
-import { deterministicMockUuid, mockId } from "@/data/mock/identity";
+import { deterministicMockUuid, mockId, utc } from "@/data/mock/identity";
 import { publishedChallengeFixtures } from "@/data/mock/catalog/challenges";
 import { publishedQuestionFixtures } from "@/data/mock/catalog/questions";
 import type { AnyMockPublishedQuestion } from "@/data/mock/catalog/questions/definition";
@@ -163,6 +163,10 @@ describe("normalized mock domain store", () => {
     expect(history.every(({ scheduledChallenge }) => scheduledChallenge.status === "closed")).toBe(
       true,
     );
+    expect(history[0]?.ranking[0]).toMatchObject({
+      durationMs: expect.any(Number),
+      startedAt: expect.any(String),
+    });
   });
 
   it("selects challenge 06 explicitly from its open window", () => {
@@ -188,6 +192,12 @@ describe("normalized mock domain store", () => {
         attempt.playerId === playerRouteAliases.player,
     );
     if (!playerAttempt) throw new Error("Missing base attempt.");
+    const chesAttempt = mockDomainStore.attempts.find(
+      (attempt) =>
+        attempt.scheduledChallengeId === challengeId &&
+        attempt.playerId === playerRouteAliases.ches,
+    );
+    if (!chesAttempt) throw new Error("Missing tied attempt.");
     const testAttempt = {
       ...playerAttempt,
       id: mockId.attempt("test-superadmin"),
@@ -201,15 +211,20 @@ describe("normalized mock domain store", () => {
       status: "invalidated" as const,
       score: 100,
     };
-    const tieAttempt = { ...playerAttempt, score: 54 };
     const store = {
       ...mockDomainStore,
       attempts: [
-        ...mockDomainStore.attempts.filter((attempt) => attempt.id !== playerAttempt.id),
-        tieAttempt,
+        ...mockDomainStore.attempts.filter(
+          (attempt) => attempt.id !== playerAttempt.id && attempt.id !== chesAttempt.id,
+        ),
+        { ...playerAttempt, score: 54 },
+        { ...chesAttempt, score: 54 },
         testAttempt,
         invalidatedAttempt,
       ],
+      attemptAnswers: mockDomainStore.attemptAnswers.filter(
+        (answer) => answer.attemptId !== playerAttempt.id && answer.attemptId !== chesAttempt.id,
+      ),
     } satisfies MockDomainStore;
     const ranking = selectChallengeRanking(challengeId, store);
     expect(ranking.slice(0, 2).map(({ rank }) => rank)).toEqual([1, 1]);
@@ -219,5 +234,35 @@ describe("normalized mock domain store", () => {
     expect(
       ranking.find(({ playerId }) => playerId === playerRouteAliases.player)?.flashPoints,
     ).toBe(54);
+  });
+
+  it("selects the best completed retry with the full challenge comparator", () => {
+    const challengeId = scheduledChallengeRouteAliases["tabarnia-flash-01"];
+    const original = mockDomainStore.attempts.find(
+      (attempt) =>
+        attempt.scheduledChallengeId === challengeId &&
+        attempt.playerId === playerRouteAliases.player,
+    );
+    if (!original) throw new Error("Missing base attempt.");
+    const retry = {
+      ...original,
+      id: mockId.attempt("player-retry"),
+      attemptNumber: original.attemptNumber + 1,
+      startedAt: utc("2026-09-01T20:31:00.000Z"),
+      completedAt: utc("2026-09-01T20:32:00.000Z"),
+    };
+    const store = {
+      ...mockDomainStore,
+      attempts: [...mockDomainStore.attempts, retry],
+    } satisfies MockDomainStore;
+
+    const selected = selectChallengeRanking(challengeId, store).find(
+      ({ playerId }) => playerId === playerRouteAliases.player,
+    );
+    expect(selected).toMatchObject({
+      flashPoints: original.score,
+      durationMs: 0,
+      startedAt: retry.startedAt,
+    });
   });
 });

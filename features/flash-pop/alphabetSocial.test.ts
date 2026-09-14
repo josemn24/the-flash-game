@@ -13,6 +13,7 @@ describe("Flash Pop Alphabet social adapter", () => {
         elapsedTime: 0,
         lastCorrectAt: 0,
         completedAt: "2026-09-01T12:00:00.000Z",
+        startedAt: "2026-09-01T11:00:00.000Z",
       },
       makeSocialSnapshot(0),
     );
@@ -31,6 +32,7 @@ describe("Flash Pop Alphabet social adapter", () => {
         elapsedTime: 80,
         lastCorrectAt: 70,
         completedAt: "2026-09-01T12:00:00.000Z",
+        startedAt: "2026-09-01T11:00:00.000Z",
       },
       makeSocialSnapshot(0),
       { seasonFlashPoints: 640 },
@@ -41,7 +43,7 @@ describe("Flash Pop Alphabet social adapter", () => {
     expect(result.peers.some((row) => row.player.id === "player")).toBe(true);
   });
 
-  it("ranks by Flash Points and uses time as the tie-breaker", () => {
+  it("ignores Alphabet completion timestamps after applying the common tie-breaker", () => {
     const snapshot = makeSocialSnapshot(1);
     const peer = snapshot.peers[0];
     if (!peer) throw new Error("Expected a peer");
@@ -54,14 +56,23 @@ describe("Flash Pop Alphabet social adapter", () => {
         elapsedTime: 100,
         lastCorrectAt: 90,
         completedAt: "2026-09-02T12:00:00.000Z",
+        startedAt: "2026-09-02T11:00:00.000Z",
       },
       {
         ...snapshot,
-        peers: [{ ...peer, flashPoints: 89, timeUsed: 120, lastCorrectAt: 90 }],
+        peers: [
+          {
+            ...peer,
+            flashPoints: 89,
+            timeUsed: 120,
+            lastCorrectAt: 0,
+            completedAt: "2020-01-01T00:00:00.000Z",
+          },
+        ],
       },
     );
 
-    expect(result.playerRank).toBe(2);
-    expect(result.peers[0]?.player.id).toBe("ches");
+    expect(result.playerRank).toBe(1);
+    expect(result.peers[0]?.player.id).toBe("player");
   });
 });

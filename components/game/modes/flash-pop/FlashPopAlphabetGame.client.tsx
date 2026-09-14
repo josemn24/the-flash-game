@@ -340,8 +340,13 @@ export function FlashPopAlphabetGame({
     session.phase === "results"
       ? {
           challengeId: challenge.id,
+          startedAt:
+            session.startedAt ??
+            roomContext?.result?.attempt?.startedAt ??
+            new Date().toISOString(),
           flashPoints: session.score,
           completed: true,
+          durationMs: Math.round(session.elapsedTime * 1_000),
           answers: buildAlphabetAnswerReviews(challenge, session.letters),
         }
       : null,

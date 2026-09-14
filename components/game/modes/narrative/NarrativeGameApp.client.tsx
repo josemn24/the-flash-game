@@ -30,6 +30,7 @@ import {
   useRoomAttemptSnapshot,
 } from "@/features/rooms/useRoomAttemptSnapshot";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import {
   calculateResultAccuracy,
@@ -377,8 +378,13 @@ export function NarrativeGameApp({
     session.phase === "results"
       ? {
           challengeId: challenge.id,
+          startedAt:
+            session.startedAt ??
+            roomContext?.result?.attempt?.startedAt ??
+            new Date().toISOString(),
           flashPoints: session.score,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.results),
           answers: session.results,
         }
       : null,

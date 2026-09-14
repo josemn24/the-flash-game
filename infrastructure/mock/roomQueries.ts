@@ -166,6 +166,8 @@ export class MockRoomQueries implements RoomQueries {
         avatarSrc: player.avatarPath ?? undefined,
         flashPoints: entry.flashPoints,
         completed: true,
+        durationMs: entry.durationMs,
+        startedAt: entry.startedAt,
       };
     });
   }

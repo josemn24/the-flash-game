@@ -18,6 +18,7 @@ import {
   type FlashPopSurvivalSummary,
 } from "@/features/flash-pop/survivalSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import type {
   AnswerResult,
@@ -100,6 +101,7 @@ function toSummary(
     livesRemaining: session.livesRemaining,
     totalTime: session.results.reduce((total, result) => total + result.timeUsed, 0),
     survived: session.survived,
+    startedAt: session.startedAt ?? new Date().toISOString(),
   };
 }
 
@@ -115,7 +117,11 @@ export function FlashPopSurvivalGame({
   socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
-  const resumeState = useRoomAttemptResume<SurvivalSessionSnapshot>(roomContext, challenge.id, "survival");
+  const resumeState = useRoomAttemptResume<SurvivalSessionSnapshot>(
+    roomContext,
+    challenge.id,
+    "survival",
+  );
   const session = useSurvivalSession(scoredChallenge, { resumeState });
   useRoomAttemptSnapshot(roomContext, challenge.id, "survival", session.phase, session.snapshot);
   const latestResult = session.results.at(-1);
@@ -127,8 +133,13 @@ export function FlashPopSurvivalGame({
     session.phase === "results" && result
       ? {
           challengeId: challenge.id,
+          startedAt:
+            session.startedAt ??
+            roomContext?.result?.attempt?.startedAt ??
+            new Date().toISOString(),
           flashPoints: result.flashPointsEarned,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.results),
           answers: session.results,
         }
       : null,

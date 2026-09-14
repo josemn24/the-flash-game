@@ -22,6 +22,7 @@ import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
 import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import type {
   AnswerValue,
   ChallengeCompletionResult,
@@ -425,8 +426,12 @@ export function FlashPopPyramidGame({
     session.phase === "results" && session.summary
       ? {
           challengeId: challenge.id,
+          startedAt: session.record
+            ? new Date(session.record.startedAt).toISOString()
+            : new Date().toISOString(),
           flashPoints: session.summary.score,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.record?.results ?? []),
           answers: session.record?.results ?? [],
         }
       : null,
