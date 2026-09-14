@@ -13,7 +13,9 @@ Este repositorio usa el enfoque declarativo de Supabase.
   `supabase db schema declarative sync` los detecte: el workflow compara los archivos declarativos
   con el baseline de migraciones, no usa el estado vivo como fuente de verdad.
 
-El proyecto todavía no define tablas, tipos, funciones, vistas, políticas RLS ni datos seed.
+El proyecto incluye una [propuesta inicial de tablas, restricciones y RLS](schemas/README.md)
+en `schemas/`, pendiente de integración con la aplicación. Todavía no se han generado migraciones
+ni datos seed para esta propuesta.
 
 ## Estructura
 
@@ -64,7 +66,7 @@ El comando `db diff` no es el workflow declarativo de este repositorio: en la ve
 CLI su baseline es el historial de migraciones y no la ruta declarativa configurada.
 
 6. Validar la reconstrucción completa cuando sea necesario. Este comando borra y recrea la base de
-     datos local, por lo que no debe ejecutarse contra un entorno con datos que se quieran conservar:
+   datos local, por lo que no debe ejecutarse contra un entorno con datos que se quieran conservar:
 
    ```bash
    npx supabase db reset --local
