@@ -55,6 +55,8 @@ son fuentes de verdad independientes en la primera versión.
    autorización mock, DTOs y fronteras de dependencia.
 9. [`mode-contracts.md`](mode-contracts.md): contrato funcional recomendado de inicio, tiempo,
    finalización, reanudación, revisión y replay para cada modo de juego.
+10. [`../data-model.md`](../data-model.md): propuesta de persistencia relacional y sus garantías;
+    no sustituye al modelo conceptual de esta carpeta.
 
 Los casos de uso transversales del producto están en [`../use-cases.md`](../use-cases.md).
 

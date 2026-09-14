@@ -9,6 +9,8 @@ entender qué existe en el repositorio hoy.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`use-cases.md`](use-cases.md): casos de uso funcionales, prioridades, permisos y límites.
 - [`architecture.md`](architecture.md): fronteras, dependencias y evolución hacia producción.
+- [`data-model.md`](data-model.md): propuesta relacional, integridad, transacciones y mapeo desde
+  el dominio.
 - [`architecture/server-client-architecture.md`](architecture/server-client-architecture.md): límites
   entre servidor y cliente.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
