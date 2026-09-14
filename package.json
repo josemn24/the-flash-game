@@ -16,7 +16,8 @@
     "stylelint": "stylelint \"**/*.{css,module.css}\"",
     "style-architecture": "node scripts/check-style-architecture.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "docs:check": "node scripts/check-doc-links.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.41.0",

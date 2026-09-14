@@ -1,10 +1,12 @@
 # The Flash
 
-The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. La versión actual permite elegir entre dos desafíos de diez preguntas, consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva de 31 formatos.
+The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
+permite jugar desafíos mock dentro de una sala simulada, consultar resultados detallados, revisar
+respuestas y explorar una biblioteca interactiva de 31 formatos.
 
 ## Qué incluye
 
-- Una sala demo local con temporada activa, publicaciones de desafío y dos definiciones de diez preguntas.
+- Una sala demo local con temporada activa, siete definiciones de desafío y seis publicaciones mock.
 - Treinta y un formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, Queens, rompecabezas deslizante, Escape, reconstrucción del error, anagramas, Hashtag de palabras, Mini-Wordle, sopa de letras, imagen progresivamente revelada, laberinto contrarreloj, Zip y Tuberías.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
@@ -83,7 +85,7 @@ scripts/         Comprobaciones y generadores deterministas
 
 Las reglas aprobadas para la futura persistencia con Supabase, incluidos usuarios, salas,
 temporadas, publicaciones, intentos, rankings y límites de seguridad, se mantienen en
-[`docs/domain/README.md`](docs/domain/README.md).
+[`docs/current/domain/README.md`](docs/current/domain/README.md).
 
 ## Convenciones de estilos
 
@@ -100,9 +102,12 @@ temporada, miembros, rankings e historial derivados de datos canónicos. La capa
 fase 4 está cerrada, pero no incluye creación de salas, panel de administración, backend, base de
 datos, autenticación real ni persistencia de nuevos intentos.
 
-Los dos desafíos publicados conservan diez preguntas cada uno. La temporada apunta a publicaciones mock, cada publicación apunta a una definición reusable y cada definición resuelve su contenido desde `questionsById`. Los formatos que no aparecen en ellos, incluidos Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
+Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
+contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos
+Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto
+contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
 
-Mini-Wordle carga bajo demanda un vocabulario español de cuatro letras generado offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/mini-wordle-dictionary.md) para regeneración, métricas y licencia.
+Mini-Wordle carga bajo demanda un vocabulario español de cuatro letras generado offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/content/guidelines/mini-wordle-dictionary.md) para regeneración, métricas y licencia.
 
 La imagen progresiva espera a que el activo visual esté listo antes de iniciar el cronómetro. El desenfoque desaparece automáticamente, se puede responder en cualquier momento y un único fallo termina la ronda.
 
@@ -115,8 +120,8 @@ Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos
 Todos los formatos de la biblioteca usan Flash Pop directamente mediante el registry único
 `QuestionInput`. Las variantes que permanecen en los controles son semánticas (`primary`,
 `secondary`, `reward`, etc.) y no representan temas. La cobertura automatizada y el estado de la
-revisión manual se mantienen en [`docs/qa-fase-4.md`](docs/qa-fase-4.md).
+revisión manual se mantienen en [`docs/current/qa/qa-fase-4.md`](docs/current/qa/qa-fase-4.md).
 
 ## Rediseño Flash Pop
 
-La evolución visual y de experiencia hacia un juego más alegre, social, casual y cercano está especificada en [`docs/redesign/README.md`](docs/redesign/README.md). El contrato visual se ha extendido a los 31 formatos mediante la variante `flash-pop`; el estado de sus quality gates está documentado en [`docs/qa-fase-4.md`](docs/qa-fase-4.md).
+La evolución visual y de experiencia hacia un juego más alegre, social, casual y cercano se conserva como proceso histórico en [`docs/archive/redesign/README.md`](docs/archive/redesign/README.md). El estado actual de sus quality gates está documentado en [`docs/current/qa/qa-fase-4.md`](docs/current/qa/qa-fase-4.md).
