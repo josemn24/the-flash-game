@@ -1,5 +1,9 @@
 # Server and Client Component Architecture
 
+> La arquitectura transversal de aplicación, persistencia, autenticación y casos de uso está en
+> [`../architecture.md`](../architecture.md). Este documento se centra en las fronteras entre
+> Server Components y Client Components.
+
 > **Estado: vigente.** Esta guía describe las fronteras implementadas actualmente. La composición
 > anterior del prototipo se conserva en [`../../archive/the-flash-poc.md`](../../archive/the-flash-poc.md).
 

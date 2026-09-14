@@ -11,6 +11,7 @@ interpretarse como funcionalidades ya disponibles.
 | Qué está implementado ahora                   | [`current/status.md`](current/status.md)                                                                   |
 | Cómo está organizado el dominio               | [`current/domain/README.md`](current/domain/README.md)                                                     |
 | Qué casos de uso debe soportar                | [`current/use-cases.md`](current/use-cases.md)                                                             |
+| Qué arquitectura debe guiar la evolución      | [`current/architecture.md`](current/architecture.md)                                                       |
 | Cómo funcionan las fronteras servidor/cliente | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
 | Qué decisiones son normativas                 | [`decisions/README.md`](decisions/README.md)                                                               |
 | Cómo se crean formatos y desafíos             | [`content/README.md`](content/README.md)                                                                   |
