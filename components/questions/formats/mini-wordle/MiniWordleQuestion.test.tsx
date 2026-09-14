@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { MiniWordleQuestion } from "@/components/questions/formats/mini-wordle/MiniWordleQuestion";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
-import { questionsById } from "@/data/questions";
+import { questionsById } from "@/test-utils/mockGameplay";
 import type { AnswerResult } from "@/types/result";
 
 const callbacks = {

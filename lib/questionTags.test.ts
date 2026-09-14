@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { questionsById } from "@/data/questions";
+import { questionsById } from "@/test-utils/mockGameplay";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import {
   getQuestionDomainIds,

@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { demoRoom } from "@/data/demoRoom";
-import { buildRoomDetailModel } from "@/test-utils/legacy/roomDetail";
+import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
 import { FlashPopRoomDetail } from "@/components/game/modes/flash-pop/FlashPopRoomDetail.client";
 
 vi.mock("next/navigation", () => ({
@@ -10,9 +9,15 @@ vi.mock("next/navigation", () => ({
 
 const now = new Date("2026-09-06T12:00:00.000Z");
 
+async function getRoomDetailModel() {
+  const model = await mockRoomQueries.getDetail("tabarnia-room", mockQueryContext(now));
+  if (!model) throw new Error("Expected room detail model");
+  return model;
+}
+
 describe("FlashPopRoomDetail", () => {
-  it("renders the compact room summary, daily challenge and daily leaderboard", () => {
-    const model = buildRoomDetailModel(demoRoom, now);
+  it("renders the compact room summary, daily challenge and daily leaderboard", async () => {
+    const model = await getRoomDetailModel();
     const markup = renderToStaticMarkup(<FlashPopRoomDetail model={model} />);
 
     expect(markup).toContain("Tabarnia");
@@ -41,13 +46,10 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).not.toContain("Puntos acumulados");
   });
 
-  it("keeps the detail usable when no daily challenge exists", () => {
-    const room = {
-      ...demoRoom,
-      activeSeason: { ...demoRoom.activeSeason, status: "finished" as const },
-    };
+  it("keeps the detail usable when no daily challenge exists", async () => {
+    const model = await getRoomDetailModel();
     const markup = renderToStaticMarkup(
-      <FlashPopRoomDetail model={buildRoomDetailModel(room, now)} />,
+      <FlashPopRoomDetail model={{ ...model, dailyChallenge: null, dailyLeaderboard: [] }} />,
     );
 
     expect(markup).toContain("Sin reto hoy");
@@ -58,10 +60,9 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).not.toContain("Ranking de hoy");
   });
 
-  it("does not add the season calendar, chat or activity feed", () => {
-    const markup = renderToStaticMarkup(
-      <FlashPopRoomDetail model={buildRoomDetailModel(demoRoom, now)} />,
-    );
+  it("does not add the season calendar, chat or activity feed", async () => {
+    const model = await getRoomDetailModel();
+    const markup = renderToStaticMarkup(<FlashPopRoomDetail model={model} />);
 
     expect(markup).not.toContain("Calendario");
     expect(markup).not.toContain("Chat");
@@ -80,8 +81,8 @@ describe("FlashPopRoomDetail", () => {
     ["notCompleted", "No completado", "Ver resultado", "/salas/tabarnia-room/ranking/player"],
   ] as const)(
     "uses the %s label and action for the current attempt",
-    (status, statusLabel, label, href) => {
-      const model = buildRoomDetailModel(demoRoom, now);
+    async (status, statusLabel, label, href) => {
+      const model = await getRoomDetailModel();
       const markup = renderToStaticMarkup(
         <FlashPopRoomDetail
           model={{

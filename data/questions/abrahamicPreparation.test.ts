@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { questionsById } from "@/data/questions";
+import { mockQuestionsById } from "@/test-utils/mockGameplay";
 import {
   buildWordHashtagSolution,
   calculateMinimumWordHashtagSwaps,
@@ -9,8 +9,10 @@ import {
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import type { WordHashtagQuestion, WordSearchQuestion } from "@/types/game";
 
-const wordSearch = questionsById["abrahamic-word-search-biblical-characters"] as WordSearchQuestion;
-const wordHashtag = questionsById["abrahamic-word-hashtag-references"] as WordHashtagQuestion;
+const wordSearch = mockQuestionsById[
+  "abrahamic-word-search-biblical-characters"
+] as WordSearchQuestion;
+const wordHashtag = mockQuestionsById["abrahamic-word-hashtag-references"] as WordHashtagQuestion;
 
 describe("Abrahamic challenge preparation", () => {
   it("ships a unique 8 × 8 word search with six biblical characters", () => {

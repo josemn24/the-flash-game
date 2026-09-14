@@ -1,8 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopRoomSettings } from "@/components/game/modes/flash-pop/FlashPopRoomSettings";
-import { demoRoom } from "@/data/demoRoom";
-import { buildRoomSettingsModel } from "@/lib/roomSettings";
+import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
 import { dynamic, generateMetadata } from "./page";
 
 describe("room settings route", () => {
@@ -14,9 +13,9 @@ describe("room settings route", () => {
       title: "Ajustes de Tabarnia — Flash Pop",
     });
 
-    const markup = renderToStaticMarkup(
-      <FlashPopRoomSettings model={buildRoomSettingsModel(demoRoom)} />,
-    );
+    const model = await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext());
+    if (!model) throw new Error("Expected settings model");
+    const markup = renderToStaticMarkup(<FlashPopRoomSettings model={model} />);
 
     expect(markup).toContain("Acciones");
     expect(markup).toContain("Tabarnia");

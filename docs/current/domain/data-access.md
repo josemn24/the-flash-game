@@ -69,9 +69,10 @@ y no constituye una frontera de seguridad.
 snapshot recibido del servidor mediante funciones puras. El resultado local reemplaza al del
 jugador actual y no se duplica. El desafío 06 no inventa peers ni actividad.
 
-Los generadores basados en contratos legacy que solo necesitan las pruebas están aislados en
-`test-utils/legacy`. Los exports legacy de `data` continúan disponibles para compatibilidad y tests,
-pero no tienen consumidores de producción.
+Los helpers de test viven en `test-utils/mockGameplay.ts` y `test-utils/mockRoom.ts`. Las fachadas
+legacy de nivel superior en `data/` y los helpers de `test-utils/legacy` ya se han retirado; los tests
+usan modelos explícitos respaldados por el store canónico. La infraestructura mock conserva solo los
+adaptadores internos que todavía necesita para entregar los modelos de gameplay actuales.
 
 ## Fronteras verificadas
 

@@ -1,8 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopRoomRanking } from "@/components/game/modes/flash-pop/FlashPopRoomRanking";
-import { demoRoom } from "@/data/demoRoom";
-import { getRoomLeaderboard } from "@/lib/roomRankings";
+import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
 import { dynamic, generateMetadata } from "./page";
 
 describe("room ranking route", () => {
@@ -14,14 +13,9 @@ describe("room ranking route", () => {
       title: "Ranking de Tabarnia — Flash Pop",
     });
 
-    const markup = renderToStaticMarkup(
-      <FlashPopRoomRanking
-        roomId={demoRoom.id}
-        roomTitle={demoRoom.title}
-        currentUserId={demoRoom.currentUserId}
-        entries={getRoomLeaderboard(demoRoom)}
-      />,
-    );
+    const model = await mockRoomQueries.getRanking("tabarnia-room", mockQueryContext());
+    if (!model) throw new Error("Expected ranking model");
+    const markup = renderToStaticMarkup(<FlashPopRoomRanking {...model} />);
 
     expect(markup).toContain("Ranking de Tabarnia");
     expect(markup).toContain("Dark");

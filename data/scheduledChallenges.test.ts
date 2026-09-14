@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { demoSeasonScheduledChallenges } from "@/data/scheduledChallenges";
+import { mockScheduledChallenges as demoSeasonScheduledChallenges } from "@/test-utils/mockRoom";
 import type { PlayableScheduledChallenge } from "@/types/game";
 
 describe("demo season challenge availability", () => {

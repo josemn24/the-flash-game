@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getRoomHistory, getRoomHistoryEntry } from "./roomHistory";
+import {
+  getMockRoomHistory as getRoomHistory,
+  getMockRoomHistoryEntry as getRoomHistoryEntry,
+} from "@/test-utils/mockRoom";
 
 describe("room history mock", () => {
   it("provides previous games for Tabarnia", () => {

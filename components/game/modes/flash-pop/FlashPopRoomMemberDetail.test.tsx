@@ -1,14 +1,20 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { demoRoom } from "@/data/demoRoom";
-import { buildRoomMemberDetailModel } from "@/test-utils/legacy/roomMemberDetail";
+import { mockDomainStore } from "@/data/mock/store";
+import { createMockRoomQueries, mockQueryContext } from "@/test-utils/mockRoom";
 import { FlashPopRoomMemberDetail } from "./FlashPopRoomMemberDetail.client";
 
 const now = new Date("2026-09-01T12:00:00.000Z");
+const roomQueries = createMockRoomQueries({
+  ...mockDomainStore,
+  scheduledChallenges: mockDomainStore.scheduledChallenges.map((schedule) =>
+    schedule.number === 1 ? { ...schedule, status: "open", resultsLockedAt: null } : schedule,
+  ),
+});
 
 describe("FlashPopRoomMemberDetail", () => {
-  it("renders the attempt summary and expandable answer history", () => {
-    const model = buildRoomMemberDetailModel(demoRoom, "ches", now);
+  it("renders the attempt summary and expandable answer history", async () => {
+    const model = await roomQueries.getMemberDetail("tabarnia-room", "ches", mockQueryContext(now));
     if (!model) throw new Error("Expected member model");
 
     const markup = renderToStaticMarkup(<FlashPopRoomMemberDetail model={model} />);
@@ -31,8 +37,12 @@ describe("FlashPopRoomMemberDetail", () => {
     expect(markup).not.toContain("gemas");
   });
 
-  it("renders a clear empty state for pending players", () => {
-    const model = buildRoomMemberDetailModel(demoRoom, "laura", now);
+  it("renders a clear empty state for pending players", async () => {
+    const model = await roomQueries.getMemberDetail(
+      "tabarnia-room",
+      "laura",
+      mockQueryContext(now),
+    );
     if (!model) throw new Error("Expected member model");
 
     const markup = renderToStaticMarkup(<FlashPopRoomMemberDetail model={model} />);

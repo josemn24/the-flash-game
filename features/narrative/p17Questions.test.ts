@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import { replayEscapeMoves } from "@/lib/escape";
 import { evaluateAnswer } from "@/lib/scoring";
 import { isCompleteZipPath } from "@/lib/zip";

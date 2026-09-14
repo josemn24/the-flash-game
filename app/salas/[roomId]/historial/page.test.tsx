@@ -1,9 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopRoomHistory } from "@/components/game/modes/flash-pop/FlashPopRoomHistory";
-import { demoRoom } from "@/data/demoRoom";
-import { getRoomHistory } from "@/data/roomHistory";
-import { getHistoryLeaderboard } from "@/lib/roomRankings";
+import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
 import { dynamic, generateMetadata } from "./page";
 
 describe("room history route", () => {
@@ -15,18 +13,9 @@ describe("room history route", () => {
       title: "Historial de Tabarnia — Flash Pop",
     });
 
-    const markup = renderToStaticMarkup(
-      <FlashPopRoomHistory
-        roomId={demoRoom.id}
-        entries={getRoomHistory(demoRoom.id)}
-        rankings={Object.fromEntries(
-          getRoomHistory(demoRoom.id).map((entry) => [
-            entry.challengeId,
-            getHistoryLeaderboard(demoRoom, entry),
-          ]),
-        )}
-      />,
-    );
+    const model = await mockRoomQueries.listHistory("tabarnia-room", mockQueryContext());
+    if (!model) throw new Error("Expected history model");
+    const markup = renderToStaticMarkup(<FlashPopRoomHistory {...model} />);
 
     expect(markup).toContain("Historial");
     expect(markup).toContain("5 sept");

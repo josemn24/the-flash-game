@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 
 const source = readFileSync(new URL("./NarrativeGameApp.client.tsx", import.meta.url), "utf8");
 const styles = readFileSync(new URL("./NarrativeGame.module.css", import.meta.url), "utf8");

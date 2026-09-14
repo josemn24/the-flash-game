@@ -1,20 +1,20 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { challengeDefinitions } from "@/data/challengeDefinitions";
+import { mockChallengeDefinitions as challengeDefinitions } from "@/test-utils/mockGameplay";
 import {
   challenges,
   getChallengeById,
   getNarrativeQuestionIds,
   getPyramidQuestionIds,
-} from "@/data/challenges";
-import { demoRoom } from "@/data/demoRoom";
+} from "@/test-utils/mockGameplay";
+import { demoRoom } from "@/test-utils/mockRoom";
 import {
   getQuestionsByIds,
   questionGroups,
   questionsById,
   type QuestionId,
-} from "@/data/questions";
+} from "@/test-utils/mockGameplay";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";

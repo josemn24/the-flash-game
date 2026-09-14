@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getMockChallengeById as getChallengeById } from "@/test-utils/mockGameplay";
 import {
   getNarrativeReaction,
   getNarrativeSequence,

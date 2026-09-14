@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import {
   buildReviewAnswerEntries,
   ReviewAnswerList,

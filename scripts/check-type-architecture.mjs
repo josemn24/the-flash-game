@@ -17,8 +17,6 @@ const CANONICAL_MOCK_FILES = new Set([
   "store.ts",
 ]);
 const LEGACY_DATA_SOURCES = new Set([
-  "@/data/questions",
-  "@/data/challengeDefinitions",
   "@/data/mock/legacyAdapters",
   "@/data/mock/legacyChallengeAdapter",
   "@/data/mock/legacyChallengeDefinitionAdapter",
@@ -73,7 +71,9 @@ function importsIn(source) {
 
 const files = (
   await Promise.all(LAYERS.map((layer) => collectTypeScriptFiles(path.join(TYPES_ROOT, layer))))
-).flat();
+)
+  .flat()
+  .filter((file) => !/\.(?:test|spec)\.(?:ts|tsx)$/.test(path.basename(file)));
 const violations = [];
 
 for (const file of files) {

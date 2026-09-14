@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { demoRoom } from "@/data/demoRoom";
-import { getRoomHistory } from "@/data/roomHistory";
+import { demoRoom } from "@/test-utils/mockRoom";
+import { getMockRoomHistory as getRoomHistory } from "@/test-utils/mockRoom";
 import { getDailyLeaderboard, getHistoryLeaderboard, getRoomLeaderboard } from "@/lib/roomRankings";
 import type { Room } from "@/types/game";
 

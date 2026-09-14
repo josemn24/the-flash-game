@@ -1,8 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
-import { getChallengeById } from "@/data/challenges";
-import { questionsById } from "@/data/questions";
+import {
+  getMockChallengeById as getChallengeById,
+  mockQuestionsById as questionsById,
+} from "@/test-utils/mockGameplay";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 
 describe("canonical question renderer", () => {

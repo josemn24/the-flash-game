@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { demoRoom } from "@/data/demoRoom";
+import { demoRoom } from "@/test-utils/mockRoom";
 import { buildRoomSettingsModel } from "@/lib/roomSettings";
 import { FlashPopRoomSettings } from "./FlashPopRoomSettings";
 

@@ -1,12 +1,10 @@
-import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
-import { questionsById } from "@/data/questions";
 import { getConfiguredChallengeQuestionPointValues } from "@/lib/challengeScoring";
 import type {
   NarrativeChallengeDefinition,
   NarrativeOutcome,
   NarrativeScene,
   PyramidChallengeDefinition,
-} from "@/types/game";
+} from "@/types/gameplay/challenge";
 
 const narrativeOutcomes = [
   "correct",
@@ -39,6 +37,7 @@ export function getNarrativeQuestionIds<QuestionId extends string>(
 
 export function validateNarrativeChallengeDefinition<QuestionId extends string>(
   definition: NarrativeChallengeDefinition<QuestionId>,
+  knownQuestionIds: ReadonlySet<string>,
 ) {
   if (!Number.isInteger(definition.maxScore) || definition.maxScore <= 0) {
     throw new Error("Narrative challenge maxScore must be a positive integer.");
@@ -91,7 +90,7 @@ export function validateNarrativeChallengeDefinition<QuestionId extends string>(
   if (duplicateIds(sceneIds).length > 0) {
     throw new Error("Narrative challenge scene IDs must be unique.");
   }
-  const unknownQuestionIds = questionIds.filter((id) => !(id in questionsById));
+  const unknownQuestionIds = questionIds.filter((id) => !knownQuestionIds.has(id));
   if (unknownQuestionIds.length > 0) {
     throw new Error(
       `Narrative challenge references unknown questions: ${unknownQuestionIds.join(", ")}`,
@@ -122,6 +121,7 @@ export function getPyramidQuestionIds<QuestionId extends string>(
 
 export function validatePyramidChallengeDefinition<QuestionId extends string>(
   definition: PyramidChallengeDefinition<QuestionId>,
+  knownQuestionIds: ReadonlySet<string>,
 ) {
   if (!Number.isInteger(definition.attemptVersion) || definition.attemptVersion <= 0) {
     throw new Error("Pyramid challenge attemptVersion must be a positive integer.");
@@ -151,7 +151,7 @@ export function validatePyramidChallengeDefinition<QuestionId extends string>(
     throw new Error("Pyramid challenge levels require non-empty IDs, labels and briefings.");
   }
 
-  const unknownQuestionIds = questionIds.filter((id) => !(id in questionsById));
+  const unknownQuestionIds = questionIds.filter((id) => !knownQuestionIds.has(id));
   if (unknownQuestionIds.length > 0) {
     throw new Error(`Pyramid challenge references unknown questions: ${unknownQuestionIds}`);
   }
@@ -163,11 +163,4 @@ export function validatePyramidChallengeDefinition<QuestionId extends string>(
   }
 
   getConfiguredChallengeQuestionPointValues(questionIds, definition.questionPoints);
-}
-
-/** @deprecated Proyección gameplay completa; usa los selectores de `@/data/mock`. */
-export const challenges = [...legacyChallenges];
-
-export function getChallengeById(id: string) {
-  return challenges.find((challenge) => challenge.id === id);
 }

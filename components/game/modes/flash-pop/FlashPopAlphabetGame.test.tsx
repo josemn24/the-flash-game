@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import { FlashPopAlphabetGame } from "@/components/game/modes/flash-pop/FlashPopAlphabetGame.client";
 
 const source = readFileSync(new URL("./FlashPopAlphabetGame.client.tsx", import.meta.url), "utf8");

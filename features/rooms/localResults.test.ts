@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { demoRoom } from "@/data/demoRoom";
-import { buildRoomDetailModel } from "@/test-utils/legacy/roomDetail";
+import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
 import type { ChallengeCompletion } from "@/types/game";
 import { applyRoomChallengeResult } from "./localResults";
 
@@ -16,8 +15,12 @@ const completion = (flashPoints: number): ChallengeCompletion => ({
 });
 
 describe("local room results", () => {
-  it("does not apply the same competitive challenge twice", () => {
-    const model = buildRoomDetailModel(demoRoom, new Date("2026-09-06T12:00:00.000Z"));
+  it("does not apply the same competitive challenge twice", async () => {
+    const model = await mockRoomQueries.getDetail(
+      "tabarnia-room",
+      mockQueryContext(new Date("2026-09-06T12:00:00.000Z")),
+    );
+    if (!model) throw new Error("Expected room detail model");
     const first = applyRoomChallengeResult(model, completion(80));
     const second = applyRoomChallengeResult(first, completion(42));
 

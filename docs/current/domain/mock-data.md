@@ -27,10 +27,11 @@ jugador de la sesión demo se declara aparte; no existe `currentUserId` en `Room
 - Los ejemplos de `QUESTION_FORMAT_CATALOG` continúan siendo ejemplos locales de práctica y no
   generan registros persistibles.
 
-`data/questions/index.ts` y `data/challengeDefinitions.ts` son exclusivamente proyecciones de
-compatibilidad. La conversión legacy → canónico solo existe en tests para verificar round trips;
-no participa en la creación del store. La lectura legacy todavía recompone preguntas y desafíos
-completos, incluidos datos privados, por lo que no es una frontera de seguridad.
+Las preguntas y los desafíos canónicos se convierten a contratos de gameplay únicamente a través de
+los adaptadores internos de `data/mock` que todavía necesita la infraestructura mock. La conversión
+legacy → canónico solo existe en tests para verificar round trips; no participa en la creación del
+store. La lectura legacy todavía recompone preguntas y desafíos completos, incluidos datos privados,
+por lo que no es una frontera de seguridad.
 
 ## Calendario y actividad
 
@@ -58,11 +59,12 @@ El superadministrador demo es un jugador con rol global, sin membresía ni inten
 
 ## Compatibilidad y validación
 
-`demoRoom`, `demoRooms`, `questionsById`, `questionGroups`, `challengeDefinitions`,
-`demoSeasonScheduledChallenges`, `challenges`, `getChallengeById` y el historial antiguo se
-mantienen como API obsoleta derivada para compatibilidad y tests. Ya no tienen consumidores de
-producción. Los generadores legacy exclusivos de pruebas están en `test-utils/legacy`; los fixtures
-canónicos y el store no pueden importarlos.
+Las antiguas fachadas de `data/` para `demoRoom`, preguntas, desafíos, publicaciones e historial se
+han retirado. Los tests que necesitan contratos de gameplay usan helpers exclusivos de
+`test-utils/mockGameplay.ts` y `test-utils/mockRoom.ts`, respaldados por fixtures canónicos y por
+los adaptadores internos necesarios para materializar la UI. No queda código de apoyo en
+`test-utils/legacy`; los adaptadores de compatibilidad que aún necesita la infraestructura viven en
+`data/mock`.
 
 La integridad se valida sin modificar archivos:
 

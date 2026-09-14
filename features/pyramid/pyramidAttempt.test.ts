@@ -11,7 +11,7 @@ import {
   parsePyramidAttempt,
   type PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import type { AnswerResult } from "@/types/game";
 
 function getChallenge() {

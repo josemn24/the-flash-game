@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { demoRoom } from "@/data/demoRoom";
+import { demoRoom } from "@/test-utils/mockRoom";
 import { buildRoomSettingsModel } from "./roomSettings";
 
 describe("room settings model", () => {

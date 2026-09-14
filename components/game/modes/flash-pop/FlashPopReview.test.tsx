@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import type { AnswerResult } from "@/types/game";
 
 describe("FlashPopReview", () => {
