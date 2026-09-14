@@ -50,11 +50,13 @@ son fuentes de verdad independientes en la primera versión.
 6. [`type-model.md`](type-model.md): capas de tipos, API canónica y compatibilidad temporal con el
    prototipo.
 7. [`mock-data.md`](mock-data.md): almacén normalizado, aliases, datos reconciliados, selectores y
-    controles de integridad.
+   controles de integridad.
 8. [`data-access.md`](data-access.md): contratos de consultas, composición server-only,
-    autorización mock, DTOs y fronteras de dependencia.
+   autorización mock, DTOs y fronteras de dependencia.
 9. [`mode-contracts.md`](mode-contracts.md): contrato funcional recomendado de inicio, tiempo,
-    finalización, reanudación, revisión y replay para cada modo de juego.
+   finalización, reanudación, revisión y replay para cada modo de juego.
+
+Los casos de uso transversales del producto están en [`../use-cases.md`](../use-cases.md).
 
 ## Jerarquía documental
 
