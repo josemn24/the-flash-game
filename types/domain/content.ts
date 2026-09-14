@@ -33,6 +33,7 @@ export type ChallengeVersion = EntityTimestamps & {
   readonly id: ChallengeVersionId;
   readonly challengeDefinitionId: ChallengeDefinitionId;
   readonly versionNumber: number;
+  readonly configSchemaVersion: number;
   readonly status: ContentStatus;
   readonly mode: GameMode;
   readonly title: string;
@@ -50,6 +51,7 @@ export type ChallengeItem = EntityTimestamps & {
   readonly questionVersionId: QuestionVersionId;
   readonly position: number;
   readonly points: number;
+  readonly configSchemaVersion: number;
   readonly modeConfig: JsonValue;
 };
 
@@ -68,6 +70,7 @@ export type QuestionVersion<
   readonly id: QuestionVersionId;
   readonly questionDefinitionId: QuestionDefinitionId;
   readonly versionNumber: number;
+  readonly payloadSchemaVersion: number;
   readonly status: ContentStatus;
   readonly type: Type;
   readonly publicPayload: PublicPayload;

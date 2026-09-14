@@ -258,6 +258,37 @@ select is((select count(*) from public.rooms), 0::bigint, 'Missing auth.uid deni
 reset role;
 
 -- Database constraints, independently of RLS.
+select is((select payload_schema_version from private.question_versions where id = pg_temp.test_id('qv')),
+  1, 'Question payload contracts default to schema version one');
+select is((select config_schema_version from private.challenge_versions where id = pg_temp.test_id('cv-1')),
+  1, 'Challenge configs default to schema version one');
+select is((select config_schema_version from private.challenge_items where id = pg_temp.test_id('item-1')),
+  1, 'Item configs default to schema version one');
+select throws_ok($$insert into private.question_versions
+  (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
+  values (pg_temp.test_id('invalid-payload-version'), pg_temp.test_id('question'), 99, 0,
+    'short-text', 60000, '{"prompt":"invalid"}', pg_temp.test_id('superadmin'))$$,
+  '23514', null, 'Question payload schema versions must be positive');
+select throws_ok($$insert into private.challenge_versions
+  (id, challenge_definition_id, version_number, config_schema_version, mode, title, created_by_player_id)
+  values (pg_temp.test_id('invalid-config-version'), pg_temp.test_id('challenge'), 99, 0,
+    'flash', 'invalid', pg_temp.test_id('superadmin'))$$,
+  '23514', null, 'Challenge config schema versions must be positive');
+insert into private.challenge_versions
+  (id, challenge_definition_id, version_number, mode, title, created_by_player_id)
+values (pg_temp.test_id('draft-item-parent'), pg_temp.test_id('challenge'), 99, 'flash', 'draft item parent',
+  pg_temp.test_id('superadmin'));
+select throws_ok($$insert into private.challenge_items
+  (id, challenge_version_id, question_version_id, position, points, config_schema_version)
+  values (pg_temp.test_id('invalid-item-config-version'), pg_temp.test_id('draft-item-parent'),
+    pg_temp.test_id('qv'), 1, 100, 0)$$,
+  '23514', null, 'Item config schema versions must be positive');
+select throws_ok($$update private.question_versions set payload_schema_version = 2$$,
+  'P0001', null, 'Published payload schema versions are frozen');
+select throws_ok($$update private.challenge_versions set config_schema_version = 2$$,
+  'P0001', null, 'Published challenge config schema versions are frozen');
+select throws_ok($$update private.challenge_items set config_schema_version = 2$$,
+  'P0001', null, 'Published item config schema versions are frozen');
 select throws_ok($$update private.question_version_solutions set solution_payload = '{}'$$,
   'P0001', null, 'Published solutions are frozen even for SQL owner');
 select throws_ok($$update private.challenge_items set points = 99$$,

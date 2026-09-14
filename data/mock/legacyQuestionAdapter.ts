@@ -2,8 +2,10 @@ import {
   publishedQuestionFixtures,
   type MockPublishedQuestion,
 } from "@/data/mock/catalog/questions";
+import { questionVersions } from "@/data/mock/questionFixtures";
 import type { AnyMockPublishedQuestion } from "@/data/mock/catalog/questions/definition";
 import { durationMs, mockId } from "@/data/mock/identity";
+import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import type { StoredPrivateQuestionPayload, StoredPublicQuestionPayload } from "@/types/contracts";
 import type { QuestionVersion } from "@/types/domain";
 import type { Question, QuestionType } from "@/types/question";
@@ -1030,6 +1032,8 @@ export const legacyQuestionsBySlug = Object.fromEntries(
 
 /** Adaptador temporal: la UI aún necesita la unión pública/privada completa. */
 export function reconstructLegacyQuestion(questionVersionId: QuestionVersion["id"]) {
+  const version = questionVersions.find((candidate) => candidate.id === questionVersionId);
+  if (version) assertSupportedQuestionPayloadSchemaVersion(version.payloadSchemaVersion);
   const fixture = fixturesByVersionId.get(questionVersionId);
   return fixture ? projectLegacyQuestion(fixture as AnyMockPublishedQuestion) : undefined;
 }

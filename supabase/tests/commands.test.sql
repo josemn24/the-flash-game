@@ -27,6 +27,8 @@ select is(test_support.repeat_last(),(select last_result from test_support.runti
 select throws_ok($$select test_support.repeat_last('{"sessionToken":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}')$$,'40001',null,'Same key with changed payload conflicts');
 select throws_ok($$select test_support.run('receive_answer',jsonb_build_object('challengeItemId',test_support.id('item-flash-1'),'answer',true))$$,'55000',null,'Answer without presentation is rejected');
 select lives_ok($$select test_support.run('prepare_interaction')$$,'Preparation persists clock before payload');
+select is((select (last_result->>'payloadSchemaVersion')::integer from test_support.runtime),1,
+  'Preparation returns the question payload schema version');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Prepare retry preserves clock and version');
 select throws_ok($$select test_support.run('receive_answer','{"answer":true,"presentedAt":"2000-01-01T00:00:00Z"}')$$,'22023',null,'Client cannot supply presentedAt');
 select throws_ok($$select test_support.run('receive_answer','{"answer":true,"timeUsedMs":0}')$$,'22023',null,'Client cannot supply competitive time');

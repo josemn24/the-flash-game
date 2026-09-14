@@ -3,6 +3,7 @@ import {
   challengeItems,
   challengeVersions,
 } from "@/data/mock/challengeFixtures";
+import { questionVersions } from "@/data/mock/questionFixtures";
 import {
   scheduledChallengeRouteAliases,
   type ScheduledChallengeRouteKey,
@@ -10,6 +11,10 @@ import {
 import { reconstructLegacyQuestion } from "@/data/mock/legacyQuestionAdapter";
 import { scheduledChallenges } from "@/data/mock/socialFixtures";
 import { withChallengeQuestionPoints } from "@/lib/challengeScoring";
+import {
+  assertSupportedConfigSchemaVersion,
+  assertSupportedQuestionPayloadSchemaVersion,
+} from "@/types/contracts";
 import type { ScheduledChallengeId } from "@/types/domain";
 import type {
   Challenge,
@@ -45,11 +50,16 @@ export function reconstructLegacyChallenge(scheduledChallengeId: ScheduledChalle
   if (!schedule || !routeKey || !version || !definition) {
     throw new Error(`Cannot reconstruct scheduled challenge "${scheduledChallengeId}".`);
   }
+  assertSupportedConfigSchemaVersion(version.configSchemaVersion);
 
   const items = challengeItems
     .filter((item) => item.challengeVersionId === version.id)
     .sort((left, right) => left.position - right.position);
   const resolvedItems = items.map((item) => {
+    assertSupportedConfigSchemaVersion(item.configSchemaVersion);
+    const questionVersion = questionVersions.find(({ id }) => id === item.questionVersionId);
+    if (!questionVersion) throw new Error(`Cannot resolve question version for item "${item.id}".`);
+    assertSupportedQuestionPayloadSchemaVersion(questionVersion.payloadSchemaVersion);
     const question = reconstructLegacyQuestion(item.questionVersionId);
     if (!question) throw new Error(`Cannot reconstruct question for item "${item.id}".`);
     return { item, question };

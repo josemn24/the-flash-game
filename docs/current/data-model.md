@@ -240,6 +240,7 @@ Snapshot de título, modo, configuración y reglas de una definición.
 - `id uuid primary key`.
 - `challenge_definition_id uuid not null references challenge_definitions(id)`.
 - `version_number integer not null`.
+- `config_schema_version integer not null`: versión técnica del contrato de `mode_config`.
 - `status text not null`: `draft`, `published` o `archived`.
 - `mode text not null`: uno de los modos soportados por la aplicación.
 - `title text not null`, `subtitle text not null`, `description text not null`.
@@ -266,6 +267,7 @@ Inclusión ordenada de una pregunta versionada en un desafío.
 - `challenge_version_id uuid not null references challenge_versions(id)`.
 - `question_version_id uuid not null references question_versions(id)`.
 - `position integer not null`, `points integer not null`.
+- `config_schema_version integer not null`: versión técnica de la configuración de este elemento.
 - `mode_config jsonb not null`.
 - `created_at`, `updated_at`.
 
@@ -294,6 +296,7 @@ Metadatos y payload público de una versión concreta de pregunta.
 - `id uuid primary key`.
 - `question_definition_id uuid not null references question_definitions(id)`.
 - `version_number integer not null`.
+- `payload_schema_version integer not null`: versión técnica conjunta de `public_payload` y su solución.
 - `status text not null`: `draft`, `published` o `archived`.
 - `type text not null`.
 - `time_limit_ms integer not null`, positivo: límite de pregunta o nivel en la versión publicada.
@@ -318,6 +321,21 @@ rutas o tableros resueltos.
 La aplicación compone `public_payload` y `solution_payload` en su entidad de dominio para uso
 server-only. Los clientes autenticados no tienen lectura directa de esta tabla mediante RLS.
 Publicar o archivar una pregunta congela también su solución.
+
+### Versionado técnico de contratos JSON
+
+`version_number` identifica una edición editorial de una pregunta o desafío; no describe la forma
+del JSON. Por eso las versiones de contenido mantienen además:
+
+- `question_versions.payload_schema_version`, compartida por `public_payload` y `solution_payload`;
+- `challenge_versions.config_schema_version`, para la configuración global del modo;
+- `challenge_items.config_schema_version`, para la configuración contextual de cada elemento.
+
+Los contratos actuales son versión `1`. La versión se conserva como columna, no dentro del JSON, y
+los valores publicados son inmutables. PostgreSQL exige una versión entera positiva; la aplicación
+debe rechazar cualquier versión que no tenga lector/validador registrado. Añadir una versión `2`
+requiere registrar su compatibilidad antes de publicar contenido con ella. Los payloads operativos
+de intentos, respuestas, evaluaciones, comandos y auditoría no forman parte de este versionado.
 
 ## 6. Intentos y respuestas
 

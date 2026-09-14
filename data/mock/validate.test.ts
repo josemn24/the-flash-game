@@ -23,6 +23,33 @@ function replaceBaseAttempt(replacement: Attempt) {
 }
 
 describe("mock domain store negative integrity scenarios", () => {
+  it("rejects unsupported content contract versions", () => {
+    expectInvalid(
+      changed({
+        questionVersions: mockDomainStore.questionVersions.map((version, index) =>
+          index === 0 ? { ...version, payloadSchemaVersion: 2 } : version,
+        ),
+      }),
+      "unsupported payload schema version",
+    );
+    expectInvalid(
+      changed({
+        challengeVersions: mockDomainStore.challengeVersions.map((version, index) =>
+          index === 0 ? { ...version, configSchemaVersion: 2 } : version,
+        ),
+      }),
+      "unsupported config schema version",
+    );
+    expectInvalid(
+      changed({
+        challengeItems: mockDomainStore.challengeItems.map((item, index) =>
+          index === 0 ? { ...item, configSchemaVersion: 2 } : item,
+        ),
+      }),
+      "unsupported config schema version",
+    );
+  });
+
   it("rejects invalid invitation usage", () => {
     expectInvalid(
       changed({

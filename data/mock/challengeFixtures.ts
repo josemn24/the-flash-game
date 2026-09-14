@@ -1,6 +1,7 @@
 import { publishedChallengeFixtures } from "@/data/mock/catalog/challenges";
 import { CONTENT_CREATED_AT, CONTENT_PUBLISHED_AT, demoIdentity } from "@/data/mock/constants";
 import { mockId } from "@/data/mock/identity";
+import { CURRENT_CONFIG_SCHEMA_VERSION } from "@/types/contracts";
 import type { ChallengeDefinition, ChallengeItem, ChallengeVersion } from "@/types/domain";
 
 export const challengeDefinitions: readonly ChallengeDefinition[] = publishedChallengeFixtures.map(
@@ -19,6 +20,7 @@ export const challengeVersions: readonly ChallengeVersion[] = publishedChallenge
     id: mockId.challengeVersion(`${fixture.slug}:v1`),
     challengeDefinitionId: mockId.challengeDefinition(fixture.slug),
     versionNumber: 1,
+    configSchemaVersion: CURRENT_CONFIG_SCHEMA_VERSION,
     status: "published",
     mode: fixture.mode,
     title: fixture.title,
@@ -41,6 +43,7 @@ export const challengeItems: readonly ChallengeItem[] = publishedChallengeFixtur
       questionVersionId: mockId.questionVersion(`${item.questionSlug}:v1`),
       position: position + 1,
       points: item.points,
+      configSchemaVersion: CURRENT_CONFIG_SCHEMA_VERSION,
       modeConfig: item.modeConfig,
       createdAt: CONTENT_CREATED_AT,
       updatedAt: CONTENT_PUBLISHED_AT,

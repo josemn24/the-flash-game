@@ -402,7 +402,9 @@ la arquitectura productiva.
 - La publicación referencia versiones inmutables de desafío y pregunta.
 - En competición se entrega `PublicQuestion`; solución, tolerancias, rutas y métricas permanecen en
   servidor.
-- La validación de payloads JSON debe depender del formato declarado y de la versión publicada.
+- La validación de payloads JSON debe depender del formato declarado y de la versión técnica
+  publicada (`payload_schema_version` o `config_schema_version`); una versión desconocida se rechaza
+  y no se interpreta como la versión actual por defecto.
 - Las correcciones administrativas son ajustes auditados, no sobrescrituras.
 
 ### Testing

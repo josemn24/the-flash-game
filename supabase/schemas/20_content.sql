@@ -13,6 +13,7 @@ create table private.question_versions (
   id uuid primary key default gen_random_uuid(),
   question_definition_id uuid not null references private.question_definitions(id) on delete restrict,
   version_number integer not null check (version_number > 0),
+  payload_schema_version integer not null default 1 check (payload_schema_version > 0),
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
   type text not null check (btrim(type) <> ''),
   time_limit_ms integer not null check (time_limit_ms > 0),
@@ -45,6 +46,7 @@ create table private.challenge_versions (
   id uuid primary key default gen_random_uuid(),
   challenge_definition_id uuid not null references private.challenge_definitions(id) on delete restrict,
   version_number integer not null check (version_number > 0),
+  config_schema_version integer not null default 1 check (config_schema_version > 0),
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
   mode text not null check (mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')),
   title text not null check (btrim(title) <> ''),
@@ -68,10 +70,10 @@ create table private.challenge_items (
   question_version_id uuid not null references private.question_versions(id) on delete restrict,
   position integer not null check (position > 0),
   points integer not null check (points between 0 and 100),
+  config_schema_version integer not null default 1 check (config_schema_version > 0),
   mode_config jsonb not null default '{}'::jsonb check (jsonb_typeof(mode_config) = 'object'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (challenge_version_id, position),
   unique (id, challenge_version_id)
 );
-

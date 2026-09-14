@@ -37,6 +37,7 @@ export type PrepareInteractionInput = AttemptCommandInput;
 export type PrepareInteractionResult = AttemptCommandResult & {
   readonly challengeItemId: ChallengeItemId;
   readonly questionType: QuestionType;
+  readonly payloadSchemaVersion: number;
   readonly publicPayload: JsonValue | null;
   readonly presentedAt: UtcIsoDateTime;
   readonly deadlineAt: UtcIsoDateTime;

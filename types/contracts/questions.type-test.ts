@@ -4,6 +4,8 @@ import type {
   QuestionContractMap,
   QuestionSolutionOfType,
   QuestionType,
+  StoredPrivateQuestionPayload,
+  StoredPublicQuestionPayload,
 } from "@/types/contracts";
 
 type Assert<Value extends true> = Value;
@@ -19,6 +21,12 @@ type PublicQuestionHasNoCorrectAnswer = Assert<
 >;
 type PublicQuestionHasNoExplanation = Assert<
   HasNoKey<PublicQuestionOfType<"multiple-choice">, "explanation">
+>;
+type StoredPublicPayloadHasNoSchemaVersion = Assert<
+  HasNoKey<StoredPublicQuestionPayload<"multiple-choice">, "payloadSchemaVersion">
+>;
+type StoredPrivatePayloadHasNoSchemaVersion = Assert<
+  HasNoKey<StoredPrivateQuestionPayload<"multiple-choice">, "payloadSchemaVersion">
 >;
 type SolutionOwnsCorrectAnswer = Assert<
   "correctAnswer" extends keyof QuestionSolutionOfType<"multiple-choice">["payload"] ? true : false
@@ -41,6 +49,8 @@ export type QuestionContractTypeAssertions =
   | EveryQuestionTypeHasContracts
   | PublicQuestionHasNoCorrectAnswer
   | PublicQuestionHasNoExplanation
+  | StoredPublicPayloadHasNoSchemaVersion
+  | StoredPrivatePayloadHasNoSchemaVersion
   | SolutionOwnsCorrectAnswer
   | ProgressiveImageDoesNotExposeSourceInitially
   | QueensAnswerDoesNotFitSelection

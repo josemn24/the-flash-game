@@ -1,4 +1,8 @@
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
+import {
+  isSupportedConfigSchemaVersion,
+  isSupportedQuestionPayloadSchemaVersion,
+} from "@/types/contracts";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -164,6 +168,9 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
     if (!playerIds.has(version.createdByPlayerId)) {
       errors.push(`Challenge version ${version.id} has no creator.`);
     }
+    if (!isSupportedConfigSchemaVersion(version.configSchemaVersion)) {
+      errors.push(`Challenge version ${version.id} has an unsupported config schema version.`);
+    }
     const items = store.challengeItems
       .filter((item) => item.challengeVersionId === version.id)
       .sort((left, right) => left.position - right.position);
@@ -194,6 +201,9 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
     if (!playerIds.has(version.createdByPlayerId)) {
       errors.push(`Question version ${version.id} has no creator.`);
     }
+    if (!isSupportedQuestionPayloadSchemaVersion(version.payloadSchemaVersion)) {
+      errors.push(`Question version ${version.id} has an unsupported payload schema version.`);
+    }
   }
   for (const item of store.challengeItems) {
     if (
@@ -201,6 +211,9 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
       !questionVersionIds.has(item.questionVersionId)
     ) {
       errors.push(`Broken challenge item ${item.id}.`);
+    }
+    if (!isSupportedConfigSchemaVersion(item.configSchemaVersion)) {
+      errors.push(`Challenge item ${item.id} has an unsupported config schema version.`);
     }
   }
 

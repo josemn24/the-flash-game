@@ -236,6 +236,7 @@ begin
             values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
         end if;
         select jsonb_build_object('challengeItemId', item.id, 'questionType', q.type,
+          'payloadSchemaVersion', q.payload_schema_version,
           'publicPayload', case when instant < unit.deadline_at then q.public_payload else null end,
           'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at)
           into result from private.question_versions q where q.id = item.question_version_id;
@@ -450,10 +451,12 @@ begin
   select jsonb_build_object(
     'receiptId', r.id, 'answer', r.answer, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
-    'questionType', q.type, 'publicPayload', q.public_payload,
+    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
+    'publicPayload', q.public_payload,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
-    'itemPoints', i.points, 'itemConfig', i.mode_config,
-    'mode', cv.mode, 'modeConfig', cv.mode_config)
+    'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
+    'itemConfig', i.mode_config, 'mode', cv.mode,
+    'modeConfigSchemaVersion', cv.config_schema_version, 'modeConfig', cv.mode_config)
   into result from private.answer_receipts r
   join public.attempts a on a.id = r.attempt_id
   join private.attempt_sessions s on s.attempt_id = a.id
