@@ -13,8 +13,6 @@ export const demoRoom = toLegacyRoomSnapshot(
   demoIdentity.currentPlayerId,
 ) as Room;
 
-export const demoRooms: Room[] = [demoRoom];
-
 export const mockRoomQueries = new MockRoomQueries(mockDomainStore);
 
 export function createMockRoomQueries(store: MockDomainStore = mockDomainStore) {
