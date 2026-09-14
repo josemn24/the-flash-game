@@ -68,18 +68,51 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 ## Estructura principal
 
 ```text
-application/     Contratos de consultas y presentación independiente del framework
-app/             Rutas, layout, metadata y estilos globales
-components/      Pantallas, UI universal e islas interactivas
-data/            Fixtures canónicos, store normalizado y proyecciones legacy
-features/        Sesión de juego y catálogo de formatos
-infrastructure/  Adaptadores mock de los contratos de aplicación
-lib/             Puntuación, validación y utilidades puras
-server/          Fachada server-only usada por las rutas de producto
-types/           Dominio, contratos, gameplay y view models
-docs/            Estado funcional, evolución y arquitectura
+app/             Entrada de Next.js: rutas, layouts, metadata y estilos globales
+application/     Consultas, casos de uso y contratos independientes de Next.js
+components/      Pantallas, UI compartida e islas interactivas
+data/            Fixtures canónicos, store mock y proyecciones transitorias
+features/        Comportamiento de producto: sesiones, juego y catálogo
+infrastructure/  Adaptadores concretos: actualmente mock; futuro Supabase
+lib/             Lógica pura reutilizable: scoring, validación y utilidades
+server/          Composición server-only, sesión y fachadas para las rutas
+types/           Tipos de dominio, contratos, gameplay y view models
+docs/            Estado funcional, evolución y decisiones de arquitectura
 scripts/         Comprobaciones y generadores deterministas
 ```
+
+Estas carpetas no son capas equivalentes, sino responsabilidades distintas. La diferencia más
+importante es la siguiente:
+
+- `app/` pertenece al framework. Es donde Next.js descubre las URLs y compone cada pantalla. Una
+  página de `app/` debería encargarse de recibir parámetros, cargar un modelo y renderizar la UI,
+  no de implementar reglas de negocio.
+- `application/` pertenece a la aplicación. Coordina consultas y casos de uso mediante contratos
+  que no dependen de React, Next.js ni de una base de datos concreta. Por eso puede probarse y
+  evolucionar sin cambiar las rutas.
+- `server/` es el punto de composición server-only: obtiene el contexto de sesión, selecciona los
+  adaptadores y expone fachadas cómodas para las rutas. No debería convertirse en un segundo lugar
+  para las reglas de dominio.
+- `infrastructure/` contiene las implementaciones concretas de esos contratos. Hoy usa adaptadores
+  mock; cuando exista persistencia real, ahí podrán convivir adaptadores como `mock/` y
+  `supabase/` sin que la UI conozca sus detalles.
+
+El recorrido típico de una lectura es:
+
+```text
+app/ → server/ → application/ → infrastructure/mock/ → data/mock/
+  └──────────────────────────────→ components/ y features/
+```
+
+`lib/` y `types/` son piezas transversales: `lib/` concentra funciones puras y `types/` separa
+entidades del dominio, contratos públicos, estado de gameplay y modelos preparados para la UI.
+`data/` conserva el store y los fixtures del prototipo; parte de sus archivos antiguos es
+transitoria y no debe tomarse como el destino final de la persistencia.
+
+La estructura actual es deliberadamente una arquitectura de transición: algunas capas todavía son
+finas porque el proyecto no tiene backend, autenticación real ni base de datos. No se pretende añadir
+más capas hasta que aporten una necesidad concreta. La explicación completa de responsabilidades,
+dependencias y evolución está en [`docs/current/architecture.md`](docs/current/architecture.md).
 
 ## Modelo de dominio
 
