@@ -93,7 +93,12 @@ create policy memberships_select on public.room_memberships for select to authen
 create policy seasons_select on public.seasons for select to authenticated
   using (status <> 'draft' and private.is_room_member(room_id));
 create policy publications_select on public.scheduled_challenges for select to authenticated
-  using (exists (select 1 from public.seasons s where s.id = season_id));
+  using (exists (
+    select 1 from public.seasons s
+    where s.id = scheduled_challenges.season_id
+      and s.status <> 'draft'
+      and private.is_room_member(s.room_id)
+  ));
 create policy attempts_select_own on public.attempts for select to authenticated
   using (kind = 'competitive' and status <> 'invalidated'
     and private.can_read_own_attempt(scheduled_challenge_id, player_id));

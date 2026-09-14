@@ -54,6 +54,17 @@ insert into public.scheduled_challenges
 select pg_temp.test_id('sc-' || suffix), pg_temp.test_id('season-' || suffix), pg_temp.test_id('cv-1'),
   1, 'open', now() - interval '1 day', now() + interval '1 day'
 from unnest(array['a', 'b']) suffix;
+insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
+values (
+  pg_temp.test_id('season-draft'), pg_temp.test_id('room-a'), 'draft', 'draft',
+  now() - interval '1 day', now() + interval '1 day'
+);
+insert into public.scheduled_challenges
+  (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
+values (
+  pg_temp.test_id('sc-draft'), pg_temp.test_id('season-draft'), pg_temp.test_id('cv-1'),
+  1, 'open', now() - interval '1 day', now() + interval '1 day'
+);
 
 select ok((select bool_and(c.relrowsecurity) from pg_class c join pg_namespace n on n.oid = c.relnamespace
   where n.nspname in ('public', 'private') and c.relkind = 'r'), 'Every application table has RLS');
@@ -83,6 +94,14 @@ set local role authenticated;
 select is(private.current_player_id(), pg_temp.test_id('owner'), 'Auth resolves a distinct domain player');
 select is((select count(*) from public.rooms), 1::bigint, 'Owner sees only their room');
 select is((select count(*) from public.room_memberships), 4::bigint, 'Membership RLS does not recurse or expose another room');
+select is((select count(*) from public.scheduled_challenges), 1::bigint,
+  'Owner sees only publications from their visible season');
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-a')), 1::bigint,
+  'Owner can read their room publication');
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-b')), 0::bigint,
+  'Owner cannot read another room publication');
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-draft')), 0::bigint,
+  'Draft-season publications are hidden from room members');
 select is((select count(*) from public.players), 4::bigint, 'Social profiles are limited to active peers and self');
 select throws_ok('select auth_user_id from public.players', '42501', null, 'Auth IDs are never social columns');
 select throws_ok('select * from public.players', '42501', null, 'Wildcard cannot bypass column grants');
@@ -192,9 +211,30 @@ reset role;
 select set_config('request.jwt.claims', jsonb_build_object('sub', pg_temp.test_id('auth-spectator'))::text, true);
 set local role authenticated;
 select is((select count(*) from public.rooms), 1::bigint, 'Spectator reads room metadata');
+select is((select count(*) from public.scheduled_challenges), 1::bigint,
+  'Spectator reads publications from their room');
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-b')), 0::bigint,
+  'Spectator cannot read another room publication');
 select is((select count(*) from public.get_challenge_ranking(pg_temp.test_id('sc-a'))), 1::bigint, 'Spectator reads ranking');
 select is((select count(id) from public.attempts), 0::bigint, 'Spectator cannot read another player raw attempts');
 select throws_ok('select * from private.challenge_items', '42501', null, 'Spectator cannot obtain gameplay');
+reset role;
+
+select set_config('request.jwt.claims', jsonb_build_object('sub', pg_temp.test_id('auth-outsider'), 'role', 'authenticated')::text, true);
+set local role authenticated;
+select is((select count(*) from public.scheduled_challenges), 1::bigint,
+  'Owner of another room sees only that room publications');
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-a')), 0::bigint,
+  'Unrelated member cannot read room A publications');
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-b')), 1::bigint,
+  'Owner can read room B publications');
+reset role;
+update public.rooms
+set status = 'deleted', deleted_at = statement_timestamp()
+where id = pg_temp.test_id('room-b');
+set local role authenticated;
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-b')), 0::bigint,
+  'Deleted rooms do not expose their publications');
 reset role;
 
 select set_config('request.jwt.claims', jsonb_build_object('sub', pg_temp.test_id('auth-superadmin'))::text, true);
@@ -313,6 +353,8 @@ update public.scheduled_challenges set status = 'cancelled', cancelled_at = stat
 where id = pg_temp.test_id('sc-a');
 select set_config('request.jwt.claims', jsonb_build_object('sub', pg_temp.test_id('auth-spectator'))::text, true);
 set local role authenticated;
+select is((select count(*) from public.scheduled_challenges where id = pg_temp.test_id('sc-a')), 1::bigint,
+  'Cancelled publications remain visible as room metadata');
 select is((select count(*) from public.get_challenge_ranking(pg_temp.test_id('sc-a'))), 0::bigint,
   'Cancelled publications have no competitive ranking');
 reset role;
