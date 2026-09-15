@@ -1,9 +1,10 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-14. **22 tablas**, una vista
-interna, dos funciones públicas de ranking y comandos privados de servidor. La aplicación sigue
-usando mocks: no se conecta Auth, Storage, la interfaz ni un adaptador PostgreSQL real. No hay
-migraciones, seed data ni cambios remotos en este trabajo.
+Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-15. **22 tablas**, una vista
+interna, funciones públicas de lectura/ranking y comandos privados de servidor. S01–S04 conectan
+Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo.
+Las capacidades restantes siguen usando mocks o están pendientes. Las migraciones están versionadas;
+no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
 
@@ -41,12 +42,12 @@ el comportamiento provisional del mock.
   o coincide con el deadline global. Tras ese deadline solo se permite resolver timeout, evaluar,
   finalizar o abandonar; no se entrega nuevo contenido jugable. El takeover entre dispositivos está
   deshabilitado durante el MVP.
-- Política documentada para la siguiente evolución de S04: una unidad e intervalo confirmados antes
-  de devolver contenido se consideran consumidos. Al recuperar, una recepción existente se evalúa;
-  sin recepción del jugador se cierra atómicamente el intervalo y, cuando el modo lo requiere, se
-  crea una recepción interna de payload nulo para evaluar `unanswered`, sin reentregar el payload.
-  Alfabeto necesitará un motivo de cierre auditable distinto de `pass` voluntario. Esta política
-  todavía requiere migración y comandos; no describe una capacidad ya disponible en el SQL actual.
+- Política S04 implementada para el vertical Flash: una unidad e intervalo confirmados antes de
+  devolver contenido se consideran consumidos. Al recuperar, una recepción existente se evalúa; sin
+  recepción del jugador se cierra atómicamente el intervalo y se crea una recepción interna de
+  payload nulo para evaluar `unanswered`, sin reentregar el payload. Alfabeto necesitará un motivo de
+  cierre auditable distinto de `pass` voluntario; los demás modos incorporarán esta política en sus
+  propias slices.
 
 ### Decisiones provisionales y operaciones cerradas
 
@@ -206,8 +207,8 @@ y el catálogo/ACL efectivo en ese entorno. Nada de ello se ha ejecutado remotam
 ## Pruebas y riesgos pendientes
 
 Ejecutar `npm run supabase:schema:test` con Docker y el PostgreSQL local de Supabase en marcha.
-El ejecutor crea una base aleatoria separada, aplica los 11 SQL e inventario, ejecuta pgTAP y abre
-conexiones independientes para carreras. Siempre elimina esa base al terminar. Puede elegirse el
+El ejecutor crea una base aleatoria separada, aplica los archivos SQL declarativos y el inventario,
+ejecuta pgTAP y abre conexiones independientes para carreras. Siempre elimina esa base al terminar. Puede elegirse el
 contenedor con `SUPABASE_DB_CONTAINER`; no se acepta una base destino existente. El bootstrap Auth
 mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; no son seeds.
 
@@ -223,9 +224,10 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local: **177 comprobaciones pgTAP**, cinco carreras entre conexiones independientes y
-**541 pruebas TypeScript** superadas. También pasan comprobación de tipos, arquitectura de tipos,
-ESLint de los archivos afectados y enlaces de documentación.
+Validación local actual: **263 comprobaciones SQL**, carreras entre conexiones independientes y
+**518 pruebas TypeScript** superadas. También pasan comprobación de tipos, arquitectura de tipos,
+ESLint y los enlaces de documentación. La suite SQL no sustituye las pruebas Auth/HTTP/E2E, que se
+ejecutan en los escenarios locales de S01–S04.
 
 La credencial `service_role` sigue siendo confiable: tiene lectura interna amplia, puede invocar el
 evaluador privilegiado y puede establecer claims en una conexión SQL. Evitar endpoints genéricos que
@@ -233,10 +235,11 @@ acepten evaluación/claims del navegador. El adaptador debe verificar Auth, vali
 limitar tamaño de peticiones y no filtrar soluciones. `postgres` y los roles de mantenimiento están
 fuera de esta frontera; pueden alterar ACL/triggers y no deben ser credenciales de ejecución normal.
 
-Quedan pendientes la conexión real, pruebas HTTP/Storage/GraphQL/Realtime si se habilitan, retención
-de payloads e idempotencia, gestión editorial autorizada, validación de contenido publicado y planes
-EXPLAIN con volumen real. La selección de duraciones/configuración de cada modo se valida al publicar;
-SQL protege límites positivos y versiones congeladas, no todas las reglas de formato del producto.
+Quedan pendientes el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
+Realtime si se habilitan, retención de payloads e idempotencia, gestión editorial autorizada,
+validación de contenido publicado y planes EXPLAIN con volumen real. La selección de duraciones/
+configuración de cada modo se valida al publicar; SQL protege límites positivos y versiones congeladas,
+no todas las reglas de formato del producto.
 
 Referencias oficiales consultadas el 2026-09-14:
 [esquemas declarativos Supabase](https://supabase.com/docs/guides/local-development/declarative-database-schemas),

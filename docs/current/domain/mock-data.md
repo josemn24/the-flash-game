@@ -3,8 +3,9 @@
 ## Estado
 
 La fase 3 está cerrada. `mockDomainStore` es un conjunto de tablas planas con las entidades de
-`@/types/domain` y constituye la única fuente persistible del prototipo para contenido, identidad,
-salas, membresías, temporadas, publicaciones, intentos y respuestas. No existe ningún flujo
+`@/types/domain` y sigue siendo la fuente de fixtures de práctica, previews y tests de contrato para
+contenido, identidad, salas, membresías, temporadas, publicaciones, intentos y respuestas. Desde
+S01, los recorridos reales no lo usan como fuente de persistencia y no existe ningún flujo
 legacy → store en producción.
 
 Los IDs persistibles son UUID v5 deterministas generados solo en `data/mock`. Los slugs legibles
@@ -80,11 +81,16 @@ del contenido público. Incluye escenarios negativos aislados de relaciones y es
 
 ## Fase 4 cerrada y límite actual
 
-Las rutas de producto acceden al store mediante contratos asíncronos, adaptadores mock y la fachada
-`server/data-access.ts`. Consulta [`data-access.md`](data-access.md) para la composición,
-autorización y DTOs.
+Las rutas de práctica y preview acceden al store mediante contratos asíncronos, el adaptador mock y
+la fachada `server/data-access.ts`. Las rutas reales de S01–S04 usan la misma fachada para seleccionar
+Auth, RPCs y PostgreSQL mediante `infrastructure/supabase/`. Consulta
+[`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 
-Todavía no hay repositorios de persistencia, Route Handlers, autenticación real, SQL ni Supabase.
-Como limitación conocida de la PoC, `PlayableChallengePageModel` sigue llevando las soluciones al
-cliente para puntuar localmente; el backend deberá separar contenido público y evaluación
-autoritativa.
+S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;
+S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
+abandono. Ranking, historial, administración, calendario, Storage y los demás modos siguen usando
+mock o están pendientes de sus propias slices.
+
+Como compatibilidad de la práctica y de previews, `PlayableChallengePageModel` todavía puede llevar
+las soluciones al cliente y puntuar localmente. El recorrido competitivo migrado separa contenido
+público y evaluación autoritativa, por lo que esta compatibilidad no debe reutilizarse como fallback.

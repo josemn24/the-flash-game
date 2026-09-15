@@ -1,7 +1,7 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Propuesta de evolución incremental desde el prototipo mock hacia una aplicación
-> productiva. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
+> Estado: vigente. Arquitectura de transición con S01–S04 implementadas sobre Supabase local y el
+> resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
 ## 1. Arquitectura propuesta
@@ -183,21 +183,22 @@ en el MVP. La recuperación debe ser una operación de dominio: reconcilia una r
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
-auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL futuro
-verificará Auth y establecerá identidad con claims locales a cada transacción. No se expone `private`
-por PostgREST ni se usa el propietario de las funciones como credencial de servidor.
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S04
+verifica Auth y establece identidad con claims locales a cada transacción. No se expone `private` por
+PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 
 Preparar confirma el reloj antes de entregar contenido; recibir confirma payload e instante antes
 de evaluar. [evaluateReceipt](../../server/evaluation/evaluate-receipt.ts) adapta el tiempo persistido
 al evaluador existente en una frontera `server-only`. Corrección, puntos, identidad y marcas
-autoritativas no son inputs públicos. La UI conserva los mocks; estas operaciones no están conectadas.
+autoritativas no son inputs públicos. El recorrido Flash de S03/S04 ya está conectado a estas
+operaciones; la UI conserva mocks únicamente para práctica, previews y slices aún no migradas.
 
 Adaptadores previstos:
 
 ```text
 infrastructure/
   mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador futuro sobre PostgreSQL/Supabase
+  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S04
 ```
 
 Reglas de persistencia:

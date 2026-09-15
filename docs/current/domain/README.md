@@ -15,8 +15,11 @@ temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
 - Versión: 1.
 - Fecha de la última revisión: 2026-09-13.
 - Alcance técnico actual: reglas, tipos TypeScript, fixtures canónicos, store normalizado y capa de
-  consultas asíncrona server-only; todavía no define backend ni esquema SQL.
-- Persistencia prevista: PostgreSQL, autenticación y almacenamiento mediante Supabase.
+  consultas asíncrona server-only. Las slices S01–S04 ya tienen integración real documentada en
+  `data-access.md` y `supabase/README.md`; esta carpeta conserva las reglas de dominio y no sustituye
+  la documentación del backend ni del esquema SQL.
+- Persistencia: PostgreSQL y autenticación mediante Supabase; Storage y el resto de capacidades se
+  incorporan por slices posteriores.
 
 ## Mapa conceptual
 

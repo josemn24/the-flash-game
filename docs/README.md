@@ -49,9 +49,10 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-14.
-- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock.
-- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
-  `npm run style-architecture` completan correctamente.
-- `npm run format:check` mantiene avisos preexistentes y Stylelint mantiene una incidencia
-  preexistente; están registrados en [`current/qa.md`](current/qa.md).
+- Fecha: 2026-09-15.
+- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock; S01–S04
+  tienen integración real verificada sobre Supabase local.
+- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture`,
+  `npm run docs:check` y `npm run supabase:schema:test` completan correctamente.
+- `npm run format:check` mantiene avisos en 56 archivos; están registrados en [`current/qa.md`](current/qa.md).
+- No hay proyecto remoto de Supabase vinculado desde este entorno.

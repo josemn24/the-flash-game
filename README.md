@@ -1,12 +1,13 @@
 # The Flash
 
 The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
-permite jugar desafíos mock dentro de una sala simulada, consultar resultados detallados, revisar
-respuestas y explorar una biblioteca interactiva de 31 formatos.
+combina una experiencia de práctica mock con un recorrido competitivo real de Flash sobre Supabase,
+además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
+de 31 formatos.
 
 ## Qué incluye
 
-- Una sala demo local con temporada activa, siete definiciones de desafío y seis publicaciones mock.
+- Una sala demo mock y escenarios Supabase locales con temporada activa, desafíos y publicaciones.
 - Treinta y un formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, Queens, rompecabezas deslizante, Escape, reconstrucción del error, anagramas, Hashtag de palabras, Mini-Wordle, sopa de letras, imagen progresivamente revelada, laberinto contrarreloj, Zip y Tuberías.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
@@ -25,14 +26,18 @@ respuestas y explorar una biblioteca interactiva de 31 formatos.
 - React 19 y TypeScript.
 - Tailwind CSS 4.
 - Motion para transiciones y microinteracciones.
+- Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
-La aplicación no utiliza todavía backend, base de datos, autenticación real ni servicios externos.
-Sus Server Components leen una DAL asíncrona server-only respaldada por un store mock normalizado.
+La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
+recorridos competitivos persistidos en Supabase. S01–S04 conectan Auth, provisioning de jugador,
+lecturas de salas y el intento Flash de dos preguntas, incluida su evaluación server-side y
+recuperación. Ranking, historial, administración, otros modos y Storage siguen pendientes.
 
 ## Requisitos
 
 - Node.js 20.9 o superior.
 - npm.
+- Docker, si se quiere ejecutar el stack local de Supabase.
 
 ## Instalación y ejecución
 
@@ -48,7 +53,9 @@ Inicia el entorno de desarrollo:
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es necesario configurar ninguna variable de entorno ni servicio adicional.
+Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
+necesita configuración adicional. Para probar S01–S04 con persistencia real, copia `.env.example` a
+`.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
 
 ## Comandos disponibles
 
@@ -61,6 +68,9 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. No es neces
 | `npm test`                    | Ejecuta los tests unitarios con Vitest.                   |
 | `npm run build`               | Genera la compilación optimizada de producción.           |
 | `npm run start`               | Sirve localmente una compilación de producción.           |
+| `npm run supabase:start`      | Inicia el stack local de Supabase.                        |
+| `npm run supabase:status`     | Muestra el estado del stack local de Supabase.            |
+| `npm run supabase:schema:test` | Verifica esquema, RLS, comandos y concurrencia.          |
 | `npm run dictionary:generate` | Regenera el vocabulario español de Mini-Wordle.           |
 | `npm run dictionary:check`    | Comprueba que el vocabulario versionado esté actualizado. |
 | `npm run format:check`        | Comprueba el formato con Prettier.                        |
@@ -73,7 +83,7 @@ application/     Consultas, casos de uso y contratos independientes de Next.js
 components/      Pantallas, UI compartida e islas interactivas
 data/            Fixtures canónicos, store mock y proyecciones transitorias
 features/        Comportamiento de producto: sesiones, juego y catálogo
-infrastructure/  Adaptadores concretos: actualmente mock; futuro Supabase
+infrastructure/  Adaptadores concretos mock y Supabase
 lib/             Lógica pura reutilizable: scoring, validación y utilidades
 server/          Composición server-only, sesión y fachadas para las rutas
 types/           Tipos de dominio, contratos, gameplay y view models
@@ -93,15 +103,19 @@ importante es la siguiente:
 - `server/` es el punto de composición server-only: obtiene el contexto de sesión, selecciona los
   adaptadores y expone fachadas cómodas para las rutas. No debería convertirse en un segundo lugar
   para las reglas de dominio.
-- `infrastructure/` contiene las implementaciones concretas de esos contratos. Hoy usa adaptadores
-  mock; cuando exista persistencia real, ahí podrán convivir adaptadores como `mock/` y
-  `supabase/` sin que la UI conozca sus detalles.
+- `infrastructure/` contiene las implementaciones concretas de esos contratos. Conviven los
+  adaptadores `mock/` y `supabase/`; cada recorrido selecciona explícitamente el que corresponde,
+  sin que la UI conozca sus detalles.
 
 El recorrido típico de una lectura es:
 
 ```text
-app/ → server/ → application/ → infrastructure/mock/ → data/mock/
+app/ → server/ → application/ → infrastructure/supabase/ → Supabase Auth/RPC/PostgreSQL
   └──────────────────────────────→ components/ y features/
+
+Las rutas de práctica y preview siguen este recorrido:
+
+app/ → server/ → application/ → infrastructure/mock/ → data/mock/
 ```
 
 `lib/` y `types/` son piezas transversales: `lib/` concentra funciones puras y `types/` separa
@@ -109,15 +123,15 @@ entidades del dominio, contratos públicos, estado de gameplay y modelos prepara
 `data/` conserva el store y los fixtures del prototipo; parte de sus archivos antiguos es
 transitoria y no debe tomarse como el destino final de la persistencia.
 
-La estructura actual es deliberadamente una arquitectura de transición: algunas capas todavía son
-finas porque el proyecto no tiene backend, autenticación real ni base de datos. No se pretende añadir
-más capas hasta que aporten una necesidad concreta. La explicación completa de responsabilidades,
-dependencias y evolución está en [`docs/current/architecture.md`](docs/current/architecture.md).
+La estructura actual es deliberadamente una arquitectura de transición: las slices se migran por
+recorridos completos y el mock se conserva solo donde aún no existe una slice real o para práctica.
+No se pretende añadir más capas hasta que aporten una necesidad concreta. La explicación completa de
+responsabilidades, dependencias y evolución está en [`docs/current/architecture.md`](docs/current/architecture.md).
 
 ## Modelo de dominio
 
-Las reglas aprobadas para la futura persistencia con Supabase, incluidos usuarios, salas,
-temporadas, publicaciones, intentos, rankings y límites de seguridad, se mantienen en
+Las reglas de dominio y persistencia con Supabase, incluidos usuarios, salas, temporadas,
+publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 [`docs/current/domain/README.md`](docs/current/domain/README.md).
 
 ## Convenciones de estilos
@@ -130,10 +144,10 @@ temporadas, publicaciones, intentos, rankings y límites de seguridad, se mantie
 
 ## Alcance
 
-Esta versión valida la experiencia individual y social simulada dentro de una sala local con
-temporada, miembros, rankings e historial derivados de datos canónicos. La capa de acceso de la
-fase 4 está cerrada, pero no incluye creación de salas, panel de administración, backend, base de
-datos, autenticación real ni persistencia de nuevos intentos.
+Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
+competitivo real acotado. S01–S04 cubren autenticación, perfil, lecturas autorizadas de salas y un
+Flash competitivo persistido con recuperación. Todavía no incluye creación de salas, panel de
+administración, rankings/historial reales, otros modos ni Storage.
 
 Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
 contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos

@@ -4,61 +4,56 @@
 
 ## Resumen
 
-The Flash es actualmente una aplicación web frontend para validar desafíos rápidos y una experiencia
-social simulada. Usa fixtures locales y un store mock normalizado; no tiene backend, base de datos,
-autenticación real ni persistencia remota.
+The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
+migradas usan fixtures y un store mock normalizado. Las slices S01–S04 tienen integración real con
+Supabase local: Auth, perfil, lecturas autorizadas de salas y un Flash competitivo persistido con
+evaluación server-side, recuperación y abandono.
 
-La interfaz ya representa una sala, miembros, temporada, publicaciones, rankings e historial mock.
-Los resultados del jugador y los checkpoints de la sesión se conservan solo en memoria mientras vive
-la sesión de React.
+No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
+estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
 
 ## Capacidades actuales
 
 - 31 formatos de pregunta nativos, con ejemplos jugables en la biblioteca.
 - Cinco modos: `flash`, `alphabet`, `survival`, `narrative` y `pyramid`.
-- Siete desafíos definidos en el catálogo mock.
-- Seis publicaciones programadas en la temporada mock; cinco cerradas y una abierta.
-- Evaluación, puntuación, revisión y estados específicos por formato.
-- Shell visual Flash Pop para las experiencias publicadas y la biblioteca.
-- Acceso mock a sala, ranking, historial, detalle de miembro y ajustes.
-- El ranking por desafío de los cinco modos aplica el comparador común de Flash Points, duración
-  efectiva y `startedAt`, con posiciones compartidas; el ranking de temporada sigue usando solo
-  Flash Points acumulados. En el mock, la duración se deriva de los `AttemptAnswer.timeUsedMs` y la
-  aplicación está completa.
+- Autenticación Supabase local, provisioning idempotente de `Player`, logout y edición del nombre.
+- Home, detalle de sala e introducción con lecturas autorizadas reales (S02).
+- Flash competitivo real de dos preguntas `multiple-choice`, con sesiones exclusivas, tiempos,
+  respuestas, evaluación privada, puntuación y ledger de puntos (S03).
+- Recuperación tras recarga o fallo parcial, bloqueo de segunda sesión y abandono explícito (S04).
+- Recorridos mock para ranking, historial, miembros, ajustes, práctica y previews.
 
 ## Rutas principales
 
-| Ruta                        | Estado                                                     |
-| --------------------------- | ---------------------------------------------------------- |
-| `/`                         | Página principal con salas mock y acceso a la experiencia. |
-| `/salas/[roomId]`           | Detalle de sala, desafío disponible y resumen social.      |
-| `/salas/[roomId]/ranking`   | Ranking de temporada.                                      |
-| `/salas/[roomId]/historial` | Historial de publicaciones cerradas.                       |
-| `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes de sala.                  |
-| `/desafios/[challengeId]`   | Desafío competitivo contextualizado o preview.             |
-| `/formatos`                 | Biblioteca estática de formatos.                           |
-| `/flash-pop`                | Lobby demo de Flash Pop.                                   |
-
-Las rutas de sala y desafío son dinámicas. La biblioteca de formatos y sus fichas usan generación
-estática.
+| Ruta                        | Estado                                                                 |
+| --------------------------- | --------------------------------------------------------------------- |
+| `/`                         | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto. |
+| `/salas/[roomId]`           | Detalle de sala real para salas persistidas; no cae silenciosamente al mock. |
+| `/salas/[roomId]/ranking`   | Ranking de temporada mock; la lectura real corresponde a S06.       |
+| `/salas/[roomId]/historial` | Historial mock; la lectura y revisión real corresponden a S07.      |
+| `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes; gestión real está pendiente.      |
+| `/desafios/[challengeId]`   | Desafío Flash competitivo real en contexto autorizado; preview mock explícito en los demás casos. |
+| `/formatos`                 | Biblioteca estática de formatos y práctica local.                    |
+| `/flash-pop`                | Lobby/demo de Flash Pop.                                             |
 
 ## Límites actuales
 
-- El jugador actual, la autenticación y los permisos son mock.
-- El cliente recibe soluciones y calcula localmente parte de la evaluación; todavía no es una frontera
-  segura para producción.
-- La unicidad del intento, el abandono y la puntuación autoritativa están modelados y parcialmente
-  simulados, pero aún no se validan en servidor.
-- El contenido nuevo, la creación de salas, las invitaciones y la persistencia real siguen pendientes.
+- La persistencia real verificada cubre únicamente el vertical Flash de S01–S04 y el stack local.
+- Ranking, historial/revisión ampliada, configuración, miembros, creación de salas, invitaciones,
+  editor, publicación, calendario y Storage siguen pendientes.
+- Alphabet, Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
+- El takeover entre dispositivos y el abandono automático por inactividad siguen deshabilitados.
+- Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
+  confundirse con el recorrido competitivo migrado.
 
 ## Verificación
 
-Última verificación: 2026-09-14.
+Última verificación: 2026-09-15.
 
-- 81 archivos de test y 535 tests pasan con `npm test`.
+- `npm test`: 77 archivos de test y 518 tests superados.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
-  `npm run style-architecture` pasan.
-- `npm run format:check` informa avisos en 53 archivos; quedan fuera del alcance de este cambio
-  documental.
-- `npm run stylelint` informa un selector duplicado en
-  `app/flash-pop-concepts/FlashPopConcepts.module.css`.
+  `npm run docs:check`: correctos.
+- `npm run supabase:schema:test`: correcto; pasan las suites de esquema/RLS, provisioning, S02,
+  S03, S04 y las pruebas concurrentes con conexiones PostgreSQL independientes.
+- `npm run format:check`: avisos de formato en 56 archivos; queda fuera del alcance de esta
+  actualización documental.

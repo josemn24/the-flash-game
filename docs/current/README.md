@@ -5,6 +5,9 @@
 Esta sección describe la aplicación y los contratos técnicos vigentes. Es la primera referencia para
 entender qué existe en el repositorio hoy.
 
+En la rama actual, S01–S04 están implementadas y verificadas contra el stack local de Supabase. El
+resto de capacidades se mantiene explícitamente en mock o pendiente de su propia vertical slice.
+
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`use-cases.md`](use-cases.md): casos de uso funcionales, prioridades, permisos y límites.

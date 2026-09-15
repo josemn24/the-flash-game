@@ -2,10 +2,11 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada y S01 añade la primera integración real de Supabase. S02 completa el primer
-recorrido de lectura `Auth → home → mis salas → detalle → introducción autorizada`: la home, el
-detalle de una sala real y su introducción consultan proyecciones autorizadas. Ranking, historial,
-ajustes y gameplay continúan mock hasta sus propias vertical slices.
+La fase 4 está cerrada. S01–S04 añaden la primera integración real de Supabase y completan el
+recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
+recuperación/abandono`: la home, el detalle de una sala, su introducción y el gameplay Flash consultan
+o mutan mediante fronteras autorizadas. Ranking, historial, ajustes, gestión y los demás modos
+continúan mock hasta sus propias vertical slices.
 
 La dirección vigente es:
 
@@ -16,7 +17,7 @@ Server Components
 → Supabase Auth/RPC/RLS
 → PostgreSQL
 
-Las lecturas de S02 siguen una frontera específica:
+Las lecturas de S02 y S03 siguen una frontera específica:
 
 Server Components
 → server/data-access.ts
