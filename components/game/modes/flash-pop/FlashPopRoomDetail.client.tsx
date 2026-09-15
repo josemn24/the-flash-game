@@ -185,7 +185,9 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       : `posición ${visibleModel.currentUser.roomRank}`;
   const pendingCount = Math.max(
     0,
-    visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length,
+    visibleModel.dailyChallenge
+      ? visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length
+      : 0,
   );
 
   return (
@@ -240,20 +242,23 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         <p className={styles.todayLabel}>HOY</p>
         <DailyChallengeCard model={visibleModel} />
 
-        {visibleModel.dailyChallenge ? (
-          <div className={styles.dailyRanking}>
-            <RoomLeaderboard
-              title="Ranking de hoy"
-              entries={visibleModel.dailyLeaderboard}
-              currentUserId={visibleModel.currentUser.id}
-              daily
-              compact
-              variant="cards"
-              pendingCount={pendingCount}
-              memberHrefBase={`/salas/${visibleModel.roomId}/ranking`}
-            />
-          </div>
-        ) : null}
+        <div className={styles.dailyRanking}>
+          <RoomLeaderboard
+            title="Ranking de hoy"
+            entries={visibleModel.dailyLeaderboard}
+            currentUserId={visibleModel.currentUser.id}
+            daily
+            dailyAvailable={Boolean(visibleModel.dailyChallenge)}
+            compact
+            variant="cards"
+            pendingCount={pendingCount}
+            memberHrefBase={
+              visibleModel.source === "supabase"
+                ? undefined
+                : `/salas/${visibleModel.roomId}/ranking`
+            }
+          />
+        </div>
       </div>
     </Canvas>
   );

@@ -29,9 +29,10 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S04 conectan Auth, provisioning de jugador,
-lecturas de salas y el intento Flash de dos preguntas, incluida su evaluación server-side y
-recuperación. Ranking, historial, administración, otros modos y Storage siguen pendientes.
+recorridos competitivos persistidos en Supabase. S01–S06 conectan Auth, provisioning de jugador,
+lecturas de salas, el intento Flash de dos preguntas, su evaluación server-side, recuperación y
+los rankings de temporada/publicación actual. El historial, administración, otros modos y Storage
+siguen pendientes.
 
 ## Requisitos
 
@@ -54,7 +55,7 @@ npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
-necesita configuración adicional. Para probar S01–S04 con persistencia real, copia `.env.example` a
+necesita configuración adicional. Para probar S01–S06 con persistencia real, copia `.env.example` a
 `.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
 
 ## Comandos disponibles
@@ -145,9 +146,9 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 ## Alcance
 
 Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
-competitivo real acotado. S01–S04 cubren autenticación, perfil, lecturas autorizadas de salas y un
-Flash competitivo persistido con recuperación. Todavía no incluye creación de salas, panel de
-administración, rankings/historial reales, otros modos ni Storage.
+competitivo real acotado. S01–S06 cubren autenticación, perfil, lecturas autorizadas de salas, un
+Flash competitivo persistido con recuperación y sus rankings actuales. Todavía no incluye creación
+de salas, panel de administración, historial/revisión histórica, otros modos ni Storage.
 
 Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
 contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos

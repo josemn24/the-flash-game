@@ -42,6 +42,11 @@ export interface RoomLobbyQueries {
   getIntroduction(roomKey: string, challengeKey: string): Promise<RoomIntroductionModel | null>;
 }
 
+/** Narrow read surface for the authenticated S06 ranking slice. */
+export interface RoomRankingQueries {
+  getRanking(roomKey: string): Promise<RoomRankingModel | null>;
+}
+
 export interface ChallengeQueries {
   getPlayable(
     challengeKey: string,

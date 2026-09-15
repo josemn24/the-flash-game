@@ -2,11 +2,11 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S04 añaden la primera integración real de Supabase y completan el
+La fase 4 está cerrada. S01–S06 añaden la primera integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
-recuperación/abandono`: la home, el detalle de una sala, su introducción y el gameplay Flash consultan
-o mutan mediante fronteras autorizadas. Ranking, historial, ajustes, gestión y los demás modos
-continúan mock hasta sus propias vertical slices.
+recuperación/abandono → rankings`: la home, el detalle de una sala, su introducción, el gameplay
+Flash y los dos rankings consultan o mutan mediante fronteras autorizadas. Historial, ajustes,
+gestión y los demás modos continúan mock hasta sus propias vertical slices.
 
 La dirección vigente es:
 
@@ -17,7 +17,7 @@ Server Components
 → Supabase Auth/RPC/RLS
 → PostgreSQL
 
-Las lecturas de S02 y S03 siguen una frontera específica:
+Las lecturas de S02, S03 y S06 siguen una frontera específica:
 
 Server Components
 → server/data-access.ts
@@ -41,7 +41,8 @@ siendo públicas y estáticas.
 
 ## Contratos de aplicación
 
-`application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries` y `ChallengeQueries`. Esta capa
+`application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
+`RoomRankingQueries` y `ChallengeQueries`. Esta capa
 solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
 
 Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
@@ -59,10 +60,18 @@ intentos y respuestas normalizados.
 `public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
 del propio jugador; no existe DML de aplicación con `service_role`.
 
-La home y el detalle S02 delegan en `SupabaseRoomQueries`. Este adaptador solo implementa
-`listCards`, `getDetail` y `getIntroduction`; no contiene lecturas de ranking, historial ni
-gameplay. Las consultas todavía mock se limitan a los aliases explícitos del demo, por lo que una
+La home, el detalle S02 y los rankings S06 delegan en `SupabaseRoomQueries`. El adaptador implementa
+`listCards`, `getDetail`, `getIntroduction` y `getRanking`. Para una sala real resuelve la temporada
+desde `get_room_detail`, consulta `get_season_ranking` para la página de ranking y consulta en
+paralelo `get_season_ranking`/`get_challenge_ranking` para el detalle. Las filas JSON se validan antes
+de convertirse a view models; los UUID de jugador son el `memberId` canónico y un error RPC se
+propaga. Las consultas todavía mock se limitan a los aliases explícitos del demo, por lo que una
 sala real no puede caer silenciosamente en `MockRoomQueries`.
+
+`get_my_room_cards` reutiliza el mismo `get_season_ranking` para `current_position`. Así, puntos,
+empates y la posición visible en home/detalle proceden de una sola semántica SQL. El RPC de desafío
+mantiene privado `started_at`: el servidor lo usa para ordenar y S06 no lo muestra; el detalle de
+miembro/histórico que pueda necesitarlo queda explícitamente en S07.
 
 La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del cliente puede elegir
 la identidad de consulta. Sus funciones usan `cache` de React para compartir una misma promesa
@@ -115,7 +124,9 @@ adaptadores internos que todavía necesita para entregar los modelos de gameplay
 - la infraestructura mock no consume proyecciones legacy de nivel superior;
 - la fachada conserva `server-only` y la memoización de petición.
 
-Los tests de contrato se ejecutan contra los adaptadores mock e incluyen acceso inexistente o
+Los tests de contrato se ejecutan contra los adaptadores mock y el adaptador Supabase incluye acceso
+inexistente/temporada ausente, transformación de filas, UUID del usuario actual y propagación de
+errores RPC. La cobertura SQL incluye acceso inexistente o
 ajeno, owner, admin, spectator, antiguo miembro, alias inválido, empates, intentos invalidados,
 publicaciones canceladas, historial vacío, publicaciones sin participantes y conteo de intentos
 iniciados.
@@ -123,17 +134,17 @@ iniciados.
 ## Siguiente frontera
 
 El runner reproducible de escenarios vive en `scripts/supabase-fixture.mjs` y escribe sus
-credenciales en `output/fixtures/<scenario>.json`, que está ignorado por Git. S02 se crea y valida
+credenciales en `output/fixtures/<scenario>.json`, que está ignorado por Git. S06 se crea y valida
 con:
 
 ```bash
 npm run supabase:db:reset
-npm run supabase:fixture -- --scenario s02
-npm run test:integration:supabase -- --scenario s02
-npm run test:e2e -- e2e/s02-rooms.spec.ts
+npm run supabase:fixture -- --scenario s06
+npm run test:integration:supabase -- --scenario s06
+npm run test:e2e -- e2e/s06-ranking.spec.ts
 ```
 
-La limpieza usa `npm run supabase:fixture -- --scenario s02 --clean` y reinicia únicamente la base
-local. La definición de datos de S02 está aislada en `scripts/fixtures/scenarios/s02.mjs` y sus
-aserciones en `scripts/integration/scenarios/s02.mjs`; una fase posterior puede añadir S03 sin
-crear nuevos runners ni comandos en `package.json`.
+La limpieza usa `npm run supabase:fixture -- --scenario s06 --clean` y reinicia únicamente la base
+local. La definición de datos de S06, basada en el fixture Flash de S03, está aislada en
+`scripts/fixtures/scenarios/s06.mjs`, con aserciones en `scripts/integration/scenarios/s06.mjs` y
+el recorrido de navegador en `e2e/s06-ranking.spec.ts`.

@@ -1,10 +1,6 @@
--- S02 read projections. They are the only public boundary into private challenge metadata.
--- This file is intentionally ordered before 80_rankings.sql; defer body checking for
--- the forward reference used by current_position until the complete schema is loaded.
-set local check_function_bodies = off;
--- The current Auth identity is resolved from the verified claim; no player/room ownership
--- decision is delegated to a client-supplied identity.
-create function public.get_my_room_cards()
+-- S06: expose the season position already returned by the real ranking RPC.
+-- The function signature and its existing grants remain unchanged.
+create or replace function public.get_my_room_cards()
 returns table (
   room_id              uuid,
   room_slug            text,
@@ -12,10 +8,10 @@ returns table (
   room_description     text,
   membership_role      text,
   season_id            uuid,
-  season_title        text,
+  season_title         text,
   season_status        text,
-  season_starts_at    timestamptz,
-  season_ends_at      timestamptz,
+  season_starts_at     timestamptz,
+  season_ends_at       timestamptz,
   publication_id       uuid,
   publication_status   text,
   opens_at             timestamptz,
@@ -134,88 +130,3 @@ language sql stable security definer set search_path = '' as $$
   ) publication on true
   order by r.title, r.id
 $$;
-
-set local check_function_bodies = on;
-
--- Detail deliberately reuses the same authorization and projection as the home card.
-create function public.get_room_detail(target_room_slug text)
-returns table (
-  room_id              uuid,
-  room_slug            text,
-  room_title           text,
-  room_description     text,
-  membership_role      text,
-  season_id            uuid,
-  season_title        text,
-  season_status        text,
-  season_starts_at    timestamptz,
-  season_ends_at      timestamptz,
-  publication_id       uuid,
-  publication_status   text,
-  opens_at             timestamptz,
-  closes_at            timestamptz,
-  challenge_title      text,
-  challenge_subtitle   text,
-  challenge_mode       text,
-  challenge_max_score  integer,
-  question_count       bigint,
-  competitive_playable boolean,
-  member_count         bigint,
-  member_previews      jsonb,
-  current_flash_points bigint,
-  current_position     bigint
-)
-language sql stable security definer set search_path = '' as $$
-  select cards.*
-  from public.get_my_room_cards() cards
-  where cards.room_slug = target_room_slug
-$$;
-
--- Introduction metadata is scoped by both the persisted room slug and publication id.
--- It cannot be used to fetch a private challenge version or any question payload.
-create function public.get_room_introduction(target_room_slug text, target_publication_id uuid)
-returns table (
-  room_id             uuid,
-  room_slug           text,
-  room_title          text,
-  membership_role     text,
-  publication_id      uuid,
-  publication_status  text,
-  opens_at            timestamptz,
-  closes_at           timestamptz,
-  challenge_title     text,
-  challenge_subtitle  text,
-  challenge_mode      text,
-  challenge_max_score integer,
-  question_count      bigint,
-  competitive_playable boolean
-)
-language sql stable security definer set search_path = '' as $$
-  select
-    cards.room_id,
-    cards.room_slug,
-    cards.room_title,
-    cards.membership_role,
-    cards.publication_id,
-    cards.publication_status,
-    cards.opens_at,
-    cards.closes_at,
-    cards.challenge_title,
-    cards.challenge_subtitle,
-    cards.challenge_mode,
-    cards.challenge_max_score,
-    cards.question_count,
-    cards.competitive_playable
-  from public.get_my_room_cards() cards
-  where cards.room_slug = target_room_slug
-    and cards.publication_id = target_publication_id
-$$;
-
-alter function public.get_my_room_cards() owner to postgres;
-alter function public.get_room_detail(text) owner to postgres;
-alter function public.get_room_introduction(text, uuid) owner to postgres;
-
-revoke all on function public.get_my_room_cards(), public.get_room_detail(text),
-  public.get_room_introduction(text, uuid) from public, anon, service_role;
-grant execute on function public.get_my_room_cards(), public.get_room_detail(text),
-  public.get_room_introduction(text, uuid) to authenticated;

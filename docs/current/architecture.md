@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S04 implementadas sobre Supabase local y el
+> Estado: vigente. Arquitectura de transición con S01–S06 implementadas sobre Supabase local y el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -183,7 +183,7 @@ en el MVP. La recuperación debe ser una operación de dominio: reconcilia una r
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
-auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S04
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S06
 verifica Auth y establece identidad con claims locales a cada transacción. No se expone `private` por
 PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 
@@ -198,7 +198,7 @@ Adaptadores previstos:
 ```text
 infrastructure/
   mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S04
+  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S06
 ```
 
 Reglas de persistencia:
@@ -377,10 +377,10 @@ Page server
   → al finalizar, revalida sala, ranking e historial
 ```
 
-La situación actual difiere en tres puntos intencionados del prototipo: `demoIdentity` sustituye la
-autenticación, `RoomSessionProvider` mantiene resultados y snapshots en memoria, y el cliente todavía
-recibe soluciones para evaluar localmente. Esas piezas son puntos de sustitución, no el contrato de
-la arquitectura productiva.
+En las rutas aún mock, la situación actual difiere en tres puntos intencionados del prototipo:
+`demoIdentity` sustituye la autenticación, `RoomSessionProvider` mantiene resultados y snapshots en
+memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S06 ya usan Auth/RPC
+reales en sus recorridos; esas piezas mock son puntos de sustitución, no el contrato productivo.
 
 ## 6. Decisiones técnicas relevantes
 
@@ -485,8 +485,9 @@ deben vivir en el servidor.
   sustituye a la otra.
 - El envío de respuestas, checkpoints y señales de abandono necesita límites de frecuencia y una
   estrategia para reintentos de red.
-- Finalización/acreditación atómica está implementada y probada en SQL; falta conectar el adaptador.
-- Queda pendiente decidir cuándo materializar rankings/historial y cómo invalidar sus lecturas.
+- Finalización/acreditación atómica y lecturas de los dos rankings están implementadas y probadas en
+  SQL/adapter; S06 lee rankings bajo demanda y no materializa tablas adicionales.
+- Queda pendiente el ranking histórico, historial/revisión y su política de consolidación/invalidación.
 - Invalidación y corrección exigen superadmin, motivo y auditoría. La revisión de intentos
   `invalidated`, inspección global y moderación siguen pendientes de política administrativa.
 - La anonimización debe coordinar identidad, avatar, actividad social y retención histórica.

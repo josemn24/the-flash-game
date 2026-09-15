@@ -360,9 +360,32 @@ select is((select count(*) from public.get_season_ranking(pg_temp.test_id('seaso
   2::bigint, 'Equal season points share first position regardless of duration');
 select is((select position from public.get_season_ranking(pg_temp.test_id('season-a')) where player_id = pg_temp.test_id('member')),
   3::bigint, 'Competition ranking skips a position after a tie');
+select is(
+  (select current_position from public.get_my_room_cards() where room_id = pg_temp.test_id('room-a')),
+  (select position from public.get_season_ranking(pg_temp.test_id('season-a'))
+    where player_id = pg_temp.test_id('admin')),
+  'Room cards reuse the season ranking position');
 select is((select position from public.get_challenge_ranking(pg_temp.test_id('sc-a')) where player_id = pg_temp.test_id('admin')),
   2::bigint, 'Challenge ranking breaks equal points by effective duration');
 reset role;
+
+-- A former competitor with an accredited result remains visible to an active member.
+update public.room_memberships
+set status = 'left', ended_at = statement_timestamp()
+where room_id = pg_temp.test_id('room-a') and player_id = pg_temp.test_id('admin');
+select set_config('request.jwt.claims', jsonb_build_object('sub', pg_temp.test_id('auth-owner'))::text, true);
+set local role authenticated;
+select is((select count(*) from public.get_season_ranking(pg_temp.test_id('season-a'))
+  where player_id = pg_temp.test_id('admin')), 1::bigint,
+  'Former competitor with points remains in season ranking');
+select ok((select is_former_member from public.get_season_ranking(pg_temp.test_id('season-a'))
+  where player_id = pg_temp.test_id('admin')),
+  'Former competitor is marked as historical without a new visual signal');
+reset role;
+update public.room_memberships
+set status = 'active', ended_at = null
+where room_id = pg_temp.test_id('room-a') and player_id = pg_temp.test_id('admin');
+select set_config('request.jwt.claims', jsonb_build_object('sub', pg_temp.test_id('auth-admin'))::text, true);
 update public.attempts set status = 'invalidated', terminal_reason = 'test invalidation', lock_version = lock_version + 1
 where id = pg_temp.test_id('attempt-admin');
 set local role authenticated;

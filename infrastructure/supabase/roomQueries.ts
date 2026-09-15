@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { RoomLobbyQueries } from "@/application/queries";
+import type { RoomLobbyQueries, RoomRankingQueries } from "@/application/queries";
 import {
   getChallengeDisplayTitle,
   getChallengeFormatLabel,
@@ -10,9 +10,12 @@ import { createClient } from "@/lib/supabase/server";
 import type { GameMode } from "@/types/gameplay/challenge";
 import type {
   RoomCardModel,
+  RoomDailyLeaderboardEntry,
   RoomDetailModel,
   RoomIntroductionModel,
+  RoomLeaderboardEntry,
   RoomMembershipRole,
+  RoomRankingModel,
 } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 
@@ -22,6 +25,7 @@ type RoomReadRow = {
   room_title: string;
   room_description: string | null;
   membership_role: RoomMembershipRole;
+  season_id: string | null;
   season_title: string | null;
   season_status: "draft" | "scheduled" | "active" | "finished" | "cancelled" | null;
   season_starts_at: string | null;
@@ -59,6 +63,24 @@ type RoomIntroductionReadRow = {
   competitive_playable: boolean;
 };
 
+type ChallengeRankingReadRow = {
+  player_id: string;
+  display_name: string;
+  avatar_path: string | null;
+  flash_points: number;
+  duration_ms: number;
+  position: number;
+};
+
+type SeasonRankingReadRow = {
+  player_id: string;
+  display_name: string;
+  avatar_path: string | null;
+  flash_points: number;
+  is_former_member: boolean;
+  position: number;
+};
+
 const roomRoles = new Set<RoomMembershipRole>(["owner", "admin", "member", "spectator"]);
 const gameModes = new Set<GameMode>(["flash", "alphabet", "survival", "narrative", "pyramid"]);
 
@@ -72,6 +94,7 @@ function isRoomReadRow(value: unknown): value is RoomReadRow {
     (row.room_description === null || typeof row.room_description === "string") &&
     typeof row.membership_role === "string" &&
     roomRoles.has(row.membership_role as RoomMembershipRole) &&
+    (row.season_id === null || typeof row.season_id === "string") &&
     (row.season_title === null || typeof row.season_title === "string") &&
     (row.season_status === null || typeof row.season_status === "string") &&
     (row.season_starts_at === null || typeof row.season_starts_at === "string") &&
@@ -90,6 +113,42 @@ function isRoomReadRow(value: unknown): value is RoomReadRow {
     (row.current_position === null || typeof row.current_position === "number") &&
     Array.isArray(row.member_previews) &&
     typeof row.member_count === "number"
+  );
+}
+
+function isChallengeRankingReadRow(value: unknown): value is ChallengeRankingReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.player_id === "string" &&
+    typeof row.display_name === "string" &&
+    (row.avatar_path === null || typeof row.avatar_path === "string") &&
+    typeof row.flash_points === "number" &&
+    Number.isFinite(row.flash_points) &&
+    row.flash_points >= 0 &&
+    typeof row.duration_ms === "number" &&
+    Number.isFinite(row.duration_ms) &&
+    row.duration_ms >= 0 &&
+    typeof row.position === "number" &&
+    Number.isInteger(row.position) &&
+    row.position > 0
+  );
+}
+
+function isSeasonRankingReadRow(value: unknown): value is SeasonRankingReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.player_id === "string" &&
+    typeof row.display_name === "string" &&
+    (row.avatar_path === null || typeof row.avatar_path === "string") &&
+    typeof row.flash_points === "number" &&
+    Number.isFinite(row.flash_points) &&
+    row.flash_points >= 0 &&
+    typeof row.is_former_member === "boolean" &&
+    typeof row.position === "number" &&
+    Number.isInteger(row.position) &&
+    row.position > 0
   );
 }
 
@@ -206,7 +265,41 @@ function toCard(row: RoomReadRow): RoomCardModel {
   };
 }
 
-function toDetail(row: RoomReadRow, viewer: { id: string; name: string; avatarSrc?: string }) {
+function toSeasonLeaderboard(rows: SeasonRankingReadRow[]): RoomLeaderboardEntry[] {
+  return rows.map((row) => ({
+    rank: row.position,
+    memberId: row.player_id,
+    name: row.display_name,
+    initials: initials(row.display_name),
+    avatarSrc: row.avatar_path ?? undefined,
+    flashPoints: row.flash_points,
+  }));
+}
+
+function toChallengeLeaderboard(rows: ChallengeRankingReadRow[]): RoomDailyLeaderboardEntry[] {
+  return rows.map((row) => ({
+    rank: row.position,
+    memberId: row.player_id,
+    name: row.display_name,
+    initials: initials(row.display_name),
+    avatarSrc: row.avatar_path ?? undefined,
+    flashPoints: row.flash_points,
+    completed: true,
+    durationMs: row.duration_ms,
+    // The existing public RPC keeps started_at private; its server-side ordering
+    // is authoritative and S06 does not render this field. S07 can expose it via
+    // a dedicated historical read contract if the member detail needs it.
+    startedAt: "",
+  }));
+}
+
+function toDetail(
+  row: RoomReadRow,
+  viewer: { id: string; name: string; avatarSrc?: string },
+  roomLeaderboard: RoomLeaderboardEntry[],
+  dailyLeaderboard: RoomDailyLeaderboardEntry[],
+) {
+  const dailyEntry = dailyLeaderboard.find(({ memberId }) => memberId === viewer.id);
   const dailyChallenge = toChallengeSummary(
     row,
     `/salas/${row.room_slug}/introduccion/${row.publication_id ?? ""}`,
@@ -224,8 +317,8 @@ function toDetail(row: RoomReadRow, viewer: { id: string; name: string; avatarSr
       avatarSrc: viewer.avatarSrc,
       totalFlashPoints: row.current_flash_points,
       roomRank: row.current_position,
-      dailyFlashPoints: 0,
-      dailyCompleted: false,
+      dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
+      dailyCompleted: Boolean(dailyEntry),
       dailyAttemptStatus: "available",
       role: row.membership_role,
     },
@@ -235,8 +328,8 @@ function toDetail(row: RoomReadRow, viewer: { id: string; name: string; avatarSr
           endsAt: dailyChallenge.availableUntil,
         }
       : null,
-    roomLeaderboard: [],
-    dailyLeaderboard: [],
+    roomLeaderboard,
+    dailyLeaderboard,
     source: "supabase",
   };
   return detail;
@@ -275,7 +368,26 @@ async function callRoomRead(
   return data.filter(guard);
 }
 
-export class SupabaseRoomQueries implements RoomLobbyQueries {
+async function callRankingRead<T>(
+  functionName: "get_challenge_ranking" | "get_season_ranking",
+  args: Record<string, string>,
+  guard: (value: unknown) => value is T,
+): Promise<T[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(functionName, args);
+  if (error) throw new Error(`Supabase ranking read failed (${functionName}): ${error.message}`);
+  if (!Array.isArray(data)) {
+    throw new Error(`Supabase ranking read returned an invalid payload (${functionName})`);
+  }
+  return data.map((value, index) => {
+    if (!guard(value)) {
+      throw new Error(`Supabase ranking read returned an invalid row (${functionName}, ${index})`);
+    }
+    return value;
+  });
+}
+
+export class SupabaseRoomQueries implements RoomLobbyQueries, RoomRankingQueries {
   async listCards() {
     return (await callRoomRead("get_my_room_cards")).map(toCard);
   }
@@ -285,7 +397,31 @@ export class SupabaseRoomQueries implements RoomLobbyQueries {
     if (!viewer) return null;
     const rows = await callRoomRead("get_room_detail", { target_room_slug: roomKey });
     const row = rows[0];
-    return row ? toDetail(row, viewer) : null;
+    if (!row) return null;
+
+    const [seasonRows, dailyRows] = await Promise.all([
+      row.season_id
+        ? callRankingRead(
+            "get_season_ranking",
+            { target_season_id: row.season_id },
+            isSeasonRankingReadRow,
+          )
+        : Promise.resolve([]),
+      row.publication_id && row.publication_status === "open"
+        ? callRankingRead(
+            "get_challenge_ranking",
+            { target_publication_id: row.publication_id },
+            isChallengeRankingReadRow,
+          )
+        : Promise.resolve([]),
+    ]);
+
+    return toDetail(
+      row,
+      viewer,
+      toSeasonLeaderboard(seasonRows),
+      toChallengeLeaderboard(dailyRows),
+    );
   }
 
   async getIntroduction(roomKey: string, challengeKey: string) {
@@ -299,6 +435,27 @@ export class SupabaseRoomQueries implements RoomLobbyQueries {
       isRoomIntroductionReadRow,
     );
     return rows[0] ? toIntroduction(rows[0]) : null;
+  }
+
+  async getRanking(roomKey: string): Promise<RoomRankingModel | null> {
+    const viewer = await getCurrentViewerProfile();
+    if (!viewer) return null;
+
+    const rows = await callRoomRead("get_room_detail", { target_room_slug: roomKey });
+    const row = rows[0];
+    if (!row || !row.season_id) return null;
+
+    const rankingRows = await callRankingRead(
+      "get_season_ranking",
+      { target_season_id: row.season_id },
+      isSeasonRankingReadRow,
+    );
+    return {
+      roomId: row.room_slug,
+      roomTitle: row.room_title,
+      currentUserId: viewer.playerId,
+      entries: toSeasonLeaderboard(rankingRows),
+    };
   }
 }
 

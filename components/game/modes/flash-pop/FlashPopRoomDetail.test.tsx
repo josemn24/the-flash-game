@@ -57,7 +57,9 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
     expect(markup).not.toContain("Jugar");
     expect(markup).not.toContain("Tiempo restante");
-    expect(markup).not.toContain("Ranking de hoy");
+    expect(markup).toContain("Ranking de hoy");
+    expect(markup).toContain("Sin reto disponible hoy.");
+    expect(markup).not.toContain("pendientes por jugar");
   });
 
   it("does not add the season calendar, chat or activity feed", async () => {

@@ -1,8 +1,9 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-15. **22 tablas**, una vista
-interna, funciones públicas de lectura/ranking y comandos privados de servidor. S01–S04 conectan
+interna, funciones públicas de lectura/ranking y comandos privados de servidor. S01–S06 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo.
+S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
 Las capacidades restantes siguen usando mocks o están pendientes. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
@@ -182,7 +183,9 @@ No hay INSERT/DELETE directos ni políticas permisivas para ellos. Las siete pol
 cubren seis SELECT y UPDATE del nombre con `USING` y `WITH CHECK`. Todas las tablas tienen RLS.
 `private.effective_results` es una vista invoker accesible al servicio; los rankings públicos solo
 son ejecutables por `authenticated` y comprueban membresía, devolviendo datos sociales
-mínimos. `anon` no puede ejecutarlos.
+mínimos. `anon` no puede ejecutarlos. `get_challenge_ranking` ordena por puntos, duración efectiva
+y `started_at` en servidor, aunque mantiene `started_at` fuera de su retorno público; el adaptador
+S06 consume el orden y los campos expuestos sin inventar esa fecha.
 
 ## Denegación futura e inventario
 
@@ -224,10 +227,11 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: **263 comprobaciones SQL**, carreras entre conexiones independientes y
-**518 pruebas TypeScript** superadas. También pasan comprobación de tipos, arquitectura de tipos,
+Validación local actual: **266 comprobaciones SQL**, carreras entre conexiones independientes y
+**523 pruebas TypeScript** superadas. También pasan comprobación de tipos, arquitectura de tipos,
 ESLint y los enlaces de documentación. La suite SQL no sustituye las pruebas Auth/HTTP/E2E, que se
-ejecutan en los escenarios locales de S01–S04.
+ejecutan en los escenarios locales de S01–S06; S06 añade integración PostgREST y E2E de dos
+rankings tras refrescar.
 
 La credencial `service_role` sigue siendo confiable: tiene lectura interna amplia, puede invocar el
 evaluador privilegiado y puede establecer claims en una conexión SQL. Evitar endpoints genéricos que
