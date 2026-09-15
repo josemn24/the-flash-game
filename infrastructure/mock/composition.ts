@@ -1,4 +1,4 @@
-import { demoIdentity } from "@/data/mock/constants";
+import { demoIdentity, roomRouteAliases } from "@/data/mock/constants";
 import { mockDomainStore } from "@/data/mock/store";
 import { MockChallengeQueries } from "@/infrastructure/mock/challengeQueries";
 import { MockCurrentViewerProvider } from "@/infrastructure/mock/currentViewer";
@@ -10,3 +10,7 @@ export const mockCurrentViewerProvider = new MockCurrentViewerProvider(
 );
 export const mockRoomQueries = new MockRoomQueries(mockDomainStore);
 export const mockChallengeQueries = new MockChallengeQueries(mockDomainStore);
+
+export function isMockRoomRoute(roomKey: string) {
+  return Object.hasOwn(roomRouteAliases, roomKey);
+}

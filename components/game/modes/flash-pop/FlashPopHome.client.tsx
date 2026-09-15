@@ -114,7 +114,7 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
               const imageAlt = challenge
                 ? `Ilustración del desafío ${challenge.title}`
                 : `Ilustración de la sala ${room.title}`;
-              const isClosed = room.seasonStatus !== "active";
+              const isClosed = room.seasonStatus !== null && room.seasonStatus !== "active";
 
               return (
                 <Link
@@ -179,7 +179,11 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
                         </span>
                         <span className={styles.statBadge}>
                           <TrophyIcon aria-hidden="true" />
-                          <strong>#{room.currentUser.roomRank}</strong>
+                          <strong>
+                            {room.currentUser.roomRank === null
+                              ? "—"
+                              : `#${room.currentUser.roomRank}`}
+                          </strong>
                           <span className={styles.visuallyHidden}> ranking</span>
                         </span>
                       </div>

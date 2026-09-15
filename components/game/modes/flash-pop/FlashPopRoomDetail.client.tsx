@@ -96,6 +96,7 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
   }
 
   const attemptStatus = model.currentUser.dailyAttemptStatus;
+  const isSpectator = model.currentUser.role === "spectator";
   const resultHref = `/salas/${model.roomId}/ranking/${model.currentUser.id}`;
   const actionHref =
     attemptStatus === "completed" || attemptStatus === "notCompleted" ? resultHref : challenge.href;
@@ -141,9 +142,15 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 
       <div className={styles.challengeFooter}>
         <span className={styles.challengeFormat}>{challenge.formatLabel}</span>
-        <ButtonLink href={actionHref} size="sm" trailingIcon={<ArrowIcon />}>
-          {actionLabel}
-        </ButtonLink>
+        {isSpectator ? (
+          <ButtonLink href={challenge.href} size="sm" trailingIcon={<ArrowIcon />}>
+            Ver introducción
+          </ButtonLink>
+        ) : (
+          <ButtonLink href={actionHref} size="sm" trailingIcon={<ArrowIcon />}>
+            {actionLabel}
+          </ButtonLink>
+        )}
       </div>
     </Card>
   );
@@ -151,9 +158,12 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 
 export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
   const { getCompletion } = useRoomSession();
-  const completion = model.dailyChallenge
-    ? getCompletion(model.roomId, model.dailyChallenge.id)
-    : undefined;
+  const completion =
+    model.source === "supabase"
+      ? undefined
+      : model.dailyChallenge
+        ? getCompletion(model.roomId, model.dailyChallenge.id)
+        : undefined;
   const visibleModel = completion
     ? applyRoomChallengeResult(model, {
         roomId: model.roomId,
@@ -169,6 +179,10 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
 
   const rankingHref = `/salas/${visibleModel.roomId}/ranking`;
   const historyHref = `/salas/${visibleModel.roomId}/historial`;
+  const positionLabel =
+    visibleModel.currentUser.roomRank === null
+      ? "sin posición"
+      : `posición ${visibleModel.currentUser.roomRank}`;
   const pendingCount = Math.max(
     0,
     visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length,
@@ -204,7 +218,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       <Link
         href={rankingHref}
         className={styles.statPill}
-        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalFlashPoints} Flash Points, posición ${visibleModel.currentUser.roomRank}`}
+        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalFlashPoints} Flash Points, ${positionLabel}`}
       >
         <StatItem
           label="Flash Points"
@@ -213,7 +227,11 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         />
         <StatItem
           label="Posición"
-          value={`#${visibleModel.currentUser.roomRank}`}
+          value={
+            visibleModel.currentUser.roomRank === null
+              ? "—"
+              : `#${visibleModel.currentUser.roomRank}`
+          }
           icon={<TrophyIcon />}
         />
       </Link>

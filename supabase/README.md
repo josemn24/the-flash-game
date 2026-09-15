@@ -68,6 +68,27 @@ En S01, la aplicación usa `@supabase/ssr` con el cliente publicable de Supabase
 flujo local, copia `.env.example` a `.env.local` y rellena la clave publicada a partir de
 `npx supabase status`; nunca uses `service_role` en el navegador ni en Server Actions.
 
+S02 añade las proyecciones de lectura `public.get_my_room_cards`, `public.get_room_detail` y
+`public.get_room_introduction` en `schemas/55_room_reads.sql`. Son funciones estrechas para la
+home, el detalle y la introducción autorizada; las preguntas, soluciones y payloads siguen en
+`private` y no se exponen al cliente. El adaptador de servidor está en
+`infrastructure/supabase/roomQueries.ts`.
+
+Los escenarios locales no son seeds globales. Se crean con cuentas Auth reales y datos de dominio
+mediante mantenimiento local. El runner es común y recibe el identificador del escenario:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario s02
+npm run test:integration:supabase -- --scenario s02
+npm run test:e2e -- e2e/s02-rooms.spec.ts
+```
+
+Las credenciales temporales se guardan en `output/fixtures/<scenario>.json` (ignorado por Git).
+Para limpiar un escenario, ejecuta `npm run supabase:fixture -- --scenario s02 --clean`, que hace
+`db reset --local`. El fixture es la única fuente de datos del E2E S02; no se debe convertir en
+`supabase/seed.sql`.
+
 El comando `db diff` no es el workflow declarativo de este repositorio: en la versión actual de la
 CLI su baseline es el historial de migraciones y no la ruta declarativa configurada.
 

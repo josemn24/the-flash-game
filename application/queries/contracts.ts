@@ -4,6 +4,7 @@ import type {
   QueryContext,
   RoomCardModel,
   RoomDetailModel,
+  RoomIntroductionModel,
   RoomHistoryDetailModel,
   RoomHistoryListModel,
   RoomMemberDetailModel,
@@ -32,6 +33,13 @@ export interface RoomQueries {
     challengeKey: string,
     context: QueryContext,
   ): Promise<RoomHistoryDetailModel | null>;
+}
+
+/** Narrow read surface for the authenticated S02 room-lobby slice. */
+export interface RoomLobbyQueries {
+  listCards(): Promise<RoomCardModel[]>;
+  getDetail(roomKey: string): Promise<RoomDetailModel | null>;
+  getIntroduction(roomKey: string, challengeKey: string): Promise<RoomIntroductionModel | null>;
 }
 
 export interface ChallengeQueries {

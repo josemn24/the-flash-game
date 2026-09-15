@@ -2,10 +2,12 @@ import "server-only";
 
 import { cache } from "react";
 import {
+  isMockRoomRoute,
   mockChallengeQueries,
   mockCurrentViewerProvider,
   mockRoomQueries,
 } from "@/infrastructure/mock/composition";
+import { supabaseRoomQueries } from "@/infrastructure/supabase/roomQueries";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
@@ -24,38 +26,51 @@ export const getHomePageModel = cache(async () => {
   const viewer = await getCurrentViewerProfile();
   if (!viewer) return null;
 
-  // S01 owns the authenticated home. Rooms become real in S02; do not mix
-  // demo memberships with an authenticated Player.
-  return { rooms: [], currentViewer: viewer };
+  return {
+    rooms: await supabaseRoomQueries.listCards(),
+    currentViewer: viewer,
+  };
 });
 
 export const getRoomDetailPageModel = cache(async (roomKey: string) =>
-  mockRoomQueries.getDetail(roomKey, await getQueryContext()),
+  isMockRoomRoute(roomKey)
+    ? mockRoomQueries.getDetail(roomKey, await getQueryContext())
+    : supabaseRoomQueries.getDetail(roomKey),
+);
+
+export const getRoomIntroductionPageModel = cache(async (roomKey: string, challengeKey: string) =>
+  supabaseRoomQueries.getIntroduction(roomKey, challengeKey),
 );
 
 export const getRoomSettingsPageModel = cache(async (roomKey: string) =>
-  mockRoomQueries.getSettings(roomKey, await getQueryContext()),
+  isMockRoomRoute(roomKey) ? mockRoomQueries.getSettings(roomKey, await getQueryContext()) : null,
 );
 
 export const getRoomRankingPageModel = cache(async (roomKey: string) =>
-  mockRoomQueries.getRanking(roomKey, await getQueryContext()),
+  isMockRoomRoute(roomKey) ? mockRoomQueries.getRanking(roomKey, await getQueryContext()) : null,
 );
 
 export const getRoomMemberDetailPageModel = cache(async (roomKey: string, memberKey: string) =>
-  mockRoomQueries.getMemberDetail(roomKey, memberKey, await getQueryContext()),
+  isMockRoomRoute(roomKey)
+    ? mockRoomQueries.getMemberDetail(roomKey, memberKey, await getQueryContext())
+    : null,
 );
 
 export const getRoomHistoryPageModel = cache(async (roomKey: string) =>
-  mockRoomQueries.listHistory(roomKey, await getQueryContext()),
+  isMockRoomRoute(roomKey) ? mockRoomQueries.listHistory(roomKey, await getQueryContext()) : null,
 );
 
 export const getRoomHistoryDetailPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  mockRoomQueries.getHistoryDetail(roomKey, challengeKey, await getQueryContext()),
+  isMockRoomRoute(roomKey)
+    ? mockRoomQueries.getHistoryDetail(roomKey, challengeKey, await getQueryContext())
+    : null,
 );
 
 export const getPlayableChallengePageModel = cache(
-  async (challengeKey: string, roomKey: string | null = null) =>
-    mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext()),
+  async (challengeKey: string, roomKey: string | null = null) => {
+    if (roomKey && !isMockRoomRoute(roomKey)) return null;
+    return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
+  },
 );
 
 export const getFlashPopLobbyPageModel = cache(async () =>

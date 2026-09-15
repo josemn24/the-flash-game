@@ -1,8 +1,11 @@
-import type { Challenge, ChallengeAvailabilityStatus } from "@/types/gameplay/challenge";
+import type { Challenge, ChallengeAvailabilityStatus, GameMode } from "@/types/gameplay/challenge";
 import type { RoomChallengeResult } from "@/types/gameplay/completion";
 import type { LegacySeasonStatus } from "@/types/legacy/room";
 
 export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
+
+export type RoomMembershipRole = "owner" | "admin" | "member" | "spectator";
+export type RoomDataSource = "mock" | "supabase";
 
 export type GameRoomContext = {
   roomId: string;
@@ -41,8 +44,8 @@ export type RoomDailyLeaderboardEntry = RoomLeaderboardEntry & {
 export type RoomCardModel = {
   roomId: string;
   title: string;
-  seasonTitle: string;
-  seasonStatus: LegacySeasonStatus;
+  seasonTitle: string | null;
+  seasonStatus: LegacySeasonStatus | null;
   dailyChallenge: {
     id: string;
     title: string;
@@ -54,7 +57,8 @@ export type RoomCardModel = {
   } | null;
   currentUser: {
     totalFlashPoints: number;
-    roomRank: number;
+    roomRank: number | null;
+    role?: RoomMembershipRole;
   };
   memberPreviews: Array<{
     id: string;
@@ -64,23 +68,25 @@ export type RoomCardModel = {
   }>;
   memberCount: number;
   href: string;
+  source?: RoomDataSource;
 };
 
 export type RoomDetailModel = {
   roomId: string;
   title: string;
-  seasonTitle: string;
-  seasonStatus: LegacySeasonStatus;
+  seasonTitle: string | null;
+  seasonStatus: LegacySeasonStatus | null;
   currentUser: {
     id: string;
     name: string;
     initials: string;
     avatarSrc?: string;
     totalFlashPoints: number;
-    roomRank: number;
+    roomRank: number | null;
     dailyFlashPoints: number;
     dailyCompleted: boolean;
     dailyAttemptStatus: CompetitiveAttemptStatus;
+    role?: RoomMembershipRole;
   };
   dailyChallenge: {
     id: string;
@@ -94,6 +100,25 @@ export type RoomDetailModel = {
   } | null;
   roomLeaderboard: RoomLeaderboardEntry[];
   dailyLeaderboard: RoomDailyLeaderboardEntry[];
+  source?: RoomDataSource;
+};
+
+/** Safe projection used by the S02 introduction route. */
+export type RoomIntroductionModel = {
+  roomId: string;
+  roomTitle: string;
+  role: RoomMembershipRole;
+  publicationId: string;
+  publicationStatus: "scheduled" | "open" | "closed" | "cancelled";
+  opensAt: string;
+  closesAt: string;
+  challengeTitle: string;
+  challengeSubtitle: string | null;
+  mode: GameMode;
+  maxScore: number;
+  questionCount: number;
+  canStart: boolean;
+  source: "supabase";
 };
 
 export type RoomMemberDetailModel = {

@@ -1,6 +1,6 @@
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { Challenge, NarrativeQuestionStep } from "@/types/game";
+import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/game";
 
 export type ChallengeIntroMetric = {
   value: string | number;
@@ -46,7 +46,11 @@ function getQuestionFormats(challenge: Challenge) {
 }
 
 function getModeLabel(challenge: Challenge) {
-  switch (challenge.mode) {
+  return getModeLabelForMode(challenge.mode);
+}
+
+function getModeLabelForMode(mode: GameMode) {
+  switch (mode) {
     case "flash":
       return "Flash clásico";
     case "survival":
@@ -58,6 +62,47 @@ function getModeLabel(challenge: Challenge) {
     case "pyramid":
       return "La Pirámide";
   }
+}
+
+function buildSafeRules(
+  mode: GameMode,
+): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
+  switch (mode) {
+    case "flash":
+      return buildFlashRules();
+    case "survival":
+      return buildSurvivalRules(3);
+    case "alphabet":
+      return buildAlphabetRules();
+    case "narrative":
+      return buildNarrativeRules();
+    case "pyramid":
+      return buildPyramidRules();
+  }
+}
+
+export type SafeChallengeIntroduction = {
+  title: string;
+  mode: GameMode;
+  questionCount: number;
+  maxScore: number;
+};
+
+export function buildSafeChallengeIntroModel(
+  introduction: SafeChallengeIntroduction,
+): ChallengeIntroModel {
+  const modeLabel = getModeLabelForMode(introduction.mode);
+  return {
+    modeLabel,
+    contextLabel: `Reto de hoy · ${modeLabel}`,
+    title: introduction.title,
+    metrics: [
+      { value: introduction.questionCount, label: "Preguntas" },
+      { value: introduction.maxScore, label: "Puntos" },
+      { value: modeLabel, label: "Formato" },
+    ],
+    rules: buildSafeRules(introduction.mode),
+  };
 }
 
 function buildFlashRules(): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {

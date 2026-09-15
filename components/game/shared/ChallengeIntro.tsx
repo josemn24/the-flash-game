@@ -4,24 +4,46 @@ import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { ArrowIcon, Button, Chip, GameHeader } from "@/components/ui";
-import { buildChallengeIntroModel } from "@/lib/challengeIntro";
+import {
+  buildChallengeIntroModel,
+  buildSafeChallengeIntroModel,
+  type SafeChallengeIntroduction,
+} from "@/lib/challengeIntro";
 import type { Challenge } from "@/types/game";
 import styles from "./ChallengeIntro.module.css";
 
-export function ChallengeIntro({
-  challenge,
-  onStart,
-  note,
-  notice,
-  returnTo = "/",
-}: {
+type FullChallengeIntroProps = {
   challenge: Challenge;
+  introduction?: never;
   onStart: () => void;
   note?: ReactNode;
   notice?: string;
   returnTo?: string;
-}) {
-  const model = buildChallengeIntroModel(challenge);
+  canStart?: boolean;
+};
+
+type SafeChallengeIntroProps = {
+  challenge?: never;
+  introduction: SafeChallengeIntroduction;
+  onStart?: never;
+  note?: ReactNode;
+  notice?: string;
+  returnTo?: string;
+  canStart: boolean;
+};
+
+export function ChallengeIntro({
+  challenge,
+  introduction,
+  onStart,
+  note,
+  notice,
+  returnTo = "/",
+  canStart = true,
+}: FullChallengeIntroProps | SafeChallengeIntroProps) {
+  const model = challenge
+    ? buildChallengeIntroModel(challenge)
+    : buildSafeChallengeIntroModel(introduction);
 
   return (
     <motion.section
@@ -71,9 +93,17 @@ export function ChallengeIntro({
               </p>
             ) : null}
 
-            <Button size="hero" fullWidth onClick={onStart} trailingIcon={<ArrowIcon />}>
-              Empezar desafío
-            </Button>
+            {challenge || canStart ? (
+              <Button
+                size="hero"
+                fullWidth
+                onClick={onStart}
+                disabled={!challenge}
+                trailingIcon={<ArrowIcon />}
+              >
+                Empezar desafío
+              </Button>
+            ) : null}
             {note ? <p className={styles.note}>{note}</p> : null}
           </div>
         </section>
