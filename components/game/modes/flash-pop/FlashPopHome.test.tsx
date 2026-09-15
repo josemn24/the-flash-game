@@ -55,8 +55,7 @@ describe("FlashPopHome", () => {
     expect(markup).not.toContain('aria-label="Configuración"');
     expect(markup).toContain("Tu perfil");
     expect(markup).toContain("Nombre visible");
-    expect(markup).toContain("Cambiar imagen");
-    expect(markup).toContain('accept="image/*"');
+    expect(markup).toContain("Avatar pendiente");
     expect(markup).toContain('aria-label="Kike"');
   });
 

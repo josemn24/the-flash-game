@@ -14,6 +14,8 @@ import {
   IconButton,
   TrophyIcon,
 } from "@/components/ui";
+import { LogoutButton } from "@/components/auth/LogoutButton.client";
+import { updateProfileName } from "@/app/actions/profile";
 import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/game";
@@ -62,10 +64,14 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
     }
   }, [profileOpen]);
 
-  const handleProfileSave = useCallback((nextProfile: UserProfile) => {
-    setProfile(nextProfile);
-    setProfileOpen(false);
-    setStatusMessage("Cambios guardados.");
+  const handleProfileSave = useCallback(async (name: string) => {
+    const result = await updateProfileName(name);
+    if (result.ok) {
+      setProfile(result.profile);
+      setProfileOpen(false);
+      setStatusMessage("Cambios guardados.");
+    }
+    return result;
   }, []);
 
   return (
@@ -93,6 +99,7 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
           >
             <Avatar name={profile.name} src={profile.avatarSrc} tone="social" size="sm" />
           </IconButton>
+          <LogoutButton />
         </nav>
       </header>
 

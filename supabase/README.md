@@ -14,8 +14,10 @@ Este repositorio usa el enfoque declarativo de Supabase.
   con el baseline de migraciones, no usa el estado vivo como fuente de verdad.
 
 El proyecto incluye una [propuesta inicial de tablas, restricciones y RLS](schemas/README.md)
-en `schemas/`, pendiente de integración con la aplicación. Todavía no se han generado migraciones
-ni datos seed para esta propuesta.
+en `schemas/`. El baseline actual está versionado en
+`migrations/20260915070137_initial_schema.sql`; las migraciones posteriores representan cambios
+incrementales de los esquemas declarativos. Los seeds permanecen desactivados hasta disponer de
+datos locales reproducibles diseñados explícitamente.
 
 ## Estructura
 
@@ -24,8 +26,8 @@ supabase/
 ├── config.toml             # Configuración del stack local y de los esquemas declarativos
 ├── schemas/                # Fuente de verdad; archivos SQL declarativos
 │   └── README.md
-├── migrations/             # Se crea al generar la primera migración SQL
-├── seed.sql                # Futuro: datos locales reproducibles, si el proyecto los necesita
+├── migrations/             # Historial versionado generado desde schemas/
+├── seed.sql                # Futuro: datos locales reproducibles; actualmente desactivado
 ├── .gitignore              # Estado local ignorado por la CLI
 └── .temp/ y .branches/     # Estado interno no versionado
 ```
@@ -61,6 +63,10 @@ definiciones.
    ```bash
    npx supabase migration up
    ```
+
+En S01, la aplicación usa `@supabase/ssr` con el cliente publicable de Supabase. Para probar el
+flujo local, copia `.env.example` a `.env.local` y rellena la clave publicada a partir de
+`npx supabase status`; nunca uses `service_role` en el navegador ni en Server Actions.
 
 El comando `db diff` no es el workflow declarativo de este repositorio: en la versión actual de la
 CLI su baseline es el historial de migraciones y no la ruta declarativa configurada.

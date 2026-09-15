@@ -2,14 +2,22 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. La aplicación dispone de una capa de consultas asíncrona, exclusiva de
-servidor, entre las rutas de producto y `mockDomainStore`. Esta fase implementa solo lecturas: no
-añade SQL, Supabase, autenticación real, Route Handlers, Server Actions ni persistencia de
-intentos.
+La fase 4 está cerrada y S01 añade la primera integración real de Supabase. La home ya resuelve la
+sesión mediante Auth, aprovisiona de forma idempotente el `Player` actual y permite guardar su
+nombre; las lecturas de salas y el resto de las rutas siguen en `mockDomainStore` hasta S02 y las
+vertical slices posteriores. S01 no añade todavía persistencia de salas, intentos ni avatares.
 
 La dirección vigente es:
 
 ```text
+Server Components
+→ server/data-access.ts
+→ server/profile.ts
+→ Supabase Auth/RPC/RLS
+→ PostgreSQL
+
+Las consultas aún no migradas conservan este flujo:
+
 Server Components
 → server/data-access.ts
 → application/queries
@@ -37,8 +45,12 @@ intentos y respuestas normalizados.
 
 ## Composición de servidor
 
-`server/data-access.ts` lleva el marcador `server-only`. Es el único punto de acceso usado por las
-rutas de producto y compone los adaptadores mock con `mockDomainStore` y
+`server/data-access.ts` lleva el marcador `server-only`. Para la home, delega en
+`server/profile.ts`, que valida la sesión con `auth.getUser()`, llama al RPC estrecho
+`public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
+del propio jugador; no existe DML de aplicación con `service_role`.
+
+Para las consultas todavía mock, la fachada compone los adaptadores con `mockDomainStore` y
 `demoIdentity.currentPlayerId`.
 
 La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del cliente puede elegir

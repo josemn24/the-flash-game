@@ -8,6 +8,7 @@ import {
 } from "@/infrastructure/mock/composition";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
+import { getCurrentViewerProfile } from "@/server/profile";
 
 const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
 
@@ -20,11 +21,12 @@ const getQueryContext = cache(async (): Promise<QueryContext> => {
 });
 
 export const getHomePageModel = cache(async () => {
-  const [context, viewer] = await Promise.all([getQueryContext(), getCurrentViewer()]);
-  return {
-    rooms: await mockRoomQueries.listCards(context),
-    currentViewer: { id: viewer.id, name: viewer.name, avatarSrc: viewer.avatarSrc },
-  };
+  const viewer = await getCurrentViewerProfile();
+  if (!viewer) return null;
+
+  // S01 owns the authenticated home. Rooms become real in S02; do not mix
+  // demo memberships with an authenticated Player.
+  return { rooms: [], currentViewer: viewer };
 });
 
 export const getRoomDetailPageModel = cache(async (roomKey: string) =>

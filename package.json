@@ -28,6 +28,8 @@
     "supabase:schema:test": "node scripts/check-supabase-schema.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^1.41.0",
     "motion": "^12.42.2",
     "next": "16.2.10",
