@@ -331,6 +331,16 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_my_flash_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_flash_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_room_detail": {
       "arguments": "target_room_slug text",
       "securityDefiner": true,

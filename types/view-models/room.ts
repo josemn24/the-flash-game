@@ -6,6 +6,7 @@ export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" 
 
 export type RoomMembershipRole = "owner" | "admin" | "member" | "spectator";
 export type RoomDataSource = "mock" | "supabase";
+export type GameplayPersistence = "mock" | "server";
 
 export type GameRoomContext = {
   roomId: string;
@@ -14,6 +15,7 @@ export type GameRoomContext = {
   memberId: string;
   availabilityStatus: ChallengeAvailabilityStatus;
   attemptStatus: CompetitiveAttemptStatus;
+  gameplayPersistence?: GameplayPersistence;
   result?: RoomChallengeResult;
 };
 
@@ -118,6 +120,7 @@ export type RoomIntroductionModel = {
   maxScore: number;
   questionCount: number;
   canStart: boolean;
+  competitivePlayable: boolean;
   source: "supabase";
 };
 

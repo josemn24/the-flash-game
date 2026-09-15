@@ -54,12 +54,15 @@ export type EvaluationReceipt = {
 /** Private content; the adapter validates each format before assembling the legacy evaluator input. */
 export type EvaluationContext = EvaluationReceipt & {
   readonly questionType: QuestionType;
+  readonly payloadSchemaVersion: number;
+  readonly itemConfigSchemaVersion: number;
   readonly publicPayload: JsonValue;
   readonly solutionPayload: JsonValue;
   readonly timeLimitMs: DurationMs;
   readonly itemPoints: number;
   readonly itemConfig: JsonValue;
   readonly mode: GameMode;
+  readonly modeConfigSchemaVersion: number;
   readonly modeConfig: JsonValue;
 };
 

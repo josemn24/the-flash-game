@@ -27,7 +27,9 @@ export default async function RoomIntroductionPage({ params }: Props) {
   if (!model) notFound();
 
   const note = model.canStart
-    ? "La partida estará disponible próximamente."
+    ? model.competitivePlayable
+      ? ""
+      : "La partida estará disponible próximamente."
     : "Puedes consultar la introducción, pero no iniciar una partida competitiva.";
 
   return (
@@ -39,6 +41,11 @@ export default async function RoomIntroductionPage({ params }: Props) {
         maxScore: model.maxScore,
       }}
       canStart={model.canStart}
+      startHref={
+        model.competitivePlayable
+          ? `/desafios/${model.publicationId}?roomId=${model.roomId}`
+          : undefined
+      }
       note={note}
       returnTo={`/salas/${model.roomId}`}
     />

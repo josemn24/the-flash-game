@@ -7,7 +7,7 @@ import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { isTerminalCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
 import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/game";
-import type { FlashPopSocialSnapshot } from "@/types/view-models";
+import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
 
 function TerminalCompetitiveChallenge({
   roomContext,
@@ -47,11 +47,7 @@ function TerminalCompetitiveChallenge({
   );
 }
 
-function UnavailableCompetitiveChallenge({
-  roomContext,
-}: {
-  roomContext: GameRoomContext;
-}) {
+function UnavailableCompetitiveChallenge({ roomContext }: { roomContext: GameRoomContext }) {
   const isExpired = roomContext.availabilityStatus === "expired";
 
   return (
@@ -84,15 +80,16 @@ export function RoomChallengeClient({
   challenge,
   roomContext,
   socialSnapshot,
+  persistence: persistenceProp,
 }: {
   challenge: Challenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;
+  persistence?: GameplayPersistence;
 }) {
+  const persistence = persistenceProp ?? roomContext?.gameplayPersistence ?? "mock";
   const { recordCompletion, getCompletion } = useRoomSession();
-  const localCompletion = roomContext
-    ? getCompletion(roomContext.roomId, challenge.id)
-    : undefined;
+  const localCompletion = roomContext ? getCompletion(roomContext.roomId, challenge.id) : undefined;
   const attemptStatus = localCompletion
     ? localCompletion.completed
       ? "completed"
@@ -110,6 +107,17 @@ export function RoomChallengeClient({
     },
     [recordCompletion, roomContext],
   );
+
+  if (persistence === "server" && roomContext) {
+    return (
+      <GameApp
+        challenge={challenge}
+        roomContext={roomContext}
+        socialSnapshot={socialSnapshot}
+        persistence="server"
+      />
+    );
+  }
 
   if (
     roomContext &&
@@ -144,6 +152,7 @@ export function RoomChallengeClient({
       challenge={challenge}
       roomContext={roomContext}
       socialSnapshot={socialSnapshot}
+      persistence={persistence}
       onComplete={roomContext ? onComplete : undefined}
     />
   );

@@ -74,6 +74,28 @@ home, el detalle y la introducción autorizada; las preguntas, soluciones y payl
 `private` y no se exponen al cliente. El adaptador de servidor está en
 `infrastructure/supabase/roomQueries.ts`.
 
+S03 añade dos proyecciones más: `public.get_my_flash_challenge` entrega exclusivamente el payload
+público de las dos preguntas jugables y `public.get_my_flash_result` entrega la revisión propia solo
+después del cierre terminal. El gameplay real pasa por los Route Handlers
+`/api/competitive/attempts/*`; el adaptador server-only está en
+`infrastructure/supabase/attemptCommands.ts`. Cada comando usa `SUPABASE_DB_URL`, conecta como
+`authenticator`, asume `service_role` solo dentro de la transacción y fija los claims Auth mediante
+`set_config`. Nunca se usa la credencial propietaria `postgres` ni DML genérico desde Next.js.
+
+Para ejecutar el piloto competitivo local:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario s03
+npm run test:integration:supabase -- --scenario s03
+npm run test:e2e -- e2e/s03-flash.spec.ts
+```
+
+El token de control del intento solo vive en una cookie HttpOnly con duración limitada. No aparece
+en los DTO, HTML/RSC, `localStorage`, auditoría ni `private.command_requests`; durante la partida
+la solución queda en PostgreSQL y la revisión terminal se reconstruye mediante la proyección
+autorizada.
+
 Los escenarios locales no son seeds globales. Se crean con cuentas Auth reales y datos de dominio
 mediante mantenimiento local. El runner es común y recibe el identificador del escenario:
 

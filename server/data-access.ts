@@ -8,6 +8,7 @@ import {
   mockRoomQueries,
 } from "@/infrastructure/mock/composition";
 import { supabaseRoomQueries } from "@/infrastructure/supabase/roomQueries";
+import { supabaseFlashQueries } from "@/infrastructure/supabase/flashQueries";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
@@ -68,7 +69,10 @@ export const getRoomHistoryDetailPageModel = cache(async (roomKey: string, chall
 
 export const getPlayableChallengePageModel = cache(
   async (challengeKey: string, roomKey: string | null = null) => {
-    if (roomKey && !isMockRoomRoute(roomKey)) return null;
+    if (roomKey && !isMockRoomRoute(roomKey)) {
+      if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
+      return supabaseFlashQueries.getPlayable(roomKey, challengeKey);
+    }
     return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
   },
 );

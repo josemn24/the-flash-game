@@ -1,0 +1,194 @@
+import "server-only";
+
+import { randomBytes } from "node:crypto";
+import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
+import {
+  AttemptCommandError,
+  SupabaseAttemptCommands,
+  type VerifiedAuthIdentity,
+} from "@/infrastructure/supabase/attemptCommands";
+
+const attemptCookiePrefix = "flash-attempt-";
+const attemptTokenMaxAgeSeconds = 60 * 60;
+
+export class AttemptApiError extends Error {
+  constructor(
+    readonly code: string,
+    readonly status: number,
+  ) {
+    super(code);
+    this.name = "AttemptApiError";
+  }
+}
+
+type JsonObject = Record<string, unknown>;
+
+function isObject(value: unknown): value is JsonObject {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+  );
+}
+
+function isKey(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 8 && value.length <= 160;
+}
+
+function isLockVersion(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
+}
+
+export async function readJson(request: Request): Promise<JsonObject> {
+  let value: unknown;
+  try {
+    value = await request.json();
+  } catch {
+    throw new AttemptApiError("invalid_json", 400);
+  }
+  if (!isObject(value)) throw new AttemptApiError("invalid_body", 400);
+  return value;
+}
+
+export function requireUuid(body: JsonObject, key: string) {
+  const value = body[key];
+  if (!isUuid(value)) throw new AttemptApiError(`invalid_${key}`, 400);
+  return value;
+}
+
+export function requirePathUuid(value: string, key = "attempt_id") {
+  if (!isUuid(value)) throw new AttemptApiError(`invalid_${key}`, 400);
+  return value;
+}
+
+export function requireKey(body: JsonObject) {
+  if (!isKey(body.idempotencyKey)) throw new AttemptApiError("invalid_idempotency_key", 400);
+  return body.idempotencyKey;
+}
+
+export function requireLockVersion(body: JsonObject) {
+  if (!isLockVersion(body.lockVersion)) throw new AttemptApiError("invalid_lock_version", 400);
+  return body.lockVersion;
+}
+
+export function optionalClientTime(body: JsonObject) {
+  if (body.clientTimeUsedMs === undefined) return undefined;
+  if (
+    typeof body.clientTimeUsedMs !== "number" ||
+    !Number.isSafeInteger(body.clientTimeUsedMs) ||
+    body.clientTimeUsedMs < 0
+  ) {
+    throw new AttemptApiError("invalid_client_time", 400);
+  }
+  return body.clientTimeUsedMs;
+}
+
+export async function verifiedIdentity(): Promise<VerifiedAuthIdentity> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) throw new AttemptApiError("not_authenticated", 401);
+  return { authUserId: data.user.id };
+}
+
+export function assertSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) return;
+  let actualUrl: URL;
+  let expectedUrl: URL;
+  try {
+    actualUrl = new URL(origin);
+    expectedUrl = new URL(request.url);
+  } catch {
+    throw new AttemptApiError("invalid_origin", 403);
+  }
+  if (origin === expectedUrl.origin) return;
+  const localAliases = new Set(["localhost", "127.0.0.1", "::1"]);
+  if (
+    !localAliases.has(actualUrl.hostname) ||
+    !localAliases.has(expectedUrl.hostname) ||
+    actualUrl.port !== expectedUrl.port
+  ) {
+    throw new AttemptApiError("invalid_origin", 403);
+  }
+}
+
+export function newAttemptToken() {
+  return randomBytes(32).toString("base64url");
+}
+
+function cookieName(attemptId: string) {
+  return `${attemptCookiePrefix}${attemptId}`;
+}
+
+export async function readAttemptToken(attemptId: string) {
+  const value = (await cookies()).get(cookieName(attemptId))?.value;
+  if (!value) throw new AttemptApiError("attempt_session_missing", 401);
+  return value;
+}
+
+export async function setAttemptToken(
+  attemptId: string,
+  token: string,
+  deadlineAt?: string | null,
+) {
+  const maxAge = deadlineAt
+    ? Math.max(
+        60,
+        Math.min(
+          attemptTokenMaxAgeSeconds,
+          Math.ceil((Date.parse(deadlineAt) - Date.now()) / 1000),
+        ),
+      )
+    : attemptTokenMaxAgeSeconds;
+  (await cookies()).set(cookieName(attemptId), token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api/competitive/attempts",
+    maxAge,
+  });
+}
+
+export async function clearAttemptToken(attemptId: string) {
+  (await cookies()).set(cookieName(attemptId), "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api/competitive/attempts",
+    maxAge: 0,
+  });
+}
+
+export function commandsFor(identity: VerifiedAuthIdentity) {
+  return new SupabaseAttemptCommands(identity);
+}
+
+export function mapAttemptError(error: unknown): AttemptApiError {
+  if (error instanceof AttemptApiError) return error;
+  if (error instanceof AttemptCommandError) {
+    const status =
+      error.code === "not_authorized" || error.code === "competitive_access_denied"
+        ? 404
+        : error.code === "command_failed"
+          ? 500
+          : 409;
+    return new AttemptApiError(error.code, status);
+  }
+  return new AttemptApiError("command_failed", 500);
+}
+
+export function responseFor(value: unknown, status = 200) {
+  return Response.json(value, {
+    status,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
+export function errorResponse(error: unknown) {
+  const mapped = mapAttemptError(error);
+  return responseFor({ error: { code: mapped.code } }, mapped.status);
+}

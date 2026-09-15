@@ -22,6 +22,7 @@ function parseLocalStatus() {
 const localStatus = parseLocalStatus();
 const localEnv = {
   ...process.env,
+  SUPABASE_DB_URL: process.env.SUPABASE_DB_URL || localStatus.DB_URL || "",
   NEXT_PUBLIC_SUPABASE_URL:
     process.env.NEXT_PUBLIC_SUPABASE_URL || localStatus.API_URL || "http://127.0.0.1:54321",
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:

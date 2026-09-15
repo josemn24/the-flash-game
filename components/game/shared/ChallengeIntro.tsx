@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowIcon, Button, Chip, GameHeader } from "@/components/ui";
+import { ArrowIcon, Button, ButtonLink, Chip, GameHeader } from "@/components/ui";
 import {
   buildChallengeIntroModel,
   buildSafeChallengeIntroModel,
@@ -20,6 +20,7 @@ type FullChallengeIntroProps = {
   notice?: string;
   returnTo?: string;
   canStart?: boolean;
+  startHref?: string;
 };
 
 type SafeChallengeIntroProps = {
@@ -30,6 +31,7 @@ type SafeChallengeIntroProps = {
   notice?: string;
   returnTo?: string;
   canStart: boolean;
+  startHref?: string;
 };
 
 export function ChallengeIntro({
@@ -40,6 +42,7 @@ export function ChallengeIntro({
   notice,
   returnTo = "/",
   canStart = true,
+  startHref,
 }: FullChallengeIntroProps | SafeChallengeIntroProps) {
   const model = challenge
     ? buildChallengeIntroModel(challenge)
@@ -94,15 +97,21 @@ export function ChallengeIntro({
             ) : null}
 
             {challenge || canStart ? (
-              <Button
-                size="hero"
-                fullWidth
-                onClick={onStart}
-                disabled={!challenge}
-                trailingIcon={<ArrowIcon />}
-              >
-                Empezar desafío
-              </Button>
+              startHref ? (
+                <ButtonLink href={startHref} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
+                  Empezar desafío
+                </ButtonLink>
+              ) : (
+                <Button
+                  size="hero"
+                  fullWidth
+                  onClick={onStart}
+                  disabled={!challenge}
+                  trailingIcon={<ArrowIcon />}
+                >
+                  Empezar desafío
+                </Button>
+              )
             ) : null}
             {note ? <p className={styles.note}>{note}</p> : null}
           </div>

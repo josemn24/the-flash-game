@@ -63,7 +63,7 @@ function Intro({
   return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
-function QuestionStage({
+export function QuestionStage({
   challenge,
   question,
   questionIndex,
@@ -158,7 +158,7 @@ function QuestionStage({
   );
 }
 
-function Transition({
+export function Transition({
   result,
   timedOut,
   isLast,
@@ -180,7 +180,7 @@ function Transition({
   );
 }
 
-function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
+export function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
   const correct = results.filter((result) => result.status === "correct").length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
@@ -207,7 +207,7 @@ function buildResultModel(results: AnswerResult[], score: number): ChallengeResu
   };
 }
 
-function ReviewStage({
+export function ReviewStage({
   challenge,
   results,
   onBack,

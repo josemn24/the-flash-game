@@ -35,6 +35,7 @@ type RoomReadRow = {
   challenge_mode: GameMode | null;
   challenge_max_score: number | null;
   question_count: number | null;
+  competitive_playable: boolean;
   current_flash_points: number;
   current_position: number | null;
   member_previews: unknown;
@@ -55,6 +56,7 @@ type RoomIntroductionReadRow = {
   challenge_mode: GameMode;
   challenge_max_score: number;
   question_count: number;
+  competitive_playable: boolean;
 };
 
 const roomRoles = new Set<RoomMembershipRole>(["owner", "admin", "member", "spectator"]);
@@ -83,6 +85,7 @@ function isRoomReadRow(value: unknown): value is RoomReadRow {
     (row.challenge_mode === null || gameModes.has(row.challenge_mode as GameMode)) &&
     (row.challenge_max_score === null || typeof row.challenge_max_score === "number") &&
     (row.question_count === null || typeof row.question_count === "number") &&
+    typeof row.competitive_playable === "boolean" &&
     typeof row.current_flash_points === "number" &&
     (row.current_position === null || typeof row.current_position === "number") &&
     Array.isArray(row.member_previews) &&
@@ -108,7 +111,8 @@ function isRoomIntroductionReadRow(value: unknown): value is RoomIntroductionRea
     typeof row.challenge_mode === "string" &&
     gameModes.has(row.challenge_mode as GameMode) &&
     typeof row.challenge_max_score === "number" &&
-    typeof row.question_count === "number"
+    typeof row.question_count === "number" &&
+    typeof row.competitive_playable === "boolean"
   );
 }
 
@@ -174,6 +178,7 @@ function toChallengeSummary(row: RoomReadRow, href: string) {
     subtitle: row.challenge_subtitle,
     availableUntil: row.closes_at,
     questionCount: row.question_count,
+    competitivePlayable: row.competitive_playable,
     imageSrc: getChallengeImage(mode),
     href,
   };
@@ -253,6 +258,7 @@ function toIntroduction(row: RoomIntroductionReadRow): RoomIntroductionModel {
     maxScore: row.challenge_max_score,
     questionCount: row.question_count,
     canStart: row.membership_role !== "spectator",
+    competitivePlayable: row.competitive_playable,
     source: "supabase",
   };
 }

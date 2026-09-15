@@ -79,6 +79,7 @@ export type PlayableChallengePageModel = {
   readonly challenge: Challenge;
   readonly roomContext?: GameRoomContext;
   readonly socialSnapshot: FlashPopSocialSnapshot;
+  readonly gameplayPersistence?: "mock" | "server";
 };
 
 export type FlashPopLobbyPageModel = {

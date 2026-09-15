@@ -1,34 +1,43 @@
--- S02 read projections. They are the only public boundary into private challenge metadata.
--- The current Auth identity is resolved from the verified claim; no player/room ownership
--- decision is delegated to a client-supplied identity.
-create function public.get_my_room_cards()
-returns table (
-  room_id              uuid,
-  room_slug            text,
-  room_title           text,
-  room_description     text,
-  membership_role      text,
-  season_id            uuid,
-  season_title        text,
-  season_status        text,
-  season_starts_at    timestamptz,
-  season_ends_at      timestamptz,
-  publication_id       uuid,
-  publication_status   text,
-  opens_at             timestamptz,
-  closes_at            timestamptz,
-  challenge_title      text,
-  challenge_subtitle   text,
-  challenge_mode       text,
-  challenge_max_score  integer,
-  question_count       bigint,
-  competitive_playable boolean,
-  member_count         bigint,
-  member_previews      jsonb,
-  current_flash_points bigint,
-  current_position     bigint
-)
-language sql stable security definer set search_path = '' as $$
+SET local check_function_bodies = off;
+
+DROP FUNCTION "public"."get_my_room_cards"();
+
+DROP FUNCTION "public"."get_room_detail"(text);
+
+DROP FUNCTION "public"."get_room_introduction"(text, uuid);
+
+CREATE OR REPLACE FUNCTION public.get_my_room_cards()
+  RETURNS TABLE (
+    room_id              uuid,
+    room_slug            text,
+    room_title           text,
+    room_description     text,
+    membership_role      text,
+    season_id            uuid,
+    season_title         text,
+    season_status        text,
+    season_starts_at     timestamp with time zone,
+    season_ends_at       timestamp with time zone,
+    publication_id       uuid,
+    publication_status   text,
+    opens_at             timestamp with time zone,
+    closes_at            timestamp with time zone,
+    challenge_title      text,
+    challenge_subtitle   text,
+    challenge_mode       text,
+    challenge_max_score  integer,
+    question_count       bigint,
+    competitive_playable boolean,
+    member_count         bigint,
+    member_previews      jsonb,
+    current_flash_points bigint,
+    current_position     bigint
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
   with current_player as (
     select private.current_player_id() as player_id
   ), accessible_rooms as (
@@ -126,62 +135,72 @@ language sql stable security definer set search_path = '' as $$
     limit 1
   ) publication on true
   order by r.title, r.id
-$$;
+$function$;
 
--- Detail deliberately reuses the same authorization and projection as the home card.
-create function public.get_room_detail(target_room_slug text)
-returns table (
-  room_id              uuid,
-  room_slug            text,
-  room_title           text,
-  room_description     text,
-  membership_role      text,
-  season_id            uuid,
-  season_title        text,
-  season_status        text,
-  season_starts_at    timestamptz,
-  season_ends_at      timestamptz,
-  publication_id       uuid,
-  publication_status   text,
-  opens_at             timestamptz,
-  closes_at            timestamptz,
-  challenge_title      text,
-  challenge_subtitle   text,
-  challenge_mode       text,
-  challenge_max_score  integer,
-  question_count       bigint,
-  competitive_playable boolean,
-  member_count         bigint,
-  member_previews      jsonb,
-  current_flash_points bigint,
-  current_position     bigint
+CREATE OR REPLACE FUNCTION public.get_room_detail (
+  target_room_slug text
 )
-language sql stable security definer set search_path = '' as $$
+  RETURNS TABLE (
+    room_id              uuid,
+    room_slug            text,
+    room_title           text,
+    room_description     text,
+    membership_role      text,
+    season_id            uuid,
+    season_title         text,
+    season_status        text,
+    season_starts_at     timestamp with time zone,
+    season_ends_at       timestamp with time zone,
+    publication_id       uuid,
+    publication_status   text,
+    opens_at             timestamp with time zone,
+    closes_at            timestamp with time zone,
+    challenge_title      text,
+    challenge_subtitle   text,
+    challenge_mode       text,
+    challenge_max_score  integer,
+    question_count       bigint,
+    competitive_playable boolean,
+    member_count         bigint,
+    member_previews      jsonb,
+    current_flash_points bigint,
+    current_position     bigint
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
   select cards.*
   from public.get_my_room_cards() cards
   where cards.room_slug = target_room_slug
-$$;
+$function$;
 
--- Introduction metadata is scoped by both the persisted room slug and publication id.
--- It cannot be used to fetch a private challenge version or any question payload.
-create function public.get_room_introduction(target_room_slug text, target_publication_id uuid)
-returns table (
-  room_id             uuid,
-  room_slug           text,
-  room_title          text,
-  membership_role     text,
-  publication_id      uuid,
-  publication_status  text,
-  opens_at            timestamptz,
-  closes_at           timestamptz,
-  challenge_title     text,
-  challenge_subtitle  text,
-  challenge_mode      text,
-  challenge_max_score integer,
-  question_count      bigint,
-  competitive_playable boolean
+CREATE OR REPLACE FUNCTION public.get_room_introduction (
+  target_room_slug      text,
+  target_publication_id uuid
 )
-language sql stable security definer set search_path = '' as $$
+  RETURNS TABLE (
+    room_id              uuid,
+    room_slug            text,
+    room_title           text,
+    membership_role      text,
+    publication_id       uuid,
+    publication_status   text,
+    opens_at             timestamp with time zone,
+    closes_at            timestamp with time zone,
+    challenge_title      text,
+    challenge_subtitle   text,
+    challenge_mode       text,
+    challenge_max_score  integer,
+    question_count       bigint,
+    competitive_playable boolean
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
   select
     cards.room_id,
     cards.room_slug,
@@ -200,13 +219,16 @@ language sql stable security definer set search_path = '' as $$
   from public.get_my_room_cards() cards
   where cards.room_slug = target_room_slug
     and cards.publication_id = target_publication_id
-$$;
+$function$;
 
-alter function public.get_my_room_cards() owner to postgres;
-alter function public.get_room_detail(text) owner to postgres;
-alter function public.get_room_introduction(text, uuid) owner to postgres;
+REVOKE ALL ON FUNCTION "public"."get_my_room_cards"() FROM PUBLIC;
 
-revoke all on function public.get_my_room_cards(), public.get_room_detail(text),
-  public.get_room_introduction(text, uuid) from public, anon, service_role;
-grant execute on function public.get_my_room_cards(), public.get_room_detail(text),
-  public.get_room_introduction(text, uuid) to authenticated;
+GRANT EXECUTE ON FUNCTION "public"."get_my_room_cards"() TO "authenticated", "postgres";
+
+REVOKE ALL ON FUNCTION "public"."get_room_detail"(text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "public"."get_room_detail"(text) TO "authenticated", "postgres";
+
+REVOKE ALL ON FUNCTION "public"."get_room_introduction"(text, uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "public"."get_room_introduction"(text, uuid) TO "authenticated", "postgres";
