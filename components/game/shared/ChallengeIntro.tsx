@@ -26,7 +26,8 @@ type FullChallengeIntroProps = {
 type SafeChallengeIntroProps = {
   challenge?: never;
   introduction: SafeChallengeIntroduction;
-  onStart?: never;
+  /** Server-backed games may start without ever serializing their question payloads. */
+  onStart?: () => void;
   note?: ReactNode;
   notice?: string;
   returnTo?: string;
@@ -106,7 +107,7 @@ export function ChallengeIntro({
                   size="hero"
                   fullWidth
                   onClick={onStart}
-                  disabled={!challenge}
+                  disabled={!(challenge || introduction)}
                   trailingIcon={<ArrowIcon />}
                 >
                   Empezar desafío

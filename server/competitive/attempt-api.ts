@@ -170,14 +170,23 @@ export async function setAttemptToken(
   store.set(startCookieName(authUserId, scheduledChallengeId), token, options);
 }
 
-export async function clearAttemptToken(attemptId: string) {
-  (await cookies()).set(cookieName(attemptId), "", {
+export async function clearAttemptToken(
+  attemptId: string,
+  authUserId?: string,
+  scheduledChallengeId?: string,
+) {
+  const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/api/competitive/attempts",
     maxAge: 0,
-  });
+  } as const;
+  const store = await cookies();
+  store.set(cookieName(attemptId), "", options);
+  if (authUserId && scheduledChallengeId) {
+    store.set(startCookieName(authUserId, scheduledChallengeId), "", options);
+  }
 }
 
 export function commandsFor(identity: VerifiedAuthIdentity) {

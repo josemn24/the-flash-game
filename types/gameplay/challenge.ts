@@ -165,6 +165,33 @@ export type FlashChallenge = ChallengeBase & {
   questionPoints?: ChallengeQuestionPoints;
 };
 
+/**
+ * Competitive server projection. Its slots are deliberately metadata only: the
+ * current question is released by the prepared interaction route, never by RSC.
+ */
+export type ServerFlashChallenge = ChallengeBase & {
+  mode: "flash";
+  slots: readonly {
+    id: string;
+    position: number;
+    questionType: "multiple-choice";
+    payloadSchemaVersion: number;
+    timeLimitMs: number;
+    points: number;
+  }[];
+  maxScore: number;
+};
+
+/**
+ * Terminal-only projection used to rebuild the owner's answer review after a
+ * page reload. It must never be returned while an attempt is in progress.
+ */
+export type ServerFlashTerminalReview = {
+  readonly challengeItemId: string;
+  readonly publicPayload: unknown;
+  readonly solutionPayload: unknown;
+};
+
 export type SurvivalChallenge = ChallengeBase & {
   mode: "survival";
   lives: number;

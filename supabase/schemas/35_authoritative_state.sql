@@ -31,7 +31,7 @@ create table private.interaction_intervals (
   timing_unit_id uuid not null,
   started_at timestamptz not null,
   ended_at timestamptz,
-  end_reason text check (end_reason in ('answer', 'pass', 'timeout', 'abandon')),
+  end_reason text check (end_reason in ('answer', 'pass', 'timeout', 'abandon', 'recovery_interrupted')),
   foreign key (timing_unit_id, attempt_id, challenge_item_id)
     references private.attempt_timing_units(id, attempt_id, challenge_item_id),
   check ((ended_at is null) = (end_reason is null)),

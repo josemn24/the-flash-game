@@ -29,6 +29,7 @@ export default async function ChallengePage({ params, searchParams }: Props) {
       challenge={model.challenge}
       roomContext={model.roomContext}
       socialSnapshot={model.socialSnapshot}
+      terminalReview={"terminalReview" in model ? model.terminalReview : undefined}
     />
   );
 }

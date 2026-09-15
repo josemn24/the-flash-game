@@ -132,7 +132,7 @@ No hay un proceso automático de timeout o recuperación de evaluaciones en este
 | `start_attempt`                                | Miembro competitivo durante apertura para un inicio nuevo; recuperación sin nuevo intento.        |
 | `take_over_attempt`                            | Reservado para una política posterior; devuelve `takeover_disabled` durante el MVP.               |
 | `prepare_interaction`                          | Propietario y sesión vigente; persiste reloj antes de devolver contenido.                         |
-| Recuperación de intervalo (futuro)              | Cierra/evalúa atómicamente la interacción abierta antes de preparar contenido; no reentrega payload. |
+| `recover_attempt` / `read_attempt_recovery`     | S04 Flash: cierra/evalúa atómicamente la interacción abierta antes de preparar contenido; no reentrega payload. |
 | `receive_answer`, `pass_interaction`           | Sesión, item actual, versión y recepción autoritativa; pasar solo en Alfabeto antes del deadline. |
 | `read_evaluation_context`, `record_evaluation` | Servidor confiable en contexto del propietario; recepción vinculada a versión congelada.          |
 | `complete_attempt`, `abandon_attempt`          | Propietario y sesión vigente; cierre, sesiones, puntos y auditoría atómicos.                      |

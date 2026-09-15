@@ -278,6 +278,10 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   Una segunda sesión solo recibe un bloqueo y no puede transferir el control; abandonar conserva
   respuestas, consume intento y no suma puntos. Desconexión sola todavía no promete abandono
   automático: corresponde a S21.
+- **Estado de implementación:** completado para el vertical Flash: `recover_attempt` cierra el
+  intervalo expuesto como `recovery_interrupted`, crea/evalúa una recepción interna `unanswered` y
+  el cliente prepara solo el siguiente item autorizado. Alfabeto, Supervivencia, Pirámide y Narrativa
+  mantienen esta política como contrato pendiente de S05/S14–S16.
 
 ### S05 — Jugar Alfabeto con reloj global y vueltas reales
 

@@ -291,6 +291,16 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.recover_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_attempt_recovery": {
+      "arguments": "target_attempt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.reject_rewrite": {
       "arguments": "",
       "securityDefiner": false,

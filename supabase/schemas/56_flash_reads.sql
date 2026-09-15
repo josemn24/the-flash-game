@@ -31,7 +31,6 @@ returns table (
   question_version_id     uuid,
   question_type           text,
   payload_schema_version  integer,
-  public_payload          jsonb,
   time_limit_ms           integer,
   item_points             integer
 )
@@ -94,7 +93,7 @@ language sql stable security definer set search_path = '' as $$
     count(i.id) over (partition by p.challenge_version_id),
     p.own_attempt_id, p.own_attempt_status, p.own_attempt_score, p.own_attempt_started_at,
     p.own_attempt_completed_at, p.own_attempt_deadline_at, p.own_attempt_lock_version,
-    i.id, i.position, q.id, q.type, q.payload_schema_version, q.public_payload,
+    i.id, i.position, q.id, q.type, q.payload_schema_version,
     q.time_limit_ms, i.points
   from authorized_publication p
   join private.challenge_items i on i.challenge_version_id = p.version_id

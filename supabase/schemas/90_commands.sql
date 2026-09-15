@@ -369,8 +369,27 @@ revoke all on function private.take_over_attempt(jsonb) from public, anon, authe
 grant execute on function private.take_over_attempt(jsonb) to service_role;
 
 create function private.prepare_interaction(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('prepare', input)
+language plpgsql security definer set search_path = '' as $$
+begin
+  -- A prepared open interval is already exposed/consumed. Only recovery can
+  -- close it; prepare must never replay its payload after a lost HTTP response.
+  if exists (
+    select 1 from private.command_requests
+    where actor_id = private.command_actor() and idempotency_key = prepare_interaction.input->>'idempotencyKey'
+      and operation = 'prepare'
+  ) then
+    return private.execute_command('prepare', input);
+  end if;
+  if exists (
+    select 1 from private.interaction_intervals x
+    join public.attempts a on a.id = x.attempt_id
+    join private.challenge_versions cv on cv.id = a.challenge_version_id
+    where x.attempt_id = (input->>'attemptId')::uuid and x.ended_at is null and cv.mode = 'flash'
+  ) then
+    raise exception 'recovery_required' using errcode = '55000';
+  end if;
+  return private.execute_command('prepare', input);
+end;
 $$;
 alter function private.prepare_interaction(jsonb) owner to postgres;
 revoke all on function private.prepare_interaction(jsonb) from public, anon, authenticated, service_role;
@@ -483,3 +502,93 @@ $$;
 alter function private.read_evaluation_context(uuid, text) owner to postgres;
 revoke all on function private.read_evaluation_context(uuid, text) from public, anon, authenticated, service_role;
 grant execute on function private.read_evaluation_context(uuid, text) to service_role;
+
+-- S04 recovery has a separate private command because it intentionally turns an
+-- already prepared interval into a null-answer receipt before evaluating it.
+create function private.recover_attempt(input jsonb) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare
+  actor uuid := private.command_actor(); key text := input->>'idempotencyKey';
+  safe_input jsonb := input; cached private.command_requests%rowtype;
+  a public.attempts%rowtype; s private.attempt_sessions%rowtype;
+  segment private.interaction_intervals%rowtype; unit private.attempt_timing_units%rowtype;
+  receipt private.answer_receipts%rowtype; instant timestamptz := clock_timestamp();
+  expected bigint; presented timestamptz; used_ms bigint; effective timestamptz; result jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object' or key is null or btrim(key) = ''
+    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken']
+    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array['idempotencyKey','attemptId','lockVersion','sessionToken'])) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
+  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> 'recover' or cached.input <> safe_input) then raise exception 'idempotency_conflict' using errcode = '40001'; end if;
+  if cached.result is not null then return cached.result; end if;
+  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
+  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
+    or exists (select 1 from private.platform_role_assignments where player_id = actor) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into s from private.attempt_sessions where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
+  if not found or s.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  expected := (input->>'lockVersion')::bigint;
+  if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+  select * into receipt from private.answer_receipts r where r.attempt_id = a.id and not exists (
+    select 1 from private.attempt_answers aa where aa.receipt_id = r.id
+  ) order by r.received_at limit 1 for update;
+  if found then
+    result := jsonb_build_object('receiptId', receipt.id, 'recovered', false);
+  else
+    select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+    if found then
+      select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+      effective := greatest(segment.started_at, least(instant, unit.deadline_at));
+      update private.interaction_intervals set ended_at = effective, end_reason = 'recovery_interrupted' where id = segment.id;
+      select min(started_at), coalesce(sum(floor(extract(epoch from (ended_at - started_at)) * 1000)), 0)::bigint
+        into presented, used_ms from private.interaction_intervals where attempt_id = a.id and challenge_item_id = segment.challenge_item_id;
+      insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
+        presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
+      values(a.id, segment.challenge_item_id, a.challenge_version_id, null, instant, presented, effective, used_ms,
+        instant >= unit.deadline_at, null) returning * into receipt;
+      result := jsonb_build_object('receiptId', receipt.id, 'recovered', true);
+    else
+      result := jsonb_build_object('receiptId', null, 'recovered', false);
+    end if;
+  end if;
+  update public.attempts set lock_version = lock_version + 1, last_activity_at = instant where id = a.id returning * into a;
+  result := result || jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version);
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
+    values(actor, 'recover', 'attempt', a.id, key, jsonb_build_object('lockVersion', expected), result);
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, 'recover', safe_input, result);
+  return result;
+end;
+$$;
+alter function private.recover_attempt(jsonb) owner to postgres;
+revoke all on function private.recover_attempt(jsonb) from public, anon, authenticated, service_role;
+grant execute on function private.recover_attempt(jsonb) to service_role;
+
+create function private.read_attempt_recovery(target_attempt uuid, session_token text) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare actor uuid := private.command_actor(); result jsonb;
+begin
+  select jsonb_build_object(
+    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
+    'lockVersion', a.lock_version,
+    'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
+    'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
+      and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
+    'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
+      'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms) order by i.position)
+      from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
+  ) into result
+  from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id
+  where a.id = target_attempt and a.player_id = actor and a.kind = 'competitive'
+    and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
+    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
+  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  return result;
+end;
+$$;
+alter function private.read_attempt_recovery(uuid, text) owner to postgres;
+revoke all on function private.read_attempt_recovery(uuid, text) from public, anon, authenticated, service_role;
+grant execute on function private.read_attempt_recovery(uuid, text) to service_role;

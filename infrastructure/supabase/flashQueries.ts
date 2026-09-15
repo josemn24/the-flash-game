@@ -1,12 +1,8 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type {
-  AnswerResult,
-  FlashChallenge,
-  Question,
-  RoomChallengeResult,
-} from "@/types/game";
+import type { AnswerResult, RoomChallengeResult } from "@/types/game";
+import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 
@@ -39,7 +35,6 @@ export type FlashReadRow = {
   question_version_id: string;
   question_type: "multiple-choice";
   payload_schema_version: number;
-  public_payload: unknown;
   time_limit_ms: number;
   item_points: number;
 };
@@ -102,7 +97,6 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     typeof value.question_version_id === "string" &&
     value.question_type === "multiple-choice" &&
     value.payload_schema_version === 1 &&
-    isRecord(value.public_payload) &&
     typeof value.time_limit_ms === "number" &&
     value.time_limit_ms > 0 &&
     value.item_points === 50
@@ -131,58 +125,12 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
   );
 }
 
-function tagsFromPayload(payload: Record<string, unknown>): Question["tags"] {
-  const candidate = payload.tags;
-  if (!isRecord(candidate)) {
-    return { domains: [], topics: [], cognitiveSkills: [], formatSkills: [], lifeSkills: [] };
-  }
+function toTerminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
   return {
-    domains: Array.isArray(candidate.domains)
-      ? candidate.domains.filter((x): x is string => typeof x === "string")
-      : [],
-    topics: Array.isArray(candidate.topics)
-      ? candidate.topics.filter((x): x is string => typeof x === "string")
-      : [],
-    cognitiveSkills: Array.isArray(candidate.cognitiveSkills)
-      ? candidate.cognitiveSkills.filter((x): x is string => typeof x === "string")
-      : [],
-    formatSkills: Array.isArray(candidate.formatSkills)
-      ? candidate.formatSkills.filter((x): x is string => typeof x === "string")
-      : [],
-    lifeSkills: Array.isArray(candidate.lifeSkills)
-      ? candidate.lifeSkills.filter((x): x is string => typeof x === "string")
-      : [],
-  } as unknown as Question["tags"];
-}
-
-function toQuestion(row: FlashReadRow, result?: FlashResultRow): Question {
-  const payload = row.public_payload as Record<string, unknown>;
-  const solution = result?.solution_payload as Record<string, unknown> | undefined;
-  const prompt = typeof payload.question === "string" ? payload.question : "";
-  const options = Array.isArray(payload.options)
-    ? payload.options.filter((option): option is string => typeof option === "string")
-    : [];
-  const question = {
-    id: row.challenge_item_id,
-    type: "multiple-choice" as const,
-    category: typeof payload.category === "string" ? payload.category : "",
-    tags: tagsFromPayload(payload),
-    question: prompt,
-    options,
-    timeLimit: row.time_limit_ms / 1000,
-    points: row.item_points,
-    ...(payload.media && isRecord(payload.media) ? { media: payload.media } : {}),
-    ...(payload.promptVisual && isRecord(payload.promptVisual)
-      ? { promptVisual: payload.promptVisual }
-      : {}),
-    ...(solution && typeof solution.correctAnswer === "string"
-      ? { correctAnswer: solution.correctAnswer }
-      : {}),
-    ...(solution && typeof solution.explanation === "string"
-      ? { explanation: solution.explanation }
-      : {}),
-  } as Question;
-  return question;
+    challengeItemId: row.challenge_item_id,
+    publicPayload: row.public_payload,
+    solutionPayload: row.solution_payload,
+  };
 }
 
 async function callFlashRead(
@@ -211,7 +159,9 @@ function toRoomContext(
         ? "completed"
         : row.own_attempt_status === "in_progress"
           ? "inProgress"
-          : "available",
+          : row.own_attempt_status === "abandoned" || row.own_attempt_status === "invalidated"
+            ? "notCompleted"
+            : "available",
     gameplayPersistence: "server",
     ...(result ? { result } : {}),
   };
@@ -239,7 +189,9 @@ export class SupabaseFlashQueries {
       ).filter(isFlashResultRow);
     }
     const result = resultRows.length ? this.toResult(resultRows) : undefined;
-    const challenge: FlashChallenge = {
+    const terminalReview =
+      resultRows.length === first.question_count ? resultRows.map(toTerminalReviewRow) : undefined;
+    const challenge: ServerFlashChallenge = {
       id: first.publication_id,
       definitionId: first.challenge_slug,
       number: 1,
@@ -247,15 +199,15 @@ export class SupabaseFlashQueries {
       subtitle: first.challenge_subtitle,
       description: first.challenge_description,
       mode: "flash",
-      questions: rows.map((row) =>
-        toQuestion(
-          row,
-          resultRows.find((item) => item.challenge_item_id === row.challenge_item_id),
-        ),
-      ),
-      questionPoints: Object.fromEntries(
-        rows.map((row) => [row.challenge_item_id, row.item_points]),
-      ),
+      slots: rows.map((row) => ({
+        id: row.challenge_item_id,
+        position: row.item_position,
+        questionType: row.question_type,
+        payloadSchemaVersion: row.payload_schema_version,
+        timeLimitMs: row.time_limit_ms,
+        points: row.item_points,
+      })),
+      maxScore: first.challenge_max_score,
     };
     return {
       challenge,
@@ -271,6 +223,7 @@ export class SupabaseFlashQueries {
         peers: [],
       },
       gameplayPersistence: "server" as const,
+      ...(terminalReview ? { terminalReview } : {}),
     };
   }
 

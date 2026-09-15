@@ -30,5 +30,5 @@ export default async function FlashPopFlashPage({
   const { challengeId } = await params;
   const model = await getPlayableChallengePageModel(challengeId);
   if (challengeId !== FLASH_POP_FLASH_PILOT_ID || model?.challenge.mode !== "flash") notFound();
-  return <FlashPopFlashGame challenge={model.challenge} />;
+  return <FlashPopFlashGame challenge={model.challenge as import("@/types/game").FlashChallenge} />;
 }

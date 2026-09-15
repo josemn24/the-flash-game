@@ -6,6 +6,7 @@ import type {
   CompleteAttemptCommand,
   EvaluationContext,
   RecordEvaluationCommand,
+  RecoverAttemptCommand,
   StartAttemptCommand,
 } from "@/application/ports/attempt-commands";
 import type {
@@ -15,6 +16,8 @@ import type {
   SubmitAnswerInput,
   SubmitAnswerResult,
   FinishAttemptResult,
+  RecoverAttemptResult,
+  AttemptRecoverySnapshot,
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type { MultipleChoiceQuestion, Question } from "@/types/game";
@@ -98,6 +101,7 @@ function commandCode(error: unknown) {
     "receipt_not_found",
     "already_evaluated",
     "takeover_disabled",
+    "recovery_required",
   ];
   return known.find((candidate) => message.includes(candidate)) ?? "command_failed";
 }
@@ -219,7 +223,15 @@ function asQuestion(context: EvaluationContext): MultipleChoiceQuestion {
 
 export class SupabaseAttemptCommands implements Pick<
   AttemptCommands,
-  "start" | "prepare" | "receiveAnswer" | "readEvaluationContext" | "recordEvaluation" | "complete"
+  | "start"
+  | "prepare"
+  | "receiveAnswer"
+  | "readEvaluationContext"
+  | "recordEvaluation"
+  | "complete"
+  | "abandon"
+  | "recover"
+  | "readRecovery"
 > {
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
@@ -253,6 +265,24 @@ export class SupabaseAttemptCommands implements Pick<
     return callCommand<FinishAttemptResult>(this.identity, "complete_attempt", input);
   }
 
+  abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
+    return callCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
+  }
+
+  recover(input: RecoverAttemptCommand) {
+    return callCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
+  }
+
+  readRecovery(attemptId: string, sessionToken: string) {
+    return transaction<AttemptRecoverySnapshot>(this.identity, async (client) => {
+      const result = await client.query<{ read_attempt_recovery: AttemptRecoverySnapshot }>(
+        "select private.read_attempt_recovery($1::uuid, $2::text)",
+        [attemptId, sessionToken],
+      );
+      return result.rows[0]?.read_attempt_recovery as AttemptRecoverySnapshot;
+    });
+  }
+
   async evaluateAndRecord(input: { readonly receive: SubmitAnswerInput }) {
     const received = await this.receiveAnswer(input.receive);
     const context = await this.readEvaluationContext(
@@ -278,6 +308,31 @@ export class SupabaseAttemptCommands implements Pick<
       ...(result.details ? { resultDetails: result.details } : {}),
     });
     return { received, evaluated };
+  }
+
+  async evaluateReceipt(input: {
+    readonly attemptId: string;
+    readonly sessionToken: string;
+    readonly lockVersion: number;
+    readonly receiptId: AnswerReceiptId;
+    readonly idempotencyKey: string;
+  }) {
+    const context = await this.readEvaluationContext(input.receiptId, input.sessionToken);
+    const result = evaluateReceipt({
+      receipt: { timeUsedMs: context.timeUsedMs, timedOut: context.timedOut },
+      question: asQuestion(context),
+      answer: typeof context.answer === "string" ? context.answer : null,
+    });
+    return this.recordEvaluation({
+      attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],
+      sessionToken: input.sessionToken,
+      lockVersion: input.lockVersion,
+      idempotencyKey: input.idempotencyKey,
+      receiptId: input.receiptId,
+      status: result.status,
+      points: result.points,
+      ...(result.details ? { resultDetails: result.details } : {}),
+    });
   }
 
   completeFromPersistedAnswers(input: {

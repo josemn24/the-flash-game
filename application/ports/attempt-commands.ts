@@ -4,6 +4,9 @@ import type {
   AttemptCommandInput,
   AttemptCommandResult,
   CompleteAttemptInput,
+  RecoverAttemptInput,
+  RecoverAttemptResult,
+  AttemptRecoverySnapshot,
   FinishAttemptResult,
   PassInteractionInput,
   PassInteractionResult,
@@ -39,6 +42,7 @@ export type CompleteAttemptCommand = CompleteAttemptInput & {
   readonly score: number;
   readonly outcome?: string;
 };
+export type RecoverAttemptCommand = RecoverAttemptInput;
 export type InvalidateAttemptCommand = TakeOverAttemptInput & { readonly reason: string };
 export type AdjustResultCommand = InvalidateAttemptCommand & { readonly score: number };
 export type AdministrativeResult = AttemptCommandResult & {
@@ -86,6 +90,8 @@ export interface AttemptCommands {
   pass(input: PassInteractionInput): Promise<PassInteractionResult>;
   recordEvaluation(input: RecordEvaluationCommand): Promise<SubmitAnswerResult>;
   complete(input: CompleteAttemptCommand): Promise<FinishAttemptResult>;
+  recover(input: RecoverAttemptCommand): Promise<RecoverAttemptResult>;
+  readRecovery(attemptId: string, sessionToken: string): Promise<AttemptRecoverySnapshot>;
   abandon(input: AttemptCommandInput): Promise<FinishAttemptResult>;
   acceptInvitation(input: AcceptInvitationInput): Promise<AcceptInvitationResult>;
   invalidate(input: InvalidateAttemptCommand): Promise<AdministrativeResult>;

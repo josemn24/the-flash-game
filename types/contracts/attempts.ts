@@ -75,6 +75,29 @@ export type TakeOverAttemptResult = AttemptCommandResult & {
   readonly deadlineAt: UtcIsoDateTime | null;
 };
 export type CompleteAttemptInput = AttemptCommandInput;
+/** Recovery is server initiated after the original HttpOnly session is restored. */
+export type RecoverAttemptInput = AttemptCommandInput;
+export type RecoverAttemptResult = AttemptCommandResult & {
+  readonly receiptId: AnswerReceiptId | null;
+  readonly recovered: boolean;
+};
+export type AttemptRecoveryAnswer = {
+  readonly challengeItemId: ChallengeItemId;
+  readonly status: AnswerStatus;
+  readonly answer: JsonValue;
+  readonly points: number;
+  readonly timeUsedMs: DurationMs;
+};
+/** Deliberately excludes question public/solution payloads. */
+export type AttemptRecoverySnapshot = {
+  readonly attemptId: AttemptId;
+  readonly scheduledChallengeId: ScheduledChallengeId;
+  readonly status: AttemptStatus;
+  readonly lockVersion: number;
+  readonly hasStartedInteraction: boolean;
+  readonly allItemsResolved: boolean;
+  readonly answers: readonly AttemptRecoveryAnswer[];
+};
 export type FinishAttemptResult = AttemptCommandResult & {
   readonly status: Extract<AttemptStatus, "completed" | "abandoned">;
   readonly score: number | null;

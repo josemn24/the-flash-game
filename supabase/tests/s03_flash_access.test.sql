@@ -57,10 +57,9 @@ set local role authenticated;
 select is((select count(*) from public.get_my_flash_challenge(
   's03-test-room', pg_temp.test_id('publication'))), 2::bigint,
   'Competitive player receives both public questions');
-select ok(not exists (
-  select 1 from public.get_my_flash_challenge('s03-test-room', pg_temp.test_id('publication'))
-  where public_payload::text like '%correctAnswer%' or public_payload::text like '%Solución%'
-), 'Playable projection does not expose solutions');
+select ok(position('public_payload' in pg_get_function_result(
+  'public.get_my_flash_challenge(text,uuid)'::regprocedure
+)) = 0, 'Playable projection exposes no question payload at all');
 select is((select count(*) from public.get_my_flash_result(pg_temp.test_id('missing-attempt'))), 0::bigint,
   'Missing result is absent');
 select throws_ok($$select solution_payload from private.question_version_solutions$$, '42501', null,

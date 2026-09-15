@@ -7,6 +7,7 @@ import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { isTerminalCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
 import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/game";
+import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
 
 function TerminalCompetitiveChallenge({
@@ -81,11 +82,13 @@ export function RoomChallengeClient({
   roomContext,
   socialSnapshot,
   persistence: persistenceProp,
+  terminalReview,
 }: {
-  challenge: Challenge;
+  challenge: Challenge | ServerFlashChallenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
+  terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const persistence = persistenceProp ?? roomContext?.gameplayPersistence ?? "mock";
   const { recordCompletion, getCompletion } = useRoomSession();
@@ -108,7 +111,11 @@ export function RoomChallengeClient({
     [recordCompletion, roomContext],
   );
 
-  if (persistence === "server" && roomContext) {
+  if (
+    persistence === "server" &&
+    roomContext &&
+    (!attemptStatus || !isTerminalCompetitiveAttemptStatus(attemptStatus))
+  ) {
     return (
       <GameApp
         challenge={challenge}
@@ -129,16 +136,34 @@ export function RoomChallengeClient({
   }
 
   if (
+    persistence === "server" &&
+    roomContext &&
+    "slots" in challenge &&
+    attemptStatus === "completed" &&
+    roomContext.result
+  ) {
+    return (
+      <GameApp
+        challenge={challenge}
+        roomContext={roomContext}
+        socialSnapshot={socialSnapshot}
+        persistence="server"
+        terminalReview={terminalReview}
+      />
+    );
+  }
+
+  if (
     roomContext &&
     attemptStatus &&
     isTerminalCompetitiveAttemptStatus(attemptStatus) &&
-    !hasActiveGame
+    (!hasActiveGame || (persistence === "server" && attemptStatus === "notCompleted"))
   ) {
     const result = localCompletion ?? roomContext.result;
     if (attemptStatus === "completed" && result) {
       return (
         <CompetitiveResultScreen
-          challenge={challenge}
+          challenge={challenge as Challenge}
           result={result}
           returnTo={roomContext.returnTo}
         />
@@ -149,7 +174,7 @@ export function RoomChallengeClient({
 
   return (
     <GameApp
-      challenge={challenge}
+      challenge={challenge as Challenge}
       roomContext={roomContext}
       socialSnapshot={socialSnapshot}
       persistence={persistence}

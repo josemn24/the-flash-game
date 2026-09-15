@@ -62,6 +62,7 @@ begin
     when 'record_evaluation' then keys:=array['attemptId','lockVersion','sessionToken','receiptId'];
     when 'complete_attempt' then keys:=array['attemptId','lockVersion','sessionToken'];
     when 'abandon_attempt' then keys:=array['attemptId','lockVersion','sessionToken'];
+    when 'recover_attempt' then keys:=array['attemptId','lockVersion','sessionToken'];
     when 'accept_invitation' then keys:=array[]::text[];
     when 'invalidate_attempt' then keys:=array['attemptId','lockVersion'];
     when 'adjust_result' then keys:=array['attemptId','lockVersion'];

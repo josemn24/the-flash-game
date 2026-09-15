@@ -1,15 +1,17 @@
 import dynamic from "next/dynamic";
 import type { Challenge, GameRoomContext } from "@/types/game";
+import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { ChallengeCompletionResult } from "@/types/game";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import type { GameplayPersistence } from "@/types/view-models";
 
 type GameAppProps = {
-  challenge: Challenge;
+  challenge: Challenge | ServerFlashChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
+  terminalReview?: readonly ServerFlashTerminalReview[];
 };
 
 const FlashPopAlphabetGame = dynamic(() =>
@@ -52,6 +54,7 @@ export function GameApp({
   onComplete,
   socialSnapshot,
   persistence = "mock",
+  terminalReview,
 }: GameAppProps) {
   if (challenge.mode === "alphabet") {
     return (
@@ -88,9 +91,16 @@ export function GameApp({
     );
   }
   if (challenge.mode === "flash") {
-    if (persistence === "server" && roomContext) {
-      return <ServerFlashPopGame challenge={challenge} roomContext={roomContext} />;
+    if (persistence === "server" && roomContext && "slots" in challenge) {
+      return (
+        <ServerFlashPopGame
+          challenge={challenge}
+          roomContext={roomContext}
+          terminalReview={terminalReview}
+        />
+      );
     }
+    if ("slots" in challenge) return null;
     return (
       <FlashPopFlashGame challenge={challenge} roomContext={roomContext} onComplete={onComplete} />
     );

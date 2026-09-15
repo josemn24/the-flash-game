@@ -707,10 +707,11 @@ gracia aún abiertos.
 
 El esquema mantiene el bloqueo de sesión única y correcciones de superadmin con motivo y auditoría.
 El wrapper técnico de takeover está deshabilitado durante el MVP. Heartbeat, lease y abandono
-automático quedan fuera de esta fase; no son requisitos para ejecutar los comandos actuales. La
-resolución de recuperación por modo y el motivo `recovery_interrupted` se implementarán con sus
-migraciones/comandos en S04/S05/S14–S16, no mediante una actualización documental. Siguen abiertas
-la matriz owner/admin y la política de retención/anonimización.
+automático quedan fuera de esta fase; no son requisitos para ejecutar los comandos actuales. S04 ya
+implementa para Flash `recover_attempt` y `read_attempt_recovery`: un intervalo abierto se cierra
+como `recovery_interrupted`, genera una recepción interna nula y se evalúa como `unanswered` antes de
+autorizar otra preparación. Alfabeto, Supervivencia, Pirámide y Narrativa siguen pendientes de sus
+vertical slices. Siguen abiertas la matriz owner/admin y la política de retención/anonimización.
 
 ## 14. Evolución desde el repositorio actual
 
