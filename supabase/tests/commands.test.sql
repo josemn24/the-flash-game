@@ -40,9 +40,8 @@ select throws_ok($$select test_support.run('prepare_interaction')$$,'55000',null
 select pg_sleep(0.02);
 select lives_ok($$select test_support.run('record_evaluation','{"status":"correct","points":50}')$$,'Delayed evaluation uses recorded reception');
 select lives_ok($$select test_support.run('prepare_interaction')$$,'Next question becomes available after evaluation');
-select lives_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"}')$$,'Explicit takeover succeeds');
-select throws_ok($$select test_support.run('receive_answer','{"answer":true,"sessionToken":"ssssssssssssssssssssssssssssssssssssssss"}')$$,'42501',null,'Revoked token cannot submit');
-select lives_ok($$select test_support.run('receive_answer','{"answer":true}')$$,'New session continues existing interaction');
+select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"}')$$,'55000','takeover_disabled','Cross-device takeover is disabled for the MVP');
+select lives_ok($$select test_support.run('receive_answer','{"answer":true}')$$,'Original session continues existing interaction');
 select lives_ok($$select test_support.run('record_evaluation','{"status":"correct","points":50}')$$,'Second answer evaluated');
 select lives_ok($$select test_support.run('complete_attempt','{"score":100}')$$,'Completion credits and revokes atomically');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Completion retry works after session revocation');

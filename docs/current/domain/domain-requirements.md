@@ -145,9 +145,11 @@ autenticación y la gestión real de actores todavía no están implementadas.
   membresía competitiva activa y la publicación está disponible.
 - **FR-19 —** El inicio oficial consume el único intento competitivo del jugador para ese desafío.
   (**Objetivo confirmado para la primera producción**)
-- **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura autorizada debe
-  reanudar el mismo intento y no crear otro. Si el cierre de la pestaña, la pérdida de conexión o el
-  abandono voluntario se registra como `abandoned`, el intento es terminal y no puede reanudarse.
+- **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura con la sesión
+  controladora autorizada debe reanudar el mismo intento y no crear otro. El servidor debe resolver
+  antes cualquier interacción temporal abierta según el modo; cerrar una pestaña o perder conexión
+  no marca por sí solo `abandoned`. Una segunda sesión se bloquea y un abandono explícito sí es
+  terminal.
 - **FR-21 —** El desafío debe aplicar el tiempo total, los tiempos por pregunta y las reglas de
   finalización propias del modo. El agotamiento del tiempo de una pregunta o ronda se registra como
   una respuesta no contestada o como el estado equivalente definido por el modo; no implica por sí
@@ -222,11 +224,11 @@ autenticación y la gestión real de actores todavía no están implementadas.
   la publicación termina antes de iniciar el desafío, el desafío se proyecta como `expired`: el
   jugador no ha jugado, no consume un intento y no genera resultado.
 - Para producción inicial hay un único intento competitivo por jugador y desafío programado.
-- Un intento que sigue `inProgress` puede reanudarse; repetir el desafío no crea una segunda
-  oportunidad competitiva. Si el cierre de la pestaña, la pérdida de conexión o el abandono
-  voluntario ya lo marcaron como `abandoned`, no puede reanudarse.
-- Cerrar la pestaña, perder la conexión o abandonar voluntariamente un intento iniciado lo termina
-  como `abandoned`; se proyecta como `notCompleted` y consume el intento único.
+- Un intento que sigue `inProgress` puede reanudarse con la sesión controladora; repetir el desafío
+  no crea una segunda oportunidad competitiva. Antes de reanudar, el servidor consume la
+  interacción abierta según las reglas del modo, sin volver a entregar contenido ya preparado.
+- Cerrar la pestaña o perder la conexión no es abandono fiable. Abandonar explícitamente un intento
+  lo termina como `abandoned`, se proyecta como `notCompleted` y consume el intento único.
 - Llegar al final del flujo convierte el intento en `completed` aunque el resultado sea de cero
   Flash Points. No existe un estado funcional global de desafío “superado” o “fallido”.
 - La Pirámide finaliza reglamentariamente cuando el jugador completa sus siete niveles o cuando
@@ -252,7 +254,7 @@ autenticación y la gestión real de actores todavía no están implementadas.
   y métricas, pero no alteran el ranking.
 - El contenido publicado y el contexto histórico deben permanecer estables para quienes ya jugaron.
 - Los resultados válidos permanecen aunque el jugador abandone la sala; un intento fraudulento debe
-  invalidarse explícitamente.
+  invalidarse explícitamente. `invalidated` no se usa para resolver una interrupción o recuperación.
 - Las pruebas de superadministrador son no competitivas.
 
 ## 7. Estados y ciclos de vida observados
@@ -270,7 +272,9 @@ autenticación y la gestión real de actores todavía no están implementadas.
   de que iniciara su intento. No es un estado de un intento creado, no es abandono y no produce
   respuestas ni puntos.
 - `abandoned` significa que el jugador inició el intento, pero lo dejó sin llegar al final. Se
-  conserva la información que haya enviado y puede revisarla junto con la respuesta correcta.
+  conserva la información que haya enviado y puede revisarla junto con la respuesta correcta. Solo
+  una operación explícita lo establece en esta fase; una interrupción técnica mantiene el intento
+  recuperable y se resuelve por modo.
 - Estado de respuesta observado: correcta, parcial, incorrecta, no contestada o timeout.
 
 ### Publicación, temporada y membresía
@@ -296,8 +300,11 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
   intento a `abandoned`, conserve las respuestas ya enviadas y elimine el snapshot recuperable.
 - `pagehide`, `visibilitychange` u `offline` pueden enviar un aviso inmediato, pero son señales
   auxiliares y no garantizan que el navegador o la red permitan completar la notificación.
-- Si no se recibe actividad dentro del límite acordado, el intento debe cerrarse como `abandoned`.
-  Una vez terminal, no se puede reanudar ni repetir.
+- Al recuperar, el servidor debe reconciliar una recepción ya persistida y, si no existe, cerrar
+  atómicamente la interacción preparada como consumida con la consecuencia definida por el modo.
+  Nunca debe volver a entregar esa unidad ni concederle un nuevo reloj.
+- Una política posterior podrá cerrar por inactividad tras el límite acordado; hasta entonces la
+  falta de actividad no cambia por sí sola el intento a `abandoned`.
 - La duración del heartbeat, el lease y el posible periodo de gracia aún deben concretarse antes de
   implementar este comportamiento.
 
@@ -319,8 +326,8 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
   la puntuación que se obtiene al jugar un desafío y el total de la temporada activa de la sala.
 - Completar el flujo de un desafío determina el estado `completed` aunque la puntuación sea cero;
   la puntuación no determina si el intento está completado.
-- Cerrar la pestaña, perder la conexión o abandonar voluntariamente un intento iniciado equivale a
-  `abandoned` y se muestra como `notCompleted`.
+- Abandonar explícitamente un intento iniciado equivale a `abandoned` y se muestra como
+  `notCompleted`; cerrar la pestaña o perder conexión activa la recuperación autoritativa por modo.
 - `expired` se reserva para una publicación que termina antes de que el jugador inicie su intento;
   no equivale a `abandoned`.
 - Los modos pueden definir penalizaciones por errores, intentos o tiempo. Estas reducen la puntuación
@@ -328,6 +335,9 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
   puntuación de una pregunta ni el total del desafío pueden ser negativos.
 - En Alfabeto cada respuesta correcta concede puntos. `lastCorrectAt` y `completedAt` se conservan
   para revisión e historial, pero no son criterios del ranking común.
+- Una pregunta, nivel o letra preparada por el servidor se considera consumida aunque se pierda su
+  respuesta HTTP. Si no hay recepción aceptada, la recuperación la resuelve por modo; en Alfabeto,
+  el pase por interrupción se conserva como motivo auditable distinto del pase voluntario.
 - El feedback de “desafío superado” de La Pirámide al completar sus siete niveles es específico de
   la interfaz del modo y no crea un estado global `passed`.
 - `⚡` y “Flash Points” son equivalentes en la interfaz. El texto completo se conserva en títulos
@@ -347,12 +357,14 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 
 Estas cuestiones no cambian las decisiones confirmadas anteriores:
 
-- Duración exacta, finalización, checkpoints, feedback y exposición de soluciones de cada modo.
+- Duración exacta, distribución de puntos, checkpoints adicionales, feedback y exposición de
+  soluciones de cada modo que no estén fijados en `mode-contracts.md`.
 - Si algún modo futuro podrá permitir más de un intento oficial y cómo se acreditaría; el valor
   inicial confirmado sigue siendo uno.
 - Duración, usos y flujo operativo de las invitaciones.
 - Políticas de recuperación o eliminación de salas, retención de eventos, moderación y anonimización.
-- Flujo de correcciones administrativas, toma de control de sesión y límites de frecuencia.
+- Flujo de correcciones administrativas, política posterior de toma de control de sesión y límites
+  de frecuencia.
 - Alcance exacto de la actividad social, notificaciones y formatos/challenges que entrarán en la
   primera validación con usuarios.
 
@@ -371,8 +383,9 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   validarse en servidor cuando exista backend.
 - **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
   llegó al final del flujo y se incluye en el ranking del desafío.
-- **Resuelta (2026-09-13):** `abandoned` se reserva para un intento iniciado que se deja sin
-  finalizar; `expired` se reserva para una publicación que termina antes de que el jugador empiece.
+- **Resuelta (2026-09-13, precisada 2026-09-15):** `abandoned` se reserva para un intento iniciado
+  que el jugador abandona explícitamente; `expired` se reserva para una publicación que termina
+  antes de que el jugador empiece. Una interrupción se recupera por modo y no equivale a ninguno.
 - **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la
   expiración a partir de la ventana de la publicación cuando no existe un intento; la interfaz la
   muestra como desafío cerrado sin resultado ni revisión propios.

@@ -31,7 +31,8 @@ Cada modo debe declarar explícitamente:
    reducir la puntuación disponible de una pregunta o prueba, pero el resultado final de esa unidad
    y el total del desafío deben quedar limitados a cero.
 7. Qué intento se acredita si admite varios; el valor predeterminado es el mejor.
-8. Qué checkpoints necesita para reanudarse sin permitir repetir contenido.
+8. Qué checkpoints adicionales necesita para reanudarse sin permitir repetir contenido; la regla
+   ya cerrada consume toda interacción preparada y aplica la recuperación por modo documentada.
 9. Qué estado parcial debe persistirse en el servidor.
 10. Qué feedback puede mostrarse después de cada respuesta.
 11. Cuándo puede mostrarse la solución completa.
@@ -45,7 +46,8 @@ Cada modo debe declarar explícitamente:
 - Procedimiento concreto para conceder y retirar el rol global `superadmin`.
 - Interfaz y flujo de auditoría para correcciones de puntuación.
 - Límites de frecuencia por operación competitiva.
-- Política de toma de control de un intento desde un segundo dispositivo.
+- Política posterior al MVP para una transferencia voluntaria de control entre dispositivos. El MVP
+  bloquea la segunda sesión y no ofrece takeover.
 - Intervalo del heartbeat, duración del lease y periodo de gracia para confirmar un abandono por
   cierre de pestaña, pérdida de conexión o ausencia de actividad.
 - Momento en que un antiguo miembro deja de aparecer en listados no históricos.
@@ -60,6 +62,7 @@ Cada modo debe declarar explícitamente:
 - Salas públicas.
 - Equipos y juego cooperativo.
 - Partidas sincronizadas en tiempo real.
+- Transferencia de control de un intento entre dispositivos durante el MVP.
 - Ranking global entre salas.
 - Internacionalización del contenido.
 - Monetización o recompensas distintas de Flash Points.

@@ -97,6 +97,7 @@ function commandCode(error: unknown) {
     "deadline_reached",
     "receipt_not_found",
     "already_evaluated",
+    "takeover_disabled",
   ];
   return known.find((candidate) => message.includes(candidate)) ?? "command_failed";
 }

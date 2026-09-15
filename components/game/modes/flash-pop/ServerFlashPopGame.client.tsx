@@ -27,6 +27,12 @@ type TerminalReviewRow = {
   solution_payload: unknown;
 };
 
+class CompetitiveCommandError extends Error {
+  constructor(readonly code: string) {
+    super(code);
+  }
+}
+
 function idempotencyKey(prefix: string) {
   return `${prefix}:${crypto.randomUUID()}`;
 }
@@ -67,7 +73,14 @@ async function postJson(path: string, body: object) {
     body: JSON.stringify(body),
   });
   const value = (await response.json()) as Record<string, unknown>;
-  if (!response.ok) throw new Error("competitive_command_failed");
+  if (!response.ok) {
+    const error = value.error;
+    const code =
+      error && typeof error === "object" && "code" in error && typeof error.code === "string"
+        ? error.code
+        : "competitive_command_failed";
+    throw new CompetitiveCommandError(code);
+  }
   return value;
 }
 
@@ -99,6 +112,7 @@ export function ServerFlashPopGame({
   const [reviewChallenge, setReviewChallenge] = useState<FlashChallenge>(challenge);
   const [locked, setLocked] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [startNotice, setStartNotice] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(
@@ -127,6 +141,7 @@ export function ServerFlashPopGame({
   const begin = async () => {
     if (busy) return;
     setBusy(true);
+    setStartNotice(undefined);
     try {
       const started = await postJson("/api/competitive/attempts/start", {
         scheduledChallengeId: challenge.id,
@@ -138,6 +153,12 @@ export function ServerFlashPopGame({
       };
       setAttempt(nextAttempt);
       setPhase("countdown");
+    } catch (error) {
+      setStartNotice(
+        error instanceof CompetitiveCommandError && error.code === "attempt_control_required"
+          ? "Tienes una partida en curso en otra sesión. Para este MVP, vuelve al dispositivo original para continuar."
+          : "No se ha podido iniciar el desafío. Inténtalo de nuevo.",
+      );
     } finally {
       setBusy(false);
     }
@@ -220,6 +241,7 @@ export function ServerFlashPopGame({
               <ChallengeIntro
                 challenge={challenge}
                 onStart={begin}
+                notice={startNotice}
                 returnTo={roomContext.returnTo}
               />
             </motion.div>

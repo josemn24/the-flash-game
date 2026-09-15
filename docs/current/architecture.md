@@ -177,7 +177,11 @@ El puerto expone operaciones del comportamiento —por ejemplo `createOrGetAttem
 de lecturas y escrituras desde la aplicación.
 
 La frontera concreta está en [attempt-commands.ts](../../application/ports/attempt-commands.ts):
-inicio/recuperación, takeover, preparación, recepción, evaluación, cierre, invitaciones y correcciones.
+inicio/recuperación con sesión exclusiva, preparación, recepción, evaluación, cierre, invitaciones
+y correcciones. El tipo de takeover se reserva para una política posterior, pero está deshabilitado
+en el MVP. La recuperación debe ser una operación de dominio: reconcilia una recepción pendiente o
+resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
+ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
 auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL futuro
 verificará Auth y establecerá identidad con claims locales a cada transacción. No se expone `private`
@@ -392,10 +396,14 @@ la arquitectura productiva.
 
 - `createOrGetAttempt` debe ser atómico e idempotente.
 - Cada envío lleva la versión o condición necesaria para rechazar estado obsoleto.
-- Solo una sesión controla un intento; tomar el control revoca la anterior sin crear otro intento.
+- Solo una sesión controla un intento; durante el MVP otra sesión se bloquea y no puede revocar ni
+  sustituir a la original.
 - El servidor fija `startedAt`, deadlines, tiempos competitivos, estados y puntuación.
 - Un timeout de pregunta es un resultado de respuesta; no es por sí mismo abandono ni expiración de
   la publicación.
+- Una unidad temporal persistida antes de devolver su payload se considera consumida. Al recuperar,
+  una recepción existente se evalúa y un intervalo sin recepción se cierra con la consecuencia del
+  modo, sin reentregar la misma unidad ni reiniciar su reloj.
 
 ### Contenido y seguridad
 
@@ -468,8 +476,8 @@ deben vivir en el servidor.
 
 - La matriz exacta de permisos de `owner` frente a `admin` y el alcance del rol editor aún no está
   cerrada.
-- Takeover explícito está implementado en SQL; heartbeat, lease y abandono automático quedan fuera
-  de la fase actual, pendientes de una política posterior.
+- La transferencia de control entre dispositivos está deshabilitada durante el MVP. Heartbeat, lease
+  y abandono automático quedan fuera de la fase actual, pendientes de una política posterior.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,
   conflicto obsoleto y validación inválida sin filtrar información.
 - Supabase RLS debe diseñarse junto con las políticas de aplicación; no conviene asumir que una capa

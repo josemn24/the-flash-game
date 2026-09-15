@@ -21,17 +21,17 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 
 ### Evidencia del código actual
 
-| Área      | Existe y conviene conservar                                                                                                                                                         | Falta para un recorrido real                                                                                                                                 |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                | Estados de red, sesión real y comandos competitivos; muchas pantallas aún esperan preguntas completas con soluciones.                                        |
-| Lecturas  | `server/data-access.ts`, contratos `CurrentViewerProvider`, `RoomQueries`, `ChallengeQueries`; pruebas de contrato del mock.                                                        | Composición real y consultas PostgreSQL autorizadas. `application/queries` define principalmente contratos, no una implementación completa de casos de uso.  |
-| Identidad | `Player` separado de Auth, tabla `players`, perfil visual editable.                                                                                                                 | Login/logout, resolución/alta de jugador y guardado. `MockCurrentViewerProvider` usa un jugador fijo; `FlashPopHome` guarda cambios solo en estado React.    |
-| Partidas  | Reducers, scoring, revisión, `RoomSessionProvider`, snapshots y lógica de resultados locales.                                                                                       | Sustituir autoridad cliente. Pirámide también usa `localStorage`; ninguno de esos almacenes constituye persistencia competitiva.                             |
-| Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                         | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                                 |
-| SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría y dos rankings.                                                 | Migraciones versionadas, datos iniciales reproducibles y conexión desde la aplicación.                                                                       |
-| Comandos  | `application/ports/attempt-commands.ts`, funciones privadas de inicio, takeover, preparar, recibir, pasar, evaluar, completar, abandonar, aceptar invitación, corregir e invalidar. | Implementación del puerto, casos de uso y transportes. No hay comandos de alta de jugador, creación de sala, edición, publicación o emisión de invitaciones. |
-| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; adapta milisegundos a segundos.                                                                                | Reconstruir y validar el contexto privado, persistir el resultado, decidir el final del modo y producir respuestas públicas.                                 |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad y carreras con conexiones PostgreSQL independientes.                                                                             | Login real, HTTP, Storage y E2E de navegador contra aplicación y base reales. No hay suite E2E configurada en `package.json`.                                |
+| Área      | Existe y conviene conservar                                                                                                                                                                                                         | Falta para un recorrido real                                                                                                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                | Estados de red, sesión real y comandos competitivos; muchas pantallas aún esperan preguntas completas con soluciones.                                        |
+| Lecturas  | `server/data-access.ts`, contratos `CurrentViewerProvider`, `RoomQueries`, `ChallengeQueries`; pruebas de contrato del mock.                                                                                                        | Composición real y consultas PostgreSQL autorizadas. `application/queries` define principalmente contratos, no una implementación completa de casos de uso.  |
+| Identidad | `Player` separado de Auth, tabla `players`, perfil visual editable.                                                                                                                                                                 | Login/logout, resolución/alta de jugador y guardado. `MockCurrentViewerProvider` usa un jugador fijo; `FlashPopHome` guarda cambios solo en estado React.    |
+| Partidas  | Reducers, scoring, revisión, `RoomSessionProvider`, snapshots y lógica de resultados locales.                                                                                                                                       | Sustituir autoridad cliente. Pirámide también usa `localStorage`; ninguno de esos almacenes constituye persistencia competitiva.                             |
+| Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                         | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                                 |
+| SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría y dos rankings.                                                                                                 | Migraciones versionadas, datos iniciales reproducibles y conexión desde la aplicación.                                                                       |
+| Comandos  | `application/ports/attempt-commands.ts`, funciones privadas de inicio, preparar, recibir, pasar, evaluar, completar, abandonar, aceptar invitación, corregir e invalidar. El takeover queda reservado pero deshabilitado en el MVP. | Implementación del puerto, casos de uso y transportes. No hay comandos de alta de jugador, creación de sala, edición, publicación o emisión de invitaciones. |
+| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; adapta milisegundos a segundos.                                                                                                                                | Reconstruir y validar el contexto privado, persistir el resultado, decidir el final del modo y producir respuestas públicas.                                 |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad y carreras con conexiones PostgreSQL independientes.                                                                                                                             | Login real, HTTP, Storage y E2E de navegador contra aplicación y base reales. No hay suite E2E configurada en `package.json`.                                |
 
 Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 [composición mock](../infrastructure/mock/composition.ts),
@@ -59,9 +59,10 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 - SQL exige publicación `open` y temporada `active` además de fechas válidas. La apertura no se
   consigue cambiando solo el texto de la UI o esperando a que avance el reloj: S12 integra las
   transiciones de calendario.
-- La documentación mezcla abandono por desconexión como objetivo con ausencia deliberada de
-  heartbeat/lease en el esquema actual. No se inventa una duración ni se trata `pagehide` como
-  confirmación fiable; véase D04 y S21.
+- La recuperación de una interacción iniciada ya está definida: no se reentrega contenido preparado
+  y se aplica la consecuencia del modo. El abandono por inactividad sigue pendiente porque no hay
+  heartbeat/lease: no se inventa una duración ni se trata `pagehide` como confirmación fiable;
+  véase D04 y S21.
 - Las cifras de QA no están sincronizadas: `docs/current/qa.md` registra 535 pruebas TS y el README
   de schemas registra 541. Son evidencias documentadas, no pruebas ejecutadas para redactar este
   plan. Cada implementación registrará su propia validación y revisión del commit correspondiente.
@@ -148,7 +149,7 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | Orden sugerido   | Entregable verificable                                                                     | Dependencias principales                                             |
 | ---------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
 | S01 → S02        | Identidad real, perfil y sala persistida autorizada.                                       | D01, D02.                                                            |
-| S03 → S04        | Flash completo guardado; recuperación y control en dos dispositivos.                       | S01/S02, D03/D07.                                                    |
+| S03 → S04        | Flash completo guardado; recuperación en la misma sesión y bloqueo de una segunda sesión.  | S01/S02, D03/D07.                                                    |
 | S05 y E01        | Alfabeto y Mini-Wordle de prueba: reloj global y feedback intermedio sin solución cliente. | S04, D03. Reducen pronto dos riesgos distintos.                      |
 | S06 → S07        | Dos rankings y consulta histórica real.                                                    | S03; S04 para reconstrucción de estado.                              |
 | S08 → S09        | Crear sala y reunir al grupo mediante enlace.                                              | S02, D05/D06.                                                        |
@@ -248,27 +249,35 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 
 ### S04 — Reanudar, recuperar fallos y abandonar explícitamente
 
-- **Objetivo / CU:** conservar el mismo intento ante recarga, fallo parcial o segundo dispositivo;
-  CU-16, CU-19 y recuperación de CU-17/CU-18.
-- **UI:** `RoomChallengeClient`, `useRoomAttemptSnapshot`, `RoomSessionProvider`, aviso de control
-  transferido, acción explícita de takeover/abandono y estado «procesando respuesta» recuperable.
+- **Objetivo / CU:** conservar el mismo intento ante recarga o fallo parcial y bloquear una segunda
+  sesión/dispositivo; CU-16, CU-19 y recuperación de CU-17/CU-18.
+- **UI:** `RoomChallengeClient`, `useRoomAttemptSnapshot`, `RoomSessionProvider`, aviso de sesión
+  activa en otro dispositivo, acción explícita de abandono y estado «procesando respuesta»
+  recuperable. No hay CTA de takeover.
 - **Mocks retirados:** snapshot en memoria como fuente de progreso oficial del Flash migrado.
 - **Backend/dominio:** lectura autorizada del estado aceptado, recepción pendiente y versión actual;
-  reconciliar antes de reenviar. Un retry conserva clave, operación, contenido y secreto; conflictos
-  obsoletos requieren releer, no repetir a ciegas. Diferenciar SQLSTATE `40001` de negocio de fallos
-  transitorios reintentables. Recuperar evaluación pendiente tras reinicio sin nueva respuesta.
-- **Persistencia:** usar takeover/abandon existentes y añadir función privada de lectura de
-  recuperación con ACL mínima. Reconstruir desde respuestas/intervalos/recepciones; checkpoint
-  nuevo solo si hace falta, con esquema validado. No abrir SELECT genérico sobre tablas privadas
-  nuevas. Resolver la entrega/pérdida del token creado por servidor sin almacenarlo en texto plano
-  en DB, auditoría ni registros de idempotencia.
-- **Tests:** caída después de preparar, recibir, evaluar y acreditar; conexión HTTP perdida;
-  token perdido; dos pestañas y dos dispositivos; versión/token antiguos; abandono repetido;
-  terminal no reanudable; relojes originales; disputa abandono/evaluación con resultado definido.
+  recuperar no rehidrata a ciegas. Si existe recepción, evaluarla/reconciliarla idempotentemente;
+  si queda un intervalo preparado sin recepción, consumirlo atómicamente con la consecuencia del
+  modo antes de preparar contenido. Un retry conserva clave, operación, contenido y secreto;
+  conflictos obsoletos requieren releer, no repetir a ciegas. Un token distinto recibe conflicto de
+  sesión activa y nunca revoca la sesión original. Diferenciar SQLSTATE `40001` de negocio de fallos
+  transitorios reintentables.
+- **Persistencia:** usar `abandon_attempt` y añadir lectura y comando privado de recuperación con
+  ACL mínima. El comando bloquea intento/intervalo, reconcilia recepción o cierra la interacción
+  abierta, registra su efecto y solo después permite preparar la siguiente. El wrapper
+  `take_over_attempt` queda deshabilitado. Reconstruir desde respuestas/intervalos/recepciones;
+  checkpoint nuevo solo si hace falta, con esquema validado. No abrir SELECT genérico sobre tablas
+  privadas nuevas ni guardar el token en texto plano en DB, auditoría o idempotencia.
+- **Tests:** caída después de preparar, recibir, evaluar y acreditar; pérdida de HTTP tras preparar
+  (no se repite la unidad) y tras recibir (se evalúa la recepción); misma cookie tras recarga;
+  segunda pestaña/dispositivo bloqueado; versión/token antiguos; abandono repetido; terminal no
+  reanudable; relojes originales; disputa abandono/evaluación con resultado definido.
 - **Dependencias:** S03, D01 de token y D03 de checkpoint.
-- **Terminada:** el jugador recupera el mismo progreso y tiempos tras reiniciar el proceso;
-  takeover revoca control anterior; abandonar conserva respuestas, consume intento y no suma puntos.
-  Desconexión sola todavía no promete abandono automático: corresponde a S21.
+- **Terminada:** el jugador recupera el estado aceptado con la sesión original tras reiniciar el
+  proceso; una interacción ya preparada se resuelve sin volver a mostrarse ni reiniciar su reloj.
+  Una segunda sesión solo recibe un bloqueo y no puede transferir el control; abandonar conserva
+  respuestas, consume intento y no suma puntos. Desconexión sola todavía no promete abandono
+  automático: corresponde a S21.
 
 ### S05 — Jugar Alfabeto con reloj global y vueltas reales
 
@@ -279,15 +288,19 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   para Alfabeto; peers inventados no se muestran en el recorrido real.
 - **Backend/dominio:** validar respuesta corta/normalización y calcular puntos por item en servidor;
   pasar letra conserva intento y no crea respuesta final. Añadir vueltas/reconstrucción autorizada;
-  tiempo total desde `global_time_limit_ms`, sin timer competitivo independiente por letra.
-- **Persistencia:** `pass_interaction`, unidades e intervalos existentes. Al vencer: preparar cada
-  pendiente sin nuevo payload, recibir timeout/evaluar y completar. Letras nunca visitadas aportan
-  duración cero; visitas repetidas suman sus intervalos. Recuperar también un cierre interrumpido.
-- **Tests:** pasar/volver, letra ya contestada, cierre global durante evaluación o desconexión,
-  timeout de todas las pendientes, `lastCorrectAt` fuera del desempate, checkpoint y takeover.
+  tiempo total desde `global_time_limit_ms`, sin timer competitivo independiente por letra. Al
+  recuperar antes del deadline, la letra visible se consume como pase por interrupción y se avanza.
+- **Persistencia:** ampliar el motivo de cierre de `interaction_intervals` con
+  `recovery_interrupted`, distinto de `pass`, sin añadir estado a `attempt_answers`. Al vencer:
+  preparar cada pendiente sin nuevo payload, recibir timeout/evaluar y completar. Letras nunca
+  visitadas aportan duración cero; visitas repetidas suman sus intervalos.
+- **Tests:** pasar/volver, letra ya contestada, recuperación de letra visible antes del deadline con
+  motivo auditable, cierre global durante evaluación o desconexión, timeout de todas las pendientes,
+  `lastCorrectAt` fuera del desempate, checkpoint y bloqueo de segunda sesión.
 - **Dependencias:** S04; D03 para Alfabeto y reconciliación `unanswered`/`timeout`.
-- **Terminada:** recargar no reinicia el reloj global, las vueltas conservan progreso y el resultado
-  terminal se acredita una vez, incluso si todas las letras quedan sin contestar.
+- **Terminada:** recargar no reinicia el reloj global, no vuelve a mostrar la letra que estaba activa
+  y conserva sus vueltas; el resultado terminal se acredita una vez, incluso si todas las letras
+  quedan sin contestar.
 
 ### S06 — Consultar los dos rankings reales
 
@@ -500,7 +513,8 @@ Ficha común, obligatoria para **cada** E*:
   Mantener una recepción/respuesta final por item y vincular la evaluación a eventos aceptados.
   Cambios de esquema/ACL/inventario se entregan junto al formato, no en una fase horizontal previa.
 - **Tests:** E2E evento → feedback → siguiente acción → cierre → revisión; replay/reordenación de
-  eventos, contador falsificado, evento tardío, respuesta HTTP perdida y takeover entre eventos.
+  eventos, contador falsificado, evento tardío, respuesta HTTP perdida y bloqueo de segunda sesión
+  entre eventos.
   Probar también las particularidades de cada fila y el límite de tamaño/frecuencia.
 - **Dependencias:** S04 y D03; D08 cuando hay assets privados. E01 es el experimento inicial sugerido;
   el resto no depende de terminar todos los formatos simples.
@@ -540,7 +554,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 - **Persistencia:** respuestas, checkpoint validado mínimo y `complete_attempt` existentes; datos
   de modo congelados. DTO con vidas/estado confirmado, sin recalcular desde valores de la UI.
 - **Tests:** última vida por error/timeout, crédito parcial, cero puntos, cierre temprano falsificado,
-  recuperación tras eliminación y acreditación única.
+  recuperación de pregunta abierta como `unanswered` con pérdida de vida, recuperación tras
+  eliminación y acreditación única.
 - **Dependencias:** S04 y D03; únicamente las F*/E* del desafío seleccionado.
 - **Terminada:** sobrevivir o ser eliminado produce `completed`; dejar la partida produce abandono
   solo por su operación/política. No quedan vidas ni resultados oficiales en estado cliente.
@@ -556,11 +571,13 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 - **Persistencia:** unidades de scope `level`, respuestas por item y checkpoint de fase, comandos
   de preparación/evaluación/cierre. No inventar un deadline global ni cortar por `closes_at` un
   intento ya válido. Respuesta con nivel/estado/resultado confirmado.
-- **Tests:** siete niveles, fallo/timeout en primero e intermedio, briefing sin reiniciar reloj,
-  manipulación del nivel, recarga y revisión de niveles realmente alcanzados según D07.
+- **Tests:** siete niveles, fallo/timeout en primero e intermedio, recuperación durante briefing
+  (reanuda) y durante un nivel iniciado (lo falla y completa), manipulación del nivel, recarga y
+  revisión de niveles realmente alcanzados según D07.
 - **Dependencias:** S04, D03 y formatos usados; no requiere migrar todo el catálogo.
-- **Terminada:** el ascenso sobrevive a cambio de sesión y un fallo reglamentario nunca se muestra
-  como abandono ni concede otra oportunidad.
+- **Terminada:** el ascenso se reanuda solo desde la sesión original antes de comenzar un nivel; una
+  interrupción de nivel lo falla reglamentariamente, nunca se muestra como abandono ni concede otra
+  oportunidad.
 
 ### S16 — Narrativa con escenas y epílogo persistidos
 
@@ -572,11 +589,13 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
   reacciones. Reconciliar el final en epílogo con el guard SQL que comprueba respuestas, no escenas.
 - **Persistencia:** configuración narrativa versionada, checkpoint validado y comando de avance
   si es necesario; respuestas y cierre existentes. DTO con siguiente paso permitido.
-- **Tests:** recarga en escena/pregunta/epílogo, salto de pasos, timeout, evaluación pendiente,
-  escena sin consumo de tiempo de pregunta y cierre prematuro denegado.
+- **Tests:** recarga en escena/pregunta/epílogo, recuperación de pregunta activa como `unanswered`
+  con reacción aplicable, salto de pasos, timeout, evaluación pendiente, escena sin consumo de
+  tiempo de pregunta y cierre prematuro denegado.
 - **Dependencias:** S04, D03 y formatos elegidos.
-- **Terminada:** la historia retoma el paso aceptado, termina tras su secuencia reglamentaria y
-  conserva una revisión reproducible de la versión jugada.
+- **Terminada:** la historia retoma escenas y epílogo aceptados, pero no vuelve a presentar una
+  pregunta temporizada abierta; termina tras su secuencia reglamentaria y conserva una revisión
+  reproducible de la versión jugada.
 
 ### S17 — Corregir contenido creando otra versión y archivar
 
@@ -617,7 +636,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 - **Persistencia:** comandos acotados, locks y auditoría; conservar membresía/reactivación e histórico.
   DTO de miembro actualizado y revalidación de accesos.
 - **Tests:** matriz actor/objetivo, intento activo tras pérdida de membresía, bloqueado no acepta
-  invitación, cambio simultáneo con takeover y exclusión de nuevos inicios de spectator.
+  invitación, cambio simultáneo con sesión competitiva activa y exclusión de nuevos inicios de
+  spectator.
 - **Dependencias:** S18a y D05 con política explícita de desbloqueo.
 - **Terminada:** cada acción habilitada tiene autorización de servidor y sus efectos se reflejan
   también en una sesión ya abierta del afectado.
@@ -755,25 +775,34 @@ S03/S04 deben implementar esta secuencia; no concentrar todo el juego en una tra
    El contexto incluye solución: no es el DTO de feedback. Persistir la respuesta asociada.
 5. **Avance/cierre:** dominio decide siguiente item o final reglamentario; completar/acreditar en
    su transacción atómica. No exponer un endpoint que acepte `score`/`outcome` oficiales.
-6. **Relectura:** responder con estado confirmado y versión vigente; revalidar vistas afectadas.
+6. **Recuperación:** al volver con la sesión controladora, bloquear el intento y resolver antes el
+   intervalo abierto. Una recepción ya confirmada se evalúa; sin recepción, la unidad preparada se
+   consume con la consecuencia del modo. No se vuelve a entregar su payload ni se reinicia su reloj.
+7. **Relectura:** responder con estado confirmado y versión vigente; revalidar vistas afectadas.
    No presentar como aceptado un score optimista que todavía no está persistido. Un resultado
    idempotente guardado puede describir un estado anterior: revalidar permisos, sesión y fase antes
    de volver a entregar contenido, sin reiniciar relojes ni resucitar una interacción terminal.
 
 Puntos de fallo que deben tener salida explícita:
 
-| Último hecho confirmado                           | Recuperación exigida                                                                      |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Inicio confirmado, token/respuesta HTTP perdidos  | Recuperar entrega segura del mismo secreto o takeover explícito; no iniciar otro intento. |
-| Preparación confirmada, contenido no recibido     | Recuperar mismo intervalo/deadline; no conceder otro reloj por usar otra clave.           |
-| Recepción confirmada, evaluación pendiente        | Leer recepción autorizada y evaluarla de nuevo idempotentemente; no pedir otra respuesta. |
-| Evaluación confirmada, UI no recibió feedback     | Reconstruir resultado aceptado y siguiente versión; no registrar segunda respuesta.       |
-| Cierre/acreditación confirmados, UI sigue jugando | Leer terminal y mostrar resultado; no otorgar puntos otra vez.                            |
-| Takeover durante procesamiento                    | Token anterior deja de escribir; control vigente recupera hechos pendientes.              |
+| Último hecho confirmado                           | Recuperación exigida                                                                             |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Inicio confirmado, token/respuesta HTTP perdidos  | Recuperar con la cookie original; otro token se bloquea y no inicia otro intento.                 |
+| Preparación confirmada, contenido/HTTP perdidos   | Tratar la unidad como consumida: sin recepción, cerrar el intervalo y aplicar la consecuencia del modo; nunca reentregar payload o reloj. |
+| Recepción confirmada, evaluación pendiente        | Leer recepción autorizada y evaluarla de nuevo idempotentemente; no pedir otra respuesta.        |
+| Evaluación confirmada, UI no recibió feedback     | Reconstruir resultado aceptado y siguiente versión; no registrar segunda respuesta.              |
+| Cierre/acreditación confirmados, UI sigue jugando | Leer terminal y mostrar resultado; no otorgar puntos otra vez.                                   |
+| Segunda sesión durante procesamiento              | Se bloquea; la sesión original conserva el control y recupera los hechos pendientes.             |
 
-Un error técnico no se convierte automáticamente en `abandoned`. La resolución de actividad es
-una política distinta. Los identificadores de operación deben permitir rastrear cada commit sin
-guardar secretos ni duplicar soluciones en logs.
+Un error técnico no se convierte automáticamente en `abandoned`. La resolución de una interacción
+ya preparada sí es obligatoria al recuperar, pero sigue siendo una consecuencia de modo, no de
+actividad. Heartbeat/lease y abandono automático son una política distinta. Los identificadores de
+operación deben permitir rastrear cada commit sin guardar secretos ni duplicar soluciones en logs.
+
+La aceptación de S04 debe demostrar, como mínimo, una recarga con la cookie original, pérdida de
+HTTP después de preparar, pérdida de HTTP después de recibir, recuperación tras vencimiento del
+deadline global de Alfabeto y bloqueo de un segundo dispositivo. En ningún caso se repite una unidad
+preparada, se pierden respuestas ya recibidas ni se transfiere el control.
 
 ## 9. Cobertura de casos de uso y pendientes explícitos
 

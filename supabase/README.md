@@ -96,6 +96,13 @@ en los DTO, HTML/RSC, `localStorage`, auditoría ni `private.command_requests`; 
 la solución queda en PostgreSQL y la revisión terminal se reconstruye mediante la proyección
 autorizada.
 
+Para el MVP, el token identifica una única sesión controladora por intento. La misma cookie permite
+recuperar tras una recarga; un segundo navegador o dispositivo recibe un conflicto de sesión activa
+y no puede transferir el control. La recuperación no vuelve a presentar una interacción ya preparada:
+primero reconcilia una respuesta recibida o consume la interacción según el modo. El takeover queda
+aplazado y su wrapper privado está deshabilitado. Esta última política está documentada para las
+siguientes slices; aún no cambia los comandos SQL ejecutables.
+
 Los escenarios locales no son seeds globales. Se crean con cuentas Auth reales y datos de dominio
 mediante mantenimiento local. El runner es común y recibe el identificador del escenario:
 

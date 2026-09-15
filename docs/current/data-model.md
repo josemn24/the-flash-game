@@ -373,8 +373,9 @@ Constraints y reglas:
   `challenge_version_id` inmutable en la tabla como referencia redundante para consultas y
   restricciones compuestas; no es una segunda relación conceptual.
 - Un intento abandonado conserva respuestas aceptadas, pero su `progress_payload` recuperable se
-  elimina o invalida. `terminal_reason` distingue abandono voluntario, desconexión o invalidación
-  administrativa si esa política se cierra.
+  elimina o invalida. En esta fase `terminal_reason` distingue abandono voluntario o invalidación
+  administrativa; una desconexión se resuelve por recuperación y no es motivo terminal. Una futura
+  política de inactividad podrá añadir su motivo de sistema aprobado.
 
 ### `attempt_sessions`
 
@@ -389,8 +390,8 @@ que deba llegar a la UI.
 - `revoked_at timestamptz null`.
 
 Un índice único parcial sobre `attempt_id where revoked_at is null` garantiza una sesión activa. Se
-guardan hashes, nunca tokens reutilizables. Tomar el control revoca la sesión anterior y crea la
-nueva dentro de una transacción.
+guardan hashes, nunca tokens reutilizables. En el MVP un token distinto se bloquea y no revoca ni
+sustituye a la sesión original; la transferencia entre dispositivos queda aplazada.
 No se añade heartbeat ni lease. El deadline impide nuevo juego, pero permite persistir el timeout,
 evaluar la recepción ya guardada y cerrar el intento con la sesión propietaria.
 
@@ -404,7 +405,15 @@ en una versión publicada.
 
 `interaction_intervals` conserva cada visita, con una sola abierta por intento. Pasar una letra
 cierra su intervalo; volver crea otro sin cambiar el deadline. La duración suma solo las visitas
-a esa letra, excluyendo transiciones y evaluación.
+a esa letra, excluyendo transiciones y evaluación. Una interacción preparada queda consumida aunque
+se pierda el HTTP que llevaba su payload: la recuperación no puede reabrir ni volver a entregar ese
+intervalo.
+
+La implementación futura de recuperación deberá añadir un motivo de cierre auditable, por ejemplo
+`recovery_interrupted`, distinto de `pass` voluntario. Se usará para cerrar la letra visible de
+Alfabeto sin crear `attempt_answers`; los demás modos registrarán su resultado normal
+`unanswered` cuando corresponda. Es un cambio futuro de constraint/migración, no un estado nuevo de
+`attempt_answers` ni una modificación ya aplicada al esquema ejecutable.
 
 `answer_receipts` guarda payload e instante de recepción PostgreSQL antes de evaluar, presentación,
 instante efectivo limitado por deadline, duración acumulada y timeout. El tiempo cliente es
@@ -572,14 +581,28 @@ el número es único y que la ventana no se solapa. La cancelación posterior re
 
 Comprobar sesión, membresía, rol, publicación, temporada y reloj autoritativo; usar la unicidad del
 intento competitivo para que dos peticiones concurrentes creen o recuperen la misma fila; crear la
-sesión al inicio. Recuperar con otro token requiere takeover explícito. La introducción o cuenta atrás no debe crear el intento
-antes de la señal oficial.
+sesión al inicio. Recuperar exige el mismo token; otro token se bloquea durante el MVP. La
+introducción o cuenta atrás no debe crear el intento antes de la señal oficial.
 
-### Reanudar o tomar el control
+### Reanudar con sesión vigente
 
-Reanudar conserva la sesión y los relojes. Tomar control bloquea el intento, valida `lock_version`
-y deadline, revoca la sesión anterior y crea la nueva.
-Una escritura obsoleta debe devolver conflicto, no sobrescribir el progreso más reciente.
+Reanudar conserva la sesión y los relojes ya iniciados. Una segunda sesión no puede tomar el
+control, aunque el jugador esté autenticado: recibe conflicto y debe volver al navegador original o
+abandonar explícitamente el intento. Antes de devolver contenido, la recuperación reconcilia una
+recepción existente o resuelve el intervalo abierto como consumido según el modo. Una escritura
+obsoleta debe devolver conflicto, no sobrescribir el progreso más reciente.
+
+### Recuperar una interacción interrumpida
+
+Bloquear el intento y su único intervalo abierto. Si ya existe una recepción originada por el
+jugador, recuperar y evaluar esa recepción idempotentemente; nunca registrar `unanswered` en su
+lugar. Si no existe, cerrar el intervalo en la misma transacción y, para los modos que deben guardar
+una respuesta final, crear una recepción interna autoritativa con payload nulo antes de evaluar como
+`unanswered`. Así se conserva la FK obligatoria de `attempt_answers` sin atribuir una respuesta al
+cliente. Alfabeto registra en cambio su pase por recuperación sin respuesta final. Aplicar después
+los efectos del modo (avance, vida, final reglamentario o deadline global) y solo entonces preparar
+contenido autorizado. Esta operación futura debe ser idempotente y no confiar en una señal de cierre
+del navegador ni en que el cliente confirme haber visto el payload.
 
 ### Enviar una respuesta
 
@@ -682,9 +705,12 @@ marca `results_locked_at` permite cerrar el historial de forma definitiva sin in
 `expired` para intentos existentes. El criterio exacto para rellenarla depende del heartbeat y la
 gracia aún abiertos.
 
-El esquema implementa takeover explícito y correcciones de superadmin con motivo y auditoría.
-Heartbeat, lease y abandono automático quedan fuera de esta fase; no son requisitos para ejecutar
-los comandos actuales. Siguen abiertas la matriz owner/admin y la política de retención/anonimización.
+El esquema mantiene el bloqueo de sesión única y correcciones de superadmin con motivo y auditoría.
+El wrapper técnico de takeover está deshabilitado durante el MVP. Heartbeat, lease y abandono
+automático quedan fuera de esta fase; no son requisitos para ejecutar los comandos actuales. La
+resolución de recuperación por modo y el motivo `recovery_interrupted` se implementarán con sus
+migraciones/comandos en S04/S05/S14–S16, no mediante una actualización documental. Siguen abiertas
+la matriz owner/admin y la política de retención/anonimización.
 
 ## 14. Evolución desde el repositorio actual
 

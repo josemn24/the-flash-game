@@ -25,6 +25,7 @@ import type { GameMode } from "@/types/domain/content";
 
 /** Internal only: created by the adapter using cryptographic randomness, never a player ID. */
 export type StartAttemptCommand = StartAttemptInput & { readonly sessionToken: string };
+/** Reserved for a post-MVP multi-device policy; no current application flow may invoke it. */
 export type TakeOverAttemptCommand = TakeOverAttemptInput & { readonly newSessionToken: string };
 /** Only the trusted evaluator can provide status/points. Not a browser input contract. */
 export type RecordEvaluationCommand = AttemptCommandInput & {
@@ -74,6 +75,7 @@ export type EvaluationContext = EvaluationReceipt & {
  */
 export interface AttemptCommands {
   start(input: StartAttemptCommand): Promise<StartAttemptResult>;
+  /** Reserved for a post-MVP multi-device policy; the database rejects it in the MVP. */
   takeOver(input: TakeOverAttemptCommand): Promise<TakeOverAttemptResult>;
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;

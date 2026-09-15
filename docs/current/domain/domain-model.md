@@ -375,6 +375,8 @@ rankings. La lista no prescribe un mecanismo de almacenamiento ni event sourcing
 ### Competición
 
 - `AttemptStarted` y `AttemptResumed`.
+- `AttemptInteractionRecovered` cuando el servidor reconcilia una recepción o consume un intervalo
+  preparado con la consecuencia del modo.
 - `AttemptAnswerSubmitted` y `AttemptAnswerEvaluated`.
 - `AttemptCompleted`, `AttemptAbandoned` y `AttemptInvalidated`.
 - `FlashPointsAccredited`.
@@ -429,8 +431,8 @@ El modelo no decide todavía:
 - duración, usos y flujo exactos de las invitaciones;
 - matriz precisa de permisos entre `owner` y `admin`;
 - duración del heartbeat, lease y periodo de gracia para detectar abandono automático;
-- qué checkpoints y borradores se conservan para cada modo y cómo se toma el control en otro
-  dispositivo;
+- qué checkpoints y borradores adicionales se conservan para cada modo; la recuperación consume la
+  interacción ya preparada y la toma de control en otro dispositivo queda aplazada tras el MVP;
 - política de consulta y revisión de intentos `invalidated`;
 - detalles de tiempo, finalización, feedback y exposición de soluciones de cada modo que no estén
   cerrados en sus contratos;

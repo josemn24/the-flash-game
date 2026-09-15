@@ -2,12 +2,14 @@
 
 ## Estado del documento
 
-Última actualización: 2026-09-14.
+Última actualización: 2026-09-15.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
 implementación. Cuando una regla aparece como **Recomendación**, debe considerarse una propuesta de
 comportamiento y no una decisión irreversible hasta confirmarla en `docs/decisions/decisions.md`.
+La política de recuperación de interacción iniciada que figura en este documento ya está confirmada
+por la decisión y ADR de 2026-09-15.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
 decisiones generales prevalecen sobre este documento; este documento prevalece sobre descripciones
@@ -26,8 +28,14 @@ Estas reglas se aplican a cualquier modo cuando se juega dentro de una sala:
 - Si un intento iniciado se abandona, pasa a `abandoned` y se proyecta como `notCompleted`. Es
   terminal: no se reanuda ni se repite.
 - `inProgress` significa reanudar el mismo intento, no empezar una nueva partida.
+- En el MVP solo la sesión que inició el intento puede reanudarlo. Un segundo navegador o dispositivo
+  se bloquea; no existe transferencia de control entre dispositivos.
+- Cerrar una pestaña, perder conectividad u observar `offline` no demuestra que el jugador haya
+  abandonado. Solo la acción explícita e idempotente de abandonar termina el intento como
+  `abandoned`; el abandono automático queda para una política posterior de actividad.
 - `invalidated` queda fuera del ranking y de la acreditación competitiva. La revisión visible de un
-  intento invalidado requiere una decisión administrativa específica.
+  intento invalidado requiere una decisión administrativa específica y nunca es la consecuencia de
+  recuperar una interrupción.
 - El tiempo de una pregunta o ronda produce el resultado temporal definido por el modo —normalmente
   `unanswered`—. No equivale por sí solo a `expired`, `abandoned` ni a un fallo global del desafío.
 - Mientras el intento está en progreso no se muestran soluciones. Tras `completed` o `abandoned`,
@@ -48,6 +56,27 @@ Cada contrato debe distinguir tres relojes:
 
 No se recomienda añadir un tiempo total común a todos los modos sin que el contenido del modo lo
 requiera. Si existe, debe documentarse aparte del tiempo de respuesta.
+
+### Recuperación de una interacción iniciada
+
+El servidor considera **consumida** una interacción desde que ha confirmado su unidad temporal e
+intervalo antes de entregar el payload público. Esta regla también cubre una respuesta HTTP perdida:
+el servidor no puede demostrar que el navegador no llegó a ver el contenido y no debe conceder una
+segunda oportunidad ni otro reloj.
+
+Al reanudar con la cookie de la sesión controladora, el servidor resuelve primero los hechos ya
+aceptados:
+
+1. Si existe una recepción de respuesta, la reconcilia y evalúa idempotentemente antes de preparar
+   contenido nuevo. Nunca la sustituye por `unanswered`.
+2. Si no existe recepción, cierra atómicamente el intervalo abierto y aplica la consecuencia de
+   recuperación del modo. La misma pregunta, nivel o letra visible no se vuelve a entregar.
+3. Solo después reconstruye el siguiente estado autorizado. Un token de otra sesión sigue recibiendo
+   un bloqueo; recuperar no transfiere el control.
+
+`unanswered` y `timeout` son resultados de respuesta, no `invalidated`. El motivo técnico de cierre
+puede conservar la interrupción para auditoría, pero no crea una respuesta adicional salvo que el
+modo deba registrar una como no contestada.
 
 ### Ranking por desafío
 
@@ -77,10 +106,9 @@ Points acumulados.
 - **Finalización:** se completa al terminar la secuencia ordenada de preguntas, aunque todas las
   respuestas sean incorrectas o no contestadas y el total sea cero.
 - **Estado global:** `inProgress` mientras quedan preguntas; `completed` al terminar la última.
-  Un abandono externo produce `abandoned`, no una respuesta temporal adicional.
-- **Cierre, desconexión y abandono:** cerrar la pestaña, perder la conexión o abandonar
-  voluntariamente deja el intento como `abandoned` cuando la señal de abandono se confirme. No se
-  reanuda desde el último checkpoint ni se ofrece replay competitivo.
+- **Recuperación y abandono:** si la pregunta temporizada activa no tiene una recepción aceptada,
+  se registra `unanswered` con cero puntos y se avanza; si era la última, se completa el flujo.
+  Abandonar explícitamente sigue marcando `abandoned` y no permite reanudar ni repetir.
 - **Checkpoint recomendado:** índice de pregunta, resultados aceptados, respuesta en curso,
   intentos de código, pistas reveladas, deadline de la pregunta y último estado de transición.
   No debe contener la solución privada.
@@ -110,9 +138,11 @@ preview. La persistencia autoritativa del checkpoint debe quedar para la fase de
 - **Estado global:** `inProgress` durante las vueltas; `completed` al finalizar por resolución de
   letras o por tiempo. `correct`, `incorrect`, `passed` y `unanswered` son estados internos de cada
   letra.
-- **Cierre, desconexión y abandono:** cerrar la pestaña, perder la conexión o abandonar
-  voluntariamente termina el intento como `abandoned` cuando se confirme. Las letras ya registradas
-  pueden revisarse, pero la partida no se reanuda ni se repite en competición.
+- **Recuperación y abandono:** el deadline global sigue avanzando durante la interrupción. Si vence,
+  las letras sin respuesta final pasan a `unanswered` y el intento se completa. Si aún no vence, la
+  letra visible se cierra como un pase causado por recuperación y se avanza a la siguiente; este pase
+  se audita con un motivo distinto del pase voluntario, sin crear `AttemptAnswer`. Se conservan las
+  letras y vueltas ya registradas. Abandonar explícitamente sigue marcando `abandoned`.
 - **Checkpoint recomendado:** fase, vuelta, índice actual, estado y respuesta de cada letra,
   `playedCount`, tiempo transcurrido, deadline total y `lastCorrectAt`. El reloj autoritativo no
   debe depender de `performance.now()` del cliente.
@@ -143,10 +173,11 @@ seguir aplicando la política de `roomContext`.
   y `survived` son feedback interno; ambos producen un intento global `completed` si el flujo llegó
   a su final reglamentario.
 - **Estado global:** `inProgress` mientras se puede responder; `completed` al ser eliminado por la
-  mecánica o al llegar al final. Abandonar externamente produce `abandoned` y no permite reanudar.
-- **Cierre, desconexión y abandono:** cerrar la pestaña, perder la conexión o abandonar
-  voluntariamente no consume una vida adicional: cierra el intento como `abandoned` cuando se
-  confirme y bloquea la reanudación y el replay competitivo.
+  mecánica o al llegar al final.
+- **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
+  `unanswered` y aplica la pérdida normal de vida. Si se agotan las vidas, el intento se completa
+  con el feedback interno de eliminación; si no, avanza. Abandonar explícitamente es la única salida
+  que marca `abandoned`.
 - **Checkpoint recomendado:** índice de pregunta, resultados, vidas restantes, errores, estado de
   eliminación, intentos de código, borrador, pistas reveladas, deadline actual y transición
   pendiente. La vida no debe recalcularse solo desde datos enviados por el cliente.
@@ -175,11 +206,12 @@ automática de abandono y la validación autoritativa siguen pendientes.
 - **Finalización:** después del último paso de la secuencia, incluido el epílogo cuando exista, el
   flujo pasa a resultados. El intento queda `completed` aunque no haya aciertos.
 - **Estado global:** `inProgress` durante escenas, preguntas y transiciones; `completed` al terminar
-  la secuencia; `abandoned` si el jugador deja un intento iniciado y esa condición se registra.
+  la secuencia; `abandoned` solo por abandono explícito.
   Reacciones como `correct`, `incorrect` o `timeout` son feedback narrativo interno.
-- **Cierre, desconexión y abandono:** cerrar la pestaña, perder la conexión o abandonar
-  voluntariamente termina la experiencia como `abandoned` cuando se confirme. La historia vuelve al
-  último checkpoint solo mientras el intento siga `inProgress`.
+- **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
+  `unanswered`, muestra la reacción de timeout si la narrativa la define y continúa al siguiente
+  paso. Una escena no temporizada, transición confirmada o epílogo se reanuda desde el último paso
+  aceptado. Abandonar explícitamente termina la experiencia como `abandoned`.
 - **Checkpoint recomendado:** índice del paso, fase, resultados, respuesta en curso, pistas o
   intentos específicos del formato, deadline de la pregunta y transición pendiente. El checkpoint
   debe permitir volver a la misma escena o pregunta sin repetir respuestas ya registradas.
@@ -193,8 +225,8 @@ automática de abandono y la validación autoritativa siguen pendientes.
 
 `useNarrativeSession` ya conserva la secuencia, escenas, respuestas, timeout y fases de resultado y
 revisión. El snapshot actual no conserva todos los borradores y referencias temporales del formato;
-la siguiente implementación de checkpoints debe completarlo antes de prometer recuperación entre
-sesiones o dispositivos.
+la siguiente implementación de checkpoints debe completarlo antes de prometer recuperación completa
+con la sesión original.
 
 ## 5. La Pirámide (`pyramid`)
 
@@ -212,11 +244,11 @@ sesiones o dispositivos.
   siete niveles y `failed` cuando se falla un nivel que termina el modo. Ambos producen
   `completed`; `failed` nunca se proyecta como `notCompleted`.
 - **Estado global:** `inProgress` mientras el jugador está en briefing o resolviendo un nivel;
-  `completed` después de cima o fallo de nivel; `abandoned` solo cuando el intento iniciado se deja
-  sin finalizar por una causa externa o voluntaria registrada.
-- **Cierre, desconexión y abandono:** cerrar la pestaña, perder la conexión o abandonar
-  voluntariamente marca el intento como `abandoned` cuando se confirme. El snapshot deja de ser
-  reanudable y el intento no puede repetirse en competición.
+  `completed` después de cima o fallo de nivel; `abandoned` solo por abandono explícito.
+- **Recuperación y abandono:** un briefing previo al inicio del temporizador se reanuda. Si el nivel
+  temporizado ya se preparó y no existe recepción, se registra como `unanswered`, no se supera y La
+  Pirámide termina con resultado interno `failed` y estado global `completed`; no hay vuelta a ese
+  nivel. Abandonar explícitamente marca `abandoned`.
 - **Checkpoint recomendado:** reutilizar `PyramidAttemptRecord`: nivel actual, resultados,
   borrador, códigos enviados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
   fase y versión del contenido. Al finalizar, el snapshot deja de ser reanudable.
@@ -239,7 +271,7 @@ los niveles alcanzados y `outcome`. La proyección social también trata ambos r
 | Situación                       | Estado global                | ¿Se reanuda?              | ¿Se repite?       | ¿Hay resultado/revisión?        |
 | ------------------------------- | ---------------------------- | ------------------------- | ----------------- | ------------------------------- |
 | Publicación cerrada sin iniciar | `expired` en la publicación  | No aplica                 | No                | No hay resultado propio         |
-| Intento activo                  | `inProgress`                 | Sí, mismo intento         | No crea otro      | No se muestran soluciones       |
+| Intento activo                  | `inProgress`                 | Sí, tras resolver la interacción abierta por modo | No crea otro | No se muestran soluciones |
 | Final reglamentario del modo    | `completed`                  | No                        | No en competición | Sí, si se inició                |
 | Abandono tras iniciar           | `abandoned` / `notCompleted` | No                        | No                | Sí, con respuestas disponibles  |
 | Intento invalidado              | `invalidated`                | No                        | No                | Acceso administrativo pendiente |
@@ -248,6 +280,7 @@ los niveles alcanzados y `outcome`. La proyección social también trata ambos r
 ## Pendientes que no debe resolver este documento
 
 - Definir el intervalo de heartbeat, lease y periodo de gracia para abandono automático.
-- Implementar persistencia y validación autoritativa de checkpoints, deadlines, respuestas y puntos.
+- Implementar persistencia y validación autoritativa de checkpoints, deadlines, respuestas y puntos,
+  incluida la resolución transaccional de recuperación aquí definida.
 - Resolver la política de consulta para intentos `invalidated`.
 - Convertir cada recomendación en pruebas de contrato por modo antes de cambiar la UI o el backend.

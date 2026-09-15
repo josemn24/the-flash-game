@@ -226,18 +226,29 @@ usar previews.
 - **Errores o impedimentos:** publicación cerrada/cancelada, jugador espectador, membresía terminada, intento ya existente, sesión concurrente o datos del cliente manipulados.
 - **Permisos necesarios:** `owner`, `admin` o `member` con membresía activa; el servidor autoriza y serializa la creación.
 
-### CU-16 — Reanudar o tomar el control de un intento [V1]
+### CU-16 — Reanudar un intento con sesión vigente [V1]
 
 - **Actor:** jugador propietario del intento; sistema de concurrencia.
 - **Objetivo:** continuar el mismo intento `in_progress` sin crear una segunda oportunidad.
 - **Precondiciones:** intento iniciado, no terminal, jugador autorizado y checkpoint compatible.
 - **Entrada relevante:** identificador/alias de publicación, token de sesión, checkpoint y `lock_version`.
-- **Flujo principal:** localizar el intento; comprobar deadline y versión; revalidar o transferir el control de sesión según la política; restaurar progreso; continuar desde el último estado aceptado.
-- **Reglas de negocio:** reanudar no equivale a repetir; solo una sesión controla el intento; actualizaciones obsoletas se rechazan; `abandoned`, `completed` e `invalidated` no se reanudan.
+- **Flujo principal:** localizar el intento; comprobar deadline, versión y token de la sesión activa;
+  reconciliar primero una recepción ya confirmada y evaluarla idempotentemente cuando falte su
+  evaluación. Si queda un intervalo preparado sin recepción, cerrarlo atómicamente con la
+  consecuencia de recuperación del modo; restaurar después el progreso confirmado y continuar.
+- **Reglas de negocio:** reanudar no equivale a repetir; solo una sesión controla el intento; una
+  segunda sesión se bloquea y no sustituye a la primera durante el MVP; actualizaciones obsoletas se
+  rechazan; una interacción preparada se considera consumida aunque se haya perdido su respuesta
+  HTTP y no se vuelve a entregar. Flash, Supervivencia, Narrativa, Pirámide y Alfabeto aplican la
+  consecuencia definida en `mode-contracts.md`; `abandoned`, `completed` e `invalidated` no se
+  reanudan.
 - **Resultado:** misma ejecución en progreso, o estado terminal consultable.
-- **Efectos secundarios:** `AttemptResumed`, renovación de actividad y posible revocación de la sesión anterior.
-- **Errores o impedimentos:** intento inexistente, deadline vencido, checkpoint incompatible, token inválido, concurrencia obsoleta o intento terminal.
-- **Permisos necesarios:** jugador del intento con autorización competitiva; toma de control con autenticación y reglas de sesión.
+- **Efectos secundarios:** `AttemptResumed` y renovación de actividad de la sesión vigente.
+- **Errores o impedimentos:** intento inexistente, deadline vencido, checkpoint incompatible, token
+  inválido, sesión activa en otro dispositivo, concurrencia obsoleta, intento terminal o una
+  recuperación que complete reglamentariamente el modo.
+- **Permisos necesarios:** jugador del intento con autorización competitiva y token de la sesión
+  que controla el intento.
 
 ### CU-17 — Enviar y evaluar una respuesta [V1]
 

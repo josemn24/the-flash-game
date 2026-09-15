@@ -3,8 +3,8 @@
 ## Estado y alcance
 
 - Estado: aprobado.
-- Versión: 1.1.
-- Fecha: 2026-09-13.
+- Versión: 1.2.
+- Fecha: 2026-09-15.
 - Este documento define comportamiento e invariantes, no tablas SQL concretas.
 
 ## 1. Producto y participación
@@ -33,10 +33,14 @@
   “desafío superado” solo al completar correctamente los siete niveles. No existe un estado
   funcional global de desafío “superado” o “fallido”, ni ese feedback específico se convierte en
   una propiedad de dominio.
-- Cerrar la pestaña, perder la conexión o abandonar voluntariamente un intento iniciado produce
-  `abandoned`; consume el intento y se proyecta como `notCompleted`.
+- Solo abandonar explícitamente un intento iniciado produce `abandoned`; consume el intento y se
+  proyecta como `notCompleted`. Cerrar la pestaña o perder conexión activa la recuperación
+  autoritativa por modo y no es, por sí solo, una transición terminal.
 - La política predeterminada permite un único intento. Un modo puede sustituirla explícitamente y,
   si permite varios intentos, cuenta el mejor.
+- Para el MVP, un intento `in_progress` tiene una única sesión controladora. Una recarga en esa
+  sesión puede reanudarlo; una cookie/token distinto recibe un conflicto de sesión activa y no
+  transfiere el control. El takeover entre dispositivos queda expresamente fuera del MVP.
 
 ## 2. Jugadores e identidad
 
@@ -156,9 +160,9 @@
   temporada, contenido y reglas.
 - Para iniciar un intento el jugador debe tener una membresía competitiva activa.
 - Empezar consume uno de los intentos permitidos, aunque después se cierre o refresque el navegador.
-- Mientras el intento siga `in_progress`, regresar al desafío reanuda el mismo intento; no crea otro.
-  Si el cierre de la pestaña, la pérdida de conexión o el abandono voluntario se registran como
-  abandono, el intento pasa a ser terminal y no puede reanudarse.
+- Mientras el intento siga `in_progress`, regresar al desafío con la sesión controladora reanuda el
+  mismo intento; no crea otro. Antes de exponer contenido nuevo, el servidor reconcilia una
+  recepción ya aceptada o consume la interacción abierta según el contrato del modo.
 - Los estados del intento iniciado son `in_progress`, `completed`, `abandoned` e `invalidated`.
   `expired` describe la publicación que termina antes de que el jugador cree un intento y no genera
   respuestas, puntos ni resultado propio.
@@ -168,18 +172,17 @@
 - En La Pirámide, `PyramidAttemptOutcome` (`summit`/`failed`) es feedback interno del modo. Ambos
   corresponden a un intento `completed` cuando el modo termina reglamentariamente; `failed` no se
   proyecta como `notCompleted`.
-- Recomendación pendiente de implementación para detectar abandono: registrar una acción explícita
-  e idempotente de abandono, conservar checkpoints y renovar periódicamente la actividad del intento.
-  Los eventos `pagehide`, `visibilitychange` u `offline` solo deben enviar avisos auxiliares. Si el
-  servidor deja de recibir actividad durante el límite acordado, debe cerrar el intento como
-  `abandoned`; entonces se elimina el snapshot recuperable y no se permite reanudar ni repetir.
+- La acción explícita e idempotente de abandono conserva las respuestas aceptadas, elimina el
+  snapshot recuperable y hace el intento terminal. Los eventos `pagehide`, `visibilitychange` u
+  `offline` solo pueden enviar avisos auxiliares: no son prueba de abandono. Mientras no se apruebe
+  la política posterior de heartbeat/lease, la falta de actividad no cierra el intento.
 - El intervalo del heartbeat, la duración del lease y el periodo de gracia para una desconexión son
   cuestiones operativas aún abiertas; no se fija aquí un valor.
 - El servidor asigna identificadores, timestamps, deadlines, estados y puntuaciones.
 - Crear o recuperar el intento es una operación atómica e idempotente.
 - Solo puede haber una sesión de juego activa por intento.
-- Continuar en otro dispositivo requiere tomar el control de la sesión y revoca el token del
-  dispositivo anterior; no crea un intento adicional.
+- Durante el MVP, continuar en otro navegador o dispositivo no toma el control ni revoca la sesión
+  original: se bloquea y debe volver a la sesión que creó el intento o abandonarlo explícitamente.
 - Cada escritura comprueba una versión de bloqueo para rechazar actualizaciones concurrentes u
   obsoletas.
 - Se guarda un checkpoint al confirmar una respuesta o alcanzar un punto de control relevante para

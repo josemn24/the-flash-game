@@ -39,7 +39,14 @@ el comportamiento provisional del mock.
   publicado. No se infiere un límite total sumando preguntas. En Pirámide cada item es un nivel.
 - No hay heartbeat, abandono automático ni una caducidad adicional de sesión. `expires_at` es nulo
   o coincide con el deadline global. Tras ese deadline solo se permite resolver timeout, evaluar,
-  finalizar o abandonar; no se entrega nuevo contenido jugable ni se transfiere control.
+  finalizar o abandonar; no se entrega nuevo contenido jugable. El takeover entre dispositivos está
+  deshabilitado durante el MVP.
+- Política documentada para la siguiente evolución de S04: una unidad e intervalo confirmados antes
+  de devolver contenido se consideran consumidos. Al recuperar, una recepción existente se evalúa;
+  sin recepción del jugador se cierra atómicamente el intervalo y, cuando el modo lo requiere, se
+  crea una recepción interna de payload nulo para evaluar `unanswered`, sin reentregar el payload.
+  Alfabeto necesitará un motivo de cierre auditable distinto de `pass` voluntario. Esta política
+  todavía requiere migración y comandos; no describe una capacidad ya disponible en el SQL actual.
 
 ### Decisiones provisionales y operaciones cerradas
 
@@ -89,11 +96,13 @@ la UI. El adaptador pendiente deberá:
 1. Verificar sesión Auth, comenzar una transacción y establecer claims con `SET LOCAL` usando
    parámetros, nunca copiando claims sin verificar. Usar `service_role` y garantizar commit/rollback
    antes de devolver la conexión al pool. La credencial SQL no verifica JWT por sí sola.
-2. Generar el token aleatorio en inicio/takeover y conservarlo de forma segura para reintentos.
-   Recuperar un intento desde otro token devuelve `controlRequired`; tomar control exige petición
-   explícita y `lockVersion`. La sesión anterior queda revocada atómicamente, sin reiniciar relojes.
+2. Generar el token aleatorio en el primer inicio y conservarlo de forma segura para reintentos.
+   La misma cookie permite recuperar el intento. Otro token devuelve `controlRequired`, se bloquea
+   y no revoca la sesión anterior; el takeover entre dispositivos está aplazado para después del MVP.
 3. Llamar `prepare_interaction` y **confirmar la transacción antes de devolver `publicPayload`**.
-   La repetición con otra clave también recupera el mismo intervalo abierto y su deadline.
+   En la evolución de recuperación, si existe un intervalo abierto no resuelto, el adaptador debe
+   resolverlo primero con el comando transaccional de recuperación; no debe reentregar ese payload
+   ni su deadline usando otra clave.
 4. Llamar `receive_answer` y confirmar esa transacción antes de evaluar. PostgreSQL captura el
    instante al entrar, verifica sesión, versión y orden bajo bloqueo, cierra el intervalo y guarda
    el payload. `clientTimeUsedMs` es solo telemetría. Un envío tardío queda marcado `timedOut` y su
@@ -106,11 +115,12 @@ la UI. El adaptador pendiente deberá:
    incrementa la duración competitiva. No se prepara otra interacción mientras haya una recepción
    pendiente de evaluación.
 6. Completar/acreditar o abandonar con sesión y versión. El cierre, la revocación, el asiento si
-   corresponde, la auditoría y el resultado idempotente son una sola transacción. Tras una transferencia,
-   el evaluador pendiente reintenta con el control vigente; el token antiguo no autoriza escrituras.
+   corresponde, la auditoría y el resultado idempotente son una sola transacción. Una segunda sesión
+   no puede escribir ni sustituir al controlador vigente durante el MVP.
 
 Cada visita de Alfabeto tiene su intervalo; pasar no crea una respuesta final. Volver acumula solo
-los intervalos de esa letra. El deadline global sigue avanzando durante transiciones y esperas;
+los intervalos de esa letra. La recuperación cerrará la letra visible con el futuro motivo
+`recovery_interrupted`, distinto del pase voluntario, antes de avanzar. El deadline global sigue avanzando durante transiciones y esperas;
 las demás modalidades empiezan su reloj al preparar la siguiente pregunta/nivel. La evaluación y
 transiciones fuera de intervalos no se suman a la duración del ranking. Al vencer Alfabeto, el
 adaptador debe resolver las letras pendientes mediante preparar/recibir timeout/evaluar, sin nuevo
@@ -120,8 +130,9 @@ No hay un proceso automático de timeout o recuperación de evaluaciones en este
 | Operación privada                              | Autorización y garantía                                                                           |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `start_attempt`                                | Miembro competitivo durante apertura para un inicio nuevo; recuperación sin nuevo intento.        |
-| `take_over_attempt`                            | Propietario competitivo, petición explícita y versión esperada; revoca y crea sesión.             |
+| `take_over_attempt`                            | Reservado para una política posterior; devuelve `takeover_disabled` durante el MVP.               |
 | `prepare_interaction`                          | Propietario y sesión vigente; persiste reloj antes de devolver contenido.                         |
+| Recuperación de intervalo (futuro)              | Cierra/evalúa atómicamente la interacción abierta antes de preparar contenido; no reentrega payload. |
 | `receive_answer`, `pass_interaction`           | Sesión, item actual, versión y recepción autoritativa; pasar solo en Alfabeto antes del deadline. |
 | `read_evaluation_context`, `record_evaluation` | Servidor confiable en contexto del propietario; recepción vinculada a versión congelada.          |
 | `complete_attempt`, `abandon_attempt`          | Propietario y sesión vigente; cierre, sesiones, puntos y auditoría atómicos.                      |
@@ -200,13 +211,13 @@ conexiones independientes para carreras. Siempre elimina esa base al terminar. P
 contenedor con `SUPABASE_DB_CONTAINER`; no se acepta una base destino existente. El bootstrap Auth
 mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; no son seeds.
 
-| Suite                           | Evidencia                                                                                                                                                            |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `initial_schema_rls.test.sql`   | Aislamiento de salas, columnas privadas, Auth anónimo, ownership, catálogo congelado, pruebas fantasma, cero puntos, empates e histórico.                            |
-| `commands.test.sql`             | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, takeover, Alfabeto, timeout, evaluación lenta e invitación atómica.                              |
-| `command_boundaries.test.sql`   | Identidad/actor, acceso privado al evaluador, rollback de inicio/transferencia/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre. |
-| `test-supabase-concurrency.mjs` | Dos conexiones reales: inicio simultáneo, último uso de invitación, takeover, recepción duplicada y acreditación concurrente con invalidación (incluido cero).       |
-| Contratos y evaluador TS        | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                             |
+| Suite                           | Evidencia                                                                                                                                                         |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `initial_schema_rls.test.sql`   | Aislamiento de salas, columnas privadas, Auth anónimo, ownership, catálogo congelado, pruebas fantasma, cero puntos, empates e histórico.                         |
+| `commands.test.sql`             | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, bloqueo de segunda sesión, Alfabeto, timeout, evaluación lenta e invitación atómica.          |
+| `command_boundaries.test.sql`   | Identidad/actor, acceso privado al evaluador, rollback de inicio/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre.            |
+| `test-supabase-concurrency.mjs` | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación. |
+| Contratos y evaluador TS        | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                          |
 
 Los tests de defaults, DML y respuesta sin presentación fallan con el diseño anterior. Los fallos
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre

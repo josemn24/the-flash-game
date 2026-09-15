@@ -69,6 +69,7 @@ export type TakeOverAttemptInput = Pick<
   AttemptCommandInput,
   "attemptId" | "lockVersion" | "idempotencyKey"
 >;
+/** Reserved for a post-MVP multi-device policy; the current command is deliberately disabled. */
 export type TakeOverAttemptResult = AttemptCommandResult & {
   readonly sessionId: AttemptSessionId;
   readonly deadlineAt: UtcIsoDateTime | null;

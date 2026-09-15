@@ -124,14 +124,28 @@ function cookieName(attemptId: string) {
   return `${attemptCookiePrefix}${attemptId}`;
 }
 
+function startCookieName(authUserId: string, scheduledChallengeId: string) {
+  return `${attemptCookiePrefix}scheduled-${authUserId}-${scheduledChallengeId}`;
+}
+
 export async function readAttemptToken(attemptId: string) {
   const value = (await cookies()).get(cookieName(attemptId))?.value;
   if (!value) throw new AttemptApiError("attempt_session_missing", 401);
   return value;
 }
 
+/**
+ * The scheduled-challenge cookie lets the server reuse the controlling token after a reload.
+ * It is still HttpOnly: a different browser/device does not receive it and remains blocked.
+ */
+export async function readStartAttemptToken(authUserId: string, scheduledChallengeId: string) {
+  return (await cookies()).get(startCookieName(authUserId, scheduledChallengeId))?.value;
+}
+
 export async function setAttemptToken(
   attemptId: string,
+  authUserId: string,
+  scheduledChallengeId: string,
   token: string,
   deadlineAt?: string | null,
 ) {
@@ -144,13 +158,16 @@ export async function setAttemptToken(
         ),
       )
     : attemptTokenMaxAgeSeconds;
-  (await cookies()).set(cookieName(attemptId), token, {
+  const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/api/competitive/attempts",
     maxAge,
-  });
+  } as const;
+  const store = await cookies();
+  store.set(cookieName(attemptId), token, options);
+  store.set(startCookieName(authUserId, scheduledChallengeId), token, options);
 }
 
 export async function clearAttemptToken(attemptId: string) {

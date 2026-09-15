@@ -87,9 +87,14 @@ export async function testConcurrentCommands(sql) {
   assert.equal(
     starts[1].value.controlRequired,
     true,
-    "A different device does not silently take control",
+    "A second session is blocked without taking control",
   );
   assert.equal((await sql("select count(*) from public.attempts;")).trim(), "1");
+  assert.equal(
+    (await sql("select count(*) from private.attempt_sessions where revoked_at is null;")).trim(),
+    "1",
+    "The original session remains the only controller",
+  );
 
   const invites = await race(
     "outsider",
@@ -101,38 +106,16 @@ export async function testConcurrentCommands(sql) {
   requireOneConflict(invites, "Only one claimant consumes the last invitation use");
   assert.equal((await sql("select use_count from private.room_invitations;")).trim(), "1");
 
-  const transfers = await race(
-    "owner",
-    "owner",
-    "take_over_attempt",
-    {
-      attemptId: a.attemptId,
-      lockVersion: 1,
-      newSessionToken: "e".repeat(40),
-      idempotencyKey: "takeover-1",
-    },
-    {
-      attemptId: a.attemptId,
-      lockVersion: 1,
-      newSessionToken: "f".repeat(40),
-      idempotencyKey: "takeover-2",
-    },
-  );
-  requireOneConflict(transfers, "Only one transfer wins an expected version");
-  assert.equal(
-    (await sql("select count(*) from private.attempt_sessions where revoked_at is null;")).trim(),
-    "1",
-  );
   const prepared = await run("owner", "prepare_interaction", {
     attemptId: a.attemptId,
-    lockVersion: 2,
-    sessionToken: "e".repeat(40),
+    lockVersion: 1,
+    sessionToken: "c".repeat(40),
     idempotencyKey: "prepare-concurrent",
   });
   const response = {
     attemptId: a.attemptId,
     lockVersion: prepared.lockVersion,
-    sessionToken: "e".repeat(40),
+    sessionToken: "c".repeat(40),
     challengeItemId: prepared.challengeItemId,
     answer: true,
     idempotencyKey: "same-response",
