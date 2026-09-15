@@ -1,0 +1,836 @@
+# Plan de implementación mediante vertical slices
+
+> Estado: propuesta de backlog técnico; ninguna slice se considera implementada por aparecer aquí.
+> Fecha de análisis: 2026-09-15. Alcance: pasar del prototipo mock a competición persistida,
+> ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
+
+## 1. Fuentes y punto de partida
+
+Se han contrastado los [requisitos](current/domain/domain-requirements.md), el
+[modelo de dominio](current/domain/domain-model.md), los [casos de uso](current/use-cases.md), la
+[arquitectura](current/architecture.md), el [modelo de persistencia](current/data-model.md) y los
+once archivos SQL de [schemas](../supabase/schemas/README.md). Completan la lectura las
+[decisiones](decisions/decisions.md), los [ADR](decisions/adr/README.md), los
+[contratos de modo](current/domain/mode-contracts.md), las
+[cuestiones abiertas](decisions/open-questions.md) y la documentación de
+[acceso a datos](current/domain/data-access.md), [tipos](current/domain/type-model.md),
+[mocks](current/domain/mock-data.md) y [QA](current/qa.md).
+
+La documentación histórica explica el prototipo, pero no añade requisitos a este backlog.
+Este plan propone orden y alcance de entrega; no aprueba por sí mismo políticas de producto abiertas.
+
+### Evidencia del código actual
+
+| Área      | Existe y conviene conservar                                                                                                                                                         | Falta para un recorrido real                                                                                                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                | Estados de red, sesión real y comandos competitivos; muchas pantallas aún esperan preguntas completas con soluciones.                                        |
+| Lecturas  | `server/data-access.ts`, contratos `CurrentViewerProvider`, `RoomQueries`, `ChallengeQueries`; pruebas de contrato del mock.                                                        | Composición real y consultas PostgreSQL autorizadas. `application/queries` define principalmente contratos, no una implementación completa de casos de uso.  |
+| Identidad | `Player` separado de Auth, tabla `players`, perfil visual editable.                                                                                                                 | Login/logout, resolución/alta de jugador y guardado. `MockCurrentViewerProvider` usa un jugador fijo; `FlashPopHome` guarda cambios solo en estado React.    |
+| Partidas  | Reducers, scoring, revisión, `RoomSessionProvider`, snapshots y lógica de resultados locales.                                                                                       | Sustituir autoridad cliente. Pirámide también usa `localStorage`; ninguno de esos almacenes constituye persistencia competitiva.                             |
+| Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                         | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                                 |
+| SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría y dos rankings.                                                 | Migraciones versionadas, datos iniciales reproducibles y conexión desde la aplicación.                                                                       |
+| Comandos  | `application/ports/attempt-commands.ts`, funciones privadas de inicio, takeover, preparar, recibir, pasar, evaluar, completar, abandonar, aceptar invitación, corregir e invalidar. | Implementación del puerto, casos de uso y transportes. No hay comandos de alta de jugador, creación de sala, edición, publicación o emisión de invitaciones. |
+| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; adapta milisegundos a segundos.                                                                                | Reconstruir y validar el contexto privado, persistir el resultado, decidir el final del modo y producir respuestas públicas.                                 |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad y carreras con conexiones PostgreSQL independientes.                                                                             | Login real, HTTP, Storage y E2E de navegador contra aplicación y base reales. No hay suite E2E configurada en `package.json`.                                |
+
+Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
+[composición mock](../infrastructure/mock/composition.ts),
+[cliente competitivo](../components/game/RoomChallengeClient.client.tsx),
+[registry de interacción](../features/question-formats/QuestionInput.tsx),
+[motor de evaluación](../lib/scoringCore/engine.ts),
+[puerto de comandos](../application/ports/attempt-commands.ts) y
+[comandos SQL](../supabase/schemas/90_commands.sql).
+
+### Diferencias que el plan debe respetar
+
+- El README general dice que no hay base de datos: es cierto para la aplicación en ejecución,
+  pero ya existe una implementación SQL aislada. No hay que rediseñarla ni sustituirla por CRUD.
+- `supabase/tests/support/bootstrap.sql` simula las funciones mínimas de Auth; sus fixtures no son
+  un seed ni prueban un login GoTrue. La integración con Supabase completo se valida en S01.
+- `service_role` carece de DML directo. Ejecuta comandos privados por conexión PostgreSQL; no se
+  puede conectar la UI usando `.insert()`/`.update()` genéricos ni exponer `private` por Data API.
+- Los rankings públicos tienen EXECUTE para `authenticated`, no para `service_role`. El adaptador
+  debe respetar esa diferencia; el JWT de servicio no representa a un jugador.
+- Los tipos de contexto de evaluación todavía no conservan todos los campos de versión técnica
+  que devuelve SQL. S03 debe validar esas versiones antes de componer el evaluador.
+- No hay lectura de recuperación completa ni comandos de checkpoints/revelaciones/eventos por
+  formato. Las tablas temporales nuevas tampoco tienen SELECT directo para el servicio. S04 y E*
+  añaden operaciones estrechas cuando su flujo las necesita.
+- SQL exige publicación `open` y temporada `active` además de fechas válidas. La apertura no se
+  consigue cambiando solo el texto de la UI o esperando a que avance el reloj: S12 integra las
+  transiciones de calendario.
+- La documentación mezcla abandono por desconexión como objetivo con ausencia deliberada de
+  heartbeat/lease en el esquema actual. No se inventa una duración ni se trata `pagehide` como
+  confirmación fiable; véase D04 y S21.
+- Las cifras de QA no están sincronizadas: `docs/current/qa.md` registra 535 pruebas TS y el README
+  de schemas registra 541. Son evidencias documentadas, no pruebas ejecutadas para redactar este
+  plan. Cada implementación registrará su propia validación y revisión del commit correspondiente.
+
+## 2. Forma de trabajar y límites
+
+Cada identificador S*, F* o E* es una unidad de backlog con resultado demostrable. Las secciones de
+formatos contienen fichas comunes y filas específicas: **cada fila es una slice independiente**,
+no una tarea para migrar una familia completa. Las dependencias son requisitos de cierre, no una
+orden de crear capas vacías.
+
+El recorrido normal será:
+
+```text
+UI → Server Action / Route Handler → sesión verificada → caso de uso
+   → reglas puras + puerto → transacción PostgreSQL
+   → DTO autorizado → UI actualizada → tests de dominio, integración y recorrido
+```
+
+En una consulta: Server Component → fachada → consulta autorizada → persistencia → view model.
+No se crea un endpoint HTTP para cada lectura interna. Las acciones de formularios usan Server
+Actions; el protocolo de juego usa Route Handlers cuando necesita JSON, reintentos y conflictos
+explícitos. Los nombres de transportes futuros son orientativos hasta implementar cada slice.
+
+Reglas de entrega:
+
+1. Conservar rutas y componentes cuando sus contratos sean adecuados. No crear un segundo árbol
+   `domain/`, repositorios por tabla, microservicios, colas, Realtime ni rankings materializados.
+2. Cambiar un recorrido completo a persistencia real. No mezclar puntos mock con puntos reales ni
+   caer silenciosamente al mock si falla la base. Las demos y `/formatos` quedan en un contexto
+   explícito de práctica; no se eliminan sus fixtures de test.
+3. Para competición, separar metadatos de introducción, interacción pública y revisión terminal.
+   Eliminar soluciones de props, HTML/RSC, JSON, bundles, metadata y assets accesibles por rutas
+   alternativas. Quitar `roomId` de la URL nunca debe convertir contenido competitivo en preview.
+4. Activar solo combinaciones de modo/formato verificadas. La lista de capacidades se valida al
+   publicar y antes de consumir un intento. Un formato pendiente no usa scoring local como fallback.
+5. Introducir validadores, puertos, errores y migraciones junto con su primer consumidor real.
+   La misma función pura puede seguir sirviendo a práctica y evaluación privada; la práctica no
+   importa secretos ni contenido de publicaciones competitivas.
+6. No renumerar ni reescribir migraciones aplicadas. La primera incorpora el esquema declarativo
+   existente; después, cambios incrementales. No convertir los IDs de demo en identidad de usuarios
+   reales ni importar sus resultados como historial auténtico.
+7. Leer las guías de la versión instalada en `node_modules/next/dist/docs/` antes de implementar
+   rutas, sesión, Server Actions o caché; lo exige `AGENTS.md`. Este plan no fija APIs de otra versión.
+
+### Datos iniciales y migraciones
+
+S01 establece el workflow de [Supabase](../supabase/README.md): generar y revisar la migración desde
+`supabase/schemas/`, aplicar y comprobar reconstrucción en una base local vacía. Las ACL, propietarios,
+default privileges y objetos adicionales se contrastan con `supabase/security-inventory.json`.
+Los cambios no representables por el sincronizador llevan una migración explícita según ese workflow.
+
+S02–S03 añaden un conjunto local mínimo: dos cuentas de prueba reales de Auth, una sala, membresías
+competitivas/espectador, una temporada y un Flash de dos preguntas con 50 puntos cada una. Los
+escenarios de fechas y UUID son deterministas; las pruebas usan un reloj controlado o preparación
+explícita del escenario. El modo demo no modifica el reloj competitivo de producción.
+
+El aprovisionamiento local puede usar privilegios de mantenimiento en una base desechable. Es un
+fixture de integración, no un endpoint ni la credencial del proceso Next.js. No se copian `auth.users`
+ni el bootstrap ficticio de pgTAP al stack real. Para un piloto remoto, el aprovisionamiento se hace
+mediante un procedimiento explícito y reproducible separado del seed de pruebas; se retira su uso
+ordinario al completar S08–S12. No hace falta esperar a un editor completo para validar S03.
+
+## 3. Decisiones previas a las slices afectadas
+
+Estos tickets tienen responsable funcional/técnico a asignar. Su salida es una decisión documentada
+y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción de este backlog.
+
+| ID  | Decisión o incertidumbre                                                                                            | Resolver antes de                                                 | Salida necesaria                                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D01 | Método inicial de login, cookies, transporte seguro del token de intento y conexión SQL con pool.                   | S01; completar token en S03/S04.                                  | Un método Auth, política de expiración y reintento, rol SQL de ejecución limitado, prueba de aislamiento de claims entre conexiones reutilizadas y prueba en el entorno objetivo.                                                        |
+| D02 | Identidad de rutas: hoy hay aliases mock para publicaciones/miembros; SQL solo tiene algunos slugs.                 | S02/S03.                                                          | Usar UUID de publicación/jugador o alias persistido si debe conservarse una URL. Evitar inventar slugs para todas las tablas; una publicación no es el slug de una definición reutilizable.                                              |
+| D03 | Contrato ejecutable por modo y formato: feedback, timeout, borradores, revelaciones y tiempo de carga/presentación. | S03, S05, F*, E*, S14–S16.                                        | Escenarios aprobados; milisegundos en contratos; tiempo privado inmutable. Decidir discrepancias del prototipo sin trasladar automáticamente todas sus reglas.                                                                           |
+| D04 | Confirmación de abandono por inactividad, gracia, recuperación y cierre definitivo de publicaciones.                | S21; antes de declarar cumplido el objetivo completo de abandono. | Política de actividad y `results_locked_at`; el piloto anterior solo promete reanudación y abandono explícito. Si se aplaza para usuarios reales, registrar expresamente esa limitación.                                                 |
+| D05 | Acciones permitidas a owner/admin/editor y provisión del superadmin.                                                | S09–S12, S17–S20, S23.                                            | Matriz por operación, actor y objetivo. Propuesta inicial editorial: superadmin ya modelado; no inventar un rol editor persistido sin decisión.                                                                                          |
+| D06 | Invitaciones: roles concedibles por cada actor, TTL, usos y revocación.                                             | S09.                                                              | Valores/reglas explícitos y UX de enlace; no añadir correo ni notificaciones para copiar un enlace.                                                                                                                                      |
+| D07 | Revisión de respuestas, contenido no alcanzado y resultados ajenos/invalidados.                                     | Revisión mínima S03; ampliar en S07/S20/S23.                      | Revisión propia terminal autorizada; durante `in_progress` sin soluciones; invalidados cerrados hasta política expresa. Precisar el contenido revisable tras abandono.                                                                   |
+| D08 | Storage: acceso a avatares/medios, límites, moderación y limpieza.                                                  | S13 y formatos con revelaciones de assets.                        | Ruta estable, permisos de lectura/escritura y compensación de fallos; privacidad coherente con las salas.                                                                                                                                |
+| D09 | Retención de respuestas, auditoría e idempotencia; anonimización y purga.                                           | S24 y apertura general S22.                                       | Política y operación recuperable. Retener claves suficiente tiempo para impedir duplicados tras reintentos; no fijar caducidad por comodidad técnica.                                                                                    |
+| D10 | Conflictos entre fuentes normativas antiguas y reglas actuales.                                                     | Primera slice afectada.                                           | Reconciliar referencias: ADR 0003 aún menciona intento «expirado»/varios intentos, pero el modelo vigente exige uno y `expired` sin intento. Registrar aclaración en las fuentes, no cambiar el dominio silenciosamente desde este plan. |
+
+## 4. Orden, hitos y dependencias
+
+| Orden sugerido   | Entregable verificable                                                                     | Dependencias principales                                             |
+| ---------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| S01 → S02        | Identidad real, perfil y sala persistida autorizada.                                       | D01, D02.                                                            |
+| S03 → S04        | Flash completo guardado; recuperación y control en dos dispositivos.                       | S01/S02, D03/D07.                                                    |
+| S05 y E01        | Alfabeto y Mini-Wordle de prueba: reloj global y feedback intermedio sin solución cliente. | S04, D03. Reducen pronto dos riesgos distintos.                      |
+| S06 → S07        | Dos rankings y consulta histórica real.                                                    | S03; S04 para reconstrucción de estado.                              |
+| S08 → S09        | Crear sala y reunir al grupo mediante enlace.                                              | S02, D05/D06.                                                        |
+| S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición sin SQL manual.             | S08, S03, D05.                                                       |
+| S13              | Avatar persistido.                                                                         | S01, D08.                                                            |
+| F* y resto de E* | Más formatos competitivos, uno por entrega según el contenido elegido.                     | S03/S04 y D03; E01 ofrece el primer patrón de eventos.               |
+| S14, S15, S16    | Supervivencia, Pirámide y Narrativa.                                                       | S04 y las slices de formatos usadas por cada desafío.                |
+| S17–S21          | Evolución editorial, membresías, cancelación, corrección e inactividad.                    | Dependencias explícitas en cada ficha.                               |
+| S22              | Apertura operativa y retirada de mocks del producto real.                                  | Capacidades elegidas y puertas de salida de este documento.          |
+| S23–S24          | Pruebas fantasma y anonimización.                                                          | Políticas de operación; pueden adelantarse si la salida lo requiere. |
+
+**H1 — primera escritura real:** S01, login → editar nombre → recargar y conservarlo.
+
+**H2 — primera competición E2E:** S01–S03, dos jugadores en una sala aprovisionada juegan un Flash;
+queda una respuesta por item y una acreditación por intento, incluso con cero. Es validación interna,
+todavía no la V1 completa.
+
+**H3 — piloto acotado:** S04, S06, S07 y las capacidades elegidas, con decisiones D03/D04 registradas.
+Antes de invitar usuarios externos, ejecutar también los controles operativos de S22 para ese alcance.
+S05/E01 son experimentos técnicos tempranos; no obligan a lanzar esos modos al piloto.
+
+**H4 — V1 operable:** S08–S13 y calendario real, más recuperación, consultas y capacidades publicadas.
+Cerrar S19/S21 o registrar las restricciones expresas de salida; no declarar toda la especificación
+implementada mientras falten comportamientos requeridos. CU-10 puede entregarse con editor mínimo.
+
+**H5 — paridad del catálogo:** los cinco modos y las 31 filas del inventario de formatos cerradas.
+No es requisito para obtener H2 ni para validar el producto con un catálogo menor.
+
+## 5. Slices del recorrido principal
+
+### S01 — Entrar y guardar el nombre del perfil
+
+- **Objetivo / CU:** primera lectura y escritura persistidas; CU-01 y CU-02 (nombre).
+- **UI:** nueva entrada de autenticación y salida; `app/page.tsx`, `FlashPopHome`,
+  `FlashPopProfileDialog`. Mostrar sesión caducada y errores de guardado reales. Hasta S02,
+  el inicio real muestra el perfil y una lista vacía, sin mezclar las salas demo con esa identidad.
+- **Mocks retirados:** `demoIdentity`/`MockCurrentViewerProvider` del recorrido real y el guardado
+  exclusivamente local del nombre. El avatar sigue pendiente de S13.
+- **Backend/dominio:** verificar Auth en servidor; resolver o crear un `Player` idempotentemente
+  sin confiar en un `auth_user_id` enviado por UI. Action de nombre → caso de uso → validación
+  compartida → persistencia → perfil actualizado. Sin membresías implícitas.
+- **Persistencia:** primera migración existente y comando estrecho nuevo de provisión del jugador.
+  Para nombre, usar el permiso actual de `authenticated` con RLS desde servidor, o un comando
+  específico si se justifica; nunca habilitar DML global a `service_role`.
+- **Tests:** login real local, altas simultáneas sin dos Players, nombre inválido, intento de editar
+  otro jugador, sesión caducada, logout, recarga, claims falsos y aislamiento del pool. Añadir aquí
+  el arnés E2E mínimo y CI para este recorrido, junto a las pruebas de integración.
+- **Dependencias:** D01; workflow local reproducible y credencial de ejecución sin ownership.
+- **Terminada:** una cuenta nueva entra, cambia su nombre y lo conserva tras reiniciar la app;
+  otra cuenta no puede leer datos Auth ni editarla. Build, integración y E2E pasan en base limpia.
+
+### S02 — Ver mis salas y la introducción autorizada
+
+- **Objetivo / CU:** navegar por datos reales sin empezar una partida; CU-05, consulta de CU-08 y
+  metadatos de CU-14.
+- **UI:** inicio, `app/salas/[roomId]`, `FlashPopRoomDetail` e introducción. Tratar sala vacía,
+  ausencia de temporada, ausencia de posición y rol espectador sin inventar valores.
+- **Mocks retirados:** `MockRoomQueries.listCards/getDetail` y metadatos mock para este recorrido;
+  quitar la superposición de resultados locales en salas reales.
+- **Backend/dominio:** consultas de sala bajo membresía; misma ausencia para recurso inexistente
+  o ajeno. Separar introducción de `getPlayable`; metadata usa la misma autorización. Mapear
+  identidades de ruta según D02. No devolver `Challenge` completo ni empezar timers.
+- **Persistencia:** leer salas, membresías, temporadas y publicaciones del fixture mínimo;
+  proyectar metadatos privados autorizados sin entregar preguntas. Las proyecciones de puntos usan
+  hechos reales, aunque aún estén vacías.
+- **Tests:** contratos aplicables del mock ejecutados también sobre adaptador real; owner/admin/
+  member/spectator, exmiembro y usuario de otra sala; metadata y acceso sin `roomId`; cero intentos
+  después de abrir introducción. No mantener expectativas legacy de filtración de soluciones.
+- **Dependencias:** S01, D02. Preparación de datos local de la sección 2.
+- **Terminada:** cada usuario solo ve sus salas y el CTA correcto; consultar no consume intento y
+  ninguna ruta alternativa devuelve contenido competitivo como preview.
+
+### S03 — Completar un Flash de dos preguntas con resultado persistido
+
+- **Objetivo / CU:** primer loop competitivo entero; CU-14, CU-15, CU-17, CU-18, CU-20 y CU-21.
+- **UI:** `RoomChallengeClient`, `FlashPopFlashGame`, `QuestionInput`, `QuestionScreen`, resultado
+  y revisión propia mínima. Solo formato `multiple-choice`, dos preguntas/50 puntos por item.
+- **Mocks retirados:** desafío completo mock, scoring oficial en `useGameSession`, reporter local
+  y `recordCompletion` como autoridad para esta publicación. Conservar UI/transiciones reutilizables.
+- **Backend/dominio:** casos de iniciar, preparar, enviar/evaluar y finalizar; validar versiones
+  técnicas, payload y orden. Recomponer la pregunta privada para `evaluateReceipt` con puntos del
+  item; sumar y cerrar Flash en servidor. No aceptar estado, puntos ni solución del navegador.
+- **Persistencia:** adaptar `start_attempt`, `prepare_interaction`, `receive_answer`,
+  `read_evaluation_context`, `record_evaluation`, `complete_attempt`. Confirmar preparación antes
+  de entregar pregunta y recepción antes de evaluar. Completar/acreditar conserva su transacción
+  SQL única. Añadir consulta autorizada de resultado/revisión terminal mínima, sin DML nuevo.
+- **Respuesta:** DTO de interacción pública/feedback sin solución durante la partida; resultado
+  terminal con puntos, tiempo y respuestas propias. Revalidar solo la sala/resultados afectados.
+- **Tests:** E2E acierto/error/timeout/cero; doble click e inicio simultáneo; score y reloj cliente
+  falsificados; fecha límite exacta; cierre de publicación tras inicio; finalización prematura;
+  retry tras commit sin respuesta HTTP y evaluación lenta. Comprobar ausencia de secretos en
+  HTML/RSC/JSON/bundle y que el resultado permanece tras recargar.
+- **Dependencias:** S01, S02, D03 y D07 acotadas al Flash piloto.
+- **Terminada:** dos cuentas completan el desafío real, cada item tiene una recepción y respuesta,
+  cada intento una acreditación; cero también es `completed`; no hay replay competitivo ni
+  solución accesible durante el intento. Validado además en entorno objetivo aislado del piloto.
+
+### S04 — Reanudar, recuperar fallos y abandonar explícitamente
+
+- **Objetivo / CU:** conservar el mismo intento ante recarga, fallo parcial o segundo dispositivo;
+  CU-16, CU-19 y recuperación de CU-17/CU-18.
+- **UI:** `RoomChallengeClient`, `useRoomAttemptSnapshot`, `RoomSessionProvider`, aviso de control
+  transferido, acción explícita de takeover/abandono y estado «procesando respuesta» recuperable.
+- **Mocks retirados:** snapshot en memoria como fuente de progreso oficial del Flash migrado.
+- **Backend/dominio:** lectura autorizada del estado aceptado, recepción pendiente y versión actual;
+  reconciliar antes de reenviar. Un retry conserva clave, operación, contenido y secreto; conflictos
+  obsoletos requieren releer, no repetir a ciegas. Diferenciar SQLSTATE `40001` de negocio de fallos
+  transitorios reintentables. Recuperar evaluación pendiente tras reinicio sin nueva respuesta.
+- **Persistencia:** usar takeover/abandon existentes y añadir función privada de lectura de
+  recuperación con ACL mínima. Reconstruir desde respuestas/intervalos/recepciones; checkpoint
+  nuevo solo si hace falta, con esquema validado. No abrir SELECT genérico sobre tablas privadas
+  nuevas. Resolver la entrega/pérdida del token creado por servidor sin almacenarlo en texto plano
+  en DB, auditoría ni registros de idempotencia.
+- **Tests:** caída después de preparar, recibir, evaluar y acreditar; conexión HTTP perdida;
+  token perdido; dos pestañas y dos dispositivos; versión/token antiguos; abandono repetido;
+  terminal no reanudable; relojes originales; disputa abandono/evaluación con resultado definido.
+- **Dependencias:** S03, D01 de token y D03 de checkpoint.
+- **Terminada:** el jugador recupera el mismo progreso y tiempos tras reiniciar el proceso;
+  takeover revoca control anterior; abandonar conserva respuestas, consume intento y no suma puntos.
+  Desconexión sola todavía no promete abandono automático: corresponde a S21.
+
+### S05 — Jugar Alfabeto con reloj global y vueltas reales
+
+- **Objetivo / CU:** validar pronto el modelo temporal diferente; CU-15–CU-21 para Alfabeto.
+- **UI:** `FlashPopAlphabetGame`, `useAlphabetSession`, `alphabetGame`, revisión por letra.
+  Escenario mínimo de letras `short-text`; no migrar todas las preguntas temáticas a la vez.
+- **Mocks retirados:** respuestas, tiempo, `lastCorrectAt` y resultado oficial calculados localmente
+  para Alfabeto; peers inventados no se muestran en el recorrido real.
+- **Backend/dominio:** validar respuesta corta/normalización y calcular puntos por item en servidor;
+  pasar letra conserva intento y no crea respuesta final. Añadir vueltas/reconstrucción autorizada;
+  tiempo total desde `global_time_limit_ms`, sin timer competitivo independiente por letra.
+- **Persistencia:** `pass_interaction`, unidades e intervalos existentes. Al vencer: preparar cada
+  pendiente sin nuevo payload, recibir timeout/evaluar y completar. Letras nunca visitadas aportan
+  duración cero; visitas repetidas suman sus intervalos. Recuperar también un cierre interrumpido.
+- **Tests:** pasar/volver, letra ya contestada, cierre global durante evaluación o desconexión,
+  timeout de todas las pendientes, `lastCorrectAt` fuera del desempate, checkpoint y takeover.
+- **Dependencias:** S04; D03 para Alfabeto y reconciliación `unanswered`/`timeout`.
+- **Terminada:** recargar no reinicia el reloj global, las vueltas conservan progreso y el resultado
+  terminal se acredita una vez, incluso si todas las letras quedan sin contestar.
+
+### S06 — Consultar los dos rankings reales
+
+- **Objetivo / CU:** comparar resultados guardados; CU-22 y CU-23.
+- **UI:** ranking de sala, `RoomLeaderboard`, `FlashPopRoomRanking`, resumen de inicio/sala y enlaces
+  al detalle de miembro cuando corresponda.
+- **Mocks retirados:** rankings de `MockRoomQueries`, peers sintéticos y fusiones de `localResults`
+  para las vistas migradas; no borrar utilidades puras que sigan sirviendo a presentación/práctica.
+- **Backend/dominio:** consultas mínimas por publicación/temporada. Ejecutar rankings con contexto
+  `authenticated` autorizado o componer una lectura privada equivalente con autorización explícita;
+  no ampliar EXECUTE para esquivar la identidad. Usar puntuación efectiva del libro de puntos.
+- **Persistencia:** `get_challenge_ranking`, `get_season_ranking`, `effective_results`; no tabla
+  de ranking ni saldo adicional.
+- **Tests:** paridad de contratos, `1,1,3`, cero puntos, exmiembros con puntos, prueba fantasma,
+  abandonados, invalidados y cancelados; duración sumada sin multiplicación por joins del ledger;
+  aislamiento de salas y actualización tras finalizar en otro navegador.
+- **Dependencias:** S03, S02. S05 amplía los escenarios, no bloquea esta slice.
+- **Terminada:** dos navegadores ven las mismas posiciones tras refrescar; temporada ordena solo
+  por el total de puntos con posiciones compartidas y desafío usa puntos/duración/`startedAt`.
+
+### S07 — Consultar historial, resultados y revisión después de volver
+
+- **Objetivo / CU:** reconstruir la competición desde hechos persistidos; CU-20 y CU-24.
+- **UI:** historial, detalle histórico, detalle de miembro y revisión de resultado; manejar ausencia
+  de resultado propio y abandono. `FlashPopRoomHistory*`, `FlashPopRoomMemberDetail` y pantallas shared.
+- **Mocks retirados:** `MockRoomQueries.listHistory/getHistoryDetail/getMemberDetail`, historial de
+  fixtures y mezcla local de resultados para esos recorridos.
+- **Backend/dominio:** separar revisión propia de proyección social ajena. Autorizar soluciones
+  solo según D07; no enviarlas en metadata, prefetch ni consulta de miembro ajeno. Contar jugadores
+  competitivos distintos que iniciaron, no solo finalizadores.
+- **Persistencia:** versiones enlazadas, intentos, respuestas y rankings existentes. Añadir consulta
+  privada de revisión si la mínima de S03 no cubre el caso. Mostrar como definitivo solo lo
+  consolidado: inicialmente publicaciones cerradas sin intentos en progreso; casos pendientes no
+  se declaran cerrados definitivamente. S21 resuelve el cierre por inactividad.
+- **Tests:** versión archivada posterior, publicación sin participantes, expiración sin intento,
+  abandono, exmiembro sin acceso, revisión ajena denegada, publicación con intento válido tras cierre.
+- **Dependencias:** S04, S06 y D07; D04 para automatizar consolidación, no para leer hechos cerrados.
+- **Terminada:** una sesión nueva reproduce resultados y revisión desde DB sin memoria local ni
+  recalcular la puntuación histórica con el algoritmo actual.
+
+### S08 — Crear una sala privada
+
+- **Objetivo / CU:** dejar de aprovisionar salas para cada grupo; CU-04.
+- **UI:** acción «Crear sala» en inicio, formulario de título/descripción/zona y detalle de sala vacía.
+- **Mocks retirados:** listado fijo de salas como única vía de entrada. No se crea temporada demo.
+- **Backend/dominio:** Action → caso de uso autenticado → validación de nombre/zona/slug → creación
+  idempotente; el servidor asigna `owner` al actor y devuelve URL/DTO de sala.
+- **Persistencia:** nuevo comando privado que crea `rooms`, `room_memberships` y auditoría en una
+  transacción; reutilizar constraint diferida de propietario. Sin DML general de servicio.
+- **Tests:** doble envío, rollback sin sala huérfana, zona inválida, slug en conflicto, actor
+  manipulado y lectura posterior desde otra cuenta denegada.
+- **Dependencias:** S02, D02 para URLs; reglas confirmadas de CU-04.
+- **Terminada:** un usuario crea y abre su sala vacía tras recarga con exactamente un propietario.
+
+### S09 — Crear, aceptar y revocar una invitación
+
+- **Objetivo / CU:** incorporar un segundo jugador sin seed; CU-06 completo.
+- **UI:** invitaciones en ajustes; generar/copiar enlace; entrada de aceptación preservada durante
+  login; estado de token no disponible. No requiere envío de correo desde la aplicación.
+- **Mocks retirados:** miembros predefinidos y botones de invitación deshabilitados para salas reales.
+- **Backend/dominio:** acciones separadas de emitir/revocar/aceptar. Autorizar rol concedible según
+  D05/D06, generar secreto en servidor y evitar filtrarlo a logs/analytics/referrers. Redirigir a
+  sala tras aceptación; miembro activo no consume otro uso, bloqueado no se reincorpora.
+- **Persistencia:** reutilizar `accept_invitation`; nuevos comandos estrechos para emitir y revocar,
+  hash y límites en `room_invitations`, membresía reactivable y auditoría.
+- **Tests:** dos aceptaciones del último uso, expiración, revocación concurrente, reintento, rol
+  `owner` rechazado, antiguo miembro conserva historial, `banned`, tercero que intenta administrar.
+- **Dependencias:** S08, S01, D05 y D06.
+- **Terminada:** un invitado inicia sesión, acepta y aparece en la sala; un enlace revocado/caducado
+  no concede acceso. Las tres acciones tienen recorrido UI/backend/DB probado.
+
+### S10 — Preparar y activar una temporada
+
+- **Objetivo / CU:** organizar un ciclo real en una sala nueva; CU-08 (configurar/consultar/activar).
+- **UI:** formulario de temporada en ajustes, fechas en zona de sala, borrador visible a gestores y
+  estado vacío para miembros hasta su publicación/activación permitida.
+- **Mocks retirados:** temporada activa única fija del store.
+- **Backend/dominio:** casos crear/editar borrador/activar; validar transiciones y UTC, devolver
+  disponibilidad actualizada. Un miembro ordinario no recibe borradores por la consulta pública.
+- **Persistencia:** comandos privados nuevos sobre `seasons` y auditoría; usar unicidad de temporada
+  activa. Activación explícita inicial; la automatización temporal se conecta en S12.
+- **Tests:** fechas inválidas, cambio horario de Madrid, dos activaciones concurrentes, permisos,
+  edición de temporada terminal denegada y nuevo total de cero sin borrar la temporada anterior.
+- **Dependencias:** S08 y D05.
+- **Terminada:** el gestor configura y activa una temporada persistida; la sala la muestra sin
+  publicaciones ficticias y nunca hay dos temporadas activas.
+
+### S11 — Publicar contenido mínimo desde una herramienta editorial
+
+- **Objetivo / CU:** producir un desafío jugable sin escribir SQL; CU-10 y preview editorial de CU-12.
+- **UI:** pantalla interna mínima para cargar/editar una definición estructurada de Flash con los
+  formatos ya migrados, validar, previsualizar y publicar. No construir un editor visual de 31 formatos.
+- **Mocks retirados:** catálogo hardcodeado como única fuente publicable; fixtures permanecen como
+  ejemplos de test, sin importar identidades ni intentos demo.
+- **Backend/dominio:** autorizar editor según D05; validar JSON en ejecución, versiones técnicas,
+  soluciones/revelaciones, orden, puntos y tiempos. Lista de capacidades evita publicar contenido
+  no soportado. Preview editorial protegido, distinto de `/formatos` público.
+- **Persistencia:** comandos de borrador/publicación en tablas privadas existentes y auditoría;
+  insertar primero borrador/soluciones/items y publicar con locks/validación atómica. Nuevos objetos
+  solo para necesidades demostradas, sin rehacer el modelo versionado.
+- **Tests:** JSON inválido, versión técnica desconocida, secreto en payload público, suma distinta
+  de 100, solución ausente, doble publicación, edición concurrente e inmutabilidad tras publicar.
+- **Dependencias:** S03, D03 para contenido soportado y D05 editorial.
+- **Terminada:** un operador autorizado crea una versión publicada seleccionable en calendario;
+  otro jugador no puede acceder a borradores/soluciones. La validación se ejecuta también en servidor.
+
+### S12 — Programar un desafío y ejecutar su calendario
+
+- **Objetivo / CU:** abrir/cerrar competición por fechas reales; CU-09 y transiciones temporales de CU-08.
+- **UI:** calendario sencillo del gestor, versión/número/ventana; sala muestra futuro, disponible y
+  cerrado. Permitir reprogramación solo antes de abrir.
+- **Mocks retirados:** fechas y publicaciones de `socialFixtures` y selección fija del lobby real.
+- **Backend/dominio:** comandos de programación/reprogramación y transición temporal idempotente.
+  Implementar una vía mínima operativa para activar/finalizar temporadas y abrir/cerrar publicaciones
+  (por ejemplo tarea gestionada protegida); las escrituras revalidan fechas aunque esa tarea se retrase.
+  No introducir una cola. La lectura sola no debe mentir sobre lo que `start_attempt` autoriza.
+- **Persistencia:** tablas existentes, exclusión GiST, número único, estados y auditoría mediante
+  comandos nuevos. Cerrar ventana no cancela intentos válidos ni fija prematuramente `results_locked_at`.
+- **Tests:** instante exacto de apertura/cierre, dos publicaciones solapadas, transición repetida,
+  proceso temporal caído/retrasado, edición después de abrir denegada, intento iniciado antes del
+  cierre que finaliza después y nueva temporada sin mezcla de puntos.
+- **Dependencias:** S10, S11, S03, D05 y decisión de mecanismo temporal; consolidación final en D04/S21.
+- **Terminada:** un desafío programado se abre sin intervención SQL y puede jugarse por el flujo
+  real; al cerrar bloquea nuevos inicios y preserva los iniciados conforme a sus relojes de modo.
+
+### S13 — Subir y sustituir el avatar global
+
+- **Objetivo / CU:** completar CU-02 con archivo persistido.
+- **UI:** `FlashPopProfileDialog`, `Avatar`, perfiles sociales; progreso/error y confirmación de guardado.
+- **Mocks retirados:** data URL de `FileReader` como avatar definitivo; preview local sigue siendo UX.
+- **Backend/dominio:** validar archivo real, tamaño y tipo; autorizar subida y asignación de ruta al
+  propio jugador. La firma de subida no permite elegir propietario. Devolver perfil/URL de lectura
+  autorizada y revalidar proyecciones.
+- **Persistencia:** bucket/políticas Storage y comando limitado de `players.avatar_path`. Guardar
+  ruta estable, no URL firmada. Subir primero, confirmar referencia y limpiar huérfanos con
+  compensación/reintento; Storage y PostgreSQL no comparten transacción.
+- **Tests:** subida/cambio/recarga, tipo falsificado, asset ajeno, Storage caído, fallo de DB tras
+  subida, limpieza que no borra el avatar nuevo y permisos de lectura entre salas.
+- **Dependencias:** S01 y D08.
+- **Terminada:** el avatar aparece en las proyecciones autorizadas tras una nueva sesión y los fallos
+  parciales no dejan una referencia rota ni permiten modificar archivos de terceros.
+
+## 6. Slices de formatos: una entrega por fila
+
+Los 31 formatos no se migran mediante una sustitución masiva de tipos. S03 cubre `multiple-choice`
+y S05 cubre `short-text`. Las siguientes 29 slices completan el inventario. Seleccionar primero los
+formatos necesarios para un desafío de validación; después ampliar el catálogo.
+
+### F01–F19 — Formatos con una respuesta final verificable
+
+Ficha común, obligatoria para **cada** F*:
+
+- **Objetivo / CU:** jugar el formato indicado dentro de un Flash real; CU-17, CU-20 y conservación
+  de CU-13. Un desafío pequeño con ese formato es la demostración vertical.
+- **UI:** `components/questions/formats/<formato>`, `QuestionInput`, renderer/revisión y ficha de
+  biblioteca. Adaptar props a `PublicQuestion`; no reconstruir una pregunta con solución en cliente.
+- **Mocks retirados:** payload completo, evaluación y resultado local competitivos de ese formato;
+  sus ejemplos públicos de práctica siguen siendo locales y repetibles.
+- **Backend/dominio:** validador de contenido/respuesta y adaptador privado para el evaluador del
+  registry. Verificar la solución o reproducir la secuencia enviada cuando corresponda. Si una
+  penalización necesita eventos que una respuesta final no demuestra, extender esa slice con el
+  protocolo E*; no confiar en contadores del navegador.
+- **Persistencia:** versiones/items/recepciones/respuestas existentes. Sin nueva tabla por formato;
+  declarar cambios JSON de forma versionada si hacen falta. Conservar solo el progreso necesario
+  para reanudar, y derivar el resultado en servidor.
+- **Tests:** validador, scoring real, respuesta manipulada, duplicado, timeout, recuperación,
+  ausencia de solución y E2E de juego/resultado/revisión. Añadir los casos específicos de la fila.
+- **Dependencias:** S03 y S04; D03 para ese formato. S11 si se usa el editor; antes basta fixture
+  de integración. Ninguna F* depende de terminar todas las demás.
+- **Terminada:** el formato se puede habilitar en la lista de capacidades y jugar tras recarga sin
+  scoring cliente; pruebas de práctica existentes siguen pasando.
+
+| Slice | Formato                | Adaptación y prueba específica que cierra la ficha                                                                     |
+| ----- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| F01   | `true-false`           | Booleano estricto; no interpretar cadenas arbitrarias como verdadero.                                                  |
+| F02   | `odd-one-out`          | Selección perteneciente a los items publicados; preservar medios sin solución.                                         |
+| F03   | `estimation`           | Número finito, rango/paso/unidad; tolerancia solo privada y crédito parcial probado.                                   |
+| F04   | `heat-map`             | Coordenadas normalizadas y precisión en servidor; no entregar centro/radios privados.                                  |
+| F05   | `image-labeling`       | Dos variantes `assign-all`/`identify-one`; asociaciones privadas, texto/elección y crédito parcial.                    |
+| F06   | `ordering`             | Permutación válida sin omitir/duplicar items; borrador de timeout y revisión del orden.                                |
+| F07   | `classification`       | IDs/categorías válidos, asignaciones parciales y claves privadas excluidas.                                            |
+| F08   | `logic-matrix`         | Opción válida; solución no necesaria para pintar la matriz.                                                            |
+| F09   | `mini-sudoku`          | Tablero consistente con pistas fijas y tamaño; validar solución/timeout privado.                                       |
+| F10   | `mini-nonogram`        | Dimensiones y celdas; no incluir tablero resuelto en el cliente.                                                       |
+| F11   | `sliding-puzzle`       | El componente actual recibe `solution`; sustituirlo. Validar movimientos alcanzables si cuentan para score.            |
+| F12   | `anagram`              | Consumo válido de fichas y normalización de respuesta; no enviar palabra correcta.                                     |
+| F13   | `error-reconstruction` | Paso y corrección válidos, incluida variante sin corrección; borrador parcial persistido cuando aplique.               |
+| F14   | `connect-pairs`        | Reproducir rutas ortogonales, símbolos, solapamientos/cobertura; parcial en timeout sin rutas solución.                |
+| F15   | `time-maze`            | Reproducir recorrido legal hasta salida; no confiar en una bandera cliente de llegada.                                 |
+| F16   | `zip`                  | Camino y checkpoints en orden; recorrido parcial y solución privada.                                                   |
+| F17   | `pipes`                | Rotaciones válidas y conectividad desde origen; no aceptar solo `completed: true`.                                     |
+| F18   | `escape`               | Reproducir movimientos legales; `optimalMoves`/ruta de referencia privados; revisión sin recalcular puntos históricos. |
+| F19   | `word-hashtag`         | Movimiento/reordenación válida y límite; palabras solución privadas y conteo derivado del registro verificable.        |
+
+### E01–E10 — Formatos con eventos, penalizaciones o revelaciones
+
+Ficha común, obligatoria para **cada** E*:
+
+- **Objetivo / CU:** completar una interacción que necesita respuestas parciales del servidor sin
+  revelar toda la solución; CU-16, CU-17, CU-20 y práctica CU-13 preservada.
+- **UI:** componente del formato, `QuestionInput`, hooks de progreso/feedback y revisión. Mostrar
+  latencia/reintento sin duplicar acciones aceptadas.
+- **Mocks retirados:** secretos y contadores/historiales autodeclarados como autoridad; revelaciones
+  locales ilimitadas o comprobaciones privadas en navegador para el formato migrado.
+- **Backend/dominio:** operaciones tipadas de interacción (no un dispatcher SQL público), validación
+  de estado/orden/plazo y feedback permitido. El servidor concede una revelación o registra un evento
+  antes de devolverlo. No basta recibir al final una lista de errores que el jugador puede omitir.
+- **Persistencia:** extender con el mínimo registro privado de eventos/checkpoint y comandos
+  autorizados/idempotentes que necesite la primera slice; reutilizarlo solo si sirve a las siguientes.
+  Mantener una recepción/respuesta final por item y vincular la evaluación a eventos aceptados.
+  Cambios de esquema/ACL/inventario se entregan junto al formato, no en una fase horizontal previa.
+- **Tests:** E2E evento → feedback → siguiente acción → cierre → revisión; replay/reordenación de
+  eventos, contador falsificado, evento tardío, respuesta HTTP perdida y takeover entre eventos.
+  Probar también las particularidades de cada fila y el límite de tamaño/frecuencia.
+- **Dependencias:** S04 y D03; D08 cuando hay assets privados. E01 es el experimento inicial sugerido;
+  el resto no depende de terminar todos los formatos simples.
+- **Terminada:** reiniciar navegador/proceso conserva revelaciones, penalizaciones y plazos;
+  ningún resultado depende de secretos ni contadores confiados al cliente. Capacidad habilitada
+  únicamente tras demostrar su recorrido completo con contenido real persistido.
+
+| Slice | Formato             | Backend/persistencia y criterio específico adicional                                                                                                                                                                                                                          |
+| ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E01   | `mini-wordle`       | Primer patrón de eventos: registrar cada palabra válida y devolver colores sin solución; diccionario/longitud 4–5 y máximo de intentos verificados en servidor. No aceptar una historia final fabricada ni consumir intentos duplicados.                                      |
+| E02   | `logic-code`        | Registrar cada código y su penalización; evaluar con secreto privado, conservar intentos tras recarga y cerrar al acertar/agotar tiempo según contrato.                                                                                                                       |
+| E03   | `progressive-clues` | Entregar pistas de una en una y registrar qué se concedió; no enviar el array completo ni confiar en `revealedClues`. Ajustar penalización con puntos del item.                                                                                                               |
+| E04   | `matching`          | Comprobar cada asociación que produce feedback/penalización; conservar fallos aceptados y parejas correctas sin `correctMatchId` público.                                                                                                                                     |
+| E05   | `queens`            | Validar colocación/conflicto y derivar penalizaciones de eventos, no de `incorrectAttempts`; conservar tablero y piezas precolocadas.                                                                                                                                         |
+| E06   | `word-search`       | Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos para impedir borrar penalizaciones del payload final.                                                                                                                                      |
+| E07   | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                             |
+| E08   | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                     |
+| E09   | `simon-sequence`    | Secuencia visible solo en fase autorizada y registro de su entrega; impedir reiniciar presentación/reloj con recarga. Respuesta final evaluada en servidor.                                                                                                                   |
+| E10   | `progressive-image` | Resolver entrega de imagen y comienzo temporal: un blur CSS sobre el original no es ocultación. Si el contrato exige revelación protegida, servir versiones/etapas controladas; validar coste y Storage antes de habilitar. No fiar el comienzo a un `assetReady` arbitrario. |
+
+Para E08–E10, el SQL actual inicia el reloj al preparar la interacción, mientras el prototipo espera
+a presentación/carga en algunos formatos. D03 debe fijar fase preparatoria, presentación y respuesta;
+si exige modificar el protocolo temporal, hacerlo solo en esa slice con migración y pruebas. Una vez
+entregada legítimamente una imagen/secuencia no puede impedirse que el jugador la conserve; el
+criterio es cumplir la política de entrega, no prometer que el navegador olvide información recibida.
+
+## 7. Otros modos y operación del producto
+
+### S14 — Supervivencia con vidas y finalización autoritativas
+
+- **Objetivo / CU:** CU-15–CU-21 para `survival`, incluyendo eliminación reglamentaria.
+- **UI:** `FlashPopSurvivalGame`, `useSurvivalSession`, resultado de supervivencia.
+- **Mocks retirados:** vidas, eliminación, score y ranking local como hechos oficiales.
+- **Backend/dominio:** reutilizar `survivalRules` y extraer del hook las decisiones puras; derivar
+  vidas de respuestas aceptadas. Decidir eliminación/última pregunta y puntuación en servidor antes
+  de llamar `complete`; SQL por sí solo no decide esa terminación temprana.
+- **Persistencia:** respuestas, checkpoint validado mínimo y `complete_attempt` existentes; datos
+  de modo congelados. DTO con vidas/estado confirmado, sin recalcular desde valores de la UI.
+- **Tests:** última vida por error/timeout, crédito parcial, cero puntos, cierre temprano falsificado,
+  recuperación tras eliminación y acreditación única.
+- **Dependencias:** S04 y D03; únicamente las F*/E* del desafío seleccionado.
+- **Terminada:** sobrevivir o ser eliminado produce `completed`; dejar la partida produce abandono
+  solo por su operación/política. No quedan vidas ni resultados oficiales en estado cliente.
+
+### S15 — Pirámide con niveles persistidos
+
+- **Objetivo / CU:** CU-15–CU-21 para `pyramid`.
+- **UI:** `FlashPopPyramidGame`, `usePyramidSession`, briefing, nivel y revisión.
+- **Mocks retirados:** `PyramidAttemptRecord`/`localStorage` como autoridad competitiva y resultado
+  social local. Conservar el almacenamiento de práctica si sigue teniendo utilidad explícita.
+- **Backend/dominio:** reutilizar reglas puras de `pyramidAttempt`; validar nivel esperado,
+  transición briefing/pregunta y final temprano; `summit`/`failed` son outcome, ambos `completed`.
+- **Persistencia:** unidades de scope `level`, respuestas por item y checkpoint de fase, comandos
+  de preparación/evaluación/cierre. No inventar un deadline global ni cortar por `closes_at` un
+  intento ya válido. Respuesta con nivel/estado/resultado confirmado.
+- **Tests:** siete niveles, fallo/timeout en primero e intermedio, briefing sin reiniciar reloj,
+  manipulación del nivel, recarga y revisión de niveles realmente alcanzados según D07.
+- **Dependencias:** S04, D03 y formatos usados; no requiere migrar todo el catálogo.
+- **Terminada:** el ascenso sobrevive a cambio de sesión y un fallo reglamentario nunca se muestra
+  como abandono ni concede otra oportunidad.
+
+### S16 — Narrativa con escenas y epílogo persistidos
+
+- **Objetivo / CU:** CU-15–CU-21 para `narrative`.
+- **UI:** `NarrativeGameApp`, `useNarrativeSession`, escenas, reacciones y epílogo.
+- **Mocks retirados:** índice/fase narrativa y finalización local como fuente de verdad.
+- **Backend/dominio:** validar avance de escena con checkpoint específico; preparar pregunta solo
+  en su paso, excluir lectura de escenas del tiempo de respuesta y no revelar soluciones mediante
+  reacciones. Reconciliar el final en epílogo con el guard SQL que comprueba respuestas, no escenas.
+- **Persistencia:** configuración narrativa versionada, checkpoint validado y comando de avance
+  si es necesario; respuestas y cierre existentes. DTO con siguiente paso permitido.
+- **Tests:** recarga en escena/pregunta/epílogo, salto de pasos, timeout, evaluación pendiente,
+  escena sin consumo de tiempo de pregunta y cierre prematuro denegado.
+- **Dependencias:** S04, D03 y formatos elegidos.
+- **Terminada:** la historia retoma el paso aceptado, termina tras su secuencia reglamentaria y
+  conserva una revisión reproducible de la versión jugada.
+
+### S17 — Corregir contenido creando otra versión y archivar
+
+- **Objetivo / CU:** CU-11 y ampliación editorial de CU-10.
+- **UI:** herramienta de S11 con duplicar versión, comparar, publicar y archivar.
+- **Mocks retirados:** edición directa del fixture como única vía para corregir contenido real.
+- **Backend/dominio:** conservar versión usada, crear borrador nuevo, validar y publicar; archivo
+  autorizado sin permitir borrar referencias históricas. Responder con nueva versión seleccionable.
+- **Persistencia:** comandos sobre definiciones/versiones existentes; no mutar items/soluciones
+  publicados. Archivado permitido por guards actuales, auditoría y nuevas publicaciones separadas.
+- **Tests:** mismo desafío en dos salas, corrección posterior y revisión anterior intacta; edición
+  in situ rechazada; versión archivada usada sigue resolviéndose; publicación concurrente.
+- **Dependencias:** S11, S07 y D05.
+- **Terminada:** una corrección afecta solo a publicaciones que eligen la nueva versión; los puntos
+  y respuestas históricos no se recalculan.
+
+### S18a — Salir de la sala y transferir propiedad
+
+- **Objetivo / CU:** parte de CU-07: salida propia y transferencia.
+- **UI:** ajustes, confirmación de salida/transferencia, actualización de «Mis salas».
+- **Mocks retirados:** acciones deshabilitadas y membresías fijas en estos flujos.
+- **Backend/dominio:** salida normal; si sale owner, sucesor según antigüedad admin/member o exigir
+  alternativa válida. Transferencia explícita autorizada; nunca dejar sala activa sin owner.
+- **Persistencia:** comando transaccional sobre sala/membresías con orden de locks coherente con
+  invitaciones, auditoría; no borrar intentos/puntos. Devolver navegación/acceso actualizado.
+- **Tests:** transferencias concurrentes, salida del único elegible rechazada, nuevo propietario
+  coherente, pérdida de acceso inmediata e historial/puntos preservados.
+- **Dependencias:** S08, S09 y D05. El borrado lógico alternativo se entrega en S18c.
+- **Terminada:** un miembro sale y deja de acceder; un owner transfiere/sale sin romper propiedad.
+
+### S18b — Administrar roles, expulsión y bloqueo
+
+- **Objetivo / CU:** resto de membresías de CU-07 según matriz aprobada.
+- **UI:** lista de miembros en ajustes con acciones autorizadas y errores de conflicto.
+- **Mocks retirados:** roles/estados inmutables de demo y controles deshabilitados correspondientes.
+- **Backend/dominio:** operaciones explícitas de cambio de rol, expulsar, bloquear y desbloquear
+  solo según D05; revalidar permisos al escribir. No permitir autoconcederse owner/superadmin.
+- **Persistencia:** comandos acotados, locks y auditoría; conservar membresía/reactivación e histórico.
+  DTO de miembro actualizado y revalidación de accesos.
+- **Tests:** matriz actor/objetivo, intento activo tras pérdida de membresía, bloqueado no acepta
+  invitación, cambio simultáneo con takeover y exclusión de nuevos inicios de spectator.
+- **Dependencias:** S18a y D05 con política explícita de desbloqueo.
+- **Terminada:** cada acción habilitada tiene autorización de servidor y sus efectos se reflejan
+  también en una sesión ya abierta del afectado.
+
+### S18c — Eliminar lógicamente una sala y recuperarla
+
+- **Objetivo / CU:** ciclo de sala asociado a CU-07, incluida alternativa del único owner.
+- **UI:** ajustes con confirmación de eliminación; herramienta autorizada de recuperación.
+- **Mocks retirados:** ausencia de transición real de sala y entradas permanentes del listado demo.
+- **Backend/dominio:** autorizar borrado lógico/recuperación con D05/D09; definir efecto en intentos
+  activos y conflictos con calendario antes de habilitar. No ejecutar purga irreversible aquí.
+- **Persistencia:** `rooms.status/deleted_at`, propiedad coherente y auditoría mediante comandos
+  nuevos; referencias históricas conservadas. Respuesta sin acceso ordinario a la sala eliminada.
+- **Tests:** denegación posterior de lectura/escritura, reintento, recuperación dentro de política,
+  ownership válido y carreras con salida/inicio.
+- **Dependencias:** S18a, D05 y D09.
+- **Terminada:** sala eliminada deja de ser accesible y puede recuperarse por la vía prevista sin
+  perder resultados. La purga queda como operación futura separada bajo D09.
+
+### S19 — Cancelar competición y cerrar temporadas de forma controlada
+
+- **Objetivo / CU:** cancelación administrativa de CU-08/CU-09.
+- **UI:** calendario/ajustes con motivo; estados de cancelación separados del historial ordinario.
+- **Mocks retirados:** estados cancelados solo representados por fixtures.
+- **Backend/dominio:** cancelar publicación o temporada según D05, conservar intentos y detener
+  nuevos envíos/inicios según política. El cierre normal no es cancelación. Precisar cómo terminar
+  intentos activos afectados y cómo una temporada cancelada afecta sus publicaciones/resultados.
+- **Persistencia:** comandos transaccionales y auditoría sobre estados existentes. SQL filtra
+  publicaciones canceladas; validar expresamente la semántica de temporada cancelada, que no se
+  resuelve solo cambiando `seasons.status`. No reescribir respuestas ni score original.
+- **Tests:** cancelación concurrente con inicio/recepción/acreditación, exclusión de ambos rankings,
+  conservación del ledger e historial auditable; reintento y cierre normal con intentos válidos.
+- **Dependencias:** S12, S06, S07 y D05.
+- **Terminada:** cancelar desde UI produce el estado y exclusión competitiva acordados de forma
+  consistente; un cierre normal mantiene los resultados legítimos.
+
+### S20 — Inspeccionar y corregir un resultado con auditoría
+
+- **Objetivo / CU:** CU-25.
+- **UI:** pantalla interna mínima de inspección por intento y acción de ajuste/invalidación con motivo.
+- **Mocks retirados:** correcciones simuladas o modificación manual de fixtures/resultados.
+- **Backend/dominio:** comprobar superadmin real; consulta de inspección mínima auditada; conectar
+  `adjust_result`/`invalidate_attempt`. Separar score original de saldo efectivo y de revisión visible.
+- **Persistencia:** comandos existentes de ajuste/reversión y auditoría; añadir lectura privilegiada
+  limitada cuando haga falta. Nunca sobrescribir respuesta ni acreditación original.
+- **Tests:** rol falsificado, motivo vacío, cero puntos, ajuste repetido, corrección concurrente con
+  invalidación, rollback de auditoría, originales intactos y rankings actualizados.
+- **Dependencias:** S06, S07, D05 y D07 para inspección/invalidados.
+- **Terminada:** un operador corrige/invalida con trazabilidad; jugadores ordinarios no pueden
+  invocar esa operación y las proyecciones muestran el saldo efectivo correcto.
+
+### S21 — Resolver inactividad y consolidar publicaciones
+
+- **Objetivo / CU:** abandono automático de CU-19 y cierre definitivo de CU-09/CU-24.
+- **UI:** estado de conexión/recuperación y terminal confirmado por servidor; señales del navegador
+  como ayuda. No mostrar abandono definitivo solo por `offline`/`visibilitychange`.
+- **Mocks retirados:** suposición de sesión indefinida/local como política de actividad.
+- **Backend/dominio:** implementar exactamente D04: actividad, gracia y resolución de la carrera
+  respuesta/timeout/abandono. Proceso protegido y reintentable con actor de sistema explícito;
+  no fabricar claims de un usuario para llamar al comando de abandono actual.
+- **Persistencia:** ampliar con lease/actividad solo si la decisión lo requiere; comando de sistema
+  con permisos mínimos y auditoría; conservar recepciones pendientes. Consolidar `results_locked_at`
+  cuando ya no queda intento válido que pueda modificar la clasificación ordinaria.
+- **Tests:** pestaña cerrada sin beacon, partición de red, reloj cliente cambiado, heartbeat tardío,
+  doble ejecución del proceso, evaluación ya recibida antes del corte, intento sin deadline global,
+  cero participantes y publicación cerrada con intento aún válido.
+- **Dependencias:** S04, S07, S12 y D04 aprobada. No es requisito técnico para probar S03 localmente.
+- **Terminada:** el servidor confirma terminales/consolidación de forma reproducible sin depender
+  de un navegador abierto; no queda ambigüedad entre timeout, `expired` y `abandoned`.
+
+### S22 — Operar el alcance elegido y retirar mocks de producción
+
+- **Objetivo / CU:** validar el recorrido completo de la versión que se va a ofrecer, incluidos
+  fallos de servicios. Es una slice de salida operativa; sus controles se ejecutan también en H3.
+- **UI:** errores útiles/reintento, estados sin datos y navegación de todas las capacidades activadas.
+- **Mocks retirados:** composición mock de rutas de producto, overlays de `RoomSessionProvider` y
+  `localResults`, aliases de fixtures y demos competitivas accesibles por bypass. Tests, biblioteca
+  pública y demos explícitas pueden conservar mocks; no borrar algoritmos por su nombre `demoSocial`.
+- **Backend/dominio:** selección de entorno inequívoca, límites de petición/frecuencia, errores
+  estables, correlación de request/intento/receipt sin secretos, recuperación operativa y health check
+  privado. Revisar que no exista transporte genérico de evaluación/claims del cliente.
+- **Persistencia:** aplicar migraciones/inventario en entorno objetivo con rol creador correcto;
+  comprobar pool, backup/restauración ensayada, compatibilidad de despliegue y procedimiento de
+  rollback de app que no destruya datos. Retención según D09; scheduler solo para tareas usadas.
+- **Tests:** E2E desde cuenta nueva a resultado/ranking/historial, dos usuarios/salas, CSRF/origen en
+  mutaciones con cookies, límites, Auth/DB/Storage caídos, despliegue con intento activo, restauración,
+  inventario de permisos real y ausencia de secretos en red/assets. CI prueba el stack real además
+  de pgTAP con Auth simulado; medir consultas con datos representativos antes de optimizar.
+- **Dependencias:** para piloto, S01–S04/S06/S07 y decisiones de alcance; para V1 operable,
+  S08–S13 y S19/S21 o restricciones expresamente aceptadas; F*/E*/modos solo si se ofrecen.
+- **Terminada:** el entorno reconstruido ejecuta todo el alcance declarado con persistencia real,
+  pruebas repetibles y recuperación documentada; ninguna ruta activada vuelve a mock al fallar.
+
+### S23 — Ejecutar una prueba fantasma interna
+
+- **Objetivo / CU:** CU-26 y parte privilegiada de CU-12; separado del preview público.
+- **UI:** herramienta interna para lanzar/ver una prueba de contenido identificado.
+- **Mocks retirados:** simulación de superadmin como demostración suficiente de no contaminación.
+- **Backend/dominio:** autorización/auditoría explícita según D05; flujo de prueba distinto del
+  competitivo. No añadir `kind: test` aceptado libremente a `start` de jugadores.
+- **Persistencia:** SQL permite estructuralmente `test`, pero los comandos actuales exigen
+  competición; crear las operaciones mínimas para este recorrido sobre entidades existentes.
+- **Tests:** mismo operador prueba varias veces sin consumir intento oficial; ninguna acreditación,
+  ranking, participación ni actividad ordinaria; jugador normal denegado.
+- **Dependencias:** S11, S20 y D05.
+- **Terminada:** una prueba produce evidencia recuperable y auditable, sin efectos competitivos.
+
+### S24 — Anonimizar cuenta preservando resultados
+
+- **Objetivo / CU:** CU-03 (futuro en la especificación); adelantar si la salida operativa lo exige.
+- **UI:** solicitud/confirmación explícita, resultado del proceso y cierre de sesión.
+- **Mocks retirados:** estado anonimizado solo simulado en fixtures.
+- **Backend/dominio:** coordinar identidad, ownership pendiente, intentos activos, perfil y avatar
+  según D09; operación propia o administrativa autorizada. Proceso idempotente y recuperación de
+  fallos entre Auth, PostgreSQL y Storage.
+- **Persistencia:** reutilizar guard de `players` y referencias históricas; comandos mínimos y
+  compensaciones para servicios externos. No borrar en cascada respuestas/ledger ni purgar sin política.
+- **Tests:** reintento, fallo entre servicios, propietario único, datos personales inaccesibles,
+  antiguo token, avatar retirado y ranking histórico con participante anonimizado.
+- **Dependencias:** S13, S18a, D09 y decisiones explícitas de recuperación/purga.
+- **Terminada:** la identidad personal deja de dar acceso y los resultados permanecen coherentes,
+  sin assets personales accesibles ni operaciones parciales sin vía de recuperación.
+
+## 8. Contrato técnico del primer loop y recuperación
+
+S03/S04 deben implementar esta secuencia; no concentrar todo el juego en una transacción larga:
+
+1. **Inicio:** tras confirmación/cuenta atrás, verificar actor, crear/recuperar intento y establecer
+   control. La clave pública no permite elegir identidad; el secreto se genera en servidor.
+2. **Preparación:** comando con sesión/versión; commit de unidad temporal e intervalo, después
+   entregar exclusivamente el payload público del item autorizado.
+3. **Recepción:** validar la forma y tamaño de la respuesta; comando que captura tiempo PostgreSQL
+   y confirma recepción. Nunca corregir la duración usando un timestamp que envía el navegador.
+4. **Evaluación:** cargar contexto privado y versiones técnicas, validar y ejecutar registry.
+   El contexto incluye solución: no es el DTO de feedback. Persistir la respuesta asociada.
+5. **Avance/cierre:** dominio decide siguiente item o final reglamentario; completar/acreditar en
+   su transacción atómica. No exponer un endpoint que acepte `score`/`outcome` oficiales.
+6. **Relectura:** responder con estado confirmado y versión vigente; revalidar vistas afectadas.
+   No presentar como aceptado un score optimista que todavía no está persistido. Un resultado
+   idempotente guardado puede describir un estado anterior: revalidar permisos, sesión y fase antes
+   de volver a entregar contenido, sin reiniciar relojes ni resucitar una interacción terminal.
+
+Puntos de fallo que deben tener salida explícita:
+
+| Último hecho confirmado                           | Recuperación exigida                                                                      |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Inicio confirmado, token/respuesta HTTP perdidos  | Recuperar entrega segura del mismo secreto o takeover explícito; no iniciar otro intento. |
+| Preparación confirmada, contenido no recibido     | Recuperar mismo intervalo/deadline; no conceder otro reloj por usar otra clave.           |
+| Recepción confirmada, evaluación pendiente        | Leer recepción autorizada y evaluarla de nuevo idempotentemente; no pedir otra respuesta. |
+| Evaluación confirmada, UI no recibió feedback     | Reconstruir resultado aceptado y siguiente versión; no registrar segunda respuesta.       |
+| Cierre/acreditación confirmados, UI sigue jugando | Leer terminal y mostrar resultado; no otorgar puntos otra vez.                            |
+| Takeover durante procesamiento                    | Token anterior deja de escribir; control vigente recupera hechos pendientes.              |
+
+Un error técnico no se convierte automáticamente en `abandoned`. La resolución de actividad es
+una política distinta. Los identificadores de operación deben permitir rastrear cada commit sin
+guardar secretos ni duplicar soluciones en logs.
+
+## 9. Cobertura de casos de uso y pendientes explícitos
+
+| Casos de uso        | Slice(s)                     | Alcance / condición                                                  |
+| ------------------- | ---------------------------- | -------------------------------------------------------------------- |
+| CU-01               | S01                          | Auth real y Player estable.                                          |
+| CU-02               | S01, S13                     | Nombre primero; avatar después.                                      |
+| CU-03               | S24                          | Futuro, condicionado por D09.                                        |
+| CU-04, CU-05        | S08, S02                     | Creación y consulta de sala.                                         |
+| CU-06               | S09                          | Emisión, aceptación y revocación; sin correo obligatorio.            |
+| CU-07               | S18a–S18c                    | Salida/ownership, moderación y ciclo de sala separados.              |
+| CU-08               | S10, S12, S19                | Configuración, transiciones temporales y cancelación.                |
+| CU-09               | S12, S19, S21                | Programación, cancelación y consolidación definitiva.                |
+| CU-10, CU-11        | S11, S17                     | Autoría mínima/versionado; ampliar formatos solo al habilitarlos.    |
+| CU-12, CU-13        | S11, S23; regresión en F*/E* | Preview editorial/fantasma protegido; biblioteca pública preservada. |
+| CU-14, CU-15        | S02, S03                     | Introducción autorizada e inicio único.                              |
+| CU-16               | S04, S05, E*, S14–S16        | Recuperación común y checkpoints por modo/formato.                   |
+| CU-17, CU-18, CU-21 | S03, S05, F*, E*, S14–S16    | Evaluación, final reglamentario y acreditación.                      |
+| CU-19               | S04, S21                     | Abandono explícito primero; automático tras D04.                     |
+| CU-20               | S03, S07, cada modo/formato  | Resultado/revisión propios; política de invalidados en D07/S20.      |
+| CU-22, CU-23        | S06                          | Exactamente dos rankings.                                            |
+| CU-24               | S07, S21                     | Historial; feed completo y notificaciones fuera del alcance inicial. |
+| CU-25, CU-26        | S20, S23                     | Correcciones y pruebas internas separadas.                           |
+
+No se incluyen salas públicas, invitados competitivos, ranking global, moneda adicional, juego
+sincronizado, monetización ni notificaciones. La purga definitiva y las materializaciones requieren
+una necesidad y decisión posteriores. No son prerrequisitos implícitos para crear más capas ahora.
+
+## 10. Cierre de una slice y uso como backlog
+
+Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
+incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. Estado
+inicial de todas las slices: **pendiente**. D* pendientes bloquean solo los recorridos que los citan.
+
+Una slice se cierra cuando:
+
+- Su escenario puede demostrarse desde UI y comprobarse con una nueva lectura de persistencia.
+- Tiene camino exitoso, error relevante y reintento/conflicto definidos; la autorización se comprueba
+  en servidor, aunque la UI o el SDK sean invocados de otra forma.
+- Los tests de reglas y caso de uso pasan; adaptador y SQL se prueban contra PostgreSQL real cuando
+  hay persistencia. Mantener pgTAP/inventario y carreras existentes; ampliar solo lo afectado.
+- Hay al menos un E2E del recorrido nuevo con backend real; usar fallos controlados para puntos de
+  commit cuando corresponda. Un mock del transporte no demuestra la vertical completa.
+- Pasan `npm run typecheck`, `npm run type-architecture`, lint/build y tests pertinentes. Si cambia
+  SQL, también `npm run supabase:schema:test`, migración desde vacío e integración con Auth real.
+  Añadir los comandos de integración/E2E al introducir su arnés en S01, pues todavía no existen.
+- Se revisan payloads públicos y regresiones de práctica. Los formatos con assets prueban carga,
+  timeout y accesibilidad; los cambios visuales conservan teclado y movimiento reducido.
+- El mock del recorrido real ya no participa; una bandera puede ocultar una capacidad incompleta,
+  pero no debe cambiar autoridad ni otorgar resultados locales oficiales.
+- Migración, ACL/inventario, configuración de entorno y pasos de verificación están versionados;
+  se actualizan estado actual/documentación afectada sin afirmar implementadas las demás slices.
+
+El formato previo y el selector CSS duplicado documentados en QA no se arreglan mediante un barrido
+de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
+preexistente, sin usarlo para omitir pruebas nuevas.
+
+Para comenzar: convertir **S01** en el primer ticket y cerrar D01 dentro de su alcance. Su entrega
+debe ser login y nombre persistido, no una colección de clientes, repositorios y servicios sin UI.
+El siguiente objetivo inmediato es H2; la gestión editorial completa y los 31 formatos no lo bloquean.

@@ -6,18 +6,19 @@ interpretarse como funcionalidades ya disponibles.
 
 ## Dónde buscar
 
-| Necesito saber...                             | Consulta                                                                                                   |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Qué está implementado ahora                   | [`current/status.md`](current/status.md)                                                                   |
-| Cómo está organizado el dominio               | [`current/domain/README.md`](current/domain/README.md)                                                     |
-| Qué casos de uso debe soportar                | [`current/use-cases.md`](current/use-cases.md)                                                             |
-| Qué arquitectura debe guiar la evolución      | [`current/architecture.md`](current/architecture.md)                                                       |
-| Cómo organizar la persistencia futura         | [`current/data-model.md`](current/data-model.md)                                                           |
-| Cómo funcionan las fronteras servidor/cliente | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
-| Qué decisiones son normativas                 | [`decisions/README.md`](decisions/README.md)                                                               |
-| Cómo se crean formatos y desafíos             | [`content/README.md`](content/README.md)                                                                   |
-| Qué estrategia e hipótesis siguen activas     | [`product/README.md`](product/README.md)                                                                   |
-| Qué documentos describen etapas anteriores    | [`archive/README.md`](archive/README.md)                                                                   |
+| Necesito saber...                               | Consulta                                                                                                   |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Qué está implementado ahora                     | [`current/status.md`](current/status.md)                                                                   |
+| Cómo está organizado el dominio                 | [`current/domain/README.md`](current/domain/README.md)                                                     |
+| Qué casos de uso debe soportar                  | [`current/use-cases.md`](current/use-cases.md)                                                             |
+| Qué arquitectura debe guiar la evolución        | [`current/architecture.md`](current/architecture.md)                                                       |
+| En qué orden implementar backend y persistencia | [`implementation-plan.md`](implementation-plan.md)                                                         |
+| Cómo organizar la persistencia futura           | [`current/data-model.md`](current/data-model.md)                                                           |
+| Cómo funcionan las fronteras servidor/cliente   | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
+| Qué decisiones son normativas                   | [`decisions/README.md`](decisions/README.md)                                                               |
+| Cómo se crean formatos y desafíos               | [`content/README.md`](content/README.md)                                                                   |
+| Qué estrategia e hipótesis siguen activas       | [`product/README.md`](product/README.md)                                                                   |
+| Qué documentos describen etapas anteriores      | [`archive/README.md`](archive/README.md)                                                                   |
 
 ## Secciones
 
