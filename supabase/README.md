@@ -160,6 +160,46 @@ Para limpiar un escenario, ejecuta `npm run supabase:fixture -- --scenario s02 -
 `db reset --local`. El fixture es la única fuente de datos del E2E S02; no se debe convertir en
 `supabase/seed.sql`.
 
+## Dataset para pruebas manuales en navegador
+
+Para abrir la aplicación con cuentas Auth conocidas, una sala persistida y desafíos ya preparados:
+
+```bash
+npm run supabase:browser:setup
+npm run dev
+```
+
+El comando reinicia únicamente el Supabase local, crea seis cuentas Auth y aprovisiona su `Player`
+mediante `provision_player` antes de ejecutar `supabase/seed.sql`. El seed contiene solo datos de
+dominio y recibe los `player_id` dinámicos mediante variables de `psql`; no inserta usuarios Auth ni
+usa DML desde la aplicación. Las credenciales se imprimen al terminar y se guardan con permisos
+restrictivos en `output/fixtures/browser.json`, que está ignorado por Git.
+
+| Cuenta     | Correo                       | Contraseña local              | Rol en `browser-playground`                          |
+| ---------- | ---------------------------- | ----------------------------- | ---------------------------------------------------- |
+| superadmin | `superadmin@the-flash.local` | `Flash-local-Superadmin-123!` | Superadministrador global; no es miembro competitivo |
+| owner      | `owner@the-flash.local`      | `Flash-local-Owner-123!`      | `owner`                                              |
+| admin      | `admin@the-flash.local`      | `Flash-local-Admin-123!`      | `admin`                                              |
+| member     | `member@the-flash.local`     | `Flash-local-Member-123!`     | `member`                                             |
+| spectator  | `spectator@the-flash.local`  | `Flash-local-Spectator-123!`  | `spectator`                                          |
+| outsider   | `outsider@the-flash.local`   | `Flash-local-Outsider-123!`   | Owner de `browser-isolated`                          |
+
+Estas contraseñas están versionadas exclusivamente para el entorno local: no deben reutilizarse ni
+configurarse contra un proyecto remoto. La sala principal tiene una publicación abierta, una futura
+y una cerrada. El desafío abierto se puede visitar en
+`/desafios/<publicationId>?roomId=browser-playground`.
+
+El dataset base no contiene intentos, respuestas ni puntos, para que la primera partida sea limpia.
+Para cargar además resultados históricos, rankings y revisiones:
+
+```bash
+npm run supabase:browser:setup -- --with-history
+```
+
+`supabase db reset --local` continúa sin cargar este dataset automáticamente. Esto mantiene aislados
+los resets de los escenarios `s02`, `s03`, `s07`, `s08`, `s10`, `s11` y `s12`, que siguen siendo la
+fuente de datos reproducible de sus pruebas de integración y E2E.
+
 El comando `db diff` no es el workflow declarativo de este repositorio: en la versión actual de la
 CLI su baseline es el historial de migraciones y no la ruta declarativa configurada.
 

@@ -264,6 +264,54 @@ export async function createAuthAccounts(scenario, config) {
   return accounts;
 }
 
+export async function createFixedAuthAccounts(users, config) {
+  const admin = createClient(config.url, config.serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const accounts = {};
+
+  for (const user of users) {
+    const { data, error } = await admin.auth.admin.createUser({
+      email: user.email,
+      password: user.password,
+      email_confirm: true,
+      user_metadata: { display_name: user.displayName },
+    });
+    if (error || !data.user) {
+      throw new Error(`No se pudo crear la cuenta local de ${user.label}.`, { cause: error });
+    }
+
+    const client = createClient(config.url, config.publishableKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { data: sessionData, error: sessionError } = await client.auth.signInWithPassword({
+      email: user.email,
+      password: user.password,
+    });
+    if (sessionError || !sessionData.session) {
+      throw new Error(`No se pudo iniciar sesión como ${user.email}.`, { cause: sessionError });
+    }
+
+    const { data: provisioned, error: provisionError } = await client.rpc("provision_player");
+    if (provisionError) {
+      throw new Error(`No se pudo aprovisionar ${user.email}.`, { cause: provisionError });
+    }
+    const row = Array.isArray(provisioned) ? provisioned[0] : provisioned;
+    if (!row?.player_id) {
+      throw new Error(`La respuesta de provision_player no contiene Player para ${user.email}.`);
+    }
+
+    accounts[user.label] = {
+      email: user.email,
+      password: user.password,
+      authUserId: data.user.id,
+      playerId: row.player_id,
+    };
+  }
+
+  return accounts;
+}
+
 export async function createAuthenticatedClient(config, account) {
   const client = createClient(config.url, config.publishableKey, {
     auth: { autoRefreshToken: false, persistSession: false },
