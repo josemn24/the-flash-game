@@ -20,12 +20,12 @@ export async function testConcurrentCommands(sql) {
   await sql(
     `begin; ${await readFile("supabase/tests/support/command-fixtures.sql", "utf8")} commit;`,
   );
-  async function invoke(actor, command, input, hold = false) {
+  async function invoke(actor, command, input, hold = false, role = "service_role", schema = "private") {
     const marker = `flash_concurrency_${randomUUID().replaceAll("-", "")}`;
     const operation =
-      sql(`begin; set local application_name = ${quote(marker)}; set local role service_role;
+      sql(`begin; set local application_name = ${quote(marker)}; set local role ${role};
       select set_config('request.jwt.claims', ${quote(JSON.stringify({ sub: id(`auth-${actor}`) }))}, true);
-      select private.${command}(${quote(JSON.stringify(input))}::jsonb);
+      select ${schema}.${command}(${quote(JSON.stringify(input))}::jsonb);
       ${hold ? "select pg_sleep(1.5);" : ""} commit;`);
     // Observe rejection immediately while the barrier is polling; callers still receive the error.
     operation.catch(() => {});
@@ -53,15 +53,43 @@ export async function testConcurrentCommands(sql) {
   async function run(actor, command, input) {
     return (await invoke(actor, command, input)).done;
   }
-  async function race(actor1, actor2, command, firstInput, secondInput) {
-    const first = await invoke(actor1, command, firstInput, true);
-    const second = await invoke(actor2, command, secondInput);
+  async function race(actor1, actor2, command, firstInput, secondInput, options = {}) {
+    const first = await invoke(actor1, command, firstInput, true, options.role, options.schema);
+    const second = await invoke(actor2, command, secondInput, false, options.role, options.schema);
     return Promise.allSettled([first.done, second.done]);
   }
   const requireOneConflict = (outcomes, message) => {
     assert.equal(outcomes.filter((r) => r.status === "fulfilled").length, 1, message);
     assert.equal(outcomes.filter((r) => r.status === "rejected").length, 1, message);
   };
+
+  const seasonRaceRoom = id("season-race-room");
+  const seasonRaceOne = id("season-race-one");
+  const seasonRaceTwo = id("season-race-two");
+  await sql(`begin;
+    insert into public.rooms(id, slug, title, description, time_zone, status)
+    values (${quote(seasonRaceRoom)}, 'concurrent-season-room', 'Concurrent season room', '', 'UTC', 'active');
+    insert into public.room_memberships(room_id, player_id, role)
+    values (${quote(seasonRaceRoom)}, ${quote(id("owner"))}, 'owner');
+    insert into public.seasons(id, room_id, title, status, starts_at, ends_at)
+    values
+      (${quote(seasonRaceOne)}, ${quote(seasonRaceRoom)}, 'Concurrent season one', 'draft', now() + interval '1 day', now() + interval '5 days'),
+      (${quote(seasonRaceTwo)}, ${quote(seasonRaceRoom)}, 'Concurrent season two', 'draft', now() + interval '1 day', now() + interval '5 days');
+    commit;`);
+  const seasonActivations = await race(
+    "superadmin",
+    "superadmin",
+    "activate_superadmin_season",
+    { idempotencyKey: "concurrent-season-1", seasonId: seasonRaceOne, reason: "race one" },
+    { idempotencyKey: "concurrent-season-2", seasonId: seasonRaceTwo, reason: "race two" },
+    { role: "authenticated", schema: "public" },
+  );
+  requireOneConflict(seasonActivations, "Only one concurrent season activation succeeds");
+  assert.equal(
+    (await sql(`select count(*) from public.seasons where room_id=${quote(seasonRaceRoom)} and status='active';`)).trim(),
+    "1",
+    "Concurrent season activation leaves exactly one active season",
+  );
 
   const starts = await race(
     "owner",

@@ -2,16 +2,17 @@
 
 ## Estado y alcance
 
-- Estado: propuesta de persistencia para la primera versión productiva.
-- Fecha: 2026-09-14.
+- Estado: modelo de persistencia aprobado; implementación parcial local hasta S10.
+- Fecha: 2026-09-16.
 - Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
   [`domain-model.md`](domain/domain-model.md), que sigue siendo la referencia para el
   comportamiento del dominio.
 
-La propuesta parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
+El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual continúa usando `data/mock/`; este modelo no implica que la persistencia real ya exista.
+actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S10 ya tienen
+persistencia real verificada en Supabase local.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
 comandos transaccionales competitivos en una base aislada de pruebas. La conexión productiva sigue

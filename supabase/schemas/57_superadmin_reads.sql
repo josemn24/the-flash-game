@@ -35,6 +35,20 @@ begin
           'roomId', room.id,
           'slug', room.slug,
           'title', room.title,
+          'timeZone', room.time_zone,
+          'seasons', coalesce((
+            select jsonb_agg(
+              jsonb_build_object(
+                'seasonId', season.id,
+                'title', season.title,
+                'status', season.status,
+                'startsAt', season.starts_at,
+                'endsAt', season.ends_at
+              ) order by season.starts_at desc, season.id
+            )
+            from public.seasons season
+            where season.room_id = room.id
+          ), '[]'::jsonb),
           'status', room.status
         ) order by room.title, room.id
       )

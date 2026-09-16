@@ -12,7 +12,17 @@ const baseContext = {
       roomId: "00000000-0000-4000-8000-000000000002",
       slug: "portal-alpha",
       title: "Sala Alpha",
+      timeZone: "Europe/Madrid",
       status: "active" as const,
+      seasons: [
+        {
+          seasonId: "00000000-0000-4000-8000-000000000003",
+          title: "Temporada Alpha",
+          status: "draft" as const,
+          startsAt: "2026-09-20T10:30:00.000Z",
+          endsAt: "2026-09-27T10:30:00.000Z",
+        },
+      ],
     },
   ],
   source: "supabase" as const,
@@ -27,6 +37,9 @@ describe("AdminPortal", () => {
     expect(markup).toContain("Sala Alpha");
     expect(markup).toContain("/portal-alpha");
     expect(markup).toContain("Crear una sala privada");
+    expect(markup).toContain("Temporadas");
+    expect(markup).toContain("Temporada Alpha");
+    expect(markup).toContain("Activar temporada");
     expect(markup).not.toContain('href="/admin');
   });
 

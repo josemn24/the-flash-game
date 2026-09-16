@@ -2,14 +2,22 @@ import { LogoutButton } from "@/components/auth/LogoutButton.client";
 import { Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
 import type { SuperadminPortalContext } from "@/types/view-models";
 import { CreateRoomForm } from "./CreateRoomForm.client";
+import { SeasonManagement } from "./SeasonManagement.client";
 import styles from "./AdminPortal.module.css";
 
 type AdminPortalProps = {
   readonly context: SuperadminPortalContext;
   readonly creationNotice?: boolean;
+  readonly seasonNotice?: string;
 };
 
-export function AdminPortal({ context, creationNotice = false }: AdminPortalProps) {
+export function AdminPortal({ context, creationNotice = false, seasonNotice }: AdminPortalProps) {
+  const seasonNoticeText = {
+    created: "Borrador de temporada creado.",
+    updated: "Borrador de temporada actualizado.",
+    activated: "Temporada activada correctamente.",
+  }[seasonNotice ?? ""];
+
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.header}>
@@ -42,8 +50,8 @@ export function AdminPortal({ context, creationNotice = false }: AdminPortalProp
         <p className={styles.eyebrow}>Superadministración</p>
         <h1 id="admin-portal-title">Todo listo para operar.</h1>
         <p>
-          Esta es la vista privada de la beta. Desde aquí se incorporarán las herramientas para
-          preparar salas, grupos y temporadas.
+          Esta es la vista privada de la beta. Desde aquí se preparan salas, grupos y temporadas
+          antes de publicar contenido competitivo.
         </p>
       </section>
 
@@ -84,10 +92,19 @@ export function AdminPortal({ context, creationNotice = false }: AdminPortalProp
         )}
       </section>
 
+      <SeasonManagement rooms={context.rooms} />
+
       {creationNotice ? (
         <Card as="section" surface="soft" className={styles.notice} role="status">
           <strong>Sala creada correctamente.</strong>
           <span>La nueva sala ya aparece en el contexto operativo.</span>
+        </Card>
+      ) : null}
+
+      {seasonNoticeText ? (
+        <Card as="section" surface="soft" className={styles.notice} role="status">
+          <strong>{seasonNoticeText}</strong>
+          <span>El contexto operativo se ha actualizado.</span>
         </Card>
       ) : null}
 

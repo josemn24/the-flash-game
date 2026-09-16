@@ -1,7 +1,7 @@
 # Casos de uso
 
 > Estado: vigente. Especificación funcional derivada de [`domain-requirements.md`](domain/domain-requirements.md),
-> [`domain-model.md`](domain/domain-model.md), las decisiones aprobadas y la implementación mock
+> [`domain-model.md`](domain/domain-model.md), las decisiones aprobadas y las slices implementadas/mock
 > actual. No prescribe endpoints ni una correspondencia uno-a-uno entre casos de uso y operaciones
 > técnicas.
 
@@ -9,7 +9,8 @@
 
 La clasificación indica prioridad para una primera versión productiva del loop de salas privadas,
 temporadas y desafíos asíncronos. No equivale al estado actual de implementación: hoy la aplicación
-usa un jugador fijo, consultas mock de solo lectura y sesiones de juego locales.
+usa mocks en los recorridos aún no migrados; S01–S10 ya cubren identidad, salas, competición Flash,
+rankings, historial, portal y temporadas reales sobre Supabase local.
 
 - **V1**: esencial para que exista una competición productiva usable.
 - **Importante**: aporta operación, confianza o completitud, pero puede llegar después del loop
@@ -151,8 +152,8 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Objetivo:** definir el ciclo competitivo de una sala y su estado temporal.
 - **Precondiciones:** sala activa y, para editar, permisos de gestión.
 - **Entrada relevante:** título, `startsAt`, `endsAt` y transición solicitada (`draft`, `scheduled`, `active`, `finished` o `cancelled`).
-- **Flujo principal:** validar fechas y estado; crear o modificar la temporada permitida; activar cuando corresponda; consultar total y ranking propios.
-- **Reglas de negocio:** como máximo una temporada `active`; las fechas se almacenan en UTC; una temporada empieza con cero Flash Points; una finalizada no admite nuevos inicios.
+- **Flujo principal:** desde el portal local de superadmin, validar fechas y estado; crear o modificar un borrador; activar explícitamente cuando corresponda; consultar total y ranking propios.
+- **Reglas de negocio:** S10 implementa únicamente `draft → active`; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. `scheduled`, finalización, cancelación y automatización temporal quedan para S12/S19.
 - **Resultado:** temporada en estado coherente y visible dentro de la sala.
 - **Efectos secundarios:** auditoría y actualización de disponibilidad; al finalizar se cierran nuevas entradas, pero intentos válidos pueden terminar dentro de su plazo.
 - **Errores o impedimentos:** fechas invertidas, solapamiento de temporada activa, transición no permitida o edición de temporada finalizada sin corrección auditada.
@@ -425,9 +426,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   autenticación, soluciones privadas ni filas canónicas innecesarias.
 - Los cambios de intento, respuesta, puntuación y membresía deben ser idempotentes cuando una
   repetición de petición pueda producir duplicados.
-- La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-12, CU-13, CU-14,
-  CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. La autenticación,
-  escrituras, evaluación autoritativa, abandono automático y persistencia real siguen pendientes.
+- La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-08, CU-12, CU-13,
+  CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. El calendario,
+  publicación editorial, abandono automático y persistencia remota siguen pendientes.
 - Las decisiones sobre heartbeat, lease, gracia de desconexión, alcance del editor y revisión de
   intentos invalidados deben cerrarse antes de convertir los casos correspondientes en contratos
   técnicos. La matriz de permisos de sala y las reglas de invitaciones ya están fijadas.

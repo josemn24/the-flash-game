@@ -27,7 +27,7 @@
 - `npm run test:e2e -- e2e/s07-history-review.spec.ts`: 1/1 correcto con ranking histórico,
   revisión propia/ajena y spectator en sesiones de navegador aisladas.
 - S06 continúa verificado por `s06` y `e2e/s06-ranking.spec.ts`.
-- `npm run format:check`: avisos de formato en 56 archivos; quedan fuera del alcance de esta
+- `npm run format:check`: avisos de formato en 71 archivos; quedan fuera del alcance de esta
   actualización documental.
 
 ## Cobertura
@@ -44,10 +44,10 @@ interpretarse como una auditoría del estado actual.
 
 ## Limitaciones actuales
 
-- Prettier todavía informa 56 archivos sin formato canónico.
+- Prettier todavía informa 71 archivos sin formato canónico.
 - Stylelint mantiene un selector duplicado preexistente en
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
-- La validación E2E de S01–S08 usa escenarios locales reproducibles; no se ha verificado un proyecto
+- La validación E2E de S01–S10 usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
 - `results_locked_at`, abandono automático, takeover, modos distintos de Flash y la revisión
   administrativa de intentos invalidados siguen fuera de S07.

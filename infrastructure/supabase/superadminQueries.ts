@@ -1,16 +1,21 @@
 import "server-only";
 
 import type { SuperadminPortalQueries } from "@/application/queries";
-import type { SuperadminRoomCommands, CreateRoomInput } from "@/application/ports/superadmin-room-commands";
+import type {
+  SuperadminRoomCommands,
+  CreateRoomInput,
+} from "@/application/ports/superadmin-room-commands";
 import {
   SuperadminAccessDeniedError,
   SuperadminRoomCommandError,
 } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
   SuperadminPlayerCandidate,
   SuperadminPortalContext,
   SuperadminPortalRoom,
+  SuperadminPortalSeason,
   SuperadminRoomCreationResult,
 } from "@/types/view-models";
 
@@ -31,7 +36,28 @@ function isPortalRoom(value: unknown): value is SuperadminPortalRoom {
     value.slug.trim().length > 0 &&
     typeof value.title === "string" &&
     value.title.trim().length > 0 &&
-    value.status === "active"
+    typeof value.timeZone === "string" &&
+    value.timeZone.trim().length > 0 &&
+    isValidTimeZone(value.timeZone) &&
+    value.status === "active" &&
+    Array.isArray(value.seasons) &&
+    value.seasons.every(isPortalSeason)
+  );
+}
+
+function isPortalSeason(value: unknown): value is SuperadminPortalSeason {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.seasonId === "string" &&
+    uuidPattern.test(value.seasonId) &&
+    typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
+    ["draft", "scheduled", "active", "finished", "cancelled"].includes(String(value.status)) &&
+    typeof value.startsAt === "string" &&
+    !Number.isNaN(Date.parse(value.startsAt)) &&
+    typeof value.endsAt === "string" &&
+    !Number.isNaN(Date.parse(value.endsAt)) &&
+    new Date(value.startsAt).getTime() < new Date(value.endsAt).getTime()
   );
 }
 
@@ -99,7 +125,9 @@ function commandErrorCode(error: { code?: string; message?: string }) {
     "idempotency_conflict",
     "room_creation_failed",
   ];
-  return candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed";
+  return (
+    candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed"
+  );
 }
 
 export class SupabaseSuperadminPortalQueries implements SuperadminPortalQueries {
@@ -168,6 +196,8 @@ export function isSuperadminPortalContext(value: unknown): value is SuperadminPo
   return isPortalContext(value);
 }
 
-export function isSuperadminRoomCreationResult(value: unknown): value is SuperadminRoomCreationResult {
+export function isSuperadminRoomCreationResult(
+  value: unknown,
+): value is SuperadminRoomCreationResult {
   return isRoomCreationResult(value);
 }

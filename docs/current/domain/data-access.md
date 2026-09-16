@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S08 y el portal privado añaden la primera integración real de Supabase y completan el
+La fase 4 está cerrada. S01–S10 y el portal privado añaden la primera integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
@@ -32,7 +32,7 @@ Portal privado `/admin`
 → server/data-access.ts
 → server/admin.ts
 → infrastructure/supabase/superadminQueries.ts
-→ public.get_superadmin_portal_context()
+→ public.get_superadmin_portal_context() con temporadas y zona horaria
 → asignación privada de plataforma y salas activas
 
 Mutaciones del portal `/admin`
@@ -41,6 +41,14 @@ Mutaciones del portal `/admin`
 → infrastructure/supabase/superadminQueries.ts
 → public.lookup_superadmin_players() / public.create_superadmin_room()
 → comando privado transaccional + private.audit_log
+
+Mutaciones de temporadas del portal `/admin`
+→ app/admin/season-actions.ts
+→ server/admin.ts + server/admin-season.ts
+→ infrastructure/supabase/superadminSeasonQueries.ts
+→ public.create_superadmin_season() / public.update_superadmin_season() /
+  public.activate_superadmin_season()
+→ comando privado transaccional, idempotencia y private.audit_log
 
 Las consultas aún no migradas conservan este flujo:
 

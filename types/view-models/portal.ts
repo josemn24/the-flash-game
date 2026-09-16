@@ -1,8 +1,20 @@
+import type { SeasonStatus } from "@/types/domain/season";
+
+export type SuperadminPortalSeason = {
+  readonly seasonId: string;
+  readonly title: string;
+  readonly status: SeasonStatus;
+  readonly startsAt: string;
+  readonly endsAt: string;
+};
+
 export type SuperadminPortalRoom = {
   readonly roomId: string;
   readonly slug: string;
   readonly title: string;
+  readonly timeZone: string;
   readonly status: "active";
+  readonly seasons: readonly SuperadminPortalSeason[];
 };
 
 export type SuperadminPortalContext = {
@@ -30,5 +42,10 @@ export type SuperadminRoomCreationResult = {
     readonly displayName: string;
   };
   readonly memberCount: number;
+  readonly source: "supabase";
+};
+
+export type SuperadminSeasonCommandResult = SuperadminPortalSeason & {
+  readonly roomId: string;
   readonly source: "supabase";
 };

@@ -23,7 +23,9 @@ const context = {
       roomId: "00000000-0000-4000-8000-000000000002",
       slug: "beta",
       title: "Sala beta",
+      timeZone: "Europe/Madrid",
       status: "active",
+      seasons: [],
     },
   ],
 };

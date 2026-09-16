@@ -38,7 +38,7 @@ ni ranking.
 - **Editor o autor de contenido**: actor previsto para preparar y publicar desafíos y preguntas.
 - **Sistema**: controla disponibilidad, duración, evaluación, cierre y acreditación de resultados.
 
-S01–S08 ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
+S01–S10 ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
 persistido sobre Supabase local y la creación inicial de salas desde un portal privado. La gestión
 posterior de miembros, temporadas y contenido todavía no está implementada en la interfaz pública;
 en la beta cerrada se reservará a un portal privado de superadministración.

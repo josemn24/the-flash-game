@@ -1,14 +1,15 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-16. **22 tablas**, una vista
-interna, funciones públicas de lectura/ranking, contexto del portal privado y comandos privados de servidor. S01–S08 conectan
+interna, funciones públicas de lectura/ranking, contexto del portal privado y comandos privados de servidor. S01–S10 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
 S07 consulta el historial Flash cerrado y la revisión autorizada desde versiones y resultados
 persistidos, sin materializar tablas adicionales. El portal consulta el contexto global de
 superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
-Las capacidades restantes siguen usando mocks o están pendientes. Las migraciones están versionadas;
+Las capacidades restantes siguen usando mocks o están pendientes. S10 añade preparación/edición de
+borradores y activación explícita de temporadas, sin automatización temporal. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
@@ -254,7 +255,7 @@ Validación local actual: las comprobaciones SQL existentes más **15 casos pgTA
 casos de S07 y **27 casos pgTAP de S08**, carreras entre conexiones independientes y **540 pruebas
 TypeScript** superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
-las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S08 y portal; S06 añade
+las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S10 y portal; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
 portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,
 rollback y recarga del portal.

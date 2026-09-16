@@ -1,8 +1,8 @@
 # Documentación de The Flash
 
-Este es el punto de entrada de la documentación del proyecto. La aplicación actual es un frontend
-con datos mock normalizados; la documentación de producto futuro y la de persistencia no deben
-interpretarse como funcionalidades ya disponibles.
+Este es el punto de entrada de la documentación del proyecto. La aplicación combina recorridos
+mock/práctica con slices reales sobre Supabase local; la documentación de producto futuro y las
+capacidades aún pendientes no deben interpretarse como funcionalidades ya disponibles.
 
 ## Dónde buscar
 
@@ -49,10 +49,10 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-15.
-- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock; S01–S06
+- Fecha: 2026-09-16.
+- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock; S01–S10
   tienen integración real verificada sobre Supabase local.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture`,
   `npm run docs:check` y `npm run supabase:schema:test` completan correctamente.
-- `npm run format:check` mantiene avisos en 56 archivos; están registrados en [`current/qa.md`](current/qa.md).
+- `npm run format:check` mantiene avisos en 71 archivos; están registrados en [`current/qa.md`](current/qa.md).
 - No hay proyecto remoto de Supabase vinculado desde este entorno.

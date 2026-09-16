@@ -25,3 +25,13 @@ export class SuperadminRoomCommandError extends Error {
     this.code = code;
   }
 }
+
+export class SuperadminSeasonCommandError extends Error {
+  readonly code: string;
+
+  constructor(code: string, cause?: unknown) {
+    super(code, { cause });
+    this.name = "SuperadminSeasonCommandError";
+    this.code = code;
+  }
+}

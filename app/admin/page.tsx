@@ -19,11 +19,17 @@ async function loadAdminContext() {
 }
 
 type AdminPageProps = {
-  readonly searchParams: Promise<{ created?: string }>;
+  readonly searchParams: Promise<{ created?: string; season?: string }>;
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const context = await loadAdminContext();
   const params = await searchParams;
-  return <AdminPortal context={context} creationNotice={params.created === "1"} />;
+  return (
+    <AdminPortal
+      context={context}
+      creationNotice={params.created === "1"}
+      seasonNotice={params.season}
+    />
+  );
 }
