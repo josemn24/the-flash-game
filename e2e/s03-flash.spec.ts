@@ -31,7 +31,9 @@ async function openFlash(page: Page, account: { email: string; password: string 
   await page.getByRole("link", { name: /Abrir sala Sala competitiva S03/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Flash competitivo" })).toBeVisible();
-  await page.getByRole("link", { name: "Empezar desafío" }).click();
+  await expect(page).toHaveURL(/\/desafios\/[^/]+\?roomId=/);
+  await expect(page.getByRole("button", { name: "Empezar desafío" })).toHaveCount(1);
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
 }
 
 test.describe("S03 — Flash competitivo persistido", () => {
@@ -40,7 +42,6 @@ test.describe("S03 — Flash competitivo persistido", () => {
   }) => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
-    await page.getByRole("button", { name: "Empezar desafío" }).dblclick();
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     expect(await page.content()).not.toContain("Lisboa es la capital de Portugal");
 

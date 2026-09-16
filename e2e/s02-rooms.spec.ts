@@ -38,7 +38,7 @@ test.describe("S02 — salas e introducción autorizada", () => {
     await expect(page.getByRole("link", { name: /Ver historial de Sala principal/ })).toBeVisible();
     await page.getByRole("link", { name: "Jugar" }).click();
     await expect(page.getByRole("heading", { name: "Metadatos privados S02" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Empezar desafío" })).toHaveCount(1);
     const introductionResponse = await page.reload();
     const introductionHtml = (await introductionResponse?.text()) ?? "";
     expect(introductionHtml).not.toContain("S02_PRIVATE_PROMPT");

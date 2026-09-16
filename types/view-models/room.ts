@@ -107,7 +107,7 @@ export type RoomDetailModel = {
   source?: RoomDataSource;
 };
 
-/** Safe projection used by the S02 introduction route. */
+/** Safe projection used by the room challenge introduction fallback. */
 export type RoomIntroductionModel = {
   roomId: string;
   roomTitle: string;

@@ -53,8 +53,8 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     await expect(member.getByRole("heading", { name: "Desafíos de la temporada" })).toBeVisible();
     await expect(member.getByText("Disponible")).toBeVisible();
     await member.getByRole("link", { name: "Introducción" }).click();
-    await expect(member.getByRole("link", { name: "Empezar desafío" })).toBeVisible();
-    await member.getByRole("link", { name: "Empezar desafío" }).click();
+    await expect(member.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
+    await member.getByRole("button", { name: "Empezar desafío" }).click();
     await expect(member).toHaveURL(/\/desafios\//);
     await memberContext.close();
   });

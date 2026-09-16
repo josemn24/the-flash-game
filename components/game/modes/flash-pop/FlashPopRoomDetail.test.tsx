@@ -91,7 +91,7 @@ describe("FlashPopRoomDetail", () => {
               subtitle: null,
               mode: "flash",
               questionCount: 2,
-              href: "/salas/tabarnia-room/introduccion/future-1",
+              href: "/desafios/future-1?roomId=tabarnia-room",
               canStart: false,
               canContinue: false,
             },
@@ -107,7 +107,7 @@ describe("FlashPopRoomDetail", () => {
               subtitle: null,
               mode: "flash",
               questionCount: 2,
-              href: "/salas/tabarnia-room/introduccion/open-2",
+              href: "/desafios/open-2?roomId=tabarnia-room",
               canStart: true,
               canContinue: false,
             },
@@ -123,7 +123,7 @@ describe("FlashPopRoomDetail", () => {
               subtitle: null,
               mode: "flash",
               questionCount: 2,
-              href: "/salas/tabarnia-room/introduccion/closed-3",
+              href: "/desafios/closed-3?roomId=tabarnia-room",
               canStart: false,
               canContinue: false,
             },
@@ -136,9 +136,9 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain("Próximo");
     expect(markup).toContain("Disponible");
     expect(markup).toContain("Cerrado");
-    expect(markup).toContain('href="/salas/tabarnia-room/introduccion/open-2"');
-    expect(markup).not.toContain('href="/salas/tabarnia-room/introduccion/future-1"');
-    expect(markup).not.toContain('href="/salas/tabarnia-room/introduccion/closed-3"');
+    expect(markup).toContain('href="/desafios/open-2?roomId=tabarnia-room"');
+    expect(markup).not.toContain('href="/desafios/future-1?roomId=tabarnia-room"');
+    expect(markup).not.toContain('href="/desafios/closed-3?roomId=tabarnia-room"');
     expect(markup).toContain("Europe/Madrid");
   });
 

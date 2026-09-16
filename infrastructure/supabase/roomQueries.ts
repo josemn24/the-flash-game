@@ -505,6 +505,10 @@ function toChallengeSummary(row: RoomReadRow, href: string) {
   };
 }
 
+function playableChallengeHref(roomSlug: string, publicationId: string) {
+  return `/desafios/${publicationId}?roomId=${encodeURIComponent(roomSlug)}`;
+}
+
 function toCard(row: RoomReadRow): RoomCardModel {
   return {
     roomId: row.room_slug,
@@ -513,7 +517,7 @@ function toCard(row: RoomReadRow): RoomCardModel {
     seasonStatus: toLegacySeasonStatus(row.season_status),
     dailyChallenge: toChallengeSummary(
       row,
-      `/salas/${row.room_slug}/introduccion/${row.publication_id ?? ""}`,
+      playableChallengeHref(row.room_slug, row.publication_id ?? ""),
     ),
     currentUser: {
       totalFlashPoints: row.current_flash_points,
@@ -565,7 +569,7 @@ function toDetail(
   const dailyEntry = dailyLeaderboard.find(({ memberId }) => memberId === viewer.id);
   const dailyChallenge = toChallengeSummary(
     row,
-    `/salas/${row.room_slug}/introduccion/${row.publication_id ?? ""}`,
+    playableChallengeHref(row.room_slug, row.publication_id ?? ""),
   );
 
   const detail: RoomDetailModel = {
@@ -634,9 +638,7 @@ function toCalendarEntry(row: RoomCalendarReadRow): RoomCalendarEntry {
     subtitle: row.challenge_subtitle,
     mode: row.challenge_mode,
     questionCount: row.question_count,
-    href: row.can_continue
-      ? `/desafios/${row.publication_id}?roomId=${encodeURIComponent(row.room_slug)}`
-      : `/salas/${row.room_slug}/introduccion/${row.publication_id}`,
+    href: playableChallengeHref(row.room_slug, row.publication_id),
     canStart: row.can_start,
     canContinue: row.can_continue,
   };
@@ -751,7 +753,7 @@ function historicalChallengeSummary(row: FlashHistoryReadRow) {
 function currentMemberChallengeSummary(row: RoomReadRow) {
   const summary = toChallengeSummary(
     row,
-    `/salas/${row.room_slug}/introduccion/${row.publication_id ?? ""}`,
+    playableChallengeHref(row.room_slug, row.publication_id ?? ""),
   );
   return summary
     ? {
