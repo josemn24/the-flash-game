@@ -20,6 +20,11 @@ export type QuestionStageProps = {
   questionNumber: number;
   totalQuestions: number;
   locked: boolean;
+  pendingAnswer?: AnswerValue | null;
+  submissionState?: "idle" | "submitting" | "error";
+  submissionStatusVisible?: boolean;
+  submissionError?: string;
+  onRetrySubmission?: () => void;
   codeAttemptCount: number;
   onSubmit: (answer: AnswerValue) => void;
   onTimeUp: () => void;
@@ -54,6 +59,11 @@ export function QuestionStage({
   questionNumber,
   totalQuestions,
   locked,
+  pendingAnswer,
+  submissionState,
+  submissionStatusVisible,
+  submissionError,
+  onRetrySubmission,
   codeAttemptCount,
   onSubmit,
   onTimeUp,
@@ -116,6 +126,11 @@ export function QuestionStage({
         <QuestionInput
           question={question}
           locked={locked}
+          pendingAnswer={pendingAnswer}
+          submissionState={submissionState}
+          submissionStatusVisible={submissionStatusVisible}
+          submissionError={submissionError}
+          onRetrySubmission={onRetrySubmission}
           onSubmit={onSubmit}
           onProgress={onProgress}
           onIncorrectAttempt={onIncorrectAttempt}

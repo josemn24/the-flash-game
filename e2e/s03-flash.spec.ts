@@ -60,10 +60,18 @@ test.describe("S03 — Flash competitivo persistido", () => {
   });
 
   test("persiste un resultado válido con score cero", async ({ page }) => {
+    await page.route("**/api/competitive/attempts/*/answer", async (route) => {
+      const response = await route.fetch();
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      await route.fulfill({ response });
+    });
+
     await openFlash(page, (await fixture()).users.carol);
     await page.getByRole("button", { name: "Empezar desafío" }).click();
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await page.getByRole("button", { name: "Oporto" }).click();
+    await expect(page.getByText("Comprobando respuesta…")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Oporto" })).toBeDisabled();
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();
     await expect(page.getByText("Desafío completado")).toBeVisible();

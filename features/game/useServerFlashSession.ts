@@ -22,6 +22,16 @@ export type ServerFlashPhase =
   "intro" | "recovering" | "countdown" | "playing" | "transition" | "results" | "review";
 
 type AttemptState = { id: string; lockVersion: number };
+type SubmissionState = "idle" | "submitting" | "error";
+type PendingSubmission = {
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  answer: AnswerValue | null;
+  idempotencyKey: string;
+};
+
+const SUBMISSION_STATUS_DELAY_MS = 250;
 
 class CompetitiveCommandError extends Error {
   constructor(readonly code: string) {
@@ -91,14 +101,39 @@ export function useServerFlashSession({
   );
   const [locked, setLocked] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
+  const [submissionStatusVisible, setSubmissionStatusVisible] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string>();
+  const [pendingAnswer, setPendingAnswer] = useState<AnswerValue | null>(null);
   const [startNotice, setStartNotice] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
+
+  const clearSubmissionStatusTimer = () => {
+    if (submissionStatusTimerRef.current) {
+      clearTimeout(submissionStatusTimerRef.current);
+      submissionStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startSubmissionStatus = () => {
+    clearSubmissionStatusTimer();
+    setSubmissionState("submitting");
+    setSubmissionStatusVisible(false);
+    setSubmissionError(undefined);
+    submissionStatusTimerRef.current = setTimeout(() => {
+      setSubmissionStatusVisible(true);
+      submissionStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
+  };
 
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      clearSubmissionStatusTimer();
     },
     [],
   );
@@ -214,20 +249,20 @@ export function useServerFlashSession({
     }
   };
 
-  const submit = async (answer: AnswerValue | null) => {
-    if (!attempt || !question || locked || busy) return;
+  const submitAnswerToServer = async (submission: PendingSubmission) => {
+    startSubmissionStatus();
     setBusy(true);
     setLocked(true);
     try {
-      const response = await postJson(`/api/competitive/attempts/${attempt.id}/answer`, {
-        lockVersion: attempt.lockVersion,
-        idempotencyKey: idempotencyKey("answer"),
-        challengeItemId: question.id,
-        answer,
+      const response = await postJson(`/api/competitive/attempts/${submission.attemptId}/answer`, {
+        lockVersion: submission.lockVersion,
+        idempotencyKey: submission.idempotencyKey,
+        challengeItemId: submission.challengeItemId,
+        answer: submission.answer,
       });
       const result: AnswerResult = {
-        questionId: question.id,
-        answer,
+        questionId: submission.challengeItemId,
+        answer: submission.answer,
         status: String(response.status) as AnswerResult["status"],
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points),
@@ -235,34 +270,64 @@ export function useServerFlashSession({
       };
       const nextResults = [...results, result];
       const nextLockVersion = Number(response.lockVersion);
-      setAttempt({ id: attempt.id, lockVersion: nextLockVersion });
+      clearSubmissionStatusTimer();
+      pendingSubmissionRef.current = null;
+      setPendingAnswer(null);
+      setSubmissionState("idle");
+      setSubmissionStatusVisible(false);
+      setSubmissionError(undefined);
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
       setResults(nextResults);
       setLastResult(result);
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
           if (questionIndex === challenge.slots.length - 1) {
-            const completed = await postJson(`/api/competitive/attempts/${attempt.id}/complete`, {
-              lockVersion: nextLockVersion,
-              idempotencyKey: idempotencyKey("complete"),
-            });
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              {
+                lockVersion: nextLockVersion,
+                idempotencyKey: idempotencyKey("complete"),
+              },
+            );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
             setReviewChallenge(challengeWithReview(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: attempt.id, lockVersion: nextLockVersion });
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
           }
           setBusy(false);
         },
         FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
           1800,
       );
-    } catch (error) {
-      setLocked(false);
+    } catch {
+      clearSubmissionStatusTimer();
+      setSubmissionState("error");
+      setSubmissionStatusVisible(true);
+      setSubmissionError("No hemos podido confirmar tu respuesta.");
       setBusy(false);
-      throw error;
     }
+  };
+
+  const submit = async (answer: AnswerValue | null) => {
+    if (!attempt || !question || locked || busy) return;
+    const submission: PendingSubmission = {
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      answer,
+      idempotencyKey: idempotencyKey("answer"),
+    };
+    pendingSubmissionRef.current = submission;
+    setPendingAnswer(answer);
+    await submitAnswerToServer(submission);
+  };
+
+  const retrySubmit = async () => {
+    if (busy || !pendingSubmissionRef.current) return;
+    await submitAnswerToServer(pendingSubmissionRef.current);
   };
 
   const abandon = async () => {
@@ -292,11 +357,16 @@ export function useServerFlashSession({
     reviewChallenge,
     locked,
     busy,
+    submissionState,
+    submissionStatusVisible,
+    submissionError,
+    pendingAnswer,
     startNotice,
     displayChallenge: display,
     begin,
     startQuestions,
     submit,
+    retrySubmit,
     abandon,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

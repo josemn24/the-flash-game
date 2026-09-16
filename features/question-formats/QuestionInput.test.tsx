@@ -8,6 +8,79 @@ import {
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 
 describe("canonical question renderer", () => {
+  it("shows a pending multiple-choice answer without implying correctness", () => {
+    const question = questionsById["capital-canada"];
+    if (question?.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionInput
+        question={question}
+        locked
+        pendingAnswer="Ottawa"
+        submissionState="submitting"
+        submissionStatusVisible
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("Comprobando respuesta…");
+    expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain(">B<");
+    expect(markup).not.toContain("<svg");
+  });
+
+  it("shows a retry action when a multiple-choice submission fails", () => {
+    const question = questionsById["capital-canada"];
+    if (question?.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionInput
+        question={question}
+        locked
+        pendingAnswer="Ottawa"
+        submissionState="error"
+        submissionError="No hemos podido confirmar tu respuesta."
+        onRetrySubmission={vi.fn()}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("No hemos podido confirmar tu respuesta.");
+    expect(markup).toContain("Reintentar");
+    expect(markup).not.toContain("Comprobando respuesta…");
+  });
+
+  it("does not add submission feedback layout to local multiple-choice questions", () => {
+    const question = questionsById["capital-canada"];
+    if (question?.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionInput
+        question={question}
+        locked={false}
+        onSubmit={vi.fn()}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onProgressiveClueReveal={vi.fn()}
+        onCodeAttempt={vi.fn(() => false)}
+        onTimedResponseStart={vi.fn()}
+      />,
+    );
+
+    expect(markup).not.toContain("submissionStatusSlot");
+  });
+
   it("renders every format in tabarnia-challenge-05", () => {
     const challenge = getChallengeById("tabarnia-challenge-05");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");

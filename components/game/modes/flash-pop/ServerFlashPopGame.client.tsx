@@ -75,6 +75,11 @@ export function ServerFlashPopGame({
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
             locked={session.locked}
+            pendingAnswer={session.pendingAnswer}
+            submissionState={session.submissionState}
+            submissionStatusVisible={session.submissionStatusVisible}
+            submissionError={session.submissionError}
+            onRetrySubmission={session.retrySubmit}
             codeAttemptCount={0}
             onSubmit={session.submit}
             onTimeUp={() => void session.submit(null)}

@@ -5,6 +5,7 @@ import styles from "./AnswerOption.module.css";
 type AnswerOptionProps = {
   label: string;
   selected?: boolean;
+  pending?: boolean;
   disabled: boolean;
   index: number;
   onSelect: () => void;
@@ -13,6 +14,7 @@ type AnswerOptionProps = {
 export function AnswerOption({
   label,
   selected,
+  pending = false,
   disabled,
   index,
   onSelect,
@@ -22,7 +24,7 @@ export function AnswerOption({
   return (
     <motion.button
       type="button"
-      className={`${styles.option} ${selected ? styles.selected : ""}`}
+      className={`${styles.option} ${selected ? styles.selected : ""} ${pending ? styles.pending : ""}`}
       onClick={onSelect}
       disabled={disabled}
       aria-pressed={selected}
@@ -30,7 +32,7 @@ export function AnswerOption({
       whileTap={disabled ? undefined : { scale: 0.985 }}
     >
       <span className={styles.key} aria-hidden="true">
-        {selected ? <CheckIcon className="h-4 w-4" /> : shortcut}
+        {selected && !pending ? <CheckIcon className="h-4 w-4" /> : shortcut}
       </span>
       <span className={styles.label}>{label}</span>
     </motion.button>

@@ -36,7 +36,7 @@ import {
   WordSearchQuestion,
   ZipQuestion,
 } from "@/components/questions";
-import { ArrowIcon } from "@/components/ui";
+import { ArrowIcon, Button } from "@/components/ui";
 import styles from "./QuestionInput.module.css";
 import textStyles from "./TextAnswerControls.module.css";
 import { isQueensAnswer } from "@/lib/queens";
@@ -53,6 +53,11 @@ import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/type
 type CommonProps = {
   locked: boolean;
   onSubmit: (answer: AnswerValue) => void;
+  pendingAnswer?: AnswerValue | null;
+  submissionState?: "idle" | "submitting" | "error";
+  submissionStatusVisible?: boolean;
+  submissionError?: string;
+  onRetrySubmission?: () => void;
   codeAttemptCount?: number;
   onCodeAttempt: (code: string) => boolean;
   onProgress: (answer: AnswerValue) => void;
@@ -69,7 +74,16 @@ function MultipleChoiceInput({
   question,
   locked,
   onSubmit,
+  pendingAnswer,
+  submissionState,
+  submissionStatusVisible = false,
+  submissionError,
+  onRetrySubmission,
 }: QuestionInputProps<QuestionOfType<"multiple-choice">>) {
+  const selectedAnswer = typeof pendingAnswer === "string" ? pendingAnswer : null;
+  const resolvedSubmissionState = submissionState ?? "idle";
+  const submissionFeedbackEnabled = submissionState !== undefined;
+
   return (
     <>
       {question.promptVisual?.type === "number-sequence" && (
@@ -83,11 +97,39 @@ function MultipleChoiceInput({
             key={option}
             label={option}
             index={index}
+            selected={selectedAnswer === option}
+            pending={selectedAnswer === option}
             disabled={locked}
             onSelect={() => onSubmit(option)}
           />
         ))}
       </div>
+      {submissionFeedbackEnabled ? (
+        <div
+          className={styles.submissionStatusSlot}
+          aria-busy={resolvedSubmissionState === "submitting"}
+        >
+          {resolvedSubmissionState === "submitting" && submissionStatusVisible ? (
+            <p className={styles.submissionStatus} role="status" aria-live="polite">
+              <span className={styles.submissionSpinner} aria-hidden="true" />
+              Comprobando respuesta…
+            </p>
+          ) : null}
+          {resolvedSubmissionState === "error" ? (
+            <div
+              className={styles.submissionError}
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <p>{submissionError ?? "No hemos podido confirmar tu respuesta."}</p>
+              <Button type="button" variant="secondary" size="sm" onClick={onRetrySubmission}>
+                Reintentar
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </>
   );
 }
@@ -687,7 +729,11 @@ export function QuestionInput(props: QuestionInputProps) {
     props.question.type
   ] as ComponentType<QuestionInputProps>;
   return (
-    <div className={styles.questionInput} data-format={props.question.type}>
+    <div
+      className={styles.questionInput}
+      data-format={props.question.type}
+      aria-busy={props.submissionState === "submitting" || undefined}
+    >
       <Renderer {...props} />
     </div>
   );

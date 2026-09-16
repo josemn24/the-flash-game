@@ -5,4 +5,57 @@
     color: var(--color-ink);
     font-family: var(--type-ui);
   }
+
+  .submissionStatusSlot {
+    display: flex;
+    min-height: 56px;
+    margin-top: var(--space-3);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .submissionStatus,
+  .submissionError {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .submissionSpinner {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    border: 2px solid color-mix(in srgb, var(--color-social) 28%, transparent);
+    border-top-color: var(--color-social);
+    border-radius: var(--radius-pill);
+    animation: question-submission-spin 650ms linear infinite;
+  }
+
+  .submissionError {
+    flex-wrap: wrap;
+    color: var(--color-danger);
+  }
+
+  .submissionError p {
+    margin: 0;
+  }
+
+  @keyframes question-submission-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .submissionSpinner {
+      animation: none;
+    }
+  }
 }
