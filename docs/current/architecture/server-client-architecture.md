@@ -86,6 +86,39 @@ export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
 
 Client Components can also generate HTML during the initial server render. The difference is that their code is sent to and hydrated in the browser.
 
+## Asynchronous server-authoritative gameplay
+
+When an interaction is evaluated or persisted by the server, the client must represent the period
+between the player's action and the authoritative response explicitly. This is a recommended UX and
+architecture pattern, not a mandatory visual component for every mode or format.
+
+The standard interaction lifecycle is:
+
+1. **Acknowledge immediately.** Reflect the selected answer or submitted action in the UI.
+2. **Lock the interaction.** Prevent duplicate submissions and stop the client-side interaction timer
+   while the server command is pending. The competitive time remains authoritative on the server and
+   must not be extended by network latency.
+3. **Delay visible loading briefly.** Use a short default threshold of `250 ms`; do not show a loading
+   indicator for responses that arrive sooner. If the threshold is crossed, show a compact,
+   format-appropriate status such as `Comprobando respuesta…`.
+4. **Reveal authoritative feedback only after confirmation.** Correct, incorrect, partial, points and
+   mode consequences must not be inferred from the pending state.
+5. **Recover safely from failures.** Show an actionable error and retry the same command with its
+   original idempotency key when a response is lost or the network fails. Do not silently advance or
+   create a second competitive answer.
+
+The loading presentation may vary by format: a selected option for multiple choice, a loading submit
+control for text answers, or a locked board with inline status for a puzzle. The semantic contract is
+the same even when the visual treatment differs. `idle`, `submitting` and `error` are the recommended
+client states for this boundary.
+
+This pattern applies to server-authoritative modes. Practice, previews and other local sessions should
+remain immediate and should not add a network loading state. At present, the persisted server flow is
+implemented for competitive Flash; Alphabet, Narrative, Supervivencia, Pirámide and the other formats
+still use client-side evaluation or local persistence. When those modes migrate to server-side
+validation, they should adopt this lifecycle by default and adapt only the visible status to their
+mechanics.
+
 ### Universal components
 
 Universal components are pure components without `"use client"`, server access, or browser APIs. They can become part of either the server or client graph depending on where they are imported.

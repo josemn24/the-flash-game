@@ -7,10 +7,11 @@
 
 2026-09-16, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 89 archivos de test y 575 tests superados.
+- `npm test`: 93 archivos de test y 596 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
-- `npm run build`: correcto.
+- `npm run build`: no concluido en esta actualización; el proceso quedó sin progreso después de
+  detenerse el entorno local de Supabase durante la verificación E2E.
 - `npm run type-architecture`: correcto.
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 63 archivos Markdown comprobados.
@@ -48,6 +49,23 @@ concurrentes sobre PostgreSQL local.
 La validación visual y manual específica de la migración Flash Pop se conserva en el
 [`informe histórico de la fase 4`](../archive/redesign/qa-fase-4.md). Sus cifras y checklists no deben
 interpretarse como una auditoría del estado actual.
+
+## Interacciones server-authoritative
+
+El flujo competitivo Flash debe verificarse con estas condiciones de red:
+
+- Respuesta rápida, inferior a `250 ms`: no se muestra loading visible.
+- Respuesta lenta, de `600–1000 ms`: la opción elegida permanece marcada, el resto de controles queda
+  bloqueado y aparece `Comprobando respuesta…` sin mostrar todavía si es correcta.
+- Respuesta confirmada: desaparece el estado pendiente y comienza el feedback normal del modo.
+- Error o respuesta HTTP perdida: se muestra un error accionable y el reintento conserva la misma clave
+  de idempotencia; no se crea una segunda respuesta competitiva.
+- Accesibilidad: el estado se anuncia con `role="status"` y el contenedor de interacción comunica
+  `aria-busy` mientras espera.
+
+Esta comprobación es actualmente específica del recorrido Flash competitivo persistido. Los modos
+locales no deben añadir este loading; al migrar un modo a evaluación server-side, sus pruebas deben
+incorporar la misma matriz y adaptar únicamente el texto o la presentación al formato.
 
 ## Limitaciones actuales
 
