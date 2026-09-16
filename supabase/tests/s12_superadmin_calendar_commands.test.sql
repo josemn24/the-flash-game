@@ -142,6 +142,8 @@ select is((select count(*) from public.get_room_calendar('s12-room')), 2::bigint
   'A member sees future and available calendar metadata');
 select is((select availability_status from public.get_room_calendar('s12-room') where publication_number = 1), 'available',
   'Public availability is derived from the PostgreSQL clock');
+select is((select can_continue from public.get_room_calendar('s12-room') where publication_number = 1), false,
+  'A member without an attempt cannot continue and receives a boolean false');
 select is((select count(*) from public.get_room_introduction('s12-room', current_setting('s12.schedule_id')::uuid)), 1::bigint,
   'A member can open the introduction for an available publication');
 select ok(not exists (

@@ -644,7 +644,7 @@ language sql stable security definer set search_path = '' as $$
       schedule.status, season.status, season.starts_at, season.ends_at,
       schedule.opens_at, schedule.closes_at, statement_timestamp()
     ),
-    attempt.status = 'in_progress'
+    coalesce(attempt.status = 'in_progress', false)
   from public.rooms room
   join public.room_memberships membership on membership.room_id = room.id
   join public.seasons season on season.room_id = room.id and season.status in ('active', 'finished')
