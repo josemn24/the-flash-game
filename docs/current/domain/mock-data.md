@@ -90,7 +90,9 @@ S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle
 S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
 abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
 historial Flash, ranking histórico y revisión autorizada después de volver. La administración, el
-calendario, Storage y los demás modos siguen usando mock o están pendientes de sus propias slices.
+portal privado de superadmin, el calendario, Storage y los demás modos siguen usando mock o están
+pendientes de sus propias slices. La beta provisionará miembros directamente desde ese portal, sin
+flujo público de invitaciones.
 
 Como compatibilidad de la práctica y de previews, `PlayableChallengePageModel` todavía puede llevar
 las soluciones al cliente y puntuar localmente. El recorrido competitivo migrado separa contenido

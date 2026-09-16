@@ -83,6 +83,62 @@
 - Una sala se elimina primero de forma lógica y recuperable. Su purga definitiva elimina los datos
   que solo tienen significado dentro de ella.
 
+### 3.1 Gestión de sala e invitaciones (2026-09-16)
+
+- `owner` puede gestionar la sala, temporadas, publicaciones, invitaciones y membresías, y puede
+  transferir la propiedad. No puede invalidar intentos ni corregir puntos; esas operaciones quedan
+  reservadas a `superadmin`.
+- `admin` puede editar la sala, crear y revocar invitaciones, cambiar roles y expulsar, bloquear o
+  desbloquear miembros. Puede gestionar cualquier membresía salvo la de `owner`, incluida la de
+  otros admins, pero solo `owner` puede conceder el rol `admin`.
+- `member` no realiza operaciones de administración. `spectator` tampoco.
+- `superadmin` puede realizar prácticamente cualquier operación de sala, membresía, publicación,
+  inspección, invalidación y corrección necesaria para operar la plataforma, sin convertirse por
+  ello en miembro competitivo ni saltarse las invariantes de identidad. Toda acción de
+  `superadmin` que afecte directamente a una sala exige motivo cuando corresponda y queda registrada
+  en auditoría.
+- `editor`/autor no es un rol de sala concedible por invitación en esta fase. Su alcance editorial
+  específico queda separado de esta matriz y se concretará en las slices de contenido; mientras tanto, las
+  capacidades globales de contenido corresponden a `superadmin`.
+- Las invitaciones pueden conceder `admin`, `member` o `spectator` cuando las crea `owner`; las
+  creadas por `admin` solo pueden conceder `member` o `spectator`.
+- Una invitación es de un solo uso por defecto. Puede configurarse explícitamente como multiuso
+  hasta 20 aceptaciones; la UI no ofrece invitaciones ilimitadas.
+- La caducidad por defecto es de 7 días y nunca puede superar 30 días. El servidor calcula y valida
+  esos límites usando su reloj autoritativo.
+- `owner` y cualquier `admin` pueden revocar invitaciones. La revocación solo bloquea aceptaciones
+  futuras y no modifica membresías ya creadas.
+- Una membresía `left` o `removed` se reactiva con el rol de la nueva invitación y conserva su
+  historial. Una membresía `banned` no puede reincorporarse.
+- Un miembro `active` que acepta otra invitación no consume usos ni cambia de rol automáticamente.
+  El cambio de rol se realiza mediante la gestión de membresías.
+- El token en claro solo se muestra al crear la invitación; después se conserva únicamente su hash.
+  No se envía correo desde la aplicación. Crear, aceptar y revocar invitaciones son operaciones
+  auditables y los errores de token no disponible no revelan si fue inválido, caducado, revocado o
+  agotado.
+
+### 3.2 Alcance operativo de la beta cerrada (2026-09-16)
+
+- La UI pública de la primera versión no permite crear salas privadas, crear, aceptar o revocar
+  invitaciones, ni preparar o activar temporadas.
+- Las operaciones administrativas que sí se habiliten en la beta se realizarán desde un portal
+  privado para superadministradores. El portal debe autenticar y autorizar server-side cada acción,
+  usar comandos estrechos y registrar en auditoría las acciones que afecten directamente a una sala.
+- Durante la beta, el superadmin puede añadir directamente a un usuario autenticado a una sala o
+  reactivar su membresía, asignándole un rol permitido (`admin`, `member` o `spectator`). Este alta
+  directa es provisioning operativo: no crea ni consume una invitación y no requiere que el usuario
+  acepte un enlace.
+- El superadmin puede crear salas y asignar su propietario inicial desde ese portal. No se convierte
+  automáticamente en miembro competitivo por operar la sala.
+- La configuración y activación de temporadas también es una tarea exclusiva del portal durante la
+  beta. La publicación mínima de contenido, la programación de desafíos y la ejecución del
+  calendario son capacidades previstas para esa misma superficie interna, según el alcance que se
+  habilite para la beta.
+- Los usuarios finales solo consultan y juegan en salas ya provisionadas. No deben aparecer CTA ni
+  rutas públicas que sugieran gestión de salas, membresías, invitaciones o temporadas.
+- Las reglas de invitaciones documentadas arriba se conservan como política del producto para una
+  fase posterior; no son un requisito de bootstrap ni un flujo público o necesario de esta beta.
+
 ## 4. Superadministración y pruebas fantasma
 
 - `superadmin` es un rol global de plataforma y no una membresía de sala.

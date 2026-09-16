@@ -99,6 +99,20 @@ spectator; la revisión ajena completa, incluidas soluciones, se limita a `owner
 `member`. Los abandonos conservan respuestas parciales y proyectan los items restantes como
 `unanswered`. No se crean tablas materializadas ni se conecta un proyecto remoto.
 
+### Operación de la beta cerrada
+
+La UI pública no crea salas privadas, gestiona invitaciones ni prepara o activa temporadas. Esas
+operaciones se realizarán desde un portal privado de superadmin, con autorización server-side,
+comandos estrechos y auditoría para cualquier acción que afecte directamente a una sala. Durante la
+beta, el superadmin provisiona directamente a usuarios autenticados: crea o reactiva su membresía
+con el rol permitido, sin crear ni consumir una invitación y sin requerir aceptación de enlace.
+
+La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario son
+capacidades previstas para ese portal interno, no para PostgREST público ni para las rutas de usuario.
+El flujo de invitaciones y sus límites permanecen documentados como capacidad futura. El portal no
+debe resolver este alcance mediante DML genérico con `service_role`: cada mutación debe pasar por un
+comando administrativo específico y auditado.
+
 Para ejecutar el recorrido histórico local:
 
 ```bash

@@ -34,8 +34,9 @@ persistencia conserva hechos y estados.
 
 - **Server Components** para cargar páginas, metadata, consultas y proyecciones de lectura.
 - **Server Actions** para mutaciones iniciadas desde la UI y estrechamente ligadas a una página:
-  actualizar perfil, crear sala, aceptar invitación, gestionar miembros o iniciar/abandonar un
-  intento cuando el flujo no requiera un protocolo JSON independiente.
+  actualizar perfil, iniciar/abandonar un intento o, dentro del portal privado, ejecutar operaciones
+  administrativas como provisionar salas y membresías. La UI pública de la beta no crea salas ni
+  gestiona invitaciones o temporadas.
 - **Route Handlers** para envíos de juego de alta frecuencia que necesiten JSON, códigos HTTP e
   idempotencia explícita, además de webhooks de autenticación, almacenamiento o servicios
   externos. No se crea un Route Handler por cada función interna del dominio.
@@ -44,6 +45,25 @@ persistencia conserva hechos y estados.
 
 La elección entre Server Action y Route Handler es de transporte. Ambos deben llamar a los mismos
 casos de uso y no duplicar autorización ni reglas de negocio.
+
+### Portal operativo de la beta cerrada
+
+La UI pública está limitada a consultar y jugar en salas ya provisionadas. La creación de salas, el
+alta o reactivación de miembros, la gestión de roles, la configuración y activación de temporadas y
+las tareas necesarias para operar el calendario pertenecen a un portal privado de
+superadministración. Ese portal será una superficie server-side protegida, aunque comparta la
+aplicación Next.js, y no una colección de controles ocultos dentro de las páginas públicas.
+
+En la beta, el superadmin provisiona directamente a usuarios autenticados en una sala; el alta no
+simula la aceptación de una invitación y no consume un token. La emisión, aceptación y revocación de
+invitaciones siguen siendo capacidades del producto para una fase posterior, sin UI pública en esta
+versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
+calendario podrán habilitarse en el mismo portal interno según el alcance operativo de la beta.
+
+Cada operación administrativa debe comprobar el privilegio global en servidor, aplicar las
+invariantes de dominio y usar un comando acotado. Las acciones que afecten directamente a una sala
+se registran en auditoría; el portal no obtiene permisos escribiendo DML genérico con
+`service_role`, ni convierte al superadmin en miembro competitivo.
 
 ## 2. Responsabilidades por capa
 
@@ -475,8 +495,9 @@ deben vivir en el servidor.
 
 ## 8. Riesgos y cuestiones abiertas
 
-- La matriz exacta de permisos de `owner` frente a `admin` y el alcance del rol editor aún no está
-  cerrada.
+- La matriz de permisos de `owner` frente a `admin` está cerrada: `admin` no gestiona `owner`,
+  solo `owner` concede `admin` y `superadmin` audita sus acciones directas sobre salas. El alcance
+  editorial del rol `editor` aún no está cerrado.
 - La transferencia de control entre dispositivos está deshabilitada durante el MVP. Heartbeat, lease
   y abandono automático quedan fuera de la fase actual, pendientes de una política posterior.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,

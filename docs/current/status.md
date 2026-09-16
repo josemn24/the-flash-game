@@ -1,5 +1,7 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
+Última actualización documental: 2026-09-16.
+
 # Estado actual del proyecto
 
 ## Resumen
@@ -30,6 +32,15 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
   historial/rankings, pero no respuestas ni soluciones ajenas (S07).
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash.
 
+### Modelo operativo de la beta cerrada
+
+La UI pública no permite crear salas privadas, gestionar invitaciones ni preparar o activar
+temporadas. Un portal privado de superadmin realizará esas tareas y provisionará directamente a los
+usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
+invitaciones. La publicación mínima de contenido, la programación de desafíos y la ejecución del
+calendario son capacidades previstas para ese portal interno, según el alcance operativo que se
+habilite.
+
 ## Rutas principales
 
 | Ruta                        | Estado                                                                 |
@@ -49,8 +60,13 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
 
 - La persistencia real verificada cubre el vertical Flash de S01–S07 y el stack local; no hay
   proyecto remoto vinculado.
-- La administración, configuración, miembros, creación de salas, invitaciones, editor, publicación,
-  calendario y Storage siguen pendientes.
+- El portal privado de operación todavía está pendiente. La gestión de salas, provisionamiento de
+  miembros, configuración de temporadas, editor, publicación y calendario no forma parte de la UI
+  pública de la beta; Storage también sigue pendiente.
+- El flujo de invitaciones conserva sus reglas de producto, pero no se ofrece en la UI pública ni se
+  necesita para bootstrappear la beta: el superadmin añade directamente usuarios autenticados.
+- Las políticas de permisos de sala e invitaciones ya están fijadas; su implementación completa
+  mediante S08–S09 todavía no se ha realizado.
 - Alphabet, Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
 - `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
   siguen fuera de S07 y deshabilitados.

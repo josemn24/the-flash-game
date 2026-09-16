@@ -32,7 +32,10 @@ La aplicación combina dos contextos explícitos: práctica y previews respaldad
 recorridos competitivos persistidos en Supabase. S01–S07 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de dos preguntas, su evaluación server-side, recuperación y
 los rankings de temporada/publicación actual, el historial Flash y la revisión después de volver.
-La administración, otros modos y Storage siguen pendientes.
+La beta cerrada se operará mediante un portal privado de superadmin: la UI pública no crea salas,
+gestiona invitaciones ni prepara temporadas. El superadmin añadirá directamente a los usuarios
+autenticados a las salas; la publicación mínima de contenido, la programación y la ejecución del
+calendario podrán formar parte de ese portal. Los demás modos y Storage siguen pendientes.
 
 ## Requisitos
 
@@ -148,9 +151,11 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
 competitivo real acotado. S01–S07 cubren autenticación, perfil, lecturas autorizadas de salas, un
 Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión
-histórica autorizada. Todavía no incluye creación de salas, panel de administración, otros modos ni
-Storage. La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` puede leer
-historial y rankings, pero no soluciones ajenas.
+histórica autorizada. Todavía no incluye el portal privado de operación, otros modos ni Storage. La
+UI pública no incluye creación de salas, gestión de invitaciones ni configuración de temporadas;
+durante la beta esas tareas, incluido el alta directa de miembros, corresponden al superadmin. La
+revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` puede leer historial y
+rankings, pero no soluciones ajenas.
 
 Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
 contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos

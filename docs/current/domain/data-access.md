@@ -6,8 +6,8 @@ La fase 4 está cerrada. S01–S07 añaden la primera integración real de Supab
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
-mutan mediante fronteras autorizadas. Ajustes, gestión y los demás modos continúan mock hasta sus
-propias vertical slices.
+mutan mediante fronteras autorizadas. Ajustes y operaciones administrativas continúan pendientes de
+su portal privado de superadmin; los demás modos siguen mock hasta sus propias vertical slices.
 
 La dirección vigente es:
 
@@ -38,7 +38,10 @@ Server Components
 ```
 
 Las rutas de sala y desafío son dinámicas. La galería editorial `/formatos` y sus fichas siguen
-siendo públicas y estáticas.
+siendo públicas y estáticas. La beta no añade rutas públicas para crear salas, gestionar
+invitaciones o preparar temporadas: esas operaciones pertenecerán a una frontera privada de
+superadmin. El alta directa de un miembro será un comando de provisioning, no una aceptación de
+invitación.
 
 ## Contratos de aplicación
 

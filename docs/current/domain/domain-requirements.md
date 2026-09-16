@@ -7,7 +7,7 @@ decisiones de dominio ya aprobadas. Es la fuente de verdad funcional para las fa
 junto con [`../../decisions/decisions.md`](../../decisions/decisions.md). Cuando una regla aún no está cerrada se
 marca como cuestión abierta; no se deduce una solución técnica a partir de ella.
 
-Última actualización: 2026-09-14.
+Última actualización: 2026-09-16.
 
 Las etiquetas indican la relación con la implementación actual:
 
@@ -38,8 +38,22 @@ ni ranking.
 - **Editor o autor de contenido**: actor previsto para preparar y publicar desafíos y preguntas.
 - **Sistema**: controla disponibilidad, duración, evaluación, cierre y acreditación de resultados.
 
-La implementación actual representa principalmente un jugador fijo y datos simulados; la
-autenticación y la gestión real de actores todavía no están implementadas.
+S01–S07 ya implementan autenticación, provisioning de jugador y el recorrido competitivo Flash
+persistido sobre Supabase local. La gestión operativa de salas, miembros, temporadas y contenido
+todavía no está implementada en la interfaz; en la beta cerrada se reservará a un portal privado de
+superadministración.
+
+### Alcance operativo de la beta cerrada
+
+La primera versión pública no ofrecerá crear salas privadas, crear/aceptar/revocar invitaciones ni
+preparar o activar temporadas. La gestión que se habilite se realizará desde una interfaz interna
+protegida de superadmin. Para reunir al grupo, el superadmin añadirá directamente usuarios
+autenticados a una sala o reactivará su membresía con un rol permitido, sin flujo de invitación ni
+aceptación de enlace.
+
+La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario son
+capacidades previstas para ese portal interno, si se incluyen en el alcance operativo de la beta.
+No son funciones de la UI pública.
 
 ## 3. Áreas funcionales
 
@@ -111,7 +125,8 @@ autenticación y la gestión real de actores todavía no están implementadas.
 - **FR-06 —** `owner`, `admin` y `member` pueden competir; `spectator` solo puede consultar.
   (**Objetivo confirmado**)
 - **FR-07 —** Los responsables deben poder gestionar invitaciones, membresías y las reglas de
-  propiedad definidas para la sala. (**Previsto**; la UI actual muestra acciones deshabilitadas.)
+  propiedad definidas para la sala. (**Previsto**; en la beta estas operaciones se ejecutarán desde
+  el portal privado de superadmin y no desde la UI pública.)
 - **FR-08 —** Reunirse de nuevo en una sala debe conservar el historial previo del jugador.
   (**Objetivo confirmado**)
 
@@ -214,6 +229,10 @@ autenticación y la gestión real de actores todavía no están implementadas.
   aparecer como miembro competitivo de una sala.
 - **FR-38 —** Los intentos de prueba o fantasma no consumen el intento oficial ni conceden Flash
   Points, historial o posiciones en rankings.
+- **FR-39 —** Durante la beta cerrada, el superadmin puede crear salas, provisionar o reactivar
+  membresías directamente y preparar la operación de temporadas, publicaciones y calendario desde
+  un portal privado. Estas acciones deben autorizarse en servidor y auditarse cuando afecten a una
+  sala; la UI pública no ofrece el flujo equivalente.
 
 ## 6. Reglas de negocio conocidas
 
@@ -361,7 +380,8 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   soluciones de cada modo que no estén fijados en `mode-contracts.md`.
 - Si algún modo futuro podrá permitir más de un intento oficial y cómo se acreditaría; el valor
   inicial confirmado sigue siendo uno.
-- Duración, usos y flujo operativo de las invitaciones.
+- El detalle de interfaz, límites de frecuencia y notificaciones de invitaciones; las reglas de
+  roles, TTL, usos, revocación, reincorporación y almacenamiento del token ya están fijadas.
 - Políticas de recuperación o eliminación de salas, retención de eventos, moderación y anonimización.
 - Flujo de correcciones administrativas, política posterior de toma de control de sesión y límites
   de frecuencia.

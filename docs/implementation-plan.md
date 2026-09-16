@@ -2,8 +2,10 @@
 
 > Estado: backlog técnico vivo. S01–S07 están implementadas y verificadas sobre el stack local;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-15. Alcance: pasar del prototipo mock a competición persistida,
+> Fecha de análisis: 2026-09-16. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
+> En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
+> privado de superadmin; no forman parte de la UI pública.
 
 ## 1. Fuentes y punto de partida
 
@@ -24,13 +26,13 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 
 | Área      | Existe y conviene conservar                                                                                                                                                                                                         | Falta para un recorrido real                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                | Estados de red, administración y otros modos aún no migrados.                                                                                            |
+| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta.            |
 | Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07.                  | Ajustes y el resto de proyecciones autorizadas.                                                                                                          |
 | Identidad | `Player` separado de Auth, provisioning, login/logout y nombre persistido en S01.                                                                                                                                                 | Avatar, Storage y políticas de administración.                                                                                                             |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash en S03–S04.                                                                                       | Sustituir autoridad cliente en Alphabet y los demás modos; Pirámide también usa `localStorage` en práctica.                                                |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                         | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                                 |
-| SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                           | Aplicación controlada a un proyecto remoto y operación de contenido/room management.                                                                      |
-| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado. | Alta de jugador, creación de sala, edición, publicación, emisión/revocación de invitaciones y administración.                                             |
+| SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                           | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                              |
+| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado. | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                              |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                            | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                             |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S07.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
 
@@ -128,6 +130,26 @@ ni el bootstrap ficticio de pgTAP al stack real. Para un piloto remoto, el aprov
 mediante un procedimiento explícito y reproducible separado del seed de pruebas; se retira su uso
 ordinario al completar S08–S12. No hace falta esperar a un editor completo para validar S03.
 
+### Alcance operativo de la beta cerrada
+
+La primera versión pública no expondrá acciones para crear una sala privada, crear, aceptar o
+revocar invitaciones, ni preparar o activar una temporada. Esas capacidades siguen formando parte
+del producto, pero durante la beta se ejecutarán exclusivamente desde un portal privado para
+superadministradores, con autorización server-side, comandos estrechos, revalidación y auditoría.
+
+El superadmin podrá provisionar directamente a usuarios autenticados en una sala, creando o
+reactivando su membresía con el rol permitido (`admin`, `member` o `spectator`) sin simular ni
+requerir la aceptación de una invitación. Este alta directa será el mecanismo de reunir al grupo en
+la beta; la UI pública no mostrará enlaces, formularios ni CTA de invitación. Las reglas de
+invitaciones —un uso por defecto, multiuso explícito hasta 20 y caducidad de 7 días por defecto con
+máximo de 30— siguen siendo la política futura si el flujo se habilita después.
+
+El portal interno será también la superficie prevista para crear salas, configurar y activar
+temporadas y operar membresías. La publicación mínima de contenido, la programación de desafíos y
+la ejecución del calendario podrán incorporarse a ese portal según la priorización de la beta; en
+ningún caso se convertirán en pantallas públicas de la aplicación. Los usuarios finales solo
+consultarán y jugarán en salas ya provisionadas.
+
 ## 3. Decisiones previas a las slices afectadas
 
 Estos tickets tienen responsable funcional/técnico a asignar. Su salida es una decisión documentada
@@ -139,8 +161,8 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | D02 | Identidad de rutas: hoy hay aliases mock para publicaciones/miembros; SQL solo tiene algunos slugs. **Resuelto para los recorridos S02–S04.** | S02/S03.                                                          | Usar UUID de publicación/jugador o alias persistido si debe conservarse una URL. Evitar inventar slugs para todas las tablas; una publicación no es el slug de una definición reutilizable.                                              |
 | D03 | Contrato ejecutable por modo y formato: feedback, timeout, borradores, revelaciones y tiempo de carga/presentación. **Acotado al Flash multiple-choice en S03–S04.** | S03, S05, F*, E*, S14–S16.                                        | Escenarios aprobados; milisegundos en contratos; tiempo privado inmutable. Decidir discrepancias del prototipo sin trasladar automáticamente todas sus reglas.                                                                           |
 | D04 | Confirmación de abandono por inactividad, gracia, recuperación y cierre definitivo de publicaciones. **Recuperación y abandono explícito resueltos en S04; inactividad pendiente.** | S21; antes de declarar cumplido el objetivo completo de abandono. | Política de actividad y `results_locked_at`; el piloto anterior solo promete reanudación y abandono explícito. Si se aplaza para usuarios reales, registrar expresamente esa limitación.                                                 |
-| D05 | Acciones permitidas a owner/admin/editor y provisión del superadmin.                                                | S09–S12, S17–S20, S23.                                            | Matriz por operación, actor y objetivo. Propuesta inicial editorial: superadmin ya modelado; no inventar un rol editor persistido sin decisión.                                                                                          |
-| D06 | Invitaciones: roles concedibles por cada actor, TTL, usos y revocación.                                             | S09.                                                              | Valores/reglas explícitos y UX de enlace; no añadir correo ni notificaciones para copiar un enlace.                                                                                                                                      |
+| D05 | **Resuelto para owner/admin/superadmin (2026-09-16).** `owner` gestiona la sala y puede transferir propiedad, pero no invalida ni corrige puntos; `admin` gestiona cualquier membresía salvo owner, pero solo owner concede admin; member/spectator no administran; las acciones directas de superadmin sobre una sala se auditan. El editor no es rol de sala y su alcance editorial queda para sus slices. | S09–S12, S17–S20, S23. | Matriz por operación, actor y objetivo documentada; no se añade un rol editor persistido en esta fase. |
+| D06 | **Resuelto (2026-09-16).** Owner invita a admin/member/spectator; admin invita a member/spectator; un uso por defecto, multiuso explícito hasta 20, TTL por defecto de 7 días y máximo de 30; owner/admin revocan sin afectar membresías existentes. | S09. | Token opaco almacenado como hash, mostrado una sola vez, sin correo; aceptación y errores no disponible auditables y sin filtración. |
 | D07 | Revisión de respuestas, contenido no alcanzado y resultados ajenos/invalidados. **Revisión propia terminal mínima resuelta en S03; ampliación Flash resuelta en S07.** | Revisión mínima S03; revisión Flash S07; invalidación administrativa S20/S23. | Revisión propia terminal autorizada; revisión ajena completa solo para `owner`/`admin`/`member`; durante `in_progress` sin soluciones; invalidados fuera de la revisión de usuario. Precisar el contenido revisable tras abandono. |
 | D08 | Storage: acceso a avatares/medios, límites, moderación y limpieza.                                                  | S13 y formatos con revelaciones de assets.                        | Ruta estable, permisos de lectura/escritura y compensación de fallos; privacidad coherente con las salas.                                                                                                                                |
 | D09 | Retención de respuestas, auditoría e idempotencia; anonimización y purga.                                           | S24 y apertura general S22.                                       | Política y operación recuperable. Retener claves suficiente tiempo para impedir duplicados tras reintentos; no fijar caducidad por comodidad técnica.                                                                                    |
@@ -154,8 +176,8 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | S03 → S04        | Flash completo guardado; recuperación en la misma sesión y bloqueo de una segunda sesión. **Implementado en local.** | S01/S02, D03/D07.                                                    |
 | S05 y E01        | Alfabeto y Mini-Wordle de prueba: reloj global y feedback intermedio sin solución cliente. | S04, D03. Reducen pronto dos riesgos distintos.                      |
 | S06 → S07        | Dos rankings y consulta histórica real. **S06 y S07 implementados en local.**                 | S03; S04 para reconstrucción de estado.                              |
-| S08 → S09        | Crear sala y reunir al grupo mediante enlace.                                              | S02, D05/D06.                                                        |
-| S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición sin SQL manual.             | S08, S03, D05.                                                       |
+| S08 → S09        | Provisionar salas y reunir al grupo desde el portal privado de operación.                   | S02, D05/D06.                                                        |
+| S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición desde el portal privado.     | S08, S03, D05.                                                       |
 | S13              | Avatar persistido.                                                                         | S01, D08.                                                            |
 | F* y resto de E* | Más formatos competitivos, uno por entrega según el contenido elegido.                     | S03/S04 y D03; E01 ofrece el primer patrón de eventos.               |
 | S14, S15, S16    | Supervivencia, Pirámide y Narrativa.                                                       | S04 y las slices de formatos usadas por cada desafío.                |
@@ -171,10 +193,12 @@ con cero. Es validación interna, todavía no la V1 completa.
 
 **H3 — piloto acotado:** pendiente de las capacidades elegidas, con decisiones D03/D04 registradas.
 S04, S06 y S07 ya están implementadas localmente.
-Antes de invitar usuarios externos, ejecutar también los controles operativos de S22 para ese alcance.
+Antes de incorporar usuarios externos mediante el provisioning directo del portal privado, ejecutar
+también los controles operativos de S22 para ese alcance.
 S05/E01 son experimentos técnicos tempranos; no obligan a lanzar esos modos al piloto.
 
-**H4 — V1 operable:** S08–S13 y calendario real, más recuperación, consultas y capacidades publicadas.
+**H4 — V1 operable:** S08–S13 y calendario real operados desde el portal privado, más recuperación,
+consultas y capacidades publicadas.
 Cerrar S19/S21 o registrar las restricciones expresas de salida; no declarar toda la especificación
 implementada mientras falten comportamientos requeridos. CU-10 puede entregarse con editor mínimo.
 
@@ -380,23 +404,31 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 ### S08 — Crear una sala privada
 
 - **Objetivo / CU:** dejar de aprovisionar salas para cada grupo; CU-04.
-- **UI:** acción «Crear sala» en inicio, formulario de título/descripción/zona y detalle de sala vacía.
+- **Actor y superficie:** `superadmin` desde el portal privado de operación. No habrá acción «Crear
+  sala» ni formulario de creación en la UI pública de la beta.
 - **Mocks retirados:** listado fijo de salas como única vía de entrada. No se crea temporada demo.
-- **Backend/dominio:** Action → caso de uso autenticado → validación de nombre/zona/slug → creación
-  idempotente; el servidor asigna `owner` al actor y devuelve URL/DTO de sala.
+- **Backend/dominio:** comando privado autorizado para `superadmin` → validación de
+  nombre/zona/slug → creación idempotente; el portal asigna un `owner` inicial explícito y devuelve
+  URL/DTO de sala. El superadmin no se convierte por ello en miembro competitivo.
 - **Persistencia:** nuevo comando privado que crea `rooms`, `room_memberships` y auditoría en una
   transacción; reutilizar constraint diferida de propietario. Sin DML general de servicio.
-- **Tests:** doble envío, rollback sin sala huérfana, zona inválida, slug en conflicto, actor
-  manipulado y lectura posterior desde otra cuenta denegada.
+- **Tests:** doble envío, rollback sin sala huérfana, zona inválida, slug en conflicto, actor sin
+  privilegio global, owner inicial manipulado y lectura posterior desde otra cuenta denegada.
 - **Dependencias:** S02, D02 para URLs; reglas confirmadas de CU-04.
-- **Terminada:** un usuario crea y abre su sala vacía tras recarga con exactamente un propietario.
+- **Terminada:** un superadmin crea y provisiona una sala desde el portal; tras recarga existe
+  exactamente un propietario y la sala aparece solo a sus miembros activos.
 
 ### S09 — Crear, aceptar y revocar una invitación
 
-- **Objetivo / CU:** incorporar un segundo jugador sin seed; CU-06 completo.
-- **UI:** invitaciones en ajustes; generar/copiar enlace; entrada de aceptación preservada durante
-  login; estado de token no disponible. No requiere envío de correo desde la aplicación.
-- **Mocks retirados:** miembros predefinidos y botones de invitación deshabilitados para salas reales.
+- **Objetivo / CU:** conservar el flujo general de incorporación mediante invitación; CU-06 completo.
+- **Alcance de beta:** esta slice no formará parte de la UI pública ni será necesaria para
+  bootstrappear la beta. El superadmin añadirá o reactivará directamente usuarios autenticados desde
+  el portal privado. La aceptación de invitación queda para una fase posterior o para una herramienta
+  interna explícita.
+- **UI futura:** gestión de invitaciones en una superficie privada; generar/copiar enlace, entrada de
+  aceptación preservada durante login y estado de token no disponible. No requiere envío de correo.
+- **Mocks retirados:** miembros predefinidos y botones de invitación deshabilitados para salas reales;
+  el aprovisionamiento del escenario beta se hará mediante el portal privado.
 - **Backend/dominio:** acciones separadas de emitir/revocar/aceptar. Autorizar rol concedible según
   D05/D06, generar secreto en servidor y evitar filtrarlo a logs/analytics/referrers. Redirigir a
   sala tras aceptación; miembro activo no consume otro uso, bloqueado no se reincorpora.
@@ -405,33 +437,37 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Tests:** dos aceptaciones del último uso, expiración, revocación concurrente, reintento, rol
   `owner` rechazado, antiguo miembro conserva historial, `banned`, tercero que intenta administrar.
 - **Dependencias:** S08, S01, D05 y D06.
-- **Terminada:** un invitado inicia sesión, acepta y aparece en la sala; un enlace revocado/caducado
-  no concede acceso. Las tres acciones tienen recorrido UI/backend/DB probado.
+- **Terminada:** fuera de la beta, un invitado inicia sesión, acepta y aparece en la sala; un enlace
+  revocado/caducado no concede acceso. Las tres acciones tienen recorrido UI/backend/DB probado.
 
 ### S10 — Preparar y activar una temporada
 
 - **Objetivo / CU:** organizar un ciclo real en una sala nueva; CU-08 (configurar/consultar/activar).
-- **UI:** formulario de temporada en ajustes, fechas en zona de sala, borrador visible a gestores y
-  estado vacío para miembros hasta su publicación/activación permitida.
+- **Actor y superficie:** `superadmin` desde el portal privado de operación; no habrá formulario de
+  preparación o activación en ajustes de la UI pública durante la beta. Las fechas se editarán en la
+  zona de la sala.
 - **Mocks retirados:** temporada activa única fija del store.
-- **Backend/dominio:** casos crear/editar borrador/activar; validar transiciones y UTC, devolver
+- **Backend/dominio:** comandos privados del portal para crear/editar borrador/activar; validar
+  transiciones y UTC, devolver
   disponibilidad actualizada. Un miembro ordinario no recibe borradores por la consulta pública.
 - **Persistencia:** comandos privados nuevos sobre `seasons` y auditoría; usar unicidad de temporada
   activa. Activación explícita inicial; la automatización temporal se conecta en S12.
 - **Tests:** fechas inválidas, cambio horario de Madrid, dos activaciones concurrentes, permisos,
   edición de temporada terminal denegada y nuevo total de cero sin borrar la temporada anterior.
 - **Dependencias:** S08 y D05.
-- **Terminada:** el gestor configura y activa una temporada persistida; la sala la muestra sin
+- **Terminada:** el superadmin configura y activa una temporada persistida desde el portal; la sala la muestra sin
   publicaciones ficticias y nunca hay dos temporadas activas.
 
 ### S11 — Publicar contenido mínimo desde una herramienta editorial
 
 - **Objetivo / CU:** producir un desafío jugable sin escribir SQL; CU-10 y preview editorial de CU-12.
-- **UI:** pantalla interna mínima para cargar/editar una definición estructurada de Flash con los
+- **Superficie:** si entra en la beta, será una pantalla interna exclusiva del portal de
+  superadmin para cargar/editar una definición estructurada de Flash con los
   formatos ya migrados, validar, previsualizar y publicar. No construir un editor visual de 31 formatos.
 - **Mocks retirados:** catálogo hardcodeado como única fuente publicable; fixtures permanecen como
   ejemplos de test, sin importar identidades ni intentos demo.
-- **Backend/dominio:** autorizar editor según D05; validar JSON en ejecución, versiones técnicas,
+- **Backend/dominio:** autorizar al superadmin del portal (con futura delegación editorial si se
+  habilita); validar JSON en ejecución, versiones técnicas,
   soluciones/revelaciones, orden, puntos y tiempos. Lista de capacidades evita publicar contenido
   no soportado. Preview editorial protegido, distinto de `/formatos` público.
 - **Persistencia:** comandos de borrador/publicación en tablas privadas existentes y auditoría;
@@ -446,8 +482,9 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 ### S12 — Programar un desafío y ejecutar su calendario
 
 - **Objetivo / CU:** abrir/cerrar competición por fechas reales; CU-09 y transiciones temporales de CU-08.
-- **UI:** calendario sencillo del gestor, versión/número/ventana; sala muestra futuro, disponible y
-  cerrado. Permitir reprogramación solo antes de abrir.
+- **Superficie:** calendario sencillo del portal privado de superadmin para versión/número/ventana;
+  la sala pública solo muestra futuro, disponible y cerrado. Permitir reprogramación solo antes de
+  abrir.
 - **Mocks retirados:** fechas y publicaciones de `socialFixtures` y selección fija del lobby real.
 - **Backend/dominio:** comandos de programación/reprogramación y transición temporal idempotente.
   Implementar una vía mínima operativa para activar/finalizar temporadas y abrir/cerrar publicaciones
@@ -636,7 +673,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 ### S17 — Corregir contenido creando otra versión y archivar
 
 - **Objetivo / CU:** CU-11 y ampliación editorial de CU-10.
-- **UI:** herramienta de S11 con duplicar versión, comparar, publicar y archivar.
+- **Superficie:** herramienta privada del portal de superadmin, integrada con S11, para duplicar
+  versión, comparar, publicar y archivar.
 - **Mocks retirados:** edición directa del fixture como única vía para corregir contenido real.
 - **Backend/dominio:** conservar versión usada, crear borrador nuevo, validar y publicar; archivo
   autorizado sin permitir borrar referencias históricas. Responder con nueva versión seleccionable.
@@ -651,7 +689,9 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 ### S18a — Salir de la sala y transferir propiedad
 
 - **Objetivo / CU:** parte de CU-07: salida propia y transferencia.
-- **UI:** ajustes, confirmación de salida/transferencia, actualización de «Mis salas».
+- **Superficie:** portal privado de superadmin para transferencias y cambios administrativos; no
+  habrá acciones públicas de gestión en ajustes durante la beta. La actualización de «Mis salas» sí
+  se refleja en la UI pública después de la operación.
 - **Mocks retirados:** acciones deshabilitadas y membresías fijas en estos flujos.
 - **Backend/dominio:** salida normal; si sale owner, sucesor según antigüedad admin/member o exigir
   alternativa válida. Transferencia explícita autorizada; nunca dejar sala activa sin owner.
@@ -665,7 +705,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 ### S18b — Administrar roles, expulsión y bloqueo
 
 - **Objetivo / CU:** resto de membresías de CU-07 según matriz aprobada.
-- **UI:** lista de miembros en ajustes con acciones autorizadas y errores de conflicto.
+- **Superficie:** lista de miembros y acciones en el portal privado de superadmin, con errores de
+  conflicto. La UI pública no permitirá cambiar roles, expulsar, bloquear ni desbloquear.
 - **Mocks retirados:** roles/estados inmutables de demo y controles deshabilitados correspondientes.
 - **Backend/dominio:** operaciones explícitas de cambio de rol, expulsar, bloquear y desbloquear
   solo según D05; revalidar permisos al escribir. No permitir autoconcederse owner/superadmin.
@@ -681,7 +722,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 ### S18c — Eliminar lógicamente una sala y recuperarla
 
 - **Objetivo / CU:** ciclo de sala asociado a CU-07, incluida alternativa del único owner.
-- **UI:** ajustes con confirmación de eliminación; herramienta autorizada de recuperación.
+- **Superficie:** portal privado de superadmin con confirmación de eliminación y herramienta
+  autorizada de recuperación; no se expone en ajustes públicos.
 - **Mocks retirados:** ausencia de transición real de sala y entradas permanentes del listado demo.
 - **Backend/dominio:** autorizar borrado lógico/recuperación con D05/D09; definir efecto en intentos
   activos y conflictos con calendario antes de habilitar. No ejecutar purga irreversible aquí.
@@ -696,7 +738,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 ### S19 — Cancelar competición y cerrar temporadas de forma controlada
 
 - **Objetivo / CU:** cancelación administrativa de CU-08/CU-09.
-- **UI:** calendario/ajustes con motivo; estados de cancelación separados del historial ordinario.
+- **Superficie:** calendario privado del portal de superadmin con motivo; la UI pública solo muestra
+  estados de cancelación separados del historial ordinario.
 - **Mocks retirados:** estados cancelados solo representados por fixtures.
 - **Backend/dominio:** cancelar publicación o temporada según D05, conservar intentos y detener
   nuevos envíos/inicios según política. El cierre normal no es cancelación. Precisar cómo terminar
@@ -713,7 +756,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
 - **Objetivo / CU:** CU-25.
-- **UI:** pantalla interna mínima de inspección por intento y acción de ajuste/invalidación con motivo.
+- **Superficie:** pantalla interna del portal privado de superadmin para inspección por intento y
+  acción de ajuste/invalidación con motivo.
 - **Mocks retirados:** correcciones simuladas o modificación manual de fixtures/resultados.
 - **Backend/dominio:** comprobar superadmin real; consulta de inspección mínima auditada; conectar
   `adjust_result`/`invalidate_attempt`. Separar score original de saldo efectivo y de revisión visible.

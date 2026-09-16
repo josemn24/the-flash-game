@@ -13,13 +13,18 @@ temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
 
 - Estado: modelo aprobado y fases 3 y 4 cerradas.
 - Versión: 1.
-- Fecha de la última revisión: 2026-09-13.
+- Fecha de la última revisión: 2026-09-16.
 - Alcance técnico actual: reglas, tipos TypeScript, fixtures canónicos, store normalizado y capa de
   consultas asíncrona server-only. Las slices S01–S07 ya tienen integración real documentada en
   `data-access.md` y `supabase/README.md`; esta carpeta conserva las reglas de dominio y no sustituye
   la documentación del backend ni del esquema SQL.
 - Persistencia: PostgreSQL y autenticación mediante Supabase; Storage y el resto de capacidades se
   incorporan por slices posteriores.
+
+En la beta cerrada, la interfaz pública consulta y ejecuta competición sobre salas ya provisionadas.
+La creación de salas, el provisioning directo de miembros, la preparación de temporadas y la
+operación editorial/calendario se reservan a un portal privado de superadmin; no se implementa un
+flujo público de invitaciones en esta fase.
 
 ## Mapa conceptual
 

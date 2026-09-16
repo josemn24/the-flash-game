@@ -151,6 +151,11 @@ Restricciones y reglas:
 - `status = 'active'` exige `ended_at is null`; un estado terminal exige fecha de finalización.
 - Los FKs no borran intentos ni resultados cuando la membresía termina.
 
+Durante la beta cerrada, el portal privado de superadmin podrá crear o reactivar directamente una
+membresía para un usuario autenticado y asignar un rol permitido. Esta operación no crea una fila de
+invitación ni consume usos; conserva las restricciones de propiedad, estado e historial y debe
+quedar auditada cuando afecte a una sala. La UI pública solo consulta las membresías ya provisionadas.
+
 ### `room_invitations`
 
 Autorizaciones temporales para incorporarse a una sala.

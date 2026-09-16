@@ -7,6 +7,8 @@ entender qué existe en el repositorio hoy.
 
 En la rama actual, S01–S07 están implementadas y verificadas contra el stack local de Supabase. El
 resto de capacidades se mantiene explícitamente en mock o pendiente de su propia vertical slice.
+La beta cerrada se provisionará y operará desde un portal privado de superadmin: la UI pública no
+crea salas, gestiona invitaciones ni prepara temporadas.
 
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.

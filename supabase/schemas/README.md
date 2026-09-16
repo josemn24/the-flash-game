@@ -54,11 +54,19 @@ el comportamiento provisional del mock.
 
 ### Decisiones provisionales y operaciones cerradas
 
-La matriz editorial y de gestión owner/admin sigue pendiente: crear salas, invitaciones, publicar,
-expulsar, cambiar roles, transferir propiedad, pruebas administrativas y revisar soluciones no
-obtienen DML genérico ni comandos por este cambio. La aceptación de una invitación **existente** sí
-está implementada; una membresía activa no consume otro uso y una prohibida no puede reactivarse.
-El TTL y número de usos se obtienen de esa invitación, sin valores de producto inventados.
+La política de permisos de sala e invitaciones ya está fijada: `owner` gestiona la sala y transfiere propiedad; `admin` gestiona
+cualquier membresía salvo `owner`, pero solo `owner` concede `admin`; `member` y `spectator` no
+administran. `owner` invita a `admin`/`member`/`spectator` y `admin` a `member`/`spectator`; las
+invitaciones duran 7 días por defecto, como máximo 30, tienen un uso por defecto y hasta 20 usos
+explícitos, y `owner`/`admin` pueden revocarlas sin afectar membresías existentes. La aceptación de
+una invitación **existente** ya está implementada; una membresía activa no consume otro uso y una
+prohibida no puede reactivarse. Las operaciones directas de `superadmin` sobre salas se auditan.
+Para la beta cerrada, el superadmin podrá crear o reactivar directamente membresías de usuarios
+autenticados desde un portal privado, sin crear ni consumir una invitación. La emisión, aceptación y
+revocación de invitaciones completas siguen siendo una capacidad futura de S09, no un flujo de la UI
+pública. Las capacidades editoriales y de publicación global, así como la preparación de temporadas
+y la operación del calendario, se implementarán como comandos del portal privado cuando entren en su
+alcance.
 
 Se conserva la visibilidad de perfiles históricos mínimos en rankings, la exclusión de resultados
 invalidados de la lectura directa y la necesidad de membresía vigente para consultar resultados

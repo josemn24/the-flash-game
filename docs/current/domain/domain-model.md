@@ -11,7 +11,7 @@ Es la referencia para hablar del dominio en las siguientes fases. Distingue las 
 de las cuestiones abiertas y no define tablas, schemas ORM, APIs, endpoints ni arquitectura de
 backend.
 
-Última actualización: 2026-09-14.
+Última actualización: 2026-09-16.
 
 ## 1. Visión general del modelo
 
@@ -92,6 +92,18 @@ independiente de la sala.
 Es una autorización temporal para incorporarse a una sala privada. Pertenece a una sala, la crea
 un jugador responsable y puede limitarse por caducidad, revocación y usos. La invitación no puede
 conceder el rol `owner` directamente.
+
+#### Aprovisionamiento directo en la beta cerrada
+
+Durante la beta, el superadmin puede crear o reactivar directamente la membresía de un usuario
+autenticado desde el portal privado de operación. Puede asignar los roles de sala permitidos
+(`admin`, `member` o `spectator`) respetando la unicidad del `owner`, el estado de la membresía y el
+historial existente. Esta operación es provisioning administrativo: no representa una invitación,
+no consume usos y no requiere aceptación del usuario.
+
+El modelo de invitaciones se conserva para una fase posterior. La UI pública de la beta no crea
+salas, gestiona membresías, ofrece invitaciones ni prepara temporadas; los usuarios finales solo
+reciben acceso a salas ya provisionadas y participan según su membresía.
 
 ### 3.2 Tiempo competitivo
 
@@ -307,7 +319,8 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
 
 - La participación competitiva requiere cuenta; la práctica puede estar disponible sin cuenta.
 - Los perfiles son globales a la persona y un jugador puede pertenecer a varias salas.
-- Las invitaciones son revocables y caducables; su duración, usos y flujo exactos siguen abiertos.
+- Las invitaciones son revocables y caducables. La política vigente fija 7 días por defecto, 30 días máximo, un uso
+  por defecto y hasta 20 usos si se solicita explícitamente; no se ofrecen invitaciones ilimitadas.
 - Los roles de sala competitivos son `owner`, `admin` y `member`; `spectator` solo consulta.
 - La propiedad puede transferirse. Si el propietario abandona, la sucesión sigue el orden de
   administrador activo más antiguo y después miembro activo más antiguo; si no existe uno elegible,
@@ -334,8 +347,8 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
 | Actor o contexto          | Puede leer sala/rankings                                | Puede competir               | Puede gestionar                                            |
 | ------------------------- | ------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------- |
 | Persona sin cuenta        | No tiene acceso competitivo; sí puede explorar previews | No                           | No                                                         |
-| `owner`                   | Sí, con membresía activa                                | Sí                           | Sí, según las reglas de ownership e invitaciones           |
-| `admin`                   | Sí, con membresía activa                                | Sí                           | Responsabilidades de sala previstas; matriz exacta abierta |
+| `owner`                   | Sí, con membresía activa                                | Sí                           | Gestión de sala, invitaciones, temporadas, publicaciones y membresías; no invalida ni corrige puntos |
+| `admin`                   | Sí, con membresía activa                                | Sí                           | Sala, invitaciones y membresías salvo `owner`; no concede `admin` ni transfiere propiedad |
 | `member`                  | Sí, con membresía activa                                | Sí                           | No se presupone gestión administrativa                     |
 | `spectator`               | Sí, incluidos rankings e historial                      | No                           | No                                                         |
 | Superadministrador        | Inspección global según privilegio                      | Solo en modo fantasma/prueba | Inspección, contenido y pruebas, con auditoría             |
@@ -350,8 +363,12 @@ Reglas adicionales de ownership:
 - Una membresía terminada conserva el contexto histórico, pero no permite leer la sala como miembro
   activo ni iniciar nuevos desafíos.
 - El rol global `superadmin` no sustituye a una membresía ni hace que una prueba sea competitiva.
-- La matriz exacta de acciones de `owner` frente a `admin`, incluida la publicación y corrección de
-  contenido, todavía no está cerrada.
+- `admin` puede gestionar otros admins, pero no al `owner`; solo `owner` puede conceder el rol
+  `admin`. La transferencia de propiedad es exclusiva de `owner`.
+- `owner` puede gestionar temporadas y publicaciones, pero invalidar intentos y corregir puntos son
+  operaciones de `superadmin`.
+- Las acciones de `superadmin` que afecten directamente a una sala quedan auditadas. `editor` no es
+  un rol de sala en esta fase y su alcance editorial se resolverá separadamente.
 
 ## 9. Eventos relevantes del dominio
 
@@ -428,8 +445,9 @@ Estos límites ayudan a razonar sobre consistencia y permisos; no anticipan tabl
 
 El modelo no decide todavía:
 
-- duración, usos y flujo exactos de las invitaciones;
-- matriz precisa de permisos entre `owner` y `admin`;
+- detalles de interfaz, límites de frecuencia y notificaciones de invitaciones, sin reabrir las
+  reglas vigentes de roles, TTL, usos y revocación;
+- alcance exacto del editor/autor de contenido, que no es un rol de sala en esta fase;
 - duración del heartbeat, lease y periodo de gracia para detectar abandono automático;
 - qué checkpoints y borradores adicionales se conservan para cada modo; la recuperación consume la
   interacción ya preparada y la toma de control en otro dispositivo queda aplazada tras el MVP;

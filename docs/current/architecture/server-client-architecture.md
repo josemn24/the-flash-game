@@ -27,6 +27,11 @@ The goal is not to maximize the number of Server Components. The goal is to plac
 6. **CSS before JavaScript for decoration.** Hover, focus, and simple animations should preferably be implemented with CSS.
 7. **Motion is used intentionally.** It is reserved for coordinated transitions, presence, gestures, dragging, and state-dependent animations.
 
+For the closed beta, public pages remain limited to consultation and gameplay in already provisioned
+rooms. Room creation, direct member provisioning, invitations, season setup and calendar operations
+belong to a protected private superadmin portal; they are not public controls hidden inside these
+pages.
+
 ## Component categories
 
 ### Server Components

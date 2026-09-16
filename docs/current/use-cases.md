@@ -19,7 +19,13 @@ usa un jugador fijo, consultas mock de solo lectura y sesiones de juego locales.
 Las reglas comunes de permisos son: la competición requiere cuenta; `owner`, `admin` y `member`
 pueden competir; `spectator` puede consultar sala, historial y rankings, pero no jugar; el
 superadministrador opera fuera de la competición ordinaria; y una persona sin cuenta solo puede
-usar previews.
+usar previews. En la beta cerrada, la UI pública se limita a consultar y jugar en salas ya
+provisionadas: la gestión operativa se realiza desde un portal privado de superadmin.
+
+El portal interno provisiona salas, añade o reactiva directamente usuarios autenticados, configura
+temporadas y, si se habilita para la beta, publica contenido mínimo y opera el calendario. El alta
+directa de miembros no simula ni requiere aceptar una invitación; la emisión, aceptación y
+revocación de invitaciones quedan fuera de la UI pública en esta fase.
 
 ## 1. Identidad y perfil
 
@@ -32,7 +38,9 @@ usar previews.
 - **Flujo principal:** autenticar; localizar o crear la relación con `Player`; cargar nombre, avatar y salas activas; crear el contexto de consulta.
 - **Reglas de negocio:** la identidad del proveedor y el perfil de jugador son conceptos distintos; no hay invitados competitivos inicialmente.
 - **Resultado:** sesión autenticada con un jugador de dominio.
-- **Efectos secundarios:** creación o actualización auditada de identidad y perfil; no crea membresías automáticamente salvo invitación aceptada.
+- **Efectos secundarios:** creación o actualización auditada de identidad y perfil; no crea
+  membresías automáticamente. El provisioning directo de una sala es una operación separada del
+  portal privado de superadmin.
 - **Errores o impedimentos:** credenciales inválidas, sesión caducada, jugador anonimizado sin proceso de recuperación o proveedor no disponible.
 - **Permisos necesarios:** el propio proveedor y el jugador sobre su sesión; el sistema valida la correspondencia.
 
@@ -66,16 +74,20 @@ usar previews.
 
 ### CU-04 — Crear una sala privada [V1]
 
-- **Actor:** jugador autenticado.
+- **Actor:** superadmin desde el portal privado de operación durante la beta; jugador autenticado en
+  el producto general cuando se habilite la creación pública.
 - **Objetivo:** crear el límite social y competitivo de un grupo.
-- **Precondiciones:** cuenta válida y capacidad operativa para crear salas.
+- **Precondiciones:** sesión autenticada con capacidad operativa; durante la beta, privilegio global
+  de superadmin y un propietario inicial explícito.
 - **Entrada relevante:** título, descripción y zona horaria.
 - **Flujo principal:** validar datos; crear la sala privada; crear una membresía `owner`; dejar la sala lista para una temporada.
 - **Reglas de negocio:** la sala es privada; la propiedad vive en la membresía `owner`; una sala puede tener varias temporadas, pero solo una activa.
 - **Resultado:** sala activa con su propietario como miembro.
 - **Efectos secundarios:** creación de `Room`, membresía y auditoría; inicialmente no crea temporada ni publicaciones implícitas.
 - **Errores o impedimentos:** datos inválidos, zona horaria no soportada, duplicación de operación o creación sin propietario.
-- **Permisos necesarios:** jugador autenticado; el sistema asigna el rol `owner`.
+- **Permisos necesarios:** superadmin en la beta; en una fase pública posterior, jugador autenticado
+  si se habilita la creación. El sistema asigna el rol `owner` al propietario inicial, no al
+  superadmin por defecto.
 
 ### CU-05 — Consultar una sala accesible [V1]
 
@@ -94,18 +106,29 @@ usar previews.
 
 - **Actor:** `owner`/`admin` que invita; persona invitada que acepta; sistema que valida la invitación.
 - **Objetivo:** incorporar un jugador a una sala privada con un rol permitido.
+- **Alcance de beta:** no se ofrece en la UI pública ni se necesita para bootstrappear una sala. El
+  superadmin incorpora directamente al usuario autenticado o reactiva su membresía desde el portal
+  privado, sin crear ni consumir una invitación. Este caso de uso queda reservado para una fase
+  posterior o una herramienta interna explícita.
 - **Precondiciones:** invitación creada por un responsable; token válido, no revocado, no caducado y dentro de su límite de usos.
 - **Entrada relevante:** sala, rol solicitado, token de invitación y jugador autenticado que acepta.
 - **Flujo principal:** responsable crea invitación; sistema genera representación no reversible del token; invitado abre y acepta; se crea o reactiva la membresía.
-- **Reglas de negocio:** una invitación no concede `owner`; los usos, caducidad y revocación son controlables; reincorporarse conserva historial.
+- **Reglas de negocio:** `owner` puede invitar a `admin`, `member` o `spectator`; `admin` solo a
+  `member` o `spectator`; una invitación usa una aceptación por defecto, admite hasta 20 usos si se
+  configura explícitamente y caduca por defecto en 7 días, con máximo de 30. `owner` y `admin`
+  pueden revocarla sin afectar membresías ya creadas; reincorporarse conserva historial y aplica el
+  rol de la nueva invitación salvo que la membresía esté `banned`.
 - **Resultado:** membresía `active` con `admin`, `member` o `spectator`.
 - **Efectos secundarios:** incremento de uso, auditoría y actualización de miembros y rankings proyectados.
 - **Errores o impedimentos:** token inválido, expirado, revocado o agotado; sala eliminada; rol no permitido; jugador ya bloqueado o membresía incoherente.
-- **Permisos necesarios:** crear: `owner` o `admin`; aceptar: destinatario autenticado; el sistema impide autoasignar propiedad.
+- **Permisos necesarios:** crear: `owner` o `admin` cuando se habilite el flujo; aceptar: destinatario
+  autenticado; el sistema impide autoasignar propiedad. En la beta, el provisioning directo requiere
+  superadmin y se autoriza/audita server-side.
 
 ### CU-07 — Gestionar membresías y propiedad [Importante]
 
-- **Actor:** `owner`, `admin` y, en algunos cambios, el propio miembro; sistema de autorización.
+- **Actor:** `owner`, `admin` y, en algunos cambios, el propio miembro; superadmin desde el portal
+  privado para la operación de la beta; sistema de autorización.
 - **Objetivo:** cambiar roles, expulsar, bloquear, reactivar, transferir propiedad o abandonar una sala.
 - **Precondiciones:** membresía y sala activas; el actor tiene autoridad para la operación.
 - **Entrada relevante:** jugador objetivo, nuevo rol o estado, y confirmación de salida/transferencia.
@@ -114,13 +137,17 @@ usar previews.
 - **Resultado:** membresía y ownership coherentes.
 - **Efectos secundarios:** auditoría, actualización de accesos y proyecciones; no se recalculan silenciosamente resultados pasados.
 - **Errores o impedimentos:** actor sin autoridad, transición inválida, dejar la sala sin propietario elegible o cambiar el rol global desde el cliente.
-- **Permisos necesarios:** `owner` para ownership y decisiones finales; `admin` según la matriz que se cierre; miembro para su propia salida.
+- **Permisos necesarios:** `owner` para ownership y decisiones finales; `admin` para gestionar
+  cualquier membresía salvo `owner`; miembro para su propia salida. Solo `owner` concede `admin` y
+  la transferencia de propiedad es exclusiva de `owner`. El superadmin opera desde el portal
+  privado con auditoría, sin convertirse en miembro competitivo.
 
 ## 3. Temporadas y calendario
 
 ### CU-08 — Configurar y consultar una temporada [V1]
 
-- **Actor:** responsable de sala para configurar; cualquier miembro activo para consultar.
+- **Actor:** superadmin desde el portal privado para configurar durante la beta; cualquier miembro
+  activo para consultar.
 - **Objetivo:** definir el ciclo competitivo de una sala y su estado temporal.
 - **Precondiciones:** sala activa y, para editar, permisos de gestión.
 - **Entrada relevante:** título, `startsAt`, `endsAt` y transición solicitada (`draft`, `scheduled`, `active`, `finished` o `cancelled`).
@@ -129,11 +156,13 @@ usar previews.
 - **Resultado:** temporada en estado coherente y visible dentro de la sala.
 - **Efectos secundarios:** auditoría y actualización de disponibilidad; al finalizar se cierran nuevas entradas, pero intentos válidos pueden terminar dentro de su plazo.
 - **Errores o impedimentos:** fechas invertidas, solapamiento de temporada activa, transición no permitida o edición de temporada finalizada sin corrección auditada.
-- **Permisos necesarios:** `owner`/`admin` para editar; membresía activa para consultar.
+- **Permisos necesarios:** superadmin desde el portal privado durante la beta; en el producto general,
+  `owner` para editar la temporada; membresía activa para consultar.
 
 ### CU-09 — Preparar y publicar el calendario de desafíos [V1]
 
-- **Actor:** responsable de sala o editor autorizado; sistema de calendario.
+- **Actor:** superadmin desde el portal privado durante la beta; responsable de sala o editor
+  autorizado en una fase posterior; sistema de calendario.
 - **Objetivo:** publicar una versión de desafío dentro de una temporada con una ventana competitiva.
 - **Precondiciones:** temporada adecuada y `ChallengeVersion` publicada; número libre y fechas válidas.
 - **Entrada relevante:** versión, número, `opensAt`, `closesAt` y, si procede, zona horaria de edición.
@@ -142,13 +171,15 @@ usar previews.
 - **Resultado:** publicación `scheduled`, `open`, `closed` o `cancelled`.
 - **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; una cancelación conserva intentos para auditoría.
 - **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida o intento de modificar una publicación abierta sin cancelar.
-- **Permisos necesarios:** responsable/editor autorizado; miembros y espectadores solo consultan.
+- **Permisos necesarios:** superadmin desde el portal privado durante la beta; responsable/editor
+  autorizado cuando se habilite esa superficie. Miembros y espectadores solo consultan.
 
 ## 4. Contenido y práctica
 
 ### CU-10 — Preparar, versionar y publicar contenido [V1]
 
-- **Actor:** editor/autor de contenido o superadministrador.
+- **Actor:** superadministrador desde el portal privado durante la beta; editor/autor autorizado en
+  una fase posterior.
 - **Objetivo:** crear preguntas y desafíos reutilizables que puedan publicarse sin ambigüedad histórica.
 - **Precondiciones:** permisos editoriales; formatos y reglas de validación disponibles.
 - **Entrada relevante:** payload público, solución privada, modo, elementos ordenados, configuración, puntos y metadatos editoriales.
@@ -157,7 +188,9 @@ usar previews.
 - **Resultado:** `QuestionVersion` y/o `ChallengeVersion` publicada y reutilizable.
 - **Efectos secundarios:** autoría, timestamps, auditoría y disponibilidad para futuras publicaciones.
 - **Errores o impedimentos:** formato desconocido, solución ausente, relación inválida, puntos distintos de 100, payload privado expuesto o publicación incompleta.
-- **Permisos necesarios:** editor/autor autorizado o superadministrador; nunca un jugador ordinario desde el cliente competitivo.
+- **Permisos necesarios:** superadministrador desde el portal privado durante la beta; editor/autor
+  autorizado cuando se habilite esa delegación; nunca un jugador ordinario desde el cliente
+  competitivo.
 
 ### CU-11 — Sustituir o archivar contenido publicado [Importante]
 
@@ -395,6 +428,6 @@ usar previews.
 - La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-12, CU-13, CU-14,
   CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. La autenticación,
   escrituras, evaluación autoritativa, abandono automático y persistencia real siguen pendientes.
-- Las decisiones sobre heartbeat, lease, gracia de desconexión, matriz exacta de `owner` frente a
-  `admin`, editores y revisión de intentos invalidados deben cerrarse antes de convertir los casos
-  correspondientes en contratos técnicos.
+- Las decisiones sobre heartbeat, lease, gracia de desconexión, alcance del editor y revisión de
+  intentos invalidados deben cerrarse antes de convertir los casos correspondientes en contratos
+  técnicos. La matriz de permisos de sala y las reglas de invitaciones ya están fijadas.
