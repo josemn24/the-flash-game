@@ -209,3 +209,228 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     );
   });
 });
+
+const historyRows = [
+  {
+    room_id: roomRow.room_id,
+    room_slug: roomRow.room_slug,
+    room_title: roomRow.room_title,
+    viewer_role: "member",
+    season_id: roomRow.season_id,
+    season_title: "Temporada S06",
+    publication_id: "00000000-0000-0000-0000-000000000012",
+    publication_number: 1,
+    publication_status: "closed",
+    publication_opens_at: "2026-01-01T00:00:00Z",
+    publication_closes_at: "2026-01-02T00:00:00Z",
+    challenge_id: "00000000-0000-0000-0000-000000000013",
+    challenge_slug: "s07-flash-history",
+    challenge_version_id: "00000000-0000-0000-0000-000000000014",
+    challenge_title: "Flash histórico",
+    challenge_subtitle: "Dos preguntas",
+    challenge_description: "Revisión",
+    challenge_mode: "flash",
+    challenge_max_score: 100,
+    question_count: 2,
+    played_at: "2026-01-02T00:00:00Z",
+    player_count: 1,
+    player_id: viewer.id,
+    display_name: viewer.name,
+    avatar_path: viewer.avatarSrc,
+    flash_points: 80,
+    duration_ms: 1400,
+    started_at: "2026-01-01T10:00:00Z",
+    position: 1,
+  },
+  {
+    room_id: roomRow.room_id,
+    room_slug: roomRow.room_slug,
+    room_title: roomRow.room_title,
+    viewer_role: "member",
+    season_id: roomRow.season_id,
+    season_title: "Temporada S06",
+    publication_id: "00000000-0000-0000-0000-000000000015",
+    publication_number: 2,
+    publication_status: "closed",
+    publication_opens_at: "2026-01-03T00:00:00Z",
+    publication_closes_at: "2026-01-04T00:00:00Z",
+    challenge_id: "00000000-0000-0000-0000-000000000013",
+    challenge_slug: "s07-flash-history",
+    challenge_version_id: "00000000-0000-0000-0000-000000000014",
+    challenge_title: "Flash histórico",
+    challenge_subtitle: "Dos preguntas",
+    challenge_description: "Revisión",
+    challenge_mode: "flash",
+    challenge_max_score: 100,
+    question_count: 2,
+    played_at: "2026-01-04T00:00:00Z",
+    player_count: 0,
+    player_id: null,
+    display_name: null,
+    avatar_path: null,
+    flash_points: null,
+    duration_ms: null,
+    started_at: null,
+    position: null,
+  },
+];
+
+const reviewRows = [
+  {
+    room_id: roomRow.room_id,
+    room_slug: roomRow.room_slug,
+    room_title: roomRow.room_title,
+    viewer_role: "member",
+    publication_id: historyRows[0].publication_id,
+    publication_status: "closed",
+    publication_closes_at: historyRows[0].publication_closes_at,
+    challenge_id: historyRows[0].challenge_id,
+    challenge_slug: historyRows[0].challenge_slug,
+    challenge_version_id: historyRows[0].challenge_version_id,
+    challenge_title: historyRows[0].challenge_title,
+    challenge_subtitle: historyRows[0].challenge_subtitle,
+    challenge_description: historyRows[0].challenge_description,
+    challenge_mode: "flash",
+    challenge_max_score: 100,
+    player_id: viewer.id,
+    display_name: viewer.name,
+    avatar_path: viewer.avatarSrc,
+    attempt_id: "00000000-0000-0000-0000-000000000016",
+    attempt_status: "completed",
+    attempt_score: 80,
+    attempt_started_at: "2026-01-01T10:00:00Z",
+    attempt_completed_at: "2026-01-01T10:01:00Z",
+    attempt_lock_version: 4,
+    challenge_item_id: "00000000-0000-0000-0000-000000000017",
+    item_position: 1,
+    question_version_id: "00000000-0000-0000-0000-000000000018",
+    question_type: "multiple-choice",
+    payload_schema_version: 1,
+    public_payload: {
+      category: "Cultura",
+      tags: { domains: ["culture"], topics: ["general"], cognitiveSkills: ["memory"], formatSkills: ["recall"], lifeSkills: [] },
+      prompt: "¿Capital?",
+      context: null,
+      timeLimitMs: 15000,
+      payload: { options: ["Lisboa", "Oporto"], media: null, promptVisual: null },
+    },
+    solution_payload: {
+      solution: { explanation: "Explicación persistida", payload: { correctAnswer: "Lisboa" } },
+      reveals: [],
+    },
+    answer: "Lisboa",
+    answer_status: "correct",
+    points: 50,
+    result_details: null,
+    presented_at: "2026-01-01T10:00:00Z",
+    submitted_at: "2026-01-01T10:00:01Z",
+    time_used_ms: 900,
+    item_points: 50,
+  },
+  {
+    ...historyRows[0],
+    viewer_role: "member",
+    publication_status: "closed",
+    publication_closes_at: historyRows[0].publication_closes_at,
+    challenge_id: historyRows[0].challenge_id,
+    challenge_slug: historyRows[0].challenge_slug,
+    challenge_version_id: historyRows[0].challenge_version_id,
+    player_id: viewer.id,
+    display_name: viewer.name,
+    avatar_path: viewer.avatarSrc,
+    attempt_id: "00000000-0000-0000-0000-000000000016",
+    attempt_status: "completed",
+    attempt_score: 80,
+    attempt_started_at: "2026-01-01T10:00:00Z",
+    attempt_completed_at: "2026-01-01T10:01:00Z",
+    attempt_lock_version: 4,
+    challenge_item_id: "00000000-0000-0000-0000-000000000019",
+    item_position: 2,
+    question_version_id: "00000000-0000-0000-0000-000000000020",
+    question_type: "multiple-choice",
+    payload_schema_version: 1,
+    public_payload: {
+      category: "Cultura",
+      tags: { domains: ["culture"], topics: ["general"], cognitiveSkills: ["memory"], formatSkills: ["recall"], lifeSkills: [] },
+      prompt: "¿Planeta?",
+      context: null,
+      timeLimitMs: 15000,
+      payload: { options: ["Venus", "Marte"], media: null, promptVisual: null },
+    },
+    solution_payload: {
+      solution: { explanation: "Segunda explicación", payload: { correctAnswer: "Marte" } },
+      reveals: [],
+    },
+    answer: null,
+    answer_status: null,
+    points: null,
+    result_details: null,
+    presented_at: null,
+    submitted_at: null,
+    time_used_ms: null,
+    item_points: 50,
+  },
+];
+
+describe("SupabaseRoomQueries S07 history and review", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+  });
+
+  it("groups historical rows and keeps empty publications", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) =>
+        functionName === "get_flash_history" ? { data: historyRows, error: null } : { data: [], error: null },
+      ),
+    });
+    const model = await new SupabaseRoomQueries().listHistory("s06-main");
+    expect(model?.entries).toHaveLength(2);
+    expect(model?.rankings[historyRows[0].publication_id]).toEqual([
+      expect.objectContaining({ memberId: viewer.id, startedAt: historyRows[0].started_at }),
+    ]);
+    expect(model?.rankings[historyRows[1].publication_id]).toEqual([]);
+    expect(model?.source).toBe("supabase");
+  });
+
+  it("reconstructs a persisted completed review without local session data", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_flash_history") return { data: historyRows, error: null };
+        if (functionName === "get_flash_member_review") return { data: reviewRows, error: null };
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        return { data: challengeRows, error: null };
+      }),
+    });
+    const model = await new SupabaseRoomQueries().getMemberDetail(
+      "s06-main",
+      viewer.id,
+      historyRows[0].publication_id,
+    );
+    expect(model).toMatchObject({
+      source: "supabase",
+      challengeSummary: { id: historyRows[0].publication_id },
+      challengeRank: 1,
+      result: { completed: true, flashPoints: 80 },
+    });
+    expect(model?.challenge?.mode).toBe("flash");
+    expect(model?.challenge?.questions).toHaveLength(2);
+    expect(model?.result?.attempt?.answers[1]?.status).toBe("unanswered");
+    expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
+  });
+
+  it("propagates malformed history rows and RPC errors", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: [{ ...historyRows[0], player_count: "1" }], error: null })),
+    });
+    await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
+      "Supabase history read returned an invalid row",
+    );
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
+    });
+    await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
+      "Supabase history read failed (get_flash_history): permission denied",
+    );
+  });
+});

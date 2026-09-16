@@ -53,20 +53,23 @@ export const getRoomRankingPageModel = cache(async (roomKey: string) =>
     : supabaseRoomQueries.getRanking(roomKey),
 );
 
-export const getRoomMemberDetailPageModel = cache(async (roomKey: string, memberKey: string) =>
-  isMockRoomRoute(roomKey)
-    ? mockRoomQueries.getMemberDetail(roomKey, memberKey, await getQueryContext())
-    : null,
+export const getRoomMemberDetailPageModel = cache(
+  async (roomKey: string, memberKey: string, publicationKey?: string) =>
+    isMockRoomRoute(roomKey)
+      ? mockRoomQueries.getMemberDetail(roomKey, memberKey, await getQueryContext())
+      : supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),
 );
 
 export const getRoomHistoryPageModel = cache(async (roomKey: string) =>
-  isMockRoomRoute(roomKey) ? mockRoomQueries.listHistory(roomKey, await getQueryContext()) : null,
+  isMockRoomRoute(roomKey)
+    ? mockRoomQueries.listHistory(roomKey, await getQueryContext())
+    : supabaseRoomQueries.listHistory(roomKey),
 );
 
 export const getRoomHistoryDetailPageModel = cache(async (roomKey: string, challengeKey: string) =>
   isMockRoomRoute(roomKey)
     ? mockRoomQueries.getHistoryDetail(roomKey, challengeKey, await getQueryContext())
-    : null,
+    : supabaseRoomQueries.getHistoryDetail(roomKey, challengeKey),
 );
 
 export const getPlayableChallengePageModel = cache(

@@ -47,6 +47,21 @@ export interface RoomRankingQueries {
   getRanking(roomKey: string): Promise<RoomRankingModel | null>;
 }
 
+/** Narrow read surface for the authenticated S07 Flash history slice. */
+export interface RoomHistoryQueries {
+  listHistory(roomKey: string): Promise<RoomHistoryListModel | null>;
+  getHistoryDetail(roomKey: string, publicationKey: string): Promise<RoomHistoryDetailModel | null>;
+}
+
+/** Narrow read surface for the authenticated S07 member review slice. */
+export interface RoomMemberDetailQueries {
+  getMemberDetail(
+    roomKey: string,
+    memberKey: string,
+    publicationKey?: string,
+  ): Promise<RoomMemberDetailModel | null>;
+}
+
 export interface ChallengeQueries {
   getPlayable(
     challengeKey: string,

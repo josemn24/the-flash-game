@@ -5,9 +5,10 @@
 ## Resumen
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S06 tienen integración real con
+migradas usan fixtures y un store mock normalizado. Las slices S01–S07 tienen integración real con
 Supabase local: Auth, perfil, lecturas autorizadas de salas, un Flash competitivo persistido con
-evaluación server-side, recuperación/abandono y sus dos rankings.
+evaluación server-side, recuperación/abandono, sus dos rankings, historial y revisión después de
+volver.
 
 No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
 estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
@@ -23,7 +24,11 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
 - Recuperación tras recarga o fallo parcial, bloqueo de segunda sesión y abandono explícito (S04).
 - Ranking de temporada y de la publicación abierta actual desde los RPCs reales, con posición
   persistida en las tarjetas de sala y lectura autorizada para spectators (S06).
-- Recorridos mock para historial, miembros, ajustes, práctica y previews.
+- Historial Flash de publicaciones cerradas, ranking histórico y detalle de resultados reconstruidos
+  desde versiones persistidas (S07).
+- Revisión propia y revisión ajena completa para `owner`, `admin` y `member`; `spectator` puede leer
+  historial/rankings, pero no respuestas ni soluciones ajenas (S07).
+- Recorridos mock para ajustes, práctica, previews y modos distintos de Flash.
 
 ## Rutas principales
 
@@ -32,7 +37,9 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
 | `/`                         | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto. |
 | `/salas/[roomId]`           | Detalle de sala real para salas persistidas; no cae silenciosamente al mock. |
 | `/salas/[roomId]/ranking`   | Ranking de temporada real para salas persistidas; 404 si no hay temporada. |
-| `/salas/[roomId]/historial` | Historial mock; la lectura y revisión real corresponden a S07.      |
+| `/salas/[roomId]/historial` | Historial Flash real para salas persistidas; otros modos siguen mock. |
+| `/salas/[roomId]/historial/[challengeId]` | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada. |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators. |
 | `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes; gestión real está pendiente.      |
 | `/desafios/[challengeId]`   | Desafío Flash competitivo real en contexto autorizado; preview mock explícito en los demás casos. |
 | `/formatos`                 | Biblioteca estática de formatos y práctica local.                    |
@@ -40,12 +47,15 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
 
 ## Límites actuales
 
-- La persistencia real verificada cubre el vertical Flash de S01–S06 y el stack local; no hay
+- La persistencia real verificada cubre el vertical Flash de S01–S07 y el stack local; no hay
   proyecto remoto vinculado.
-- El ranking histórico de publicaciones cerradas, la revisión ampliada, configuración, miembros,
-  creación de salas, invitaciones, editor, publicación, calendario y Storage siguen pendientes.
+- La administración, configuración, miembros, creación de salas, invitaciones, editor, publicación,
+  calendario y Storage siguen pendientes.
 - Alphabet, Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
-- El takeover entre dispositivos y el abandono automático por inactividad siguen deshabilitados.
+- `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
+  siguen fuera de S07 y deshabilitados.
+- El historial solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
+  `test`/`invalidated` y publicaciones `cancelled` quedan fuera de las proyecciones de usuario.
 - Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
   confundirse con el recorrido competitivo migrado.
 
@@ -53,12 +63,13 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
 
 Última verificación: 2026-09-15.
 
-- `npm test`: 78 archivos de test y 523 tests superados.
+- `npm test`: 78 archivos de test y 526 tests superados.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
-- `npm run supabase:schema:test`: correcto; 266 comprobaciones SQL, inventario, provisioning, S02,
-  S03, S04, posición de tarjetas y carreras con conexiones PostgreSQL independientes.
-- `npm run test:integration:supabase -- --scenario s06` y `npm run test:e2e -- e2e/s06-ranking.spec.ts`:
-  correctos con Auth, PostgREST y dos sesiones de navegador contra Supabase local.
+- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S07 y carreras con
+  conexiones PostgreSQL independientes.
+- `npm run test:integration:supabase -- --scenario s07` y
+  `npm run test:e2e -- e2e/s07-history-review.spec.ts`: correctos con Auth, PostgREST y sesiones
+  de navegador contra Supabase local. S06 continúa cubierto por su escenario y E2E propios.
 - `npm run format:check`: avisos de formato en 56 archivos; queda fuera del alcance de esta
   actualización documental.

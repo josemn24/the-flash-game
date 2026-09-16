@@ -38,6 +38,7 @@ export type RoomHistoryListModel = {
   readonly roomTitle: string;
   readonly entries: RoomHistoryEntry[];
   readonly rankings: Record<string, RoomDailyLeaderboardEntry[]>;
+  readonly source?: "mock" | "supabase";
 };
 
 export type RoomHistoryDetailModel = {
@@ -46,6 +47,8 @@ export type RoomHistoryDetailModel = {
   readonly currentUserId: string;
   readonly entry: RoomHistoryEntry;
   readonly ranking: RoomDailyLeaderboardEntry[];
+  readonly canReviewMembers?: boolean;
+  readonly source?: "mock" | "supabase";
 };
 
 export type FlashPopSocialPlayerModel = {

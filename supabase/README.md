@@ -91,6 +91,23 @@ npm run test:integration:supabase -- --scenario s03
 npm run test:e2e -- e2e/s03-flash.spec.ts
 ```
 
+S07 añade las lecturas Flash `public.get_flash_history(text, uuid)` y
+`public.get_flash_member_review(text, uuid, uuid)` desde `schemas/85_flash_history_reads.sql`.
+El historial solo incluye publicaciones `closed` sin intentos `in_progress` y excluye pruebas,
+invalidaciones y cancelaciones. La revisión propia terminal también está disponible para un
+spectator; la revisión ajena completa, incluidas soluciones, se limita a `owner`, `admin` y
+`member`. Los abandonos conservan respuestas parciales y proyectan los items restantes como
+`unanswered`. No se crean tablas materializadas ni se conecta un proyecto remoto.
+
+Para ejecutar el recorrido histórico local:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario s07
+npm run test:integration:supabase -- --scenario s07
+npm run test:e2e -- e2e/s07-history-review.spec.ts
+```
+
 El token de control del intento solo vive en una cookie HttpOnly con duración limitada. No aparece
 en los DTO, HTML/RSC, `localStorage`, auditoría ni `private.command_requests`; durante la partida
 la solución queda en PostgreSQL y la revisión terminal se reconstruye mediante la proyección

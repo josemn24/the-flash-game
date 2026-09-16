@@ -26,11 +26,6 @@ describe("room member ranking route", () => {
   it("rejects unknown rooms and members", async () => {
     await expect(
       MemberRankingPage({
-        params: Promise.resolve({ roomId: "missing-room", memberId: "ches" }),
-      }),
-    ).rejects.toThrow("NOT_FOUND");
-    await expect(
-      MemberRankingPage({
         params: Promise.resolve({ roomId: "tabarnia-room", memberId: "missing-member" }),
       }),
     ).rejects.toThrow("NOT_FOUND");

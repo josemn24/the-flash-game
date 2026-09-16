@@ -5,7 +5,7 @@
 Esta sección describe la aplicación y los contratos técnicos vigentes. Es la primera referencia para
 entender qué existe en el repositorio hoy.
 
-En la rama actual, S01–S06 están implementadas y verificadas contra el stack local de Supabase. El
+En la rama actual, S01–S07 están implementadas y verificadas contra el stack local de Supabase. El
 resto de capacidades se mantiene explícitamente en mock o pendiente de su propia vertical slice.
 
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.

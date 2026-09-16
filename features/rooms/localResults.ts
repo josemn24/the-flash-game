@@ -94,14 +94,16 @@ export function applyRoomChallengeResult(
   };
 }
 
-function withRanks(model: Omit<RoomMemberDetailModel, "roomRank" | "dailyRank">) {
+function withRanks(model: Omit<RoomMemberDetailModel, "roomRank" | "challengeRank">) {
   const roomEntry = model.roomLeaderboard.find(({ memberId }) => memberId === model.member.id);
-  const dailyEntry = model.dailyLeaderboard.find(({ memberId }) => memberId === model.member.id);
+  const challengeEntry = model.challengeLeaderboard.find(
+    ({ memberId }) => memberId === model.member.id,
+  );
 
   return {
     ...model,
     roomRank: roomEntry?.rank ?? 0,
-    dailyRank: dailyEntry?.rank ?? null,
+    challengeRank: challengeEntry?.rank ?? null,
   } satisfies RoomMemberDetailModel;
 }
 
@@ -109,7 +111,7 @@ export function applyRoomMemberChallengeResult(
   model: RoomMemberDetailModel,
   result: ChallengeCompletion,
 ): RoomMemberDetailModel {
-  if (result.roomId !== model.roomId || model.dailyChallenge?.id !== result.challengeId) {
+  if (result.roomId !== model.roomId || model.challengeSummary?.id !== result.challengeId) {
     return model;
   }
 
@@ -122,14 +124,14 @@ export function applyRoomMemberChallengeResult(
       entry.memberId === model.member.id ? { ...entry, flashPoints: totalFlashPoints } : entry,
     ),
   );
-  const currentDailyEntry = model.dailyLeaderboard.find(
+  const currentChallengeEntry = model.challengeLeaderboard.find(
     (entry) => entry.memberId === model.member.id,
   );
-  const dailyLeaderboard = rankChallengeEntriesWithStableOrder([
-    ...model.dailyLeaderboard.filter((entry) => entry.memberId !== model.member.id),
-    currentDailyEntry
+  const challengeLeaderboard = rankChallengeEntriesWithStableOrder([
+    ...model.challengeLeaderboard.filter((entry) => entry.memberId !== model.member.id),
+    currentChallengeEntry
       ? {
-          ...currentDailyEntry,
+          ...currentChallengeEntry,
           flashPoints: result.flashPoints,
           completed: result.completed,
           durationMs: result.durationMs,
@@ -165,6 +167,6 @@ export function applyRoomMemberChallengeResult(
       },
     },
     roomLeaderboard,
-    dailyLeaderboard,
+    challengeLeaderboard,
   });
 }

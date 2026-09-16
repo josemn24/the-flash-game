@@ -15,10 +15,12 @@ function formatHistoryDate(value: string) {
 
 export function FlashPopRoomHistory({
   roomId,
+  roomTitle,
   entries,
   rankings,
 }: {
   roomId: string;
+  roomTitle: string;
   entries: RoomHistoryEntry[];
   rankings: Record<string, RoomDailyLeaderboardEntry[]>;
 }) {
@@ -35,7 +37,7 @@ export function FlashPopRoomHistory({
       </header>
 
       <div className={styles.pageIntro}>
-        <p className={styles.eyebrow}>TABARNIA</p>
+        <p className={styles.eyebrow}>{roomTitle.toUpperCase()}</p>
         <h1>Historial</h1>
       </div>
 

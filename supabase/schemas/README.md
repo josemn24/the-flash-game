@@ -1,9 +1,11 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-15. **22 tablas**, una vista
-interna, funciones públicas de lectura/ranking y comandos privados de servidor. S01–S06 conectan
+interna, funciones públicas de lectura/ranking y comandos privados de servidor. S01–S07 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
+S07 consulta el historial Flash cerrado y la revisión autorizada desde versiones y resultados
+persistidos, sin materializar tablas adicionales.
 Las capacidades restantes siguen usando mocks o están pendientes. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
@@ -81,6 +83,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [60_integrity.sql](60_integrity.sql)                     | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                     |
 | [70_rls.sql](70_rls.sql)                                 | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                               |
 | [80_rankings.sql](80_rankings.sql)                       | Vista privada invoker y funciones públicas autorizadas por membresía.                                                               |
+| [85_flash_history_reads.sql](85_flash_history_reads.sql) | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                        |
 | [90_commands.sql](90_commands.sql)                       | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                           |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
@@ -93,7 +96,7 @@ los índices de membresía/ranking. No se indexa JSONB sin una consulta que lo j
 
 [Los puertos de aplicación](../../application/ports/attempt-commands.ts) distinguen inputs del
 navegador y comandos internos. [Los contratos](../../types/contracts/attempts.ts) no se activan en
-la UI. El adaptador pendiente deberá:
+la UI. El adaptador de comandos deberá:
 
 1. Verificar sesión Auth, comenzar una transacción y establecer claims con `SET LOCAL` usando
    parámetros, nunca copiando claims sin verificar. Usar `service_role` y garantizar commit/rollback
@@ -185,7 +188,12 @@ cubren seis SELECT y UPDATE del nombre con `USING` y `WITH CHECK`. Todas las tab
 son ejecutables por `authenticated` y comprueban membresía, devolviendo datos sociales
 mínimos. `anon` no puede ejecutarlos. `get_challenge_ranking` ordena por puntos, duración efectiva
 y `started_at` en servidor, aunque mantiene `started_at` fuera de su retorno público; el adaptador
-S06 consume el orden y los campos expuestos sin inventar esa fecha.
+S06 consume el orden y los campos expuestos sin inventar esa fecha. S07 añade
+`get_flash_history(text, uuid)` y `get_flash_member_review(text, uuid, uuid)`: ambos son
+`SECURITY DEFINER`, fijan `search_path = ''`, no exponen tablas `private` directamente y solo tienen
+`EXECUTE` para `authenticated`. El historial no contiene payloads de pregunta ni soluciones; la
+revisión solo entrega soluciones al propio jugador terminal o a un `owner`, `admin` o `member` que
+revise un resultado ajeno elegible.
 
 ## Denegación futura e inventario
 
@@ -220,6 +228,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `initial_schema_rls.test.sql`   | Aislamiento de salas, columnas privadas, Auth anónimo, ownership, catálogo congelado, pruebas fantasma, cero puntos, empates e histórico.                         |
 | `commands.test.sql`             | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, bloqueo de segunda sesión, Alfabeto, timeout, evaluación lenta e invitación atómica.          |
 | `command_boundaries.test.sql`   | Identidad/actor, acceso privado al evaluador, rollback de inicio/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre.            |
+| `s07_flash_history.test.sql`    | Historial Flash cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, versión archivada, abandonos parciales y revisión propia/ajena.           |
 | `test-supabase-concurrency.mjs` | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación. |
 | Contratos y evaluador TS        | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                          |
 
@@ -227,11 +236,11 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: **266 comprobaciones SQL**, carreras entre conexiones independientes y
-**523 pruebas TypeScript** superadas. También pasan comprobación de tipos, arquitectura de tipos,
-ESLint y los enlaces de documentación. La suite SQL no sustituye las pruebas Auth/HTTP/E2E, que se
-ejecutan en los escenarios locales de S01–S06; S06 añade integración PostgREST y E2E de dos
-rankings tras refrescar.
+Validación local actual: las comprobaciones SQL existentes más **17 casos pgTAP de S07**, carreras
+entre conexiones independientes y **526 pruebas TypeScript** superadas. También pasan comprobación
+de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
+las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S07; S06 añade integración
+PostgREST y E2E de dos rankings, y S07 añade historial y revisión tras refrescar.
 
 La credencial `service_role` sigue siendo confiable: tiene lectura interna amplia, puede invocar el
 evaluador privilegiado y puede establecer claims en una conexión SQL. Evitar endpoints genéricos que

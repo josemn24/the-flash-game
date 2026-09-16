@@ -26,6 +26,11 @@ export default async function RoomHistoryPage({ params }: Props) {
     notFound();
   }
   return (
-    <FlashPopRoomHistory roomId={model.roomId} entries={model.entries} rankings={model.rankings} />
+    <FlashPopRoomHistory
+      roomId={model.roomId}
+      roomTitle={model.roomTitle}
+      entries={model.entries}
+      rankings={model.rankings}
+    />
   );
 }

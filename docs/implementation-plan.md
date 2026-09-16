@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S06 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S07 están implementadas y verificadas sobre el stack local;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-15. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
@@ -24,15 +24,15 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 
 | Área      | Existe y conviene conservar                                                                                                                                                                                                         | Falta para un recorrido real                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                | Estados de red e historial, administración y otros modos aún no migrados.                                                                                  |
-| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable y rankings actuales reales en S01–S06.                                                        | Historial, miembros, ajustes y el resto de proyecciones autorizadas.                                                                                       |
+| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                | Estados de red, administración y otros modos aún no migrados.                                                                                            |
+| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07.                  | Ajustes y el resto de proyecciones autorizadas.                                                                                                          |
 | Identidad | `Player` separado de Auth, provisioning, login/logout y nombre persistido en S01.                                                                                                                                                 | Avatar, Storage y políticas de administración.                                                                                                             |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash en S03–S04.                                                                                       | Sustituir autoridad cliente en Alphabet y los demás modos; Pirámide también usa `localStorage` en práctica.                                                |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                         | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                                 |
 | SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                           | Aplicación controlada a un proyecto remoto y operación de contenido/room management.                                                                      |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado. | Alta de jugador, creación de sala, edición, publicación, emisión/revocación de invitaciones y administración.                                             |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                            | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                             |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S06.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S07.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
 
 Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 [composición mock](../infrastructure/mock/composition.ts),
@@ -45,7 +45,7 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 ### Diferencias que el plan debe respetar
 
 - Algunas páginas de documentación general todavía describen una aplicación sin base de datos; son
-  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S06.
+  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S07.
   No hay que rediseñar el esquema ni sustituirlo por CRUD.
 - `supabase/tests/support/bootstrap.sql` simula las funciones mínimas de Auth; sus fixtures no son
   un seed ni prueban un login GoTrue. La integración con Supabase completo se valida en S01.
@@ -65,10 +65,9 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
   y se aplica la consecuencia del modo. El abandono por inactividad sigue pendiente porque no hay
   heartbeat/lease: no se inventa una duración ni se trata `pagehide` como confirmación fiable;
   véase D04 y S21.
-- La verificación actual registra 523 tests en 78 archivos, 63 documentos comprobados y avisos de
-  formato en 56 archivos. El stack local de Supabase pasa esquema/RLS, provisioning, S02, S03, S04,
-  S06
-  y concurrencia. No hay proyecto remoto vinculado.
+- La verificación actual registra 526 tests en 78 archivos, 63 documentos comprobados y avisos de
+  formato en 56 archivos. El stack local de Supabase pasa esquema/RLS, provisioning, S02–S04, S06,
+  S07 y concurrencia. No hay proyecto remoto vinculado.
 
 ## 2. Forma de trabajar y límites
 
@@ -142,7 +141,7 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | D04 | Confirmación de abandono por inactividad, gracia, recuperación y cierre definitivo de publicaciones. **Recuperación y abandono explícito resueltos en S04; inactividad pendiente.** | S21; antes de declarar cumplido el objetivo completo de abandono. | Política de actividad y `results_locked_at`; el piloto anterior solo promete reanudación y abandono explícito. Si se aplaza para usuarios reales, registrar expresamente esa limitación.                                                 |
 | D05 | Acciones permitidas a owner/admin/editor y provisión del superadmin.                                                | S09–S12, S17–S20, S23.                                            | Matriz por operación, actor y objetivo. Propuesta inicial editorial: superadmin ya modelado; no inventar un rol editor persistido sin decisión.                                                                                          |
 | D06 | Invitaciones: roles concedibles por cada actor, TTL, usos y revocación.                                             | S09.                                                              | Valores/reglas explícitos y UX de enlace; no añadir correo ni notificaciones para copiar un enlace.                                                                                                                                      |
-| D07 | Revisión de respuestas, contenido no alcanzado y resultados ajenos/invalidados. **Revisión propia terminal mínima resuelta en S03; ampliación pendiente.** | Revisión mínima S03; ampliar en S07/S20/S23.                      | Revisión propia terminal autorizada; durante `in_progress` sin soluciones; invalidados cerrados hasta política expresa. Precisar el contenido revisable tras abandono.                                                                   |
+| D07 | Revisión de respuestas, contenido no alcanzado y resultados ajenos/invalidados. **Revisión propia terminal mínima resuelta en S03; ampliación Flash resuelta en S07.** | Revisión mínima S03; revisión Flash S07; invalidación administrativa S20/S23. | Revisión propia terminal autorizada; revisión ajena completa solo para `owner`/`admin`/`member`; durante `in_progress` sin soluciones; invalidados fuera de la revisión de usuario. Precisar el contenido revisable tras abandono. |
 | D08 | Storage: acceso a avatares/medios, límites, moderación y limpieza.                                                  | S13 y formatos con revelaciones de assets.                        | Ruta estable, permisos de lectura/escritura y compensación de fallos; privacidad coherente con las salas.                                                                                                                                |
 | D09 | Retención de respuestas, auditoría e idempotencia; anonimización y purga.                                           | S24 y apertura general S22.                                       | Política y operación recuperable. Retener claves suficiente tiempo para impedir duplicados tras reintentos; no fijar caducidad por comodidad técnica.                                                                                    |
 | D10 | Conflictos entre fuentes normativas antiguas y reglas actuales.                                                     | Primera slice afectada.                                           | Reconciliar referencias: ADR 0003 aún menciona intento «expirado»/varios intentos, pero el modelo vigente exige uno y `expired` sin intento. Registrar aclaración en las fuentes, no cambiar el dominio silenciosamente desde este plan. |
@@ -154,7 +153,7 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | S01 → S02        | Identidad real, perfil y sala persistida autorizada. **Implementado en local.**              | D01, D02.                                                            |
 | S03 → S04        | Flash completo guardado; recuperación en la misma sesión y bloqueo de una segunda sesión. **Implementado en local.** | S01/S02, D03/D07.                                                    |
 | S05 y E01        | Alfabeto y Mini-Wordle de prueba: reloj global y feedback intermedio sin solución cliente. | S04, D03. Reducen pronto dos riesgos distintos.                      |
-| S06 → S07        | Dos rankings y consulta histórica real. **S06 implementado en local; S07 pendiente.**         | S03; S04 para reconstrucción de estado.                              |
+| S06 → S07        | Dos rankings y consulta histórica real. **S06 y S07 implementados en local.**                 | S03; S04 para reconstrucción de estado.                              |
 | S08 → S09        | Crear sala y reunir al grupo mediante enlace.                                              | S02, D05/D06.                                                        |
 | S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición sin SQL manual.             | S08, S03, D05.                                                       |
 | S13              | Avatar persistido.                                                                         | S01, D08.                                                            |
@@ -170,8 +169,8 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 aprovisionada juegan un Flash; queda una respuesta por item y una acreditación por intento, incluso
 con cero. Es validación interna, todavía no la V1 completa.
 
-**H3 — piloto acotado:** pendiente de S07 y las capacidades elegidas, con decisiones D03/D04
-registradas. S04 y S06 ya están implementadas localmente.
+**H3 — piloto acotado:** pendiente de las capacidades elegidas, con decisiones D03/D04 registradas.
+S04, S06 y S07 ya están implementadas localmente.
 Antes de invitar usuarios externos, ejecutar también los controles operativos de S22 para ese alcance.
 S05/E01 son experimentos técnicos tempranos; no obligan a lanzar esos modos al piloto.
 
@@ -342,23 +341,41 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 
 ### S07 — Consultar historial, resultados y revisión después de volver
 
-- **Objetivo / CU:** reconstruir la competición desde hechos persistidos; CU-20 y CU-24.
-- **UI:** historial, detalle histórico, detalle de miembro y revisión de resultado; manejar ausencia
-  de resultado propio y abandono. `FlashPopRoomHistory*`, `FlashPopRoomMemberDetail` y pantallas shared.
+> Estado: implementada y verificada en local (2026-09-15).
+
+- **Objetivo / CU:** reconstruir la competición Flash desde hechos persistidos; CU-20 y CU-24.
+- **UI:** historial, detalle histórico, detalle de miembro y revisión de resultado; maneja ausencia
+  de resultado propio y abandono. Las rutas reales usan UUIDs:
+  `/salas/[roomId]/historial/[challengeId]` y
+  `/salas/[roomId]/historial/[challengeId]/[memberId]`.
 - **Mocks retirados:** `MockRoomQueries.listHistory/getHistoryDetail/getMemberDetail`, historial de
-  fixtures y mezcla local de resultados para esos recorridos.
-- **Backend/dominio:** separar revisión propia de proyección social ajena. Autorizar soluciones
-  solo según D07; no enviarlas en metadata, prefetch ni consulta de miembro ajeno. Contar jugadores
-  competitivos distintos que iniciaron, no solo finalizadores.
-- **Persistencia:** versiones enlazadas, intentos, respuestas y rankings existentes. Añadir consulta
-  privada de revisión si la mínima de S03 no cubre el caso. Mostrar como definitivo solo lo
-  consolidado: inicialmente publicaciones cerradas sin intentos en progreso; casos pendientes no
-  se declaran cerrados definitivamente. S21 resuelve el cierre por inactividad.
-- **Tests:** versión archivada posterior, publicación sin participantes, expiración sin intento,
-  abandono, exmiembro sin acceso, revisión ajena denegada, publicación con intento válido tras cierre.
-- **Dependencias:** S04, S06 y D07; D04 para automatizar consolidación, no para leer hechos cerrados.
-- **Terminada:** una sesión nueva reproduce resultados y revisión desde DB sin memoria local ni
-  recalcular la puntuación histórica con el algoritmo actual.
+  fixtures y mezcla local de resultados para esos recorridos. Alphabet y los demás modos continúan
+  mock.
+- **Backend/dominio:** `RoomHistoryQueries` y `RoomMemberDetailQueries` delegan en
+  `get_flash_history` y `get_flash_member_review`. El historial solo consolida publicaciones Flash
+  `closed` sin intentos `in_progress`; conserva publicaciones sin participantes y excluye
+  `test`, `invalidated` y `cancelled`. La revisión usa puntos y respuestas persistidos, sin
+  recalcular resultados con el algoritmo actual.
+- **Autorización:** el lector debe ser miembro activo, incluido `spectator`, para historial y
+  rankings. La revisión propia terminal también está disponible para el jugador si ahora es
+  `spectator`; revisar a otra persona, incluidas sus soluciones, exige `owner`, `admin` o `member`.
+  Los intentos solo pueden ser `completed` o `abandoned`; los abandonos proyectan items sin respuesta
+  como `unanswered`.
+- **Persistencia:** reutiliza versiones enlazadas, intentos, respuestas, `effective_results` y los
+  rankings existentes. No añade tablas de historial, rankings ni saldos materializados. Las nuevas
+  funciones son `SECURITY DEFINER`, con `search_path = ''`, propiedad `postgres` y `EXECUTE` solo
+  para `authenticated`.
+- **Tests:** pgTAP para publicaciones elegibles/vacías/en curso/canceladas, conteos, `1,1,3`, cero
+  puntos, antiguos miembros, versión archivada, revisión propia/ajena, abandonos parciales,
+  aislamiento y ACL; Vitest para validación/agrupación; integración Auth/PostgREST y E2E tras
+  refrescar con Alice, Bob spectator, Carol y Dave.
+- **Dependencias:** S04 y S06; D04 sigue siendo necesario para abandono automático y consolidación
+  futura, no para leer hechos ya cerrados.
+- **Fuera de alcance:** no se añade `results_locked_at`, abandono automático ni takeover; tampoco
+  revisión administrativa de `invalidated`. No se conecta ningún proyecto remoto de Supabase.
+- **Terminada:** `npm run supabase:db:reset`, fixture/integración/E2E S07, `supabase:schema:test`,
+  `npm test`, typecheck, lint, build y `docs:check` pasan; una sesión nueva reproduce historial,
+  ranking y revisión desde DB sin memoria local.
 
 ### S08 — Crear una sala privada
 
@@ -853,7 +870,7 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 ## 10. Cierre de una slice y uso como backlog
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
-incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S06
+incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S07
 están **implementadas**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
@@ -880,7 +897,8 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S06 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
-competitivo persistido y recuperación local. El siguiente objetivo inmediato es completar H3 con
-S07 o, si el riesgo de modos pesa más, ejecutar primero el experimento técnico S05/E01. La
+S01–S07 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
+competitivo persistido, recuperación local, rankings, historial y revisión. El siguiente objetivo
+inmediato es completar H3 con S08 o, si el riesgo de modos pesa más, ejecutar primero el experimento
+técnico S05/E01. La
 gestión editorial completa y los 31 formatos no bloquean el piloto acotado.

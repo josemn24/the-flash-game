@@ -29,10 +29,10 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S06 conectan Auth, provisioning de jugador,
+recorridos competitivos persistidos en Supabase. S01–S07 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de dos preguntas, su evaluación server-side, recuperación y
-los rankings de temporada/publicación actual. El historial, administración, otros modos y Storage
-siguen pendientes.
+los rankings de temporada/publicación actual, el historial Flash y la revisión después de volver.
+La administración, otros modos y Storage siguen pendientes.
 
 ## Requisitos
 
@@ -55,7 +55,7 @@ npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
-necesita configuración adicional. Para probar S01–S06 con persistencia real, copia `.env.example` a
+necesita configuración adicional. Para probar S01–S07 con persistencia real, copia `.env.example` a
 `.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
 
 ## Comandos disponibles
@@ -146,9 +146,11 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 ## Alcance
 
 Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
-competitivo real acotado. S01–S06 cubren autenticación, perfil, lecturas autorizadas de salas, un
-Flash competitivo persistido con recuperación y sus rankings actuales. Todavía no incluye creación
-de salas, panel de administración, historial/revisión histórica, otros modos ni Storage.
+competitivo real acotado. S01–S07 cubren autenticación, perfil, lecturas autorizadas de salas, un
+Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión
+histórica autorizada. Todavía no incluye creación de salas, panel de administración, otros modos ni
+Storage. La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` puede leer
+historial y rankings, pero no soluciones ajenas.
 
 Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
 contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos

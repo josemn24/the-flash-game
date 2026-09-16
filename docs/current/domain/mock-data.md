@@ -82,15 +82,15 @@ del contenido público. Incluye escenarios negativos aislados de relaciones y es
 ## Fase 4 cerrada y límite actual
 
 Las rutas de práctica y preview acceden al store mediante contratos asíncronos, el adaptador mock y
-la fachada `server/data-access.ts`. Las rutas reales de S01–S06 usan la misma fachada para seleccionar
+la fachada `server/data-access.ts`. Las rutas reales de S01–S07 usan la misma fachada para seleccionar
 Auth, RPCs y PostgreSQL mediante `infrastructure/supabase/`. Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 
 S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;
 S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
-abandono; S06 consulta los rankings reales de temporada y de la publicación abierta. El historial,
-la administración, el calendario, Storage y los demás modos siguen usando mock o están pendientes de
-sus propias slices.
+abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
+historial Flash, ranking histórico y revisión autorizada después de volver. La administración, el
+calendario, Storage y los demás modos siguen usando mock o están pendientes de sus propias slices.
 
 Como compatibilidad de la práctica y de previews, `PlayableChallengePageModel` todavía puede llevar
 las soluciones al cliente y puntuar localmente. El recorrido competitivo migrado separa contenido

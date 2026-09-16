@@ -107,7 +107,16 @@ export function RoomLeaderboard({
                     size="sm"
                   />
                   <span className={styles.name}>
-                    <strong>{entry.name}</strong>
+                    {memberHrefBase ? (
+                      <Link
+                        href={`${memberHrefBase}/${entry.memberId}`}
+                        aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
+                      >
+                        <strong>{entry.name}</strong>
+                      </Link>
+                    ) : (
+                      <strong>{entry.name}</strong>
+                    )}
                   </span>
                   <span
                     className={styles.points}

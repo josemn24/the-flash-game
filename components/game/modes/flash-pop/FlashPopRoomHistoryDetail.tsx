@@ -18,12 +18,14 @@ export function FlashPopRoomHistoryDetail({
   entry,
   ranking,
   currentUserId,
+  canReviewMembers = false,
 }: {
   roomId: string;
   roomTitle: string;
   entry: RoomHistoryEntry;
   ranking: RoomDailyLeaderboardEntry[];
   currentUserId: string;
+  canReviewMembers?: boolean;
 }) {
   return (
     <Canvas contentClassName={styles.content}>
@@ -55,6 +57,9 @@ export function FlashPopRoomHistoryDetail({
             daily
             bare
             headingLevel="h2"
+            memberHrefBase={
+              canReviewMembers ? `/salas/${roomId}/historial/${entry.challengeId}` : undefined
+            }
           />
         ) : (
           <Card as="section" surface="soft" className={styles.emptyState}>

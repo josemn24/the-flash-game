@@ -382,13 +382,26 @@ export class MockRoomQueries implements RoomQueries {
       roomId: roomKey,
       roomTitle: access.room.title,
       member,
-      dailyChallenge: detail.dailyChallenge,
+      challengeSummary: detail.dailyChallenge
+        ? {
+            id: detail.dailyChallenge.id,
+            title: detail.dailyChallenge.title,
+            formatLabel: detail.dailyChallenge.formatLabel,
+            subtitle: detail.dailyChallenge.subtitle,
+            imageSrc: detail.dailyChallenge.imageSrc,
+            questionCount: detail.dailyChallenge.questionCount,
+            playedAt: detail.dailyChallenge.endsAt,
+          }
+        : null,
       challenge,
       result,
       roomRank: detail.roomLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? 0,
-      dailyRank: detail.dailyLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? null,
+      challengeRank:
+        detail.dailyLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? null,
       roomLeaderboard: detail.roomLeaderboard,
-      dailyLeaderboard: detail.dailyLeaderboard,
+      challengeLeaderboard: detail.dailyLeaderboard,
+      returnHref: `/salas/${roomKey}/ranking`,
+      canReviewMembers: access.membership.role !== "spectator",
     };
   }
 
@@ -441,6 +454,7 @@ export class MockRoomQueries implements RoomQueries {
       currentUserId,
       entry,
       ranking: history.rankings[challengeKey] ?? [],
+      canReviewMembers: access.membership.role !== "spectator",
     };
   }
 }

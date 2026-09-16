@@ -83,9 +83,9 @@ function AnswerHistory({
 
 export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailModel }) {
   const { getCompletion } = useRoomSession();
-  const completion = model.dailyChallenge
-    ? getCompletion(model.roomId, model.dailyChallenge.id)
-    : undefined;
+  const completion = model.source === "supabase" || !model.challengeSummary
+    ? undefined
+    : getCompletion(model.roomId, model.challengeSummary.id);
   const visibleModel = completion?.attempt
     ? applyRoomMemberChallengeResult(model, {
         roomId: model.roomId,
@@ -97,18 +97,20 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
         durationMs: completion.attempt.durationMs,
         answers: completion.attempt.answers,
       })
-    : model;
-  const result = visibleModel.result;
+    : undefined;
+  const resolvedModel = visibleModel ?? model;
+  const result = resolvedModel.result;
   const attempt = result?.attempt;
+  const hasAttempt = Boolean(attempt);
   const isComplete = Boolean(result?.completed && attempt);
 
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
         <Link
-          href={`/salas/${model.roomId}/ranking`}
+          href={model.returnHref}
           className={styles.backLink}
-          aria-label="Volver al ranking de hoy"
+          aria-label="Volver al origen del resultado"
         >
           <ArrowIcon className={styles.backIcon} />
         </Link>
@@ -117,20 +119,20 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
       <div>
         <section className={styles.profile} aria-labelledby="member-detail-title">
           <Avatar
-            name={visibleModel.member.name}
-            src={visibleModel.member.avatarSrc}
-            initials={visibleModel.member.initials}
+            name={resolvedModel.member.name}
+            src={resolvedModel.member.avatarSrc}
+            initials={resolvedModel.member.initials}
             tone="social"
             size="lg"
           />
           <div>
             <p className={styles.eyebrow}>{model.roomTitle}</p>
-            <h1 id="member-detail-title">{visibleModel.member.name}</h1>
+            <h1 id="member-detail-title">{resolvedModel.member.name}</h1>
             <p className={styles.profileMeta}>
-              <span role="img" aria-label={`${visibleModel.member.totalFlashPoints} Flash Points`}>
-                {visibleModel.member.totalFlashPoints} ⚡
+              <span role="img" aria-label={`${resolvedModel.member.totalFlashPoints} Flash Points`}>
+                {resolvedModel.member.totalFlashPoints} ⚡
               </span>{" "}
-              · #{visibleModel.roomRank} en la sala
+              · #{resolvedModel.roomRank} en la sala
             </p>
           </div>
         </section>
@@ -138,9 +140,9 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
         <Card as="section" className={styles.summary} aria-labelledby="attempt-summary-title">
           <div className={styles.summaryHeader}>
             <div>
-              <p className={styles.eyebrow}>Reto de hoy</p>
+              <p className={styles.eyebrow}>{model.source === "supabase" ? "Resultado Flash" : "Reto de hoy"}</p>
               <h2 id="attempt-summary-title">
-                {visibleModel.dailyChallenge?.title ?? "Sin reto hoy"}
+                {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}
               </h2>
             </div>
           </div>
@@ -155,35 +157,40 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
             </div>
             <div>
               <div className={styles.statValue}>
-                <strong>#{visibleModel.dailyRank ?? "—"}</strong>
+                <strong>#{resolvedModel.challengeRank ?? "—"}</strong>
               </div>
-              <span>ranking de hoy</span>
+              <span>ranking del reto</span>
             </div>
             <div>
               <div className={styles.statValue}>
                 <time
-                  dateTime={isComplete ? attempt?.playedAt : undefined}
+                  dateTime={hasAttempt ? attempt?.playedAt : undefined}
                   aria-label={
-                    isComplete ? `Jugado el ${formatPlayedAt(attempt?.playedAt)}` : undefined
+                    hasAttempt ? `Jugado el ${formatPlayedAt(attempt?.playedAt)}` : undefined
                   }
                 >
-                  {isComplete ? formatPlayedAtCompact(attempt?.playedAt) : "—"}
+                  {hasAttempt ? formatPlayedAtCompact(attempt?.playedAt) : "—"}
                 </time>
               </div>
               <span>jugado</span>
             </div>
           </div>
 
-          {!isComplete ? (
+          {!hasAttempt ? (
             <div className={styles.emptyState}>
               <p>Todavía no ha jugado</p>
               <span>Cuando termine el reto aparecerá aquí el intento completo.</span>
             </div>
+          ) : !isComplete ? (
+            <div className={styles.emptyState}>
+              <p>Partida abandonada</p>
+              <span>Se muestran las respuestas que llegó a enviar y los huecos sin responder.</span>
+            </div>
           ) : null}
         </Card>
 
-        {isComplete && visibleModel.challenge && attempt ? (
-          <AnswerHistory challenge={visibleModel.challenge} attempt={attempt} />
+        {hasAttempt && resolvedModel.challenge && attempt ? (
+          <AnswerHistory challenge={resolvedModel.challenge} attempt={attempt} />
         ) : null}
       </div>
     </Canvas>

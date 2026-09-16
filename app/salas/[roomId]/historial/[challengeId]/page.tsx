@@ -35,6 +35,7 @@ export default async function RoomHistoryDetailPage({ params }: Props) {
       entry={model.entry}
       ranking={model.ranking}
       currentUserId={model.currentUserId}
+      canReviewMembers={model.canReviewMembers}
     />
   );
 }

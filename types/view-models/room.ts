@@ -128,13 +128,24 @@ export type RoomMemberDetailModel = {
   roomId: string;
   roomTitle: string;
   member: RoomMemberViewModel;
-  dailyChallenge: RoomDetailModel["dailyChallenge"];
+  challengeSummary: {
+    id: string;
+    title: string;
+    formatLabel: string;
+    subtitle: string;
+    imageSrc: string;
+    questionCount: number;
+    playedAt: string;
+  } | null;
   challenge: Challenge | null;
   result: RoomChallengeResult | null;
   roomRank: number;
-  dailyRank: number | null;
+  challengeRank: number | null;
   roomLeaderboard: RoomLeaderboardEntry[];
-  dailyLeaderboard: RoomDailyLeaderboardEntry[];
+  challengeLeaderboard: RoomDailyLeaderboardEntry[];
+  returnHref: string;
+  source?: RoomDataSource;
+  canReviewMembers?: boolean;
 };
 
 export type RoomSettingsModel = {
