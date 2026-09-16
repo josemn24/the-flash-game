@@ -1,4 +1,5 @@
 import type { SeasonStatus } from "@/types/domain/season";
+import type { SuperadminEditorialContext } from "@/types/view-models/editorial";
 
 export type SuperadminPortalSeason = {
   readonly seasonId: string;
@@ -24,6 +25,7 @@ export type SuperadminPortalContext = {
   };
   readonly rooms: readonly SuperadminPortalRoom[];
   readonly source: "supabase";
+  readonly editorial?: SuperadminEditorialContext;
 };
 
 export type SuperadminPlayerCandidate = {

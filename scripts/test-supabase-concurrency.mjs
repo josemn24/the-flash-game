@@ -91,6 +91,142 @@ export async function testConcurrentCommands(sql) {
     "Concurrent season activation leaves exactly one active season",
   );
 
+  const editorialDefinition = id("s11-concurrent-definition");
+  const editorialVersion = id("s11-concurrent-version");
+  const editorialQuestionDefinitionOne = id("s11-concurrent-question-definition-one");
+  const editorialQuestionDefinitionTwo = id("s11-concurrent-question-definition-two");
+  const editorialQuestionVersionOne = id("s11-concurrent-question-version-one");
+  const editorialQuestionVersionTwo = id("s11-concurrent-question-version-two");
+  const editorialItemOne = id("s11-concurrent-item-one");
+  const editorialItemTwo = id("s11-concurrent-item-two");
+  await sql(`begin;
+    insert into private.challenge_definitions(id, slug, created_by_player_id)
+    values (${quote(editorialDefinition)}, 's11-concurrent-definition', ${quote(id("superadmin"))});
+    insert into private.challenge_versions(id, challenge_definition_id, version_number, config_schema_version,
+      status, mode, title, subtitle, description, max_score, mode_config, created_by_player_id)
+    values (${quote(editorialVersion)}, ${quote(editorialDefinition)}, 1, 1, 'draft', 'flash',
+      'Concurrent Flash', 'Dos preguntas', 'Concurrente', 100, '{}'::jsonb, ${quote(id("superadmin"))});
+    insert into private.question_definitions(id, slug, created_by_player_id)
+    values
+      (${quote(editorialQuestionDefinitionOne)}, 's11-concurrent-question-one', ${quote(id("superadmin"))}),
+      (${quote(editorialQuestionDefinitionTwo)}, 's11-concurrent-question-two', ${quote(id("superadmin"))});
+    insert into private.question_versions(id, question_definition_id, version_number, payload_schema_version,
+      status, type, time_limit_ms, public_payload, created_by_player_id)
+    values
+      (${quote(editorialQuestionVersionOne)}, ${quote(editorialQuestionDefinitionOne)}, 1, 1, 'draft', 'multiple-choice', 15000,
+        '{"question":"¿Uno?","options":["A","B"],"category":"Test","tags":{},"media":null,"promptVisual":null}'::jsonb, ${quote(id("superadmin"))}),
+      (${quote(editorialQuestionVersionTwo)}, ${quote(editorialQuestionDefinitionTwo)}, 1, 1, 'draft', 'multiple-choice', 15000,
+        '{"question":"¿Dos?","options":["A","B"],"category":"Test","tags":{},"media":null,"promptVisual":null}'::jsonb, ${quote(id("superadmin"))});
+    insert into private.question_version_solutions(question_version_id, solution_payload)
+    values
+      (${quote(editorialQuestionVersionOne)}, '{"correctAnswer":"A","explanation":"A"}'::jsonb),
+      (${quote(editorialQuestionVersionTwo)}, '{"correctAnswer":"B","explanation":"B"}'::jsonb);
+    insert into private.challenge_items(id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
+    values
+      (${quote(editorialItemOne)}, ${quote(editorialVersion)}, ${quote(editorialQuestionVersionOne)}, 1, 50, 1, '{}'::jsonb),
+      (${quote(editorialItemTwo)}, ${quote(editorialVersion)}, ${quote(editorialQuestionVersionTwo)}, 2, 50, 1, '{}'::jsonb);
+    commit;`);
+  const editorialUpdatedAt = (
+    await sql(`select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`)
+  ).trim();
+  const editorialDocument = (title) => ({
+    challenge: {
+      slug: "s11-concurrent-definition",
+      title,
+      subtitle: "Dos preguntas",
+      description: "Concurrente",
+      mode: "flash",
+      configSchemaVersion: 1,
+      modeConfig: {},
+    },
+    questions: [
+      {
+        slug: "s11-concurrent-question-one",
+        type: "multiple-choice",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 15000,
+        points: 50,
+        publicPayload: {
+          question: "¿Uno?",
+          options: ["A", "B"],
+          category: "Test",
+          tags: {},
+          media: null,
+          promptVisual: null,
+        },
+        solutionPayload: { correctAnswer: "A", explanation: "A" },
+      },
+      {
+        slug: "s11-concurrent-question-two",
+        type: "multiple-choice",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 15000,
+        points: 50,
+        publicPayload: {
+          question: "¿Dos?",
+          options: ["A", "B"],
+          category: "Test",
+          tags: {},
+          media: null,
+          promptVisual: null,
+        },
+        solutionPayload: { correctAnswer: "B", explanation: "B" },
+      },
+    ],
+  });
+  const editorialUpdates = await race(
+    "superadmin",
+    "superadmin",
+    "update_superadmin_flash_draft",
+    {
+      idempotencyKey: "s11-concurrent-update-one",
+      challengeVersionId: editorialVersion,
+      expectedUpdatedAt: editorialUpdatedAt,
+      document: editorialDocument("Concurrent winner"),
+      reason: "Concurrent update one",
+    },
+    {
+      idempotencyKey: "s11-concurrent-update-two",
+      challengeVersionId: editorialVersion,
+      expectedUpdatedAt: editorialUpdatedAt,
+      document: editorialDocument("Concurrent loser"),
+      reason: "Concurrent update two",
+    },
+    { role: "authenticated", schema: "public" },
+  );
+  requireOneConflict(editorialUpdates, "Only one concurrent editorial update succeeds");
+  const publishedBeforeRace = (
+    await sql(`select status from private.challenge_versions where id=${quote(editorialVersion)};`)
+  ).trim();
+  assert.equal(publishedBeforeRace, "draft", "A concurrent edit leaves the draft unpublished");
+  const editorialPublishUpdatedAt = (
+    await sql(`select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`)
+  ).trim();
+  const editorialPublications = await race(
+    "superadmin",
+    "superadmin",
+    "publish_superadmin_flash",
+    {
+      idempotencyKey: "s11-concurrent-publish-one",
+      challengeVersionId: editorialVersion,
+      expectedUpdatedAt: editorialPublishUpdatedAt,
+      reason: "Concurrent publication one",
+    },
+    {
+      idempotencyKey: "s11-concurrent-publish-two",
+      challengeVersionId: editorialVersion,
+      expectedUpdatedAt: editorialPublishUpdatedAt,
+      reason: "Concurrent publication two",
+    },
+    { role: "authenticated", schema: "public" },
+  );
+  requireOneConflict(editorialPublications, "Only one concurrent editorial publication succeeds");
+  assert.equal(
+    (await sql(`select count(*) from private.challenge_versions where id=${quote(editorialVersion)} and status='published';`)).trim(),
+    "1",
+    "Concurrent editorial publication leaves one published version",
+  );
+
   const starts = await race(
     "owner",
     "owner",

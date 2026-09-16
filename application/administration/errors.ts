@@ -35,3 +35,13 @@ export class SuperadminSeasonCommandError extends Error {
     this.code = code;
   }
 }
+
+export class SuperadminEditorialCommandError extends Error {
+  readonly code: string;
+
+  constructor(code: string, cause?: unknown) {
+    super(code, { cause });
+    this.name = "SuperadminEditorialCommandError";
+    this.code = code;
+  }
+}

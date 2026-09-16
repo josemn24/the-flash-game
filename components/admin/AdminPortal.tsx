@@ -3,20 +3,26 @@ import { Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
 import type { SuperadminPortalContext } from "@/types/view-models";
 import { CreateRoomForm } from "./CreateRoomForm.client";
 import { SeasonManagement } from "./SeasonManagement.client";
+import { EditorialManagement } from "./EditorialManagement.client";
 import styles from "./AdminPortal.module.css";
 
 type AdminPortalProps = {
   readonly context: SuperadminPortalContext;
   readonly creationNotice?: boolean;
   readonly seasonNotice?: string;
+  readonly editorialNotice?: string;
 };
 
-export function AdminPortal({ context, creationNotice = false, seasonNotice }: AdminPortalProps) {
+export function AdminPortal({ context, creationNotice = false, seasonNotice, editorialNotice }: AdminPortalProps) {
   const seasonNoticeText = {
     created: "Borrador de temporada creado.",
     updated: "Borrador de temporada actualizado.",
     activated: "Temporada activada correctamente.",
   }[seasonNotice ?? ""];
+  const editorialNoticeText = {
+    saved: "Borrador editorial guardado.",
+    published: "Versión editorial publicada.",
+  }[editorialNotice ?? ""];
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -93,6 +99,9 @@ export function AdminPortal({ context, creationNotice = false, seasonNotice }: A
       </section>
 
       <SeasonManagement rooms={context.rooms} />
+      <EditorialManagement
+        context={context.editorial ?? { entries: [], source: "supabase" }}
+      />
 
       {creationNotice ? (
         <Card as="section" surface="soft" className={styles.notice} role="status">
@@ -105,6 +114,13 @@ export function AdminPortal({ context, creationNotice = false, seasonNotice }: A
         <Card as="section" surface="soft" className={styles.notice} role="status">
           <strong>{seasonNoticeText}</strong>
           <span>El contexto operativo se ha actualizado.</span>
+        </Card>
+      ) : null}
+
+      {editorialNoticeText ? (
+        <Card as="section" surface="soft" className={styles.notice} role="status">
+          <strong>{editorialNoticeText}</strong>
+          <span>El catálogo editorial se ha actualizado.</span>
         </Card>
       ) : null}
 

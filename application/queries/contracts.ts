@@ -14,6 +14,7 @@ import type {
   SuperadminPortalContext,
   ViewerProfile,
 } from "@/types/view-models";
+import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
 
 export interface CurrentViewerProvider {
   getCurrentViewer(): Promise<ViewerProfile>;
@@ -69,6 +70,8 @@ export interface SuperadminPortalQueries {
   getContext(): Promise<SuperadminPortalContext>;
   lookupPlayersByEmail(emails: readonly string[]): Promise<SuperadminPlayerCandidate[]>;
 }
+
+export type { SuperadminEditorialQueries };
 
 export interface ChallengeQueries {
   getPlayable(

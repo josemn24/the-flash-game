@@ -211,6 +211,36 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "private.editorial_has_secret_key": {
+      "arguments": "value jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.validate_flash_editorial_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.create_flash_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.update_flash_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.publish_flash_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.read_superadmin_editorial_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.execute_command": {
       "arguments": "op text, input jsonb",
       "securityDefiner": true,
@@ -406,6 +436,11 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_editorial_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.lookup_superadmin_players": {
       "arguments": "target_emails text[]",
       "securityDefiner": true,
@@ -432,6 +467,21 @@
       "executeRoles": ["authenticated"]
     },
     "public.update_superadmin_season": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_flash_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_flash_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.publish_superadmin_flash": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]

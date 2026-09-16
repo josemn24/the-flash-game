@@ -5,10 +5,10 @@
 Esta sección describe la aplicación y los contratos técnicos vigentes. Es la primera referencia para
 entender qué existe en el repositorio hoy.
 
-En la rama actual, S01–S10 están implementadas y verificadas contra el stack local de Supabase. El
+En la rama actual, S01–S11 están implementadas y verificadas contra el stack local de Supabase. El
 resto de capacidades se mantiene explícitamente en mock o pendiente de su propia vertical slice.
 La beta cerrada se provisionará y operará desde un portal privado de superadmin: la UI pública no
-crea salas ni gestiona invitaciones. El portal privado también prepara y activa temporadas.
+crea salas ni gestiona invitaciones. El portal privado también prepara y activa temporadas y publica contenido Flash mínimo.
 
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.

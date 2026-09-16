@@ -7,12 +7,12 @@
 ## Resumen
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S10 y la base transversal del
+migradas usan fixtures y un store mock normalizado. Las slices S01–S11 y la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
-de temporadas desde el portal.
+de temporadas y la publicación editorial auditada de Flash mínimo desde el portal.
 
 No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
 estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
@@ -36,17 +36,18 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
   de salas activas con owner explícito y grupo inicial opcional. La creación usa resolución exacta de
   usuarios, slug server-side, transacción, idempotencia y una auditoría agregada; no hay todavía
   gestión posterior de miembros. S10 añade creación/edición de borradores y activación explícita de
-  temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC.
+  temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC. S11 añade
+  creación, edición, preview y publicación separada de Flash mínimo: dos preguntas
+  multiple-choice, 50 puntos cada una, con soluciones privadas e inmutabilidad al publicar.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash.
 
 ### Modelo operativo de la beta cerrada
 
 La UI pública no permite crear salas privadas ni gestionar invitaciones. Un portal privado de
-superadmin prepara y activa temporadas y provisiona directamente a los
+superadmin prepara y activa temporadas, publica Flash mínimo y provisiona directamente a los
 usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
-invitaciones. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-calendario son capacidades previstas para ese portal interno, según el alcance operativo que se
-habilite. La superficie `/admin` ya permite al superadmin crear salas activas y provisionar
+invitaciones. La programación de desafíos y la ejecución del calendario quedan fuera de S11 y son
+capacidades previstas para ese portal interno. La superficie `/admin` ya permite al superadmin crear salas activas y provisionar
 directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capacidad administrativa.
 
 ## Rutas principales
@@ -60,19 +61,20 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/salas/[roomId]/historial/[challengeId]` | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada. |
 | `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators. |
 | `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes; gestión real está pendiente.      |
-| `/admin`                    | Portal privado server-side para superadmins: contexto, salas y preparación/activación de temporadas. |
+| `/admin`                    | Portal privado server-side para superadmins: contexto, salas, temporadas y editorial Flash mínimo. |
 | `/desafios/[challengeId]`   | Desafío Flash competitivo real en contexto autorizado; preview mock explícito en los demás casos. |
 | `/formatos`                 | Biblioteca estática de formatos y práctica local.                    |
 | `/flash-pop`                | Lobby/demo de Flash Pop.                                             |
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S10 y el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S11 y el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
-  provisionar un grupo inicial opcional y gestionar temporadas S10. La gestión posterior de
-  miembros, editor, publicación y calendario aún no está implementada y no forma parte de la UI
-  pública de la beta; Storage también sigue pendiente.
+  provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
+  Flash mínimo; la gestión posterior de miembros, reemplazo/archivado de contenido publicado y
+  calendario aún no está implementada y no forma parte de la UI pública de la beta; Storage también
+  sigue pendiente.
 - El flujo de invitaciones conserva sus reglas de producto, pero no se ofrece en la UI pública ni se
   necesita para bootstrappear la beta: el superadmin añade directamente usuarios autenticados.
 - Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre únicamente el
@@ -90,16 +92,21 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-16.
 
-- `npm test`: 84 archivos de test y 553 tests superados, incluyendo contratos, adaptador y
-  componentes de S10.
+- `npm test`: 88 archivos de test y 568 tests superados, incluyendo parser, adaptador, acciones y
+  componentes de S11.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
-- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S08, S10, ACL del portal,
-  idempotencia, rollback y carreras de comandos y activaciones con conexiones PostgreSQL independientes.
+- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S08, S10, S11, ACL del
+  portal, idempotencia, rollback y carreras de comandos, activaciones y edición/publicación con
+  conexiones PostgreSQL independientes.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.
 - `npm run test:e2e -- e2e/s10-season.spec.ts`: 2/2 correctos; superadmin crea/edita/activa en `/admin`
   y un miembro no accede al portal.
+- `npm run test:integration:supabase -- --scenario s11`: correcto con Auth, PostgREST, creación,
+  edición, publicación, soluciones privadas y denegación del contexto editorial.
+- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: 2/2 correctos; superadmin crea/edita/previsualiza/
+  publica Flash mínimo y un miembro no ve editor, borradores ni soluciones.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth, PostgREST y
   denegación de acceso privado contra Supabase local.
 - `npm run test:e2e -- e2e/admin-portal.spec.ts`: 2/2 correctos; superadmin, recarga, miembro

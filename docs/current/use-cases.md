@@ -9,7 +9,7 @@
 
 La clasificación indica prioridad para una primera versión productiva del loop de salas privadas,
 temporadas y desafíos asíncronos. No equivale al estado actual de implementación: hoy la aplicación
-usa mocks en los recorridos aún no migrados; S01–S10 ya cubren identidad, salas, competición Flash,
+usa mocks en los recorridos aún no migrados; S01–S11 ya cubren identidad, salas, competición Flash,
 rankings, historial, portal y temporadas reales sobre Supabase local.
 
 - **V1**: esencial para que exista una competición productiva usable.
@@ -182,16 +182,24 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Actor:** superadministrador desde el portal privado durante la beta; editor/autor autorizado en
   una fase posterior.
 - **Objetivo:** crear preguntas y desafíos reutilizables que puedan publicarse sin ambigüedad histórica.
-- **Precondiciones:** permisos editoriales; formatos y reglas de validación disponibles.
-- **Entrada relevante:** payload público, solución privada, modo, elementos ordenados, configuración, puntos y metadatos editoriales.
-- **Flujo principal:** crear borrador; validar formatos, relaciones y configuración; crear versión; revisar; publicar el snapshot.
-- **Reglas de negocio:** una versión publicada es inmutable; cada desafío suma exactamente 100 puntos; las soluciones y métricas privadas quedan separadas del payload público; los puntos/configuración pertenecen al `ChallengeItem`.
-- **Resultado:** `QuestionVersion` y/o `ChallengeVersion` publicada y reutilizable.
-- **Efectos secundarios:** autoría, timestamps, auditoría y disponibilidad para futuras publicaciones.
-- **Errores o impedimentos:** formato desconocido, solución ausente, relación inválida, puntos distintos de 100, payload privado expuesto o publicación incompleta.
-- **Permisos necesarios:** superadministrador desde el portal privado durante la beta; editor/autor
-  autorizado cuando se habilite esa delegación; nunca un jugador ordinario desde el cliente
-  competitivo.
+- **Precondiciones:** superadmin autenticado; el editor S11 soporta únicamente `flash` con dos
+  preguntas `multiple-choice`, schema técnico `v1` y 50 puntos por pregunta.
+- **Entrada relevante:** documento JSON estructurado con payload público, solución privada, orden,
+  configuración, puntos, tiempos y motivo obligatorio de auditoría.
+- **Flujo principal:** crear borrador; validar y previsualizar sin competición; guardar; editar solo
+  mientras siga en `draft`; publicar explícitamente el snapshot.
+- **Reglas de negocio:** una versión publicada es inmutable; cada desafío suma exactamente 100
+  puntos; las soluciones quedan separadas del payload público; la publicación no crea calendario,
+  intentos, puntos ni actividad ficticia.
+- **Resultado:** `QuestionVersion` y `ChallengeVersion` publicada y reutilizable para futuras
+  selecciones de calendario.
+- **Efectos secundarios:** autoría, timestamps, auditoría segura, idempotencia y disponibilidad
+  editorial posterior.
+- **Errores o impedimentos:** JSON o formato desconocido, schema no soportado, solución ausente,
+  relación inválida, puntos distintos de 100, secreto en payload público, conflicto optimista o
+  publicación incompleta.
+- **Permisos necesarios:** exclusivamente superadmin desde el portal privado durante la beta; el
+  miembro ordinario nunca recibe borradores ni soluciones.
 
 ### CU-11 — Sustituir o archivar contenido publicado [Importante]
 
@@ -210,14 +218,20 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 
 - **Actor:** persona sin sala para preview; superadministrador/editor para prueba interna.
 - **Objetivo:** explorar formatos o verificar contenido sin contaminar la competición.
-- **Precondiciones:** contenido disponible para práctica; para prueba interna, privilegio global.
-- **Entrada relevante:** formato, versión o desafío y configuración de prueba.
-- **Flujo principal:** cargar payload de práctica; ejecutar interacción; evaluar localmente en preview o bajo contexto de prueba; mostrar feedback y permitir replay.
-- **Reglas de negocio:** no crea intento competitivo, Flash Points, historial, ranking ni actividad social; una prueba de superadministración es fantasma.
-- **Resultado:** resultado de exploración o evidencia interna no competitiva.
-- **Efectos secundarios:** opcionalmente telemetría y auditoría de la prueba; ningún efecto en la temporada.
-- **Errores o impedimentos:** intentar usar preview con contexto competitivo, acceder a solución privilegiada desde una sala o registrar la prueba como participación.
-- **Permisos necesarios:** preview: ninguno para contenido público; prueba fantasma: superadministrador/editor autorizado.
+- **Precondiciones:** contenido disponible para práctica; para el preview editorial de S11, privilegio
+  global y un borrador JSON válido.
+- **Entrada relevante:** documento editorial Flash y configuración de preview.
+- **Flujo principal:** validar el documento; renderizar las dos preguntas con el renderer existente;
+  mostrar feedback de solución dentro del portal protegido, sin iniciar un intento.
+- **Reglas de negocio:** el preview editorial no llama a `start_attempt` ni `prepare_interaction` y
+  no crea Flash Points, historial, ranking, actividad social o filas de calendario.
+- **Resultado:** previsualización interna no competitiva; la prueba fantasma interactiva completa
+  queda reservada a una slice posterior.
+- **Efectos secundarios:** ninguno en la competición ni en la temporada.
+- **Errores o impedimentos:** JSON inválido, formato/schema no soportado, solución no perteneciente a
+  las opciones o intento de acceder al editor fuera de superadmin.
+- **Permisos necesarios:** preview público de ejemplos: ninguno; preview editorial S11: únicamente
+  superadmin desde `/admin`.
 
 ### CU-13 — Explorar la biblioteca y practicar un formato [Importante]
 
@@ -428,7 +442,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   repetición de petición pueda producir duplicados.
 - La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-08, CU-12, CU-13,
   CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. El calendario,
-  publicación editorial, abandono automático y persistencia remota siguen pendientes.
+  automatización temporal y persistencia remota siguen pendientes. S11 cubre la publicación editorial
+  mínima de Flash y su preview protegido; reemplazar/archivar versiones publicadas y la prueba
+  fantasma interactiva siguen pendientes.
 - Las decisiones sobre heartbeat, lease, gracia de desconexión, alcance del editor y revisión de
   intentos invalidados deben cerrarse antes de convertir los casos correspondientes en contratos
   técnicos. La matriz de permisos de sala y las reglas de invitaciones ya están fijadas.

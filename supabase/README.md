@@ -82,6 +82,13 @@ después del cierre terminal. El gameplay real pasa por los Route Handlers
 `authenticator`, asume `service_role` solo dentro de la transacción y fija los claims Auth mediante
 `set_config`. Nunca se usa la credencial propietaria `postgres` ni DML genérico desde Next.js.
 
+S11 añade `schemas/59_superadmin_editorial_commands.sql`: la lectura protegida
+`public.get_superadmin_editorial_context()` entrega el documento completo solo para borradores al
+superadmin y metadatos para versiones publicadas/archivadas. Los comandos públicos
+`create_superadmin_flash_draft`, `update_superadmin_flash_draft` y `publish_superadmin_flash` son
+wrappers estrechos sobre transacciones privadas; requieren motivo, idempotencia, concurrencia
+optimista y auditoría, y no crean publicaciones de calendario, intentos, puntos ni actividad.
+
 Para ejecutar el piloto competitivo local:
 
 ```bash

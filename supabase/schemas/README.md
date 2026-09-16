@@ -1,15 +1,18 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-16. **22 tablas**, una vista
-interna, funciones públicas de lectura/ranking, contexto del portal privado y comandos privados de servidor. S01–S10 conectan
-Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo.
+interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
+privados de servidor. S01–S11 conectan
+Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
+además del editor Flash mínimo de S11.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
 S07 consulta el historial Flash cerrado y la revisión autorizada desde versiones y resultados
 persistidos, sin materializar tablas adicionales. El portal consulta el contexto global de
 superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
 Las capacidades restantes siguen usando mocks o están pendientes. S10 añade preparación/edición de
-borradores y activación explícita de temporadas, sin automatización temporal. Las migraciones están versionadas;
+borradores y activación explícita de temporadas, sin automatización temporal; S11 añade el editor
+Flash mínimo de dos preguntas y publicación inmutable, sin calendario ni participación. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
@@ -67,9 +70,9 @@ prohibida no puede reactivarse. Las operaciones directas de `superadmin` sobre s
 Para la beta cerrada, el superadmin podrá crear o reactivar directamente membresías de usuarios
 autenticados desde un portal privado, sin crear ni consumir una invitación. La emisión, aceptación y
 revocación de invitaciones completas siguen siendo una capacidad futura de S09, no un flujo de la UI
-pública. Las capacidades editoriales y de publicación global, así como la preparación de temporadas
-y la operación del calendario, se implementarán como comandos del portal privado cuando entren en su
-alcance.
+pública. S11 implementa el editor Flash mínimo y su publicación global desde el portal privado;
+reemplazo/archivado, el resto de formatos, la preparación de temporadas y la operación del calendario
+se implementarán en sus slices correspondientes.
 
 Se conserva la visibilidad de perfiles históricos mínimos en rankings, la exclusión de resultados
 invalidados de la lectura directa y la necesidad de membresía vigente para consultar resultados
@@ -93,6 +96,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [50_access_helpers.sql](50_access_helpers.sql)           | Resolución del jugador y ayudas RLS sin recursión.                                                                                  |
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)       | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                |
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql) | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal. |
+| [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql) | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash mínimo desde el portal; no añade tablas ni columnas. |
 | [60_integrity.sql](60_integrity.sql)                     | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                     |
 | [70_rls.sql](70_rls.sql)                                 | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                               |
 | [80_rankings.sql](80_rankings.sql)                       | Vista privada invoker y funciones públicas autorizadas por membresía.                                                               |
@@ -156,6 +160,7 @@ No hay un proceso automático de timeout o recuperación de evaluaciones en este
 | `complete_attempt`, `abandon_attempt`          | Propietario y sesión vigente; cierre, sesiones, puntos y auditoría atómicos.                      |
 | `accept_invitation`                            | Actor verificado; sala activa, token, caducidad, usos y estado de membresía bajo bloqueo.         |
 | `invalidate_attempt`, `adjust_result`          | Superadmin activo, motivo y versión; saldo y auditoría atómicos.                                  |
+| `create_superadmin_flash_draft`, `update_superadmin_flash_draft`, `publish_superadmin_flash` | Solo superadmin; grafo versionado, solución privada, locks, concurrencia optimista, publicación atómica y auditoría segura. |
 
 El dispatcher genérico y sus helpers no tienen EXECUTE para los roles API. No hay RPC de escritura
 pública. Los errores de versión/idempotencia usan SQLSTATE `40001`; autorización `42501`, input
@@ -252,10 +257,10 @@ provocados en auditoría demuestran que no quedan operaciones parciales. La vali
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
 Validación local actual: las comprobaciones SQL existentes más **15 casos pgTAP del portal**, los
-casos de S07 y **27 casos pgTAP de S08**, carreras entre conexiones independientes y **540 pruebas
+casos de S07, S10 y S11, carreras entre conexiones independientes y **568 pruebas
 TypeScript** superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
-las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S10 y portal; S06 añade
+las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
 portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,
 rollback y recarga del portal.
@@ -267,8 +272,8 @@ limitar tamaño de peticiones y no filtrar soluciones. `postgres` y los roles de
 fuera de esta frontera; pueden alterar ACL/triggers y no deben ser credenciales de ejecución normal.
 
 Quedan pendientes el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
-Realtime si se habilitan, retención de payloads e idempotencia, gestión editorial autorizada,
-validación de contenido publicado y planes EXPLAIN con volumen real. La selección de duraciones/
+Realtime si se habilitan, retención de payloads e idempotencia, reemplazo/archivado editorial,
+validación de contenido de otros formatos y planes EXPLAIN con volumen real. La selección de duraciones/
 configuración de cada modo se valida al publicar; SQL protege límites positivos y versiones congeladas,
 no todas las reglas de formato del producto.
 

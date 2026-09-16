@@ -38,10 +38,11 @@ ni ranking.
 - **Editor o autor de contenido**: actor previsto para preparar y publicar desafíos y preguntas.
 - **Sistema**: controla disponibilidad, duración, evaluación, cierre y acreditación de resultados.
 
-S01–S10 ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
-persistido sobre Supabase local y la creación inicial de salas desde un portal privado. La gestión
-posterior de miembros, temporadas y contenido todavía no está implementada en la interfaz pública;
-en la beta cerrada se reservará a un portal privado de superadministración.
+S01–S11 ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
+persistido sobre Supabase local, la creación inicial de salas, la activación de temporadas y la
+publicación editorial mínima desde un portal privado. La gestión posterior de miembros no está
+implementada en la interfaz pública; en la beta cerrada se reservará a un portal privado de
+superadministración.
 
 ### Alcance operativo de la beta cerrada
 

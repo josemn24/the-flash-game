@@ -1,0 +1,146 @@
+import "server-only";
+
+import type {
+  CreateFlashDraftInput,
+  PublishFlashInput,
+  SuperadminEditorialCommands,
+  SuperadminEditorialQueries,
+  UpdateFlashDraftInput,
+} from "@/application/ports/superadmin-editorial-commands";
+import {
+  SuperadminAccessDeniedError,
+  SuperadminEditorialCommandError,
+} from "@/application/administration/errors";
+import { isFlashEditorialDocument } from "@/lib/editorial/flashDocument";
+import { createClient } from "@/lib/supabase/server";
+import type {
+  SuperadminEditorialCommandResult,
+  SuperadminEditorialContext,
+  SuperadminEditorialEntry,
+} from "@/types/view-models/editorial";
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const statuses = new Set(["draft", "published", "archived"]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isIsoDate(value: unknown) {
+  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function isEditorialEntry(
+  value: unknown,
+  allowDraftWithoutDocument = false,
+): value is SuperadminEditorialEntry {
+  if (!isRecord(value)) return false;
+  const isDraft = value.status === "draft";
+  return (
+    typeof value.challengeDefinitionId === "string" && uuidPattern.test(value.challengeDefinitionId) &&
+    typeof value.challengeVersionId === "string" && uuidPattern.test(value.challengeVersionId) &&
+    typeof value.versionNumber === "number" && Number.isSafeInteger(value.versionNumber) && value.versionNumber > 0 &&
+    typeof value.status === "string" && statuses.has(value.status) &&
+    typeof value.slug === "string" && value.slug.trim().length > 0 &&
+    typeof value.title === "string" && value.title.trim().length > 0 &&
+    typeof value.subtitle === "string" && typeof value.description === "string" &&
+    value.mode === "flash" && typeof value.questionCount === "number" && Number.isSafeInteger(value.questionCount) && value.questionCount >= 0 &&
+    isIsoDate(value.createdAt) && isIsoDate(value.updatedAt) &&
+    (value.publishedAt === null || isIsoDate(value.publishedAt)) &&
+    (isDraft
+      ? (allowDraftWithoutDocument && value.document === null) || isFlashEditorialDocument(value.document)
+      : value.document === null)
+  );
+}
+
+function isEditorialContext(value: unknown): value is Omit<SuperadminEditorialContext, "source"> {
+  return isRecord(value) && Array.isArray(value.entries) && value.entries.every((entry) => isEditorialEntry(entry));
+}
+
+function commandErrorCode(error: { code?: string; message?: string }) {
+  const message = error.message ?? "";
+  const candidates = [
+    "not_authorized",
+    "invalid_command",
+    "invalid_content",
+    "content_not_found",
+    "content_not_draft",
+    "content_already_published",
+    "unsupported_mode",
+    "unsupported_question_type",
+    "unsupported_schema_version",
+    "invalid_public_payload",
+    "invalid_solution_payload",
+    "points_total_invalid",
+    "incomplete_content",
+    "content_conflict",
+    "content_slug_conflict",
+    "idempotency_conflict",
+  ];
+  return candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed";
+}
+
+async function callCommand<T>(
+  functionName:
+    | "create_superadmin_flash_draft"
+    | "update_superadmin_flash_draft"
+    | "publish_superadmin_flash",
+  input: CreateFlashDraftInput | UpdateFlashDraftInput | PublishFlashInput,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(functionName, { input });
+  if (error) {
+    if (error.code === "42501" || error.message.includes("not_authorized")) {
+      throw new SuperadminAccessDeniedError();
+    }
+    throw new SuperadminEditorialCommandError(commandErrorCode(error), error);
+  }
+  if (!isEditorialEntry(data, true)) {
+    throw new SuperadminEditorialCommandError("invalid_response");
+  }
+  return { ...data, source: "supabase" as const } as T;
+}
+
+export class SupabaseSuperadminEditorialQueries
+  implements SuperadminEditorialQueries, SuperadminEditorialCommands
+{
+  async getContext(): Promise<SuperadminEditorialContext> {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_editorial_context");
+    if (error) {
+      if (error.code === "42501" || error.message.includes("not_authorized")) {
+        throw new SuperadminAccessDeniedError();
+      }
+      throw new Error(`Supabase editorial read failed: ${error.message}`);
+    }
+    if (!isEditorialContext(data)) {
+      throw new Error("Supabase editorial read returned an invalid context payload.");
+    }
+    return { ...data, source: "supabase" };
+  }
+
+  createFlashDraft(input: CreateFlashDraftInput): Promise<SuperadminEditorialCommandResult> {
+    return callCommand("create_superadmin_flash_draft", input);
+  }
+
+  updateFlashDraft(input: UpdateFlashDraftInput): Promise<SuperadminEditorialCommandResult> {
+    return callCommand("update_superadmin_flash_draft", input);
+  }
+
+  publishFlash(input: PublishFlashInput): Promise<SuperadminEditorialCommandResult> {
+    return callCommand("publish_superadmin_flash", input);
+  }
+}
+
+export const supabaseSuperadminEditorialQueries = new SupabaseSuperadminEditorialQueries();
+export const supabaseSuperadminEditorialCommands = supabaseSuperadminEditorialQueries;
+
+export function isSuperadminEditorialContext(value: unknown): value is SuperadminEditorialContext {
+  return isEditorialContext(value);
+}
+
+export function isSuperadminEditorialCommandResult(
+  value: unknown,
+): value is SuperadminEditorialCommandResult {
+  return isEditorialEntry(value, true);
+}

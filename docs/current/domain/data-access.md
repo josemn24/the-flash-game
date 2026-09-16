@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S10 y el portal privado añaden la primera integración real de Supabase y completan el
+La fase 4 está cerrada. S01–S11 y el portal privado añaden la primera integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
@@ -50,6 +50,21 @@ Mutaciones de temporadas del portal `/admin`
   public.activate_superadmin_season()
 → comando privado transaccional, idempotencia y private.audit_log
 
+Lectura editorial protegida del portal `/admin`
+→ server/data-access.ts
+→ server/admin-editorial.ts
+→ infrastructure/supabase/superadminEditorialQueries.ts
+→ public.get_superadmin_editorial_context()
+→ borradores completos solo para superadmin; publicados/archivados como metadatos
+
+Mutaciones editoriales del portal `/admin`
+→ app/admin/editorial-actions.ts
+→ server/admin-editorial.ts
+→ infrastructure/supabase/superadminEditorialQueries.ts
+→ public.create_superadmin_flash_draft() / public.update_superadmin_flash_draft() /
+  public.publish_superadmin_flash()
+→ grafo versionado, idempotencia, concurrencia optimista, auditoría y publicación atómica
+
 Las consultas aún no migradas conservan este flujo:
 
 Server Components
@@ -70,8 +85,9 @@ invitación.
 ## Contratos de aplicación
 
 `application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
-`RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries` y
-`ChallengeQueries`. `application/ports` añade `SuperadminRoomCommands` para separar la mutación
+`RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
+`SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
+`SuperadminRoomCommands` y `SuperadminEditorialCommands` para separar la mutación
 administrativa de las consultas. Esta capa
 solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
 

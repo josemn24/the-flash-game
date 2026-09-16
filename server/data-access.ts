@@ -13,6 +13,7 @@ import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
+import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
 
 const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
 
@@ -89,5 +90,8 @@ export const getFlashPopLobbyPageModel = cache(async () =>
 
 export const getSuperadminPortalPageModel = cache(async () => {
   const access = await requireSuperadmin();
-  return access.context;
+  return {
+    ...access.context,
+    editorial: await supabaseSuperadminEditorialQueries.getContext(),
+  };
 });

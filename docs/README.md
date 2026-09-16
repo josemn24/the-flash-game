@@ -50,7 +50,7 @@ decisiones y después los documentos afectados.
 ## Estado de la última revisión
 
 - Fecha: 2026-09-16.
-- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock; S01–S10
+- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock; S01–S11
   tienen integración real verificada sobre Supabase local.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture`,
   `npm run docs:check` y `npm run supabase:schema:test` completan correctamente.
