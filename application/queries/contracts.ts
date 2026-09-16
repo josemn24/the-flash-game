@@ -10,6 +10,7 @@ import type {
   RoomMemberDetailModel,
   RoomRankingModel,
   RoomSettingsModel,
+  SuperadminPortalContext,
   ViewerProfile,
 } from "@/types/view-models";
 
@@ -60,6 +61,11 @@ export interface RoomMemberDetailQueries {
     memberKey: string,
     publicationKey?: string,
   ): Promise<RoomMemberDetailModel | null>;
+}
+
+/** Narrow server-only read surface for the beta superadmin portal. */
+export interface SuperadminPortalQueries {
+  getContext(): Promise<SuperadminPortalContext>;
 }
 
 export interface ChallengeQueries {

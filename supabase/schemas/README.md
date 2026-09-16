@@ -1,11 +1,13 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-15. **22 tablas**, una vista
-interna, funciones públicas de lectura/ranking y comandos privados de servidor. S01–S07 conectan
+Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-16. **22 tablas**, una vista
+interna, funciones públicas de lectura/ranking, contexto del portal privado y comandos privados de servidor. S01–S07 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
 S07 consulta el historial Flash cerrado y la revisión autorizada desde versiones y resultados
-persistidos, sin materializar tablas adicionales.
+persistidos, sin materializar tablas adicionales. El portal mínimo consulta el contexto global de
+superadmin y salas activas mediante `get_superadmin_portal_context()`; sus mutaciones quedan para
+S08 y siguientes.
 Las capacidades restantes siguen usando mocks o están pendientes. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
@@ -88,6 +90,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [35_authoritative_state.sql](35_authoritative_state.sql) | Unidades temporales, intervalos de visita, recepciones inmutables e idempotencia. FK obligatoria desde respuesta final a recepción. |
 | [40_indexes.sql](40_indexes.sql)                         | Índices de autorización, calendario, unicidad y consultas competitivas.                                                             |
 | [50_access_helpers.sql](50_access_helpers.sql)           | Resolución del jugador y ayudas RLS sin recursión.                                                                                  |
+| [57_superadmin_reads.sql](57_superadmin_reads.sql)       | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                |
 | [60_integrity.sql](60_integrity.sql)                     | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                     |
 | [70_rls.sql](70_rls.sql)                                 | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                               |
 | [80_rankings.sql](80_rankings.sql)                       | Vista privada invoker y funciones públicas autorizadas por membresía.                                                               |
@@ -237,6 +240,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `commands.test.sql`             | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, bloqueo de segunda sesión, Alfabeto, timeout, evaluación lenta e invitación atómica.          |
 | `command_boundaries.test.sql`   | Identidad/actor, acceso privado al evaluador, rollback de inicio/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre.            |
 | `s07_flash_history.test.sql`    | Historial Flash cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, versión archivada, abandonos parciales y revisión propia/ajena.           |
+| `admin_portal_reads.test.sql`  | Contexto global del superadmin, salas activas, ACL del RPC, claims falsos y ausencia de acceso privado directo.                                                       |
 | `test-supabase-concurrency.mjs` | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación. |
 | Contratos y evaluador TS        | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                          |
 
@@ -244,11 +248,13 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: las comprobaciones SQL existentes más **17 casos pgTAP de S07**, carreras
-entre conexiones independientes y **526 pruebas TypeScript** superadas. También pasan comprobación
+Validación local actual: las comprobaciones SQL existentes más **15 casos pgTAP del portal** y
+**17 casos pgTAP de S07**, carreras entre conexiones independientes y **533 pruebas TypeScript**
+superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
-las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S07; S06 añade integración
-PostgREST y E2E de dos rankings, y S07 añade historial y revisión tras refrescar.
+las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S07 y portal; S06 añade
+integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
+portal añade acceso privado y recarga en navegador.
 
 La credencial `service_role` sigue siendo confiable: tiene lectura interna amplia, puede invocar el
 evaluador privilegiado y puede establecer claims en una conexión SQL. Evitar endpoints genéricos que

@@ -176,7 +176,9 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | S03 → S04        | Flash completo guardado; recuperación en la misma sesión y bloqueo de una segunda sesión. **Implementado en local.** | S01/S02, D03/D07.                                                    |
 | S05 y E01        | Alfabeto y Mini-Wordle de prueba: reloj global y feedback intermedio sin solución cliente. | S04, D03. Reducen pronto dos riesgos distintos.                      |
 | S06 → S07        | Dos rankings y consulta histórica real. **S06 y S07 implementados en local.**                 | S03; S04 para reconstrucción de estado.                              |
-| S08 → S09        | Provisionar salas y reunir al grupo desde el portal privado de operación.                   | S02, D05/D06.                                                        |
+| Portal privado    | Acceso seguro al portal, contexto de operador y marco común de comandos administrativos. **Implementado en local.** | S01, Auth y rol global de plataforma. |
+| S08              | Crear sala, asignar propietario y provisionar directamente al grupo desde el portal.       | Portal privado, S02, D05/D06.                                       |
+| S09 (posterior)   | Invitaciones de un solo/multiuso y aceptación mediante enlace.                              | S08, S01, D05/D06; no bloquea la beta con provisioning directo.       |
 | S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición desde el portal privado.     | S08, S03, D05.                                                       |
 | S13              | Avatar persistido.                                                                         | S01, D08.                                                            |
 | F* y resto de E* | Más formatos competitivos, uno por entrega según el contenido elegido.                     | S03/S04 y D03; E01 ofrece el primer patrón de eventos.               |
@@ -191,16 +193,18 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 aprovisionada juegan un Flash; queda una respuesta por item y una acreditación por intento, incluso
 con cero. Es validación interna, todavía no la V1 completa.
 
-**H3 — piloto acotado:** pendiente de las capacidades elegidas, con decisiones D03/D04 registradas.
-S04, S06 y S07 ya están implementadas localmente.
+**H3 — piloto acotado:** pendiente del portal privado y de las capacidades elegidas, con decisiones
+D03/D04 registradas. S04, S06 y S07 ya están implementadas localmente.
 Antes de incorporar usuarios externos mediante el provisioning directo del portal privado, ejecutar
 también los controles operativos de S22 para ese alcance.
 S05/E01 son experimentos técnicos tempranos; no obligan a lanzar esos modos al piloto.
 
-**H4 — V1 operable:** S08–S13 y calendario real operados desde el portal privado, más recuperación,
-consultas y capacidades publicadas.
-Cerrar S19/S21 o registrar las restricciones expresas de salida; no declarar toda la especificación
-implementada mientras falten comportamientos requeridos. CU-10 puede entregarse con editor mínimo.
+**H4 — V1 operable:** portal privado, S08, S10–S12, cierre/cancelación operativa y S22; todo el
+alcance habilitado se opera desde ese portal, con recuperación, consultas y capacidades publicadas.
+S09 no bloquea esta beta porque el grupo se provisiona directamente. S13 es una mejora opcional;
+S21 debe cerrarse o dejar registrada explícitamente la restricción de no disponer de abandono
+automático/consolidación avanzada. No declarar toda la especificación implementada mientras falten
+comportamientos requeridos. CU-10 puede entregarse con editor mínimo.
 
 **H5 — paridad del catálogo:** los cinco modos y las 31 filas del inventario de formatos cerradas.
 No es requisito para obtener H2 ni para validar el producto con un catálogo menor.
@@ -229,6 +233,38 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Dependencias:** D01; workflow local reproducible y credencial de ejecución sin ownership.
 - **Terminada:** una cuenta nueva entra, cambia su nombre y lo conserva tras reiniciar la app;
   otra cuenta no puede leer datos Auth ni editarla. Build, integración y E2E pasan en base limpia.
+
+### Slice transversal previa — Portal privado mínimo
+
+> Estado: implementada y verificada en local el 2026-09-16. `/admin` es una superficie de solo
+> lectura; S08 añadirá las primeras mutaciones administrativas.
+
+- **Objetivo:** proporcionar la frontera común para operar la beta sin mezclar permisos de
+  superadmin con la UI pública ni crear una pantalla administrativa genérica antes de tener casos
+  de uso reales.
+- **Superficie:** `/admin` usa un layout y una página dinámica server-side, sin enlaces desde la
+  navegación pública. La página muestra el contexto del operador y todas las salas `active`; las
+  acciones de negocio llegan en S08 y las slices siguientes.
+- **Autenticación y autorización:** resolver la sesión en servidor y comprobar el rol global
+  `superadmin` contra la asignación persistida. Un miembro normal no debe poder alcanzar las páginas
+  ni invocar sus acciones modificando URL, formulario, claims del cliente o payloads.
+- **Frontera de comandos:** `requireSuperadmin()` resuelve Auth, provisioning, asignación persistida,
+  actor y `requestId` en servidor. Deja preparado el contexto de auditoría para Server Actions y
+  Route Handlers futuros. No hay CRUD genérico ni DML directo con `service_role`.
+- **Auditoría:** definir el contexto común de operador, sala afectada, operación, motivo cuando
+  corresponda, timestamps y resultado para que S08–S12 y las operaciones posteriores sean trazables.
+- **UI y estados:** incluir carga, ausencia de datos, error recuperable y acceso denegado sin filtrar
+  si existe una sala que el operador no puede consultar.
+- **Tests:** `get_superadmin_portal_context()` tiene 15 checks pgTAP de ACL, propietario,
+  `search_path`, salas activas, ausencia de salas borradas, claims falsos y acceso privado directo.
+  El adaptador cubre payloads válidos/vacíos, filas inválidas, errores y ausencia de fallback; el
+  E2E cubre superadmin, miembro, sesión anónima y recarga. La auditoría de mutaciones comienza en
+  S08; esta slice no inventa una operación de escritura de prueba.
+- **Dependencias:** S01 para Auth/provisioning y las asignaciones globales existentes; guía instalada
+  de Next.js para layouts, rutas y acciones server-side.
+- **Terminada:** un superadmin entra en `/admin`, ve su contexto y salas activas tras recargar;
+  cualquier otro actor recibe ausencia/denegación consistente y no puede ejecutar comandos. S08
+  reutiliza la frontera sin crear su propia autorización o layout.
 
 ### S02 — Ver mis salas y la introducción autorizada
 
@@ -403,20 +439,25 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 
 ### S08 — Crear una sala privada
 
-- **Objetivo / CU:** dejar de aprovisionar salas para cada grupo; CU-04.
+- **Objetivo / CU:** dejar de aprovisionar salas y miembros beta a mano; CU-04 y provisioning
+  directo de la beta.
 - **Actor y superficie:** `superadmin` desde el portal privado de operación. No habrá acción «Crear
   sala» ni formulario de creación en la UI pública de la beta.
 - **Mocks retirados:** listado fijo de salas como única vía de entrada. No se crea temporada demo.
 - **Backend/dominio:** comando privado autorizado para `superadmin` → validación de
-  nombre/zona/slug → creación idempotente; el portal asigna un `owner` inicial explícito y devuelve
-  URL/DTO de sala. El superadmin no se convierte por ello en miembro competitivo.
-- **Persistencia:** nuevo comando privado que crea `rooms`, `room_memberships` y auditoría en una
-  transacción; reutilizar constraint diferida de propietario. Sin DML general de servicio.
+  nombre/zona/slug → creación idempotente; el portal asigna un `owner` inicial explícito y añade o
+  reactiva usuarios autenticados con `admin`, `member` o `spectator`. El superadmin no se convierte
+  por ello en miembro competitivo ni se simula una aceptación de invitación.
+- **Persistencia:** comandos privados que crean `rooms`, la membresía `owner`, las membresías beta
+  iniciales y la auditoría en transacciones coherentes; reutilizar las restricciones existentes de
+  propiedad, estado e historial. Sin DML general de servicio.
 - **Tests:** doble envío, rollback sin sala huérfana, zona inválida, slug en conflicto, actor sin
-  privilegio global, owner inicial manipulado y lectura posterior desde otra cuenta denegada.
-- **Dependencias:** S02, D02 para URLs; reglas confirmadas de CU-04.
-- **Terminada:** un superadmin crea y provisiona una sala desde el portal; tras recarga existe
-  exactamente un propietario y la sala aparece solo a sus miembros activos.
+  privilegio global, owner inicial manipulado, alta directa idempotente, reactivación de `left` o
+  `removed`, bloqueo de `banned`, rol no permitido y lectura posterior desde otra cuenta denegada.
+- **Dependencias:** Portal privado, S02 y D02 para URLs; reglas confirmadas de CU-04 y membresías.
+- **Terminada:** un superadmin crea una sala, asigna propietario y provisiona al grupo desde el
+  portal; tras recargar, los usuarios ven la sala según su rol, el alta no usa invitaciones y toda
+  acción que afecta a la sala queda auditada.
 
 ### S09 — Crear, aceptar y revocar una invitación
 
@@ -806,8 +847,9 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
   mutaciones con cookies, límites, Auth/DB/Storage caídos, despliegue con intento activo, restauración,
   inventario de permisos real y ausencia de secretos en red/assets. CI prueba el stack real además
   de pgTAP con Auth simulado; medir consultas con datos representativos antes de optimizar.
-- **Dependencias:** para piloto, S01–S04/S06/S07 y decisiones de alcance; para V1 operable,
-  S08–S13 y S19/S21 o restricciones expresamente aceptadas; F*/E*/modos solo si se ofrecen.
+- **Dependencias:** para piloto, portal privado, S01–S04/S06/S07, S08, S10–S12 y decisiones de
+  alcance; para V1 operable, S19 y S21 o restricciones expresamente aceptadas. S09, S13 y F*/E*/modos
+  solo son necesarios si se ofrecen.
 - **Terminada:** el entorno reconstruido ejecuta todo el alcance declarado con persistencia real,
   pruebas repetibles y recuperación documentada; ninguna ruta activada vuelve a mock al fallar.
 

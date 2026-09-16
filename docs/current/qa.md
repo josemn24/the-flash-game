@@ -5,17 +5,20 @@
 
 ## Última verificación
 
-2026-09-15, sobre el estado actual del repositorio y el stack local de Supabase.
+2026-09-16, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 78 archivos de test y 526 tests superados.
+- `npm test`: 80 archivos de test y 533 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto.
 - `npm run type-architecture`: correcto.
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 63 archivos Markdown comprobados.
-- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S07 y pruebas concurrentes
-  con conexiones PostgreSQL independientes.
+- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S07, portal privado y
+  pruebas concurrentes con conexiones PostgreSQL independientes.
+- `npm run test:integration:supabase -- --scenario portal`: correcto con Auth y PostgREST local.
+- `npm run test:e2e -- e2e/admin-portal.spec.ts`: 2/2 correcto con acceso superadmin, recarga y
+  denegación de miembro/anónimo.
 - `npm run test:integration:supabase -- --scenario s07`: correcto con Auth y PostgREST local.
 - `npm run test:e2e -- e2e/s07-history-review.spec.ts`: 1/1 correcto con ranking histórico,
   revisión propia/ajena y spectator en sesiones de navegador aisladas.
@@ -38,6 +41,8 @@ interpretarse como una auditoría del estado actual.
 ## Limitaciones actuales
 
 - Prettier todavía informa 56 archivos sin formato canónico.
+- Stylelint mantiene un selector duplicado preexistente en
+  `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - La validación E2E de S01–S07 usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
 - `results_locked_at`, abandono automático, takeover, modos distintos de Flash y la revisión

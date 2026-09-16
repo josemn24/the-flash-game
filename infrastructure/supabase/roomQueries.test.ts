@@ -414,7 +414,7 @@ describe("SupabaseRoomQueries S07 history and review", () => {
       result: { completed: true, flashPoints: 80 },
     });
     expect(model?.challenge?.mode).toBe("flash");
-    expect(model?.challenge?.questions).toHaveLength(2);
+    expect(model?.challenge && "questions" in model.challenge ? model.challenge.questions : null).toHaveLength(2);
     expect(model?.result?.attempt?.answers[1]?.status).toBe("unanswered");
     expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
   });

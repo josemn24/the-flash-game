@@ -12,6 +12,7 @@ import { supabaseFlashQueries } from "@/infrastructure/supabase/flashQueries";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
+import { requireSuperadmin } from "@/server/admin";
 
 const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
 
@@ -85,3 +86,8 @@ export const getPlayableChallengePageModel = cache(
 export const getFlashPopLobbyPageModel = cache(async () =>
   mockChallengeQueries.getFlashPopLobby(await getQueryContext()),
 );
+
+export const getSuperadminPortalPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  return access.context;
+});

@@ -376,6 +376,11 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_portal_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.provision_player": {
       "arguments": "",
       "securityDefiner": true,

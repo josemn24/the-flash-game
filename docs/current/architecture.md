@@ -65,6 +65,12 @@ invariantes de dominio y usar un comando acotado. Las acciones que afecten direc
 se registran en auditoría; el portal no obtiene permisos escribiendo DML genérico con
 `service_role`, ni convierte al superadmin en miembro competitivo.
 
+La base transversal ya implementada vive en `/admin`: es una ruta dinámica server-side que consulta
+`public.get_superadmin_portal_context()` mediante una fachada y un adaptador propios. El RPC valida
+la asignación persistida de `superadmin`, muestra solo salas activas y no concede acceso RLS global
+ni acceso directo a relaciones `private`. Esta slice no escribe ni audita lecturas; S08 añadirá los
+primeros comandos administrativos idempotentes y auditados usando el mismo `requireSuperadmin()`.
+
 ## 2. Responsabilidades por capa
 
 ### 2.1 UI y presentación
