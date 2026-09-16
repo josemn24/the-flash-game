@@ -1,0 +1,8 @@
+@layer app-formats {
+  .questionInput {
+    width: 100%;
+    min-width: 0;
+    color: var(--color-ink);
+    font-family: var(--type-ui);
+  }
+}

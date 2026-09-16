@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { Canvas } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { ChallengeIntro, StartCountdown } from "@/components/game/shared";
-import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
+import { ChallengeIntro, StartCountdown, SurvivalQuestionStage } from "@/components/game/shared";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useSurvivalSession } from "@/features/game/useSurvivalSession";
 import type { SurvivalSessionSnapshot } from "@/features/game/useSurvivalSession";
@@ -179,14 +178,14 @@ export function FlashPopSurvivalGame({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -18 }}
             >
-              <QuestionScreen
+              <SurvivalQuestionStage
                 question={session.question}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}
+                codeAttemptCount={session.codeAttempts.length}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}

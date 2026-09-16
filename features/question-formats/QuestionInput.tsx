@@ -37,7 +37,8 @@ import {
   ZipQuestion,
 } from "@/components/questions";
 import { ArrowIcon } from "@/components/ui";
-import styles from "@/components/game/shared/QuestionScreen.module.css";
+import styles from "./QuestionInput.module.css";
+import textStyles from "./TextAnswerControls.module.css";
 import { isQueensAnswer } from "@/lib/queens";
 import {
   isConnectPairsAnswer,
@@ -47,12 +48,7 @@ import {
   isWordHashtagAnswer,
   isWordSearchAnswer,
 } from "@/lib/scoring";
-import type {
-  AnswerValue,
-  Question,
-  QuestionOfType,
-  QuestionType,
-} from "@/types/game";
+import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
   locked: boolean;
@@ -96,10 +92,7 @@ function MultipleChoiceInput({
   );
 }
 
-function TrueFalseInput({
-  locked,
-  onSubmit,
-}: QuestionInputProps<QuestionOfType<"true-false">>) {
+function TrueFalseInput({ locked, onSubmit }: QuestionInputProps<QuestionOfType<"true-false">>) {
   return <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />;
 }
 
@@ -108,13 +101,7 @@ function OddOneOutInput({
   locked,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"odd-one-out">>) {
-  return (
-    <OddOneOutQuestion
-      items={question.items}
-      locked={locked}
-      onSubmit={onSubmit}
-    />
-  );
+  return <OddOneOutQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
 }
 
 function MatchingInput({
@@ -130,9 +117,7 @@ function MatchingInput({
       leftItems={question.leftItems}
       rightItems={question.rightItems}
       initialAnswer={
-        initialAnswer !== undefined && isMatchingAnswer(initialAnswer)
-          ? initialAnswer
-          : undefined
+        initialAnswer !== undefined && isMatchingAnswer(initialAnswer) ? initialAnswer : undefined
       }
       locked={locked}
       onProgress={onProgress}
@@ -178,17 +163,14 @@ function ShortTextInput({
   };
 
   return (
-    <form
-      className={`${styles.textAnswerForm} mt-8`}
-      onSubmit={submit}
-    >
-      <label className={styles.textAnswerLabel} htmlFor={`answer-${question.id}`}>
+    <form className="mt-8" onSubmit={submit}>
+      <label className={textStyles.label} htmlFor={`answer-${question.id}`}>
         Escribe tu respuesta
       </label>
-      <div className={styles.textAnswerRow}>
+      <div className={textStyles.row}>
         <input
           id={`answer-${question.id}`}
-          className={styles.textAnswerInput}
+          className={textStyles.input}
           type="text"
           value={answer}
           onChange={(event) => setAnswer(event.target.value)}
@@ -207,9 +189,7 @@ function ShortTextInput({
           <ArrowIcon className="h-6 w-6" />
         </motion.button>
       </div>
-      <p className={styles.textAnswerHint}>
-        No importan las mayúsculas, las tildes ni los espacios.
-      </p>
+      <p className={textStyles.hint}>No importan las mayúsculas, las tildes ni los espacios.</p>
     </form>
   );
 }
@@ -287,9 +267,7 @@ function HeatMapInput({
   locked,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"heat-map">>) {
-  return (
-    <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />
-  );
+  return <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />;
 }
 
 function ImageLabelingInput({
@@ -297,13 +275,7 @@ function ImageLabelingInput({
   locked,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"image-labeling">>) {
-  return (
-    <ImageLabelingQuestion
-      question={question}
-      locked={locked}
-      onSubmit={onSubmit}
-    />
-  );
+  return <ImageLabelingQuestion question={question} locked={locked} onSubmit={onSubmit} />;
 }
 
 function ClassificationInput({
@@ -664,9 +636,7 @@ function MiniWordleInput({
       wordLength={question.wordLength}
       maxAttempts={question.maxAttempts}
       initialAnswer={
-        initialAnswer !== undefined && isMiniWordleAnswer(initialAnswer)
-          ? initialAnswer
-          : undefined
+        initialAnswer !== undefined && isMiniWordleAnswer(initialAnswer) ? initialAnswer : undefined
       }
       locked={locked}
       onProgress={onProgress}

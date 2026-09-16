@@ -1,0 +1,86 @@
+@layer app-formats {
+  .stageFrame {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .questionIndicator {
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .questionIndicator span {
+    color: var(--color-ink-muted);
+  }
+
+  .headerActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .notebookButton {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.38rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.55rem 0.72rem;
+    color: var(--color-ink-muted);
+    background: var(--color-surface);
+    font-family: var(--type-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+
+  .notebookButton:hover,
+  .notebookButton:focus-visible {
+    border-color: var(--color-social);
+    color: var(--color-ink);
+    background: var(--color-surface-raised);
+  }
+
+  .lifeHearts {
+    display: inline-flex;
+    min-height: 1.75rem;
+    align-items: center;
+    gap: 0.22rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.32rem 0.48rem;
+    background: var(--color-surface);
+  }
+
+  .lifeHeart {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    transition:
+      color 180ms,
+      fill 180ms,
+      opacity 180ms,
+      transform 180ms;
+  }
+
+  .lifeHeartActive {
+    color: var(--color-danger);
+    fill: color-mix(in srgb, var(--color-danger) 18%, transparent);
+  }
+
+  .lifeHeartLost {
+    color: var(--color-ink-faint);
+    fill: transparent;
+    opacity: 0.75;
+    transform: scale(0.92);
+  }
+
+  .legacyStage {
+    min-height: calc(100dvh - 48px);
+  }
+}

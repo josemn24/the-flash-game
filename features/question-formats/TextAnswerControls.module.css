@@ -1,0 +1,62 @@
+@layer app-formats {
+  .row {
+    display: flex;
+    gap: 0.65rem;
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 0.625rem;
+    color: var(--color-ink-muted);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .hint {
+    margin-top: 0.75rem;
+    color: var(--color-ink-faint);
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+  }
+
+  .input {
+    min-width: 0;
+    flex: 1;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    padding: 0.95rem 1rem;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    caret-color: var(--state-focus);
+    font-size: 1rem;
+    font-weight: 700;
+    transition:
+      border-color 160ms,
+      background 160ms;
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-faint);
+  }
+
+  .input:focus {
+    border-color: var(--state-focus);
+    background: var(--color-surface);
+    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+  }
+
+  .submitButton {
+    display: grid;
+    width: 3.7rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  .submitButton:disabled {
+    opacity: 0.24;
+  }
+}

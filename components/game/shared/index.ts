@@ -7,7 +7,14 @@ export type {
   ResultMetric,
 } from "./ChallengeResultScreen/ChallengeResultScreen";
 export { ProgressBar } from "./ProgressBar";
-export { QuestionScreen } from "./QuestionScreen";
+export { QuestionStage } from "./QuestionStage";
+export type { QuestionStageProps, QuestionStageHeaderRenderParams } from "./QuestionStage";
+export {
+  FlashQuestionStage,
+  LegacyQuestionStage,
+  PyramidQuestionStage,
+  SurvivalQuestionStage,
+} from "./QuestionStagePresets";
 export { QuestionTransition } from "./QuestionTransition";
 export { ResultScreen } from "./ResultScreen";
 export { ReviewAnswers } from "./ReviewAnswers";
