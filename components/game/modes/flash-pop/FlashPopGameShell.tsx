@@ -8,10 +8,9 @@ import styles from "./FlashPopGameShell.module.css";
 type FlashPopGameShellProps = {
   layout: "intro" | "game";
   children: ReactNode;
-  footer?: ReactNode;
 };
 
-export function FlashPopGameShell({ layout, children, footer }: FlashPopGameShellProps) {
+export function FlashPopGameShell({ layout, children }: FlashPopGameShellProps) {
   return (
     <MotionConfig reducedMotion="user">
       <Canvas
@@ -21,7 +20,6 @@ export function FlashPopGameShell({ layout, children, footer }: FlashPopGameShel
         contentClassName={layout === "intro" ? styles.introCanvasContent : styles.screen}
       >
         <AnimatePresence mode="wait">{children}</AnimatePresence>
-        {footer}
       </Canvas>
     </MotionConfig>
   );

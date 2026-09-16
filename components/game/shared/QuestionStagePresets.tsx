@@ -47,14 +47,11 @@ export function FlashQuestionStage({ className, ...props }: StagePresetProps) {
       className={`${styles.stageFrame} ${className ?? ""}`}
       renderHeader={({ timer, questionNumber, totalQuestions }) => (
         <GameHeader
-          title="Flash clásico"
-          mobileLabel={progressLabel(questionNumber, totalQuestions)}
-          mobileLabelAriaLabel={progressAriaLabel(questionNumber, totalQuestions)}
+          left={
+            <QuestionIndicator questionNumber={questionNumber} totalQuestions={totalQuestions} />
+          }
           timer={timer}
         />
-      )}
-      renderQuestionMeta={({ questionNumber, totalQuestions }) => (
-        <QuestionIndicator questionNumber={questionNumber} totalQuestions={totalQuestions} />
       )}
     />
   );
@@ -82,9 +79,9 @@ export function SurvivalQuestionStage({
       className={`${styles.stageFrame} ${className ?? ""}`}
       renderHeader={({ timer, questionNumber, totalQuestions }) => (
         <GameHeader
-          title="Supervivencia"
-          mobileLabel={progressLabel(questionNumber, totalQuestions)}
-          mobileLabelAriaLabel={progressAriaLabel(questionNumber, totalQuestions)}
+          left={
+            <QuestionIndicator questionNumber={questionNumber} totalQuestions={totalQuestions} />
+          }
           right={
             <div className={styles.headerActions}>
               {notebook ? <NotebookAction {...notebook} /> : null}
@@ -95,9 +92,6 @@ export function SurvivalQuestionStage({
             </div>
           }
         />
-      )}
-      renderQuestionMeta={({ questionNumber, totalQuestions }) => (
-        <QuestionIndicator questionNumber={questionNumber} totalQuestions={totalQuestions} />
       )}
     />
   );
@@ -110,14 +104,11 @@ export function PyramidQuestionStage({ className, ...props }: StagePresetProps) 
       className={`${styles.stageFrame} ${className ?? ""}`}
       renderHeader={({ timer, questionNumber, totalQuestions }) => (
         <GameHeader
-          title="La Pirámide"
-          mobileLabel={progressLabel(questionNumber, totalQuestions)}
-          mobileLabelAriaLabel={progressAriaLabel(questionNumber, totalQuestions)}
+          left={
+            <QuestionIndicator questionNumber={questionNumber} totalQuestions={totalQuestions} />
+          }
           timer={timer}
         />
-      )}
-      renderQuestionMeta={({ questionNumber, totalQuestions }) => (
-        <QuestionIndicator questionNumber={questionNumber} totalQuestions={totalQuestions} />
       )}
     />
   );

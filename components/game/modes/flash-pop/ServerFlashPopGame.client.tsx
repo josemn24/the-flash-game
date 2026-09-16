@@ -13,7 +13,7 @@ import {
   FlashQuestionStage,
   StartCountdown,
 } from "@/components/game/shared";
-import { Button, Card } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
 import type { GameRoomContext } from "@/types/game";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
@@ -31,25 +31,7 @@ export function ServerFlashPopGame({
   const session = useServerFlashSession({ challenge, roomContext, terminalReview });
 
   return (
-    <FlashPopGameShell
-      layout={session.phase === "intro" ? "intro" : "game"}
-      footer={
-        session.attempt &&
-        (session.phase === "countdown" ||
-          session.phase === "playing" ||
-          session.phase === "transition") ? (
-          <div className="mx-auto mt-4 flex max-w-xl justify-end">
-            <Button
-              variant="secondary"
-              onClick={() => void session.abandon()}
-              disabled={session.busy}
-            >
-              Abandonar intento
-            </Button>
-          </div>
-        ) : null
-      }
-    >
+    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
       {session.phase === "intro" ? (
         <motion.div
           key="intro"

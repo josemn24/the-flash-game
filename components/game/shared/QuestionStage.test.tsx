@@ -29,7 +29,7 @@ function stageProps(
 }
 
 describe("QuestionStage", () => {
-  it("renders the shared question structure with a mode header and accessible title", () => {
+  it("renders one progress indicator in the shared header with an accessible title", () => {
     const challenge = getChallengeById("tabarnia-flash-01");
     if (!challenge || challenge.mode !== "flash") throw new Error("Expected flash challenge");
 
@@ -44,7 +44,7 @@ describe("QuestionStage", () => {
       />,
     );
 
-    expect(markup).toContain("Flash clásico");
+    expect(markup.match(/Pregunta 01/g)).toHaveLength(1);
     expect(markup).toContain('role="timer"');
     expect(markup).toContain('aria-labelledby="');
     expect(markup).toContain(challenge.questions[0].question);
@@ -67,7 +67,7 @@ describe("QuestionStage", () => {
       />,
     );
 
-    expect(markup).toContain("Supervivencia");
+    expect(markup.match(/Pregunta 01/g)).toHaveLength(1);
     expect(markup).toContain("2 de 3 vidas restantes");
   });
 

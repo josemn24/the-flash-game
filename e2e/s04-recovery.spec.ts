@@ -65,7 +65,7 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
     ).toBeVisible();
   });
 
-  test("bloquea una segunda sesión y permite abandonar el intento", async ({ page, browser }) => {
+  test("bloquea una segunda sesión y no muestra una acción de abandono", async ({ page, browser }) => {
     test.setTimeout(60_000);
     const data = await fixture();
     const secondContext = await browser.newContext();
@@ -90,13 +90,7 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
 
       expect(blocked.status).toBe(409);
       expect(blocked.body).toEqual({ error: { code: "attempt_control_required" } });
-
-      page.once("dialog", (dialog) => void dialog.accept());
-      await page.getByRole("button", { name: "Abandonar intento" }).click();
-      await expect(page.getByRole("heading", { name: "Intento no completado" })).toBeVisible();
-      await page.reload();
-      await expect(page.getByRole("heading", { name: "Intento no completado" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Empezar desafío" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Abandonar intento" })).toHaveCount(0);
     } finally {
       await secondContext.close();
     }

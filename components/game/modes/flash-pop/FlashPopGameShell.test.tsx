@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { FlashPopGameShell } from "./FlashPopGameShell";
 
 describe("FlashPopGameShell", () => {
-  it("provides the same Canvas contract for the game layout and footer slot", () => {
+  it("provides the same Canvas contract for the game layout", () => {
     const markup = renderToStaticMarkup(
-      <FlashPopGameShell layout="game" footer={<button type="button">Abandonar</button>}>
+      <FlashPopGameShell layout="game">
         <section>Pregunta</section>
       </FlashPopGameShell>,
     );
@@ -13,7 +13,6 @@ describe("FlashPopGameShell", () => {
     expect(markup).toContain('data-gameplay-shell="flash-pop"');
     expect(markup).toContain('data-gameplay-layout="game"');
     expect(markup).toContain("Pregunta");
-    expect(markup).toContain("Abandonar");
   });
 
   it("uses an explicit intro layout", () => {
