@@ -1,0 +1,180 @@
+@layer app-components {
+  .card {
+    margin-top: clamp(3rem, 8vw, 6rem);
+  }
+
+  .heading,
+  .legendRow,
+  .inlineField,
+  .submitRow {
+    display: flex;
+    align-items: center;
+  }
+
+  .heading,
+  .legendRow,
+  .submitRow {
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .heading h2,
+  .heading p,
+  .helper,
+  .confirmed,
+  .formMessage {
+    margin: 0;
+  }
+
+  .heading h2 {
+    margin-top: var(--space-2);
+    font-family: var(--type-display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .helper {
+    max-width: 340px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .form,
+  .field,
+  .fieldset,
+  .memberList,
+  .memberRow {
+    display: grid;
+  }
+
+  .form {
+    gap: var(--space-5);
+    margin-top: var(--space-8);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .field,
+  .fieldset {
+    gap: var(--space-2);
+  }
+
+  .field > span,
+  .fieldset legend {
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .field em,
+  .fieldset em {
+    color: var(--color-ink-muted);
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .field input,
+  .field textarea,
+  .inlineField input,
+  .memberRow input,
+  .memberRow select {
+    width: 100%;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    font: inherit;
+    font-size: 15px;
+  }
+
+  .field textarea {
+    resize: vertical;
+  }
+
+  .fieldset {
+    min-width: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .legendRow legend {
+    margin-right: auto;
+  }
+
+  .inlineField {
+    gap: var(--space-3);
+  }
+
+  .inlineField input {
+    flex: 1;
+  }
+
+  .memberList {
+    gap: var(--space-3);
+  }
+
+  .memberRow {
+    grid-template-columns: minmax(0, 1fr) 130px auto auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .memberRow .confirmed,
+  .memberRow .error {
+    grid-column: 1 / -1;
+  }
+
+  .confirmed {
+    color: var(--color-success);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .error,
+  .formMessage {
+    color: var(--color-danger);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .submitRow {
+    align-items: flex-start;
+  }
+
+  @media (max-width: 760px) {
+    .heading,
+    .submitRow {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .memberRow {
+      grid-template-columns: minmax(0, 1fr) 1fr;
+    }
+
+    .memberRow button {
+      width: 100%;
+    }
+  }
+}

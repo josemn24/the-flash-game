@@ -26,7 +26,7 @@ describe("AdminPortal", () => {
     expect(markup).toContain("Operador beta");
     expect(markup).toContain("Sala Alpha");
     expect(markup).toContain("/portal-alpha");
-    expect(markup).not.toContain("Crear sala");
+    expect(markup).toContain("Crear una sala privada");
     expect(markup).not.toContain('href="/admin');
   });
 

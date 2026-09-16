@@ -117,6 +117,19 @@
     margin-top: clamp(4rem, 10vw, 8rem);
   }
 
+  .notice {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-5);
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  .notice strong {
+    color: var(--color-success);
+  }
+
   .rooms h2 {
     margin-top: var(--space-2);
     font-size: clamp(2.25rem, 5vw, 4rem);

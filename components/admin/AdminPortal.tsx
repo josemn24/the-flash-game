@@ -1,13 +1,15 @@
 import { LogoutButton } from "@/components/auth/LogoutButton.client";
 import { Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
 import type { SuperadminPortalContext } from "@/types/view-models";
+import { CreateRoomForm } from "./CreateRoomForm.client";
 import styles from "./AdminPortal.module.css";
 
 type AdminPortalProps = {
   readonly context: SuperadminPortalContext;
+  readonly creationNotice?: boolean;
 };
 
-export function AdminPortal({ context }: AdminPortalProps) {
+export function AdminPortal({ context, creationNotice = false }: AdminPortalProps) {
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.header}>
@@ -81,6 +83,15 @@ export function AdminPortal({ context }: AdminPortalProps) {
           </Card>
         )}
       </section>
+
+      {creationNotice ? (
+        <Card as="section" surface="soft" className={styles.notice} role="status">
+          <strong>Sala creada correctamente.</strong>
+          <span>La nueva sala ya aparece en el contexto operativo.</span>
+        </Card>
+      ) : null}
+
+      <CreateRoomForm />
     </Canvas>
   );
 }

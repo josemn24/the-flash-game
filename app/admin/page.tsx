@@ -18,7 +18,12 @@ async function loadAdminContext() {
   }
 }
 
-export default async function AdminPage() {
+type AdminPageProps = {
+  readonly searchParams: Promise<{ created?: string }>;
+};
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
   const context = await loadAdminContext();
-  return <AdminPortal context={context} />;
+  const params = await searchParams;
+  return <AdminPortal context={context} creationNotice={params.created === "1"} />;
 }

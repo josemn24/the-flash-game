@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S07 implementadas sobre Supabase local y el
+> Estado: vigente. Arquitectura de transición con S01–S08 implementadas sobre Supabase local y el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -68,8 +68,10 @@ se registran en auditoría; el portal no obtiene permisos escribiendo DML genér
 La base transversal ya implementada vive en `/admin`: es una ruta dinámica server-side que consulta
 `public.get_superadmin_portal_context()` mediante una fachada y un adaptador propios. El RPC valida
 la asignación persistida de `superadmin`, muestra solo salas activas y no concede acceso RLS global
-ni acceso directo a relaciones `private`. Esta slice no escribe ni audita lecturas; S08 añadirá los
-primeros comandos administrativos idempotentes y auditados usando el mismo `requireSuperadmin()`.
+ni acceso directo a relaciones `private`. S08 añade el primer comando administrativo: una Server
+Action protegida por el mismo `requireSuperadmin()` llama a los RPC estrechos de lookup y creación,
+crea de forma atómica la sala activa con owner y grupo inicial, y registra una auditoría agregada.
+No hay DML genérico desde la aplicación ni se convierte al superadmin en miembro competitivo.
 
 ## 2. Responsabilidades por capa
 
@@ -209,7 +211,7 @@ en el MVP. La recuperación debe ser una operación de dominio: reconcilia una r
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
-auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S07
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S08
 verifica Auth y establece identidad con claims locales a cada transacción. No se expone `private` por
 PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 
@@ -224,7 +226,7 @@ Adaptadores previstos:
 ```text
 infrastructure/
   mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S07
+  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S08
 ```
 
 Reglas de persistencia:
@@ -405,7 +407,7 @@ Page server
 
 En las rutas aún mock, la situación actual difiere en tres puntos intencionados del prototipo:
 `demoIdentity` sustituye la autenticación, `RoomSessionProvider` mantiene resultados y snapshots en
-memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S07 ya usan Auth/RPC
+memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S08 ya usan Auth/RPC
 reales en sus recorridos; esas piezas mock son puntos de sustitución, no el contrato productivo.
 
 ## 6. Decisiones técnicas relevantes

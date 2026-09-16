@@ -15,3 +15,13 @@ export class SuperadminAccessDeniedError extends Error {
     this.name = "SuperadminAccessDeniedError";
   }
 }
+
+export class SuperadminRoomCommandError extends Error {
+  readonly code: string;
+
+  constructor(code: string, cause?: unknown) {
+    super(code, { cause });
+    this.name = "SuperadminRoomCommandError";
+    this.code = code;
+  }
+}

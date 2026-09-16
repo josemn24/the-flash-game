@@ -2,13 +2,14 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S07 y el portal privado mínimo añaden la primera integración real de Supabase y completan el
+La fase 4 está cerrada. S01–S08 y el portal privado añaden la primera integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
-superadministración y las salas activas; las operaciones administrativas continúan pendientes de
-S08 y las slices siguientes. Los demás modos siguen mock hasta sus propias vertical slices.
+superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
+transaccional de sala, owner y grupo inicial desde el portal. Los demás modos siguen mock hasta sus
+propias vertical slices.
 
 La dirección vigente es:
 
@@ -34,6 +35,13 @@ Portal privado `/admin`
 → public.get_superadmin_portal_context()
 → asignación privada de plataforma y salas activas
 
+Mutaciones del portal `/admin`
+→ app/admin/actions.ts
+→ server/admin.ts + server/admin-room.ts
+→ infrastructure/supabase/superadminQueries.ts
+→ public.lookup_superadmin_players() / public.create_superadmin_room()
+→ comando privado transaccional + private.audit_log
+
 Las consultas aún no migradas conservan este flujo:
 
 Server Components
@@ -55,7 +63,8 @@ invitación.
 
 `application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
 `RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries` y
-`ChallengeQueries`. Esta capa
+`ChallengeQueries`. `application/ports` añade `SuperadminRoomCommands` para separar la mutación
+administrativa de las consultas. Esta capa
 solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
 
 Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
@@ -120,12 +129,15 @@ no entregan `public_payload`, soluciones, preguntas completas, filas `private` n
 Una sala inexistente y una sala ajena devuelven la misma ausencia observable. El rol `spectator`
 puede leer la introducción, pero no recibe un CTA competitivo ni puede crear un intento.
 
-El portal `/admin` delega en `SupabaseSuperadminPortalQueries`. Su RPC devuelve únicamente el
-operador y salas `active`; no requiere membresía de sala y no expone la tabla privada de asignaciones.
+El portal `/admin` delega las lecturas en `SupabaseSuperadminPortalQueries` y las mutaciones en
+`SupabaseSuperadminRoomCommands`. Su RPC de contexto devuelve únicamente el operador y salas
+`active`; los RPC de S08 resuelven emails exactos, crean la sala y escriben una auditoría agregada
+en una transacción. Ninguno requiere exponer la tabla privada de asignaciones.
 `requireSuperadmin()` valida primero Auth y el provisioning existente, y después exige la asignación
 persistida `superadmin`. Una sesión ausente vuelve al inicio y una cuenta autenticada sin ese rol
-recibe ausencia de ruta. El guard se invoca de nuevo en cada futura Server Action o Route Handler;
-ocultar controles en la UI no es una frontera de seguridad.
+recibe ausencia de ruta. La Server Action vuelve a invocar el guard antes de cada lookup y creación;
+el guard también deberá invocarse en cada futuro Route Handler. Ocultar controles en la UI no es una
+frontera de seguridad.
 
 ## Compatibilidad temporal
 

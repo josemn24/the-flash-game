@@ -191,6 +191,11 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.create_room_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.complete_attempt": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -311,6 +316,11 @@
       "securityDefiner": false,
       "executeRoles": []
     },
+    "private.room_slug_base": {
+      "arguments": "value text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
     "private.secret_hash": {
       "arguments": "secret text",
       "securityDefiner": false,
@@ -378,6 +388,16 @@
     },
     "public.get_superadmin_portal_context": {
       "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.lookup_superadmin_players": {
+      "arguments": "target_emails text[]",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_room": {
+      "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },

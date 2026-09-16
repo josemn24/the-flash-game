@@ -2,7 +2,7 @@
 create schema auth;
 create schema extensions;
 create extension pgtap with schema extensions;
-create table auth.users(id uuid primary key);
+create table auth.users(id uuid primary key, email text);
 create function auth.uid() returns uuid language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''),
     (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'))::uuid

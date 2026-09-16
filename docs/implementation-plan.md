@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S07 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S08 están implementadas y verificadas sobre el stack local;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-16. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
@@ -34,7 +34,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                           | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                              |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado. | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                              |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                            | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                             |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S07.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S08.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
 
 Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 [composición mock](../infrastructure/mock/composition.ts),
@@ -47,7 +47,7 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 ### Diferencias que el plan debe respetar
 
 - Algunas páginas de documentación general todavía describen una aplicación sin base de datos; son
-  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S07.
+  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S08.
   No hay que rediseñar el esquema ni sustituirlo por CRUD.
 - `supabase/tests/support/bootstrap.sql` simula las funciones mínimas de Auth; sus fixtures no son
   un seed ni prueban un login GoTrue. La integración con Supabase completo se valida en S01.
@@ -177,7 +177,7 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | S05 y E01        | Alfabeto y Mini-Wordle de prueba: reloj global y feedback intermedio sin solución cliente. | S04, D03. Reducen pronto dos riesgos distintos.                      |
 | S06 → S07        | Dos rankings y consulta histórica real. **S06 y S07 implementados en local.**                 | S03; S04 para reconstrucción de estado.                              |
 | Portal privado    | Acceso seguro al portal, contexto de operador y marco común de comandos administrativos. **Implementado en local.** | S01, Auth y rol global de plataforma. |
-| S08              | Crear sala, asignar propietario y provisionar directamente al grupo desde el portal.       | Portal privado, S02, D05/D06.                                       |
+| S08              | Crear sala activa, asignar propietario, provisionar grupo inicial y auditar la operación desde el portal. **Implementado en local.** | Portal privado, S02, D05/D06. |
 | S09 (posterior)   | Invitaciones de un solo/multiuso y aceptación mediante enlace.                              | S08, S01, D05/D06; no bloquea la beta con provisioning directo.       |
 | S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición desde el portal privado.     | S08, S03, D05.                                                       |
 | S13              | Avatar persistido.                                                                         | S01, D08.                                                            |
@@ -236,15 +236,15 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 
 ### Slice transversal previa — Portal privado mínimo
 
-> Estado: implementada y verificada en local el 2026-09-16. `/admin` es una superficie de solo
-> lectura; S08 añadirá las primeras mutaciones administrativas.
+> Estado: implementada y verificada en local el 2026-09-16. `/admin` es una superficie server-side
+> protegida; S08 añade la creación auditada de salas y su provisioning inicial.
 
 - **Objetivo:** proporcionar la frontera común para operar la beta sin mezclar permisos de
   superadmin con la UI pública ni crear una pantalla administrativa genérica antes de tener casos
   de uso reales.
 - **Superficie:** `/admin` usa un layout y una página dinámica server-side, sin enlaces desde la
-  navegación pública. La página muestra el contexto del operador y todas las salas `active`; las
-  acciones de negocio llegan en S08 y las slices siguientes.
+  navegación pública. La página muestra el contexto del operador y todas las salas `active`, y
+  contiene el wizard de S08 para crear una sala, owner y grupo inicial opcional.
 - **Autenticación y autorización:** resolver la sesión en servidor y comprobar el rol global
   `superadmin` contra la asignación persistida. Un miembro normal no debe poder alcanzar las páginas
   ni invocar sus acciones modificando URL, formulario, claims del cliente o payloads.
@@ -439,22 +439,34 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 
 ### S08 — Crear una sala privada
 
+- **Estado:** implementada y verificada sobre Supabase local el 2026-09-16. La slice cubre el
+  primer comando de escritura del portal privado; no conecta ningún proyecto remoto.
 - **Objetivo / CU:** dejar de aprovisionar salas y miembros beta a mano; CU-04 y provisioning
   directo de la beta.
 - **Actor y superficie:** `superadmin` desde el portal privado de operación. No habrá acción «Crear
   sala» ni formulario de creación en la UI pública de la beta.
 - **Mocks retirados:** listado fijo de salas como única vía de entrada. No se crea temporada demo.
-- **Backend/dominio:** comando privado autorizado para `superadmin` → validación de
-  nombre/zona/slug → creación idempotente; el portal asigna un `owner` inicial explícito y añade o
-  reactiva usuarios autenticados con `admin`, `member` o `spectator`. El superadmin no se convierte
-  por ello en miembro competitivo ni se simula una aceptación de invitación.
-- **Persistencia:** comandos privados que crean `rooms`, la membresía `owner`, las membresías beta
-  iniciales y la auditoría en transacciones coherentes; reutilizar las restricciones existentes de
-  propiedad, estado e historial. Sin DML general de servicio.
-- **Tests:** doble envío, rollback sin sala huérfana, zona inválida, slug en conflicto, actor sin
-  privilegio global, owner inicial manipulado, alta directa idempotente, reactivación de `left` o
-  `removed`, bloqueo de `banned`, rol no permitido y lectura posterior desde otra cuenta denegada.
+- **Backend/dominio:** `SuperadminRoomCommands` separa el comando de las consultas. La Server
+  Action vuelve a ejecutar `requireSuperadmin()`, resuelve emails exactos y delega en
+  `public.create_superadmin_room(jsonb)`; la base vuelve a resolverlos dentro de una transacción.
+  El título genera el slug server-side, con fallback `sala`, límite base de 64 caracteres y sufijos
+  para colisiones. El portal asigna un `owner` inicial explícito y añade un grupo opcional de
+  usuarios Auth activos con `admin`, `member` o `spectator`. El superadmin no se convierte por ello
+  en miembro competitivo ni se simula una aceptación de invitación.
+- **Persistencia:** `supabase/schemas/58_superadmin_room_commands.sql` y la migración incremental
+  crean `lookup_superadmin_players`, `create_superadmin_room` y el comando privado transaccional.
+  La sala nace `active`, con una única membresía `owner`, sin temporada, publicación ni invitación.
+  La operación es idempotente por actor y clave: el mismo contenido devuelve el resultado original y
+  otro contenido produce `idempotency_conflict`. Una única fila agregada de `private.audit_log`
+  registra sala, propietario, roles, motivo y request id sin guardar emails.
+- **Tests:** pgTAP cubre ACL, actor, validaciones, slug y colisiones, rollback, idempotencia,
+  auditoría y ausencia de temporada/publicación/invitación; Vitest cubre adaptación estricta y
+  errores; el escenario `s08` cubre Auth/PostgREST, grupo inicial, reintento y colisión; E2E cubre
+  búsqueda exacta, creación, recarga y acceso denegado. La validación se ejecuta con la secuencia
+  `db:reset`, fixture, integración, E2E, schema test y checks del proyecto.
 - **Dependencias:** Portal privado, S02 y D02 para URLs; reglas confirmadas de CU-04 y membresías.
+- **Fuera de alcance:** no hay gestión posterior de miembros, reactivación, cambio de roles,
+  invitaciones, temporadas, publicaciones ni navegación administrativa en la UI pública.
 - **Terminada:** un superadmin crea una sala, asigna propietario y provisiona al grupo desde el
   portal; tras recargar, los usuarios ven la sala según su rol, el alta no usa invitaciones y toda
   acción que afecta a la sala queda auditada.
@@ -956,7 +968,7 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 ## 10. Cierre de una slice y uso como backlog
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
-incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S07
+incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S08
 están **implementadas**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
@@ -983,8 +995,8 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S07 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
-competitivo persistido, recuperación local, rankings, historial y revisión. El siguiente objetivo
-inmediato es completar H3 con S08 o, si el riesgo de modos pesa más, ejecutar primero el experimento
-técnico S05/E01. La
+S01–S08 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
+competitivo persistido, recuperación local, rankings, historial y revisión, además de la creación
+auditada de salas desde el portal privado. El siguiente objetivo inmediato es completar H3 con
+S10–S12 o, si el riesgo de modos pesa más, ejecutar primero el experimento técnico S05/E01. La
 gestión editorial completa y los 31 formatos no bloquean el piloto acotado.
