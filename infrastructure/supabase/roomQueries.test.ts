@@ -98,8 +98,9 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) => {
         if (functionName === "get_room_detail") return { data: [roomRow], error: null };
-        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
-        if (functionName === "get_challenge_ranking") return { data: challengeRows, error: null };
+      if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+      if (functionName === "get_challenge_ranking") return { data: challengeRows, error: null };
+      if (functionName === "get_room_calendar") return { data: [], error: null };
         return { data: [], error: null };
       }),
     });
@@ -172,6 +173,7 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       if (functionName === "get_room_detail") {
         return { data: [{ ...roomRow, season_id: null, publication_id: null }], error: null };
       }
+      if (functionName === "get_room_calendar") return { data: [], error: null };
       throw new Error(`Unexpected ranking RPC: ${functionName}`);
     });
     mocks.createClient.mockResolvedValue(client);
@@ -206,6 +208,20 @@ describe("SupabaseRoomQueries S06 rankings", () => {
 
     await expect(new SupabaseRoomQueries().getRanking("s06-main")).rejects.toThrow(
       "Supabase ranking read returned an invalid row (get_season_ranking, 0)",
+    );
+  });
+
+  it("rejects malformed calendar rows instead of silently dropping them", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") return { data: [roomRow], error: null };
+        if (functionName === "get_room_calendar") return { data: [{ time_zone: 42 }], error: null };
+        return { data: [], error: null };
+      }),
+    });
+
+    await expect(new SupabaseRoomQueries().getDetail("s06-main")).rejects.toThrow(
+      "Supabase room read returned an invalid row (get_room_calendar, 0)",
     );
   });
 });

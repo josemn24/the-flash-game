@@ -45,3 +45,13 @@ export class SuperadminEditorialCommandError extends Error {
     this.code = code;
   }
 }
+
+export class SuperadminCalendarCommandError extends Error {
+  readonly code: string;
+
+  constructor(code: string, cause?: unknown) {
+    super(code, { cause });
+    this.name = "SuperadminCalendarCommandError";
+    this.code = code;
+  }
+}

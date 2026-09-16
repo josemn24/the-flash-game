@@ -14,6 +14,7 @@ import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
+import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
 
 const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
 
@@ -93,5 +94,6 @@ export const getSuperadminPortalPageModel = cache(async () => {
   return {
     ...access.context,
     editorial: await supabaseSuperadminEditorialQueries.getContext(),
+    calendar: await supabaseSuperadminCalendarQueries.getContext(),
   };
 });

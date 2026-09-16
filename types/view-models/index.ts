@@ -5,3 +5,4 @@ export type * from "@/types/view-models/portal";
 export type * from "@/types/view-models/user";
 export type * from "@/types/view-models/user-actions";
 export type * from "@/types/view-models/editorial";
+export type * from "@/types/view-models/calendar";

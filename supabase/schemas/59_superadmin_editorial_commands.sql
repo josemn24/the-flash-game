@@ -1,24 +1,6 @@
 -- S11 — Publish the minimum supported Flash content from the private portal.
 -- This boundary uses the existing versioned content model. The browser never receives table DML.
 
-create function private.editorial_has_secret_key(value jsonb) returns boolean
-language sql immutable set search_path = '' as $$
-  select case
-    when value is null then false
-    when jsonb_typeof(value) = 'object' then exists (
-      select 1
-      from jsonb_each(value) as item(key, nested)
-      where item.key in ('answer', 'correctAnswer', 'explanation', 'solution', 'solutionPayload')
-        or private.editorial_has_secret_key(item.nested)
-    )
-    when jsonb_typeof(value) = 'array' then exists (
-      select 1 from jsonb_array_elements(value) as item(nested)
-      where private.editorial_has_secret_key(item.nested)
-    )
-    else false
-  end;
-$$;
-
 create function private.validate_flash_editorial_document(document jsonb) returns void
 language plpgsql immutable set search_path = '' as $$
 declare

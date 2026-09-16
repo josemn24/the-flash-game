@@ -21,8 +21,10 @@ import type {
   QuestionMedia,
 } from "@/types/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
+import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
   RoomCardModel,
+  RoomCalendarEntry,
   RoomDailyLeaderboardEntry,
   RoomDetailModel,
   RoomHistoryDetailModel,
@@ -78,6 +80,32 @@ type RoomIntroductionReadRow = {
   challenge_max_score: number;
   question_count: number;
   competitive_playable: boolean;
+  availability_status: "upcoming" | "available" | "closed" | "cancelled";
+  can_start: boolean;
+};
+
+type RoomCalendarReadRow = {
+  room_id: string;
+  room_slug: string;
+  room_title: string;
+  time_zone: string;
+  membership_role: RoomMembershipRole;
+  season_id: string;
+  season_title: string;
+  season_status: "active" | "finished";
+  publication_id: string;
+  publication_number: number;
+  publication_status: "scheduled" | "open" | "closed" | "cancelled";
+  availability_status: "upcoming" | "available" | "closed" | "cancelled";
+  opens_at: string;
+  closes_at: string;
+  challenge_title: string;
+  challenge_subtitle: string | null;
+  challenge_mode: GameMode;
+  question_count: number;
+  own_attempt_status: "in_progress" | "completed" | "abandoned" | "invalidated" | null;
+  can_start: boolean;
+  can_continue: boolean;
 };
 
 type ChallengeRankingReadRow = {
@@ -266,7 +294,42 @@ function isRoomIntroductionReadRow(value: unknown): value is RoomIntroductionRea
     gameModes.has(row.challenge_mode as GameMode) &&
     typeof row.challenge_max_score === "number" &&
     typeof row.question_count === "number" &&
-    typeof row.competitive_playable === "boolean"
+    typeof row.competitive_playable === "boolean" &&
+    ["upcoming", "available", "closed", "cancelled"].includes(String(row.availability_status)) &&
+    typeof row.can_start === "boolean"
+  );
+}
+
+function isRoomCalendarReadRow(value: unknown): value is RoomCalendarReadRow {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.room_id === "string" &&
+    typeof value.room_slug === "string" &&
+    typeof value.room_title === "string" &&
+    typeof value.time_zone === "string" &&
+    isValidTimeZone(value.time_zone) &&
+    roomRoles.has(value.membership_role as RoomMembershipRole) &&
+    typeof value.season_id === "string" &&
+    typeof value.season_title === "string" &&
+    (value.season_status === "active" || value.season_status === "finished") &&
+    typeof value.publication_id === "string" &&
+    typeof value.publication_number === "number" &&
+    Number.isInteger(value.publication_number) &&
+    value.publication_number > 0 &&
+    ["scheduled", "open", "closed", "cancelled"].includes(String(value.publication_status)) &&
+    ["upcoming", "available", "closed", "cancelled"].includes(String(value.availability_status)) &&
+    typeof value.opens_at === "string" &&
+    typeof value.closes_at === "string" &&
+    typeof value.challenge_title === "string" &&
+    (value.challenge_subtitle === null || typeof value.challenge_subtitle === "string") &&
+    typeof value.challenge_mode === "string" &&
+    gameModes.has(value.challenge_mode as GameMode) &&
+    typeof value.question_count === "number" &&
+    Number.isInteger(value.question_count) &&
+    value.question_count >= 0 &&
+    (value.own_attempt_status === null || typeof value.own_attempt_status === "string") &&
+    typeof value.can_start === "boolean" &&
+    typeof value.can_continue === "boolean"
   );
 }
 
@@ -497,6 +560,7 @@ function toDetail(
   viewer: { id: string; name: string; avatarSrc?: string },
   roomLeaderboard: RoomLeaderboardEntry[],
   dailyLeaderboard: RoomDailyLeaderboardEntry[],
+  calendar: readonly RoomCalendarEntry[],
 ) {
   const dailyEntry = dailyLeaderboard.find(({ memberId }) => memberId === viewer.id);
   const dailyChallenge = toChallengeSummary(
@@ -529,6 +593,7 @@ function toDetail(
       : null,
     roomLeaderboard,
     dailyLeaderboard,
+    calendar,
     source: "supabase",
   };
   return detail;
@@ -549,14 +614,36 @@ function toIntroduction(row: RoomIntroductionReadRow): RoomIntroductionModel {
     mode,
     maxScore: row.challenge_max_score,
     questionCount: row.question_count,
-    canStart: row.membership_role !== "spectator",
+    canStart: row.can_start,
     competitivePlayable: row.competitive_playable,
+    availabilityStatus: row.availability_status,
     source: "supabase",
   };
 }
 
+function toCalendarEntry(row: RoomCalendarReadRow): RoomCalendarEntry {
+  return {
+    id: row.publication_id,
+    number: row.publication_number,
+    timeZone: row.time_zone,
+    status: row.publication_status,
+    availabilityStatus: row.availability_status,
+    opensAt: row.opens_at,
+    closesAt: row.closes_at,
+    title: getChallengeDisplayTitle(row.challenge_title, row.challenge_mode),
+    subtitle: row.challenge_subtitle,
+    mode: row.challenge_mode,
+    questionCount: row.question_count,
+    href: row.can_continue
+      ? `/desafios/${row.publication_id}?roomId=${encodeURIComponent(row.room_slug)}`
+      : `/salas/${row.room_slug}/introduccion/${row.publication_id}`,
+    canStart: row.can_start,
+    canContinue: row.can_continue,
+  };
+}
+
 async function callRoomRead(
-  functionName: "get_my_room_cards" | "get_room_detail" | "get_room_introduction",
+  functionName: "get_my_room_cards" | "get_room_detail" | "get_room_introduction" | "get_room_calendar",
   args: Record<string, string> = {},
   guard: (value: unknown) => boolean = isRoomReadRow,
 ) {
@@ -564,6 +651,14 @@ async function callRoomRead(
   const { data, error } = await supabase.rpc(functionName, args);
   if (error) throw new Error(`Supabase room read failed (${functionName}): ${error.message}`);
   if (!Array.isArray(data)) return [];
+  if (functionName === "get_room_calendar") {
+    return data.map((value, index) => {
+      if (!guard(value)) {
+        throw new Error(`Supabase room read returned an invalid row (${functionName}, ${index})`);
+      }
+      return value;
+    });
+  }
   return data.filter(guard);
 }
 
@@ -841,7 +936,7 @@ export class SupabaseRoomQueries
     const row = rows[0];
     if (!row) return null;
 
-    const [seasonRows, dailyRows] = await Promise.all([
+    const [seasonRows, dailyRows, calendarRows] = await Promise.all([
       row.season_id
         ? callRankingRead(
             "get_season_ranking",
@@ -856,6 +951,11 @@ export class SupabaseRoomQueries
             isChallengeRankingReadRow,
           )
         : Promise.resolve([]),
+      callRoomRead(
+        "get_room_calendar",
+        { target_room_slug: roomKey },
+        isRoomCalendarReadRow,
+      ),
     ]);
 
     return toDetail(
@@ -863,6 +963,7 @@ export class SupabaseRoomQueries
       viewer,
       toSeasonLeaderboard(seasonRows),
       toChallengeLeaderboard(dailyRows),
+      calendarRows.map((value) => toCalendarEntry(value as RoomCalendarReadRow)),
     );
   }
 

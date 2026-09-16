@@ -13,6 +13,7 @@
     "supabase:db:schema:sync": "supabase db schema declarative sync --no-apply",
     "supabase:fixture": "node scripts/supabase-fixture.mjs",
     "test:integration:supabase": "node scripts/supabase-integration.mjs",
+    "calendar:tick": "node scripts/calendar-tick.mjs",
     "supabase:migration:up": "supabase migration up",
     "supabase:migration:new": "supabase migration new",
     "dictionary:generate": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 && node scripts/generate-mini-wordle-dictionary.mjs --length=5",

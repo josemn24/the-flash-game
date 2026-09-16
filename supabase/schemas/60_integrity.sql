@@ -215,10 +215,12 @@ begin
         join public.rooms r on r.id = s.room_id
         join public.room_memberships m on m.room_id = r.id and m.player_id = new.player_id
         join public.players p on p.id = m.player_id
-        where sc.id = new.scheduled_challenge_id and sc.status = 'open'
-          and s.status = 'active' and r.status = 'active'
-          and s.starts_at <= new.started_at and new.started_at < s.ends_at
-          and sc.opens_at <= new.started_at and new.started_at < sc.closes_at
+        where sc.id = new.scheduled_challenge_id
+          and private.publication_is_effectively_open(
+            sc.status, s.status, s.starts_at, s.ends_at,
+            sc.opens_at, sc.closes_at, new.started_at
+          )
+          and r.status = 'active'
           and m.status = 'active' and m.role in ('owner', 'admin', 'member')
           and p.status = 'active' and p.auth_user_id is not null
         for share of sc, s, r, m, p;

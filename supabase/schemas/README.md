@@ -2,7 +2,7 @@
 
 Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-16. **22 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
-privados de servidor. S01–S11 conectan
+privados de servidor. S01–S12 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
 además del editor Flash mínimo de S11.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
@@ -11,8 +11,9 @@ persistidos, sin materializar tablas adicionales. El portal consulta el contexto
 superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
 Las capacidades restantes siguen usando mocks o están pendientes. S10 añade preparación/edición de
-borradores y activación explícita de temporadas, sin automatización temporal; S11 añade el editor
-Flash mínimo de dos preguntas y publicación inmutable, sin calendario ni participación. Las migraciones están versionadas;
+borradores y activación explícita de temporadas; S11 añade el editor Flash mínimo de dos preguntas y
+publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. Las
+migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
@@ -71,8 +72,8 @@ Para la beta cerrada, el superadmin podrá crear o reactivar directamente membre
 autenticados desde un portal privado, sin crear ni consumir una invitación. La emisión, aceptación y
 revocación de invitaciones completas siguen siendo una capacidad futura de S09, no un flujo de la UI
 pública. S11 implementa el editor Flash mínimo y su publicación global desde el portal privado;
-reemplazo/archivado, el resto de formatos, la preparación de temporadas y la operación del calendario
-se implementarán en sus slices correspondientes.
+reemplazo/archivado y el resto de formatos se implementarán en sus slices correspondientes; S12 ya
+opera localmente el calendario de Flash publicado.
 
 Se conserva la visibilidad de perfiles históricos mínimos en rankings, la exclusión de resultados
 invalidados de la lectura directa y la necesidad de membresía vigente para consultar resultados
@@ -97,11 +98,14 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)       | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                |
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql) | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal. |
 | [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql) | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash mínimo desde el portal; no añade tablas ni columnas. |
+| [59_superadmin_calendar_commands.sql](59_superadmin_calendar_commands.sql) | Programación/reprogramación de Flash publicado, lecturas de calendario y tick temporal con locks/auditoría. |
+| [61_s12_effective_attempt_guard.sql](61_s12_effective_attempt_guard.sql) | Admisión competitiva coherente con la ventana efectiva cuando el tick se retrasa. |
 | [60_integrity.sql](60_integrity.sql)                     | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                     |
 | [70_rls.sql](70_rls.sql)                                 | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                               |
 | [80_rankings.sql](80_rankings.sql)                       | Vista privada invoker y funciones públicas autorizadas por membresía.                                                               |
 | [85_flash_history_reads.sql](85_flash_history_reads.sql) | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                        |
 | [90_commands.sql](90_commands.sql)                       | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                           |
+| [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)     | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                         |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -257,7 +261,7 @@ provocados en auditoría demuestran que no quedan operaciones parciales. La vali
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
 Validación local actual: las comprobaciones SQL existentes más **15 casos pgTAP del portal**, los
-casos de S07, S10 y S11, carreras entre conexiones independientes y **568 pruebas
+casos de S07, S10, S11 y S12, carreras entre conexiones independientes y **575 pruebas
 TypeScript** superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade

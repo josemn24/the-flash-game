@@ -31,6 +31,7 @@ const localEnv = {
     localStatus.PUBLISHABLE_KEY ||
     localStatus.ANON_KEY ||
     "",
+  CALENDAR_TICK_SECRET: process.env.CALENDAR_TICK_SECRET || "local-s12-calendar-secret",
 };
 
 export default defineConfig({

@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S11 implementadas sobre Supabase local y el
+> Estado: vigente. Arquitectura de transición con S01–S12 implementadas sobre Supabase local y el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -58,7 +58,9 @@ En la beta, el superadmin provisiona directamente a usuarios autenticados en una
 simula la aceptación de una invitación y no consume un token. La emisión, aceptación y revocación de
 invitaciones siguen siendo capacidades del producto para una fase posterior, sin UI pública en esta
 versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-calendario podrán habilitarse en el mismo portal interno según el alcance operativo de la beta.
+calendario ya están habilitadas localmente en el mismo portal interno para el Flash mínimo de S11/S12.
+La ejecución temporal se realiza mediante un Route Handler protegido y CLI local; no hay scheduler
+remoto, cola ni worker propio.
 
 Cada operación administrativa debe comprobar el privilegio global en servidor, aplicar las
 invariantes de dominio y usar un comando acotado. Las acciones que afecten directamente a una sala
@@ -215,7 +217,7 @@ en el MVP. La recuperación debe ser una operación de dominio: reconcilia una r
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
-auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S11
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S12
 verifica Auth y establece identidad con claims locales a cada transacción. No se expone `private` por
 PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 
@@ -230,7 +232,7 @@ Adaptadores previstos:
 ```text
 infrastructure/
   mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S11
+  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S12
 ```
 
 Reglas de persistencia:
@@ -299,9 +301,8 @@ Un proceso asíncrono será necesario solo para tareas que no deben bloquear la 
 - recalcular proyecciones materializadas si el volumen lo exige;
 - procesar webhooks externos.
 
-Hasta que esas necesidades aparezcan, un scheduler gestionado o un Route Handler protegido puede
-ser suficiente. No se debe introducir event sourcing, una cola propia ni microservicios solo por
-anticipar estas tareas.
+Para S12, un scheduler externo opcional invoca el Route Handler protegido y es suficiente. No se
+debe introducir event sourcing, una cola propia ni microservicios solo por anticipar estas tareas.
 
 ## 3. Reglas de dependencia
 
@@ -411,7 +412,7 @@ Page server
 
 En las rutas aún mock, la situación actual difiere en tres puntos intencionados del prototipo:
 `demoIdentity` sustituye la autenticación, `RoomSessionProvider` mantiene resultados y snapshots en
-memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S11 ya usan Auth/RPC
+memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S12 ya usan Auth/RPC
 reales en sus recorridos; esas piezas mock son puntos de sustitución, no el contrato productivo.
 
 ## 6. Decisiones técnicas relevantes

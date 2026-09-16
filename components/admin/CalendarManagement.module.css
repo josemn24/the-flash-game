@@ -1,0 +1,17 @@
+@layer app-components {
+  .section { display: grid; gap: var(--space-5); margin-top: var(--space-8); }
+  .heading, .entryTopline, .listHeading { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
+  .heading h2, .card h3, .list h3, .entry h4 { margin: 0; font-family: var(--type-display); letter-spacing: -0.04em; }
+  .card, .entry { display: grid; gap: var(--space-3); }
+  .form { display: grid; gap: var(--space-3); max-width: 620px; }
+  .form label { display: grid; gap: 6px; }
+  .form label > span { font-size: 12px; font-weight: 800; }
+  .form input, .form select, .form textarea { width: 100%; border: 1px solid var(--color-line-strong); border-radius: var(--radius-control); padding: 10px 12px; background: var(--color-surface); color: var(--color-ink); font: inherit; }
+  .form textarea { resize: vertical; }
+  .list { display: grid; gap: var(--space-3); }
+  .published, .helper { color: var(--color-ink-muted); font-size: 12px; }
+  .eyebrow { margin: 0; color: var(--color-ink-muted); font-family: var(--type-mono); font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+  .edit summary { cursor: pointer; color: var(--color-brand-strong); font-size: 12px; font-weight: 800; }
+  .edit .form { margin-top: var(--space-3); }
+  .error { margin: 0; color: var(--color-danger, #a71930); font-size: 12px; font-weight: 700; }
+}

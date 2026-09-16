@@ -78,7 +78,7 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     typeof value.room_slug === "string" &&
     typeof value.room_title === "string" &&
     typeof value.publication_id === "string" &&
-    (value.publication_status === "open" || value.publication_status === "closed") &&
+    (value.publication_status === "scheduled" || value.publication_status === "open" || value.publication_status === "closed") &&
     typeof value.challenge_id === "string" &&
     typeof value.challenge_version_id === "string" &&
     typeof value.challenge_title === "string" &&

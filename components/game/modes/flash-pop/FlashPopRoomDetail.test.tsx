@@ -71,6 +71,77 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).not.toContain("Actividad reciente");
   });
 
+  it("renders the persisted calendar states and only links playable entries", async () => {
+    const model = await getRoomDetailModel();
+    const markup = renderToStaticMarkup(
+      <FlashPopRoomDetail
+        model={{
+          ...model,
+          source: "supabase",
+          calendar: [
+            {
+              id: "future-1",
+              number: 1,
+              timeZone: "Europe/Madrid",
+              status: "scheduled",
+              availabilityStatus: "upcoming",
+              opensAt: "2026-09-20T10:00:00.000Z",
+              closesAt: "2026-09-20T11:00:00.000Z",
+              title: "Flash futuro",
+              subtitle: null,
+              mode: "flash",
+              questionCount: 2,
+              href: "/salas/tabarnia-room/introduccion/future-1",
+              canStart: false,
+              canContinue: false,
+            },
+            {
+              id: "open-2",
+              number: 2,
+              timeZone: "Europe/Madrid",
+              status: "open",
+              availabilityStatus: "available",
+              opensAt: "2026-09-19T10:00:00.000Z",
+              closesAt: "2026-09-19T11:00:00.000Z",
+              title: "Flash abierto",
+              subtitle: null,
+              mode: "flash",
+              questionCount: 2,
+              href: "/salas/tabarnia-room/introduccion/open-2",
+              canStart: true,
+              canContinue: false,
+            },
+            {
+              id: "closed-3",
+              number: 3,
+              timeZone: "Europe/Madrid",
+              status: "closed",
+              availabilityStatus: "closed",
+              opensAt: "2026-09-18T10:00:00.000Z",
+              closesAt: "2026-09-18T11:00:00.000Z",
+              title: "Flash cerrado",
+              subtitle: null,
+              mode: "flash",
+              questionCount: 2,
+              href: "/salas/tabarnia-room/introduccion/closed-3",
+              canStart: false,
+              canContinue: false,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain("Desafíos de la temporada");
+    expect(markup).toContain("Próximo");
+    expect(markup).toContain("Disponible");
+    expect(markup).toContain("Cerrado");
+    expect(markup).toContain('href="/salas/tabarnia-room/introduccion/open-2"');
+    expect(markup).not.toContain('href="/salas/tabarnia-room/introduccion/future-1"');
+    expect(markup).not.toContain('href="/salas/tabarnia-room/introduccion/closed-3"');
+    expect(markup).toContain("Europe/Madrid");
+  });
+
   it.each([
     ["available", "Pendiente", "Jugar", "/desafios/tabarnia-challenge-06?roomId=tabarnia-room"],
     [

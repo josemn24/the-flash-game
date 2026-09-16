@@ -1,6 +1,7 @@
 import type { Challenge, ChallengeAvailabilityStatus, GameMode } from "@/types/gameplay/challenge";
 import type { RoomChallengeResult } from "@/types/gameplay/completion";
 import type { LegacySeasonStatus } from "@/types/legacy/room";
+import type { RoomCalendarEntry } from "@/types/view-models/calendar";
 
 export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
 
@@ -102,6 +103,7 @@ export type RoomDetailModel = {
   } | null;
   roomLeaderboard: RoomLeaderboardEntry[];
   dailyLeaderboard: RoomDailyLeaderboardEntry[];
+  calendar: readonly RoomCalendarEntry[];
   source?: RoomDataSource;
 };
 
@@ -121,6 +123,7 @@ export type RoomIntroductionModel = {
   questionCount: number;
   canStart: boolean;
   competitivePlayable: boolean;
+  availabilityStatus: "upcoming" | "available" | "closed" | "cancelled";
   source: "supabase";
 };
 

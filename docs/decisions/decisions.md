@@ -131,9 +131,9 @@
 - El superadmin puede crear salas y asignar su propietario inicial desde ese portal. No se convierte
   automáticamente en miembro competitivo por operar la sala.
 - La configuración y activación de temporadas también es una tarea exclusiva del portal durante la
-  beta. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-  calendario son capacidades previstas para esa misma superficie interna, según el alcance que se
-  habilite para la beta.
+  beta. S11 habilita la publicación mínima de Flash y S12 la programación/reprogramación y el tick
+  local de calendario desde esa misma superficie interna; cancelación, automatización remota y
+  reemplazo de versiones publicadas quedan para slices posteriores.
 - Los usuarios finales solo consultan y juegan en salas ya provisionadas. No deben aparecer CTA ni
   rutas públicas que sugieran gestión de salas, membresías, invitaciones o temporadas.
 - Las reglas de invitaciones documentadas arriba se conservan como política del producto para una

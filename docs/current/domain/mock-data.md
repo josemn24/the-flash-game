@@ -82,15 +82,15 @@ del contenido público. Incluye escenarios negativos aislados de relaciones y es
 ## Fase 4 cerrada y límite actual
 
 Las rutas de práctica y preview acceden al store mediante contratos asíncronos, el adaptador mock y
-la fachada `server/data-access.ts`. Las rutas reales de S01–S11 usan la misma fachada para seleccionar
+la fachada `server/data-access.ts`. Las rutas reales de S01–S12 usan la misma fachada para seleccionar
 Auth, RPCs y PostgreSQL mediante `infrastructure/supabase/`. Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 
 S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;
 S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
 abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
-historial Flash, ranking histórico y revisión autorizada después de volver. S08–S11 añaden portal
-privado, temporadas y publicación editorial Flash mínima; el calendario, Storage y los demás modos
+historial Flash, ranking histórico y revisión autorizada después de volver. S08–S12 añaden portal
+privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y los demás modos
 siguen usando mock o están pendientes de sus propias slices. La beta provisionará miembros
 directamente desde ese portal, sin flujo público de invitaciones.
 

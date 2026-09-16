@@ -156,6 +156,44 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
   );
 }
 
+function RoomCalendar({ model }: { model: RoomDetailModel }) {
+  if (model.source !== "supabase" || model.calendar.length === 0) return null;
+  const labels = {
+    upcoming: "Próximo",
+    available: "Disponible",
+    closed: "Cerrado",
+    cancelled: "Cancelado",
+  } as const;
+  const formatter = new Intl.DateTimeFormat("es-ES", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+  return (
+    <section aria-labelledby="room-calendar-title">
+      <p className={styles.todayLabel}>CALENDARIO</p>
+      <Card as="section" surface="soft" aria-labelledby="room-calendar-title">
+        <h2 id="room-calendar-title">Desafíos de la temporada</h2>
+        <div>
+          {model.calendar.map((entry) => (
+            <div key={entry.id}>
+              <span>#{entry.number} · {entry.title}</span>
+              <span>{labels[entry.availabilityStatus]}</span>
+              <span>
+                {formatter.format(new Date(entry.opensAt))} – {formatter.format(new Date(entry.closesAt))} ({entry.timeZone})
+              </span>
+              {entry.canStart || entry.canContinue ? (
+                <ButtonLink href={entry.href} size="sm" trailingIcon={<ArrowIcon />}>
+                  {entry.canContinue ? "Continuar" : "Introducción"}
+                </ButtonLink>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </Card>
+    </section>
+  );
+}
+
 export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
   const { getCompletion } = useRoomSession();
   const completion =
@@ -241,6 +279,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       <div className={styles.roomMain}>
         <p className={styles.todayLabel}>HOY</p>
         <DailyChallengeCard model={visibleModel} />
+        <RoomCalendar model={visibleModel} />
 
         <div className={styles.dailyRanking}>
           <RoomLeaderboard

@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S11 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S12 están implementadas y verificadas sobre el stack local;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-16. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
@@ -27,14 +27,14 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Área      | Existe y conviene conservar                                                                                                                                                                                                         | Falta para un recorrido real                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta.            |
-| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07, más los contextos privados de temporadas y editorial en S10–S11. | Ajustes y el resto de proyecciones autorizadas. |
+| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07, más los contextos privados de temporadas, editorial y calendario en S10–S12. | Ajustes y el resto de proyecciones autorizadas. |
 | Identidad | `Player` separado de Auth, provisioning, login/logout y nombre persistido en S01.                                                                                                                                                 | Avatar, Storage y políticas de administración.                                                                                                             |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash en S03–S04.                                                                                       | Sustituir autoridad cliente en Alphabet y los demás modos; Pirámide también usa `localStorage` en práctica.                                                |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                         | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                                 |
 | SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                           | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                              |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado. | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                              |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                            | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                             |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S11.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S12.                                                                                                                       | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                             |
 
 Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 [composición mock](../infrastructure/mock/composition.ts),
@@ -47,7 +47,7 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 ### Diferencias que el plan debe respetar
 
 - Algunas páginas de documentación general todavía describen una aplicación sin base de datos; son
-  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S11.
+referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S12.
   No hay que rediseñar el esquema ni sustituirlo por CRUD.
 - `supabase/tests/support/bootstrap.sql` simula las funciones mínimas de Auth; sus fixtures no son
   un seed ni prueban un login GoTrue. La integración con Supabase completo se valida en S01.
@@ -67,9 +67,9 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
   y se aplica la consecuencia del modo. El abandono por inactividad sigue pendiente porque no hay
   heartbeat/lease: no se inventa una duración ni se trata `pagehide` como confirmación fiable;
   véase D04 y S21.
-- La verificación actual registra 526 tests en 78 archivos, 63 documentos comprobados y avisos de
-  formato en 71 archivos. El stack local de Supabase pasa esquema/RLS, provisioning, S02–S04, S06,
-  S07 y concurrencia. No hay proyecto remoto vinculado.
+- La verificación actual se registra en `docs/current/status.md`; el stack local de Supabase pasa
+  esquema/RLS, provisioning, S02–S04, S06–S08 y S10–S12, además de sus integraciones y carreras.
+  No hay proyecto remoto vinculado.
 
 ## 2. Forma de trabajar y límites
 
@@ -538,25 +538,26 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   intentos, puntos ni actividad ficticia. La validación se ejecuta también en servidor y las
   mutaciones conservan idempotencia, concurrencia optimista, locks y auditoría segura.
 
-### S12 — Programar un desafío y ejecutar su calendario
+### S12 — Programar un desafío y ejecutar su calendario ✅ Implementada localmente
 
 - **Objetivo / CU:** abrir/cerrar competición por fechas reales; CU-09 y transiciones temporales de CU-08.
 - **Superficie:** calendario sencillo del portal privado de superadmin para versión/número/ventana;
   la sala pública solo muestra futuro, disponible y cerrado. Permitir reprogramación solo antes de
   abrir.
-- **Mocks retirados:** fechas y publicaciones de `socialFixtures` y selección fija del lobby real.
-- **Backend/dominio:** comandos de programación/reprogramación y transición temporal idempotente.
-  Implementar una vía mínima operativa para activar/finalizar temporadas y abrir/cerrar publicaciones
-  (por ejemplo tarea gestionada protegida); las escrituras revalidan fechas aunque esa tarea se retrase.
-  No introducir una cola. La lectura sola no debe mentir sobre lo que `start_attempt` autoriza.
+- **Mocks retirados:** la selección temporal del detalle real ya usa el calendario persistido; la ruta
+  demo `/flash-pop` conserva explícitamente su recorrido mock.
+- **Backend/dominio:** comandos de programación/reprogramación y transición temporal idempotente,
+  con Route Handler protegido y `npm run calendar:tick`; las escrituras y `start_attempt` revalidan
+  fechas aunque el tick se retrase. No se introduce una cola.
 - **Persistencia:** tablas existentes, exclusión GiST, número único, estados y auditoría mediante
   comandos nuevos. Cerrar ventana no cancela intentos válidos ni fija prematuramente `results_locked_at`.
 - **Tests:** instante exacto de apertura/cierre, dos publicaciones solapadas, transición repetida,
   proceso temporal caído/retrasado, edición después de abrir denegada, intento iniciado antes del
   cierre que finaliza después y nueva temporada sin mezcla de puntos.
 - **Dependencias:** S10, S11, S03, D05 y decisión de mecanismo temporal; consolidación final en D04/S21.
-- **Terminada:** un desafío programado se abre sin intervención SQL y puede jugarse por el flujo
-  real; al cerrar bloquea nuevos inicios y preserva los iniciados conforme a sus relojes de modo.
+- **Terminada:** implementada localmente. Un superadmin programa/reprograma Flash publicado desde
+  `/admin`; el tick abre/cierra por reloj PostgreSQL, finaliza temporadas vencidas y el gameplay
+  permite iniciar solo dentro de la ventana, preservando intentos ya iniciados.
 
 ### S13 — Subir y sustituir el avatar global
 
@@ -974,7 +975,7 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 ## 10. Cierre de una slice y uso como backlog
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
-incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S11
+incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S12
 están **implementadas**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
@@ -1001,9 +1002,9 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S11 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
+S01–S12 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
 competitivo persistido, recuperación local, rankings, historial y revisión, además de la creación
 auditada de salas, la activación de temporadas y la publicación editorial mínima desde el portal
-privado. El siguiente objetivo inmediato es completar H3 con S12 o, si el riesgo de modos pesa más,
-ejecutar primero el experimento técnico S05/E01. La gestión editorial completa y los 31 formatos no
+privado, programación y ejecución temporal local del calendario. El siguiente objetivo inmediato es
+ampliar la cobertura de modos o ejecutar el experimento técnico S05/E01. La gestión editorial completa y los 31 formatos no
 bloquean el piloto acotado.

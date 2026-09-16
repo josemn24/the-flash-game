@@ -64,7 +64,7 @@ language sql stable security definer set search_path = '' as $$
       cv.id as version_id
     from public.rooms r
     join public.room_memberships m on m.room_id = r.id
-    join public.seasons s on s.room_id = r.id and s.status = 'active'
+    join public.seasons s on s.room_id = r.id and s.status in ('active', 'finished')
     join public.scheduled_challenges sc on sc.season_id = s.id
     join private.challenge_versions cv on cv.id = sc.challenge_version_id
     join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
@@ -78,8 +78,10 @@ language sql stable security definer set search_path = '' as $$
       and m.status = 'active'
       and m.role in ('owner', 'admin', 'member')
       and (
-        (sc.status = 'open' and sc.opens_at <= statement_timestamp()
-          and statement_timestamp() < sc.closes_at)
+        private.publication_is_effectively_open(
+          sc.status, s.status, s.starts_at, s.ends_at,
+          sc.opens_at, sc.closes_at, statement_timestamp()
+        )
         or a.id is not null
       )
       and cv.status = 'published'

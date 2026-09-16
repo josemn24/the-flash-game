@@ -313,6 +313,7 @@ export class MockRoomQueries implements RoomQueries {
         : null,
       roomLeaderboard,
       dailyLeaderboard,
+      calendar: [],
     };
   }
 

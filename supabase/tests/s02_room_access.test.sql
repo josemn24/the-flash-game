@@ -165,8 +165,8 @@ select is((select count(*) from public.get_my_room_cards()
   where room_slug = 's02-main' and publication_id is null), 1::bigint,
   'A closed publication is represented as no current challenge');
 select is((select count(*) from public.get_room_introduction(
-  's02-main', pg_temp.test_id('publication'))), 0::bigint,
-  'A closed publication cannot be opened as a current introduction');
+  's02-main', pg_temp.test_id('publication'))), 1::bigint,
+  'A closed publication remains visible as historical introduction metadata');
 reset role;
 select * from finish();
 rollback;

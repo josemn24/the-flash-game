@@ -125,9 +125,10 @@ language sql stable security definer set search_path = '' as $$
     from public.scheduled_challenges sc
     join private.challenge_versions cv on cv.id = sc.challenge_version_id
     where sc.season_id = season.id
-      and sc.status = 'open'
-      and sc.opens_at <= statement_timestamp()
-      and statement_timestamp() < sc.closes_at
+      and private.publication_is_effectively_open(
+        sc.status, season.status, season.starts_at, season.ends_at,
+        sc.opens_at, sc.closes_at, statement_timestamp()
+      )
       and cv.status = 'published'
     order by sc.number
     limit 1
@@ -188,27 +189,49 @@ returns table (
   challenge_mode      text,
   challenge_max_score integer,
   question_count      bigint,
-  competitive_playable boolean
+  competitive_playable boolean,
+  availability_status  text,
+  can_start            boolean
 )
 language sql stable security definer set search_path = '' as $$
   select
-    cards.room_id,
-    cards.room_slug,
-    cards.room_title,
-    cards.membership_role,
-    cards.publication_id,
-    cards.publication_status,
-    cards.opens_at,
-    cards.closes_at,
-    cards.challenge_title,
-    cards.challenge_subtitle,
-    cards.challenge_mode,
-    cards.challenge_max_score,
-    cards.question_count,
-    cards.competitive_playable
-  from public.get_my_room_cards() cards
-  where cards.room_slug = target_room_slug
-    and cards.publication_id = target_publication_id
+    room.id,
+    room.slug,
+    room.title,
+    membership.role,
+    schedule.id,
+    schedule.status,
+    schedule.opens_at,
+    schedule.closes_at,
+    version.title,
+    version.subtitle,
+    version.mode,
+    version.max_score,
+    (select count(*)::bigint from private.challenge_items item where item.challenge_version_id = version.id),
+    (select count(*) = 2 and bool_and(question.type = 'multiple-choice')
+       from private.challenge_items item
+       join private.question_versions question on question.id = item.question_version_id
+      where item.challenge_version_id = version.id),
+    private.publication_effective_status(
+      schedule.status, season.status, season.starts_at, season.ends_at,
+      schedule.opens_at, schedule.closes_at, statement_timestamp()
+    ),
+    membership.role <> 'spectator' and private.publication_is_effectively_open(
+      schedule.status, season.status, season.starts_at, season.ends_at,
+      schedule.opens_at, schedule.closes_at, statement_timestamp()
+    )
+  from public.rooms room
+  join public.room_memberships membership on membership.room_id = room.id
+  join public.seasons season on season.room_id = room.id and season.status in ('active', 'finished')
+  join public.scheduled_challenges schedule on schedule.season_id = season.id
+  join private.challenge_versions version on version.id = schedule.challenge_version_id
+  where room.slug = target_room_slug
+    and schedule.id = target_publication_id
+    and room.status = 'active'
+    and membership.player_id = private.current_player_id()
+    and membership.status = 'active'
+    and version.status = 'published'
+  order by season.starts_at desc, schedule.number
 $$;
 
 alter function public.get_my_room_cards() owner to postgres;

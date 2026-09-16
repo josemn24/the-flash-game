@@ -26,11 +26,17 @@ export default async function RoomIntroductionPage({ params }: Props) {
   const model = await getRoomIntroductionPageModel(roomId, challengeId);
   if (!model) notFound();
 
-  const note = model.canStart
-    ? model.competitivePlayable
-      ? ""
-      : "La partida estará disponible próximamente."
-    : "Puedes consultar la introducción, pero no iniciar una partida competitiva.";
+  const note = model.availabilityStatus === "upcoming"
+    ? "La partida estará disponible cuando se abra su ventana."
+    : model.availabilityStatus === "closed"
+      ? "La ventana competitiva ya está cerrada."
+      : model.availabilityStatus === "cancelled"
+        ? "Esta publicación fue cancelada y no admite nuevas partidas."
+        : !model.canStart
+          ? "Puedes consultar la introducción, pero no iniciar una partida competitiva."
+          : model.competitivePlayable
+            ? ""
+            : "El contenido no está disponible para competición.";
 
   return (
     <ChallengeIntro
@@ -40,7 +46,7 @@ export default async function RoomIntroductionPage({ params }: Props) {
         questionCount: model.questionCount,
         maxScore: model.maxScore,
       }}
-      canStart={model.canStart}
+      canStart={model.canStart && model.availabilityStatus === "available" && model.competitivePlayable}
       startHref={
         model.competitivePlayable
           ? `/desafios/${model.publicationId}?roomId=${model.roomId}`

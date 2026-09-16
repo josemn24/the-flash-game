@@ -115,12 +115,14 @@ inicial opcional, y la operación queda registrada en una única auditoría agre
 el superadmin provisiona directamente a usuarios autenticados, sin crear ni consumir una invitación
 y sin requerir aceptación de enlace.
 
-La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario son
-capacidades previstas para ese portal interno, no para PostgREST público ni para las rutas de usuario.
-El flujo de invitaciones y sus límites permanecen documentados como capacidad futura. El portal no
-debe resolver este alcance mediante DML genérico con `service_role`: cada mutación debe pasar por un
-comando administrativo específico y auditado. La gestión posterior de miembros y las operaciones de
-temporadas, contenido y calendario siguen pendientes.
+La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario están
+implementadas localmente para S11/S12 en ese portal interno, no para PostgREST público ni para las
+rutas de usuario. S12 usa `POST /api/internal/calendar/tick` o `npm run calendar:tick`, con reloj de
+PostgreSQL y secreto local; no introduce scheduler remoto, cola ni worker. El flujo de invitaciones y
+sus límites permanecen documentados como capacidad futura. El portal no debe resolver este alcance
+mediante DML genérico con `service_role`: cada mutación debe pasar por un comando administrativo
+específico y auditado. La gestión posterior de miembros, cancelación y reemplazo de versiones
+publicadas siguen pendientes.
 
 Para ejecutar el recorrido histórico local:
 

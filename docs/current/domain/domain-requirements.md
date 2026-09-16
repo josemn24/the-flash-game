@@ -38,7 +38,7 @@ ni ranking.
 - **Editor o autor de contenido**: actor previsto para preparar y publicar desafíos y preguntas.
 - **Sistema**: controla disponibilidad, duración, evaluación, cierre y acreditación de resultados.
 
-S01–S11 ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
+S01–S12 ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
 persistido sobre Supabase local, la creación inicial de salas, la activación de temporadas y la
 publicación editorial mínima desde un portal privado. La gestión posterior de miembros no está
 implementada en la interfaz pública; en la beta cerrada se reservará a un portal privado de
@@ -52,8 +52,9 @@ protegida de superadmin. Para reunir al grupo, el superadmin añadirá directame
 autenticados a una sala o reactivará su membresía con un rol permitido, sin flujo de invitación ni
 aceptación de enlace.
 
-La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario son
-capacidades previstas para ese portal interno, si se incluyen en el alcance operativo de la beta.
+La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario se
+realizan desde ese portal interno para S11/S12, con el tick temporal local protegido. La cancelación,
+la automatización remota y las operaciones públicas siguen fuera de este alcance.
 No son funciones de la UI pública.
 
 ## 3. Áreas funcionales

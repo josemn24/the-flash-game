@@ -4,6 +4,7 @@ import type { SuperadminPortalContext } from "@/types/view-models";
 import { CreateRoomForm } from "./CreateRoomForm.client";
 import { SeasonManagement } from "./SeasonManagement.client";
 import { EditorialManagement } from "./EditorialManagement.client";
+import { CalendarManagement } from "./CalendarManagement.client";
 import styles from "./AdminPortal.module.css";
 
 type AdminPortalProps = {
@@ -11,9 +12,10 @@ type AdminPortalProps = {
   readonly creationNotice?: boolean;
   readonly seasonNotice?: string;
   readonly editorialNotice?: string;
+  readonly calendarNotice?: string;
 };
 
-export function AdminPortal({ context, creationNotice = false, seasonNotice, editorialNotice }: AdminPortalProps) {
+export function AdminPortal({ context, creationNotice = false, seasonNotice, editorialNotice, calendarNotice }: AdminPortalProps) {
   const seasonNoticeText = {
     created: "Borrador de temporada creado.",
     updated: "Borrador de temporada actualizado.",
@@ -23,6 +25,10 @@ export function AdminPortal({ context, creationNotice = false, seasonNotice, edi
     saved: "Borrador editorial guardado.",
     published: "Versión editorial publicada.",
   }[editorialNotice ?? ""];
+  const calendarNoticeText = {
+    created: "Publicación programada correctamente.",
+    updated: "Publicación reprogramada correctamente.",
+  }[calendarNotice ?? ""];
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -102,6 +108,10 @@ export function AdminPortal({ context, creationNotice = false, seasonNotice, edi
       <EditorialManagement
         context={context.editorial ?? { entries: [], source: "supabase" }}
       />
+      <CalendarManagement
+        context={context}
+        calendar={context.calendar ?? { entries: [], source: "supabase" }}
+      />
 
       {creationNotice ? (
         <Card as="section" surface="soft" className={styles.notice} role="status">
@@ -121,6 +131,13 @@ export function AdminPortal({ context, creationNotice = false, seasonNotice, edi
         <Card as="section" surface="soft" className={styles.notice} role="status">
           <strong>{editorialNoticeText}</strong>
           <span>El catálogo editorial se ha actualizado.</span>
+        </Card>
+      ) : null}
+
+      {calendarNoticeText ? (
+        <Card as="section" surface="soft" className={styles.notice} role="status">
+          <strong>{calendarNoticeText}</strong>
+          <span>El calendario operativo se ha actualizado.</span>
         </Card>
       ) : null}
 

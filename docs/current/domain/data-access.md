@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S11 y el portal privado añaden la primera integración real de Supabase y completan el
+La fase 4 está cerrada. S01–S12 y el portal privado añaden la primera integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
@@ -50,6 +50,19 @@ Mutaciones de temporadas del portal `/admin`
   public.activate_superadmin_season()
 → comando privado transaccional, idempotencia y private.audit_log
 
+Calendario temporal del portal `/admin`
+→ `app/admin/calendar-actions.ts`
+→ `server/admin-calendar.ts`
+→ `infrastructure/supabase/superadminCalendarQueries.ts`
+→ `public.create_superadmin_scheduled_challenge()` / `public.update_superadmin_scheduled_challenge()`
+→ publicación `scheduled` con ventana UTC, locks, conflictos optimistas, idempotencia y auditoría
+
+Tick local protegido
+→ `POST /api/internal/calendar/tick` o `npm run calendar:tick`
+→ conexión PostgreSQL server-only con `SET LOCAL ROLE service_role`
+→ `private.run_calendar_tick_command()`
+→ estados efectivos, auditoría de sistema y finalización de temporadas sin DML de cliente
+
 Lectura editorial protegida del portal `/admin`
 → server/data-access.ts
 → server/admin-editorial.ts
@@ -87,8 +100,8 @@ invitación.
 `application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
 `RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
 `SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
-`SuperadminRoomCommands` y `SuperadminEditorialCommands` para separar la mutación
-administrativa de las consultas. Esta capa
+`SuperadminRoomCommands`, `SuperadminEditorialCommands`, `SuperadminCalendarCommands` y
+`SuperadminCalendarQueries` para separar las mutaciones administrativas de las consultas. Esta capa
 solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
 
 Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
@@ -121,6 +134,12 @@ que una sala real no puede caer silenciosamente en `MockRoomQueries`.
 empates y la posición visible en home/detalle proceden de una sola semántica SQL. El RPC de desafío
 mantiene privado `started_at`: el servidor lo usa para ordenar y S06 no lo muestra; el detalle de
 miembro/histórico que pueda necesitarlo se mantiene dentro de la proyección autorizada S07.
+
+El detalle real carga además `public.get_room_calendar(target_room_slug)`. Esa proyección expone solo
+metadatos de publicaciones Flash y deriva `upcoming`, `available`, `closed` o `cancelled` con el reloj
+de PostgreSQL; `can_start` requiere una publicación compatible y `can_continue` conserva el enlace de
+un intento propio en curso incluso después del cierre o de finalizar la temporada. El portal usa una
+lectura separada de calendario y comandos de programación/reprogramación exclusivos de superadmin.
 
 La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del cliente puede elegir
 la identidad de consulta. Sus funciones usan `cache` de React para compartir una misma promesa

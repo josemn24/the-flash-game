@@ -9,7 +9,7 @@
 
 La clasificación indica prioridad para una primera versión productiva del loop de salas privadas,
 temporadas y desafíos asíncronos. No equivale al estado actual de implementación: hoy la aplicación
-usa mocks en los recorridos aún no migrados; S01–S11 ya cubren identidad, salas, competición Flash,
+usa mocks en los recorridos aún no migrados; S01–S12 ya cubren identidad, salas, competición Flash,
 rankings, historial, portal y temporadas reales sobre Supabase local.
 
 - **V1**: esencial para que exista una competición productiva usable.
@@ -153,7 +153,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** sala activa y, para editar, permisos de gestión.
 - **Entrada relevante:** título, `startsAt`, `endsAt` y transición solicitada (`draft`, `scheduled`, `active`, `finished` o `cancelled`).
 - **Flujo principal:** desde el portal local de superadmin, validar fechas y estado; crear o modificar un borrador; activar explícitamente cuando corresponda; consultar total y ranking propios.
-- **Reglas de negocio:** S10 implementa únicamente `draft → active`; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. `scheduled`, finalización, cancelación y automatización temporal quedan para S12/S19.
+- **Reglas de negocio:** S10 implementa `draft → active` y S12 añade la finalización `active → finished` desde el tick local; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. `scheduled` y cancelación siguen siendo responsabilidades posteriores (S19).
 - **Resultado:** temporada en estado coherente y visible dentro de la sala.
 - **Efectos secundarios:** auditoría y actualización de disponibilidad; al finalizar se cierran nuevas entradas, pero intentos válidos pueden terminar dentro de su plazo.
 - **Errores o impedimentos:** fechas invertidas, solapamiento de temporada activa, transición no permitida o edición de temporada finalizada sin corrección auditada.
@@ -167,10 +167,10 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Objetivo:** publicar una versión de desafío dentro de una temporada con una ventana competitiva.
 - **Precondiciones:** temporada adecuada y `ChallengeVersion` publicada; número libre y fechas válidas.
 - **Entrada relevante:** versión, número, `opensAt`, `closesAt` y, si procede, zona horaria de edición.
-- **Flujo principal:** comprobar que la versión está publicada; validar orden, fechas y ausencia de solapamiento; crear `ScheduledChallenge`; abrir y cerrar por estado/ventana.
-- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; cancelar después de abrir exige operación auditada.
+- **Flujo principal:** desde el calendario privado, comprobar que la versión Flash está publicada y es compatible; validar orden, fechas y ausencia de solapamiento; crear o reprogramar `ScheduledChallenge`; el tick local abre y cierra por la ventana efectiva.
+- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma antes de abrir; S12 no cancela, fija `results_locked_at` ni modifica intentos.
 - **Resultado:** publicación `scheduled`, `open`, `closed` o `cancelled`.
-- **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; una cancelación conserva intentos para auditoría.
+- **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; cada escritura administrativa y transición del tick queda auditada.
 - **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida o intento de modificar una publicación abierta sin cancelar.
 - **Permisos necesarios:** superadmin desde el portal privado durante la beta; responsable/editor
   autorizado cuando se habilite esa superficie. Miembros y espectadores solo consultan.
@@ -441,10 +441,10 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - Los cambios de intento, respuesta, puntuación y membresía deben ser idempotentes cuando una
   repetición de petición pueda producir duplicados.
 - La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-08, CU-12, CU-13,
-  CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. El calendario,
-  automatización temporal y persistencia remota siguen pendientes. S11 cubre la publicación editorial
-  mínima de Flash y su preview protegido; reemplazar/archivar versiones publicadas y la prueba
-  fantasma interactiva siguen pendientes.
+  CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. S12 cubre la
+  programación y ejecución local del calendario Flash, pero la automatización temporal remota sigue
+  pendiente. S11 cubre la publicación editorial mínima de Flash y su preview protegido; reemplazar/
+  archivar versiones publicadas y la prueba fantasma interactiva siguen pendientes.
 - Las decisiones sobre heartbeat, lease, gracia de desconexión, alcance del editor y revisión de
   intentos invalidados deben cerrarse antes de convertir los casos correspondientes en contratos
   técnicos. La matriz de permisos de sala y las reglas de invitaciones ya están fijadas.

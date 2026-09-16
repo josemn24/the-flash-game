@@ -1,6 +1,33 @@
 import type { SeasonStatus } from "@/types/domain/season";
 import type { SuperadminEditorialContext } from "@/types/view-models/editorial";
 
+export type SuperadminCalendarEntry = {
+  readonly scheduledChallengeId: string;
+  readonly roomId: string;
+  readonly roomSlug: string;
+  readonly roomTitle: string;
+  readonly timeZone: string;
+  readonly seasonId: string;
+  readonly seasonTitle: string;
+  readonly seasonStatus: SeasonStatus;
+  readonly challengeVersionId: string;
+  readonly challengeSlug: string;
+  readonly versionNumber: number;
+  readonly challengeTitle: string;
+  readonly challengeSubtitle: string;
+  readonly mode: "flash";
+  readonly number: number;
+  readonly status: "scheduled" | "open" | "closed" | "cancelled";
+  readonly opensAt: string;
+  readonly closesAt: string;
+  readonly updatedAt: string;
+};
+
+export type SuperadminCalendarContext = {
+  readonly entries: readonly SuperadminCalendarEntry[];
+  readonly source: "supabase";
+};
+
 export type SuperadminPortalSeason = {
   readonly seasonId: string;
   readonly title: string;
@@ -26,6 +53,7 @@ export type SuperadminPortalContext = {
   readonly rooms: readonly SuperadminPortalRoom[];
   readonly source: "supabase";
   readonly editorial?: SuperadminEditorialContext;
+  readonly calendar?: SuperadminCalendarContext;
 };
 
 export type SuperadminPlayerCandidate = {
@@ -49,5 +77,18 @@ export type SuperadminRoomCreationResult = {
 
 export type SuperadminSeasonCommandResult = SuperadminPortalSeason & {
   readonly roomId: string;
+  readonly source: "supabase";
+};
+
+export type SuperadminCalendarCommandResult = {
+  readonly scheduledChallengeId: string;
+  readonly roomId: string;
+  readonly seasonId: string;
+  readonly challengeVersionId: string;
+  readonly number: number;
+  readonly status: "scheduled" | "open" | "closed" | "cancelled";
+  readonly opensAt: string;
+  readonly closesAt: string;
+  readonly updatedAt: string;
   readonly source: "supabase";
 };

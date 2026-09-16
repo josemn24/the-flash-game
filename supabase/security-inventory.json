@@ -161,6 +161,11 @@
     }
   },
   "functions": {
+    "private.assert_supported_calendar_content": {
+      "arguments": "version_id uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.abandon_attempt": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -197,6 +202,11 @@
       "executeRoles": []
     },
     "private.create_season_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_scheduled_challenge_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": []
@@ -305,6 +315,26 @@
       "arguments": "target_room_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
+    },
+    "private.publication_effective_status": {
+      "arguments": "raw_status text, season_status text, season_starts_at timestamp with time zone, season_ends_at timestamp with time zone, opens_at timestamp with time zone, closes_at timestamp with time zone, at_time timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.publication_is_effectively_open": {
+      "arguments": "raw_status text, season_status text, season_starts_at timestamp with time zone, season_ends_at timestamp with time zone, opens_at timestamp with time zone, closes_at timestamp with time zone, at_time timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.run_calendar_tick_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.update_scheduled_challenge_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
     },
     "private.lock_membership_room": {
       "arguments": "",
@@ -426,6 +456,11 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_room_calendar": {
+      "arguments": "target_room_slug text",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_season_ranking": {
       "arguments": "target_season_id uuid",
       "securityDefiner": true,
@@ -437,6 +472,11 @@
       "executeRoles": ["authenticated"]
     },
     "public.get_superadmin_editorial_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_calendar_context": {
       "arguments": "",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
@@ -476,12 +516,22 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.create_superadmin_scheduled_challenge": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.update_superadmin_flash_draft": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
     "public.publish_superadmin_flash": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_scheduled_challenge": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
