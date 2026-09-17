@@ -58,6 +58,46 @@ describe("Flash editorial document", () => {
     expect(isFlashEditorialDocument(parsed)).toBe(true);
   });
 
+  it("accepts Flash documents from two through twenty questions", () => {
+    for (const count of [2, 3, 5, 20]) {
+      const document = documentFixture();
+      document.questions = Array.from({ length: count }, (_, index) => ({
+        ...document.questions[index % 2],
+        slug: `question-${index + 1}`,
+        points: count === 2 ? 50 : count === 3 ? (index === 0 ? 34 : 33) : 100 / count,
+      }));
+
+      const parsed = parseFlashEditorialDocument(document);
+      expect(parsed.questions).toHaveLength(count);
+      expect(parsed.questions.reduce((total, question) => total + question.points, 0)).toBe(100);
+    }
+  });
+
+  it("rejects Flash documents outside the question count and points contracts", () => {
+    const tooFew = documentFixture();
+    tooFew.questions = [tooFew.questions[0]];
+    expect(() => parseFlashEditorialDocument(tooFew)).toThrow("entre 2 y 20");
+
+    const tooMany = documentFixture();
+    tooMany.questions = Array.from({ length: 21 }, (_, index) => ({
+      ...tooMany.questions[index % 2],
+      slug: `question-${index + 1}`,
+      points: 1,
+    }));
+    expect(() => parseFlashEditorialDocument(tooMany)).toThrow("entre 2 y 20");
+
+    for (const points of [0, -1, 1.5]) {
+      const invalidPoints = documentFixture();
+      invalidPoints.questions[0].points = points;
+      invalidPoints.questions[1].points = 100 - points;
+      expect(() => parseFlashEditorialDocument(invalidPoints)).toThrow("contrato Flash");
+    }
+
+    const invalidTotal = documentFixture();
+    invalidTotal.questions[0].points = 40;
+    expect(() => parseFlashEditorialDocument(invalidTotal)).toThrow("sumar 100");
+  });
+
   it("rejects invalid JSON and unknown document fields", () => {
     expect(() => parseFlashEditorialJson("{")).toThrow("El documento no contiene JSON válido");
     expect(() => parseFlashEditorialDocument({ ...documentFixture(), extra: true })).toThrow(
@@ -74,7 +114,7 @@ describe("Flash editorial document", () => {
     ).toThrow("challenge no cumple");
     const wrongPoints = documentFixture();
     wrongPoints.questions[1].points = 40;
-    expect(() => parseFlashEditorialDocument(wrongPoints)).toThrow("questions[1]");
+    expect(() => parseFlashEditorialDocument(wrongPoints)).toThrow("sumar 100");
     const missingSolution = documentFixture();
     delete (missingSolution.questions[0] as { solutionPayload?: unknown }).solutionPayload;
     expect(() => parseFlashEditorialDocument(missingSolution)).toThrow("solutionPayload");

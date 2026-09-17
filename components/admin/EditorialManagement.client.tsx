@@ -10,6 +10,9 @@ import {
   type EditorialActionState,
 } from "@/app/admin/editorial-actions";
 import {
+  FLASH_MAX_QUESTIONS,
+  FLASH_MIN_QUESTIONS,
+  FLASH_TOTAL_POINTS,
   FlashEditorialValidationError,
   formatFlashEditorialDocument,
   parseFlashEditorialJson,
@@ -322,6 +325,10 @@ export function EditorialManagement({
     }
   }, [documentText]);
 
+  const documentSummary = parsedDocument
+    ? `Flash · ${parsedDocument.questions.length} preguntas · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
+    : `Flash · ${FLASH_MIN_QUESTIONS}–${FLASH_MAX_QUESTIONS} preguntas · ${FLASH_TOTAL_POINTS} puntos`;
+
   function validatePreview() {
     try {
       parseFlashEditorialJson(documentText);
@@ -367,7 +374,9 @@ export function EditorialManagement({
               <h3 id="editorial-editor-title">{selected ? "Editar borrador" : "Preparar contenido"}</h3>
             </div>
             <span className={styles.helper}>
-              {selected ? `Actualizado ${formatTimestamp(selected.updatedAt)} UTC` : "Flash · 2 preguntas · 100 puntos"}
+              {selected
+                ? `${documentSummary} · actualizado ${formatTimestamp(selected.updatedAt)} UTC`
+                : documentSummary}
             </span>
           </div>
 

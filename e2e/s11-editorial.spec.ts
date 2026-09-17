@@ -25,32 +25,28 @@ const editorialDocument = {
   challenge: {
     slug: "flash-s11-e2e",
     title: "Flash S11 E2E",
-    subtitle: "Dos preguntas",
+    subtitle: "Cinco preguntas",
     description: "Desafío editorial creado desde el portal.",
     mode: "flash",
     configSchemaVersion: 1,
     modeConfig: {},
   },
-  questions: [
-    {
-      slug: "e2e-uno",
-      type: "multiple-choice",
-      payloadSchemaVersion: 1,
-      timeLimitMs: 15000,
-      points: 50,
-      publicPayload: { category: "Cultura", tags: {}, question: "¿Capital de Portugal?", options: ["Lisboa", "Oporto"], media: null, promptVisual: null },
-      solutionPayload: { correctAnswer: "Lisboa", explanation: "Lisboa." },
+  questions: Array.from({ length: 5 }, (_, index) => ({
+    slug: `e2e-${index + 1}`,
+    type: "multiple-choice" as const,
+    payloadSchemaVersion: 1 as const,
+    timeLimitMs: 15000,
+    points: 20,
+    publicPayload: {
+      category: index % 2 === 0 ? "Cultura" : "Ciencia",
+      tags: {},
+      question: `¿Pregunta E2E ${index + 1}?`,
+      options: ["A", "B"],
+      media: null,
+      promptVisual: null,
     },
-    {
-      slug: "e2e-dos",
-      type: "multiple-choice",
-      payloadSchemaVersion: 1,
-      timeLimitMs: 15000,
-      points: 50,
-      publicPayload: { category: "Ciencia", tags: {}, question: "¿Planeta rojo?", options: ["Marte", "Venus"], media: null, promptVisual: null },
-      solutionPayload: { correctAnswer: "Marte", explanation: "Marte." },
-    },
-  ],
+    solutionPayload: { correctAnswer: "A", explanation: `Respuesta ${index + 1}.` },
+  })),
 };
 
 test.describe("S11 — publicar contenido mínimo", () => {
@@ -77,6 +73,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     await page.reload();
 
     await expect(editor.getByRole("heading", { name: "Flash S11 E2E", exact: true })).toBeVisible();
+    await expect(editor.getByText("Flash · 5 preguntas · 100 puntos")).toBeVisible();
     await textarea.fill(JSON.stringify({
       ...draftDocument,
       challenge: { ...draftDocument.challenge, title: "Flash S11 E2E editado" },

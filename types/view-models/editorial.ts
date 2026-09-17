@@ -111,7 +111,7 @@ export type FlashEditorialMultipleChoiceQuestion = {
   readonly type: "multiple-choice";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
-  readonly points: 50;
+  readonly points: number;
   readonly publicPayload: FlashEditorialMultipleChoicePublicPayload;
   readonly solutionPayload: FlashEditorialMultipleChoiceSolutionPayload;
 };
@@ -121,7 +121,7 @@ export type FlashEditorialMiniWordleQuestion = {
   readonly type: "mini-wordle";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
-  readonly points: 50;
+  readonly points: number;
   readonly publicPayload: FlashEditorialMiniWordlePublicPayload;
   readonly solutionPayload: FlashEditorialMiniWordleSolutionPayload;
 };
@@ -131,7 +131,7 @@ export type FlashEditorialLogicCodeQuestion = {
   readonly type: "logic-code";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
-  readonly points: 50;
+  readonly points: number;
   readonly publicPayload: FlashEditorialLogicCodePublicPayload;
   readonly solutionPayload: FlashEditorialLogicCodeSolutionPayload;
 };
@@ -141,7 +141,7 @@ export type FlashEditorialProgressiveCluesQuestion = {
   readonly type: "progressive-clues";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
-  readonly points: 50;
+  readonly points: number;
   readonly publicPayload: FlashEditorialProgressiveCluesPublicPayload;
   readonly solutionPayload: FlashEditorialProgressiveCluesSolutionPayload;
 };
@@ -151,7 +151,7 @@ export type FlashEditorialMatchingQuestion = {
   readonly type: "matching";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
-  readonly points: 50;
+  readonly points: number;
   readonly publicPayload: FlashEditorialMatchingPublicPayload;
   readonly solutionPayload: FlashEditorialMatchingSolutionPayload;
 };
@@ -173,7 +173,7 @@ export type FlashEditorialDocument = {
     readonly configSchemaVersion: 1;
     readonly modeConfig: EditorialJsonObject;
   };
-  readonly questions: readonly [FlashEditorialQuestion, FlashEditorialQuestion];
+  readonly questions: readonly FlashEditorialQuestion[];
 };
 
 export type EditorialContentStatus = "draft" | "published" | "archived";

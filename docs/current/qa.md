@@ -7,7 +7,7 @@
 
 2026-09-17, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 98 archivos de test y 624 tests superados.
+- `npm test`: 98 archivos de test y 627 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
@@ -17,11 +17,12 @@
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
 - `npm run supabase:schema:test`: correcto; 27 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S12, E01–E04, portal privado, comandos editoriales/calendario y pruebas concurrentes
-  con conexiones PostgreSQL independientes.
+  S02–S08, S10–S13, E01–E04, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
+  crecimiento y reducción del grafo editorial.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth y PostgREST local.
 - `npm run test:integration:supabase -- --scenario s11`: correcto con Auth/PostgREST, grafo
-  editorial completo, idempotencia, publicación e aislamiento del contexto protegido.
+  editorial de cinco preguntas, idempotencia, publicación e aislamiento del contexto protegido.
 - `npm run test:e2e -- e2e/admin-portal.spec.ts`: 2/2 correcto con acceso superadmin, recarga y
   denegación de miembro/anónimo.
 - `npm run test:integration:supabase -- --scenario s08`: correcto con lookup exacto, creación de
@@ -32,7 +33,8 @@
 - `npm run test:e2e -- e2e/s07-history-review.spec.ts`: 1/1 correcto con ranking histórico,
   revisión propia/ajena y spectator en sesiones de navegador aisladas.
 - `npm run test:e2e -- e2e/s11-editorial.spec.ts`: 2/2 correcto con creación, edición, preview,
-  publicación explícita e invisibilidad del editor para un miembro.
+  resumen dinámico de 5 preguntas/100 puntos, publicación explícita e invisibilidad del editor para
+  un miembro.
 - `npm run test:integration:supabase -- --scenario e01`: cubre publicación editorial mixta, lectura
   sin solución y aislamiento del spectator mediante Auth/PostgREST local.
 - `npm run test:e2e -- e2e/e01-mini-wordle.spec.ts`: cubre Auth, elección múltiple + Mini-Wordle,

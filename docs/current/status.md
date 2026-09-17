@@ -30,7 +30,7 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
 - Cinco modos: `flash`, `alphabet`, `survival`, `narrative` y `pyramid`.
 - Autenticación Supabase local, provisioning idempotente de `Player`, logout y edición del nombre.
 - Home, detalle de sala e introducción con lecturas autorizadas reales (S02).
-- Flash competitivo real de dos preguntas, 50 puntos por pregunta, con sesiones exclusivas, tiempos,
+- Flash competitivo real de 2 a 20 preguntas, 100 puntos totales, con sesiones exclusivas, tiempos,
   respuestas, evaluación privada, puntuación y ledger de puntos (S03/E01). E01 admite desafíos
   mixtos `multiple-choice` + `mini-wordle`; cada palabra procede del diccionario general o de
   palabras temáticas privadas de la pregunta, y el feedback/historial se calculan y persisten en
@@ -111,23 +111,25 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-17.
 
-- `npm test`: 98 archivos y 624 tests superados; incluye reglas, adaptadores y UI pública de E01
+- `npm test`: 98 archivos y 627 tests superados; incluye reglas, adaptadores y UI pública de E01–E04
   además de S11/S12.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
 - `npm run supabase:schema:test`: correcto; 27 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S12, E01–E04, ACL del portal, idempotencia, rollback y carreras de comandos con
-  conexiones PostgreSQL independientes.
+  S02–S08, S10–S13, E01–E04, ACL del portal, idempotencia, rollback y carreras de comandos con
+  conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
+  de 20 a 2 y suma de 100 puntos.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.
 - `npm run test:e2e -- e2e/s10-season.spec.ts`: 2/2 correctos; superadmin crea/edita/activa en `/admin`
   y un miembro no accede al portal.
 - `npm run test:integration:supabase -- --scenario s11`: correcto con Auth, PostgREST, creación,
-  edición, publicación, soluciones privadas y denegación del contexto editorial.
+  edición, publicación de cinco preguntas, soluciones privadas y denegación del contexto editorial.
 - `npm run test:e2e -- e2e/s11-editorial.spec.ts`: 2/2 correctos; superadmin crea/edita/previsualiza/
-  publica Flash mínimo y un miembro no ve editor, borradores ni soluciones.
+  publica un Flash de cinco preguntas, ve el resumen dinámico 5/100 y un miembro no ve editor,
+  borradores ni soluciones.
 - `npm run test:integration:supabase -- --scenario e03`: escenario añadido para publicación mixta,
   proyección sin solución ni pistas futuras y aislamiento del spectator.
 - `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: escenario añadido para primera pista,

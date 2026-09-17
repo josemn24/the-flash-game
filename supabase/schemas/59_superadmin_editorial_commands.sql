@@ -12,6 +12,8 @@ declare
   question_slug text;
   seen_slugs text[] := array[]::text[];
   question_index integer;
+  question_points numeric;
+  total_points integer := 0;
   option_count integer;
   expected_word_length integer;
   max_attempts integer;
@@ -51,7 +53,7 @@ begin
   end if;
 
   if jsonb_typeof(document->'questions') is distinct from 'array'
-    or jsonb_array_length(document->'questions') <> 2 then
+    or jsonb_array_length(document->'questions') not between 2 and 20 then
     raise exception 'incomplete_content' using errcode = '22023';
   end if;
 
@@ -73,12 +75,21 @@ begin
       or char_length(question_slug) not between 1 and 120
       or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching')
       or question->'payloadSchemaVersion' <> '1'::jsonb
-      or question->'points' <> '50'::jsonb
       or jsonb_typeof(question->'timeLimitMs') is distinct from 'number'
       or (question->>'timeLimitMs')::numeric <= 0
       or question_slug = any(seen_slugs) then
       raise exception 'invalid_content' using errcode = '22023';
     end if;
+    if jsonb_typeof(question->'points') is distinct from 'number' then
+      raise exception 'invalid_content' using errcode = '22023';
+    end if;
+    question_points := (question->>'points')::numeric;
+    if question_points <> trunc(question_points)
+      or question_points <= 0
+      or question_points > 100 then
+      raise exception 'invalid_content' using errcode = '22023';
+    end if;
+    total_points := total_points + question_points::integer;
     seen_slugs := seen_slugs || question_slug;
 
     public_payload := question->'publicPayload';
@@ -359,6 +370,9 @@ begin
       raise exception 'invalid_solution_payload' using errcode = '22023';
     end if;
   end loop;
+  if total_points <> 100 then
+    raise exception 'points_total_invalid' using errcode = '22023';
+  end if;
 end;
 $$;
 
@@ -444,7 +458,8 @@ begin
       insert into private.challenge_items(
         id, challenge_version_id, question_version_id, position, points,
         config_schema_version, mode_config
-      ) values (item_id, challenge_version_id, question_version_id, question_index, 50, 1, '{}'::jsonb);
+      ) values (item_id, challenge_version_id, question_version_id, question_index,
+        (question->>'points')::integer, 1, '{}'::jsonb);
     end loop;
   exception when unique_violation then
     raise exception 'content_slug_conflict' using errcode = '23505';
@@ -471,9 +486,15 @@ begin
   where version.id = challenge_version_id;
   insert into private.audit_log(
     actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-  ) values (
-    actor, 'create_flash_draft', 'challenge_version', challenge_version_id, reason_value, key, null,
-    jsonb_build_object('documentHash', document_hash, 'status', 'draft', 'questionCount', 2)
+    ) values (
+      actor, 'create_flash_draft', 'challenge_version', challenge_version_id, reason_value, key, null,
+    jsonb_build_object(
+      'documentHash', document_hash,
+      'status', 'draft',
+      'questionCount', jsonb_array_length(document_value->'questions'),
+      'maxScore', (select coalesce(sum((value->>'points')::integer), 0)
+        from jsonb_array_elements(document_value->'questions') value)
+    )
   );
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
   values (actor, key, 'create_flash_draft', safe_input, result);
@@ -498,6 +519,13 @@ declare
   item_row private.challenge_items%rowtype;
   question_row private.question_versions%rowtype;
   question_definition_row private.question_definitions%rowtype;
+  old_question_definition_id uuid;
+  existing_item_count integer;
+  desired_item_count integer;
+  question_index integer;
+  question_definition_id uuid;
+  question_version_id uuid;
+  item_id uuid;
   question jsonb;
   result jsonb;
   before_payload jsonb;
@@ -551,13 +579,14 @@ begin
   select * into definition_row from private.challenge_definitions definition
   where definition.id = challenge_row.challenge_definition_id for update;
 
-  if (select count(*) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value) <> 2 then
-    raise exception 'incomplete_content' using errcode = '22023';
-  end if;
+  desired_item_count := jsonb_array_length(document_value->'questions');
+  select count(*) into existing_item_count
+  from private.challenge_items item
+  where item.challenge_version_id = challenge_version_id_value;
   before_payload := jsonb_build_object(
     'challengeDefinitionId', definition_row.id, 'challengeVersionId', challenge_row.id,
     'status', challenge_row.status, 'slug', definition_row.slug, 'title', challenge_row.title,
-    'updatedAt', challenge_row.updated_at
+    'updatedAt', challenge_row.updated_at, 'questionCount', existing_item_count
   );
 
   begin
@@ -571,9 +600,60 @@ begin
         subtitle = document_value->'challenge'->>'subtitle',
         description = document_value->'challenge'->>'description',
         global_time_limit_ms = null,
-        max_score = 100,
+        max_score = (select coalesce(sum((value->>'points')::integer), 0)
+          from jsonb_array_elements(document_value->'questions') value),
         mode_config = document_value->'challenge'->'modeConfig'
     where id = challenge_version_id_value;
+
+    if existing_item_count > desired_item_count then
+      for item_row in
+        select item.* from private.challenge_items item
+        where item.challenge_version_id = challenge_version_id_value
+          and item.position > desired_item_count
+        order by item.position desc for update
+      loop
+        select version.question_definition_id into old_question_definition_id
+        from private.question_versions version
+        where version.id = item_row.question_version_id;
+        delete from private.challenge_items where id = item_row.id;
+        delete from private.question_version_solutions solution
+        where solution.question_version_id = item_row.question_version_id;
+        delete from private.question_versions where id = item_row.question_version_id;
+        delete from private.question_definitions
+        where id = old_question_definition_id
+          and not exists (
+            select 1 from private.question_versions version
+            where version.question_definition_id = old_question_definition_id
+          );
+      end loop;
+    elsif existing_item_count < desired_item_count then
+      for question, question_index in
+        select value, ordinality::integer
+        from jsonb_array_elements(document_value->'questions') with ordinality
+        where ordinality > existing_item_count
+      loop
+        question_definition_id := gen_random_uuid();
+        question_version_id := gen_random_uuid();
+        item_id := gen_random_uuid();
+        insert into private.question_definitions(id, slug, created_by_player_id)
+        values (question_definition_id, question->>'slug', actor);
+        insert into private.question_versions(
+          id, question_definition_id, version_number, payload_schema_version, status, type,
+          time_limit_ms, public_payload, created_by_player_id
+        ) values (
+          question_version_id, question_definition_id, 1, 1, 'draft', question->>'type',
+          (question->>'timeLimitMs')::integer, question->'publicPayload', actor
+        );
+        insert into private.question_version_solutions(question_version_id, solution_payload)
+        values (question_version_id, question->'solutionPayload');
+        insert into private.challenge_items(
+          id, challenge_version_id, question_version_id, position, points,
+          config_schema_version, mode_config
+        ) values (item_id, challenge_version_id_value, question_version_id, question_index,
+          (question->>'points')::integer, 1, '{}'::jsonb);
+      end loop;
+    end if;
+
     for item_row in
       select item.* from private.challenge_items item
       where item.challenge_version_id = challenge_version_id_value
@@ -594,11 +674,11 @@ begin
           time_limit_ms = (question->>'timeLimitMs')::integer,
           public_payload = question->'publicPayload'
       where id = question_row.id;
-      update private.question_version_solutions
+      update private.question_version_solutions solution
       set solution_payload = question->'solutionPayload'
-      where question_version_id = question_row.id;
+      where solution.question_version_id = question_row.id;
       update private.challenge_items
-      set points = 50, config_schema_version = 1, mode_config = '{}'::jsonb
+      set points = (question->>'points')::integer, config_schema_version = 1, mode_config = '{}'::jsonb
       where id = item_row.id;
     end loop;
   exception when unique_violation then
@@ -628,7 +708,13 @@ begin
     actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
   ) values (
     actor, 'update_flash_draft', 'challenge_version', challenge_version_id_value, reason_value, key,
-    before_payload, jsonb_build_object('documentHash', document_hash, 'status', 'draft', 'updatedAt', result->>'updatedAt')
+    before_payload, jsonb_build_object(
+      'documentHash', document_hash,
+      'status', 'draft',
+      'updatedAt', result->>'updatedAt',
+      'questionCount', result->>'questionCount',
+      'maxScore', (select max_score from private.challenge_versions where id = challenge_version_id_value)
+    )
   );
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
   values (actor, key, 'update_flash_draft', safe_input, result);
@@ -698,7 +784,8 @@ begin
   if challenge_row.updated_at <> expected_updated_at then raise exception 'content_conflict' using errcode = '40001'; end if;
   select * into definition_row from private.challenge_definitions definition
   where definition.id = challenge_row.challenge_definition_id for update;
-  if (select count(*) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value) <> 2 then
+  if (select count(*) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value)
+    not between 2 and 20 then
     raise exception 'incomplete_content' using errcode = '22023';
   end if;
   if (select coalesce(sum(item.points), 0) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value) <> 100 then
@@ -750,7 +837,12 @@ begin
   ) values (
     actor, 'publish_flash', 'challenge_version', challenge_version_id_value, reason_value, key,
     jsonb_build_object('status', 'draft', 'slug', definition_row.slug),
-    jsonb_build_object('status', 'published', 'slug', definition_row.slug, 'questionCount', 2)
+    jsonb_build_object(
+      'status', 'published',
+      'slug', definition_row.slug,
+      'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value),
+      'maxScore', challenge_row.max_score
+    )
   );
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
   values (actor, key, 'publish_flash', safe_input, result);

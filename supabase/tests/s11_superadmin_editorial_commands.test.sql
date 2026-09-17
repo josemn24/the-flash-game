@@ -66,7 +66,7 @@ select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_objec
   'idempotencyKey', 's11-invalid-points',
   'document', jsonb_set(current_setting('s11.document')::jsonb, '{questions,1,points}', '40'::jsonb),
   'reason', 'Invalid points'
-))$$, '22023', 'invalid_content', 'Unsupported point allocation is rejected');
+))$$, '22023', 'points_total_invalid', 'Unsupported point allocation is rejected');
 
 select is((public.create_superadmin_flash_draft(jsonb_build_object(
   'idempotencyKey', 's11-create-draft', 'document', current_setting('s11.document')::jsonb,

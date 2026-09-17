@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashDocument";
 import type { AnswerResult, RoomChallengeResult } from "@/types/game";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
@@ -89,6 +90,9 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     value.challenge_mode === "flash" &&
     value.challenge_max_score === 100 &&
     typeof value.question_count === "number" &&
+    Number.isSafeInteger(value.question_count) &&
+    value.question_count >= FLASH_MIN_QUESTIONS &&
+    value.question_count <= FLASH_MAX_QUESTIONS &&
     (value.own_attempt_id === null || typeof value.own_attempt_id === "string") &&
     (value.own_attempt_status === null || typeof value.own_attempt_status === "string") &&
     (value.own_attempt_score === null || typeof value.own_attempt_score === "number") &&
@@ -105,7 +109,10 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     value.payload_schema_version === 1 &&
     typeof value.time_limit_ms === "number" &&
     value.time_limit_ms > 0 &&
-    value.item_points === 50
+    typeof value.item_points === "number" &&
+    Number.isSafeInteger(value.item_points) &&
+    value.item_points > 0 &&
+    value.item_points <= 100
   );
 }
 
@@ -188,7 +195,7 @@ export class SupabaseFlashQueries {
       })
     ).filter(isFlashReadRow);
     const first = rows[0];
-    if (!first || rows.length !== first.question_count || rows.length !== 2) return null;
+    if (!first || rows.length !== first.question_count) return null;
 
     let resultRows: FlashResultRow[] = [];
     if (first.own_attempt_status === "completed" && first.own_attempt_id) {

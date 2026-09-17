@@ -2,52 +2,31 @@ const document = {
   challenge: {
     slug: "flash-s11-integration",
     title: "Flash S11 integración",
-    subtitle: "Dos preguntas",
+    subtitle: "Cinco preguntas",
     description: "Contenido editorial mínimo persistido.",
     mode: "flash",
     configSchemaVersion: 1,
     modeConfig: {},
   },
-  questions: [
-    {
-      slug: "s11-capital",
-      type: "multiple-choice",
-      payloadSchemaVersion: 1,
-      timeLimitMs: 15000,
-      points: 50,
-      publicPayload: {
-        category: "Cultura general",
-        tags: {},
-        question: "¿Cuál es la capital de Portugal?",
-        options: ["Lisboa", "Oporto", "Braga"],
-        media: null,
-        promptVisual: null,
-      },
-      solutionPayload: {
-        correctAnswer: "Lisboa",
-        explanation: "Lisboa es la capital de Portugal.",
-      },
+  questions: Array.from({ length: 5 }, (_, index) => ({
+    slug: `s11-question-${index + 1}`,
+    type: "multiple-choice",
+    payloadSchemaVersion: 1,
+    timeLimitMs: index === 0 ? 15000 : 12000,
+    points: 20,
+    publicPayload: {
+      category: index % 2 === 0 ? "Cultura general" : "Ciencia",
+      tags: {},
+      question: `¿Pregunta editorial ${index + 1}?`,
+      options: ["A", "B", "C"],
+      media: null,
+      promptVisual: null,
     },
-    {
-      slug: "s11-planeta",
-      type: "multiple-choice",
-      payloadSchemaVersion: 1,
-      timeLimitMs: 12000,
-      points: 50,
-      publicPayload: {
-        category: "Ciencia",
-        tags: {},
-        question: "¿Qué planeta es conocido como el planeta rojo?",
-        options: ["Marte", "Venus", "Júpiter"],
-        media: null,
-        promptVisual: null,
-      },
-      solutionPayload: {
-        correctAnswer: "Marte",
-        explanation: "Marte tiene una superficie de color rojizo.",
-      },
+    solutionPayload: {
+      correctAnswer: "A",
+      explanation: `Respuesta editorial ${index + 1}.`,
     },
-  ],
+  })),
 };
 
 export const scenario = {
@@ -64,7 +43,7 @@ export const scenario = {
     };
     const created = await clients.superadmin.rpc("create_superadmin_flash_draft", { input: createInput });
     assert(!created.error && created.data?.status === "draft", "El superadmin crea el borrador Flash");
-    assert(created.data?.questionCount === 2, "El borrador contiene dos preguntas");
+    assert(created.data?.questionCount === 5, "El borrador contiene cinco preguntas");
     assert(created.data?.document === null, "El resultado de comando no reexpone soluciones");
 
     const repeated = await clients.superadmin.rpc("create_superadmin_flash_draft", { input: createInput });
@@ -75,18 +54,21 @@ export const scenario = {
     const draft = draftContext.data?.entries?.find(
       (entry) => entry.challengeVersionId === created.data?.challengeVersionId,
     );
-    assert(draft?.status === "draft" && draft?.document?.questions?.length === 2,
-      "El contexto protegido devuelve el documento completo del borrador");
-    assert(draft?.document?.questions?.[0]?.solutionPayload?.correctAnswer === "Lisboa",
+    assert(draft?.status === "draft" && draft?.document?.questions?.length === 5,
+      "El contexto protegido devuelve las cinco preguntas del borrador");
+    assert(draft?.document?.questions?.[0]?.solutionPayload?.correctAnswer === "A",
       "La solución solo aparece en el contexto protegido");
 
     const updatedDocument = {
       ...document,
       challenge: { ...document.challenge, title: "Flash S11 editado" },
-      questions: [
-        { ...document.questions[0], timeLimitMs: 16000 },
-        { ...document.questions[1], publicPayload: { ...document.questions[1].publicPayload, options: ["Marte", "Venus", "Saturno"] } },
-      ],
+      questions: document.questions.map((question, index) => ({
+        ...question,
+        timeLimitMs: index === 0 ? 16000 : question.timeLimitMs,
+        publicPayload: index === 1
+          ? { ...question.publicPayload, options: ["A", "B", "D"] }
+          : question.publicPayload,
+      })),
     };
     const updated = await clients.superadmin.rpc("update_superadmin_flash_draft", {
       input: {

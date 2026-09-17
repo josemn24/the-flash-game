@@ -11,7 +11,7 @@ persistidos, sin materializar tablas adicionales. El portal consulta el contexto
 superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
 Las capacidades restantes siguen usando mocks o están pendientes. S10 añade preparación/edición de
-borradores y activación explícita de temporadas; S11 añade el editor Flash mínimo de dos preguntas y
+borradores y activación explícita de temporadas; S11 añade el editor Flash de 2 a 20 preguntas y
 publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. E01
 añade Mini-Wordle competitivo con eventos intermedios, diccionario privado versionado y palabras
 adicionales específicas por pregunta sin modificar el diccionario global. E02 añade Logic-code
@@ -234,10 +234,11 @@ revise un resultado ajeno elegible.
 
 ## Denegación futura e inventario
 
-`api.auto_expose_new_tables = false` cierra la concesión automática local. Los privilegios
-predeterminados revocan grants globales y de `public`/`private` para objetos futuros creados por
-`postgres`, incluido EXECUTE heredado de PUBLIC. Las revocaciones explícitas siguen protegiendo los
-objetos actuales. [security-inventory.json](../security-inventory.json) registra cada tabla, vista
+La exposición de la API queda limitada a los schemas declarados en `config.toml`; la seguridad de
+objetos nuevos no depende de una clave no soportada por la CLI. Los privilegios predeterminados
+revocan grants globales y de `public`/`private` para objetos futuros creados por `postgres`, incluido
+EXECUTE heredado de PUBLIC. Las revocaciones explícitas siguen protegiendo los objetos actuales.
+[security-inventory.json](../security-inventory.json) registra cada tabla, vista
 y función del proyecto, incluso las de acceso denegado. No se regenera automáticamente al verificar.
 
 El [verificador](../../scripts/supabase-security-inventory.mjs) compara el catálogo real, privilegios
@@ -268,6 +269,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `s07_flash_history.test.sql`    | Historial Flash cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, versión archivada, abandonos parciales y revisión propia/ajena.           |
 | `admin_portal_reads.test.sql`  | Contexto global del superadmin, salas activas, ACL del RPC, claims falsos y ausencia de acceso privado directo.                                                       |
 | `s08_superadmin_room_commands.test.sql` | Creación transaccional de sala, owner y grupo inicial; validaciones, slug, colisiones, ACL, rollback, idempotencia y auditoría agregada. |
+| `s13_flash_variable_questions.test.sql` | Flash de 2, 5 y 20 preguntas, puntos por item, suma de 100, publicación, crecimiento y reducción del grafo editorial. |
 | `test-supabase-concurrency.mjs` | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación. |
 | Contratos y evaluador TS        | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                          |
 
@@ -275,9 +277,10 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **23 archivos declarativos**, verifica el
-inventario y ejecuta los casos existentes más **26 checks pgTAP específicos de E01**, los casos de
-S07, S10, S11 y S12, carreras entre conexiones independientes y **614 pruebas TypeScript**
+Validación local actual: `check-supabase-schema` carga **27 archivos declarativos**, verifica el
+inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03
+y 26 de E04**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes y **627
+pruebas TypeScript**
 superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade

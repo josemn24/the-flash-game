@@ -29,8 +29,8 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S10 conectan Auth, provisioning de jugador,
-lecturas de salas, el intento Flash de dos preguntas, su evaluación server-side, recuperación y
+recorridos competitivos persistidos en Supabase. S01–S12 y E01–E04 conectan Auth, provisioning de jugador,
+lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
 los rankings de temporada/publicación actual, el historial Flash y la revisión después de volver. El
 portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
 owner explícito y un grupo inicial opcional, y preparar/editar/activar temporadas. Estas operaciones
@@ -61,7 +61,7 @@ npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
-necesita configuración adicional. Para probar S01–S10 con persistencia real, copia `.env.example` a
+necesita configuración adicional. Para probar S01–S12 y E01–E04 con persistencia real, copia `.env.example` a
 `.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
 
 ## Comandos disponibles
@@ -153,8 +153,9 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 ## Alcance
 
 Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
-competitivo real acotado. S01–S10 cubren autenticación, perfil, lecturas autorizadas de salas, un
-Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión
+competitivo real acotado. S01–S12 cubren autenticación, perfil, lecturas autorizadas de salas, un
+Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión;
+E01–E04 amplían ese Flash con eventos autoritativos de Mini-Wordle, Logic-code, Progressive-clues y Matching.
 histórica autorizada. Incluye el portal privado de `/admin` para consultar el contexto, crear salas
 iniciales y preparar/activar temporadas; todavía no incluye la gestión posterior de miembros,
 contenido, otros modos ni Storage. La

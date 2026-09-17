@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S12 implementadas sobre Supabase local y el
+> Estado: vigente. Arquitectura de transición con S01–S12 y E01–E04 implementadas sobre Supabase local y el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 

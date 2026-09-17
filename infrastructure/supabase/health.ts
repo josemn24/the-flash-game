@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const defaultSchemaRevision = "20260917081500_e01_question_extra_words";
+const canonicalSchemaRevision = "20260917103100_e04_matching_validation";
 
 function databaseUrl() {
   const configured = process.env.SUPABASE_DB_URL;
@@ -29,7 +29,7 @@ function getPool() {
 }
 
 async function checkDatabase() {
-  const expected = process.env.EXPECTED_SCHEMA_REVISION ?? defaultSchemaRevision;
+  const expected = process.env.EXPECTED_SCHEMA_REVISION ?? canonicalSchemaRevision;
   const client = await getPool().connect();
   try {
     await client.query("BEGIN");
@@ -47,6 +47,9 @@ async function checkDatabase() {
         true as database_ok,
         to_regclass('public.players') is not null as schema_ready,
         to_regprocedure('private.submit_mini_wordle_guess(jsonb)') is not null
+          and to_regprocedure('private.submit_logic_code_attempt(jsonb)') is not null
+          and to_regprocedure('private.reveal_progressive_clue(jsonb)') is not null
+          and to_regprocedure('private.submit_matching_pair(jsonb)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null
           and to_regprocedure('public.get_flash_member_review(text,uuid,uuid)') is not null
           and pg_get_function_result(
@@ -58,7 +61,7 @@ async function checkDatabase() {
     await client.query("COMMIT");
     return {
       ok: Boolean(row?.database_ok && row.schema_ready),
-      schemaRevisionOk: expected === defaultSchemaRevision && Boolean(row?.schema_revision_marker),
+      schemaRevisionOk: expected === canonicalSchemaRevision && Boolean(row?.schema_revision_marker),
     };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);

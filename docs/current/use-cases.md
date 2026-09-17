@@ -182,8 +182,8 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Actor:** superadministrador desde el portal privado durante la beta; editor/autor autorizado en
   una fase posterior.
 - **Objetivo:** crear preguntas y desafíos reutilizables que puedan publicarse sin ambigüedad histórica.
-- **Precondiciones:** superadmin autenticado; el editor S11 soporta únicamente `flash` con dos
-  preguntas `multiple-choice`, schema técnico `v1` y 50 puntos por pregunta.
+- **Precondiciones:** superadmin autenticado; el editor S11 soporta `flash` con entre 2 y 20
+  preguntas, schema técnico `v1`, puntos enteros positivos y 100 puntos totales.
 - **Entrada relevante:** documento JSON estructurado con payload público, solución privada, orden,
   configuración, puntos, tiempos y motivo obligatorio de auditoría.
 - **Flujo principal:** crear borrador; validar y previsualizar sin competición; guardar; editar solo
@@ -221,7 +221,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** contenido disponible para práctica; para el preview editorial de S11, privilegio
   global y un borrador JSON válido.
 - **Entrada relevante:** documento editorial Flash y configuración de preview.
-- **Flujo principal:** validar el documento; renderizar las dos preguntas con el renderer existente;
+- **Flujo principal:** validar el documento; renderizar las preguntas con el renderer existente;
   mostrar feedback de solución dentro del portal protegido, sin iniciar un intento.
 - **Reglas de negocio:** el preview editorial no llama a `start_attempt` ni `prepare_interaction` y
   no crea Flash Points, historial, ranking, actividad social o filas de calendario.

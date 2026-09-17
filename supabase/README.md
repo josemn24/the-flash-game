@@ -75,7 +75,7 @@ home, el detalle y la introducción autorizada; las preguntas, soluciones y payl
 `infrastructure/supabase/roomQueries.ts`.
 
 S03 añade dos proyecciones más: `public.get_my_flash_challenge` entrega exclusivamente el payload
-público de las dos preguntas jugables y `public.get_my_flash_result` entrega la revisión propia solo
+público de las preguntas jugables y `public.get_my_flash_result` entrega la revisión propia solo
 después del cierre terminal. El gameplay real pasa por los Route Handlers
 `/api/competitive/attempts/*`; el adaptador server-only está en
 `infrastructure/supabase/attemptCommands.ts`. Cada comando usa `SUPABASE_DB_URL`, conecta como
@@ -90,7 +90,8 @@ wrappers estrechos sobre transacciones privadas; requieren motivo, idempotencia,
 optimista y auditoría, y no crean publicaciones de calendario, intentos, puntos ni actividad.
 
 E01 añade `schemas/36_mini_wordle.sql` y `schemas/92_mini_wordle_commands.sql`. El portal acepta
-`multiple-choice` y `mini-wordle` en el mismo Flash, con dos preguntas de 50 puntos. La solución y
+`multiple-choice` y `mini-wordle` en el mismo Flash, dentro de desafíos de 2 a 20 preguntas y 100
+puntos totales. La solución y
 las palabras auxiliares viven en el payload privado; el payload público solo contiene prompt, pista,
 longitud y máximo de intentos. `npm run supabase:dictionary:load` carga únicamente el diccionario
 general desde `public/dictionaries`, y `private.submit_mini_wordle_guess(jsonb)` acepta la unión

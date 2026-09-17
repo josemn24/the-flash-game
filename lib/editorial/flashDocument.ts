@@ -86,6 +86,10 @@ const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionar
 const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
 const progressiveCluesSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const matchingSolutionKeys = ["matches", "explanation"];
+
+export const FLASH_MIN_QUESTIONS = 2;
+export const FLASH_MAX_QUESTIONS = 20;
+export const FLASH_TOTAL_POINTS = 100;
 const MINI_WORDLE_MAX_ADDITIONAL_GUESSES = 1000;
 const LOGIC_CODE_MAX_CLUES = 20;
 const LOGIC_CODE_MAX_LENGTH = 12;
@@ -209,7 +213,9 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
 
   const commonValid =
     value.payloadSchemaVersion === 1 &&
-    value.points === 50 &&
+    Number.isSafeInteger(value.points) &&
+    (value.points as number) > 0 &&
+    (value.points as number) <= FLASH_TOTAL_POINTS &&
     nonEmptyString(value.slug, 120) &&
     Number.isSafeInteger(value.timeLimitMs) &&
     (value.timeLimitMs as number) > 0 &&
@@ -250,7 +256,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       type: "multiple-choice",
       payloadSchemaVersion: 1,
       timeLimitMs: value.timeLimitMs as number,
-      points: 50,
+      points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMultipleChoiceQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMultipleChoiceQuestion["solutionPayload"],
     };
@@ -296,7 +302,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       type: "mini-wordle",
       payloadSchemaVersion: 1,
       timeLimitMs: value.timeLimitMs as number,
-      points: 50,
+      points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMiniWordleQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMiniWordleQuestion["solutionPayload"],
     };
@@ -350,7 +356,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       type: "logic-code",
       payloadSchemaVersion: 1,
       timeLimitMs: value.timeLimitMs as number,
-      points: 50,
+      points: value.points as number,
       publicPayload: publicPayload as FlashEditorialLogicCodeQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialLogicCodeQuestion["solutionPayload"],
     };
@@ -395,7 +401,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       type: "progressive-clues",
       payloadSchemaVersion: 1,
       timeLimitMs: value.timeLimitMs as number,
-      points: 50,
+      points: value.points as number,
       publicPayload: publicPayload as FlashEditorialProgressiveCluesQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialProgressiveCluesQuestion["solutionPayload"],
     };
@@ -450,7 +456,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       type: "matching",
       payloadSchemaVersion: 1,
       timeLimitMs: value.timeLimitMs as number,
-      points: 50,
+      points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMatchingQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMatchingQuestion["solutionPayload"],
     };
@@ -482,13 +488,24 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
-  if (!Array.isArray(questions) || questions.length !== 2) {
-    throw new FlashEditorialValidationError(["Flash requiere exactamente dos preguntas."]);
+  if (
+    !Array.isArray(questions) ||
+    questions.length < FLASH_MIN_QUESTIONS ||
+    questions.length > FLASH_MAX_QUESTIONS
+  ) {
+    throw new FlashEditorialValidationError([
+      `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
+    ]);
   }
 
-  const parsedQuestions = questions.map(parseQuestion) as [FlashEditorialQuestion, FlashEditorialQuestion];
+  const parsedQuestions = questions.map(parseQuestion);
   if (new Set(parsedQuestions.map((question) => question.slug)).size !== parsedQuestions.length) {
     throw new FlashEditorialValidationError(["Las preguntas deben tener slugs distintos."]);
+  }
+  if (parsedQuestions.reduce((total, question) => total + question.points, 0) !== FLASH_TOTAL_POINTS) {
+    throw new FlashEditorialValidationError([
+      `Las preguntas deben sumar ${FLASH_TOTAL_POINTS} puntos.`,
+    ]);
   }
 
   return {

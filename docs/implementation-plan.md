@@ -1,8 +1,8 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S12 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S12 y E01–E04 están implementadas y verificadas sobre el stack local;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-16. Alcance: pasar del prototipo mock a competición persistida,
+> Fecha de análisis: 2026-09-17. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
 > privado de superadmin; no forman parte de la UI pública.
@@ -31,10 +31,10 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout y nombre persistido en S01.                                                                                                                                                                                                      | Avatar, Storage y políticas de administración.                                                                                                     |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash en S03–S04.                                                                                                                                              | Sustituir autoridad cliente en Alphabet y los demás modos; Pirámide también usa `localStorage` en práctica.                                        |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 22 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                                               | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                       |
+| SQL       | 27 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                                               | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                       |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                                                                               | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S12.                                                                                                                                                                          | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                     |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S12 y E01–E04.                                                                                                                                                                          | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                     |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -124,7 +124,8 @@ default privileges y objetos adicionales se contrastan con `supabase/security-in
 Los cambios no representables por el sincronizador llevan una migración explícita según ese workflow.
 
 S02–S04 añaden y ejercitan un conjunto local mínimo: dos cuentas de prueba reales de Auth, una sala,
-membresías competitivas/espectador, una temporada y un Flash de dos preguntas con 50 puntos cada
+  membresías competitivas/espectador, una temporada y un Flash de 2 a 20 preguntas con 100 puntos
+  totales
 una. Los escenarios de fechas y UUID son deterministas; las pruebas usan un reloj controlado o
 preparación explícita del escenario. El modo demo no modifica el reloj competitivo de producción.
 
@@ -293,13 +294,14 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Terminada:** cada usuario solo ve sus salas y el CTA correcto; consultar no consume intento y
   ninguna ruta alternativa devuelve contenido competitivo como preview.
 
-### S03 — Completar un Flash de dos preguntas con resultado persistido
+### S03 — Completar un Flash con resultado persistido
 
 > Estado: implementada y verificada en local (`689c3f5`).
 
 - **Objetivo / CU:** primer loop competitivo entero; CU-14, CU-15, CU-17, CU-18, CU-20 y CU-21.
 - **UI:** `RoomChallengeClient`, `FlashPopFlashGame`, `QuestionInput`, `QuestionScreen`, resultado
-  y revisión propia mínima. Solo formato `multiple-choice`, dos preguntas/50 puntos por item.
+  y revisión propia mínima. Solo formato `multiple-choice`; los fixtures históricos usan dos
+  preguntas de 50 puntos, pero el contrato Flash admite de 2 a 20 preguntas y 100 puntos totales.
 - **Mocks retirados:** desafío completo mock, scoring oficial en `useGameSession`, reporter local
   y `recordCompletion` como autoridad para esta publicación. Conservar UI/transiciones reutilizables.
 - **Backend/dominio:** casos de iniciar, preparar, enviar/evaluar y finalizar; validar versiones
@@ -537,7 +539,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   de 100, solución ausente, doble publicación, edición concurrente e inmutabilidad tras publicar.
 - **Dependencias:** S03, D03 para contenido soportado y D05 editorial.
 - **Terminada:** implementada localmente. Un superadmin crea, edita, previsualiza y publica desde
-  `/admin` un Flash mínimo de dos preguntas; el grafo versionado queda persistido e inmutable al
+  `/admin` un Flash de 2 a 20 preguntas; el grafo versionado queda persistido e inmutable al
   publicar, el documento completo solo aparece en la lectura protegida y no se crean calendario,
   intentos, puntos ni actividad ficticia. La validación se ejecuta también en servidor y las
   mutaciones conservan idempotencia, concurrencia optimista, locks y auditoría segura. E01 amplía
@@ -575,7 +577,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   privada con palabra normalizada, diccionario versionado y `additionalGuesses` específicos de la
   pregunta. Cada palabra válida pertenece al diccionario general o a esa lista privada; la propia
   solución también puede ser temática aunque no esté en el diccionario general. El portal admite
-  mezclas de elección múltiple y Mini-Wordle, siempre dos preguntas de 50 puntos.
+  mezclas de elección múltiple y Mini-Wordle, entre 2 y 20 preguntas con 100 puntos totales.
 - **Persistencia:** `private.mini_wordle_guess_events` y
   `private.mini_wordle_dictionary_words`, RLS/grants/inventario explícitos, feedback SQL para
   letras repetidas y `private.submit_mini_wordle_guess(jsonb)` con lock, plazo, secuencia,
@@ -1097,8 +1099,9 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S12 y E01 ya están cerradas localmente: su entrega cubre login y nombre persistido, lecturas de
-sala, Flash competitivo persistido con Mini-Wordle, recuperación local, rankings, historial y
-revisión, además de la creación auditada de salas, la activación de temporadas, la publicación
-editorial mixta y la programación/ejecución temporal local del calendario. E01 no habilita S13+,
-otros modos ni los formatos E02–E10; el piloto sigue acotado a las rutas reales documentadas en S22.
+S01–S12 y E01–E04 están cerradas localmente: su entrega cubre login y nombre persistido, lecturas de
+sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues y Matching,
+recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
+activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local
+del calendario. Estas slices no habilitan S13+, otros modos ni E05–E10; el piloto sigue acotado a
+las rutas reales documentadas en S22.

@@ -12,6 +12,7 @@ declare
   item_count integer;
   compatible_item_count integer;
   solution_count integer;
+  points_total integer;
 begin
   select version.status, version.mode, version.config_schema_version, version.max_score, version.mode_config
     into version_status, version_mode, version_schema, version_score, version_config
@@ -30,13 +31,14 @@ begin
 
   select count(*)::integer,
     count(*) filter (
-      where item.position in (1, 2)
-        and item.points = 50
+      where item.position between 1 and 20
+        and item.points > 0
         and item.config_schema_version = 1
         and item.mode_config = '{}'::jsonb
         and private.is_supported_flash_question(question.id)
-    )::integer
-  into item_count, compatible_item_count
+    )::integer,
+    coalesce(sum(item.points), 0)::integer
+  into item_count, compatible_item_count, points_total
   from private.challenge_items item
   left join private.question_versions question on question.id = item.question_version_id
   where item.challenge_version_id = version_id;
@@ -47,8 +49,11 @@ begin
     on solution.question_version_id = item.question_version_id
   where item.challenge_version_id = version_id;
 
-  if version_schema <> 1 or version_score <> 100 or version_config <> '{}'::jsonb or item_count <> 2
-    or compatible_item_count <> 2 or solution_count <> 2 then
+  if version_schema <> 1 or version_score <> 100 or version_config <> '{}'::jsonb
+    or item_count not between 2 and 20
+    or compatible_item_count <> item_count
+    or solution_count <> item_count
+    or points_total <> 100 then
     raise exception 'unsupported_content' using errcode = '22023';
   end if;
 end;
@@ -574,11 +579,12 @@ language sql stable security definer set search_path = '' as $$
   join lateral (
     select
       count(*)::bigint as question_count,
-      count(*) = 2
-        and coalesce(bool_and(item.position in (1, 2)), false)
-        and coalesce(bool_and(item.points = 50), false)
+      count(*) between 2 and 20
+        and coalesce(bool_and(item.position between 1 and 20), false)
+        and coalesce(bool_and(item.points > 0), false)
         and coalesce(bool_and(item.config_schema_version = 1 and item.mode_config = '{}'::jsonb), false)
-        and count(*) filter (where private.is_supported_flash_question(question.id)) = 2 as is_supported
+        and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
+        and coalesce(sum(item.points), 0) = 100 as is_supported
     from private.challenge_items item
     join private.question_versions question on question.id = item.question_version_id
     where item.challenge_version_id = version.id
