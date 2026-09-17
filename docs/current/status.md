@@ -18,6 +18,8 @@ apertura/cierre/finalización por reloj PostgreSQL.
 
 No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
 estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
+S22 fija el runtime `pilot` para operar únicamente Flash persistido y portal; las demos mock no son
+fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.md).
 
 ## Capacidades actuales
 
@@ -41,7 +43,8 @@ estado verificado corresponde al stack local y no permite afirmar el estado de p
   temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC. S11 añade
   creación, edición, preview y publicación separada de Flash mínimo: dos preguntas
   multiple-choice, 50 puntos cada una, con soluciones privadas e inmutabilidad al publicar.
-- Recorridos mock para ajustes, práctica, previews y modos distintos de Flash.
+- Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
+  `development`/`test` o bajo rutas demo explícitas.
 
 ### Modelo operativo de la beta cerrada
 
@@ -65,7 +68,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators. |
 | `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes; gestión real está pendiente.      |
 | `/admin`                    | Portal privado server-side para superadmins: contexto, salas, temporadas, editorial Flash mínimo y calendario. |
-| `/desafios/[challengeId]`   | Desafío Flash competitivo real en contexto autorizado; preview mock explícito en los demás casos. |
+| `/desafios/[challengeId]`   | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404. |
 | `/formatos`                 | Biblioteca estática de formatos y práctica local.                    |
 | `/flash-pop`                | Lobby/demo de Flash Pop.                                             |
 
@@ -95,10 +98,12 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-16.
 
-- `npm test`: 89 archivos de test y 575 tests superados, incluyendo adaptadores, acciones y
+- `npm test`: 97 archivos de test y 609 tests superados, incluyendo adaptadores, acciones y
   componentes de S11/S12.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
+- `npm run verify:pilot`: reconstruye Supabase local por escenario, ejecuta integración/E2E en scope
+  `pilot`, verifica health/límites y ensaya backup/restore.
 - `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S08, S10–S12, ACL del
   portal, idempotencia, rollback y carreras de comandos, activaciones y edición/publicación con
   conexiones PostgreSQL independientes.

@@ -74,6 +74,8 @@ function getPool() {
 
 async function beginAsServiceRole(client: PoolClient, identity: VerifiedAuthIdentity) {
   await client.query("BEGIN");
+  await client.query("SET LOCAL statement_timeout = '5000ms'");
+  await client.query("SET LOCAL idle_in_transaction_session_timeout = '10000ms'");
   await client.query("SET LOCAL ROLE service_role");
   await client.query("select set_config('request.jwt.claims', $1, true)", [
     JSON.stringify({ sub: identity.authUserId, role: "authenticated", is_anonymous: false }),
@@ -81,7 +83,16 @@ async function beginAsServiceRole(client: PoolClient, identity: VerifiedAuthIden
 }
 
 function commandCode(error: unknown) {
+  const infrastructureCode =
+    error && typeof error === "object" && "code" in error ? String(error.code) : "";
   const message = error instanceof Error ? error.message : "";
+  if (
+    infrastructureCode.startsWith("08") ||
+    ["ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "EPIPE"].includes(infrastructureCode) ||
+    /connection|timeout|socket/i.test(message)
+  ) {
+    return "database_unavailable";
+  }
   const known = [
     "not_authorized",
     "competitive_access_denied",

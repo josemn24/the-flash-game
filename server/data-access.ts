@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import {
   isMockRoomRoute,
+  isMockRoomRouteEnabled,
   mockChallengeQueries,
   mockCurrentViewerProvider,
   mockRoomQueries,
@@ -15,6 +16,7 @@ import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
 import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
+import { mocksEnabled } from "@/server/runtime-scope";
 
 const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
 
@@ -37,50 +39,67 @@ export const getHomePageModel = cache(async () => {
 });
 
 export const getRoomDetailPageModel = cache(async (roomKey: string) =>
-  isMockRoomRoute(roomKey)
+  isMockRoomRouteEnabled(roomKey)
     ? mockRoomQueries.getDetail(roomKey, await getQueryContext())
-    : supabaseRoomQueries.getDetail(roomKey),
+    : isMockRoomRoute(roomKey)
+      ? null
+      : supabaseRoomQueries.getDetail(roomKey),
 );
 
 export const getRoomIntroductionPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  supabaseRoomQueries.getIntroduction(roomKey, challengeKey),
+  isMockRoomRoute(roomKey) ? null : supabaseRoomQueries.getIntroduction(roomKey, challengeKey),
 );
 
 export const getRoomSettingsPageModel = cache(async (roomKey: string) =>
-  isMockRoomRoute(roomKey) ? mockRoomQueries.getSettings(roomKey, await getQueryContext()) : null,
+  isMockRoomRouteEnabled(roomKey)
+    ? mockRoomQueries.getSettings(roomKey, await getQueryContext())
+    : null,
 );
 
 export const getRoomRankingPageModel = cache(async (roomKey: string) =>
-  isMockRoomRoute(roomKey)
+  isMockRoomRouteEnabled(roomKey)
     ? mockRoomQueries.getRanking(roomKey, await getQueryContext())
-    : supabaseRoomQueries.getRanking(roomKey),
+    : isMockRoomRoute(roomKey)
+      ? null
+      : supabaseRoomQueries.getRanking(roomKey),
 );
 
 export const getRoomMemberDetailPageModel = cache(
   async (roomKey: string, memberKey: string, publicationKey?: string) =>
-    isMockRoomRoute(roomKey)
+    isMockRoomRouteEnabled(roomKey)
       ? mockRoomQueries.getMemberDetail(roomKey, memberKey, await getQueryContext())
-      : supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),
+      : isMockRoomRoute(roomKey)
+        ? null
+        : supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),
 );
 
 export const getRoomHistoryPageModel = cache(async (roomKey: string) =>
-  isMockRoomRoute(roomKey)
+  isMockRoomRouteEnabled(roomKey)
     ? mockRoomQueries.listHistory(roomKey, await getQueryContext())
-    : supabaseRoomQueries.listHistory(roomKey),
+    : isMockRoomRoute(roomKey)
+      ? null
+      : supabaseRoomQueries.listHistory(roomKey),
 );
 
 export const getRoomHistoryDetailPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  isMockRoomRoute(roomKey)
+  isMockRoomRouteEnabled(roomKey)
     ? mockRoomQueries.getHistoryDetail(roomKey, challengeKey, await getQueryContext())
-    : supabaseRoomQueries.getHistoryDetail(roomKey, challengeKey),
+    : isMockRoomRoute(roomKey)
+      ? null
+      : supabaseRoomQueries.getHistoryDetail(roomKey, challengeKey),
 );
 
 export const getPlayableChallengePageModel = cache(
   async (challengeKey: string, roomKey: string | null = null) => {
-    if (roomKey && !isMockRoomRoute(roomKey)) {
+    if (roomKey && isMockRoomRoute(roomKey)) {
+      if (!mocksEnabled()) return null;
+      return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
+    }
+    if (roomKey) {
       if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
       return supabaseFlashQueries.getPlayable(roomKey, challengeKey);
     }
+    if (!mocksEnabled()) return null;
     return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
   },
 );

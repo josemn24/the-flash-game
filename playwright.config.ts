@@ -32,6 +32,11 @@ const localEnv = {
     localStatus.ANON_KEY ||
     "",
   CALENDAR_TICK_SECRET: process.env.CALENDAR_TICK_SECRET || "local-s12-calendar-secret",
+  FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
+  APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
+  HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
+  EXPECTED_SCHEMA_REVISION:
+    process.env.EXPECTED_SCHEMA_REVISION || "20260916130002_s12_temporal_read_boundaries",
 };
 
 export default defineConfig({
@@ -47,7 +52,7 @@ export default defineConfig({
   webServer: {
     command: "npm run dev -- --hostname 127.0.0.1 --port 3000",
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: true,
+    reuseExistingServer: process.env.FLASH_RUNTIME_SCOPE !== "pilot",
     timeout: 120_000,
     env: localEnv,
   },

@@ -1,5 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import ChallengePage, { dynamic } from "./page";
+
+const originalScope = process.env.FLASH_RUNTIME_SCOPE;
+
+afterEach(() => {
+  if (originalScope === undefined) delete process.env.FLASH_RUNTIME_SCOPE;
+  else process.env.FLASH_RUNTIME_SCOPE = originalScope;
+});
 
 vi.mock("next/navigation", () => ({
   notFound: () => {
@@ -34,6 +41,28 @@ describe("challenge route room context", () => {
     });
 
     expect(element.props.roomContext).toBeUndefined();
+  });
+
+  it("rejects roomless mock access in pilot", async () => {
+    process.env.FLASH_RUNTIME_SCOPE = "pilot";
+
+    await expect(
+      ChallengePage({
+        params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("rejects mock room aliases in pilot", async () => {
+    process.env.FLASH_RUNTIME_SCOPE = "pilot";
+
+    await expect(
+      ChallengePage({
+        params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }),
+        searchParams: Promise.resolve({ roomId: "tabarnia-room" }),
+      }),
+    ).rejects.toThrow("NOT_FOUND");
   });
 
   it("rejects an unknown contextual room", async () => {

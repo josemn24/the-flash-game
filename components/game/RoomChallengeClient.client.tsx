@@ -92,7 +92,13 @@ export function RoomChallengeClient({
 }) {
   const persistence = persistenceProp ?? roomContext?.gameplayPersistence ?? "mock";
   const { recordCompletion, getCompletion } = useRoomSession();
-  const localCompletion = roomContext ? getCompletion(roomContext.roomId, challenge.id) : undefined;
+  // Server-backed competitive sessions must never be shadowed by the
+  // client-only demo store. The provider remains available for explicit
+  // practice/preview routes, but it is not part of the pilot data path.
+  const localCompletion =
+    persistence === "mock" && roomContext
+      ? getCompletion(roomContext.roomId, challenge.id)
+      : undefined;
   const attemptStatus = localCompletion
     ? localCompletion.completed
       ? "completed"
@@ -105,10 +111,10 @@ export function RoomChallengeClient({
   );
   const onComplete = useCallback(
     (result: ChallengeCompletionResult) => {
-      if (!roomContext) return;
+      if (!roomContext || persistence !== "mock") return;
       recordCompletion({ ...result, roomId: roomContext.roomId });
     },
-    [recordCompletion, roomContext],
+    [persistence, recordCompletion, roomContext],
   );
 
   if (

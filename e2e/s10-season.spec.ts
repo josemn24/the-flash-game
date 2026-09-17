@@ -23,7 +23,7 @@ test.describe("S10 — preparar y activar una temporada", () => {
     await page.goto("/admin");
 
     const roomSection = page.getByRole("region", { name: "Sala S10" }).last();
-    const createForm = roomSection.locator("form").first();
+    const createForm = roomSection.locator("form").filter({ hasText: "Preparar temporada" }).first();
     await createForm.getByLabel("Título").fill("Temporada S10");
     await createForm.getByLabel(/Inicio/).fill("2030-09-20T12:30");
     await createForm.getByLabel(/Fin/).fill("2030-09-27T12:30");

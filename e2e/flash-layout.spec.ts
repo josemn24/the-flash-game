@@ -22,6 +22,7 @@ test.describe("Flash layout", () => {
   test.use({ viewport: { width: 406, height: 847 } });
 
   test("uses the shared mobile shell for the server-backed game", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     const data = await fixture();
     await signIn(page, data.users.owner);
     await page.goto(`/desafios/${data.data.openPublicationId}?roomId=${data.data.roomSlug}`);

@@ -38,7 +38,10 @@ test.describe("S02 — salas e introducción autorizada", () => {
     await expect(page.getByRole("link", { name: /Ver historial de Sala principal/ })).toBeVisible();
     await page.getByRole("link", { name: "Jugar" }).click();
     await expect(page.getByRole("heading", { name: "Metadatos privados S02" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Empezar desafío" })).toHaveCount(1);
+    // S02 deliberately uses short-text content. Pilot competitive gameplay is
+    // restricted to the persisted multiple-choice Flash slice, so the safe
+    // introduction must not offer a bypass CTA for unsupported content.
+    await expect(page.getByRole("button", { name: "Empezar desafío" })).toHaveCount(0);
     const introductionResponse = await page.reload();
     const introductionHtml = (await introductionResponse?.text()) ?? "";
     expect(introductionHtml).not.toContain("S02_PRIVATE_PROMPT");
@@ -50,8 +53,8 @@ test.describe("S02 — salas e introducción autorizada", () => {
     expect(unauthorized?.status()).toBe(404);
     expect(missing?.status()).toBe(404);
 
-    const mockRanking = await page.goto("/salas/s02-main/ranking");
-    expect(mockRanking?.status()).toBe(404);
+    const persistedRanking = await page.goto("/salas/s02-main/ranking");
+    expect(persistedRanking?.status()).toBe(200);
   });
 
   test("Bob puede consultar la introducción como spectator sin CTA competitivo", async ({

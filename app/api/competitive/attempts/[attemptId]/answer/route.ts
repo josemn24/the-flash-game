@@ -9,6 +9,7 @@ import {
   requirePathUuid,
   requireUuid,
   responseFor,
+  requestIdFor,
   optionalClientTime,
   verifiedIdentity,
 } from "@/server/competitive/attempt-api";
@@ -23,6 +24,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ attemptId: string }> },
 ) {
+  const startedAt = Date.now();
+  const requestId = requestIdFor(request);
   try {
     assertSameOrigin(request);
     const body = await readJson(request);
@@ -45,16 +48,22 @@ export async function POST(
         clientTimeUsedMs: optionalClientTime(body) as DurationMs | undefined,
       },
     });
-    return responseFor({
-      attemptId: evaluated.attemptId,
-      challengeItemId: body.challengeItemId,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-      timedOut: received.timedOut,
-      timeUsedMs: received.timeUsedMs,
-    });
+    return responseFor(
+      {
+        attemptId: evaluated.attemptId,
+        challengeItemId: body.challengeItemId,
+        lockVersion: evaluated.lockVersion,
+        status: evaluated.status,
+        points: evaluated.points,
+        timedOut: received.timedOut,
+        timeUsedMs: received.timeUsedMs,
+      },
+      200,
+      requestId,
+      "competitive.attempt.answer",
+      startedAt,
+    );
   } catch (error) {
-    return errorResponse(error);
+    return errorResponse(error, requestId, "competitive.attempt.answer", startedAt);
   }
 }

@@ -9,6 +9,7 @@ import {
   requireKey,
   requireUuid,
   responseFor,
+  requestIdFor,
   setAttemptToken,
   verifiedIdentity,
 } from "@/server/competitive/attempt-api";
@@ -18,6 +19,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+  const requestId = requestIdFor(request);
   try {
     assertSameOrigin(request);
     const body = await readJson(request);
@@ -41,13 +44,19 @@ export async function POST(request: Request) {
       sessionToken,
       result.deadlineAt,
     );
-    return responseFor({
-      attemptId: result.attemptId,
-      resumed: result.resumed,
-      deadlineAt: result.deadlineAt,
-      lockVersion: result.lockVersion,
-    });
+    return responseFor(
+      {
+        attemptId: result.attemptId,
+        resumed: result.resumed,
+        deadlineAt: result.deadlineAt,
+        lockVersion: result.lockVersion,
+      },
+      200,
+      requestId,
+      "competitive.attempt.start",
+      startedAt,
+    );
   } catch (error) {
-    return errorResponse(error);
+    return errorResponse(error, requestId, "competitive.attempt.start", startedAt);
   }
 }

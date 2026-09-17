@@ -32,7 +32,7 @@ supabase/
 └── .temp/ y .branches/     # Estado interno no versionado
 ```
 
-La configuración usa `declarative_schema_path = "./schemas"`. La carpeta puede dividirse después
+La configuración usa `schema_paths = ["./schemas/*.sql"]`. La carpeta puede dividirse después
 por responsabilidad, por ejemplo `00_extensions.sql`, `10_types.sql`, `20_tables.sql`,
 `30_views-functions.sql` y `40_indexes.sql`, manteniendo siempre un orden explícito y sin duplicar
 definiciones.
@@ -97,6 +97,10 @@ npm run supabase:fixture -- --scenario s03
 npm run test:integration:supabase -- --scenario s03
 npm run test:e2e -- e2e/s03-flash.spec.ts
 ```
+
+La verificación completa de S22 se ejecuta con `npm run verify:pilot`. Arranca un stack local,
+aplica el esquema desde una base limpia, ejecuta pgTAP y todos los escenarios locales del portal,
+Flash, recuperación, histórico, editorial y calendario. No requiere ni acepta un proyecto remoto.
 
 S07 añade las lecturas Flash `public.get_flash_history(text, uuid)` y
 `public.get_flash_member_review(text, uuid, uuid)` desde `schemas/85_flash_history_reads.sql`.

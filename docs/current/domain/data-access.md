@@ -89,6 +89,15 @@ Server Components
 → Client Components
 ```
 
+En S22 la selección de esa composición está gobernada por `FLASH_RUNTIME_SCOPE`. En `pilot`, los
+aliases mock y la rama roomless devuelven ausencia y no llegan al adaptador mock; un fallo de la
+fuente persistida se propaga como error recuperable. `RoomSessionProvider` puede seguir montado para
+las demos, pero `RoomChallengeClient` solo consulta y escribe sus resultados locales cuando la
+persistencia declarada es `mock`; un modelo `server` nunca se sobrescribe con `localResults`.
+
+La matriz operativa completa, los límites HTTP y el procedimiento reproducible de Supabase están en
+[`s22-operacion.md`](../s22-operacion.md).
+
 Las rutas de sala y desafío son dinámicas. La galería editorial `/formatos` y sus fichas siguen
 siendo públicas y estáticas. La beta no añade rutas públicas para crear salas, gestionar
 invitaciones o preparar temporadas: esas operaciones pertenecerán a una frontera privada de

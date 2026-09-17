@@ -7,14 +7,15 @@
 
 2026-09-16, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 93 archivos de test y 596 tests superados.
+- `npm test`: 97 archivos de test y 609 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
-- `npm run build`: no concluido en esta actualización; el proceso quedó sin progreso después de
-  detenerse el entorno local de Supabase durante la verificación E2E.
+- `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
 - `npm run type-architecture`: correcto.
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 63 archivos Markdown comprobados.
+- `npm run verify:pilot`: comando reproducible para reconstruir Supabase local, ejecutar todos los
+  escenarios S01–S12 seleccionados y realizar backup/restore.
 - `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S08, S10–S12, portal
   privado, comandos editoriales/calendario y pruebas concurrentes con conexiones PostgreSQL independientes.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth y PostgREST local.

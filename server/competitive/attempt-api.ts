@@ -1,8 +1,14 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { getRuntimeScope } from "@/server/runtime-scope";
+import { logHttpEvent, requestIdFor, safePath } from "@/server/observability";
+import {
+  consumeCompetitiveRateLimit,
+  CompetitiveRateLimitError,
+} from "@/server/competitive/rate-limit";
 import {
   AttemptCommandError,
   SupabaseAttemptCommands,
@@ -43,10 +49,30 @@ function isLockVersion(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
-export async function readJson(request: Request): Promise<JsonObject> {
+const competitiveBodyLimitBytes = 32 * 1024;
+
+export async function readJson(
+  request: Request,
+  maxBytes = competitiveBodyLimitBytes,
+): Promise<JsonObject> {
+  const declaredLength = request.headers.get("content-length");
+  if (declaredLength && Number(declaredLength) > maxBytes) {
+    throw new AttemptApiError("body_too_large", 413);
+  }
+
+  let body: string;
+  try {
+    body = await request.text();
+  } catch {
+    throw new AttemptApiError("invalid_json", 400);
+  }
+  if (new TextEncoder().encode(body).byteLength > maxBytes) {
+    throw new AttemptApiError("body_too_large", 413);
+  }
+
   let value: unknown;
   try {
-    value = await request.json();
+    value = JSON.parse(body);
   } catch {
     throw new AttemptApiError("invalid_json", 400);
   }
@@ -90,12 +116,29 @@ export function optionalClientTime(body: JsonObject) {
 export async function verifiedIdentity(): Promise<VerifiedAuthIdentity> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new AttemptApiError("not_authenticated", 401);
+  if (error) {
+    const missingSession =
+      error.name === "AuthSessionMissingError" ||
+      error.code === "session_not_found" ||
+      error.message.toLowerCase().includes("auth session missing");
+    throw new AttemptApiError(
+      missingSession ? "not_authenticated" : "auth_unavailable",
+      missingSession ? 401 : 503,
+    );
+  }
+  if (!data.user) throw new AttemptApiError("not_authenticated", 401);
   return { authUserId: data.user.id };
 }
 
 export function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
+  if (getRuntimeScope() === "pilot") {
+    const expected = process.env.APP_ORIGIN;
+    if (!expected || !origin || origin !== expected) {
+      throw new AttemptApiError("invalid_origin", 403);
+    }
+    return;
+  }
   if (!origin) return;
   let actualUrl: URL;
   let expectedUrl: URL;
@@ -190,6 +233,8 @@ export async function clearAttemptToken(
 }
 
 export function commandsFor(identity: VerifiedAuthIdentity) {
+  const limit = consumeCompetitiveRateLimit(identity.authUserId);
+  void limit;
   return new SupabaseAttemptCommands(identity);
 }
 
@@ -199,22 +244,71 @@ export function mapAttemptError(error: unknown): AttemptApiError {
     const status =
       error.code === "not_authorized" || error.code === "competitive_access_denied"
         ? 404
-        : error.code === "command_failed"
-          ? 500
+        : error.code === "auth_unavailable" ||
+            error.code === "database_unavailable" ||
+            error.code === "command_failed"
+          ? 503
           : 409;
     return new AttemptApiError(error.code, status);
+  }
+  if (error instanceof CompetitiveRateLimitError) {
+    return new AttemptApiError(error.code, error.status);
   }
   return new AttemptApiError("command_failed", 500);
 }
 
-export function responseFor(value: unknown, status = 200) {
+export function responseFor(
+  value: unknown,
+  status = 200,
+  requestId: string = randomUUID(),
+  operation: string = "competitive.attempt",
+  startedAt = Date.now(),
+) {
+  logHttpEvent({
+    requestId,
+    route: operation,
+    operation,
+    status,
+    result: status >= 400 ? "error" : "ok",
+    durationMs: Date.now() - startedAt,
+  });
   return Response.json(value, {
     status,
-    headers: { "Cache-Control": "no-store" },
+    headers: {
+      "Cache-Control": "no-store",
+      "X-Request-Id": requestId,
+      ...(status === 429 ? { "Retry-After": "60" } : {}),
+    },
   });
 }
 
-export function errorResponse(error: unknown) {
+export function errorResponse(
+  error: unknown,
+  requestId: string = randomUUID(),
+  operation: string = "competitive.attempt",
+  startedAt = Date.now(),
+) {
   const mapped = mapAttemptError(error);
-  return responseFor({ error: { code: mapped.code } }, mapped.status);
+  logHttpEvent({
+    requestId,
+    route: operation,
+    operation,
+    status: mapped.status,
+    result: "error",
+    errorCode: mapped.code,
+    durationMs: Date.now() - startedAt,
+  });
+  return Response.json(
+    { error: { code: mapped.code, requestId } },
+    {
+      status: mapped.status,
+      headers: {
+        "Cache-Control": "no-store",
+        "X-Request-Id": requestId,
+        ...(mapped.status === 429 ? { "Retry-After": "60" } : {}),
+      },
+    },
+  );
 }
+
+export { requestIdFor, safePath };

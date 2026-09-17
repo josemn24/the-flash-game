@@ -8,6 +8,7 @@ import {
   requireLockVersion,
   requirePathUuid,
   responseFor,
+  requestIdFor,
   verifiedIdentity,
 } from "@/server/competitive/attempt-api";
 import { readTerminalFlashReview } from "@/server/competitive/flashResult";
@@ -20,6 +21,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ attemptId: string }> },
 ) {
+  const startedAt = Date.now();
+  const requestId = requestIdFor(request);
   try {
     assertSameOrigin(request);
     const body = await readJson(request);
@@ -56,24 +59,36 @@ export async function POST(
       });
       const review = await readTerminalFlashReview(attemptId);
       await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
-      return responseFor({
-        status: completed.status,
-        lockVersion: completed.lockVersion,
-        answers: snapshot.answers,
-        phase: "results",
-        ...(resolved ? { resolved } : {}),
-        review,
-        score: completed.score,
-      });
+      return responseFor(
+        {
+          status: completed.status,
+          lockVersion: completed.lockVersion,
+          answers: snapshot.answers,
+          phase: "results",
+          ...(resolved ? { resolved } : {}),
+          review,
+          score: completed.score,
+        },
+        200,
+        requestId,
+        "competitive.attempt.recover",
+        startedAt,
+      );
     }
-    return responseFor({
-      status: snapshot.status,
-      lockVersion: snapshot.lockVersion,
-      answers: snapshot.answers,
-      phase: snapshot.hasStartedInteraction ? "prepare" : "countdown",
-      ...(resolved ? { resolved } : {}),
-    });
+    return responseFor(
+      {
+        status: snapshot.status,
+        lockVersion: snapshot.lockVersion,
+        answers: snapshot.answers,
+        phase: snapshot.hasStartedInteraction ? "prepare" : "countdown",
+        ...(resolved ? { resolved } : {}),
+      },
+      200,
+      requestId,
+      "competitive.attempt.recover",
+      startedAt,
+    );
   } catch (error) {
-    return errorResponse(error);
+    return errorResponse(error, requestId, "competitive.attempt.recover", startedAt);
   }
 }

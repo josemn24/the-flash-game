@@ -98,9 +98,9 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) => {
         if (functionName === "get_room_detail") return { data: [roomRow], error: null };
-      if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
-      if (functionName === "get_challenge_ranking") return { data: challengeRows, error: null };
-      if (functionName === "get_room_calendar") return { data: [], error: null };
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        if (functionName === "get_challenge_ranking") return { data: challengeRows, error: null };
+        if (functionName === "get_room_calendar") return { data: [], error: null };
         return { data: [], error: null };
       }),
     });
@@ -226,6 +226,47 @@ describe("SupabaseRoomQueries S06 rankings", () => {
   });
 });
 
+describe("SupabaseRoomQueries room card resilience", () => {
+  it("keeps a room without an active season when member previews are null", async () => {
+    const rpc = vi.fn(async (functionName: string) => {
+      if (functionName === "get_my_room_cards") {
+        return {
+          data: [
+            {
+              ...roomRow,
+              room_slug: "s02-no-season",
+              room_title: "Sala sin temporada",
+              season_id: null,
+              season_title: null,
+              season_status: null,
+              season_starts_at: null,
+              season_ends_at: null,
+              publication_id: null,
+              publication_status: null,
+              opens_at: null,
+              closes_at: null,
+              challenge_title: null,
+              challenge_subtitle: null,
+              challenge_mode: null,
+              challenge_max_score: null,
+              question_count: null,
+              competitive_playable: null,
+              member_previews: null,
+            },
+          ],
+          error: null,
+        };
+      }
+      return { data: [], error: null };
+    });
+    mocks.createClient.mockResolvedValue({ rpc });
+
+    await expect(new SupabaseRoomQueries().listCards()).resolves.toMatchObject([
+      { roomId: "s02-no-season", title: "Sala sin temporada", dailyChallenge: null },
+    ]);
+  });
+});
+
 const historyRows = [
   {
     room_id: roomRow.room_id,
@@ -324,7 +365,13 @@ const reviewRows = [
     payload_schema_version: 1,
     public_payload: {
       category: "Cultura",
-      tags: { domains: ["culture"], topics: ["general"], cognitiveSkills: ["memory"], formatSkills: ["recall"], lifeSkills: [] },
+      tags: {
+        domains: ["culture"],
+        topics: ["general"],
+        cognitiveSkills: ["memory"],
+        formatSkills: ["recall"],
+        lifeSkills: [],
+      },
       prompt: "¿Capital?",
       context: null,
       timeLimitMs: 15000,
@@ -367,7 +414,13 @@ const reviewRows = [
     payload_schema_version: 1,
     public_payload: {
       category: "Cultura",
-      tags: { domains: ["culture"], topics: ["general"], cognitiveSkills: ["memory"], formatSkills: ["recall"], lifeSkills: [] },
+      tags: {
+        domains: ["culture"],
+        topics: ["general"],
+        cognitiveSkills: ["memory"],
+        formatSkills: ["recall"],
+        lifeSkills: [],
+      },
       prompt: "¿Planeta?",
       context: null,
       timeLimitMs: 15000,
@@ -397,7 +450,9 @@ describe("SupabaseRoomQueries S07 history and review", () => {
   it("groups historical rows and keeps empty publications", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) =>
-        functionName === "get_flash_history" ? { data: historyRows, error: null } : { data: [], error: null },
+        functionName === "get_flash_history"
+          ? { data: historyRows, error: null }
+          : { data: [], error: null },
       ),
     });
     const model = await new SupabaseRoomQueries().listHistory("s06-main");
@@ -430,7 +485,9 @@ describe("SupabaseRoomQueries S07 history and review", () => {
       result: { completed: true, flashPoints: 80 },
     });
     expect(model?.challenge?.mode).toBe("flash");
-    expect(model?.challenge && "questions" in model.challenge ? model.challenge.questions : null).toHaveLength(2);
+    expect(
+      model?.challenge && "questions" in model.challenge ? model.challenge.questions : null,
+    ).toHaveLength(2);
     expect(model?.result?.attempt?.answers[1]?.status).toBe("unanswered");
     expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
   });

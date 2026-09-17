@@ -32,10 +32,6 @@ async function openFlash(page: Page, account: FixtureAccount) {
   await page.getByRole("link", { name: /Abrir sala Sala competitiva S04/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Flash recuperación S04" })).toBeVisible();
-  await page.getByRole("link", { name: "Empezar desafío" }).click();
-}
-
-async function startQuestion(page: Page) {
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
 }
@@ -45,7 +41,6 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
     test.setTimeout(60_000);
     const data = await fixture();
     await openFlash(page, data.users.alice);
-    await startQuestion(page);
     expect(await page.content()).not.toContain("S04_EXPLANATION");
 
     await page.reload();
@@ -73,7 +68,6 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
 
     try {
       await openFlash(page, data.users.carol);
-      await startQuestion(page);
       await signIn(secondPage, data.users.carol);
 
       const blocked = await secondPage.evaluate(async (scheduledChallengeId) => {
@@ -89,7 +83,10 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
       }, data.data.publicationId);
 
       expect(blocked.status).toBe(409);
-      expect(blocked.body).toEqual({ error: { code: "attempt_control_required" } });
+      expect(blocked.body.error).toMatchObject({ code: "attempt_control_required" });
+      expect(blocked.body.error.requestId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
       await expect(page.getByRole("button", { name: "Abandonar intento" })).toHaveCount(0);
     } finally {
       await secondContext.close();

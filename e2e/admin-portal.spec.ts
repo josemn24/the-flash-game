@@ -30,13 +30,13 @@ test.describe("Portal privado mínimo", () => {
     await page.goto("/admin");
     await expect(page.getByRole("heading", { name: "Todo listo para operar." })).toBeVisible();
     await expect(page.getByText("Operador beta")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Sala Alpha" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Sala Beta" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sala Alpha" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sala Beta" }).first()).toBeVisible();
     await expect(page.getByText("Sala archivada")).toHaveCount(0);
 
     await page.reload();
-    await expect(page.getByRole("heading", { name: "Sala Alpha" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Sala Beta" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sala Alpha" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sala Beta" }).first()).toBeVisible();
   });
 
   test("un miembro no puede enumerar el portal y el anónimo vuelve al inicio", async ({ page }) => {

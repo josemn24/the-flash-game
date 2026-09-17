@@ -876,6 +876,14 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 - **Terminada:** el entorno reconstruido ejecuta todo el alcance declarado con persistencia real,
   pruebas repetibles y recuperación documentada; ninguna ruta activada vuelve a mock al fallar.
 
+**Implementación S22 en este repositorio:** el scope `pilot` es fail-closed y se selecciona mediante
+`FLASH_RUNTIME_SCOPE`; `/desafios` roomless y aliases mock no atraviesan la frontera persistida. Las
+mutaciones competitivas tienen request IDs, errores estables, límite de cuerpo, Origin obligatorio,
+rate limit y respuestas `no-store`. Existe health privado en `/api/internal/health`, logs JSON
+redactados y `npm run verify:pilot` para reconstruir Supabase local, probar escenarios por separado,
+ejecutar E2E y ensayar backup/restore. El alcance sigue siendo local/CI: no declara staging o
+producción remota, Storage, otros modos, abandono automático, takeover ni `results_locked_at`.
+
 ### S23 — Ejecutar una prueba fantasma interna
 
 - **Objetivo / CU:** CU-26 y parte privilegiada de CU-12; separado del preview público.

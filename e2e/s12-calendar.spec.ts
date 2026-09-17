@@ -31,7 +31,7 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     const data = await fixture();
     await signIn(page, data.users.superadmin);
     await page.goto("/admin");
-    const calendar = page.getByRole("region", { name: "Calendario de desafíos" });
+    const calendar = page.getByRole("region", { name: "Programar desafíos" });
     const now = Date.now();
     await calendar.getByLabel("Apertura").fill(madridLocal(new Date(now - 60_000)));
     await calendar.getByLabel("Cierre").fill(madridLocal(new Date(now + 3_600_000)));

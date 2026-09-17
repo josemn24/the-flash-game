@@ -58,7 +58,7 @@ type RoomReadRow = {
   challenge_mode: GameMode | null;
   challenge_max_score: number | null;
   question_count: number | null;
-  competitive_playable: boolean;
+  competitive_playable: boolean | null;
   current_flash_points: number;
   current_position: number | null;
   member_previews: unknown;
@@ -231,10 +231,10 @@ function isRoomReadRow(value: unknown): value is RoomReadRow {
     (row.challenge_mode === null || gameModes.has(row.challenge_mode as GameMode)) &&
     (row.challenge_max_score === null || typeof row.challenge_max_score === "number") &&
     (row.question_count === null || typeof row.question_count === "number") &&
-    typeof row.competitive_playable === "boolean" &&
+    (row.competitive_playable === null || typeof row.competitive_playable === "boolean") &&
     typeof row.current_flash_points === "number" &&
     (row.current_position === null || typeof row.current_position === "number") &&
-    Array.isArray(row.member_previews) &&
+    (row.member_previews === null || Array.isArray(row.member_previews)) &&
     typeof row.member_count === "number"
   );
 }
@@ -645,7 +645,8 @@ function toCalendarEntry(row: RoomCalendarReadRow): RoomCalendarEntry {
 }
 
 async function callRoomRead(
-  functionName: "get_my_room_cards" | "get_room_detail" | "get_room_introduction" | "get_room_calendar",
+  functionName:
+    "get_my_room_cards" | "get_room_detail" | "get_room_introduction" | "get_room_calendar",
   args: Record<string, string> = {},
   guard: (value: unknown) => boolean = isRoomReadRow,
 ) {
@@ -861,9 +862,7 @@ function toHistoricalChallenge(rows: FlashMemberReviewReadRow[]): Challenge {
     description: first.challenge_description,
     mode: "flash",
     questions,
-    questionPoints: Object.fromEntries(
-      rows.map((row) => [row.challenge_item_id, row.item_points]),
-    ),
+    questionPoints: Object.fromEntries(rows.map((row) => [row.challenge_item_id, row.item_points])),
   };
 }
 
@@ -885,9 +884,7 @@ function toHistoricalResult(rows: FlashMemberReviewReadRow[]) {
         isCorrect: status === "correct" || status === "partial",
         points: row.points ?? 0,
         timeUsed: (row.time_used_ms ?? 0) / 1_000,
-        ...(row.result_details
-          ? { details: row.result_details as AnswerReview["details"] }
-          : {}),
+        ...(row.result_details ? { details: row.result_details as AnswerReview["details"] } : {}),
       };
     });
   const durationMs = rows.reduce((total, row) => total + (row.time_used_ms ?? 0), 0);
@@ -953,11 +950,7 @@ export class SupabaseRoomQueries
             isChallengeRankingReadRow,
           )
         : Promise.resolve([]),
-      callRoomRead(
-        "get_room_calendar",
-        { target_room_slug: roomKey },
-        isRoomCalendarReadRow,
-      ),
+      callRoomRead("get_room_calendar", { target_room_slug: roomKey }, isRoomCalendarReadRow),
     ]);
 
     return toDetail(
@@ -1120,11 +1113,7 @@ export class SupabaseRoomQueries
         },
         isFlashMemberReviewReadRow,
       ),
-      callRankingRead(
-        "get_season_ranking",
-        { target_season_id: seasonId },
-        isSeasonRankingReadRow,
-      ),
+      callRankingRead("get_season_ranking", { target_season_id: seasonId }, isSeasonRankingReadRow),
       historyRow
         ? Promise.resolve(challengeLeaderboard)
         : callRankingRead(
@@ -1150,13 +1139,15 @@ export class SupabaseRoomQueries
     const viewerRole = reviewMember?.viewer_role ?? currentRoomRow?.membership_role;
     return {
       roomId: roomKey,
-      roomTitle: reviewMember?.room_title ?? historyRow?.room_title ?? currentRoomRow?.room_title ?? "",
+      roomTitle:
+        reviewMember?.room_title ?? historyRow?.room_title ?? currentRoomRow?.room_title ?? "",
       member,
       challengeSummary,
       challenge,
       result,
       roomRank: seasonEntry?.position ?? 0,
-      challengeRank: challengeLeaderboard.find(({ memberId }) => memberId === memberKey)?.rank ?? null,
+      challengeRank:
+        challengeLeaderboard.find(({ memberId }) => memberId === memberKey)?.rank ?? null,
       roomLeaderboard,
       challengeLeaderboard,
       returnHref: historyRow

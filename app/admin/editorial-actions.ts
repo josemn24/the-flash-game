@@ -7,7 +7,10 @@ import {
   SuperadminAccessDeniedError,
   SuperadminEditorialCommandError,
 } from "@/application/administration/errors";
-import { FlashEditorialValidationError, parseFlashEditorialJson } from "@/lib/editorial/flashDocument";
+import {
+  FlashEditorialValidationError,
+  parseFlashEditorialJson,
+} from "@/lib/editorial/flashDocument";
 import { requireSuperadmin } from "@/server/admin";
 import {
   createSuperadminFlashDraft,
@@ -73,12 +76,16 @@ function parseDocument(formData: FormData, fieldErrors: Record<string, string>) 
     fieldErrors.document = "Introduce el documento JSON.";
     return null;
   }
+  if (new TextEncoder().encode(source).byteLength > 256 * 1024) {
+    fieldErrors.document = "El documento supera el límite de 256 KiB.";
+    return null;
+  }
   try {
     return parseFlashEditorialJson(source);
   } catch (error) {
     fieldErrors.document =
       error instanceof FlashEditorialValidationError
-        ? error.issues[0] ?? "El JSON no cumple el contrato editorial."
+        ? (error.issues[0] ?? "El JSON no cumple el contrato editorial.")
         : "El documento no contiene JSON válido.";
     return null;
   }
@@ -127,7 +134,10 @@ export async function createFlashDraft(
     revalidatePath("/admin");
     redirect("/admin?editorial=saved");
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
       handlePortalBoundary(error);
     }
     throw error;
@@ -144,7 +154,8 @@ export async function updateFlashDraft(
     const challengeVersionId = textValue(formData, "challengeVersionId").trim();
     const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt").trim();
     const document = parseDocument(formData, parsed.fieldErrors);
-    if (!uuidPattern.test(challengeVersionId)) parsed.fieldErrors.challengeVersionId = "Selecciona un borrador válido.";
+    if (!uuidPattern.test(challengeVersionId))
+      parsed.fieldErrors.challengeVersionId = "Selecciona un borrador válido.";
     if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) {
       parsed.fieldErrors.expectedUpdatedAt = "El borrador está desactualizado. Recarga el portal.";
     }
@@ -165,7 +176,10 @@ export async function updateFlashDraft(
     revalidatePath("/admin");
     redirect("/admin?editorial=saved");
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
       handlePortalBoundary(error);
     }
     throw error;
@@ -181,7 +195,8 @@ export async function publishFlash(
     const parsed = parseCommon(formData);
     const challengeVersionId = textValue(formData, "challengeVersionId").trim();
     const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt").trim();
-    if (!uuidPattern.test(challengeVersionId)) parsed.fieldErrors.challengeVersionId = "Selecciona un borrador válido.";
+    if (!uuidPattern.test(challengeVersionId))
+      parsed.fieldErrors.challengeVersionId = "Selecciona un borrador válido.";
     if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) {
       parsed.fieldErrors.expectedUpdatedAt = "El borrador está desactualizado. Recarga el portal.";
     }
@@ -199,7 +214,10 @@ export async function publishFlash(
     revalidatePath("/admin");
     redirect("/admin?editorial=published");
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
       handlePortalBoundary(error);
     }
     throw error;
