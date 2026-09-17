@@ -89,6 +89,15 @@ superadmin y metadatos para versiones publicadas/archivadas. Los comandos públi
 wrappers estrechos sobre transacciones privadas; requieren motivo, idempotencia, concurrencia
 optimista y auditoría, y no crean publicaciones de calendario, intentos, puntos ni actividad.
 
+E01 añade `schemas/36_mini_wordle.sql` y `schemas/92_mini_wordle_commands.sql`. El portal acepta
+`multiple-choice` y `mini-wordle` en el mismo Flash, con dos preguntas de 50 puntos. La solución y
+las palabras auxiliares viven en el payload privado; el payload público solo contiene prompt, pista,
+longitud y máximo de intentos. `npm run supabase:dictionary:load` carga únicamente el diccionario
+general desde `public/dictionaries`, y `private.submit_mini_wordle_guess(jsonb)` acepta la unión
+del diccionario general con `additionalGuesses` de la pregunta, registra cada palabra válida,
+calcula feedback con letras repetidas, rechaza duplicados sin consumir intento y crea una única
+recepción final desde los eventos persistidos.
+
 Para ejecutar el piloto competitivo local:
 
 ```bash
@@ -101,6 +110,8 @@ npm run test:e2e -- e2e/s03-flash.spec.ts
 La verificación completa de S22 se ejecuta con `npm run verify:pilot`. Arranca un stack local,
 aplica el esquema desde una base limpia, ejecuta pgTAP y todos los escenarios locales del portal,
 Flash, recuperación, histórico, editorial y calendario. No requiere ni acepta un proyecto remoto.
+El escenario `e01` cubre el portal mixto, la lectura pública sin solución, Auth local, recarga y
+reintento idempotente.
 
 S07 añade las lecturas Flash `public.get_flash_history(text, uuid)` y
 `public.get_flash_member_review(text, uuid, uuid)` desde `schemas/85_flash_history_reads.sql`.

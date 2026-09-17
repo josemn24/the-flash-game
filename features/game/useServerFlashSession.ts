@@ -7,9 +7,12 @@ import type {
   AnswerValue,
   FlashChallenge,
   GameRoomContext,
-  Question,
 } from "@/types/game";
-import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
+import type {
+  ServerFlashChallenge,
+  ServerFlashQuestion,
+  ServerFlashTerminalReview,
+} from "@/types/gameplay/challenge";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import {
   challengeWithReview,
@@ -23,13 +26,23 @@ export type ServerFlashPhase =
 
 type AttemptState = { id: string; lockVersion: number };
 type SubmissionState = "idle" | "submitting" | "error";
-type PendingSubmission = {
+type PendingAnswerSubmission = {
+  kind: "answer";
   attemptId: string;
   lockVersion: number;
   challengeItemId: string;
   answer: AnswerValue | null;
   idempotencyKey: string;
 };
+type PendingMiniWordleSubmission = {
+  kind: "mini-wordle";
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  guess: string;
+  idempotencyKey: string;
+};
+type PendingSubmission = PendingAnswerSubmission | PendingMiniWordleSubmission;
 
 const SUBMISSION_STATUS_DELAY_MS = 250;
 
@@ -92,7 +105,7 @@ export function useServerFlashSession({
   );
   const [attempt, setAttempt] = useState<AttemptState | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [question, setQuestion] = useState<Question | null>(null);
+  const [question, setQuestion] = useState<ServerFlashQuestion | null>(null);
   const [results, setResults] = useState<AnswerResult[]>(() => initialResults(roomContext));
   const [lastResult, setLastResult] = useState<AnswerResult>();
   const [score, setScore] = useState(roomContext.result?.flashPoints ?? 0);
@@ -150,7 +163,16 @@ export function useServerFlashSession({
     const slot = challenge.slots[nextIndex]!;
     setAttempt({ id: currentAttempt.id, lockVersion: nextLockVersion });
     setQuestionIndex(nextIndex);
-    setQuestion(questionFromPayload(itemId, prepared.publicPayload, slot.timeLimitMs, slot.points));
+    setQuestion(
+      questionFromPayload(
+        itemId,
+        prepared.publicPayload,
+        slot.timeLimitMs,
+        slot.points,
+        slot.questionType,
+        prepared.progress,
+      ),
+    );
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
   };
@@ -249,7 +271,7 @@ export function useServerFlashSession({
     }
   };
 
-  const submitAnswerToServer = async (submission: PendingSubmission) => {
+  const submitAnswerToServer = async (submission: PendingAnswerSubmission) => {
     startSubmissionStatus();
     setBusy(true);
     setLocked(true);
@@ -311,9 +333,117 @@ export function useServerFlashSession({
     }
   };
 
+  const submitMiniWordleToServer = async (submission: PendingMiniWordleSubmission) => {
+    startSubmissionStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/mini-wordle/guess`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          guess: submission.guess,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const acceptedGuess = String(response.guess);
+      const currentQuestion = question;
+      const previousGuesses = currentQuestion?.type === "mini-wordle"
+        ? currentQuestion.progress.guesses
+        : [];
+      const responseGuesses = Array.isArray(response.guesses)
+        ? response.guesses.filter((guess): guess is string => typeof guess === "string")
+        : [...previousGuesses, acceptedGuess];
+      const feedback = Array.isArray(response.feedback) ? response.feedback : [];
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      clearSubmissionStatusTimer();
+      setSubmissionState("idle");
+      setSubmissionStatusVisible(false);
+      setSubmissionError(undefined);
+      pendingSubmissionRef.current = null;
+      if (response.terminal !== true) {
+        setQuestion((current) =>
+          current?.type === "mini-wordle"
+            ? {
+                ...current,
+                progress: {
+                  kind: "mini-wordle",
+                  guesses: responseGuesses,
+                  feedback: [...current.progress.feedback, feedback],
+                  attemptsUsed: Number(response.attemptsUsed),
+                  maxAttempts: current.maxAttempts,
+                },
+              }
+            : current,
+        );
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: { guesses: responseGuesses },
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (questionIndex === challenge.slots.length - 1) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(challengeWithReview(challenge, review));
+            setPhase("results");
+          } else {
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearSubmissionStatusTimer();
+      if (
+        error instanceof CompetitiveCommandError &&
+        (error.code === "invalid_mini_wordle_guess" ||
+          error.code === "duplicate_mini_wordle_guess")
+      ) {
+        pendingSubmissionRef.current = null;
+        setSubmissionState("idle");
+        setSubmissionStatusVisible(true);
+          setSubmissionError(
+            error.code === "duplicate_mini_wordle_guess"
+              ? "Ya has probado esa palabra. El intento no se ha consumido."
+              : "Esta palabra no está disponible para este desafío.",
+          );
+        setBusy(false);
+        setLocked(false);
+        return;
+      }
+      setSubmissionState("error");
+      setSubmissionStatusVisible(true);
+      setSubmissionError("No hemos podido confirmar tu palabra.");
+      setBusy(false);
+      setLocked(false);
+    }
+  };
+
   const submit = async (answer: AnswerValue | null) => {
     if (!attempt || !question || locked || busy) return;
-    const submission: PendingSubmission = {
+    const submission: PendingAnswerSubmission = {
+      kind: "answer",
       attemptId: attempt.id,
       lockVersion: attempt.lockVersion,
       challengeItemId: question.id,
@@ -325,9 +455,28 @@ export function useServerFlashSession({
     await submitAnswerToServer(submission);
   };
 
+  const submitMiniWordleGuess = async (guess: string) => {
+    if (!attempt || !question || question.type !== "mini-wordle" || locked || busy) return;
+    const submission: PendingMiniWordleSubmission = {
+      kind: "mini-wordle",
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      guess,
+      idempotencyKey: idempotencyKey("mini-wordle-guess"),
+    };
+    pendingSubmissionRef.current = submission;
+    await submitMiniWordleToServer(submission);
+  };
+
   const retrySubmit = async () => {
     if (busy || !pendingSubmissionRef.current) return;
-    await submitAnswerToServer(pendingSubmissionRef.current);
+    const pending = pendingSubmissionRef.current;
+    if (pending.kind === "mini-wordle") {
+      await submitMiniWordleToServer(pending);
+    } else {
+      await submitAnswerToServer(pending);
+    }
   };
 
   const abandon = async () => {
@@ -366,6 +515,7 @@ export function useServerFlashSession({
     begin,
     startQuestions,
     submit,
+    submitMiniWordleGuess,
     retrySubmit,
     abandon,
     showReview: () => setPhase("review"),

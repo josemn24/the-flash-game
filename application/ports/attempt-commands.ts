@@ -17,6 +17,8 @@ import type {
   StartAttemptResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
+  SubmitMiniWordleGuessInput,
+  SubmitMiniWordleGuessResult,
   TakeOverAttemptInput,
   TakeOverAttemptResult,
 } from "@/types/contracts/attempts";
@@ -83,6 +85,7 @@ export interface AttemptCommands {
   takeOver(input: TakeOverAttemptCommand): Promise<TakeOverAttemptResult>;
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
+  submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
   readEvaluationContext(
     receiptId: AnswerReceiptId,
     sessionToken: string,

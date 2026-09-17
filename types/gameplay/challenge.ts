@@ -1,4 +1,8 @@
 import type { Question, QuestionMedia } from "@/types/question";
+import type {
+  MiniWordleLetterFeedback,
+  MiniWordleWordLength,
+} from "@/types/domain/mini-wordle";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
 export type ChallengeImplementationStatus = "prototype" | "complete";
@@ -174,13 +178,45 @@ export type ServerFlashChallenge = ChallengeBase & {
   slots: readonly {
     id: string;
     position: number;
-    questionType: "multiple-choice";
+    questionType: "multiple-choice" | "mini-wordle";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
   }[];
   maxScore: number;
 };
+
+type ServerFlashQuestionBase = {
+  readonly id: string;
+  readonly category: string;
+  readonly tags: Question["tags"];
+  readonly question: string;
+  readonly timeLimit: number;
+  readonly points: number;
+};
+
+export type ServerMultipleChoiceQuestion = ServerFlashQuestionBase & {
+  readonly type: "multiple-choice";
+  readonly options: readonly string[];
+};
+
+export type ServerMiniWordleProgress = {
+  readonly kind: "mini-wordle";
+  readonly guesses: readonly string[];
+  readonly feedback: readonly MiniWordleLetterFeedback[][];
+  readonly attemptsUsed: number;
+  readonly maxAttempts: number;
+};
+
+export type ServerMiniWordleQuestion = ServerFlashQuestionBase & {
+  readonly type: "mini-wordle";
+  readonly hint: string | null;
+  readonly wordLength: MiniWordleWordLength;
+  readonly maxAttempts: number;
+  readonly progress: ServerMiniWordleProgress;
+};
+
+export type ServerFlashQuestion = ServerMultipleChoiceQuestion | ServerMiniWordleQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

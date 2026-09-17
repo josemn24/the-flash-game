@@ -180,7 +180,8 @@ returns table (
   result_details          jsonb,
   presented_at            timestamptz,
   submitted_at            timestamptz,
-  time_used_ms            bigint
+  time_used_ms            bigint,
+  item_points             integer
 )
 language sql stable security definer set search_path = '' as $$
   with viewer as (
@@ -261,7 +262,7 @@ language sql stable security definer set search_path = '' as $$
     a.attempt_completed_at, a.attempt_lock_version, i.id, i.position,
     q.id, q.type, q.payload_schema_version, q.public_payload, qs.solution_payload,
     aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
-    aa.submitted_at, aa.time_used_ms
+    aa.submitted_at, aa.time_used_ms, i.points
   from authorized_attempt a
   join public.players p on p.id = target_player_id
   join private.challenge_items i on i.challenge_version_id = a.challenge_version_id

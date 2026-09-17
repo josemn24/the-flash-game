@@ -1,11 +1,17 @@
 import type {
   FlashEditorialDocument,
-  FlashEditorialPublicPayload,
+  FlashEditorialMiniWordleQuestion,
+  FlashEditorialMultipleChoiceQuestion,
   FlashEditorialQuestion,
-  FlashEditorialSolutionPayload,
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
+import {
+  isMiniWordleMaxAttempts,
+  isMiniWordleWordLength,
+  isValidMiniWordleWord,
+  normalizeMiniWordleWord,
+} from "@/lib/miniWordle";
 
 const SECRET_KEYS = new Set([
   "answer",
@@ -34,8 +40,25 @@ const questionKeys = [
   "publicPayload",
   "solutionPayload",
 ];
-const publicPayloadKeys = ["category", "tags", "question", "options", "media", "promptVisual"];
-const solutionKeys = ["correctAnswer", "explanation"];
+const multipleChoicePublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "options",
+  "media",
+  "promptVisual",
+];
+const miniWordlePublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "hint",
+  "wordLength",
+  "maxAttempts",
+];
+const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
+const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionaryId", "explanation"];
+const MINI_WORDLE_MAX_ADDITIONAL_GUESSES = 1000;
 
 export class FlashEditorialValidationError extends Error {
   readonly code = "invalid_content" as const;
@@ -131,53 +154,106 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       `questions[${index}].publicPayload no puede contener soluciones.`,
     ]);
   }
-  if (!hasOnlyKeys(publicPayload, publicPayloadKeys)) {
-    throw new FlashEditorialValidationError([`questions[${index}].publicPayload es inválido.`]);
-  }
   if (!isRecord(solutionPayload) || !("correctAnswer" in solutionPayload)) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
-  if (!hasOnlyKeys(solutionPayload, solutionKeys)) {
-    throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
-  }
 
-  const options = publicPayload.options;
-  const correctAnswer = isRecord(solutionPayload) ? solutionPayload.correctAnswer : undefined;
-  if (
-    value.type !== "multiple-choice" ||
-    value.payloadSchemaVersion !== 1 ||
-    value.points !== 50 ||
-    !nonEmptyString(value.slug, 120) ||
-    !Number.isSafeInteger(value.timeLimitMs) ||
-    (value.timeLimitMs as number) <= 0 ||
-    !nonEmptyString(publicPayload.question, 2000) ||
-    !Array.isArray(options) ||
-    options.length < 2 ||
-    !options.every((option) => nonEmptyString(option, 500)) ||
-    new Set(options).size !== options.length ||
-    typeof correctAnswer !== "string" ||
-    !options.includes(correctAnswer) ||
-    (publicPayload.category !== undefined && !nonEmptyString(publicPayload.category, 160)) ||
-    (publicPayload.tags !== undefined &&
-      (!isRecord(publicPayload.tags) || !Object.values(publicPayload.tags).every(isJsonValue))) ||
-    !isMedia(publicPayload.media) ||
-    !isPromptVisual(publicPayload.promptVisual) ||
+  const commonValid =
+    value.payloadSchemaVersion === 1 &&
+    value.points === 50 &&
+    nonEmptyString(value.slug, 120) &&
+    Number.isSafeInteger(value.timeLimitMs) &&
+    (value.timeLimitMs as number) > 0 &&
+    nonEmptyString(publicPayload.question, 2000) &&
+    (publicPayload.category === undefined || nonEmptyString(publicPayload.category, 160)) &&
+    (publicPayload.tags === undefined ||
+      (isRecord(publicPayload.tags) && Object.values(publicPayload.tags).every(isJsonValue))) &&
     (isRecord(solutionPayload) &&
-      solutionPayload.explanation !== undefined &&
-      typeof solutionPayload.explanation !== "string")
-  ) {
+      (solutionPayload.explanation === undefined || typeof solutionPayload.explanation === "string"));
+
+  if (!commonValid) {
     throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
   }
 
-  return {
-    slug: value.slug,
-    type: "multiple-choice",
-    payloadSchemaVersion: 1,
-    timeLimitMs: value.timeLimitMs as number,
-    points: 50,
-    publicPayload: publicPayload as FlashEditorialPublicPayload,
-    solutionPayload: solutionPayload as FlashEditorialSolutionPayload,
-  };
+  if (value.type === "multiple-choice") {
+    if (
+      !hasOnlyKeys(publicPayload, multipleChoicePublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, multipleChoiceSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
+    }
+    const options = publicPayload.options;
+    const correctAnswer = solutionPayload.correctAnswer;
+    if (
+      !Array.isArray(options) ||
+      options.length < 2 ||
+      !options.every((option) => nonEmptyString(option, 500)) ||
+      new Set(options).size !== options.length ||
+      typeof correctAnswer !== "string" ||
+      !options.includes(correctAnswer) ||
+      !isMedia(publicPayload.media) ||
+      !isPromptVisual(publicPayload.promptVisual)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "multiple-choice",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: 50,
+      publicPayload: publicPayload as FlashEditorialMultipleChoiceQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialMultipleChoiceQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "mini-wordle") {
+    if (
+      !hasOnlyKeys(publicPayload, miniWordlePublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, miniWordleSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
+    }
+    const wordLength = publicPayload.wordLength;
+    const maxAttempts = publicPayload.maxAttempts;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const additionalGuesses = solutionPayload.additionalGuesses;
+    const dictionaryId = solutionPayload.dictionaryId;
+    const normalizedSolution = typeof correctAnswer === "string" ? normalizeMiniWordleWord(correctAnswer) : "";
+    const normalizedGuesses = Array.isArray(additionalGuesses)
+      ? additionalGuesses.map((guess) => (typeof guess === "string" ? normalizeMiniWordleWord(guess) : ""))
+      : [];
+    if (
+      !isMiniWordleWordLength(wordLength) ||
+      !isMiniWordleMaxAttempts(maxAttempts) ||
+      (wordLength === 4 ? dictionaryId !== "es-general-4.v1" : dictionaryId !== "es-general-5.v1") ||
+      typeof correctAnswer !== "string" ||
+      !isValidMiniWordleWord(correctAnswer, wordLength) ||
+      !Array.isArray(additionalGuesses) ||
+      additionalGuesses.length > MINI_WORDLE_MAX_ADDITIONAL_GUESSES ||
+      !additionalGuesses.every(
+        (guess) => typeof guess === "string" && isValidMiniWordleWord(guess, wordLength),
+      ) ||
+      new Set(normalizedGuesses).size !== normalizedGuesses.length ||
+      normalizedGuesses.includes(normalizedSolution) ||
+      (publicPayload.hint !== undefined &&
+        publicPayload.hint !== null &&
+        typeof publicPayload.hint !== "string")
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Mini-Wordle.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "mini-wordle",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: 50,
+      publicPayload: publicPayload as FlashEditorialMiniWordleQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialMiniWordleQuestion["solutionPayload"],
+    };
+  }
+
+  throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
 }
 
 export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocument {

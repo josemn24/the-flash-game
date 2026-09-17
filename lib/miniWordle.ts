@@ -1,4 +1,14 @@
 import type { MiniWordleQuestion } from "@/types/game";
+import type {
+  MiniWordleLetterFeedback,
+  MiniWordleWordLength,
+} from "@/types/domain/mini-wordle";
+
+export type {
+  MiniWordleLetterFeedback,
+  MiniWordleLetterStatus,
+  MiniWordleWordLength,
+} from "@/types/domain/mini-wordle";
 
 export const DEFAULT_MINI_WORDLE_WORD_LENGTH = 4;
 export const DEFAULT_MINI_WORDLE_MAX_ATTEMPTS = 4;
@@ -7,15 +17,6 @@ export const MINI_WORDLE_MAX_ATTEMPTS = DEFAULT_MINI_WORDLE_MAX_ATTEMPTS;
 export const MINI_WORDLE_WORD_LENGTHS = [4, 5] as const;
 export const MINI_WORDLE_MIN_ATTEMPTS = 1;
 export const MINI_WORDLE_MAX_ALLOWED_ATTEMPTS = 10;
-
-export type MiniWordleWordLength = (typeof MINI_WORDLE_WORD_LENGTHS)[number];
-
-export type MiniWordleLetterStatus = "correct" | "present" | "absent";
-
-export type MiniWordleLetterFeedback = {
-  letter: string;
-  status: MiniWordleLetterStatus;
-};
 
 export function isMiniWordleWordLength(value: unknown): value is MiniWordleWordLength {
   return MINI_WORDLE_WORD_LENGTHS.includes(value as MiniWordleWordLength);

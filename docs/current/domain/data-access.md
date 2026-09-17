@@ -20,7 +20,7 @@ Server Components
 → Supabase Auth/RPC/RLS
 → PostgreSQL
 
-Las lecturas de S02, S03, S06 y S07 siguen una frontera específica:
+Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 
 Server Components
 → server/data-access.ts
@@ -78,6 +78,15 @@ Mutaciones editoriales del portal `/admin`
   public.publish_superadmin_flash()
 → grafo versionado, idempotencia, concurrencia optimista, auditoría y publicación atómica
 
+Eventos Mini-Wordle del Flash competitivo
+→ `features/game/useServerFlashSession.ts`
+→ `POST /api/competitive/attempts/[attemptId]/mini-wordle/guess`
+→ `server/competitive/attempt-api.ts`
+→ `infrastructure/supabase/attemptCommands.ts`
+→ `private.submit_mini_wordle_guess(jsonb)`
+→ `private.mini_wordle_guess_events` + `private.answer_receipts`
+→ evaluador confiable desde la respuesta final construida por PostgreSQL
+
 Las consultas aún no migradas conservan este flujo:
 
 Server Components
@@ -94,6 +103,14 @@ aliases mock y la rama roomless devuelven ausencia y no llegan al adaptador mock
 fuente persistida se propaga como error recuperable. `RoomSessionProvider` puede seguir montado para
 las demos, pero `RoomChallengeClient` solo consulta y escribe sus resultados locales cuando la
 persistencia declarada es `mock`; un modelo `server` nunca se sobrescribe con `localResults`.
+
+E01 entrega a la UI únicamente el payload público y `progress` seguro (`guesses`, `feedback`,
+`attemptsUsed`, `maxAttempts`). La solución, `additionalGuesses` y `dictionaryId` quedan en el
+servidor. Una palabra se acepta si está en el diccionario versionado de
+`private.mini_wordle_dictionary_words` o en `additionalGuesses` de esa pregunta; la solución se
+acepta implícitamente aunque sea temática. El diccionario general se carga desde los JSON de
+`public/dictionaries`, pero las palabras específicas no se añaden al diccionario global. Un error
+de Auth/DB/PostgREST no cambia la selección a un adaptador mock.
 
 La matriz operativa completa, los límites HTTP y el procedimiento reproducible de Supabase están en
 [`s22-operacion.md`](../s22-operacion.md).

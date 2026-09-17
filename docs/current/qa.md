@@ -5,19 +5,20 @@
 
 ## Última verificación
 
-2026-09-16, sobre el estado actual del repositorio y el stack local de Supabase.
+2026-09-17, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 97 archivos de test y 609 tests superados.
+- `npm test`: 98 archivos de test y 614 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
 - `npm run type-architecture`: correcto.
 - `npm run dictionary:check`: correcto.
-- `npm run docs:check`: correcto; 63 archivos Markdown comprobados.
-- `npm run verify:pilot`: comando reproducible para reconstruir Supabase local, ejecutar todos los
-  escenarios S01–S12 seleccionados y realizar backup/restore.
-- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S08, S10–S12, portal
-  privado, comandos editoriales/calendario y pruebas concurrentes con conexiones PostgreSQL independientes.
+- `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
+- `npm run verify:pilot`: correcto; reconstruye Supabase local por escenario, carga los diccionarios
+  versionados, ejecuta portal/S02/S03/E01/S04/S06/S07/S10/S11/S12 con Auth real, E2E y backup/restore.
+- `npm run supabase:schema:test`: correcto; 23 archivos declarativos, inventario, provisioning,
+  S02–S08, S10–S12, E01, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  con conexiones PostgreSQL independientes.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth y PostgREST local.
 - `npm run test:integration:supabase -- --scenario s11`: correcto con Auth/PostgREST, grafo
   editorial completo, idempotencia, publicación e aislamiento del contexto protegido.
@@ -32,6 +33,11 @@
   revisión propia/ajena y spectator en sesiones de navegador aisladas.
 - `npm run test:e2e -- e2e/s11-editorial.spec.ts`: 2/2 correcto con creación, edición, preview,
   publicación explícita e invisibilidad del editor para un miembro.
+- `npm run test:integration:supabase -- --scenario e01`: cubre publicación editorial mixta, lectura
+  sin solución y aislamiento del spectator mediante Auth/PostgREST local.
+- `npm run test:e2e -- e2e/e01-mini-wordle.spec.ts`: cubre Auth, elección múltiple + Mini-Wordle,
+  palabra temática fuera del diccionario general, palabra general, progreso tras recarga, palabra
+  inválida/duplicada, respuesta HTTP perdida y reintento idempotente.
 - La integración Auth/PostgREST y el E2E de S12 quedan preparados en `scripts/integration/scenarios/s12.mjs`
   y `e2e/s12-calendar.spec.ts`, pero requieren aplicar primero las migraciones S12 al Supabase local
   persistente; no se ejecutó un reset global para conservar fixtures ajenos.
@@ -44,8 +50,9 @@
 La suite automatizada cubre los 31 formatos nativos, sus políticas de puntuación, sesiones de
 juego, estados de resultado, datos mock, consultas server-only, rutas principales y contratos de
 arquitectura. Las suites de Supabase cubren el esquema, RLS, comandos, provisioning, lecturas de
-salas, gameplay Flash, recuperación, rankings, historial, revisión autorizada e interacciones
-concurrentes sobre PostgreSQL local.
+salas, gameplay Flash, recuperación, rankings, historial, revisión autorizada, eventos Mini-Wordle
+e interacciones concurrentes sobre PostgreSQL local. Los fallos de Auth/PostgREST/PostgreSQL deben
+ser visibles; ninguna ruta competitiva puede sustituirlos con mocks.
 
 La validación visual y manual específica de la migración Flash Pop se conserva en el
 [`informe histórico de la fase 4`](../archive/redesign/qa-fase-4.md). Sus cifras y checklists no deben
@@ -75,7 +82,7 @@ incorporar la misma matriz y adaptar únicamente el texto o la presentación al 
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - La validación E2E de S01–S12 usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
-- `results_locked_at`, abandono automático, takeover, modos distintos de Flash y la revisión
-  administrativa de intentos invalidados siguen fuera de S07.
+- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash, E02–E10 y
+  la revisión administrativa de intentos invalidados siguen fuera del piloto.
 - No existe una ronda manual vigente y exhaustiva documentada para todos los formatos, viewports,
   VoiceOver y `prefers-reduced-motion`.

@@ -6,7 +6,20 @@ import {
   parseFlashEditorialJson,
 } from "./flashDocument";
 
-function documentFixture() {
+type TestQuestion = {
+  slug: string;
+  type: string;
+  payloadSchemaVersion: number;
+  timeLimitMs: number;
+  points: number;
+  publicPayload: Record<string, unknown>;
+  solutionPayload: Record<string, unknown>;
+};
+
+function documentFixture(): {
+  challenge: Record<string, unknown>;
+  questions: TestQuestion[];
+} {
   return {
     challenge: {
       slug: "flash-editorial-test",
@@ -83,5 +96,68 @@ describe("Flash editorial document", () => {
     const invalidTime = documentFixture();
     invalidTime.questions[0].timeLimitMs = 0;
     expect(() => parseFlashEditorialDocument(invalidTime)).toThrow("contrato Flash");
+  });
+
+  it("accepts a mixed Flash with a Mini-Wordle question", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "mini-wordle-2",
+      type: "mini-wordle",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        category: "Lengua",
+        tags: {},
+        question: "Descubre el personaje bíblico",
+        hint: "Una figura central del cristianismo",
+        wordLength: 5,
+        maxAttempts: 2,
+      },
+      solutionPayload: {
+        correctAnswer: "Jesús",
+        additionalGuesses: ["Josué", "Jacob", "David"],
+        dictionaryId: "es-general-5.v1",
+        explanation: "Una figura central del cristianismo.",
+      },
+    };
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.questions[1].type).toBe("mini-wordle");
+    expect(parsed.questions[1].solutionPayload.correctAnswer).toBe("Jesús");
+    if (parsed.questions[1].type !== "mini-wordle") throw new Error("Expected Mini-Wordle");
+    expect(parsed.questions[1].solutionPayload.additionalGuesses).toHaveLength(3);
+  });
+
+  it("rejects Mini-Wordle secrets, duplicate guesses, and mismatched dictionaries", () => {
+    const document = documentFixture();
+    const question = {
+      slug: "mini-wordle-2",
+      type: "mini-wordle",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        question: "Descubre la palabra",
+        wordLength: 5,
+        maxAttempts: 4,
+      },
+      solutionPayload: {
+        correctAnswer: "libro",
+        additionalGuesses: ["salas", "salas"],
+        dictionaryId: "es-general-4.v1",
+      },
+    };
+    document.questions[1] = question;
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato Mini-Wordle");
+
+    question.solutionPayload.additionalGuesses = ["salas"];
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato Mini-Wordle");
+
+    question.solutionPayload.additionalGuesses = ["LIBRO"];
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato Mini-Wordle");
+
+    (question.publicPayload as Record<string, unknown>).correctAnswer = "LIBRO";
+    expect(() => parseFlashEditorialDocument(document)).toThrow("no puede contener soluciones");
   });
 });

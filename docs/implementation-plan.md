@@ -540,7 +540,9 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   `/admin` un Flash mínimo de dos preguntas; el grafo versionado queda persistido e inmutable al
   publicar, el documento completo solo aparece en la lectura protegida y no se crean calendario,
   intentos, puntos ni actividad ficticia. La validación se ejecuta también en servidor y las
-  mutaciones conservan idempotencia, concurrencia optimista, locks y auditoría segura.
+  mutaciones conservan idempotencia, concurrencia optimista, locks y auditoría segura. E01 amplía
+  este contrato a desafíos mixtos `multiple-choice` + `mini-wordle` sin cambiar la regla de 50
+  puntos por pregunta.
 
 ### S12 — Programar un desafío y ejecutar su calendario ✅ Implementada localmente
 
@@ -562,6 +564,30 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Terminada:** implementada localmente. Un superadmin programa/reprograma Flash publicado desde
   `/admin`; el tick abre/cierra por reloj PostgreSQL, finaliza temporadas vencidas y el gameplay
   permite iniciar solo dentro de la ventana, preservando intentos ya iniciados.
+
+### E01 — Mini-Wordle competitivo y persistido ✅ Implementada localmente
+
+- **Objetivo / CU:** primer formato con eventos intermedios autoritativos dentro del Flash real;
+  cada palabra válida recibe feedback del servidor y el intento final se evalúa desde los eventos.
+- **Superficie:** Flash competitivo preparado por `/admin`; la biblioteca y el componente local de
+  Mini-Wordle siguen siendo demos/práctica y no son fallback de una partida persistida.
+- **Contrato:** payload público con prompt, pista, longitud 4/5 y máximo de intentos; solución
+  privada con palabra normalizada, diccionario versionado y `additionalGuesses` específicos de la
+  pregunta. Cada palabra válida pertenece al diccionario general o a esa lista privada; la propia
+  solución también puede ser temática aunque no esté en el diccionario general. El portal admite
+  mezclas de elección múltiple y Mini-Wordle, siempre dos preguntas de 50 puntos.
+- **Persistencia:** `private.mini_wordle_guess_events` y
+  `private.mini_wordle_dictionary_words`, RLS/grants/inventario explícitos, feedback SQL para
+  letras repetidas y `private.submit_mini_wordle_guess(jsonb)` con lock, plazo, secuencia,
+  idempotencia y una única recepción final.
+- **Recuperación/UI:** `prepare`/`recover` devuelven solo progreso seguro; la UI competitiva no
+  recibe solución ni carga el diccionario, conserva el tablero tras recarga y reusa la clave al
+  reintentar una respuesta perdida.
+- **Tests:** pgTAP para feedback, duplicados, unión diccionario/palabras específicas, conflictos,
+  recepción única y versión; integración editorial/lectura, E2E de Auth real, recarga, error
+  inválido, duplicado y reintento idempotente. `npm run verify:pilot` carga solo los diccionarios
+  generales desde `public/dictionaries`; las palabras temáticas viajan únicamente en el payload
+  privado del fixture.
 
 ### S13 — Subir y sustituir el avatar global
 
@@ -661,7 +687,7 @@ Ficha común, obligatoria para **cada** E*:
 
 | Slice | Formato             | Backend/persistencia y criterio específico adicional                                                                                                                                                                                                                          |
 | ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E01   | `mini-wordle`       | Primer patrón de eventos: registrar cada palabra válida y devolver colores sin solución; diccionario/longitud 4–5 y máximo de intentos verificados en servidor. No aceptar una historia final fabricada ni consumir intentos duplicados.                                      |
+| E01   | `mini-wordle`       | **Implementado localmente.** Primer patrón de eventos: registrar cada palabra válida y devolver colores sin solución; cada palabra procede del diccionario general o de `additionalGuesses` privados de la pregunta, con solución temática implícita permitida. Longitud 4–5 y máximo de intentos verificados en servidor. No aceptar una historia final fabricada ni consumir intentos duplicados. |
 | E02   | `logic-code`        | Registrar cada código y su penalización; evaluar con secreto privado, conservar intentos tras recarga y cerrar al acertar/agotar tiempo según contrato.                                                                                                                       |
 | E03   | `progressive-clues` | Entregar pistas de una en una y registrar qué se concedió; no enviar el array completo ni confiar en `revealedClues`. Ajustar penalización con puntos del item.                                                                                                               |
 | E04   | `matching`          | Comprobar cada asociación que produce feedback/penalización; conservar fallos aceptados y parejas correctas sin `correctMatchId` público.                                                                                                                                     |
@@ -1014,9 +1040,8 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S12 ya están cerradas: su entrega cubre login y nombre persistido, lecturas de sala, un Flash
-competitivo persistido, recuperación local, rankings, historial y revisión, además de la creación
-auditada de salas, la activación de temporadas y la publicación editorial mínima desde el portal
-privado, programación y ejecución temporal local del calendario. El siguiente objetivo inmediato es
-ampliar la cobertura de modos o ejecutar el experimento técnico S05/E01. La gestión editorial completa y los 31 formatos no
-bloquean el piloto acotado.
+S01–S12 y E01 ya están cerradas localmente: su entrega cubre login y nombre persistido, lecturas de
+sala, Flash competitivo persistido con Mini-Wordle, recuperación local, rankings, historial y
+revisión, además de la creación auditada de salas, la activación de temporadas, la publicación
+editorial mixta y la programación/ejecución temporal local del calendario. E01 no habilita S13+,
+otros modos ni los formatos E02–E10; el piloto sigue acotado a las rutas reales documentadas en S22.

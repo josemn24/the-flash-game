@@ -61,6 +61,18 @@
     "private.interaction_intervals": {
       "kind": "r"
     },
+    "private.mini_wordle_dictionary_words": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.mini_wordle_guess_events": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
     "private.platform_role_assignments": {
       "kind": "r",
       "service_role": {
@@ -306,6 +318,11 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.is_supported_flash_question": {
+      "arguments": "target_question uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.activate_season_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -338,6 +355,21 @@
     },
     "private.lock_membership_room": {
       "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.mini_wordle_feedback": {
+      "arguments": "guess_value text, solution_value text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.mini_wordle_normalize": {
+      "arguments": "value text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.mini_wordle_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
       "securityDefiner": false,
       "executeRoles": []
     },
@@ -397,6 +429,11 @@
       "executeRoles": []
     },
     "private.start_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.submit_mini_wordle_guess": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

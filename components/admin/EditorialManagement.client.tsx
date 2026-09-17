@@ -14,7 +14,11 @@ import {
   formatFlashEditorialDocument,
   parseFlashEditorialJson,
 } from "@/lib/editorial/flashDocument";
-import type { FlashEditorialDocument, SuperadminEditorialContext } from "@/types/view-models/editorial";
+import type {
+  FlashEditorialDocument,
+  FlashEditorialMultipleChoiceQuestion,
+  SuperadminEditorialContext,
+} from "@/types/view-models/editorial";
 import type { MultipleChoiceQuestion } from "@/types/question";
 import styles from "./EditorialManagement.module.css";
 
@@ -122,7 +126,7 @@ function statusTone(status: SuperadminEditorialContext["entries"][number]["statu
   return "neutral" as const;
 }
 
-function previewQuestion(question: FlashEditorialDocument["questions"][number]): MultipleChoiceQuestion {
+function previewQuestion(question: FlashEditorialMultipleChoiceQuestion): MultipleChoiceQuestion {
   const tags = question.publicPayload.tags;
   return {
     id: question.slug,
@@ -161,6 +165,24 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
       <p className={styles.previewDescription}>{document.challenge.description}</p>
       <div className={styles.previewQuestions}>
         {document.questions.map((draftQuestion, index) => {
+          if (draftQuestion.type === "mini-wordle") {
+            const payload = draftQuestion.publicPayload;
+            const solution = draftQuestion.solutionPayload;
+            return (
+              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+                <div className={styles.previewQuestionTopline}>
+                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                </div>
+                <p className={styles.category}>{payload.category ?? ""}</p>
+                <h4>{payload.question}</h4>
+                <p>{payload.hint ?? "Sin pista"} · {payload.wordLength} letras · {payload.maxAttempts} intentos</p>
+                <p className={styles.solution}>
+                  Solución privada: <strong>{solution.correctAnswer}</strong>
+                </p>
+              </article>
+            );
+          }
           const question = previewQuestion(draftQuestion);
           return (
             <article className={styles.previewQuestion} key={draftQuestion.slug}>

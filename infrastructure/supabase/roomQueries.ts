@@ -186,7 +186,7 @@ type FlashMemberReviewReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice";
+  question_type: "multiple-choice" | "mini-wordle";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -417,11 +417,11 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     typeof row.item_position === "number" &&
     Number.isInteger(row.item_position) &&
     typeof row.question_version_id === "string" &&
-    row.question_type === "multiple-choice" &&
+    (row.question_type === "multiple-choice" || row.question_type === "mini-wordle") &&
     row.payload_schema_version === 1 &&
     isRecord(row.public_payload) &&
     isRecord(row.solution_payload) &&
-    (row.answer === null || typeof row.answer === "string") &&
+    (row.answer === null || typeof row.answer === "string" || isRecord(row.answer)) &&
     (row.answer_status === null ||
       ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
         String(row.answer_status),
@@ -785,6 +785,44 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
   assertSupportedQuestionPayloadSchemaVersion(row.payload_schema_version);
   const publicPayload = row.public_payload as Record<string, unknown>;
   const solutionPayload = row.solution_payload as Record<string, unknown>;
+  if (row.question_type === "mini-wordle") {
+    const publicData = isRecord(publicPayload.payload) ? publicPayload.payload : publicPayload;
+    const solution = isRecord(solutionPayload.solution) ? solutionPayload.solution : solutionPayload;
+    const solutionData = isRecord(solution.payload) ? solution.payload : solution;
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const prompt = typeof publicPayload.prompt === "string" ? publicPayload.prompt : publicData.question;
+    const timeLimitMs = publicPayload.timeLimitMs ?? publicData.timeLimitMs;
+    const wordLength = publicData.wordLength;
+    const maxAttempts = publicData.maxAttempts;
+    const correctAnswer = solutionData.correctAnswer;
+    const additionalGuesses = solutionData.additionalGuesses;
+    if (
+      typeof prompt !== "string" ||
+      typeof timeLimitMs !== "number" ||
+      (wordLength !== 4 && wordLength !== 5) ||
+      typeof maxAttempts !== "number" ||
+      typeof correctAnswer !== "string" ||
+      !Array.isArray(additionalGuesses) ||
+      !additionalGuesses.every((value) => typeof value === "string")
+    ) {
+      throw new Error(`Invalid historical Mini-Wordle payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      ...(typeof publicData.hint === "string" ? { hint: publicData.hint } : {}),
+      wordLength,
+      maxAttempts,
+      correctAnswer,
+      additionalGuesses,
+      timeLimit: timeLimitMs / 1_000,
+      points: row.item_points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+      type: "mini-wordle",
+    };
+  }
   const tags = requiredRecordField(publicPayload, "tags", "public_payload");
   const payload = requiredRecordField(publicPayload, "payload", "public_payload");
   const solution = requiredRecordField(solutionPayload, "solution", "solution_payload");

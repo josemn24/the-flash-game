@@ -9,6 +9,7 @@ export type {
 } from "./ChallengeResultScreen/ChallengeResultScreen";
 export { ProgressBar } from "./ProgressBar";
 export { QuestionStage } from "./QuestionStage";
+export { ServerFlashQuestionStage } from "./ServerFlashQuestionStage";
 export type { QuestionStageProps, QuestionStageHeaderRenderParams } from "./QuestionStage";
 export {
   FlashQuestionStage,

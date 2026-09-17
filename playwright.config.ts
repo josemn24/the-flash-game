@@ -35,6 +35,9 @@ const localEnv = {
   FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
+  // E2E scenarios intentionally exercise recovery/retry sequences; keep the
+  // production default of 5 while giving the test process a bounded headroom.
+  FLASH_RATE_LIMIT_BURST: process.env.FLASH_RATE_LIMIT_BURST || "30",
   EXPECTED_SCHEMA_REVISION:
     process.env.EXPECTED_SCHEMA_REVISION || "20260916130002_s12_temporal_read_boundaries",
 };

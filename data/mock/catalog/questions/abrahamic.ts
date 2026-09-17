@@ -93,8 +93,8 @@ export const abrahamicQuestions = defineQuestionCatalog([
       },
     },
     privatePayload: {
-      solution: {
-        explanation:
+          solution: {
+            explanation:
           "Abraham es una figura de referencia del judaísmo y el cristianismo; Ibrahim es su nombre en árabe y la denominación habitual en el islam.",
         payload: {
           correctAnswer: "Abraham",
@@ -182,9 +182,10 @@ export const abrahamicQuestions = defineQuestionCatalog([
       solution: {
         explanation:
           "Josué sucedió a Moisés en el relato bíblico. La solución acepta JOSUE y JOSUÉ mediante normalización de tildes.",
-        payload: {
-          correctAnswer: "JOSUÉ",
-          additionalGuesses: [
+          payload: {
+            correctAnswer: "JOSUÉ",
+            dictionaryId: "es-general-5.v1",
+            additionalGuesses: [
             "AARON",
             "ANGEL",
             "ALTAR",

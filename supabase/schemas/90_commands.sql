@@ -238,12 +238,21 @@ begin
         select jsonb_build_object('challengeItemId', item.id, 'questionType', q.type,
           'payloadSchemaVersion', q.payload_schema_version,
           'publicPayload', case when instant < unit.deadline_at then q.public_payload else null end,
-          'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at)
+          'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
+          'progress', case when q.type = 'mini-wordle'
+            then private.mini_wordle_progress(a.id, item.id) else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
       when 'receive', 'pass' then
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
         if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
           raise exception 'interaction_not_presented' using errcode = '55000';
+        end if;
+        select * into item from private.challenge_items where id = segment.challenge_item_id;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'mini-wordle'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'mini_wordle_requires_guess_command' using errcode = '22023';
         end if;
         select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
@@ -371,22 +380,15 @@ grant execute on function private.take_over_attempt(jsonb) to service_role;
 create function private.prepare_interaction(input jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 begin
-  -- A prepared open interval is already exposed/consumed. Only recovery can
-  -- close it; prepare must never replay its payload after a lost HTTP response.
+  -- A lost prepare response or a countdown race may leave the interval open.
+  -- Re-reading is safe: execute_command exposes only public payload/progress,
+  -- and an already received answer is still blocked as evaluation_pending.
   if exists (
     select 1 from private.command_requests
     where actor_id = private.command_actor() and idempotency_key = prepare_interaction.input->>'idempotencyKey'
       and operation = 'prepare'
   ) then
     return private.execute_command('prepare', input);
-  end if;
-  if exists (
-    select 1 from private.interaction_intervals x
-    join public.attempts a on a.id = x.attempt_id
-    join private.challenge_versions cv on cv.id = a.challenge_version_id
-    where x.attempt_id = (input->>'attemptId')::uuid and x.ended_at is null and cv.mode = 'flash'
-  ) then
-    raise exception 'recovery_required' using errcode = '55000';
   end if;
   return private.execute_command('prepare', input);
 end;
@@ -512,6 +514,7 @@ declare
   safe_input jsonb := input; cached private.command_requests%rowtype;
   a public.attempts%rowtype; s private.attempt_sessions%rowtype;
   segment private.interaction_intervals%rowtype; unit private.attempt_timing_units%rowtype;
+  item private.challenge_items%rowtype; question private.question_versions%rowtype;
   receipt private.answer_receipts%rowtype; instant timestamptz := clock_timestamp();
   expected bigint; presented timestamptz; used_ms bigint; effective timestamptz; result jsonb;
 begin
@@ -541,15 +544,21 @@ begin
     select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
     if found then
       select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
-      effective := greatest(segment.started_at, least(instant, unit.deadline_at));
-      update private.interaction_intervals set ended_at = effective, end_reason = 'recovery_interrupted' where id = segment.id;
-      select min(started_at), coalesce(sum(floor(extract(epoch from (ended_at - started_at)) * 1000)), 0)::bigint
-        into presented, used_ms from private.interaction_intervals where attempt_id = a.id and challenge_item_id = segment.challenge_item_id;
-      insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
-        presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
-      values(a.id, segment.challenge_item_id, a.challenge_version_id, null, instant, presented, effective, used_ms,
-        instant >= unit.deadline_at, null) returning * into receipt;
-      result := jsonb_build_object('receiptId', receipt.id, 'recovered', true);
+      select * into item from private.challenge_items where id = segment.challenge_item_id;
+      select * into question from private.question_versions where id = item.question_version_id;
+      if question.type = 'mini-wordle' and instant < unit.deadline_at then
+        result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
+      else
+        effective := greatest(segment.started_at, least(instant, unit.deadline_at));
+        update private.interaction_intervals set ended_at = effective, end_reason = 'recovery_interrupted' where id = segment.id;
+        select min(started_at), coalesce(sum(floor(extract(epoch from (ended_at - started_at)) * 1000)), 0)::bigint
+          into presented, used_ms from private.interaction_intervals where attempt_id = a.id and challenge_item_id = segment.challenge_item_id;
+        insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
+          presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
+        values(a.id, segment.challenge_item_id, a.challenge_version_id, null, instant, presented, effective, used_ms,
+          instant >= unit.deadline_at, null) returning * into receipt;
+        result := jsonb_build_object('receiptId', receipt.id, 'recovered', true);
+      end if;
     else
       result := jsonb_build_object('receiptId', null, 'recovered', false);
     end if;

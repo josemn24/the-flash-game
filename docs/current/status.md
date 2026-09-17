@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-16.
+Última actualización documental: 2026-09-17.
 
 # Estado actual del proyecto
 
@@ -10,7 +10,8 @@ The Flash combina dos recorridos explícitos. La práctica, las previews y las c
 migradas usan fixtures y un store mock normalizado. Las slices S01–S12 y la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
-rankings, historial y revisión después de volver, además del acceso seguro server-side para
+rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
+persistidos, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
@@ -27,8 +28,11 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
 - Cinco modos: `flash`, `alphabet`, `survival`, `narrative` y `pyramid`.
 - Autenticación Supabase local, provisioning idempotente de `Player`, logout y edición del nombre.
 - Home, detalle de sala e introducción con lecturas autorizadas reales (S02).
-- Flash competitivo real de dos preguntas `multiple-choice`, con sesiones exclusivas, tiempos,
-  respuestas, evaluación privada, puntuación y ledger de puntos (S03).
+- Flash competitivo real de dos preguntas, 50 puntos por pregunta, con sesiones exclusivas, tiempos,
+  respuestas, evaluación privada, puntuación y ledger de puntos (S03/E01). E01 admite desafíos
+  mixtos `multiple-choice` + `mini-wordle`; cada palabra procede del diccionario general o de
+  palabras temáticas privadas de la pregunta, y el feedback/historial se calculan y persisten en
+  PostgreSQL sin enviar la solución.
 - Recuperación tras recarga o fallo parcial, bloqueo de segunda sesión y abandono explícito (S04).
 - Ranking de temporada y de la publicación abierta actual desde los RPCs reales, con posición
   persistida en las tarjetas de sala y lectura autorizada para spectators (S06).
@@ -41,8 +45,9 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   usuarios, slug server-side, transacción, idempotencia y una auditoría agregada; no hay todavía
   gestión posterior de miembros. S10 añade creación/edición de borradores y activación explícita de
   temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC. S11 añade
-  creación, edición, preview y publicación separada de Flash mínimo: dos preguntas
-  multiple-choice, 50 puntos cada una, con soluciones privadas e inmutabilidad al publicar.
+  creación, edición, preview y publicación separada de Flash mínimo; E01 añade Mini-Wordle y permite
+  publicar mezclas con soluciones privadas, palabras específicas fuera del diccionario general e
+  inmutabilidad al publicar.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -67,14 +72,14 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/salas/[roomId]/historial/[challengeId]` | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada. |
 | `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators. |
 | `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes; gestión real está pendiente.      |
-| `/admin`                    | Portal privado server-side para superadmins: contexto, salas, temporadas, editorial Flash mínimo y calendario. |
+| `/admin`                    | Portal privado server-side para superadmins: contexto, salas, temporadas, editorial Flash con MC/Mini-Wordle y calendario. |
 | `/desafios/[challengeId]`   | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404. |
 | `/formatos`                 | Biblioteca estática de formatos y práctica local.                    |
 | `/flash-pop`                | Lobby/demo de Flash Pop.                                             |
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S12 y el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S12 y E01 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -96,16 +101,16 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación
 
-Última verificación: 2026-09-16.
+Última verificación: 2026-09-17.
 
-- `npm test`: 97 archivos de test y 609 tests superados, incluyendo adaptadores, acciones y
-  componentes de S11/S12.
+- `npm test`: 98 archivos y 614 tests superados; incluye reglas, adaptadores y UI pública de E01
+  además de S11/S12.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
-- `npm run verify:pilot`: reconstruye Supabase local por escenario, ejecuta integración/E2E en scope
-  `pilot`, verifica health/límites y ensaya backup/restore.
-- `npm run supabase:schema:test`: correcto; inventario, provisioning, S02–S08, S10–S12, ACL del
-  portal, idempotencia, rollback y carreras de comandos, activaciones y edición/publicación con
+- `npm run verify:pilot`: correcto; reconstruye Supabase local por escenario, ejecuta integración/E2E
+  en scope `pilot`, carga diccionarios versionados y ensaya backup/restore.
+- `npm run supabase:schema:test`: correcto; 23 archivos declarativos, inventario, provisioning,
+  S02–S08, S10–S12, E01, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.

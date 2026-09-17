@@ -65,4 +65,35 @@ describe("server flash question adapter", () => {
     });
     expect(challenge).not.toHaveProperty("slots");
   });
+
+  it("maps Mini-Wordle progress without accepting a solution field", () => {
+    const question = questionFromPayload(
+      "item-mini",
+      {
+        category: "Lengua",
+        question: "Descubre la palabra",
+        hint: "Una vivienda",
+        wordLength: 4,
+        maxAttempts: 3,
+      },
+      30_000,
+      50,
+      "mini-wordle",
+      {
+        kind: "mini-wordle",
+        guesses: ["SALA"],
+        feedback: [[{ letter: "S", status: "absent" }]],
+        attemptsUsed: 1,
+        maxAttempts: 3,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "mini-wordle",
+      wordLength: 4,
+      maxAttempts: 3,
+      progress: { guesses: ["SALA"], attemptsUsed: 1 },
+    });
+    expect(question).not.toHaveProperty("correctAnswer");
+  });
 });

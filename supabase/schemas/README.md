@@ -1,6 +1,6 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-16. **22 tablas**, una vista
+Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-17. **24 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
@@ -12,7 +12,10 @@ superadmin y salas activas mediante `get_superadmin_portal_context()` y crea sal
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
 Las capacidades restantes siguen usando mocks o están pendientes. S10 añade preparación/edición de
 borradores y activación explícita de temporadas; S11 añade el editor Flash mínimo de dos preguntas y
-publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. Las
+publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. E01
+añade Mini-Wordle competitivo con eventos intermedios, diccionario privado versionado y palabras
+adicionales específicas por pregunta sin modificar el diccionario global.
+Flash mixtos. Las
 migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
@@ -93,6 +96,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [20_content.sql](20_content.sql)                         | Catálogo congelado, soluciones, items y límites temporales publicados.                                                              |
 | [30_competition.sql](30_competition.sql)                 | Publicaciones, intentos, sesiones, respuestas, libro de puntos y auditoría. Deadline global y expiración anulables.                 |
 | [35_authoritative_state.sql](35_authoritative_state.sql) | Unidades temporales, intervalos de visita, recepciones inmutables e idempotencia. FK obligatoria desde respuesta final a recepción. |
+| [36_mini_wordle.sql](36_mini_wordle.sql) | Eventos privados, diccionario versionado, normalización/feedback y progreso seguro de Mini-Wordle. |
 | [40_indexes.sql](40_indexes.sql)                         | Índices de autorización, calendario, unicidad y consultas competitivas.                                                             |
 | [50_access_helpers.sql](50_access_helpers.sql)           | Resolución del jugador y ayudas RLS sin recursión.                                                                                  |
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)       | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                |
@@ -106,6 +110,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [85_flash_history_reads.sql](85_flash_history_reads.sql) | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                        |
 | [90_commands.sql](90_commands.sql)                       | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                           |
 | [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)     | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                         |
+| [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql) | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -201,6 +206,8 @@ su asignación en DB. `service_role` elude RLS, por lo que la restricción de es
 | `private.attempt_timing_units`       | —                                                                              | —            |
 | `private.interaction_intervals`      | —                                                                              | —            |
 | `private.answer_receipts`            | —                                                                              | —            |
+| `private.mini_wordle_dictionary_words` | —                                                                            | S            |
+| `private.mini_wordle_guess_events`    | —                                                                            | S            |
 
 Las lecturas internas sirven al ensamblado del evaluador, las comprobaciones de contexto y las
 proyecciones del servidor; no se trasladan al navegador. Las nuevas tablas solo se leen por comandos.
@@ -260,9 +267,10 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: las comprobaciones SQL existentes más **15 casos pgTAP del portal**, los
-casos de S07, S10, S11 y S12, carreras entre conexiones independientes y **575 pruebas
-TypeScript** superadas. También pasan comprobación
+Validación local actual: `check-supabase-schema` carga **23 archivos declarativos**, verifica el
+inventario y ejecuta los casos existentes más **26 checks pgTAP específicos de E01**, los casos de
+S07, S10, S11 y S12, carreras entre conexiones independientes y **614 pruebas TypeScript**
+superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el

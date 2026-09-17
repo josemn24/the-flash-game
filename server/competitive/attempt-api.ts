@@ -242,7 +242,12 @@ export function mapAttemptError(error: unknown): AttemptApiError {
   if (error instanceof AttemptApiError) return error;
   if (error instanceof AttemptCommandError) {
     const status =
-      error.code === "not_authorized" || error.code === "competitive_access_denied"
+      error.code === "invalid_mini_wordle_guess" ||
+          error.code === "mini_wordle_requires_guess_command" ||
+          error.code === "invalid_question_payload" ||
+          error.code === "unsupported_question"
+        ? 400
+        : error.code === "not_authorized" || error.code === "competitive_access_denied"
         ? 404
         : error.code === "auth_unavailable" ||
             error.code === "database_unavailable" ||

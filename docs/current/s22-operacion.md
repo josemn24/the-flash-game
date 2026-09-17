@@ -3,9 +3,9 @@
 > Estado: vigente. Alcance local/CI; no hay proyecto remoto enlazado.
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
-El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase. Los demás modos,
-formatos no migrados, Storage, abandono automático, takeover y `results_locked_at` siguen fuera de
-alcance.
+El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluido E01
+Mini-Wordle. Los demás modos, formatos no migrados, E02–E10, Storage, abandono automático, takeover
+y `results_locked_at` siguen fuera de alcance.
 
 ## Runtime scope
 
@@ -22,7 +22,7 @@ falla al arrancar la composición server-only.
 | Superficie | Pilot | Development/Test |
 | --- | --- | --- |
 | `/`, `/salas/[roomId]`, rankings, historial | Supabase | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>` | Supabase | Supabase |
+| `/desafios/[challengeId]?roomId=<UUID>` | Supabase; Flash admite MC + Mini-Wordle | Supabase |
 | `/desafios/[challengeId]` sin sala | 404 | Preview mock explícito |
 | aliases como `tabarnia-room` | 404 | Demo mock |
 | `/formatos`, `/flash-pop/**` | Demo/práctica | Demo/práctica |
@@ -60,6 +60,24 @@ npm run supabase:fixture -- --scenario s03
 npm run test:integration:supabase -- --scenario s03
 FLASH_RUNTIME_SCOPE=pilot APP_ORIGIN=http://127.0.0.1:3000 npm run test:e2e -- e2e/s03-flash.spec.ts
 ```
+
+Para E01, el reset debe ir seguido de la carga del diccionario antes de crear el fixture:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:dictionary:load
+npm run supabase:fixture -- --scenario e01
+npm run test:integration:supabase -- --scenario e01
+npm run test:e2e -- e2e/e01-mini-wordle.spec.ts
+```
+
+El contrato público de Mini-Wordle solo incluye pregunta, pista, longitud, máximo de intentos y
+progreso aceptado. `correctAnswer`, `additionalGuesses` y `dictionaryId` permanecen privados. Cada
+palabra válida procede del diccionario general o de la lista `additionalGuesses` específica de la
+pregunta; la solución puede ser una palabra temática aunque no esté en el diccionario general.
+Las palabras específicas no se cargan en la tabla global. La restauración local debe conservar
+`mini_wordle_guess_events`, recepciones, resultados y ranking; el comando de carga del diccionario
+es idempotente y se ejecuta después de cada reset.
 
 No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
 es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build

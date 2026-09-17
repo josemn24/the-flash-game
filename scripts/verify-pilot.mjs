@@ -11,6 +11,7 @@ const e2eByScenario = {
   portal: ["e2e/admin-portal.spec.ts"],
   s02: ["e2e/s02-rooms.spec.ts"],
   s03: ["e2e/s03-flash.spec.ts"],
+  e01: ["e2e/e01-mini-wordle.spec.ts"],
   s04: ["e2e/s04-recovery.spec.ts"],
   s06: ["e2e/s06-ranking.spec.ts"],
   s07: ["e2e/s07-history-review.spec.ts"],
@@ -26,7 +27,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260916130002_s12_temporal_read_boundaries",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260917081500_e01_question_extra_words",
 };
 
 async function run(label, command, args, options = {}) {
@@ -64,6 +65,7 @@ await mkdir(logDirectory, { recursive: true, mode: 0o700 });
 try {
   await run("supabase-start", "npx", ["supabase", "start"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
+  await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {
     env: { ...pilotEnv, FLASH_RUNTIME_SCOPE: "test" },
   });
@@ -75,6 +77,7 @@ try {
 
   for (const [scenario, specs] of Object.entries(e2eByScenario)) {
     await run(`${scenario}-reset`, "npm", ["run", "supabase:db:reset"]);
+    await run(`${scenario}-dictionary-load`, "npm", ["run", "supabase:dictionary:load"]);
     await unlink(`output/fixtures/${scenario}.json`).catch(() => undefined);
     await run(`${scenario}-fixture`, "npm", [
       "run",
@@ -94,6 +97,7 @@ try {
     // Recreate Auth and PostgreSQL before browser tests so E2E never depends on
     // data left by the preceding scenario stage.
     await run(`${scenario}-e2e-reset`, "npm", ["run", "supabase:db:reset"]);
+    await run(`${scenario}-e2e-dictionary-load`, "npm", ["run", "supabase:dictionary:load"]);
     await unlink(`output/fixtures/${scenario}.json`).catch(() => undefined);
     await run(`${scenario}-e2e-fixture`, "npm", [
       "run",
@@ -102,7 +106,12 @@ try {
       "--scenario",
       scenario,
     ]);
-    await run(`${scenario}-e2e`, "npm", ["run", "test:e2e", "--", ...specs]);
+    await run(
+      `${scenario}-e2e`,
+      "npm",
+      ["run", "test:e2e", "--", ...specs],
+      scenario === "e01" ? { env: { ...pilotEnv, FLASH_RATE_LIMIT_BURST: "30" } } : {},
+    );
   }
 
   await run("browser-fixture", "npm", ["run", "supabase:browser:setup"]);

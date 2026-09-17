@@ -9,6 +9,7 @@ import type {
 } from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { AnswerValueOfType, QuestionType } from "@/types/contracts/questions";
+import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 
 /** Caller identity always comes from the verified server session, never this input. */
 export type StartAttemptInput = {
@@ -42,6 +43,8 @@ export type PrepareInteractionResult = AttemptCommandResult & {
   readonly presentedAt: UtcIsoDateTime;
   readonly deadlineAt: UtcIsoDateTime;
   readonly timedOut: boolean;
+  /** Safe progress only; never contains a solution payload. */
+  readonly progress?: JsonValue | null;
 };
 export type SubmitAnswerInput<Type extends QuestionType = QuestionType> = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
@@ -55,6 +58,25 @@ export type ReceiveAnswerResult = AttemptCommandResult & {
   readonly timeUsedMs: DurationMs;
   readonly receivedAt: UtcIsoDateTime;
   readonly presentedAt: UtcIsoDateTime;
+};
+export type SubmitMiniWordleGuessInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly guess: string;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitMiniWordleGuessResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly sequence: number;
+  readonly guess: string;
+  readonly feedback: readonly MiniWordleLetterFeedback[];
+  readonly attemptsUsed: number;
+  readonly maxAttempts: number;
+  readonly terminal: boolean;
+  readonly receiptId?: AnswerReceiptId;
+  /** Present only after the trusted evaluator has recorded the final receipt. */
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
 };
 export type SubmitAnswerResult = AttemptCommandResult & {
   readonly receiptId: AnswerReceiptId;
@@ -80,6 +102,7 @@ export type RecoverAttemptInput = AttemptCommandInput;
 export type RecoverAttemptResult = AttemptCommandResult & {
   readonly receiptId: AnswerReceiptId | null;
   readonly recovered: boolean;
+  readonly preserved?: boolean;
 };
 export type AttemptRecoveryAnswer = {
   readonly challengeItemId: ChallengeItemId;

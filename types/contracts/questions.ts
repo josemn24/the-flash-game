@@ -343,13 +343,19 @@ export type QuestionContractMap = {
   };
   readonly "mini-wordle": {
     readonly public: {
+      readonly category?: string;
+      readonly tags?: Record<string, unknown>;
+      readonly question?: string;
       readonly hint: string | null;
       readonly wordLength: 4 | 5;
       readonly maxAttempts: number;
     };
     readonly solution: {
       readonly correctAnswer: string;
+      /** Question-specific guesses in addition to the versioned general dictionary. */
       readonly additionalGuesses: readonly string[];
+      readonly dictionaryId: "es-general-4.v1" | "es-general-5.v1";
+      readonly explanation?: string;
     };
     readonly answer: Legacy.MiniWordleAnswer;
     readonly reveal: never;

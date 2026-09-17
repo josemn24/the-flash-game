@@ -457,6 +457,8 @@ export type MiniWordleQuestion = BaseQuestion & {
   type: "mini-wordle";
   correctAnswer: string;
   additionalGuesses?: string[];
+  /** Versioned dictionary metadata used by the competitive editorial contract. */
+  dictionaryId?: "es-general-4.v1" | "es-general-5.v1";
   hint?: string;
   wordLength?: 4 | 5;
   maxAttempts?: number;

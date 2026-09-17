@@ -34,48 +34,7 @@ begin
         and item.points = 50
         and item.config_schema_version = 1
         and item.mode_config = '{}'::jsonb
-        and question.status = 'published'
-        and question.type = 'multiple-choice'
-        and question.payload_schema_version = 1
-        and jsonb_typeof(question.public_payload) = 'object'
-        and not private.editorial_has_secret_key(question.public_payload)
-        and jsonb_typeof(question.public_payload->'question') = 'string'
-        and char_length(btrim(question.public_payload->>'question')) > 0
-        and jsonb_typeof(question.public_payload->'options') = 'array'
-        and case when jsonb_typeof(question.public_payload->'options') = 'array'
-          then jsonb_array_length(question.public_payload->'options') >= 2 else false end
-        and not exists (
-          select 1
-          from jsonb_array_elements(
-            case when jsonb_typeof(question.public_payload->'options') = 'array'
-              then question.public_payload->'options' else '[]'::jsonb end
-          ) option(value)
-          where jsonb_typeof(option.value) is distinct from 'string'
-            or char_length(btrim(option.value #>> '{}')) = 0
-        )
-        and (select count(distinct option_value)
-             from jsonb_array_elements_text(
-               case when jsonb_typeof(question.public_payload->'options') = 'array'
-                 then question.public_payload->'options' else '[]'::jsonb end
-             ) option_value)
-             = case when jsonb_typeof(question.public_payload->'options') = 'array'
-                 then jsonb_array_length(question.public_payload->'options') else -1 end
-        and (select count(*) from private.question_version_solutions solution
-             where solution.question_version_id = question.id) = 1
-        and exists (
-          select 1
-          from private.question_version_solutions solution
-          where solution.question_version_id = question.id
-            and jsonb_typeof(solution.solution_payload) = 'object'
-            and jsonb_typeof(solution.solution_payload->'correctAnswer') = 'string'
-            and exists (
-              select 1 from jsonb_array_elements_text(
-                case when jsonb_typeof(question.public_payload->'options') = 'array'
-                  then question.public_payload->'options' else '[]'::jsonb end
-              ) option_value
-              where option_value = solution.solution_payload->>'correctAnswer'
-            )
-        )
+        and private.is_supported_flash_question(question.id)
     )::integer
   into item_count, compatible_item_count
   from private.challenge_items item
@@ -619,49 +578,7 @@ language sql stable security definer set search_path = '' as $$
         and coalesce(bool_and(item.position in (1, 2)), false)
         and coalesce(bool_and(item.points = 50), false)
         and coalesce(bool_and(item.config_schema_version = 1 and item.mode_config = '{}'::jsonb), false)
-        and count(*) filter (
-          where question.status = 'published'
-            and question.type = 'multiple-choice'
-            and question.payload_schema_version = 1
-            and jsonb_typeof(question.public_payload) = 'object'
-            and not private.editorial_has_secret_key(question.public_payload)
-            and jsonb_typeof(question.public_payload->'question') = 'string'
-            and char_length(btrim(question.public_payload->>'question')) > 0
-            and case when jsonb_typeof(question.public_payload->'options') = 'array'
-              then jsonb_array_length(question.public_payload->'options') >= 2 else false end
-            and not exists (
-              select 1
-              from jsonb_array_elements(
-                case when jsonb_typeof(question.public_payload->'options') = 'array'
-                  then question.public_payload->'options' else '[]'::jsonb end
-              ) option(value)
-              where jsonb_typeof(option.value) is distinct from 'string'
-                or char_length(btrim(option.value #>> '{}')) = 0
-            )
-            and (select count(distinct option_value)
-                 from jsonb_array_elements_text(
-                   case when jsonb_typeof(question.public_payload->'options') = 'array'
-                     then question.public_payload->'options' else '[]'::jsonb end
-                 ) option_value)
-                = case when jsonb_typeof(question.public_payload->'options') = 'array'
-                    then jsonb_array_length(question.public_payload->'options') else -1 end
-            and (select count(*) from private.question_version_solutions solution
-                 where solution.question_version_id = question.id) = 1
-            and exists (
-              select 1
-              from private.question_version_solutions solution
-              where solution.question_version_id = question.id
-                and jsonb_typeof(solution.solution_payload) = 'object'
-                and jsonb_typeof(solution.solution_payload->'correctAnswer') = 'string'
-                and exists (
-                  select 1 from jsonb_array_elements_text(
-                    case when jsonb_typeof(question.public_payload->'options') = 'array'
-                      then question.public_payload->'options' else '[]'::jsonb end
-                  ) option_value
-                  where option_value = solution.solution_payload->>'correctAnswer'
-                )
-            )
-        ) = 2 as is_supported
+        and count(*) filter (where private.is_supported_flash_question(question.id)) = 2 as is_supported
     from private.challenge_items item
     join private.question_versions question on question.id = item.question_version_id
     where item.challenge_version_id = version.id

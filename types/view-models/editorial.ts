@@ -7,7 +7,7 @@ export type EditorialJsonValue =
   | { readonly [key: string]: EditorialJsonValue };
 export type EditorialJsonObject = { readonly [key: string]: EditorialJsonValue };
 
-export type FlashEditorialPublicPayload = {
+export type FlashEditorialMultipleChoicePublicPayload = {
   readonly category?: string;
   readonly tags?: EditorialJsonObject;
   readonly question: string;
@@ -16,20 +16,59 @@ export type FlashEditorialPublicPayload = {
   readonly promptVisual?: MultipleChoicePromptVisual | null;
 };
 
-export type FlashEditorialSolutionPayload = {
+export type FlashEditorialMiniWordlePublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly hint?: string | null;
+  readonly wordLength: 4 | 5;
+  readonly maxAttempts: number;
+};
+
+export type FlashEditorialPublicPayload =
+  | FlashEditorialMultipleChoicePublicPayload
+  | FlashEditorialMiniWordlePublicPayload;
+
+export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
   readonly explanation?: string;
 };
 
-export type FlashEditorialQuestion = {
+export type FlashEditorialMiniWordleSolutionPayload = {
+  readonly correctAnswer: string;
+  /** Extra guesses for this question; they do not need to belong to the general dictionary. */
+  readonly additionalGuesses: readonly string[];
+  readonly dictionaryId: "es-general-4.v1" | "es-general-5.v1";
+  readonly explanation?: string;
+};
+
+export type FlashEditorialSolutionPayload =
+  | FlashEditorialMultipleChoiceSolutionPayload
+  | FlashEditorialMiniWordleSolutionPayload;
+
+export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
   readonly type: "multiple-choice";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
   readonly points: 50;
-  readonly publicPayload: FlashEditorialPublicPayload;
-  readonly solutionPayload: FlashEditorialSolutionPayload;
+  readonly publicPayload: FlashEditorialMultipleChoicePublicPayload;
+  readonly solutionPayload: FlashEditorialMultipleChoiceSolutionPayload;
 };
+
+export type FlashEditorialMiniWordleQuestion = {
+  readonly slug: string;
+  readonly type: "mini-wordle";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: 50;
+  readonly publicPayload: FlashEditorialMiniWordlePublicPayload;
+  readonly solutionPayload: FlashEditorialMiniWordleSolutionPayload;
+};
+
+export type FlashEditorialQuestion =
+  | FlashEditorialMultipleChoiceQuestion
+  | FlashEditorialMiniWordleQuestion;
 
 export type FlashEditorialDocument = {
   readonly challenge: {

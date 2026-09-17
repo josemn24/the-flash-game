@@ -73,6 +73,14 @@ alter table private.audit_log enable row level security;
 revoke all on table private.audit_log from public, anon, authenticated, service_role;
 grant select on table private.audit_log to service_role;
 
+alter table private.mini_wordle_dictionary_words enable row level security;
+revoke all on table private.mini_wordle_dictionary_words from public, anon, authenticated, service_role;
+grant select on table private.mini_wordle_dictionary_words to service_role;
+
+alter table private.mini_wordle_guess_events enable row level security;
+revoke all on table private.mini_wordle_guess_events from public, anon, authenticated, service_role;
+grant select on table private.mini_wordle_guess_events to service_role;
+
 -- Auth IDs, checkpoints, technical timestamps and terminal reasons have no client SELECT grant.
 grant usage on schema public to authenticated, service_role;
 grant select (id, display_name, avatar_path, status) on public.players to authenticated;

@@ -570,6 +570,7 @@ export function normalizeLegacyQuestionFixture(question: Question): StoredFixtur
             payload: {
               correctAnswer: question.correctAnswer,
               additionalGuesses: question.additionalGuesses ?? [],
+              ...(question.dictionaryId ? { dictionaryId: question.dictionaryId } : {}),
             },
           },
           reveals: [],
@@ -983,6 +984,7 @@ export function projectLegacyQuestion(fixture: AnyMockPublishedQuestion): Questi
         ...(solution.additionalGuesses.length > 0
           ? { additionalGuesses: [...solution.additionalGuesses] }
           : {}),
+        ...optional("dictionaryId", solution.dictionaryId),
         ...optional("hint", fixture.publicPayload.payload.hint),
         wordLength: fixture.publicPayload.payload.wordLength,
         maxAttempts: fixture.publicPayload.payload.maxAttempts,

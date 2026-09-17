@@ -10,7 +10,7 @@ import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGam
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import {
   ChallengeResultScreen,
-  FlashQuestionStage,
+  ServerFlashQuestionStage,
   StartCountdown,
 } from "@/components/game/shared";
 import { Card } from "@/components/ui";
@@ -70,7 +70,7 @@ export function ServerFlashPopGame({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -18 }}
         >
-          <FlashQuestionStage
+          <ServerFlashQuestionStage
             question={session.question}
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
@@ -80,14 +80,9 @@ export function ServerFlashPopGame({
             submissionStatusVisible={session.submissionStatusVisible}
             submissionError={session.submissionError}
             onRetrySubmission={session.retrySubmit}
-            codeAttemptCount={0}
-            onSubmit={session.submit}
+            onSubmit={(answer) => void session.submit(answer)}
+            onMiniWordleGuess={session.submitMiniWordleGuess}
             onTimeUp={() => void session.submit(null)}
-            onProgress={() => undefined}
-            onIncorrectAttempt={() => undefined}
-            onProgressiveClueReveal={() => undefined}
-            onCodeAttempt={() => false}
-            onTimedResponseStart={() => undefined}
           />
         </motion.div>
       ) : null}

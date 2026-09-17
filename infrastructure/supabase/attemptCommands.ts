@@ -18,9 +18,16 @@ import type {
   FinishAttemptResult,
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
+  SubmitMiniWordleGuessResult,
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
-import type { MultipleChoiceQuestion, Question } from "@/types/game";
+import type { AnswerValue, MiniWordleQuestion, MultipleChoiceQuestion, Question } from "@/types/game";
+import {
+  isMiniWordleMaxAttempts,
+  isMiniWordleWordLength,
+  isValidMiniWordleWord,
+  normalizeMiniWordleWord,
+} from "@/lib/miniWordle";
 import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
@@ -113,6 +120,11 @@ function commandCode(error: unknown) {
     "already_evaluated",
     "takeover_disabled",
     "recovery_required",
+    "invalid_mini_wordle_guess",
+    "duplicate_mini_wordle_guess",
+    "mini_wordle_requires_guess_command",
+    "unsupported_question",
+    "invalid_question_payload",
   ];
   return known.find((candidate) => message.includes(candidate)) ?? "command_failed";
 }
@@ -153,9 +165,9 @@ async function callCommand<T>(
   });
 }
 
-function asQuestion(context: EvaluationContext): MultipleChoiceQuestion {
+function asQuestion(context: EvaluationContext): MultipleChoiceQuestion | MiniWordleQuestion {
   if (
-    context.questionType !== "multiple-choice" ||
+    !["multiple-choice", "mini-wordle"].includes(context.questionType) ||
     context.payloadSchemaVersion !== 1 ||
     context.itemConfigSchemaVersion !== 1 ||
     context.modeConfigSchemaVersion !== 1
@@ -189,46 +201,72 @@ function asQuestion(context: EvaluationContext): MultipleChoiceQuestion {
 
   const publicPayload = context.publicPayload as Record<string, unknown>;
   const solutionPayload = context.solutionPayload as Record<string, unknown>;
-  const options = publicPayload.options;
-  const correctAnswer = solutionPayload.correctAnswer;
   const prompt = publicPayload.question ?? publicPayload.prompt;
-  if (
-    !Array.isArray(options) ||
-    !options.every((option) => typeof option === "string") ||
-    typeof correctAnswer !== "string" ||
-    !options.includes(correctAnswer) ||
-    typeof prompt !== "string"
-  ) {
+  if (typeof prompt !== "string") {
     throw new AttemptCommandError("invalid_question_payload");
   }
 
   const tags = publicPayload.tags;
-  return {
+  const base = {
     id: typeof publicPayload.id === "string" ? publicPayload.id : context.receiptId,
-    type: "multiple-choice",
     category: typeof publicPayload.category === "string" ? publicPayload.category : "",
     tags:
       tags && typeof tags === "object" && !Array.isArray(tags)
         ? (tags as Question["tags"])
-        : {
-            domains: [],
-            topics: [],
-            cognitiveSkills: [],
-            formatSkills: [],
-            lifeSkills: [],
-          },
+        : { domains: [], topics: [], cognitiveSkills: [], formatSkills: [], lifeSkills: [] },
     question: prompt,
-    options,
-    correctAnswer,
     timeLimit: context.timeLimitMs / 1000,
     points: context.itemPoints,
+  } as const;
+  if (context.questionType === "multiple-choice") {
+    const options = publicPayload.options;
+    const correctAnswer = solutionPayload.correctAnswer;
+    if (
+      !Array.isArray(options) ||
+      !options.every((option) => typeof option === "string") ||
+      typeof correctAnswer !== "string" ||
+      !options.includes(correctAnswer)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "multiple-choice",
+      options,
+      correctAnswer,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      ...(publicPayload.media
+        ? { media: publicPayload.media as MultipleChoiceQuestion["media"] }
+        : {}),
+      ...(publicPayload.promptVisual
+        ? { promptVisual: publicPayload.promptVisual as MultipleChoiceQuestion["promptVisual"] }
+        : {}),
+    };
+  }
+  if (context.questionType !== "mini-wordle") throw new AttemptCommandError("unsupported_question");
+  const wordLength = publicPayload.wordLength;
+  const maxAttempts = publicPayload.maxAttempts;
+  const correctAnswer = solutionPayload.correctAnswer;
+  const additionalGuesses = solutionPayload.additionalGuesses;
+  if (
+    !isMiniWordleWordLength(wordLength) ||
+    !isMiniWordleMaxAttempts(maxAttempts) ||
+    typeof correctAnswer !== "string" ||
+    !isValidMiniWordleWord(correctAnswer, wordLength) ||
+    !Array.isArray(additionalGuesses) ||
+    !additionalGuesses.every((guess) => typeof guess === "string" && isValidMiniWordleWord(guess, wordLength))
+  ) {
+    throw new AttemptCommandError("invalid_question_payload");
+  }
+  return {
+    ...base,
+    type: "mini-wordle",
+    hint: typeof publicPayload.hint === "string" ? publicPayload.hint : undefined,
+    wordLength,
+    maxAttempts,
+    correctAnswer: normalizeMiniWordleWord(correctAnswer),
+    additionalGuesses: additionalGuesses.map(normalizeMiniWordleWord),
     explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
-    ...(publicPayload.media
-      ? { media: publicPayload.media as MultipleChoiceQuestion["media"] }
-      : {}),
-    ...(publicPayload.promptVisual
-      ? { promptVisual: publicPayload.promptVisual as MultipleChoiceQuestion["promptVisual"] }
-      : {}),
   };
 }
 
@@ -237,6 +275,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "start"
   | "prepare"
   | "receiveAnswer"
+  | "submitMiniWordleGuess"
   | "readEvaluationContext"
   | "recordEvaluation"
   | "complete"
@@ -256,6 +295,28 @@ export class SupabaseAttemptCommands implements Pick<
 
   receiveAnswer(input: SubmitAnswerInput) {
     return callCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
+  }
+
+  async submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
+    const accepted = await callCommand<SubmitMiniWordleGuessResult>(
+      this.identity,
+      "submit_mini_wordle_guess",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+    };
   }
 
   readEvaluationContext(receiptId: AnswerReceiptId, sessionToken: string) {
@@ -306,7 +367,7 @@ export class SupabaseAttemptCommands implements Pick<
         timedOut: context.timedOut,
       },
       question: asQuestion(context),
-      answer: typeof context.answer === "string" ? context.answer : null,
+      answer: (context.answer as AnswerValue | null) ?? null,
     });
     const evaluated = await this.recordEvaluation({
       attemptId: input.receive.attemptId,
@@ -332,7 +393,7 @@ export class SupabaseAttemptCommands implements Pick<
     const result = evaluateReceipt({
       receipt: { timeUsedMs: context.timeUsedMs, timedOut: context.timedOut },
       question: asQuestion(context),
-      answer: typeof context.answer === "string" ? context.answer : null,
+      answer: (context.answer as AnswerValue | null) ?? null,
     });
     return this.recordEvaluation({
       attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],
