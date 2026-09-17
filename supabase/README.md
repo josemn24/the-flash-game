@@ -98,6 +98,13 @@ del diccionario general con `additionalGuesses` de la pregunta, registra cada pa
 calcula feedback con letras repetidas, rechaza duplicados sin consumir intento y crea una única
 recepción final desde los eventos persistidos.
 
+E02 añade `schemas/93_logic_code.sql` y su migración reproducible. El portal acepta
+`multiple-choice` y `logic-code` en el mismo Flash; los códigos enviados se registran como eventos
+privados y `private.submit_logic_code_attempt(jsonb)` valida longitud, formato, plazo, sesión,
+versión e idempotencia. Los duplicados se rechazan sin penalización, el progreso solo devuelve
+códigos ya enviados y contador de incorrectos, y el evaluador recibe la secuencia completa desde
+`read_evaluation_context` al acertar.
+
 Para ejecutar el piloto competitivo local:
 
 ```bash
@@ -110,8 +117,8 @@ npm run test:e2e -- e2e/s03-flash.spec.ts
 La verificación completa de S22 se ejecuta con `npm run verify:pilot`. Arranca un stack local,
 aplica el esquema desde una base limpia, ejecuta pgTAP y todos los escenarios locales del portal,
 Flash, recuperación, histórico, editorial y calendario. No requiere ni acepta un proyecto remoto.
-El escenario `e01` cubre el portal mixto, la lectura pública sin solución, Auth local, recarga y
-reintento idempotente.
+Los escenarios `e01` y `e02` cubren el portal mixto, la lectura pública sin solución, Auth local,
+recarga, duplicados, ceros iniciales y reintento idempotente.
 
 S07 añade las lecturas Flash `public.get_flash_history(text, uuid)` y
 `public.get_flash_member_review(text, uuid, uuid)` desde `schemas/85_flash_history_reads.sql`.

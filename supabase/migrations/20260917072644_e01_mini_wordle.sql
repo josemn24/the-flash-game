@@ -655,8 +655,10 @@ begin
           'payloadSchemaVersion', q.payload_schema_version,
           'publicPayload', case when instant < unit.deadline_at then q.public_payload else null end,
           'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
-          'progress', case when q.type = 'mini-wordle'
-            then private.mini_wordle_progress(a.id, item.id) else null end)
+          'progress', case
+            when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
+            when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
+            else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
       when 'receive', 'pass' then
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
@@ -669,6 +671,12 @@ begin
           where q.id = item.question_version_id and q.type = 'mini-wordle'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'mini_wordle_requires_guess_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'logic-code'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'logic_code_requires_attempt_command' using errcode = '22023';
         end if;
         select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
@@ -1715,6 +1723,7 @@ CREATE OR REPLACE FUNCTION public.get_flash_member_review (
     question_version_id    uuid,
     question_type          text,
     payload_schema_version integer,
+    time_limit_ms          integer,
     public_payload         jsonb,
     solution_payload       jsonb,
     answer                 jsonb,
@@ -1806,7 +1815,7 @@ CREATE OR REPLACE FUNCTION public.get_flash_member_review (
     a.challenge_max_score, target_player_id, p.display_name, p.avatar_path,
     a.attempt_id, a.attempt_status, a.attempt_score, a.attempt_started_at,
     a.attempt_completed_at, a.attempt_lock_version, i.id, i.position,
-    q.id, q.type, q.payload_schema_version, q.public_payload, qs.solution_payload,
+    q.id, q.type, q.payload_schema_version, q.time_limit_ms, q.public_payload, qs.solution_payload,
     aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
     aa.submitted_at, aa.time_used_ms
   from authorized_attempt a

@@ -25,9 +25,23 @@ export type FlashEditorialMiniWordlePublicPayload = {
   readonly maxAttempts: number;
 };
 
+export type FlashEditorialLogicCodeClue = {
+  readonly code: string;
+  readonly hint: string;
+};
+
+export type FlashEditorialLogicCodePublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly clues: readonly FlashEditorialLogicCodeClue[];
+  readonly codeLength: number;
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
-  | FlashEditorialMiniWordlePublicPayload;
+  | FlashEditorialMiniWordlePublicPayload
+  | FlashEditorialLogicCodePublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -42,9 +56,15 @@ export type FlashEditorialMiniWordleSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialLogicCodeSolutionPayload = {
+  readonly correctAnswer: string;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
-  | FlashEditorialMiniWordleSolutionPayload;
+  | FlashEditorialMiniWordleSolutionPayload
+  | FlashEditorialLogicCodeSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -66,9 +86,20 @@ export type FlashEditorialMiniWordleQuestion = {
   readonly solutionPayload: FlashEditorialMiniWordleSolutionPayload;
 };
 
+export type FlashEditorialLogicCodeQuestion = {
+  readonly slug: string;
+  readonly type: "logic-code";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: 50;
+  readonly publicPayload: FlashEditorialLogicCodePublicPayload;
+  readonly solutionPayload: FlashEditorialLogicCodeSolutionPayload;
+};
+
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
-  | FlashEditorialMiniWordleQuestion;
+  | FlashEditorialMiniWordleQuestion
+  | FlashEditorialLogicCodeQuestion;
 
 export type FlashEditorialDocument = {
   readonly challenge: {

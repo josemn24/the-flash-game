@@ -1,8 +1,9 @@
-import type { FlashChallenge, MiniWordleQuestion, QuestionOfType } from "@/types/game";
+import type { FlashChallenge, LogicCodeQuestion, MiniWordleQuestion, QuestionOfType } from "@/types/game";
 import type {
   ServerFlashChallenge,
   ServerFlashQuestion,
   ServerFlashTerminalReview,
+  ServerLogicCodeQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 
@@ -36,7 +37,7 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType: "multiple-choice" | "mini-wordle",
+  questionType: "multiple-choice" | "mini-wordle" | "logic-code",
   progress?: unknown,
 ): ServerFlashQuestion;
 export function questionFromPayload(
@@ -44,7 +45,7 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType?: "multiple-choice" | "mini-wordle",
+  questionType?: "multiple-choice" | "mini-wordle" | "logic-code",
   progress?: unknown,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
   const value = payloadRecord(payload);
@@ -75,6 +76,49 @@ export function questionFromPayload(
       throw new ServerFlashQuestionError();
     }
     return { ...base, type: "multiple-choice", options: value.options };
+  }
+  if (questionType === "logic-code") {
+    const clues = value.clues;
+    const codeLength = value.codeLength;
+    if (
+      !Array.isArray(clues) ||
+      clues.length === 0 ||
+      typeof codeLength !== "number" ||
+      !Number.isSafeInteger(codeLength) ||
+      codeLength < 1 ||
+      codeLength > 12 ||
+      !clues.every((clue) => {
+        if (!clue || typeof clue !== "object" || Array.isArray(clue)) return false;
+        const item = clue as Record<string, unknown>;
+        return (
+          typeof item.code === "string" &&
+          typeof item.hint === "string" &&
+          item.code.length === codeLength
+        );
+      })
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const rawProgress = progress && typeof progress === "object" && !Array.isArray(progress)
+      ? progress as Record<string, unknown>
+      : {};
+    const submittedCodes = Array.isArray(rawProgress.submittedCodes)
+      ? rawProgress.submittedCodes.filter((code): code is string => typeof code === "string")
+      : [];
+    return {
+      ...base,
+      type: "logic-code",
+      clues: clues as ServerLogicCodeQuestion["clues"],
+      codeLength,
+      progress: {
+        kind: "logic-code",
+        submittedCodes,
+        incorrectAttempts:
+          typeof rawProgress.incorrectAttempts === "number"
+            ? rawProgress.incorrectAttempts
+            : submittedCodes.length,
+      },
+    };
   }
   const wordLength = value.wordLength;
   const maxAttempts = value.maxAttempts;
@@ -109,7 +153,7 @@ export function questionFromPayload(
 function questionWithSolution(
   question: ServerFlashQuestion,
   row?: ServerFlashTerminalReview,
-): QuestionOfType<"multiple-choice"> | MiniWordleQuestion {
+): QuestionOfType<"multiple-choice"> | MiniWordleQuestion | LogicCodeQuestion {
   const solution = row?.solutionPayload && typeof row.solutionPayload === "object"
     ? row.solutionPayload as Record<string, unknown>
     : {};
@@ -128,6 +172,22 @@ function questionWithSolution(
       additionalGuesses: Array.isArray(solution.additionalGuesses)
         ? solution.additionalGuesses.filter((guess): guess is string => typeof guess === "string")
         : [],
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "logic-code") {
+    if (typeof solution.correctAnswer !== "string") throw new ServerFlashQuestionError();
+    return {
+      id: question.id,
+      type: "logic-code",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      clues: [...question.clues],
+      codeLength: question.codeLength,
+      correctAnswer: solution.correctAnswer,
       timeLimit: question.timeLimit,
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",

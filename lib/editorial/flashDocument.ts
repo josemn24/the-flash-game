@@ -2,6 +2,7 @@ import type {
   FlashEditorialDocument,
   FlashEditorialMiniWordleQuestion,
   FlashEditorialMultipleChoiceQuestion,
+  FlashEditorialLogicCodeQuestion,
   FlashEditorialQuestion,
   EditorialJsonObject,
   EditorialJsonValue,
@@ -56,9 +57,19 @@ const miniWordlePublicPayloadKeys = [
   "wordLength",
   "maxAttempts",
 ];
+const logicCodePublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "clues",
+  "codeLength",
+];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionaryId", "explanation"];
+const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
 const MINI_WORDLE_MAX_ADDITIONAL_GUESSES = 1000;
+const LOGIC_CODE_MAX_CLUES = 20;
+const LOGIC_CODE_MAX_LENGTH = 12;
 
 export class FlashEditorialValidationError extends Error {
   readonly code = "invalid_content" as const;
@@ -250,6 +261,60 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: 50,
       publicPayload: publicPayload as FlashEditorialMiniWordleQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMiniWordleQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "logic-code") {
+    if (
+      !hasOnlyKeys(publicPayload, logicCodePublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, logicCodeSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
+    }
+    const clues = publicPayload.clues;
+    const codeLength = publicPayload.codeLength;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const validCodeLength =
+      typeof codeLength === "number" &&
+      Number.isSafeInteger(codeLength) &&
+      codeLength >= 1 &&
+      codeLength <= LOGIC_CODE_MAX_LENGTH;
+    const validClues =
+      Array.isArray(clues) &&
+      clues.length > 0 &&
+      clues.length <= LOGIC_CODE_MAX_CLUES &&
+      clues.every((clue) => {
+        if (!isRecord(clue) || !hasOnlyKeys(clue, ["code", "hint"])) return false;
+        return (
+          typeof clue.code === "string" &&
+          typeof clue.hint === "string" &&
+          nonEmptyString(clue.code, LOGIC_CODE_MAX_LENGTH) &&
+          /^[0-9]+$/.test(clue.code) &&
+          nonEmptyString(clue.hint, 500)
+        );
+      });
+    if (
+      !validCodeLength ||
+      !validClues ||
+      !Array.isArray(clues) ||
+      !clues.every(
+        (clue) => isRecord(clue) && typeof clue.code === "string" && clue.code.length === codeLength,
+      ) ||
+      new Set(clues.filter(isRecord).map((clue) => clue.code)).size !== clues.length ||
+      typeof correctAnswer !== "string" ||
+      correctAnswer.length !== codeLength ||
+      !/^[0-9]+$/.test(correctAnswer)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato logic-code.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "logic-code",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: 50,
+      publicPayload: publicPayload as FlashEditorialLogicCodeQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialLogicCodeQuestion["solutionPayload"],
     };
   }
 

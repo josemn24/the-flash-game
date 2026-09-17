@@ -19,9 +19,16 @@ import type {
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
+  SubmitLogicCodeAttemptResult,
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
-import type { AnswerValue, MiniWordleQuestion, MultipleChoiceQuestion, Question } from "@/types/game";
+import type {
+  AnswerValue,
+  LogicCodeQuestion,
+  MiniWordleQuestion,
+  MultipleChoiceQuestion,
+  Question,
+} from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,
@@ -123,6 +130,9 @@ function commandCode(error: unknown) {
     "invalid_mini_wordle_guess",
     "duplicate_mini_wordle_guess",
     "mini_wordle_requires_guess_command",
+    "invalid_logic_code",
+    "duplicate_logic_code",
+    "logic_code_requires_attempt_command",
     "unsupported_question",
     "invalid_question_payload",
   ];
@@ -165,9 +175,11 @@ async function callCommand<T>(
   });
 }
 
-function asQuestion(context: EvaluationContext): MultipleChoiceQuestion | MiniWordleQuestion {
+function asQuestion(
+  context: EvaluationContext,
+): MultipleChoiceQuestion | MiniWordleQuestion | LogicCodeQuestion {
   if (
-    !["multiple-choice", "mini-wordle"].includes(context.questionType) ||
+    !["multiple-choice", "mini-wordle", "logic-code"].includes(context.questionType) ||
     context.payloadSchemaVersion !== 1 ||
     context.itemConfigSchemaVersion !== 1 ||
     context.modeConfigSchemaVersion !== 1
@@ -243,6 +255,43 @@ function asQuestion(context: EvaluationContext): MultipleChoiceQuestion | MiniWo
         : {}),
     };
   }
+  if (context.questionType === "logic-code") {
+    const clues = publicPayload.clues;
+    const codeLength = publicPayload.codeLength;
+    const correctAnswer = solutionPayload.correctAnswer;
+    if (
+      typeof codeLength !== "number" ||
+      !Number.isSafeInteger(codeLength) ||
+      codeLength < 1 ||
+      codeLength > 12 ||
+      !Array.isArray(clues) ||
+      clues.length === 0 ||
+      clues.length > 20 ||
+      !clues.every((clue) => {
+        if (!clue || typeof clue !== "object" || Array.isArray(clue)) return false;
+        const value = clue as Record<string, unknown>;
+        return (
+          typeof value.code === "string" &&
+          typeof value.hint === "string" &&
+          value.code.length === codeLength &&
+          /^[0-9]+$/.test(value.code)
+        );
+      }) ||
+      typeof correctAnswer !== "string" ||
+      correctAnswer.length !== codeLength ||
+      !/^[0-9]+$/.test(correctAnswer)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "logic-code",
+      clues: clues as LogicCodeQuestion["clues"],
+      codeLength,
+      correctAnswer,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
   if (context.questionType !== "mini-wordle") throw new AttemptCommandError("unsupported_question");
   const wordLength = publicPayload.wordLength;
   const maxAttempts = publicPayload.maxAttempts;
@@ -276,6 +325,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "prepare"
   | "receiveAnswer"
   | "submitMiniWordleGuess"
+  | "submitLogicCodeAttempt"
   | "readEvaluationContext"
   | "recordEvaluation"
   | "complete"
@@ -301,6 +351,28 @@ export class SupabaseAttemptCommands implements Pick<
     const accepted = await callCommand<SubmitMiniWordleGuessResult>(
       this.identity,
       "submit_mini_wordle_guess",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+    };
+  }
+
+  async submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
+    const accepted = await callCommand<SubmitLogicCodeAttemptResult>(
+      this.identity,
+      "submit_logic_code_attempt",
       input,
     );
     if (!accepted.terminal || !accepted.receiptId) return accepted;

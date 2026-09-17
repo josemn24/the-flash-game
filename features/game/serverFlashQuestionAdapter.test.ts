@@ -96,4 +96,34 @@ describe("server flash question adapter", () => {
     });
     expect(question).not.toHaveProperty("correctAnswer");
   });
+
+  it("maps Logic-code clues and safe progress without accepting a solution field", () => {
+    const question = questionFromPayload(
+      "item-code",
+      {
+        category: "Lógica",
+        question: "Descubre el código",
+        codeLength: 4,
+        clues: [
+          { code: "1203", hint: "El segundo dígito es el doble del primero." },
+          { code: "0312", hint: "El último dígito coincide con el tercero." },
+        ],
+      },
+      30_000,
+      50,
+      "logic-code",
+      {
+        kind: "logic-code",
+        submittedCodes: ["0000", "0420"],
+        incorrectAttempts: 1,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "logic-code",
+      codeLength: 4,
+      progress: { submittedCodes: ["0000", "0420"], incorrectAttempts: 1 },
+    });
+    expect(question).not.toHaveProperty("correctAnswer");
+  });
 });

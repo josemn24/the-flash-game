@@ -78,6 +78,23 @@ export type SubmitMiniWordleGuessResult = AttemptCommandResult & {
   readonly points?: number;
   readonly timeUsedMs?: DurationMs;
 };
+export type SubmitLogicCodeAttemptInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly code: string;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitLogicCodeAttemptResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly sequence: number;
+  readonly code: string;
+  readonly correct: boolean;
+  readonly incorrectAttempts: number;
+  readonly terminal: boolean;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
 export type SubmitAnswerResult = AttemptCommandResult & {
   readonly receiptId: AnswerReceiptId;
   readonly status: AnswerStatus;

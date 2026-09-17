@@ -178,7 +178,7 @@ export type ServerFlashChallenge = ChallengeBase & {
   slots: readonly {
     id: string;
     position: number;
-    questionType: "multiple-choice" | "mini-wordle";
+    questionType: "multiple-choice" | "mini-wordle" | "logic-code";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -216,7 +216,23 @@ export type ServerMiniWordleQuestion = ServerFlashQuestionBase & {
   readonly progress: ServerMiniWordleProgress;
 };
 
-export type ServerFlashQuestion = ServerMultipleChoiceQuestion | ServerMiniWordleQuestion;
+export type ServerLogicCodeProgress = {
+  readonly kind: "logic-code";
+  readonly submittedCodes: readonly string[];
+  readonly incorrectAttempts: number;
+};
+
+export type ServerLogicCodeQuestion = ServerFlashQuestionBase & {
+  readonly type: "logic-code";
+  readonly clues: readonly { readonly code: string; readonly hint: string }[];
+  readonly codeLength: number;
+  readonly progress: ServerLogicCodeProgress;
+};
+
+export type ServerFlashQuestion =
+  | ServerMultipleChoiceQuestion
+  | ServerMiniWordleQuestion
+  | ServerLogicCodeQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

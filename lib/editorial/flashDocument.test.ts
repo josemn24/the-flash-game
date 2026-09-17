@@ -59,17 +59,19 @@ describe("Flash editorial document", () => {
   });
 
   it("rejects invalid JSON and unknown document fields", () => {
-    expect(() => parseFlashEditorialJson("{"))
-      .toThrow("El documento no contiene JSON válido");
-    expect(() => parseFlashEditorialDocument({ ...documentFixture(), extra: true }))
-      .toThrow(FlashEditorialValidationError);
+    expect(() => parseFlashEditorialJson("{")).toThrow("El documento no contiene JSON válido");
+    expect(() => parseFlashEditorialDocument({ ...documentFixture(), extra: true })).toThrow(
+      FlashEditorialValidationError,
+    );
   });
 
   it("rejects unsupported formats, point allocations, and missing solutions", () => {
-    expect(() => parseFlashEditorialDocument({
-      ...documentFixture(),
-      challenge: { ...documentFixture().challenge, mode: "alphabet" },
-    })).toThrow("challenge no cumple");
+    expect(() =>
+      parseFlashEditorialDocument({
+        ...documentFixture(),
+        challenge: { ...documentFixture().challenge, mode: "alphabet" },
+      }),
+    ).toThrow("challenge no cumple");
     const wrongPoints = documentFixture();
     wrongPoints.questions[1].points = 40;
     expect(() => parseFlashEditorialDocument(wrongPoints)).toThrow("questions[1]");
@@ -159,5 +161,60 @@ describe("Flash editorial document", () => {
 
     (question.publicPayload as Record<string, unknown>).correctAnswer = "LIBRO";
     expect(() => parseFlashEditorialDocument(document)).toThrow("no puede contener soluciones");
+  });
+
+  it("accepts a mixed Flash with a Logic-code question and preserves leading zeroes", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "logic-code-2",
+      type: "logic-code",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        category: "Lógica",
+        tags: {},
+        question: "Descubre el código",
+        codeLength: 4,
+        clues: [
+          { code: "1203", hint: "El segundo dígito es el doble del primero." },
+          { code: "0312", hint: "El último dígito coincide con el tercero." },
+        ],
+      },
+      solutionPayload: {
+        correctAnswer: "0420",
+        explanation: "La secuencia satisface ambas pistas.",
+      },
+    };
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.questions[1].type).toBe("logic-code");
+    if (parsed.questions[1].type !== "logic-code") throw new Error("Expected Logic-code");
+    expect(parsed.questions[1].publicPayload.codeLength).toBe(4);
+    expect(parsed.questions[1].solutionPayload.correctAnswer).toBe("0420");
+  });
+
+  it("rejects malformed Logic-code clues and solutions", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "logic-code-2",
+      type: "logic-code",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        question: "Descubre el código",
+        codeLength: 4,
+        clues: [{ code: "012", hint: "Código demasiado corto" }],
+      },
+      solutionPayload: { correctAnswer: "0000" },
+    };
+
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato logic-code");
+    (document.questions[1].publicPayload as Record<string, unknown>).clues = [
+      { code: "0123", hint: "Pista" },
+      { code: "0123", hint: "Duplicada" },
+    ];
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato logic-code");
   });
 });

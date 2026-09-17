@@ -33,7 +33,7 @@ export type FlashReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -45,7 +45,7 @@ export type FlashResultRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -78,7 +78,9 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     typeof value.room_slug === "string" &&
     typeof value.room_title === "string" &&
     typeof value.publication_id === "string" &&
-    (value.publication_status === "scheduled" || value.publication_status === "open" || value.publication_status === "closed") &&
+    (value.publication_status === "scheduled" ||
+      value.publication_status === "open" ||
+      value.publication_status === "closed") &&
     typeof value.challenge_id === "string" &&
     typeof value.challenge_version_id === "string" &&
     typeof value.challenge_title === "string" &&
@@ -95,7 +97,9 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     typeof value.challenge_item_id === "string" &&
     typeof value.item_position === "number" &&
     typeof value.question_version_id === "string" &&
-    (value.question_type === "multiple-choice" || value.question_type === "mini-wordle") &&
+    (value.question_type === "multiple-choice" ||
+      value.question_type === "mini-wordle" ||
+      value.question_type === "logic-code") &&
     value.payload_schema_version === 1 &&
     typeof value.time_limit_ms === "number" &&
     value.time_limit_ms > 0 &&
@@ -110,7 +114,9 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
     typeof value.scheduled_challenge_id === "string" &&
     typeof value.challenge_item_id === "string" &&
     typeof value.item_position === "number" &&
-    (value.question_type === "multiple-choice" || value.question_type === "mini-wordle") &&
+    (value.question_type === "multiple-choice" ||
+      value.question_type === "mini-wordle" ||
+      value.question_type === "logic-code") &&
     value.payload_schema_version === 1 &&
     isRecord(value.public_payload) &&
     isRecord(value.solution_payload) &&

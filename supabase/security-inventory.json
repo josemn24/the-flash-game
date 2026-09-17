@@ -73,6 +73,9 @@
         "table": ["SELECT"]
       }
     },
+    "private.logic_code_attempt_events": {
+      "kind": "r"
+    },
     "private.platform_role_assignments": {
       "kind": "r",
       "service_role": {
@@ -373,6 +376,11 @@
       "securityDefiner": false,
       "executeRoles": []
     },
+    "private.logic_code_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.next_attempt_item": {
       "arguments": "target_attempt uuid",
       "securityDefiner": false,
@@ -434,6 +442,11 @@
       "executeRoles": ["service_role"]
     },
     "private.submit_mini_wordle_guess": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.submit_logic_code_attempt": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

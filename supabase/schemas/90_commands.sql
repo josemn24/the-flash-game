@@ -1,6 +1,7 @@
 -- Internal command engine: only the named wrappers at the end receive EXECUTE.
 -- The connection adapter MUST verify Auth and set request.jwt.claims transaction-locally.
 -- A service JWT by itself is not a human identity. Never copy browser claims without verification.
+set local check_function_bodies = off;
 create function private.command_actor() returns uuid
 language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.current_player_id();
@@ -239,8 +240,10 @@ begin
           'payloadSchemaVersion', q.payload_schema_version,
           'publicPayload', case when instant < unit.deadline_at then q.public_payload else null end,
           'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
-          'progress', case when q.type = 'mini-wordle'
-            then private.mini_wordle_progress(a.id, item.id) else null end)
+          'progress', case
+            when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
+            when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
+            else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
       when 'receive', 'pass' then
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
@@ -253,6 +256,12 @@ begin
           where q.id = item.question_version_id and q.type = 'mini-wordle'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'mini_wordle_requires_guess_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'logic-code'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'logic_code_requires_attempt_command' using errcode = '22023';
         end if;
         select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
@@ -477,6 +486,16 @@ begin
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
     'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
+    'submittedCodes', case when q.type = 'logic-code' then coalesce((
+      select jsonb_agg(e.code order by e.sequence)
+      from private.logic_code_attempt_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
+    ), '[]'::jsonb) else null end,
+    'incorrectAttempts', case when q.type = 'logic-code' then coalesce((
+      select count(*)::integer
+      from private.logic_code_attempt_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
     'itemConfig', i.mode_config, 'mode', cv.mode,
@@ -546,7 +565,7 @@ begin
       select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
       select * into item from private.challenge_items where id = segment.challenge_item_id;
       select * into question from private.question_versions where id = item.question_version_id;
-      if question.type = 'mini-wordle' and instant < unit.deadline_at then
+      if question.type in ('mini-wordle', 'logic-code') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

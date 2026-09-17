@@ -1,6 +1,6 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-17. **24 tablas**, una vista
+Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-17. **25 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
@@ -14,7 +14,9 @@ Las capacidades restantes siguen usando mocks o están pendientes. S10 añade pr
 borradores y activación explícita de temporadas; S11 añade el editor Flash mínimo de dos preguntas y
 publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. E01
 añade Mini-Wordle competitivo con eventos intermedios, diccionario privado versionado y palabras
-adicionales específicas por pregunta sin modificar el diccionario global.
+adicionales específicas por pregunta sin modificar el diccionario global. E02 añade Logic-code
+mixto con intentos privados, duplicados rechazados sin penalización, progreso seguro y evaluación
+autoritativa al acertar.
 Flash mixtos. Las
 migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
@@ -111,6 +113,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [90_commands.sql](90_commands.sql)                       | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                           |
 | [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)     | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                         |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql) | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior. |
+| [93_logic_code.sql](93_logic_code.sql) | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -208,6 +211,7 @@ su asignación en DB. `service_role` elude RLS, por lo que la restricción de es
 | `private.answer_receipts`            | —                                                                              | —            |
 | `private.mini_wordle_dictionary_words` | —                                                                            | S            |
 | `private.mini_wordle_guess_events`    | —                                                                            | S            |
+| `private.logic_code_attempt_events`   | —                                                                            | —            |
 
 Las lecturas internas sirven al ensamblado del evaluador, las comprobaciones de contexto y las
 proyecciones del servidor; no se trasladan al navegador. Las nuevas tablas solo se leen por comandos.

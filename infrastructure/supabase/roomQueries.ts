@@ -186,8 +186,9 @@ type FlashMemberReviewReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code";
   payload_schema_version: number;
+  time_limit_ms?: number;
   public_payload: unknown;
   solution_payload: unknown;
   answer: unknown;
@@ -417,8 +418,12 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     typeof row.item_position === "number" &&
     Number.isInteger(row.item_position) &&
     typeof row.question_version_id === "string" &&
-    (row.question_type === "multiple-choice" || row.question_type === "mini-wordle") &&
+    (row.question_type === "multiple-choice" ||
+      row.question_type === "mini-wordle" ||
+      row.question_type === "logic-code") &&
     row.payload_schema_version === 1 &&
+    (row.time_limit_ms === undefined ||
+      (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
     isRecord(row.public_payload) &&
     isRecord(row.solution_payload) &&
     (row.answer === null || typeof row.answer === "string" || isRecord(row.answer)) &&
@@ -787,11 +792,14 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
   const solutionPayload = row.solution_payload as Record<string, unknown>;
   if (row.question_type === "mini-wordle") {
     const publicData = isRecord(publicPayload.payload) ? publicPayload.payload : publicPayload;
-    const solution = isRecord(solutionPayload.solution) ? solutionPayload.solution : solutionPayload;
+    const solution = isRecord(solutionPayload.solution)
+      ? solutionPayload.solution
+      : solutionPayload;
     const solutionData = isRecord(solution.payload) ? solution.payload : solution;
     const tags = requiredRecordField(publicPayload, "tags", "public_payload");
-    const prompt = typeof publicPayload.prompt === "string" ? publicPayload.prompt : publicData.question;
-    const timeLimitMs = publicPayload.timeLimitMs ?? publicData.timeLimitMs;
+    const prompt =
+      typeof publicPayload.prompt === "string" ? publicPayload.prompt : publicData.question;
+    const timeLimitMs = row.time_limit_ms ?? publicPayload.timeLimitMs ?? publicData.timeLimitMs;
     const wordLength = publicData.wordLength;
     const maxAttempts = publicData.maxAttempts;
     const correctAnswer = solutionData.correctAnswer;
@@ -821,6 +829,49 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       points: row.item_points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
       type: "mini-wordle",
+    };
+  }
+  if (row.question_type === "logic-code") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const clues = publicPayload.clues;
+    const codeLength = publicPayload.codeLength;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const prompt = publicPayload.question;
+    const explanation = solutionPayload.explanation;
+    if (
+      typeof prompt !== "string" ||
+      typeof codeLength !== "number" ||
+      !Number.isInteger(codeLength) ||
+      codeLength < 1 ||
+      codeLength > 12 ||
+      !Array.isArray(clues) ||
+      !clues.every(
+        (clue) =>
+          isRecord(clue) &&
+          typeof clue.code === "string" &&
+          typeof clue.hint === "string" &&
+          clue.code.length === codeLength,
+      ) ||
+      typeof correctAnswer !== "string" ||
+      correctAnswer.length !== codeLength ||
+      typeof explanation !== "string"
+    ) {
+      throw new Error(`Invalid historical Logic-code payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      clues: clues as { code: string; hint: string }[],
+      codeLength,
+      correctAnswer,
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation,
+      type: "logic-code",
     };
   }
   const tags = requiredRecordField(publicPayload, "tags", "public_payload");

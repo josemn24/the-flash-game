@@ -589,6 +589,24 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   generales desde `public/dictionaries`; las palabras temáticas viajan únicamente en el payload
   privado del fixture.
 
+### E02 — Logic-code competitivo y persistido ✅ Implementada localmente
+
+- **Objetivo / CU:** segundo formato con eventos intermedios autoritativos; cada código numérico
+  enviado se persiste y el cierre se produce únicamente al acertar o al resolver el timeout.
+- **Contrato:** payload público con pregunta, entre 1 y 20 pistas `{ code, hint }` y `codeLength`
+  entre 1 y 12; la solución y explicación permanecen privadas. Los ceros iniciales forman parte
+  del valor y los códigos duplicados se rechazan sin penalización.
+- **Persistencia:** `private.logic_code_attempt_events` y
+  `private.submit_logic_code_attempt(jsonb)` con lock de intento, plazo, secuencia, idempotencia,
+  unicidad por código y recepción terminal. `read_evaluation_context` reconstruye
+  `submittedCodes` e `incorrectAttempts` desde los eventos, nunca desde el navegador.
+- **Recuperación/UI:** `prepare` y recuperación devuelven solo códigos ya enviados y contador de
+  incorrectos. La UI usa inputs numéricos por dígito, conserva el progreso tras recarga, informa
+  únicamente código incorrecto/contador y reutiliza la misma clave tras una respuesta perdida.
+- **Tests:** pgTAP para payload seguro, formato inválido, duplicados sin penalización, idempotencia,
+  ceros iniciales y recepción única; integración editorial/lectura y E2E con Auth real, recarga,
+  spectator y reintento idempotente.
+
 ### S13 — Subir y sustituir el avatar global
 
 - **Objetivo / CU:** completar CU-02 con archivo persistido.
@@ -688,7 +706,7 @@ Ficha común, obligatoria para **cada** E*:
 | Slice | Formato             | Backend/persistencia y criterio específico adicional                                                                                                                                                                                                                          |
 | ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | E01   | `mini-wordle`       | **Implementado localmente.** Primer patrón de eventos: registrar cada palabra válida y devolver colores sin solución; cada palabra procede del diccionario general o de `additionalGuesses` privados de la pregunta, con solución temática implícita permitida. Longitud 4–5 y máximo de intentos verificados en servidor. No aceptar una historia final fabricada ni consumir intentos duplicados. |
-| E02   | `logic-code`        | Registrar cada código y su penalización; evaluar con secreto privado, conservar intentos tras recarga y cerrar al acertar/agotar tiempo según contrato.                                                                                                                       |
+| E02   | `logic-code`        | **Implementado localmente.** Registrar cada código y su penalización; validar secreto privado, formato, plazo, secuencia e idempotencia; rechazar duplicados sin penalización, conservar intentos tras recarga y cerrar al acertar con evaluación server-side. |
 | E03   | `progressive-clues` | Entregar pistas de una en una y registrar qué se concedió; no enviar el array completo ni confiar en `revealedClues`. Ajustar penalización con puntos del item.                                                                                                               |
 | E04   | `matching`          | Comprobar cada asociación que produce feedback/penalización; conservar fallos aceptados y parejas correctas sin `correctMatchId` público.                                                                                                                                     |
 | E05   | `queens`            | Validar colocación/conflicto y derivar penalizaciones de eventos, no de `incorrectAttempts`; conservar tablero y piezas precolocadas.                                                                                                                                         |

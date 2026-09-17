@@ -87,6 +87,15 @@ Eventos Mini-Wordle del Flash competitivo
 → `private.mini_wordle_guess_events` + `private.answer_receipts`
 → evaluador confiable desde la respuesta final construida por PostgreSQL
 
+Eventos Logic-code del Flash competitivo
+→ `features/game/useServerFlashSession.ts`
+→ `POST /api/competitive/attempts/[attemptId]/logic-code/attempt`
+→ `server/competitive/attempt-api.ts`
+→ `infrastructure/supabase/attemptCommands.ts`
+→ `private.submit_logic_code_attempt(jsonb)`
+→ `private.logic_code_attempt_events` + `private.answer_receipts`
+→ evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
+
 Las consultas aún no migradas conservan este flujo:
 
 Server Components

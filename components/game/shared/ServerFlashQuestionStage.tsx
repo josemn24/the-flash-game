@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { AnswerOption } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
+import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -26,6 +27,7 @@ export function ServerFlashQuestionStage({
   onRetrySubmission,
   onSubmit,
   onMiniWordleGuess,
+  onLogicCodeAttempt,
   onTimeUp,
 }: {
   readonly question: ServerFlashQuestion;
@@ -39,6 +41,7 @@ export function ServerFlashQuestionStage({
   readonly onRetrySubmission?: () => void;
   readonly onSubmit: (answer: AnswerValue) => void;
   readonly onMiniWordleGuess: (guess: string) => void;
+  readonly onLogicCodeAttempt: (code: string) => void;
   readonly onTimeUp: () => void;
 }) {
   const titleId = useId();
@@ -74,6 +77,18 @@ export function ServerFlashQuestionStage({
             submissionError={submissionError}
             onRetry={onRetrySubmission}
             onSubmit={onMiniWordleGuess}
+          />
+        ) : question.type === "logic-code" ? (
+          <ServerLogicCodeQuestion
+            clues={question.clues}
+            codeLength={question.codeLength}
+            progress={question.progress}
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onSubmit={onLogicCodeAttempt}
           />
         ) : (
           <>

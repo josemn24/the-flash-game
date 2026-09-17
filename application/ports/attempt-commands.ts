@@ -19,6 +19,8 @@ import type {
   SubmitAnswerResult,
   SubmitMiniWordleGuessInput,
   SubmitMiniWordleGuessResult,
+  SubmitLogicCodeAttemptInput,
+  SubmitLogicCodeAttemptResult,
   TakeOverAttemptInput,
   TakeOverAttemptResult,
 } from "@/types/contracts/attempts";
@@ -71,6 +73,8 @@ export type EvaluationContext = EvaluationReceipt & {
   readonly mode: GameMode;
   readonly modeConfigSchemaVersion: number;
   readonly modeConfig: JsonValue;
+  readonly submittedCodes?: readonly string[];
+  readonly incorrectAttempts?: number;
 };
 
 /**
@@ -86,6 +90,7 @@ export interface AttemptCommands {
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
+  submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
   readEvaluationContext(
     receiptId: AnswerReceiptId,
     sessionToken: string,

@@ -17,5 +17,7 @@ export function evaluateReceipt({ receipt, ...trustedInput }: ReceiptEvaluationI
     ...trustedInput,
     timeUsed: receipt.timeUsedMs / 1000,
     timedOut: receipt.timedOut,
+    submittedCodes: trustedInput.submittedCodes ?? [],
+    incorrectAttempts: trustedInput.incorrectAttempts ?? 0,
   });
 }

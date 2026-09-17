@@ -243,17 +243,19 @@ export function mapAttemptError(error: unknown): AttemptApiError {
   if (error instanceof AttemptCommandError) {
     const status =
       error.code === "invalid_mini_wordle_guess" ||
-          error.code === "mini_wordle_requires_guess_command" ||
-          error.code === "invalid_question_payload" ||
-          error.code === "unsupported_question"
+      error.code === "mini_wordle_requires_guess_command" ||
+      error.code === "invalid_logic_code" ||
+      error.code === "logic_code_requires_attempt_command" ||
+      error.code === "invalid_question_payload" ||
+      error.code === "unsupported_question"
         ? 400
         : error.code === "not_authorized" || error.code === "competitive_access_denied"
-        ? 404
-        : error.code === "auth_unavailable" ||
-            error.code === "database_unavailable" ||
-            error.code === "command_failed"
-          ? 503
-          : 409;
+          ? 404
+          : error.code === "auth_unavailable" ||
+              error.code === "database_unavailable" ||
+              error.code === "command_failed"
+            ? 503
+            : 409;
     return new AttemptApiError(error.code, status);
   }
   if (error instanceof CompetitiveRateLimitError) {

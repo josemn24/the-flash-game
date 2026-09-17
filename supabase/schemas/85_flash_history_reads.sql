@@ -172,6 +172,7 @@ returns table (
   question_version_id     uuid,
   question_type           text,
   payload_schema_version  integer,
+  time_limit_ms           integer,
   public_payload          jsonb,
   solution_payload        jsonb,
   answer                  jsonb,
@@ -260,7 +261,7 @@ language sql stable security definer set search_path = '' as $$
     a.challenge_max_score, target_player_id, p.display_name, p.avatar_path,
     a.attempt_id, a.attempt_status, a.attempt_score, a.attempt_started_at,
     a.attempt_completed_at, a.attempt_lock_version, i.id, i.position,
-    q.id, q.type, q.payload_schema_version, q.public_payload, qs.solution_payload,
+    q.id, q.type, q.payload_schema_version, q.time_limit_ms, q.public_payload, qs.solution_payload,
     aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
     aa.submitted_at, aa.time_used_ms, i.points
   from authorized_attempt a

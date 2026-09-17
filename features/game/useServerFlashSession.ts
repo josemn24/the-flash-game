@@ -42,7 +42,18 @@ type PendingMiniWordleSubmission = {
   guess: string;
   idempotencyKey: string;
 };
-type PendingSubmission = PendingAnswerSubmission | PendingMiniWordleSubmission;
+type PendingLogicCodeSubmission = {
+  kind: "logic-code";
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  code: string;
+  idempotencyKey: string;
+};
+type PendingSubmission =
+  | PendingAnswerSubmission
+  | PendingMiniWordleSubmission
+  | PendingLogicCodeSubmission;
 
 const SUBMISSION_STATUS_DELAY_MS = 250;
 
@@ -440,6 +451,106 @@ export function useServerFlashSession({
     }
   };
 
+  const submitLogicCodeToServer = async (submission: PendingLogicCodeSubmission) => {
+    startSubmissionStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/logic-code/attempt`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          code: submission.code,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      clearSubmissionStatusTimer();
+      setSubmissionState("idle");
+      setSubmissionStatusVisible(false);
+      setSubmissionError(undefined);
+      pendingSubmissionRef.current = null;
+
+      if (response.terminal !== true) {
+        setQuestion((current) =>
+          current?.type === "logic-code"
+            ? {
+                ...current,
+                progress: {
+                  kind: "logic-code",
+                  submittedCodes: [
+                    ...current.progress.submittedCodes,
+                    String(response.code ?? submission.code),
+                  ],
+                  incorrectAttempts: Number(response.incorrectAttempts),
+                },
+              }
+            : current,
+        );
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: String(response.code ?? submission.code),
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (questionIndex === challenge.slots.length - 1) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(challengeWithReview(challenge, review));
+            setPhase("results");
+          } else {
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearSubmissionStatusTimer();
+      if (
+        error instanceof CompetitiveCommandError &&
+        (error.code === "invalid_logic_code" || error.code === "duplicate_logic_code")
+      ) {
+        pendingSubmissionRef.current = null;
+        setSubmissionState("idle");
+        setSubmissionStatusVisible(true);
+        setSubmissionError(
+          error.code === "duplicate_logic_code"
+            ? "Ya has probado ese código. El intento no se ha consumido."
+            : "El código debe tener la longitud indicada y contener solo cifras.",
+        );
+        setBusy(false);
+        setLocked(false);
+        return;
+      }
+      setSubmissionState("error");
+      setSubmissionStatusVisible(true);
+      setSubmissionError("No hemos podido confirmar tu código.");
+      setBusy(false);
+      setLocked(false);
+    }
+  };
+
   const submit = async (answer: AnswerValue | null) => {
     if (!attempt || !question || locked || busy) return;
     const submission: PendingAnswerSubmission = {
@@ -469,11 +580,27 @@ export function useServerFlashSession({
     await submitMiniWordleToServer(submission);
   };
 
+  const submitLogicCodeAttempt = async (code: string) => {
+    if (!attempt || !question || question.type !== "logic-code" || locked || busy) return;
+    const submission: PendingLogicCodeSubmission = {
+      kind: "logic-code",
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      code,
+      idempotencyKey: idempotencyKey("logic-code-attempt"),
+    };
+    pendingSubmissionRef.current = submission;
+    await submitLogicCodeToServer(submission);
+  };
+
   const retrySubmit = async () => {
     if (busy || !pendingSubmissionRef.current) return;
     const pending = pendingSubmissionRef.current;
     if (pending.kind === "mini-wordle") {
       await submitMiniWordleToServer(pending);
+    } else if (pending.kind === "logic-code") {
+      await submitLogicCodeToServer(pending);
     } else {
       await submitAnswerToServer(pending);
     }
@@ -516,6 +643,7 @@ export function useServerFlashSession({
     startQuestions,
     submit,
     submitMiniWordleGuess,
+    submitLogicCodeAttempt,
     retrySubmit,
     abandon,
     showReview: () => setPhase("review"),

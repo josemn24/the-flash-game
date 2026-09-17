@@ -183,6 +183,29 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
+          if (draftQuestion.type === "logic-code") {
+            const payload = draftQuestion.publicPayload;
+            const solution = draftQuestion.solutionPayload;
+            return (
+              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+                <div className={styles.previewQuestionTopline}>
+                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                </div>
+                <p className={styles.category}>{payload.category ?? ""}</p>
+                <h4>{payload.question}</h4>
+                <div className={styles.options}>
+                  {payload.clues.map((clue) => (
+                    <p key={clue.code}><strong>{clue.code}</strong> · {clue.hint}</p>
+                  ))}
+                </div>
+                <p>{payload.codeLength} cifras</p>
+                <p className={styles.solution}>
+                  Solución privada: <strong>{solution.correctAnswer}</strong>
+                </p>
+              </article>
+            );
+          }
           const question = previewQuestion(draftQuestion);
           return (
             <article className={styles.previewQuestion} key={draftQuestion.slug}>

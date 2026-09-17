@@ -122,6 +122,24 @@ begin
       and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
         where value = solution->>'correctAnswer');
   end if;
+  if question.type = 'logic-code' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'clues') = 'array'
+      and jsonb_array_length(question.public_payload->'clues') between 1 and 20
+      and (question.public_payload->>'codeLength')::integer between 1 and 12
+      and not private.editorial_has_secret_key(question.public_payload)
+      and not exists (select 1 from jsonb_array_elements(question.public_payload->'clues') clue
+        where jsonb_typeof(clue->'code') is distinct from 'string'
+          or jsonb_typeof(clue->'hint') is distinct from 'string'
+          or char_length(clue->>'code') <> (question.public_payload->>'codeLength')::integer
+          or clue->>'code' !~ '^[0-9]+$'
+          or char_length(btrim(clue->>'hint')) not between 1 and 500)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and char_length(solution->>'correctAnswer') = (question.public_payload->>'codeLength')::integer
+      and solution->>'correctAnswer' ~ '^[0-9]+$';
+  end if;
   if question.type <> 'mini-wordle' or jsonb_typeof(solution) <> 'object' then return false; end if;
   expected_word_length := (question.public_payload->>'wordLength')::integer;
   max_attempts := (question.public_payload->>'maxAttempts')::integer;

@@ -82,6 +82,7 @@ export function ServerFlashPopGame({
             onRetrySubmission={session.retrySubmit}
             onSubmit={(answer) => void session.submit(answer)}
             onMiniWordleGuess={session.submitMiniWordleGuess}
+            onLogicCodeAttempt={session.submitLogicCodeAttempt}
             onTimeUp={() => void session.submit(null)}
           />
         </motion.div>

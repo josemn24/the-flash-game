@@ -38,6 +38,10 @@
 - `npm run test:e2e -- e2e/e01-mini-wordle.spec.ts`: cubre Auth, elección múltiple + Mini-Wordle,
   palabra temática fuera del diccionario general, palabra general, progreso tras recarga, palabra
   inválida/duplicada, respuesta HTTP perdida y reintento idempotente.
+- `npm run test:integration:supabase -- --scenario e02`: cubre publicación editorial mixta, payload
+  público sin solución, progreso de códigos, duplicados sin penalización y ceros iniciales.
+- `npm run test:e2e -- e2e/e02-logic-code.spec.ts`: cubre Auth, elección múltiple + Logic-code,
+  recarga, duplicado, respuesta HTTP perdida, reintento idempotente y spectator.
 - La integración Auth/PostgREST y el E2E de S12 quedan preparados en `scripts/integration/scenarios/s12.mjs`
   y `e2e/s12-calendar.spec.ts`, pero requieren aplicar primero las migraciones S12 al Supabase local
   persistente; no se ejecutó un reset global para conservar fixtures ajenos.
@@ -50,7 +54,8 @@
 La suite automatizada cubre los 31 formatos nativos, sus políticas de puntuación, sesiones de
 juego, estados de resultado, datos mock, consultas server-only, rutas principales y contratos de
 arquitectura. Las suites de Supabase cubren el esquema, RLS, comandos, provisioning, lecturas de
-salas, gameplay Flash, recuperación, rankings, historial, revisión autorizada, eventos Mini-Wordle
+salas, gameplay Flash, recuperación, rankings, historial, revisión autorizada, eventos Mini-Wordle y
+Logic-code
 e interacciones concurrentes sobre PostgreSQL local. Los fallos de Auth/PostgREST/PostgreSQL deben
 ser visibles; ninguna ruta competitiva puede sustituirlos con mocks.
 
@@ -82,7 +87,7 @@ incorporar la misma matriz y adaptar únicamente el texto o la presentación al 
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - La validación E2E de S01–S12 usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
-- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash, E02–E10 y
+- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash, E03–E10 y
   la revisión administrativa de intentos invalidados siguen fuera del piloto.
 - No existe una ronda manual vigente y exhaustiva documentada para todos los formatos, viewports,
   VoiceOver y `prefers-reduced-motion`.

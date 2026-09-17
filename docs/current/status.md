@@ -11,7 +11,7 @@ migradas usan fixtures y un store mock normalizado. Las slices S01–S12 y la ba
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
-persistidos, además del acceso seguro server-side para
+persistidos, E02 Logic-code con eventos privados y evaluación al acertar, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
@@ -47,7 +47,8 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC. S11 añade
   creación, edición, preview y publicación separada de Flash mínimo; E01 añade Mini-Wordle y permite
   publicar mezclas con soluciones privadas, palabras específicas fuera del diccionario general e
-  inmutabilidad al publicar.
+  inmutabilidad al publicar. E02 añade mezclas `multiple-choice` + `logic-code`, códigos numéricos
+  con ceros iniciales, duplicados sin penalización, progreso tras recarga y reintento idempotente.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -79,7 +80,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S12 y E01 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S12, E01 y E02 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
