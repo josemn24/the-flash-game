@@ -96,6 +96,15 @@ Eventos Logic-code del Flash competitivo
 → `private.logic_code_attempt_events` + `private.answer_receipts`
 → evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
 
+Eventos Progressive-clues del Flash competitivo
+→ `features/game/useServerFlashSession.ts`
+→ `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`
+→ `server/competitive/attempt-api.ts`
+→ `infrastructure/supabase/attemptCommands.ts`
+→ `private.reveal_progressive_clue(jsonb)`
+→ `private.progressive_clue_reveal_events` + `private.answer_receipts`
+→ evaluador confiable desde `progressiveCluesRevealed` reconstruido por PostgreSQL
+
 Las consultas aún no migradas conservan este flujo:
 
 Server Components
@@ -120,6 +129,18 @@ servidor. Una palabra se acepta si está en el diccionario versionado de
 acepta implícitamente aunque sea temática. El diccionario general se carga desde los JSON de
 `public/dictionaries`, pero las palabras específicas no se añaden al diccionario global. Un error
 de Auth/DB/PostgREST no cambia la selección a un adaptador mock.
+
+E03 entrega solo `question`, metadatos de conteo/penalización y el prefijo de pistas concedidas.
+`private.progressive_clue_reveal_events` registra la primera pista gratuita y cada revelación
+posterior; el comando resuelve la siguiente pista desde la versión congelada, aplica la penalización
+contra `challenge_items.points`, incrementa `lock_version` y devuelve únicamente esa pista. La
+evaluación ignora cualquier contador del navegador y reconstruye `progressiveCluesRevealed` desde
+los eventos persistidos.
+
+E04 entrega las dos columnas públicas y solo el progreso de parejas correctas. Cada solicitud valida
+la correspondencia contra la versión congelada, registra como máximo un evento por clave, penaliza el
+10% de los puntos del item en fallos y reconstruye el mapa final desde eventos. `correctMatchId` y la
+solución completa aparecen únicamente en la revisión autorizada.
 
 La matriz operativa completa, los límites HTTP y el procedimiento reproducible de Supabase están en
 [`s22-operacion.md`](../s22-operacion.md).

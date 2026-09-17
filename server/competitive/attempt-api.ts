@@ -86,6 +86,14 @@ export function requireUuid(body: JsonObject, key: string) {
   return value;
 }
 
+export function requireText(body: JsonObject, key: string, maxLength = 120) {
+  const value = body[key];
+  if (typeof value !== "string" || value.trim().length === 0 || value.length > maxLength) {
+    throw new AttemptApiError(`invalid_${key}`, 400);
+  }
+  return value.trim();
+}
+
 export function requirePathUuid(value: string, key = "attempt_id") {
   if (!isUuid(value)) throw new AttemptApiError(`invalid_${key}`, 400);
   return value;

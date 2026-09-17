@@ -19,14 +19,18 @@ import type {
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
+  SubmitMatchingPairResult,
   SubmitLogicCodeAttemptResult,
+  RevealProgressiveClueResult,
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type {
   AnswerValue,
   LogicCodeQuestion,
+  MatchingQuestion,
   MiniWordleQuestion,
   MultipleChoiceQuestion,
+  ProgressiveCluesQuestion,
   Question,
 } from "@/types/game";
 import {
@@ -133,6 +137,12 @@ function commandCode(error: unknown) {
     "invalid_logic_code",
     "duplicate_logic_code",
     "logic_code_requires_attempt_command",
+    "invalid_matching_pair",
+    "matching_item_already_resolved",
+    "duplicate_matching_pair",
+    "matching_requires_pair_command",
+    "all_clues_revealed",
+    "progressive_clues_requires_reveal_command",
     "unsupported_question",
     "invalid_question_payload",
   ];
@@ -177,9 +187,16 @@ async function callCommand<T>(
 
 function asQuestion(
   context: EvaluationContext,
-): MultipleChoiceQuestion | MiniWordleQuestion | LogicCodeQuestion {
+):
+  | MultipleChoiceQuestion
+  | MiniWordleQuestion
+  | LogicCodeQuestion
+  | ProgressiveCluesQuestion
+  | MatchingQuestion {
   if (
-    !["multiple-choice", "mini-wordle", "logic-code"].includes(context.questionType) ||
+    !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching"].includes(
+      context.questionType,
+    ) ||
     context.payloadSchemaVersion !== 1 ||
     context.itemConfigSchemaVersion !== 1 ||
     context.modeConfigSchemaVersion !== 1
@@ -246,7 +263,8 @@ function asQuestion(
       type: "multiple-choice",
       options,
       correctAnswer,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
       ...(publicPayload.media
         ? { media: publicPayload.media as MultipleChoiceQuestion["media"] }
         : {}),
@@ -289,7 +307,108 @@ function asQuestion(
       clues: clues as LogicCodeQuestion["clues"],
       codeLength,
       correctAnswer,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
+  if (context.questionType === "progressive-clues") {
+    const clues = publicPayload.clues;
+    const cluePenalty = publicPayload.cluePenalty;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    if (
+      !Array.isArray(clues) ||
+      clues.length === 0 ||
+      clues.length > 20 ||
+      !clues.every((clue) => typeof clue === "string" && clue.trim().length > 0) ||
+      typeof cluePenalty !== "number" ||
+      !Number.isSafeInteger(cluePenalty) ||
+      cluePenalty < 0 ||
+      typeof correctAnswer !== "string" ||
+      !Array.isArray(acceptedAnswers) ||
+      !acceptedAnswers.every((answer) => typeof answer === "string" && answer.trim().length > 0)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "progressive-clues",
+      clues,
+      cluePenalty,
+      correctAnswer,
+      acceptedAnswers,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
+  if (context.questionType === "matching") {
+    const leftItems = publicPayload.leftItems;
+    const rightItems = publicPayload.rightItems;
+    const matches = solutionPayload.matches;
+    if (
+      !Array.isArray(leftItems) ||
+      !Array.isArray(rightItems) ||
+      leftItems.length < 3 ||
+      leftItems.length > 6 ||
+      rightItems.length !== leftItems.length ||
+      !leftItems.every((item) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+        const value = item as Record<string, unknown>;
+        return (
+          !Object.hasOwn(value, "correctMatchId") &&
+          typeof value.id === "string" &&
+          value.id.trim().length > 0 &&
+          value.id.length <= 120 &&
+          typeof value.label === "string" &&
+          value.label.trim().length > 0 &&
+          value.label.length <= 500
+        );
+      }) ||
+      !rightItems.every((item) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+        const value = item as Record<string, unknown>;
+        return (
+          !Object.hasOwn(value, "correctMatchId") &&
+          typeof value.id === "string" &&
+          value.id.trim().length > 0 &&
+          value.id.length <= 120 &&
+          typeof value.label === "string" &&
+          value.label.trim().length > 0 &&
+          value.label.length <= 500
+        );
+      }) ||
+      !matches ||
+      typeof matches !== "object" ||
+      Array.isArray(matches)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const leftIds = leftItems.map((item) => (item as Record<string, unknown>).id as string);
+    const rightIds = rightItems.map((item) => (item as Record<string, unknown>).id as string);
+    const matchRecord = matches as Record<string, unknown>;
+    if (
+      new Set(leftIds).size !== leftIds.length ||
+      new Set(rightIds).size !== rightIds.length ||
+      Object.keys(matchRecord).length !== leftIds.length ||
+      !leftIds.every(
+        (leftId) =>
+          typeof matchRecord[leftId] === "string" &&
+          rightIds.includes(matchRecord[leftId] as string),
+      ) ||
+      new Set(Object.values(matchRecord)).size !== rightIds.length
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "matching",
+      leftItems: leftItems.map((item) => ({
+        ...(item as MatchingQuestion["leftItems"][number]),
+        correctMatchId: matchRecord[(item as Record<string, unknown>).id as string] as string,
+      })),
+      rightItems: rightItems as MatchingQuestion["rightItems"],
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (context.questionType !== "mini-wordle") throw new AttemptCommandError("unsupported_question");
@@ -303,7 +422,9 @@ function asQuestion(
     typeof correctAnswer !== "string" ||
     !isValidMiniWordleWord(correctAnswer, wordLength) ||
     !Array.isArray(additionalGuesses) ||
-    !additionalGuesses.every((guess) => typeof guess === "string" && isValidMiniWordleWord(guess, wordLength))
+    !additionalGuesses.every(
+      (guess) => typeof guess === "string" && isValidMiniWordleWord(guess, wordLength),
+    )
   ) {
     throw new AttemptCommandError("invalid_question_payload");
   }
@@ -324,8 +445,10 @@ export class SupabaseAttemptCommands implements Pick<
   | "start"
   | "prepare"
   | "receiveAnswer"
+  | "submitMatchingPair"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
+  | "revealProgressiveClue"
   | "readEvaluationContext"
   | "recordEvaluation"
   | "complete"
@@ -369,6 +492,28 @@ export class SupabaseAttemptCommands implements Pick<
     };
   }
 
+  async submitMatchingPair(input: Parameters<AttemptCommands["submitMatchingPair"]>[0]) {
+    const accepted = await callCommand<SubmitMatchingPairResult>(
+      this.identity,
+      "submit_matching_pair",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+    };
+  }
+
   async submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
     const accepted = await callCommand<SubmitLogicCodeAttemptResult>(
       this.identity,
@@ -389,6 +534,14 @@ export class SupabaseAttemptCommands implements Pick<
       status: evaluated.status,
       points: evaluated.points,
     };
+  }
+
+  revealProgressiveClue(input: Parameters<AttemptCommands["revealProgressiveClue"]>[0]) {
+    return callCommand<RevealProgressiveClueResult>(
+      this.identity,
+      "reveal_progressive_clue",
+      input,
+    );
   }
 
   readEvaluationContext(receiptId: AnswerReceiptId, sessionToken: string) {
@@ -440,6 +593,8 @@ export class SupabaseAttemptCommands implements Pick<
       },
       question: asQuestion(context),
       answer: (context.answer as AnswerValue | null) ?? null,
+      progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
+      matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
     });
     const evaluated = await this.recordEvaluation({
       attemptId: input.receive.attemptId,
@@ -466,6 +621,8 @@ export class SupabaseAttemptCommands implements Pick<
       receipt: { timeUsedMs: context.timeUsedMs, timedOut: context.timedOut },
       question: asQuestion(context),
       answer: (context.answer as AnswerValue | null) ?? null,
+      progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
+      matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
     });
     return this.recordEvaluation({
       attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],

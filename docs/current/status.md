@@ -11,7 +11,9 @@ migradas usan fixtures y un store mock normalizado. Las slices S01–S12 y la ba
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
-persistidos, E02 Logic-code con eventos privados y evaluación al acertar, además del acceso seguro server-side para
+persistidos, E02 Logic-code con eventos privados y evaluación al acertar, E03 Progressive-clues
+con revelaciones privadas y penalización basada en eventos, y E04 Matching con parejas privadas,
+feedback incremental y crédito parcial, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
@@ -49,6 +51,11 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   publicar mezclas con soluciones privadas, palabras específicas fuera del diccionario general e
   inmutabilidad al publicar. E02 añade mezclas `multiple-choice` + `logic-code`, códigos numéricos
   con ceros iniciales, duplicados sin penalización, progreso tras recarga y reintento idempotente.
+  E03 añade mezclas `multiple-choice` + `progressive-clues`, primera pista gratuita, revelaciones
+  transaccionales, penalización escalada por puntos del item, evaluación desde eventos y protección
+  contra pistas futuras.
+  E04 añade mezclas `multiple-choice` + `matching`, correspondencias uno a uno, eventos privados de
+  aciertos/fallos, penalización del 10%, progreso tras recarga y evaluación parcial en timeout.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -80,7 +87,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S12, E01 y E02 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S12 y E01–E04 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -104,14 +111,14 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-17.
 
-- `npm test`: 98 archivos y 614 tests superados; incluye reglas, adaptadores y UI pública de E01
+- `npm test`: 98 archivos y 624 tests superados; incluye reglas, adaptadores y UI pública de E01
   además de S11/S12.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
-- `npm run verify:pilot`: correcto; reconstruye Supabase local por escenario, ejecuta integración/E2E
-  en scope `pilot`, carga diccionarios versionados y ensaya backup/restore.
-- `npm run supabase:schema:test`: correcto; 23 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S12, E01, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
+  fixture, integración y E2E además de los recorridos existentes.
+- `npm run supabase:schema:test`: correcto; 27 archivos declarativos, inventario, provisioning,
+  S02–S08, S10–S12, E01–E04, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.
@@ -121,6 +128,14 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   edición, publicación, soluciones privadas y denegación del contexto editorial.
 - `npm run test:e2e -- e2e/s11-editorial.spec.ts`: 2/2 correctos; superadmin crea/edita/previsualiza/
   publica Flash mínimo y un miembro no ve editor, borradores ni soluciones.
+- `npm run test:integration:supabase -- --scenario e03`: escenario añadido para publicación mixta,
+  proyección sin solución ni pistas futuras y aislamiento del spectator.
+- `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: escenario añadido para primera pista,
+  revelación idempotente, reducción del máximo, recarga, respuesta normalizada y revisión.
+- `npm run test:integration:supabase -- --scenario e04`: escenario añadido para publicación mixta,
+  payload jugable sin correspondencias y aislamiento del spectator.
+- `npm run test:e2e -- e2e/e04-matching.spec.ts`: escenario añadido para parejas, penalización,
+  recarga, respuesta HTTP perdida, reintento idempotente y revisión autorizada.
 - `npm run test:integration:supabase -- --scenario s12`: pendiente de aplicar la migración S12 al
   Supabase persistente local; la suite declarativa sobre una base aislada ya pasa y la prueba no se
   repite con un reset global para no eliminar fixtures no relacionados.

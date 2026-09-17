@@ -80,7 +80,7 @@ test.describe("E02 — Logic-code competitivo", () => {
     await page.reload();
     await expect(page.getByText("Desafío completado")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
-    await page.locator("details").filter({ hasText: "Logic-code" }).locator("summary").click();
+    await page.locator("details").filter({ hasText: "Código lógico" }).locator("summary").click();
     await expect(page.getByText("La secuencia satisface las pistas.")).toBeVisible();
   });
 

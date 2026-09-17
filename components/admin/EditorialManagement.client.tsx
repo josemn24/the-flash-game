@@ -206,6 +206,52 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
+          if (draftQuestion.type === "progressive-clues") {
+            const payload = draftQuestion.publicPayload;
+            const solution = draftQuestion.solutionPayload;
+            return (
+              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+                <div className={styles.previewQuestionTopline}>
+                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                </div>
+                <p className={styles.category}>{payload.category ?? ""}</p>
+                <h4>{payload.question}</h4>
+                <div className={styles.options}>
+                  {payload.clues.map((clue, clueIndex) => (
+                    <p key={`${clueIndex}-${clue}`}>Pista {clueIndex + 1}: {clue}</p>
+                  ))}
+                </div>
+                <p>Penalización por pista: {payload.cluePenalty} puntos</p>
+                <p className={styles.solution}>
+                  Solución privada: <strong>{solution.correctAnswer}</strong>
+                </p>
+              </article>
+            );
+          }
+          if (draftQuestion.type === "matching") {
+            const payload = draftQuestion.publicPayload;
+            const solution = draftQuestion.solutionPayload;
+            return (
+              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+                <div className={styles.previewQuestionTopline}>
+                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                </div>
+                <p className={styles.category}>{payload.category ?? ""}</p>
+                <h4>{payload.question}</h4>
+                <div className={styles.options}>
+                  {payload.leftItems.map((item) => (
+                    <p key={`left-${item.id}`}><strong>{item.label}</strong> · {solution.matches[item.id]}</p>
+                  ))}
+                </div>
+                <p>{payload.leftItems.length} parejas</p>
+                <p className={styles.solution}>
+                  Solución privada: <strong>{Object.keys(solution.matches).length} correspondencias</strong>
+                </p>
+              </article>
+            );
+          }
           const question = previewQuestion(draftQuestion);
           return (
             <article className={styles.previewQuestion} key={draftQuestion.slug}>

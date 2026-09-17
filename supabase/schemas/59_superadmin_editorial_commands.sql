@@ -71,7 +71,7 @@ begin
     question_slug := btrim(question->>'slug');
     if jsonb_typeof(question->'slug') is distinct from 'string'
       or char_length(question_slug) not between 1 and 120
-      or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code')
+      or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching')
       or question->'payloadSchemaVersion' <> '1'::jsonb
       or question->'points' <> '50'::jsonb
       or jsonb_typeof(question->'timeLimitMs') is distinct from 'number'
@@ -178,6 +178,135 @@ begin
         or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
         or char_length(solution_payload->>'correctAnswer') <> (public_payload->>'codeLength')::integer
         or solution_payload->>'correctAnswer' !~ '^[0-9]+$'
+        or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+        raise exception 'invalid_solution_payload' using errcode = '22023';
+      end if;
+      continue;
+    end if;
+
+    if question->>'type' = 'progressive-clues' then
+      if jsonb_typeof(public_payload) is distinct from 'object'
+        or not public_payload ?& array['question', 'clues', 'cluePenalty']
+        or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+          'category', 'tags', 'question', 'clues', 'cluePenalty'
+        ]))
+        or private.editorial_has_secret_key(public_payload)
+        or jsonb_typeof(public_payload->'question') is distinct from 'string'
+        or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+        or jsonb_typeof(public_payload->'clues') is distinct from 'array'
+        or jsonb_array_length(public_payload->'clues') not between 1 and 20
+        or jsonb_typeof(public_payload->'cluePenalty') is distinct from 'number'
+        or (public_payload->>'cluePenalty')::numeric <> trunc((public_payload->>'cluePenalty')::numeric)
+        or (public_payload->>'cluePenalty')::integer not between 0 and 50
+        or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+        or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+        or exists (
+          select 1 from jsonb_array_elements(public_payload->'clues') clue
+          where jsonb_typeof(clue) is distinct from 'string'
+            or char_length(btrim(clue #>> '{}')) not between 1 and 500
+        ) then
+        raise exception 'invalid_public_payload' using errcode = '22023';
+      end if;
+      if jsonb_typeof(solution_payload) is distinct from 'object'
+        or not solution_payload ?& array['correctAnswer', 'acceptedAnswers']
+        or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+          'correctAnswer', 'acceptedAnswers', 'explanation'
+        ]))
+        or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+        or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
+        or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
+        or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
+        or exists (
+          select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
+          where jsonb_typeof(answer) is distinct from 'string'
+            or char_length(btrim(answer #>> '{}')) not between 1 and 500
+        )
+        or exists (
+          select 1
+          from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+          group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+          having count(*) > 1
+        )
+        or not exists (
+          select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+          where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+            regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+        )
+        or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+        raise exception 'invalid_solution_payload' using errcode = '22023';
+      end if;
+      continue;
+    end if;
+
+    if question->>'type' = 'matching' then
+      if jsonb_typeof(public_payload) is distinct from 'object'
+        or not public_payload ?& array['question', 'leftItems', 'rightItems']
+        or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+          'category', 'tags', 'question', 'leftItems', 'rightItems'
+        ]))
+        or private.editorial_has_secret_key(public_payload)
+        or jsonb_typeof(public_payload->'question') is distinct from 'string'
+        or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+        or jsonb_typeof(public_payload->'leftItems') is distinct from 'array'
+        or jsonb_typeof(public_payload->'rightItems') is distinct from 'array'
+        or jsonb_array_length(public_payload->'leftItems') not between 3 and 6
+        or jsonb_array_length(public_payload->'rightItems') <> jsonb_array_length(public_payload->'leftItems')
+        or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+        or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+        or exists (
+          select 1 from jsonb_array_elements(public_payload->'leftItems') item
+          where jsonb_typeof(item) is distinct from 'object'
+            or not item ?& array['id', 'label']
+            or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'icon', 'media']))
+            or jsonb_typeof(item->'id') is distinct from 'string'
+            or char_length(btrim(item->>'id')) not between 1 and 120
+            or jsonb_typeof(item->'label') is distinct from 'string'
+            or char_length(btrim(item->>'label')) not between 1 and 500
+            or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
+            or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
+        )
+        or exists (
+          select 1 from jsonb_array_elements(public_payload->'rightItems') item
+          where jsonb_typeof(item) is distinct from 'object'
+            or not item ?& array['id', 'label']
+            or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'icon', 'media']))
+            or jsonb_typeof(item->'id') is distinct from 'string'
+            or char_length(btrim(item->>'id')) not between 1 and 120
+            or jsonb_typeof(item->'label') is distinct from 'string'
+            or char_length(btrim(item->>'label')) not between 1 and 500
+            or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
+            or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
+        )
+        or exists (select 1 from (
+          select item->>'id' as id from jsonb_array_elements(public_payload->'leftItems') item
+          group by item->>'id' having count(*) > 1
+        ) duplicate_id)
+        or exists (select 1 from (
+          select item->>'id' as id from jsonb_array_elements(public_payload->'rightItems') item
+          group by item->>'id' having count(*) > 1
+        ) duplicate_id)
+        or exists (select 1 from (
+          select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
+          from jsonb_array_elements(public_payload->'leftItems') item
+          group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
+        ) duplicate)
+        or exists (select 1 from (
+          select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
+          from jsonb_array_elements(public_payload->'rightItems') item
+          group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
+        ) duplicate) then
+        raise exception 'invalid_public_payload' using errcode = '22023';
+      end if;
+      if jsonb_typeof(solution_payload) is distinct from 'object'
+        or not solution_payload ? 'matches'
+        or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['matches', 'explanation']))
+        or jsonb_typeof(solution_payload->'matches') is distinct from 'object'
+        or (select count(*) from jsonb_object_keys(solution_payload->'matches')) <> jsonb_array_length(public_payload->'leftItems')
+        or exists (select 1 from jsonb_array_elements(public_payload->'leftItems') item where not (solution_payload->'matches' ? (item->>'id')))
+        or exists (select 1 from jsonb_each_text(solution_payload->'matches') match where not exists (
+          select 1 from jsonb_array_elements(public_payload->'rightItems') item where item->>'id' = match.value
+        ))
+        or (select count(*) from jsonb_each_text(solution_payload->'matches')) <> (select count(distinct value) from jsonb_each_text(solution_payload->'matches'))
         or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
         raise exception 'invalid_solution_payload' using errcode = '22023';
       end if;

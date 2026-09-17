@@ -105,6 +105,22 @@ versión e idempotencia. Los duplicados se rechazan sin penalización, el progre
 códigos ya enviados y contador de incorrectos, y el evaluador recibe la secuencia completa desde
 `read_evaluation_context` al acertar.
 
+E03 añade `schemas/89_progressive_clues.sql` y `schemas/94_progressive_clues.sql`, más las
+migraciones `20260917102000_e03_progressive_clues.sql` y
+`20260917102100_e03_progressive_clues_validation.sql`. El portal acepta
+`multiple-choice` y `progressive-clues` en el mismo Flash; la primera pista se registra gratis al
+preparar la interacción y las siguientes se conceden con
+`private.reveal_progressive_clue(jsonb)`. El navegador solo recibe metadatos y pistas ya
+reveladas. La tabla privada conserva índice, versión, penalización efectiva, puntos disponibles y
+clave idempotente; la evaluación reconstruye el número real de pistas desde esos eventos.
+
+E04 añade `schemas/95_matching.sql` y las migraciones `20260917103000_e04_matching.sql` y
+`20260917103100_e04_matching_validation.sql`. El portal acepta `multiple-choice` y `matching` en
+el mismo Flash; las dos columnas se entregan sin `correctMatchId`, y cada pareja se valida mediante
+`private.submit_matching_pair(jsonb)`. `private.matching_pair_events` conserva aciertos, fallos,
+secuencia, tiempos y claves idempotentes. La penalización es el 10% de los puntos reales del item;
+la evaluación y el timeout reconstruyen el progreso exclusivamente desde esos eventos.
+
 Para ejecutar el piloto competitivo local:
 
 ```bash
@@ -117,8 +133,8 @@ npm run test:e2e -- e2e/s03-flash.spec.ts
 La verificación completa de S22 se ejecuta con `npm run verify:pilot`. Arranca un stack local,
 aplica el esquema desde una base limpia, ejecuta pgTAP y todos los escenarios locales del portal,
 Flash, recuperación, histórico, editorial y calendario. No requiere ni acepta un proyecto remoto.
-Los escenarios `e01` y `e02` cubren el portal mixto, la lectura pública sin solución, Auth local,
-recarga, duplicados, ceros iniciales y reintento idempotente.
+Los escenarios `e01`, `e02`, `e03` y `e04` cubren el portal mixto, la lectura pública sin solución,
+Auth local, recarga, duplicados, ceros iniciales, pistas futuras, correspondencias y reintento idempotente.
 
 S07 añade las lecturas Flash `public.get_flash_history(text, uuid)` y
 `public.get_flash_member_review(text, uuid, uuid)` desde `schemas/85_flash_history_reads.sql`.

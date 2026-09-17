@@ -38,10 +38,35 @@ export type FlashEditorialLogicCodePublicPayload = {
   readonly codeLength: number;
 };
 
+export type FlashEditorialProgressiveCluesPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly clues: readonly string[];
+  readonly cluePenalty: number;
+};
+
+export type FlashEditorialMatchingItem = {
+  readonly id: string;
+  readonly label: string;
+  readonly icon?: string;
+  readonly media?: QuestionMedia;
+};
+
+export type FlashEditorialMatchingPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly leftItems: readonly FlashEditorialMatchingItem[];
+  readonly rightItems: readonly FlashEditorialMatchingItem[];
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
   | FlashEditorialMiniWordlePublicPayload
-  | FlashEditorialLogicCodePublicPayload;
+  | FlashEditorialLogicCodePublicPayload
+  | FlashEditorialProgressiveCluesPublicPayload
+  | FlashEditorialMatchingPublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -61,10 +86,25 @@ export type FlashEditorialLogicCodeSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialProgressiveCluesSolutionPayload = {
+  readonly correctAnswer: string;
+  readonly acceptedAnswers: readonly string[];
+  readonly explanation?: string;
+};
+
+export type FlashEditorialMatchingSolutionPayload = {
+  readonly matches: Readonly<Record<string, string>>;
+  /** Type-level guard for callers that share the common solution accessor; rejected at runtime. */
+  readonly correctAnswer?: never;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
   | FlashEditorialMiniWordleSolutionPayload
-  | FlashEditorialLogicCodeSolutionPayload;
+  | FlashEditorialLogicCodeSolutionPayload
+  | FlashEditorialProgressiveCluesSolutionPayload
+  | FlashEditorialMatchingSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -96,10 +136,32 @@ export type FlashEditorialLogicCodeQuestion = {
   readonly solutionPayload: FlashEditorialLogicCodeSolutionPayload;
 };
 
+export type FlashEditorialProgressiveCluesQuestion = {
+  readonly slug: string;
+  readonly type: "progressive-clues";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: 50;
+  readonly publicPayload: FlashEditorialProgressiveCluesPublicPayload;
+  readonly solutionPayload: FlashEditorialProgressiveCluesSolutionPayload;
+};
+
+export type FlashEditorialMatchingQuestion = {
+  readonly slug: string;
+  readonly type: "matching";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: 50;
+  readonly publicPayload: FlashEditorialMatchingPublicPayload;
+  readonly solutionPayload: FlashEditorialMatchingSolutionPayload;
+};
+
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialMiniWordleQuestion
-  | FlashEditorialLogicCodeQuestion;
+  | FlashEditorialLogicCodeQuestion
+  | FlashEditorialProgressiveCluesQuestion
+  | FlashEditorialMatchingQuestion;
 
 export type FlashEditorialDocument = {
   readonly challenge: {

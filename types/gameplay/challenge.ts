@@ -1,8 +1,5 @@
-import type { Question, QuestionMedia } from "@/types/question";
-import type {
-  MiniWordleLetterFeedback,
-  MiniWordleWordLength,
-} from "@/types/domain/mini-wordle";
+import type { MatchingItem, MatchingLeftItem, Question, QuestionMedia } from "@/types/question";
+import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
 export type ChallengeImplementationStatus = "prototype" | "complete";
@@ -178,7 +175,8 @@ export type ServerFlashChallenge = ChallengeBase & {
   slots: readonly {
     id: string;
     position: number;
-    questionType: "multiple-choice" | "mini-wordle" | "logic-code";
+    questionType:
+      "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -229,10 +227,50 @@ export type ServerLogicCodeQuestion = ServerFlashQuestionBase & {
   readonly progress: ServerLogicCodeProgress;
 };
 
+export type ServerMatchingPair = {
+  readonly leftId: string;
+  readonly rightId: string;
+};
+
+export type ServerMatchingProgress = {
+  readonly kind: "matching";
+  readonly matchedPairs: readonly ServerMatchingPair[];
+  readonly matchedCount: number;
+  readonly totalPairs: number;
+  readonly incorrectAttempts: number;
+  readonly penaltyPoints: number;
+};
+
+export type ServerMatchingQuestion = ServerFlashQuestionBase & {
+  readonly type: "matching";
+  readonly leftItems: readonly Omit<MatchingLeftItem, "correctMatchId">[];
+  readonly rightItems: readonly MatchingItem[];
+  readonly progress: ServerMatchingProgress;
+};
+
+export type ServerProgressiveCluesProgress = {
+  readonly kind: "progressive-clues";
+  readonly clues: readonly string[];
+  readonly revealedClues: number;
+  readonly totalClues: number;
+  readonly availablePoints: number;
+  readonly cluePenalty: number;
+};
+
+export type ServerProgressiveCluesQuestion = ServerFlashQuestionBase & {
+  readonly type: "progressive-clues";
+  readonly clues: readonly string[];
+  readonly totalClues: number;
+  readonly cluePenalty: number;
+  readonly progress: ServerProgressiveCluesProgress;
+};
+
 export type ServerFlashQuestion =
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
-  | ServerLogicCodeQuestion;
+  | ServerLogicCodeQuestion
+  | ServerProgressiveCluesQuestion
+  | ServerMatchingQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

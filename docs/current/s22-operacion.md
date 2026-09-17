@@ -4,7 +4,7 @@
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
 El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluidos E01
-Mini-Wordle y E02 Logic-code. Los demás modos, formatos no migrados, E03–E10, Storage, abandono automático, takeover
+Mini-Wordle, E02 Logic-code, E03 Progressive-clues y E04 Matching. Los demás modos, formatos no migrados, E05–E10, Storage, abandono automático, takeover
 y `results_locked_at` siguen fuera de alcance.
 
 ## Runtime scope
@@ -22,7 +22,7 @@ falla al arrancar la composición server-only.
 | Superficie | Pilot | Development/Test |
 | --- | --- | --- |
 | `/`, `/salas/[roomId]`, rankings, historial | Supabase | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>` | Supabase; Flash admite MC + Mini-Wordle + Logic-code | Supabase |
+| `/desafios/[challengeId]?roomId=<UUID>` | Supabase; Flash admite MC + Mini-Wordle + Logic-code + Progressive-clues + Matching | Supabase |
 | `/desafios/[challengeId]` sin sala | 404 | Preview mock explícito |
 | aliases como `tabarnia-room` | 404 | Demo mock |
 | `/formatos`, `/flash-pop/**` | Demo/práctica | Demo/práctica |
@@ -87,6 +87,33 @@ npm run supabase:fixture -- --scenario e02
 npm run test:integration:supabase -- --scenario e02
 npm run test:e2e -- e2e/e02-logic-code.spec.ts
 ```
+
+Para E03 tampoco hace falta cargar diccionario:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario e03
+npm run test:integration:supabase -- --scenario e03
+npm run test:e2e -- e2e/e03-progressive-clues.spec.ts
+```
+
+Progressive-clues registra la primera pista con penalización cero y las siguientes mediante
+`POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`. El payload jugable no
+contiene la solución ni pistas futuras; `lockVersion`, el plazo, la secuencia, la idempotencia y
+los puntos disponibles los decide PostgreSQL. Una respuesta incorrecta o timeout recibe cero puntos.
+
+Para E04:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario e04
+npm run test:integration:supabase -- --scenario e04
+npm run test:e2e -- e2e/e04-matching.spec.ts
+```
+
+Matching valida cada pareja con `POST /api/competitive/attempts/[attemptId]/matching/pair`.
+Los eventos privados conservan aciertos y fallos; el jugador recibe solo progreso seguro y la
+revisión autorizada reconstruye las correspondencias completas.
 
 No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
 es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build

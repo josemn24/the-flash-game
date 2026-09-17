@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type {
-  AnswerResult,
-  AnswerValue,
-  FlashChallenge,
-  GameRoomContext,
-} from "@/types/game";
+import type { AnswerResult, AnswerValue, FlashChallenge, GameRoomContext } from "@/types/game";
 import type {
   ServerFlashChallenge,
   ServerFlashQuestion,
@@ -50,10 +45,22 @@ type PendingLogicCodeSubmission = {
   code: string;
   idempotencyKey: string;
 };
+type PendingProgressiveClueReveal = {
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  idempotencyKey: string;
+};
+type PendingMatchingPair = {
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  leftItemId: string;
+  rightItemId: string;
+  idempotencyKey: string;
+};
 type PendingSubmission =
-  | PendingAnswerSubmission
-  | PendingMiniWordleSubmission
-  | PendingLogicCodeSubmission;
+  PendingAnswerSubmission | PendingMiniWordleSubmission | PendingLogicCodeSubmission;
 
 const SUBMISSION_STATUS_DELAY_MS = 250;
 
@@ -128,11 +135,24 @@ export function useServerFlashSession({
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
   const [submissionStatusVisible, setSubmissionStatusVisible] = useState(false);
   const [submissionError, setSubmissionError] = useState<string>();
+  const [revealState, setRevealState] = useState<SubmissionState>("idle");
+  const [revealStatusVisible, setRevealStatusVisible] = useState(false);
+  const [revealError, setRevealError] = useState<string>();
+  const [matchingState, setMatchingState] = useState<SubmissionState>("idle");
+  const [matchingStatusVisible, setMatchingStatusVisible] = useState(false);
+  const [matchingError, setMatchingError] = useState<string>();
+  const [lastMatchingPair, setLastMatchingPair] = useState<
+    { readonly leftId: string; readonly rightId: string; readonly correct: boolean } | undefined
+  >();
   const [pendingAnswer, setPendingAnswer] = useState<AnswerValue | null>(null);
   const [startNotice, setStartNotice] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const matchingStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
+  const pendingRevealRef = useRef<PendingProgressiveClueReveal | null>(null);
+  const pendingMatchingPairRef = useRef<PendingMatchingPair | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
 
@@ -154,10 +174,48 @@ export function useServerFlashSession({
     }, SUBMISSION_STATUS_DELAY_MS);
   };
 
+  const clearRevealStatusTimer = () => {
+    if (revealStatusTimerRef.current) {
+      clearTimeout(revealStatusTimerRef.current);
+      revealStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startRevealStatus = () => {
+    clearRevealStatusTimer();
+    setRevealState("submitting");
+    setRevealStatusVisible(false);
+    setRevealError(undefined);
+    revealStatusTimerRef.current = setTimeout(() => {
+      setRevealStatusVisible(true);
+      revealStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
+  };
+
+  const clearMatchingStatusTimer = () => {
+    if (matchingStatusTimerRef.current) {
+      clearTimeout(matchingStatusTimerRef.current);
+      matchingStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startMatchingStatus = () => {
+    clearMatchingStatusTimer();
+    setMatchingState("submitting");
+    setMatchingStatusVisible(false);
+    setMatchingError(undefined);
+    matchingStatusTimerRef.current = setTimeout(() => {
+      setMatchingStatusVisible(true);
+      matchingStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
+  };
+
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       clearSubmissionStatusTimer();
+      clearRevealStatusTimer();
+      clearMatchingStatusTimer();
     },
     [],
   );
@@ -184,6 +242,15 @@ export function useServerFlashSession({
         prepared.progress,
       ),
     );
+    setRevealState("idle");
+    setRevealStatusVisible(false);
+    setRevealError(undefined);
+    pendingRevealRef.current = null;
+    setMatchingState("idle");
+    setMatchingStatusVisible(false);
+    setMatchingError(undefined);
+    setLastMatchingPair(undefined);
+    pendingMatchingPairRef.current = null;
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
   };
@@ -273,7 +340,7 @@ export function useServerFlashSession({
   };
 
   const startQuestions = async () => {
-    if (!attempt) return;
+    if (!attempt || busy) return;
     setBusy(true);
     try {
       await prepare(attempt);
@@ -361,9 +428,8 @@ export function useServerFlashSession({
       const nextLockVersion = Number(response.lockVersion);
       const acceptedGuess = String(response.guess);
       const currentQuestion = question;
-      const previousGuesses = currentQuestion?.type === "mini-wordle"
-        ? currentQuestion.progress.guesses
-        : [];
+      const previousGuesses =
+        currentQuestion?.type === "mini-wordle" ? currentQuestion.progress.guesses : [];
       const responseGuesses = Array.isArray(response.guesses)
         ? response.guesses.filter((guess): guess is string => typeof guess === "string")
         : [...previousGuesses, acceptedGuess];
@@ -428,17 +494,16 @@ export function useServerFlashSession({
       clearSubmissionStatusTimer();
       if (
         error instanceof CompetitiveCommandError &&
-        (error.code === "invalid_mini_wordle_guess" ||
-          error.code === "duplicate_mini_wordle_guess")
+        (error.code === "invalid_mini_wordle_guess" || error.code === "duplicate_mini_wordle_guess")
       ) {
         pendingSubmissionRef.current = null;
         setSubmissionState("idle");
         setSubmissionStatusVisible(true);
-          setSubmissionError(
-            error.code === "duplicate_mini_wordle_guess"
-              ? "Ya has probado esa palabra. El intento no se ha consumido."
-              : "Esta palabra no está disponible para este desafío.",
-          );
+        setSubmissionError(
+          error.code === "duplicate_mini_wordle_guess"
+            ? "Ya has probado esa palabra. El intento no se ha consumido."
+            : "Esta palabra no está disponible para este desafío.",
+        );
         setBusy(false);
         setLocked(false);
         return;
@@ -551,6 +616,181 @@ export function useServerFlashSession({
     }
   };
 
+  const revealProgressiveClueToServer = async (reveal: PendingProgressiveClueReveal) => {
+    startRevealStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${reveal.attemptId}/progressive-clues/reveal`,
+        {
+          lockVersion: reveal.lockVersion,
+          idempotencyKey: reveal.idempotencyKey,
+          challengeItemId: reveal.challengeItemId,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const revealedClues = Number(response.revealedClues);
+      const totalClues = Number(response.totalClues);
+      const availablePoints = Number(response.availablePoints);
+      const cluePenalty = Number(response.cluePenalty);
+      const clue = String(response.clue);
+      setAttempt({ id: reveal.attemptId, lockVersion: nextLockVersion });
+      setQuestion((current) =>
+        current?.type === "progressive-clues"
+          ? {
+              ...current,
+              clues: [...current.clues, clue],
+              totalClues,
+              cluePenalty,
+              progress: {
+                kind: "progressive-clues",
+                clues: [...current.progress.clues, clue],
+                revealedClues,
+                totalClues,
+                availablePoints,
+                cluePenalty,
+              },
+            }
+          : current,
+      );
+      clearRevealStatusTimer();
+      pendingRevealRef.current = null;
+      setRevealState("idle");
+      setRevealStatusVisible(false);
+      setRevealError(undefined);
+      setLocked(false);
+      setBusy(false);
+    } catch (error) {
+      clearRevealStatusTimer();
+      setRevealState("error");
+      setRevealStatusVisible(true);
+      setRevealError(
+        error instanceof CompetitiveCommandError && error.code === "all_clues_revealed"
+          ? "Ya has revelado todas las pistas."
+          : "No hemos podido revelar la siguiente pista.",
+      );
+      setBusy(false);
+      setLocked(false);
+    }
+  };
+
+  const submitMatchingPairToServer = async (submission: PendingMatchingPair) => {
+    startMatchingStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/matching/pair`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          leftItemId: submission.leftItemId,
+          rightItemId: submission.rightItemId,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const matchedPairs = Array.isArray(response.matchedPairs)
+        ? response.matchedPairs.filter(
+            (pair): pair is { leftId: string; rightId: string } =>
+              Boolean(pair) &&
+              typeof pair === "object" &&
+              typeof (pair as Record<string, unknown>).leftId === "string" &&
+              typeof (pair as Record<string, unknown>).rightId === "string",
+          )
+        : [];
+      const correct = response.correct === true;
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      setLastMatchingPair({
+        leftId: submission.leftItemId,
+        rightId: submission.rightItemId,
+        correct,
+      });
+      setQuestion((current) =>
+        current?.type === "matching"
+          ? {
+              ...current,
+              progress: {
+                kind: "matching",
+                matchedPairs,
+                matchedCount: Number(response.matchedCount),
+                totalPairs: Number(response.totalPairs),
+                incorrectAttempts: Number(response.incorrectAttempts),
+                penaltyPoints: Number(response.penaltyPoints),
+              },
+            }
+          : current,
+      );
+      clearMatchingStatusTimer();
+      pendingMatchingPairRef.current = null;
+      setMatchingState("idle");
+      setMatchingStatusVisible(false);
+      setMatchingError(undefined);
+      if (response.terminal !== true) {
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: Object.fromEntries(matchedPairs.map((pair) => [pair.leftId, pair.rightId])),
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (questionIndex === challenge.slots.length - 1) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(challengeWithReview(challenge, review));
+            setPhase("results");
+          } else {
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearMatchingStatusTimer();
+      const commandError = error instanceof CompetitiveCommandError ? error.code : "";
+      if (
+        commandError === "duplicate_matching_pair" ||
+        commandError === "matching_item_already_resolved" ||
+        commandError === "invalid_matching_pair"
+      ) {
+        pendingMatchingPairRef.current = null;
+        setMatchingState("idle");
+        setMatchingStatusVisible(true);
+        setMatchingError(
+          commandError === "matching_item_already_resolved"
+            ? "Una de las tarjetas ya está resuelta."
+            : commandError === "duplicate_matching_pair"
+              ? "Esa pareja ya ha sido enviada."
+              : "Esa pareja no está disponible.",
+        );
+      } else {
+        setMatchingState("error");
+        setMatchingStatusVisible(true);
+        setMatchingError("No hemos podido confirmar la pareja.");
+      }
+      setBusy(false);
+      setLocked(false);
+    }
+  };
+
   const submit = async (answer: AnswerValue | null) => {
     if (!attempt || !question || locked || busy) return;
     const submission: PendingAnswerSubmission = {
@@ -594,6 +834,32 @@ export function useServerFlashSession({
     await submitLogicCodeToServer(submission);
   };
 
+  const revealProgressiveClue = async () => {
+    if (!attempt || !question || question.type !== "progressive-clues" || locked || busy) return;
+    const reveal: PendingProgressiveClueReveal = {
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      idempotencyKey: idempotencyKey("progressive-clue-reveal"),
+    };
+    pendingRevealRef.current = reveal;
+    await revealProgressiveClueToServer(reveal);
+  };
+
+  const submitMatchingPair = async (leftId: string, rightId: string) => {
+    if (!attempt || !question || question.type !== "matching" || locked || busy) return;
+    const submission: PendingMatchingPair = {
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      leftItemId: leftId,
+      rightItemId: rightId,
+      idempotencyKey: idempotencyKey("matching-pair"),
+    };
+    pendingMatchingPairRef.current = submission;
+    await submitMatchingPairToServer(submission);
+  };
+
   const retrySubmit = async () => {
     if (busy || !pendingSubmissionRef.current) return;
     const pending = pendingSubmissionRef.current;
@@ -604,6 +870,16 @@ export function useServerFlashSession({
     } else {
       await submitAnswerToServer(pending);
     }
+  };
+
+  const retryReveal = async () => {
+    if (busy || !pendingRevealRef.current) return;
+    await revealProgressiveClueToServer(pendingRevealRef.current);
+  };
+
+  const retryMatchingPair = async () => {
+    if (busy || !pendingMatchingPairRef.current) return;
+    await submitMatchingPairToServer(pendingMatchingPairRef.current);
   };
 
   const abandon = async () => {
@@ -636,6 +912,13 @@ export function useServerFlashSession({
     submissionState,
     submissionStatusVisible,
     submissionError,
+    revealState,
+    revealStatusVisible,
+    revealError,
+    matchingState,
+    matchingStatusVisible,
+    matchingError,
+    lastMatchingPair,
     pendingAnswer,
     startNotice,
     displayChallenge: display,
@@ -645,6 +928,10 @@ export function useServerFlashSession({
     submitMiniWordleGuess,
     submitLogicCodeAttempt,
     retrySubmit,
+    revealProgressiveClue,
+    retryReveal,
+    submitMatchingPair,
+    retryMatchingPair,
     abandon,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

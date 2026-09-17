@@ -13,6 +13,8 @@ const e2eByScenario = {
   s03: ["e2e/s03-flash.spec.ts"],
   e01: ["e2e/e01-mini-wordle.spec.ts"],
   e02: ["e2e/e02-logic-code.spec.ts"],
+  e03: ["e2e/e03-progressive-clues.spec.ts"],
+  e04: ["e2e/e04-matching.spec.ts"],
   s04: ["e2e/s04-recovery.spec.ts"],
   s06: ["e2e/s06-ranking.spec.ts"],
   s07: ["e2e/s07-history-review.spec.ts"],
@@ -28,7 +30,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260917101000_e02_logic_code",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260917103100_e04_matching_validation",
 };
 
 async function run(label, command, args, options = {}) {

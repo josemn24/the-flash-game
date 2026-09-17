@@ -607,6 +607,45 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   ceros iniciales y recepción única; integración editorial/lectura y E2E con Auth real, recarga,
   spectator y reintento idempotente.
 
+### E03 — Progressive-clues competitivo y persistido ✅ Implementada localmente
+
+- **Objetivo / CU:** entregar una primera pista gratuita y revelar las siguientes bajo demanda,
+  conservando una única respuesta final y una puntuación dependiente de las pistas realmente
+  concedidas.
+- **Contrato:** el contenido editorial admite entre 1 y 20 pistas, penalización entera y
+  `acceptedAnswers` normalizadas sin duplicados; la proyección jugable solo incluye metadatos y el
+  prefijo de pistas ya revelado.
+- **Persistencia:** `private.progressive_clue_reveal_events` registra índice, item, versión,
+  penalización efectiva, puntos disponibles e idempotencia. `private.reveal_progressive_clue(jsonb)`
+  usa locks de intento, versión optimista, plazo y solución congelada en PostgreSQL.
+- **Recuperación/UI:** `prepare` registra la pista inicial de forma determinista; recarga y
+  recuperación reconstruyen el prefijo desde eventos. La UI server-safe ofrece botón explícito,
+  bloqueo, `aria-live`, contador N/M y reintento con la misma clave.
+- **Evaluación:** `read_evaluation_context` obtiene `progressiveCluesRevealed` desde eventos y el
+  evaluador aplica `max(0, item.points - penalty * (revealedClues - 1))` antes del multiplicador de
+  velocidad; una respuesta incorrecta o timeout puntúa cero.
+- **Tests:** pgTAP, unidad, integración editorial/lectura y E2E cubren secreto/pistas futuras,
+  primera pista gratuita, escalado por puntos reales, recarga, idempotencia, versión obsoleta,
+  spectator, cierre y revisión final.
+
+### E04 — Matching competitivo y persistido ✅ Implementada localmente
+
+- **Objetivo / CU:** validar una pareja por comando, devolver feedback inmediato y conservar crédito
+  parcial aunque el tiempo termine.
+- **Contrato:** el contenido admite 3–6 parejas con IDs y labels únicos, correspondencia uno a uno y
+  solución exclusiva en `solutionPayload.matches`; el payload jugable nunca contiene `correctMatchId`.
+- **Persistencia:** `private.matching_pair_events` guarda aciertos y fallos, secuencia, penalización,
+  tiempos e idempotencia. `private.submit_matching_pair(jsonb)` serializa el intento, aplica locks y
+  calcula el 10% de los puntos reales del item por fallo.
+- **Recuperación/UI:** `prepare` entrega columnas públicas y progreso seguro; las parejas resueltas
+  sobreviven a recargas, las tarjetas se bloquean y la UI ofrece feedback `aria-live` y reintento de
+  solicitudes cuya respuesta se perdió.
+- **Evaluación:** el contexto server-side reconstruye únicamente las parejas correctas y el contador
+  de fallos persistidos; `evaluateMatching` conserva crédito parcial, aplica penalización acumulada
+  y conserva ese progreso en timeout.
+- **Tests:** pgTAP, unidad, integración y E2E cubren publicación mixta, secreto, fallos, duplicados,
+  tarjetas resueltas, idempotencia, versión obsoleta, recarga, timeout, spectator y revisión final.
+
 ### S13 — Subir y sustituir el avatar global
 
 - **Objetivo / CU:** completar CU-02 con archivo persistido.
@@ -707,8 +746,8 @@ Ficha común, obligatoria para **cada** E*:
 | ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | E01   | `mini-wordle`       | **Implementado localmente.** Primer patrón de eventos: registrar cada palabra válida y devolver colores sin solución; cada palabra procede del diccionario general o de `additionalGuesses` privados de la pregunta, con solución temática implícita permitida. Longitud 4–5 y máximo de intentos verificados en servidor. No aceptar una historia final fabricada ni consumir intentos duplicados. |
 | E02   | `logic-code`        | **Implementado localmente.** Registrar cada código y su penalización; validar secreto privado, formato, plazo, secuencia e idempotencia; rechazar duplicados sin penalización, conservar intentos tras recarga y cerrar al acertar con evaluación server-side. |
-| E03   | `progressive-clues` | Entregar pistas de una en una y registrar qué se concedió; no enviar el array completo ni confiar en `revealedClues`. Ajustar penalización con puntos del item.                                                                                                               |
-| E04   | `matching`          | Comprobar cada asociación que produce feedback/penalización; conservar fallos aceptados y parejas correctas sin `correctMatchId` público.                                                                                                                                     |
+| E03   | `progressive-clues` | **Implementado localmente.** Entregar la primera pista gratis y las siguientes mediante comando transaccional; persistir eventos privados, no enviar pistas futuras ni confiar en `revealedClues`, ajustar penalización con los puntos reales del item y recuperar tras recarga. |
+| E04   | `matching`          | **Implementado localmente.** Comprobar cada asociación con feedback inmediato; conservar fallos y parejas correctas en eventos privados, aplicar 10% por error, recuperar tras recarga y evaluar timeout con crédito parcial sin `correctMatchId` público. |
 | E05   | `queens`            | Validar colocación/conflicto y derivar penalizaciones de eventos, no de `incorrectAttempts`; conservar tablero y piezas precolocadas.                                                                                                                                         |
 | E06   | `word-search`       | Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos para impedir borrar penalizaciones del payload final.                                                                                                                                      |
 | E07   | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                             |

@@ -3,10 +3,13 @@ import type {
   FlashEditorialMiniWordleQuestion,
   FlashEditorialMultipleChoiceQuestion,
   FlashEditorialLogicCodeQuestion,
+  FlashEditorialProgressiveCluesQuestion,
+  FlashEditorialMatchingQuestion,
   FlashEditorialQuestion,
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
+import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,
@@ -64,12 +67,32 @@ const logicCodePublicPayloadKeys = [
   "clues",
   "codeLength",
 ];
+const progressiveCluesPublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "clues",
+  "cluePenalty",
+];
+const matchingPublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "leftItems",
+  "rightItems",
+];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionaryId", "explanation"];
 const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
+const progressiveCluesSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
+const matchingSolutionKeys = ["matches", "explanation"];
 const MINI_WORDLE_MAX_ADDITIONAL_GUESSES = 1000;
 const LOGIC_CODE_MAX_CLUES = 20;
 const LOGIC_CODE_MAX_LENGTH = 12;
+const PROGRESSIVE_CLUES_MAX_CLUES = 20;
+const PROGRESSIVE_CLUES_MAX_PENALTY = 50;
+const MATCHING_MIN_PAIRS = 3;
+const MATCHING_MAX_PAIRS = 6;
 
 export class FlashEditorialValidationError extends Error {
   readonly code = "invalid_content" as const;
@@ -137,6 +160,21 @@ function isPromptVisual(value: unknown): boolean {
   );
 }
 
+function isMatchingItem(value: unknown): value is {
+  id: string;
+  label: string;
+  icon?: string;
+  media?: NonNullable<FlashEditorialMatchingQuestion["publicPayload"]["leftItems"]>[number]["media"];
+} {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["id", "label", "icon", "media"])) return false;
+  return (
+    nonEmptyString(value.id, 120) &&
+    nonEmptyString(value.label, 500) &&
+    (value.icon === undefined || nonEmptyString(value.icon, 32)) &&
+    isMedia(value.media)
+  );
+}
+
 function containsSecretKey(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(containsSecretKey);
   if (!isRecord(value)) return false;
@@ -165,7 +203,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       `questions[${index}].publicPayload no puede contener soluciones.`,
     ]);
   }
-  if (!isRecord(solutionPayload) || !("correctAnswer" in solutionPayload)) {
+  if (!isRecord(solutionPayload) || (!("correctAnswer" in solutionPayload) && !("matches" in solutionPayload))) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
 
@@ -315,6 +353,106 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: 50,
       publicPayload: publicPayload as FlashEditorialLogicCodeQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialLogicCodeQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "progressive-clues") {
+    if (
+      !hasOnlyKeys(publicPayload, progressiveCluesPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, progressiveCluesSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato progressive-clues.`]);
+    }
+    const clues = publicPayload.clues;
+    const cluePenalty = publicPayload.cluePenalty;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    const normalizedAcceptedAnswers = Array.isArray(acceptedAnswers)
+      ? acceptedAnswers.map((answer) => (typeof answer === "string" ? normalizeAnswer(answer) : ""))
+      : [];
+    if (
+      !Array.isArray(clues) ||
+      clues.length < 1 ||
+      clues.length > PROGRESSIVE_CLUES_MAX_CLUES ||
+      !clues.every((clue) => nonEmptyString(clue, 500)) ||
+      typeof cluePenalty !== "number" ||
+      !Number.isSafeInteger(cluePenalty) ||
+      cluePenalty < 0 ||
+      cluePenalty > PROGRESSIVE_CLUES_MAX_PENALTY ||
+      typeof correctAnswer !== "string" ||
+      !nonEmptyString(correctAnswer, 500) ||
+      !Array.isArray(acceptedAnswers) ||
+      acceptedAnswers.length < 1 ||
+      acceptedAnswers.length > 100 ||
+      !acceptedAnswers.every((answer) => nonEmptyString(answer, 500)) ||
+      new Set(normalizedAcceptedAnswers).size !== normalizedAcceptedAnswers.length ||
+      !normalizedAcceptedAnswers.includes(normalizeAnswer(correctAnswer))
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato progressive-clues.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "progressive-clues",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: 50,
+      publicPayload: publicPayload as FlashEditorialProgressiveCluesQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialProgressiveCluesQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "matching") {
+    if (
+      !hasOnlyKeys(publicPayload, matchingPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, matchingSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato matching.`]);
+    }
+    const leftItems = publicPayload.leftItems;
+    const rightItems = publicPayload.rightItems;
+    const matches = solutionPayload.matches;
+    const validLeftItems =
+      Array.isArray(leftItems) &&
+      leftItems.length >= MATCHING_MIN_PAIRS &&
+      leftItems.length <= MATCHING_MAX_PAIRS &&
+      leftItems.every(isMatchingItem);
+    const validRightItems =
+      Array.isArray(rightItems) &&
+      Array.isArray(leftItems) &&
+      rightItems.length === leftItems.length &&
+      rightItems.every(isMatchingItem);
+    const leftIds = validLeftItems ? leftItems.map((item) => item.id) : [];
+    const rightIds = validRightItems ? rightItems.map((item) => item.id) : [];
+    const normalizedLeftLabels = validLeftItems
+      ? leftItems.map((item) => normalizeAnswer(item.label))
+      : [];
+    const normalizedRightLabels = validRightItems
+      ? rightItems.map((item) => normalizeAnswer(item.label))
+      : [];
+    const validMatches =
+      isRecord(matches) &&
+      Object.keys(matches).length === leftIds.length &&
+      leftIds.every((leftId) => typeof matches[leftId] === "string" && rightIds.includes(matches[leftId] as string)) &&
+      new Set(Object.values(matches)).size === rightIds.length &&
+      new Set(leftIds).size === leftIds.length &&
+      new Set(rightIds).size === rightIds.length;
+    if (
+      !validLeftItems ||
+      !validRightItems ||
+      !validMatches ||
+      new Set(normalizedLeftLabels).size !== normalizedLeftLabels.length ||
+      new Set(normalizedRightLabels).size !== normalizedRightLabels.length
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato matching.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "matching",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: 50,
+      publicPayload: publicPayload as FlashEditorialMatchingQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialMatchingQuestion["solutionPayload"],
     };
   }
 

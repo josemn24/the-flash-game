@@ -186,7 +186,7 @@ type FlashMemberReviewReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -420,7 +420,9 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     typeof row.question_version_id === "string" &&
     (row.question_type === "multiple-choice" ||
       row.question_type === "mini-wordle" ||
-      row.question_type === "logic-code") &&
+      row.question_type === "logic-code" ||
+      row.question_type === "progressive-clues" ||
+      row.question_type === "matching") &&
     row.payload_schema_version === 1 &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
@@ -872,6 +874,94 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       points: row.item_points,
       explanation,
       type: "logic-code",
+    };
+  }
+  if (row.question_type === "progressive-clues") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const clues = publicPayload.clues;
+    const cluePenalty = publicPayload.cluePenalty;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    const prompt = publicPayload.question;
+    const explanation = solutionPayload.explanation;
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(clues) ||
+      !clues.every((clue) => typeof clue === "string" && clue.trim().length > 0) ||
+      typeof cluePenalty !== "number" ||
+      !Number.isInteger(cluePenalty) ||
+      cluePenalty < 0 ||
+      typeof correctAnswer !== "string" ||
+      !Array.isArray(acceptedAnswers) ||
+      !acceptedAnswers.every((answer) => typeof answer === "string") ||
+      typeof explanation !== "string"
+    ) {
+      throw new Error(`Invalid historical progressive-clues payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      clues,
+      cluePenalty,
+      correctAnswer,
+      acceptedAnswers,
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation,
+      type: "progressive-clues",
+    };
+  }
+  if (row.question_type === "matching") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const leftItems = publicPayload.leftItems;
+    const rightItems = publicPayload.rightItems;
+    const matches = solutionPayload.matches;
+    const prompt = publicPayload.question;
+    const explanation = solutionPayload.explanation;
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(leftItems) ||
+      !Array.isArray(rightItems) ||
+      leftItems.length < 3 ||
+      leftItems.length > 6 ||
+      rightItems.length !== leftItems.length ||
+      !leftItems.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string") ||
+      !rightItems.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string") ||
+      !isRecord(matches) ||
+      Object.keys(matches).length !== leftItems.length ||
+      !leftItems.every((item) => typeof matches[item.id as string] === "string") ||
+      new Set(Object.values(matches)).size !== rightItems.length ||
+      typeof explanation !== "string"
+    ) {
+      throw new Error(`Invalid historical matching payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      leftItems: leftItems.map((item) => ({
+        id: (item as Record<string, unknown>).id as string,
+        label: (item as Record<string, unknown>).label as string,
+        ...(typeof (item as Record<string, unknown>).icon === "string"
+          ? { icon: (item as Record<string, unknown>).icon as string }
+          : {}),
+        ...((item as Record<string, unknown>).media
+          ? { media: (item as Record<string, unknown>).media as QuestionMedia }
+          : {}),
+        correctMatchId: matches[(item as Record<string, unknown>).id as string] as string,
+      })) as Extract<Question, { type: "matching" }>["leftItems"],
+      rightItems: rightItems as Extract<Question, { type: "matching" }>["rightItems"],
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation,
+      type: "matching",
     };
   }
   const tags = requiredRecordField(publicPayload, "tags", "public_payload");

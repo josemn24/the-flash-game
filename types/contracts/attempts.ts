@@ -59,6 +59,32 @@ export type ReceiveAnswerResult = AttemptCommandResult & {
   readonly receivedAt: UtcIsoDateTime;
   readonly presentedAt: UtcIsoDateTime;
 };
+export type MatchingPair = {
+  readonly leftId: string;
+  readonly rightId: string;
+};
+export type SubmitMatchingPairInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly leftItemId: string;
+  readonly rightItemId: string;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitMatchingPairResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly leftItemId: string;
+  readonly rightItemId: string;
+  readonly correct: boolean;
+  readonly terminal: boolean;
+  readonly matchedPairs: readonly MatchingPair[];
+  readonly matchedCount: number;
+  readonly totalPairs: number;
+  readonly incorrectAttempts: number;
+  readonly penaltyPoints: number;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
 export type SubmitMiniWordleGuessInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly guess: string;
@@ -94,6 +120,18 @@ export type SubmitLogicCodeAttemptResult = AttemptCommandResult & {
   readonly status?: AnswerStatus;
   readonly points?: number;
   readonly timeUsedMs?: DurationMs;
+};
+export type RevealProgressiveClueInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+};
+export type RevealProgressiveClueResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly clueIndex: number;
+  readonly clue: string;
+  readonly revealedClues: number;
+  readonly totalClues: number;
+  readonly availablePoints: number;
+  readonly cluePenalty: number;
 };
 export type SubmitAnswerResult = AttemptCommandResult & {
   readonly receiptId: AnswerReceiptId;

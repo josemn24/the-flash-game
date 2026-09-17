@@ -76,6 +76,12 @@
     "private.logic_code_attempt_events": {
       "kind": "r"
     },
+    "private.progressive_clue_reveal_events": {
+      "kind": "r"
+    },
+    "private.matching_pair_events": {
+      "kind": "r"
+    },
     "private.platform_role_assignments": {
       "kind": "r",
       "service_role": {
@@ -381,6 +387,26 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.progressive_clue_effective_penalty": {
+      "arguments": "configured_penalty integer, item_points integer",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.progressive_clues_public_payload": {
+      "arguments": "target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.progressive_clues_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.ensure_progressive_clue_initial": {
+      "arguments": "target_attempt uuid, target_item uuid, target_version uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.next_attempt_item": {
       "arguments": "target_attempt uuid",
       "securityDefiner": false,
@@ -447,6 +473,26 @@
       "executeRoles": ["service_role"]
     },
     "private.submit_logic_code_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.reveal_progressive_clue": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.matching_public_payload": {
+      "arguments": "target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.matching_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_matching_pair": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

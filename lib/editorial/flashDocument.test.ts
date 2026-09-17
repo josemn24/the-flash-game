@@ -163,6 +163,75 @@ describe("Flash editorial document", () => {
     expect(() => parseFlashEditorialDocument(document)).toThrow("no puede contener soluciones");
   });
 
+  it("accepts Matching and keeps its correspondence private", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "matching-2",
+      type: "matching",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        question: "Relaciona los conceptos",
+        leftItems: [
+          { id: "l1", label: "Uno" },
+          { id: "l2", label: "Dos" },
+          { id: "l3", label: "Tres" },
+        ],
+        rightItems: [
+          { id: "r1", label: "Primero" },
+          { id: "r2", label: "Segundo" },
+          { id: "r3", label: "Tercero" },
+        ],
+      },
+      solutionPayload: { matches: { l1: "r1", l2: "r2", l3: "r3" } },
+    };
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.questions[1].type).toBe("matching");
+    if (parsed.questions[1].type !== "matching") throw new Error("Expected Matching");
+    expect(parsed.questions[1].publicPayload.leftItems).toHaveLength(3);
+    expect(parsed.questions[1].solutionPayload.matches).toEqual({ l1: "r1", l2: "r2", l3: "r3" });
+  });
+
+  it("rejects invalid Matching cardinality, labels, and mappings", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "matching-invalid",
+      type: "matching",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        question: "Relaciona",
+        leftItems: [{ id: "l1", label: "Uno" }, { id: "l2", label: "uno" }],
+        rightItems: [{ id: "r1", label: "Primero" }, { id: "r2", label: "Segundo" }],
+      },
+      solutionPayload: { matches: { l1: "r1", l2: "r1" } },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato matching");
+
+    const valid = documentFixture();
+    valid.questions[1] = {
+      ...document.questions[1],
+      publicPayload: {
+        question: "Relaciona",
+        leftItems: [
+          { id: "l1", label: "Uno" },
+          { id: "l2", label: "Dos" },
+          { id: "l3", label: "Tres" },
+        ],
+        rightItems: [
+          { id: "r1", label: "Primero" },
+          { id: "r2", label: "Segundo" },
+          { id: "r3", label: "Tercero" },
+        ],
+      },
+      solutionPayload: { matches: { l1: "r1", l2: "r2", l3: "missing" } },
+    };
+    expect(() => parseFlashEditorialDocument(valid)).toThrow("contrato matching");
+  });
+
   it("accepts a mixed Flash with a Logic-code question and preserves leading zeroes", () => {
     const document = documentFixture();
     document.questions[1] = {
@@ -216,5 +285,62 @@ describe("Flash editorial document", () => {
       { code: "0123", hint: "Duplicada" },
     ];
     expect(() => parseFlashEditorialDocument(document)).toThrow("contrato logic-code");
+  });
+
+  it("accepts Progressive-clues and normalizes accepted answers for uniqueness", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "progressive-clues-2",
+      type: "progressive-clues",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        category: "Historia",
+        tags: {},
+        question: "Identifica el acontecimiento",
+        clues: ["Ocurrió en Europa.", "Sucedió en 1989."],
+        cluePenalty: 25,
+      },
+      solutionPayload: {
+        correctAnswer: "Caída del muro de Berlín",
+        acceptedAnswers: ["caida del muro de berlin", "Berlín"],
+        explanation: "La respuesta identifica el acontecimiento.",
+      },
+    };
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.questions[1].type).toBe("progressive-clues");
+    if (parsed.questions[1].type !== "progressive-clues")
+      throw new Error("Expected Progressive-clues");
+    expect(parsed.questions[1].publicPayload.clues).toHaveLength(2);
+    expect(parsed.questions[1].solutionPayload.acceptedAnswers).toContain("Berlín");
+  });
+
+  it("rejects future-clue secrets and duplicate normalized accepted answers", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "progressive-clues-2",
+      type: "progressive-clues",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30000,
+      points: 50,
+      publicPayload: {
+        question: "Identifica el acontecimiento",
+        clues: ["Pista inicial", "Pista futura"],
+        cluePenalty: 10,
+      },
+      solutionPayload: {
+        correctAnswer: "Respuesta",
+        acceptedAnswers: ["respuesta", " Res puesta "],
+      },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato progressive-clues");
+
+    (document.questions[1].solutionPayload as Record<string, unknown>).acceptedAnswers = ["otra"];
+    expect(() => parseFlashEditorialDocument(document)).toThrow("contrato progressive-clues");
+
+    (document.questions[1].publicPayload as Record<string, unknown>).correctAnswer = "Respuesta";
+    expect(() => parseFlashEditorialDocument(document)).toThrow("no puede contener soluciones");
   });
 });

@@ -126,4 +126,131 @@ describe("server flash question adapter", () => {
     });
     expect(question).not.toHaveProperty("correctAnswer");
   });
+
+  it("maps only revealed Progressive-clues progress", () => {
+    const question = questionFromPayload(
+      "item-progressive",
+      {
+        category: "Historia",
+        question: "Identifica el acontecimiento",
+        clueCount: 3,
+        cluePenalty: 25,
+      },
+      30_000,
+      80,
+      "progressive-clues",
+      {
+        kind: "progressive-clues",
+        clues: ["Ocurrió en Europa."],
+        revealedClues: 1,
+        totalClues: 3,
+        availablePoints: 80,
+        cluePenalty: 40,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "progressive-clues",
+      clues: ["Ocurrió en Europa."],
+      totalClues: 3,
+      cluePenalty: 25,
+      progress: { revealedClues: 1, availablePoints: 80 },
+    });
+    if (question.type !== "progressive-clues") throw new Error("Expected Progressive-clues");
+    expect(question.clues).not.toContain("Pista futura");
+    expect(question).not.toHaveProperty("correctAnswer");
+  });
+
+  it("maps the complete Progressive-clues payload only for review", () => {
+    const question = questionFromPayload(
+      "item-progressive-review",
+      {
+        question: "Identifica el acontecimiento",
+        clues: ["Primera", "Segunda", "Tercera"],
+        cluePenalty: 25,
+      },
+      30_000,
+      50,
+      "progressive-clues",
+      undefined,
+      true,
+    );
+
+    expect(question).toMatchObject({
+      type: "progressive-clues",
+      clues: ["Primera", "Segunda", "Tercera"],
+      progress: { revealedClues: 3, totalClues: 3 },
+    });
+  });
+
+  it("maps Matching progress without exposing a solution or future answer IDs", () => {
+    const question = questionFromPayload(
+      "item-matching",
+      {
+        category: "Cultura",
+        question: "Relaciona",
+        leftItems: [
+          { id: "l1", label: "Uno" },
+          { id: "l2", label: "Dos" },
+          { id: "l3", label: "Tres" },
+        ],
+        rightItems: [
+          { id: "r1", label: "Primero" },
+          { id: "r2", label: "Segundo" },
+          { id: "r3", label: "Tercero" },
+        ],
+      },
+      30_000,
+      50,
+      "matching",
+      {
+        kind: "matching",
+        matchedPairs: [{ leftId: "l1", rightId: "r1" }],
+        matchedCount: 1,
+        totalPairs: 3,
+        incorrectAttempts: 2,
+        penaltyPoints: 10,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "matching",
+      progress: { matchedCount: 1, incorrectAttempts: 2, penaltyPoints: 10 },
+    });
+    expect(question).not.toHaveProperty("correctMatchId");
+    expect(question).not.toHaveProperty("solutionPayload");
+    expect(JSON.stringify(question)).not.toContain("correctMatchId");
+  });
+
+  it("rejects a playable Matching payload containing correctMatchId", () => {
+    expect(() =>
+      questionFromPayload(
+        "item-matching",
+        {
+          question: "Relaciona",
+          leftItems: [
+            { id: "l1", label: "Uno", correctMatchId: "r1" },
+            { id: "l2", label: "Dos" },
+            { id: "l3", label: "Tres" },
+          ],
+          rightItems: [
+            { id: "r1", label: "Primero" },
+            { id: "r2", label: "Segundo" },
+            { id: "r3", label: "Tercero" },
+          ],
+        },
+        30_000,
+        50,
+        "matching",
+        {
+          kind: "matching",
+          matchedPairs: [],
+          matchedCount: 0,
+          totalPairs: 3,
+          incorrectAttempts: 0,
+          penaltyPoints: 0,
+        },
+      ),
+    ).toThrow(ServerFlashQuestionError);
+  });
 });

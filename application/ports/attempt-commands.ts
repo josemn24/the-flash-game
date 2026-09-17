@@ -17,12 +17,16 @@ import type {
   StartAttemptResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
+  SubmitMatchingPairInput,
+  SubmitMatchingPairResult,
   SubmitMiniWordleGuessInput,
   SubmitMiniWordleGuessResult,
   SubmitLogicCodeAttemptInput,
   SubmitLogicCodeAttemptResult,
   TakeOverAttemptInput,
   TakeOverAttemptResult,
+  RevealProgressiveClueInput,
+  RevealProgressiveClueResult,
 } from "@/types/contracts/attempts";
 import type { AnswerStatus } from "@/types/domain/attempt";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
@@ -75,6 +79,8 @@ export type EvaluationContext = EvaluationReceipt & {
   readonly modeConfig: JsonValue;
   readonly submittedCodes?: readonly string[];
   readonly incorrectAttempts?: number;
+  readonly matchingIncorrectAttempts?: number;
+  readonly progressiveCluesRevealed?: number;
 };
 
 /**
@@ -90,7 +96,9 @@ export interface AttemptCommands {
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
+  submitMatchingPair(input: SubmitMatchingPairInput): Promise<SubmitMatchingPairResult>;
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
+  revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;
   readEvaluationContext(
     receiptId: AnswerReceiptId,
     sessionToken: string,

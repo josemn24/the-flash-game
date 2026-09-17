@@ -1,9 +1,18 @@
-import type { FlashChallenge, LogicCodeQuestion, MiniWordleQuestion, QuestionOfType } from "@/types/game";
+import type {
+  FlashChallenge,
+  LogicCodeQuestion,
+  MatchingQuestion,
+  MiniWordleQuestion,
+  ProgressiveCluesQuestion,
+  QuestionOfType,
+} from "@/types/game";
 import type {
   ServerFlashChallenge,
   ServerFlashQuestion,
   ServerFlashTerminalReview,
   ServerLogicCodeQuestion,
+  ServerMatchingQuestion,
+  ServerProgressiveCluesQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 
@@ -37,16 +46,19 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType: "multiple-choice" | "mini-wordle" | "logic-code",
+  questionType: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching",
   progress?: unknown,
+  allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
 export function questionFromPayload(
   id: string,
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType?: "multiple-choice" | "mini-wordle" | "logic-code",
+  questionType?:
+    "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching",
   progress?: unknown,
+  allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
   const value = payloadRecord(payload);
   const prompt = value.question ?? value.prompt;
@@ -60,7 +72,10 @@ export function questionFromPayload(
     points,
   } as const;
   if (questionType === undefined) {
-    if (!Array.isArray(value.options) || !value.options.every((option) => typeof option === "string")) {
+    if (
+      !Array.isArray(value.options) ||
+      !value.options.every((option) => typeof option === "string")
+    ) {
       throw new ServerFlashQuestionError();
     }
     return {
@@ -72,7 +87,10 @@ export function questionFromPayload(
     };
   }
   if (questionType === "multiple-choice") {
-    if (!Array.isArray(value.options) || !value.options.every((option) => typeof option === "string")) {
+    if (
+      !Array.isArray(value.options) ||
+      !value.options.every((option) => typeof option === "string")
+    ) {
       throw new ServerFlashQuestionError();
     }
     return { ...base, type: "multiple-choice", options: value.options };
@@ -99,9 +117,10 @@ export function questionFromPayload(
     ) {
       throw new ServerFlashQuestionError();
     }
-    const rawProgress = progress && typeof progress === "object" && !Array.isArray(progress)
-      ? progress as Record<string, unknown>
-      : {};
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
     const submittedCodes = Array.isArray(rawProgress.submittedCodes)
       ? rawProgress.submittedCodes.filter((code): code is string => typeof code === "string")
       : [];
@@ -120,19 +139,168 @@ export function questionFromPayload(
       },
     };
   }
+  if (questionType === "progressive-clues") {
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
+    const rawClues = Array.isArray(rawProgress.clues)
+      ? rawProgress.clues.filter((clue): clue is string => typeof clue === "string")
+      : allowCompleteProgress && Array.isArray(value.clues)
+        ? value.clues.filter((clue): clue is string => typeof clue === "string")
+        : [];
+    const totalClues =
+      typeof value.clueCount === "number"
+        ? value.clueCount
+        : typeof rawProgress.totalClues === "number"
+          ? rawProgress.totalClues
+          : rawClues.length;
+    const cluePenalty = typeof value.cluePenalty === "number" ? value.cluePenalty : Number.NaN;
+    const revealedClues =
+      typeof rawProgress.revealedClues === "number" ? rawProgress.revealedClues : rawClues.length;
+    const availablePoints =
+      typeof rawProgress.availablePoints === "number" ? rawProgress.availablePoints : points;
+    if (
+      !Number.isSafeInteger(totalClues) ||
+      totalClues < 1 ||
+      totalClues > 20 ||
+      !Number.isSafeInteger(cluePenalty) ||
+      cluePenalty < 0 ||
+      !Number.isSafeInteger(revealedClues) ||
+      revealedClues < 1 ||
+      revealedClues > totalClues ||
+      rawClues.length !== revealedClues ||
+      !rawClues.every((clue) => clue.trim().length > 0) ||
+      !Number.isSafeInteger(availablePoints) ||
+      availablePoints < 0
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const progressiveProgress: ServerProgressiveCluesQuestion["progress"] = {
+      kind: "progressive-clues",
+      clues: rawClues,
+      revealedClues,
+      totalClues,
+      availablePoints,
+      cluePenalty,
+    };
+    return {
+      ...base,
+      type: "progressive-clues",
+      clues: rawClues,
+      totalClues,
+      cluePenalty,
+      progress: progressiveProgress,
+    };
+  }
+  if (questionType === "matching") {
+    const leftItems = value.leftItems;
+    const rightItems = value.rightItems;
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
+    const isItem = (item: unknown) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+      const record = item as Record<string, unknown>;
+      return (
+        Object.keys(record).every((key) => ["id", "label", "icon", "media"].includes(key)) &&
+        typeof record.id === "string" &&
+        record.id.trim().length > 0 &&
+        record.id.length <= 120 &&
+        typeof record.label === "string" &&
+        record.label.trim().length > 0 &&
+        record.label.length <= 500 &&
+        (record.icon === undefined || (typeof record.icon === "string" && record.icon.length <= 32))
+      );
+    };
+    const validLeftItems =
+      Array.isArray(leftItems) &&
+      leftItems.length >= 3 &&
+      leftItems.length <= 6 &&
+      leftItems.every(isItem);
+    const validRightItems =
+      Array.isArray(rightItems) &&
+      rightItems.length === (Array.isArray(leftItems) ? leftItems.length : 0) &&
+      rightItems.every(isItem);
+    const leftIds = validLeftItems
+      ? leftItems.map((item) => (item as Record<string, unknown>).id as string)
+      : [];
+    const rightIds = validRightItems
+      ? rightItems.map((item) => (item as Record<string, unknown>).id as string)
+      : [];
+    const rawMatchedPairs = Array.isArray(rawProgress.matchedPairs) ? rawProgress.matchedPairs : [];
+    const matchedPairs = rawMatchedPairs.filter(
+      (pair): pair is { leftId: string; rightId: string } => {
+        if (!pair || typeof pair !== "object" || Array.isArray(pair)) return false;
+        const record = pair as Record<string, unknown>;
+        return typeof record.leftId === "string" && typeof record.rightId === "string";
+      },
+    );
+    const matchedLeftIds = new Set(matchedPairs.map((pair) => pair.leftId));
+    const matchedRightIds = new Set(matchedPairs.map((pair) => pair.rightId));
+    const totalPairs =
+      typeof rawProgress.totalPairs === "number"
+        ? rawProgress.totalPairs
+        : Array.isArray(leftItems)
+          ? leftItems.length
+          : 0;
+    const matchedCount =
+      typeof rawProgress.matchedCount === "number" ? rawProgress.matchedCount : matchedPairs.length;
+    const incorrectAttempts =
+      typeof rawProgress.incorrectAttempts === "number" ? rawProgress.incorrectAttempts : 0;
+    const penaltyPoints =
+      typeof rawProgress.penaltyPoints === "number" ? rawProgress.penaltyPoints : 0;
+    if (
+      !validLeftItems ||
+      !validRightItems ||
+      new Set(leftIds).size !== leftIds.length ||
+      new Set(rightIds).size !== rightIds.length ||
+      !matchedPairs.every(
+        (pair) => leftIds.includes(pair.leftId) && rightIds.includes(pair.rightId),
+      ) ||
+      matchedLeftIds.size !== matchedPairs.length ||
+      matchedRightIds.size !== matchedPairs.length ||
+      matchedCount !== matchedPairs.length ||
+      totalPairs !== leftIds.length ||
+      !Number.isSafeInteger(incorrectAttempts) ||
+      incorrectAttempts < 0 ||
+      !Number.isSafeInteger(penaltyPoints) ||
+      penaltyPoints < 0
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const safeLeftItems = leftItems as ServerMatchingQuestion["leftItems"];
+    const safeRightItems = rightItems as ServerMatchingQuestion["rightItems"];
+    return {
+      ...base,
+      type: "matching",
+      leftItems: safeLeftItems,
+      rightItems: safeRightItems,
+      progress: {
+        kind: "matching",
+        matchedPairs,
+        matchedCount,
+        totalPairs,
+        incorrectAttempts,
+        penaltyPoints,
+      },
+    };
+  }
   const wordLength = value.wordLength;
   const maxAttempts = value.maxAttempts;
   if ((wordLength !== 4 && wordLength !== 5) || typeof maxAttempts !== "number") {
     throw new ServerFlashQuestionError();
   }
-  const rawProgress = progress && typeof progress === "object" && !Array.isArray(progress)
-    ? progress as Record<string, unknown>
-    : {};
+  const rawProgress =
+    progress && typeof progress === "object" && !Array.isArray(progress)
+      ? (progress as Record<string, unknown>)
+      : {};
   const guesses = Array.isArray(rawProgress.guesses)
     ? rawProgress.guesses.filter((guess): guess is string => typeof guess === "string")
     : [];
   const feedback = Array.isArray(rawProgress.feedback)
-    ? rawProgress.feedback as MiniWordleLetterFeedback[][]
+    ? (rawProgress.feedback as MiniWordleLetterFeedback[][])
     : [];
   return {
     ...base,
@@ -144,7 +312,8 @@ export function questionFromPayload(
       kind: "mini-wordle",
       guesses,
       feedback,
-      attemptsUsed: typeof rawProgress.attemptsUsed === "number" ? rawProgress.attemptsUsed : guesses.length,
+      attemptsUsed:
+        typeof rawProgress.attemptsUsed === "number" ? rawProgress.attemptsUsed : guesses.length,
       maxAttempts,
     },
   };
@@ -153,10 +322,16 @@ export function questionFromPayload(
 function questionWithSolution(
   question: ServerFlashQuestion,
   row?: ServerFlashTerminalReview,
-): QuestionOfType<"multiple-choice"> | MiniWordleQuestion | LogicCodeQuestion {
-  const solution = row?.solutionPayload && typeof row.solutionPayload === "object"
-    ? row.solutionPayload as Record<string, unknown>
-    : {};
+):
+  | QuestionOfType<"multiple-choice">
+  | MiniWordleQuestion
+  | LogicCodeQuestion
+  | ProgressiveCluesQuestion
+  | MatchingQuestion {
+  const solution =
+    row?.solutionPayload && typeof row.solutionPayload === "object"
+      ? (row.solutionPayload as Record<string, unknown>)
+      : {};
   if (question.type === "mini-wordle") {
     if (typeof solution.correctAnswer !== "string") throw new ServerFlashQuestionError();
     return {
@@ -188,6 +363,61 @@ function questionWithSolution(
       clues: [...question.clues],
       codeLength: question.codeLength,
       correctAnswer: solution.correctAnswer,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "progressive-clues") {
+    if (typeof solution.correctAnswer !== "string") throw new ServerFlashQuestionError();
+    return {
+      id: question.id,
+      type: "progressive-clues",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      clues: [...question.clues],
+      cluePenalty: question.cluePenalty,
+      correctAnswer: solution.correctAnswer,
+      acceptedAnswers: Array.isArray(solution.acceptedAnswers)
+        ? solution.acceptedAnswers.filter((answer): answer is string => typeof answer === "string")
+        : undefined,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "matching") {
+    if (
+      !solution.matches ||
+      typeof solution.matches !== "object" ||
+      Array.isArray(solution.matches)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const matches = solution.matches as Record<string, unknown>;
+    const leftItems = question.leftItems.map((item) => {
+      const rightId = matches[item.id];
+      if (typeof rightId !== "string") throw new ServerFlashQuestionError();
+      return { ...item, correctMatchId: rightId };
+    });
+    if (
+      Object.keys(matches).length !== leftItems.length ||
+      new Set(leftItems.map((item) => item.correctMatchId)).size !== leftItems.length ||
+      !leftItems.every((item) =>
+        question.rightItems.some((right) => right.id === item.correctMatchId),
+      )
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "matching",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      leftItems,
+      rightItems: [...question.rightItems],
       timeLimit: question.timeLimit,
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
@@ -240,7 +470,15 @@ export function challengeWithReview(
     questions: slots.map((slot) => {
       const row = review.find((item) => item.challengeItemId === slot.id);
       return questionWithSolution(
-        questionFromPayload(slot.id, row?.publicPayload, slot.timeLimitMs, slot.points, slot.questionType),
+        questionFromPayload(
+          slot.id,
+          row?.publicPayload,
+          slot.timeLimitMs,
+          slot.points,
+          slot.questionType,
+          undefined,
+          true,
+        ),
         row,
       );
     }),

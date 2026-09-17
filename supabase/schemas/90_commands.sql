@@ -236,13 +236,21 @@ begin
           insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
             values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
         end if;
+        perform private.ensure_progressive_clue_initial(a.id, item.id, a.challenge_version_id);
         select jsonb_build_object('challengeItemId', item.id, 'questionType', q.type,
           'payloadSchemaVersion', q.payload_schema_version,
-          'publicPayload', case when instant < unit.deadline_at then q.public_payload else null end,
+          'publicPayload', case
+            when instant >= unit.deadline_at then null
+            when q.type = 'progressive-clues' then private.progressive_clues_public_payload(item.id)
+            when q.type = 'matching' then private.matching_public_payload(item.id)
+            else q.public_payload
+          end,
           'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
           'progress', case
             when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
             when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
+            when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
+            when q.type = 'matching' then private.matching_progress(a.id, item.id)
             else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
       when 'receive', 'pass' then
@@ -262,6 +270,12 @@ begin
           where q.id = item.question_version_id and q.type = 'logic-code'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'logic_code_requires_attempt_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'matching'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'matching_requires_pair_command' using errcode = '22023';
         end if;
         select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
@@ -482,7 +496,11 @@ language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', r.answer, 'receivedAt', r.received_at,
+    'receiptId', r.id, 'answer', case when q.type = 'matching' then coalesce((
+      select jsonb_object_agg(e.left_item_id, e.right_item_id)
+      from private.matching_pair_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
+    ), '{}'::jsonb) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
     'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
@@ -491,6 +509,15 @@ begin
       from private.logic_code_attempt_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
     ), '[]'::jsonb) else null end,
+    'progressiveCluesRevealed', case when q.type = 'progressive-clues' then coalesce((
+      select max(e.clue_index)::integer
+      from private.progressive_clue_reveal_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
+    ), 1) else null end,
+    'matchingIncorrectAttempts', case when q.type = 'matching' then coalesce((
+      select count(*)::integer from private.matching_pair_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) else null end,
     'incorrectAttempts', case when q.type = 'logic-code' then coalesce((
       select count(*)::integer
       from private.logic_code_attempt_events e
@@ -565,7 +592,7 @@ begin
       select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
       select * into item from private.challenge_items where id = segment.challenge_item_id;
       select * into question from private.question_versions where id = item.question_version_id;
-      if question.type in ('mini-wordle', 'logic-code') and instant < unit.deadline_at then
+      if question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

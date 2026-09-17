@@ -140,6 +140,88 @@ begin
       and char_length(solution->>'correctAnswer') = (question.public_payload->>'codeLength')::integer
       and solution->>'correctAnswer' ~ '^[0-9]+$';
   end if;
+  if question.type = 'progressive-clues' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'clues') = 'array'
+      and jsonb_array_length(question.public_payload->'clues') between 1 and 20
+      and jsonb_typeof(question.public_payload->'cluePenalty') = 'number'
+      and (question.public_payload->>'cluePenalty')::numeric = trunc((question.public_payload->>'cluePenalty')::numeric)
+      and (question.public_payload->>'cluePenalty')::integer between 0 and 50
+      and not private.editorial_has_secret_key(question.public_payload)
+      and not exists (select 1 from jsonb_array_elements(question.public_payload->'clues') clue
+        where jsonb_typeof(clue) is distinct from 'string'
+          or char_length(btrim(clue #>> '{}')) not between 1 and 500)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
+      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
+      and not exists (select 1 from jsonb_array_elements(solution->'acceptedAnswers') answer
+        where jsonb_typeof(answer) is distinct from 'string'
+          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+      and not exists (
+        select 1
+        from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+        having count(*) > 1
+      )
+      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
+  end if;
+  if question.type = 'matching' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'leftItems') = 'array'
+      and jsonb_typeof(question.public_payload->'rightItems') = 'array'
+      and jsonb_array_length(question.public_payload->'leftItems') between 3 and 6
+      and jsonb_array_length(question.public_payload->'rightItems') = jsonb_array_length(question.public_payload->'leftItems')
+      and not private.editorial_has_secret_key(question.public_payload)
+      and not exists (
+        select 1 from jsonb_array_elements(question.public_payload->'leftItems') item
+        where jsonb_typeof(item->'id') is distinct from 'string'
+          or char_length(btrim(item->>'id')) not between 1 and 120
+          or jsonb_typeof(item->'label') is distinct from 'string'
+          or char_length(btrim(item->>'label')) not between 1 and 500
+          or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
+      )
+      and not exists (
+        select 1 from jsonb_array_elements(question.public_payload->'rightItems') item
+        where jsonb_typeof(item->'id') is distinct from 'string'
+          or char_length(btrim(item->>'id')) not between 1 and 120
+          or jsonb_typeof(item->'label') is distinct from 'string'
+          or char_length(btrim(item->>'label')) not between 1 and 500
+          or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
+      )
+      and not exists (select 1 from (
+        select item->>'id' as id from jsonb_array_elements(question.public_payload->'leftItems') item
+        group by item->>'id' having count(*) > 1
+      ) duplicate)
+      and not exists (select 1 from (
+        select item->>'id' as id from jsonb_array_elements(question.public_payload->'rightItems') item
+        group by item->>'id' having count(*) > 1
+      ) duplicate)
+      and not exists (select 1 from (
+        select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
+        from jsonb_array_elements(question.public_payload->'leftItems') item
+        group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
+      ) duplicate)
+      and not exists (select 1 from (
+        select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
+        from jsonb_array_elements(question.public_payload->'rightItems') item
+        group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
+      ) duplicate)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'matches') = 'object'
+      and (select count(*) from jsonb_object_keys(solution->'matches')) = jsonb_array_length(question.public_payload->'leftItems')
+      and not exists (select 1 from jsonb_array_elements(question.public_payload->'leftItems') item
+        where not (solution->'matches' ? (item->>'id')))
+      and not exists (select 1 from jsonb_each_text(solution->'matches') match
+        where not exists (select 1 from jsonb_array_elements(question.public_payload->'rightItems') item
+          where item->>'id' = match.value))
+      and (select count(*) from jsonb_each_text(solution->'matches')) =
+        (select count(distinct value) from jsonb_each_text(solution->'matches'));
+  end if;
   if question.type <> 'mini-wordle' or jsonb_typeof(solution) <> 'object' then return false; end if;
   expected_word_length := (question.public_payload->>'wordLength')::integer;
   max_attempts := (question.public_payload->>'maxAttempts')::integer;

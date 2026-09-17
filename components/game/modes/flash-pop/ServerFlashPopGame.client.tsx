@@ -83,6 +83,17 @@ export function ServerFlashPopGame({
             onSubmit={(answer) => void session.submit(answer)}
             onMiniWordleGuess={session.submitMiniWordleGuess}
             onLogicCodeAttempt={session.submitLogicCodeAttempt}
+            matchingState={session.matchingState}
+            matchingStatusVisible={session.matchingStatusVisible}
+            matchingError={session.matchingError}
+            lastMatchingPair={session.lastMatchingPair}
+            onMatchingPair={(leftId, rightId) => void session.submitMatchingPair(leftId, rightId)}
+            onRetryMatching={() => void session.retryMatchingPair()}
+            revealState={session.revealState}
+            revealStatusVisible={session.revealStatusVisible}
+            revealError={session.revealError}
+            onRevealProgressiveClue={() => void session.revealProgressiveClue()}
+            onRetryReveal={() => void session.retryReveal()}
             onTimeUp={() => void session.submit(null)}
           />
         </motion.div>

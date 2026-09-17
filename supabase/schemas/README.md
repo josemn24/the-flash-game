@@ -1,6 +1,6 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-17. **25 tablas**, una vista
+Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-17. **27 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
@@ -16,9 +16,10 @@ publicación inmutable; S12 añade calendario local y tick temporal sin particip
 añade Mini-Wordle competitivo con eventos intermedios, diccionario privado versionado y palabras
 adicionales específicas por pregunta sin modificar el diccionario global. E02 añade Logic-code
 mixto con intentos privados, duplicados rechazados sin penalización, progreso seguro y evaluación
-autoritativa al acertar.
-Flash mixtos. Las
-migraciones están versionadas;
+autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita, eventos de
+revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
+E04 añade Matching con eventos privados de aciertos/fallos, penalización del 10%, progreso seguro y
+evaluación parcial desde eventos. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
@@ -114,6 +115,9 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)     | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                         |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql) | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior. |
 | [93_logic_code.sql](93_logic_code.sql) | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code. |
+| [89_progressive_clues.sql](89_progressive_clues.sql) | Eventos privados, metadatos/prefijo seguro y cálculo de penalización de Progressive-clues. |
+| [94_progressive_clues.sql](94_progressive_clues.sql) | Comando transaccional de revelación, idempotencia y locks de Progressive-clues. |
+| [95_matching.sql](95_matching.sql) | Eventos privados, proyección segura y comando transaccional de parejas Matching. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
