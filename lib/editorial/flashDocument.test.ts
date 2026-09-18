@@ -234,6 +234,91 @@ describe("Flash editorial document", () => {
     expect(parsed.questions[1].solutionPayload.matches).toEqual({ l1: "r1", l2: "r2", l3: "r3" });
   });
 
+  it("accepts Progressive-image with a public source and private normalized answers", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "progressive-image-2",
+      type: "progressive-image",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 20_000,
+      points: 50,
+      publicPayload: {
+        question: "¿Qué monumento aparece?",
+        surface: {
+          src: "/visuals/connections/eiffel-tower.png",
+          alt: "Imagen progresivamente revelada de un monumento europeo",
+          width: 1024,
+          height: 1024,
+          fit: "contain",
+        },
+        revealDurationMs: 12_000,
+        answerLabel: "¿Qué aparece?",
+        answerPlaceholder: "Tu respuesta…",
+      },
+      solutionPayload: {
+        correctAnswer: "Torre Eiffel",
+        acceptedAnswers: ["torre eiffel", "eiffel tower"],
+        solutionAlt: "La Torre Eiffel en París",
+        explanation: "La imagen muestra la Torre Eiffel.",
+      },
+    };
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.questions[1]).toMatchObject({
+      type: "progressive-image",
+      publicPayload: { surface: { src: "/visuals/connections/eiffel-tower.png" } },
+      solutionPayload: { acceptedAnswers: ["torre eiffel", "eiffel tower"] },
+    });
+  });
+
+  it("rejects Progressive-image assets, dimensions, duration, and public solutions", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "progressive-image-invalid",
+      type: "progressive-image",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 20_000,
+      points: 50,
+      publicPayload: {
+        question: "¿Qué aparece?",
+        surface: { src: "https://example.com/image.png", alt: "Imagen", width: 0, height: 100 },
+        revealDurationMs: 20_000,
+      },
+      solutionPayload: {
+        correctAnswer: "Algo",
+        acceptedAnswers: ["algo"],
+        solutionAlt: "Solución",
+      },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow("progressive-image");
+
+    const valid = documentFixture();
+    valid.questions[1] = { ...document.questions[1], publicPayload: {
+      ...document.questions[1].publicPayload,
+      surface: { src: "/visuals/connections/eiffel-tower.png", alt: "Imagen", width: 100, height: 100 },
+      revealDurationMs: 10_000,
+    }};
+    (valid.questions[1].publicPayload as Record<string, unknown>).correctAnswer = "Algo";
+    expect(() => parseFlashEditorialDocument(valid)).toThrow("no puede contener soluciones");
+
+    const revealingAlt = documentFixture();
+    revealingAlt.questions[1] = { ...document.questions[1], publicPayload: {
+      ...document.questions[1].publicPayload,
+      surface: {
+        src: "/visuals/connections/eiffel-tower.png",
+        alt: "Torre Eiffel",
+        width: 100,
+        height: 100,
+      },
+      revealDurationMs: 10_000,
+    }, solutionPayload: {
+      correctAnswer: "Torre Eiffel",
+      acceptedAnswers: ["torre eiffel"],
+      solutionAlt: "La Torre Eiffel en París",
+    }};
+    expect(() => parseFlashEditorialDocument(revealingAlt)).toThrow("progressive-image");
+  });
+
   it("rejects invalid Matching cardinality, labels, and mappings", () => {
     const document = documentFixture();
     document.questions[1] = {

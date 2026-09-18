@@ -1,4 +1,4 @@
-import type { MatchingItem, MatchingLeftItem, Question, QuestionMedia } from "@/types/question";
+import type { ImageSurface, MatchingItem, MatchingLeftItem, Question, QuestionMedia } from "@/types/question";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
@@ -176,7 +176,7 @@ export type ServerFlashChallenge = ChallengeBase & {
     id: string;
     position: number;
     questionType:
-      "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching";
+      "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -265,12 +265,21 @@ export type ServerProgressiveCluesQuestion = ServerFlashQuestionBase & {
   readonly progress: ServerProgressiveCluesProgress;
 };
 
+export type ServerProgressiveImageQuestion = ServerFlashQuestionBase & {
+  readonly type: "progressive-image";
+  readonly surface: ImageSurface;
+  readonly revealDuration: number;
+  readonly answerLabel: string | null;
+  readonly answerPlaceholder: string | null;
+};
+
 export type ServerFlashQuestion =
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
   | ServerLogicCodeQuestion
   | ServerProgressiveCluesQuestion
-  | ServerMatchingQuestion;
+  | ServerMatchingQuestion
+  | ServerProgressiveImageQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

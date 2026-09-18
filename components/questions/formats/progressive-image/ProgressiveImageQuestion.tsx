@@ -20,6 +20,8 @@ type ProgressiveImageQuestionProps = {
   locked: boolean;
   onSubmit: (answer: string) => void;
   onTimedResponseStart: () => void;
+  /** Competitive mode anchors the visual reveal to the server's prepared timestamp. */
+  presentedAtMs?: number;
 };
 
 type ImageState = "loading" | "ready" | "error";
@@ -36,6 +38,7 @@ export function ProgressiveImageQuestion({
   locked,
   onSubmit,
   onTimedResponseStart,
+  presentedAtMs,
 }: ProgressiveImageQuestionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
@@ -52,7 +55,10 @@ export function ProgressiveImageQuestion({
 
     const reducedMotion = prefersReducedMotion();
     const updateProgress = () => {
-      const elapsed = (performance.now() - startedAt) / 1000;
+      const elapsed =
+        presentedAtMs === undefined
+          ? (performance.now() - startedAt) / 1000
+          : (Date.now() - presentedAtMs) / 1000;
       const exactProgress = calculateProgressiveImageReveal(elapsed, revealDuration);
       const displayedProgress = reducedMotion
         ? exactProgress >= 1
@@ -74,26 +80,30 @@ export function ProgressiveImageQuestion({
       if (updateProgress()) window.clearInterval(interval);
     }, 100);
     return () => window.clearInterval(interval);
-  }, [imageState, revealDuration, startedAt]);
+  }, [imageState, presentedAtMs, revealDuration, startedAt]);
 
   const handleImageLoaded = () => {
     if (startedRef.current) return;
     startedRef.current = true;
     lastMilestoneRef.current = 0;
-    const start = performance.now();
+    const start = presentedAtMs ?? performance.now();
     setProgress(0);
     setStartedAt(start);
     setImageState("ready");
     setAnnouncement("Imagen preparada. Comienza el revelado.");
-    onTimedResponseStart();
+    if (presentedAtMs === undefined) onTimedResponseStart();
     window.requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const retryLoad = () => {
     startedRef.current = false;
     lastMilestoneRef.current = 0;
-    setProgress(0);
-    setStartedAt(null);
+    setProgress(
+      presentedAtMs === undefined
+        ? 0
+        : calculateProgressiveImageReveal((Date.now() - presentedAtMs) / 1000, revealDuration),
+    );
+    setStartedAt(presentedAtMs === undefined ? null : presentedAtMs);
     setImageState("loading");
     setAnnouncement("Reintentando la carga de la imagen.");
     setLoadAttempt((current) => current + 1);
@@ -163,7 +173,11 @@ export function ProgressiveImageQuestion({
         {imageState === "error" && (
           <div className={styles.errorPanel} role="alert">
             <strong>No se pudo cargar la imagen.</strong>
-            <span>El tiempo todavía no ha comenzado.</span>
+            <span>
+              {presentedAtMs === undefined
+                ? "El tiempo todavía no ha comenzado."
+                : "El reloj competitivo ya está en marcha."}
+            </span>
             <MotionButton className={styles.retryButton} type="button" onClick={retryLoad}>
               Reintentar
             </MotionButton>

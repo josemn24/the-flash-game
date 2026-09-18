@@ -4,7 +4,7 @@
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
 El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluidos E01
-Mini-Wordle, E02 Logic-code, E03 Progressive-clues y E04 Matching. Los demás modos, formatos no migrados, E05–E10, Storage, abandono automático, takeover
+Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching y E10 Progressive-image. Los demás modos, formatos no migrados, E05–E09, Storage, abandono automático, takeover
 y `results_locked_at` siguen fuera de alcance.
 
 ## Runtime scope

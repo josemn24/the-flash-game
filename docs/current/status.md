@@ -87,7 +87,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S12 y E01–E04 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S12 y E01–E04/E10 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -111,16 +111,23 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-17.
 
-- `npm test`: 98 archivos y 627 tests superados; incluye reglas, adaptadores y UI pública de E01–E04
+- `npm test`: 98 archivos y 631 tests superados; incluye reglas, adaptadores y UI pública de E01–E04
+  y el contrato E10
   además de S11/S12.
 - `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
   `npm run docs:check`: correctos.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
 - `npm run supabase:schema:test`: correcto; 27 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S13, E01–E04, ACL del portal, idempotencia, rollback y carreras de comandos con
+  S02–S08, S10–S13, E01–E04 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
+- E10 añade `progressive-image` al recorrido competitivo persistido: fixture mixto, validación
+  pública/privada, reloj iniciado por servidor, recuperación y evaluación normalizada; la imagen
+  original es pública y no se presenta como revelación protegida.
+- `npm run test:integration:supabase -- --scenario e10`: correcto; el E2E E10 incluye el recorrido
+  completo y el control de spectator. En esta sesión el caso jugador quedó pendiente por un timeout
+  del entorno local al iniciar el intento, con artefactos de trace incompletos.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.
 - `npm run test:e2e -- e2e/s10-season.spec.ts`: 2/2 correctos; superadmin crea/edita/activa en `/admin`

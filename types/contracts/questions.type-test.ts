@@ -31,8 +31,8 @@ type StoredPrivatePayloadHasNoSchemaVersion = Assert<
 type SolutionOwnsCorrectAnswer = Assert<
   "correctAnswer" extends keyof QuestionSolutionOfType<"multiple-choice">["payload"] ? true : false
 >;
-type ProgressiveImageDoesNotExposeSourceInitially = Assert<
-  HasNoKey<PublicQuestionOfType<"progressive-image">["payload"]["surface"], "src">
+type ProgressiveImageExposesPublicSource = Assert<
+  "src" extends keyof PublicQuestionOfType<"progressive-image">["payload"]["surface"] ? true : false
 >;
 
 type QueensAnswerDoesNotFitSelection = Assert<
@@ -52,7 +52,7 @@ export type QuestionContractTypeAssertions =
   | StoredPublicPayloadHasNoSchemaVersion
   | StoredPrivatePayloadHasNoSchemaVersion
   | SolutionOwnsCorrectAnswer
-  | ProgressiveImageDoesNotExposeSourceInitially
+  | ProgressiveImageExposesPublicSource
   | QueensAnswerDoesNotFitSelection
   | EscapeAnswerDoesNotFitQueens
   | SelectionDoesNotFitEscape;

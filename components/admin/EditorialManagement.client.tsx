@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import Image from "next/image";
 import { AnswerOption } from "@/components/questions/shared/AnswerOption";
 import { Button, Card, Chip } from "@/components/ui";
 import {
@@ -251,6 +252,32 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
                 <p>{payload.leftItems.length} parejas</p>
                 <p className={styles.solution}>
                   Solución privada: <strong>{Object.keys(solution.matches).length} correspondencias</strong>
+                </p>
+              </article>
+            );
+          }
+          if (draftQuestion.type === "progressive-image") {
+            const payload = draftQuestion.publicPayload;
+            const solution = draftQuestion.solutionPayload;
+            return (
+              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+                <div className={styles.previewQuestionTopline}>
+                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.previewMeta}>
+                    {draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos · revelado {payload.revealDurationMs / 1000}s
+                  </span>
+                </div>
+                <p className={styles.category}>{payload.category ?? ""}</p>
+                <h4>{payload.question}</h4>
+                <Image
+                  src={payload.surface.src}
+                  alt={payload.surface.alt}
+                  width={payload.surface.width}
+                  height={payload.surface.height}
+                  className="mt-3 rounded-xl"
+                />
+                <p className={styles.solution}>
+                  Solución privada: <strong>{solution.correctAnswer}</strong>
                 </p>
               </article>
             );

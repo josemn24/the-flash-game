@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S12 y E01–E04 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S12, E01–E04 y E10 están implementadas y verificadas sobre el stack local;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-17. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
@@ -34,7 +34,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | SQL       | 27 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                                               | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                       |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                                                                               | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S12 y E01–E04.                                                                                                                                                                          | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                     |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S12, E01–E04 y E10.                                                                                                                                                                  | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                     |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -755,13 +755,17 @@ Ficha común, obligatoria para **cada** E*:
 | E07   | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                             |
 | E08   | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                     |
 | E09   | `simon-sequence`    | Secuencia visible solo en fase autorizada y registro de su entrega; impedir reiniciar presentación/reloj con recarga. Respuesta final evaluada en servidor.                                                                                                                   |
-| E10   | `progressive-image` | Resolver entrega de imagen y comienzo temporal: un blur CSS sobre el original no es ocultación. Si el contrato exige revelación protegida, servir versiones/etapas controladas; validar coste y Storage antes de habilitar. No fiar el comienzo a un `assetReady` arbitrario. |
+| E10   | `progressive-image` | **Implementado localmente.** Flash competitivo mixto con imagen pública y solución privada; `prepare` inicia el reloj en servidor, `receive_answer` y el evaluador existente calculan tiempo/puntos, y la recuperación conserva `presentedAt`/`deadlineAt`. El cliente aplica blur/scale CSS sobre el original, por lo que no es ocultación criptográfica; Storage, URLs firmadas y variantes protegidas quedan como evolución de D08. |
 
-Para E08–E10, el SQL actual inicia el reloj al preparar la interacción, mientras el prototipo espera
+Para E08–E09, el SQL actual inicia el reloj al preparar la interacción, mientras el prototipo espera
 a presentación/carga en algunos formatos. D03 debe fijar fase preparatoria, presentación y respuesta;
 si exige modificar el protocolo temporal, hacerlo solo en esa slice con migración y pruebas. Una vez
 entregada legítimamente una imagen/secuencia no puede impedirse que el jugador la conserve; el
 criterio es cumplir la política de entrega, no prometer que el navegador olvide información recibida.
+
+E10 fija ese contrato para `progressive-image`: la carga/error nunca pausa ni reinicia el plazo,
+no existe comando de revelación intermedia y la revisión terminal usa `solutionAlt` y el porcentaje
+derivado de `timeUsed`. La imagen original queda accesible en el navegador de forma explícita.
 
 ## 7. Otros modos y operación del producto
 
@@ -1099,9 +1103,9 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S12 y E01–E04 están cerradas localmente: su entrega cubre login y nombre persistido, lecturas de
+S01–S12, E01–E04 y E10 están cerradas localmente: su entrega cubre login y nombre persistido, lecturas de
 sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues y Matching,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local
-del calendario. Estas slices no habilitan S13+, otros modos ni E05–E10; el piloto sigue acotado a
+del calendario. Estas slices no habilitan S13+, otros modos ni E05–E09; el piloto sigue acotado a
 las rutas reales documentadas en S22.

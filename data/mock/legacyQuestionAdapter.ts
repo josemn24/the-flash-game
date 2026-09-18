@@ -148,13 +148,12 @@ export function normalizeLegacyQuestionFixture(question: Question): StoredFixtur
         },
       };
     case "progressive-image": {
-      const publicSurface = omitFixtureKeys(question.surface, "src");
       return {
         type: question.type,
         publicPayload: {
           ...base,
           payload: {
-            surface: publicSurface,
+            surface: question.surface,
             revealDurationMs: durationMs(question.revealDuration),
             answerLabel: question.answerLabel ?? null,
             answerPlaceholder: question.answerPlaceholder ?? null,
@@ -169,7 +168,7 @@ export function normalizeLegacyQuestionFixture(question: Question): StoredFixtur
               solutionAlt: question.solutionAlt,
             },
           },
-          reveals: [{ surface: question.surface }],
+          reveals: [],
         },
       };
     }
@@ -719,12 +718,10 @@ export function projectLegacyQuestion(fixture: AnyMockPublishedQuestion): Questi
     }
     case "progressive-image": {
       const solution = fixture.privatePayload.solution.payload;
-      const reveal = fixture.privatePayload.reveals[0];
-      if (!reveal) throw new Error(`Missing progressive image reveal for "${fixture.slug}".`);
       return asLegacy({
         ...base,
         type: fixture.type,
-        surface: reveal.surface,
+        surface: fixture.publicPayload.payload.surface,
         solutionAlt: solution.solutionAlt,
         revealDuration: fixture.publicPayload.payload.revealDurationMs,
         correctAnswer: solution.correctAnswer,

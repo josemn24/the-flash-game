@@ -117,7 +117,7 @@ language sql stable security definer set search_path = '' as $$
         where items.challenge_version_id = cv.id
       ) as question_count,
       (
-        select count(*) = 2 and bool_and(private.is_supported_flash_question(q.id))
+        select count(*) between 2 and 20 and bool_and(private.is_supported_flash_question(q.id))
         from private.challenge_items items
         join private.question_versions q on q.id = items.question_version_id
         where items.challenge_version_id = cv.id
@@ -208,7 +208,7 @@ language sql stable security definer set search_path = '' as $$
     version.mode,
     version.max_score,
     (select count(*)::bigint from private.challenge_items item where item.challenge_version_id = version.id),
-    (select count(*) = 2 and bool_and(private.is_supported_flash_question(question.id))
+    (select count(*) between 2 and 20 and bool_and(private.is_supported_flash_question(question.id))
        from private.challenge_items item
        join private.question_versions question on question.id = item.question_version_id
       where item.challenge_version_id = version.id),

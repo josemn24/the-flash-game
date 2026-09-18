@@ -437,6 +437,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       timeLimitMs: 16000,
       payload: {
         surface: {
+          src: "/visuals/spain-survival/sagrada-familia.jpg",
           alt: "Fotografía de la Sagrada Familia vista desde el Parc Güell",
           width: 1920,
           height: 1271,
@@ -461,17 +462,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
           solutionAlt: "Fotografía de la Sagrada Familia de Barcelona",
         },
       },
-      reveals: [
-        {
-          surface: {
-            src: "/visuals/spain-survival/sagrada-familia.jpg",
-            alt: "Fotografía de la Sagrada Familia vista desde el Parc Güell",
-            width: 1920,
-            height: 1271,
-            fit: "contain",
-          },
-        },
-      ],
+      reveals: [],
     },
   },
   {
@@ -713,6 +704,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       timeLimitMs: 16000,
       payload: {
         surface: {
+          src: "/visuals/spain-survival/las-meninas-velazquez.jpg",
           alt: "Las Meninas de Diego Velázquez",
           width: 960,
           height: 1105,
@@ -733,17 +725,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
           solutionAlt: "Las Meninas de Diego Velázquez",
         },
       },
-      reveals: [
-        {
-          surface: {
-            src: "/visuals/spain-survival/las-meninas-velazquez.jpg",
-            alt: "Las Meninas de Diego Velázquez",
-            width: 960,
-            height: 1105,
-            fit: "contain",
-          },
-        },
-      ],
+      reveals: [],
     },
   },
   {

@@ -75,6 +75,8 @@ export function ServerFlashPopGame({
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
             locked={session.locked}
+            deadlineAt={session.questionDeadlineAt}
+            presentedAt={session.questionPresentedAt}
             pendingAnswer={session.pendingAnswer}
             submissionState={session.submissionState}
             submissionStatusVisible={session.submissionStatusVisible}

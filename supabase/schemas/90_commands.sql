@@ -592,7 +592,7 @@ begin
       select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
       select * into item from private.challenge_items where id = segment.challenge_item_id;
       select * into question from private.question_versions where id = item.question_version_id;
-      if question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching') and instant < unit.deadline_at then
+      if question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

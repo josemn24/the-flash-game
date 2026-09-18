@@ -1,4 +1,4 @@
-import type { MultipleChoicePromptVisual, QuestionMedia } from "@/types/question";
+import type { ImageSurface, MultipleChoicePromptVisual, QuestionMedia } from "@/types/question";
 
 export type EditorialJsonPrimitive = boolean | number | string | null;
 export type EditorialJsonValue =
@@ -61,12 +61,23 @@ export type FlashEditorialMatchingPublicPayload = {
   readonly rightItems: readonly FlashEditorialMatchingItem[];
 };
 
+export type FlashEditorialProgressiveImagePublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly surface: ImageSurface;
+  readonly revealDurationMs: number;
+  readonly answerLabel?: string | null;
+  readonly answerPlaceholder?: string | null;
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
   | FlashEditorialMiniWordlePublicPayload
   | FlashEditorialLogicCodePublicPayload
   | FlashEditorialProgressiveCluesPublicPayload
-  | FlashEditorialMatchingPublicPayload;
+  | FlashEditorialMatchingPublicPayload
+  | FlashEditorialProgressiveImagePublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -99,12 +110,20 @@ export type FlashEditorialMatchingSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialProgressiveImageSolutionPayload = {
+  readonly correctAnswer: string;
+  readonly acceptedAnswers: readonly string[];
+  readonly solutionAlt: string;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
   | FlashEditorialMiniWordleSolutionPayload
   | FlashEditorialLogicCodeSolutionPayload
   | FlashEditorialProgressiveCluesSolutionPayload
-  | FlashEditorialMatchingSolutionPayload;
+  | FlashEditorialMatchingSolutionPayload
+  | FlashEditorialProgressiveImageSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -156,12 +175,23 @@ export type FlashEditorialMatchingQuestion = {
   readonly solutionPayload: FlashEditorialMatchingSolutionPayload;
 };
 
+export type FlashEditorialProgressiveImageQuestion = {
+  readonly slug: string;
+  readonly type: "progressive-image";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialProgressiveImagePublicPayload;
+  readonly solutionPayload: FlashEditorialProgressiveImageSolutionPayload;
+};
+
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialMiniWordleQuestion
   | FlashEditorialLogicCodeQuestion
   | FlashEditorialProgressiveCluesQuestion
-  | FlashEditorialMatchingQuestion;
+  | FlashEditorialMatchingQuestion
+  | FlashEditorialProgressiveImageQuestion;
 
 export type FlashEditorialDocument = {
   readonly challenge: {

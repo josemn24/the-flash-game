@@ -289,6 +289,7 @@ export const steelBallRunQuestions = defineQuestionCatalog([
       timeLimitMs: 20000,
       payload: {
         surface: {
+          src: "/visuals/sbr/grand-canyon-nps.jpg",
           alt: "Fotografía desenfocada de un paisaje rocoso que se revela progresivamente",
           width: 1280,
           height: 853,
@@ -311,18 +312,7 @@ export const steelBallRunQuestions = defineQuestionCatalog([
             "Fotografía del Gran Cañón con paredes rojizas, sombras profundas y cielo azul.",
         },
       },
-      reveals: [
-        {
-          surface: {
-            src: "/visuals/sbr/grand-canyon-nps.jpg",
-            alt: "Fotografía desenfocada de un paisaje rocoso que se revela progresivamente",
-            width: 1280,
-            height: 853,
-            fit: "cover",
-            position: "50% 50%",
-          },
-        },
-      ],
+      reveals: [],
     },
   },
   {

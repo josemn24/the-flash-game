@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   displayChallenge,
+  challengeWithReview,
   questionFromPayload,
   ServerFlashQuestionError,
 } from "./serverFlashQuestionAdapter";
@@ -252,5 +253,80 @@ describe("server flash question adapter", () => {
         },
       ),
     ).toThrow(ServerFlashQuestionError);
+  });
+
+  it("maps a public Progressive-image payload without its solution", () => {
+    const question = questionFromPayload(
+      "item-image",
+      {
+        question: "¿Qué monumento aparece?",
+        surface: {
+          src: "/visuals/connections/eiffel-tower.png",
+          alt: "Imagen progresivamente revelada de un monumento europeo",
+          width: 1024,
+          height: 1024,
+          fit: "contain",
+        },
+        revealDurationMs: 12_000,
+        answerLabel: "¿Qué aparece?",
+        answerPlaceholder: "Tu respuesta…",
+      },
+      20_000,
+      50,
+      "progressive-image",
+    );
+
+    expect(question).toMatchObject({
+      type: "progressive-image",
+      revealDuration: 12,
+      surface: { src: "/visuals/connections/eiffel-tower.png" },
+    });
+    expect(question).not.toHaveProperty("correctAnswer");
+    expect(question).not.toHaveProperty("solutionAlt");
+  });
+
+  it("rebuilds the complete Progressive-image question only in terminal review", () => {
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-image",
+            position: 1,
+            questionType: "progressive-image" as const,
+            payloadSchemaVersion: 1,
+            timeLimitMs: 20_000,
+            points: 50,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-image",
+          publicPayload: {
+            question: "¿Qué monumento aparece?",
+            surface: {
+              src: "/visuals/connections/eiffel-tower.png",
+              alt: "Imagen progresivamente revelada de un monumento europeo",
+              width: 1024,
+              height: 1024,
+              fit: "contain",
+            },
+            revealDurationMs: 12_000,
+          },
+          solutionPayload: {
+            correctAnswer: "Torre Eiffel",
+            acceptedAnswers: ["torre eiffel", "eiffel tower"],
+            solutionAlt: "La Torre Eiffel en París",
+            explanation: "La imagen muestra la Torre Eiffel.",
+          },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({
+      type: "progressive-image",
+      solutionAlt: "La Torre Eiffel en París",
+      surface: { src: "/visuals/connections/eiffel-tower.png" },
+    });
   });
 });

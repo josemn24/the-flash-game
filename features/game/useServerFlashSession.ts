@@ -74,6 +74,12 @@ function idempotencyKey(prefix: string) {
   return `${prefix}:${crypto.randomUUID()}`;
 }
 
+function serverTimestamp(value: unknown): number {
+  const timestamp = typeof value === "string" ? Date.parse(value) : Number.NaN;
+  if (!Number.isFinite(timestamp)) throw new Error("invalid_server_timestamp");
+  return timestamp;
+}
+
 async function postJson(path: string, body: object) {
   const response = await fetch(path, {
     method: "POST",
@@ -124,6 +130,8 @@ export function useServerFlashSession({
   const [attempt, setAttempt] = useState<AttemptState | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [question, setQuestion] = useState<ServerFlashQuestion | null>(null);
+  const [questionPresentedAt, setQuestionPresentedAt] = useState<number | null>(null);
+  const [questionDeadlineAt, setQuestionDeadlineAt] = useState<number | null>(null);
   const [results, setResults] = useState<AnswerResult[]>(() => initialResults(roomContext));
   const [lastResult, setLastResult] = useState<AnswerResult>();
   const [score, setScore] = useState(roomContext.result?.flashPoints ?? 0);
@@ -230,6 +238,8 @@ export function useServerFlashSession({
     const nextIndex = challenge.slots.findIndex((item) => item.id === itemId);
     if (nextIndex < 0) throw new Error("competitive_question_not_found");
     const slot = challenge.slots[nextIndex]!;
+    const presentedAt = serverTimestamp(prepared.presentedAt);
+    const deadlineAt = serverTimestamp(prepared.deadlineAt);
     setAttempt({ id: currentAttempt.id, lockVersion: nextLockVersion });
     setQuestionIndex(nextIndex);
     setQuestion(
@@ -242,6 +252,8 @@ export function useServerFlashSession({
         prepared.progress,
       ),
     );
+    setQuestionPresentedAt(presentedAt);
+    setQuestionDeadlineAt(deadlineAt);
     setRevealState("idle");
     setRevealStatusVisible(false);
     setRevealError(undefined);
@@ -287,6 +299,8 @@ export function useServerFlashSession({
       const rows = terminalReviewFromResponse(response.review);
       setScore(Number(response.score ?? 0));
       setReviewChallenge(rows.length ? challengeWithReview(challenge, rows) : null);
+      setQuestionPresentedAt(null);
+      setQuestionDeadlineAt(null);
       setPhase("results");
     } else if (response.phase === "countdown") {
       setPhase("countdown");
@@ -903,6 +917,8 @@ export function useServerFlashSession({
     attempt,
     questionIndex,
     question,
+    questionPresentedAt,
+    questionDeadlineAt,
     results,
     lastResult,
     score,

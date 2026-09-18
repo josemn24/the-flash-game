@@ -124,7 +124,7 @@ export type QuestionContractMap = {
   };
   readonly "progressive-image": {
     readonly public: {
-      readonly surface: Omit<Legacy.ImageSurface, "src">;
+      readonly surface: Legacy.ImageSurface;
       readonly revealDurationMs: DurationMs;
       readonly answerLabel: string | null;
       readonly answerPlaceholder: string | null;
@@ -135,7 +135,7 @@ export type QuestionContractMap = {
       readonly solutionAlt: string;
     };
     readonly answer: string;
-    readonly reveal: { readonly surface: Legacy.ImageSurface };
+    readonly reveal: never;
   };
   readonly "heat-map": {
     readonly public: {

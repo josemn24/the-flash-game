@@ -278,9 +278,9 @@ provocados en auditoría demuestran que no quedan operaciones parciales. La vali
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
 Validación local actual: `check-supabase-schema` carga **27 archivos declarativos**, verifica el
-inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03
-y 26 de E04**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes y **627
-pruebas TypeScript**
+inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
+26 de E04 y 12 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
+y las 631 pruebas TypeScript
 superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade

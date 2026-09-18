@@ -73,7 +73,7 @@ begin
     question_slug := btrim(question->>'slug');
     if jsonb_typeof(question->'slug') is distinct from 'string'
       or char_length(question_slug) not between 1 and 120
-      or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching')
+      or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image')
       or question->'payloadSchemaVersion' <> '1'::jsonb
       or jsonb_typeof(question->'timeLimitMs') is distinct from 'number'
       or (question->>'timeLimitMs')::numeric <= 0
@@ -318,6 +318,73 @@ begin
           select 1 from jsonb_array_elements(public_payload->'rightItems') item where item->>'id' = match.value
         ))
         or (select count(*) from jsonb_each_text(solution_payload->'matches')) <> (select count(distinct value) from jsonb_each_text(solution_payload->'matches'))
+        or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+        raise exception 'invalid_solution_payload' using errcode = '22023';
+      end if;
+      continue;
+    end if;
+
+    if question->>'type' = 'progressive-image' then
+      if jsonb_typeof(public_payload) is distinct from 'object'
+        or not public_payload ?& array['question', 'surface', 'revealDurationMs']
+        or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+          'category', 'tags', 'question', 'surface', 'revealDurationMs', 'answerLabel', 'answerPlaceholder'
+        ]))
+        or private.editorial_has_secret_key(public_payload)
+        or jsonb_typeof(public_payload->'question') is distinct from 'string'
+        or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+        or jsonb_typeof(public_payload->'surface') is distinct from 'object'
+        or not public_payload->'surface' ?& array['src', 'alt', 'width', 'height']
+        or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
+          'src', 'alt', 'width', 'height', 'fit', 'position'
+        ]))
+        or jsonb_typeof(public_payload->'surface'->'src') is distinct from 'string'
+        or char_length(btrim(public_payload->'surface'->>'src')) not between 10 and 1000
+        or left(public_payload->'surface'->>'src', 9) <> '/visuals/'
+        or public_payload->'surface'->>'src' ~ '\s'
+        or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
+        or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
+        or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
+        or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
+        or (public_payload->'surface'->>'width')::integer <= 0
+        or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
+        or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
+        or (public_payload->'surface'->>'height')::integer <= 0
+        or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
+        or (public_payload->'surface' ? 'position' and (jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
+          or char_length(public_payload->'surface'->>'position') > 100))
+        or jsonb_typeof(public_payload->'revealDurationMs') is distinct from 'number'
+        or (public_payload->>'revealDurationMs')::numeric <> trunc((public_payload->>'revealDurationMs')::numeric)
+        or (public_payload->>'revealDurationMs')::integer <= 0
+        or (public_payload->>'revealDurationMs')::integer >= (question->>'timeLimitMs')::numeric
+        or (public_payload ? 'answerLabel' and jsonb_typeof(public_payload->'answerLabel') not in ('null', 'string'))
+        or (public_payload ? 'answerPlaceholder' and jsonb_typeof(public_payload->'answerPlaceholder') not in ('null', 'string')) then
+        raise exception 'invalid_public_payload' using errcode = '22023';
+      end if;
+      if jsonb_typeof(solution_payload) is distinct from 'object'
+        or not solution_payload ?& array['correctAnswer', 'acceptedAnswers', 'solutionAlt']
+        or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+          'correctAnswer', 'acceptedAnswers', 'solutionAlt', 'explanation'
+        ]))
+        or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+        or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
+        or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
+        or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
+        or exists (select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
+          where jsonb_typeof(answer) is distinct from 'string'
+            or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+        or exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+          group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+          having count(*) > 1)
+        or not exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+          where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+            regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'))
+        or position(
+          regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') in
+          regexp_replace(lower(translate(btrim(public_payload->'surface'->>'alt'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+        ) > 0
+        or jsonb_typeof(solution_payload->'solutionAlt') is distinct from 'string'
+        or char_length(btrim(solution_payload->>'solutionAlt')) not between 1 and 500
         or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
         raise exception 'invalid_solution_payload' using errcode = '22023';
       end if;

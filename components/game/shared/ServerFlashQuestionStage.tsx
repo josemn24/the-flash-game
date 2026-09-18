@@ -6,6 +6,7 @@ import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wo
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
 import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
+import { ProgressiveImageQuestion } from "@/components/questions/formats/progressive-image/ProgressiveImageQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -44,6 +45,8 @@ export function ServerFlashQuestionStage({
   onRevealProgressiveClue,
   onRetryReveal,
   onTimeUp,
+  deadlineAt,
+  presentedAt,
 }: {
   readonly question: ServerFlashQuestion;
   readonly questionNumber: number;
@@ -73,6 +76,8 @@ export function ServerFlashQuestionStage({
   readonly onRevealProgressiveClue: () => void;
   readonly onRetryReveal?: () => void;
   readonly onTimeUp: () => void;
+  readonly deadlineAt?: number | null;
+  readonly presentedAt?: number | null;
 }) {
   const titleId = useId();
   const prompt = splitPrompt(question.question);
@@ -97,6 +102,7 @@ export function ServerFlashQuestionStage({
             active={!locked}
             onTimeUp={onTimeUp}
             resetKey={question.id}
+            deadlineAt={deadlineAt ?? undefined}
             size="compact"
           />
         }
@@ -154,6 +160,17 @@ export function ServerFlashQuestionStage({
             lastPair={lastMatchingPair}
             onPair={onMatchingPair}
             onRetry={onRetryMatching}
+          />
+        ) : question.type === "progressive-image" ? (
+          <ProgressiveImageQuestion
+            surface={question.surface}
+            revealDuration={question.revealDuration}
+            answerLabel={question.answerLabel ?? undefined}
+            answerPlaceholder={question.answerPlaceholder ?? undefined}
+            locked={locked}
+            presentedAtMs={presentedAt ?? undefined}
+            onTimedResponseStart={() => undefined}
+            onSubmit={onSubmit}
           />
         ) : (
           <>

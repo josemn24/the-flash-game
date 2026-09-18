@@ -16,6 +16,7 @@ import type { GameMode } from "@/types/gameplay/challenge";
 import type {
   AnswerReview,
   Challenge,
+  ImageSurface,
   MultipleChoicePromptVisual,
   Question,
   QuestionMedia,
@@ -186,7 +187,7 @@ type FlashMemberReviewReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -422,7 +423,8 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "mini-wordle" ||
       row.question_type === "logic-code" ||
       row.question_type === "progressive-clues" ||
-      row.question_type === "matching") &&
+      row.question_type === "matching" ||
+      row.question_type === "progressive-image") &&
     row.payload_schema_version === 1 &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
@@ -962,6 +964,64 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       points: row.item_points,
       explanation,
       type: "matching",
+    };
+  }
+  if (row.question_type === "progressive-image") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const surface = publicPayload.surface;
+    const revealDurationMs = publicPayload.revealDurationMs;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    const solutionAlt = solutionPayload.solutionAlt;
+    const prompt = publicPayload.question;
+    const explanation = solutionPayload.explanation;
+    if (
+      typeof prompt !== "string" ||
+      !isRecord(surface) ||
+      typeof surface.src !== "string" ||
+      typeof surface.alt !== "string" ||
+      typeof surface.width !== "number" ||
+      !Number.isInteger(surface.width) ||
+      surface.width <= 0 ||
+      typeof surface.height !== "number" ||
+      !Number.isInteger(surface.height) ||
+      surface.height <= 0 ||
+      (surface.fit !== undefined && surface.fit !== "cover" && surface.fit !== "contain") ||
+      (surface.position !== undefined && typeof surface.position !== "string") ||
+      typeof revealDurationMs !== "number" ||
+      !Number.isInteger(revealDurationMs) ||
+      revealDurationMs <= 0 ||
+      (row.time_limit_ms !== undefined && revealDurationMs >= row.time_limit_ms) ||
+      typeof correctAnswer !== "string" ||
+      !Array.isArray(acceptedAnswers) ||
+      !acceptedAnswers.every((answer) => typeof answer === "string") ||
+      typeof solutionAlt !== "string" ||
+      typeof explanation !== "string"
+    ) {
+      throw new Error(`Invalid historical progressive-image payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      surface: surface as ImageSurface,
+      revealDuration: revealDurationMs / 1_000,
+      correctAnswer,
+      acceptedAnswers,
+      solutionAlt,
+      ...(typeof publicPayload.answerLabel === "string"
+        ? { answerLabel: publicPayload.answerLabel }
+        : {}),
+      ...(typeof publicPayload.answerPlaceholder === "string"
+        ? { answerPlaceholder: publicPayload.answerPlaceholder }
+        : {}),
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation,
+      type: "progressive-image",
     };
   }
   const tags = requiredRecordField(publicPayload, "tags", "public_payload");

@@ -31,6 +31,7 @@ import type {
   MiniWordleQuestion,
   MultipleChoiceQuestion,
   ProgressiveCluesQuestion,
+  ProgressiveImageQuestion,
   Question,
 } from "@/types/game";
 import {
@@ -192,9 +193,10 @@ function asQuestion(
   | MiniWordleQuestion
   | LogicCodeQuestion
   | ProgressiveCluesQuestion
+  | ProgressiveImageQuestion
   | MatchingQuestion {
   if (
-    !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching"].includes(
+    !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching", "progressive-image"].includes(
       context.questionType,
     ) ||
     context.payloadSchemaVersion !== 1 ||
@@ -271,6 +273,53 @@ function asQuestion(
       ...(publicPayload.promptVisual
         ? { promptVisual: publicPayload.promptVisual as MultipleChoiceQuestion["promptVisual"] }
         : {}),
+    };
+  }
+  if (context.questionType === "progressive-image") {
+    const surface = publicPayload.surface;
+    const revealDurationMs = publicPayload.revealDurationMs;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    if (
+      !surface ||
+      typeof surface !== "object" ||
+      Array.isArray(surface) ||
+      typeof (surface as Record<string, unknown>).src !== "string" ||
+      typeof (surface as Record<string, unknown>).alt !== "string" ||
+      !Number.isSafeInteger((surface as Record<string, unknown>).width) ||
+      Number((surface as Record<string, unknown>).width) <= 0 ||
+      !Number.isSafeInteger((surface as Record<string, unknown>).height) ||
+      Number((surface as Record<string, unknown>).height) <= 0 ||
+      ((surface as Record<string, unknown>).fit !== undefined &&
+        (surface as Record<string, unknown>).fit !== "cover" &&
+        (surface as Record<string, unknown>).fit !== "contain") ||
+      (typeof revealDurationMs !== "number" ||
+        !Number.isSafeInteger(revealDurationMs) ||
+        revealDurationMs <= 0 ||
+        revealDurationMs >= context.timeLimitMs) ||
+      typeof correctAnswer !== "string" ||
+      !Array.isArray(acceptedAnswers) ||
+      !acceptedAnswers.every((answer) => typeof answer === "string") ||
+      typeof solutionPayload.solutionAlt !== "string"
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "progressive-image",
+      surface: surface as ProgressiveImageQuestion["surface"],
+      revealDuration: revealDurationMs / 1000,
+      correctAnswer,
+      acceptedAnswers,
+      solutionAlt: solutionPayload.solutionAlt,
+      answerLabel:
+        typeof publicPayload.answerLabel === "string" ? publicPayload.answerLabel : undefined,
+      answerPlaceholder:
+        typeof publicPayload.answerPlaceholder === "string"
+          ? publicPayload.answerPlaceholder
+          : undefined,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (context.questionType === "logic-code") {

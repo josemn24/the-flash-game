@@ -5,6 +5,7 @@ import type {
   FlashEditorialLogicCodeQuestion,
   FlashEditorialProgressiveCluesQuestion,
   FlashEditorialMatchingQuestion,
+  FlashEditorialProgressiveImageQuestion,
   FlashEditorialQuestion,
   EditorialJsonObject,
   EditorialJsonValue,
@@ -81,11 +82,26 @@ const matchingPublicPayloadKeys = [
   "leftItems",
   "rightItems",
 ];
+const progressiveImagePublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "surface",
+  "revealDurationMs",
+  "answerLabel",
+  "answerPlaceholder",
+];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionaryId", "explanation"];
 const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
 const progressiveCluesSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const matchingSolutionKeys = ["matches", "explanation"];
+const progressiveImageSolutionKeys = [
+  "correctAnswer",
+  "acceptedAnswers",
+  "solutionAlt",
+  "explanation",
+];
 
 export const FLASH_MIN_QUESTIONS = 2;
 export const FLASH_MAX_QUESTIONS = 20;
@@ -97,6 +113,7 @@ const PROGRESSIVE_CLUES_MAX_CLUES = 20;
 const PROGRESSIVE_CLUES_MAX_PENALTY = 50;
 const MATCHING_MIN_PAIRS = 3;
 const MATCHING_MAX_PAIRS = 6;
+const PROGRESSIVE_IMAGE_MAX_POSITION_LENGTH = 100;
 
 export class FlashEditorialValidationError extends Error {
   readonly code = "invalid_content" as const;
@@ -161,6 +178,24 @@ function isPromptVisual(value: unknown): boolean {
     (value.eyebrow === undefined || typeof value.eyebrow === "string") &&
     (value.differences === undefined ||
       (Array.isArray(value.differences) && value.differences.every((item) => typeof item === "string")))
+  );
+}
+
+function isProgressiveImageSurface(value: unknown): boolean {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["src", "alt", "width", "height", "fit", "position"])) {
+    return false;
+  }
+  return (
+    typeof value.src === "string" &&
+    /^\/visuals\/[A-Za-z0-9._~!$&'()*+,;=:@%/-]+$/.test(value.src) &&
+    nonEmptyString(value.alt, 500) &&
+    Number.isSafeInteger(value.width) &&
+    (value.width as number) > 0 &&
+    Number.isSafeInteger(value.height) &&
+    (value.height as number) > 0 &&
+    (value.fit === undefined || value.fit === "cover" || value.fit === "contain") &&
+    (value.position === undefined ||
+      (typeof value.position === "string" && value.position.length <= PROGRESSIVE_IMAGE_MAX_POSITION_LENGTH))
   );
 }
 
@@ -459,6 +494,57 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMatchingQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMatchingQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "progressive-image") {
+    if (
+      !hasOnlyKeys(publicPayload, progressiveImagePublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, progressiveImageSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato progressive-image.`]);
+    }
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    const normalizedAcceptedAnswers = Array.isArray(acceptedAnswers)
+      ? acceptedAnswers.map((answer) => (typeof answer === "string" ? normalizeAnswer(answer) : ""))
+      : [];
+    const correctAnswer = solutionPayload.correctAnswer;
+    const validRevealDuration =
+      Number.isSafeInteger(publicPayload.revealDurationMs) &&
+      (publicPayload.revealDurationMs as number) > 0 &&
+      (publicPayload.revealDurationMs as number) < (value.timeLimitMs as number);
+    if (
+      !isProgressiveImageSurface(publicPayload.surface) ||
+      !validRevealDuration ||
+      (publicPayload.answerLabel !== undefined &&
+        publicPayload.answerLabel !== null &&
+        !nonEmptyString(publicPayload.answerLabel, 200)) ||
+      (publicPayload.answerPlaceholder !== undefined &&
+        publicPayload.answerPlaceholder !== null &&
+        !nonEmptyString(publicPayload.answerPlaceholder, 200)) ||
+      typeof correctAnswer !== "string" ||
+      !nonEmptyString(correctAnswer, 500) ||
+      !Array.isArray(acceptedAnswers) ||
+      acceptedAnswers.length < 1 ||
+      acceptedAnswers.length > 100 ||
+      !acceptedAnswers.every((answer) => nonEmptyString(answer, 500)) ||
+      new Set(normalizedAcceptedAnswers).size !== normalizedAcceptedAnswers.length ||
+      !normalizedAcceptedAnswers.includes(normalizeAnswer(correctAnswer)) ||
+      normalizeAnswer((publicPayload.surface as Record<string, unknown>).alt as string).includes(
+        normalizeAnswer(correctAnswer),
+      ) ||
+      !nonEmptyString(solutionPayload.solutionAlt, 500)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato progressive-image.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "progressive-image",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialProgressiveImageQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialProgressiveImageQuestion["solutionPayload"],
     };
   }
 

@@ -4,6 +4,7 @@ import type {
   MatchingQuestion,
   MiniWordleQuestion,
   ProgressiveCluesQuestion,
+  ProgressiveImageQuestion,
   QuestionOfType,
 } from "@/types/game";
 import type {
@@ -13,6 +14,7 @@ import type {
   ServerLogicCodeQuestion,
   ServerMatchingQuestion,
   ServerProgressiveCluesQuestion,
+  ServerProgressiveImageQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 
@@ -26,6 +28,34 @@ export class ServerFlashQuestionError extends Error {
   constructor() {
     super("invalid_question_payload");
   }
+}
+
+function imageSurface(payload: Record<string, unknown>): ServerProgressiveImageQuestion["surface"] {
+  const surface = payload.surface;
+  if (!surface || typeof surface !== "object" || Array.isArray(surface)) {
+    throw new ServerFlashQuestionError();
+  }
+  const value = surface as Record<string, unknown>;
+  if (
+    typeof value.src !== "string" ||
+    typeof value.alt !== "string" ||
+    !Number.isSafeInteger(value.width) ||
+    Number(value.width) <= 0 ||
+    !Number.isSafeInteger(value.height) ||
+    Number(value.height) <= 0 ||
+    (value.fit !== undefined && value.fit !== "cover" && value.fit !== "contain") ||
+    (value.position !== undefined && typeof value.position !== "string")
+  ) {
+    throw new ServerFlashQuestionError();
+  }
+  return {
+    src: value.src,
+    alt: value.alt,
+    width: value.width,
+    height: value.height,
+    ...(value.fit ? { fit: value.fit } : {}),
+    ...(typeof value.position === "string" ? { position: value.position } : {}),
+  } as ServerProgressiveImageQuestion["surface"];
 }
 
 function payloadRecord(payload: unknown): Record<string, unknown> {
@@ -46,7 +76,7 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching",
+  questionType: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -56,7 +86,7 @@ export function questionFromPayload(
   timeLimitMs: number,
   points: number,
   questionType?:
-    "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching",
+    "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -94,6 +124,25 @@ export function questionFromPayload(
       throw new ServerFlashQuestionError();
     }
     return { ...base, type: "multiple-choice", options: value.options };
+  }
+  if (questionType === "progressive-image") {
+    const revealDurationMs = value.revealDurationMs;
+    if (
+      typeof revealDurationMs !== "number" ||
+      !Number.isSafeInteger(revealDurationMs) ||
+      revealDurationMs <= 0 ||
+      revealDurationMs >= timeLimitMs
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "progressive-image",
+      surface: imageSurface(value),
+      revealDuration: revealDurationMs / 1000,
+      answerLabel: typeof value.answerLabel === "string" ? value.answerLabel : null,
+      answerPlaceholder: typeof value.answerPlaceholder === "string" ? value.answerPlaceholder : null,
+    };
   }
   if (questionType === "logic-code") {
     const clues = value.clues;
@@ -327,6 +376,7 @@ function questionWithSolution(
   | MiniWordleQuestion
   | LogicCodeQuestion
   | ProgressiveCluesQuestion
+  | ProgressiveImageQuestion
   | MatchingQuestion {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
@@ -382,6 +432,33 @@ function questionWithSolution(
       acceptedAnswers: Array.isArray(solution.acceptedAnswers)
         ? solution.acceptedAnswers.filter((answer): answer is string => typeof answer === "string")
         : undefined,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "progressive-image") {
+    if (
+      typeof solution.correctAnswer !== "string" ||
+      !Array.isArray(solution.acceptedAnswers) ||
+      !solution.acceptedAnswers.every((answer) => typeof answer === "string") ||
+      typeof solution.solutionAlt !== "string"
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "progressive-image",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      surface: question.surface,
+      revealDuration: question.revealDuration,
+      answerLabel: question.answerLabel ?? undefined,
+      answerPlaceholder: question.answerPlaceholder ?? undefined,
+      correctAnswer: solution.correctAnswer,
+      acceptedAnswers: solution.acceptedAnswers,
+      solutionAlt: solution.solutionAlt,
       timeLimit: question.timeLimit,
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",

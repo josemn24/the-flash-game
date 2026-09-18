@@ -7,7 +7,7 @@
 
 2026-09-17, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 98 archivos de test y 627 tests superados.
+- `npm test`: 98 archivos de test y 631 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
@@ -17,9 +17,10 @@
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
 - `npm run supabase:schema:test`: correcto; 27 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S13, E01–E04, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  S02–S08, S10–S13, E01–E04 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
-  crecimiento y reducción del grafo editorial.
+  crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
+  privada, preparación temporal y evaluación normalizada.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth y PostgREST local.
 - `npm run test:integration:supabase -- --scenario s11`: correcto con Auth/PostgREST, grafo
   editorial de cinco preguntas, idempotencia, publicación e aislamiento del contexto protegido.
@@ -98,7 +99,7 @@ incorporar la misma matriz y adaptar únicamente el texto o la presentación al 
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - La validación E2E de S01–S12 usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
-- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash, E05–E10 y
+- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash y E05–E09 y
   la revisión administrativa de intentos invalidados siguen fuera del piloto.
 - No existe una ronda manual vigente y exhaustiva documentada para todos los formatos, viewports,
   VoiceOver y `prefers-reduced-motion`.

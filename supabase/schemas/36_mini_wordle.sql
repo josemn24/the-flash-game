@@ -222,6 +222,41 @@ begin
       and (select count(*) from jsonb_each_text(solution->'matches')) =
         (select count(distinct value) from jsonb_each_text(solution->'matches'));
   end if;
+  if question.type = 'progressive-image' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'surface') = 'object'
+      and jsonb_typeof(question.public_payload->'surface'->'src') = 'string'
+      and char_length(btrim(question.public_payload->'surface'->>'src')) between 10 and 1000
+      and left(question.public_payload->'surface'->>'src', 9) = '/visuals/'
+      and question.public_payload->'surface'->>'src' !~ '\s'
+      and jsonb_typeof(question.public_payload->'surface'->'alt') = 'string'
+      and char_length(btrim(question.public_payload->'surface'->>'alt')) between 1 and 500
+      and (question.public_payload->'surface'->>'width')::numeric = trunc((question.public_payload->'surface'->>'width')::numeric)
+      and (question.public_payload->'surface'->>'width')::integer > 0
+      and (question.public_payload->'surface'->>'height')::numeric = trunc((question.public_payload->'surface'->>'height')::numeric)
+      and (question.public_payload->'surface'->>'height')::integer > 0
+      and (question.public_payload->'surface'->>'fit' is null or question.public_payload->'surface'->>'fit' in ('cover', 'contain'))
+      and (question.public_payload->>'revealDurationMs')::numeric = trunc((question.public_payload->>'revealDurationMs')::numeric)
+      and (question.public_payload->>'revealDurationMs')::integer > 0
+      and (question.public_payload->>'revealDurationMs')::integer < question.time_limit_ms
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
+      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
+      and jsonb_typeof(solution->'solutionAlt') = 'string'
+      and char_length(btrim(solution->>'solutionAlt')) between 1 and 500
+      and not exists (select 1 from jsonb_array_elements(solution->'acceptedAnswers') answer
+        where jsonb_typeof(answer) is distinct from 'string'
+          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+      and not exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+        having count(*) > 1)
+      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
+  end if;
   if question.type <> 'mini-wordle' or jsonb_typeof(solution) <> 'object' then return false; end if;
   expected_word_length := (question.public_payload->>'wordLength')::integer;
   max_attempts := (question.public_payload->>'maxAttempts')::integer;
