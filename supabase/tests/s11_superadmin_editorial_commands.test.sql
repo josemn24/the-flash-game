@@ -116,6 +116,30 @@ select is((public.update_superadmin_flash_draft(jsonb_build_object(
 reset role;
 select is((select reason from private.audit_log where action = 'update_flash_draft' and entity_id = current_setting('s11.version_id')::uuid), 'Ajustar el contenido',
   'Draft updates audit their reason');
+select set_config('s11.question_versions', (
+  select coalesce(jsonb_agg(jsonb_build_object('id', item.question_version_id, 'updatedAt', version.updated_at) order by item.position), '[]'::jsonb)
+  from private.challenge_items item
+  join private.question_versions version on version.id = item.question_version_id
+  where item.challenge_version_id = current_setting('s11.version_id')::uuid
+ )::text, true);
+set local role authenticated;
+do $$
+declare
+  item jsonb;
+begin
+  for item in select value from jsonb_array_elements(current_setting('s11.question_versions')::jsonb)
+  loop
+    perform public.publish_superadmin_question(jsonb_build_object(
+      'idempotencyKey', 's11-publish-question-' || (item->>'id'),
+      'questionVersionId', (item->>'id')::uuid,
+      'expectedUpdatedAt', (item->>'updatedAt')::timestamptz,
+      'reason', 'Publicar pregunta S11'
+    ));
+  end loop;
+end;
+$$;
+reset role;
+
 set local role authenticated;
 select throws_ok($$select private.update_flash_draft_command(jsonb_build_object(
   'idempotencyKey', 's11-direct-private', 'challengeVersionId', current_setting('s11.version_id')::uuid,

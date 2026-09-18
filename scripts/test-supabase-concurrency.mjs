@@ -195,6 +195,26 @@ export async function testConcurrentCommands(sql) {
     { role: "authenticated", schema: "public" },
   );
   requireOneConflict(editorialUpdates, "Only one concurrent editorial update succeeds");
+  const currentEditorialQuestions = (
+    await sql(`select version.id::text || '|' || version.updated_at::text
+      from private.challenge_items item
+      join private.question_versions version on version.id = item.question_version_id
+      where item.challenge_version_id=${quote(editorialVersion)}
+      order by item.position;`)
+  ).trim().split("\n");
+  for (const [index, currentQuestion] of currentEditorialQuestions.entries()) {
+    const [questionVersionId, questionUpdatedAt] = currentQuestion.split("|");
+    await sql(`begin;
+      set local role authenticated;
+      select set_config('request.jwt.claims', ${quote(JSON.stringify({ sub: id("auth-superadmin"), role: "authenticated" }))}, true);
+      select public.publish_superadmin_question(jsonb_build_object(
+        'idempotencyKey', 's11-concurrent-publish-question-' || ${index + 1},
+        'questionVersionId', ${quote(questionVersionId)}::uuid,
+        'expectedUpdatedAt', ${quote(questionUpdatedAt)}::timestamptz,
+        'reason', 'Publicar pregunta concurrente'
+      ));
+      commit;`);
+  }
   const publishedBeforeRace = (
     await sql(`select status from private.challenge_versions where id=${quote(editorialVersion)};`)
   ).trim();

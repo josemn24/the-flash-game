@@ -2,9 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   FlashEditorialValidationError,
   isFlashEditorialDocument,
+  parseFlashEditorialQuestionDocument,
   parseFlashEditorialDocument,
   parseFlashEditorialJson,
 } from "./flashDocument";
+import type { FlashEditorialChallengeQuestion, FlashEditorialQuestion } from "@/types/view-models/editorial";
+
+function inlineQuestion(question: FlashEditorialChallengeQuestion): FlashEditorialQuestion {
+  if ("source" in question) throw new Error("Expected inline question");
+  return question;
+}
 
 type TestQuestion = {
   slug: string;
@@ -50,11 +57,33 @@ function documentFixture(): {
 }
 
 describe("Flash editorial document", () => {
+  it("accepts a standalone question without challenge points", () => {
+    const standalone = { ...documentFixture().questions[0] } as Record<string, unknown>;
+    delete standalone.points;
+    const parsed = parseFlashEditorialQuestionDocument(standalone);
+    expect(parsed).not.toHaveProperty("points");
+    expect(parsed.slug).toBe("question-1");
+  });
+
+  it("accepts published-library references and rejects duplicates", () => {
+    const document = documentFixture();
+    const reference = {
+      source: "library",
+      questionVersionId: "00000000-0000-4000-8000-000000000099",
+      points: 50,
+      modeConfig: {},
+    };
+    document.questions = [reference, { ...reference, questionVersionId: "00000000-0000-4000-8000-000000000100" }] as unknown as TestQuestion[];
+    expect(parseFlashEditorialDocument(document).questions[0]).toMatchObject(reference);
+    document.questions[1] = reference as unknown as TestQuestion;
+    expect(() => parseFlashEditorialDocument(document)).toThrow("no puede repetirse");
+  });
+
   it("accepts the supported envelope and preserves both private solutions", () => {
     const parsed = parseFlashEditorialDocument(documentFixture());
 
     expect(parsed.questions).toHaveLength(2);
-    expect(parsed.questions[0].solutionPayload.correctAnswer).toBe("A");
+    expect(inlineQuestion(parsed.questions[0]).solutionPayload.correctAnswer).toBe("A");
     expect(isFlashEditorialDocument(parsed)).toBe(true);
   });
 
@@ -165,10 +194,11 @@ describe("Flash editorial document", () => {
     };
 
     const parsed = parseFlashEditorialDocument(document);
-    expect(parsed.questions[1].type).toBe("mini-wordle");
-    expect(parsed.questions[1].solutionPayload.correctAnswer).toBe("Jesús");
-    if (parsed.questions[1].type !== "mini-wordle") throw new Error("Expected Mini-Wordle");
-    expect(parsed.questions[1].solutionPayload.additionalGuesses).toHaveLength(3);
+    const parsedQuestion = inlineQuestion(parsed.questions[1]);
+    expect(parsedQuestion.type).toBe("mini-wordle");
+    if (parsedQuestion.type !== "mini-wordle") throw new Error("Expected Mini-Wordle");
+    expect(parsedQuestion.solutionPayload.correctAnswer).toBe("Jesús");
+    expect(parsedQuestion.solutionPayload.additionalGuesses).toHaveLength(3);
   });
 
   it("rejects Mini-Wordle secrets, duplicate guesses, and mismatched dictionaries", () => {
@@ -228,10 +258,11 @@ describe("Flash editorial document", () => {
     };
 
     const parsed = parseFlashEditorialDocument(document);
-    expect(parsed.questions[1].type).toBe("matching");
-    if (parsed.questions[1].type !== "matching") throw new Error("Expected Matching");
-    expect(parsed.questions[1].publicPayload.leftItems).toHaveLength(3);
-    expect(parsed.questions[1].solutionPayload.matches).toEqual({ l1: "r1", l2: "r2", l3: "r3" });
+    const parsedQuestion = inlineQuestion(parsed.questions[1]);
+    expect(parsedQuestion.type).toBe("matching");
+    if (parsedQuestion.type !== "matching") throw new Error("Expected Matching");
+    expect(parsedQuestion.publicPayload.leftItems).toHaveLength(3);
+    expect(parsedQuestion.solutionPayload.matches).toEqual({ l1: "r1", l2: "r2", l3: "r3" });
   });
 
   it("accepts Progressive-image with a public source and private normalized answers", () => {
@@ -382,10 +413,11 @@ describe("Flash editorial document", () => {
     };
 
     const parsed = parseFlashEditorialDocument(document);
-    expect(parsed.questions[1].type).toBe("logic-code");
-    if (parsed.questions[1].type !== "logic-code") throw new Error("Expected Logic-code");
-    expect(parsed.questions[1].publicPayload.codeLength).toBe(4);
-    expect(parsed.questions[1].solutionPayload.correctAnswer).toBe("0420");
+    const parsedQuestion = inlineQuestion(parsed.questions[1]);
+    expect(parsedQuestion.type).toBe("logic-code");
+    if (parsedQuestion.type !== "logic-code") throw new Error("Expected Logic-code");
+    expect(parsedQuestion.publicPayload.codeLength).toBe(4);
+    expect(parsedQuestion.solutionPayload.correctAnswer).toBe("0420");
   });
 
   it("rejects malformed Logic-code clues and solutions", () => {
@@ -435,11 +467,12 @@ describe("Flash editorial document", () => {
     };
 
     const parsed = parseFlashEditorialDocument(document);
-    expect(parsed.questions[1].type).toBe("progressive-clues");
-    if (parsed.questions[1].type !== "progressive-clues")
+    const parsedQuestion = inlineQuestion(parsed.questions[1]);
+    expect(parsedQuestion.type).toBe("progressive-clues");
+    if (parsedQuestion.type !== "progressive-clues")
       throw new Error("Expected Progressive-clues");
-    expect(parsed.questions[1].publicPayload.clues).toHaveLength(2);
-    expect(parsed.questions[1].solutionPayload.acceptedAnswers).toContain("Berlín");
+    expect(parsedQuestion.publicPayload.clues).toHaveLength(2);
+    expect(parsedQuestion.solutionPayload.acceptedAnswers).toContain("Berlín");
   });
 
   it("rejects future-clue secrets and duplicate normalized accepted answers", () => {

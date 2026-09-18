@@ -1,10 +1,12 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: implementado y probado sobre PostgreSQL 17 local, 2026-09-17. **27 tablas**, una vista
+Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-17. La ampliación S17a queda en
+declarativo y pendiente de validación local con Docker. **27 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
-además del editor Flash mínimo de S11.
+además del editor Flash mínimo de S11. S17a añade biblioteca editorial y reutilización exacta de
+`question_version` sin nuevas tablas.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
 S07 consulta el historial Flash cerrado y la revisión autorizada desde versiones y resultados
 persistidos, sin materializar tablas adicionales. El portal consulta el contexto global de
@@ -105,6 +107,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)       | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                |
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql) | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal. |
 | [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql) | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash mínimo desde el portal; no añade tablas ni columnas. |
+| [61_question_library.sql](61_question_library.sql) | Biblioteca protegida de preguntas standalone, historial de versiones, publicación/archivo e índice para impedir duplicados de una versión dentro de un desafío. |
 | [59_superadmin_calendar_commands.sql](59_superadmin_calendar_commands.sql) | Programación/reprogramación de Flash publicado, lecturas de calendario y tick temporal con locks/auditoría. |
 | [61_s12_effective_attempt_guard.sql](61_s12_effective_attempt_guard.sql) | Admisión competitiva coherente con la ventana efectiva cuando el tick se retrasa. |
 | [60_integrity.sql](60_integrity.sql)                     | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                     |

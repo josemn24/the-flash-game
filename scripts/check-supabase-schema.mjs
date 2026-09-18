@@ -47,7 +47,12 @@ try {
       "-- @command-fixtures",
       () => fixtures,
     );
-    const result = await sql(source);
+    let result;
+    try {
+      result = await sql(source);
+    } catch (error) {
+      throw new Error(`${file}:\n${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    }
     if (/^not ok|^Bail out!|# Looks like you failed/m.test(result) || !/^1\.\.\d+/m.test(result))
       throw new Error(`${file}:\n${result}`);
     console.log(`${file}: ${result.match(/^1\.\.(\d+)/m)?.[1]} checks passed.`);

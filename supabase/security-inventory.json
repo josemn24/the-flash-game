@@ -257,6 +257,46 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.create_question_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.update_question_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.publish_question_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.archive_question_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.question_version_document": {
+      "arguments": "target_question_version uuid",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.question_version_detail": {
+      "arguments": "target_question_version uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.read_superadmin_question_library": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.validate_flash_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
     "private.update_flash_draft_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -609,6 +649,36 @@
     },
     "public.create_superadmin_flash_draft": {
       "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_question_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_question_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.publish_superadmin_question": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.archive_superadmin_question": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_question_library": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_question_version": {
+      "arguments": "question_version_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },

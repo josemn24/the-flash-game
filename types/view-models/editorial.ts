@@ -193,6 +193,28 @@ export type FlashEditorialQuestion =
   | FlashEditorialMatchingQuestion
   | FlashEditorialProgressiveImageQuestion;
 
+/**
+ * Standalone question document. Points are deliberately absent: points belong
+ * to the challenge item that uses a published question version.
+ */
+export type FlashEditorialQuestionDocument =
+  | Omit<FlashEditorialMultipleChoiceQuestion, "points">
+  | Omit<FlashEditorialMiniWordleQuestion, "points">
+  | Omit<FlashEditorialLogicCodeQuestion, "points">
+  | Omit<FlashEditorialProgressiveCluesQuestion, "points">
+  | Omit<FlashEditorialMatchingQuestion, "points">
+  | Omit<FlashEditorialProgressiveImageQuestion, "points">;
+
+export type FlashEditorialQuestionReference = {
+  readonly source: "library";
+  readonly questionVersionId: string;
+  readonly points: number;
+  readonly modeConfig: EditorialJsonObject;
+  readonly challengeItemId?: string;
+};
+
+export type FlashEditorialChallengeQuestion = FlashEditorialQuestion | FlashEditorialQuestionReference;
+
 export type FlashEditorialDocument = {
   readonly challenge: {
     readonly slug: string;
@@ -203,7 +225,50 @@ export type FlashEditorialDocument = {
     readonly configSchemaVersion: 1;
     readonly modeConfig: EditorialJsonObject;
   };
-  readonly questions: readonly FlashEditorialQuestion[];
+  readonly questions: readonly FlashEditorialChallengeQuestion[];
+};
+
+export type SuperadminQuestionLibraryStatus = EditorialContentStatus;
+
+export type SuperadminQuestionLibraryEntry = {
+  readonly questionDefinitionId: string;
+  readonly questionVersionId: string;
+  readonly versionNumber: number;
+  readonly status: SuperadminQuestionLibraryStatus;
+  readonly slug: string;
+  readonly type:
+    | "multiple-choice"
+    | "mini-wordle"
+    | "logic-code"
+    | "progressive-clues"
+    | "matching"
+    | "progressive-image";
+  readonly question: string;
+  readonly category: string | null;
+  readonly tags: EditorialJsonObject;
+  readonly timeLimitMs: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly publishedAt: string | null;
+  readonly versionCount: number;
+  readonly usageCount: number;
+};
+
+export type SuperadminQuestionLibraryContext = {
+  readonly entries: readonly SuperadminQuestionLibraryEntry[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly source: "supabase";
+};
+
+export type SuperadminQuestionVersionDetail = {
+  readonly questionDefinitionId: string;
+  readonly slug: string;
+  readonly versions: readonly (SuperadminQuestionLibraryEntry & {
+    readonly document: FlashEditorialQuestionDocument | null;
+  })[];
+  readonly source: "supabase";
 };
 
 export type EditorialContentStatus = "draft" | "published" | "archived";

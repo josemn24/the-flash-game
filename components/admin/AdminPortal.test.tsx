@@ -40,7 +40,7 @@ describe("AdminPortal", () => {
     expect(markup).toContain("Temporadas");
     expect(markup).toContain("Temporada Alpha");
     expect(markup).toContain("Activar temporada");
-    expect(markup).not.toContain('href="/admin');
+    expect(markup).toContain('href="/admin/questions/new"');
   });
 
   it("renders an empty state without inventing administrative actions", () => {

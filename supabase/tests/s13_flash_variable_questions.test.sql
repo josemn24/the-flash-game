@@ -121,6 +121,29 @@ select is((select max(position) from private.challenge_items where challenge_ver
   'The last question receives position twenty');
 select is((select sum(points) from private.challenge_items where challenge_version_id = current_setting('s13.version_two')::uuid), 100::bigint,
   'The twenty-question draft sums to 100 points');
+select set_config('s13.question_versions', (
+  select coalesce(jsonb_agg(jsonb_build_object('id', item.question_version_id, 'updatedAt', version.updated_at) order by item.position), '[]'::jsonb)
+  from private.challenge_items item
+  join private.question_versions version on version.id = item.question_version_id
+  where item.challenge_version_id = current_setting('s13.version_two')::uuid
+ )::text, true);
+set local role authenticated;
+do $$
+declare
+  item jsonb;
+begin
+  for item in select value from jsonb_array_elements(current_setting('s13.question_versions')::jsonb)
+  loop
+    perform public.publish_superadmin_question(jsonb_build_object(
+      'idempotencyKey', 's13-publish-question-' || (item->>'id'),
+      'questionVersionId', (item->>'id')::uuid,
+      'expectedUpdatedAt', (item->>'updatedAt')::timestamptz,
+      'reason', 'Publicar pregunta S13'
+    ));
+  end loop;
+end;
+$$;
+reset role;
 
 select set_config('s13.updated_twenty', (select updated_at::text from private.challenge_versions where id = current_setting('s13.version_two')::uuid), true);
 set local role authenticated;

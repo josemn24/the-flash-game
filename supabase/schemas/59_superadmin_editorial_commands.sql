@@ -15,6 +15,7 @@ declare
   question_points numeric;
   total_points integer := 0;
   option_count integer;
+  seen_question_versions text[] := array[]::text[];
   expected_word_length integer;
   max_attempts integer;
   code_length integer;
@@ -61,6 +62,30 @@ begin
     select value, ordinality::integer
     from jsonb_array_elements(document->'questions') with ordinality
   loop
+    if jsonb_typeof(question) = 'object' and question->>'source' = 'library' then
+      if exists (
+          select 1 from jsonb_object_keys(question) key_name
+          where key_name <> all(array['source', 'questionVersionId', 'points', 'modeConfig', 'challengeItemId'])
+        )
+        or not question ?& array['source', 'questionVersionId', 'points', 'modeConfig']
+        or jsonb_typeof(question->'questionVersionId') is distinct from 'string'
+        or question->>'questionVersionId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        or jsonb_typeof(question->'points') is distinct from 'number'
+        or (question->>'points')::numeric <> trunc((question->>'points')::numeric)
+        or (question->>'points')::integer <= 0
+        or (question->>'points')::integer > 100
+        or jsonb_typeof(question->'modeConfig') is distinct from 'object'
+        or (question ? 'challengeItemId' and (
+          jsonb_typeof(question->'challengeItemId') is distinct from 'string'
+          or question->>'challengeItemId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        ))
+        or question->>'questionVersionId' = any(seen_question_versions) then
+        raise exception 'invalid_question_reference' using errcode = '22023';
+      end if;
+      seen_question_versions := seen_question_versions || (question->>'questionVersionId');
+      total_points := total_points + (question->>'points')::integer;
+      continue;
+    end if;
     if jsonb_typeof(question) is distinct from 'object'
       or not question ?& array['slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'points', 'publicPayload', 'solutionPayload']
       or exists (
@@ -508,25 +533,35 @@ begin
       select value, ordinality::integer
       from jsonb_array_elements(document_value->'questions') with ordinality
     loop
-      question_definition_id := gen_random_uuid();
-      question_version_id := gen_random_uuid();
       item_id := gen_random_uuid();
-      insert into private.question_definitions(id, slug, created_by_player_id)
-      values (question_definition_id, question->>'slug', actor);
-      insert into private.question_versions(
-        id, question_definition_id, version_number, payload_schema_version, status, type,
-        time_limit_ms, public_payload, created_by_player_id
-      ) values (
-        question_version_id, question_definition_id, 1, 1, 'draft', question->>'type',
-        (question->>'timeLimitMs')::integer, question->'publicPayload', actor
-      );
-      insert into private.question_version_solutions(question_version_id, solution_payload)
-      values (question_version_id, question->'solutionPayload');
+      if question->>'source' = 'library' then
+        question_version_id := (question->>'questionVersionId')::uuid;
+        if not exists (
+          select 1 from private.question_versions version
+          where version.id = question_version_id and version.status = 'published'
+        ) then
+          raise exception 'question_not_published' using errcode = '55000';
+        end if;
+      else
+        question_definition_id := gen_random_uuid();
+        question_version_id := gen_random_uuid();
+        insert into private.question_definitions(id, slug, created_by_player_id)
+        values (question_definition_id, question->>'slug', actor);
+        insert into private.question_versions(
+          id, question_definition_id, version_number, payload_schema_version, status, type,
+          time_limit_ms, public_payload, created_by_player_id
+        ) values (
+          question_version_id, question_definition_id, 1, 1, 'draft', question->>'type',
+          (question->>'timeLimitMs')::integer, question->'publicPayload', actor
+        );
+        insert into private.question_version_solutions(question_version_id, solution_payload)
+        values (question_version_id, question->'solutionPayload');
+      end if;
       insert into private.challenge_items(
         id, challenge_version_id, question_version_id, position, points,
         config_schema_version, mode_config
       ) values (item_id, challenge_version_id, question_version_id, question_index,
-        (question->>'points')::integer, 1, '{}'::jsonb);
+        (question->>'points')::integer, 1, coalesce(question->'modeConfig', '{}'::jsonb));
     end loop;
   exception when unique_violation then
     raise exception 'content_slug_conflict' using errcode = '23505';
@@ -699,25 +734,35 @@ begin
         from jsonb_array_elements(document_value->'questions') with ordinality
         where ordinality > existing_item_count
       loop
-        question_definition_id := gen_random_uuid();
-        question_version_id := gen_random_uuid();
         item_id := gen_random_uuid();
-        insert into private.question_definitions(id, slug, created_by_player_id)
-        values (question_definition_id, question->>'slug', actor);
-        insert into private.question_versions(
-          id, question_definition_id, version_number, payload_schema_version, status, type,
-          time_limit_ms, public_payload, created_by_player_id
-        ) values (
-          question_version_id, question_definition_id, 1, 1, 'draft', question->>'type',
-          (question->>'timeLimitMs')::integer, question->'publicPayload', actor
-        );
-        insert into private.question_version_solutions(question_version_id, solution_payload)
-        values (question_version_id, question->'solutionPayload');
+        if question->>'source' = 'library' then
+          question_version_id := (question->>'questionVersionId')::uuid;
+          if not exists (
+            select 1 from private.question_versions version
+            where version.id = question_version_id and version.status = 'published'
+          ) then
+            raise exception 'question_not_published' using errcode = '55000';
+          end if;
+        else
+          question_definition_id := gen_random_uuid();
+          question_version_id := gen_random_uuid();
+          insert into private.question_definitions(id, slug, created_by_player_id)
+          values (question_definition_id, question->>'slug', actor);
+          insert into private.question_versions(
+            id, question_definition_id, version_number, payload_schema_version, status, type,
+            time_limit_ms, public_payload, created_by_player_id
+          ) values (
+            question_version_id, question_definition_id, 1, 1, 'draft', question->>'type',
+            (question->>'timeLimitMs')::integer, question->'publicPayload', actor
+          );
+          insert into private.question_version_solutions(question_version_id, solution_payload)
+          values (question_version_id, question->'solutionPayload');
+        end if;
         insert into private.challenge_items(
           id, challenge_version_id, question_version_id, position, points,
           config_schema_version, mode_config
         ) values (item_id, challenge_version_id_value, question_version_id, question_index,
-          (question->>'points')::integer, 1, '{}'::jsonb);
+          (question->>'points')::integer, 1, coalesce(question->'modeConfig', '{}'::jsonb));
       end loop;
     end if;
 
@@ -726,27 +771,51 @@ begin
       where item.challenge_version_id = challenge_version_id_value
       order by item.position for update
     loop
-      question := document_value->'questions'->(item_row.position - 1);
-      select * into question_row from private.question_versions version
-      where version.id = item_row.question_version_id for update;
-      select * into question_definition_row from private.question_definitions definition
-      where definition.id = question_row.question_definition_id for update;
-      if question_row.status <> 'draft' then raise exception 'content_not_draft' using errcode = '55000'; end if;
-      update private.question_definitions
-      set slug = question->>'slug'
-      where id = question_definition_row.id;
-      update private.question_versions
-      set payload_schema_version = 1,
-          type = question->>'type',
-          time_limit_ms = (question->>'timeLimitMs')::integer,
-          public_payload = question->'publicPayload'
-      where id = question_row.id;
-      update private.question_version_solutions solution
-      set solution_payload = question->'solutionPayload'
-      where solution.question_version_id = question_row.id;
-      update private.challenge_items
-      set points = (question->>'points')::integer, config_schema_version = 1, mode_config = '{}'::jsonb
-      where id = item_row.id;
+      question := coalesce(
+        (
+          select value from jsonb_array_elements(document_value->'questions') value
+          where value->>'challengeItemId' = item_row.id::text
+          limit 1
+        ),
+        document_value->'questions'->(item_row.position - 1)
+      );
+      if question->>'source' = 'library' then
+        question_version_id := (question->>'questionVersionId')::uuid;
+        if not exists (
+          select 1 from private.question_versions version
+          where version.id = question_version_id and version.status = 'published'
+        ) then
+          raise exception 'question_not_published' using errcode = '55000';
+        end if;
+        update private.challenge_items
+        set question_version_id = (question->>'questionVersionId')::uuid,
+            points = (question->>'points')::integer,
+            config_schema_version = 1,
+            mode_config = coalesce(question->'modeConfig', '{}'::jsonb)
+        where id = item_row.id;
+      else
+        select * into question_row from private.question_versions version
+        where version.id = item_row.question_version_id for update;
+        select * into question_definition_row from private.question_definitions definition
+        where definition.id = question_row.question_definition_id for update;
+        if question_row.status <> 'draft' then raise exception 'content_not_draft' using errcode = '55000'; end if;
+        update private.question_definitions
+        set slug = question->>'slug'
+        where id = question_definition_row.id;
+        update private.question_versions
+        set payload_schema_version = 1,
+            type = question->>'type',
+            time_limit_ms = (question->>'timeLimitMs')::integer,
+            public_payload = question->'publicPayload'
+        where id = question_row.id;
+        update private.question_version_solutions solution
+        set solution_payload = question->'solutionPayload'
+        where solution.question_version_id = question_row.id;
+        update private.challenge_items
+        set points = (question->>'points')::integer, config_schema_version = 1,
+            mode_config = coalesce(question->'modeConfig', '{}'::jsonb)
+        where id = item_row.id;
+      end if;
     end loop;
   exception when unique_violation then
     raise exception 'content_slug_conflict' using errcode = '23505';
@@ -866,20 +935,13 @@ begin
   loop
     select * into question_row from private.question_versions version
     where version.id = item_row.question_version_id for update;
-    if question_row.status <> 'draft' or not exists (
+    if question_row.status <> 'published' or not exists (
       select 1 from private.question_version_solutions solution
       where solution.question_version_id = question_row.id
     ) then
-      raise exception 'incomplete_content' using errcode = '22023';
+      raise exception 'question_not_published' using errcode = '55000';
     end if;
   end loop;
-
-  update private.question_versions version
-  set status = 'published'
-  where version.id in (
-    select item.question_version_id from private.challenge_items item
-    where item.challenge_version_id = challenge_version_id_value
-  );
   update private.challenge_versions version
   set status = 'published'
   where version.id = challenge_version_id_value
@@ -957,7 +1019,13 @@ begin
             ),
             'questions', coalesce((
               select jsonb_agg(
-                jsonb_build_object(
+                case when question.status <> 'draft' then jsonb_build_object(
+                  'source', 'library',
+                  'questionVersionId', question.id,
+                  'points', item.points,
+                  'modeConfig', item.mode_config,
+                  'challengeItemId', item.id
+                ) else jsonb_build_object(
                   'slug', question_definition.slug,
                   'type', question.type,
                   'payloadSchemaVersion', question.payload_schema_version,
@@ -965,7 +1033,7 @@ begin
                   'points', item.points,
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload
-                ) order by item.position
+                ) end order by item.position
               )
               from private.challenge_items item
               join private.question_versions question on question.id = item.question_version_id

@@ -1,6 +1,8 @@
 # Plan de implementación mediante vertical slices
 
 > Estado: backlog técnico vivo. S01–S12, E01–E04 y E10 están implementadas y verificadas sobre el stack local;
+> S17a está implementada en código declarativo y portal, pendiente de generar/aplicar su migración
+> local cuando Docker esté disponible;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-17. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
@@ -822,6 +824,23 @@ derivado de `timeUsed`. La imagen original queda accesible en el navegador de fo
 - **Terminada:** la historia retoma escenas y epílogo aceptados, pero no vuelve a presentar una
   pregunta temporizada abierta; termina tras su secuencia reglamentaria y conserva una revisión
   reproducible de la versión jugada.
+
+### S17a — Biblioteca editorial y reutilización de preguntas ✅ Código implementado; migración pendiente de Docker
+
+- **Objetivo / CU:** CU-10 y CU-11; separar documento standalone de pregunta, versión publicada e
+  inclusión contextual en un desafío.
+- **Superficie:** sección «Preguntas» en `/admin`, filtros por texto/formato/tags/estado, historial,
+  preview protegido, editor JSON y selector de versiones publicadas desde el editor Flash.
+- **Backend/dominio:** comandos auditados e idempotentes `get/create/update/publish/archive`; solo
+  superadmin; editar una publicada crea otra versión; publicar un desafío exige preguntas publicadas
+  y no publica preguntas implícitamente.
+- **Persistencia:** se conservan `question_definitions`, `question_versions`,
+  `question_version_solutions` y `challenge_items`; solo se añade el índice único
+  `(challenge_version_id, question_version_id)`.
+- **Compatibilidad:** los documentos inline históricos se siguen leyendo; las nuevas inclusiones usan
+  `{ source: "library", questionVersionId, points, modeConfig, challengeItemId? }`.
+- **Verificación pendiente:** el typecheck y las pruebas Vitest están ejecutados; PgTAP, reset local
+  y la migración incremental requieren que el stack Supabase/Docker esté disponible.
 
 ### S17 — Corregir contenido creando otra versión y archivar
 

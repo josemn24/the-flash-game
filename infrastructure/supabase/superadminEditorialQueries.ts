@@ -2,21 +2,29 @@ import "server-only";
 
 import type {
   CreateFlashDraftInput,
+  CreateQuestionDraftInput,
+  ArchiveQuestionInput,
   PublishFlashInput,
+  PublishQuestionInput,
+  QuestionLibraryFilters,
   SuperadminEditorialCommands,
   SuperadminEditorialQueries,
   UpdateFlashDraftInput,
+  UpdateQuestionDraftInput,
 } from "@/application/ports/superadmin-editorial-commands";
 import {
   SuperadminAccessDeniedError,
   SuperadminEditorialCommandError,
 } from "@/application/administration/errors";
-import { isFlashEditorialDocument } from "@/lib/editorial/flashDocument";
+import { isFlashEditorialDocument, parseFlashEditorialQuestionDocument } from "@/lib/editorial/flashDocument";
 import { createClient } from "@/lib/supabase/server";
 import type {
   SuperadminEditorialCommandResult,
   SuperadminEditorialContext,
   SuperadminEditorialEntry,
+  SuperadminQuestionLibraryContext,
+  SuperadminQuestionLibraryEntry,
+  SuperadminQuestionVersionDetail,
 } from "@/types/view-models/editorial";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -57,6 +65,47 @@ function isEditorialContext(value: unknown): value is Omit<SuperadminEditorialCo
   return isRecord(value) && Array.isArray(value.entries) && value.entries.every((entry) => isEditorialEntry(entry));
 }
 
+function isQuestionLibraryEntry(value: unknown): value is SuperadminQuestionLibraryEntry {
+  return isRecord(value) &&
+    typeof value.questionDefinitionId === "string" && uuidPattern.test(value.questionDefinitionId) &&
+    typeof value.questionVersionId === "string" && uuidPattern.test(value.questionVersionId) &&
+    typeof value.versionNumber === "number" && Number.isSafeInteger(value.versionNumber) && value.versionNumber > 0 &&
+    typeof value.status === "string" && statuses.has(value.status) &&
+    typeof value.slug === "string" && value.slug.length > 0 &&
+    typeof value.type === "string" &&
+    typeof value.question === "string" && value.question.length > 0 &&
+    (value.category === null || typeof value.category === "string") &&
+    isRecord(value.tags) &&
+    typeof value.timeLimitMs === "number" && Number.isSafeInteger(value.timeLimitMs) && value.timeLimitMs > 0 &&
+    isIsoDate(value.createdAt) && isIsoDate(value.updatedAt) &&
+    (value.publishedAt === null || isIsoDate(value.publishedAt)) &&
+    typeof value.versionCount === "number" && Number.isSafeInteger(value.versionCount) && value.versionCount > 0 &&
+    typeof value.usageCount === "number" && Number.isSafeInteger(value.usageCount) && value.usageCount >= 0;
+}
+
+function isQuestionLibraryContext(value: unknown): value is Omit<SuperadminQuestionLibraryContext, "source"> {
+  return isRecord(value) && Array.isArray(value.entries) && value.entries.every(isQuestionLibraryEntry) &&
+    typeof value.total === "number" && Number.isSafeInteger(value.total) && value.total >= 0 &&
+    typeof value.page === "number" && Number.isSafeInteger(value.page) && value.page > 0 &&
+    typeof value.pageSize === "number" && Number.isSafeInteger(value.pageSize) && value.pageSize > 0;
+}
+
+function isQuestionVersionDetail(value: unknown): value is SuperadminQuestionVersionDetail {
+  return isRecord(value) && typeof value.questionDefinitionId === "string" && uuidPattern.test(value.questionDefinitionId) &&
+    typeof value.slug === "string" && value.slug.length > 0 && Array.isArray(value.versions) &&
+    value.versions.every((version) => {
+      if (!isQuestionLibraryEntry(version) || !("document" in version)) return false;
+      return version.document === null || (() => {
+        try {
+          parseFlashEditorialQuestionDocument(version.document);
+          return true;
+        } catch {
+          return false;
+        }
+      })();
+    });
+}
+
 function commandErrorCode(error: { code?: string; message?: string }) {
   const message = error.message ?? "";
   const candidates = [
@@ -75,9 +124,35 @@ function commandErrorCode(error: { code?: string; message?: string }) {
     "incomplete_content",
     "content_conflict",
     "content_slug_conflict",
+    "content_not_published",
+    "invalid_question_document",
+    "invalid_question_reference",
+    "question_not_published",
     "idempotency_conflict",
   ];
   return candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed";
+}
+
+async function callQuestionCommand<T>(
+  functionName:
+    | "create_superadmin_question_draft"
+    | "update_superadmin_question_draft"
+    | "publish_superadmin_question"
+    | "archive_superadmin_question",
+  input: CreateQuestionDraftInput | UpdateQuestionDraftInput | PublishQuestionInput | ArchiveQuestionInput,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(functionName, { input });
+  if (error) {
+    if (error.code === "42501" || error.message.includes("not_authorized")) {
+      throw new SuperadminAccessDeniedError();
+    }
+    throw new SuperadminEditorialCommandError(commandErrorCode(error), error);
+  }
+  if (!isQuestionVersionDetail(data)) {
+    throw new SuperadminEditorialCommandError("invalid_response");
+  }
+  return { ...data, source: "supabase" as const } as T;
 }
 
 async function callCommand<T>(
@@ -129,6 +204,53 @@ export class SupabaseSuperadminEditorialQueries
 
   publishFlash(input: PublishFlashInput): Promise<SuperadminEditorialCommandResult> {
     return callCommand("publish_superadmin_flash", input);
+  }
+
+  async getQuestionLibrary(filters: QuestionLibraryFilters = {}): Promise<SuperadminQuestionLibraryContext> {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_question_library", { input: filters });
+    if (error) {
+      if (error.code === "42501" || error.message.includes("not_authorized")) {
+        throw new SuperadminAccessDeniedError();
+      }
+      throw new Error(`Supabase question library read failed: ${error.message}`);
+    }
+    if (!isQuestionLibraryContext(data)) throw new Error("Supabase question library returned an invalid payload.");
+    return { ...data, source: "supabase" };
+  }
+
+  async getQuestionVersion(questionVersionId: string): Promise<SuperadminQuestionVersionDetail> {
+    if (!uuidPattern.test(questionVersionId)) {
+      throw new SuperadminEditorialCommandError("invalid_command");
+    }
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_question_version", {
+      question_version_id: questionVersionId,
+    });
+    if (error) {
+      if (error.code === "42501" || error.message.includes("not_authorized")) {
+        throw new SuperadminAccessDeniedError();
+      }
+      throw new Error(`Supabase question version read failed: ${error.message}`);
+    }
+    if (!isQuestionVersionDetail(data)) throw new Error("Supabase question version returned an invalid payload.");
+    return { ...data, source: "supabase" };
+  }
+
+  createQuestionDraft(input: CreateQuestionDraftInput): Promise<SuperadminQuestionVersionDetail> {
+    return callQuestionCommand("create_superadmin_question_draft", input);
+  }
+
+  updateQuestionDraft(input: UpdateQuestionDraftInput): Promise<SuperadminQuestionVersionDetail> {
+    return callQuestionCommand("update_superadmin_question_draft", input);
+  }
+
+  publishQuestion(input: PublishQuestionInput): Promise<SuperadminQuestionVersionDetail> {
+    return callQuestionCommand("publish_superadmin_question", input);
+  }
+
+  archiveQuestion(input: ArchiveQuestionInput): Promise<SuperadminQuestionVersionDetail> {
+    return callQuestionCommand("archive_superadmin_question", input);
   }
 }
 

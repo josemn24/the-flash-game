@@ -21,7 +21,10 @@ import {
 import type {
   FlashEditorialDocument,
   FlashEditorialMultipleChoiceQuestion,
+  FlashEditorialQuestion,
+  FlashEditorialQuestionReference,
   SuperadminEditorialContext,
+  SuperadminQuestionLibraryContext,
 } from "@/types/view-models/editorial";
 import type { MultipleChoiceQuestion } from "@/types/question";
 import styles from "./EditorialManagement.module.css";
@@ -154,6 +157,10 @@ function previewQuestion(question: FlashEditorialMultipleChoiceQuestion): Multip
   };
 }
 
+function isLibraryReference(question: FlashEditorialQuestion | FlashEditorialQuestionReference): question is FlashEditorialQuestionReference {
+  return "source" in question && question.source === "library";
+}
+
 function EditorialPreview({ document }: { readonly document: FlashEditorialDocument }) {
   return (
     <div className={styles.preview} aria-label="Previsualización editorial protegida">
@@ -169,14 +176,28 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
       <p className={styles.previewDescription}>{document.challenge.description}</p>
       <div className={styles.previewQuestions}>
         {document.questions.map((draftQuestion, index) => {
-          if (draftQuestion.type === "mini-wordle") {
-            const payload = draftQuestion.publicPayload;
-            const solution = draftQuestion.solutionPayload;
+          if (isLibraryReference(draftQuestion)) {
             return (
-              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+              <article className={styles.previewQuestion} key={draftQuestion.challengeItemId ?? draftQuestion.questionVersionId}>
                 <div className={styles.previewQuestionTopline}>
                   <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                  <span className={styles.previewMeta}>{draftQuestion.points} puntos · biblioteca</span>
+                </div>
+                <h4>Versión reutilizable</h4>
+                <p className={styles.category}>{draftQuestion.questionVersionId}</p>
+                <p className={styles.solution}>La pregunta se resolverá desde la versión publicada seleccionada.</p>
+              </article>
+            );
+          }
+          const inlineQuestion = draftQuestion as FlashEditorialQuestion;
+          if (inlineQuestion.type === "mini-wordle") {
+            const payload = inlineQuestion.publicPayload;
+            const solution = inlineQuestion.solutionPayload;
+            return (
+              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
+                <div className={styles.previewQuestionTopline}>
+                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
                 </div>
                 <p className={styles.category}>{payload.category ?? ""}</p>
                 <h4>{payload.question}</h4>
@@ -187,14 +208,14 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
-          if (draftQuestion.type === "logic-code") {
-            const payload = draftQuestion.publicPayload;
-            const solution = draftQuestion.solutionPayload;
+          if (inlineQuestion.type === "logic-code") {
+            const payload = inlineQuestion.publicPayload;
+            const solution = inlineQuestion.solutionPayload;
             return (
-              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
                 <div className={styles.previewQuestionTopline}>
                   <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
                 </div>
                 <p className={styles.category}>{payload.category ?? ""}</p>
                 <h4>{payload.question}</h4>
@@ -210,14 +231,14 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
-          if (draftQuestion.type === "progressive-clues") {
-            const payload = draftQuestion.publicPayload;
-            const solution = draftQuestion.solutionPayload;
+          if (inlineQuestion.type === "progressive-clues") {
+            const payload = inlineQuestion.publicPayload;
+            const solution = inlineQuestion.solutionPayload;
             return (
-              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
                 <div className={styles.previewQuestionTopline}>
                   <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
                 </div>
                 <p className={styles.category}>{payload.category ?? ""}</p>
                 <h4>{payload.question}</h4>
@@ -233,14 +254,14 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
-          if (draftQuestion.type === "matching") {
-            const payload = draftQuestion.publicPayload;
-            const solution = draftQuestion.solutionPayload;
+          if (inlineQuestion.type === "matching") {
+            const payload = inlineQuestion.publicPayload;
+            const solution = inlineQuestion.solutionPayload;
             return (
-              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
                 <div className={styles.previewQuestionTopline}>
                   <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos</span>
+                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
                 </div>
                 <p className={styles.category}>{payload.category ?? ""}</p>
                 <h4>{payload.question}</h4>
@@ -256,15 +277,15 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
-          if (draftQuestion.type === "progressive-image") {
-            const payload = draftQuestion.publicPayload;
-            const solution = draftQuestion.solutionPayload;
+          if (inlineQuestion.type === "progressive-image") {
+            const payload = inlineQuestion.publicPayload;
+            const solution = inlineQuestion.solutionPayload;
             return (
-              <article className={styles.previewQuestion} key={draftQuestion.slug}>
+              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
                 <div className={styles.previewQuestionTopline}>
                   <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
                   <span className={styles.previewMeta}>
-                    {draftQuestion.timeLimitMs / 1000}s · {draftQuestion.points} puntos · revelado {payload.revealDurationMs / 1000}s
+                    {inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos · revelado {payload.revealDurationMs / 1000}s
                   </span>
                 </div>
                 <p className={styles.category}>{payload.category ?? ""}</p>
@@ -282,9 +303,9 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
               </article>
             );
           }
-          const question = previewQuestion(draftQuestion);
+          const question = previewQuestion(inlineQuestion as FlashEditorialMultipleChoiceQuestion);
           return (
-            <article className={styles.previewQuestion} key={draftQuestion.slug}>
+            <article className={styles.previewQuestion} key={inlineQuestion.slug}>
               <div className={styles.previewQuestionTopline}>
                 <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
                 <span className={styles.previewMeta}>{question.timeLimit}s · {question.points} puntos</span>
@@ -324,8 +345,10 @@ function ReasonField() {
 
 export function EditorialManagement({
   context,
+  questionLibrary,
 }: {
   readonly context: SuperadminEditorialContext;
+  readonly questionLibrary?: SuperadminQuestionLibraryContext;
 }) {
   const drafts = context.entries.filter((entry) => entry.status === "draft");
   const [selectedId, setSelectedId] = useState(drafts[0]?.challengeVersionId ?? "");
@@ -334,6 +357,9 @@ export function EditorialManagement({
     selected?.document ? formatFlashEditorialDocument(selected.document) : formatFlashEditorialDocument(emptyDocument),
   );
   const [previewError, setPreviewError] = useState("");
+  const publishedLibraryEntries = questionLibrary?.entries.filter((entry) => entry.status === "published") ?? [];
+  const [libraryQuestionId, setLibraryQuestionId] = useState(publishedLibraryEntries[0]?.questionVersionId ?? "");
+  const [replaceIndex, setReplaceIndex] = useState("0");
   const [createState, createAction, createPending] = useActionState(createFlashDraft, initialState);
   const [updateState, updateAction, updatePending] = useActionState(updateFlashDraft, initialState);
   const [publishState, publishAction, publishPending] = useActionState(publishFlash, initialState);
@@ -383,6 +409,32 @@ export function EditorialManagement({
     setPreviewError("");
   }
 
+  function selectLibraryQuestion() {
+    const entry = publishedLibraryEntries.find((candidate) => candidate.questionVersionId === libraryQuestionId);
+    if (!entry) return;
+    try {
+      const document = parseFlashEditorialJson(documentText);
+      const index = Number(replaceIndex);
+      const current = document.questions[index];
+      const reference: FlashEditorialQuestionReference = {
+        source: "library",
+        questionVersionId: entry.questionVersionId,
+        points: current?.points ?? 50,
+        modeConfig: {},
+        ...(current && "challengeItemId" in current && current.challengeItemId
+          ? { challengeItemId: current.challengeItemId }
+          : {}),
+      };
+      setDocumentText(formatFlashEditorialDocument({
+        ...document,
+        questions: document.questions.map((question, questionIndex) => questionIndex === index ? reference : question),
+      }));
+      setPreviewError("");
+    } catch {
+      setPreviewError("Corrige el documento antes de seleccionar una pregunta de biblioteca.");
+    }
+  }
+
   return (
     <section className={styles.section} aria-labelledby="editorial-management-title">
       <div className={styles.sectionHeading}>
@@ -416,6 +468,24 @@ export function EditorialManagement({
                 </select>
               </label>
               <Button type="button" variant="secondary" onClick={startNewDraft}>Nuevo borrador</Button>
+            </div>
+          ) : null}
+
+          {publishedLibraryEntries.length > 0 ? (
+            <div className={styles.draftSelector}>
+              <label className={styles.field}>
+                <span>Versión publicada de biblioteca</span>
+                <select value={libraryQuestionId} onChange={(event) => setLibraryQuestionId(event.target.value)}>
+                  {publishedLibraryEntries.map((entry) => <option key={entry.questionVersionId} value={entry.questionVersionId}>{entry.slug} · v{entry.versionNumber} · {entry.type}</option>)}
+                </select>
+              </label>
+              <label className={styles.field}>
+                <span>Sustituir pregunta</span>
+                <select value={replaceIndex} onChange={(event) => setReplaceIndex(event.target.value)}>
+                  {parsedDocument?.questions.map((_, index) => <option key={index} value={index}>#{index + 1}</option>)}
+                </select>
+              </label>
+              <Button type="button" variant="secondary" onClick={selectLibraryQuestion}>Usar versión</Button>
             </div>
           ) : null}
 

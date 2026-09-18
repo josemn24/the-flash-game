@@ -1,5 +1,8 @@
 import type { SeasonStatus } from "@/types/domain/season";
-import type { SuperadminEditorialContext } from "@/types/view-models/editorial";
+import type {
+  SuperadminEditorialContext,
+  SuperadminQuestionLibraryContext,
+} from "@/types/view-models/editorial";
 
 export type SuperadminCalendarEntry = {
   readonly scheduledChallengeId: string;
@@ -53,6 +56,7 @@ export type SuperadminPortalContext = {
   readonly rooms: readonly SuperadminPortalRoom[];
   readonly source: "supabase";
   readonly editorial?: SuperadminEditorialContext;
+  readonly questionLibrary?: SuperadminQuestionLibraryContext;
   readonly calendar?: SuperadminCalendarContext;
 };
 

@@ -21,10 +21,10 @@ insert into public.seasons(id,room_id,title,status,starts_at,ends_at)
 select test_support.id('season-'||m),test_support.id('room-'||m),m,'active',now()-interval '2 days',now()+interval '2 days'
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
 insert into private.question_definitions(id,slug,created_by_player_id)
-select test_support.id('q-'||m),'commands-q-'||m,test_support.id('superadmin') from unnest(array['normal','fast']) m;
+select test_support.id('q-'||m),'commands-q-'||m,test_support.id('superadmin') from unnest(array['normal','normal-2','fast','fast-2']) m;
 insert into private.question_versions(id,question_definition_id,version_number,type,time_limit_ms,public_payload,created_by_player_id)
 select test_support.id('qv-'||m),test_support.id('q-'||m),1,'true-false',case m when 'fast' then 10 else 60000 end,
-  '{"prompt":"Test?"}',test_support.id('superadmin') from unnest(array['normal','fast']) m;
+  '{"prompt":"Test?"}',test_support.id('superadmin') from unnest(array['normal','normal-2','fast','fast-2']) m;
 insert into private.question_version_solutions(question_version_id,solution_payload)
 select id,'{"correctAnswer":true}' from private.question_versions;
 update private.question_versions set status='published';
@@ -35,7 +35,7 @@ select test_support.id('cv-'||m),test_support.id('cd-'||m),1,case when m='fast' 
   case when m='alphabet' then 60000 when m='alphabet-fast' then 100 else null end,test_support.id('superadmin')
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
 insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points)
-select test_support.id('item-'||m||'-'||n),test_support.id('cv-'||m),test_support.id('qv-'||case when m='fast' then 'fast' else 'normal' end),n,50
+select test_support.id('item-'||m||'-'||n),test_support.id('cv-'||m),test_support.id('qv-'||case when m='fast' and n=2 then 'fast-2' when m='fast' then 'fast' when n=2 then 'normal-2' else 'normal' end),n,50
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m cross join generate_series(1,2) n;
 update private.challenge_versions set status='published';
 insert into public.scheduled_challenges(id,season_id,challenge_version_id,number,status,opens_at,closes_at)

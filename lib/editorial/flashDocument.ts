@@ -7,6 +7,8 @@ import type {
   FlashEditorialMatchingQuestion,
   FlashEditorialProgressiveImageQuestion,
   FlashEditorialQuestion,
+  FlashEditorialQuestionDocument,
+  FlashEditorialQuestionReference,
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
@@ -45,6 +47,7 @@ const questionKeys = [
   "publicPayload",
   "solutionPayload",
 ];
+const questionDocumentKeys = questionKeys.filter((key) => key !== "points");
 const multipleChoicePublicPayloadKeys = [
   "category",
   "tags",
@@ -551,6 +554,61 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
   throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
 }
 
+function parseQuestionReference(value: unknown, index: number): FlashEditorialQuestionReference {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, ["source", "questionVersionId", "points", "modeConfig", "challengeItemId"]) ||
+    !["source", "questionVersionId", "points", "modeConfig"].every((key) => key in value)
+  ) {
+    throw new FlashEditorialValidationError([`questions[${index}] tiene una referencia de biblioteca inválida.`]);
+  }
+  if (
+    value.source !== "library" ||
+    typeof value.questionVersionId !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.questionVersionId) ||
+    !Number.isSafeInteger(value.points) ||
+    (value.points as number) <= 0 ||
+    (value.points as number) > FLASH_TOTAL_POINTS ||
+    !isRecord(value.modeConfig) ||
+    !Object.values(value.modeConfig).every(isJsonValue) ||
+    (value.challengeItemId !== undefined &&
+      (typeof value.challengeItemId !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.challengeItemId)))
+  ) {
+    throw new FlashEditorialValidationError([`questions[${index}] tiene una referencia de biblioteca inválida.`]);
+  }
+  return {
+    source: "library",
+    questionVersionId: value.questionVersionId,
+    points: value.points as number,
+    modeConfig: value.modeConfig as EditorialJsonObject,
+    ...(value.challengeItemId ? { challengeItemId: value.challengeItemId } : {}),
+  };
+}
+
+export function parseFlashEditorialQuestionDocument(value: unknown): FlashEditorialQuestionDocument {
+  if (!isRecord(value) || !hasExactKeys(value, questionDocumentKeys)) {
+    throw new FlashEditorialValidationError(["La pregunta debe contener un documento Flash válido sin points."]);
+  }
+  const parsed = parseQuestion({ ...value, points: 1 }, 0);
+  const document = { ...parsed } as unknown as Record<string, unknown>;
+  delete document.points;
+  return document as FlashEditorialQuestionDocument;
+}
+
+export function parseFlashEditorialQuestionJson(source: string): FlashEditorialQuestionDocument {
+  try {
+    return parseFlashEditorialQuestionDocument(JSON.parse(source));
+  } catch (error) {
+    if (error instanceof FlashEditorialValidationError) throw error;
+    throw new FlashEditorialValidationError(["El documento de pregunta no contiene JSON válido."]);
+  }
+}
+
+export function formatFlashEditorialQuestionDocument(document: FlashEditorialQuestionDocument) {
+  return JSON.stringify(document, null, 2);
+}
+
 export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocument {
   if (!isRecord(value) || !hasExactKeys(value, documentKeys)) {
     throw new FlashEditorialValidationError(["El documento debe contener solo challenge y questions."]);
@@ -584,9 +642,22 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     ]);
   }
 
-  const parsedQuestions = questions.map(parseQuestion);
-  if (new Set(parsedQuestions.map((question) => question.slug)).size !== parsedQuestions.length) {
+  const parsedQuestions = questions.map((question, index) =>
+    isRecord(question) && question.source === "library"
+      ? parseQuestionReference(question, index)
+      : parseQuestion(question, index),
+  );
+  const inlineSlugs = parsedQuestions
+    .filter((question): question is FlashEditorialQuestion => !("source" in question))
+    .map((question) => question.slug);
+  const libraryVersions = parsedQuestions
+    .filter((question): question is FlashEditorialQuestionReference => "source" in question)
+    .map((question) => question.questionVersionId);
+  if (new Set(inlineSlugs).size !== inlineSlugs.length) {
     throw new FlashEditorialValidationError(["Las preguntas deben tener slugs distintos."]);
+  }
+  if (new Set(libraryVersions).size !== libraryVersions.length) {
+    throw new FlashEditorialValidationError(["Una misma versión de biblioteca no puede repetirse en el desafío."]);
   }
   if (parsedQuestions.reduce((total, question) => total + question.points, 0) !== FLASH_TOTAL_POINTS) {
     throw new FlashEditorialValidationError([

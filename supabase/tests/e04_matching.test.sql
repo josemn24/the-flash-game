@@ -32,14 +32,20 @@ values (test_support.id('e04-qv'), test_support.id('e04-q'), 1, 1, 'draft', 'mat
   '{"question":"Relaciona cada término","leftItems":[{"id":"l1","label":"Uno"},{"id":"l2","label":"Dos"},{"id":"l3","label":"Tres"}],"rightItems":[{"id":"r1","label":"Primero"},{"id":"r2","label":"Segundo"},{"id":"r3","label":"Tercero"}]}', test_support.id('superadmin'));
 insert into private.question_version_solutions(question_version_id, solution_payload)
 values (test_support.id('e04-qv'), '{"matches":{"l1":"r1","l2":"r2","l3":"r3"},"explanation":"Correspondencias."}');
-update private.question_versions set status = 'published', published_at = now() where id = test_support.id('e04-qv');
+insert into private.question_versions(id, question_definition_id, version_number, payload_schema_version, status, type, time_limit_ms, public_payload, created_by_player_id)
+select test_support.id('e04-qv-2'), question_definition_id, 2, payload_schema_version, 'draft', type, time_limit_ms, public_payload, created_by_player_id
+from private.question_versions where id = test_support.id('e04-qv');
+insert into private.question_version_solutions(question_version_id, solution_payload)
+select test_support.id('e04-qv-2'), solution_payload from private.question_version_solutions where question_version_id = test_support.id('e04-qv');
+update private.question_versions set status = 'published', published_at = now()
+where id in (test_support.id('e04-qv'), test_support.id('e04-qv-2'));
 insert into private.challenge_definitions(id, slug, created_by_player_id) values (test_support.id('e04-cd'), 'e04-matching-flash', test_support.id('superadmin'));
 insert into private.challenge_versions(id, challenge_definition_id, version_number, config_schema_version, status, mode, title, subtitle, description, max_score, mode_config, created_by_player_id)
 values (test_support.id('e04-cv'), test_support.id('e04-cd'), 1, 1, 'draft', 'flash', 'Flash Matching', 'Parejas', 'Prueba E04.', 100, '{}', test_support.id('superadmin'));
 insert into private.challenge_items(id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
 values
   (test_support.id('e04-item'), test_support.id('e04-cv'), test_support.id('e04-qv'), 1, 50, 1, '{}'),
-  (test_support.id('e04-item-2'), test_support.id('e04-cv'), test_support.id('e04-qv'), 2, 50, 1, '{}');
+  (test_support.id('e04-item-2'), test_support.id('e04-cv'), test_support.id('e04-qv-2'), 2, 50, 1, '{}');
 update private.challenge_versions set status = 'published', published_at = now() where id = test_support.id('e04-cv');
 insert into public.scheduled_challenges(id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values (test_support.id('e04-sc'), test_support.id('e04-season'), test_support.id('e04-cv'), 20, 'open', now() - interval '1 hour', now() + interval '1 hour');

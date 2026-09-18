@@ -5,6 +5,7 @@ import { CreateRoomForm } from "./CreateRoomForm.client";
 import { SeasonManagement } from "./SeasonManagement.client";
 import { EditorialManagement } from "./EditorialManagement.client";
 import { CalendarManagement } from "./CalendarManagement.client";
+import { QuestionLibraryManagement } from "./QuestionLibraryManagement.client";
 import styles from "./AdminPortal.module.css";
 
 type AdminPortalProps = {
@@ -107,6 +108,10 @@ export function AdminPortal({ context, creationNotice = false, seasonNotice, edi
       <SeasonManagement rooms={context.rooms} />
       <EditorialManagement
         context={context.editorial ?? { entries: [], source: "supabase" }}
+        questionLibrary={context.questionLibrary}
+      />
+      <QuestionLibraryManagement
+        library={context.questionLibrary ?? { entries: [], total: 0, page: 1, pageSize: 25, source: "supabase" }}
       />
       <CalendarManagement
         context={context}

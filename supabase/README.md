@@ -89,6 +89,12 @@ superadmin y metadatos para versiones publicadas/archivadas. Los comandos públi
 wrappers estrechos sobre transacciones privadas; requieren motivo, idempotencia, concurrencia
 optimista y auditoría, y no crean publicaciones de calendario, intentos, puntos ni actividad.
 
+S17a añade `schemas/61_question_library.sql`: el portal superadmin gestiona documentos standalone
+y versiones publicadas/archivadas. Los desafíos seleccionan una `question_version` exacta; puntos
+y `mode_config` permanecen en `challenge_items`, una versión puede reutilizarse en varios desafíos y
+no puede repetirse dentro del mismo desafío. La migración incremental debe generarse con el workflow
+declarativo cuando el stack local de Docker esté disponible.
+
 E01 añade `schemas/36_mini_wordle.sql` y `schemas/92_mini_wordle_commands.sql`. El portal acepta
 `multiple-choice` y `mini-wordle` en el mismo Flash, dentro de desafíos de 2 a 20 preguntas y 100
 puntos totales. La solución y

@@ -57,6 +57,34 @@ const entry = {
   document,
 };
 
+const questionVersionId = "00000000-0000-4000-8000-000000000010";
+const questionDefinitionId = "00000000-0000-4000-8000-000000000011";
+const questionDocument = {
+  slug: "question-library",
+  type: "multiple-choice" as const,
+  payloadSchemaVersion: 1 as const,
+  timeLimitMs: 15000,
+  publicPayload: { category: "Test", tags: {}, question: "Question", options: ["A", "B"], media: null, promptVisual: null },
+  solutionPayload: { correctAnswer: "A", explanation: "A" },
+};
+const libraryEntry = {
+  questionDefinitionId,
+  questionVersionId,
+  versionNumber: 1,
+  status: "published" as const,
+  slug: "question-library",
+  type: "multiple-choice" as const,
+  question: "Question",
+  category: "Test",
+  tags: {},
+  timeLimitMs: 15000,
+  createdAt: "2026-09-16T10:00:00.000Z",
+  updatedAt: "2026-09-16T10:00:00.000Z",
+  publishedAt: "2026-09-16T10:00:00.000Z",
+  versionCount: 1,
+  usageCount: 2,
+};
+
 describe("SupabaseSuperadminEditorialQueries", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -106,6 +134,22 @@ describe("SupabaseSuperadminEditorialQueries", () => {
       document: null,
       source: "supabase",
     });
+  });
+
+  it("reads the library and routes version commands through dedicated RPCs", async () => {
+    const detail = { questionDefinitionId, slug: "question-library", versions: [{ ...libraryEntry, document: questionDocument }] };
+    mocks.rpc.mockResolvedValue({ data: { entries: [libraryEntry], total: 1, page: 1, pageSize: 25 }, error: null });
+    const queries = new SupabaseSuperadminEditorialQueries();
+    await expect(queries.getQuestionLibrary({ status: "all" })).resolves.toMatchObject({ total: 1, source: "supabase" });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("get_superadmin_question_library", { input: { status: "all" } });
+
+    mocks.rpc.mockResolvedValue({ data: detail, error: null });
+    await expect(queries.getQuestionVersion(questionVersionId)).resolves.toMatchObject({ slug: "question-library", source: "supabase" });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("get_superadmin_question_version", { question_version_id: questionVersionId });
+
+    const input = { idempotencyKey: "question-test-1", document: questionDocument, reason: "Test" };
+    await expect(queries.createQuestionDraft(input)).resolves.toMatchObject({ source: "supabase" });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_question_draft", { input });
   });
 
   it("rejects malformed Supabase payloads instead of falling back", async () => {

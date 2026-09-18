@@ -47,6 +47,10 @@ function commandMessage(code: string) {
     case "invalid_solution_payload":
     case "incomplete_content":
       return "El JSON no cumple el contrato Flash mínimo.";
+    case "invalid_question_reference":
+      return "La referencia de biblioteca no es válida o está duplicada.";
+    case "question_not_published":
+      return "El desafío solo puede seleccionar versiones de pregunta publicadas.";
     case "unsupported_mode":
     case "unsupported_question_type":
     case "unsupported_schema_version":

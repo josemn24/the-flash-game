@@ -113,6 +113,7 @@ export const getSuperadminPortalPageModel = cache(async () => {
   return {
     ...access.context,
     editorial: await supabaseSuperadminEditorialQueries.getContext(),
+    questionLibrary: await supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
     calendar: await supabaseSuperadminCalendarQueries.getContext(),
   };
 });

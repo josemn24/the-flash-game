@@ -280,6 +280,8 @@ Inclusión ordenada de una pregunta versionada en un desafío.
 Constraints:
 
 - `unique (challenge_version_id, position)` y `position > 0`.
+- `unique (challenge_version_id, question_version_id)`: una misma versión no puede repetirse en el
+  mismo desafío, aunque puede reutilizarse en desafíos distintos.
 - `points >= 0`; el total exacto de 100 se valida al publicar, porque un `CHECK` no puede sumar
   varias filas.
 - La configuración contextual —nivel, letra, escena o reacción— pertenece al item, no a la
@@ -314,6 +316,11 @@ Metadatos y payload público de una versión concreta de pregunta.
 `unique (question_definition_id, version_number)` y `version_number > 0`. El formato se valida
 contra los contratos de preguntas de la aplicación; `type` no debe convertirse en un enum SQL que
 obligue a una migración por cada nuevo formato.
+
+El documento standalone de una pregunta contiene slug, formato, límite, payload público y solución
+privada, pero no puntos. Los puntos y `mode_config` pertenecen a `challenge_items`. Un desafío
+publicado referencia una `question_version` exacta y no se actualiza automáticamente al publicar
+versiones posteriores.
 
 ### `question_version_solutions`
 

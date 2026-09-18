@@ -191,6 +191,8 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Reglas de negocio:** una versión publicada es inmutable; cada desafío suma exactamente 100
   puntos; las soluciones quedan separadas del payload público; la publicación no crea calendario,
   intentos, puntos ni actividad ficticia.
+- Una pregunta publicada puede seleccionarse en varios desafíos con puntos y `mode_config`
+  diferentes; el mismo `question_version` no puede repetirse dentro de un único desafío.
 - **Resultado:** `QuestionVersion` y `ChallengeVersion` publicada y reutilizable para futuras
   selecciones de calendario.
 - **Efectos secundarios:** autoría, timestamps, auditoría segura, idempotencia y disponibilidad
@@ -210,6 +212,8 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Flujo principal:** conservar la versión usada; crear una nueva versión para la corrección; publicar o archivar según corresponda; mantener las publicaciones antiguas apuntando a su snapshot.
 - **Reglas de negocio:** nunca se modifica silenciosamente una versión publicada ni se elimina una versión usada.
 - **Resultado:** contenido futuro actualizado y contenido histórico reconstruible.
+- Editar una versión publicada crea una nueva versión draft; los desafíos existentes conservan la
+  versión que seleccionaron.
 - **Efectos secundarios:** auditoría y posible actualización del catálogo de publicación; no se recalculan resultados anteriores automáticamente.
 - **Errores o impedimentos:** intentar editar una versión publicada in situ, archivar contenido aún necesario sin reemplazo o romper una publicación histórica.
 - **Permisos necesarios:** editor autorizado o superadministrador con auditoría.

@@ -21,8 +21,13 @@ values (
   test_support.id('superadmin'));
 insert into private.question_version_solutions(question_version_id, solution_payload)
 values (test_support.id('e02-qv'), '{"correctAnswer":"0420","explanation":"La secuencia satisface las pistas."}');
+insert into private.question_versions(id, question_definition_id, version_number, payload_schema_version, status, type, time_limit_ms, public_payload, created_by_player_id)
+select test_support.id('e02-qv-2'), question_definition_id, 2, payload_schema_version, 'draft', type, time_limit_ms, public_payload, created_by_player_id
+from private.question_versions where id = test_support.id('e02-qv');
+insert into private.question_version_solutions(question_version_id, solution_payload)
+select test_support.id('e02-qv-2'), solution_payload from private.question_version_solutions where question_version_id = test_support.id('e02-qv');
 update private.question_versions set status = 'published', published_at = now()
-where id = test_support.id('e02-qv');
+where id in (test_support.id('e02-qv'), test_support.id('e02-qv-2'));
 insert into private.challenge_definitions(id, slug, created_by_player_id)
 values (test_support.id('e02-cd'), 'e02-logic-code-flash', test_support.id('superadmin'));
 insert into private.challenge_versions(
@@ -35,7 +40,7 @@ values (
 insert into private.challenge_items(id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
 values
   (test_support.id('e02-item-1'), test_support.id('e02-cv'), test_support.id('e02-qv'), 1, 50, 1, '{}'),
-  (test_support.id('e02-item-2'), test_support.id('e02-cv'), test_support.id('e02-qv'), 2, 50, 1, '{}');
+  (test_support.id('e02-item-2'), test_support.id('e02-cv'), test_support.id('e02-qv-2'), 2, 50, 1, '{}');
 update private.challenge_versions set status = 'published', published_at = now()
 where id = test_support.id('e02-cv');
 insert into public.scheduled_challenges(id, season_id, challenge_version_id, number, status, opens_at, closes_at)
