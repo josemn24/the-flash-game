@@ -52,6 +52,10 @@
 - El nombre visible no es único y el jugador puede modificar nombre y avatar.
 - Los avatares se suben a Supabase Storage. El dominio conserva la ruta estable del objeto, no una
   URL firmada temporal.
+- El bucket de avatares es público para lectura: cualquier persona que conozca el enlace puede
+  descargar el avatar, pero la subida, sustitución, borrado y listado no son operaciones públicas.
+- Las imágenes de preguntas viven en un bucket privado. El servidor entrega una URL firmada solo
+  después de autorizar el contexto de preview o competición; la URL no se persiste en PostgreSQL.
 - El jugador actual se obtiene de la sesión autenticada; nunca es una propiedad de `Room`.
 - El correo y otros datos privados de autenticación no forman parte del perfil social.
 - Al eliminar la cuenta se desvincula la identidad de autenticación, se eliminan los datos
@@ -187,7 +191,12 @@
   incluye la pregunta en el desafío, no a la pregunta global.
 - La configuración completa debe sumar exactamente 100 puntos.
 - Inicialmente solo se publica contenido en español. El idioma no se incrusta en los IDs.
-- Los medios se referencian mediante rutas estables de assets versionados o de Storage.
+- Los medios se referencian mediante `assetId`/ruta estable de Storage, nunca mediante una URL firmada
+  persistida. El contrato editorial conserva metadatos de presentación y el servidor resuelve una
+  URL de lectura en el DTO runtime autorizado.
+- `progressive-image` y las imágenes de `multiple-choice` comparten el mismo registro y resolver de
+  assets. La imagen entregada al navegador puede conservarse; Storage controla el acceso previo a la
+  entrega, no ofrece ocultación criptográfica durante la progresión visual.
 - Se conserva autoría y fecha de creación y publicación del contenido.
 
 ## 7. Programación de desafíos

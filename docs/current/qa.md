@@ -5,9 +5,9 @@
 
 ## Última verificación
 
-2026-09-17, sobre el estado actual del repositorio y el stack local de Supabase.
+2026-09-18, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 98 archivos de test y 631 tests superados.
+- `npm test`: 98 archivos de test y 634 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
@@ -16,7 +16,7 @@
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto; 27 archivos declarativos, inventario, provisioning,
+- `npm run supabase:schema:test`: correcto; 32 archivos declarativos, inventario, provisioning,
   S02–S08, S10–S13, E01–E04 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución

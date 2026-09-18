@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; implementación parcial local hasta S12, E01–E04 y E10.
+- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a, E01–E04 y E10.
 - Fecha: 2026-09-16.
 - Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
@@ -11,7 +11,7 @@
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S12, E01–E04 y E10 ya tienen
+actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a, E01–E04 y E10 ya tienen
 persistencia real verificada en Supabase local.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
@@ -102,6 +102,26 @@ Restricciones y reglas:
 - `status = 'anonymized'` exige `anonymized_at` no nulo; un jugador activo no debe tener esa fecha.
 - La relación con `auth.users` puede ser una FK `ON DELETE SET NULL` en Supabase, pero el dominio
   no debe depender de ese proveedor.
+
+### `media_assets` (registro previsto para D08)
+
+Registro interno de objetos gestionados por Supabase Storage. No sustituye a
+`storage.objects`: conserva la relación de negocio, el estado de validación y la autoridad que puede
+usar el asset.
+
+- `id uuid primary key`.
+- `bucket_id text not null`: inicialmente `avatars` o `question-assets`.
+- `object_path text not null unique`: ruta estable, no URL completa.
+- `kind text not null`: `avatar` o `question`.
+- `status text not null`: `pending`, `ready`, `archived` o `deleted`.
+- `mime_type text`, `byte_size bigint`, `width integer`, `height integer`, `sha256 text`.
+- `created_by_player_id uuid not null references players(id)`.
+- `created_at`, `updated_at`.
+
+Los payloads JSON de preguntas referencian `media_assets.id`; `players.avatar_path` conserva
+inicialmente la ruta estable del avatar por compatibilidad. Un asset usado por una versión publicada
+no se borra físicamente mientras exista una referencia histórica. Las URLs firmadas solo aparecen en
+lecturas runtime autorizadas.
 
 ### `platform_role_assignments`
 
@@ -334,6 +354,10 @@ rutas o tableros resueltos.
 La aplicación compone `public_payload` y `solution_payload` en su entidad de dominio para uso
 server-only. Los clientes autenticados no tienen lectura directa de esta tabla mediante RLS.
 Publicar o archivar una pregunta congela también su solución.
+
+Los campos visuales de `public_payload` (`media`, `surface` y equivalentes futuros) contienen una
+referencia estable y metadatos accesibles. El adaptador de lectura los resuelve mediante Storage
+según el contexto autorizado; no se guarda una URL firmada dentro de una versión publicada.
 
 ### Versionado técnico de contratos JSON
 
@@ -658,6 +682,9 @@ según la regla, sin reescribir silenciosamente la respuesta original.
   privacidad.
 - La limpieza del avatar en Supabase Storage puede ejecutarse después del cambio transaccional de
   `players`; Storage no participa en la transacción de PostgreSQL.
+- La limpieza de un asset de pregunta debe respetar versiones publicadas, desafíos históricos y
+  revisiones. Los objetos huérfanos se marcan y purgan mediante una operación posterior, nunca como
+  parte de una respuesta competitiva.
 
 ## 12. UI, dominio y persistencia
 

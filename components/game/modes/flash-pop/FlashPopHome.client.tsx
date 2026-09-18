@@ -15,7 +15,13 @@ import {
   TrophyIcon,
 } from "@/components/ui";
 import { LogoutButton } from "@/components/auth/LogoutButton.client";
-import { updateProfileName } from "@/app/actions/profile";
+import {
+  abortProfileAvatar,
+  confirmProfileAvatar,
+  prepareProfileAvatar,
+  updateProfileName,
+} from "@/app/actions/profile";
+import { createClient } from "@/lib/supabase/client";
 import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/game";
@@ -64,14 +70,50 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
     }
   }, [profileOpen]);
 
-  const handleProfileSave = useCallback(async (name: string) => {
-    const result = await updateProfileName(name);
-    if (result.ok) {
-      setProfile(result.profile);
+  const handleProfileSave = useCallback(async ({ name, file }: { name: string; file: File | null }) => {
+    const nameResult = await updateProfileName(name);
+    if (!nameResult.ok) return nameResult;
+    if (!file) {
+      setProfile(nameResult.profile);
+      setProfileOpen(false);
+      setStatusMessage("Cambios guardados.");
+      return nameResult;
+    }
+
+    const idempotencyKey = crypto.randomUUID();
+    const prepared = await prepareProfileAvatar({
+      mimeType: file.type,
+      byteSize: file.size,
+      idempotencyKey,
+    });
+    if (!prepared.ok) return prepared;
+
+    const uploadClient = createClient();
+    const { error: uploadError } = await uploadClient.storage
+      .from("avatars")
+      .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+    if (uploadError) {
+      await abortProfileAvatar(prepared.assetId);
+      return {
+        ok: false as const,
+        code: "storage_unavailable" as const,
+        message: "No se ha podido subir la imagen. Inténtalo de nuevo.",
+      };
+    }
+
+    const confirmed = await confirmProfileAvatar({
+      assetId: prepared.assetId,
+      idempotencyKey: prepared.confirmIdempotencyKey,
+    });
+    if (confirmed.ok) {
+      setProfile(confirmed.profile);
       setProfileOpen(false);
       setStatusMessage("Cambios guardados.");
     }
-    return result;
+    return confirmed;
   }, []);
 
   return (

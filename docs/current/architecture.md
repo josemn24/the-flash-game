@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S12, E01–E04 y E10 implementadas sobre Supabase local y el
+> Estado: vigente. Arquitectura de transición con S01–S13, D08a, E01–E04 y E10 implementadas sobre Supabase local y el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -203,6 +203,7 @@ application/ports/
   room-store
   content-store
   attempt-store
+  media-storage             subida, confirmación, lectura firmada y limpieza
   ranking-read-model       (solo si la consulta lo necesita)
 ```
 
@@ -279,14 +280,21 @@ La autorización debe impedir especialmente que:
 Los servicios externos se incorporan detrás de adaptadores solo cuando el caso de uso los necesita:
 
 - **Auth:** proveedor de identidad y sesiones;
-- **Storage:** avatares y medios mediante rutas estables;
+- **Storage:** avatares en un bucket público de lectura e imágenes de preguntas en un bucket privado;
+  la aplicación persiste referencias estables y resuelve URLs firmadas únicamente en runtime;
 - **correo/notificaciones:** invitaciones y avisos, si se activan;
 - **observabilidad:** errores, auditoría y métricas, sin convertir logs en fuente de verdad;
 - **scheduler:** cierre de intentos inactivos y tareas temporales, si se aprueba el abandono automático.
 
 La lógica de The Flash no debe depender de la forma concreta de una respuesta externa. Cada
 integración debe tener timeouts, reintentos idempotentes y un comportamiento definido si está
-temporalmente indisponible.
+temporalmente indisponible. Storage se integra mediante un puerto server-only: el navegador nunca
+recibe `service_role`, no elige el propietario de un objeto y no persiste URLs firmadas.
+
+El flujo de subida es deliberadamente compensatorio porque Storage y PostgreSQL no comparten
+transacción: crear referencia pendiente, subir, confirmar y validar el objeto, asociarlo al perfil o
+a un borrador y limpiar el objeto anterior después del commit. Un fallo posterior deja el objeto
+marcado para limpieza, no sustituye una referencia válida.
 
 ### 2.8 Procesos asíncronos
 
@@ -447,6 +455,12 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
   representación paralela del runtime.
 - En competición se entrega `PublicQuestion`; solución, tolerancias, rutas y métricas permanecen en
   servidor.
+- Los payloads editoriales usan referencias de asset (`assetId`, alt, dimensiones y configuración
+  visual). `src` es un campo de runtime resuelto por el servidor, no una URL firmada almacenada en una
+  `question_version` publicada.
+- El bucket privado de preguntas se resuelve solo para un superadmin con preview o para un jugador
+  que ya tenga autorización competitiva. La progresión de E10 sigue siendo presentación CSS y no se
+  presenta como protección contra la copia después de la entrega.
 - La validación de payloads JSON debe depender del formato declarado y de la versión técnica
   publicada (`payload_schema_version` o `config_schema_version`); una versión desconocida se rechaza
   y no se interpreta como la versión actual por defecto.

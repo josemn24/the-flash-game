@@ -50,9 +50,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Actor:** jugador autenticado.
 - **Objetivo:** consultar o cambiar su nombre visible y avatar global.
 - **Precondiciones:** sesión válida y jugador activo.
-- **Entrada relevante:** `displayName` y ruta de avatar nueva.
+- **Entrada relevante:** `displayName` y archivo de avatar validado; la ruta la genera el servidor.
 - **Flujo principal:** leer perfil; validar nombre y asset; guardar el cambio; reflejarlo en salas, rankings e historial donde corresponda.
-- **Reglas de negocio:** el perfil es global, el nombre no tiene que ser único y los datos privados de autenticación no forman parte del perfil social.
+- **Reglas de negocio:** el perfil es global, el nombre no tiene que ser único y los datos privados de autenticación no forman parte del perfil social. El avatar se lee desde un bucket público, pero solo el propio jugador puede solicitar su sustitución.
 - **Resultado:** perfil actualizado y disponible en nuevas proyecciones.
 - **Efectos secundarios:** actualización de avatar en almacenamiento y de marcas temporales; no se alteran resultados históricos.
 - **Errores o impedimentos:** nombre vacío o inválido, asset no permitido, jugador inexistente o intento de modificar datos de otro jugador.
@@ -188,6 +188,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   configuración, puntos, tiempos y motivo obligatorio de auditoría.
 - **Flujo principal:** crear borrador; validar y previsualizar sin competición; guardar; editar solo
   mientras siga en `draft`; publicar explícitamente el snapshot.
+- Cuando el documento contiene imágenes, el portal solicita una subida de asset, confirma su
+  validación y guarda `assetId` junto a alt, dimensiones y configuración visual. La preview recibe
+  una URL resuelta temporalmente; la versión publicada conserva solo la referencia estable.
 - **Reglas de negocio:** una versión publicada es inmutable; cada desafío suma exactamente 100
   puntos; las soluciones quedan separadas del payload público; la publicación no crea calendario,
   intentos, puntos ni actividad ficticia.
@@ -198,8 +201,8 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Efectos secundarios:** autoría, timestamps, auditoría segura, idempotencia y disponibilidad
   editorial posterior.
 - **Errores o impedimentos:** JSON o formato desconocido, schema no soportado, solución ausente,
-  relación inválida, puntos distintos de 100, secreto en payload público, conflicto optimista o
-  publicación incompleta.
+  relación inválida, asset inexistente o no validado, puntos distintos de 100, secreto en payload
+  público, conflicto optimista o publicación incompleta.
 - **Permisos necesarios:** exclusivamente superadmin desde el portal privado durante la beta; el
   miembro ordinario nunca recibe borradores ni soluciones.
 
@@ -211,6 +214,8 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Entrada relevante:** versión a corregir/archivar y nuevo contenido si aplica.
 - **Flujo principal:** conservar la versión usada; crear una nueva versión para la corrección; publicar o archivar según corresponda; mantener las publicaciones antiguas apuntando a su snapshot.
 - **Reglas de negocio:** nunca se modifica silenciosamente una versión publicada ni se elimina una versión usada.
+- Un asset asociado a una versión publicada tampoco se sustituye in situ ni se borra mientras pueda
+  ser necesario para una revisión histórica.
 - **Resultado:** contenido futuro actualizado y contenido histórico reconstruible.
 - Editar una versión publicada crea una nueva versión draft; los desafíos existentes conservan la
   versión que seleccionaron.

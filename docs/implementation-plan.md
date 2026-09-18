@@ -1,10 +1,9 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S12, E01–E04 y E10 están implementadas y verificadas sobre el stack local;
-> S17a está implementada en código declarativo y portal, pendiente de generar/aplicar su migración
-> local cuando Docker esté disponible;
+> Estado: backlog técnico vivo. S01–S13, D08a, E01–E04, E10 y S17a están implementadas y verificadas sobre el stack local;
+> `question-assets` queda preparado, pero la integración editorial de imágenes de preguntas sigue pendiente;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-17. Alcance: pasar del prototipo mock a competición persistida,
+> Fecha de análisis: 2026-09-18. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
 > privado de superadmin; no forman parte de la UI pública.
@@ -30,13 +29,13 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                                                                   | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta. |
 | Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07, más los contextos privados de temporadas, editorial y calendario en S10–S12. | Ajustes y el resto de proyecciones autorizadas.                                                                                                    |
-| Identidad | `Player` separado de Auth, provisioning, login/logout y nombre persistido en S01.                                                                                                                                                                                                      | Avatar, Storage y políticas de administración.                                                                                                     |
+| Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                             |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash en S03–S04.                                                                                                                                              | Sustituir autoridad cliente en Alphabet y los demás modos; Pirámide también usa `localStorage` en práctica.                                        |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 27 tablas, restricciones, RLS/ACL, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                                               | Aplicación controlada a un proyecto remoto y operación de contenido/room management desde un portal privado.                                       |
+| SQL       | 28 tablas, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                  | Aplicación controlada a un proyecto remoto y operación de assets editoriales desde un portal privado.                                               |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                                                                               | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP y E2E local para S01–S12, E01–E04 y E10.                                                                                                                                                                  | Storage, E2E de las siguientes slices y verificación contra un entorno remoto.                                                                     |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a, E01–E04 y E10.                                                                                                                                            | E2E editorial de `question-assets` y verificación contra un entorno remoto.                                                                         |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -171,7 +170,7 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | D05 | **Resuelto para owner/admin/superadmin (2026-09-16).** `owner` gestiona la sala y puede transferir propiedad, pero no invalida ni corrige puntos; `admin` gestiona cualquier membresía salvo owner, pero solo owner concede admin; member/spectator no administran; las acciones directas de superadmin sobre una sala se auditan. El editor no es rol de sala y su alcance editorial queda para sus slices. | S09–S12, S17–S20, S23.                                                        | Matriz por operación, actor y objetivo documentada; no se añade un rol editor persistido en esta fase.                                                                                                                                   |
 | D06 | **Resuelto (2026-09-16).** Owner invita a admin/member/spectator; admin invita a member/spectator; un uso por defecto, multiuso explícito hasta 20, TTL por defecto de 7 días y máximo de 30; owner/admin revocan sin afectar membresías existentes.                                                                                                                                                         | S09.                                                                          | Token opaco almacenado como hash, mostrado una sola vez, sin correo; aceptación y errores no disponible auditables y sin filtración.                                                                                                     |
 | D07 | Revisión de respuestas, contenido no alcanzado y resultados ajenos/invalidados. **Revisión propia terminal mínima resuelta en S03; ampliación Flash resuelta en S07.**                                                                                                                                                                                                                                       | Revisión mínima S03; revisión Flash S07; invalidación administrativa S20/S23. | Revisión propia terminal autorizada; revisión ajena completa solo para `owner`/`admin`/`member`; durante `in_progress` sin soluciones; invalidados fuera de la revisión de usuario. Precisar el contenido revisable tras abandono.       |
-| D08 | Storage: acceso a avatares/medios, límites, moderación y limpieza.                                                                                                                                                                                                                                                                                                                                           | S13 y formatos con revelaciones de assets.                                    | Ruta estable, permisos de lectura/escritura y compensación de fallos; privacidad coherente con las salas.                                                                                                                                |
+| D08 | **Resuelto e implementado en D08a/S13 (2026-09-18).** Dos buckets: `avatars` público para lectura por enlace y `question-assets` privado preparado. Se persisten referencias estables/`assetId`, nunca URLs firmadas; el servidor genera URLs runtime según autorización. | Integración editorial de `question-assets`. | Registro `media_assets`, validación server-side de bytes/tipo/dimensiones, subida confirmada, auditoría, compensación y limpieza segura; la entrega de E10 no se presenta como protección contra copia. |
 | D09 | Retención de respuestas, auditoría e idempotencia; anonimización y purga.                                                                                                                                                                                                                                                                                                                                    | S24 y apertura general S22.                                                   | Política y operación recuperable. Retener claves suficiente tiempo para impedir duplicados tras reintentos; no fijar caducidad por comodidad técnica.                                                                                    |
 | D10 | Conflictos entre fuentes normativas antiguas y reglas actuales.                                                                                                                                                                                                                                                                                                                                              | Primera slice afectada.                                                       | Reconciliar referencias: ADR 0003 aún menciona intento «expirado»/varios intentos, pero el modelo vigente exige uno y `expired` sin intento. Registrar aclaración en las fuentes, no cambiar el dominio silenciosamente desde este plan. |
 
@@ -188,6 +187,7 @@ y ejemplos de aceptación, no una capa nueva. No requieren detener la redacción
 | S09 (posterior)  | Invitaciones de un solo/multiuso y aceptación mediante enlace.                                                                       | S08, S01, D05/D06; no bloquea la beta con provisioning directo.      |
 | S10 → S11 → S12  | Preparar temporada, publicar contenido y programar competición desde el portal privado.                                              | S08, S03, D05.                                                       |
 | S13              | Avatar persistido.                                                                                                                   | S01, D08.                                                            |
+| D08a             | Fundación Storage: buckets, `media_assets`, adaptador server-only, políticas, confirmación de subidas y limpieza compensatoria.       | S01, S11, S17a, D08.                                                 |
 | F* y resto de E* | Más formatos competitivos, uno por entrega según el contenido elegido.                                                               | S03/S04 y D03; E01 ofrece el primer patrón de eventos.               |
 | S14, S15, S16    | Supervivencia, Pirámide y Narrativa.                                                                                                 | S04 y las slices de formatos usadas por cada desafío.                |
 | S17–S21          | Evolución editorial, membresías, cancelación, corrección e inactividad.                                                              | Dependencias explícitas en cada ficha.                               |
@@ -227,7 +227,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   `FlashPopProfileDialog`. Mostrar sesión caducada y errores de guardado reales. Hasta S02,
   el inicio real muestra el perfil y una lista vacía, sin mezclar las salas demo con esa identidad.
 - **Mocks retirados:** `demoIdentity`/`MockCurrentViewerProvider` del recorrido real y el guardado
-  exclusivamente local del nombre. El avatar sigue pendiente de S13.
+  exclusivamente local del nombre. El avatar persistido queda cubierto por S13/D08a.
 - **Backend/dominio:** verificar Auth en servidor; resolver o crear un `Player` idempotentemente
   sin confiar en un `auth_user_id` enviado por UI. Action de nombre → caso de uso → validación
   compartida → persistencia → perfil actualizado. Sin membresías implícitas.
@@ -650,7 +650,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Tests:** pgTAP, unidad, integración y E2E cubren publicación mixta, secreto, fallos, duplicados,
   tarjetas resueltas, idempotencia, versión obsoleta, recarga, timeout, spectator y revisión final.
 
-### S13 — Subir y sustituir el avatar global
+### S13 — Subir y sustituir el avatar global — implementada localmente
 
 - **Objetivo / CU:** completar CU-02 con archivo persistido.
 - **UI:** `FlashPopProfileDialog`, `Avatar`, perfiles sociales; progreso/error y confirmación de guardado.
@@ -658,8 +658,8 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Backend/dominio:** validar archivo real, tamaño y tipo; autorizar subida y asignación de ruta al
   propio jugador. La firma de subida no permite elegir propietario. Devolver perfil/URL de lectura
   autorizada y revalidar proyecciones.
-- **Persistencia:** bucket/políticas Storage y comando limitado de `players.avatar_path`. Guardar
-  ruta estable, no URL firmada. Subir primero, confirmar referencia y limpiar huérfanos con
+- **Persistencia:** bucket público de lectura/políticas Storage y comando limitado de
+  `players.avatar_path`. Guardar ruta estable, no URL firmada. Subir primero, confirmar referencia y limpiar huérfanos con
   compensación/reintento; Storage y PostgreSQL no comparten transacción.
 - **Tests:** subida/cambio/recarga, tipo falsificado, asset ajeno, Storage caído, fallo de DB tras
   subida, limpieza que no borra el avatar nuevo y permisos de lectura entre salas.
@@ -757,7 +757,7 @@ Ficha común, obligatoria para **cada** E*:
 | E07   | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                             |
 | E08   | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                     |
 | E09   | `simon-sequence`    | Secuencia visible solo en fase autorizada y registro de su entrega; impedir reiniciar presentación/reloj con recarga. Respuesta final evaluada en servidor.                                                                                                                   |
-| E10   | `progressive-image` | **Implementado localmente.** Flash competitivo mixto con imagen pública y solución privada; `prepare` inicia el reloj en servidor, `receive_answer` y el evaluador existente calculan tiempo/puntos, y la recuperación conserva `presentedAt`/`deadlineAt`. El cliente aplica blur/scale CSS sobre el original, por lo que no es ocultación criptográfica; Storage, URLs firmadas y variantes protegidas quedan como evolución de D08. |
+| E10   | `progressive-image` | **Implementado localmente.** Flash competitivo mixto con referencia de imagen y solución privada; `prepare` inicia el reloj en servidor, `receive_answer` y el evaluador existente calculan tiempo/puntos, y la recuperación conserva `presentedAt`/`deadlineAt`. La siguiente evolución resolverá el asset desde `question-assets` mediante URL firmada; el cliente seguirá aplicando blur/scale CSS y no se prometerá ocultación criptográfica. |
 
 Para E08–E09, el SQL actual inicia el reloj al preparar la interacción, mientras el prototipo espera
 a presentación/carga en algunos formatos. D03 debe fijar fase preparatoria, presentación y respuesta;
@@ -767,7 +767,8 @@ criterio es cumplir la política de entrega, no prometer que el navegador olvide
 
 E10 fija ese contrato para `progressive-image`: la carga/error nunca pausa ni reinicia el plazo,
 no existe comando de revelación intermedia y la revisión terminal usa `solutionAlt` y el porcentaje
-derivado de `timeUsed`. La imagen original queda accesible en el navegador de forma explícita.
+derivado de `timeUsed`. Con D08, la imagen no será públicamente accesible antes de un contexto
+autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ## 7. Otros modos y operación del producto
 
@@ -825,7 +826,7 @@ derivado de `timeUsed`. La imagen original queda accesible en el navegador de fo
   pregunta temporizada abierta; termina tras su secuencia reglamentaria y conserva una revisión
   reproducible de la versión jugada.
 
-### S17a — Biblioteca editorial y reutilización de preguntas ✅ Código implementado; migración pendiente de Docker
+### S17a — Biblioteca editorial y reutilización de preguntas ✅ Implementada y verificada localmente
 
 - **Objetivo / CU:** CU-10 y CU-11; separar documento standalone de pregunta, versión publicada e
   inclusión contextual en un desafío.
@@ -839,8 +840,8 @@ derivado de `timeUsed`. La imagen original queda accesible en el navegador de fo
   `(challenge_version_id, question_version_id)`.
 - **Compatibilidad:** los documentos inline históricos se siguen leyendo; las nuevas inclusiones usan
   `{ source: "library", questionVersionId, points, modeConfig, challengeItemId? }`.
-- **Verificación pendiente:** el typecheck y las pruebas Vitest están ejecutados; PgTAP, reset local
-  y la migración incremental requieren que el stack Supabase/Docker esté disponible.
+- **Verificación:** typecheck, Vitest, reset local, migración incremental, PgTAP y concurrencia están
+  ejecutados sobre el stack Supabase/Docker local.
 
 ### S17 — Corregir contenido creando otra versión y archivar
 
@@ -990,7 +991,8 @@ mutaciones competitivas tienen request IDs, errores estables, límite de cuerpo,
 rate limit y respuestas `no-store`. Existe health privado en `/api/internal/health`, logs JSON
 redactados y `npm run verify:pilot` para reconstruir Supabase local, probar escenarios por separado,
 ejecutar E2E y ensayar backup/restore. El alcance sigue siendo local/CI: no declara staging o
-producción remota, Storage, otros modos, abandono automático, takeover ni `results_locked_at`.
+producción remota, integración editorial de `question-assets`, otros modos, abandono automático,
+takeover ni `results_locked_at`.
 
 ### S23 — Ejecutar una prueba fantasma interna
 
@@ -1077,7 +1079,7 @@ preparada, se pierden respuestas ya recibidas ni se transfiere el control.
 | CU-07               | S18a–S18c                    | Salida/ownership, moderación y ciclo de sala separados.              |
 | CU-08               | S10, S12, S19                | Configuración, transiciones temporales y cancelación.                |
 | CU-09               | S12, S19, S21                | Programación, cancelación y consolidación definitiva.                |
-| CU-10, CU-11        | S11, S17                     | Autoría mínima/versionado; ampliar formatos solo al habilitarlos.    |
+| CU-10, CU-11        | S11, S17, D08a               | Autoría/versionado y assets referenciados; ampliar formatos solo al habilitarlos. |
 | CU-12, CU-13        | S11, S23; regresión en F*/E* | Preview editorial/fantasma protegido; biblioteca pública preservada. |
 | CU-14, CU-15        | S02, S03                     | Introducción autorizada e inicio único.                              |
 | CU-16               | S04, S05, E*, S14–S16        | Recuperación común y checkpoints por modo/formato.                   |
@@ -1122,7 +1124,7 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S12, E01–E04 y E10 están cerradas localmente: su entrega cubre login y nombre persistido, lecturas de
+S01–S13, D08a, E01–E04 y E10 están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
 sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues y Matching,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local

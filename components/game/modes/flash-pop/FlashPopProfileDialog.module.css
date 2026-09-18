@@ -100,6 +100,18 @@
     line-height: 1.35;
   }
 
+  .avatarCopy label {
+    color: var(--color-ink);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .avatarCopy input {
+    max-width: 100%;
+    color: var(--color-ink);
+    font-size: 12px;
+  }
+
   .field {
     display: grid;
     gap: var(--space-2);

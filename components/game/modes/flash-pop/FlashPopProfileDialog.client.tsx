@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Avatar, Button, CrossIcon } from "@/components/ui";
 import { validateProfileName } from "@/lib/userProfile";
+import { validateAvatarSelection } from "@/lib/media/avatarValidation";
 import type { UserProfile } from "@/types/user";
 import type { ProfileSaveResult } from "@/types/view-models/user-actions";
 import styles from "./FlashPopProfileDialog.module.css";
@@ -11,11 +12,12 @@ type FlashPopProfileDialogProps = {
   open: boolean;
   profile: UserProfile;
   onClose: () => void;
-  onSave: (name: string) => Promise<ProfileSaveResult>;
+  onSave: (input: { name: string; file: File | null }) => Promise<ProfileSaveResult>;
 };
 
 type ProfileErrors = {
   name?: string;
+  avatar?: string;
 };
 
 export function FlashPopProfileDialog({
@@ -31,6 +33,8 @@ export function FlashPopProfileDialog({
   const [draft, setDraft] = useState<UserProfile>(profile);
   const [errors, setErrors] = useState<ProfileErrors>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string>();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -50,7 +54,10 @@ export function FlashPopProfileDialog({
   }, [open]);
 
   function closeDialog() {
+    if (previewSrc) URL.revokeObjectURL(previewSrc);
     setDraft(profile);
+    setSelectedFile(null);
+    setPreviewSrc(undefined);
     setErrors({});
     dialogRef.current?.close();
   }
@@ -62,6 +69,22 @@ export function FlashPopProfileDialog({
     if (errors.name && !validateProfileName(name)) {
       setErrors((current) => ({ ...current, name: undefined }));
     }
+  }
+
+  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0] ?? null;
+    if (previewSrc) URL.revokeObjectURL(previewSrc);
+    setPreviewSrc(undefined);
+    setSelectedFile(null);
+    if (!file) return;
+    const validationError = validateAvatarSelection(file);
+    if (validationError) {
+      setErrors((current) => ({ ...current, avatar: "Elige un JPEG, PNG o WebP de hasta 5 MB." }));
+      return;
+    }
+    setErrors((current) => ({ ...current, avatar: undefined }));
+    setSelectedFile(file);
+    setPreviewSrc(URL.createObjectURL(file));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -76,8 +99,12 @@ export function FlashPopProfileDialog({
 
     setIsSaving(true);
     try {
-      const result = await onSave(draft.name.trim());
-      if (!result.ok) setErrors({ name: result.message });
+      const result = await onSave({ name: draft.name.trim(), file: selectedFile });
+      if (!result.ok) {
+        const isAvatarError =
+          result.code === "invalid_file" || result.code === "storage_unavailable" || result.code === "conflict";
+        setErrors(isAvatarError ? { avatar: result.message } : { name: result.message });
+      }
     } catch {
       setErrors({ name: "No se ha podido guardar el nombre. Inténtalo de nuevo." });
     } finally {
@@ -120,10 +147,19 @@ export function FlashPopProfileDialog({
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.avatarField}>
-            <Avatar name={draft.name || profile.name} src={profile.avatarSrc} size="lg" />
+            <Avatar name={draft.name || profile.name} src={previewSrc ?? profile.avatarSrc} size="lg" />
             <div className={styles.avatarCopy}>
-              <strong>Avatar pendiente</strong>
-              <span>La imagen de perfil se integrará con Storage en S13.</span>
+              <label htmlFor="profile-avatar">Imagen de perfil</label>
+              <span>JPEG, PNG o WebP. Máximo 5 MB y 2048 px.</span>
+              <input
+                id="profile-avatar"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarChange}
+                disabled={isSaving}
+                aria-invalid={Boolean(errors.avatar)}
+              />
+              {errors.avatar ? <span className={styles.error}>{errors.avatar}</span> : null}
             </div>
           </div>
 

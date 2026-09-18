@@ -92,8 +92,30 @@ optimista y auditoría, y no crean publicaciones de calendario, intentos, puntos
 S17a añade `schemas/61_question_library.sql`: el portal superadmin gestiona documentos standalone
 y versiones publicadas/archivadas. Los desafíos seleccionan una `question_version` exacta; puntos
 y `mode_config` permanecen en `challenge_items`, una versión puede reutilizarse en varios desafíos y
-no puede repetirse dentro del mismo desafío. La migración incremental debe generarse con el workflow
-declarativo cuando el stack local de Docker esté disponible.
+no puede repetirse dentro del mismo desafío. La migración incremental ya se generó y aplicó en el
+stack local de Docker.
+
+## Storage y referencias de assets
+
+La arquitectura aprobada para D08 separa dos usos de Storage:
+
+- `avatars`: bucket público para lectura por enlace. Solo el jugador propietario puede solicitar
+  subida, sustitución o borrado; la aplicación conserva en `players.avatar_path` una ruta estable,
+  nunca una URL firmada.
+- `question-assets`: bucket privado para imágenes de preguntas. El portal superadmin crea y valida
+  assets; el servidor entrega URLs firmadas únicamente para previews autorizadas o interacciones
+  competitivas ya admitidas.
+
+Los documentos editoriales guardan `assetId` y metadatos visuales (`alt`, dimensiones, `fit` y
+`position`). No se persisten URLs firmadas en `public_payload`, porque caducan y no deben formar parte
+de una versión publicada inmutable. E10 seguirá usando blur/scale como presentación: una imagen que
+ya llegó al navegador puede conservarse, por lo que Storage controla la autorización previa a la
+entrega, no una protección criptográfica contra la copia.
+
+La implementación D08a/S13 usa un adaptador server-only para Storage y una referencia interna
+`media_assets` con estados `pending`/`ready`/`archived`/`deleted`. La subida y la actualización de
+PostgreSQL no comparten transacción: se sube, se confirma y se valida el objeto antes de asociarlo;
+la limpieza de objetos antiguos u huérfanos es compensatoria y auditada.
 
 E01 añade `schemas/36_mini_wordle.sql` y `schemas/92_mini_wordle_commands.sql`. El portal acepta
 `multiple-choice` y `mini-wordle` en el mismo Flash, dentro de desafíos de 2 a 20 preguntas y 100

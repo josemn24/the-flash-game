@@ -76,6 +76,12 @@
     "private.logic_code_attempt_events": {
       "kind": "r"
     },
+    "private.media_assets": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
     "private.progressive_clue_reveal_events": {
       "kind": "r"
     },
@@ -182,6 +188,11 @@
     }
   },
   "functions": {
+    "private.abort_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.assert_supported_calendar_content": {
       "arguments": "version_id uuid",
       "securityDefiner": true,
@@ -211,6 +222,11 @@
       "arguments": "target_player_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
+    },
+    "private.confirm_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
     },
     "private.command_actor": {
       "arguments": "",
@@ -392,6 +408,11 @@
       "securityDefiner": false,
       "executeRoles": []
     },
+    "private.prepare_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.run_calendar_tick_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -479,6 +500,11 @@
     },
     "private.read_attempt_recovery": {
       "arguments": "target_attempt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_avatar_upload_asset": {
+      "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },

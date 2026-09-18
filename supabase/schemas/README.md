@@ -1,7 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-17. La ampliación S17a queda en
-declarativo y pendiente de validación local con Docker. **27 tablas**, una vista
+Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-18. La ampliación S17a y D08a/S13 están aplicadas
+localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar.
+**28 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
@@ -108,10 +109,12 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql) | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal. |
 | [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql) | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash mínimo desde el portal; no añade tablas ni columnas. |
 | [61_question_library.sql](61_question_library.sql) | Biblioteca protegida de preguntas standalone, historial de versiones, publicación/archivo e índice para impedir duplicados de una versión dentro de un desafío. |
+| [62_media_assets.sql](62_media_assets.sql) | Registro privado de objetos de Storage, estados, metadatos, ownership e índices. |
 | [59_superadmin_calendar_commands.sql](59_superadmin_calendar_commands.sql) | Programación/reprogramación de Flash publicado, lecturas de calendario y tick temporal con locks/auditoría. |
 | [61_s12_effective_attempt_guard.sql](61_s12_effective_attempt_guard.sql) | Admisión competitiva coherente con la ventana efectiva cuando el tick se retrasa. |
 | [60_integrity.sql](60_integrity.sql)                     | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                     |
 | [70_rls.sql](70_rls.sql)                                 | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                               |
+| [71_storage_acl.sql](71_storage_acl.sql)                   | Lectura pública de `avatars` y ausencia de lectura de `question-assets` para roles de navegador. |
 | [80_rankings.sql](80_rankings.sql)                       | Vista privada invoker y funciones públicas autorizadas por membresía.                                                               |
 | [85_flash_history_reads.sql](85_flash_history_reads.sql) | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                        |
 | [90_commands.sql](90_commands.sql)                       | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                           |
@@ -121,6 +124,8 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [89_progressive_clues.sql](89_progressive_clues.sql) | Eventos privados, metadatos/prefijo seguro y cálculo de penalización de Progressive-clues. |
 | [94_progressive_clues.sql](94_progressive_clues.sql) | Comando transaccional de revelación, idempotencia y locks de Progressive-clues. |
 | [95_matching.sql](95_matching.sql) | Eventos privados, proyección segura y comando transaccional de parejas Matching. |
+| [96_media_asset_commands.sql](96_media_asset_commands.sql) | Handshake idempotente de preparación, lectura, confirmación y aborto de avatar. |
+| [97_media_asset_acl.sql](97_media_asset_acl.sql) | ACL explícita de `media_assets` y comandos server-only. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -280,10 +285,10 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **27 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **32 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
 26 de E04 y 12 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las 631 pruebas TypeScript
+y las 634 pruebas TypeScript
 superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
@@ -297,7 +302,7 @@ acepten evaluación/claims del navegador. El adaptador debe verificar Auth, vali
 limitar tamaño de peticiones y no filtrar soluciones. `postgres` y los roles de mantenimiento están
 fuera de esta frontera; pueden alterar ACL/triggers y no deben ser credenciales de ejecución normal.
 
-Quedan pendientes el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
+Quedan pendientes la integración editorial de `question-assets`, el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
 Realtime si se habilitan, retención de payloads e idempotencia, reemplazo/archivado editorial,
 validación de contenido de otros formatos y planes EXPLAIN con volumen real. La selección de duraciones/
 configuración de cada modo se valida al publicar; SQL protege límites positivos y versiones congeladas,

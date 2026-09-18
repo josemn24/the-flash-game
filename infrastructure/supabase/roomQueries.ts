@@ -38,6 +38,7 @@ import type {
   RoomRankingModel,
 } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
+import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 
 type RoomReadRow = {
   room_id: string;
@@ -474,7 +475,7 @@ function asMemberPreviews(value: unknown) {
         id: row.id,
         name: row.name,
         initials: initials(row.name),
-        src: row.avatarPath ?? undefined,
+        src: resolveAvatarPath(row.avatarPath),
       },
     ];
   });
@@ -546,7 +547,7 @@ function toSeasonLeaderboard(rows: SeasonRankingReadRow[]): RoomLeaderboardEntry
     memberId: row.player_id,
     name: row.display_name,
     initials: initials(row.display_name),
-    avatarSrc: row.avatar_path ?? undefined,
+    avatarSrc: resolveAvatarPath(row.avatar_path),
     flashPoints: row.flash_points,
   }));
 }
@@ -557,7 +558,7 @@ function toChallengeLeaderboard(rows: ChallengeRankingReadRow[]): RoomDailyLeade
     memberId: row.player_id,
     name: row.display_name,
     initials: initials(row.display_name),
-    avatarSrc: row.avatar_path ?? undefined,
+    avatarSrc: resolveAvatarPath(row.avatar_path),
     flashPoints: row.flash_points,
     completed: true,
     durationMs: row.duration_ms,
@@ -737,7 +738,7 @@ function toHistoricalLeaderboard(rows: FlashHistoryReadRow[]): RoomDailyLeaderbo
             memberId: row.player_id,
             name: row.display_name,
             initials: initials(row.display_name),
-            avatarSrc: row.avatar_path ?? undefined,
+            avatarSrc: resolveAvatarPath(row.avatar_path),
             flashPoints: row.flash_points,
             completed: true,
             durationMs: row.duration_ms,
@@ -1149,7 +1150,7 @@ function toHistoricalMember(
 ): RoomMemberDetailModel["member"] {
   const first = rows[0];
   const name = first?.display_name ?? fallback.name;
-  const avatarSrc = first?.avatar_path ?? fallback.avatarSrc;
+  const avatarSrc = resolveAvatarPath(first?.avatar_path) ?? fallback.avatarSrc;
   return {
     id: first?.player_id ?? fallback.id,
     name,
@@ -1369,7 +1370,7 @@ export class SupabaseRoomQueries
     const member = toHistoricalMember(reviewRows, {
       id: memberKey,
       name: seasonEntry?.display_name ?? viewer.name,
-      avatarSrc: seasonEntry?.avatar_path ?? viewer.avatarSrc,
+      avatarSrc: resolveAvatarPath(seasonEntry?.avatar_path) ?? viewer.avatarSrc,
     });
     member.totalFlashPoints = seasonEntry?.flash_points ?? 0;
     const roomLeaderboard = toSeasonLeaderboard(seasonRows);
