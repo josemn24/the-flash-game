@@ -103,6 +103,8 @@ const progressiveImagePublicPayloadKeys = [
   "answerLabel",
   "answerPlaceholder",
 ];
+const shortTextPublicPayloadKeys = ["category", "tags", "question", "answerPlaceholder"];
+const shortTextSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const estimationSolutionKeys = ["correctAnswer", "tolerance", "explanation"];
 const heatMapSolutionKeys = ["target", "fullCreditRadius", "toleranceRadius", "explanation"];
@@ -459,6 +461,47 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMultipleChoiceQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMultipleChoiceQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "short-text") {
+    if (
+      value.payloadSchemaVersion !== 1 ||
+      !hasOnlyKeys(publicPayload, shortTextPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, shortTextSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato short-text.`,
+      ]);
+    }
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    const normalizedAcceptedAnswers = Array.isArray(acceptedAnswers)
+      ? acceptedAnswers.map((answer) => (typeof answer === "string" ? normalizeAnswer(answer) : ""))
+      : [];
+    if (
+      !nonEmptyString(solutionPayload.correctAnswer, 500) ||
+      !Array.isArray(acceptedAnswers) ||
+      acceptedAnswers.length < 1 ||
+      acceptedAnswers.length > 100 ||
+      !acceptedAnswers.every((answer) => nonEmptyString(answer, 500)) ||
+      new Set(normalizedAcceptedAnswers).size !== normalizedAcceptedAnswers.length ||
+      !normalizedAcceptedAnswers.includes(normalizeAnswer(solutionPayload.correctAnswer)) ||
+      (publicPayload.answerPlaceholder !== undefined &&
+        publicPayload.answerPlaceholder !== null &&
+        !nonEmptyString(publicPayload.answerPlaceholder, 200))
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato short-text.`,
+      ]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "short-text",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as Extract<FlashEditorialQuestion, { type: "short-text" }>["publicPayload"],
+      solutionPayload: solutionPayload as Extract<FlashEditorialQuestion, { type: "short-text" }>["solutionPayload"],
     };
   }
 
@@ -1097,7 +1140,11 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
   }
   const challenge = value.challenge;
   const questions = value.questions;
-  if (!isRecord(challenge) || !hasExactKeys(challenge, challengeKeys)) {
+  if (
+    !isRecord(challenge) ||
+    !challengeKeys.filter((key) => key !== "mode").every((key) => key in challenge) ||
+    !hasOnlyKeys(challenge, [...challengeKeys, "globalTimeLimitMs"])
+  ) {
     throw new FlashEditorialValidationError(["challenge tiene una estructura inválida."]);
   }
   if (
@@ -1107,10 +1154,14 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     challenge.subtitle.length > 300 ||
     typeof challenge.description !== "string" ||
     challenge.description.length > 2000 ||
-    challenge.mode !== "flash" ||
+    (challenge.mode !== "flash" && challenge.mode !== "alphabet") ||
     challenge.configSchemaVersion !== 1 ||
     !isRecord(challenge.modeConfig) ||
-    !Object.values(challenge.modeConfig).every(isJsonValue)
+    !Object.values(challenge.modeConfig).every(isJsonValue) ||
+    (challenge.mode === "alphabet" &&
+      (!Number.isSafeInteger(challenge.globalTimeLimitMs) ||
+        (challenge.globalTimeLimitMs as number) <= 0)) ||
+    (challenge.mode === "flash" && challenge.globalTimeLimitMs !== undefined)
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
@@ -1129,6 +1180,31 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
       ? parseQuestionReference(question, index)
       : parseQuestion(question, index),
   );
+  if (challenge.mode === "alphabet") {
+    const letters = parsedQuestions.map((question) =>
+      "source" in question ? question.modeConfig.letter : undefined,
+    );
+    if (
+      parsedQuestions.some(
+        (question) =>
+          !(
+            "source" in question &&
+            typeof question.modeConfig.letter === "string" &&
+            Array.from(question.modeConfig.letter).length === 1
+          ),
+      ) ||
+      letters.some((letter) => typeof letter !== "string" || letter.trim().length === 0) ||
+      new Set(letters.map((letter) => (letter as string).toLocaleUpperCase("es-ES"))).size !==
+        letters.length ||
+      parsedQuestions.some(
+        (question) => ("source" in question ? false : question.type !== "short-text"),
+      )
+    ) {
+      throw new FlashEditorialValidationError([
+        "Alphabet requiere referencias short-text y una letra única por elemento.",
+      ]);
+    }
+  }
   const inlineSlugs = parsedQuestions
     .filter((question): question is FlashEditorialQuestion => !("source" in question))
     .map((question) => question.slug);
@@ -1157,9 +1233,12 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
       title: challenge.title,
       subtitle: challenge.subtitle,
       description: challenge.description,
-      mode: "flash",
+      mode: challenge.mode,
       configSchemaVersion: 1,
       modeConfig: challenge.modeConfig as EditorialJsonObject,
+      ...(challenge.mode === "alphabet"
+        ? { globalTimeLimitMs: challenge.globalTimeLimitMs as number }
+        : {}),
     },
     questions: parsedQuestions,
   };

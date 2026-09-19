@@ -8,8 +8,9 @@ recuperación/abandono → rankings → historial/revisión`: la home, el detall
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
-transaccional de sala, owner y grupo inicial desde el portal. Los demás modos siguen mock hasta sus
-propias vertical slices.
+transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
+server-only y los comandos competitivos existentes; Supervivencia, Pirámide y Narrativa siguen mock
+hasta sus propias vertical slices.
 
 La dirección vigente es:
 
@@ -148,6 +149,11 @@ reconstruye las coronas desde `private.queens_placement_events`, calcula conflic
 de penalización sin confiar en contadores del navegador. Las marcas X son estado local y se descartan
 al recuperar. Al completar el tablero se crea una única recepción terminal; la solución solo se
 reconstruye en el contexto privado de evaluación y revisión autorizada.
+
+S05 entrega `public.get_my_alphabet_challenge` con letras y payloads públicos `short-text`, y
+`public.get_my_alphabet_result` solo tras un intento completado. El cliente conserva únicamente el
+estado visual de la sesión; `prepare_interaction`, `pass_interaction`, `receive_answer` y la
+evaluación server-side son la autoridad del reloj, los pases, las respuestas y el resultado.
 
 La matriz operativa completa, los límites HTTP y el procedimiento reproducible de Supabase están en
 [`s22-operacion.md`](../s22-operacion.md).

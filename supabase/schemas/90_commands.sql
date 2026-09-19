@@ -252,6 +252,49 @@ begin
             when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
             when q.type = 'matching' then private.matching_progress(a.id, item.id)
             when q.type = 'queens' then private.queens_progress(a.id, item.id)
+            when q.type = 'short-text' and cv.mode = 'alphabet' then (
+              select jsonb_build_object(
+                'kind', 'alphabet',
+                'round', greatest(1, 1 + floor((
+                  (select count(*) from private.interaction_intervals interval_row
+                    where interval_row.attempt_id = a.id)::numeric /
+                  nullif((select count(*) from private.challenge_items round_item
+                    where round_item.challenge_version_id = a.challenge_version_id)::numeric, 0)
+                ))::integer),
+                'currentIndex', item.position - 1,
+                'playedCount', (select count(distinct interval_row.challenge_item_id)::integer
+                  from private.interaction_intervals interval_row
+                  where interval_row.attempt_id = a.id),
+                'correctAnswers', (select count(*)::integer from private.attempt_answers answer_row
+                  where answer_row.attempt_id = a.id and answer_row.status = 'correct'),
+                'incorrectAnswers', (select count(*)::integer from private.attempt_answers answer_row
+                  where answer_row.attempt_id = a.id and answer_row.status = 'incorrect'),
+                'elapsedTimeMs', coalesce((select sum(floor(extract(epoch from
+                  (interval_row.ended_at - interval_row.started_at)) * 1000))::bigint
+                  from private.interaction_intervals interval_row where interval_row.attempt_id = a.id), 0)::bigint,
+                'deadlineAt', a.deadline_at,
+                'lastCorrectAt', (select max(answer_row.submitted_at) from private.attempt_answers answer_row
+                  where answer_row.attempt_id = a.id and answer_row.status = 'correct'),
+                'letters', coalesce((select jsonb_agg(jsonb_build_object(
+                  'letter', all_item.mode_config->>'letter',
+                  'challengeItemId', all_item.id,
+                  'status', case
+                    when answer_row.status is not null then answer_row.status
+                    when exists (select 1 from private.interaction_intervals open_interval
+                      where open_interval.attempt_id = a.id and open_interval.challenge_item_id = all_item.id
+                        and open_interval.ended_at is null) then 'active'
+                    when exists (select 1 from private.interaction_intervals visited
+                      where visited.attempt_id = a.id and visited.challenge_item_id = all_item.id) then 'passed'
+                    else 'unvisited' end,
+                  'answer', case when answer_row.answer is null then null
+                    else answer_row.answer #>> '{}' end
+                ) order by all_item.position)
+                  from private.challenge_items all_item
+                  left join private.attempt_answers answer_row
+                    on answer_row.attempt_id = a.id and answer_row.challenge_item_id = all_item.id
+                  where all_item.challenge_version_id = a.challenge_version_id), '[]'::jsonb)
+              )
+            )
             else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
       when 'receive', 'pass' then
@@ -570,6 +613,7 @@ declare
   actor uuid := private.command_actor(); key text := input->>'idempotencyKey';
   safe_input jsonb := input; cached private.command_requests%rowtype;
   a public.attempts%rowtype; s private.attempt_sessions%rowtype;
+  cv private.challenge_versions%rowtype;
   segment private.interaction_intervals%rowtype; unit private.attempt_timing_units%rowtype;
   item private.challenge_items%rowtype; question private.question_versions%rowtype;
   receipt private.answer_receipts%rowtype; instant timestamptz := clock_timestamp();
@@ -603,7 +647,15 @@ begin
       select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
       select * into item from private.challenge_items where id = segment.challenge_item_id;
       select * into question from private.question_versions where id = item.question_version_id;
-      if question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens') and instant < unit.deadline_at then
+      select * into cv from private.challenge_versions where id = a.challenge_version_id;
+      if cv.mode = 'alphabet' and instant < unit.deadline_at then
+        update private.interaction_intervals
+        set ended_at = greatest(segment.started_at, least(instant, unit.deadline_at)),
+            end_reason = 'recovery_interrupted'
+        where id = segment.id;
+        result := jsonb_build_object('receiptId', null, 'recovered', true,
+          'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
+      elsif question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

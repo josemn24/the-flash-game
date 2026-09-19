@@ -24,7 +24,8 @@ autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita
 revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
 E04 añade Matching con eventos privados de aciertos/fallos, penalización del 10%, progreso seguro y
 evaluación parcial desde eventos. E05 añade Queens con eventos privados de colocación/retirada,
-penalización del 5%, recuperación del tablero y resolución terminal server-side. Las migraciones están versionadas;
+penalización del 5%, recuperación del tablero y resolución terminal server-side. S05 añade Alphabet
+con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
@@ -105,6 +106,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [30_competition.sql](30_competition.sql)                 | Publicaciones, intentos, sesiones, respuestas, libro de puntos y auditoría. Deadline global y expiración anulables.                 |
 | [35_authoritative_state.sql](35_authoritative_state.sql) | Unidades temporales, intervalos de visita, recepciones inmutables e idempotencia. FK obligatoria desde respuesta final a recepción. |
 | [36_mini_wordle.sql](36_mini_wordle.sql) | Eventos privados, diccionario versionado, normalización/feedback y progreso seguro de Mini-Wordle. |
+| [57_alphabet_reads.sql](57_alphabet_reads.sql) | Lecturas públicas autorizadas del desafío Alphabet y su revisión terminal; nunca expone soluciones durante el juego. |
 | [40_indexes.sql](40_indexes.sql)                         | Índices de autorización, calendario, unicidad y consultas competitivas.                                                             |
 | [50_access_helpers.sql](50_access_helpers.sql)           | Resolución del jugador y ayudas RLS sin recursión.                                                                                  |
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)       | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                |
@@ -290,13 +292,12 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **35 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **36 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
-26 de E04, 24 de E05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las 643 pruebas TypeScript
+26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
+y las 654 pruebas TypeScript
 superadas. También pasan comprobación
-de tipos, ESLint y los enlaces de documentación; la comprobación de arquitectura mantiene dos
-incidencias preexistentes fuera de este slice. La suite SQL no sustituye
+de tipos, ESLint, arquitectura y los enlaces de documentación. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
 portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,

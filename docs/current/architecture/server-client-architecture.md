@@ -113,11 +113,10 @@ the same even when the visual treatment differs. `idle`, `submitting` and `error
 client states for this boundary.
 
 This pattern applies to server-authoritative modes. Practice, previews and other local sessions should
-remain immediate and should not add a network loading state. At present, the persisted server flow is
-implemented for competitive Flash; Alphabet, Narrative, Supervivencia, Pirámide and the other formats
-still use client-side evaluation or local persistence. When those modes migrate to server-side
-validation, they should adopt this lifecycle by default and adapt only the visible status to their
-mechanics.
+remain immediate and should not add a network loading state. The persisted server flow is implemented
+for competitive Flash and Alphabet; Narrative, Supervivencia, Pirámide and the other formats still use
+client-side evaluation or local persistence. When those modes migrate to server-side validation, they
+should adopt this lifecycle by default and adapt only the visible status to their mechanics.
 
 ### Universal components
 

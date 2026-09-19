@@ -205,6 +205,55 @@ export type ServerFlashChallenge = ChallengeBase & {
   maxScore: number;
 };
 
+export type ServerAlphabetLetterStatus =
+  | "unvisited"
+  | "active"
+  | "passed"
+  | "correct"
+  | "incorrect"
+  | "unanswered";
+
+export type ServerAlphabetLetter = {
+  readonly letter: string;
+  readonly challengeItemId: string;
+  readonly status: ServerAlphabetLetterStatus;
+  readonly answer: string | null;
+};
+
+export type ServerAlphabetProgress = {
+  readonly kind: "alphabet";
+  readonly round: number;
+  readonly currentIndex: number;
+  readonly playedCount: number;
+  readonly correctAnswers: number;
+  readonly incorrectAnswers: number;
+  readonly elapsedTimeMs: number;
+  readonly deadlineAt: string;
+  readonly lastCorrectAt: string | null;
+  readonly letters: readonly ServerAlphabetLetter[];
+};
+
+export type ServerAlphabetQuestion = ServerFlashQuestionBase & {
+  readonly type: "short-text";
+  readonly letter: string;
+  readonly answerPlaceholder: string | null;
+};
+
+export type ServerAlphabetChallenge = ChallengeBase & {
+  mode: "alphabet";
+  timeLimitMs: number;
+  entries: readonly {
+    readonly id: string;
+    readonly position: number;
+    readonly letter: string;
+    readonly questionType: "short-text";
+    readonly payloadSchemaVersion: number;
+    readonly timeLimitMs: number;
+    readonly points: number;
+  }[];
+  maxScore: number;
+};
+
 type ServerFlashQuestionBase = {
   readonly id: string;
   readonly category: string;

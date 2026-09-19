@@ -149,6 +149,13 @@ export type FlashEditorialProgressiveImagePublicPayload = {
   readonly answerPlaceholder?: string | null;
 };
 
+export type FlashEditorialShortTextPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly answerPlaceholder?: string | null;
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
   | FlashEditorialEstimationPublicPayload
@@ -161,7 +168,8 @@ export type FlashEditorialPublicPayload =
   | FlashEditorialOrderingPublicPayload
   | FlashEditorialAnagramPublicPayload
   | FlashEditorialClassificationPublicPayload
-  | FlashEditorialProgressiveImagePublicPayload;
+  | FlashEditorialProgressiveImagePublicPayload
+  | FlashEditorialShortTextPublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -232,6 +240,12 @@ export type FlashEditorialProgressiveImageSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialShortTextSolutionPayload = {
+  readonly correctAnswer: string;
+  readonly acceptedAnswers: readonly string[];
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
   | FlashEditorialEstimationSolutionPayload
@@ -244,7 +258,8 @@ export type FlashEditorialSolutionPayload =
   | FlashEditorialOrderingSolutionPayload
   | FlashEditorialAnagramSolutionPayload
   | FlashEditorialClassificationSolutionPayload
-  | FlashEditorialProgressiveImageSolutionPayload;
+  | FlashEditorialProgressiveImageSolutionPayload
+  | FlashEditorialShortTextSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -404,7 +419,16 @@ export type FlashEditorialQuestion =
   | FlashEditorialOrderingQuestion
   | FlashEditorialAnagramQuestion
   | FlashEditorialClassificationQuestion
-  | FlashEditorialProgressiveImageQuestion;
+  | FlashEditorialProgressiveImageQuestion
+  | {
+      readonly slug: string;
+      readonly type: "short-text";
+      readonly payloadSchemaVersion: 1;
+      readonly timeLimitMs: number;
+      readonly points: number;
+      readonly publicPayload: FlashEditorialShortTextPublicPayload;
+      readonly solutionPayload: FlashEditorialShortTextSolutionPayload;
+    };
 
 /**
  * Standalone question document. Points are deliberately absent: points belong
@@ -423,7 +447,8 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialOrderingQuestion, "points">
   | Omit<FlashEditorialAnagramQuestion, "points">
   | Omit<FlashEditorialClassificationQuestion, "points">
-  | Omit<FlashEditorialProgressiveImageQuestion, "points">;
+  | Omit<FlashEditorialProgressiveImageQuestion, "points">
+  | Omit<Extract<FlashEditorialQuestion, { readonly type: "short-text" }>, "points">;
 
 export type FlashEditorialQuestionReference = {
   readonly source: "library";
@@ -442,9 +467,10 @@ export type FlashEditorialDocument = {
     readonly title: string;
     readonly subtitle: string;
     readonly description: string;
-    readonly mode: "flash";
+    readonly mode: "flash" | "alphabet";
     readonly configSchemaVersion: 1;
     readonly modeConfig: EditorialJsonObject;
+    readonly globalTimeLimitMs?: number;
   };
   readonly questions: readonly FlashEditorialChallengeQuestion[];
 };
@@ -470,7 +496,8 @@ export type SuperadminQuestionLibraryEntry = {
     | "ordering"
     | "anagram"
     | "classification"
-    | "progressive-image";
+    | "progressive-image"
+    | "short-text";
   readonly question: string;
   readonly category: string | null;
   readonly tags: EditorialJsonObject;

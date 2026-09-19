@@ -642,8 +642,8 @@ una respuesta final, crear una recepción interna autoritativa con payload nulo 
 `unanswered`. Así se conserva la FK obligatoria de `attempt_answers` sin atribuir una respuesta al
 cliente. Alfabeto registra en cambio su pase por recuperación sin respuesta final. Aplicar después
 los efectos del modo (avance, vida, final reglamentario o deadline global) y solo entonces preparar
-contenido autorizado. Esta operación futura debe ser idempotente y no confiar en una señal de cierre
-del navegador ni en que el cliente confirme haber visto el payload.
+contenido autorizado. En S05 esta operación es idempotente y no confía en una señal de cierre del
+navegador ni en que el cliente confirme haber visto el payload.
 
 ### Enviar una respuesta
 

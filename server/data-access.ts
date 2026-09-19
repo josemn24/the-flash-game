@@ -10,6 +10,7 @@ import {
 } from "@/infrastructure/mock/composition";
 import { supabaseRoomQueries } from "@/infrastructure/supabase/roomQueries";
 import { supabaseFlashQueries } from "@/infrastructure/supabase/flashQueries";
+import { supabaseAlphabetQueries } from "@/infrastructure/supabase/alphabetQueries";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
@@ -97,7 +98,8 @@ export const getPlayableChallengePageModel = cache(
     }
     if (roomKey) {
       if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
-      return supabaseFlashQueries.getPlayable(roomKey, challengeKey);
+      return (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
+        supabaseAlphabetQueries.getPlayable(roomKey, challengeKey);
     }
     if (!mocksEnabled()) return null;
     return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());

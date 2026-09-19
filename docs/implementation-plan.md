@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, F01, F02, F03, F06, F07, F12 y S17a están implementadas y verificadas sobre el stack local; F04 está implementada y pendiente de verificación pgTAP con Docker;
+> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F06, F07, F12 y S17a están implementadas y verificadas sobre el stack local; F04 está implementada y pendiente de verificación pgTAP con Docker;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-19. Alcance: pasar del prototipo mock a competición persistida,
@@ -30,11 +30,11 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                                                                   | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta. |
 | Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07, más los contextos privados de temporadas, editorial y calendario en S10–S12. | Ajustes y el resto de proyecciones autorizadas.                                                                                                    |
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                            |
-| Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash en S03–S04.                                                                                                                                              | Sustituir autoridad cliente en Alphabet y los demás modos; Pirámide también usa `localStorage` en práctica.                                        |
+| Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash y Alphabet.                                                                                                                                              | Sustituir autoridad cliente en Supervivencia, Pirámide y Narrativa; Pirámide también usa `localStorage` en práctica.                                        |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
 | SQL       | 28 tablas, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                      | Aplicación controlada a un proyecto remoto y operación de assets editoriales desde un portal privado.                                              |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
-| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                                                                               | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                    |
+| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash y Alphabet reconstruyen contexto privado, persisten resultado y producen feedback público.                                                                                                                               | Contextos y reglas autoritativas de Supervivencia, Pirámide, Narrativa y los demás modos.                                                                                    |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E05, E10 y `multiple-choice` con assets privados.                                                                                                 | Verificación contra un entorno remoto.                                                                                                             |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
@@ -358,10 +358,10 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   Una segunda sesión solo recibe un bloqueo y no puede transferir el control; abandonar conserva
   respuestas, consume intento y no suma puntos. Desconexión sola todavía no promete abandono
   automático: corresponde a S21.
-- **Estado de implementación:** completado para el vertical Flash: `recover_attempt` cierra el
-  intervalo expuesto como `recovery_interrupted`, crea/evalúa una recepción interna `unanswered` y
-  el cliente prepara solo el siguiente item autorizado. Alfabeto, Supervivencia, Pirámide y Narrativa
-  mantienen esta política como contrato pendiente de S05/S14–S16.
+- **Estado de implementación:** completado para Flash y Alphabet. `recover_attempt` cierra un
+  intervalo Alphabet abierto con `recovery_interrupted`, conserva el deadline global y permite que
+  el cliente resuelva después los items pendientes sin reentregar contenido. Supervivencia,
+  Pirámide y Narrativa mantienen esta política pendiente.
 
 ### S05 — Jugar Alfabeto con reloj global y vueltas reales
 
@@ -382,9 +382,10 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   motivo auditable, cierre global durante evaluación o desconexión, timeout de todas las pendientes,
   `lastCorrectAt` fuera del desempate, checkpoint y bloqueo de segunda sesión.
 - **Dependencias:** S04; D03 para Alfabeto y reconciliación `unanswered`/`timeout`.
-- **Terminada:** recargar no reinicia el reloj global, no vuelve a mostrar la letra que estaba activa
-  y conserva sus vueltas; el resultado terminal se acredita una vez, incluso si todas las letras
-  quedan sin contestar.
+- **Terminada:** implementada localmente. `public.get_my_alphabet_challenge` entrega solo letras,
+  metadatos y payload público; `prepare_interaction` reconstruye el progreso y comparte el deadline;
+  `pass_interaction` conserva las vueltas sin crear respuestas finales; timeout, evaluación y
+  revisión terminal se resuelven por las rutas existentes. La solución solo aparece tras completar.
 
 ### S06 — Consultar los dos rankings reales
 
@@ -418,8 +419,8 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   `/salas/[roomId]/historial/[challengeId]` y
   `/salas/[roomId]/historial/[challengeId]/[memberId]`.
 - **Mocks retirados:** `MockRoomQueries.listHistory/getHistoryDetail/getMemberDetail`, historial de
-  fixtures y mezcla local de resultados para esos recorridos. Alphabet y los demás modos continúan
-  mock.
+  fixtures y mezcla local de resultados para esos recorridos. Supervivencia, Pirámide y Narrativa
+  continúan mock.
 - **Backend/dominio:** `RoomHistoryQueries` y `RoomMemberDetailQueries` delegan en
   `get_flash_history` y `get_flash_member_review`. El historial solo consolida publicaciones Flash
   `closed` sin intentos `in_progress`; conserva publicaciones sin participantes y excluye
@@ -754,6 +755,7 @@ Ficha común, obligatoria para **cada** E*:
 | E03     | `progressive-clues` | **Implementado localmente.** Entregar la primera pista gratis y las siguientes mediante comando transaccional; persistir eventos privados, no enviar pistas futuras ni confiar en `revealedClues`, ajustar penalización con los puntos reales del item y recuperar tras recarga.                                                                                                                    |
 | E04     | `matching`          | **Implementado localmente.** Comprobar cada asociación con feedback inmediato; conservar fallos y parejas correctas en eventos privados, aplicar 10% por error, recuperar tras recarga y evaluar timeout con crédito parcial sin `correctMatchId` público.                                                                                                                                          |
 | E05     | `queens`            | **Implementado localmente.** Persistir cada colocación/retirada como evento privado; calcular conflictos y penalización del 5% server-side, recuperar el tablero sin marcas X y cerrar automáticamente al resolver las cinco regiones. La solución solo aparece en la revisión autorizada.                                                                                                          |
+| S05     | `alphabet`          | **Implementado localmente.** Publicar desafíos Alphabet con referencias `short-text`, reloj global, vueltas y pases; persistir intervalos y respuestas mediante los comandos existentes, reconstruir progreso/timeout server-side y exponer soluciones solo en revisión terminal autorizada. |
 | E06     | `word-search`       | Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos para impedir borrar penalizaciones del payload final.                                                                                                                                                                                                                                                            |
 | E07     | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                                                                                                                                                   |
 | E08     | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                                                                                                                                           |
@@ -1126,7 +1128,7 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S13, D08a/D08b, E01–E05, E10 y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+S01–S13, D08a/D08b, E01–E05, E10, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
 sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues, Matching y Queens,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local

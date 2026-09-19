@@ -167,6 +167,11 @@ colocación o retirada se registra en `private.queens_placement_events`. El coma
 recuperación y cierre terminal desde PostgreSQL. Las marcas X no se persisten y la solución solo se
 entrega durante la evaluación/revisión autorizada.
 
+S05 añade `schemas/57_alphabet_reads.sql`: el desafío usa referencias publicadas `short-text`,
+`global_time_limit_ms` y el mismo ciclo de `start`/`prepare`/`pass`/`receive`/`evaluate`/`complete`.
+El RPC de juego devuelve únicamente letras, metadatos y payload público; `get_my_alphabet_result`
+queda restringido al intento propio completado y se usa para reconstruir la revisión terminal.
+
 Para ejecutar el piloto competitivo local:
 
 ```bash

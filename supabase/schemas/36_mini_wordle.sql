@@ -228,6 +228,20 @@ begin
       and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
         where value = solution->>'correctAnswer');
   end if;
+  if question.type = 'short-text' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and (not question.public_payload ? 'answerPlaceholder'
+        or jsonb_typeof(question.public_payload->'answerPlaceholder') in ('null', 'string'))
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
+      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
+      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
+  end if;
   if question.type = 'logic-code' then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'

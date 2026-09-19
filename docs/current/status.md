@@ -74,6 +74,8 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   E05 añade mezclas `multiple-choice` + `queens`, tablero 5×5, coronas precolocadas, eventos de
   colocación/retirada, penalización del 5% por conflicto, recuperación sin marcas X y resolución
   automática con evaluación server-side.
+  S05 añade Alphabet competitivo persistido: referencias `short-text` publicadas, reloj global,
+  vueltas, pases, recuperación de la letra activa y revisión terminal sin solución durante el juego.
   F01/F02/F06/F07/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
   `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
   permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
@@ -122,7 +124,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre únicamente el
   provisioning inicial directo desde el portal; la gestión posterior e invitaciones permanecen
   pendientes.
-- Alphabet, Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
+- Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
 - `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
   siguen fuera de S07 y deshabilitados.
 - El historial solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
@@ -134,17 +136,20 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-19.
 
-- `npm test`: 100 archivos y 650 tests superados; incluye reglas, adaptadores y UI pública de E01–E05,
+- `npm test`: 101 archivos y 654 tests superados; incluye reglas, adaptadores y UI pública de E01–E05, S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
   `npm run docs:check`: correctos.
-- `npm run type-architecture`: mantiene dos incidencias preexistentes fuera de este slice.
+- `npm run type-architecture`: correcto.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto; 35 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S13, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run supabase:schema:test`: correcto; 36 archivos declarativos, inventario, provisioning,
+  S02–S08, S05-Alphabet, S10–S13, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
+- `npm run supabase:db:schema:sync`: bloqueado antes de generar la migración de S05 por una migración
+  histórica preexistente, `supabase/migrations/20260919140000_f04_heat_map.sql:5`, que contiene el prefijo
+  literal `+CREATE`. No se reescribió la historia ni se generó una migración parcial.
 - E10 añade `progressive-image` al recorrido competitivo persistido: fixture mixto, validación
   pública/privada, reloj iniciado por servidor, recuperación y evaluación normalizada; la imagen
   original es pública y no se presenta como revelación protegida.

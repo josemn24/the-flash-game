@@ -7,7 +7,11 @@ import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { isTerminalCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
 import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/game";
-import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
+import type {
+  ServerAlphabetChallenge,
+  ServerFlashChallenge,
+  ServerFlashTerminalReview,
+} from "@/types/gameplay/challenge";
 import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
 
 function TerminalCompetitiveChallenge({
@@ -84,7 +88,7 @@ export function RoomChallengeClient({
   persistence: persistenceProp,
   terminalReview,
 }: {
-  challenge: Challenge | ServerFlashChallenge;
+  challenge: Challenge | ServerFlashChallenge | ServerAlphabetChallenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
@@ -144,7 +148,7 @@ export function RoomChallengeClient({
   if (
     persistence === "server" &&
     roomContext &&
-    "slots" in challenge &&
+    ("slots" in challenge || "entries" in challenge) &&
     attemptStatus === "completed" &&
     roomContext.result
   ) {

@@ -23,6 +23,7 @@ import type {
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementResult,
   RevealProgressiveClueResult,
+  PassInteractionResult,
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type {
@@ -42,6 +43,7 @@ import type {
   ClassificationQuestion,
   EstimationQuestion,
   HeatMapQuestion,
+  ShortTextQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -217,7 +219,8 @@ function asQuestion(
   | AnagramQuestion
   | ClassificationQuestion
   | EstimationQuestion
-  | HeatMapQuestion {
+  | HeatMapQuestion
+  | ShortTextQuestion {
   if (
     ![
       "multiple-choice",
@@ -234,6 +237,7 @@ function asQuestion(
       "classification",
       "estimation",
       "heat-map",
+      "short-text",
     ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
       !(
@@ -316,6 +320,25 @@ function asQuestion(
         ? { promptVisual: publicPayload.promptVisual as MultipleChoiceQuestion["promptVisual"] }
         : {}),
     };
+  }
+  if (context.questionType === "short-text") {
+    const correctAnswer = solutionPayload.correctAnswer;
+    const acceptedAnswers = solutionPayload.acceptedAnswers;
+    if (
+      typeof correctAnswer !== "string" ||
+      !Array.isArray(acceptedAnswers) ||
+      !acceptedAnswers.every((answer) => typeof answer === "string")
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "short-text",
+      correctAnswer,
+      acceptedAnswers,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies ShortTextQuestion;
   }
   if (context.questionType === "estimation") {
     const configuration = {
@@ -856,6 +879,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "start"
   | "prepare"
   | "receiveAnswer"
+  | "pass"
   | "submitMatchingPair"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
@@ -893,6 +917,10 @@ export class SupabaseAttemptCommands implements Pick<
 
   receiveAnswer(input: SubmitAnswerInput) {
     return callCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
+  }
+
+  pass(input: Parameters<AttemptCommands["pass"]>[0]) {
+    return callCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
   }
 
   async submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {

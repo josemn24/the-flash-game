@@ -39,7 +39,7 @@ begin
     or not challenge ?& array['slug', 'title', 'subtitle', 'description', 'mode', 'configSchemaVersion', 'modeConfig']
     or exists (
       select 1 from jsonb_object_keys(challenge) key_name
-      where key_name <> all(array['slug', 'title', 'subtitle', 'description', 'mode', 'configSchemaVersion', 'modeConfig'])
+      where key_name <> all(array['slug', 'title', 'subtitle', 'description', 'mode', 'configSchemaVersion', 'modeConfig', 'globalTimeLimitMs'])
     )
     or jsonb_typeof(challenge->'slug') is distinct from 'string'
     or char_length(btrim(challenge->>'slug')) not between 1 and 120
@@ -49,9 +49,15 @@ begin
     or char_length(challenge->>'subtitle') > 300
     or jsonb_typeof(challenge->'description') is distinct from 'string'
     or char_length(challenge->>'description') > 2000
-    or challenge->>'mode' <> 'flash'
+    or challenge->>'mode' not in ('flash', 'alphabet')
     or challenge->'configSchemaVersion' <> '1'::jsonb
-    or jsonb_typeof(challenge->'modeConfig') is distinct from 'object' then
+    or jsonb_typeof(challenge->'modeConfig') is distinct from 'object'
+    or (challenge->>'mode' = 'alphabet' and (
+      jsonb_typeof(challenge->'globalTimeLimitMs') is distinct from 'number'
+      or (challenge->>'globalTimeLimitMs')::numeric <> trunc((challenge->>'globalTimeLimitMs')::numeric)
+      or (challenge->>'globalTimeLimitMs')::integer <= 0
+    ))
+    or (challenge->>'mode' = 'flash' and challenge ? 'globalTimeLimitMs') then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
@@ -100,7 +106,7 @@ begin
     question_slug := btrim(question->>'slug');
     if jsonb_typeof(question->'slug') is distinct from 'string'
       or char_length(question_slug) not between 1 and 120
-      or question->>'type' not in ('multiple-choice', 'estimation', 'heat-map', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'true-false', 'odd-one-out', 'ordering', 'anagram', 'classification')
+      or question->>'type' not in ('multiple-choice', 'estimation', 'heat-map', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'true-false', 'odd-one-out', 'ordering', 'anagram', 'classification', 'short-text')
       or (question->>'type' not in ('progressive-image', 'multiple-choice', 'estimation', 'heat-map') and question->'payloadSchemaVersion' <> '1'::jsonb)
       or (question->>'type' in ('progressive-image', 'multiple-choice') and question->'payloadSchemaVersion' not in ('1'::jsonb, '2'::jsonb))
       or (question->>'type' in ('estimation', 'heat-map') and question->'payloadSchemaVersion' <> '2'::jsonb)
@@ -826,6 +832,36 @@ begin
       continue;
     end if;
 
+    if question->>'type' = 'short-text' then
+      if jsonb_typeof(public_payload) is distinct from 'object'
+        or not public_payload ? 'question'
+        or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+          'category', 'tags', 'question', 'answerPlaceholder'
+        ]))
+        or private.editorial_has_secret_key(public_payload)
+        or jsonb_typeof(public_payload->'question') is distinct from 'string'
+        or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+        or (public_payload ? 'answerPlaceholder' and jsonb_typeof(public_payload->'answerPlaceholder') not in ('null', 'string'))
+        or jsonb_typeof(solution_payload) is distinct from 'object'
+        or not solution_payload ?& array['correctAnswer', 'acceptedAnswers']
+        or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+          'correctAnswer', 'acceptedAnswers', 'explanation'
+        ]))
+        or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+        or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
+        or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
+        or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
+        or exists (select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
+          where jsonb_typeof(answer) is distinct from 'string'
+            or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+        or not exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+          where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\\s+', '', 'g') =
+            regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\\s+', '', 'g')) then
+        raise exception 'invalid_short_text_payload' using errcode = '22023';
+      end if;
+      continue;
+    end if;
+
     if jsonb_typeof(public_payload) is distinct from 'object'
       or not public_payload ?& array['question', 'options']
       or exists (
@@ -895,6 +931,43 @@ begin
       raise exception 'invalid_solution_payload' using errcode = '22023';
     end if;
   end loop;
+  if challenge->>'mode' = 'alphabet' then
+    if exists (
+      select 1 from jsonb_array_elements(document->'questions') question_row
+      where question_row->>'source' <> 'library'
+        or jsonb_typeof(question_row->'modeConfig') is distinct from 'object'
+        or jsonb_typeof(question_row->'modeConfig'->'letter') is distinct from 'string'
+        or char_length(question_row->'modeConfig'->>'letter') = 0
+        or char_length(question_row->'modeConfig'->>'letter') > 4
+        or question_row->'modeConfig'->>'letter' !~ '^[[:alpha:]]$'
+        or not exists (
+          select 1 from private.question_versions version
+          where version.id = (question_row->>'questionVersionId')::uuid
+            and version.status = 'published' and version.type = 'short-text'
+        )
+    ) then
+      raise exception 'invalid_alphabet_item' using errcode = '22023';
+    end if;
+    if exists (
+      select 1 from (
+        select lower(question_row->'modeConfig'->>'letter') as letter
+        from jsonb_array_elements(document->'questions') question_row
+      ) letters group by letter having count(*) > 1
+    ) then
+      raise exception 'duplicate_alphabet_letter' using errcode = '22023';
+    end if;
+  elsif exists (
+    select 1
+    from jsonb_array_elements(document->'questions') question_row
+    where question_row->>'type' = 'short-text'
+      or (question_row->>'source' = 'library' and exists (
+        select 1 from private.question_versions version
+        where version.id = (question_row->>'questionVersionId')::uuid
+          and version.type = 'short-text'
+      ))
+  ) then
+    raise exception 'short_text_requires_alphabet' using errcode = '22023';
+  end if;
   if total_points <> 100 then
     raise exception 'points_total_invalid' using errcode = '22023';
   end if;
@@ -956,11 +1029,13 @@ begin
     values (challenge_definition_id, document_value->'challenge'->>'slug', actor);
     insert into private.challenge_versions(
       id, challenge_definition_id, version_number, config_schema_version, status, mode,
-      title, subtitle, description, max_score, mode_config, created_by_player_id
+      title, subtitle, description, max_score, global_time_limit_ms, mode_config, created_by_player_id
     ) values (
-      challenge_version_id, challenge_definition_id, 1, 1, 'draft', 'flash',
+      challenge_version_id, challenge_definition_id, 1, 1, 'draft', document_value->'challenge'->>'mode',
       document_value->'challenge'->>'title', document_value->'challenge'->>'subtitle',
-      document_value->'challenge'->>'description', 100, document_value->'challenge'->'modeConfig', actor
+      document_value->'challenge'->>'description', 100,
+      (document_value->'challenge'->>'globalTimeLimitMs')::integer,
+      document_value->'challenge'->'modeConfig', actor
     );
     for question, question_index in
       select value, ordinality::integer
@@ -1130,11 +1205,11 @@ begin
     where id = definition_row.id;
     update private.challenge_versions
     set config_schema_version = 1,
-        mode = 'flash',
+        mode = document_value->'challenge'->>'mode',
         title = document_value->'challenge'->>'title',
         subtitle = document_value->'challenge'->>'subtitle',
         description = document_value->'challenge'->>'description',
-        global_time_limit_ms = null,
+        global_time_limit_ms = (document_value->'challenge'->>'globalTimeLimitMs')::integer,
         max_score = (select coalesce(sum((value->>'points')::integer), 0)
           from jsonb_array_elements(document_value->'questions') value),
         mode_config = document_value->'challenge'->'modeConfig'

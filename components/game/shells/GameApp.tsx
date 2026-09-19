@@ -1,12 +1,16 @@
 import dynamic from "next/dynamic";
 import type { Challenge, GameRoomContext } from "@/types/game";
-import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
+import type {
+  ServerAlphabetChallenge,
+  ServerFlashChallenge,
+  ServerFlashTerminalReview,
+} from "@/types/gameplay/challenge";
 import type { ChallengeCompletionResult } from "@/types/game";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import type { GameplayPersistence } from "@/types/view-models";
 
 type GameAppProps = {
-  challenge: Challenge | ServerFlashChallenge;
+  challenge: Challenge | ServerFlashChallenge | ServerAlphabetChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
   socialSnapshot: FlashPopSocialSnapshot;
@@ -30,6 +34,11 @@ const FlashPopFlashGame = dynamic(() =>
 const ServerFlashPopGame = dynamic(() =>
   import("@/components/game/modes/flash-pop/ServerFlashPopGame.client").then(
     (module) => module.ServerFlashPopGame,
+  ),
+);
+const ServerFlashPopAlphabetGame = dynamic(() =>
+  import("@/components/game/modes/flash-pop/ServerFlashPopAlphabetGame.client").then(
+    (module) => module.ServerFlashPopAlphabetGame,
   ),
 );
 const FlashPopPyramidGame = dynamic(() =>
@@ -57,9 +66,18 @@ export function GameApp({
   terminalReview,
 }: GameAppProps) {
   if (challenge.mode === "alphabet") {
+    if (persistence === "server" && roomContext && "timeLimitMs" in challenge) {
+      return (
+        <ServerFlashPopAlphabetGame
+          challenge={challenge}
+          roomContext={roomContext}
+          terminalReview={terminalReview}
+        />
+      );
+    }
     return (
       <FlashPopAlphabetGame
-        challenge={challenge}
+        challenge={challenge as Extract<Challenge, { mode: "alphabet" }>}
         roomContext={roomContext}
         onComplete={onComplete}
       />

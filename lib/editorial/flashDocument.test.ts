@@ -393,13 +393,34 @@ describe("Flash editorial document", () => {
     );
   });
 
-  it("rejects unsupported formats, point allocations, and missing solutions", () => {
+  it("accepts an Alphabet envelope with published-library references", () => {
+    const document = {
+      ...documentFixture(),
+      challenge: {
+        ...documentFixture().challenge,
+        mode: "alphabet",
+        globalTimeLimitMs: 120_000,
+      },
+      questions: ["A", "B"].map((letter, index) => ({
+        source: "library",
+        questionVersionId: `00000000-0000-4000-8000-00000000010${index}`,
+        points: 50,
+        modeConfig: { letter },
+      })),
+    };
+    expect(parseFlashEditorialDocument(document).challenge.mode).toBe("alphabet");
     expect(() =>
       parseFlashEditorialDocument({
-        ...documentFixture(),
-        challenge: { ...documentFixture().challenge, mode: "alphabet" },
+        ...document,
+        questions: [
+          { ...document.questions[0], modeConfig: { letter: "A" } },
+          { ...document.questions[1], modeConfig: { letter: "a" } },
+        ],
       }),
-    ).toThrow("challenge no cumple");
+    ).toThrow("letra única");
+  });
+
+  it("rejects unsupported point allocations and missing solutions", () => {
     const wrongPoints = documentFixture();
     wrongPoints.questions[1].points = 40;
     expect(() => parseFlashEditorialDocument(wrongPoints)).toThrow("sumar 100");
