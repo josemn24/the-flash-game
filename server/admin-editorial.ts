@@ -10,8 +10,21 @@ import type {
   UpdateFlashDraftInput,
   UpdateQuestionDraftInput,
 } from "@/application/ports/superadmin-editorial-commands";
-import { supabaseSuperadminEditorialCommands } from "@/infrastructure/supabase/superadminEditorialQueries";
+import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
+import {
+  supabaseSuperadminEditorialCommands,
+  supabaseSuperadminEditorialQueries,
+} from "@/infrastructure/supabase/superadminEditorialQueries";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
+import { requireSuperadmin } from "@/server/admin";
+
+export async function getSuperadminQuestionVersion(
+  questionVersionId: string,
+  queries: Pick<SuperadminEditorialQueries, "getQuestionVersion"> = supabaseSuperadminEditorialQueries,
+) {
+  await requireSuperadmin();
+  return queries.getQuestionVersion(questionVersionId);
+}
 
 export function createSuperadminFlashDraft(
   input: CreateFlashDraftInput,

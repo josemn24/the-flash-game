@@ -1,15 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { AuthenticationRequiredError, SuperadminAccessDeniedError } from "@/application/administration/errors";
 import { QuestionVersionEditor } from "@/components/admin/QuestionVersionEditor.client";
-import { requireSuperadmin } from "@/server/admin";
-import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
+import { getSuperadminQuestionVersion } from "@/server/admin-editorial";
 
 export const dynamic = "force-dynamic";
 
 async function loadQuestionVersion(questionVersionId: string) {
   try {
-    await requireSuperadmin();
-    return await supabaseSuperadminEditorialQueries.getQuestionVersion(questionVersionId);
+    return await getSuperadminQuestionVersion(questionVersionId);
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) redirect("/");
     if (error instanceof SuperadminAccessDeniedError) notFound();
