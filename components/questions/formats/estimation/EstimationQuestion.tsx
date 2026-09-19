@@ -13,6 +13,7 @@ type EstimationQuestionProps = {
   unit: string;
   locked: boolean;
   onSubmit: (value: number) => void;
+  onProgress?: (value: number) => void;
 };
 
 export function EstimationQuestion({
@@ -23,11 +24,16 @@ export function EstimationQuestion({
   unit,
   locked,
   onSubmit,
+  onProgress,
 }: EstimationQuestionProps) {
   const [value, setValue] = useState(initialValue);
 
   const adjust = (amount: number) => {
-    setValue((current) => Math.min(max, Math.max(min, current + amount)));
+    setValue((current) => {
+      const next = Math.min(max, Math.max(min, current + amount));
+      onProgress?.(next);
+      return next;
+    });
   };
 
   const progress = ((value - min) / (max - min)) * 100;
@@ -52,7 +58,11 @@ export function EstimationQuestion({
             step={step}
             value={value}
             disabled={locked}
-            onChange={(event) => setValue(Number(event.target.value))}
+            onChange={(event) => {
+              const next = Number(event.target.value);
+              setValue(next);
+              onProgress?.(next);
+            }}
             style={{ "--range-progress": `${progress}%` } as React.CSSProperties}
             aria-label={`Estimación en ${unit}`}
             aria-valuetext={`${value} ${unit}`}

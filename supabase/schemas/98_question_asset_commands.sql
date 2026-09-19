@@ -197,6 +197,7 @@ begin
     and (
       (question.type = 'progressive-image' and question.public_payload->'surface' ? 'assetId')
       or (question.type = 'multiple-choice' and question.public_payload->'media' ? 'assetId')
+      or (question.type = 'estimation' and question.public_payload->'media' ? 'assetId')
     )
     and asset.kind = 'question-asset' and asset.status in ('ready','archived')
     and asset.id = (input->>'assetId')::uuid;

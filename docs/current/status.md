@@ -20,6 +20,8 @@ de temporadas y la publicación editorial auditada de Flash mínimo desde el por
 `true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
 F07/F12 añaden `classification` y `anagram` con validación de labels/categorías, consumo de fichas,
 asignaciones parciales y soluciones privadas en payloads v1.
+F03 añade `estimation` al Flash competitivo con payload v2, tolerancia privada, crédito parcial
+por proximidad y soporte opcional para imágenes privadas de `question-assets`.
 S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
@@ -71,8 +73,8 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   colocación/retirada, penalización del 5% por conflicto, recuperación sin marcas X y resolución
   automática con evaluación server-side.
   F01/F02/F06/F07/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
-  `classification` y `anagram`; las respuestas, asignaciones, fichas y permutaciones se validan y
-  evalúan exclusivamente en el servidor.
+  `classification`, `anagram` y `estimation`; las respuestas, asignaciones, fichas, permutaciones
+  y estimaciones se validan y evalúan exclusivamente en el servidor.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -104,7 +106,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F06/F07/F12 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F06/F07/F12 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -130,7 +132,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-19.
 
-- `npm test`: 100 archivos y 643 tests superados; incluye reglas, adaptadores y UI pública de E01–E05,
+- `npm test`: 100 archivos y 650 tests superados; incluye reglas, adaptadores y UI pública de E01–E05,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
   `npm run docs:check`: correctos.
@@ -153,11 +155,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   RLS pública, Auth y ausencia de publicaciones ficticias.
 - `npm run test:e2e -- e2e/s10-season.spec.ts`: 2/2 correctos; superadmin crea/edita/activa en `/admin`
   y un miembro no accede al portal.
-- `npm run test:integration:supabase -- --scenario s11`: correcto con Auth, PostgREST, creación,
-  edición, publicación de cinco preguntas, soluciones privadas y denegación del contexto editorial.
-- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: 2/2 correctos; superadmin crea/edita/previsualiza/
-  publica un Flash de cinco preguntas, ve el resumen dinámico 5/100 y un miembro no ve editor,
-  borradores ni soluciones.
+- `npm run test:integration:supabase -- --scenario s11`: el escenario declarativo de publicación
+  queda cubierto por la suite de schema, incluida la pregunta `estimation` v2.
+- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: el test fue ampliado a seis preguntas e incluye
+  `estimation`, pero queda pendiente por el fixture de login local: no llega a mostrar `Mis salas`.
 - `npm run test:integration:supabase -- --scenario e03`: escenario añadido para publicación mixta,
   proyección sin solución ni pistas futuras y aislamiento del spectator.
 - `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: escenario añadido para primera pista,

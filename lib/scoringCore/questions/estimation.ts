@@ -1,5 +1,6 @@
 import type { AnswerValue, EstimationQuestion, Question } from "@/types/game";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
+import { isValidEstimationAnswer } from "@/lib/estimation";
 import type {
   EvaluationContext,
   InternalEvaluation,
@@ -20,7 +21,8 @@ export function calculateEstimationMetrics(question: EstimationQuestion, answer:
 }
 
 function isCorrect(question: Question, answer: AnswerValue) {
-  return typeof answer === "number" && answer === asQuestion(question).correctAnswer;
+  const estimationQuestion = asQuestion(question);
+  return isValidEstimationAnswer(answer, estimationQuestion) && answer === estimationQuestion.correctAnswer;
 }
 
 export function evaluateEstimation({
@@ -30,8 +32,8 @@ export function evaluateEstimation({
 }: EvaluationContext): InternalEvaluation {
   const estimationQuestion = asQuestion(question);
   const correct = isCorrect(question, answer);
-  if (typeof answer !== "number") {
-    return { isCorrect: correct, status: "partial", points: 0 };
+  if (!isValidEstimationAnswer(answer, estimationQuestion)) {
+    return { isCorrect: false, status: "incorrect", points: 0 };
   }
 
   const metrics = calculateEstimationMetrics(estimationQuestion, answer);
@@ -53,7 +55,7 @@ export function evaluateEstimation({
 export const scoring = {
   questionType: "estimation",
   policy: "proximity",
-  isAnswer: (answer) => typeof answer === "number",
+  isAnswer: (answer) => typeof answer === "number" && Number.isFinite(answer),
   isCorrect,
   evaluate: evaluateEstimation,
 } as const satisfies QuestionScoring;

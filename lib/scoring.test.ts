@@ -1793,6 +1793,33 @@ describe("question evaluation", () => {
     expect(result.details).toEqual({ type: "estimation", difference: 100, proximity: 0.5 });
   });
 
+  it("rejects estimation answers outside the published range or step grid", () => {
+    const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
+    expect(evaluateAnswer({ question, answer: question.max + question.step, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question, answer: question.min + question.step / 2, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+  });
+
+  it("uses exact equality when estimation tolerance is zero", () => {
+    const question = {
+      ...QUESTION_FORMAT_CATALOG.estimation.examples[0].question,
+      tolerance: 0,
+    };
+    expect(evaluateAnswer({ question, answer: question.correctAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: question.points,
+    });
+    expect(evaluateAnswer({ question, answer: question.correctAnswer - question.step, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 0,
+    });
+  });
+
   it("penalizes failed code attempts", () => {
     const question = QUESTION_FORMAT_CATALOG["logic-code"].examples[0].question;
     const result = evaluateAnswer({

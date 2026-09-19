@@ -12,6 +12,7 @@ import {
   getChallengeImage,
 } from "@/application/presentation/room";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 import type { GameMode } from "@/types/gameplay/challenge";
 import type {
   AnswerReview,
@@ -20,10 +21,16 @@ import type {
   MultipleChoicePromptVisual,
   Question,
   QuestionMedia,
+  EstimationQuestion,
 } from "@/types/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
+import {
+  isValidEstimationAnswer,
+  isValidEstimationConfiguration,
+  isValidEstimationSolution,
+} from "@/lib/estimation";
 import type {
   RoomCardModel,
   RoomCalendarEntry,
@@ -201,7 +208,8 @@ type FlashMemberReviewReadRow = {
     | "odd-one-out"
     | "ordering"
     | "anagram"
-    | "classification";
+    | "classification"
+    | "estimation";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -444,9 +452,11 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "odd-one-out" ||
       row.question_type === "ordering" ||
       row.question_type === "anagram" ||
-      row.question_type === "classification") &&
+      row.question_type === "classification" ||
+      row.question_type === "estimation") &&
     (row.payload_schema_version === 1 ||
-      (row.question_type === "progressive-image" && row.payload_schema_version === 2)) &&
+      (row.question_type === "progressive-image" && row.payload_schema_version === 2) ||
+      (row.question_type === "estimation" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
     isRecord(row.public_payload) &&
@@ -1090,6 +1100,50 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       type: "ordering",
     };
   }
+  if (row.question_type === "estimation") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const prompt = publicPayload.question;
+    const configuration = {
+      min: publicPayload.min,
+      max: publicPayload.max,
+      step: publicPayload.step,
+      initialValue: publicPayload.initialValue,
+      unit: publicPayload.unit,
+    };
+    const correctAnswer = solutionPayload.correctAnswer;
+    const tolerance = solutionPayload.tolerance;
+    const media = publicPayload.media;
+    const resolvedMedia =
+      isRecord(media) && typeof media.src === "string" ? (media as QuestionMedia) : undefined;
+    const privateMediaReference = isRecord(media) && typeof media.assetId === "string";
+    if (
+      typeof prompt !== "string" ||
+      !isValidEstimationConfiguration(configuration) ||
+      !isValidEstimationSolution(correctAnswer, tolerance, configuration) ||
+      !isValidEstimationAnswer(configuration.initialValue, configuration) ||
+      (media !== null && media !== undefined && !resolvedMedia && !privateMediaReference)
+    ) {
+      throw new Error(`Invalid historical estimation payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      type: "estimation",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      min: configuration.min as number,
+      max: configuration.max as number,
+      step: configuration.step as number,
+      initialValue: configuration.initialValue as number,
+      unit: configuration.unit as string,
+      ...(resolvedMedia ? { media: resolvedMedia } : {}),
+      correctAnswer,
+      tolerance: tolerance as number,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies EstimationQuestion;
+  }
   if (row.question_type === "anagram") {
     const tags = requiredRecordField(publicPayload, "tags", "public_payload");
     const prompt = publicPayload.question;
@@ -1601,7 +1655,7 @@ export class SupabaseRoomQueries
     }
 
     if (!resolvedPublicationId || !seasonId) return null;
-    const [reviewRows, seasonRows, rankingRows] = await Promise.all([
+    const [initialReviewRows, seasonRows, rankingRows] = await Promise.all([
       callHistoryRead(
         "get_flash_member_review",
         {
@@ -1620,6 +1674,32 @@ export class SupabaseRoomQueries
             isChallengeRankingReadRow,
           ).then(toChallengeLeaderboard),
     ]);
+    let reviewRows = initialReviewRows;
+    const reviewNeedsPrivateAsset = reviewRows.some((row) => {
+      if (!isRecord(row.public_payload)) return false;
+      const media = row.public_payload.media;
+      const surface = row.public_payload.surface;
+      return (
+        (isRecord(media) && typeof media.assetId === "string") ||
+        (isRecord(surface) && typeof surface.assetId === "string")
+      );
+    });
+    if (reviewNeedsPrivateAsset && memberKey === viewer.playerId) {
+      const authClient = await createClient();
+      const { data: authData } = await authClient.auth.getUser();
+      if (authData.user) {
+        reviewRows = await Promise.all(
+          reviewRows.map(async (row) => ({
+            ...row,
+            public_payload: await resolveCompetitiveQuestionPayload({
+              authUserId: authData.user!.id,
+              attemptId: row.attempt_id,
+              publicPayload: row.public_payload,
+            }),
+          })),
+        );
+      }
+    }
     if (!historyRow) challengeLeaderboard = rankingRows;
 
     const seasonEntry = seasonRows.find((entry) => entry.player_id === memberKey);

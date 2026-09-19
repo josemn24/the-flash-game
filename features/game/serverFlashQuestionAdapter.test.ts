@@ -139,6 +139,32 @@ describe("server flash question adapter", () => {
       categories: ["A", "B"],
     });
     expect(classification).not.toHaveProperty("categoriesByItem");
+
+    const estimation = questionFromPayload(
+      "item-estimation",
+      {
+        question: "¿Cuál es la velocidad media?",
+        min: 10,
+        max: 60,
+        step: 1,
+        initialValue: 30,
+        unit: "km/h",
+        media: null,
+      },
+      22_000,
+      40,
+      "estimation",
+    );
+    expect(estimation).toMatchObject({
+      type: "estimation",
+      min: 10,
+      max: 60,
+      step: 1,
+      initialValue: 30,
+      unit: "km/h",
+    });
+    expect(estimation).not.toHaveProperty("correctAnswer");
+    expect(estimation).not.toHaveProperty("tolerance");
   });
 
   it("reconstructs final-answer solutions only for terminal review", () => {
@@ -241,6 +267,43 @@ describe("server flash question adapter", () => {
     expect(classificationReview.questions[0].items[0]).toMatchObject({
       label: "Uno",
       correctCategory: "A",
+    });
+
+    const estimationReview = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-estimation",
+            position: 1,
+            questionType: "estimation",
+            payloadSchemaVersion: 2,
+            timeLimitMs: 22_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-estimation",
+          publicPayload: {
+            question: "¿Cuál es la velocidad media?",
+            min: 10,
+            max: 60,
+            step: 1,
+            initialValue: 30,
+            unit: "km/h",
+            media: null,
+          },
+          solutionPayload: { correctAnswer: 36, tolerance: 18, explanation: "Cálculo." },
+        },
+      ],
+    );
+    expect(estimationReview.questions[0]).toMatchObject({
+      type: "estimation",
+      correctAnswer: 36,
+      tolerance: 18,
+      explanation: "Cálculo.",
     });
   });
 

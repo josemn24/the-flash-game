@@ -17,7 +17,7 @@ language sql immutable set search_path = '' as $$
     when jsonb_typeof(value) = 'object' then exists (
       select 1
       from jsonb_each(value) as item(key, nested)
-      where item.key in ('answer', 'correctAnswer', 'explanation', 'solution', 'solutionPayload')
+      where item.key in ('answer', 'correctAnswer', 'explanation', 'solution', 'solutionPayload', 'tolerance')
         or private.editorial_has_secret_key(item.nested)
     )
     when jsonb_typeof(value) = 'array' then exists (

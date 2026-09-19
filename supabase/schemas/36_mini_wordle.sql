@@ -153,6 +153,41 @@ begin
       and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
         where value = solution->>'correctAnswer');
   end if;
+  if question.type = 'estimation' and question.payload_schema_version = 2 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'min') = 'number'
+      and jsonb_typeof(question.public_payload->'max') = 'number'
+      and jsonb_typeof(question.public_payload->'step') = 'number'
+      and jsonb_typeof(question.public_payload->'initialValue') = 'number'
+      and (question.public_payload->>'min')::numeric < (question.public_payload->>'max')::numeric
+      and (question.public_payload->>'step')::numeric > 0
+      and (question.public_payload->>'initialValue')::numeric between
+        (question.public_payload->>'min')::numeric and (question.public_payload->>'max')::numeric
+      and jsonb_typeof(question.public_payload->'unit') = 'string'
+      and char_length(btrim(question.public_payload->>'unit')) between 1 and 120
+      and jsonb_typeof(question.public_payload->'media') in ('null', 'object')
+      and (
+        jsonb_typeof(question.public_payload->'media') = 'null'
+        or (
+          question.public_payload->'media'->>'type' = 'image'
+          and question.public_payload->'media'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          and private.is_usable_question_asset((question.public_payload->'media'->>'assetId')::uuid)
+          and jsonb_typeof(question.public_payload->'media'->'alt') = 'string'
+          and jsonb_typeof(question.public_payload->'media'->'width') = 'number'
+          and jsonb_typeof(question.public_payload->'media'->'height') = 'number'
+          and (question.public_payload->'media'->>'width')::integer between 1 and 8192
+          and (question.public_payload->'media'->>'height')::integer between 1 and 8192
+        )
+      )
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'number'
+      and (solution->>'correctAnswer')::numeric between
+        (question.public_payload->>'min')::numeric and (question.public_payload->>'max')::numeric
+      and jsonb_typeof(solution->'tolerance') = 'number'
+      and (solution->>'tolerance')::numeric >= 0;
+  end if;
   if question.type = 'queens' and question.payload_schema_version = 1 then
     return private.queens_content_valid(question.public_payload, solution);
   end if;

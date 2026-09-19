@@ -40,6 +40,7 @@ import type {
   OrderingQuestion,
   AnagramQuestion,
   ClassificationQuestion,
+  EstimationQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -49,6 +50,10 @@ import {
 } from "@/lib/miniWordle";
 import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
+import {
+  isValidEstimationConfiguration,
+  isValidEstimationSolution,
+} from "@/lib/estimation";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -211,7 +216,8 @@ function asQuestion(
   | OddOneOutQuestion
   | OrderingQuestion
   | AnagramQuestion
-  | ClassificationQuestion {
+  | ClassificationQuestion
+  | EstimationQuestion {
   if (
     ![
       "multiple-choice",
@@ -226,11 +232,15 @@ function asQuestion(
       "ordering",
       "anagram",
       "classification",
+      "estimation",
     ].includes(
       context.questionType,
     ) ||
     (context.payloadSchemaVersion !== 1 &&
-      !(context.questionType === "progressive-image" && context.payloadSchemaVersion === 2)) ||
+      !(
+        (context.questionType === "progressive-image" || context.questionType === "estimation") &&
+        context.payloadSchemaVersion === 2
+      )) ||
     context.itemConfigSchemaVersion !== 1 ||
     context.modeConfigSchemaVersion !== 1
   ) {
@@ -304,6 +314,50 @@ function asQuestion(
       ...(publicPayload.promptVisual
         ? { promptVisual: publicPayload.promptVisual as MultipleChoiceQuestion["promptVisual"] }
         : {}),
+    };
+  }
+  if (context.questionType === "estimation") {
+    const configuration = {
+      min: publicPayload.min,
+      max: publicPayload.max,
+      step: publicPayload.step,
+      initialValue: publicPayload.initialValue,
+      unit: publicPayload.unit,
+    };
+    const media = publicPayload.media;
+    const validMedia =
+      media === null ||
+      (media &&
+        typeof media === "object" &&
+        !Array.isArray(media) &&
+        (media as Record<string, unknown>).type === "image" &&
+        typeof (media as Record<string, unknown>).src === "string" &&
+        typeof (media as Record<string, unknown>).alt === "string");
+    if (
+      !Object.hasOwn(publicPayload, "media") ||
+      !isValidEstimationConfiguration(configuration) ||
+      !validMedia ||
+      !isValidEstimationSolution(
+        solutionPayload.correctAnswer,
+        solutionPayload.tolerance,
+        configuration,
+      )
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "estimation",
+      min: configuration.min as number,
+      max: configuration.max as number,
+      step: configuration.step as number,
+      initialValue: configuration.initialValue as number,
+      unit: configuration.unit as string,
+      ...(media ? { media: media as EstimationQuestion["media"] } : {}),
+      correctAnswer: solutionPayload.correctAnswer as number,
+      tolerance: solutionPayload.tolerance as number,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (context.questionType === "true-false") {

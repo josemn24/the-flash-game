@@ -386,7 +386,7 @@ export type QuestionContractMap = {
       readonly step: number;
       readonly initialValue: number;
       readonly unit: string;
-      readonly media: Legacy.QuestionMedia | null;
+      readonly media: Legacy.QuestionMedia | PrivateQuestionImageReference | null;
     };
     readonly solution: { readonly correctAnswer: number; readonly tolerance: number };
     readonly answer: number;

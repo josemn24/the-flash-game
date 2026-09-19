@@ -133,6 +133,24 @@ describe("Flash editorial document", () => {
         },
       },
       {
+        slug: "sbr-average-speed",
+        type: "estimation",
+        payloadSchemaVersion: 2,
+        timeLimitMs: 22_000,
+        publicPayload: {
+          category: "Matemáticas",
+          tags: {},
+          question: "¿Cuál es la velocidad media?",
+          min: 10,
+          max: 60,
+          step: 1,
+          initialValue: 30,
+          unit: "km/h",
+          media: null,
+        },
+        solutionPayload: { correctAnswer: 36, tolerance: 18, explanation: "Cálculo." },
+      },
+      {
         slug: "sbr-race-anagram",
         type: "anagram",
         payloadSchemaVersion: 1,
@@ -177,6 +195,7 @@ describe("Flash editorial document", () => {
       { type: "true-false" },
       { type: "odd-one-out" },
       { type: "ordering" },
+      { type: "estimation" },
       { type: "anagram" },
       { type: "classification" },
     ]);
@@ -250,6 +269,24 @@ describe("Flash editorial document", () => {
       solutionPayload: { categoriesByItem: { Uno: "A", Extra: "B" } },
     };
     expect(() => parseFlashEditorialQuestionDocument(classification)).toThrow();
+
+    const estimation = {
+      slug: "invalid-estimation",
+      type: "estimation",
+      payloadSchemaVersion: 2,
+      timeLimitMs: 12_000,
+      publicPayload: {
+        question: "Estima",
+        min: 10,
+        max: 60,
+        step: 5,
+        initialValue: 12,
+        unit: "km/h",
+        media: null,
+      },
+      solutionPayload: { correctAnswer: 80, tolerance: -1 },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(estimation)).toThrow();
   });
 
   it("accepts Flash documents from two through twenty questions", () => {

@@ -195,7 +195,8 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "odd-one-out"
       | "ordering"
       | "anagram"
-      | "classification";
+      | "classification"
+      | "estimation";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -243,6 +244,16 @@ export type ServerClassificationQuestion = ServerFlashQuestionBase & {
   readonly type: "classification";
   readonly items: readonly { readonly label: string }[];
   readonly categories: readonly string[];
+};
+
+export type ServerEstimationQuestion = ServerFlashQuestionBase & {
+  readonly type: "estimation";
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+  readonly initialValue: number;
+  readonly unit: string;
+  readonly media?: QuestionMedia;
 };
 
 export type ServerMiniWordleProgress = {
@@ -351,7 +362,8 @@ export type ServerFlashQuestion =
   | ServerOddOneOutQuestion
   | ServerOrderingQuestion
   | ServerAnagramQuestion
-  | ServerClassificationQuestion;
+  | ServerClassificationQuestion
+  | ServerEstimationQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

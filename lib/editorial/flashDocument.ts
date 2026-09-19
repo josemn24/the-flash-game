@@ -1,5 +1,6 @@
 import type {
   FlashEditorialDocument,
+  FlashEditorialEstimationQuestion,
   FlashEditorialMiniWordleQuestion,
   FlashEditorialMultipleChoiceQuestion,
   FlashEditorialLogicCodeQuestion,
@@ -17,6 +18,10 @@ import type {
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
+import {
+  isValidEstimationConfiguration,
+  isValidEstimationSolution,
+} from "@/lib/estimation";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import {
   isMiniWordleMaxAttempts,
@@ -31,6 +36,7 @@ const SECRET_KEYS = new Set([
   "explanation",
   "solution",
   "solutionPayload",
+  "tolerance",
 ]);
 
 const documentKeys = ["challenge", "questions"];
@@ -60,6 +66,17 @@ const multipleChoicePublicPayloadKeys = [
   "options",
   "media",
   "promptVisual",
+];
+const estimationPublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "min",
+  "max",
+  "step",
+  "initialValue",
+  "unit",
+  "media",
 ];
 const miniWordlePublicPayloadKeys = [
   "category",
@@ -105,6 +122,7 @@ const progressiveImagePublicPayloadKeys = [
   "answerPlaceholder",
 ];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
+const estimationSolutionKeys = ["correctAnswer", "tolerance", "explanation"];
 const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionaryId", "explanation"];
 const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
 const progressiveCluesSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
@@ -216,6 +234,10 @@ function isPrivateMultipleChoiceMedia(value: unknown): boolean {
   );
 }
 
+function isPrivateOptionalMedia(value: unknown): boolean {
+  return value === null || isPrivateMultipleChoiceMedia(value);
+}
+
 function isPromptVisual(value: unknown): boolean {
   if (value === null || value === undefined) return true;
   if (!isRecord(value) || value.type !== "number-sequence" || !Array.isArray(value.sequence)) {
@@ -319,7 +341,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
 
   const commonValid =
     (value.payloadSchemaVersion === 1 ||
-      ((value.type === "progressive-image" || value.type === "multiple-choice") &&
+      ((value.type === "progressive-image" || value.type === "multiple-choice" || value.type === "estimation") &&
         value.payloadSchemaVersion === 2)) &&
     Number.isSafeInteger(value.points) &&
     (value.points as number) > 0 &&
@@ -369,6 +391,41 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMultipleChoiceQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMultipleChoiceQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "estimation") {
+    if (
+      !hasOnlyKeys(publicPayload, estimationPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, estimationSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato estimation.`]);
+    }
+    const configuration = {
+      min: publicPayload.min,
+      max: publicPayload.max,
+      step: publicPayload.step,
+      initialValue: publicPayload.initialValue,
+      unit: publicPayload.unit,
+    };
+    const correctAnswer = solutionPayload.correctAnswer;
+    const tolerance = solutionPayload.tolerance;
+    if (
+      value.payloadSchemaVersion !== 2 ||
+      !isValidEstimationConfiguration(configuration) ||
+      !isPrivateOptionalMedia(publicPayload.media) ||
+      !isValidEstimationSolution(correctAnswer, tolerance, configuration)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato estimation.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "estimation",
+      payloadSchemaVersion: 2,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialEstimationQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialEstimationQuestion["solutionPayload"],
     };
   }
 

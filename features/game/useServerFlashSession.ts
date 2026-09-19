@@ -950,7 +950,14 @@ export function useServerFlashSession({
   };
 
   const updateDraft = (answer: AnswerValue) => {
-    if (!question || question.type !== "classification" || locked || busy) return;
+    if (
+      !question ||
+      (question.type !== "classification" && question.type !== "estimation") ||
+      locked ||
+      busy
+    ) {
+      return;
+    }
     setPendingAnswer(answer);
   };
 

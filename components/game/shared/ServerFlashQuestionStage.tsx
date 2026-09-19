@@ -13,6 +13,7 @@ import { OddOneOutQuestion } from "@/components/questions/formats/odd-one-out/Od
 import { OrderingQuestion } from "@/components/questions/formats/ordering/OrderingQuestion";
 import { AnagramQuestion } from "@/components/questions/formats/anagram/AnagramQuestion";
 import { ClassificationQuestion } from "@/components/questions/formats/classification/ClassificationQuestion";
+import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -294,6 +295,41 @@ export function ServerFlashQuestionStage({
                   ? (pendingAnswer as Record<string, string>)
                   : undefined
               }
+              locked={locked}
+              onProgress={onProgress}
+              onSubmit={onSubmit}
+            />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : question.type === "estimation" ? (
+          <>
+            {question.media ? (
+              <div className="mt-5">
+                <QuestionMedia media={question.media} prominent />
+              </div>
+            ) : null}
+            <EstimationQuestion
+              key={`${question.id}:${typeof pendingAnswer === "number" ? "draft" : "initial"}`}
+              min={question.min}
+              max={question.max}
+              step={question.step}
+              initialValue={
+                typeof pendingAnswer === "number" ? pendingAnswer : question.initialValue
+              }
+              unit={question.unit}
               locked={locked}
               onProgress={onProgress}
               onSubmit={onSubmit}

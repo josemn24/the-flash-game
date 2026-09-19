@@ -1,6 +1,7 @@
 import type {
   AnagramQuestion,
   ClassificationQuestion,
+  EstimationQuestion,
   FlashChallenge,
   LogicCodeQuestion,
   MatchingQuestion,
@@ -23,9 +24,15 @@ import type {
   ServerOrderingQuestion,
   ServerAnagramQuestion,
   ServerClassificationQuestion,
+  ServerEstimationQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
+import {
+  isValidEstimationAnswer,
+  isValidEstimationConfiguration,
+  isValidEstimationSolution,
+} from "@/lib/estimation";
 
 type TerminalReviewResponseRow = {
   challenge_item_id: string;
@@ -140,7 +147,8 @@ export function questionFromPayload(
     | "odd-one-out"
     | "ordering"
     | "anagram"
-    | "classification",
+    | "classification"
+    | "estimation",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -161,7 +169,8 @@ export function questionFromPayload(
     | "odd-one-out"
     | "ordering"
     | "anagram"
-    | "classification",
+    | "classification"
+    | "estimation",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -202,6 +211,33 @@ export function questionFromPayload(
     }
     const media = questionMedia(value);
     return { ...base, type: "multiple-choice", options: value.options, ...(media ? { media } : {}) };
+  }
+  if (questionType === "estimation") {
+    const configuration = {
+      min: value.min,
+      max: value.max,
+      step: value.step,
+      initialValue: value.initialValue,
+      unit: value.unit,
+    };
+    const media = questionMedia(value);
+    if (
+      !isValidEstimationConfiguration(configuration) ||
+      typeof value.media === "undefined" ||
+      (media !== undefined && !media)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "estimation",
+      min: configuration.min as number,
+      max: configuration.max as number,
+      step: configuration.step as number,
+      initialValue: configuration.initialValue as number,
+      unit: configuration.unit as string,
+      ...(media ? { media } : {}),
+    } satisfies ServerEstimationQuestion;
   }
   if (questionType === "true-false") {
     return { ...base, type: "true-false" } satisfies ServerTrueFalseQuestion;
@@ -674,7 +710,8 @@ function questionWithSolution(
   | QuestionOfType<"odd-one-out">
   | QuestionOfType<"ordering">
   | AnagramQuestion
-  | ClassificationQuestion {
+  | ClassificationQuestion
+  | EstimationQuestion {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -819,6 +856,34 @@ function questionWithSolution(
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     };
+  }
+  if (question.type === "estimation") {
+    const tolerance = solution.tolerance;
+    if (
+      !isValidEstimationSolution(solution.correctAnswer, tolerance, question) ||
+      typeof tolerance !== "number" ||
+      !isValidEstimationAnswer(question.initialValue, question)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "estimation",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      min: question.min,
+      max: question.max,
+      step: question.step,
+      initialValue: question.initialValue,
+      unit: question.unit,
+      ...(question.media ? { media: question.media } : {}),
+      correctAnswer: solution.correctAnswer,
+      tolerance,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies EstimationQuestion;
   }
   if (question.type === "anagram") {
     if (typeof solution.correctAnswer !== "string") {

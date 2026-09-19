@@ -25,7 +25,7 @@ const editorialDocument = {
   challenge: {
     slug: "flash-s11-e2e",
     title: "Flash S11 E2E",
-    subtitle: "Cinco preguntas",
+    subtitle: "Seis preguntas",
     description: "Desafío editorial creado desde el portal.",
     mode: "flash",
     configSchemaVersion: 1,
@@ -37,7 +37,7 @@ const editorialDocument = {
       type: "multiple-choice" as const,
       payloadSchemaVersion: 1 as const,
       timeLimitMs: 15000,
-      points: 20,
+      points: 15,
       publicPayload: {
         category: index % 2 === 0 ? "Cultura" : "Ciencia",
         tags: {},
@@ -53,7 +53,7 @@ const editorialDocument = {
       type: "anagram" as const,
       payloadSchemaVersion: 1 as const,
       timeLimitMs: 30000,
-      points: 20,
+      points: 15,
       publicPayload: {
         category: "Deporte",
         tags: {},
@@ -89,6 +89,29 @@ const editorialDocument = {
         explanation: "Clasificación histórica.",
       },
     },
+    {
+      slug: "e2e-estimation",
+      type: "estimation" as const,
+      payloadSchemaVersion: 2 as const,
+      timeLimitMs: 22000,
+      points: 20,
+      publicPayload: {
+        category: "Deporte",
+        tags: {},
+        question: "¿Cuál era la velocidad media aproximada?",
+        min: 0,
+        max: 100,
+        step: 5,
+        initialValue: 50,
+        unit: "km/h",
+        media: null,
+      },
+      solutionPayload: {
+        correctAnswer: 65,
+        tolerance: 15,
+        explanation: "La media aproximada del fixture es 65 km/h.",
+      },
+    },
   ],
 };
 
@@ -116,7 +139,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     await page.reload();
 
     await expect(editor.getByRole("heading", { name: "Flash S11 E2E", exact: true })).toBeVisible();
-    await expect(editor.getByText("Flash · 5 preguntas · 100 puntos")).toBeVisible();
+    await expect(editor.getByText("Flash · 6 preguntas · 100 puntos")).toBeVisible();
     await textarea.fill(JSON.stringify({
       ...draftDocument,
       challenge: { ...draftDocument.challenge, title: "Flash S11 E2E editado" },

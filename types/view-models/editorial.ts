@@ -30,6 +30,18 @@ export type FlashEditorialMultipleChoicePublicPayload = {
   readonly promptVisual?: MultipleChoicePromptVisual | null;
 };
 
+export type FlashEditorialEstimationPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+  readonly initialValue: number;
+  readonly unit: string;
+  readonly media: FlashEditorialMultipleChoiceImageAssetReference | null;
+};
+
 export type FlashEditorialMiniWordlePublicPayload = {
   readonly category?: string;
   readonly tags?: EditorialJsonObject;
@@ -140,6 +152,7 @@ export type FlashEditorialProgressiveImagePublicPayload = {
 
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
+  | FlashEditorialEstimationPublicPayload
   | FlashEditorialMiniWordlePublicPayload
   | FlashEditorialLogicCodePublicPayload
   | FlashEditorialProgressiveCluesPublicPayload
@@ -153,6 +166,12 @@ export type FlashEditorialPublicPayload =
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialEstimationSolutionPayload = {
+  readonly correctAnswer: number;
+  readonly tolerance: number;
   readonly explanation?: string;
 };
 
@@ -216,6 +235,7 @@ export type FlashEditorialProgressiveImageSolutionPayload = {
 
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
+  | FlashEditorialEstimationSolutionPayload
   | FlashEditorialMiniWordleSolutionPayload
   | FlashEditorialLogicCodeSolutionPayload
   | FlashEditorialProgressiveCluesSolutionPayload
@@ -235,6 +255,16 @@ export type FlashEditorialMultipleChoiceQuestion = {
   readonly points: number;
   readonly publicPayload: FlashEditorialMultipleChoicePublicPayload;
   readonly solutionPayload: FlashEditorialMultipleChoiceSolutionPayload;
+};
+
+export type FlashEditorialEstimationQuestion = {
+  readonly slug: string;
+  readonly type: "estimation";
+  readonly payloadSchemaVersion: 2;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialEstimationPublicPayload;
+  readonly solutionPayload: FlashEditorialEstimationSolutionPayload;
 };
 
 export type FlashEditorialMiniWordleQuestion = {
@@ -339,6 +369,7 @@ export type FlashEditorialProgressiveImageQuestion = {
 
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
+  | FlashEditorialEstimationQuestion
   | FlashEditorialMiniWordleQuestion
   | FlashEditorialLogicCodeQuestion
   | FlashEditorialProgressiveCluesQuestion
@@ -356,6 +387,7 @@ export type FlashEditorialQuestion =
  */
 export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialMultipleChoiceQuestion, "points">
+  | Omit<FlashEditorialEstimationQuestion, "points">
   | Omit<FlashEditorialMiniWordleQuestion, "points">
   | Omit<FlashEditorialLogicCodeQuestion, "points">
   | Omit<FlashEditorialProgressiveCluesQuestion, "points">
@@ -400,6 +432,7 @@ export type SuperadminQuestionLibraryEntry = {
   readonly slug: string;
   readonly type:
     | "multiple-choice"
+    | "estimation"
     | "mini-wordle"
     | "logic-code"
     | "progressive-clues"
