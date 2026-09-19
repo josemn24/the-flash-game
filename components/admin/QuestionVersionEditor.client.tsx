@@ -21,22 +21,46 @@ const emptyQuestion = {
 function key() { return globalThis.crypto.randomUUID(); }
 function ErrorMessage({ state }: { readonly state: QuestionActionState }) { return state.message ? <p className={styles.error} role="alert">{state.message} {Object.values(state.fieldErrors ?? {}).join(" ")}</p> : null; }
 function Reason() { return <label className={styles.reason}><span>Motivo de auditoría</span><textarea name="reason" rows={2} maxLength={500} required placeholder="Preparar pregunta para la biblioteca" /></label>; }
+function isRecord(value: unknown): value is Record<string, unknown> { return Boolean(value) && typeof value === "object" && !Array.isArray(value); }
 
 function QuestionAssetUploader({ document, onDocumentChange }: { readonly document: string; readonly onDocumentChange: (value: string) => void }) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [altText, setAltText] = useState("");
+  const [fit, setFit] = useState<"" | "cover" | "contain">("");
+  const [position, setPosition] = useState("");
+  let target: "multiple-choice" | "progressive-image" | null = null;
+  let currentReference: Record<string, unknown> = {};
   let progressiveImage = false;
   try {
-    const parsed = JSON.parse(document) as { type?: unknown; publicPayload?: { surface?: { assetId?: unknown } } };
-    progressiveImage = parsed.type === "progressive-image";
+    const parsed = JSON.parse(document) as { type?: unknown; publicPayload?: unknown };
+    if (parsed.type === "progressive-image" || parsed.type === "multiple-choice") {
+      target = parsed.type;
+      progressiveImage = parsed.type === "progressive-image";
+      const publicPayload = isRecord(parsed.publicPayload) ? parsed.publicPayload : {};
+      const reference = publicPayload[parsed.type === "progressive-image" ? "surface" : "media"];
+      currentReference = isRecord(reference) ? reference : {};
+    }
   } catch { /* The JSON editor displays the validation error. */ }
-  if (!progressiveImage) return null;
+  if (!target) return null;
+
+  const currentAlt = typeof currentReference.alt === "string" ? currentReference.alt : "";
+  const currentFit = currentReference.fit === "cover" || currentReference.fit === "contain" ? currentReference.fit : "";
+  const currentPosition = typeof currentReference.position === "string" ? currentReference.position : "";
+  const effectiveAlt = altText || currentAlt;
+  const effectiveFit = fit || currentFit;
+  const effectivePosition = position || currentPosition;
 
   async function upload(file: File) {
     setMessage(null);
     setPending(true);
     const idempotencyKey = crypto.randomUUID();
     try {
+      const alt = effectiveAlt.trim();
+      if (!alt || alt.length > 500) {
+        setMessage("Introduce un texto alternativo de entre 1 y 500 caracteres.");
+        return;
+      }
       const prepared = await prepareQuestionAsset({ mimeType: file.type, byteSize: file.size, idempotencyKey });
       if (!prepared.ok) { setMessage(prepared.message); return; }
       const { error } = await createClient().storage.from("question-assets").uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, { contentType: file.type, upsert: false });
@@ -45,11 +69,31 @@ function QuestionAssetUploader({ document, onDocumentChange }: { readonly docume
       if (!confirmed.ok) { setMessage(confirmed.message); return; }
       const parsed = JSON.parse(document) as Record<string, unknown>;
       const publicPayload = (parsed.publicPayload ?? {}) as Record<string, unknown>;
-      const surface = (publicPayload.surface ?? {}) as Record<string, unknown>;
+      const referenceKey = target === "progressive-image" ? "surface" : "media";
+      const reference = (publicPayload[referenceKey] ?? {}) as Record<string, unknown>;
+      const privateReference = target === "multiple-choice"
+        ? {
+            type: "image",
+            assetId: confirmed.assetId,
+            alt,
+            width: confirmed.width,
+            height: confirmed.height,
+            ...(effectiveFit ? { fit: effectiveFit } : {}),
+            ...(effectivePosition ? { position: effectivePosition } : {}),
+          }
+        : {
+            ...reference,
+            assetId: confirmed.assetId,
+            alt,
+            width: confirmed.width,
+            height: confirmed.height,
+            ...(effectiveFit ? { fit: effectiveFit } : {}),
+            ...(effectivePosition ? { position: effectivePosition } : {}),
+          };
       onDocumentChange(JSON.stringify({
         ...parsed,
         payloadSchemaVersion: 2,
-        publicPayload: { ...publicPayload, surface: { ...surface, assetId: confirmed.assetId, width: confirmed.width, height: confirmed.height } },
+        publicPayload: { ...publicPayload, [referenceKey]: privateReference },
       }, null, 2));
       setMessage("Asset confirmado y vinculado al documento.");
     } catch { setMessage("No se ha podido completar la subida."); }
@@ -57,7 +101,12 @@ function QuestionAssetUploader({ document, onDocumentChange }: { readonly docume
   }
 
   return <div className={styles.assetPanel}>
-    <div><strong>Asset privado de progressive-image</strong><span>El servidor inspecciona los bytes y guarda solo el assetId.</span></div>
+    <div><strong>Asset privado de {progressiveImage ? "progressive-image" : "multiple-choice"}</strong><span>El servidor inspecciona los bytes y guarda solo el assetId.</span></div>
+    <div className={styles.assetFields}>
+      <label><span>Texto alternativo</span><input value={effectiveAlt} maxLength={500} onChange={(event) => setAltText(event.target.value)} placeholder="Describe la imagen" /></label>
+      <label><span>Ajuste</span><select value={effectiveFit} onChange={(event) => setFit(event.target.value as "" | "cover" | "contain")}><option value="">Predeterminado</option><option value="cover">Cover</option><option value="contain">Contain</option></select></label>
+      <label><span>Posición</span><input value={effectivePosition} maxLength={100} onChange={(event) => setPosition(event.target.value)} placeholder="center" /></label>
+    </div>
     <label className={styles.fileInput}><span>Seleccionar JPEG, PNG o WebP</span><input type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></label>
     {pending ? <span role="status">Subiendo y confirmando…</span> : null}
     {message ? <span className={styles.assetMessage} role="status">{message}</span> : null}

@@ -159,6 +159,61 @@ describe("Flash editorial document", () => {
     expect(() => parseFlashEditorialDocument(invalidAnswer)).toThrow("contrato Flash");
   });
 
+  it("accepts multiple-choice v2 with a private image asset reference", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "multiple-choice-private",
+      type: "multiple-choice",
+      payloadSchemaVersion: 2,
+      timeLimitMs: 15_000,
+      points: 50,
+      publicPayload: {
+        question: "¿Qué edificio aparece?",
+        options: ["A", "B"],
+        media: {
+          type: "image",
+          assetId: "00000000-0000-4000-8000-000000000099",
+          alt: "Edificio histórico",
+          width: 1200,
+          height: 800,
+          fit: "contain",
+          position: "center",
+        },
+        promptVisual: null,
+      },
+      solutionPayload: { correctAnswer: "A" },
+    };
+
+    expect(parseFlashEditorialDocument(document).questions[1]).toMatchObject({
+      type: "multiple-choice",
+      payloadSchemaVersion: 2,
+      publicPayload: { media: { assetId: "00000000-0000-4000-8000-000000000099" } },
+    });
+  });
+
+  it("rejects a private multiple-choice media reference in v1 or with a public source in v2", () => {
+    const v1 = documentFixture();
+    v1.questions[0].publicPayload.media = {
+      type: "image",
+      assetId: "00000000-0000-4000-8000-000000000099",
+      alt: "Imagen",
+      width: 100,
+      height: 100,
+    };
+    expect(() => parseFlashEditorialDocument(v1)).toThrow("contrato Flash");
+
+    const v2 = documentFixture();
+    v2.questions[1] = {
+      ...v2.questions[1],
+      payloadSchemaVersion: 2,
+      publicPayload: {
+        ...v2.questions[1].publicPayload,
+        media: { type: "image", src: "/visuals/example.png", alt: "Imagen" },
+      },
+    };
+    expect(() => parseFlashEditorialDocument(v2)).toThrow("contrato Flash");
+  });
+
   it("rejects duplicate options and non-positive timers", () => {
     const duplicateOptions = documentFixture();
     duplicateOptions.questions[0].publicPayload.options = ["A", "A"];

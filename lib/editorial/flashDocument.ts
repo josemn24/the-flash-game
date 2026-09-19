@@ -170,6 +170,27 @@ function isMedia(value: unknown): boolean {
   return false;
 }
 
+function isPrivateMultipleChoiceMedia(value: unknown): boolean {
+  if (!isRecord(value) || value.type !== "image") return false;
+  if (!hasOnlyKeys(value, ["type", "assetId", "alt", "width", "height", "fit", "position"])) {
+    return false;
+  }
+  return (
+    typeof value.assetId === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.assetId) &&
+    nonEmptyString(value.alt, 500) &&
+    Number.isSafeInteger(value.width) &&
+    (value.width as number) > 0 &&
+    (value.width as number) <= 8192 &&
+    Number.isSafeInteger(value.height) &&
+    (value.height as number) > 0 &&
+    (value.height as number) <= 8192 &&
+    (value.fit === undefined || value.fit === "cover" || value.fit === "contain") &&
+    (value.position === undefined ||
+      (typeof value.position === "string" && value.position.length <= PROGRESSIVE_IMAGE_MAX_POSITION_LENGTH))
+  );
+}
+
 function isPromptVisual(value: unknown): boolean {
   if (value === null || value === undefined) return true;
   if (!isRecord(value) || value.type !== "number-sequence" || !Array.isArray(value.sequence)) {
@@ -267,7 +288,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
 
   const commonValid =
     (value.payloadSchemaVersion === 1 ||
-      (value.type === "progressive-image" && value.payloadSchemaVersion === 2)) &&
+      ((value.type === "progressive-image" || value.type === "multiple-choice") &&
+        value.payloadSchemaVersion === 2)) &&
     Number.isSafeInteger(value.points) &&
     (value.points as number) > 0 &&
     (value.points as number) <= FLASH_TOTAL_POINTS &&
@@ -301,7 +323,9 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       new Set(options).size !== options.length ||
       typeof correctAnswer !== "string" ||
       !options.includes(correctAnswer) ||
-      !isMedia(publicPayload.media) ||
+      (value.payloadSchemaVersion === 2
+        ? !isPrivateMultipleChoiceMedia(publicPayload.media)
+        : !isMedia(publicPayload.media)) ||
       !isPromptVisual(publicPayload.promptVisual)
     ) {
       throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
@@ -309,7 +333,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
     return {
       slug: value.slug as string,
       type: "multiple-choice",
-      payloadSchemaVersion: 1,
+      payloadSchemaVersion: value.payloadSchemaVersion as 1 | 2,
       timeLimitMs: value.timeLimitMs as number,
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMultipleChoiceQuestion["publicPayload"],

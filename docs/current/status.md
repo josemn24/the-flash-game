@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-18.
+Última actualización documental: 2026-09-19.
 
 # Estado actual del proyecto
 
@@ -22,6 +22,8 @@ apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca ed
 `media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. D08b
 integra E10 con `question-assets`: el editor sube y confirma assets privados, las versiones nuevas
 persisten `assetId` y `prepare_interaction` emite una URL firmada solo tras autorizar la partida.
+La misma infraestructura ya está integrada en `multiple-choice`: su biblioteca usa `media.assetId`
+en payload v2 y el runtime entrega únicamente `media.src` al jugador autorizado.
 
 No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
 estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
@@ -97,8 +99,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
   Flash mínimo; la gestión posterior de miembros, reemplazo/archivado de contenido publicado y
   calendario S12 es local-first y no forma parte de la UI pública de administración. D08a/S13 ya
-  cubren avatares persistidos y assets privados de E10. `multiple-choice` podrá reutilizar el mismo
-  registro y resolver, pero su edición de imágenes queda fuera de esta slice.
+  cubren avatares persistidos y assets privados de E10 y `multiple-choice`. La subida de imágenes de
+  `multiple-choice` vive en la biblioteca de preguntas; el editor inline de Flash solo reutiliza
+  versiones publicadas.
 - El flujo de invitaciones conserva sus reglas de producto, pero no se ofrece en la UI pública ni se
   necesita para bootstrappear la beta: el superadmin añade directamente usuarios autenticados.
 - Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre únicamente el
@@ -114,16 +117,16 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación
 
-Última verificación: 2026-09-18.
+Última verificación: 2026-09-19.
 
-- `npm test`: 98 archivos y 634 tests superados; incluye reglas, adaptadores y UI pública de E01–E04
-  y el contrato E10
-  además de S11/S12.
-- `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture` y
+- `npm test`: 100 archivos y 643 tests superados; incluye reglas, adaptadores y UI pública de E01–E04,
+  el contrato E10, S11/S12 y la integración D08b-MC.
+- `npm run typecheck`, `npm run lint`, `npm run build` y
   `npm run docs:check`: correctos.
+- `npm run type-architecture`: mantiene dos incidencias preexistentes fuera de este slice.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto; 32 archivos declarativos, inventario, provisioning,
+- `npm run supabase:schema:test`: correcto; 34 archivos declarativos, inventario, provisioning,
   S02–S08, S10–S13, E01–E04 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.

@@ -186,10 +186,18 @@ begin
   from public.attempts attempt
   join private.challenge_items item on item.challenge_version_id = attempt.challenge_version_id
   join private.question_versions question on question.id = item.question_version_id
-  join private.media_assets asset on asset.id = (question.public_payload->'surface'->>'assetId')::uuid
+  join private.media_assets asset on asset.id = coalesce(
+    question.public_payload->'surface'->>'assetId',
+    question.public_payload->'media'->>'assetId'
+  )::uuid
   where attempt.id = (input->>'attemptId')::uuid
     and attempt.player_id = actor and attempt.kind = 'competitive'
-    and item.question_version_id is not null and question.type = 'progressive-image'
+    and item.question_version_id is not null
+    and question.payload_schema_version = 2
+    and (
+      (question.type = 'progressive-image' and question.public_payload->'surface' ? 'assetId')
+      or (question.type = 'multiple-choice' and question.public_payload->'media' ? 'assetId')
+    )
     and asset.kind = 'question-asset' and asset.status in ('ready','archived')
     and asset.id = (input->>'assetId')::uuid;
   if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;

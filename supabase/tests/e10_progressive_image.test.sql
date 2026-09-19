@@ -25,8 +25,14 @@ values
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
 values (
-  test_support.id('e10-qv-choice'), test_support.id('e10-q-choice'), 1, 1, 'multiple-choice', 15000,
-  '{"question":"¿Capital?","options":["Lisboa","Madrid"]}', test_support.id('superadmin')
+  test_support.id('e10-qv-choice'), test_support.id('e10-q-choice'), 1, 2, 'multiple-choice', 15000,
+  jsonb_build_object(
+    'question', '¿Capital?', 'options', jsonb_build_array('Lisboa', 'Madrid'),
+    'media', jsonb_build_object(
+      'type', 'image', 'assetId', test_support.id('e10-asset')::text,
+      'alt', 'Mapa de Portugal', 'width', 847, 'height', 566, 'fit', 'contain'
+    )
+  ), test_support.id('superadmin')
 );
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values (test_support.id('e10-qv-choice'), '{"correctAnswer":"Lisboa"}');
@@ -76,6 +82,7 @@ values (test_support.id('e10-sc'), test_support.id('e10-season'), test_support.i
   'open', now() - interval '1 hour', now() + interval '1 hour');
 
 select ok(private.is_supported_flash_question(test_support.id('e10-qv-image')), 'Progressive-image is a supported Flash question');
+select ok(private.is_supported_flash_question(test_support.id('e10-qv-choice')), 'Multiple-choice v2 is a supported Flash question');
 select ok(private.is_ready_question_asset(test_support.id('e10-asset')), 'E10 question asset is ready');
 select lives_ok($$select private.assert_supported_calendar_content(test_support.id('e10-cv'))$$, 'Calendar accepts the mixed E10 publication');
 
@@ -83,6 +90,10 @@ select test_support.as_actor('owner');
 set local role service_role;
 select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeId', test_support.id('e10-sc')));
 select test_support.run('prepare_interaction');
+select is((select state->'publicPayload'->'media'->>'assetId' from test_support.runtime), test_support.id('e10-asset')::text,
+  'Database prepare returns the private multiple-choice asset reference');
+select ok((select not (state->'publicPayload'->'media' ? 'src') from test_support.runtime),
+  'Database prepare never stores or returns a signed multiple-choice URL');
 select test_support.run('receive_answer', jsonb_build_object('answer', true));
 select test_support.run('record_evaluation', '{"status":"incorrect","points":0}');
 select test_support.run('prepare_interaction');

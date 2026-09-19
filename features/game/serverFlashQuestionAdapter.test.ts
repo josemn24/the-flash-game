@@ -56,6 +56,37 @@ describe("server flash question adapter", () => {
     );
   });
 
+  it("propagates a runtime-safe multiple-choice image without exposing an asset id", () => {
+    const question = questionFromPayload(
+      "item-1",
+      {
+        question: "¿Qué aparece?",
+        options: ["A", "B"],
+        media: {
+          type: "image",
+          src: "https://signed.example/question.png?token=test",
+          alt: "Imagen de la pregunta",
+          fit: "contain",
+          position: "center",
+          assetId: "must-not-be-present-in-runtime",
+        },
+      },
+      5_000,
+      50,
+      "multiple-choice",
+    );
+
+    expect(question).toMatchObject({
+      type: "multiple-choice",
+      media: {
+        type: "image",
+        src: "https://signed.example/question.png?token=test",
+        alt: "Imagen de la pregunta",
+      },
+    });
+    expect(JSON.stringify(question)).not.toContain("assetId");
+  });
+
   it("builds a renderer-safe challenge from metadata-only slots", () => {
     const challenge = displayChallenge(serverChallenge);
 

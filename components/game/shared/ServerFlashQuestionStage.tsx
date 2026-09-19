@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { AnswerOption } from "@/components/questions/shared";
+import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
@@ -174,6 +174,11 @@ export function ServerFlashQuestionStage({
           />
         ) : (
           <>
+            {question.type === "multiple-choice" && question.media ? (
+              <div className="mt-5">
+                <QuestionMedia media={question.media} prominent />
+              </div>
+            ) : null}
             <div className="mt-7 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
               {question.options.map((option, index) => (
                 <AnswerOption

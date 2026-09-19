@@ -196,6 +196,7 @@ type ServerFlashQuestionBase = {
 export type ServerMultipleChoiceQuestion = ServerFlashQuestionBase & {
   readonly type: "multiple-choice";
   readonly options: readonly string[];
+  readonly media?: QuestionMedia;
 };
 
 export type ServerMiniWordleProgress = {

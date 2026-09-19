@@ -133,6 +133,26 @@ begin
       and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
         where private.mini_wordle_normalize(answer) = private.mini_wordle_normalize(solution->>'correctAnswer'));
   end if;
+  if question.type = 'multiple-choice' and question.payload_schema_version = 2 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'options') = 'array'
+      and jsonb_array_length(question.public_payload->'options') >= 2
+      and jsonb_typeof(question.public_payload->'media') = 'object'
+      and question.public_payload->'media'->>'type' = 'image'
+      and question.public_payload->'media'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      and private.is_usable_question_asset((question.public_payload->'media'->>'assetId')::uuid)
+      and jsonb_typeof(question.public_payload->'media'->'alt') = 'string'
+      and jsonb_typeof(question.public_payload->'media'->'width') = 'number'
+      and jsonb_typeof(question.public_payload->'media'->'height') = 'number'
+      and (question.public_payload->'media'->>'width')::integer between 1 and 8192
+      and (question.public_payload->'media'->>'height')::integer between 1 and 8192
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
+        where value = solution->>'correctAnswer');
+  end if;
   if question.payload_schema_version <> 1 then return false; end if;
   if question.type = 'multiple-choice' then
     return jsonb_typeof(question.public_payload) = 'object'

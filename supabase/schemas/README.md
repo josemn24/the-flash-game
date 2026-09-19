@@ -1,8 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-18. La ampliación S17a y D08a/D08b/S13 están aplicadas
+Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-19. La ampliación S17a y D08a/D08b/S13 están aplicadas
 localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
-D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10.
+D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
 **28 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
@@ -288,12 +288,13 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **32 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **34 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
-26 de E04 y 16 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las 634 pruebas TypeScript
+26 de E04 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
+y las 643 pruebas TypeScript
 superadas. También pasan comprobación
-de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
+de tipos, ESLint y los enlaces de documentación; la comprobación de arquitectura mantiene dos
+incidencias preexistentes fuera de este slice. La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
 portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,
@@ -305,7 +306,7 @@ acepten evaluación/claims del navegador. El adaptador debe verificar Auth, vali
 limitar tamaño de peticiones y no filtrar soluciones. `postgres` y los roles de mantenimiento están
 fuera de esta frontera; pueden alterar ACL/triggers y no deben ser credenciales de ejecución normal.
 
-Quedan pendientes la integración de imágenes privadas en `multiple-choice`, el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
+Quedan pendientes el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
 Realtime si se habilitan, retención de payloads e idempotencia, reemplazo/archivado editorial,
 validación de contenido de otros formatos y planes EXPLAIN con volumen real. La selección de duraciones/
 configuración de cada modo se valida al publicar; SQL protege límites positivos y versiones congeladas,

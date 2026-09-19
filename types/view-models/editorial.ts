@@ -9,6 +9,11 @@ export type FlashEditorialImageAssetReference = {
   readonly position?: string;
 };
 
+export type FlashEditorialMultipleChoiceImageAssetReference =
+  FlashEditorialImageAssetReference & {
+    readonly type: "image";
+  };
+
 export type EditorialJsonPrimitive = boolean | number | string | null;
 export type EditorialJsonValue =
   | EditorialJsonPrimitive
@@ -21,7 +26,7 @@ export type FlashEditorialMultipleChoicePublicPayload = {
   readonly tags?: EditorialJsonObject;
   readonly question: string;
   readonly options: readonly string[];
-  readonly media?: QuestionMedia | null;
+  readonly media?: QuestionMedia | FlashEditorialMultipleChoiceImageAssetReference | null;
   readonly promptVisual?: MultipleChoicePromptVisual | null;
 };
 
@@ -138,7 +143,7 @@ export type FlashEditorialSolutionPayload =
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
   readonly type: "multiple-choice";
-  readonly payloadSchemaVersion: 1;
+  readonly payloadSchemaVersion: 1 | 2;
   readonly timeLimitMs: number;
   readonly points: number;
   readonly publicPayload: FlashEditorialMultipleChoicePublicPayload;

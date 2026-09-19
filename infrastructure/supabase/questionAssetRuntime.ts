@@ -12,25 +12,35 @@ export async function resolveCompetitiveQuestionPayload(input: {
   readonly attemptId: string;
   readonly publicPayload: unknown;
 }) {
-  if (!isRecord(input.publicPayload) || !isRecord(input.publicPayload.surface)) {
+  if (!isRecord(input.publicPayload)) {
     return input.publicPayload;
   }
-  const surface = input.publicPayload.surface;
-  if (typeof surface.assetId !== "string") return input.publicPayload;
+  const referenceKey = isRecord(input.publicPayload.surface) && typeof input.publicPayload.surface.assetId === "string"
+    ? "surface"
+    : isRecord(input.publicPayload.media) && typeof input.publicPayload.media.assetId === "string"
+      ? "media"
+      : null;
+  if (!referenceKey) return input.publicPayload;
+  const reference = input.publicPayload[referenceKey] as Record<string, unknown>;
 
   const asset = await readCompetitiveQuestionAsset(input.authUserId, {
     attemptId: input.attemptId,
-    assetId: surface.assetId,
+    assetId: reference.assetId as string,
   });
   const signed = await supabaseMediaStorage.createSignedReadUrl({
     bucket: "question-assets",
     objectPath: asset.objectPath,
     expiresInSeconds: 300,
   });
-  const runtimeSurface = { ...surface };
-  delete runtimeSurface.assetId;
+  const runtimeReference = { ...reference };
+  delete runtimeReference.assetId;
+  if (referenceKey === "media") {
+    runtimeReference.src = signed.signedUrl;
+  }
   return {
     ...input.publicPayload,
-    surface: { ...runtimeSurface, src: signed.signedUrl },
+    [referenceKey]: referenceKey === "media"
+      ? runtimeReference
+      : { ...runtimeReference, src: signed.signedUrl },
   };
 }

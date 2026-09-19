@@ -17,6 +17,7 @@ import type {
   ServerProgressiveImageQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
+import type { QuestionIllustration, QuestionMedia } from "@/types/question";
 
 type TerminalReviewResponseRow = {
   challenge_item_id: string;
@@ -56,6 +57,49 @@ function imageSurface(payload: Record<string, unknown>): ServerProgressiveImageQ
     ...(value.fit ? { fit: value.fit } : {}),
     ...(typeof value.position === "string" ? { position: value.position } : {}),
   } as ServerProgressiveImageQuestion["surface"];
+}
+
+function questionMedia(payload: Record<string, unknown>): QuestionMedia | undefined {
+  const media = payload.media;
+  if (media === undefined || media === null) return undefined;
+  if (!media || typeof media !== "object" || Array.isArray(media)) {
+    throw new ServerFlashQuestionError();
+  }
+  const value = media as Record<string, unknown>;
+  if (value.type === "illustration") {
+    const illustrations: readonly QuestionIllustration[] = [
+      "japan-flag",
+      "saturn",
+      "italy-flag",
+      "france-flag",
+    ];
+    if (
+      !illustrations.includes(value.id as QuestionIllustration) ||
+      typeof value.alt !== "string" ||
+      value.alt.trim().length === 0
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return { type: "illustration", id: value.id as QuestionIllustration, alt: value.alt };
+  }
+  if (
+    value.type !== "image" ||
+    typeof value.src !== "string" ||
+    value.src.trim().length === 0 ||
+    typeof value.alt !== "string" ||
+    value.alt.trim().length === 0 ||
+    (value.fit !== undefined && value.fit !== "cover" && value.fit !== "contain") ||
+    (value.position !== undefined && typeof value.position !== "string")
+  ) {
+    throw new ServerFlashQuestionError();
+  }
+  return {
+    type: "image",
+    src: value.src,
+    alt: value.alt,
+    ...(value.fit ? { fit: value.fit } : {}),
+    ...(typeof value.position === "string" ? { position: value.position } : {}),
+  };
 }
 
 function payloadRecord(payload: unknown): Record<string, unknown> {
@@ -108,10 +152,12 @@ export function questionFromPayload(
     ) {
       throw new ServerFlashQuestionError();
     }
+    const media = questionMedia(value);
     return {
       ...base,
       type: "multiple-choice",
       options: value.options,
+      ...(media ? { media } : {}),
       correctAnswer: "",
       explanation: "",
     };
@@ -123,7 +169,8 @@ export function questionFromPayload(
     ) {
       throw new ServerFlashQuestionError();
     }
-    return { ...base, type: "multiple-choice", options: value.options };
+    const media = questionMedia(value);
+    return { ...base, type: "multiple-choice", options: value.options, ...(media ? { media } : {}) };
   }
   if (questionType === "progressive-image") {
     const revealDurationMs = value.revealDurationMs;

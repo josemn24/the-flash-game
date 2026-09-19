@@ -3,6 +3,16 @@ import type { QuestionTagSet, QuestionVersion } from "@/types/domain/content";
 import type { QuestionDefinitionId, QuestionVersionId } from "@/types/domain/identifiers";
 import type { DurationMs } from "@/types/domain/values";
 
+type PrivateQuestionImageReference = {
+  readonly type: "image";
+  readonly assetId: string;
+  readonly alt: string;
+  readonly width: number;
+  readonly height: number;
+  readonly fit?: "cover" | "contain";
+  readonly position?: string;
+};
+
 export type QuestionType = Legacy.QuestionType;
 
 type PublicQuestionBase<Type extends QuestionType> = {
@@ -66,7 +76,7 @@ export type QuestionContractMap = {
   readonly "multiple-choice": {
     readonly public: {
       readonly options: readonly string[];
-      readonly media: Legacy.QuestionMedia | null;
+      readonly media: Legacy.QuestionMedia | PrivateQuestionImageReference | null;
       readonly promptVisual: Legacy.MultipleChoicePromptVisual | null;
     };
     readonly solution: { readonly correctAnswer: string };

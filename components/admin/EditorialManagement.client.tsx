@@ -135,6 +135,8 @@ function statusTone(status: SuperadminEditorialContext["entries"][number]["statu
 
 function previewQuestion(question: FlashEditorialMultipleChoiceQuestion): MultipleChoiceQuestion {
   const tags = question.publicPayload.tags;
+  const media = question.publicPayload.media;
+  const runtimeMedia = media && (media.type === "illustration" || "src" in media) ? media : undefined;
   return {
     id: question.slug,
     type: "multiple-choice",
@@ -152,7 +154,7 @@ function previewQuestion(question: FlashEditorialMultipleChoiceQuestion): Multip
     timeLimit: question.timeLimitMs / 1000,
     points: question.points,
     explanation: question.solutionPayload.explanation ?? "",
-    ...(question.publicPayload.media ? { media: question.publicPayload.media } : {}),
+    ...(runtimeMedia ? { media: runtimeMedia } : {}),
     ...(question.publicPayload.promptVisual ? { promptVisual: question.publicPayload.promptVisual } : {}),
   };
 }

@@ -122,8 +122,9 @@ D08b completa el primer uso editorial: E10 guarda `surface.assetId` en una nueva
 con contrato v2. El portal superadmin prepara, sube, inspecciona y confirma el objeto en
 `question-assets`; `prepare_interaction` comprueba autorización y devuelve `surface.src` como URL
 firmada de lectura durante cinco minutos. La recuperación puede reemitirla sin reiniciar el reloj.
-Las versiones históricas con `/visuals/...` siguen siendo compatibles. `multiple-choice` podrá usar
-la misma infraestructura en una slice posterior.
+Las versiones históricas con `/visuals/...` siguen siendo compatibles. `multiple-choice` usa la misma
+infraestructura mediante `publicPayload.media.assetId` en contrato v2; el runtime autorizado devuelve
+`media.src` firmado y nunca persiste la URL.
 
 E01 añade `schemas/36_mini_wordle.sql` y `schemas/92_mini_wordle_commands.sql`. El portal acepta
 `multiple-choice` y `mini-wordle` en el mismo Flash, dentro de desafíos de 2 a 20 preguntas y 100
