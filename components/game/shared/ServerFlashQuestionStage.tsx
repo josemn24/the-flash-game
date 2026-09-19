@@ -14,6 +14,7 @@ import { OrderingQuestion } from "@/components/questions/formats/ordering/Orderi
 import { AnagramQuestion } from "@/components/questions/formats/anagram/AnagramQuestion";
 import { ClassificationQuestion } from "@/components/questions/formats/classification/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
+import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMapQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -334,6 +335,43 @@ export function ServerFlashQuestionStage({
               onProgress={onProgress}
               onSubmit={onSubmit}
             />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : question.type === "heat-map" ? (
+          <>
+            {question.surface ? (
+              <div className="mt-5">
+                <HeatMapQuestion
+                  key={`${question.id}:${pendingAnswer && typeof pendingAnswer === "object" ? "draft" : "initial"}`}
+                  question={{ surface: question.surface }}
+                  initialAnswer={
+                    pendingAnswer &&
+                    typeof pendingAnswer === "object" &&
+                    !Array.isArray(pendingAnswer) &&
+                    typeof (pendingAnswer as Record<string, unknown>).x === "number" &&
+                    typeof (pendingAnswer as Record<string, unknown>).y === "number"
+                      ? (pendingAnswer as { x: number; y: number })
+                      : undefined
+                  }
+                  locked={locked}
+                  onProgress={onProgress}
+                  onSubmit={onSubmit}
+                />
+              </div>
+            ) : null}
             {submissionState !== "idle" ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>

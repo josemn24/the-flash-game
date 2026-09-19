@@ -10,7 +10,7 @@ import type {
   HeatMapQuestion as HeatMapQuestionType,
   ImageSurface,
   NormalizedPoint,
-  } from "@/types/game";
+} from "@/types/game";
 
 type HeatMapSurfaceProps = {
   surface: ImageSurface;
@@ -161,17 +161,22 @@ export function HeatMapSurface({
 export function HeatMapQuestion({
   question,
   locked,
+  initialAnswer,
+  onProgress,
   onSubmit,
 }: {
-  question: HeatMapQuestionType;
+  question: Pick<HeatMapQuestionType, "surface">;
   locked: boolean;
+  initialAnswer?: HeatMapAnswer;
+  onProgress?: (point: HeatMapAnswer) => void;
   onSubmit: (answer: HeatMapAnswer) => void;
 }) {
-  const [answer, setAnswer] = useState<HeatMapAnswer | null>(null);
+  const [answer, setAnswer] = useState<HeatMapAnswer | null>(initialAnswer ?? null);
   const [announcement, setAnnouncement] = useState("");
 
   const selectSurfacePoint = (point: NormalizedPoint) => {
     setAnswer(point);
+    onProgress?.(point);
     setAnnouncement(
       `Marcador en ${Math.round(point.x * 100)} por ciento horizontal y ${Math.round(point.y * 100)} por ciento vertical. Puedes corregirlo o confirmar.`,
     );

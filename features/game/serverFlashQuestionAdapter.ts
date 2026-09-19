@@ -2,6 +2,7 @@ import type {
   AnagramQuestion,
   ClassificationQuestion,
   EstimationQuestion,
+  HeatMapQuestion,
   FlashChallenge,
   LogicCodeQuestion,
   MatchingQuestion,
@@ -25,6 +26,7 @@ import type {
   ServerAnagramQuestion,
   ServerClassificationQuestion,
   ServerEstimationQuestion,
+  ServerHeatMapQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -33,6 +35,7 @@ import {
   isValidEstimationConfiguration,
   isValidEstimationSolution,
 } from "@/lib/estimation";
+import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 
 type TerminalReviewResponseRow = {
   challenge_item_id: string;
@@ -148,7 +151,8 @@ export function questionFromPayload(
     | "ordering"
     | "anagram"
     | "classification"
-    | "estimation",
+    | "estimation"
+    | "heat-map",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -170,7 +174,8 @@ export function questionFromPayload(
     | "ordering"
     | "anagram"
     | "classification"
-    | "estimation",
+    | "estimation"
+    | "heat-map",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -210,7 +215,12 @@ export function questionFromPayload(
       throw new ServerFlashQuestionError();
     }
     const media = questionMedia(value);
-    return { ...base, type: "multiple-choice", options: value.options, ...(media ? { media } : {}) };
+    return {
+      ...base,
+      type: "multiple-choice",
+      options: value.options,
+      ...(media ? { media } : {}),
+    };
   }
   if (questionType === "estimation") {
     const configuration = {
@@ -238,6 +248,17 @@ export function questionFromPayload(
       unit: configuration.unit as string,
       ...(media ? { media } : {}),
     } satisfies ServerEstimationQuestion;
+  }
+  if (questionType === "heat-map") {
+    if (typeof value.targetLabel !== "string" || value.targetLabel.trim().length === 0) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "heat-map",
+      surface: imageSurface(value),
+      targetLabel: value.targetLabel,
+    } satisfies ServerHeatMapQuestion;
   }
   if (questionType === "true-false") {
     return { ...base, type: "true-false" } satisfies ServerTrueFalseQuestion;
@@ -282,7 +303,9 @@ export function questionFromPayload(
       !Array.isArray(items) ||
       items.length < 2 ||
       items.length > 8 ||
-      !items.every((item) => typeof item === "string" && item.trim().length > 0 && item.length <= 500) ||
+      !items.every(
+        (item) => typeof item === "string" && item.trim().length > 0 && item.length <= 500,
+      ) ||
       new Set(items).size !== items.length
     ) {
       throw new ServerFlashQuestionError();
@@ -336,7 +359,8 @@ export function questionFromPayload(
           Array.from(record.value).length === 1
         );
       }) ||
-      new Set(tiles.map((tile) => (tile as Record<string, unknown>).id as string)).size !== tiles.length ||
+      new Set(tiles.map((tile) => (tile as Record<string, unknown>).id as string)).size !==
+        tiles.length ||
       (hint !== undefined && hint !== null && (typeof hint !== "string" || hint.length > 500))
     ) {
       throw new ServerFlashQuestionError();
@@ -368,7 +392,8 @@ export function questionFromPayload(
           record.label.length <= 500
         );
       }) ||
-      new Set(items.map((item) => (item as Record<string, unknown>).label as string)).size !== items.length ||
+      new Set(items.map((item) => (item as Record<string, unknown>).label as string)).size !==
+        items.length ||
       !Array.isArray(categories) ||
       categories.length < 2 ||
       categories.length > 8 ||
@@ -468,7 +493,8 @@ export function questionFromPayload(
       surface: imageSurface(value),
       revealDuration: revealDurationMs / 1000,
       answerLabel: typeof value.answerLabel === "string" ? value.answerLabel : null,
-      answerPlaceholder: typeof value.answerPlaceholder === "string" ? value.answerPlaceholder : null,
+      answerPlaceholder:
+        typeof value.answerPlaceholder === "string" ? value.answerPlaceholder : null,
     };
   }
   if (questionType === "logic-code") {
@@ -711,7 +737,8 @@ function questionWithSolution(
   | QuestionOfType<"ordering">
   | AnagramQuestion
   | ClassificationQuestion
-  | EstimationQuestion {
+  | EstimationQuestion
+  | HeatMapQuestion {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -884,6 +911,29 @@ function questionWithSolution(
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     } satisfies EstimationQuestion;
+  }
+  if (question.type === "heat-map") {
+    const target = solution.target;
+    const fullCreditRadius = solution.fullCreditRadius;
+    const toleranceRadius = solution.toleranceRadius;
+    if (!isNormalizedPoint(target) || !isValidHeatMapRadii(fullCreditRadius, toleranceRadius)) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "heat-map",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      surface: question.surface,
+      targetLabel: question.targetLabel,
+      target,
+      fullCreditRadius: fullCreditRadius as number,
+      toleranceRadius: toleranceRadius as number,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies HeatMapQuestion;
   }
   if (question.type === "anagram") {
     if (typeof solution.correctAnswer !== "string") {

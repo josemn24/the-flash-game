@@ -25,7 +25,7 @@ const editorialDocument = {
   challenge: {
     slug: "flash-s11-e2e",
     title: "Flash S11 E2E",
-    subtitle: "Seis preguntas",
+    subtitle: "Siete preguntas",
     description: "Desafío editorial creado desde el portal.",
     mode: "flash",
     configSchemaVersion: 1,
@@ -37,7 +37,7 @@ const editorialDocument = {
       type: "multiple-choice" as const,
       payloadSchemaVersion: 1 as const,
       timeLimitMs: 15000,
-      points: 15,
+      points: 10,
       publicPayload: {
         category: index % 2 === 0 ? "Cultura" : "Ciencia",
         tags: {},
@@ -76,7 +76,7 @@ const editorialDocument = {
       type: "classification" as const,
       payloadSchemaVersion: 1 as const,
       timeLimitMs: 22000,
-      points: 20,
+      points: 15,
       publicPayload: {
         category: "Tecnología",
         tags: {},
@@ -85,7 +85,7 @@ const editorialDocument = {
         categories: ["útil en 1890", "anacrónico"],
       },
       solutionPayload: {
-        categoriesByItem: { "Brújula": "útil en 1890", "Navegador GPS": "anacrónico" },
+        categoriesByItem: { Brújula: "útil en 1890", "Navegador GPS": "anacrónico" },
         explanation: "Clasificación histórica.",
       },
     },
@@ -112,6 +112,32 @@ const editorialDocument = {
         explanation: "La media aproximada del fixture es 65 km/h.",
       },
     },
+    {
+      slug: "e2e-heat-map",
+      type: "heat-map" as const,
+      payloadSchemaVersion: 2 as const,
+      timeLimitMs: 18000,
+      points: 20,
+      publicPayload: {
+        category: "Geografía",
+        tags: {},
+        question: "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        surface: {
+          assetId: "11111111-1111-4111-8111-111111111111",
+          alt: "Mapa sin etiquetas de Estados Unidos",
+          width: 1200,
+          height: 800,
+          fit: "contain",
+        },
+        targetLabel: "Norte de Arizona",
+      },
+      solutionPayload: {
+        target: { x: 0.38, y: 0.58 },
+        fullCreditRadius: 0.055,
+        toleranceRadius: 0.18,
+        explanation: "El Gran Cañón está en Arizona.",
+      },
+    },
   ],
 };
 
@@ -133,24 +159,37 @@ test.describe("S11 — publicar contenido mínimo", () => {
     const editor = page.getByRole("region", { name: "Contenido Flash" });
     const textarea = editor.getByLabel("Documento editorial JSON");
     await textarea.fill(JSON.stringify(draftDocument, null, 2));
+    await editor
+      .getByLabel("Seleccionar JPEG, PNG o WebP")
+      .setInputFiles("public/visuals/sbr/grand-canyon-nps.jpg");
+    await expect(editor.getByText("Asset confirmado y vinculado al documento.")).toBeVisible();
+    const uploadedDocument = JSON.parse(await textarea.inputValue()) as typeof draftDocument;
     await editor.getByLabel("Motivo de auditoría").first().fill("Crear contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     await expect(page).toHaveURL(/\/admin\?editorial=saved$/);
     await page.reload();
 
     await expect(editor.getByRole("heading", { name: "Flash S11 E2E", exact: true })).toBeVisible();
-    await expect(editor.getByText("Flash · 6 preguntas · 100 puntos")).toBeVisible();
-    await textarea.fill(JSON.stringify({
-      ...draftDocument,
-      challenge: { ...draftDocument.challenge, title: "Flash S11 E2E editado" },
-    }, null, 2));
+    await expect(editor.getByText("Flash · 7 preguntas · 100 puntos")).toBeVisible();
+    await textarea.fill(
+      JSON.stringify(
+        {
+          ...uploadedDocument,
+          challenge: { ...uploadedDocument.challenge, title: "Flash S11 E2E editado" },
+        },
+        null,
+        2,
+      ),
+    );
     const reasons = editor.getByLabel("Motivo de auditoría");
     await reasons.first().fill("Editar contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     await expect(page).toHaveURL(/\/admin\?editorial=saved$/);
     await page.reload();
 
-    await expect(editor.getByRole("heading", { name: "Flash S11 E2E editado", exact: true }).first()).toBeVisible();
+    await expect(
+      editor.getByRole("heading", { name: "Flash S11 E2E editado", exact: true }).first(),
+    ).toBeVisible();
     await editor.getByLabel("Motivo de auditoría").last().fill("Publicar contenido S11");
     page.once("dialog", (dialog) => dialog.accept());
     await editor.getByRole("button", { name: "Publicar versión" }).click();

@@ -149,7 +149,7 @@ export type QuestionContractMap = {
   };
   readonly "heat-map": {
     readonly public: {
-      readonly surface: Legacy.ImageSurface;
+      readonly surface: Legacy.ImageSurface | PrivateQuestionImageReference;
       readonly targetLabel: string;
     };
     readonly solution: {

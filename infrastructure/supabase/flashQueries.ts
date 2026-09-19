@@ -48,7 +48,8 @@ export type FlashReadRow = {
     | "ordering"
     | "anagram"
     | "classification"
-    | "estimation";
+    | "estimation"
+    | "heat-map";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -73,7 +74,8 @@ export type FlashResultRow = {
     | "ordering"
     | "anagram"
     | "classification"
-    | "estimation";
+    | "estimation"
+    | "heat-map";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -140,10 +142,12 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "ordering" ||
       value.question_type === "anagram" ||
       value.question_type === "classification" ||
-      value.question_type === "estimation") &&
+      value.question_type === "estimation" ||
+      value.question_type === "heat-map") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
-      (value.question_type === "estimation" && value.payload_schema_version === 2)) &&
+      (value.question_type === "estimation" && value.payload_schema_version === 2) ||
+      (value.question_type === "heat-map" && value.payload_schema_version === 2)) &&
     typeof value.time_limit_ms === "number" &&
     value.time_limit_ms > 0 &&
     typeof value.item_points === "number" &&
@@ -172,10 +176,12 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "ordering" ||
       value.question_type === "anagram" ||
       value.question_type === "classification" ||
-      value.question_type === "estimation") &&
+      value.question_type === "estimation" ||
+      value.question_type === "heat-map") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
-      (value.question_type === "estimation" && value.payload_schema_version === 2)) &&
+      (value.question_type === "estimation" && value.payload_schema_version === 2) ||
+      (value.question_type === "heat-map" && value.payload_schema_version === 2)) &&
     isRecord(value.public_payload) &&
     isRecord(value.solution_payload) &&
     (typeof value.answer === "string" ||

@@ -104,7 +104,9 @@ export function ServerFlashPopGame({
             onRetryReveal={() => void session.retryReveal()}
             onTimeUp={() =>
               void session.submit(
-                session.question?.type === "classification" || session.question?.type === "estimation"
+                session.question?.type === "classification" ||
+                  session.question?.type === "estimation" ||
+                  session.question?.type === "heat-map"
                   ? session.pendingAnswer
                   : null,
               )

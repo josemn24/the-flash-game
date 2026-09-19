@@ -22,10 +22,12 @@ F07/F12 añaden `classification` y `anagram` con validación de labels/categorí
 asignaciones parciales y soluciones privadas en payloads v1.
 F03 añade `estimation` al Flash competitivo con payload v2, tolerancia privada, crédito parcial
 por proximidad y soporte opcional para imágenes privadas de `question-assets`.
+F04 añade `heat-map` al Flash competitivo con payload v2, superficie privada resuelta por URL firmada,
+objetivo y radios privados, y crédito parcial espacial server-side.
 S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
-  reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
+reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
 `media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. D08b
 integra E10 con `question-assets`: el editor sube y confirma assets privados, las versiones nuevas
 persisten `assetId` y `prepare_interaction` emite una URL firmada solo tras autorizar la partida.
@@ -73,8 +75,8 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   colocación/retirada, penalización del 5% por conflicto, recuperación sin marcas X y resolución
   automática con evaluación server-side.
   F01/F02/F06/F07/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
-  `classification`, `anagram` y `estimation`; las respuestas, asignaciones, fichas, permutaciones
-  y estimaciones se validan y evalúan exclusivamente en el servidor.
+  `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
+  permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -90,23 +92,23 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Rutas principales
 
-| Ruta                        | Estado                                                                 |
-| --------------------------- | --------------------------------------------------------------------- |
-| `/`                         | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto. |
-| `/salas/[roomId]`           | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock. |
-| `/salas/[roomId]/ranking`   | Ranking de temporada real para salas persistidas; 404 si no hay temporada. |
-| `/salas/[roomId]/historial` | Historial Flash real para salas persistidas; otros modos siguen mock. |
-| `/salas/[roomId]/historial/[challengeId]` | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada. |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators. |
-| `/salas/[roomId]/ajustes`   | Vista mock de miembros y ajustes; gestión real está pendiente.      |
-| `/admin`                    | Portal privado server-side para superadmins: contexto, salas, temporadas, editorial Flash con MC/Mini-Wordle y calendario. |
-| `/desafios/[challengeId]`   | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404. |
-| `/formatos`                 | Biblioteca estática de formatos y práctica local.                    |
-| `/flash-pop`                | Lobby/demo de Flash Pop.                                             |
+| Ruta                                                 | Estado                                                                                                                     |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                  | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                       |
+| `/salas/[roomId]`                                    | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                       |
+| `/salas/[roomId]/ranking`                            | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                 |
+| `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                                      |
+| `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                 |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                              |
+| `/salas/[roomId]/ajustes`                            | Vista mock de miembros y ajustes; gestión real está pendiente.                                                             |
+| `/admin`                                             | Portal privado server-side para superadmins: contexto, salas, temporadas, editorial Flash con MC/Mini-Wordle y calendario. |
+| `/desafios/[challengeId]`                            | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404.                  |
+| `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                                          |
+| `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                                   |
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F06/F07/F12 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F06/F07/F12 sobre el stack local. F04 está implementada y pendiente de ejecutar contra el contenedor PostgreSQL local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -147,7 +149,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   pública/privada, reloj iniciado por servidor, recuperación y evaluación normalizada; la imagen
   original es pública y no se presenta como revelación protegida.
   - D08a/S13 valida los bytes reales de avatares, limita JPEG/PNG/WebP a 5 MB y 2048 px, confirma
-  `media_assets` antes de cambiar `players.avatar_path` y conserva el avatar anterior ante fallos.
+    `media_assets` antes de cambiar `players.avatar_path` y conserva el avatar anterior ante fallos.
 - `npm run test:integration:supabase -- --scenario e10`: correcto; el E2E E10 incluye el recorrido
   completo y el control de spectator. En esta sesión el caso jugador quedó pendiente por un timeout
   del entorno local al iniciar el intento, con artefactos de trace incompletos.
@@ -157,8 +159,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   y un miembro no accede al portal.
 - `npm run test:integration:supabase -- --scenario s11`: el escenario declarativo de publicación
   queda cubierto por la suite de schema, incluida la pregunta `estimation` v2.
-- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: el test fue ampliado a seis preguntas e incluye
-  `estimation`, pero queda pendiente por el fixture de login local: no llega a mostrar `Mis salas`.
+- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: el test fue ampliado a siete preguntas e incluye
+  `estimation` y `heat-map`, pero queda pendiente por el fixture de login local: no llega a mostrar
+  `Mis salas`.
 - `npm run test:integration:supabase -- --scenario e03`: escenario añadido para publicación mixta,
   proyección sin solución ni pistas futuras y aislamiento del spectator.
 - `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: escenario añadido para primera pista,

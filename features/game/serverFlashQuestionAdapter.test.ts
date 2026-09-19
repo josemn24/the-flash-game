@@ -64,7 +64,10 @@ describe("server flash question adapter", () => {
       20,
       "true-false",
     );
-    expect(trueFalse).toMatchObject({ type: "true-false", question: "¿La respuesta es verdadera?" });
+    expect(trueFalse).toMatchObject({
+      type: "true-false",
+      question: "¿La respuesta es verdadera?",
+    });
     expect(trueFalse).not.toHaveProperty("correctAnswer");
 
     const oddOneOut = questionFromPayload(
@@ -165,6 +168,33 @@ describe("server flash question adapter", () => {
     });
     expect(estimation).not.toHaveProperty("correctAnswer");
     expect(estimation).not.toHaveProperty("tolerance");
+
+    const heatMap = questionFromPayload(
+      "item-heat-map",
+      {
+        question: "Marca la ubicación",
+        surface: {
+          src: "https://signed.example/usa-map.png?token=test",
+          alt: "Mapa sin etiquetas",
+          width: 1859,
+          height: 968,
+          fit: "contain",
+          assetId: "must-not-be-present-in-runtime",
+        },
+        targetLabel: "Norte de Arizona",
+      },
+      18_000,
+      40,
+      "heat-map",
+    );
+    expect(heatMap).toMatchObject({
+      type: "heat-map",
+      targetLabel: "Norte de Arizona",
+      surface: { src: "https://signed.example/usa-map.png?token=test" },
+    });
+    expect(heatMap).not.toHaveProperty("target");
+    expect(heatMap).not.toHaveProperty("fullCreditRadius");
+    expect(heatMap).not.toHaveProperty("toleranceRadius");
   });
 
   it("reconstructs final-answer solutions only for terminal review", () => {
@@ -304,6 +334,49 @@ describe("server flash question adapter", () => {
       correctAnswer: 36,
       tolerance: 18,
       explanation: "Cálculo.",
+    });
+
+    const heatMapReview = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-heat-map",
+            position: 1,
+            questionType: "heat-map",
+            payloadSchemaVersion: 2,
+            timeLimitMs: 18_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-heat-map",
+          publicPayload: {
+            question: "Marca la ubicación",
+            surface: {
+              src: "https://signed.example/usa-map.png",
+              alt: "Mapa sin etiquetas",
+              width: 1859,
+              height: 968,
+            },
+            targetLabel: "Norte de Arizona",
+          },
+          solutionPayload: {
+            target: { x: 0.38, y: 0.58 },
+            fullCreditRadius: 0.055,
+            toleranceRadius: 0.18,
+            explanation: "El Gran Cañón está en Arizona.",
+          },
+        },
+      ],
+    );
+    expect(heatMapReview.questions[0]).toMatchObject({
+      type: "heat-map",
+      target: { x: 0.38, y: 0.58 },
+      fullCreditRadius: 0.055,
+      toleranceRadius: 0.18,
     });
   });
 

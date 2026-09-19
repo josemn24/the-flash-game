@@ -41,6 +41,7 @@ import type {
   AnagramQuestion,
   ClassificationQuestion,
   EstimationQuestion,
+  HeatMapQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -50,10 +51,8 @@ import {
 } from "@/lib/miniWordle";
 import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
-import {
-  isValidEstimationConfiguration,
-  isValidEstimationSolution,
-} from "@/lib/estimation";
+import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
+import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -217,7 +216,8 @@ function asQuestion(
   | OrderingQuestion
   | AnagramQuestion
   | ClassificationQuestion
-  | EstimationQuestion {
+  | EstimationQuestion
+  | HeatMapQuestion {
   if (
     ![
       "multiple-choice",
@@ -233,12 +233,13 @@ function asQuestion(
       "anagram",
       "classification",
       "estimation",
-    ].includes(
-      context.questionType,
-    ) ||
+      "heat-map",
+    ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
       !(
-        (context.questionType === "progressive-image" || context.questionType === "estimation") &&
+        (context.questionType === "progressive-image" ||
+          context.questionType === "estimation" ||
+          context.questionType === "heat-map") &&
         context.payloadSchemaVersion === 2
       )) ||
     context.itemConfigSchemaVersion !== 1 ||
@@ -360,6 +361,47 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
+  if (context.questionType === "heat-map") {
+    const surface = publicPayload.surface;
+    const validSurface =
+      surface &&
+      typeof surface === "object" &&
+      !Array.isArray(surface) &&
+      typeof (surface as Record<string, unknown>).src === "string" &&
+      typeof (surface as Record<string, unknown>).alt === "string" &&
+      Number.isSafeInteger((surface as Record<string, unknown>).width) &&
+      Number((surface as Record<string, unknown>).width) > 0 &&
+      Number((surface as Record<string, unknown>).width) <= 8192 &&
+      Number.isSafeInteger((surface as Record<string, unknown>).height) &&
+      Number((surface as Record<string, unknown>).height) > 0 &&
+      Number((surface as Record<string, unknown>).height) <= 8192 &&
+      ((surface as Record<string, unknown>).fit === undefined ||
+        (surface as Record<string, unknown>).fit === "cover" ||
+        (surface as Record<string, unknown>).fit === "contain") &&
+      ((surface as Record<string, unknown>).position === undefined ||
+        typeof (surface as Record<string, unknown>).position === "string");
+    if (
+      !Object.hasOwn(publicPayload, "surface") ||
+      typeof publicPayload.targetLabel !== "string" ||
+      publicPayload.targetLabel.trim().length === 0 ||
+      !validSurface ||
+      !isNormalizedPoint(solutionPayload.target) ||
+      !isValidHeatMapRadii(solutionPayload.fullCreditRadius, solutionPayload.toleranceRadius)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "heat-map",
+      surface: surface as HeatMapQuestion["surface"],
+      targetLabel: publicPayload.targetLabel,
+      target: solutionPayload.target,
+      fullCreditRadius: solutionPayload.fullCreditRadius as number,
+      toleranceRadius: solutionPayload.toleranceRadius as number,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
   if (context.questionType === "true-false") {
     const correctAnswer = solutionPayload.correctAnswer;
     if (typeof correctAnswer !== "boolean") {
@@ -419,7 +461,9 @@ function asQuestion(
       !Array.isArray(items) ||
       items.length < 2 ||
       items.length > 8 ||
-      !items.every((item) => typeof item === "string" && item.trim().length > 0 && item.length <= 500) ||
+      !items.every(
+        (item) => typeof item === "string" && item.trim().length > 0 && item.length <= 500,
+      ) ||
       new Set(items).size !== items.length ||
       !Array.isArray(correctOrder) ||
       correctOrder.length !== items.length ||
@@ -472,7 +516,8 @@ function asQuestion(
           Array.from(value.value).length === 1
         );
       }) ||
-      new Set(tiles.map((tile) => (tile as Record<string, unknown>).id as string)).size !== tiles.length ||
+      new Set(tiles.map((tile) => (tile as Record<string, unknown>).id as string)).size !==
+        tiles.length ||
       typeof correctAnswer !== "string" ||
       correctAnswer.trim().length === 0 ||
       /\s/.test(correctAnswer) ||
@@ -484,9 +529,7 @@ function asQuestion(
       .map((tile) => String((tile as Record<string, unknown>).value).toLocaleLowerCase("es"))
       .sort()
       .join("");
-    const solutionSignature = Array.from(correctAnswer.toLocaleLowerCase("es"))
-      .sort()
-      .join("");
+    const solutionSignature = Array.from(correctAnswer.toLocaleLowerCase("es")).sort().join("");
     if (tileSignature !== solutionSignature) {
       throw new AttemptCommandError("invalid_question_payload");
     }
@@ -517,7 +560,8 @@ function asQuestion(
           typeof (item as Record<string, unknown>).label === "string" &&
           ((item as Record<string, unknown>).label as string).trim().length > 0,
       ) ||
-      new Set(items.map((item) => (item as Record<string, unknown>).label as string)).size !== items.length ||
+      new Set(items.map((item) => (item as Record<string, unknown>).label as string)).size !==
+        items.length ||
       !Array.isArray(categories) ||
       categories.length < 2 ||
       categories.length > 8 ||
@@ -534,7 +578,8 @@ function asQuestion(
     if (
       Object.keys(solution).length !== labels.length ||
       labels.some(
-        (label) => typeof solution[label] !== "string" || !categories.includes(solution[label] as string),
+        (label) =>
+          typeof solution[label] !== "string" || !categories.includes(solution[label] as string),
       ) ||
       Object.keys(solution).some((label) => !labels.includes(label))
     ) {
@@ -570,10 +615,10 @@ function asQuestion(
       ((surface as Record<string, unknown>).fit !== undefined &&
         (surface as Record<string, unknown>).fit !== "cover" &&
         (surface as Record<string, unknown>).fit !== "contain") ||
-      (typeof revealDurationMs !== "number" ||
-        !Number.isSafeInteger(revealDurationMs) ||
-        revealDurationMs <= 0 ||
-        revealDurationMs >= context.timeLimitMs) ||
+      typeof revealDurationMs !== "number" ||
+      !Number.isSafeInteger(revealDurationMs) ||
+      revealDurationMs <= 0 ||
+      revealDurationMs >= context.timeLimitMs ||
       typeof correctAnswer !== "string" ||
       !Array.isArray(acceptedAnswers) ||
       !acceptedAnswers.every((answer) => typeof answer === "string") ||
@@ -750,11 +795,18 @@ function asQuestion(
       (grid as Record<string, unknown>).columns !== 5 ||
       !Array.isArray(regions) ||
       regions.length !== 25 ||
-      !regions.every((region) => typeof region === "number" && Number.isSafeInteger(region) && region >= 0 && region < 5) ||
+      !regions.every(
+        (region) =>
+          typeof region === "number" && Number.isSafeInteger(region) && region >= 0 && region < 5,
+      ) ||
       !Array.isArray(prefilledQueens) ||
-      !prefilledQueens.every((cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25) ||
+      !prefilledQueens.every(
+        (cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25,
+      ) ||
       !Array.isArray(solution) ||
-      !solution.every((cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25) ||
+      !solution.every(
+        (cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25,
+      ) ||
       new Set(solution).size !== solution.length
     ) {
       throw new AttemptCommandError("invalid_question_payload");
@@ -823,7 +875,11 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    const prepared = await callCommand<PrepareInteractionResult>(this.identity, "prepare_interaction", input);
+    const prepared = await callCommand<PrepareInteractionResult>(
+      this.identity,
+      "prepare_interaction",
+      input,
+    );
     if (!prepared.publicPayload) return prepared;
     return {
       ...prepared,

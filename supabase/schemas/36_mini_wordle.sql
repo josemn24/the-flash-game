@@ -188,6 +188,31 @@ begin
       and jsonb_typeof(solution->'tolerance') = 'number'
       and (solution->>'tolerance')::numeric >= 0;
   end if;
+  if question.type = 'heat-map' and question.payload_schema_version = 2 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'targetLabel') = 'string'
+      and char_length(btrim(question.public_payload->>'targetLabel')) between 1 and 500
+      and jsonb_typeof(question.public_payload->'surface') = 'object'
+      and question.public_payload->'surface'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      and private.is_usable_question_asset((question.public_payload->'surface'->>'assetId')::uuid)
+      and jsonb_typeof(question.public_payload->'surface'->'alt') = 'string'
+      and jsonb_typeof(question.public_payload->'surface'->'width') = 'number'
+      and jsonb_typeof(question.public_payload->'surface'->'height') = 'number'
+      and (question.public_payload->'surface'->>'width')::integer between 1 and 8192
+      and (question.public_payload->'surface'->>'height')::integer between 1 and 8192
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'target') = 'object'
+      and jsonb_typeof(solution->'target'->'x') = 'number'
+      and (solution->'target'->>'x')::numeric between 0 and 1
+      and jsonb_typeof(solution->'target'->'y') = 'number'
+      and (solution->'target'->>'y')::numeric between 0 and 1
+      and jsonb_typeof(solution->'fullCreditRadius') = 'number'
+      and (solution->>'fullCreditRadius')::numeric >= 0
+      and jsonb_typeof(solution->'toleranceRadius') = 'number'
+      and (solution->>'toleranceRadius')::numeric > (solution->>'fullCreditRadius')::numeric;
+  end if;
   if question.type = 'queens' and question.payload_schema_version = 1 then
     return private.queens_content_valid(question.public_payload, solution);
   end if;

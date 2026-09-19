@@ -952,7 +952,9 @@ export function useServerFlashSession({
   const updateDraft = (answer: AnswerValue) => {
     if (
       !question ||
-      (question.type !== "classification" && question.type !== "estimation") ||
+      (question.type !== "classification" &&
+        question.type !== "estimation" &&
+        question.type !== "heat-map") ||
       locked ||
       busy
     ) {

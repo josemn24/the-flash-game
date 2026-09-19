@@ -9,10 +9,9 @@ export type FlashEditorialImageAssetReference = {
   readonly position?: string;
 };
 
-export type FlashEditorialMultipleChoiceImageAssetReference =
-  FlashEditorialImageAssetReference & {
-    readonly type: "image";
-  };
+export type FlashEditorialMultipleChoiceImageAssetReference = FlashEditorialImageAssetReference & {
+  readonly type: "image";
+};
 
 export type EditorialJsonPrimitive = boolean | number | string | null;
 export type EditorialJsonValue =
@@ -267,6 +266,31 @@ export type FlashEditorialEstimationQuestion = {
   readonly solutionPayload: FlashEditorialEstimationSolutionPayload;
 };
 
+export type FlashEditorialHeatMapPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly surface: FlashEditorialImageAssetReference;
+  readonly targetLabel: string;
+};
+
+export type FlashEditorialHeatMapSolutionPayload = {
+  readonly target: { readonly x: number; readonly y: number };
+  readonly fullCreditRadius: number;
+  readonly toleranceRadius: number;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialHeatMapQuestion = {
+  readonly slug: string;
+  readonly type: "heat-map";
+  readonly payloadSchemaVersion: 2;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialHeatMapPublicPayload;
+  readonly solutionPayload: FlashEditorialHeatMapSolutionPayload;
+};
+
 export type FlashEditorialMiniWordleQuestion = {
   readonly slug: string;
   readonly type: "mini-wordle";
@@ -370,6 +394,7 @@ export type FlashEditorialProgressiveImageQuestion = {
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialEstimationQuestion
+  | FlashEditorialHeatMapQuestion
   | FlashEditorialMiniWordleQuestion
   | FlashEditorialLogicCodeQuestion
   | FlashEditorialProgressiveCluesQuestion
@@ -388,6 +413,7 @@ export type FlashEditorialQuestion =
 export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialMultipleChoiceQuestion, "points">
   | Omit<FlashEditorialEstimationQuestion, "points">
+  | Omit<FlashEditorialHeatMapQuestion, "points">
   | Omit<FlashEditorialMiniWordleQuestion, "points">
   | Omit<FlashEditorialLogicCodeQuestion, "points">
   | Omit<FlashEditorialProgressiveCluesQuestion, "points">
@@ -407,7 +433,8 @@ export type FlashEditorialQuestionReference = {
   readonly challengeItemId?: string;
 };
 
-export type FlashEditorialChallengeQuestion = FlashEditorialQuestion | FlashEditorialQuestionReference;
+export type FlashEditorialChallengeQuestion =
+  FlashEditorialQuestion | FlashEditorialQuestionReference;
 
 export type FlashEditorialDocument = {
   readonly challenge: {
@@ -433,6 +460,7 @@ export type SuperadminQuestionLibraryEntry = {
   readonly type:
     | "multiple-choice"
     | "estimation"
+    | "heat-map"
     | "mini-wordle"
     | "logic-code"
     | "progressive-clues"

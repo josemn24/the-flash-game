@@ -6,7 +6,10 @@ import {
   parseFlashEditorialDocument,
   parseFlashEditorialJson,
 } from "./flashDocument";
-import type { FlashEditorialChallengeQuestion, FlashEditorialQuestion } from "@/types/view-models/editorial";
+import type {
+  FlashEditorialChallengeQuestion,
+  FlashEditorialQuestion,
+} from "@/types/view-models/editorial";
 
 function inlineQuestion(question: FlashEditorialChallengeQuestion): FlashEditorialQuestion {
   if ("source" in question) throw new Error("Expected inline question");
@@ -73,7 +76,10 @@ describe("Flash editorial document", () => {
       points: 50,
       modeConfig: {},
     };
-    document.questions = [reference, { ...reference, questionVersionId: "00000000-0000-4000-8000-000000000100" }] as unknown as TestQuestion[];
+    document.questions = [
+      reference,
+      { ...reference, questionVersionId: "00000000-0000-4000-8000-000000000100" },
+    ] as unknown as TestQuestion[];
     expect(parseFlashEditorialDocument(document).questions[0]).toMatchObject(reference);
     document.questions[1] = reference as unknown as TestQuestion;
     expect(() => parseFlashEditorialDocument(document)).toThrow("no puede repetirse");
@@ -88,7 +94,7 @@ describe("Flash editorial document", () => {
     expect(isFlashEditorialDocument(parsed)).toBe(true);
   });
 
-  it("accepts the three final-answer editorial formats", () => {
+  it("accepts the supported final-answer editorial formats", () => {
     const documents = [
       {
         slug: "true-false-question",
@@ -151,6 +157,31 @@ describe("Flash editorial document", () => {
         solutionPayload: { correctAnswer: 36, tolerance: 18, explanation: "Cálculo." },
       },
       {
+        slug: "sbr-grand-canyon-heat-map",
+        type: "heat-map",
+        payloadSchemaVersion: 2,
+        timeLimitMs: 18_000,
+        publicPayload: {
+          category: "Geografía",
+          tags: {},
+          question: "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+          surface: {
+            assetId: "11111111-1111-4111-8111-111111111111",
+            alt: "Mapa sin etiquetas de Estados Unidos",
+            width: 1859,
+            height: 968,
+            fit: "contain",
+          },
+          targetLabel: "Norte de Arizona",
+        },
+        solutionPayload: {
+          target: { x: 0.38, y: 0.58 },
+          fullCreditRadius: 0.055,
+          toleranceRadius: 0.18,
+          explanation: "El Gran Cañón está en el norte de Arizona.",
+        },
+      },
+      {
         slug: "sbr-race-anagram",
         type: "anagram",
         payloadSchemaVersion: 1,
@@ -185,17 +216,20 @@ describe("Flash editorial document", () => {
           categories: ["útil en 1890", "anacrónico"],
         },
         solutionPayload: {
-          categoriesByItem: { "Brújula": "útil en 1890", "Navegador GPS": "anacrónico" },
+          categoriesByItem: { Brújula: "útil en 1890", "Navegador GPS": "anacrónico" },
           explanation: "Clasificación histórica.",
         },
       },
     ];
 
-    expect(documents.map((document) => parseFlashEditorialQuestionDocument(document))).toMatchObject([
+    expect(
+      documents.map((document) => parseFlashEditorialQuestionDocument(document)),
+    ).toMatchObject([
       { type: "true-false" },
       { type: "odd-one-out" },
       { type: "ordering" },
       { type: "estimation" },
+      { type: "heat-map" },
       { type: "anagram" },
       { type: "classification" },
     ]);
@@ -287,6 +321,29 @@ describe("Flash editorial document", () => {
       solutionPayload: { correctAnswer: 80, tolerance: -1 },
     };
     expect(() => parseFlashEditorialQuestionDocument(estimation)).toThrow();
+
+    const heatMap = {
+      slug: "invalid-heat-map",
+      type: "heat-map",
+      payloadSchemaVersion: 2,
+      timeLimitMs: 12_000,
+      publicPayload: {
+        question: "Marca la zona",
+        surface: {
+          assetId: "11111111-1111-4111-8111-111111111111",
+          alt: "Mapa",
+          width: 800,
+          height: 600,
+        },
+        targetLabel: "Zona objetivo",
+      },
+      solutionPayload: {
+        target: { x: 1.2, y: 0.5 },
+        fullCreditRadius: 0.2,
+        toleranceRadius: 0.1,
+      },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(heatMap)).toThrow();
   });
 
   it("accepts Flash documents from two through twenty questions", () => {
@@ -604,7 +661,12 @@ describe("Flash editorial document", () => {
       points: 50,
       publicPayload: {
         question: "¿Qué monumento aparece?",
-        surface: { src: "/visuals/connections/eiffel-tower.png", alt: "Imagen", width: 847, height: 566 },
+        surface: {
+          src: "/visuals/connections/eiffel-tower.png",
+          alt: "Imagen",
+          width: 847,
+          height: 566,
+        },
         revealDurationMs: 12_000,
       },
       solutionPayload: {
@@ -638,29 +700,41 @@ describe("Flash editorial document", () => {
     expect(() => parseFlashEditorialDocument(document)).toThrow("progressive-image");
 
     const valid = documentFixture();
-    valid.questions[1] = { ...document.questions[1], publicPayload: {
-      ...document.questions[1].publicPayload,
-      surface: { src: "/visuals/connections/eiffel-tower.png", alt: "Imagen", width: 100, height: 100 },
-      revealDurationMs: 10_000,
-    }};
+    valid.questions[1] = {
+      ...document.questions[1],
+      publicPayload: {
+        ...document.questions[1].publicPayload,
+        surface: {
+          src: "/visuals/connections/eiffel-tower.png",
+          alt: "Imagen",
+          width: 100,
+          height: 100,
+        },
+        revealDurationMs: 10_000,
+      },
+    };
     (valid.questions[1].publicPayload as Record<string, unknown>).correctAnswer = "Algo";
     expect(() => parseFlashEditorialDocument(valid)).toThrow("no puede contener soluciones");
 
     const revealingAlt = documentFixture();
-    revealingAlt.questions[1] = { ...document.questions[1], publicPayload: {
-      ...document.questions[1].publicPayload,
-      surface: {
-        src: "/visuals/connections/eiffel-tower.png",
-        alt: "Torre Eiffel",
-        width: 100,
-        height: 100,
+    revealingAlt.questions[1] = {
+      ...document.questions[1],
+      publicPayload: {
+        ...document.questions[1].publicPayload,
+        surface: {
+          src: "/visuals/connections/eiffel-tower.png",
+          alt: "Torre Eiffel",
+          width: 100,
+          height: 100,
+        },
+        revealDurationMs: 10_000,
       },
-      revealDurationMs: 10_000,
-    }, solutionPayload: {
-      correctAnswer: "Torre Eiffel",
-      acceptedAnswers: ["torre eiffel"],
-      solutionAlt: "La Torre Eiffel en París",
-    }};
+      solutionPayload: {
+        correctAnswer: "Torre Eiffel",
+        acceptedAnswers: ["torre eiffel"],
+        solutionAlt: "La Torre Eiffel en París",
+      },
+    };
     expect(() => parseFlashEditorialDocument(revealingAlt)).toThrow("progressive-image");
   });
 
@@ -674,8 +748,14 @@ describe("Flash editorial document", () => {
       points: 50,
       publicPayload: {
         question: "Relaciona",
-        leftItems: [{ id: "l1", label: "Uno" }, { id: "l2", label: "uno" }],
-        rightItems: [{ id: "r1", label: "Primero" }, { id: "r2", label: "Segundo" }],
+        leftItems: [
+          { id: "l1", label: "Uno" },
+          { id: "l2", label: "uno" },
+        ],
+        rightItems: [
+          { id: "r1", label: "Primero" },
+          { id: "r2", label: "Segundo" },
+        ],
       },
       solutionPayload: { matches: { l1: "r1", l2: "r1" } },
     };
@@ -783,8 +863,7 @@ describe("Flash editorial document", () => {
     const parsed = parseFlashEditorialDocument(document);
     const parsedQuestion = inlineQuestion(parsed.questions[1]);
     expect(parsedQuestion.type).toBe("progressive-clues");
-    if (parsedQuestion.type !== "progressive-clues")
-      throw new Error("Expected Progressive-clues");
+    if (parsedQuestion.type !== "progressive-clues") throw new Error("Expected Progressive-clues");
     expect(parsedQuestion.publicPayload.clues).toHaveLength(2);
     expect(parsedQuestion.solutionPayload.acceptedAnswers).toContain("Berlín");
   });

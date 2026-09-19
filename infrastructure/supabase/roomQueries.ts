@@ -22,6 +22,7 @@ import type {
   Question,
   QuestionMedia,
   EstimationQuestion,
+  HeatMapQuestion,
 } from "@/types/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
@@ -31,6 +32,7 @@ import {
   isValidEstimationConfiguration,
   isValidEstimationSolution,
 } from "@/lib/estimation";
+import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import type {
   RoomCardModel,
   RoomCalendarEntry,
@@ -209,7 +211,8 @@ type FlashMemberReviewReadRow = {
     | "ordering"
     | "anagram"
     | "classification"
-    | "estimation";
+    | "estimation"
+    | "heat-map";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -453,10 +456,12 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "ordering" ||
       row.question_type === "anagram" ||
       row.question_type === "classification" ||
-      row.question_type === "estimation") &&
+      row.question_type === "estimation" ||
+      row.question_type === "heat-map") &&
     (row.payload_schema_version === 1 ||
       (row.question_type === "progressive-image" && row.payload_schema_version === 2) ||
-      (row.question_type === "estimation" && row.payload_schema_version === 2)) &&
+      (row.question_type === "estimation" && row.payload_schema_version === 2) ||
+      (row.question_type === "heat-map" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
     isRecord(row.public_payload) &&
@@ -966,8 +971,12 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       leftItems.length < 3 ||
       leftItems.length > 6 ||
       rightItems.length !== leftItems.length ||
-      !leftItems.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string") ||
-      !rightItems.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string") ||
+      !leftItems.every(
+        (item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string",
+      ) ||
+      !rightItems.every(
+        (item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string",
+      ) ||
       !isRecord(matches) ||
       Object.keys(matches).length !== leftItems.length ||
       !leftItems.every((item) => typeof matches[item.id as string] === "string") ||
@@ -1005,10 +1014,7 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
     const tags = requiredRecordField(publicPayload, "tags", "public_payload");
     const prompt = publicPayload.question;
     const correctAnswer = solutionPayload.correctAnswer;
-    if (
-      typeof prompt !== "string" ||
-      typeof correctAnswer !== "boolean"
-    ) {
+    if (typeof prompt !== "string" || typeof correctAnswer !== "boolean") {
       throw new Error(`Invalid historical true-false payload (${row.challenge_item_id})`);
     }
     return {
@@ -1021,7 +1027,8 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
         (row.time_limit_ms ??
           (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
       points: row.item_points,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
       type: "true-false",
     };
   }
@@ -1035,8 +1042,11 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       !Array.isArray(items) ||
       items.length < 3 ||
       items.length > 8 ||
-      !items.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string") ||
-      new Set(items.map((item) => (item as Record<string, unknown>).id as string)).size !== items.length ||
+      !items.every(
+        (item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string",
+      ) ||
+      new Set(items.map((item) => (item as Record<string, unknown>).id as string)).size !==
+        items.length ||
       typeof correctAnswer !== "string" ||
       !items.some((item) => (item as Record<string, unknown>).id === correctAnswer)
     ) {
@@ -1047,13 +1057,14 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
       tags: tags as Question["tags"],
       question: prompt,
-      items: items as Extract<Question, { type: "odd-one-out" }>['items'],
+      items: items as Extract<Question, { type: "odd-one-out" }>["items"],
       correctAnswer,
       timeLimit:
         (row.time_limit_ms ??
           (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
       points: row.item_points,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
       type: "odd-one-out",
     };
   }
@@ -1096,7 +1107,8 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
         (row.time_limit_ms ??
           (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
       points: row.item_points,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
       type: "ordering",
     };
   }
@@ -1141,8 +1153,56 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       tolerance: tolerance as number,
       timeLimit: (row.time_limit_ms ?? 0) / 1000,
       points: row.item_points,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies EstimationQuestion;
+  }
+  if (row.question_type === "heat-map") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const prompt = publicPayload.question;
+    const surface = publicPayload.surface;
+    const resolvedSurface =
+      isRecord(surface) && typeof surface.src === "string" ? surface : undefined;
+    const target = solutionPayload.target;
+    const fullCreditRadius = solutionPayload.fullCreditRadius;
+    const toleranceRadius = solutionPayload.toleranceRadius;
+    if (
+      typeof prompt !== "string" ||
+      !resolvedSurface ||
+      typeof resolvedSurface.alt !== "string" ||
+      typeof resolvedSurface.width !== "number" ||
+      !Number.isSafeInteger(resolvedSurface.width) ||
+      resolvedSurface.width <= 0 ||
+      typeof resolvedSurface.height !== "number" ||
+      !Number.isSafeInteger(resolvedSurface.height) ||
+      resolvedSurface.height <= 0 ||
+      (resolvedSurface.fit !== undefined &&
+        resolvedSurface.fit !== "cover" &&
+        resolvedSurface.fit !== "contain") ||
+      (resolvedSurface.position !== undefined && typeof resolvedSurface.position !== "string") ||
+      typeof publicPayload.targetLabel !== "string" ||
+      publicPayload.targetLabel.trim().length === 0 ||
+      !isNormalizedPoint(target) ||
+      !isValidHeatMapRadii(fullCreditRadius, toleranceRadius)
+    ) {
+      throw new Error(`Invalid historical heat-map payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      type: "heat-map",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      surface: resolvedSurface as ImageSurface,
+      target,
+      targetLabel: publicPayload.targetLabel,
+      fullCreditRadius: fullCreditRadius as number,
+      toleranceRadius: toleranceRadius as number,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies HeatMapQuestion;
   }
   if (row.question_type === "anagram") {
     const tags = requiredRecordField(publicPayload, "tags", "public_payload");
@@ -1150,9 +1210,14 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
     const tiles = publicPayload.tiles;
     const correctAnswer = solutionPayload.correctAnswer;
     const tileValues = Array.isArray(tiles)
-      ? tiles.map((tile) => (isRecord(tile) && typeof tile.value === "string" ? normalizeAnswer(tile.value) : ""))
+      ? tiles.map((tile) =>
+          isRecord(tile) && typeof tile.value === "string" ? normalizeAnswer(tile.value) : "",
+        )
       : [];
-    const solutionSignature = typeof correctAnswer === "string" ? Array.from(normalizeAnswer(correctAnswer)).sort().join("") : "";
+    const solutionSignature =
+      typeof correctAnswer === "string"
+        ? Array.from(normalizeAnswer(correctAnswer)).sort().join("")
+        : "";
     if (
       typeof prompt !== "string" ||
       !Array.isArray(tiles) ||
@@ -1186,7 +1251,8 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       correctAnswer,
       timeLimit: (row.time_limit_ms ?? 0) / 1000,
       points: row.item_points,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (row.question_type === "classification") {
@@ -1236,7 +1302,8 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       categories: categories as string[],
       timeLimit: (row.time_limit_ms ?? 0) / 1000,
       points: row.item_points,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (row.question_type === "queens") {
@@ -1253,11 +1320,18 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       grid.columns !== 5 ||
       !Array.isArray(regions) ||
       regions.length !== 25 ||
-      !regions.every((region) => typeof region === "number" && Number.isInteger(region) && region >= 0 && region < 5) ||
+      !regions.every(
+        (region) =>
+          typeof region === "number" && Number.isInteger(region) && region >= 0 && region < 5,
+      ) ||
       !Array.isArray(prefilledQueens) ||
-      !prefilledQueens.every((cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25) ||
+      !prefilledQueens.every(
+        (cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25,
+      ) ||
       !Array.isArray(solution) ||
-      !solution.every((cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25) ||
+      !solution.every(
+        (cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25,
+      ) ||
       typeof solutionPayload.explanation !== "string"
     ) {
       throw new Error(`Invalid historical Queens payload (${row.challenge_item_id})`);

@@ -196,7 +196,8 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "ordering"
       | "anagram"
       | "classification"
-      | "estimation";
+      | "estimation"
+      | "heat-map";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -254,6 +255,12 @@ export type ServerEstimationQuestion = ServerFlashQuestionBase & {
   readonly initialValue: number;
   readonly unit: string;
   readonly media?: QuestionMedia;
+};
+
+export type ServerHeatMapQuestion = ServerFlashQuestionBase & {
+  readonly type: "heat-map";
+  readonly surface: ImageSurface;
+  readonly targetLabel: string;
 };
 
 export type ServerMiniWordleProgress = {
@@ -363,7 +370,8 @@ export type ServerFlashQuestion =
   | ServerOrderingQuestion
   | ServerAnagramQuestion
   | ServerClassificationQuestion
-  | ServerEstimationQuestion;
+  | ServerEstimationQuestion
+  | ServerHeatMapQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a
