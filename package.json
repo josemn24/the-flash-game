@@ -10,7 +10,7 @@
     "supabase:status": "supabase status",
     "supabase:stop": "supabase stop",
     "supabase:db:reset": "supabase db reset --local",
-    "supabase:db:schema:sync": "supabase db schema declarative sync --no-apply",
+    "supabase:db:schema:sync": "supabase db schema declarative sync",
     "supabase:fixture": "node scripts/supabase-fixture.mjs",
     "supabase:browser:setup": "node scripts/seed-browser.mjs",
     "test:integration:supabase": "node scripts/supabase-integration.mjs",

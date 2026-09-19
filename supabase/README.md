@@ -49,10 +49,11 @@ definiciones.
 3. Generar una migración incremental contra la definición declarativa, sin aplicarla todavía:
 
    ```bash
-   npx supabase db schema declarative sync --no-apply --name nombre_descriptivo
+   npx supabase db schema declarative sync --name nombre_descriptivo
    ```
 
-4. Revisar la migración generada y confirmar que contiene únicamente el cambio esperado:
+4. El comando no aplica la migración salvo que se indique explícitamente `--apply`. Revisar la
+   migración generada y confirmar que contiene únicamente el cambio esperado:
 
    ```bash
    git diff -- supabase/schemas supabase/migrations
