@@ -142,6 +142,13 @@ la correspondencia contra la versión congelada, registra como máximo un evento
 10% de los puntos del item en fallos y reconstruye el mapa final desde eventos. `correctMatchId` y la
 solución completa aparecen únicamente en la revisión autorizada.
 
+E05 entrega el tablero 5×5, las regiones, las coronas precolocadas y un progreso seguro. Cada
+colocación o retirada pasa por `private.submit_queens_placement(jsonb)`, que bloquea el intento,
+reconstruye las coronas desde `private.queens_placement_events`, calcula conflictos y aplica el 5%
+de penalización sin confiar en contadores del navegador. Las marcas X son estado local y se descartan
+al recuperar. Al completar el tablero se crea una única recepción terminal; la solución solo se
+reconstruye en el contexto privado de evaluación y revisión autorizada.
+
 La matriz operativa completa, los límites HTTP y el procedimiento reproducible de Supabase están en
 [`s22-operacion.md`](../s22-operacion.md).
 

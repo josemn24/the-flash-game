@@ -15,6 +15,7 @@ import type {
   ServerMatchingQuestion,
   ServerProgressiveCluesQuestion,
   ServerProgressiveImageQuestion,
+  ServerQueensProgress,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -120,7 +121,7 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image",
+  questionType: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -130,7 +131,7 @@ export function questionFromPayload(
   timeLimitMs: number,
   points: number,
   questionType?:
-    "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image",
+    "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -171,6 +172,71 @@ export function questionFromPayload(
     }
     const media = questionMedia(value);
     return { ...base, type: "multiple-choice", options: value.options, ...(media ? { media } : {}) };
+  }
+  if (questionType === "queens") {
+    const grid = value.grid;
+    const regions = value.regions;
+    const prefilledQueens = value.prefilledQueens;
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
+    const validCells = (candidate: unknown): candidate is number[] =>
+      Array.isArray(candidate) &&
+      candidate.every(
+        (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < 25,
+      ) &&
+      new Set(candidate).size === candidate.length;
+    const queens = validCells(rawProgress.queens)
+      ? rawProgress.queens
+      : validCells(prefilledQueens)
+        ? prefilledQueens
+        : [];
+    const safeProgress: ServerQueensProgress = {
+      kind: "queens",
+      queens,
+      placedQueens: Number(rawProgress.placedQueens ?? queens.length),
+      completedRows: Number(rawProgress.completedRows ?? 0),
+      completedColumns: Number(rawProgress.completedColumns ?? 0),
+      completedRegions: Number(rawProgress.completedRegions ?? 0),
+      conflictingQueens: Number(rawProgress.conflictingQueens ?? 0),
+      solved: rawProgress.solved === true,
+    };
+    if (
+      !grid ||
+      typeof grid !== "object" ||
+      Array.isArray(grid) ||
+      (grid as Record<string, unknown>).rows !== 5 ||
+      (grid as Record<string, unknown>).columns !== 5 ||
+      !Array.isArray(regions) ||
+      regions.length !== 25 ||
+      !regions.every(
+        (region) => Number.isSafeInteger(region) && Number(region) >= 0 && Number(region) < 5,
+      ) ||
+      !validCells(prefilledQueens) ||
+      !validCells(queens) ||
+      safeProgress.placedQueens !== queens.length ||
+      ![
+        safeProgress.placedQueens,
+        safeProgress.completedRows,
+        safeProgress.completedColumns,
+        safeProgress.completedRegions,
+        safeProgress.conflictingQueens,
+      ].every((metric) => Number.isSafeInteger(metric) && metric >= 0) ||
+      safeProgress.completedRows > 5 ||
+      safeProgress.completedColumns > 5 ||
+      safeProgress.completedRegions > 5
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "queens",
+      grid: { rows: 5, columns: 5 },
+      regions,
+      prefilledQueens,
+      progress: safeProgress,
+    };
   }
   if (questionType === "progressive-image") {
     const revealDurationMs = value.revealDurationMs;
@@ -424,7 +490,8 @@ function questionWithSolution(
   | LogicCodeQuestion
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
-  | MatchingQuestion {
+  | MatchingQuestion
+  | QuestionOfType<"queens"> {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -506,6 +573,29 @@ function questionWithSolution(
       correctAnswer: solution.correctAnswer,
       acceptedAnswers: solution.acceptedAnswers,
       solutionAlt: solution.solutionAlt,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "queens") {
+    const solutionCells = solution.solution;
+    if (
+      !Array.isArray(solutionCells) ||
+      !solutionCells.every((cell) => Number.isSafeInteger(cell) && cell >= 0 && cell < 25)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "queens",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      regions: [...question.regions],
+      prefilledQueens: [...question.prefilledQueens],
+      solution: solutionCells,
       timeLimit: question.timeLimit,
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",

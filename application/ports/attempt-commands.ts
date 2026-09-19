@@ -23,6 +23,8 @@ import type {
   SubmitMiniWordleGuessResult,
   SubmitLogicCodeAttemptInput,
   SubmitLogicCodeAttemptResult,
+  SubmitQueensPlacementInput,
+  SubmitQueensPlacementResult,
   TakeOverAttemptInput,
   TakeOverAttemptResult,
   RevealProgressiveClueInput,
@@ -98,6 +100,7 @@ export interface AttemptCommands {
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
   submitMatchingPair(input: SubmitMatchingPairInput): Promise<SubmitMatchingPairResult>;
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
+  submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;
   readEvaluationContext(
     receiptId: AnswerReceiptId,

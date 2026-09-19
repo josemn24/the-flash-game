@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a/D08b, E01–E04 y E10.
+- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a/D08b, E01–E05 y E10.
 - Fecha: 2026-09-16.
 - Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
@@ -11,7 +11,7 @@
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a/D08b, E01–E04 y E10 ya tienen
+actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a/D08b, E01–E05 y E10 ya tienen
 persistencia real verificada en Supabase local.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los

@@ -159,6 +159,14 @@ el mismo Flash; las dos columnas se entregan sin `correctMatchId`, y cada pareja
 secuencia, tiempos y claves idempotentes. La penalización es el 10% de los puntos reales del item;
 la evaluación y el timeout reconstruyen el progreso exclusivamente desde esos eventos.
 
+E05 añade `schemas/99_queens.sql` y las migraciones `20260919085635_e05_queens.sql` y
+`20260919090805_declarative_sync.sql`. El portal acepta
+`multiple-choice` y `queens` en el mismo Flash; el tablero público no contiene la solución y cada
+colocación o retirada se registra en `private.queens_placement_events`. El comando
+`private.submit_queens_placement(jsonb)` deriva conflictos, penalización del 5%, idempotencia,
+recuperación y cierre terminal desde PostgreSQL. Las marcas X no se persisten y la solución solo se
+entrega durante la evaluación/revisión autorizada.
+
 Para ejecutar el piloto competitivo local:
 
 ```bash
@@ -171,8 +179,8 @@ npm run test:e2e -- e2e/s03-flash.spec.ts
 La verificación completa de S22 se ejecuta con `npm run verify:pilot`. Arranca un stack local,
 aplica el esquema desde una base limpia, ejecuta pgTAP y todos los escenarios locales del portal,
 Flash, recuperación, histórico, editorial y calendario. No requiere ni acepta un proyecto remoto.
-Los escenarios `e01`, `e02`, `e03` y `e04` cubren el portal mixto, la lectura pública sin solución,
-Auth local, recarga, duplicados, ceros iniciales, pistas futuras, correspondencias y reintento idempotente.
+Los escenarios `e01`, `e02`, `e03`, `e04` y `e05` cubren el portal mixto, la lectura pública sin solución,
+Auth local, recarga, duplicados, ceros iniciales, pistas futuras, correspondencias, coronas y reintento idempotente.
 
 S07 añade las lecturas Flash `public.get_flash_history(text, uuid)` y
 `public.get_flash_member_review(text, uuid, uuid)` desde `schemas/85_flash_history_reads.sql`.

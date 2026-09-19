@@ -188,7 +188,7 @@ type FlashMemberReviewReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -425,7 +425,8 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "logic-code" ||
       row.question_type === "progressive-clues" ||
       row.question_type === "matching" ||
-      row.question_type === "progressive-image") &&
+      row.question_type === "progressive-image" ||
+      row.question_type === "queens") &&
     (row.payload_schema_version === 1 ||
       (row.question_type === "progressive-image" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
@@ -966,6 +967,46 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       points: row.item_points,
       explanation,
       type: "matching",
+    };
+  }
+  if (row.question_type === "queens") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const grid = publicPayload.grid;
+    const regions = publicPayload.regions;
+    const prefilledQueens = publicPayload.prefilledQueens;
+    const solution = solutionPayload.solution;
+    const prompt = publicPayload.question;
+    if (
+      typeof prompt !== "string" ||
+      !isRecord(grid) ||
+      grid.rows !== 5 ||
+      grid.columns !== 5 ||
+      !Array.isArray(regions) ||
+      regions.length !== 25 ||
+      !regions.every((region) => typeof region === "number" && Number.isInteger(region) && region >= 0 && region < 5) ||
+      !Array.isArray(prefilledQueens) ||
+      !prefilledQueens.every((cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25) ||
+      !Array.isArray(solution) ||
+      !solution.every((cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25) ||
+      typeof solutionPayload.explanation !== "string"
+    ) {
+      throw new Error(`Invalid historical Queens payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      grid: { rows: 5, columns: 5 },
+      regions,
+      prefilledQueens,
+      solution,
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation: solutionPayload.explanation,
+      type: "queens",
     };
   }
   if (row.question_type === "progressive-image") {

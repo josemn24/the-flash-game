@@ -14,10 +14,10 @@
 - `npm run type-architecture`: correcto.
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
-- `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E04; el runner ya incluye sus
+- `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
 - `npm run supabase:schema:test`: correcto; 32 archivos declarativos, inventario, provisioning,
-  S02–S08, S10–S13, E01–E04 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  S02–S08, S10–S13, E01–E05 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
   privada, preparación temporal y evaluación normalizada.
@@ -54,6 +54,10 @@
   correspondencias privadas y aislamiento del spectator.
 - `npm run test:e2e -- e2e/e04-matching.spec.ts`: preparado para cubrir feedback por pareja,
   penalización, recarga, reintento idempotente, cierre automático y revisión.
+- `npm run test:integration:supabase -- --scenario e05`: preparado para cubrir tablero mixto,
+  publicación de Queens, ausencia de solución y aislamiento del spectator.
+- `npm run test:e2e -- e2e/e05-queens.spec.ts`: preparado para cubrir persistencia de coronas,
+  recarga, conflicto, respuesta HTTP perdida, reintento idempotente y revisión.
 - La integración Auth/PostgREST y el E2E de S12 quedan preparados en `scripts/integration/scenarios/s12.mjs`
   y `e2e/s12-calendar.spec.ts`, pero requieren aplicar primero las migraciones S12 al Supabase local
   persistente; no se ejecutó un reset global para conservar fixtures ajenos.
@@ -99,7 +103,7 @@ incorporar la misma matriz y adaptar únicamente el texto o la presentación al 
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - La validación E2E de S01–S12 usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
-- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash y E05–E09 y
+- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash y E06–E09 y
   la revisión administrativa de intentos invalidados siguen fuera del piloto.
 - No existe una ronda manual vigente y exhaustiva documentada para todos los formatos, viewports,
   VoiceOver y `prefers-reduced-motion`.

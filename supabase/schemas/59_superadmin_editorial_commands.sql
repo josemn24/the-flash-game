@@ -100,7 +100,7 @@ begin
     question_slug := btrim(question->>'slug');
     if jsonb_typeof(question->'slug') is distinct from 'string'
       or char_length(question_slug) not between 1 and 120
-      or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image')
+      or question->>'type' not in ('multiple-choice', 'mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens')
       or (question->>'type' not in ('progressive-image', 'multiple-choice') and question->'payloadSchemaVersion' <> '1'::jsonb)
       or (question->>'type' in ('progressive-image', 'multiple-choice') and question->'payloadSchemaVersion' not in ('1'::jsonb, '2'::jsonb))
       or jsonb_typeof(question->'timeLimitMs') is distinct from 'number'
@@ -348,6 +348,18 @@ begin
         or (select count(*) from jsonb_each_text(solution_payload->'matches')) <> (select count(distinct value) from jsonb_each_text(solution_payload->'matches'))
         or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
         raise exception 'invalid_solution_payload' using errcode = '22023';
+      end if;
+      continue;
+    end if;
+
+    if question->>'type' = 'queens' then
+      if exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name not in ('category', 'tags', 'question', 'grid', 'regions', 'prefilledQueens'))
+        or private.editorial_has_secret_key(public_payload)
+        or not private.queens_content_valid(public_payload, solution_payload)
+        or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+        or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+        or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+        raise exception 'invalid_public_payload' using errcode = '22023';
       end if;
       continue;
     end if;

@@ -23,7 +23,8 @@ mixto con intentos privados, duplicados rechazados sin penalización, progreso s
 autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita, eventos de
 revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
 E04 añade Matching con eventos privados de aciertos/fallos, penalización del 10%, progreso seguro y
-evaluación parcial desde eventos. Las migraciones están versionadas;
+evaluación parcial desde eventos. E05 añade Queens con eventos privados de colocación/retirada,
+penalización del 5%, recuperación del tablero y resolución terminal server-side. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
 ## Decisiones y supuestos
@@ -129,6 +130,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [97_media_asset_acl.sql](97_media_asset_acl.sql) | ACL explícita de `media_assets` y comandos server-only. |
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql) | Validación interna de assets de preguntas listos para publicación/uso. |
 | [98_question_asset_commands.sql](98_question_asset_commands.sql) | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas. |
+| [99_queens.sql](99_queens.sql) | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -288,9 +290,9 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **34 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **35 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
-26 de E04 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
+26 de E04, 24 de E05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
 y las 643 pruebas TypeScript
 superadas. También pasan comprobación
 de tipos, ESLint y los enlaces de documentación; la comprobación de arquitectura mantiene dos

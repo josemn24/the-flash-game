@@ -1,4 +1,10 @@
-import type { ImageSurface, MatchingItem, MatchingLeftItem, Question, QuestionMedia } from "@/types/question";
+import type {
+  ImageSurface,
+  MatchingItem,
+  MatchingLeftItem,
+  Question,
+  QuestionMedia,
+} from "@/types/question";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
@@ -176,7 +182,13 @@ export type ServerFlashChallenge = ChallengeBase & {
     id: string;
     position: number;
     questionType:
-      "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image";
+      | "multiple-choice"
+      | "mini-wordle"
+      | "logic-code"
+      | "progressive-clues"
+      | "matching"
+      | "progressive-image"
+      | "queens";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -274,13 +286,33 @@ export type ServerProgressiveImageQuestion = ServerFlashQuestionBase & {
   readonly answerPlaceholder: string | null;
 };
 
+export type ServerQueensProgress = {
+  readonly kind: "queens";
+  readonly queens: readonly number[];
+  readonly placedQueens: number;
+  readonly completedRows: number;
+  readonly completedColumns: number;
+  readonly completedRegions: number;
+  readonly conflictingQueens: number;
+  readonly solved: boolean;
+};
+
+export type ServerQueensQuestion = ServerFlashQuestionBase & {
+  readonly type: "queens";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly regions: readonly number[];
+  readonly prefilledQueens: readonly number[];
+  readonly progress: ServerQueensProgress;
+};
+
 export type ServerFlashQuestion =
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
   | ServerLogicCodeQuestion
   | ServerProgressiveCluesQuestion
   | ServerMatchingQuestion
-  | ServerProgressiveImageQuestion;
+  | ServerProgressiveImageQuestion
+  | ServerQueensQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

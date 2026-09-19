@@ -88,6 +88,9 @@
     "private.matching_pair_events": {
       "kind": "r"
     },
+    "private.queens_placement_events": {
+      "kind": "r"
+    },
     "private.platform_role_assignments": {
       "kind": "r",
       "service_role": {
@@ -599,6 +602,36 @@
       "executeRoles": []
     },
     "private.submit_matching_pair": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.queens_board": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.queens_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.queens_cell_conflicts": {
+      "arguments": "regions jsonb, target_cell integer, queens integer[]",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.queens_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.queens_answer": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_queens_placement": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

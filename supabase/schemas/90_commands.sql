@@ -251,6 +251,7 @@ begin
             when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
             when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
             when q.type = 'matching' then private.matching_progress(a.id, item.id)
+            when q.type = 'queens' then private.queens_progress(a.id, item.id)
             else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
       when 'receive', 'pass' then
@@ -270,6 +271,12 @@ begin
           where q.id = item.question_version_id and q.type = 'logic-code'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'logic_code_requires_attempt_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'queens'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'queens_requires_placement_command' using errcode = '22023';
         end if;
         if op = 'receive' and exists (
           select 1 from private.question_versions q
@@ -500,7 +507,7 @@ begin
       select jsonb_object_agg(e.left_item_id, e.right_item_id)
       from private.matching_pair_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '{}'::jsonb) else r.answer end, 'receivedAt', r.received_at,
+    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
     'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
@@ -522,6 +529,10 @@ begin
       select count(*)::integer
       from private.logic_code_attempt_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) when q.type = 'queens' then coalesce((
+      select count(*)::integer
+      from private.queens_placement_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
     ), 0) else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
@@ -592,7 +603,7 @@ begin
       select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
       select * into item from private.challenge_items where id = segment.challenge_item_id;
       select * into question from private.question_versions where id = item.question_version_id;
-      if question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image') and instant < unit.deadline_at then
+      if question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

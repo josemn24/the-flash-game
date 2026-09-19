@@ -59,6 +59,15 @@ type PendingMatchingPair = {
   rightItemId: string;
   idempotencyKey: string;
 };
+type PendingQueensPlacement = {
+  kind: "queens";
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  cell: number;
+  action: "place" | "remove";
+  idempotencyKey: string;
+};
 type PendingSubmission =
   PendingAnswerSubmission | PendingMiniWordleSubmission | PendingLogicCodeSubmission;
 
@@ -149,6 +158,9 @@ export function useServerFlashSession({
   const [matchingState, setMatchingState] = useState<SubmissionState>("idle");
   const [matchingStatusVisible, setMatchingStatusVisible] = useState(false);
   const [matchingError, setMatchingError] = useState<string>();
+  const [queensState, setQueensState] = useState<SubmissionState>("idle");
+  const [queensStatusVisible, setQueensStatusVisible] = useState(false);
+  const [queensError, setQueensError] = useState<string>();
   const [lastMatchingPair, setLastMatchingPair] = useState<
     { readonly leftId: string; readonly rightId: string; readonly correct: boolean } | undefined
   >();
@@ -158,9 +170,11 @@ export function useServerFlashSession({
   const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const matchingStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const queensStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const pendingRevealRef = useRef<PendingProgressiveClueReveal | null>(null);
   const pendingMatchingPairRef = useRef<PendingMatchingPair | null>(null);
+  const pendingQueensPlacementRef = useRef<PendingQueensPlacement | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
 
@@ -218,12 +232,31 @@ export function useServerFlashSession({
     }, SUBMISSION_STATUS_DELAY_MS);
   };
 
+  const clearQueensStatusTimer = () => {
+    if (queensStatusTimerRef.current) {
+      clearTimeout(queensStatusTimerRef.current);
+      queensStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startQueensStatus = () => {
+    clearQueensStatusTimer();
+    setQueensState("submitting");
+    setQueensStatusVisible(false);
+    setQueensError(undefined);
+    queensStatusTimerRef.current = setTimeout(() => {
+      setQueensStatusVisible(true);
+      queensStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
+  };
+
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       clearSubmissionStatusTimer();
       clearRevealStatusTimer();
       clearMatchingStatusTimer();
+      clearQueensStatusTimer();
     },
     [],
   );
@@ -263,6 +296,10 @@ export function useServerFlashSession({
     setMatchingError(undefined);
     setLastMatchingPair(undefined);
     pendingMatchingPairRef.current = null;
+    setQueensState("idle");
+    setQueensStatusVisible(false);
+    setQueensError(undefined);
+    pendingQueensPlacementRef.current = null;
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
   };
@@ -317,6 +354,98 @@ export function useServerFlashSession({
       );
     } else {
       await prepare({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
+    }
+  };
+
+  const submitQueensPlacementToServer = async (submission: PendingQueensPlacement) => {
+    startQueensStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/queens/place`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          cell: submission.cell,
+          action: submission.action,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const queens = Array.isArray(response.queens)
+        ? response.queens.filter((cell): cell is number => Number.isSafeInteger(cell))
+        : [];
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      setQuestion((current) =>
+        current?.type === "queens"
+          ? {
+              ...current,
+              progress: {
+                kind: "queens",
+                queens,
+                placedQueens: Number(response.placedQueens),
+                completedRows: Number(response.completedRows),
+                completedColumns: Number(response.completedColumns),
+                completedRegions: Number(response.completedRegions),
+                conflictingQueens: Number(response.conflictingQueens),
+                solved: response.solved === true,
+              },
+            }
+          : current,
+      );
+      clearQueensStatusTimer();
+      pendingQueensPlacementRef.current = null;
+      setQueensState("idle");
+      setQueensStatusVisible(false);
+      setQueensError(undefined);
+      if (response.terminal !== true) {
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: { queens, marks: [] },
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (questionIndex === challenge.slots.length - 1) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(challengeWithReview(challenge, review));
+            setPhase("results");
+          } else {
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearQueensStatusTimer();
+      setQueensState("error");
+      setQueensStatusVisible(true);
+      setQueensError(
+        error instanceof CompetitiveCommandError && error.code === "prefilled_queen_locked"
+          ? "Esa corona es una pista fija."
+          : "No hemos podido guardar la corona.",
+      );
+      setBusy(false);
+      setLocked(false);
     }
   };
 
@@ -874,6 +1003,21 @@ export function useServerFlashSession({
     await submitMatchingPairToServer(submission);
   };
 
+  const submitQueensPlacement = async (cell: number, action: "place" | "remove") => {
+    if (!attempt || !question || question.type !== "queens" || locked || busy) return;
+    const submission: PendingQueensPlacement = {
+      kind: "queens",
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      cell,
+      action,
+      idempotencyKey: idempotencyKey("queens-placement"),
+    };
+    pendingQueensPlacementRef.current = submission;
+    await submitQueensPlacementToServer(submission);
+  };
+
   const retrySubmit = async () => {
     if (busy || !pendingSubmissionRef.current) return;
     const pending = pendingSubmissionRef.current;
@@ -894,6 +1038,11 @@ export function useServerFlashSession({
   const retryMatchingPair = async () => {
     if (busy || !pendingMatchingPairRef.current) return;
     await submitMatchingPairToServer(pendingMatchingPairRef.current);
+  };
+
+  const retryQueensPlacement = async () => {
+    if (busy || !pendingQueensPlacementRef.current) return;
+    await submitQueensPlacementToServer(pendingQueensPlacementRef.current);
   };
 
   const abandon = async () => {
@@ -935,6 +1084,9 @@ export function useServerFlashSession({
     matchingStatusVisible,
     matchingError,
     lastMatchingPair,
+    queensState,
+    queensStatusVisible,
+    queensError,
     pendingAnswer,
     startNotice,
     displayChallenge: display,
@@ -948,6 +1100,8 @@ export function useServerFlashSession({
     retryReveal,
     submitMatchingPair,
     retryMatchingPair,
+    submitQueensPlacement,
+    retryQueensPlacement,
     abandon,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

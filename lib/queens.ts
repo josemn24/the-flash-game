@@ -68,7 +68,10 @@ function hasValidShape(question: QueensQuestion) {
   );
 }
 
-export function getQueensConflicts(question: QueensQuestion, queens: number[]) {
+export function getQueensConflicts(
+  question: { readonly regions: readonly number[] },
+  queens: number[],
+) {
   const conflicts = new Map<number, Set<QueensConflictType>>();
   const add = (cell: number, type: QueensConflictType) => {
     const types = conflicts.get(cell) ?? new Set<QueensConflictType>();

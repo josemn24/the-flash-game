@@ -61,6 +61,7 @@ begin
     when 'submit_mini_wordle_guess' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_logic_code_attempt' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_matching_pair' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
+    when 'submit_queens_placement' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'reveal_progressive_clue' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'pass_interaction' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'record_evaluation' then keys:=array['attemptId','lockVersion','sessionToken','receiptId'];

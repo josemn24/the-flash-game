@@ -21,6 +21,7 @@ import type {
   SubmitMiniWordleGuessResult,
   SubmitMatchingPairResult,
   SubmitLogicCodeAttemptResult,
+  SubmitQueensPlacementResult,
   RevealProgressiveClueResult,
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
@@ -33,6 +34,7 @@ import type {
   ProgressiveCluesQuestion,
   ProgressiveImageQuestion,
   Question,
+  QueensQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -143,6 +145,9 @@ function commandCode(error: unknown) {
     "matching_item_already_resolved",
     "duplicate_matching_pair",
     "matching_requires_pair_command",
+    "invalid_queens_placement",
+    "queens_requires_placement_command",
+    "prefilled_queen_locked",
     "all_clues_revealed",
     "progressive_clues_requires_reveal_command",
     "unsupported_question",
@@ -195,9 +200,10 @@ function asQuestion(
   | LogicCodeQuestion
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
-  | MatchingQuestion {
+  | MatchingQuestion
+  | QueensQuestion {
   if (
-    !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching", "progressive-image"].includes(
+    !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching", "progressive-image", "queens"].includes(
       context.questionType,
     ) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -462,6 +468,39 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
+  if (context.questionType === "queens") {
+    const grid = publicPayload.grid;
+    const regions = publicPayload.regions;
+    const prefilledQueens = publicPayload.prefilledQueens;
+    const solution = solutionPayload.solution;
+    if (
+      !grid ||
+      typeof grid !== "object" ||
+      Array.isArray(grid) ||
+      (grid as Record<string, unknown>).rows !== 5 ||
+      (grid as Record<string, unknown>).columns !== 5 ||
+      !Array.isArray(regions) ||
+      regions.length !== 25 ||
+      !regions.every((region) => typeof region === "number" && Number.isSafeInteger(region) && region >= 0 && region < 5) ||
+      !Array.isArray(prefilledQueens) ||
+      !prefilledQueens.every((cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25) ||
+      !Array.isArray(solution) ||
+      !solution.every((cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25) ||
+      new Set(solution).size !== solution.length
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "queens",
+      grid: { rows: 5, columns: 5 },
+      regions,
+      prefilledQueens,
+      solution,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
   if (context.questionType !== "mini-wordle") throw new AttemptCommandError("unsupported_question");
   const wordLength = publicPayload.wordLength;
   const maxAttempts = publicPayload.maxAttempts;
@@ -499,6 +538,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "submitMatchingPair"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
+  | "submitQueensPlacement"
   | "revealProgressiveClue"
   | "readEvaluationContext"
   | "recordEvaluation"
@@ -578,6 +618,28 @@ export class SupabaseAttemptCommands implements Pick<
     const accepted = await callCommand<SubmitLogicCodeAttemptResult>(
       this.identity,
       "submit_logic_code_attempt",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+    };
+  }
+
+  async submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
+    const accepted = await callCommand<SubmitQueensPlacementResult>(
+      this.identity,
+      "submit_queens_placement",
       input,
     );
     if (!accepted.terminal || !accepted.receiptId) return accepted;

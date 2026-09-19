@@ -28,6 +28,7 @@ export { ProgressiveCluesQuestion } from "./progressive-clues/ProgressiveCluesQu
 export { ProgressiveImageQuestion } from "./progressive-image/ProgressiveImageQuestion";
 export { QueensQuestion } from "./queens/QueensQuestion";
 export { QueensBoard } from "./queens/QueensQuestion";
+export { ServerQueensQuestion } from "./queens/ServerQueensQuestion";
 export { SimonSequenceQuestion } from "./simon-sequence/SimonSequenceQuestion";
 export { SlidingPuzzleQuestion } from "./sliding-puzzle/SlidingPuzzleQuestion";
 export { TimeMazeQuestion } from "./time-maze/TimeMazeQuestion";

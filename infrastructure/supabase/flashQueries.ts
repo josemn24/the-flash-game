@@ -35,7 +35,7 @@ export type FlashReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -47,7 +47,7 @@ export type FlashResultRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image";
+  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -107,7 +107,8 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "logic-code" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
-      value.question_type === "progressive-image") &&
+      value.question_type === "progressive-image" ||
+      value.question_type === "queens") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2)) &&
     typeof value.time_limit_ms === "number" &&
@@ -131,7 +132,8 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "logic-code" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
-      value.question_type === "progressive-image") &&
+      value.question_type === "progressive-image" ||
+      value.question_type === "queens") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2)) &&
     isRecord(value.public_payload) &&

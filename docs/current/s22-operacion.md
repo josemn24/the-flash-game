@@ -4,7 +4,7 @@
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
 El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluidos E01
-Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching y E10 Progressive-image. Los demás modos, formatos no migrados, E05–E09, Storage, abandono automático, takeover
+Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens y E10 Progressive-image. Los demás modos, formatos no migrados, E06–E09, Storage, abandono automático, takeover
 y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y D08b habilita assets
 privados de E10 desde el editor y el recorrido competitivo. `multiple-choice` todavía no consume
 assets privados.
@@ -116,6 +116,19 @@ npm run test:e2e -- e2e/e04-matching.spec.ts
 Matching valida cada pareja con `POST /api/competitive/attempts/[attemptId]/matching/pair`.
 Los eventos privados conservan aciertos y fallos; el jugador recibe solo progreso seguro y la
 revisión autorizada reconstruye las correspondencias completas.
+
+Para E05:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario e05
+npm run test:integration:supabase -- --scenario e05
+npm run test:e2e -- e2e/e05-queens.spec.ts
+```
+
+Queens valida cada colocación o retirada con `POST /api/competitive/attempts/[attemptId]/queens/place`.
+El tablero se reconstruye desde eventos privados; las marcas X son locales y la solución solo aparece
+en la revisión autorizada.
 
 No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
 es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build

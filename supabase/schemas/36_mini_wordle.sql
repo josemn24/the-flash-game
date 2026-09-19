@@ -153,6 +153,9 @@ begin
       and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
         where value = solution->>'correctAnswer');
   end if;
+  if question.type = 'queens' and question.payload_schema_version = 1 then
+    return private.queens_content_valid(question.public_payload, solution);
+  end if;
   if question.payload_schema_version <> 1 then return false; end if;
   if question.type = 'multiple-choice' then
     return jsonb_typeof(question.public_payload) = 'object'

@@ -5,7 +5,7 @@
 Esta sección describe la aplicación y los contratos técnicos vigentes. Es la primera referencia para
 entender qué existe en el repositorio hoy.
 
-En la rama actual, S01–S13, D08a, D08b, E01–E04 y E10 están implementadas y verificadas contra el stack local de Supabase. El
+En la rama actual, S01–S13, D08a, D08b, E01–E05 y E10 están implementadas y verificadas contra el stack local de Supabase. El
 resto de capacidades se mantiene explícitamente en mock o pendiente de su propia vertical slice.
 La beta cerrada se provisionará y operará desde un portal privado de superadmin: la UI pública no
 crea salas ni gestiona invitaciones. El portal privado también prepara y activa temporadas, publica

@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20260917103100_e04_matching_validation";
+const canonicalSchemaRevision = "20260919090805_declarative_sync";
 
 function databaseUrl() {
   const configured = process.env.SUPABASE_DB_URL;
@@ -50,6 +50,7 @@ async function checkDatabase() {
           and to_regprocedure('private.submit_logic_code_attempt(jsonb)') is not null
           and to_regprocedure('private.reveal_progressive_clue(jsonb)') is not null
           and to_regprocedure('private.submit_matching_pair(jsonb)') is not null
+          and to_regprocedure('private.submit_queens_placement(jsonb)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null
           and to_regprocedure('public.get_flash_member_review(text,uuid,uuid)') is not null
           and pg_get_function_result(

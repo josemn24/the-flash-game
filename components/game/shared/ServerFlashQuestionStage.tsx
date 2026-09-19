@@ -6,6 +6,7 @@ import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wo
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
 import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
+import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
 import { ProgressiveImageQuestion } from "@/components/questions/formats/progressive-image/ProgressiveImageQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
@@ -39,6 +40,11 @@ export function ServerFlashQuestionStage({
   lastMatchingPair,
   onMatchingPair,
   onRetryMatching,
+  queensState,
+  queensStatusVisible,
+  queensError,
+  onQueensPlacement,
+  onRetryQueens,
   revealState,
   revealStatusVisible,
   revealError,
@@ -70,6 +76,11 @@ export function ServerFlashQuestionStage({
   };
   readonly onMatchingPair: (leftId: string, rightId: string) => void;
   readonly onRetryMatching?: () => void;
+  readonly queensState: "idle" | "submitting" | "error";
+  readonly queensStatusVisible: boolean;
+  readonly queensError?: string;
+  readonly onQueensPlacement: (cell: number, action: "place" | "remove") => void;
+  readonly onRetryQueens?: () => void;
   readonly revealState: "idle" | "submitting" | "error";
   readonly revealStatusVisible: boolean;
   readonly revealError?: string;
@@ -171,6 +182,18 @@ export function ServerFlashQuestionStage({
             presentedAtMs={presentedAt ?? undefined}
             onTimedResponseStart={() => undefined}
             onSubmit={onSubmit}
+          />
+        ) : question.type === "queens" ? (
+          <ServerQueensQuestion
+            key={question.id}
+            question={question}
+            progress={question.progress}
+            locked={locked}
+            placementState={queensState}
+            placementStatusVisible={queensStatusVisible}
+            placementError={queensError}
+            onPlace={onQueensPlacement}
+            onRetry={onRetryQueens}
           />
         ) : (
           <>

@@ -121,6 +121,30 @@ export type SubmitLogicCodeAttemptResult = AttemptCommandResult & {
   readonly points?: number;
   readonly timeUsedMs?: DurationMs;
 };
+export type SubmitQueensPlacementInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly cell: number;
+  readonly action: "place" | "remove";
+};
+export type SubmitQueensPlacementResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly cell: number;
+  readonly action: "place" | "remove";
+  readonly conflicting: boolean;
+  readonly penaltyApplied: boolean;
+  readonly terminal: boolean;
+  readonly queens: readonly number[];
+  readonly placedQueens: number;
+  readonly completedRows: number;
+  readonly completedColumns: number;
+  readonly completedRegions: number;
+  readonly conflictingQueens: number;
+  readonly solved: boolean;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
 export type RevealProgressiveClueInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
 };

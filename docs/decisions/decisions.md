@@ -293,6 +293,19 @@
 - Un cambio futuro del algoritmo no recalcula automáticamente resultados anteriores.
 - Una corrección administrativa crea un ajuste auditado sin modificar silenciosamente respuestas
   originales.
+
+### 10.1 Queens competitivo
+
+- Queens usa un tablero de 5×5 con cinco regiones, solución válida y coronas precolocadas congeladas
+  en la versión publicada.
+- Cada colocación o retirada es un evento privado idempotente. El servidor reconstruye el tablero,
+  calcula conflictos y aplica una penalización del 5% de los puntos del item cuando una colocación
+  conflictiva es aceptada; retirar una corona y usar marcas X no penaliza.
+- Las marcas X pertenecen únicamente al estado de interfaz y se pierden al recuperar la interacción.
+  El tablero y el número de penalizaciones se reconstruyen siempre desde eventos persistidos.
+- Completar el tablero válido crea la recepción terminal una sola vez. La solución no forma parte del
+  payload de `prepare`, del progreso ni de los comandos del navegador y solo se expone en evaluación
+  o revisión autorizada.
 - La puntuación competitiva se denomina **Flash Points**. Los Flash Points obtenidos al jugar un
   desafío se suman al total de la temporada activa de la sala.
 - `⚡` y “Flash Points” son equivalentes como representación de interfaz. El texto completo se

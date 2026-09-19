@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E04, E10 y S17a están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10 y S17a están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-19. Alcance: pasar del prototipo mock a competición persistida,
@@ -35,7 +35,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | SQL       | 28 tablas, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                  | Aplicación controlada a un proyecto remoto y operación de assets editoriales desde un portal privado.                                               |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; en S03 reconstruye contexto privado, persiste resultado y produce feedback público.                                                                                                                               | Contextos y reglas autoritativas de Alphabet y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E04, E10 y `multiple-choice` con assets privados.                                                                                      | Verificación contra un entorno remoto.                                                                                                                   |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E05, E10 y `multiple-choice` con assets privados.                                                                                      | Verificación contra un entorno remoto.                                                                                                                   |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -753,7 +753,7 @@ Ficha común, obligatoria para **cada** E*:
 | E02   | `logic-code`        | **Implementado localmente.** Registrar cada código y su penalización; validar secreto privado, formato, plazo, secuencia e idempotencia; rechazar duplicados sin penalización, conservar intentos tras recarga y cerrar al acertar con evaluación server-side. |
 | E03   | `progressive-clues` | **Implementado localmente.** Entregar la primera pista gratis y las siguientes mediante comando transaccional; persistir eventos privados, no enviar pistas futuras ni confiar en `revealedClues`, ajustar penalización con los puntos reales del item y recuperar tras recarga. |
 | E04   | `matching`          | **Implementado localmente.** Comprobar cada asociación con feedback inmediato; conservar fallos y parejas correctas en eventos privados, aplicar 10% por error, recuperar tras recarga y evaluar timeout con crédito parcial sin `correctMatchId` público. |
-| E05   | `queens`            | Validar colocación/conflicto y derivar penalizaciones de eventos, no de `incorrectAttempts`; conservar tablero y piezas precolocadas.                                                                                                                                         |
+| E05   | `queens`            | **Implementado localmente.** Persistir cada colocación/retirada como evento privado; calcular conflictos y penalización del 5% server-side, recuperar el tablero sin marcas X y cerrar automáticamente al resolver las cinco regiones. La solución solo aparece en la revisión autorizada. |
 | E06   | `word-search`       | Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos para impedir borrar penalizaciones del payload final.                                                                                                                                      |
 | E07   | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                             |
 | E08   | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                     |
@@ -1126,9 +1126,9 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S13, D08a/D08b, E01–E04, E10 y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
-sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues y Matching,
+S01–S13, D08a/D08b, E01–E05, E10 y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues, Matching y Queens,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local
-del calendario. Estas slices no habilitan S13+, otros modos ni E05–E09; el piloto sigue acotado a
+del calendario. Estas slices no habilitan S13+, otros modos ni E06–E09; el piloto sigue acotado a
 las rutas reales documentadas en S22.

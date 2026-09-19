@@ -91,6 +91,11 @@ export function ServerFlashPopGame({
             lastMatchingPair={session.lastMatchingPair}
             onMatchingPair={(leftId, rightId) => void session.submitMatchingPair(leftId, rightId)}
             onRetryMatching={() => void session.retryMatchingPair()}
+            queensState={session.queensState}
+            queensStatusVisible={session.queensStatusVisible}
+            queensError={session.queensError}
+            onQueensPlacement={(cell, action) => void session.submitQueensPlacement(cell, action)}
+            onRetryQueens={() => void session.retryQueensPlacement()}
             revealState={session.revealState}
             revealStatusVisible={session.revealStatusVisible}
             revealError={session.revealError}
