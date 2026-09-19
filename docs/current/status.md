@@ -110,7 +110,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F06/F07/F12 sobre el stack local. F04 está implementada y pendiente de ejecutar contra el contenedor PostgreSQL local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F04/F06/F07/F12 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -147,9 +147,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   S02–S08, S05-Alphabet, S10–S13, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
-- `npm run supabase:db:schema:sync`: bloqueado antes de generar la migración de S05 por una migración
-  histórica preexistente, `supabase/migrations/20260919140000_f04_heat_map.sql:5`, que contiene el prefijo
-  literal `+CREATE`. No se reescribió la historia ni se generó una migración parcial.
+- `npm run supabase:db:schema:sync -- --name s05_alphabet`: correcto; generó
+  `supabase/migrations/20260919184450_s05_alphabet.sql`.
+- La segunda ejecución de `npm run supabase:db:schema:sync -- --name s05_alphabet_check` informó
+  `No schema changes found`, tras reparar el cierre SQL perdido de la migración histórica F04.
 - E10 añade `progressive-image` al recorrido competitivo persistido: fixture mixto, validación
   pública/privada, reloj iniciado por servidor, recuperación y evaluación normalizada; la imagen
   original es pública y no se presenta como revelación protegida.

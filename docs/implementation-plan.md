@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F06, F07, F12 y S17a están implementadas y verificadas sobre el stack local; F04 está implementada y pendiente de verificación pgTAP con Docker;
+> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F12 y S17a están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-19. Alcance: pasar del prototipo mock a competición persistida,
