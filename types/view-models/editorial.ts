@@ -102,6 +102,31 @@ export type FlashEditorialOrderingPublicPayload = {
   readonly directionLabels?: { readonly start: string; readonly end: string } | null;
 };
 
+export type FlashEditorialAnagramTile = {
+  readonly id: string;
+  readonly value: string;
+};
+
+export type FlashEditorialAnagramPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly tiles: readonly FlashEditorialAnagramTile[];
+  readonly hint?: string | null;
+};
+
+export type FlashEditorialClassificationItem = {
+  readonly label: string;
+};
+
+export type FlashEditorialClassificationPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly items: readonly FlashEditorialClassificationItem[];
+  readonly categories: readonly string[];
+};
+
 export type FlashEditorialProgressiveImagePublicPayload = {
   readonly category?: string;
   readonly tags?: EditorialJsonObject;
@@ -122,6 +147,8 @@ export type FlashEditorialPublicPayload =
   | FlashEditorialTrueFalsePublicPayload
   | FlashEditorialOddOneOutPublicPayload
   | FlashEditorialOrderingPublicPayload
+  | FlashEditorialAnagramPublicPayload
+  | FlashEditorialClassificationPublicPayload
   | FlashEditorialProgressiveImagePublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
@@ -170,6 +197,16 @@ export type FlashEditorialOrderingSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialAnagramSolutionPayload = {
+  readonly correctAnswer: string;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialClassificationSolutionPayload = {
+  readonly categoriesByItem: Readonly<Record<string, string>>;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialProgressiveImageSolutionPayload = {
   readonly correctAnswer: string;
   readonly acceptedAnswers: readonly string[];
@@ -186,6 +223,8 @@ export type FlashEditorialSolutionPayload =
   | FlashEditorialTrueFalseSolutionPayload
   | FlashEditorialOddOneOutSolutionPayload
   | FlashEditorialOrderingSolutionPayload
+  | FlashEditorialAnagramSolutionPayload
+  | FlashEditorialClassificationSolutionPayload
   | FlashEditorialProgressiveImageSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
@@ -268,6 +307,26 @@ export type FlashEditorialOrderingQuestion = {
   readonly solutionPayload: FlashEditorialOrderingSolutionPayload;
 };
 
+export type FlashEditorialAnagramQuestion = {
+  readonly slug: string;
+  readonly type: "anagram";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialAnagramPublicPayload;
+  readonly solutionPayload: FlashEditorialAnagramSolutionPayload;
+};
+
+export type FlashEditorialClassificationQuestion = {
+  readonly slug: string;
+  readonly type: "classification";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialClassificationPublicPayload;
+  readonly solutionPayload: FlashEditorialClassificationSolutionPayload;
+};
+
 export type FlashEditorialProgressiveImageQuestion = {
   readonly slug: string;
   readonly type: "progressive-image";
@@ -287,6 +346,8 @@ export type FlashEditorialQuestion =
   | FlashEditorialTrueFalseQuestion
   | FlashEditorialOddOneOutQuestion
   | FlashEditorialOrderingQuestion
+  | FlashEditorialAnagramQuestion
+  | FlashEditorialClassificationQuestion
   | FlashEditorialProgressiveImageQuestion;
 
 /**
@@ -302,6 +363,8 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialTrueFalseQuestion, "points">
   | Omit<FlashEditorialOddOneOutQuestion, "points">
   | Omit<FlashEditorialOrderingQuestion, "points">
+  | Omit<FlashEditorialAnagramQuestion, "points">
+  | Omit<FlashEditorialClassificationQuestion, "points">
   | Omit<FlashEditorialProgressiveImageQuestion, "points">;
 
 export type FlashEditorialQuestionReference = {
@@ -344,6 +407,8 @@ export type SuperadminQuestionLibraryEntry = {
     | "true-false"
     | "odd-one-out"
     | "ordering"
+    | "anagram"
+    | "classification"
     | "progressive-image";
   readonly question: string;
   readonly category: string | null;

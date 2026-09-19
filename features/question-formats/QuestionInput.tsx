@@ -42,13 +42,14 @@ import textStyles from "./TextAnswerControls.module.css";
 import { isQueensAnswer } from "@/lib/queens";
 import {
   isConnectPairsAnswer,
+  isClassificationAnswer,
   isErrorReconstructionAnswer,
   isMatchingAnswer,
   isMiniWordleAnswer,
   isWordHashtagAnswer,
   isWordSearchAnswer,
 } from "@/lib/scoring";
-import type { AnswerValue, Question, QuestionOfType, QuestionType } from "@/types/game";
+import type { AnswerValue, ClassificationAnswer, Question, QuestionOfType, QuestionType } from "@/types/game";
 
 type CommonProps = {
   locked: boolean;
@@ -323,13 +324,21 @@ function ImageLabelingInput({
 function ClassificationInput({
   question,
   locked,
+  initialAnswer,
+  onProgress,
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"classification">>) {
   return (
     <ClassificationQuestion
       items={question.items}
       categories={question.categories}
+      initialAnswer={
+        isClassificationAnswer(initialAnswer ?? null)
+          ? (initialAnswer as ClassificationAnswer)
+          : undefined
+      }
       locked={locked}
+      onProgress={onProgress}
       onSubmit={onSubmit}
     />
   );

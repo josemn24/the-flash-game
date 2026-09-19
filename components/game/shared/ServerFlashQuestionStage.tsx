@@ -11,6 +11,8 @@ import { ProgressiveImageQuestion } from "@/components/questions/formats/progres
 import { TrueFalseQuestion } from "@/components/questions/formats/true-false/TrueFalseQuestion";
 import { OddOneOutQuestion } from "@/components/questions/formats/odd-one-out/OddOneOutQuestion";
 import { OrderingQuestion } from "@/components/questions/formats/ordering/OrderingQuestion";
+import { AnagramQuestion } from "@/components/questions/formats/anagram/AnagramQuestion";
+import { ClassificationQuestion } from "@/components/questions/formats/classification/ClassificationQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -35,6 +37,7 @@ export function ServerFlashQuestionStage({
   submissionError,
   onRetrySubmission,
   onSubmit,
+  onProgress,
   onMiniWordleGuess,
   onLogicCodeAttempt,
   matchingState,
@@ -67,6 +70,7 @@ export function ServerFlashQuestionStage({
   readonly submissionError?: string;
   readonly onRetrySubmission?: () => void;
   readonly onSubmit: (answer: AnswerValue) => void;
+  readonly onProgress: (answer: AnswerValue) => void;
   readonly onMiniWordleGuess: (guess: string) => void;
   readonly onLogicCodeAttempt: (code: string) => void;
   readonly matchingState: "idle" | "submitting" | "error";
@@ -240,6 +244,58 @@ export function ServerFlashQuestionStage({
               items={[...question.items]}
               directionLabels={question.directionLabels ?? undefined}
               locked={locked}
+              onSubmit={onSubmit}
+            />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : question.type === "anagram" ? (
+          <>
+            <AnagramQuestion
+              tiles={[...question.tiles]}
+              hint={question.hint ?? undefined}
+              locked={locked}
+              onSubmit={onSubmit}
+            />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : question.type === "classification" ? (
+          <>
+            <ClassificationQuestion
+              items={[...question.items]}
+              categories={[...question.categories]}
+              initialAnswer={
+                pendingAnswer && typeof pendingAnswer === "object" && !Array.isArray(pendingAnswer)
+                  ? (pendingAnswer as Record<string, string>)
+                  : undefined
+              }
+              locked={locked}
+              onProgress={onProgress}
               onSubmit={onSubmit}
             />
             {submissionState !== "idle" ? (

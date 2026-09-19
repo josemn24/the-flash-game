@@ -3,6 +3,7 @@ import type {
   MatchingItem,
   MatchingLeftItem,
   OddOneOutItem,
+  AnagramTile,
   Question,
   QuestionMedia,
 } from "@/types/question";
@@ -192,7 +193,9 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "queens"
       | "true-false"
       | "odd-one-out"
-      | "ordering";
+      | "ordering"
+      | "anagram"
+      | "classification";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -228,6 +231,18 @@ export type ServerOrderingQuestion = ServerFlashQuestionBase & {
   readonly type: "ordering";
   readonly items: readonly string[];
   readonly directionLabels: { readonly start: string; readonly end: string } | null;
+};
+
+export type ServerAnagramQuestion = ServerFlashQuestionBase & {
+  readonly type: "anagram";
+  readonly tiles: readonly AnagramTile[];
+  readonly hint: string | null;
+};
+
+export type ServerClassificationQuestion = ServerFlashQuestionBase & {
+  readonly type: "classification";
+  readonly items: readonly { readonly label: string }[];
+  readonly categories: readonly string[];
 };
 
 export type ServerMiniWordleProgress = {
@@ -334,7 +349,9 @@ export type ServerFlashQuestion =
   | ServerQueensQuestion
   | ServerTrueFalseQuestion
   | ServerOddOneOutQuestion
-  | ServerOrderingQuestion;
+  | ServerOrderingQuestion
+  | ServerAnagramQuestion
+  | ServerClassificationQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

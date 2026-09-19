@@ -132,12 +132,53 @@ describe("Flash editorial document", () => {
           explanation: "Orden geográfico.",
         },
       },
+      {
+        slug: "sbr-race-anagram",
+        type: "anagram",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 30_000,
+        publicPayload: {
+          category: "Deporte",
+          tags: {},
+          question: "Forma una palabra relacionada con el desafío.",
+          tiles: [
+            { id: "a", value: "A" },
+            { id: "c", value: "C" },
+            { id: "r-1", value: "R" },
+            { id: "r-2", value: "R" },
+            { id: "a-2", value: "A" },
+            { id: "e", value: "E" },
+            { id: "r-3", value: "R" },
+          ],
+          hint: null,
+        },
+        solutionPayload: { correctAnswer: "CARRERA", explanation: "La palabra es carrera." },
+      },
+      {
+        slug: "sbr-1890-gear-classification",
+        type: "classification",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 22_000,
+        publicPayload: {
+          category: "Tecnología",
+          tags: {},
+          question: "Clasifica cada objeto.",
+          items: [{ label: "Brújula" }, { label: "Navegador GPS" }],
+          categories: ["útil en 1890", "anacrónico"],
+        },
+        solutionPayload: {
+          categoriesByItem: { "Brújula": "útil en 1890", "Navegador GPS": "anacrónico" },
+          explanation: "Clasificación histórica.",
+        },
+      },
     ];
 
     expect(documents.map((document) => parseFlashEditorialQuestionDocument(document))).toMatchObject([
       { type: "true-false" },
       { type: "odd-one-out" },
       { type: "ordering" },
+      { type: "anagram" },
+      { type: "classification" },
     ]);
   });
 
@@ -178,6 +219,37 @@ describe("Flash editorial document", () => {
       solutionPayload: { correctOrder: ["A", "A", "B"] },
     };
     expect(() => parseFlashEditorialQuestionDocument(ordering)).toThrow();
+
+    const anagram = {
+      slug: "invalid-anagram",
+      type: "anagram",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 12_000,
+      publicPayload: {
+        question: "Forma una palabra",
+        tiles: [
+          { id: "a", value: "A" },
+          { id: "b", value: "B" },
+          { id: "c", value: "C" },
+        ],
+      },
+      solutionPayload: { correctAnswer: "ABA" },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(anagram)).toThrow();
+
+    const classification = {
+      slug: "invalid-classification",
+      type: "classification",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 12_000,
+      publicPayload: {
+        question: "Clasifica",
+        items: [{ label: "Uno" }, { label: "Dos" }],
+        categories: ["A", "B"],
+      },
+      solutionPayload: { categoriesByItem: { Uno: "A", Extra: "B" } },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(classification)).toThrow();
   });
 
   it("accepts Flash documents from two through twenty questions", () => {

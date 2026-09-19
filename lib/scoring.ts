@@ -22,7 +22,10 @@ export {
   isValidWordSearchConfiguration,
   isWordSearchAnswer,
 } from "@/lib/wordSearch";
-export { isClassificationAnswer } from "@/lib/scoringCore/questions/classification";
+export {
+  isClassificationAnswer,
+  isValidClassificationAnswer,
+} from "@/lib/scoringCore/questions/classification";
 export { isConnectPairsAnswer } from "@/lib/scoringCore/questions/connectPairs";
 export {
   calculateErrorReconstructionMetrics,

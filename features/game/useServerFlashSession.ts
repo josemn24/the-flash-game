@@ -949,6 +949,11 @@ export function useServerFlashSession({
     await submitAnswerToServer(submission);
   };
 
+  const updateDraft = (answer: AnswerValue) => {
+    if (!question || question.type !== "classification" || locked || busy) return;
+    setPendingAnswer(answer);
+  };
+
   const submitMiniWordleGuess = async (guess: string) => {
     if (!attempt || !question || question.type !== "mini-wordle" || locked || busy) return;
     const submission: PendingMiniWordleSubmission = {
@@ -1093,6 +1098,7 @@ export function useServerFlashSession({
     begin,
     startQuestions,
     submit,
+    updateDraft,
     submitMiniWordleGuess,
     submitLogicCodeAttempt,
     retrySubmit,

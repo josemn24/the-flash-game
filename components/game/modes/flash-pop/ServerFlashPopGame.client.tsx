@@ -83,6 +83,7 @@ export function ServerFlashPopGame({
             submissionError={session.submissionError}
             onRetrySubmission={session.retrySubmit}
             onSubmit={(answer) => void session.submit(answer)}
+            onProgress={session.updateDraft}
             onMiniWordleGuess={session.submitMiniWordleGuess}
             onLogicCodeAttempt={session.submitLogicCodeAttempt}
             matchingState={session.matchingState}
@@ -101,7 +102,11 @@ export function ServerFlashPopGame({
             revealError={session.revealError}
             onRevealProgressiveClue={() => void session.revealProgressiveClue()}
             onRetryReveal={() => void session.retryReveal()}
-            onTimeUp={() => void session.submit(null)}
+            onTimeUp={() =>
+              void session.submit(
+                session.question?.type === "classification" ? session.pendingAnswer : null,
+              )
+            }
           />
         </motion.div>
       ) : null}

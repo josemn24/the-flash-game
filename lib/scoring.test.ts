@@ -1102,6 +1102,24 @@ describe("question evaluation", () => {
     ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
+  it("rejects unknown classification labels and categories", () => {
+    const question = QUESTION_FORMAT_CATALOG.classification.examples[0].question;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { Delfín: "mamífero", Desconocido: "ave" },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { Delfín: "desconocido" },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+  });
+
   it("awards matching credit per correct pair and adjusts it by speed", () => {
     const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     const complete = {

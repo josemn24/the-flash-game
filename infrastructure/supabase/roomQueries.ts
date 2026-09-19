@@ -23,6 +23,7 @@ import type {
 } from "@/types/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
+import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import type {
   RoomCardModel,
   RoomCalendarEntry,
@@ -198,7 +199,9 @@ type FlashMemberReviewReadRow = {
     | "queens"
     | "true-false"
     | "odd-one-out"
-    | "ordering";
+    | "ordering"
+    | "anagram"
+    | "classification";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -439,7 +442,9 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "queens" ||
       row.question_type === "true-false" ||
       row.question_type === "odd-one-out" ||
-      row.question_type === "ordering") &&
+      row.question_type === "ordering" ||
+      row.question_type === "anagram" ||
+      row.question_type === "classification") &&
     (row.payload_schema_version === 1 ||
       (row.question_type === "progressive-image" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
@@ -1083,6 +1088,101 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       points: row.item_points,
       explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
       type: "ordering",
+    };
+  }
+  if (row.question_type === "anagram") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const prompt = publicPayload.question;
+    const tiles = publicPayload.tiles;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const tileValues = Array.isArray(tiles)
+      ? tiles.map((tile) => (isRecord(tile) && typeof tile.value === "string" ? normalizeAnswer(tile.value) : ""))
+      : [];
+    const solutionSignature = typeof correctAnswer === "string" ? Array.from(normalizeAnswer(correctAnswer)).sort().join("") : "";
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(tiles) ||
+      tiles.length < 3 ||
+      tiles.length > 10 ||
+      !tiles.every(
+        (tile) =>
+          isRecord(tile) &&
+          typeof tile.id === "string" &&
+          tile.id.trim().length > 0 &&
+          typeof tile.value === "string" &&
+          tile.value.trim().length > 0 &&
+          Array.from(tile.value).length === 1,
+      ) ||
+      new Set(tiles.map((tile) => tile.id)).size !== tiles.length ||
+      typeof correctAnswer !== "string" ||
+      /\s/.test(correctAnswer) ||
+      Array.from(correctAnswer).length !== tiles.length ||
+      tileValues.sort().join("") !== solutionSignature
+    ) {
+      throw new Error(`Invalid historical anagram payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      type: "anagram",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      tiles: tiles as Extract<Question, { type: "anagram" }>["tiles"],
+      hint: typeof publicPayload.hint === "string" ? publicPayload.hint : undefined,
+      correctAnswer,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
+  if (row.question_type === "classification") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const prompt = publicPayload.question;
+    const items = publicPayload.items;
+    const categories = publicPayload.categories;
+    const categoriesByItem = solutionPayload.categoriesByItem;
+    const labels = Array.isArray(items)
+      ? items.map((item) => (isRecord(item) && typeof item.label === "string" ? item.label : ""))
+      : [];
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(items) ||
+      items.length < 2 ||
+      items.length > 20 ||
+      !items.every((item) => isRecord(item) && typeof item.label === "string") ||
+      labels.some((label) => label.trim().length === 0) ||
+      new Set(labels).size !== labels.length ||
+      !Array.isArray(categories) ||
+      categories.length < 2 ||
+      categories.length > 8 ||
+      !categories.every((category) => typeof category === "string") ||
+      categories.some((category) => category.trim().length === 0) ||
+      new Set(categories).size !== categories.length ||
+      !isRecord(categoriesByItem) ||
+      Object.keys(categoriesByItem).length !== labels.length ||
+      Object.keys(categoriesByItem).some((label) => !labels.includes(label)) ||
+      items.some(
+        (item) =>
+          typeof categoriesByItem[item.label as string] !== "string" ||
+          !categories.includes(categoriesByItem[item.label as string] as string),
+      )
+    ) {
+      throw new Error(`Invalid historical classification payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      type: "classification",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      items: items.map((item) => ({
+        label: item.label as string,
+        correctCategory: categoriesByItem[item.label as string] as string,
+      })),
+      categories: categories as string[],
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (row.question_type === "queens") {

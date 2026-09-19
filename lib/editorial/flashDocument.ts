@@ -8,6 +8,8 @@ import type {
   FlashEditorialTrueFalseQuestion,
   FlashEditorialOddOneOutQuestion,
   FlashEditorialOrderingQuestion,
+  FlashEditorialAnagramQuestion,
+  FlashEditorialClassificationQuestion,
   FlashEditorialProgressiveImageQuestion,
   FlashEditorialQuestion,
   FlashEditorialQuestionDocument,
@@ -91,6 +93,8 @@ const matchingPublicPayloadKeys = [
 const trueFalsePublicPayloadKeys = ["category", "tags", "question"];
 const oddOneOutPublicPayloadKeys = ["category", "tags", "question", "items"];
 const orderingPublicPayloadKeys = ["category", "tags", "question", "items", "directionLabels"];
+const anagramPublicPayloadKeys = ["category", "tags", "question", "tiles", "hint"];
+const classificationPublicPayloadKeys = ["category", "tags", "question", "items", "categories"];
 const progressiveImagePublicPayloadKeys = [
   "category",
   "tags",
@@ -108,6 +112,8 @@ const matchingSolutionKeys = ["matches", "explanation"];
 const trueFalseSolutionKeys = ["correctAnswer", "explanation"];
 const oddOneOutSolutionKeys = ["correctAnswer", "explanation"];
 const orderingSolutionKeys = ["correctOrder", "explanation"];
+const anagramSolutionKeys = ["correctAnswer", "explanation"];
+const classificationSolutionKeys = ["categoriesByItem", "explanation"];
 const progressiveImageSolutionKeys = [
   "correctAnswer",
   "acceptedAnswers",
@@ -129,6 +135,12 @@ const ODD_ONE_OUT_MIN_ITEMS = 3;
 const ODD_ONE_OUT_MAX_ITEMS = 8;
 const ORDERING_MIN_ITEMS = 2;
 const ORDERING_MAX_ITEMS = 8;
+const ANAGRAM_MIN_TILES = 3;
+const ANAGRAM_MAX_TILES = 10;
+const CLASSIFICATION_MIN_ITEMS = 2;
+const CLASSIFICATION_MAX_ITEMS = 20;
+const CLASSIFICATION_MIN_CATEGORIES = 2;
+const CLASSIFICATION_MAX_CATEGORIES = 8;
 const PROGRESSIVE_IMAGE_MAX_POSITION_LENGTH = 100;
 
 export class FlashEditorialValidationError extends Error {
@@ -299,7 +311,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
     !isRecord(solutionPayload) ||
     (!("correctAnswer" in solutionPayload) &&
       !("matches" in solutionPayload) &&
-      !("correctOrder" in solutionPayload))
+      !("correctOrder" in solutionPayload) &&
+      !("categoriesByItem" in solutionPayload))
   ) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
@@ -662,6 +675,116 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialOrderingQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialOrderingQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "anagram") {
+    if (
+      !hasOnlyKeys(publicPayload, anagramPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, anagramSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato anagram.`]);
+    }
+    const tiles = publicPayload.tiles;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const validTiles =
+      Array.isArray(tiles) &&
+      tiles.length >= ANAGRAM_MIN_TILES &&
+      tiles.length <= ANAGRAM_MAX_TILES &&
+      tiles.every(
+        (tile) =>
+          isRecord(tile) &&
+          hasExactKeys(tile, ["id", "value"]) &&
+          nonEmptyString(tile.id, 120) &&
+          typeof tile.value === "string" &&
+          tile.value.trim().length > 0 &&
+          Array.from(tile.value).length === 1,
+      );
+    const tileIds = validTiles ? tiles.map((tile) => (tile as Record<string, unknown>).id as string) : [];
+    const tileSignature = validTiles
+      ? tiles
+          .map((tile) => normalizeAnswer((tile as Record<string, unknown>).value as string))
+          .sort()
+          .join("")
+      : "";
+    const solutionSignature =
+      typeof correctAnswer === "string"
+        ? Array.from(normalizeAnswer(correctAnswer)).sort().join("")
+        : "";
+    if (
+      !validTiles ||
+      new Set(tileIds).size !== tileIds.length ||
+      typeof correctAnswer !== "string" ||
+      !nonEmptyString(correctAnswer, 120) ||
+      /\s/.test(correctAnswer) ||
+      Array.from(correctAnswer).length !== tiles.length ||
+      tileSignature !== solutionSignature
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato anagram.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "anagram",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialAnagramQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialAnagramQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "classification") {
+    if (
+      !hasOnlyKeys(publicPayload, classificationPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, classificationSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato classification.`]);
+    }
+    const items = publicPayload.items;
+    const categories = publicPayload.categories;
+    const categoriesByItem = solutionPayload.categoriesByItem;
+    const validItems =
+      Array.isArray(items) &&
+      items.length >= CLASSIFICATION_MIN_ITEMS &&
+      items.length <= CLASSIFICATION_MAX_ITEMS &&
+      items.every(
+        (item) =>
+          isRecord(item) &&
+          hasExactKeys(item, ["label"]) &&
+          nonEmptyString(item.label, 500),
+      );
+    const validCategories =
+      Array.isArray(categories) &&
+      categories.length >= CLASSIFICATION_MIN_CATEGORIES &&
+      categories.length <= CLASSIFICATION_MAX_CATEGORIES &&
+      categories.every((category) => nonEmptyString(category, 120));
+    const labels = validItems ? items.map((item) => (item as Record<string, unknown>).label as string) : [];
+    const categoryValues = validCategories ? categories : [];
+    const validSolution =
+      isRecord(categoriesByItem) &&
+      Object.keys(categoriesByItem).length === labels.length &&
+      labels.every(
+        (label) =>
+          typeof categoriesByItem[label] === "string" &&
+          categoryValues.includes(categoriesByItem[label] as string),
+      );
+    if (
+      !validItems ||
+      new Set(labels).size !== labels.length ||
+      !validCategories ||
+      new Set(categoryValues).size !== categoryValues.length ||
+      !validSolution
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato classification.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "classification",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialClassificationQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialClassificationQuestion["solutionPayload"],
     };
   }
 

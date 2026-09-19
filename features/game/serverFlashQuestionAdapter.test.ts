@@ -103,6 +103,42 @@ describe("server flash question adapter", () => {
       directionLabels: { start: "Oeste", end: "Este" },
     });
     expect(ordering).not.toHaveProperty("correctOrder");
+
+    const anagram = questionFromPayload(
+      "item-anagram",
+      {
+        question: "Forma una palabra",
+        tiles: [
+          { id: "a", value: "A" },
+          { id: "b", value: "B" },
+          { id: "c", value: "C" },
+        ],
+        hint: null,
+      },
+      12_000,
+      30,
+      "anagram",
+    );
+    expect(anagram).toMatchObject({ type: "anagram", hint: null });
+    expect(anagram).not.toHaveProperty("correctAnswer");
+
+    const classification = questionFromPayload(
+      "item-classification",
+      {
+        question: "Clasifica los elementos",
+        items: [{ label: "Uno" }, { label: "Dos" }],
+        categories: ["A", "B"],
+      },
+      12_000,
+      30,
+      "classification",
+    );
+    expect(classification).toMatchObject({
+      type: "classification",
+      items: [{ label: "Uno" }, { label: "Dos" }],
+      categories: ["A", "B"],
+    });
+    expect(classification).not.toHaveProperty("categoriesByItem");
   });
 
   it("reconstructs final-answer solutions only for terminal review", () => {
@@ -138,6 +174,73 @@ describe("server flash question adapter", () => {
     expect(review.questions[0]).toMatchObject({
       type: "ordering",
       correctOrder: ["San Diego", "Denver", "Nueva York"],
+    });
+
+    const anagramReview = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-anagram",
+            position: 1,
+            questionType: "anagram",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 12_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-anagram",
+          publicPayload: {
+            question: "Forma una palabra",
+            tiles: [
+              { id: "a", value: "A" },
+              { id: "b", value: "B" },
+              { id: "c", value: "C" },
+            ],
+          },
+          solutionPayload: { correctAnswer: "CAB", explanation: "Explicación" },
+        },
+      ],
+    );
+    expect(anagramReview.questions[0]).toMatchObject({ type: "anagram", correctAnswer: "CAB" });
+
+    const classificationReview = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-classification",
+            position: 1,
+            questionType: "classification",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 12_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-classification",
+          publicPayload: {
+            question: "Clasifica",
+            items: [{ label: "Uno" }, { label: "Dos" }],
+            categories: ["A", "B"],
+          },
+          solutionPayload: { categoriesByItem: { Uno: "A", Dos: "B" }, explanation: "Explicación" },
+        },
+      ],
+    );
+    expect(classificationReview.questions[0]).toMatchObject({ type: "classification" });
+    expect(classificationReview.questions[0].type).toBe("classification");
+    if (classificationReview.questions[0].type !== "classification") {
+      throw new Error("Expected classification review");
+    }
+    expect(classificationReview.questions[0].items[0]).toMatchObject({
+      label: "Uno",
+      correctCategory: "A",
     });
   });
 

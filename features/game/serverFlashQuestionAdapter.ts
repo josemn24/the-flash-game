@@ -1,4 +1,6 @@
 import type {
+  AnagramQuestion,
+  ClassificationQuestion,
   FlashChallenge,
   LogicCodeQuestion,
   MatchingQuestion,
@@ -19,6 +21,8 @@ import type {
   ServerTrueFalseQuestion,
   ServerOddOneOutQuestion,
   ServerOrderingQuestion,
+  ServerAnagramQuestion,
+  ServerClassificationQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -134,7 +138,9 @@ export function questionFromPayload(
     | "queens"
     | "true-false"
     | "odd-one-out"
-    | "ordering",
+    | "ordering"
+    | "anagram"
+    | "classification",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -153,7 +159,9 @@ export function questionFromPayload(
     | "queens"
     | "true-false"
     | "odd-one-out"
-    | "ordering",
+    | "ordering"
+    | "anagram"
+    | "classification",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -271,6 +279,77 @@ export function questionFromPayload(
       items,
       directionLabels: parsedDirectionLabels,
     } satisfies ServerOrderingQuestion;
+  }
+  if (questionType === "anagram") {
+    const tiles = value.tiles;
+    const hint = value.hint;
+    if (
+      !Array.isArray(tiles) ||
+      tiles.length < 3 ||
+      tiles.length > 10 ||
+      !tiles.every((tile) => {
+        if (!tile || typeof tile !== "object" || Array.isArray(tile)) return false;
+        const record = tile as Record<string, unknown>;
+        return (
+          Object.keys(record).every((key) => ["id", "value"].includes(key)) &&
+          typeof record.id === "string" &&
+          record.id.trim().length > 0 &&
+          record.id.length <= 120 &&
+          typeof record.value === "string" &&
+          record.value.trim().length > 0 &&
+          Array.from(record.value).length === 1
+        );
+      }) ||
+      new Set(tiles.map((tile) => (tile as Record<string, unknown>).id as string)).size !== tiles.length ||
+      (hint !== undefined && hint !== null && (typeof hint !== "string" || hint.length > 500))
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "anagram",
+      tiles: tiles.map((tile) => ({
+        id: (tile as Record<string, unknown>).id as string,
+        value: (tile as Record<string, unknown>).value as string,
+      })),
+      hint: typeof hint === "string" ? hint : null,
+    } satisfies ServerAnagramQuestion;
+  }
+  if (questionType === "classification") {
+    const items = value.items;
+    const categories = value.categories;
+    if (
+      !Array.isArray(items) ||
+      items.length < 2 ||
+      items.length > 20 ||
+      !items.every((item) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+        const record = item as Record<string, unknown>;
+        return (
+          Object.keys(record).every((key) => key === "label") &&
+          typeof record.label === "string" &&
+          record.label.trim().length > 0 &&
+          record.label.length <= 500
+        );
+      }) ||
+      new Set(items.map((item) => (item as Record<string, unknown>).label as string)).size !== items.length ||
+      !Array.isArray(categories) ||
+      categories.length < 2 ||
+      categories.length > 8 ||
+      !categories.every(
+        (category) =>
+          typeof category === "string" && category.trim().length > 0 && category.length <= 120,
+      ) ||
+      new Set(categories).size !== categories.length
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "classification",
+      items: items.map((item) => ({ label: (item as Record<string, unknown>).label as string })),
+      categories,
+    } satisfies ServerClassificationQuestion;
   }
   if (questionType === "queens") {
     const grid = value.grid;
@@ -593,7 +672,9 @@ function questionWithSolution(
   | QuestionOfType<"queens">
   | QuestionOfType<"true-false">
   | QuestionOfType<"odd-one-out">
-  | QuestionOfType<"ordering"> {
+  | QuestionOfType<"ordering">
+  | AnagramQuestion
+  | ClassificationQuestion {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -734,6 +815,61 @@ function questionWithSolution(
       items: [...question.items],
       correctOrder: [...solution.correctOrder],
       directionLabels: question.directionLabels ?? undefined,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "anagram") {
+    if (typeof solution.correctAnswer !== "string") {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "anagram",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      tiles: [...question.tiles],
+      hint: question.hint ?? undefined,
+      correctAnswer: solution.correctAnswer,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "classification") {
+    if (
+      !solution.categoriesByItem ||
+      typeof solution.categoriesByItem !== "object" ||
+      Array.isArray(solution.categoriesByItem)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const categoriesByItem = solution.categoriesByItem as Record<string, unknown>;
+    const labels = question.items.map((item) => item.label);
+    if (
+      Object.keys(categoriesByItem).length !== labels.length ||
+      labels.some(
+        (label) =>
+          typeof categoriesByItem[label] !== "string" ||
+          !question.categories.includes(categoriesByItem[label] as string),
+      ) ||
+      Object.keys(categoriesByItem).some((label) => !labels.includes(label))
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "classification",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      items: question.items.map((item) => ({
+        label: item.label,
+        correctCategory: categoriesByItem[item.label] as string,
+      })),
+      categories: [...question.categories],
       timeLimit: question.timeLimit,
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
