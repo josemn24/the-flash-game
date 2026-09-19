@@ -75,6 +75,33 @@ export type FlashEditorialMatchingPublicPayload = {
   readonly rightItems: readonly FlashEditorialMatchingItem[];
 };
 
+export type FlashEditorialTrueFalsePublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+};
+
+export type FlashEditorialOddOneOutItem = {
+  readonly id: string;
+  readonly label: string;
+  readonly media?: QuestionMedia;
+};
+
+export type FlashEditorialOddOneOutPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly items: readonly FlashEditorialOddOneOutItem[];
+};
+
+export type FlashEditorialOrderingPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly items: readonly string[];
+  readonly directionLabels?: { readonly start: string; readonly end: string } | null;
+};
+
 export type FlashEditorialProgressiveImagePublicPayload = {
   readonly category?: string;
   readonly tags?: EditorialJsonObject;
@@ -92,6 +119,9 @@ export type FlashEditorialPublicPayload =
   | FlashEditorialLogicCodePublicPayload
   | FlashEditorialProgressiveCluesPublicPayload
   | FlashEditorialMatchingPublicPayload
+  | FlashEditorialTrueFalsePublicPayload
+  | FlashEditorialOddOneOutPublicPayload
+  | FlashEditorialOrderingPublicPayload
   | FlashEditorialProgressiveImagePublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
@@ -125,6 +155,21 @@ export type FlashEditorialMatchingSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialTrueFalseSolutionPayload = {
+  readonly correctAnswer: boolean;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialOddOneOutSolutionPayload = {
+  readonly correctAnswer: string;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialOrderingSolutionPayload = {
+  readonly correctOrder: readonly string[];
+  readonly explanation?: string;
+};
+
 export type FlashEditorialProgressiveImageSolutionPayload = {
   readonly correctAnswer: string;
   readonly acceptedAnswers: readonly string[];
@@ -138,6 +183,9 @@ export type FlashEditorialSolutionPayload =
   | FlashEditorialLogicCodeSolutionPayload
   | FlashEditorialProgressiveCluesSolutionPayload
   | FlashEditorialMatchingSolutionPayload
+  | FlashEditorialTrueFalseSolutionPayload
+  | FlashEditorialOddOneOutSolutionPayload
+  | FlashEditorialOrderingSolutionPayload
   | FlashEditorialProgressiveImageSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
@@ -190,6 +238,36 @@ export type FlashEditorialMatchingQuestion = {
   readonly solutionPayload: FlashEditorialMatchingSolutionPayload;
 };
 
+export type FlashEditorialTrueFalseQuestion = {
+  readonly slug: string;
+  readonly type: "true-false";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialTrueFalsePublicPayload;
+  readonly solutionPayload: FlashEditorialTrueFalseSolutionPayload;
+};
+
+export type FlashEditorialOddOneOutQuestion = {
+  readonly slug: string;
+  readonly type: "odd-one-out";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialOddOneOutPublicPayload;
+  readonly solutionPayload: FlashEditorialOddOneOutSolutionPayload;
+};
+
+export type FlashEditorialOrderingQuestion = {
+  readonly slug: string;
+  readonly type: "ordering";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialOrderingPublicPayload;
+  readonly solutionPayload: FlashEditorialOrderingSolutionPayload;
+};
+
 export type FlashEditorialProgressiveImageQuestion = {
   readonly slug: string;
   readonly type: "progressive-image";
@@ -206,6 +284,9 @@ export type FlashEditorialQuestion =
   | FlashEditorialLogicCodeQuestion
   | FlashEditorialProgressiveCluesQuestion
   | FlashEditorialMatchingQuestion
+  | FlashEditorialTrueFalseQuestion
+  | FlashEditorialOddOneOutQuestion
+  | FlashEditorialOrderingQuestion
   | FlashEditorialProgressiveImageQuestion;
 
 /**
@@ -218,6 +299,9 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialLogicCodeQuestion, "points">
   | Omit<FlashEditorialProgressiveCluesQuestion, "points">
   | Omit<FlashEditorialMatchingQuestion, "points">
+  | Omit<FlashEditorialTrueFalseQuestion, "points">
+  | Omit<FlashEditorialOddOneOutQuestion, "points">
+  | Omit<FlashEditorialOrderingQuestion, "points">
   | Omit<FlashEditorialProgressiveImageQuestion, "points">;
 
 export type FlashEditorialQuestionReference = {
@@ -257,6 +341,9 @@ export type SuperadminQuestionLibraryEntry = {
     | "logic-code"
     | "progressive-clues"
     | "matching"
+    | "true-false"
+    | "odd-one-out"
+    | "ordering"
     | "progressive-image";
   readonly question: string;
   readonly category: string | null;

@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10 y S17a están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, F01, F02, F06 y S17a están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-19. Alcance: pasar del prototipo mock a competición persistida,
@@ -700,12 +700,12 @@ Ficha común, obligatoria para **cada** F*:
 
 | Slice | Formato                | Adaptación y prueba específica que cierra la ficha                                                                     |
 | ----- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| F01   | `true-false`           | Booleano estricto; no interpretar cadenas arbitrarias como verdadero.                                                  |
-| F02   | `odd-one-out`          | Selección perteneciente a los items publicados; preservar medios sin solución.                                         |
+| F01   | `true-false`           | **Implementado localmente.** Booleano estricto; no interpretar cadenas arbitrarias como verdadero.                     |
+| F02   | `odd-one-out`          | **Implementado localmente.** Selección perteneciente a los items publicados; preservar medios sin solución.            |
 | F03   | `estimation`           | Número finito, rango/paso/unidad; tolerancia solo privada y crédito parcial probado.                                   |
 | F04   | `heat-map`             | Coordenadas normalizadas y precisión en servidor; no entregar centro/radios privados.                                  |
 | F05   | `image-labeling`       | Dos variantes `assign-all`/`identify-one`; asociaciones privadas, texto/elección y crédito parcial.                    |
-| F06   | `ordering`             | Permutación válida sin omitir/duplicar items; borrador de timeout y revisión del orden.                                |
+| F06   | `ordering`             | **Implementado localmente.** Permutación válida sin omitir/duplicar items; timeout y revisión del orden.                |
 | F07   | `classification`       | IDs/categorías válidos, asignaciones parciales y claves privadas excluidas.                                            |
 | F08   | `logic-matrix`         | Opción válida; solución no necesaria para pintar la matriz.                                                            |
 | F09   | `mini-sudoku`          | Tablero consistente con pistas fijas y tamaño; validar solución/timeout privado.                                       |

@@ -8,6 +8,9 @@ import { ServerMatchingQuestion } from "@/components/questions/formats/matching/
 import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
 import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
 import { ProgressiveImageQuestion } from "@/components/questions/formats/progressive-image/ProgressiveImageQuestion";
+import { TrueFalseQuestion } from "@/components/questions/formats/true-false/TrueFalseQuestion";
+import { OddOneOutQuestion } from "@/components/questions/formats/odd-one-out/OddOneOutQuestion";
+import { OrderingQuestion } from "@/components/questions/formats/ordering/OrderingQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -195,6 +198,65 @@ export function ServerFlashQuestionStage({
             onPlace={onQueensPlacement}
             onRetry={onRetryQueens}
           />
+        ) : question.type === "true-false" ? (
+          <>
+            <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : question.type === "odd-one-out" ? (
+          <>
+            <OddOneOutQuestion items={[...question.items]} locked={locked} onSubmit={onSubmit} />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : question.type === "ordering" ? (
+          <>
+            <OrderingQuestion
+              items={[...question.items]}
+              directionLabels={question.directionLabels ?? undefined}
+              locked={locked}
+              onSubmit={onSubmit}
+            />
+            {submissionState !== "idle" ? (
+              <div className="mt-4" role="status" aria-live="polite">
+                <p>
+                  {submissionState === "submitting" && submissionStatusVisible
+                    ? "Comprobando respuesta…"
+                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
+                </p>
+                {submissionState === "error" && onRetrySubmission ? (
+                  <button type="button" onClick={onRetrySubmission}>
+                    Reintentar
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
         ) : (
           <>
             {question.type === "multiple-choice" && question.media ? (

@@ -56,6 +56,91 @@ describe("server flash question adapter", () => {
     );
   });
 
+  it("maps the final-answer formats without exposing their solutions", () => {
+    const trueFalse = questionFromPayload(
+      "item-true-false",
+      { question: "¿La respuesta es verdadera?" },
+      12_000,
+      20,
+      "true-false",
+    );
+    expect(trueFalse).toMatchObject({ type: "true-false", question: "¿La respuesta es verdadera?" });
+    expect(trueFalse).not.toHaveProperty("correctAnswer");
+
+    const oddOneOut = questionFromPayload(
+      "item-odd-one-out",
+      {
+        question: "¿Cuál no pertenece?",
+        items: [
+          { id: "horse", label: "Caballo" },
+          { id: "zebra", label: "Cebra" },
+          { id: "bison", label: "Bisonte" },
+        ],
+      },
+      14_000,
+      30,
+      "odd-one-out",
+    );
+    expect(oddOneOut).toMatchObject({ type: "odd-one-out" });
+    if (oddOneOut.type !== "odd-one-out") throw new Error("Expected odd-one-out");
+    expect(oddOneOut.items[0]).toMatchObject({ id: "horse" });
+    expect(oddOneOut).not.toHaveProperty("correctAnswer");
+
+    const ordering = questionFromPayload(
+      "item-ordering",
+      {
+        question: "Ordena las ciudades",
+        items: ["Nueva York", "Denver", "San Diego"],
+        directionLabels: { start: "Oeste", end: "Este" },
+      },
+      20_000,
+      50,
+      "ordering",
+    );
+    expect(ordering).toMatchObject({
+      type: "ordering",
+      items: ["Nueva York", "Denver", "San Diego"],
+      directionLabels: { start: "Oeste", end: "Este" },
+    });
+    expect(ordering).not.toHaveProperty("correctOrder");
+  });
+
+  it("reconstructs final-answer solutions only for terminal review", () => {
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-ordering",
+            position: 1,
+            questionType: "ordering",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 20_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-ordering",
+          publicPayload: {
+            question: "Ordena las ciudades",
+            items: ["Nueva York", "Denver", "San Diego"],
+            directionLabels: { start: "Oeste", end: "Este" },
+          },
+          solutionPayload: {
+            correctOrder: ["San Diego", "Denver", "Nueva York"],
+            explanation: "De oeste a este.",
+          },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({
+      type: "ordering",
+      correctOrder: ["San Diego", "Denver", "Nueva York"],
+    });
+  });
+
   it("propagates a runtime-safe multiple-choice image without exposing an asset id", () => {
     const question = questionFromPayload(
       "item-1",

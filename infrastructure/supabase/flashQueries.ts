@@ -35,7 +35,17 @@ export type FlashReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens";
+  question_type:
+    | "multiple-choice"
+    | "mini-wordle"
+    | "logic-code"
+    | "progressive-clues"
+    | "matching"
+    | "progressive-image"
+    | "queens"
+    | "true-false"
+    | "odd-one-out"
+    | "ordering";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -47,7 +57,17 @@ export type FlashResultRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens";
+  question_type:
+    | "multiple-choice"
+    | "mini-wordle"
+    | "logic-code"
+    | "progressive-clues"
+    | "matching"
+    | "progressive-image"
+    | "queens"
+    | "true-false"
+    | "odd-one-out"
+    | "ordering";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -108,7 +128,10 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
-      value.question_type === "queens") &&
+      value.question_type === "queens" ||
+      value.question_type === "true-false" ||
+      value.question_type === "odd-one-out" ||
+      value.question_type === "ordering") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2)) &&
     typeof value.time_limit_ms === "number" &&
@@ -133,12 +156,19 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
-      value.question_type === "queens") &&
+      value.question_type === "queens" ||
+      value.question_type === "true-false" ||
+      value.question_type === "odd-one-out" ||
+      value.question_type === "ordering") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2)) &&
     isRecord(value.public_payload) &&
     isRecord(value.solution_payload) &&
-    (typeof value.answer === "string" || value.answer === null || isRecord(value.answer)) &&
+    (typeof value.answer === "string" ||
+      typeof value.answer === "boolean" ||
+      Array.isArray(value.answer) ||
+      value.answer === null ||
+      isRecord(value.answer)) &&
     ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
       String(value.answer_status),
     ) &&

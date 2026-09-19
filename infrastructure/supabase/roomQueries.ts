@@ -188,7 +188,17 @@ type FlashMemberReviewReadRow = {
   challenge_item_id: string;
   item_position: number;
   question_version_id: string;
-  question_type: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens";
+  question_type:
+    | "multiple-choice"
+    | "mini-wordle"
+    | "logic-code"
+    | "progressive-clues"
+    | "matching"
+    | "progressive-image"
+    | "queens"
+    | "true-false"
+    | "odd-one-out"
+    | "ordering";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -426,14 +436,21 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "progressive-clues" ||
       row.question_type === "matching" ||
       row.question_type === "progressive-image" ||
-      row.question_type === "queens") &&
+      row.question_type === "queens" ||
+      row.question_type === "true-false" ||
+      row.question_type === "odd-one-out" ||
+      row.question_type === "ordering") &&
     (row.payload_schema_version === 1 ||
       (row.question_type === "progressive-image" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
     isRecord(row.public_payload) &&
     isRecord(row.solution_payload) &&
-    (row.answer === null || typeof row.answer === "string" || isRecord(row.answer)) &&
+    (row.answer === null ||
+      typeof row.answer === "string" ||
+      typeof row.answer === "boolean" ||
+      Array.isArray(row.answer) ||
+      isRecord(row.answer)) &&
     (row.answer_status === null ||
       ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
         String(row.answer_status),
@@ -967,6 +984,105 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       points: row.item_points,
       explanation,
       type: "matching",
+    };
+  }
+  if (row.question_type === "true-false") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const prompt = publicPayload.question;
+    const correctAnswer = solutionPayload.correctAnswer;
+    if (
+      typeof prompt !== "string" ||
+      typeof correctAnswer !== "boolean"
+    ) {
+      throw new Error(`Invalid historical true-false payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      correctAnswer,
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      type: "true-false",
+    };
+  }
+  if (row.question_type === "odd-one-out") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const items = publicPayload.items;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const prompt = publicPayload.question;
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(items) ||
+      items.length < 3 ||
+      items.length > 8 ||
+      !items.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.label === "string") ||
+      new Set(items.map((item) => (item as Record<string, unknown>).id as string)).size !== items.length ||
+      typeof correctAnswer !== "string" ||
+      !items.some((item) => (item as Record<string, unknown>).id === correctAnswer)
+    ) {
+      throw new Error(`Invalid historical odd-one-out payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      items: items as Extract<Question, { type: "odd-one-out" }>['items'],
+      correctAnswer,
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      type: "odd-one-out",
+    };
+  }
+  if (row.question_type === "ordering") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const items = publicPayload.items;
+    const correctOrder = solutionPayload.correctOrder;
+    const prompt = publicPayload.question;
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(items) ||
+      items.length < 2 ||
+      items.length > 8 ||
+      !items.every((item) => typeof item === "string") ||
+      new Set(items).size !== items.length ||
+      !Array.isArray(correctOrder) ||
+      correctOrder.length !== items.length ||
+      !correctOrder.every((item) => typeof item === "string" && items.includes(item)) ||
+      new Set(correctOrder).size !== correctOrder.length
+    ) {
+      throw new Error(`Invalid historical ordering payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      items,
+      correctOrder,
+      directionLabels:
+        isRecord(publicPayload.directionLabels) &&
+        typeof publicPayload.directionLabels.start === "string" &&
+        typeof publicPayload.directionLabels.end === "string"
+          ? {
+              start: publicPayload.directionLabels.start,
+              end: publicPayload.directionLabels.end,
+            }
+          : undefined,
+      timeLimit:
+        (row.time_limit_ms ??
+          (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
+      points: row.item_points,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      type: "ordering",
     };
   }
   if (row.question_type === "queens") {

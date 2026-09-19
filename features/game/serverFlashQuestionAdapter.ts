@@ -16,6 +16,9 @@ import type {
   ServerProgressiveCluesQuestion,
   ServerProgressiveImageQuestion,
   ServerQueensProgress,
+  ServerTrueFalseQuestion,
+  ServerOddOneOutQuestion,
+  ServerOrderingQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -121,7 +124,17 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-  questionType: "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens",
+  questionType:
+    | "multiple-choice"
+    | "mini-wordle"
+    | "logic-code"
+    | "progressive-clues"
+    | "matching"
+    | "progressive-image"
+    | "queens"
+    | "true-false"
+    | "odd-one-out"
+    | "ordering",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -131,7 +144,16 @@ export function questionFromPayload(
   timeLimitMs: number,
   points: number,
   questionType?:
-    "multiple-choice" | "mini-wordle" | "logic-code" | "progressive-clues" | "matching" | "progressive-image" | "queens",
+    | "multiple-choice"
+    | "mini-wordle"
+    | "logic-code"
+    | "progressive-clues"
+    | "matching"
+    | "progressive-image"
+    | "queens"
+    | "true-false"
+    | "odd-one-out"
+    | "ordering",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -172,6 +194,83 @@ export function questionFromPayload(
     }
     const media = questionMedia(value);
     return { ...base, type: "multiple-choice", options: value.options, ...(media ? { media } : {}) };
+  }
+  if (questionType === "true-false") {
+    return { ...base, type: "true-false" } satisfies ServerTrueFalseQuestion;
+  }
+  if (questionType === "odd-one-out") {
+    const items = value.items;
+    if (!Array.isArray(items) || items.length < 3 || items.length > 8) {
+      throw new ServerFlashQuestionError();
+    }
+    const parsedItems = items.map((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        throw new ServerFlashQuestionError();
+      }
+      const record = item as Record<string, unknown>;
+      if (
+        !Object.keys(record).every((key) => ["id", "label", "media"].includes(key)) ||
+        typeof record.id !== "string" ||
+        record.id.trim().length === 0 ||
+        record.id.length > 120 ||
+        typeof record.label !== "string" ||
+        record.label.trim().length === 0 ||
+        record.label.length > 500
+      ) {
+        throw new ServerFlashQuestionError();
+      }
+      const media = questionMedia(record);
+      return {
+        id: record.id,
+        label: record.label,
+        ...(media ? { media } : {}),
+      };
+    });
+    if (new Set(parsedItems.map((item) => item.id)).size !== parsedItems.length) {
+      throw new ServerFlashQuestionError();
+    }
+    return { ...base, type: "odd-one-out", items: parsedItems } satisfies ServerOddOneOutQuestion;
+  }
+  if (questionType === "ordering") {
+    const items = value.items;
+    const directionLabels = value.directionLabels;
+    if (
+      !Array.isArray(items) ||
+      items.length < 2 ||
+      items.length > 8 ||
+      !items.every((item) => typeof item === "string" && item.trim().length > 0 && item.length <= 500) ||
+      new Set(items).size !== items.length
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    let parsedDirectionLabels: ServerOrderingQuestion["directionLabels"] = null;
+    if (directionLabels !== undefined && directionLabels !== null) {
+      if (
+        typeof directionLabels !== "object" ||
+        Array.isArray(directionLabels) ||
+        !Object.keys(directionLabels).every((key) => ["start", "end"].includes(key))
+      ) {
+        throw new ServerFlashQuestionError();
+      }
+      const labels = directionLabels as Record<string, unknown>;
+      if (
+        typeof labels.start !== "string" ||
+        labels.start.trim().length === 0 ||
+        labels.start.length > 120 ||
+        typeof labels.end !== "string" ||
+        labels.end.trim().length === 0 ||
+        labels.end.length > 120
+      ) {
+        throw new ServerFlashQuestionError();
+      }
+      parsedDirectionLabels = { start: labels.start, end: labels.end };
+    }
+    return {
+      ...base,
+      type: "ordering",
+      items,
+      directionLabels: parsedDirectionLabels,
+    } satisfies ServerOrderingQuestion;
   }
   if (questionType === "queens") {
     const grid = value.grid;
@@ -491,7 +590,10 @@ function questionWithSolution(
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
   | MatchingQuestion
-  | QuestionOfType<"queens"> {
+  | QuestionOfType<"queens">
+  | QuestionOfType<"true-false">
+  | QuestionOfType<"odd-one-out">
+  | QuestionOfType<"ordering"> {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -573,6 +675,65 @@ function questionWithSolution(
       correctAnswer: solution.correctAnswer,
       acceptedAnswers: solution.acceptedAnswers,
       solutionAlt: solution.solutionAlt,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "true-false") {
+    if (typeof solution.correctAnswer !== "boolean") {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "true-false",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      correctAnswer: solution.correctAnswer,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "odd-one-out") {
+    if (typeof solution.correctAnswer !== "string") {
+      throw new ServerFlashQuestionError();
+    }
+    if (!question.items.some((item) => item.id === solution.correctAnswer)) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "odd-one-out",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      items: [...question.items],
+      correctAnswer: solution.correctAnswer,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "ordering") {
+    if (
+      !Array.isArray(solution.correctOrder) ||
+      solution.correctOrder.length !== question.items.length ||
+      !solution.correctOrder.every((item) => question.items.includes(item)) ||
+      new Set(solution.correctOrder).size !== solution.correctOrder.length
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "ordering",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      items: [...question.items],
+      correctOrder: [...solution.correctOrder],
+      directionLabels: question.directionLabels ?? undefined,
       timeLimit: question.timeLimit,
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",

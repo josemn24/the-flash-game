@@ -83,8 +83,101 @@ describe("Flash editorial document", () => {
     const parsed = parseFlashEditorialDocument(documentFixture());
 
     expect(parsed.questions).toHaveLength(2);
-    expect(inlineQuestion(parsed.questions[0]).solutionPayload.correctAnswer).toBe("A");
+    const solution = inlineQuestion(parsed.questions[0]).solutionPayload;
+    expect("correctAnswer" in solution ? solution.correctAnswer : undefined).toBe("A");
     expect(isFlashEditorialDocument(parsed)).toBe(true);
+  });
+
+  it("accepts the three final-answer editorial formats", () => {
+    const documents = [
+      {
+        slug: "true-false-question",
+        type: "true-false",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 12_000,
+        publicPayload: { category: "Lógica", tags: {}, question: "¿Es correcto?" },
+        solutionPayload: { correctAnswer: false, explanation: "No es correcto." },
+      },
+      {
+        slug: "odd-one-out-question",
+        type: "odd-one-out",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 14_000,
+        publicPayload: {
+          category: "Ciencias",
+          tags: {},
+          question: "¿Cuál no pertenece?",
+          items: [
+            { id: "horse", label: "Caballo" },
+            { id: "zebra", label: "Cebra" },
+            { id: "bison", label: "Bisonte" },
+          ],
+        },
+        solutionPayload: { correctAnswer: "bison", explanation: "El bisonte es un bóvido." },
+      },
+      {
+        slug: "ordering-question",
+        type: "ordering",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 20_000,
+        publicPayload: {
+          category: "Geografía",
+          tags: {},
+          question: "Ordena de oeste a este.",
+          items: ["Nueva York", "Denver", "San Diego"],
+          directionLabels: { start: "Más al oeste", end: "Más al este" },
+        },
+        solutionPayload: {
+          correctOrder: ["San Diego", "Denver", "Nueva York"],
+          explanation: "Orden geográfico.",
+        },
+      },
+    ];
+
+    expect(documents.map((document) => parseFlashEditorialQuestionDocument(document))).toMatchObject([
+      { type: "true-false" },
+      { type: "odd-one-out" },
+      { type: "ordering" },
+    ]);
+  });
+
+  it("rejects invalid final-answer contracts", () => {
+    const trueFalse = {
+      slug: "invalid-true-false",
+      type: "true-false",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 12_000,
+      publicPayload: { question: "¿Es correcto?" },
+      solutionPayload: { correctAnswer: "false" },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(trueFalse)).toThrow();
+
+    const oddOneOut = {
+      slug: "invalid-odd-one-out",
+      type: "odd-one-out",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 12_000,
+      publicPayload: {
+        question: "¿Cuál no pertenece?",
+        items: [
+          { id: "same", label: "Uno" },
+          { id: "same", label: "Dos" },
+          { id: "third", label: "Tres" },
+        ],
+      },
+      solutionPayload: { correctAnswer: "third" },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(oddOneOut)).toThrow();
+
+    const ordering = {
+      slug: "invalid-ordering",
+      type: "ordering",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 12_000,
+      publicPayload: { question: "Ordena", items: ["A", "B", "C"] },
+      solutionPayload: { correctOrder: ["A", "A", "B"] },
+    };
+    expect(() => parseFlashEditorialQuestionDocument(ordering)).toThrow();
   });
 
   it("accepts Flash documents from two through twenty questions", () => {

@@ -5,6 +5,9 @@ import type {
   FlashEditorialLogicCodeQuestion,
   FlashEditorialProgressiveCluesQuestion,
   FlashEditorialMatchingQuestion,
+  FlashEditorialTrueFalseQuestion,
+  FlashEditorialOddOneOutQuestion,
+  FlashEditorialOrderingQuestion,
   FlashEditorialProgressiveImageQuestion,
   FlashEditorialQuestion,
   FlashEditorialQuestionDocument,
@@ -85,6 +88,9 @@ const matchingPublicPayloadKeys = [
   "leftItems",
   "rightItems",
 ];
+const trueFalsePublicPayloadKeys = ["category", "tags", "question"];
+const oddOneOutPublicPayloadKeys = ["category", "tags", "question", "items"];
+const orderingPublicPayloadKeys = ["category", "tags", "question", "items", "directionLabels"];
 const progressiveImagePublicPayloadKeys = [
   "category",
   "tags",
@@ -99,6 +105,9 @@ const miniWordleSolutionKeys = ["correctAnswer", "additionalGuesses", "dictionar
 const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
 const progressiveCluesSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const matchingSolutionKeys = ["matches", "explanation"];
+const trueFalseSolutionKeys = ["correctAnswer", "explanation"];
+const oddOneOutSolutionKeys = ["correctAnswer", "explanation"];
+const orderingSolutionKeys = ["correctOrder", "explanation"];
 const progressiveImageSolutionKeys = [
   "correctAnswer",
   "acceptedAnswers",
@@ -116,6 +125,10 @@ const PROGRESSIVE_CLUES_MAX_CLUES = 20;
 const PROGRESSIVE_CLUES_MAX_PENALTY = 50;
 const MATCHING_MIN_PAIRS = 3;
 const MATCHING_MAX_PAIRS = 6;
+const ODD_ONE_OUT_MIN_ITEMS = 3;
+const ODD_ONE_OUT_MAX_ITEMS = 8;
+const ORDERING_MIN_ITEMS = 2;
+const ORDERING_MAX_ITEMS = 8;
 const PROGRESSIVE_IMAGE_MAX_POSITION_LENGTH = 100;
 
 export class FlashEditorialValidationError extends Error {
@@ -282,7 +295,12 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       `questions[${index}].publicPayload no puede contener soluciones.`,
     ]);
   }
-  if (!isRecord(solutionPayload) || (!("correctAnswer" in solutionPayload) && !("matches" in solutionPayload))) {
+  if (
+    !isRecord(solutionPayload) ||
+    (!("correctAnswer" in solutionPayload) &&
+      !("matches" in solutionPayload) &&
+      !("correctOrder" in solutionPayload))
+  ) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
 
@@ -538,6 +556,112 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialMatchingQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialMatchingQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "true-false") {
+    if (
+      !hasOnlyKeys(publicPayload, trueFalsePublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, trueFalseSolutionKeys) ||
+      typeof solutionPayload.correctAnswer !== "boolean"
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato true-false.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "true-false",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialTrueFalseQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialTrueFalseQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "odd-one-out") {
+    if (
+      !hasOnlyKeys(publicPayload, oddOneOutPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, oddOneOutSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato odd-one-out.`]);
+    }
+    const items = publicPayload.items;
+    const correctAnswer = solutionPayload.correctAnswer;
+    const validItems =
+      Array.isArray(items) &&
+      items.length >= ODD_ONE_OUT_MIN_ITEMS &&
+      items.length <= ODD_ONE_OUT_MAX_ITEMS &&
+      items.every((item) => {
+        if (!isRecord(item) || !hasOnlyKeys(item, ["id", "label", "media"])) return false;
+        return (
+          nonEmptyString(item.id, 120) &&
+          nonEmptyString(item.label, 500) &&
+          isMedia(item.media)
+        );
+      });
+    const ids = validItems ? items.map((item) => (item as Record<string, unknown>).id as string) : [];
+    if (
+      !validItems ||
+      new Set(ids).size !== ids.length ||
+      typeof correctAnswer !== "string" ||
+      !ids.includes(correctAnswer)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato odd-one-out.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "odd-one-out",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialOddOneOutQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialOddOneOutQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "ordering") {
+    if (
+      !hasOnlyKeys(publicPayload, orderingPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, orderingSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato ordering.`]);
+    }
+    const items = publicPayload.items;
+    const correctOrder = solutionPayload.correctOrder;
+    const validItems =
+      Array.isArray(items) &&
+      items.length >= ORDERING_MIN_ITEMS &&
+      items.length <= ORDERING_MAX_ITEMS &&
+      items.every((item) => nonEmptyString(item, 500));
+    const validDirectionLabels =
+      publicPayload.directionLabels === undefined ||
+      publicPayload.directionLabels === null ||
+      (isRecord(publicPayload.directionLabels) &&
+        hasExactKeys(publicPayload.directionLabels, ["start", "end"]) &&
+        nonEmptyString(publicPayload.directionLabels.start, 120) &&
+        nonEmptyString(publicPayload.directionLabels.end, 120));
+    const validCorrectOrder =
+      Array.isArray(correctOrder) &&
+      validItems &&
+      correctOrder.length === items.length &&
+      correctOrder.every((item) => typeof item === "string" && items.includes(item));
+    if (
+      !validItems ||
+      new Set(items).size !== items.length ||
+      !validDirectionLabels ||
+      !validCorrectOrder ||
+      new Set(correctOrder).size !== correctOrder.length
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato ordering.`]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "ordering",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialOrderingQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialOrderingQuestion["solutionPayload"],
     };
   }
 

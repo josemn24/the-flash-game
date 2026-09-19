@@ -35,6 +35,9 @@ import type {
   ProgressiveImageQuestion,
   Question,
   QueensQuestion,
+  TrueFalseQuestion,
+  OddOneOutQuestion,
+  OrderingQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -201,9 +204,23 @@ function asQuestion(
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
   | MatchingQuestion
-  | QueensQuestion {
+  | QueensQuestion
+  | TrueFalseQuestion
+  | OddOneOutQuestion
+  | OrderingQuestion {
   if (
-    !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching", "progressive-image", "queens"].includes(
+    ![
+      "multiple-choice",
+      "mini-wordle",
+      "logic-code",
+      "progressive-clues",
+      "matching",
+      "progressive-image",
+      "queens",
+      "true-false",
+      "odd-one-out",
+      "ordering",
+    ].includes(
       context.questionType,
     ) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -281,6 +298,98 @@ function asQuestion(
       ...(publicPayload.promptVisual
         ? { promptVisual: publicPayload.promptVisual as MultipleChoiceQuestion["promptVisual"] }
         : {}),
+    };
+  }
+  if (context.questionType === "true-false") {
+    const correctAnswer = solutionPayload.correctAnswer;
+    if (typeof correctAnswer !== "boolean") {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "true-false",
+      correctAnswer,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
+  if (context.questionType === "odd-one-out") {
+    const items = publicPayload.items;
+    const correctAnswer = solutionPayload.correctAnswer;
+    if (
+      !Array.isArray(items) ||
+      items.length < 3 ||
+      items.length > 8 ||
+      !items.every((item) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+        const value = item as Record<string, unknown>;
+        return (
+          !Object.hasOwn(value, "correctAnswer") &&
+          !Object.hasOwn(value, "correctMatchId") &&
+          typeof value.id === "string" &&
+          value.id.trim().length > 0 &&
+          value.id.length <= 120 &&
+          typeof value.label === "string" &&
+          value.label.trim().length > 0 &&
+          value.label.length <= 500
+        );
+      }) ||
+      typeof correctAnswer !== "string"
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const itemIds = items.map((item) => (item as Record<string, unknown>).id as string);
+    if (new Set(itemIds).size !== itemIds.length || !itemIds.includes(correctAnswer)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "odd-one-out",
+      items: items as OddOneOutQuestion["items"],
+      correctAnswer,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+  }
+  if (context.questionType === "ordering") {
+    const items = publicPayload.items;
+    const correctOrder = solutionPayload.correctOrder;
+    const directionLabels = publicPayload.directionLabels;
+    if (
+      !Array.isArray(items) ||
+      items.length < 2 ||
+      items.length > 8 ||
+      !items.every((item) => typeof item === "string" && item.trim().length > 0 && item.length <= 500) ||
+      new Set(items).size !== items.length ||
+      !Array.isArray(correctOrder) ||
+      correctOrder.length !== items.length ||
+      !correctOrder.every((item) => typeof item === "string" && items.includes(item)) ||
+      new Set(correctOrder).size !== correctOrder.length ||
+      (directionLabels !== undefined &&
+        directionLabels !== null &&
+        (typeof directionLabels !== "object" ||
+          Array.isArray(directionLabels) ||
+          !Object.keys(directionLabels).every((key) => ["start", "end"].includes(key)) ||
+          !Object.hasOwn(directionLabels, "start") ||
+          !Object.hasOwn(directionLabels, "end") ||
+          typeof (directionLabels as Record<string, unknown>).start !== "string" ||
+          typeof (directionLabels as Record<string, unknown>).end !== "string" ||
+          ((directionLabels as Record<string, unknown>).start as string).trim().length === 0 ||
+          ((directionLabels as Record<string, unknown>).end as string).trim().length === 0))
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "ordering",
+      items,
+      correctOrder,
+      directionLabels:
+        directionLabels && typeof directionLabels === "object"
+          ? (directionLabels as OrderingQuestion["directionLabels"])
+          : undefined,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
   if (context.questionType === "progressive-image") {

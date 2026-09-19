@@ -2,6 +2,7 @@ import type {
   ImageSurface,
   MatchingItem,
   MatchingLeftItem,
+  OddOneOutItem,
   Question,
   QuestionMedia,
 } from "@/types/question";
@@ -188,7 +189,10 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "progressive-clues"
       | "matching"
       | "progressive-image"
-      | "queens";
+      | "queens"
+      | "true-false"
+      | "odd-one-out"
+      | "ordering";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -209,6 +213,21 @@ export type ServerMultipleChoiceQuestion = ServerFlashQuestionBase & {
   readonly type: "multiple-choice";
   readonly options: readonly string[];
   readonly media?: QuestionMedia;
+};
+
+export type ServerTrueFalseQuestion = ServerFlashQuestionBase & {
+  readonly type: "true-false";
+};
+
+export type ServerOddOneOutQuestion = ServerFlashQuestionBase & {
+  readonly type: "odd-one-out";
+  readonly items: readonly OddOneOutItem[];
+};
+
+export type ServerOrderingQuestion = ServerFlashQuestionBase & {
+  readonly type: "ordering";
+  readonly items: readonly string[];
+  readonly directionLabels: { readonly start: string; readonly end: string } | null;
 };
 
 export type ServerMiniWordleProgress = {
@@ -312,7 +331,10 @@ export type ServerFlashQuestion =
   | ServerProgressiveCluesQuestion
   | ServerMatchingQuestion
   | ServerProgressiveImageQuestion
-  | ServerQueensQuestion;
+  | ServerQueensQuestion
+  | ServerTrueFalseQuestion
+  | ServerOddOneOutQuestion
+  | ServerOrderingQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

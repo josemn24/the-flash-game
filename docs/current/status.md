@@ -16,7 +16,9 @@ con revelaciones privadas y penalización basada en eventos, E04 Matching con pa
 feedback incremental y crédito parcial, y E05 Queens con colocaciones persistidas y penalización
 server-side, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
-de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. S12 añade
+de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. F01/F02/F06 añaden
+`true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
+S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
   reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
@@ -66,6 +68,8 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   E05 añade mezclas `multiple-choice` + `queens`, tablero 5×5, coronas precolocadas, eventos de
   colocación/retirada, penalización del 5% por conflicto, recuperación sin marcas X y resolución
   automática con evaluación server-side.
+  F01/F02/F06 permiten publicar mezclas con `true-false`, `odd-one-out` y `ordering`; las respuestas
+  booleanas, IDs seleccionados y permutaciones se validan y evalúan exclusivamente en el servidor.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -97,7 +101,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b y E01–E05/E10 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F06 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
