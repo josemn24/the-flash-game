@@ -193,6 +193,11 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.abort_question_asset_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.assert_supported_calendar_content": {
       "arguments": "version_id uuid",
       "securityDefiner": true,
@@ -224,6 +229,11 @@
       "executeRoles": ["authenticated"]
     },
     "private.confirm_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.confirm_question_asset_upload_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
@@ -398,6 +408,21 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "private.is_ready_question_asset": {
+      "arguments": "target_asset uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.is_usable_question_asset": {
+      "arguments": "target_asset uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.archive_question_asset_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.publication_effective_status": {
       "arguments": "raw_status text, season_status text, season_starts_at timestamp with time zone, season_ends_at timestamp with time zone, opens_at timestamp with time zone, closes_at timestamp with time zone, at_time timestamp with time zone",
       "securityDefiner": false,
@@ -409,6 +434,11 @@
       "executeRoles": []
     },
     "private.prepare_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.prepare_question_asset_upload_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
@@ -504,6 +534,16 @@
       "executeRoles": ["service_role"]
     },
     "private.read_avatar_upload_asset": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_competitive_question_asset": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_question_asset_upload": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

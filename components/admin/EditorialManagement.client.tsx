@@ -280,6 +280,7 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
           if (inlineQuestion.type === "progressive-image") {
             const payload = inlineQuestion.publicPayload;
             const solution = inlineQuestion.solutionPayload;
+            const imageSrc = "src" in payload.surface ? payload.surface.src : undefined;
             return (
               <article className={styles.previewQuestion} key={inlineQuestion.slug}>
                 <div className={styles.previewQuestionTopline}>
@@ -290,13 +291,17 @@ function EditorialPreview({ document }: { readonly document: FlashEditorialDocum
                 </div>
                 <p className={styles.category}>{payload.category ?? ""}</p>
                 <h4>{payload.question}</h4>
-                <Image
-                  src={payload.surface.src}
-                  alt={payload.surface.alt}
-                  width={payload.surface.width}
-                  height={payload.surface.height}
-                  className="mt-3 rounded-xl"
-                />
+                {imageSrc ? (
+                  <Image
+                    src={imageSrc}
+                    alt={payload.surface.alt}
+                    width={payload.surface.width}
+                    height={payload.surface.height}
+                    className="mt-3 rounded-xl"
+                  />
+                ) : (
+                  <p className={styles.solution}>Asset privado: preview pendiente de URL firmada.</p>
+                )}
                 <p className={styles.solution}>
                   Solución privada: <strong>{solution.correctAnswer}</strong>
                 </p>

@@ -45,6 +45,9 @@ async function main() {
     sqlUuid: (label) => sqlUuid(scenario.namespace, label),
   });
   await dockerSql(scenarioSql, config.dbContainer);
+  if (scenario.seedStorage) {
+    await scenario.seedStorage({ config, accounts, stableId });
+  }
 
   const scenarioData = await scenario.manifest({ accounts, stableId });
   const users = Object.fromEntries(

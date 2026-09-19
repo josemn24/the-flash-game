@@ -18,9 +18,10 @@ superadministración, la creación auditada de salas privadas y la preparación/
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
-reutilizables. D08a/S13 añade los buckets `avatars` y `question-assets`, el registro privado
-`media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. La
-integración editorial de imágenes de preguntas queda para una slice posterior.
+  reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
+`media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. D08b
+integra E10 con `question-assets`: el editor sube y confirma assets privados, las versiones nuevas
+persisten `assetId` y `prepare_interaction` emite una URL firmada solo tras autorizar la partida.
 
 No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
 estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
@@ -90,13 +91,14 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a y E01–E04/E10 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b y E01–E04/E10 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
   Flash mínimo; la gestión posterior de miembros, reemplazo/archivado de contenido publicado y
   calendario S12 es local-first y no forma parte de la UI pública de administración. D08a/S13 ya
-  cubren avatares persistidos; `question-assets` queda preparado para una slice editorial posterior.
+  cubren avatares persistidos y assets privados de E10. `multiple-choice` podrá reutilizar el mismo
+  registro y resolver, pero su edición de imágenes queda fuera de esta slice.
 - El flujo de invitaciones conserva sus reglas de producto, pero no se ofrece en la UI pública ni se
   necesita para bootstrappear la beta: el superadmin añade directamente usuarios autenticados.
 - Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre únicamente el
@@ -128,7 +130,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - E10 añade `progressive-image` al recorrido competitivo persistido: fixture mixto, validación
   pública/privada, reloj iniciado por servidor, recuperación y evaluación normalizada; la imagen
   original es pública y no se presenta como revelación protegida.
-- D08a/S13 valida los bytes reales de avatares, limita JPEG/PNG/WebP a 5 MB y 2048 px, confirma
+  - D08a/S13 valida los bytes reales de avatares, limita JPEG/PNG/WebP a 5 MB y 2048 px, confirma
   `media_assets` antes de cambiar `players.avatar_path` y conserva el avatar anterior ante fallos.
 - `npm run test:integration:supabase -- --scenario e10`: correcto; el E2E E10 incluye el recorrido
   completo y el control de spectator. En esta sesión el caso jugador quedó pendiente por un timeout

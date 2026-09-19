@@ -41,6 +41,7 @@ import {
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
 import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -199,7 +200,8 @@ function asQuestion(
     !["multiple-choice", "mini-wordle", "logic-code", "progressive-clues", "matching", "progressive-image"].includes(
       context.questionType,
     ) ||
-    context.payloadSchemaVersion !== 1 ||
+    (context.payloadSchemaVersion !== 1 &&
+      !(context.questionType === "progressive-image" && context.payloadSchemaVersion === 2)) ||
     context.itemConfigSchemaVersion !== 1 ||
     context.modeConfigSchemaVersion !== 1
   ) {
@@ -511,8 +513,17 @@ export class SupabaseAttemptCommands implements Pick<
     return callCommand<StartAttemptResult>(this.identity, "start_attempt", input);
   }
 
-  prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    return callCommand<PrepareInteractionResult>(this.identity, "prepare_interaction", input);
+  async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
+    const prepared = await callCommand<PrepareInteractionResult>(this.identity, "prepare_interaction", input);
+    if (!prepared.publicPayload) return prepared;
+    return {
+      ...prepared,
+      publicPayload: (await resolveCompetitiveQuestionPayload({
+        authUserId: this.identity.authUserId,
+        attemptId: input.attemptId,
+        publicPayload: prepared.publicPayload,
+      })) as PrepareInteractionResult["publicPayload"],
+    };
   }
 
   receiveAnswer(input: SubmitAnswerInput) {

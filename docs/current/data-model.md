@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a, E01–E04 y E10.
+- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a/D08b, E01–E04 y E10.
 - Fecha: 2026-09-16.
 - Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
@@ -11,7 +11,7 @@
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a, E01–E04 y E10 ya tienen
+actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a/D08b, E01–E04 y E10 ya tienen
 persistencia real verificada en Supabase local.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
@@ -103,7 +103,7 @@ Restricciones y reglas:
 - La relación con `auth.users` puede ser una FK `ON DELETE SET NULL` en Supabase, pero el dominio
   no debe depender de ese proveedor.
 
-### `media_assets` (registro previsto para D08)
+### `media_assets` (registro privado D08a/D08b)
 
 Registro interno de objetos gestionados por Supabase Storage. No sustituye a
 `storage.objects`: conserva la relación de negocio, el estado de validación y la autoridad que puede
@@ -118,10 +118,11 @@ usar el asset.
 - `created_by_player_id uuid not null references players(id)`.
 - `created_at`, `updated_at`.
 
-Los payloads JSON de preguntas referencian `media_assets.id`; `players.avatar_path` conserva
-inicialmente la ruta estable del avatar por compatibilidad. Un asset usado por una versión publicada
-no se borra físicamente mientras exista una referencia histórica. Las URLs firmadas solo aparecen en
-lecturas runtime autorizadas.
+Los payloads JSON de preguntas referencian `media_assets.id`; en E10 la referencia es
+`publicPayload.surface.assetId` y solo el payload runtime autorizado añade `surface.src`. `players.avatar_path`
+conserva la ruta estable del avatar por compatibilidad. Un asset usado por una versión publicada no se
+borra físicamente mientras exista una referencia histórica. Las URLs firmadas solo aparecen en lecturas
+runtime autorizadas y caducan; nunca se guardan en PostgreSQL, auditoría o HTML persistente.
 
 ### `platform_role_assignments`
 
@@ -367,6 +368,9 @@ del JSON. Por eso las versiones de contenido mantienen además:
 - `question_versions.payload_schema_version`, compartida por `public_payload` y `solution_payload`;
 - `challenge_versions.config_schema_version`, para la configuración global del modo;
 - `challenge_items.config_schema_version`, para la configuración contextual de cada elemento.
+
+E10 usa la versión 2 del contrato de `progressive-image`: `surface` contiene `assetId`, metadatos
+visuales y no `src`; las versiones históricas v1 que contienen `/visuals/...` siguen siendo legibles.
 
 Los contratos actuales son versión `1`. La versión se conserva como columna, no dentro del JSON, y
 los valores publicados son inmutables. PostgreSQL exige una versión entera positiva; la aplicación

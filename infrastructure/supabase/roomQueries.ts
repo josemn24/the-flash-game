@@ -426,7 +426,8 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "progressive-clues" ||
       row.question_type === "matching" ||
       row.question_type === "progressive-image") &&
-    row.payload_schema_version === 1 &&
+    (row.payload_schema_version === 1 ||
+      (row.question_type === "progressive-image" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
     isRecord(row.public_payload) &&

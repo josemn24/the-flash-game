@@ -326,6 +326,18 @@ export async function createAuthenticatedClient(config, account) {
   return client;
 }
 
+export async function uploadStorageObject(config, { bucket, objectPath, filePath, contentType }) {
+  const admin = createClient(config.url, config.serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const bytes = await readFile(filePath);
+  const { error } = await admin.storage.from(bucket).upload(objectPath, bytes, {
+    contentType,
+    upsert: false,
+  });
+  if (error) throw new Error(`No se pudo cargar ${bucket}/${objectPath}.`, { cause: error });
+}
+
 export async function rpc(client, functionName, args) {
   const { data, error } = await client.rpc(functionName, args);
   if (error) throw new Error(`RPC ${functionName} falló: ${error.message}`);

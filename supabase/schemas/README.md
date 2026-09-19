@@ -1,7 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-18. La ampliación S17a y D08a/S13 están aplicadas
-localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar.
+Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-18. La ampliación S17a y D08a/D08b/S13 están aplicadas
+localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
+D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10.
 **28 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S12 conectan
@@ -126,6 +127,8 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [95_matching.sql](95_matching.sql) | Eventos privados, proyección segura y comando transaccional de parejas Matching. |
 | [96_media_asset_commands.sql](96_media_asset_commands.sql) | Handshake idempotente de preparación, lectura, confirmación y aborto de avatar. |
 | [97_media_asset_acl.sql](97_media_asset_acl.sql) | ACL explícita de `media_assets` y comandos server-only. |
+| [63_question_asset_helpers.sql](63_question_asset_helpers.sql) | Validación interna de assets de preguntas listos para publicación/uso. |
+| [98_question_asset_commands.sql](98_question_asset_commands.sql) | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -287,7 +290,7 @@ semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login G
 
 Validación local actual: `check-supabase-schema` carga **32 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
-26 de E04 y 12 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
+26 de E04 y 16 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
 y las 634 pruebas TypeScript
 superadas. También pasan comprobación
 de tipos, arquitectura de tipos, ESLint y los enlaces de documentación. La suite SQL no sustituye
@@ -302,7 +305,7 @@ acepten evaluación/claims del navegador. El adaptador debe verificar Auth, vali
 limitar tamaño de peticiones y no filtrar soluciones. `postgres` y los roles de mantenimiento están
 fuera de esta frontera; pueden alterar ACL/triggers y no deben ser credenciales de ejecución normal.
 
-Quedan pendientes la integración editorial de `question-assets`, el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
+Quedan pendientes la integración de imágenes privadas en `multiple-choice`, el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
 Realtime si se habilitan, retención de payloads e idempotencia, reemplazo/archivado editorial,
 validación de contenido de otros formatos y planes EXPLAIN con volumen real. La selección de duraciones/
 configuración de cada modo se valida al publicar; SQL protege límites positivos y versiones congeladas,

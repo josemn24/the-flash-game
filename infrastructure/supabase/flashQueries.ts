@@ -6,6 +6,7 @@ import type { AnswerResult, RoomChallengeResult } from "@/types/game";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 
 export type FlashReadRow = {
   room_id: string;
@@ -107,7 +108,8 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image") &&
-    value.payload_schema_version === 1 &&
+    (value.payload_schema_version === 1 ||
+      (value.question_type === "progressive-image" && value.payload_schema_version === 2)) &&
     typeof value.time_limit_ms === "number" &&
     value.time_limit_ms > 0 &&
     typeof value.item_points === "number" &&
@@ -130,7 +132,8 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image") &&
-    value.payload_schema_version === 1 &&
+    (value.payload_schema_version === 1 ||
+      (value.question_type === "progressive-image" && value.payload_schema_version === 2)) &&
     isRecord(value.public_payload) &&
     isRecord(value.solution_payload) &&
     (typeof value.answer === "string" || value.answer === null || isRecord(value.answer)) &&
@@ -208,8 +211,24 @@ export class SupabaseFlashQueries {
       ).filter(isFlashResultRow);
     }
     const result = resultRows.length ? this.toResult(resultRows) : undefined;
-    const terminalReview =
+    let terminalReview =
       resultRows.length === first.question_count ? resultRows.map(toTerminalReviewRow) : undefined;
+    if (terminalReview) {
+      const authClient = await createClient();
+      const { data: authData } = await authClient.auth.getUser();
+      if (authData.user) {
+        terminalReview = await Promise.all(
+          terminalReview.map(async (review) => ({
+            ...review,
+            publicPayload: await resolveCompetitiveQuestionPayload({
+              authUserId: authData.user!.id,
+              attemptId: first.own_attempt_id!,
+              publicPayload: review.publicPayload,
+            }),
+          })),
+        );
+      }
+    }
     const challenge: ServerFlashChallenge = {
       id: first.publication_id,
       definitionId: first.challenge_slug,
@@ -278,11 +297,25 @@ export class SupabaseFlashQueries {
   }
 
   async getTerminalReview(attemptId: string) {
-    return (
+    const rows = (
       await callFlashRead("get_my_flash_result", {
         target_attempt_id: attemptId,
       })
     ).filter(isFlashResultRow);
+    if (!rows.length) return rows;
+    const client = await createClient();
+    const { data } = await client.auth.getUser();
+    if (!data.user) return rows;
+    return Promise.all(
+      rows.map(async (row) => ({
+        ...row,
+        public_payload: await resolveCompetitiveQuestionPayload({
+          authUserId: data.user.id,
+          attemptId,
+          publicPayload: row.public_payload,
+        }),
+      })),
+    );
   }
 }
 

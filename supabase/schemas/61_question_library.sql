@@ -1,6 +1,8 @@
 -- S17a — Independent Flash question library.
 -- Question versions remain immutable once published; challenge_items select them.
 
+set local check_function_bodies = off;
+
 create unique index if not exists challenge_items_question_version_unique_idx
   on private.challenge_items (challenge_version_id, question_version_id);
 

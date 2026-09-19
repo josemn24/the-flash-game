@@ -168,6 +168,7 @@ export async function prepareCurrentPlayerAvatar(input: {
     const upload = await supabaseMediaStorage.prepareUpload({
       assetId,
       objectPath,
+      bucket: "avatars",
       mimeType: input.mimeType as "image/jpeg" | "image/png" | "image/webp",
     });
     return {
@@ -215,14 +216,16 @@ export async function confirmCurrentPlayerAvatar(input: {
       ...inspection,
     });
     if (result.oldObjectPath && result.oldObjectPath.startsWith("avatars/")) {
-      await supabaseMediaStorage.deleteObject({ objectPath: result.oldObjectPath }).catch(() => undefined);
+      await supabaseMediaStorage.deleteObject({ bucket: "avatars", objectPath: result.oldObjectPath }).catch(() => undefined);
     }
     const refreshed = await getProvisionedCurrentPlayer();
     if (!refreshed) return { ok: false, code: "save_failed", message: "No se ha podido confirmar el perfil." };
     revalidatePath("/");
     return { ok: true, profile: toUserProfile(refreshed.row) };
   } catch (error) {
-    await supabaseMediaStorage.deleteObject({ objectPath: asset?.objectPath ?? "" }).catch(() => undefined);
+    if (asset?.objectPath) {
+      await supabaseMediaStorage.deleteObject({ bucket: "avatars", objectPath: asset.objectPath }).catch(() => undefined);
+    }
     await abortAvatarAsset(current.authUserId, { assetId: input.assetId }).catch(() => undefined);
     const message = error instanceof Error && ["unsupported_type", "too_large", "dimensions", "corrupt", "empty"].includes(error.message)
       ? "El archivo no es un JPEG, PNG o WebP válido de hasta 2048 px."
@@ -240,6 +243,6 @@ export async function abortCurrentPlayerAvatar(assetId: string) {
   const current = await getProvisionedCurrentPlayer();
   if (!current) return;
   const asset = await readAvatarAsset(current.authUserId, assetId).catch(() => null);
-  if (asset?.objectPath) await supabaseMediaStorage.deleteObject({ objectPath: asset.objectPath }).catch(() => undefined);
+  if (asset?.objectPath) await supabaseMediaStorage.deleteObject({ bucket: "avatars", objectPath: asset.objectPath }).catch(() => undefined);
   await abortAvatarAsset(current.authUserId, { assetId }).catch(() => undefined);
 }

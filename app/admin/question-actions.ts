@@ -18,6 +18,13 @@ import {
   publishSuperadminQuestion,
   updateSuperadminQuestionDraft,
 } from "@/server/admin-editorial";
+import {
+  abortSuperadminQuestionAsset,
+  archiveSuperadminQuestionAsset,
+  confirmSuperadminQuestionAsset,
+  prepareSuperadminQuestionAsset,
+  previewSuperadminQuestionAsset,
+} from "@/server/question-assets";
 
 export type QuestionActionState = {
   readonly message?: string;
@@ -200,4 +207,28 @@ export async function archiveQuestion(_state: QuestionActionState, formData: For
     if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) boundary(error);
     throw error;
   }
+}
+
+export async function prepareQuestionAsset(input: {
+  readonly mimeType: string;
+  readonly byteSize: number;
+  readonly idempotencyKey: string;
+}) {
+  return prepareSuperadminQuestionAsset(input);
+}
+
+export async function confirmQuestionAsset(input: { readonly assetId: string; readonly idempotencyKey: string }) {
+  return confirmSuperadminQuestionAsset(input);
+}
+
+export async function abortQuestionAsset(assetId: string) {
+  await abortSuperadminQuestionAsset(assetId);
+}
+
+export async function previewQuestionAsset(assetId: string) {
+  return previewSuperadminQuestionAsset(assetId);
+}
+
+export async function archiveQuestionAsset(input: { readonly assetId: string; readonly idempotencyKey: string; readonly reason: string }) {
+  return archiveSuperadminQuestionAsset(input);
 }

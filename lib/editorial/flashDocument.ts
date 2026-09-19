@@ -184,10 +184,26 @@ function isPromptVisual(value: unknown): boolean {
   );
 }
 
-function isProgressiveImageSurface(value: unknown): boolean {
+function isProgressiveImageSurface(value: unknown, payloadSchemaVersion: unknown): boolean {
   if (!isRecord(value) || !hasOnlyKeys(value, ["src", "alt", "width", "height", "fit", "position"])) {
-    return false;
+    if (!isRecord(value) || !hasOnlyKeys(value, ["assetId", "alt", "width", "height", "fit", "position"])) {
+      return false;
+    }
+    return (
+      payloadSchemaVersion === 2 &&
+      typeof value.assetId === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.assetId) &&
+      nonEmptyString(value.alt, 500) &&
+      Number.isSafeInteger(value.width) &&
+      (value.width as number) > 0 &&
+      Number.isSafeInteger(value.height) &&
+      (value.height as number) > 0 &&
+      (value.fit === undefined || value.fit === "cover" || value.fit === "contain") &&
+      (value.position === undefined ||
+        (typeof value.position === "string" && value.position.length <= PROGRESSIVE_IMAGE_MAX_POSITION_LENGTH))
+    );
   }
+  if (payloadSchemaVersion !== 1) return false;
   return (
     typeof value.src === "string" &&
     /^\/visuals\/[A-Za-z0-9._~!$&'()*+,;=:@%/-]+$/.test(value.src) &&
@@ -250,7 +266,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
   }
 
   const commonValid =
-    value.payloadSchemaVersion === 1 &&
+    (value.payloadSchemaVersion === 1 ||
+      (value.type === "progressive-image" && value.payloadSchemaVersion === 2)) &&
     Number.isSafeInteger(value.points) &&
     (value.points as number) > 0 &&
     (value.points as number) <= FLASH_TOTAL_POINTS &&
@@ -517,7 +534,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       (publicPayload.revealDurationMs as number) > 0 &&
       (publicPayload.revealDurationMs as number) < (value.timeLimitMs as number);
     if (
-      !isProgressiveImageSurface(publicPayload.surface) ||
+      !isProgressiveImageSurface(publicPayload.surface, value.payloadSchemaVersion) ||
       !validRevealDuration ||
       (publicPayload.answerLabel !== undefined &&
         publicPayload.answerLabel !== null &&
@@ -543,7 +560,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
     return {
       slug: value.slug as string,
       type: "progressive-image",
-      payloadSchemaVersion: 1,
+      payloadSchemaVersion: value.payloadSchemaVersion as 1 | 2,
       timeLimitMs: value.timeLimitMs as number,
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialProgressiveImageQuestion["publicPayload"],

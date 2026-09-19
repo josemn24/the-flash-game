@@ -201,7 +201,10 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
     if (!playerIds.has(version.createdByPlayerId)) {
       errors.push(`Question version ${version.id} has no creator.`);
     }
-    if (!isSupportedQuestionPayloadSchemaVersion(version.payloadSchemaVersion)) {
+    if (
+      !isSupportedQuestionPayloadSchemaVersion(version.payloadSchemaVersion) ||
+      (version.payloadSchemaVersion === 2 && version.type !== "progressive-image")
+    ) {
       errors.push(`Question version ${version.id} has an unsupported payload schema version.`);
     }
   }

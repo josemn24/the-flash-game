@@ -2,9 +2,9 @@ import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { MediaStorage, MediaUploadInspection, MediaUploadPreparation } from "@/application/ports/media-storage";
-import { inspectAvatarBytes } from "@/lib/media/avatarValidation";
+import { inspectAvatarBytes, inspectQuestionAssetBytes } from "@/lib/media/avatarValidation";
 
-const AVATAR_BUCKET = "avatars";
+const AVATAR_BUCKET = "avatars" as const;
 
 function getAdminClient(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,7 +18,7 @@ function getAdminClient(): SupabaseClient {
 export const supabaseMediaStorage: MediaStorage = {
   async prepareUpload(input): Promise<MediaUploadPreparation> {
     const client = getAdminClient();
-    const { data, error } = await client.storage.from(AVATAR_BUCKET).createSignedUploadUrl(input.objectPath);
+    const { data, error } = await client.storage.from(input.bucket).createSignedUploadUrl(input.objectPath);
     if (error || !data?.signedUrl || !data.token) throw new Error("storage_unavailable");
     return {
       assetId: input.assetId,
@@ -30,15 +30,28 @@ export const supabaseMediaStorage: MediaStorage = {
   },
 
   async inspectUpload(input): Promise<MediaUploadInspection> {
-    const { data, error } = await getAdminClient().storage.from(AVATAR_BUCKET).download(input.objectPath);
+    const bucket = input.objectPath.startsWith("question-assets/") ? "question-assets" : AVATAR_BUCKET;
+    const { data, error } = await getAdminClient().storage.from(bucket).download(input.objectPath);
     if (error || !data) throw new Error("upload_missing");
     const bytes = new Uint8Array(await data.arrayBuffer());
-    return inspectAvatarBytes(bytes);
+    return bucket === "question-assets" ? inspectQuestionAssetBytes(bytes) : inspectAvatarBytes(bytes);
   },
 
   async deleteObject(input) {
-    const { error } = await getAdminClient().storage.from(AVATAR_BUCKET).remove([input.objectPath]);
+    const { error } = await getAdminClient().storage.from(input.bucket).remove([input.objectPath]);
     if (error) throw new Error("storage_cleanup_failed");
+  },
+
+  async createSignedReadUrl(input) {
+    const { data, error } = await getAdminClient()
+      .storage
+      .from(input.bucket)
+      .createSignedUrl(input.objectPath, input.expiresInSeconds);
+    if (error || !data?.signedUrl) throw new Error("storage_unavailable");
+    return {
+      signedUrl: data.signedUrl,
+      expiresAt: new Date(Date.now() + input.expiresInSeconds * 1000).toISOString(),
+    };
   },
 
   getPublicUrl(objectPath) {

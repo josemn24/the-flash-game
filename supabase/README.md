@@ -112,10 +112,17 @@ de una versión publicada inmutable. E10 seguirá usando blur/scale como present
 ya llegó al navegador puede conservarse, por lo que Storage controla la autorización previa a la
 entrega, no una protección criptográfica contra la copia.
 
-La implementación D08a/S13 usa un adaptador server-only para Storage y una referencia interna
+La implementación D08a/D08b/S13 usa un adaptador server-only para Storage y una referencia interna
 `media_assets` con estados `pending`/`ready`/`archived`/`deleted`. La subida y la actualización de
 PostgreSQL no comparten transacción: se sube, se confirma y se valida el objeto antes de asociarlo;
 la limpieza de objetos antiguos u huérfanos es compensatoria y auditada.
+
+D08b completa el primer uso editorial: E10 guarda `surface.assetId` en una nueva versión de pregunta
+con contrato v2. El portal superadmin prepara, sube, inspecciona y confirma el objeto en
+`question-assets`; `prepare_interaction` comprueba autorización y devuelve `surface.src` como URL
+firmada de lectura durante cinco minutos. La recuperación puede reemitirla sin reiniciar el reloj.
+Las versiones históricas con `/visuals/...` siguen siendo compatibles. `multiple-choice` podrá usar
+la misma infraestructura en una slice posterior.
 
 E01 añade `schemas/36_mini_wordle.sql` y `schemas/92_mini_wordle_commands.sql`. El portal acepta
 `multiple-choice` y `mini-wordle` en el mismo Flash, dentro de desafíos de 2 a 20 preguntas y 100

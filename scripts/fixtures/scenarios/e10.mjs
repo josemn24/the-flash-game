@@ -1,8 +1,11 @@
+import path from "node:path";
+import { uploadStorageObject } from "../../support/supabase-local.mjs";
+
 const namespace = "the-flash-game:e10";
 
 const domainIds = Object.fromEntries([
   "room", "season", "challenge", "challengeVersion", "questionOne", "questionTwo",
-  "questionVersionOne", "questionVersionTwo", "challengeItemOne", "challengeItemTwo", "publication",
+  "questionVersionOne", "questionVersionTwo", "questionAsset", "challengeItemOne", "challengeItemTwo", "publication",
 ].map((label) => [label, `e10-${label}`]));
 
 const tags = {
@@ -18,7 +21,7 @@ export const scenario = {
     { label: "alice", displayName: "Alice E10" },
     { label: "bob", displayName: "Bob E10" },
   ],
-  buildDomainSql({ accounts, sqlString, sqlUuid }) {
+  buildDomainSql({ accounts, stableId, sqlString, sqlUuid }) {
     const dateStart = "2000-01-01T00:00:00Z";
     const dateEnd = "2999-01-01T00:00:00Z";
     const multipleChoice = {
@@ -28,9 +31,9 @@ export const scenario = {
     const progressiveImage = {
       category: "Arquitectura", tags, question: "¿Qué monumento aparece en la imagen?",
       surface: {
-        src: "/visuals/connections/eiffel-tower.png",
+        assetId: "__QUESTION_ASSET_ID__",
         alt: "Imagen progresivamente revelada de un monumento europeo",
-        width: 1024, height: 1024, fit: "contain", position: "50% 50%",
+        width: 847, height: 566, fit: "contain", position: "50% 50%",
       },
       revealDurationMs: 12000, answerLabel: "¿Qué aparece?", answerPlaceholder: "Tu respuesta…",
     };
@@ -51,13 +54,20 @@ insert into private.question_definitions (id, slug, created_by_player_id)
 values
   (${sqlUuid(domainIds.questionOne)}, 'e10-question-one', ${sqlString(accounts.alice.playerId)}),
   (${sqlUuid(domainIds.questionTwo)}, 'e10-question-two', ${sqlString(accounts.alice.playerId)});
+insert into private.media_assets
+  (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
+values
+  (${sqlUuid(domainIds.questionAsset)}, 'question-assets',
+   ${sqlString(`question-assets/${stableId(domainIds.questionAsset)}.png`)}, 'question-asset', 'ready',
+   ${sqlString(accounts.superadmin.playerId)}, 'image/png', 1, 847, 566,
+   'de188cf69cb899771872cc32cd304babd4bdd64c483f8165f3766dd844db3aad');
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 1, 'multiple-choice', 15000,
    ${sqlString(JSON.stringify(multipleChoice))}, ${sqlString(accounts.alice.playerId)}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 1, 'progressive-image', 20000,
-   ${sqlString(JSON.stringify(progressiveImage))}, ${sqlString(accounts.alice.playerId)});
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 2, 'progressive-image', 20000,
+   ${sqlString(JSON.stringify(progressiveImage).replace("__QUESTION_ASSET_ID__", stableId(domainIds.questionAsset)))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({ correctAnswer: "Lisboa", explanation: "Lisboa es la capital de Portugal." }))}),
@@ -84,6 +94,14 @@ values (${sqlUuid(domainIds.publication)}, ${sqlUuid(domainIds.season)}, ${sqlUu
 set constraints all immediate;
 commit;
 `;
+  },
+  async seedStorage({ config, stableId }) {
+    await uploadStorageObject(config, {
+      bucket: "question-assets",
+      objectPath: `question-assets/${stableId(domainIds.questionAsset)}.png`,
+      filePath: path.resolve("public/visuals/connections/eiffel-tower.png"),
+      contentType: "image/png",
+    });
   },
   manifest({ stableId }) {
     return {

@@ -11,6 +11,12 @@ export type AvatarAssetRecord = {
   status: "pending" | "ready" | "archived" | "deleted";
 };
 
+export type QuestionAssetRecord = {
+  assetId: string;
+  objectPath: string;
+  status: "pending" | "ready" | "archived" | "deleted";
+};
+
 export type AvatarCommandResult = {
   assetId: string;
   objectPath: string;
@@ -70,4 +76,28 @@ export function confirmAvatarAsset(authUserId: string, input: object) {
 
 export function abortAvatarAsset(authUserId: string, input: object) {
   return call<AvatarAssetRecord>(authUserId, "abort_avatar_upload_command", input);
+}
+
+export function prepareQuestionAsset(authUserId: string, input: object) {
+  return call<QuestionAssetRecord>(authUserId, "prepare_question_asset_upload_command", input);
+}
+
+export function readQuestionAssetUpload(authUserId: string, assetId: string) {
+  return call<QuestionAssetRecord | null>(authUserId, "read_question_asset_upload", { assetId });
+}
+
+export function confirmQuestionAsset(authUserId: string, input: object) {
+  return call<QuestionAssetRecord>(authUserId, "confirm_question_asset_upload_command", input);
+}
+
+export function abortQuestionAsset(authUserId: string, input: object) {
+  return call<QuestionAssetRecord>(authUserId, "abort_question_asset_upload_command", input);
+}
+
+export function archiveQuestionAsset(authUserId: string, input: object) {
+  return call<QuestionAssetRecord>(authUserId, "archive_question_asset_command", input);
+}
+
+export function readCompetitiveQuestionAsset(authUserId: string, input: { attemptId: string; assetId: string }) {
+  return call<QuestionAssetRecord>(authUserId, "read_competitive_question_asset", input);
 }

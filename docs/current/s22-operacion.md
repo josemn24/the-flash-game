@@ -5,8 +5,9 @@
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
 El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching y E10 Progressive-image. Los demás modos, formatos no migrados, E05–E09, Storage, abandono automático, takeover
-y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita únicamente avatares; `question-assets`
-queda preparado pero no se entrega todavía desde el editor ni desde E10.
+y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y D08b habilita assets
+privados de E10 desde el editor y el recorrido competitivo. `multiple-choice` todavía no consume
+assets privados.
 
 ## Runtime scope
 
@@ -23,7 +24,7 @@ falla al arrancar la composición server-only.
 | Superficie | Pilot | Development/Test |
 | --- | --- | --- |
 | `/`, `/salas/[roomId]`, rankings, historial | Supabase | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>` | Supabase; Flash admite MC + Mini-Wordle + Logic-code + Progressive-clues + Matching | Supabase |
+| `/desafios/[challengeId]?roomId=<UUID>` | Supabase; Flash admite MC + Mini-Wordle + Logic-code + Progressive-clues + Matching + E10 | Supabase |
 | `/desafios/[challengeId]` sin sala | 404 | Preview mock explícito |
 | aliases como `tabarnia-room` | 404 | Demo mock |
 | `/formatos`, `/flash-pop/**` | Demo/práctica | Demo/práctica |

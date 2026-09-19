@@ -1,5 +1,14 @@
 import type { ImageSurface, MultipleChoicePromptVisual, QuestionMedia } from "@/types/question";
 
+export type FlashEditorialImageAssetReference = {
+  readonly assetId: string;
+  readonly alt: string;
+  readonly width: number;
+  readonly height: number;
+  readonly fit?: "cover" | "contain";
+  readonly position?: string;
+};
+
 export type EditorialJsonPrimitive = boolean | number | string | null;
 export type EditorialJsonValue =
   | EditorialJsonPrimitive
@@ -65,7 +74,8 @@ export type FlashEditorialProgressiveImagePublicPayload = {
   readonly category?: string;
   readonly tags?: EditorialJsonObject;
   readonly question: string;
-  readonly surface: ImageSurface;
+  /** Asset reference for new documents; ImageSurface remains readable for legacy v1 documents. */
+  readonly surface: FlashEditorialImageAssetReference | ImageSurface;
   readonly revealDurationMs: number;
   readonly answerLabel?: string | null;
   readonly answerPlaceholder?: string | null;
@@ -178,7 +188,7 @@ export type FlashEditorialMatchingQuestion = {
 export type FlashEditorialProgressiveImageQuestion = {
   readonly slug: string;
   readonly type: "progressive-image";
-  readonly payloadSchemaVersion: 1;
+  readonly payloadSchemaVersion: 1 | 2;
   readonly timeLimitMs: number;
   readonly points: number;
   readonly publicPayload: FlashEditorialProgressiveImagePublicPayload;

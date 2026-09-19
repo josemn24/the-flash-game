@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
             protocol: supabaseImageOrigin.protocol.replace(":", "") as "http" | "https",
             hostname: supabaseImageOrigin.hostname,
             ...(supabaseImageOrigin.port ? { port: supabaseImageOrigin.port } : {}),
-            pathname: "/storage/v1/object/public/**",
+            pathname: "/storage/v1/object/**",
           },
         ]
       : [],

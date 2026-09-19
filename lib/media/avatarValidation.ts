@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 export const AVATAR_ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 export const AVATAR_MAX_DIMENSION = 2048;
+export const QUESTION_ASSET_MAX_BYTES = 50 * 1024 * 1024;
+export const QUESTION_ASSET_MAX_DIMENSION = 8192;
 
 export type AvatarMimeType = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];
 
@@ -104,9 +106,12 @@ function inspectWebp(bytes: Uint8Array) {
   return null;
 }
 
-export function inspectAvatarBytes(input: Uint8Array): AvatarInspection {
+export function inspectImageBytes(
+  input: Uint8Array,
+  limits: { readonly maxBytes: number; readonly maxDimension: number },
+): AvatarInspection {
   if (input.byteLength === 0) throw new Error("empty");
-  if (input.byteLength > AVATAR_MAX_BYTES) throw new Error("too_large");
+  if (input.byteLength > limits.maxBytes) throw new Error("too_large");
 
   const header = inspectPng(input) ?? inspectJpeg(input) ?? inspectWebp(input);
   if (!header) throw new Error("unsupported_type");
@@ -118,7 +123,7 @@ export function inspectAvatarBytes(input: Uint8Array): AvatarInspection {
   ) {
     throw new Error("corrupt");
   }
-  if (header.width > AVATAR_MAX_DIMENSION || header.height > AVATAR_MAX_DIMENSION) {
+  if (header.width > limits.maxDimension || header.height > limits.maxDimension) {
     throw new Error("dimensions");
   }
 
@@ -127,6 +132,17 @@ export function inspectAvatarBytes(input: Uint8Array): AvatarInspection {
     byteSize: input.byteLength,
     sha256: createHash("sha256").update(input).digest("hex"),
   };
+}
+
+export function inspectAvatarBytes(input: Uint8Array): AvatarInspection {
+  return inspectImageBytes(input, { maxBytes: AVATAR_MAX_BYTES, maxDimension: AVATAR_MAX_DIMENSION });
+}
+
+export function inspectQuestionAssetBytes(input: Uint8Array): AvatarInspection {
+  return inspectImageBytes(input, {
+    maxBytes: QUESTION_ASSET_MAX_BYTES,
+    maxDimension: QUESTION_ASSET_MAX_DIMENSION,
+  });
 }
 
 export function validateAvatarSelection(file: Pick<File, "size" | "type">) {

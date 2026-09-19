@@ -13,12 +13,14 @@ describe("content contract schema versions", () => {
     expect(isSupportedConfigSchemaVersion(1)).toBe(true);
     expect(() => assertSupportedQuestionPayloadSchemaVersion(1)).not.toThrow();
     expect(() => assertSupportedConfigSchemaVersion(1)).not.toThrow();
+    expect(isSupportedQuestionPayloadSchemaVersion(2)).toBe(true);
+    expect(() => assertSupportedQuestionPayloadSchemaVersion(2)).not.toThrow();
   });
 
   it("rejects unknown and non-positive versions explicitly", () => {
-    expect(isSupportedQuestionPayloadSchemaVersion(2)).toBe(false);
     expect(isSupportedConfigSchemaVersion(0)).toBe(false);
-    expect(() => assertSupportedQuestionPayloadSchemaVersion(2)).toThrow(
+    expect(isSupportedQuestionPayloadSchemaVersion(3)).toBe(false);
+    expect(() => assertSupportedQuestionPayloadSchemaVersion(3)).toThrow(
       UnsupportedContentContractVersionError,
     );
     expect(() => assertSupportedConfigSchemaVersion(0)).toThrow(

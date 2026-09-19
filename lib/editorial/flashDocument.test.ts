@@ -302,6 +302,63 @@ describe("Flash editorial document", () => {
     });
   });
 
+  it("accepts Progressive-image v2 with a private asset reference", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "progressive-image-private",
+      type: "progressive-image",
+      payloadSchemaVersion: 2,
+      timeLimitMs: 20_000,
+      points: 50,
+      publicPayload: {
+        question: "¿Qué monumento aparece?",
+        surface: {
+          assetId: "00000000-0000-4000-8000-000000000099",
+          alt: "Imagen progresivamente revelada de un monumento europeo",
+          width: 847,
+          height: 566,
+          fit: "contain",
+        },
+        revealDurationMs: 12_000,
+      },
+      solutionPayload: {
+        correctAnswer: "Torre Eiffel",
+        acceptedAnswers: ["torre eiffel"],
+        solutionAlt: "La Torre Eiffel en París",
+        explanation: "La imagen muestra la Torre Eiffel.",
+      },
+    };
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.questions[1]).toMatchObject({
+      type: "progressive-image",
+      payloadSchemaVersion: 2,
+      publicPayload: { surface: { assetId: "00000000-0000-4000-8000-000000000099" } },
+    });
+  });
+
+  it("rejects a local source in a new private-asset Progressive-image version", () => {
+    const document = documentFixture();
+    document.questions[1] = {
+      slug: "progressive-image-private-invalid",
+      type: "progressive-image",
+      payloadSchemaVersion: 2,
+      timeLimitMs: 20_000,
+      points: 50,
+      publicPayload: {
+        question: "¿Qué monumento aparece?",
+        surface: { src: "/visuals/connections/eiffel-tower.png", alt: "Imagen", width: 847, height: 566 },
+        revealDurationMs: 12_000,
+      },
+      solutionPayload: {
+        correctAnswer: "Torre Eiffel",
+        acceptedAnswers: ["torre eiffel"],
+        solutionAlt: "La Torre Eiffel en París",
+      },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow("progressive-image");
+  });
+
   it("rejects Progressive-image assets, dimensions, duration, and public solutions", () => {
     const document = documentFixture();
     document.questions[1] = {

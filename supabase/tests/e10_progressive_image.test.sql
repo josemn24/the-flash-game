@@ -16,6 +16,12 @@ insert into private.question_definitions (id, slug, created_by_player_id)
 values
   (test_support.id('e10-q-image'), 'e10-q-image', test_support.id('superadmin')),
   (test_support.id('e10-q-choice'), 'e10-q-choice', test_support.id('superadmin'));
+insert into private.media_assets
+  (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
+values
+  (test_support.id('e10-asset'), 'question-assets', 'question-assets/' || test_support.id('e10-asset')::text || '.png',
+   'question-asset', 'ready', test_support.id('superadmin'), 'image/png', 1, 847, 566,
+   'de188cf69cb899771872cc32cd304babd4bdd64c483f8165f3766dd844db3aad');
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
 values (
@@ -27,11 +33,11 @@ values (test_support.id('e10-qv-choice'), '{"correctAnswer":"Lisboa"}');
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
 values (
-  test_support.id('e10-qv-image'), test_support.id('e10-q-image'), 1, 1, 'progressive-image', 20000,
+  test_support.id('e10-qv-image'), test_support.id('e10-q-image'), 1, 2, 'progressive-image', 20000,
   jsonb_build_object(
     'question', '¿Qué monumento aparece?',
     'surface', jsonb_build_object(
-      'src', '/visuals/connections/eiffel-tower.png',
+      'assetId', test_support.id('e10-asset')::text,
       'alt', 'Imagen progresivamente revelada de un monumento europeo',
       'width', 1024, 'height', 1024, 'fit', 'contain'
     ),
@@ -70,6 +76,7 @@ values (test_support.id('e10-sc'), test_support.id('e10-season'), test_support.i
   'open', now() - interval '1 hour', now() + interval '1 hour');
 
 select ok(private.is_supported_flash_question(test_support.id('e10-qv-image')), 'Progressive-image is a supported Flash question');
+select ok(private.is_ready_question_asset(test_support.id('e10-asset')), 'E10 question asset is ready');
 select lives_ok($$select private.assert_supported_calendar_content(test_support.id('e10-cv'))$$, 'Calendar accepts the mixed E10 publication');
 
 select test_support.as_actor('owner');
@@ -83,8 +90,10 @@ select test_support.run('prepare_interaction');
 select is((select state->>'challengeItemId' from test_support.runtime), test_support.id('e10-item-image')::text,
   'Prepare releases the Progressive-image item in order');
 select ok((select state->'lastResult' is null from test_support.runtime), 'No client-side result is trusted before receive_answer');
-select is((select state->'publicPayload'->'surface'->>'src' from test_support.runtime), '/visuals/connections/eiffel-tower.png',
-  'Prepare returns the public image source');
+select is((select state->'publicPayload'->'surface'->>'assetId' from test_support.runtime), test_support.id('e10-asset')::text,
+  'Database prepare returns the private asset reference');
+select ok((select not (state->'publicPayload'->'surface' ? 'src') from test_support.runtime),
+  'Database prepare never stores or returns a signed URL');
 select ok((select not (state->'publicPayload' ? 'correctAnswer') from test_support.runtime), 'Prepare does not return the solution');
 select ok((select not (state->'publicPayload' ? 'solutionAlt') from test_support.runtime), 'Prepare does not return solution alt text');
 select ok((select state ? 'presentedAt' and state ? 'deadlineAt' from test_support.runtime), 'Prepare returns server presentation and deadline timestamps');
@@ -96,6 +105,16 @@ select is((select last_result->>'status' from test_support.runtime), 'correct', 
 select is((select (last_result->>'points')::integer from test_support.runtime), 50, 'Progressive-image awards the configured points');
 select ok(current_setting('e10.time_used_ms')::integer < 20000, 'Evaluation uses server time instead of client time');
 
+reset role;
+select test_support.as_actor('superadmin');
+set local role service_role;
+select lives_ok($$select private.archive_question_asset_command(jsonb_build_object(
+  'idempotencyKey', 'e10-archive-asset-001',
+  'assetId', test_support.id('e10-asset'),
+  'reason', 'Retirar asset de nuevas publicaciones'
+))$$, 'Superadmin puede archivar el asset');
+select is((select status from private.media_assets where id = test_support.id('e10-asset')), 'archived',
+  'Archivar excluye el asset de nuevas publicaciones');
 reset role;
 select is((select count(*) from private.challenge_items where challenge_version_id = test_support.id('e10-cv')), 2::bigint,
   'E10 does not create auxiliary tables or items');
