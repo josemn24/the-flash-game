@@ -40,6 +40,7 @@ type UpdateProps = {
   readonly entry: Entry;
   readonly publishedContent: readonly SuperadminEditorialContext["entries"][number][];
   readonly room: SuperadminPortalRoom;
+  readonly compact?: boolean;
 };
 
 type CalendarScheduleDialogProps = CreateProps | UpdateProps;
@@ -463,7 +464,13 @@ export function CalendarScheduleDialog(props: CalendarScheduleDialogProps) {
           <span>Programar nuevo desafío</span>
         </button>
       ) : (
-        <Button type="button" variant="secondary" size="sm" onClick={() => setOpen(true)}>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className={props.compact ? styles.weekEntryAction : undefined}
+          onClick={() => setOpen(true)}
+        >
           Reprogramar
         </Button>
       )}

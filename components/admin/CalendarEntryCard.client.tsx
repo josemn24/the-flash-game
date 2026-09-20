@@ -5,6 +5,7 @@ import type {
   SuperadminEditorialContext,
   SuperadminPortalRoom,
 } from "@/types/view-models";
+import Link from "next/link";
 import { Card, Chip } from "@/components/ui";
 import { CalendarScheduleDialog } from "./CalendarScheduleDialog.client";
 import styles from "./CalendarManagement.module.css";
@@ -30,6 +31,18 @@ function timestamp(value: string, timeZone: string) {
   }).format(new Date(value));
 }
 
+function time(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone,
+  }).format(new Date(value));
+}
+
+function challengeDetailHref(content?: SuperadminEditorialContext["entries"][number]) {
+  return content ? `/admin/challenges/${content.challengeDefinitionId}` : null;
+}
+
 export function CalendarEntryCard({
   entry,
   room,
@@ -43,9 +56,57 @@ export function CalendarEntryCard({
   readonly content?: SuperadminEditorialContext["entries"][number];
   readonly publishedContent: readonly SuperadminEditorialContext["entries"][number][];
   readonly canEdit: boolean;
-  readonly variant?: "agenda" | "detail";
+  readonly variant?: "agenda" | "detail" | "week";
 }) {
   const isAgenda = variant === "agenda";
+  const isWeek = variant === "week";
+  const detailHref = challengeDetailHref(content);
+
+  if (isWeek) {
+    return (
+      <Card as="article" surface="surface" density="compact" className={styles.entryWeek}>
+        <div className={styles.weekEntryTopline}>
+          <span className={styles.weekEntryNumber}>#{entry.number}</span>
+          <Chip
+            variant="status"
+            tone={statusTone(entry.status)}
+            className={styles.weekEntryStatus}
+          >
+            {statusLabel(entry.status)}
+          </Chip>
+        </div>
+        <h4 className={styles.weekEntryTitle} title={entry.challengeTitle}>
+          {detailHref ? (
+            <Link
+              href={detailHref}
+              className={styles.entryTitleLink}
+              aria-label={`Abrir detalle de ${entry.challengeTitle}`}
+            >
+              {entry.challengeTitle}
+            </Link>
+          ) : (
+            entry.challengeTitle
+          )}
+        </h4>
+        <p
+          className={styles.weekEntryTime}
+          aria-label={`Apertura ${time(entry.opensAt, entry.timeZone)}. Cierre ${time(entry.closesAt, entry.timeZone)}`}
+        >
+          {time(entry.opensAt, entry.timeZone)} – {time(entry.closesAt, entry.timeZone)}
+        </p>
+        {canEdit && room ? (
+          <CalendarScheduleDialog
+            mode="update"
+            entry={entry}
+            room={room}
+            publishedContent={publishedContent}
+            compact
+          />
+        ) : null}
+      </Card>
+    );
+  }
+
   return (
     <Card
       as="article"
@@ -61,7 +122,17 @@ export function CalendarEntryCard({
             </p>
           ) : null}
           <h4>
-            #{entry.number} · {entry.challengeTitle}
+            {detailHref ? (
+              <Link
+                href={detailHref}
+                className={styles.entryTitleLink}
+                aria-label={`Abrir detalle de ${entry.challengeTitle}`}
+              >
+                #{entry.number} · {entry.challengeTitle}
+              </Link>
+            ) : (
+              `#${entry.number} · ${entry.challengeTitle}`
+            )}
           </h4>
         </div>
         <Chip variant="status" tone={statusTone(entry.status)}>

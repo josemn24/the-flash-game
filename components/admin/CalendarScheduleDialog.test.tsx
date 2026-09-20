@@ -95,4 +95,27 @@ describe("CalendarScheduleDialog", () => {
     expect(markup).not.toContain("<details");
     expect(markup).not.toContain('name="expectedUpdatedAt"');
   });
+
+  it("renders a compact weekly card without the full date range", () => {
+    const markup = renderToStaticMarkup(
+      <CalendarEntryCard
+        entry={{
+          ...entry,
+          challengeTitle: "Un desafío con un título editorial suficientemente largo para truncarse",
+        }}
+        room={room}
+        content={content[0]}
+        publishedContent={content}
+        canEdit={false}
+        variant="week"
+      />,
+    );
+
+    expect(markup).toContain("weekEntryTitle");
+    expect(markup).toContain("12:00");
+    expect(markup).toContain("13:00");
+    expect(markup).toContain('href="/admin/challenges/00000000-0000-4000-8000-000000000007"');
+    expect(markup).not.toContain("21 sept 2026");
+    expect(markup).not.toContain("· v1");
+  });
 });

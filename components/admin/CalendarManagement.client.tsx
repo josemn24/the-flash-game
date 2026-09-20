@@ -163,6 +163,9 @@ function AgendaView({
                 key={entry.scheduledChallengeId}
                 entry={entry}
                 room={room}
+                content={publishedContent.find(
+                  (candidate) => candidate.challengeVersionId === entry.challengeVersionId,
+                )}
                 publishedContent={publishedContent}
                 canEdit={editable.has(entry.scheduledChallengeId)}
                 variant="agenda"
@@ -241,9 +244,12 @@ function WeekView({
                         key={entry.scheduledChallengeId}
                         entry={entry}
                         room={room}
+                        content={publishedContent.find(
+                          (candidate) => candidate.challengeVersionId === entry.challengeVersionId,
+                        )}
                         publishedContent={publishedContent}
                         canEdit={editable.has(entry.scheduledChallengeId)}
-                        variant="agenda"
+                        variant="week"
                       />
                     ))
                   ) : (
