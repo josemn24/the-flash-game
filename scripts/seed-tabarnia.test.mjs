@@ -14,9 +14,45 @@ function accounts() {
   );
 }
 
+function avatarMetadata() {
+  return Object.fromEntries(
+    TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => [
+      user.label,
+      {
+        byteSize: 640,
+        width: 640,
+        height: 640,
+        sha256: "a".repeat(64),
+        mimeType: "image/jpeg",
+        extension: user.avatarFile.split(".").pop(),
+        filePath: `/tmp/${user.avatarFile}`,
+      },
+    ]),
+  );
+}
+
 describe("Tabarnia seed", () => {
   it("defines the fixed cohort and the requested roles", () => {
     expect(TABARNIA_USERS).toHaveLength(13);
+    expect(TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => user.avatarFile)).toEqual(
+      [
+        "dark.jpeg",
+        "palmera.jpeg",
+        "kike.jpeg",
+        "rielbe.jpeg",
+        "jacobo.jpeg",
+        "lambda.jpg",
+        "jhon3d.jpg",
+      ],
+    );
+    expect(TABARNIA_USERS.filter((user) => !user.avatarFile).map((user) => user.label)).toEqual([
+      "xesmona",
+      "ches",
+      "carlos",
+      "javi",
+      "alejandro",
+      "diego",
+    ]);
     expect(TABARNIA_USERS.find((user) => user.label === "xesmona")).toMatchObject({
       role: "superadmin",
     });
@@ -31,6 +67,7 @@ describe("Tabarnia seed", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),
       assetMetadata: { byteSize: 10, width: 1859, height: 968, sha256: "a".repeat(64) },
+      avatarMetadata: avatarMetadata(),
     });
 
     expect(sql).toContain("'tabarnia'");
@@ -39,6 +76,10 @@ describe("Tabarnia seed", () => {
     expect(sql.match(/'owner'/g)).toHaveLength(1);
     expect(sql.match(/'member'/g)).toHaveLength(11);
     expect(sql).toContain("'Steel Ball Run'");
+    expect(sql).toContain("'avatars'");
+    expect(sql).toContain("'avatar'");
+    expect(sql).toContain("avatars/00000003-0000-4000-8000-000000000000/");
+    expect(sql.match(/update public\.players set avatar_path/g)).toHaveLength(7);
     expect(sql).not.toContain("insert into public.attempts");
     expect(sql).not.toContain("answer_receipts");
     expect(sql).not.toContain("flash_point_entries");
@@ -66,6 +107,7 @@ describe("Tabarnia seed", () => {
           height: 968,
           sha256: "a".repeat(64),
         })),
+        getAvatarMetadata: vi.fn(async (user) => avatarMetadata()[user.label]),
         uploadStorageObject,
         dockerSql: runSql,
         writeFixture: saveFixture,
@@ -73,7 +115,8 @@ describe("Tabarnia seed", () => {
     });
 
     expect(reset).toHaveBeenCalledOnce();
-    expect(uploadStorageObject).toHaveBeenCalledOnce();
+    expect(uploadStorageObject).toHaveBeenCalledTimes(8);
+    expect(uploadStorageObject.mock.calls.every(([, input]) => input.upsert)).toBe(true);
     expect(runSql).toHaveBeenCalledOnce();
     expect(saveFixture).toHaveBeenCalledWith(
       "tabarnia",
@@ -81,6 +124,7 @@ describe("Tabarnia seed", () => {
     );
     expect(output.questionCount).toBe(16);
     expect(output.pointsTotal).toBe(100);
+    expect(output.avatars).toHaveLength(7);
   });
 
   it("does not write the manifest and removes Storage when SQL fails", async () => {
@@ -101,6 +145,7 @@ describe("Tabarnia seed", () => {
             height: 968,
             sha256: "a".repeat(64),
           }),
+          getAvatarMetadata: async (user) => avatarMetadata()[user.label],
           uploadStorageObject: vi.fn(),
           removeStorageObject,
           dockerSql: async () => {
@@ -110,7 +155,7 @@ describe("Tabarnia seed", () => {
         },
       }),
     ).rejects.toThrow("Tabarnia SQL failed");
-    expect(removeStorageObject).toHaveBeenCalledOnce();
+    expect(removeStorageObject).toHaveBeenCalledTimes(8);
     expect(saveFixture).not.toHaveBeenCalled();
   });
 });

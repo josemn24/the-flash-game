@@ -18,6 +18,13 @@ import {
 const namespace = "the-flash-game:tabarnia";
 const mapPath = path.resolve("public/visuals/sbr/usa-location-map.png");
 const assetLabel = "question-asset:tabarnia-sbr-grand-canyon-heat-map";
+const avatarDirectory = path.resolve("public/flash-pop/avatars");
+const avatarMimeTypes = {
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
 
 export const TABARNIA_USERS = [
   {
@@ -40,6 +47,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Dark-123!",
     displayName: "Dark",
     role: "member",
+    avatarFile: "dark.jpeg",
   },
   {
     label: "palmera",
@@ -47,6 +55,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Palmera-123!",
     displayName: "Palmera",
     role: "member",
+    avatarFile: "palmera.jpeg",
   },
   {
     label: "carlos",
@@ -61,6 +70,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Kike-123!",
     displayName: "Kike",
     role: "member",
+    avatarFile: "kike.jpeg",
   },
   {
     label: "javi",
@@ -75,6 +85,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Rielbe-123!",
     displayName: "Rielbe",
     role: "member",
+    avatarFile: "rielbe.jpeg",
   },
   {
     label: "alejandro",
@@ -89,6 +100,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Jacobo-123!",
     displayName: "Jacobo",
     role: "member",
+    avatarFile: "jacobo.jpeg",
   },
   {
     label: "lambda",
@@ -96,6 +108,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Lambda-123!",
     displayName: "Lambda",
     role: "member",
+    avatarFile: "lambda.jpg",
   },
   {
     label: "jhon3d",
@@ -103,6 +116,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Jhon3D-123!",
     displayName: "Jhon3D",
     role: "member",
+    avatarFile: "jhon3d.jpg",
   },
   {
     label: "diego",
@@ -128,12 +142,20 @@ function assertLocalTabarniaUrl(value) {
   }
 }
 
-async function getMapMetadata() {
-  const bytes = await readFile(mapPath);
+async function getImageMetadata(filePath, { expectedFormat, expectedWidth, expectedHeight } = {}) {
+  const bytes = await readFile(filePath);
   const metadata = await sharp(bytes).metadata();
-  if (metadata.format !== "png" || metadata.width !== 1859 || metadata.height !== 968) {
+  const mimeType = avatarMimeTypes[metadata.format];
+  if (!mimeType || !metadata.width || !metadata.height || bytes.byteLength <= 0) {
+    throw new Error(`El asset de imagen no es válido: ${filePath}`);
+  }
+  if (
+    (expectedFormat && metadata.format !== expectedFormat) ||
+    (expectedWidth && metadata.width !== expectedWidth) ||
+    (expectedHeight && metadata.height !== expectedHeight)
+  ) {
     throw new Error(
-      `El asset SBR no tiene el formato esperado: ${metadata.format} ${metadata.width}x${metadata.height}`,
+      `El asset no tiene el formato esperado: ${filePath} ${metadata.format} ${metadata.width}x${metadata.height}`,
     );
   }
   return {
@@ -141,12 +163,52 @@ async function getMapMetadata() {
     sha256: createHash("sha256").update(bytes).digest("hex"),
     width: metadata.width,
     height: metadata.height,
+    format: metadata.format,
+    mimeType,
   };
 }
 
-export function buildTabarniaDomainSql({ accounts, assetMetadata }) {
+async function getMapMetadata() {
+  return getImageMetadata(mapPath, {
+    expectedFormat: "png",
+    expectedWidth: 1859,
+    expectedHeight: 968,
+  });
+}
+
+async function getAvatarMetadata(user) {
+  const filePath = path.join(avatarDirectory, user.avatarFile);
+  const extension = path.extname(user.avatarFile).slice(1).toLowerCase();
+  const expectedMimeType = avatarMimeTypes[extension];
+  const metadata = await getImageMetadata(filePath);
+  if (metadata.mimeType !== expectedMimeType || metadata.byteSize > 5 * 1024 * 1024) {
+    throw new Error(`El avatar de ${user.displayName} no cumple las restricciones de Storage.`);
+  }
+  return { ...metadata, filePath, extension };
+}
+
+function avatarAssetId(label) {
+  return stableId(`avatar:${label}`);
+}
+
+function avatarObjectPath(label, playerId, extension) {
+  return `avatars/${playerId}/${avatarAssetId(label)}.${extension}`;
+}
+
+export function buildTabarniaDomainSql({ accounts, assetMetadata, avatarMetadata }) {
   const xesmona = accounts.xesmona.playerId;
   const assetId = stableId(assetLabel);
+  const avatarAssets = TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => ({
+    label: user.label,
+    playerId: accounts[user.label].playerId,
+    assetId: avatarAssetId(user.label),
+    objectPath: avatarObjectPath(
+      user.label,
+      accounts[user.label].playerId,
+      avatarMetadata[user.label].extension,
+    ),
+    metadata: avatarMetadata[user.label],
+  }));
   const questions = SBR_QUESTIONS.map((item) => ({
     ...item,
     publicPayload: JSON.parse(
@@ -192,6 +254,18 @@ export function buildTabarniaDomainSql({ accounts, assetMetadata }) {
         `(${sqlString(roomId)}, ${sqlString(accounts[label].playerId)}, ${sqlString(label === "ches" ? "owner" : "member")}, 'active', now())`,
     )
     .join(",\n");
+  const avatarMediaSql = avatarAssets
+    .map(
+      (avatar) =>
+        `(${sqlString(avatar.assetId)}, 'avatars', ${sqlString(avatar.objectPath)}, 'avatar', 'ready', ${sqlString(avatar.playerId)}, ${sqlString(xesmona)}, ${sqlString(avatar.metadata.mimeType)}, ${avatar.metadata.byteSize}, ${avatar.metadata.width}, ${avatar.metadata.height}, ${sqlString(avatar.metadata.sha256)})`,
+    )
+    .join(",\n");
+  const avatarPlayerUpdates = avatarAssets
+    .map(
+      (avatar) =>
+        `update public.players set avatar_path = ${sqlString(avatar.objectPath)} where id = ${sqlString(avatar.playerId)};`,
+    )
+    .join("\n");
 
   return `
 begin;
@@ -215,6 +289,14 @@ insert into private.media_assets
 values
   (${sqlString(assetId)}, 'question-assets', ${sqlString(`question-assets/${assetId}.png`)}, 'question-asset', 'ready',
    ${sqlString(xesmona)}, 'image/png', ${assetMetadata.byteSize}, ${assetMetadata.width}, ${assetMetadata.height}, ${sqlString(assetMetadata.sha256)});
+
+insert into private.media_assets
+  (id, bucket_id, object_path, kind, status, owner_player_id, created_by_player_id,
+   mime_type, byte_size, width, height, sha256)
+values
+${avatarMediaSql};
+
+${avatarPlayerUpdates}
 
 insert into private.question_definitions (id, slug, created_by_player_id)
 values
@@ -268,7 +350,17 @@ commit;
 `;
 }
 
-export function tabarniaManifest() {
+export function tabarniaManifest(accounts, avatarMetadata) {
+  const avatars = TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => ({
+    label: user.label,
+    sourceFile: user.avatarFile,
+    assetId: avatarAssetId(user.label),
+    objectPath: avatarObjectPath(
+      user.label,
+      accounts[user.label].playerId,
+      avatarMetadata[user.label].extension,
+    ),
+  }));
   return {
     room: { id: stableId("room:tabarnia"), slug: "tabarnia" },
     seasonId: stableId("season:tabarnia-alpha"),
@@ -282,6 +374,7 @@ export function tabarniaManifest() {
       bucket: "question-assets",
       objectPath: `question-assets/${stableId(assetLabel)}.png`,
     },
+    avatars,
     playerLabels,
     superadminLabel: "xesmona",
     ownerLabel: "ches",
@@ -297,6 +390,7 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
   const uploadAsset = dependencies.uploadStorageObject ?? uploadStorageObject;
   const removeAsset = dependencies.removeStorageObject ?? removeStorageObject;
   const readAssetMetadata = dependencies.getMapMetadata ?? getMapMetadata;
+  const readAvatarMetadata = dependencies.getAvatarMetadata ?? getAvatarMetadata;
 
   const config = await loadConfig({ requireServiceRole: true });
   assertLocalTabarniaUrl(config.url);
@@ -304,20 +398,46 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
 
   const accounts = await createAccounts(TABARNIA_USERS, config);
   const assetId = stableId(assetLabel);
-  let storageSeeded = false;
+  const avatarMetadata = Object.fromEntries(
+    await Promise.all(
+      TABARNIA_USERS.filter((user) => user.avatarFile).map(async (user) => [
+        user.label,
+        await readAvatarMetadata(user),
+      ]),
+    ),
+  );
+  const seededStorageObjects = [];
 
   try {
     const assetMetadata = await readAssetMetadata();
-    await uploadAsset(config, {
-      bucket: "question-assets",
-      objectPath: `question-assets/${assetId}.png`,
-      filePath: mapPath,
-      contentType: "image/png",
-    });
-    storageSeeded = true;
-    await runSql(buildTabarniaDomainSql({ accounts, assetMetadata }), config.dbContainer);
+    const storageObjects = [
+      {
+        bucket: "question-assets",
+        objectPath: `question-assets/${assetId}.png`,
+        filePath: mapPath,
+        contentType: "image/png",
+      },
+      ...TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => ({
+        bucket: "avatars",
+        objectPath: avatarObjectPath(
+          user.label,
+          accounts[user.label].playerId,
+          avatarMetadata[user.label].extension,
+        ),
+        filePath: avatarMetadata[user.label].filePath,
+        contentType: avatarMetadata[user.label].mimeType,
+      })),
+    ];
+    for (const storageObject of storageObjects) {
+      seededStorageObjects.push(storageObject);
+      await uploadAsset(config, { ...storageObject, upsert: true });
+    }
+    await runSql(
+      buildTabarniaDomainSql({ accounts, assetMetadata, avatarMetadata }),
+      config.dbContainer,
+    );
 
-    const output = tabarniaManifest();
+    const output = tabarniaManifest(accounts, avatarMetadata);
     await saveFixture("tabarnia", {
       version: 1,
       scenario: "tabarnia",
@@ -338,14 +458,11 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
     });
     return output;
   } catch (error) {
-    if (storageSeeded) {
-      await Promise.resolve(
-        removeAsset(config, {
-          bucket: "question-assets",
-          objectPath: `question-assets/${assetId}.png`,
-        }),
-      ).catch(() => undefined);
-    }
+    await Promise.all(
+      seededStorageObjects.map((storageObject) =>
+        Promise.resolve(removeAsset(config, storageObject)).catch(() => undefined),
+      ),
+    );
     throw error;
   }
 }

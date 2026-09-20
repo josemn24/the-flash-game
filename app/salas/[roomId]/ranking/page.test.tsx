@@ -17,7 +17,7 @@ describe("room ranking route", () => {
     if (!model) throw new Error("Expected ranking model");
     const markup = renderToStaticMarkup(<FlashPopRoomRanking {...model} />);
 
-    expect(markup).toContain("Ranking de Tabarnia");
+    expect(markup).toContain("Ranking global");
     expect(markup).toContain("Dark");
     expect(markup).toContain("Jackobo");
     expect(markup).toContain("Rielbe");

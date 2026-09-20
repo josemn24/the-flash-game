@@ -326,14 +326,17 @@ export async function createAuthenticatedClient(config, account) {
   return client;
 }
 
-export async function uploadStorageObject(config, { bucket, objectPath, filePath, contentType }) {
+export async function uploadStorageObject(
+  config,
+  { bucket, objectPath, filePath, contentType, upsert = false },
+) {
   const admin = createClient(config.url, config.serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
   const bytes = await readFile(filePath);
   const { error } = await admin.storage.from(bucket).upload(objectPath, bytes, {
     contentType,
-    upsert: false,
+    upsert,
   });
   if (error) throw new Error(`No se pudo cargar ${bucket}/${objectPath}.`, { cause: error });
 }

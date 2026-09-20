@@ -18,6 +18,28 @@ export const scenario = {
         !JSON.stringify(playable).includes("solutionPayload"),
       "La lectura jugable no expone las soluciones",
     );
+    const roomCards = await rpc(clients.ches, "get_my_room_cards", {});
+    const memberPreviews = roomCards[0]?.member_previews ?? [];
+    const darkPreview = memberPreviews.find((preview) => preview.name === "Dark");
+    const jacoboPreview = memberPreviews.find((preview) => preview.name === "Jacobo");
+    const chesPreview = memberPreviews.find((preview) => preview.name === "Ches");
+    assert(darkPreview?.avatarPath?.startsWith("avatars/"), "Dark tiene avatar en Storage");
+    assert(jacoboPreview?.avatarPath?.startsWith("avatars/"), "Jacobo tiene avatar en Storage");
+    assert(!chesPreview?.avatarPath, "Ches conserva el fallback sin avatar");
+    assert(
+      (await sqlCount(
+        "select count(*) from private.media_assets where bucket_id = 'avatars' and kind = 'avatar' and status = 'ready';",
+        config.dbContainer,
+      )) === 7,
+      "Tabarnia tiene siete avatares listos en Storage",
+    );
+    assert(
+      (await sqlCount(
+        "select count(*) from public.players where display_name in ('xesmona', 'Ches', 'Carlos', 'Javi', 'Alejandro', 'Diego') and avatar_path is null;",
+        config.dbContainer,
+      )) === 6,
+      "Los seis perfiles sin avatar conservan avatar_path nulo",
+    );
     assert(
       (await sqlCount(
         "select count(*) from public.room_memberships rm join public.rooms r on r.id = rm.room_id where r.slug = 'tabarnia' and rm.status = 'active';",

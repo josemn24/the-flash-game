@@ -278,9 +278,9 @@
 
   .bare .heading h1 {
     font-family: var(--type-display);
-    font-size: clamp(42px, 7vw, 68px);
+    font-size: clamp(36px, 5vw, 48px);
     letter-spacing: -0.06em;
-    line-height: 0.9;
+    line-height: 1;
   }
 
   .bare .list {

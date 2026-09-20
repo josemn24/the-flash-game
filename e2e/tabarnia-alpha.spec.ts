@@ -4,7 +4,11 @@ import { readFile } from "node:fs/promises";
 type Account = { email: string; password: string };
 type Fixture = {
   users: { ches: Account; xesmona: Account };
-  data: { room: { slug: string }; publicationId: string };
+  data: {
+    room: { slug: string };
+    publicationId: string;
+    avatars: Array<{ label: string; objectPath: string }>;
+  };
 };
 
 async function fixture() {
@@ -24,6 +28,23 @@ test.describe("Tabarnia alpha", () => {
     const data = await fixture();
     await signIn(page, data.users.ches);
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
+
+    await page.getByRole("link", { name: /Ver ranking de la sala/ }).click();
+    for (const label of ["Dark", "Jacobo"]) {
+      const avatar = data.data.avatars.find((item) => item.label === label.toLowerCase());
+      expect(avatar).toBeDefined();
+      await expect(page.getByRole("img", { name: label }).first().locator("img")).toHaveAttribute(
+        "src",
+        expect.stringContaining(encodeURIComponent(avatar!.objectPath)),
+      );
+      await expect(page.getByRole("img", { name: label }).first().locator("img")).toHaveJSProperty(
+        "naturalWidth",
+        640,
+      );
+    }
+    await expect(page.getByRole("img", { name: "Ches" }).first().getByText("CH")).toBeVisible();
+    await page.getByRole("link", { name: "Volver al detalle de la sala" }).click();
+
     await page.getByRole("link", { name: "Jugar" }).click();
     await expect(page.getByRole("heading", { name: "Steel Ball Run" }).first()).toBeVisible();
     await page.getByRole("button", { name: "Empezar desafío" }).click();
