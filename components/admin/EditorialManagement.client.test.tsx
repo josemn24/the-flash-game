@@ -95,4 +95,19 @@ describe("EditorialManagement", () => {
     expect(markup).not.toContain("Publicar versión");
     expect(markup).toContain("Solución privada:");
   });
+
+  it("keeps a published-only challenge in read-only detail mode", () => {
+    const context: SuperadminEditorialContext = {
+      entries: [entry("published", "2")],
+      source: "supabase",
+    };
+    const markup = renderToStaticMarkup(
+      <EditorialManagement context={context} canCreate={false} allowNewDraft={false} title="Flash beta" />,
+    );
+
+    expect(markup).toContain("Flash beta");
+    expect(markup).toContain("Versiones no editables");
+    expect(markup).not.toContain("Documento editorial");
+    expect(markup).not.toContain("Guardar borrador");
+  });
 });

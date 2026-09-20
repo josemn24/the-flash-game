@@ -12,7 +12,7 @@ const metricLinks = {
   activeRooms: "/admin/rooms",
   activeSeasons: "/admin/rooms",
   pendingSeasons: "/admin/rooms",
-  editorialDrafts: "/admin/content",
+  editorialDrafts: "/admin/challenges",
   upcomingChallenges: "/admin/rooms",
 } as const;
 
@@ -20,7 +20,7 @@ const metricLabels = {
   activeRooms: "Salas activas",
   activeSeasons: "Temporadas activas",
   pendingSeasons: "Temporadas pendientes",
-  editorialDrafts: "Borradores editoriales",
+  editorialDrafts: "Borradores de desafíos",
   upcomingChallenges: "Próximos desafíos",
 } as const;
 

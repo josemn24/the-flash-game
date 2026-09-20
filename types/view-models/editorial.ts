@@ -550,6 +550,41 @@ export type SuperadminEditorialContext = {
   readonly source: "supabase";
 };
 
+export type SuperadminChallengeStatusCounts = Readonly<Record<EditorialContentStatus, number>>;
+
+export type SuperadminChallengeSummary = {
+  readonly challengeDefinitionId: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly description: string;
+  readonly mode: "flash";
+  readonly questionCount: number;
+  readonly versionCount: number;
+  readonly status: EditorialContentStatus;
+  readonly statusCounts: SuperadminChallengeStatusCounts;
+  readonly updatedAt: string;
+  readonly latestVersion: {
+    readonly challengeVersionId: string;
+    readonly versionNumber: number;
+    readonly status: EditorialContentStatus;
+    readonly questionCount: number;
+    readonly updatedAt: string;
+    readonly publishedAt: string | null;
+  };
+};
+
+export type SuperadminChallengeCatalogContext = {
+  readonly entries: readonly SuperadminChallengeSummary[];
+  readonly source: "supabase";
+};
+
+export type SuperadminChallengeDetailContext = {
+  readonly challengeDefinitionId: string;
+  readonly entries: readonly SuperadminEditorialEntry[];
+  readonly source: "supabase";
+};
+
 export type SuperadminEditorialCommandResult = Omit<SuperadminEditorialEntry, "document"> & {
   readonly document: FlashEditorialDocument | null;
   readonly source: "supabase";

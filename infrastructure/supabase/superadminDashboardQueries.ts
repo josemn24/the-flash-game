@@ -133,8 +133,8 @@ function dashboardAlerts(payload: DashboardPayload): SuperadminDashboardAlert[] 
       id: "editorial-drafts",
       tone: "info",
       title: `${payload.metrics.editorialDrafts} ${payload.metrics.editorialDrafts === 1 ? "borrador necesita" : "borradores necesitan"} revisión`,
-      description: "Valida y publica el contenido Flash pendiente.",
-      href: "/admin/content",
+      description: "Valida y publica los desafíos Flash pendientes.",
+      href: "/admin/challenges",
       actionLabel: "Revisar contenido",
     });
   }
@@ -157,7 +157,7 @@ function dashboardActions() {
   return [
     { id: "create-room", label: "Crear sala", href: "/admin/rooms" },
     { id: "prepare-season", label: "Preparar temporada", href: "/admin/rooms" },
-    { id: "edit-content", label: "Preparar contenido", href: "/admin/content" },
+    { id: "prepare-challenge", label: "Preparar desafío", href: "/admin/challenges" },
     { id: "schedule-challenge", label: "Programar desafío", href: "/admin/rooms" },
   ] as const;
 }

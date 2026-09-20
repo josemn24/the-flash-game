@@ -82,7 +82,7 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
 - La reorganización del portal ya convierte `/admin` en un dashboard breve basado en
   `SuperadminDashboardModel`. `/admin/rooms` es la entrada operativa principal: sus tarjetas llevan a
   `/admin/rooms/[roomId]`, donde viven las pestañas `overview`, `seasons`, `members` y `calendar`.
-  Temporadas, usuarios activos y calendario se cargan acotados a la sala; contenido Flash y preguntas
+  Temporadas, usuarios activos y calendario se cargan acotados a la sala; desafíos Flash y preguntas
   siguen siendo áreas globales. Las Server Actions conservan autorización, auditoría, idempotencia y
   concurrencia optimista, y vuelven al detalle de la sala con avisos contextuales. `/admin/questions`
   conserva su biblioteca funcional dentro del shell común; `/admin/questions/new` y
@@ -114,7 +114,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.   |
 | `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                   |
 | `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.              |
-| `/admin/content`                                     | Gestión protegida del editor Flash y su biblioteca de preguntas.                                          |
+| `/admin/challenges`                                  | Catálogo protegido de desafíos Flash definidos.                                                          |
+| `/admin/challenges/new`                              | Preparación protegida de un nuevo desafío Flash.                                                         |
+| `/admin/challenges/[challengeDefinitionId]`         | Detalle protegido, edición de borradores e historial de versiones Flash.                                |
 | `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común.                                                   |
 | `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común.                              |
 | `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común.                                        |

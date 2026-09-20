@@ -20,6 +20,9 @@ import { isFlashEditorialDocument, parseFlashEditorialQuestionDocument } from "@
 import { createClient } from "@/lib/supabase/server";
 import type {
   SuperadminEditorialCommandResult,
+  SuperadminChallengeCatalogContext,
+  SuperadminChallengeDetailContext,
+  SuperadminChallengeSummary,
   SuperadminEditorialContext,
   SuperadminEditorialEntry,
   SuperadminQuestionLibraryContext,
@@ -63,6 +66,39 @@ function isEditorialEntry(
 
 function isEditorialContext(value: unknown): value is Omit<SuperadminEditorialContext, "source"> {
   return isRecord(value) && Array.isArray(value.entries) && value.entries.every((entry) => isEditorialEntry(entry));
+}
+
+function isChallengeSummary(value: unknown): value is SuperadminChallengeSummary {
+  if (!isRecord(value) || !isRecord(value.latestVersion) || !isRecord(value.statusCounts)) return false;
+  const latest = value.latestVersion;
+  const counts = value.statusCounts;
+  return (
+    typeof value.challengeDefinitionId === "string" && uuidPattern.test(value.challengeDefinitionId) &&
+    typeof value.slug === "string" && value.slug.trim().length > 0 &&
+    typeof value.title === "string" && value.title.trim().length > 0 &&
+    typeof value.subtitle === "string" && typeof value.description === "string" &&
+    value.mode === "flash" &&
+    typeof value.questionCount === "number" && Number.isSafeInteger(value.questionCount) && value.questionCount >= 0 &&
+    typeof value.versionCount === "number" && Number.isSafeInteger(value.versionCount) && value.versionCount > 0 &&
+    statuses.has(String(value.status)) && isIsoDate(value.updatedAt) &&
+    ("draft" in counts && "published" in counts && "archived" in counts) &&
+    ["draft", "published", "archived"].every((status) => typeof counts[status] === "number" && Number.isSafeInteger(counts[status]) && counts[status] >= 0) &&
+    typeof latest.challengeVersionId === "string" && uuidPattern.test(latest.challengeVersionId) &&
+    typeof latest.versionNumber === "number" && Number.isSafeInteger(latest.versionNumber) && latest.versionNumber > 0 &&
+    statuses.has(String(latest.status)) &&
+    typeof latest.questionCount === "number" && Number.isSafeInteger(latest.questionCount) && latest.questionCount >= 0 &&
+    isIsoDate(latest.updatedAt) && (latest.publishedAt === null || isIsoDate(latest.publishedAt))
+  );
+}
+
+function isChallengeCatalog(value: unknown): value is Omit<SuperadminChallengeCatalogContext, "source"> {
+  return isRecord(value) && Array.isArray(value.entries) && value.entries.every(isChallengeSummary);
+}
+
+function isChallengeDetail(value: unknown): value is Omit<SuperadminChallengeDetailContext, "source"> {
+  return isRecord(value) && typeof value.challengeDefinitionId === "string" &&
+    uuidPattern.test(value.challengeDefinitionId) && Array.isArray(value.entries) &&
+    value.entries.length > 0 && value.entries.every((entry) => isEditorialEntry(entry));
 }
 
 function isQuestionLibraryEntry(value: unknown): value is SuperadminQuestionLibraryEntry {
@@ -191,6 +227,36 @@ export class SupabaseSuperadminEditorialQueries
     if (!isEditorialContext(data)) {
       throw new Error("Supabase editorial read returned an invalid context payload.");
     }
+    return { ...data, source: "supabase" };
+  }
+
+  async getChallengeCatalog(): Promise<SuperadminChallengeCatalogContext> {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_challenge_catalog");
+    if (error) {
+      if (error.code === "42501" || error.message.includes("not_authorized")) {
+        throw new SuperadminAccessDeniedError();
+      }
+      throw new Error(`Supabase challenge catalog read failed: ${error.message}`);
+    }
+    if (!isChallengeCatalog(data)) throw new Error("Supabase challenge catalog returned an invalid payload.");
+    return { ...data, source: "supabase" };
+  }
+
+  async getChallengeDetail(challengeDefinitionId: string): Promise<SuperadminChallengeDetailContext | null> {
+    if (!uuidPattern.test(challengeDefinitionId)) return null;
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_challenge_detail", {
+      target_challenge_definition_id: challengeDefinitionId,
+    });
+    if (error) {
+      if (error.code === "42501" || error.message.includes("not_authorized")) {
+        throw new SuperadminAccessDeniedError();
+      }
+      throw new Error(`Supabase challenge detail read failed: ${error.message}`);
+    }
+    if (data === null) return null;
+    if (!isChallengeDetail(data)) throw new Error("Supabase challenge detail returned an invalid payload.");
     return { ...data, source: "supabase" };
   }
 

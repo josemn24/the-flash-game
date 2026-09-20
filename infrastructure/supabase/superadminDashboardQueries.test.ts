@@ -41,7 +41,7 @@ describe("SupabaseSuperadminDashboardQueries", () => {
       alerts: [expect.objectContaining({ id: "no-active-rooms" })],
       actions: expect.arrayContaining([
         expect.objectContaining({ href: "/admin/rooms" }),
-        expect.objectContaining({ href: "/admin/content" }),
+        expect.objectContaining({ href: "/admin/challenges" }),
       ]),
       source: "supabase",
     });

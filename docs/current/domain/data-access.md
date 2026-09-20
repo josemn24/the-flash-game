@@ -44,7 +44,7 @@ Dashboard del portal `/admin`
 → métricas, resúmenes de salas, próximos desafíos y alertas derivadas
 → `components/admin/AdminDashboard` sin formularios ni contexto editorial completo
 
-Áreas operativas del portal `/admin/rooms`, `/admin/rooms/[roomId]`, `/admin/content` y
+Áreas operativas del portal `/admin/rooms`, `/admin/rooms/[roomId]`, `/admin/challenges` y
 `/admin/questions`
 → shell y navegación comunes de `components/admin`
 → cada página mantiene su propia autorización, loader especializado y mutaciones existentes
@@ -234,7 +234,7 @@ caché persistente ni compartida entre usuarios.
 `SuperadminPortalContext` conserva el contexto amplio que necesitan las operaciones actuales de
 `/admin` y la entrada al listado de salas: salas con temporadas, editorial, biblioteca de preguntas
 y calendario opcional. `SuperadminRoomDetailModel` es el contrato acotado del detalle: una sala
-activa, todas sus temporadas, miembros activos, calendario filtrado por sala y contenido Flash
+activa, todas sus temporadas, miembros activos, calendario filtrado por sala y desafíos Flash
 publicado necesario para programar. `SuperadminDashboardModel` es un contrato independiente y deliberadamente pequeño para
 el dashboard: operador, métricas, resúmenes de salas, próximos desafíos, alertas y destinos de
 navegación. No contiene documentos editoriales, soluciones, la biblioteca completa ni formularios.
@@ -246,7 +246,9 @@ La navegación canónica queda fijada así:
 | `/admin`                | Dashboard operativo breve, sin formularios ni documentos editoriales          |
 | `/admin/rooms`          | Área especializada de salas activas y creación de salas                       |
 | `/admin/rooms/[roomId]` | Detalle de sala; temporadas, miembros y calendario como subáreas contextuales |
-| `/admin/content`        | Área especializada de contenido Flash y biblioteca necesaria                  |
+| `/admin/challenges`     | Catálogo especializado de desafíos Flash definidos                             |
+| `/admin/challenges/new` | Creación de un nuevo desafío Flash                                              |
+| `/admin/challenges/[challengeDefinitionId]` | Detalle, borrador e historial de versiones Flash                 |
 | `/admin/questions`      | Biblioteca de preguntas existente, integrada en el shell común                |
 
 El dashboard no carga documentos editoriales, soluciones, la biblioteca completa ni todas las

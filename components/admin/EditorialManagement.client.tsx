@@ -142,9 +142,17 @@ function ReasonField() {
 export function EditorialManagement({
   context,
   questionLibrary,
+  title = "Desafíos",
+  eyebrow = "S11 · herramienta editorial",
+  canCreate = true,
+  allowNewDraft = true,
 }: {
   readonly context: SuperadminEditorialContext;
   readonly questionLibrary?: SuperadminQuestionLibraryContext;
+  readonly title?: string;
+  readonly eyebrow?: string;
+  readonly canCreate?: boolean;
+  readonly allowNewDraft?: boolean;
 }) {
   const drafts = context.entries.filter((entry) => entry.status === "draft");
   const [selectedId, setSelectedId] = useState(drafts[0]?.challengeVersionId ?? "");
@@ -162,6 +170,7 @@ export function EditorialManagement({
   const createKeyRef = useRef<string | null>(null);
   const updateKeyRef = useRef<string | null>(null);
   const publishKeyRef = useRef<string | null>(null);
+  const hasEditableSurface = canCreate || Boolean(selected);
   useResetKeyWhenError(createState, createKeyRef);
   useResetKeyWhenError(updateState, updateKeyRef);
   useResetKeyWhenError(publishState, publishKeyRef);
@@ -233,9 +242,9 @@ export function EditorialManagement({
 
   return (
     <section className={styles.section} aria-labelledby="editorial-management-title">
-      <AdminSectionHeader id="editorial-management-title" eyebrow="S11 · herramienta editorial" title="Contenido Flash" trailing={<Chip variant="data" tone="social">{context.entries.length} versiones</Chip>} />
+      <AdminSectionHeader id="editorial-management-title" eyebrow={eyebrow} title={title} trailing={<Chip variant="data" tone="social">{context.entries.length} versiones</Chip>} />
 
-      <div className={styles.layout}>
+      {hasEditableSurface ? (<div className={styles.layout}>
         <Card as="section" className={styles.editorCard} aria-labelledby="editorial-editor-title">
           <div className={styles.formHeading}>
             <div>
@@ -257,7 +266,7 @@ export function EditorialManagement({
                   {drafts.map((entry) => <option key={entry.challengeVersionId} value={entry.challengeVersionId}>{entry.title} · {entry.slug}</option>)}
                 </select>
               </label>
-              <Button type="button" variant="secondary" onClick={startNewDraft}>Nuevo borrador</Button>
+              {allowNewDraft ? <Button type="button" variant="secondary" onClick={startNewDraft}>Nuevo borrador</Button> : null}
             </div>
           ) : null}
 
@@ -341,6 +350,7 @@ export function EditorialManagement({
           {parsedDocument ? <EditorialPreview document={parsedDocument} /> : <Card surface="soft" className={styles.emptyPreview}><p className={styles.eyebrow}>Preview protegido</p><h3>Corrige el JSON para ver el desafío.</h3><p>La validación se ejecuta también en el servidor antes de persistir.</p></Card>}
         </div>
       </div>
+      ) : null}
 
       <div className={styles.published}>
         <div className={styles.formHeading}>

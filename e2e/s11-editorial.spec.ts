@@ -154,9 +154,9 @@ test.describe("S11 — publicar contenido mínimo", () => {
       })),
     };
     await signIn(page, data.users.superadmin);
-    await page.goto("/admin/content");
+    await page.goto("/admin/challenges/new");
 
-    const editor = page.getByRole("region", { name: "Contenido Flash" });
+    const editor = page.locator("section[aria-labelledby='editorial-management-title']");
     const textarea = editor.getByLabel("Documento editorial JSON");
     await textarea.fill(JSON.stringify(draftDocument, null, 2));
     await editor
@@ -166,7 +166,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     const uploadedDocument = JSON.parse(await textarea.inputValue()) as typeof draftDocument;
     await editor.getByLabel("Motivo de auditoría").first().fill("Crear contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
-    await expect(page).toHaveURL(/\/admin\/content\?editorial=saved$/);
+    await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=saved$/);
     await page.reload();
 
     await expect(editor.getByRole("heading", { name: "Flash S11 E2E", exact: true })).toBeVisible();
@@ -184,7 +184,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     const reasons = editor.getByLabel("Motivo de auditoría");
     await reasons.first().fill("Editar contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
-    await expect(page).toHaveURL(/\/admin\/content\?editorial=saved$/);
+    await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=saved$/);
     await page.reload();
 
     await expect(
@@ -193,7 +193,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     await editor.getByLabel("Motivo de auditoría").last().fill("Publicar contenido S11");
     page.once("dialog", (dialog) => dialog.accept());
     await editor.getByRole("button", { name: "Publicar versión" }).click();
-    await expect(page).toHaveURL(/\/admin\/content\?editorial=published$/);
+    await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=published$/);
     await expect(editor.getByText("Publicado").first()).toBeVisible();
     await expect(editor.getByText("Sin intento ni puntuación")).toBeVisible();
   });
@@ -203,7 +203,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     await signIn(page, data.users.member);
     await page.goto("/admin");
     await expect(page.getByText("Acceso no disponible")).toBeVisible();
-    await expect(page.getByText("Contenido Flash")).toHaveCount(0);
+    await expect(page.getByText("Desafíos")).toHaveCount(0);
     await expect(page.getByText("Solución privada")).toHaveCount(0);
   });
 });

@@ -4,6 +4,8 @@ import type {
   SuperadminQuestionVersionDetail,
   FlashEditorialDocument,
   SuperadminEditorialCommandResult,
+  SuperadminChallengeCatalogContext,
+  SuperadminChallengeDetailContext,
   SuperadminEditorialContext,
 } from "@/types/view-models/editorial";
 
@@ -78,6 +80,8 @@ export interface SuperadminEditorialCommands {
 
 export interface SuperadminEditorialQueries {
   getContext(): Promise<SuperadminEditorialContext>;
+  getChallengeCatalog(): Promise<SuperadminChallengeCatalogContext>;
+  getChallengeDetail(challengeDefinitionId: string): Promise<SuperadminChallengeDetailContext | null>;
   getQuestionLibrary(filters?: QuestionLibraryFilters): Promise<SuperadminQuestionLibraryContext>;
   getQuestionVersion(questionVersionId: string): Promise<SuperadminQuestionVersionDetail>;
 }

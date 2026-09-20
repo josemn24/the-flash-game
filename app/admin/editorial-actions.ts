@@ -126,8 +126,9 @@ export async function createFlashDraft(
     if (!document || Object.keys(parsed.fieldErrors).length > 0) {
       return validationState(parsed.fieldErrors);
     }
+    let result: Awaited<ReturnType<typeof createSuperadminFlashDraft>>;
     try {
-      await createSuperadminFlashDraft({
+      result = await createSuperadminFlashDraft({
         idempotencyKey: parsed.idempotencyKey,
         document,
         reason: parsed.reason,
@@ -136,8 +137,9 @@ export async function createFlashDraft(
       return commandState(error);
     }
     revalidatePath("/admin");
-    revalidatePath("/admin/content");
-    redirect("/admin/content?editorial=saved");
+    revalidatePath("/admin/challenges");
+    revalidatePath(`/admin/challenges/${result.challengeDefinitionId}`);
+    redirect(`/admin/challenges/${result.challengeDefinitionId}?editorial=saved`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -167,8 +169,9 @@ export async function updateFlashDraft(
     if (!document || Object.keys(parsed.fieldErrors).length > 0) {
       return validationState(parsed.fieldErrors);
     }
+    let result: Awaited<ReturnType<typeof updateSuperadminFlashDraft>>;
     try {
-      await updateSuperadminFlashDraft({
+      result = await updateSuperadminFlashDraft({
         idempotencyKey: parsed.idempotencyKey,
         challengeVersionId,
         expectedUpdatedAt,
@@ -179,8 +182,9 @@ export async function updateFlashDraft(
       return commandState(error);
     }
     revalidatePath("/admin");
-    revalidatePath("/admin/content");
-    redirect("/admin/content?editorial=saved");
+    revalidatePath("/admin/challenges");
+    revalidatePath(`/admin/challenges/${result.challengeDefinitionId}`);
+    redirect(`/admin/challenges/${result.challengeDefinitionId}?editorial=saved`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -207,8 +211,9 @@ export async function publishFlash(
       parsed.fieldErrors.expectedUpdatedAt = "El borrador está desactualizado. Recarga el portal.";
     }
     if (Object.keys(parsed.fieldErrors).length > 0) return validationState(parsed.fieldErrors);
+    let result: Awaited<ReturnType<typeof publishSuperadminFlash>>;
     try {
-      await publishSuperadminFlash({
+      result = await publishSuperadminFlash({
         idempotencyKey: parsed.idempotencyKey,
         challengeVersionId,
         expectedUpdatedAt,
@@ -218,8 +223,9 @@ export async function publishFlash(
       return commandState(error);
     }
     revalidatePath("/admin");
-    revalidatePath("/admin/content");
-    redirect("/admin/content?editorial=published");
+    revalidatePath("/admin/challenges");
+    revalidatePath(`/admin/challenges/${result.challengeDefinitionId}`);
+    redirect(`/admin/challenges/${result.challengeDefinitionId}?editorial=published`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||

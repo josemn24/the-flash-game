@@ -57,6 +57,28 @@ const entry = {
   document,
 };
 
+const summary = {
+  challengeDefinitionId: entry.challengeDefinitionId,
+  slug: entry.slug,
+  title: entry.title,
+  subtitle: entry.subtitle,
+  description: entry.description,
+  mode: "flash" as const,
+  questionCount: 2,
+  versionCount: 2,
+  status: "draft" as const,
+  statusCounts: { draft: 1, published: 1, archived: 0 },
+  updatedAt: entry.updatedAt,
+  latestVersion: {
+    challengeVersionId: entry.challengeVersionId,
+    versionNumber: entry.versionNumber,
+    status: entry.status,
+    questionCount: 2,
+    updatedAt: entry.updatedAt,
+    publishedAt: null,
+  },
+};
+
 const questionVersionId = "00000000-0000-4000-8000-000000000010";
 const questionDefinitionId = "00000000-0000-4000-8000-000000000011";
 const questionDocument = {
@@ -99,6 +121,34 @@ describe("SupabaseSuperadminEditorialQueries", () => {
       source: "supabase",
     });
     expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_editorial_context");
+  });
+
+  it("reads the challenge catalog without requiring editorial documents", async () => {
+    mocks.rpc.mockResolvedValue({ data: { entries: [summary] }, error: null });
+
+    await expect(new SupabaseSuperadminEditorialQueries().getChallengeCatalog()).resolves.toEqual({
+      entries: [summary],
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_challenge_catalog");
+  });
+
+  it("reads one challenge detail and returns null for an invalid or missing definition", async () => {
+    const queries = new SupabaseSuperadminEditorialQueries();
+    mocks.rpc.mockResolvedValue({ data: { challengeDefinitionId: entry.challengeDefinitionId, entries: [entry] }, error: null });
+
+    await expect(queries.getChallengeDetail(entry.challengeDefinitionId)).resolves.toEqual({
+      challengeDefinitionId: entry.challengeDefinitionId,
+      entries: [entry],
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_challenge_detail", {
+      target_challenge_definition_id: entry.challengeDefinitionId,
+    });
+
+    mocks.rpc.mockResolvedValue({ data: null, error: null });
+    await expect(queries.getChallengeDetail(entry.challengeDefinitionId)).resolves.toBeNull();
+    await expect(queries.getChallengeDetail("not-a-uuid")).resolves.toBeNull();
   });
 
   it("calls each narrow RPC and marks command results as Supabase sourced", async () => {

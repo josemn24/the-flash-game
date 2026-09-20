@@ -721,6 +721,16 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_challenge_catalog": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_challenge_detail": {
+      "arguments": "target_challenge_definition_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_superadmin_editorial_context": {
       "arguments": "",
       "securityDefiner": true,

@@ -62,9 +62,10 @@ describe("editorial admin actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireSuperadmin.mockResolvedValue({});
-    mocks.createDraft.mockResolvedValue({});
-    mocks.updateDraft.mockResolvedValue({});
-    mocks.publish.mockResolvedValue({});
+    const challengeDefinitionId = "00000000-0000-4000-8000-000000000099";
+    mocks.createDraft.mockResolvedValue({ challengeDefinitionId });
+    mocks.updateDraft.mockResolvedValue({ challengeDefinitionId });
+    mocks.publish.mockResolvedValue({ challengeDefinitionId });
   });
 
   it("authorizes and sends a parsed document when creating a draft", async () => {
@@ -72,7 +73,7 @@ describe("editorial admin actions", () => {
       idempotencyKey: "editorial-create-1",
       document: JSON.stringify(document),
       reason: "Preparar contenido",
-    }))).rejects.toThrow("REDIRECT:/admin/content?editorial=saved");
+    }))).rejects.toThrow("REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=saved");
 
     expect(mocks.requireSuperadmin).toHaveBeenCalledTimes(1);
     expect(mocks.createDraft).toHaveBeenCalledWith(expect.objectContaining({
@@ -81,7 +82,8 @@ describe("editorial admin actions", () => {
       document: expect.objectContaining({ challenge: expect.objectContaining({ mode: "flash" }) }),
     }));
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin");
-    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/content");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/challenges");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/challenges/00000000-0000-4000-8000-000000000099");
   });
 
   it("rejects malformed JSON before crossing the command boundary", async () => {
@@ -102,7 +104,7 @@ describe("editorial admin actions", () => {
       expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
       document: JSON.stringify(document),
       reason: "Editar contenido",
-    }))).rejects.toThrow("REDIRECT:/admin/content?editorial=saved");
+    }))).rejects.toThrow("REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=saved");
 
     expect(mocks.requireSuperadmin).toHaveBeenCalledTimes(1);
     expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({

@@ -10,4 +10,5 @@ export { AdminFormError } from "./AdminFormError";
 export { AdminAuditReasonField } from "./AdminAuditReasonField";
 export { AdminEmptyState } from "./AdminEmptyState";
 export { EditorialManagement } from "./EditorialManagement.client";
+export { ChallengesOverview } from "./ChallengesOverview";
 export { CalendarManagement } from "./CalendarManagement.client";
