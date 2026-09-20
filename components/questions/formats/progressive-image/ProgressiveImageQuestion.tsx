@@ -20,7 +20,7 @@ type ProgressiveImageQuestionProps = {
   locked: boolean;
   onSubmit: (answer: string) => void;
   onTimedResponseStart: () => void;
-  /** Competitive mode anchors the visual reveal to the server's prepared timestamp. */
+  /** Competitive mode keeps the server clock authoritative for the response deadline. */
   presentedAtMs?: number;
 };
 
@@ -56,9 +56,7 @@ export function ProgressiveImageQuestion({
     const reducedMotion = prefersReducedMotion();
     const updateProgress = () => {
       const elapsed =
-        presentedAtMs === undefined
-          ? (performance.now() - startedAt) / 1000
-          : (Date.now() - presentedAtMs) / 1000;
+        (performance.now() - startedAt) / 1000;
       const exactProgress = calculateProgressiveImageReveal(elapsed, revealDuration);
       const displayedProgress = reducedMotion
         ? exactProgress >= 1
@@ -80,13 +78,16 @@ export function ProgressiveImageQuestion({
       if (updateProgress()) window.clearInterval(interval);
     }, 100);
     return () => window.clearInterval(interval);
-  }, [imageState, presentedAtMs, revealDuration, startedAt]);
+  }, [imageState, revealDuration, startedAt]);
 
   const handleImageLoaded = () => {
     if (startedRef.current) return;
     startedRef.current = true;
     lastMilestoneRef.current = 0;
-    const start = presentedAtMs ?? performance.now();
+    // Provisional client-side fix: the visual reveal starts when the image is
+    // actually available to the player. The competitive deadline remains
+    // server-authoritative and is still enforced by the answer command.
+    const start = performance.now();
     setProgress(0);
     setStartedAt(start);
     setImageState("ready");
@@ -98,12 +99,8 @@ export function ProgressiveImageQuestion({
   const retryLoad = () => {
     startedRef.current = false;
     lastMilestoneRef.current = 0;
-    setProgress(
-      presentedAtMs === undefined
-        ? 0
-        : calculateProgressiveImageReveal((Date.now() - presentedAtMs) / 1000, revealDuration),
-    );
-    setStartedAt(presentedAtMs === undefined ? null : presentedAtMs);
+    setProgress(0);
+    setStartedAt(null);
     setImageState("loading");
     setAnnouncement("Reintentando la carga de la imagen.");
     setLoadAttempt((current) => current + 1);
