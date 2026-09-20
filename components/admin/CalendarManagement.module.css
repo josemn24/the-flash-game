@@ -1,20 +1,487 @@
 @layer app-components {
-  .section { display: grid; gap: var(--space-5); margin-top: clamp(1.5rem, 3vw, 3rem); }
-  .heading, .entryTopline, .listHeading { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
-  .heading h2, .card h3, .list h3, .entry h4 { margin: 0; font-family: var(--type-display); letter-spacing: -0.04em; }
-  .card, .entry { display: grid; gap: var(--space-3); }
-  .form { display: grid; gap: var(--space-3); max-width: 620px; }
-  .form label { display: grid; gap: 6px; }
-  .form label > span { font-size: 12px; font-weight: 800; }
-  .form input, .form select, .form textarea { width: 100%; border: 1px solid var(--color-line-strong); border-radius: var(--radius-control); padding: 10px 12px; background: var(--color-surface); color: var(--color-ink); font: inherit; }
-  .form textarea { resize: vertical; }
-  .list { display: grid; gap: var(--space-3); }
-  .published, .helper { color: var(--color-ink-muted); font-size: 12px; }
-  .eyebrow { margin: 0; color: var(--color-ink-muted); font-family: var(--type-mono); font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
-  .edit summary { cursor: pointer; color: var(--color-brand-strong); font-size: 12px; font-weight: 800; }
-  .edit .form { margin-top: var(--space-3); }
-  .error { margin: 0; color: var(--color-danger, #a71930); font-size: 12px; font-weight: 700; }
+  .section {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: clamp(1.5rem, 3vw, 3rem);
+  }
+  .heading,
+  .entryTopline,
+  .listHeading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+  .heading h2,
+  .card h3,
+  .list h3,
+  .entry h4 {
+    margin: 0;
+    font-family: var(--type-display);
+    letter-spacing: -0.04em;
+  }
+  .card,
+  .entry {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .card {
+    max-width: 860px;
+  }
+  .card h3 {
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+  }
+  .createTrigger {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    text-align: left;
+    box-shadow: var(--shadow-card);
+    transition:
+      border-color var(--motion-press-out) ease,
+      box-shadow var(--motion-press-out) ease,
+      transform var(--motion-press-out) var(--ease-out);
+  }
+  .createTrigger:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-hero);
+    transform: translateY(-1px);
+  }
+  .createTriggerIcon {
+    display: inline-grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: var(--color-surface);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .dialog {
+    width: min(calc(100% - 32px), 760px);
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border-hover);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-dialog);
+  }
+  .dialog::backdrop {
+    background: var(--color-overlay-ink);
+    backdrop-filter: blur(6px);
+  }
+  .dialog[open] {
+    animation: calendar-dialog-in 180ms var(--ease-out) both;
+  }
+  .dialogSurface {
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    background: linear-gradient(145deg, var(--color-surface), var(--color-canvas));
+  }
+  .dialogHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .dialogHeader > div {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .dialogHeader h2 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+  .dialogDescription {
+    max-width: 56ch;
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+  .closeButton {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-raised);
+    color: var(--color-ink-muted);
+    cursor: pointer;
+  }
+  .closeButton:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-ink);
+  }
+  .closeButton svg {
+    width: 20px;
+    height: 20px;
+  }
+  .dialogBody {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-6);
+  }
+  .form {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-6);
+  }
+  .group {
+    display: grid;
+    gap: var(--space-3);
+    min-inline-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .group + .group {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+  .group legend {
+    margin-bottom: calc(var(--space-1) * -1);
+    padding: 0;
+    color: var(--color-ink);
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .form label {
+    display: grid;
+    gap: 6px;
+  }
+  .form label > span {
+    color: var(--color-ink);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .form input,
+  .form select,
+  .form textarea {
+    width: 100%;
+    min-height: 52px;
+    border: 1.5px solid var(--color-border-hover);
+    border-radius: var(--radius-control);
+    padding: 10px 12px;
+    background: var(--color-surface-raised);
+    color: var(--color-ink);
+    font: inherit;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%);
+    transition:
+      border-color var(--motion-press-out) ease,
+      background var(--motion-press-out) ease,
+      box-shadow var(--motion-press-out) ease;
+  }
+  .form input:focus-visible,
+  .form select:focus-visible,
+  .form textarea:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-color: var(--color-ink);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px rgb(77 59 209 / 18%);
+  }
+  .form textarea {
+    min-height: 96px;
+    resize: vertical;
+  }
+  .form input::placeholder,
+  .form textarea::placeholder {
+    color: var(--color-ink-muted);
+    opacity: 1;
+  }
+  .numberField {
+    max-width: 220px;
+  }
+  .dateGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+  .timezone {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+    color: var(--color-ink);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .formActions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+  }
+  .formActions button {
+    min-width: 150px;
+  }
+  .dialogContext {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+    color: var(--color-ink);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .list {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .viewToolbar {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .viewToggle {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+  }
+  .viewButton,
+  .viewButtonActive,
+  .navigationButton {
+    border: 0;
+    background: transparent;
+    color: var(--color-ink-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .viewButton,
+  .viewButtonActive {
+    padding: 8px 12px;
+    border-radius: 7px;
+  }
+  .viewButtonActive {
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+  .viewButton:hover,
+  .navigationButton:hover {
+    color: var(--color-ink);
+  }
+  .agenda {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .agendaDay {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .agendaDayHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .agendaDayHeader h4,
+  .weekDayHeader h4 {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .agendaDayHeader span,
+  .weekDayHeader span {
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .agendaEntries {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .entryCompact {
+    display: grid;
+    gap: var(--space-2);
+    border-color: var(--color-border);
+  }
+  .entryCompact h4 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: 1.15rem;
+    letter-spacing: -0.025em;
+  }
+  .entryCompact > .helper {
+    margin: 0;
+  }
+  .historyList {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .weekShell {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .weekNavigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .weekNavigation strong {
+    color: var(--color-ink);
+    font-size: 14px;
+  }
+  .navigationButton {
+    padding: 8px 0;
+    color: var(--color-focus);
+  }
+  .weekViewport {
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+  }
+  .week {
+    display: grid;
+    min-width: 900px;
+    grid-template-columns: repeat(7, minmax(118px, 1fr));
+    gap: var(--space-2);
+  }
+  .weekDay {
+    display: grid;
+    align-content: start;
+    min-height: 220px;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+  }
+  .weekDayHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .weekDayEntries {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+  }
+  .weekDayEntries .entryCompact {
+    box-shadow: none;
+  }
+  .weekEmpty {
+    margin: 0;
+    color: var(--color-ink-faint);
+    font-size: 12px;
+  }
+  .published,
+  .helper {
+    color: var(--color-ink-muted);
+    font-size: 12px;
+  }
+  .eyebrow {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .fieldError,
+  .formError {
+    margin: 0;
+    color: var(--color-danger, #a71930);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .form input[aria-invalid="true"],
+  .form select[aria-invalid="true"],
+  .form textarea[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  @keyframes calendar-dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
   @media (max-width: 680px) {
-    .listHeading { align-items: flex-start; flex-direction: column; }
+    .listHeading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .viewToolbar {
+      justify-content: flex-start;
+      width: 100%;
+    }
+    .viewToggle {
+      width: 100%;
+    }
+    .viewButton,
+    .viewButtonActive {
+      flex: 1;
+    }
+    .weekNavigation {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .dateGrid {
+      grid-template-columns: 1fr;
+    }
+    .form .formActions,
+    .dialogBody .formActions {
+      justify-content: stretch;
+      flex-direction: column-reverse;
+    }
+    .form .formActions button,
+    .dialogBody .formActions button {
+      width: 100%;
+    }
+    .dialog {
+      width: min(calc(100% - 20px), 760px);
+      max-height: calc(100dvh - 20px);
+    }
+    .dialogSurface {
+      max-height: calc(100dvh - 20px);
+    }
+    .dialogHeader,
+    .form,
+    .dialogBody {
+      padding: var(--space-5);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dialog[open] {
+      animation: none;
+    }
   }
 }
