@@ -1,5 +1,5 @@
 @layer app-components {
-  .section { display: grid; gap: var(--space-5); margin-top: var(--space-8); }
+  .section { display: grid; gap: var(--space-5); margin-top: clamp(1.5rem, 3vw, 3rem); }
   .heading, .entryTopline, .listHeading { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
   .heading h2, .card h3, .list h3, .entry h4 { margin: 0; font-family: var(--type-display); letter-spacing: -0.04em; }
   .card, .entry { display: grid; gap: var(--space-3); }

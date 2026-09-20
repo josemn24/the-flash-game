@@ -1,6 +1,6 @@
 .hero {
   max-width: 720px;
-  margin-top: clamp(4rem, 10vw, 7rem);
+  margin-top: clamp(1.5rem, 3vw, 2.75rem);
 }
 
 .eyebrow {
@@ -41,7 +41,7 @@
 
 .metrics,
 .section {
-  margin-top: clamp(3rem, 8vw, 6rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
 }
 
 .sectionHeading {
@@ -97,7 +97,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
   gap: clamp(2rem, 5vw, 5rem);
-  margin-top: clamp(3rem, 8vw, 6rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
 }
 
 .panel {

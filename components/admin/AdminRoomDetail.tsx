@@ -1,5 +1,6 @@
 import { ButtonLink, Card, Chip } from "@/components/ui";
 import type { SuperadminRoomDetailModel } from "@/types/view-models";
+import Link from "next/link";
 import { AdminNotice } from "./AdminNotice";
 import { AdminRoomMembers } from "./AdminRoomMembers";
 import { AdminShell } from "./AdminShell";
@@ -47,12 +48,8 @@ export function AdminRoomDetail({
     >
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Sala activa · /{model.room.slug}</p>
           <h1>{model.room.title}</h1>
-          <p className={styles.meta}>
-            {model.room.timeZone} · Estado:{" "}
-            {model.room.status === "active" ? "Activa" : model.room.status}
-          </p>
+          <p className={styles.meta}>{model.room.timeZone}</p>
         </div>
         <Chip variant="status" tone="success">
           Activa
@@ -61,15 +58,14 @@ export function AdminRoomDetail({
 
       <nav className={styles.tabs} aria-label={`Secciones de ${model.room.title}`}>
         {tabs.map((item) => (
-          <ButtonLink
+          <Link
             key={item.id}
             href={`/admin/rooms/${model.room.roomId}?tab=${item.id}`}
-            variant={tab === item.id ? "primary" : "secondary"}
-            size="sm"
+            className={`${styles.tab} ${tab === item.id ? styles.tabActive : ""}`}
             aria-current={tab === item.id ? "page" : undefined}
           >
             {item.label}
-          </ButtonLink>
+          </Link>
         ))}
       </nav>
 

@@ -1,6 +1,6 @@
 @layer app-components {
   .card {
-    margin-top: clamp(3rem, 8vw, 6rem);
+    margin-top: clamp(2rem, 4vw, 3.5rem);
   }
 
   .heading,

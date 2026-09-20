@@ -1,5 +1,5 @@
 @layer app-components {
-  .section { margin-top: clamp(4rem, 10vw, 8rem); }
+  .section { margin-top: clamp(1.5rem, 3vw, 3rem); }
   .sectionHeading, .formHeading, .previewHeading, .previewQuestionTopline, .publishedCard { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
   .sectionHeading h2, .formHeading h3, .previewHeading h3, .previewQuestion h4, .emptyPreview h3, .publishedCard h4 { margin: var(--space-2) 0 0; font-family: var(--type-display); letter-spacing: -0.045em; line-height: 1; }
   .sectionHeading h2 { font-size: clamp(2.25rem, 5vw, 4rem); }

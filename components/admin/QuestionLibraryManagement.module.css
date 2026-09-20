@@ -1,5 +1,5 @@
 @layer app-components {
-  .section { margin-top: clamp(4rem, 10vw, 8rem); }
+  .section { margin-top: clamp(1.5rem, 3vw, 3rem); }
   .heading, .entryTop { display:flex; justify-content:space-between; align-items:center; gap:var(--space-4); }
   .heading h2 { margin:var(--space-2) 0 0; font-family:var(--type-display); font-size:clamp(2.25rem, 5vw, 4rem); letter-spacing:-.045em; line-height:1; }
   .eyebrow { margin:0; color:var(--color-ink-muted); font-family:var(--type-mono); font-size:10px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }

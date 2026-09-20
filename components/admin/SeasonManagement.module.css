@@ -1,6 +1,6 @@
 @layer app-components {
   .section {
-    margin-top: clamp(4rem, 10vw, 8rem);
+    margin-top: clamp(1.5rem, 3vw, 3rem);
   }
 
   .sectionHeading,

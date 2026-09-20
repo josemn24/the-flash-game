@@ -3,7 +3,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-5, 24px);
-  margin-top: clamp(2rem, 6vw, 5rem);
+  margin-top: clamp(0.75rem, 1.5vw, 1.25rem);
 }
 
 .eyebrow,
@@ -26,22 +26,60 @@
   margin: var(--space-3, 12px) 0;
   color: var(--color-ink, #17171f);
   font-family: var(--type-display, sans-serif);
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
   letter-spacing: -0.06em;
   line-height: 0.9;
 }
 
 .tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2, 8px);
-  margin-top: var(--space-6, 32px);
-  padding-bottom: var(--space-3, 12px);
+  gap: var(--space-5, 24px);
+  margin-top: var(--space-5, 24px);
+  overflow-x: auto;
+  overflow-y: hidden;
   border-bottom: 1px solid var(--color-line, #dddde5);
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 0 2px 13px;
+  color: var(--color-ink-muted, #777783);
+  font-size: 0.9rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.tab:hover,
+.tab:focus-visible,
+.tabActive {
+  color: var(--color-ink, #17171f);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-social, #6556d9);
+  outline-offset: 4px;
+}
+
+.tabActive::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-ink, #17171f);
+  content: "";
 }
 
 .overview {
-  margin-top: clamp(2rem, 5vw, 4rem);
+  margin-top: clamp(1.75rem, 3vw, 3rem);
 }
 
 .sectionHeading {
