@@ -16,8 +16,7 @@
   .brand,
   .heading,
   .form,
-  .field,
-  .switch {
+  .field {
     display: grid;
   }
 
@@ -66,8 +65,7 @@
     line-height: 0.98;
   }
 
-  .heading p,
-  .switch {
+  .heading p {
     color: var(--color-ink-muted);
     font-size: 14px;
     line-height: 1.45;
@@ -101,35 +99,14 @@
     border-color: var(--color-danger);
   }
 
-  .error,
   .message {
     font-size: 12px;
     font-weight: 800;
-  }
-
-  .error {
-    color: var(--color-danger);
   }
 
   .message {
     min-height: 18px;
     color: var(--color-ink-muted);
     text-align: center;
-  }
-
-  .switch {
-    justify-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-5);
-  }
-
-  .switch button {
-    border: 0;
-    padding: 0;
-    color: var(--color-social);
-    background: transparent;
-    cursor: pointer;
-    font-size: inherit;
-    font-weight: 800;
   }
 }
