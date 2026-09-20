@@ -59,6 +59,43 @@ describe("ReviewAnswerList", () => {
     expect(markup).toContain("0.6 s");
   });
 
+  it("shows a selected heat-map point even when the answer is incorrect", () => {
+    const challenge = getChallengeById("tabarnia-flash-01");
+    if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");
+    const question = challenge.questions.find((candidate) => candidate.type === "heat-map");
+    if (!question || question.type !== "heat-map") throw new Error("Expected heat-map question");
+
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "06",
+            result: {
+              questionId: question.id,
+              answer: { x: 0.2, y: 0.4 },
+              status: "incorrect",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 8.4,
+              details: {
+                type: "heat-map",
+                selectedPoint: { x: 0.2, y: 0.4 },
+                targetPoint: question.target,
+                distance: 0.4,
+                accuracy: 0,
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain("Punto sobre la imagen");
+    expect(markup).not.toContain(">Sin respuesta<");
+  });
+
   it("flattens narrative questions without including scene steps", () => {
     const challenge = getChallengeById("tabarnia-challenge-04");
     if (challenge?.mode !== "narrative") throw new Error("Expected narrative challenge");

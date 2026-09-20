@@ -16,9 +16,18 @@ import {
 import { AttemptApiError } from "@/server/competitive/attempt-api";
 import type { AttemptId, ChallengeItemId } from "@/types/domain/identifiers";
 import type { DurationMs } from "@/types/domain/values";
+import type { AnswerValue } from "@/types/game";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+export function isJsonAnswer(value: unknown): boolean {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (Array.isArray(value)) return value.every(isJsonAnswer);
+  if (typeof value === "object") return Object.values(value).every(isJsonAnswer);
+  return false;
+}
 
 export async function POST(
   request: Request,
@@ -33,8 +42,8 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    const answer = body.answer;
-    if (answer !== null && typeof answer !== "string") {
+    const answer = body.answer as AnswerValue | null;
+    if (!isJsonAnswer(answer)) {
       throw new AttemptApiError("invalid_answer", 400);
     }
     const { evaluated, received } = await commandsFor(identity).evaluateAndRecord({
@@ -55,6 +64,7 @@ export async function POST(
         lockVersion: evaluated.lockVersion,
         status: evaluated.status,
         points: evaluated.points,
+        ...(evaluated.details ? { details: evaluated.details } : {}),
         timedOut: received.timedOut,
         timeUsedMs: received.timeUsedMs,
       },

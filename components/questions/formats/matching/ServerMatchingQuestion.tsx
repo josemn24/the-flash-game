@@ -66,6 +66,8 @@ export function ServerMatchingQuestion({
 
   const choosePair = (leftId: string, rightId: string) => {
     if (locked || invalidPair || matchingState === "submitting") return;
+    setSelectedLeft(null);
+    setSelectedRight(null);
     onPair(leftId, rightId);
   };
 

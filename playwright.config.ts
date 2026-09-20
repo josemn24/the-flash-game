@@ -31,6 +31,8 @@ const localEnv = {
     localStatus.PUBLISHABLE_KEY ||
     localStatus.ANON_KEY ||
     "",
+  SUPABASE_SERVICE_ROLE_KEY:
+    process.env.SUPABASE_SERVICE_ROLE_KEY || localStatus.SERVICE_ROLE_KEY || "",
   CALENDAR_TICK_SECRET: process.env.CALENDAR_TICK_SECRET || "local-s12-calendar-secret",
   FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",

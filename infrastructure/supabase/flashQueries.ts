@@ -186,6 +186,7 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
     isRecord(value.solution_payload) &&
     (typeof value.answer === "string" ||
       typeof value.answer === "boolean" ||
+      typeof value.answer === "number" ||
       Array.isArray(value.answer) ||
       value.answer === null ||
       isRecord(value.answer)) &&

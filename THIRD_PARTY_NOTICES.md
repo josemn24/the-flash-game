@@ -24,11 +24,14 @@ The generated file contains only normalized four-letter entries. Local editorial
 
 ## USA location map
 
-`public/visuals/sbr/usa-location-map.svg` is a local copy of `USA location map.svg`, sourced from Wikimedia Commons.
+`public/visuals/sbr/usa-location-map.svg` is a local copy of `USA location map.svg`, and
+`public/visuals/sbr/usa-location-map.png` is its deterministic rasterized derivative used by
+the private competitive Storage asset.
 
 - Source: <https://ca.wikipedia.org/wiki/Fitxer:USA_location_map.svg>
 - Commons file page: <https://commons.wikimedia.org/wiki/File:USA_location_map.svg>
 - Author: NordNordWest.
 - Selected license: Creative Commons Attribution-Share Alike 3.0 Unported.
 - License text: <https://creativecommons.org/licenses/by-sa/3.0/>
-- Changes: copied locally and renamed from `USA_location_map.svg` to `usa-location-map.svg`; no visual modifications.
+- Changes: copied locally and renamed from `USA_location_map.svg` to `usa-location-map.svg`; the
+  PNG derivative is generated from that source without editorial visual modifications.

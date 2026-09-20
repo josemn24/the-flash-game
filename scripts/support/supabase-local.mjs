@@ -338,6 +338,16 @@ export async function uploadStorageObject(config, { bucket, objectPath, filePath
   if (error) throw new Error(`No se pudo cargar ${bucket}/${objectPath}.`, { cause: error });
 }
 
+export async function removeStorageObject(config, { bucket, objectPath }) {
+  const admin = createClient(config.url, config.serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { error } = await admin.storage.from(bucket).remove([objectPath]);
+  if (error && !/not found|does not exist/i.test(error.message)) {
+    throw new Error(`No se pudo eliminar ${bucket}/${objectPath}.`, { cause: error });
+  }
+}
+
 export async function rpc(client, functionName, args) {
   const { data, error } = await client.rpc(functionName, args);
   if (error) throw new Error(`RPC ${functionName} falló: ${error.message}`);

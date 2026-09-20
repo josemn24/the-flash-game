@@ -1061,15 +1061,23 @@ export class SupabaseAttemptCommands implements Pick<
       received.receiptId,
       input.receive.sessionToken,
     );
+    const resolvedContext = {
+      ...context,
+      publicPayload: (await resolveCompetitiveQuestionPayload({
+        authUserId: this.identity.authUserId,
+        attemptId: input.receive.attemptId,
+        publicPayload: context.publicPayload,
+      })) as EvaluationContext["publicPayload"],
+    };
     const result = evaluateReceipt({
       receipt: {
-        timeUsedMs: context.timeUsedMs,
-        timedOut: context.timedOut,
+        timeUsedMs: resolvedContext.timeUsedMs,
+        timedOut: resolvedContext.timedOut,
       },
-      question: asQuestion(context),
-      answer: (context.answer as AnswerValue | null) ?? null,
-      progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
-      matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
+      question: asQuestion(resolvedContext),
+      answer: (resolvedContext.answer as AnswerValue | null) ?? null,
+      progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+      matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
     });
     const evaluated = await this.recordEvaluation({
       attemptId: input.receive.attemptId,
@@ -1081,7 +1089,13 @@ export class SupabaseAttemptCommands implements Pick<
       points: result.points,
       ...(result.details ? { resultDetails: result.details } : {}),
     });
-    return { received, evaluated };
+    return {
+      received,
+      evaluated: {
+        ...evaluated,
+        ...(result.details ? { details: result.details } : {}),
+      },
+    };
   }
 
   async evaluateReceipt(input: {
@@ -1092,12 +1106,20 @@ export class SupabaseAttemptCommands implements Pick<
     readonly idempotencyKey: string;
   }) {
     const context = await this.readEvaluationContext(input.receiptId, input.sessionToken);
+    const resolvedContext = {
+      ...context,
+      publicPayload: (await resolveCompetitiveQuestionPayload({
+        authUserId: this.identity.authUserId,
+        attemptId: input.attemptId,
+        publicPayload: context.publicPayload,
+      })) as EvaluationContext["publicPayload"],
+    };
     const result = evaluateReceipt({
-      receipt: { timeUsedMs: context.timeUsedMs, timedOut: context.timedOut },
-      question: asQuestion(context),
-      answer: (context.answer as AnswerValue | null) ?? null,
-      progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
-      matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
+      receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
+      question: asQuestion(resolvedContext),
+      answer: (resolvedContext.answer as AnswerValue | null) ?? null,
+      progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+      matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
     });
     return this.recordEvaluation({
       attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],

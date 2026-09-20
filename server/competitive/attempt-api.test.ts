@@ -6,6 +6,7 @@ import {
   readJson,
 } from "@/server/competitive/attempt-api";
 import { AttemptCommandError } from "@/infrastructure/supabase/attemptCommands";
+import { isJsonAnswer } from "@/app/api/competitive/attempts/[attemptId]/answer/route";
 
 const originalScope = process.env.FLASH_RUNTIME_SCOPE;
 const originalOrigin = process.env.APP_ORIGIN;
@@ -18,6 +19,15 @@ afterEach(() => {
 });
 
 describe("competitive HTTP contract", () => {
+  it("accepts the JSON answer shapes used by final-answer formats", () => {
+    expect(isJsonAnswer(true)).toBe(true);
+    expect(isJsonAnswer(36)).toBe(true);
+    expect(isJsonAnswer(["San Diego", "Denver"])).toBe(true);
+    expect(isJsonAnswer({ Brújula: "útil en 1890" })).toBe(true);
+    expect(isJsonAnswer(Number.NaN)).toBe(false);
+    expect(isJsonAnswer(undefined)).toBe(false);
+  });
+
   it("rejects oversized JSON before parsing it", async () => {
     const body = JSON.stringify({ value: "x".repeat(33 * 1024) });
 

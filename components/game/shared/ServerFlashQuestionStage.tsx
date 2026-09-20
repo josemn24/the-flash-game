@@ -103,6 +103,8 @@ export function ServerFlashQuestionStage({
   const prompt = splitPrompt(question.question);
   const selected =
     question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
+  const showSubmissionStatus =
+    submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
 
   return (
     <div className={`${variantStyles.stageFrame} ${styles.stage}`}>
@@ -207,10 +209,10 @@ export function ServerFlashQuestionStage({
         ) : question.type === "true-false" ? (
           <>
             <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -225,10 +227,10 @@ export function ServerFlashQuestionStage({
         ) : question.type === "odd-one-out" ? (
           <>
             <OddOneOutQuestion items={[...question.items]} locked={locked} onSubmit={onSubmit} />
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -248,10 +250,10 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -271,10 +273,10 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -300,10 +302,10 @@ export function ServerFlashQuestionStage({
               onProgress={onProgress}
               onSubmit={onSubmit}
             />
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -323,22 +325,21 @@ export function ServerFlashQuestionStage({
               </div>
             ) : null}
             <EstimationQuestion
-              key={`${question.id}:${typeof pendingAnswer === "number" ? "draft" : "initial"}`}
               min={question.min}
               max={question.max}
               step={question.step}
-              initialValue={
+              value={
                 typeof pendingAnswer === "number" ? pendingAnswer : question.initialValue
               }
               unit={question.unit}
               locked={locked}
-              onProgress={onProgress}
+              onChange={onProgress}
               onSubmit={onSubmit}
             />
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -372,10 +373,10 @@ export function ServerFlashQuestionStage({
                 />
               </div>
             ) : null}
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>
@@ -407,10 +408,10 @@ export function ServerFlashQuestionStage({
                 />
               ))}
             </div>
-            {submissionState !== "idle" ? (
+            {showSubmissionStatus ? (
               <div className="mt-4" role="status" aria-live="polite">
                 <p>
-                  {submissionState === "submitting" && submissionStatusVisible
+                  {submissionState === "submitting"
                     ? "Comprobando respuesta…"
                     : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
                 </p>

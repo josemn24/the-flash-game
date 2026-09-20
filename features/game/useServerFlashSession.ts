@@ -510,6 +510,9 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points),
         timeUsed: Number(response.timeUsedMs) / 1000,
+        ...(response.details
+          ? { details: response.details as AnswerResult["details"] }
+          : {}),
       };
       const nextResults = [...results, result];
       const nextLockVersion = Number(response.lockVersion);

@@ -37,11 +37,9 @@ export function ClassificationQuestion({
 
   const chooseCategory = (item: Pick<ClassificationItem, "label">, category: string) => {
     if (locked) return;
-    setAnswers((current) => {
-      const next = { ...current, [item.label]: category };
-      onProgress?.(next);
-      return next;
-    });
+    const next = { ...answers, [item.label]: category };
+    setAnswers(next);
+    onProgress?.(next);
   };
 
   return (

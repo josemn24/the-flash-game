@@ -580,13 +580,31 @@ function EstimationInput({
   onSubmit,
 }: QuestionInputProps<QuestionOfType<"estimation">>) {
   return (
+    <LocalEstimationInput
+      key={question.id}
+      question={question}
+      locked={locked}
+      onSubmit={onSubmit}
+    />
+  );
+}
+
+function LocalEstimationInput({
+  question,
+  locked,
+  onSubmit,
+}: Pick<QuestionInputProps<QuestionOfType<"estimation">>, "question" | "locked" | "onSubmit">) {
+  const [value, setValue] = useState(question.initialValue);
+
+  return (
     <EstimationQuestion
       min={question.min}
       max={question.max}
       step={question.step}
-      initialValue={question.initialValue}
+      value={value}
       unit={question.unit}
       locked={locked}
+      onChange={setValue}
       onSubmit={onSubmit}
     />
   );

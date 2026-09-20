@@ -10,6 +10,7 @@ import type {
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { AnswerValueOfType, QuestionType } from "@/types/contracts/questions";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
+import type { AnswerResultDetails } from "@/types/gameplay/result";
 
 /** Caller identity always comes from the verified server session, never this input. */
 export type StartAttemptInput = {
@@ -161,6 +162,7 @@ export type SubmitAnswerResult = AttemptCommandResult & {
   readonly receiptId: AnswerReceiptId;
   readonly status: AnswerStatus;
   readonly points: number;
+  readonly details?: AnswerResultDetails;
 };
 export type PassInteractionInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;

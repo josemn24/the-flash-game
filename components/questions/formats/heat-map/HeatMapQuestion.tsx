@@ -72,7 +72,7 @@ export function HeatMapSurface({
         alt=""
         fill
         sizes="(max-width: 768px) calc(100vw - 3rem), 32rem"
-        unoptimized={surface.src.endsWith(".svg")}
+        unoptimized={surface.src.endsWith(".svg") || /^https?:\/\//.test(surface.src)}
         draggable={false}
       />
       <svg
