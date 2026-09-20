@@ -716,6 +716,11 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_dashboard_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_superadmin_editorial_context": {
       "arguments": "",
       "securityDefiner": true,

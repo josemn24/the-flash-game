@@ -107,8 +107,9 @@ describe("admin server actions", () => {
       source: "supabase",
     });
 
-    await expect(createPrivateRoom({}, validForm())).rejects.toThrow("REDIRECT:/admin?created=1");
+    await expect(createPrivateRoom({}, validForm())).rejects.toThrow("REDIRECT:/admin/rooms?created=1");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/rooms");
     expect(mocks.createRoom).toHaveBeenCalledWith(
       expect.objectContaining({
         ownerEmail: "owner@example.com",

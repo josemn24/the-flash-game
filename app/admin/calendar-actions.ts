@@ -135,7 +135,8 @@ export async function createScheduledChallenge(
       return commandState(error);
     }
     revalidatePath("/admin");
-    redirect("/admin?calendar=created");
+    revalidatePath("/admin/calendar");
+    redirect("/admin/calendar?calendar=created");
   } catch (error) {
     if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) handlePortalBoundary(error);
     throw error;
@@ -173,7 +174,8 @@ export async function updateScheduledChallenge(
       return commandState(error);
     }
     revalidatePath("/admin");
-    redirect("/admin?calendar=updated");
+    revalidatePath("/admin/calendar");
+    redirect("/admin/calendar?calendar=updated");
   } catch (error) {
     if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) handlePortalBoundary(error);
     throw error;

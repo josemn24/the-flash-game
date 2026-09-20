@@ -72,7 +72,7 @@ describe("editorial admin actions", () => {
       idempotencyKey: "editorial-create-1",
       document: JSON.stringify(document),
       reason: "Preparar contenido",
-    }))).rejects.toThrow("REDIRECT:/admin?editorial=saved");
+    }))).rejects.toThrow("REDIRECT:/admin/content?editorial=saved");
 
     expect(mocks.requireSuperadmin).toHaveBeenCalledTimes(1);
     expect(mocks.createDraft).toHaveBeenCalledWith(expect.objectContaining({
@@ -81,6 +81,7 @@ describe("editorial admin actions", () => {
       document: expect.objectContaining({ challenge: expect.objectContaining({ mode: "flash" }) }),
     }));
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/content");
   });
 
   it("rejects malformed JSON before crossing the command boundary", async () => {
@@ -101,7 +102,7 @@ describe("editorial admin actions", () => {
       expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
       document: JSON.stringify(document),
       reason: "Editar contenido",
-    }))).rejects.toThrow("REDIRECT:/admin?editorial=saved");
+    }))).rejects.toThrow("REDIRECT:/admin/content?editorial=saved");
 
     expect(mocks.requireSuperadmin).toHaveBeenCalledTimes(1);
     expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({

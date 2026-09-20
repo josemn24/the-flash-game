@@ -133,7 +133,8 @@ export async function createPrivateRoom(
       throw error;
     }
     revalidatePath("/admin");
-    redirect("/admin?created=1");
+    revalidatePath("/admin/rooms");
+    redirect("/admin/rooms?created=1");
   } catch (error) {
     if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) {
       handlePortalBoundary(error);

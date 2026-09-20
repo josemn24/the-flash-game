@@ -1,3 +1,10 @@
-export { AdminPortal } from "./AdminPortal";
+export { AdminDashboard } from "./AdminDashboard";
+export { AdminShell } from "./AdminShell";
+export { AdminNotice } from "./AdminNotice";
+export { AdminRoomsOverview } from "./AdminRoomsOverview";
+export { AdminSectionHeader } from "./AdminSectionHeader";
+export { AdminFormError } from "./AdminFormError";
+export { AdminAuditReasonField } from "./AdminAuditReasonField";
+export { AdminEmptyState } from "./AdminEmptyState";
 export { EditorialManagement } from "./EditorialManagement.client";
 export { CalendarManagement } from "./CalendarManagement.client";

@@ -1,0 +1,18 @@
+"use client";
+
+import { useActionState, useRef, useState, type FormEvent } from "react";
+import { createScheduledChallenge, type CalendarActionState } from "@/app/admin/calendar-actions";
+import { utcToLocalDateTime } from "@/lib/zonedDateTime";
+import type { SuperadminEditorialContext, SuperadminPortalRoom, SuperadminPortalSeason } from "@/types/view-models";
+import { Button, Card } from "@/components/ui";
+import styles from "./CalendarManagement.module.css";
+
+const initialState: CalendarActionState = {};
+type ActiveSeason = { readonly room: SuperadminPortalRoom; readonly season: SuperadminPortalSeason };
+function prepareKey(event: FormEvent<HTMLFormElement>, ref: { current: string | null }) { if (!ref.current) ref.current = globalThis.crypto.randomUUID(); const input = event.currentTarget.elements.namedItem("idempotencyKey"); if (input instanceof HTMLInputElement) input.value = ref.current; }
+function defaultLocalValue(timeZone: string, offsetMs: number) { return utcToLocalDateTime(new Date(Date.now() + offsetMs).toISOString(), timeZone); }
+
+export function CalendarCreateForm({ activeSeasons, publishedContent, nextNumber }: { readonly activeSeasons: readonly ActiveSeason[]; readonly publishedContent: readonly SuperadminEditorialContext["entries"][number][]; readonly nextNumber: (seasonId: string) => number }) {
+  const first = activeSeasons[0]; const [seasonId, setSeasonId] = useState(first?.season.seasonId ?? ""); const selected = activeSeasons.find(({ season }) => season.seasonId === seasonId) ?? first; const [state, action, pending] = useActionState(createScheduledChallenge, initialState); const keyRef = useRef<string | null>(null);
+  return <Card as="section" className={styles.card} aria-labelledby="calendar-create-title"><p className={styles.eyebrow}>Ventana temporal</p><h3 id="calendar-create-title">Nueva publicación</h3>{activeSeasons.length === 0 || publishedContent.length === 0 ? <p className={styles.helper}>Necesitas una temporada activa y contenido Flash publicado para programar.</p> : <form key={selected?.season.seasonId ?? "no-season"} action={action} onSubmit={(event) => prepareKey(event, keyRef)} className={styles.form}><input type="hidden" name="idempotencyKey" defaultValue="" /><label><span>Temporada activa</span><select name="seasonId" value={selected?.season.seasonId ?? ""} onChange={(event) => setSeasonId(event.target.value)}>{activeSeasons.map(({ room, season }) => <option key={season.seasonId} value={season.seasonId}>{room.title} · {season.title}</option>)}</select></label><label><span>Contenido publicado</span><select name="challengeVersionId" defaultValue={publishedContent[0]?.challengeVersionId}>{publishedContent.map((entry) => <option key={entry.challengeVersionId} value={entry.challengeVersionId}>{entry.title} · v{entry.versionNumber}</option>)}</select></label><label><span>Número</span><input name="number" type="number" min="1" defaultValue={selected ? nextNumber(selected.season.seasonId) : 1} required /></label><p className={styles.helper}>Zona horaria: {selected?.room.timeZone ?? "—"}</p><label><span>Apertura</span><input name="opensAtLocal" type="datetime-local" defaultValue={selected ? defaultLocalValue(selected.room.timeZone, 3_600_000) : ""} required /></label><label><span>Cierre</span><input name="closesAtLocal" type="datetime-local" defaultValue={selected ? defaultLocalValue(selected.room.timeZone, 7_200_000) : ""} required /></label><label><span>Motivo de auditoría</span><textarea name="reason" rows={2} maxLength={500} required placeholder="Programar el desafío de la beta" /></label>{state.message ? <p className={styles.error} role="alert">{state.message}</p> : null}<Button type="submit" loading={pending}>Programar desafío</Button></form>}</Card>;
+}

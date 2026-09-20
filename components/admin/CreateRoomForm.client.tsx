@@ -5,14 +5,7 @@ import { createPrivateRoom, lookupSuperadminPlayers, type CreateRoomActionState 
 import type { SuperadminPlayerCandidate } from "@/types/view-models";
 import { Button, Card } from "@/components/ui";
 import styles from "./CreateRoomForm.module.css";
-
-type MemberRow = {
-  readonly id: number;
-  readonly email: string;
-  readonly role: "admin" | "member" | "spectator";
-  readonly candidate: SuperadminPlayerCandidate | null;
-  readonly message: string;
-};
+import { RoomMemberFields, RoomOwnerFields, type RoomMemberRow } from "./RoomMemberFields.client";
 
 const initialState: CreateRoomActionState = {};
 const timeZoneOptions = ["Europe/Madrid", "UTC", "Europe/London", "America/New_York"];
@@ -32,7 +25,7 @@ export function CreateRoomForm() {
   const [ownerEmail, setOwnerEmail] = useState("");
   const [ownerCandidate, setOwnerCandidate] = useState<SuperadminPlayerCandidate | null>(null);
   const [ownerMessage, setOwnerMessage] = useState("");
-  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [members, setMembers] = useState<RoomMemberRow[]>([]);
   const [nextMemberId, setNextMemberId] = useState(1);
 
   function findOwner() {
@@ -54,16 +47,16 @@ export function CreateRoomForm() {
   function addMember() {
     setMembers((current) => [
       ...current,
-      { id: nextMemberId, email: "", role: "member", candidate: null, message: "" },
+      { id: nextMemberId, email: "", role: "member", candidate: null, message: "" } satisfies RoomMemberRow,
     ]);
     setNextMemberId((current) => current + 1);
   }
 
-  function updateMember(id: number, patch: Partial<MemberRow>) {
+  function updateMember(id: number, patch: Partial<RoomMemberRow>) {
     setMembers((current) => current.map((member) => (member.id === id ? { ...member, ...patch } : member)));
   }
 
-  function findMember(member: MemberRow) {
+  function findMember(member: RoomMemberRow) {
     updateMember(member.id, { candidate: null, message: "" });
     startLookup(() => {
       void lookupSuperadminPlayers([member.email]).then((result) => {
@@ -135,73 +128,8 @@ export function CreateRoomForm() {
           {state.fieldErrors?.description ? <small className={styles.error}>{state.fieldErrors.description}</small> : null}
         </label>
 
-        <fieldset className={styles.fieldset}>
-          <legend>Propietario inicial</legend>
-          <div className={styles.inlineField}>
-            <input
-              name="ownerEmail"
-              type="email"
-              value={ownerEmail}
-              onChange={(event) => {
-                setOwnerEmail(event.currentTarget.value);
-                setOwnerCandidate(null);
-                setOwnerMessage("");
-              }}
-              placeholder="owner@ejemplo.com"
-              required
-              aria-invalid={Boolean(state.fieldErrors?.ownerEmail || ownerMessage)}
-            />
-            <Button type="button" variant="secondary" size="sm" onClick={findOwner} loading={lookupPending}>
-              Buscar
-            </Button>
-          </div>
-          {ownerCandidate ? <p className={styles.confirmed}>✓ {ownerCandidate.displayName}</p> : null}
-          {ownerMessage || state.fieldErrors?.ownerEmail ? (
-            <small className={styles.error}>{ownerMessage || state.fieldErrors?.ownerEmail}</small>
-          ) : null}
-        </fieldset>
-
-        <fieldset className={styles.fieldset}>
-          <div className={styles.legendRow}>
-            <legend>Grupo inicial <em>(opcional)</em></legend>
-            <Button type="button" variant="secondary" size="sm" onClick={addMember}>Añadir miembro</Button>
-          </div>
-          {members.length === 0 ? <p className={styles.helper}>Puedes crear la sala solo con su propietario.</p> : null}
-          <div className={styles.memberList}>
-            {members.map((member) => (
-              <div className={styles.memberRow} key={member.id}>
-                <input type="hidden" name="memberEmail" value={member.email} readOnly />
-                <input type="hidden" name="memberRole" value={member.role} readOnly />
-                <input
-                  type="email"
-                  value={member.email}
-                  onChange={(event) => updateMember(member.id, { email: event.currentTarget.value, candidate: null, message: "" })}
-                  placeholder="jugador@ejemplo.com"
-                  required
-                  aria-label="Email del miembro"
-                />
-                <select
-                  value={member.role}
-                  onChange={(event) => updateMember(member.id, { role: event.currentTarget.value as MemberRow["role"] })}
-                  aria-label="Rol del miembro"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="member">Member</option>
-                  <option value="spectator">Spectator</option>
-                </select>
-                <Button type="button" variant="secondary" size="sm" onClick={() => findMember(member)} loading={lookupPending}>
-                  Buscar
-                </Button>
-                <Button type="button" variant="secondary" size="sm" onClick={() => setMembers((current) => current.filter((item) => item.id !== member.id))}>
-                  Quitar
-                </Button>
-                {member.candidate ? <span className={styles.confirmed}>✓ {member.candidate.displayName}</span> : null}
-                {member.message ? <small className={styles.error}>{member.message}</small> : null}
-              </div>
-            ))}
-          </div>
-          {state.fieldErrors?.members ? <small className={styles.error}>{state.fieldErrors.members}</small> : null}
-        </fieldset>
+        <RoomOwnerFields email={ownerEmail} candidate={ownerCandidate} message={ownerMessage} error={state.fieldErrors?.ownerEmail} pending={lookupPending} onEmailChange={(value) => { setOwnerEmail(value); setOwnerCandidate(null); setOwnerMessage(""); }} onLookup={findOwner} />
+        <RoomMemberFields members={members} error={state.fieldErrors?.members} pending={lookupPending} onAdd={addMember} onUpdate={updateMember} onLookup={findMember} onRemove={(id) => setMembers((current) => current.filter((item) => item.id !== id))} />
 
         <label className={styles.field}>
           <span>Motivo de auditoría</span>

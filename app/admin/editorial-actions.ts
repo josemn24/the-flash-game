@@ -136,7 +136,8 @@ export async function createFlashDraft(
       return commandState(error);
     }
     revalidatePath("/admin");
-    redirect("/admin?editorial=saved");
+    revalidatePath("/admin/content");
+    redirect("/admin/content?editorial=saved");
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -178,7 +179,8 @@ export async function updateFlashDraft(
       return commandState(error);
     }
     revalidatePath("/admin");
-    redirect("/admin?editorial=saved");
+    revalidatePath("/admin/content");
+    redirect("/admin/content?editorial=saved");
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -216,7 +218,8 @@ export async function publishFlash(
       return commandState(error);
     }
     revalidatePath("/admin");
-    redirect("/admin?editorial=published");
+    revalidatePath("/admin/content");
+    redirect("/admin/content?editorial=published");
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||

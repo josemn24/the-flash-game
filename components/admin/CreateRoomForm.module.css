@@ -176,5 +176,14 @@
     .memberRow button {
       width: 100%;
     }
+
+    .inlineField {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .inlineField button {
+      width: 100%;
+    }
   }
 }

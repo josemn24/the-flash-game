@@ -27,7 +27,7 @@ test.describe("S08 — crear una sala privada", () => {
   test("el superadmin crea una sala y su grupo inicial desde el portal", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.superadmin);
-    await page.goto("/admin");
+    await page.goto("/admin/rooms");
 
     const ownerGroup = page.getByRole("group", { name: "Propietario inicial" });
     await ownerGroup.getByRole("textbox").fill(data.data.ownerEmail);
@@ -51,7 +51,7 @@ test.describe("S08 — crear una sala privada", () => {
     await expect(page.getByRole("button", { name: "Crear sala" })).toBeEnabled();
     await page.getByRole("button", { name: "Crear sala" }).click();
 
-    await expect(page).toHaveURL(/\/admin\?created=1$/);
+    await expect(page).toHaveURL(/\/admin\/rooms\?created=1$/);
     await expect(page.getByRole("status").filter({ hasText: "Sala creada correctamente" })).toBeVisible();
     await expect(page.getByRole("heading", { name: data.data.title }).first()).toBeVisible();
 
@@ -62,7 +62,7 @@ test.describe("S08 — crear una sala privada", () => {
   test("un usuario normal y una sesión anónima no acceden al portal", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.owner);
-    await page.goto("/admin");
+    await page.goto("/admin/rooms");
     await expect(page.getByText("Acceso no disponible")).toBeVisible();
 
     await page.goto("/");

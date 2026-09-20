@@ -14,4 +14,7 @@
   .edit summary { cursor: pointer; color: var(--color-brand-strong); font-size: 12px; font-weight: 800; }
   .edit .form { margin-top: var(--space-3); }
   .error { margin: 0; color: var(--color-danger, #a71930); font-size: 12px; font-weight: 700; }
+  @media (max-width: 680px) {
+    .listHeading { align-items: flex-start; flex-direction: column; }
+  }
 }

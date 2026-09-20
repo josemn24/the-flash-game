@@ -60,6 +60,85 @@ export type SuperadminPortalContext = {
   readonly calendar?: SuperadminCalendarContext;
 };
 
+export type AdminSection = "overview" | "rooms" | "seasons" | "content" | "questions" | "calendar";
+
+export type SuperadminDashboardRoom = {
+  readonly roomId: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly timeZone: string;
+  readonly seasonCount: number;
+  readonly activeSeason: {
+    readonly title: string;
+    readonly startsAt: string;
+    readonly endsAt: string;
+  } | null;
+};
+
+export type SuperadminDashboardUpcomingChallenge = {
+  readonly scheduledChallengeId: string;
+  readonly roomId: string;
+  readonly roomTitle: string;
+  readonly seasonId: string;
+  readonly seasonTitle: string;
+  readonly challengeVersionId: string;
+  readonly challengeTitle: string;
+  readonly number: number;
+  readonly status: "scheduled" | "open";
+  readonly opensAt: string;
+  readonly closesAt: string;
+  readonly timeZone: string;
+};
+
+export type SuperadminDashboardAlert = {
+  readonly id: string;
+  readonly tone: "info" | "warning";
+  readonly title: string;
+  readonly description: string;
+  readonly href: string;
+  readonly actionLabel: string;
+};
+
+export type SuperadminDashboardAction = {
+  readonly id: string;
+  readonly label: string;
+  readonly href: string;
+};
+
+export type SuperadminDashboardModel = {
+  readonly operator: SuperadminPortalContext["operator"];
+  readonly metrics: {
+    readonly activeRooms: number;
+    readonly activeSeasons: number;
+    readonly pendingSeasons: number;
+    readonly editorialDrafts: number;
+    readonly upcomingChallenges: number;
+  };
+  readonly rooms: readonly SuperadminDashboardRoom[];
+  readonly upcomingChallenges: readonly SuperadminDashboardUpcomingChallenge[];
+  readonly alerts: readonly SuperadminDashboardAlert[];
+  readonly actions: readonly SuperadminDashboardAction[];
+  readonly source: "supabase";
+};
+
+export type SuperadminRoomsPageModel = {
+  readonly operator: SuperadminPortalContext["operator"];
+  readonly rooms: readonly SuperadminPortalRoom[];
+  readonly source: "supabase";
+};
+
+export type SuperadminContentPageModel = {
+  readonly operator: SuperadminPortalContext["operator"];
+  readonly editorial: SuperadminEditorialContext;
+  readonly questionLibrary: SuperadminQuestionLibraryContext;
+};
+
+export type SuperadminCalendarPageModel = {
+  readonly operator: SuperadminPortalContext["operator"];
+  readonly context: SuperadminPortalContext;
+  readonly calendar: SuperadminCalendarContext;
+};
+
 export type SuperadminPlayerCandidate = {
   readonly email: string;
   readonly playerId: string;

@@ -30,14 +30,14 @@ test.describe("S12 — programar y ejecutar calendario", () => {
   test("un superadmin programa y un miembro puede iniciar una publicación abierta", async ({ page, browser }) => {
     const data = await fixture();
     await signIn(page, data.users.superadmin);
-    await page.goto("/admin");
+    await page.goto("/admin/calendar");
     const calendar = page.getByRole("region", { name: "Programar desafíos" });
     const now = Date.now();
     await calendar.getByLabel("Apertura").fill(madridLocal(new Date(now - 60_000)));
     await calendar.getByLabel("Cierre").fill(madridLocal(new Date(now + 3_600_000)));
     await calendar.getByLabel("Motivo de auditoría").fill("Programar calendario S12");
     await calendar.getByRole("button", { name: "Programar desafío" }).click();
-    await expect(page).toHaveURL(/\/admin\?calendar=created$/);
+    await expect(page).toHaveURL(/\/admin\/calendar\?calendar=created$/);
     await page.reload();
     await expect(calendar.getByText("Programado")).toBeVisible();
 

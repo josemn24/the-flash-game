@@ -1,16 +1,16 @@
 import { redirect, notFound } from "next/navigation";
-import { AdminPortal } from "@/components/admin";
+import { AdminDashboard } from "@/components/admin";
 import {
   AuthenticationRequiredError,
   SuperadminAccessDeniedError,
 } from "@/application/administration/errors";
-import { getSuperadminPortalPageModel } from "@/server/data-access";
+import { getSuperadminDashboardPageModel } from "@/server/data-access";
 
 export const dynamic = "force-dynamic";
 
 async function loadAdminContext() {
   try {
-    return await getSuperadminPortalPageModel();
+    return await getSuperadminDashboardPageModel();
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) redirect("/");
     if (error instanceof SuperadminAccessDeniedError) notFound();
@@ -18,20 +18,7 @@ async function loadAdminContext() {
   }
 }
 
-type AdminPageProps = {
-  readonly searchParams: Promise<{ created?: string; season?: string; editorial?: string; calendar?: string }>;
-};
-
-export default async function AdminPage({ searchParams }: AdminPageProps) {
+export default async function AdminPage() {
   const context = await loadAdminContext();
-  const params = await searchParams;
-  return (
-    <AdminPortal
-      context={context}
-      creationNotice={params.created === "1"}
-    seasonNotice={params.season}
-    editorialNotice={params.editorial}
-    calendarNotice={params.calendar}
-  />
-  );
+  return <AdminDashboard model={context} />;
 }

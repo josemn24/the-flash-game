@@ -36,6 +36,19 @@ Portal privado `/admin`
 → public.get_superadmin_portal_context() con temporadas y zona horaria
 → asignación privada de plataforma y salas activas
 
+Dashboard del portal `/admin`
+→ server/data-access.ts
+→ server/admin.ts
+→ infrastructure/supabase/superadminDashboardQueries.ts
+→ public.get_superadmin_dashboard_context()
+→ métricas, resúmenes de salas, próximos desafíos y alertas derivadas
+→ `components/admin/AdminDashboard` sin formularios ni contexto editorial completo
+
+Áreas operativas del portal `/admin/rooms`, `/admin/seasons`, `/admin/content`,
+`/admin/questions` y `/admin/calendar`
+→ shell y navegación comunes de `components/admin`
+→ cada página mantiene su propia autorización, loader especializado y mutaciones existentes
+
 Mutaciones del portal `/admin`
 → app/admin/actions.ts
 → server/admin.ts + server/admin-room.ts
@@ -168,6 +181,7 @@ invitación.
 
 `application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
 `RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
+`SuperadminDashboardQueries`,
 `SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
 `SuperadminRoomCommands`, `SuperadminEditorialCommands`, `SuperadminCalendarCommands` y
 `SuperadminCalendarQueries` para separar las mutaciones administrativas de las consultas. Esta capa
@@ -214,6 +228,69 @@ La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del
 la identidad de consulta. Sus funciones usan `cache` de React para compartir una misma promesa
 dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página. No hay
 caché persistente ni compartida entre usuarios.
+
+### Separación del portal de superadministración
+
+`SuperadminPortalContext` conserva el contexto amplio que necesitan las operaciones actuales de
+`/admin` durante la migración: salas con temporadas, editorial, biblioteca de preguntas y
+calendario. `SuperadminDashboardModel` es un contrato independiente y deliberadamente pequeño para
+el dashboard: operador, métricas, resúmenes de salas, próximos desafíos, alertas y destinos de
+navegación. No contiene documentos editoriales, soluciones, la biblioteca completa ni formularios.
+
+La navegación canónica queda fijada así:
+
+| Ruta | Responsabilidad |
+| --- | --- |
+| `/admin` | Dashboard operativo breve, sin formularios ni documentos editoriales |
+| `/admin/rooms` | Área especializada de salas y creación de salas |
+| `/admin/seasons` | Área especializada de temporadas |
+| `/admin/content` | Área especializada de contenido Flash y biblioteca necesaria |
+| `/admin/questions` | Biblioteca de preguntas existente, integrada en el shell común |
+| `/admin/calendar` | Área especializada de calendario y programación |
+
+El dashboard no carga documentos editoriales, soluciones, la biblioteca completa ni todas las
+entradas del calendario. Las operaciones se ejecutan en sus áreas especializadas y, tras una
+operación correcta, la Server Action revalida el dashboard y su propia ruta antes de redirigir al
+usuario a esa misma área con un aviso contextual. El shell visual no es una frontera de seguridad:
+cada página y cada Server Action continúa usando `requireSuperadmin()`.
+
+### Estructura de las subpáginas administrativas
+
+Las páginas administrativas siguen la frontera `Server Page + Client Panels`. Cada `page.tsx`
+autoriza, carga un page model mínimo, interpreta los avisos de URL y compone `AdminShell` con el
+panel de su área. Los paneles cliente concentran únicamente estado local, `useActionState`,
+transiciones y controles interactivos; no contienen una frontera de permisos alternativa.
+
+Los paneles operativos se organizan por responsabilidad: temporadas separa sus formularios de
+creación, edición, activación, fechas y tarjetas; calendario separa la programación de nuevas
+publicaciones y la reprogramación de entradas; salas separa la búsqueda de propietario y la lista
+de miembros; contenido separa la previsualización protegida del coordinador editorial. Los patrones
+visuales repetidos viven en `components/admin` (`AdminSectionHeader`, `AdminEmptyState`,
+`AdminFormError` y `AdminAuditReasonField`) sin ocultar las diferencias de validación de cada
+acción.
+
+La biblioteca de preguntas y sus editores también se montan dentro de `AdminShell`. Sus loaders
+específicos devuelven el operador y el detalle mínimo necesario, sin cambiar las acciones ni los
+contratos del editor:
+
+| Ruta | Loader / composición |
+| --- | --- |
+| `/admin/questions` | `getSuperadminQuestionLibraryPageModel` + biblioteca |
+| `/admin/questions/new` | `getSuperadminNewQuestionPageModel` + editor vacío |
+| `/admin/questions/[questionVersionId]` | `getSuperadminQuestionVersionPageModel` + detalle/editor |
+
+No existen rutas de detalle para salas, temporadas o contenido. Los RPCs, comandos, payloads de
+Server Actions y permisos permanecen en sus módulos originales; esta extracción solo cambia la
+composición y la mantenibilidad de la UI.
+
+### Criterios de pulido y validación
+
+El portal debe conservar un shell navegable por teclado, con enlace para saltar al contenido,
+foco visible, breadcrumbs y estados de operación anunciados de forma no intrusiva. Las áreas
+operativas deben apilar sus formularios y tarjetas en pantallas pequeñas sin perder etiquetas,
+acciones ni mensajes de error. La validación final cubre composición del dashboard, navegación,
+editor de preguntas, estados vacíos, autorización, acciones idempotentes y los flujos E2E de
+salas, temporadas, contenido y calendario.
 
 ## Autorización
 

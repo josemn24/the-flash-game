@@ -20,7 +20,7 @@ test.describe("S10 — preparar y activar una temporada", () => {
   test("el superadmin crea, edita y activa una temporada desde el portal", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.superadmin);
-    await page.goto("/admin");
+    await page.goto("/admin/seasons");
 
     const roomSection = page.getByRole("region", { name: "Sala S10" }).last();
     const createForm = roomSection.locator("form").filter({ hasText: "Preparar temporada" }).first();
@@ -30,7 +30,7 @@ test.describe("S10 — preparar y activar una temporada", () => {
     await createForm.getByLabel("Motivo de auditoría").fill("Preparar temporada S10");
     await createForm.getByRole("button", { name: "Guardar borrador" }).click();
 
-    await expect(page).toHaveURL(/\/admin\?season=created$/);
+    await expect(page).toHaveURL(/\/admin\/seasons\?season=created$/);
     await expect(
       page.getByRole("status").filter({ hasText: "Borrador de temporada creado" }),
     ).toBeVisible();
@@ -43,7 +43,7 @@ test.describe("S10 — preparar y activar una temporada", () => {
     await editForm.getByLabel(/Fin/).fill("2030-09-27T12:30");
     await editForm.getByLabel("Motivo de auditoría").fill("Ajustar temporada S10");
     await editForm.getByRole("button", { name: "Guardar cambios" }).click();
-    await expect(page).toHaveURL(/\/admin\?season=updated$/);
+    await expect(page).toHaveURL(/\/admin\/seasons\?season=updated$/);
 
     await page.reload();
     const editedCard = roomSection
@@ -54,7 +54,7 @@ test.describe("S10 — preparar y activar una temporada", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await activateForm.getByRole("button", { name: "Activar temporada" }).click();
 
-    await expect(page).toHaveURL(/\/admin\?season=activated$/);
+    await expect(page).toHaveURL(/\/admin\/seasons\?season=activated$/);
     await expect(
       page.getByRole("status").filter({ hasText: "Temporada activada correctamente" }),
     ).toBeVisible();

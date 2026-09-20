@@ -148,7 +148,8 @@ export async function createSeasonDraft(
       return commandState(error, "form");
     }
     revalidatePath("/admin");
-    redirect("/admin?season=created");
+    revalidatePath("/admin/seasons");
+    redirect("/admin/seasons?season=created");
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -191,7 +192,8 @@ export async function updateSeasonDraft(
       return commandState(error, "form");
     }
     revalidatePath("/admin");
-    redirect("/admin?season=updated");
+    revalidatePath("/admin/seasons");
+    redirect("/admin/seasons?season=updated");
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -226,7 +228,8 @@ export async function activateSeason(
       return commandState(error, "form");
     }
     revalidatePath("/admin");
-    redirect("/admin?season=activated");
+    revalidatePath("/admin/seasons");
+    redirect("/admin/seasons?season=activated");
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||

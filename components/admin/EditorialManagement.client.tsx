@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import Image from "next/image";
-import { AnswerOption } from "@/components/questions/shared/AnswerOption";
 import { Button, Card, Chip } from "@/components/ui";
+import { AdminSectionHeader } from "./AdminSectionHeader";
+import { EditorialPreview } from "./EditorialPreview";
 import {
   createFlashDraft,
   publishFlash,
@@ -20,13 +20,10 @@ import {
 } from "@/lib/editorial/flashDocument";
 import type {
   FlashEditorialDocument,
-  FlashEditorialMultipleChoiceQuestion,
-  FlashEditorialQuestion,
   FlashEditorialQuestionReference,
   SuperadminEditorialContext,
   SuperadminQuestionLibraryContext,
 } from "@/types/view-models/editorial";
-import type { MultipleChoiceQuestion } from "@/types/question";
 import styles from "./EditorialManagement.module.css";
 
 const initialState: EditorialActionState = {};
@@ -133,214 +130,6 @@ function statusTone(status: SuperadminEditorialContext["entries"][number]["statu
   return "neutral" as const;
 }
 
-function previewQuestion(question: FlashEditorialMultipleChoiceQuestion): MultipleChoiceQuestion {
-  const tags = question.publicPayload.tags;
-  const media = question.publicPayload.media;
-  const runtimeMedia = media && (media.type === "illustration" || "src" in media) ? media : undefined;
-  return {
-    id: question.slug,
-    type: "multiple-choice",
-    category: question.publicPayload.category ?? "",
-    tags: {
-      domains: Array.isArray(tags?.domains) ? tags.domains : [],
-      topics: Array.isArray(tags?.topics) ? tags.topics : [],
-      cognitiveSkills: Array.isArray(tags?.cognitiveSkills) ? tags.cognitiveSkills : [],
-      formatSkills: Array.isArray(tags?.formatSkills) ? tags.formatSkills : [],
-      lifeSkills: Array.isArray(tags?.lifeSkills) ? tags.lifeSkills : [],
-    } as MultipleChoiceQuestion["tags"],
-    question: question.publicPayload.question,
-    options: [...question.publicPayload.options],
-    correctAnswer: question.solutionPayload.correctAnswer,
-    timeLimit: question.timeLimitMs / 1000,
-    points: question.points,
-    explanation: question.solutionPayload.explanation ?? "",
-    ...(runtimeMedia ? { media: runtimeMedia } : {}),
-    ...(question.publicPayload.promptVisual ? { promptVisual: question.publicPayload.promptVisual } : {}),
-  };
-}
-
-function isLibraryReference(question: FlashEditorialQuestion | FlashEditorialQuestionReference): question is FlashEditorialQuestionReference {
-  return "source" in question && question.source === "library";
-}
-
-function EditorialPreview({ document }: { readonly document: FlashEditorialDocument }) {
-  return (
-    <div className={styles.preview} aria-label="Previsualización editorial protegida">
-      <div className={styles.previewHeading}>
-        <div>
-          <p className={styles.eyebrow}>Preview protegido</p>
-          <h3>{document.challenge.title}</h3>
-        </div>
-        <Chip variant="data" tone="neutral">
-          Sin intento ni puntuación
-        </Chip>
-      </div>
-      <p className={styles.previewDescription}>{document.challenge.description}</p>
-      <div className={styles.previewQuestions}>
-        {document.questions.map((draftQuestion, index) => {
-          if (isLibraryReference(draftQuestion)) {
-            return (
-              <article className={styles.previewQuestion} key={draftQuestion.challengeItemId ?? draftQuestion.questionVersionId}>
-                <div className={styles.previewQuestionTopline}>
-                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{draftQuestion.points} puntos · biblioteca</span>
-                </div>
-                <h4>Versión reutilizable</h4>
-                <p className={styles.category}>{draftQuestion.questionVersionId}</p>
-                <p className={styles.solution}>La pregunta se resolverá desde la versión publicada seleccionada.</p>
-              </article>
-            );
-          }
-          const inlineQuestion = draftQuestion as FlashEditorialQuestion;
-          if (inlineQuestion.type === "mini-wordle") {
-            const payload = inlineQuestion.publicPayload;
-            const solution = inlineQuestion.solutionPayload;
-            return (
-              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
-                <div className={styles.previewQuestionTopline}>
-                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
-                </div>
-                <p className={styles.category}>{payload.category ?? ""}</p>
-                <h4>{payload.question}</h4>
-                <p>{payload.hint ?? "Sin pista"} · {payload.wordLength} letras · {payload.maxAttempts} intentos</p>
-                <p className={styles.solution}>
-                  Solución privada: <strong>{solution.correctAnswer}</strong>
-                </p>
-              </article>
-            );
-          }
-          if (inlineQuestion.type === "logic-code") {
-            const payload = inlineQuestion.publicPayload;
-            const solution = inlineQuestion.solutionPayload;
-            return (
-              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
-                <div className={styles.previewQuestionTopline}>
-                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
-                </div>
-                <p className={styles.category}>{payload.category ?? ""}</p>
-                <h4>{payload.question}</h4>
-                <div className={styles.options}>
-                  {payload.clues.map((clue) => (
-                    <p key={clue.code}><strong>{clue.code}</strong> · {clue.hint}</p>
-                  ))}
-                </div>
-                <p>{payload.codeLength} cifras</p>
-                <p className={styles.solution}>
-                  Solución privada: <strong>{solution.correctAnswer}</strong>
-                </p>
-              </article>
-            );
-          }
-          if (inlineQuestion.type === "progressive-clues") {
-            const payload = inlineQuestion.publicPayload;
-            const solution = inlineQuestion.solutionPayload;
-            return (
-              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
-                <div className={styles.previewQuestionTopline}>
-                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
-                </div>
-                <p className={styles.category}>{payload.category ?? ""}</p>
-                <h4>{payload.question}</h4>
-                <div className={styles.options}>
-                  {payload.clues.map((clue, clueIndex) => (
-                    <p key={`${clueIndex}-${clue}`}>Pista {clueIndex + 1}: {clue}</p>
-                  ))}
-                </div>
-                <p>Penalización por pista: {payload.cluePenalty} puntos</p>
-                <p className={styles.solution}>
-                  Solución privada: <strong>{solution.correctAnswer}</strong>
-                </p>
-              </article>
-            );
-          }
-          if (inlineQuestion.type === "matching") {
-            const payload = inlineQuestion.publicPayload;
-            const solution = inlineQuestion.solutionPayload;
-            return (
-              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
-                <div className={styles.previewQuestionTopline}>
-                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>{inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos</span>
-                </div>
-                <p className={styles.category}>{payload.category ?? ""}</p>
-                <h4>{payload.question}</h4>
-                <div className={styles.options}>
-                  {payload.leftItems.map((item) => (
-                    <p key={`left-${item.id}`}><strong>{item.label}</strong> · {solution.matches[item.id]}</p>
-                  ))}
-                </div>
-                <p>{payload.leftItems.length} parejas</p>
-                <p className={styles.solution}>
-                  Solución privada: <strong>{Object.keys(solution.matches).length} correspondencias</strong>
-                </p>
-              </article>
-            );
-          }
-          if (inlineQuestion.type === "progressive-image") {
-            const payload = inlineQuestion.publicPayload;
-            const solution = inlineQuestion.solutionPayload;
-            const imageSrc = "src" in payload.surface ? payload.surface.src : undefined;
-            return (
-              <article className={styles.previewQuestion} key={inlineQuestion.slug}>
-                <div className={styles.previewQuestionTopline}>
-                  <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                  <span className={styles.previewMeta}>
-                    {inlineQuestion.timeLimitMs / 1000}s · {inlineQuestion.points} puntos · revelado {payload.revealDurationMs / 1000}s
-                  </span>
-                </div>
-                <p className={styles.category}>{payload.category ?? ""}</p>
-                <h4>{payload.question}</h4>
-                {imageSrc ? (
-                  <Image
-                    src={imageSrc}
-                    alt={payload.surface.alt}
-                    width={payload.surface.width}
-                    height={payload.surface.height}
-                    className="mt-3 rounded-xl"
-                  />
-                ) : (
-                  <p className={styles.solution}>Asset privado: preview pendiente de URL firmada.</p>
-                )}
-                <p className={styles.solution}>
-                  Solución privada: <strong>{solution.correctAnswer}</strong>
-                </p>
-              </article>
-            );
-          }
-          const question = previewQuestion(inlineQuestion as FlashEditorialMultipleChoiceQuestion);
-          return (
-            <article className={styles.previewQuestion} key={inlineQuestion.slug}>
-              <div className={styles.previewQuestionTopline}>
-                <span className={styles.eyebrow}>Pregunta {String(index + 1).padStart(2, "0")}</span>
-                <span className={styles.previewMeta}>{question.timeLimit}s · {question.points} puntos</span>
-              </div>
-              <p className={styles.category}>{question.category}</p>
-              <h4>{question.question}</h4>
-              <div className={styles.options}>
-                {question.options.map((option, optionIndex) => (
-                  <AnswerOption
-                    key={option}
-                    label={option}
-                    index={optionIndex}
-                    disabled
-                    onSelect={() => undefined}
-                  />
-                ))}
-              </div>
-              <p className={styles.solution}>
-                Solución privada: <strong>{question.correctAnswer}</strong>
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function ReasonField() {
   return (
     <label className={styles.field}>
@@ -444,13 +233,7 @@ export function EditorialManagement({
 
   return (
     <section className={styles.section} aria-labelledby="editorial-management-title">
-      <div className={styles.sectionHeading}>
-        <div>
-          <p className={styles.eyebrow}>S11 · herramienta editorial</p>
-          <h2 id="editorial-management-title">Contenido Flash</h2>
-        </div>
-        <Chip variant="data" tone="social">{context.entries.length} versiones</Chip>
-      </div>
+      <AdminSectionHeader id="editorial-management-title" eyebrow="S11 · herramienta editorial" title="Contenido Flash" trailing={<Chip variant="data" tone="social">{context.entries.length} versiones</Chip>} />
 
       <div className={styles.layout}>
         <Card as="section" className={styles.editorCard} aria-labelledby="editorial-editor-title">

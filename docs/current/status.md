@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-19.
+Última actualización documental: 2026-09-20.
 
 # Estado actual del proyecto
 
@@ -79,6 +79,15 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   F01/F02/F06/F07/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
   `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
   permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
+- La reorganización del portal ya convierte `/admin` en un dashboard breve basado en
+  `SuperadminDashboardModel`. Las operaciones viven en `/admin/rooms`, `/admin/seasons`,
+  `/admin/content` y `/admin/calendar`, con loaders especializados, avisos contextuales y retorno a
+  la misma área después de guardar. `/admin/questions` conserva su biblioteca funcional dentro del
+  shell común; `/admin/questions/new` y `/admin/questions/[questionVersionId]` también usan ese
+  shell con breadcrumbs coherentes. La Fase 3 separa los paneles cliente de temporadas, contenido,
+  calendario y salas en formularios, tarjetas, selectores y estados reutilizables, sin alterar
+  acciones, RPCs ni permisos. La Fase 4 añade el enlace de salto al contenido principal, anuncios
+  accesibles para avisos, ajustes responsive de formularios y pruebas de composición del shell.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -103,7 +112,14 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                 |
 | `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                              |
 | `/salas/[roomId]/ajustes`                            | Vista mock de miembros y ajustes; gestión real está pendiente.                                                             |
-| `/admin`                                             | Portal privado server-side para superadmins: contexto, salas, temporadas, editorial Flash con MC/Mini-Wordle y calendario. |
+| `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos. |
+| `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas. |
+| `/admin/seasons`                                     | Gestión protegida de creación, edición y activación de temporadas. |
+| `/admin/content`                                     | Gestión protegida del editor Flash y su biblioteca de preguntas. |
+| `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común. |
+| `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común. |
+| `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común. |
+| `/admin/calendar`                                    | Gestión protegida de programación y reprogramación de desafíos. |
 | `/desafios/[challengeId]`                            | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404.                  |
 | `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                                          |
 | `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                                   |
@@ -134,12 +150,26 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación
 
-Última verificación: 2026-09-19.
+Última verificación: 2026-09-20.
 
-- `npm test`: 101 archivos y 654 tests superados; incluye reglas, adaptadores y UI pública de E01–E05, S05-Alphabet,
+- `npm test`: 104 archivos y 664 tests superados; incluye reglas, adaptadores, UI pública de E01–E05,
+  navegación del portal y acciones administrativas; además de S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
   `npm run docs:check`: correctos.
+- La validación de pulido cubre el shell administrativo, breadcrumbs, navegación activa, enlace de
+  accesibilidad al contenido principal y anuncios `aria-live` para operaciones completadas.
+- La reorganización del portal valida el adaptador del dashboard, el dashboard sin formularios y la
+  compatibilidad de las redirecciones con 19 tests dirigidos; `npm run supabase:schema:test` también pasa con la nueva función de
+  lectura registrada en el inventario de seguridad.
+- `npm run test:e2e -- e2e/admin-portal.spec.ts` arrancó con Supabase local, pero no completó el
+  login del fixture y no llegó a validar la página; queda pendiente repetirlo con el entorno de
+  autenticación E2E operativo.
+- La repetición de `npm run test:e2e -- e2e/s10-season.spec.ts` con Supabase local confirmó el
+  mismo bloqueo previo al portal: el fixture no alcanza el heading `Mis salas` tras iniciar sesión.
+  No se observó un fallo de la UI administrativa. `npm run stylelint` mantiene un fallo histórico
+  fuera del portal en el selector duplicado de `app/flash-pop-concepts/FlashPopConcepts.module.css`;
+  los estilos modificados de administración pasan Stylelint de forma aislada.
 - `npm run type-architecture`: correcto.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.

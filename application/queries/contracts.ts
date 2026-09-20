@@ -12,6 +12,7 @@ import type {
   RoomSettingsModel,
   SuperadminPlayerCandidate,
   SuperadminPortalContext,
+  SuperadminDashboardModel,
   ViewerProfile,
 } from "@/types/view-models";
 import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
@@ -69,6 +70,10 @@ export interface RoomMemberDetailQueries {
 export interface SuperadminPortalQueries {
   getContext(): Promise<SuperadminPortalContext>;
   lookupPlayersByEmail(emails: readonly string[]): Promise<SuperadminPlayerCandidate[]>;
+}
+
+export interface SuperadminDashboardQueries {
+  getDashboard(): Promise<SuperadminDashboardModel>;
 }
 
 export type { SuperadminEditorialQueries };

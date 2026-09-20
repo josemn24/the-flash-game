@@ -17,6 +17,7 @@ import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
 import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
+import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/superadminDashboardQueries";
 import { mocksEnabled } from "@/server/runtime-scope";
 
 const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
@@ -117,5 +118,74 @@ export const getSuperadminPortalPageModel = cache(async () => {
     editorial: await supabaseSuperadminEditorialQueries.getContext(),
     questionLibrary: await supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
     calendar: await supabaseSuperadminCalendarQueries.getContext(),
+  };
+});
+
+export const getSuperadminDashboardPageModel = cache(async () => {
+  // Keep the page behind the same server-side guard as every other portal entry point.
+  await requireSuperadmin();
+  return supabaseSuperadminDashboardQueries.getDashboard();
+});
+
+export const getSuperadminOperatorPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  return access.context.operator;
+});
+
+export const getSuperadminNewQuestionPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  return { operator: access.context.operator };
+});
+
+export const getSuperadminQuestionVersionPageModel = cache(async (questionVersionId: string) => {
+  const access = await requireSuperadmin();
+  return {
+    operator: access.context.operator,
+    detail: await supabaseSuperadminEditorialQueries.getQuestionVersion(questionVersionId),
+  };
+});
+
+export const getSuperadminRoomsPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  return {
+    operator: access.context.operator,
+    rooms: access.context.rooms,
+    source: "supabase" as const,
+  };
+});
+
+export const getSuperadminSeasonsPageModel = getSuperadminRoomsPageModel;
+
+export const getSuperadminContentPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  const [editorial, questionLibrary] = await Promise.all([
+    supabaseSuperadminEditorialQueries.getContext(),
+    supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
+  ]);
+  return {
+    operator: access.context.operator,
+    editorial,
+    questionLibrary,
+  };
+});
+
+export const getSuperadminCalendarPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  const [editorial, calendar] = await Promise.all([
+    supabaseSuperadminEditorialQueries.getContext(),
+    supabaseSuperadminCalendarQueries.getContext(),
+  ]);
+  return {
+    operator: access.context.operator,
+    context: { ...access.context, editorial, calendar },
+    calendar,
+  };
+});
+
+export const getSuperadminQuestionLibraryPageModel = cache(async () => {
+  const access = await requireSuperadmin();
+  return {
+    operator: access.context.operator,
+    library: await supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
   };
 });
