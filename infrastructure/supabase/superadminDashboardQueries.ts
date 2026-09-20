@@ -123,7 +123,7 @@ function dashboardAlerts(payload: DashboardPayload): SuperadminDashboardAlert[] 
       tone: "warning",
       title: `${roomsWithoutSeason.length} ${roomsWithoutSeason.length === 1 ? "sala no tiene" : "salas no tienen"} temporada activa`,
       description: "Prepara una temporada antes de programar desafíos.",
-      href: "/admin/seasons",
+      href: "/admin/rooms",
       actionLabel: "Preparar temporada",
     });
   }
@@ -145,7 +145,7 @@ function dashboardAlerts(payload: DashboardPayload): SuperadminDashboardAlert[] 
       tone: "warning",
       title: "No hay desafíos próximos",
       description: "Programa contenido publicado para las temporadas activas.",
-      href: "/admin/calendar",
+      href: "/admin/rooms",
       actionLabel: "Abrir calendario",
     });
   }
@@ -156,9 +156,9 @@ function dashboardAlerts(payload: DashboardPayload): SuperadminDashboardAlert[] 
 function dashboardActions() {
   return [
     { id: "create-room", label: "Crear sala", href: "/admin/rooms" },
-    { id: "prepare-season", label: "Preparar temporada", href: "/admin/seasons" },
+    { id: "prepare-season", label: "Preparar temporada", href: "/admin/rooms" },
     { id: "edit-content", label: "Preparar contenido", href: "/admin/content" },
-    { id: "schedule-challenge", label: "Programar desafío", href: "/admin/calendar" },
+    { id: "schedule-challenge", label: "Programar desafío", href: "/admin/rooms" },
   ] as const;
 }
 
@@ -187,4 +187,3 @@ export class SupabaseSuperadminDashboardQueries implements SuperadminDashboardQu
 }
 
 export const supabaseSuperadminDashboardQueries = new SupabaseSuperadminDashboardQueries();
-

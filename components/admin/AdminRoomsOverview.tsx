@@ -1,4 +1,5 @@
 import { ButtonLink, Card, Chip } from "@/components/ui";
+import Link from "next/link";
 import type { SuperadminPortalRoom } from "@/types/view-models";
 import styles from "./AdminRoomsOverview.module.css";
 
@@ -23,19 +24,28 @@ export function AdminRoomsOverview({ rooms, showAction = false }: AdminRoomsOver
       {rooms.length > 0 ? (
         <div className={styles.grid}>
           {rooms.map((room, index) => (
-            <Card as="article" key={room.roomId} elevation="card" className={styles.card}>
-              <div className={styles.topline}>
-                <span className={styles.index} aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <Chip variant="status" tone="success">Activa</Chip>
-              </div>
-              <h3>{room.title}</h3>
-              <p className={styles.slug}>/{room.slug}</p>
-              <p className={styles.meta}>
-                {room.seasons.length} {room.seasons.length === 1 ? "temporada" : "temporadas"}
-              </p>
-            </Card>
+            <Link
+              href={`/admin/rooms/${room.roomId}`}
+              className={styles.entryLink}
+              aria-label={`Ver detalle de ${room.title}`}
+              key={room.roomId}
+            >
+              <Card as="article" elevation="card" className={styles.card}>
+                <div className={styles.topline}>
+                  <span className={styles.index} aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <Chip variant="status" tone="success">
+                    Activa
+                  </Chip>
+                </div>
+                <h3>{room.title}</h3>
+                <p className={styles.slug}>/{room.slug}</p>
+                <p className={styles.meta}>
+                  {room.seasons.length} {room.seasons.length === 1 ? "temporada" : "temporadas"}
+                </p>
+              </Card>
+            </Link>
           ))}
         </div>
       ) : (

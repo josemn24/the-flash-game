@@ -27,9 +27,15 @@ export function updateScheduledChallenge(
 }
 
 export function getSuperadminCalendarContext(
-  queries: SuperadminCalendarQueries = supabaseSuperadminCalendarQueries,
+  roomIdOrQueries?: string | SuperadminCalendarQueries,
+  configuredQueries: SuperadminCalendarQueries = supabaseSuperadminCalendarQueries,
 ) {
-  return queries.getContext();
+  const roomId = typeof roomIdOrQueries === "string" ? roomIdOrQueries : undefined;
+  const queries =
+    typeof roomIdOrQueries === "string" || roomIdOrQueries === undefined
+      ? configuredQueries
+      : roomIdOrQueries;
+  return queries.getContext(roomId);
 }
 
 export function runCalendarTick(runner: CalendarTickRunner = supabaseSuperadminCalendarQueries) {

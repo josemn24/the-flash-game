@@ -17,6 +17,7 @@ import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
 import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
+import { supabaseSuperadminRoomQueries } from "@/infrastructure/supabase/superadminQueries";
 import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/superadminDashboardQueries";
 import { mocksEnabled } from "@/server/runtime-scope";
 
@@ -99,8 +100,10 @@ export const getPlayableChallengePageModel = cache(
     }
     if (roomKey) {
       if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
-      return (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
-        supabaseAlphabetQueries.getPlayable(roomKey, challengeKey);
+      return (
+        (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
+        supabaseAlphabetQueries.getPlayable(roomKey, challengeKey)
+      );
     }
     if (!mocksEnabled()) return null;
     return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
@@ -150,6 +153,26 @@ export const getSuperadminRoomsPageModel = cache(async () => {
   return {
     operator: access.context.operator,
     rooms: access.context.rooms,
+    source: "supabase" as const,
+  };
+});
+
+export const getSuperadminRoomDetailPageModel = cache(async (roomId: string) => {
+  const access = await requireSuperadmin();
+  const detail = await supabaseSuperadminRoomQueries.getDetail(roomId);
+  if (!detail) return null;
+
+  const [calendar, editorial] = await Promise.all([
+    supabaseSuperadminCalendarQueries.getContext(roomId),
+    supabaseSuperadminEditorialQueries.getContext(),
+  ]);
+
+  return {
+    operator: access.context.operator,
+    room: detail.room,
+    members: detail.members,
+    calendar,
+    publishedContent: editorial.entries.filter((entry) => entry.status === "published"),
     source: "supabase" as const,
   };
 });

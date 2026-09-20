@@ -80,14 +80,13 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
   permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
 - La reorganización del portal ya convierte `/admin` en un dashboard breve basado en
-  `SuperadminDashboardModel`. Las operaciones viven en `/admin/rooms`, `/admin/seasons`,
-  `/admin/content` y `/admin/calendar`, con loaders especializados, avisos contextuales y retorno a
-  la misma área después de guardar. `/admin/questions` conserva su biblioteca funcional dentro del
-  shell común; `/admin/questions/new` y `/admin/questions/[questionVersionId]` también usan ese
-  shell con breadcrumbs coherentes. La Fase 3 separa los paneles cliente de temporadas, contenido,
-  calendario y salas en formularios, tarjetas, selectores y estados reutilizables, sin alterar
-  acciones, RPCs ni permisos. La Fase 4 añade el enlace de salto al contenido principal, anuncios
-  accesibles para avisos, ajustes responsive de formularios y pruebas de composición del shell.
+  `SuperadminDashboardModel`. `/admin/rooms` es la entrada operativa principal: sus tarjetas llevan a
+  `/admin/rooms/[roomId]`, donde viven las pestañas `overview`, `seasons`, `members` y `calendar`.
+  Temporadas, usuarios activos y calendario se cargan acotados a la sala; contenido Flash y preguntas
+  siguen siendo áreas globales. Las Server Actions conservan autorización, auditoría, idempotencia y
+  concurrencia optimista, y vuelven al detalle de la sala con avisos contextuales. `/admin/questions`
+  conserva su biblioteca funcional dentro del shell común; `/admin/questions/new` y
+  `/admin/questions/[questionVersionId]` también usan ese shell con breadcrumbs coherentes.
 - Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
   `development`/`test` o bajo rutas demo explícitas.
 
@@ -103,26 +102,25 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Rutas principales
 
-| Ruta                                                 | Estado                                                                                                                     |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `/`                                                  | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                       |
-| `/salas/[roomId]`                                    | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                       |
-| `/salas/[roomId]/ranking`                            | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                 |
-| `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                                      |
-| `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                 |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                              |
-| `/salas/[roomId]/ajustes`                            | Vista mock de miembros y ajustes; gestión real está pendiente.                                                             |
-| `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos. |
-| `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas. |
-| `/admin/seasons`                                     | Gestión protegida de creación, edición y activación de temporadas. |
-| `/admin/content`                                     | Gestión protegida del editor Flash y su biblioteca de preguntas. |
-| `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común. |
-| `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común. |
-| `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común. |
-| `/admin/calendar`                                    | Gestión protegida de programación y reprogramación de desafíos. |
-| `/desafios/[challengeId]`                            | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404.                  |
-| `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                                          |
-| `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                                   |
+| Ruta                                                 | Estado                                                                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `/`                                                  | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                      |
+| `/salas/[roomId]`                                    | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.      |
+| `/salas/[roomId]/ranking`                            | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                |
+| `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                     |
+| `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                             |
+| `/salas/[roomId]/ajustes`                            | Vista mock de miembros y ajustes; gestión real está pendiente.                                            |
+| `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.   |
+| `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                   |
+| `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.              |
+| `/admin/content`                                     | Gestión protegida del editor Flash y su biblioteca de preguntas.                                          |
+| `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común.                                                   |
+| `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común.                              |
+| `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común.                                        |
+| `/desafios/[challengeId]`                            | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404. |
+| `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                         |
+| `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                  |
 
 ## Límites actuales
 

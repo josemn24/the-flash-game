@@ -48,6 +48,30 @@ export type SuperadminPortalRoom = {
   readonly seasons: readonly SuperadminPortalSeason[];
 };
 
+export type SuperadminRoomMember = {
+  readonly playerId: string;
+  readonly displayName: string;
+  readonly email: string | null;
+  readonly avatarSrc?: string;
+  readonly role: "owner" | "admin" | "member" | "spectator";
+  readonly joinedAt: string;
+};
+
+export type SuperadminRoomDetailData = {
+  readonly room: SuperadminPortalRoom;
+  readonly members: readonly SuperadminRoomMember[];
+  readonly source: "supabase";
+};
+
+export type SuperadminRoomDetailModel = {
+  readonly operator: SuperadminPortalContext["operator"];
+  readonly room: SuperadminPortalRoom;
+  readonly members: readonly SuperadminRoomMember[];
+  readonly calendar: SuperadminCalendarContext;
+  readonly publishedContent: readonly SuperadminEditorialContext["entries"][number][];
+  readonly source: "supabase";
+};
+
 export type SuperadminPortalContext = {
   readonly operator: {
     readonly playerId: string;
@@ -60,7 +84,7 @@ export type SuperadminPortalContext = {
   readonly calendar?: SuperadminCalendarContext;
 };
 
-export type AdminSection = "overview" | "rooms" | "seasons" | "content" | "questions" | "calendar";
+export type AdminSection = "overview" | "rooms" | "content" | "questions";
 
 export type SuperadminDashboardRoom = {
   readonly roomId: string;

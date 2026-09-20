@@ -8,9 +8,9 @@ describe("AdminNavigation", () => {
 
     expect(markup).toContain('href="/admin"');
     expect(markup).toContain('href="/admin/rooms"');
-    expect(markup).toContain('href="/admin/seasons"');
     expect(markup).toContain('aria-current="page" data-active="true" href="/admin/content"');
     expect(markup).toContain('href="/admin/questions"');
-    expect(markup).toContain('href="/admin/calendar"');
+    expect(markup).not.toContain('href="/admin/seasons"');
+    expect(markup).not.toContain('href="/admin/calendar"');
   });
 });

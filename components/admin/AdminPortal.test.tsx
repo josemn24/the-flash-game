@@ -48,9 +48,9 @@ const baseModel = {
   alerts: [],
   actions: [
     { id: "create-room", label: "Crear sala", href: "/admin/rooms" },
-    { id: "prepare-season", label: "Preparar temporada", href: "/admin/seasons" },
+    { id: "prepare-season", label: "Preparar temporada", href: "/admin/rooms" },
     { id: "edit-content", label: "Preparar contenido", href: "/admin/content" },
-    { id: "schedule-challenge", label: "Programar desafío", href: "/admin/calendar" },
+    { id: "schedule-challenge", label: "Programar desafío", href: "/admin/rooms" },
   ],
   source: "supabase" as const,
 };
@@ -66,9 +66,9 @@ describe("AdminDashboard", () => {
     expect(markup).toContain("Temporada Alpha");
     expect(markup).toContain("Flash de prueba");
     expect(markup).toContain('href="/admin/rooms"');
-    expect(markup).toContain('href="/admin/seasons"');
     expect(markup).toContain('href="/admin/content"');
-    expect(markup).toContain('href="/admin/calendar"');
+    expect(markup).not.toContain('href="/admin/seasons"');
+    expect(markup).not.toContain('href="/admin/calendar"');
     expect(markup).not.toContain("Crear una sala privada");
     expect(markup).not.toContain("Guardar borrador");
     expect(markup).not.toContain("Solución privada");

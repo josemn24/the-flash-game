@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { SuperadminPortalQueries } from "@/application/queries";
+import type { SuperadminPortalQueries, SuperadminRoomQueries } from "@/application/queries";
 import type {
   SuperadminRoomCommands,
   CreateRoomInput,
@@ -10,12 +10,15 @@ import {
   SuperadminRoomCommandError,
 } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
   SuperadminPlayerCandidate,
   SuperadminPortalContext,
   SuperadminPortalRoom,
   SuperadminPortalSeason,
+  SuperadminRoomDetailData,
+  SuperadminRoomMember,
   SuperadminRoomCreationResult,
 } from "@/types/view-models";
 
@@ -69,6 +72,39 @@ function isPortalContext(value: unknown): value is SuperadminPortalContext {
     typeof value.operator.displayName === "string" &&
     value.operator.displayName.trim().length > 0 &&
     value.rooms.every(isPortalRoom)
+  );
+}
+
+type SuperadminRoomMemberWire = Omit<SuperadminRoomMember, "avatarSrc"> & {
+  readonly avatarPath: string | null;
+};
+
+function isRoomMember(value: unknown): value is SuperadminRoomMemberWire {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.playerId === "string" &&
+    uuidPattern.test(value.playerId) &&
+    typeof value.displayName === "string" &&
+    value.displayName.trim().length > 0 &&
+    (value.email === null || typeof value.email === "string") &&
+    (value.avatarPath === null || typeof value.avatarPath === "string") &&
+    ["owner", "admin", "member", "spectator"].includes(String(value.role)) &&
+    typeof value.joinedAt === "string" &&
+    !Number.isNaN(Date.parse(value.joinedAt))
+  );
+}
+
+type SuperadminRoomDetailWire = {
+  readonly room: SuperadminPortalRoom;
+  readonly members: readonly SuperadminRoomMemberWire[];
+};
+
+function isRoomDetailData(value: unknown): value is SuperadminRoomDetailWire {
+  return (
+    isRecord(value) &&
+    isPortalRoom(value.room) &&
+    Array.isArray(value.members) &&
+    value.members.every(isRoomMember)
   );
 }
 
@@ -173,6 +209,38 @@ export class SupabaseSuperadminPortalQueries implements SuperadminPortalQueries 
 }
 
 export const supabaseSuperadminPortalQueries = new SupabaseSuperadminPortalQueries();
+
+export class SupabaseSuperadminRoomQueries implements SuperadminRoomQueries {
+  async getDetail(roomId: string): Promise<SuperadminRoomDetailData | null> {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_room_detail", {
+      target_room_id: roomId,
+    });
+
+    if (error) {
+      if (error.code === "42501") throw new SuperadminAccessDeniedError();
+      throw new Error(`Supabase room detail read failed: ${error.message}`);
+    }
+    if (data === null) return null;
+    if (!isRoomDetailData(data)) {
+      throw new Error("Supabase room detail read returned an invalid payload.");
+    }
+    return {
+      room: data.room,
+      members: data.members.map((member) => ({
+        playerId: member.playerId,
+        displayName: member.displayName,
+        email: member.email,
+        avatarSrc: resolveAvatarPath(member.avatarPath),
+        role: member.role,
+        joinedAt: member.joinedAt,
+      })),
+      source: "supabase",
+    };
+  }
+}
+
+export const supabaseSuperadminRoomQueries = new SupabaseSuperadminRoomQueries();
 
 export class SupabaseSuperadminRoomCommands implements SuperadminRoomCommands {
   async createRoom(input: CreateRoomInput): Promise<SuperadminRoomCreationResult> {

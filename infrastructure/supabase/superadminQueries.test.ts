@@ -3,6 +3,7 @@ import { SuperadminAccessDeniedError } from "@/application/administration/errors
 import { SuperadminRoomCommandError } from "@/application/administration/errors";
 import {
   SupabaseSuperadminPortalQueries,
+  SupabaseSuperadminRoomQueries,
   SupabaseSuperadminRoomCommands,
 } from "./superadminQueries";
 
@@ -55,6 +56,56 @@ describe("SupabaseSuperadminPortalQueries", () => {
     });
   });
 
+  it("reads the protected room detail and resolves member avatar paths", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        room: {
+          ...context.rooms[0],
+          seasons: [
+            {
+              seasonId: "00000000-0000-4000-8000-000000000005",
+              title: "Temporada activa",
+              status: "active",
+              startsAt: "2026-09-20T10:00:00.000Z",
+              endsAt: "2026-10-20T10:00:00.000Z",
+            },
+          ],
+        },
+        members: [
+          {
+            playerId: "00000000-0000-4000-8000-000000000006",
+            displayName: "Jugador",
+            email: null,
+            avatarPath: null,
+            role: "member",
+            joinedAt: "2026-09-20T10:00:00.000Z",
+          },
+        ],
+      },
+      error: null,
+    });
+
+    await expect(
+      new SupabaseSuperadminRoomQueries().getDetail(context.rooms[0].roomId),
+    ).resolves.toEqual({
+      room: expect.objectContaining({ title: "Sala beta" }),
+      members: [
+        {
+          playerId: "00000000-0000-4000-8000-000000000006",
+          displayName: "Jugador",
+          email: null,
+          avatarSrc: undefined,
+          role: "member",
+          joinedAt: "2026-09-20T10:00:00.000Z",
+        },
+      ],
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_room_detail", {
+      target_room_id: context.rooms[0].roomId,
+    });
+  });
+
   it("rejects an invalid payload instead of filtering or falling back", async () => {
     mocks.rpc.mockResolvedValue({
       data: { ...context, rooms: [{ ...context.rooms[0], status: "deleted" }] },
@@ -101,7 +152,10 @@ describe("SupabaseSuperadminPortalQueries", () => {
     });
 
     await expect(
-      new SupabaseSuperadminPortalQueries().lookupPlayersByEmail([" OWNER@example.com ", "missing@example.com"]),
+      new SupabaseSuperadminPortalQueries().lookupPlayersByEmail([
+        " OWNER@example.com ",
+        "missing@example.com",
+      ]),
     ).resolves.toEqual([
       {
         email: "owner@example.com",
@@ -120,9 +174,9 @@ describe("SupabaseSuperadminPortalQueries", () => {
       error: null,
     });
 
-    await expect(new SupabaseSuperadminPortalQueries().lookupPlayersByEmail(["owner@example.com"])).rejects.toThrow(
-      "invalid payload",
-    );
+    await expect(
+      new SupabaseSuperadminPortalQueries().lookupPlayersByEmail(["owner@example.com"]),
+    ).rejects.toThrow("invalid payload");
   });
 
   it("maps a validated room creation result and propagates command errors", async () => {
@@ -141,39 +195,48 @@ describe("SupabaseSuperadminPortalQueries", () => {
       error: null,
     });
 
-    await expect(new SupabaseSuperadminRoomCommands().createRoom({
-      idempotencyKey: "room-create-1",
-      title: "Sala beta",
-      description: "",
-      timeZone: "Europe/Madrid",
-      ownerEmail: "owner@example.com",
-      initialMembers: [],
-      reason: "Beta",
-    })).resolves.toMatchObject({ source: "supabase", slug: "sala-beta", memberCount: 1 });
+    await expect(
+      new SupabaseSuperadminRoomCommands().createRoom({
+        idempotencyKey: "room-create-1",
+        title: "Sala beta",
+        description: "",
+        timeZone: "Europe/Madrid",
+        ownerEmail: "owner@example.com",
+        initialMembers: [],
+        reason: "Beta",
+      }),
+    ).resolves.toMatchObject({ source: "supabase", slug: "sala-beta", memberCount: 1 });
     expect(mocks.rpc).toHaveBeenCalledWith("create_superadmin_room", {
       input: expect.objectContaining({ ownerEmail: "owner@example.com" }),
     });
 
-    mocks.rpc.mockResolvedValue({ data: null, error: { code: "22023", message: "owner_not_found" } });
-    await expect(new SupabaseSuperadminRoomCommands().createRoom({
-      idempotencyKey: "room-create-2",
-      title: "Sala beta",
-      description: "",
-      timeZone: "Europe/Madrid",
-      ownerEmail: "missing@example.com",
-      initialMembers: [],
-      reason: "Beta",
-    })).rejects.toMatchObject({ code: "owner_not_found" });
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "22023", message: "owner_not_found" },
+    });
+    await expect(
+      new SupabaseSuperadminRoomCommands().createRoom({
+        idempotencyKey: "room-create-2",
+        title: "Sala beta",
+        description: "",
+        timeZone: "Europe/Madrid",
+        ownerEmail: "missing@example.com",
+        initialMembers: [],
+        reason: "Beta",
+      }),
+    ).rejects.toMatchObject({ code: "owner_not_found" });
 
     mocks.rpc.mockResolvedValue({ data: null, error: { code: "08006", message: "offline" } });
-    await expect(new SupabaseSuperadminRoomCommands().createRoom({
-      idempotencyKey: "room-create-3",
-      title: "Sala beta",
-      description: "",
-      timeZone: "Europe/Madrid",
-      ownerEmail: "owner@example.com",
-      initialMembers: [],
-      reason: "Beta",
-    })).rejects.toBeInstanceOf(SuperadminRoomCommandError);
+    await expect(
+      new SupabaseSuperadminRoomCommands().createRoom({
+        idempotencyKey: "room-create-3",
+        title: "Sala beta",
+        description: "",
+        timeZone: "Europe/Madrid",
+        ownerEmail: "owner@example.com",
+        initialMembers: [],
+        reason: "Beta",
+      }),
+    ).rejects.toBeInstanceOf(SuperadminRoomCommandError);
   });
 });

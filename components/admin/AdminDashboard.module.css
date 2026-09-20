@@ -139,6 +139,22 @@
   margin-top: var(--space-5, 24px);
 }
 
+.roomLink,
+.challengeLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.roomLink:hover .roomCard,
+.roomLink:focus-visible .roomCard,
+.challengeLink:hover .challenge,
+.challengeLink:focus-visible .challenge {
+  transform: translateY(-2px);
+  outline: 2px solid var(--color-social, #6556d9);
+  outline-offset: 3px;
+}
+
 .roomTopline,
 .challenge {
   display: flex;

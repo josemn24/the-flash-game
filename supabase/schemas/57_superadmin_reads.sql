@@ -63,6 +63,73 @@ alter function public.get_superadmin_portal_context() owner to postgres;
 revoke all on function public.get_superadmin_portal_context() from public, anon, service_role;
 grant execute on function public.get_superadmin_portal_context() to authenticated;
 
+create function public.get_superadmin_room_detail(target_room_id uuid)
+returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare
+  actor uuid := (select private.current_player_id());
+  room_payload jsonb;
+begin
+  if actor is null or not exists (
+    select 1
+    from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+
+  select jsonb_build_object(
+    'room', jsonb_build_object(
+      'roomId', room.id,
+      'slug', room.slug,
+      'title', room.title,
+      'timeZone', room.time_zone,
+      'status', room.status,
+      'seasons', coalesce((
+        select jsonb_agg(
+          jsonb_build_object(
+            'seasonId', season.id,
+            'title', season.title,
+            'status', season.status,
+            'startsAt', season.starts_at,
+            'endsAt', season.ends_at
+          ) order by season.starts_at desc, season.id
+        )
+        from public.seasons season
+        where season.room_id = room.id
+      ), '[]'::jsonb)
+    ),
+    'members', coalesce((
+      select jsonb_agg(
+        jsonb_build_object(
+          'playerId', player.id,
+          'displayName', player.display_name,
+          'email', auth_user.email,
+          'avatarPath', player.avatar_path,
+          'role', membership.role,
+          'joinedAt', membership.joined_at
+        ) order by membership.joined_at, player.id
+      )
+      from public.room_memberships membership
+      join public.players player on player.id = membership.player_id
+      left join auth.users auth_user on auth_user.id = player.auth_user_id
+      where membership.room_id = room.id
+        and membership.status = 'active'
+        and player.status = 'active'
+    ), '[]'::jsonb)
+  )
+  into room_payload
+  from public.rooms room
+  where room.id = target_room_id and room.status = 'active';
+
+  return room_payload;
+end;
+$$;
+
+alter function public.get_superadmin_room_detail(uuid) owner to postgres;
+revoke all on function public.get_superadmin_room_detail(uuid) from public, anon, service_role;
+grant execute on function public.get_superadmin_room_detail(uuid) to authenticated;
+
 -- Dashboard read boundary. This deliberately returns summaries only; editorial
 -- payloads, solutions, the full question library, and calendar rows stay behind
 -- their dedicated queries.

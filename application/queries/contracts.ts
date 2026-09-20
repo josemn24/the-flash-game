@@ -13,6 +13,7 @@ import type {
   SuperadminPlayerCandidate,
   SuperadminPortalContext,
   SuperadminDashboardModel,
+  SuperadminRoomDetailData,
   ViewerProfile,
 } from "@/types/view-models";
 import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
@@ -74,6 +75,10 @@ export interface SuperadminPortalQueries {
 
 export interface SuperadminDashboardQueries {
   getDashboard(): Promise<SuperadminDashboardModel>;
+}
+
+export interface SuperadminRoomQueries {
+  getDetail(roomId: string): Promise<SuperadminRoomDetailData | null>;
 }
 
 export type { SuperadminEditorialQueries };

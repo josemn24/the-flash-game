@@ -73,7 +73,7 @@ describe("season admin actions", () => {
     mocks.createSeason.mockResolvedValue({});
 
     await expect(createSeasonDraft({}, createForm())).rejects.toThrow(
-      "REDIRECT:/admin/seasons?season=created",
+      "REDIRECT:/admin/rooms/00000000-0000-4000-8000-000000000001?tab=seasons&season=created",
     );
     expect(mocks.createSeason).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -83,7 +83,9 @@ describe("season admin actions", () => {
       }),
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin");
-    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/seasons");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/admin/rooms/00000000-0000-4000-8000-000000000001",
+    );
   });
 
   it("rejects nonexistent DST times before crossing the command boundary", async () => {
@@ -110,7 +112,9 @@ describe("season admin actions", () => {
           idempotencyKey: "season-update-1",
         }),
       ),
-    ).rejects.toThrow("REDIRECT:/admin/seasons?season=updated");
+    ).rejects.toThrow(
+      "REDIRECT:/admin/rooms/00000000-0000-4000-8000-000000000001?tab=seasons&season=updated",
+    );
     expect(mocks.updateSeason).toHaveBeenCalledWith(
       expect.objectContaining({
         seasonId: room.seasons[0].seasonId,

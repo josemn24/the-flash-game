@@ -41,7 +41,11 @@ test.describe("S08 — crear una sala privada", () => {
       await row.getByLabel("Rol del miembro").selectOption(member.role);
       await row.getByRole("button", { name: "Buscar" }).click();
       await expect(row).toContainText(
-        member.role === "admin" ? "Admin S08" : member.role === "member" ? "Member S08" : "Spectator S08",
+        member.role === "admin"
+          ? "Admin S08"
+          : member.role === "member"
+            ? "Member S08"
+            : "Spectator S08",
       );
     }
 
@@ -51,9 +55,12 @@ test.describe("S08 — crear una sala privada", () => {
     await expect(page.getByRole("button", { name: "Crear sala" })).toBeEnabled();
     await page.getByRole("button", { name: "Crear sala" }).click();
 
-    await expect(page).toHaveURL(/\/admin\/rooms\?created=1$/);
-    await expect(page.getByRole("status").filter({ hasText: "Sala creada correctamente" })).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?created=1$/);
+    await expect(
+      page.getByRole("status").filter({ hasText: "Sala creada correctamente" }),
+    ).toBeVisible();
     await expect(page.getByRole("heading", { name: data.data.title }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Temporadas" })).toBeVisible();
 
     await page.reload();
     await expect(page.getByRole("heading", { name: data.data.title }).first()).toBeVisible();

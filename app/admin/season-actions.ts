@@ -134,6 +134,7 @@ export async function createSeasonDraft(
       : null;
     if (!window || Object.keys(parsed.fieldErrors).length > 0)
       return validationState(parsed.fieldErrors);
+    if (!room) return validationState({ seasonId: "La temporada ya no está disponible." });
 
     try {
       await createSuperadminSeason({
@@ -148,8 +149,9 @@ export async function createSeasonDraft(
       return commandState(error, "form");
     }
     revalidatePath("/admin");
-    revalidatePath("/admin/seasons");
-    redirect("/admin/seasons?season=created");
+    revalidatePath("/admin/rooms");
+    revalidatePath(`/admin/rooms/${roomId}`);
+    redirect(`/admin/rooms/${roomId}?tab=seasons&season=created`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -178,6 +180,7 @@ export async function updateSeasonDraft(
       : null;
     if (!window || Object.keys(parsed.fieldErrors).length > 0)
       return validationState(parsed.fieldErrors);
+    if (!room) return validationState({ seasonId: "La temporada ya no está disponible." });
 
     try {
       await updateSuperadminSeason({
@@ -192,8 +195,9 @@ export async function updateSeasonDraft(
       return commandState(error, "form");
     }
     revalidatePath("/admin");
-    revalidatePath("/admin/seasons");
-    redirect("/admin/seasons?season=updated");
+    revalidatePath("/admin/rooms");
+    revalidatePath(`/admin/rooms/${room.roomId}`);
+    redirect(`/admin/rooms/${room.roomId}?tab=seasons&season=updated`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||
@@ -210,7 +214,7 @@ export async function activateSeason(
   formData: FormData,
 ): Promise<SeasonActionState> {
   try {
-    await requireSuperadmin();
+    const access = await requireSuperadmin();
     const seasonId = textValue(formData, "seasonId");
     const reason = textValue(formData, "reason");
     const idempotencyKey = textValue(formData, "idempotencyKey");
@@ -221,6 +225,8 @@ export async function activateSeason(
     if (idempotencyKey.length < 8 || idempotencyKey.length > 160)
       fieldErrors.form = "No se pudo preparar la operación. Recarga el formulario.";
     if (Object.keys(fieldErrors).length > 0) return validationState(fieldErrors);
+    const room = findSeasonRoom(access.context, seasonId);
+    if (!room) return validationState({ seasonId: "La temporada ya no está disponible." });
 
     try {
       await activateSuperadminSeason({ idempotencyKey, seasonId, reason });
@@ -228,8 +234,9 @@ export async function activateSeason(
       return commandState(error, "form");
     }
     revalidatePath("/admin");
-    revalidatePath("/admin/seasons");
-    redirect("/admin/seasons?season=activated");
+    revalidatePath("/admin/rooms");
+    revalidatePath(`/admin/rooms/${room.roomId}`);
+    redirect(`/admin/rooms/${room.roomId}?tab=seasons&season=activated`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||

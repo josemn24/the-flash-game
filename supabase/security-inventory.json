@@ -731,6 +731,16 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_room_calendar_context": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_room_detail": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.lookup_superadmin_players": {
       "arguments": "target_emails text[]",
       "securityDefiner": true,

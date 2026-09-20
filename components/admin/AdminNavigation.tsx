@@ -5,10 +5,8 @@ import styles from "./AdminShell.module.css";
 export const ADMIN_NAV_ITEMS = [
   { id: "overview", label: "Resumen", href: "/admin" },
   { id: "rooms", label: "Salas", href: "/admin/rooms" },
-  { id: "seasons", label: "Temporadas", href: "/admin/seasons" },
   { id: "content", label: "Contenido Flash", href: "/admin/content" },
   { id: "questions", label: "Preguntas", href: "/admin/questions" },
-  { id: "calendar", label: "Calendario", href: "/admin/calendar" },
 ] as const satisfies ReadonlyArray<{ id: AdminSection; label: string; href: string }>;
 
 type AdminNavigationProps = {

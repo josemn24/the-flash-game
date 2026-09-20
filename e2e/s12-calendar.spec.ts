@@ -19,30 +19,41 @@ async function signIn(page: Page, account: FixtureAccount) {
 function madridLocal(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Madrid",
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
   }).formatToParts(date);
   const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
   return `${value("year")}-${value("month")}-${value("day")}T${value("hour")}:${value("minute")}`;
 }
 
 test.describe("S12 — programar y ejecutar calendario", () => {
-  test("un superadmin programa y un miembro puede iniciar una publicación abierta", async ({ page, browser }) => {
+  test("un superadmin programa y un miembro puede iniciar una publicación abierta", async ({
+    page,
+    browser,
+  }) => {
     const data = await fixture();
     await signIn(page, data.users.superadmin);
-    await page.goto("/admin/calendar");
-    const calendar = page.getByRole("region", { name: "Programar desafíos" });
+    await page.goto("/admin/rooms");
+    await page.getByRole("link", { name: "Ver detalle de Sala S12" }).click();
+    await page.getByRole("link", { name: "Calendario" }).click();
+    const calendar = page.getByRole("region", { name: /Calendario de desafíos/ });
     const now = Date.now();
     await calendar.getByLabel("Apertura").fill(madridLocal(new Date(now - 60_000)));
     await calendar.getByLabel("Cierre").fill(madridLocal(new Date(now + 3_600_000)));
     await calendar.getByLabel("Motivo de auditoría").fill("Programar calendario S12");
     await calendar.getByRole("button", { name: "Programar desafío" }).click();
-    await expect(page).toHaveURL(/\/admin\/calendar\?calendar=created$/);
+    await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=calendar&calendar=created$/);
     await page.reload();
     await expect(calendar.getByText("Programado")).toBeVisible();
 
     const tick = await page.request.post("/api/internal/calendar/tick", {
-      headers: { authorization: `Bearer ${process.env.CALENDAR_TICK_SECRET ?? "local-s12-calendar-secret"}` },
+      headers: {
+        authorization: `Bearer ${process.env.CALENDAR_TICK_SECRET ?? "local-s12-calendar-secret"}`,
+      },
     });
     expect(tick.ok()).toBeTruthy();
 

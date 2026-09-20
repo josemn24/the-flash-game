@@ -48,24 +48,34 @@ function handlePortalBoundary(error: unknown): never {
   throw error;
 }
 
-export async function lookupSuperadminPlayers(emails: readonly string[]): Promise<AdminLookupResult> {
+export async function lookupSuperadminPlayers(
+  emails: readonly string[],
+): Promise<AdminLookupResult> {
   try {
     await requireSuperadmin();
-    const normalizedEmails = [...new Set(emails.map(normalizeEmail).filter((email): email is string => Boolean(email)))];
+    const normalizedEmails = [
+      ...new Set(emails.map(normalizeEmail).filter((email): email is string => Boolean(email))),
+    ];
     if (normalizedEmails.length === 0 || normalizedEmails.length !== emails.length) {
       return { ok: false, message: "Introduce un email válido." };
     }
     const candidates = await lookupPlayers(normalizedEmails);
     return { ok: true, candidates };
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
       handlePortalBoundary(error);
     }
     throw error;
   }
 }
 
-function parseInput(formData: FormData): { input?: CreateRoomInput; state?: CreateRoomActionState } {
+function parseInput(formData: FormData): {
+  input?: CreateRoomInput;
+  state?: CreateRoomActionState;
+} {
   const title = textValue(formData, "title").trim();
   const description = textValue(formData, "description").trim();
   const timeZone = textValue(formData, "timeZone").trim();
@@ -77,10 +87,12 @@ function parseInput(formData: FormData): { input?: CreateRoomInput; state?: Crea
   const fieldErrors: Record<string, string> = {};
 
   if (title.length < 3 || title.length > 80) fieldErrors.title = "Usa entre 3 y 80 caracteres.";
-  if (description.length > 280) fieldErrors.description = "La descripción no puede superar 280 caracteres.";
+  if (description.length > 280)
+    fieldErrors.description = "La descripción no puede superar 280 caracteres.";
   if (!timeZone) fieldErrors.timeZone = "Selecciona una zona horaria.";
   if (!ownerEmail) fieldErrors.ownerEmail = "Introduce un email válido.";
-  if (reason.length === 0 || reason.length > 500) fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
+  if (reason.length === 0 || reason.length > 500)
+    fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
   if (idempotencyKey.length < 8 || idempotencyKey.length > 160) {
     fieldErrors.form = "No se pudo preparar la operación. Recarga el formulario.";
   }
@@ -95,11 +107,16 @@ function parseInput(formData: FormData): { input?: CreateRoomInput; state?: Crea
   if (initialMembers.some((member) => !member.email)) {
     fieldErrors.members = "Todos los emails del grupo deben ser válidos.";
   }
-  if (initialMembers.some((member) => typeof member.role !== "string" || !memberRoles.has(member.role))) {
+  if (
+    initialMembers.some(
+      (member) => typeof member.role !== "string" || !memberRoles.has(member.role),
+    )
+  ) {
     fieldErrors.members = "Cada miembro debe tener un rol válido.";
   }
 
-  if (Object.keys(fieldErrors).length > 0 || !ownerEmail) return { state: validationState(fieldErrors) };
+  if (Object.keys(fieldErrors).length > 0 || !ownerEmail)
+    return { state: validationState(fieldErrors) };
 
   return {
     input: {
@@ -123,20 +140,29 @@ export async function createPrivateRoom(
     const parsed = parseInput(formData);
     if (!parsed.input) return parsed.state ?? { message: "Revisa los datos de la sala." };
 
+    let result;
     try {
-      await createSuperadminRoom(parsed.input);
+      result = await createSuperadminRoom(parsed.input);
     } catch (error) {
       if (error instanceof SuperadminRoomCommandError) {
-        const field = error.code.includes("owner") ? "ownerEmail" : error.code.includes("member") ? "members" : "form";
+        const field = error.code.includes("owner")
+          ? "ownerEmail"
+          : error.code.includes("member")
+            ? "members"
+            : "form";
         return validationState({ [field]: commandMessage(error.code) });
       }
       throw error;
     }
     revalidatePath("/admin");
     revalidatePath("/admin/rooms");
-    redirect("/admin/rooms?created=1");
+    revalidatePath(`/admin/rooms/${result.roomId}`);
+    redirect(`/admin/rooms/${result.roomId}?created=1`);
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
       handlePortalBoundary(error);
     }
     throw error;

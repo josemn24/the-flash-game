@@ -1,5 +1,6 @@
 import { ButtonLink, Card, Chip } from "@/components/ui";
 import type { SuperadminDashboardModel } from "@/types/view-models";
+import Link from "next/link";
 import { AdminShell } from "./AdminShell";
 import styles from "./AdminDashboard.module.css";
 
@@ -9,10 +10,10 @@ type AdminDashboardProps = {
 
 const metricLinks = {
   activeRooms: "/admin/rooms",
-  activeSeasons: "/admin/seasons",
-  pendingSeasons: "/admin/seasons",
+  activeSeasons: "/admin/rooms",
+  pendingSeasons: "/admin/rooms",
   editorialDrafts: "/admin/content",
-  upcomingChallenges: "/admin/calendar",
+  upcomingChallenges: "/admin/rooms",
 } as const;
 
 const metricLabels = {
@@ -33,10 +34,9 @@ function formatChallengeWindow(opensAt: string, closesAt: string, timeZone: stri
 }
 
 export function AdminDashboard({ model }: AdminDashboardProps) {
-  const metricEntries = Object.entries(model.metrics) as Array<[
-    keyof typeof model.metrics,
-    number,
-  ]>;
+  const metricEntries = Object.entries(model.metrics) as Array<
+    [keyof typeof model.metrics, number]
+  >;
 
   return (
     <AdminShell operator={model.operator} activeSection="overview">
@@ -44,7 +44,8 @@ export function AdminDashboard({ model }: AdminDashboardProps) {
         <p className={styles.eyebrow}>Superadministración</p>
         <h1 id="admin-dashboard-title">Todo listo para operar.</h1>
         <p>
-          Un resumen del estado de la beta y accesos directos a las operaciones que requieren atención.
+          Un resumen del estado de la beta y accesos directos a las operaciones que requieren
+          atención.
         </p>
       </section>
 
@@ -134,16 +135,28 @@ export function AdminDashboard({ model }: AdminDashboardProps) {
         {model.rooms.length > 0 ? (
           <div className={styles.roomGrid}>
             {model.rooms.map((room) => (
-              <Card as="article" surface="soft" key={room.roomId} className={styles.roomCard}>
-                <div className={styles.roomTopline}>
-                  <h3>{room.title}</h3>
-                  <Chip variant="status" tone="success">Activa</Chip>
-                </div>
-                <p className={styles.muted}>/{room.slug} · {room.seasonCount} temporadas</p>
-                <p className={styles.roomSeason}>
-                  {room.activeSeason ? `Temporada activa: ${room.activeSeason.title}` : "Sin temporada activa"}
-                </p>
-              </Card>
+              <Link
+                href={`/admin/rooms/${room.roomId}`}
+                key={room.roomId}
+                className={styles.roomLink}
+              >
+                <Card as="article" surface="soft" className={styles.roomCard}>
+                  <div className={styles.roomTopline}>
+                    <h3>{room.title}</h3>
+                    <Chip variant="status" tone="success">
+                      Activa
+                    </Chip>
+                  </div>
+                  <p className={styles.muted}>
+                    /{room.slug} · {room.seasonCount} temporadas
+                  </p>
+                  <p className={styles.roomSeason}>
+                    {room.activeSeason
+                      ? `Temporada activa: ${room.activeSeason.title}`
+                      : "Sin temporada activa"}
+                  </p>
+                </Card>
+              </Link>
             ))}
           </div>
         ) : (
@@ -160,25 +173,39 @@ export function AdminDashboard({ model }: AdminDashboardProps) {
             <p className={styles.eyebrow}>Programación</p>
             <h2 id="admin-upcoming-title">Próximos desafíos</h2>
           </div>
-          <ButtonLink href="/admin/calendar" variant="secondary" size="sm">
-            Abrir calendario
+          <ButtonLink href="/admin/rooms" variant="secondary" size="sm">
+            Ver salas
           </ButtonLink>
         </div>
         {model.upcomingChallenges.length > 0 ? (
           <div className={styles.challengeList}>
             {model.upcomingChallenges.map((challenge) => (
-              <Card as="article" surface="soft" key={challenge.scheduledChallengeId} className={styles.challenge}>
-                <div>
-                  <p className={styles.eyebrow}>{challenge.roomTitle} · {challenge.seasonTitle}</p>
-                  <h3>#{challenge.number} · {challenge.challengeTitle}</h3>
-                  <p className={styles.muted}>
-                    {formatChallengeWindow(challenge.opensAt, challenge.closesAt, challenge.timeZone)}
-                  </p>
-                </div>
-                <Chip variant="status" tone={challenge.status === "open" ? "success" : "info"}>
-                  {challenge.status === "open" ? "Abierto" : "Programado"}
-                </Chip>
-              </Card>
+              <Link
+                href={`/admin/rooms/${challenge.roomId}?tab=calendar`}
+                key={challenge.scheduledChallengeId}
+                className={styles.challengeLink}
+              >
+                <Card as="article" surface="soft" className={styles.challenge}>
+                  <div>
+                    <p className={styles.eyebrow}>
+                      {challenge.roomTitle} · {challenge.seasonTitle}
+                    </p>
+                    <h3>
+                      #{challenge.number} · {challenge.challengeTitle}
+                    </h3>
+                    <p className={styles.muted}>
+                      {formatChallengeWindow(
+                        challenge.opensAt,
+                        challenge.closesAt,
+                        challenge.timeZone,
+                      )}
+                    </p>
+                  </div>
+                  <Chip variant="status" tone={challenge.status === "open" ? "success" : "info"}>
+                    {challenge.status === "open" ? "Abierto" : "Programado"}
+                  </Chip>
+                </Card>
+              </Link>
             ))}
           </div>
         ) : (

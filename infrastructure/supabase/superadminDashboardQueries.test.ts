@@ -41,7 +41,7 @@ describe("SupabaseSuperadminDashboardQueries", () => {
       alerts: [expect.objectContaining({ id: "no-active-rooms" })],
       actions: expect.arrayContaining([
         expect.objectContaining({ href: "/admin/rooms" }),
-        expect.objectContaining({ href: "/admin/calendar" }),
+        expect.objectContaining({ href: "/admin/content" }),
       ]),
       source: "supabase",
     });
@@ -52,7 +52,12 @@ describe("SupabaseSuperadminDashboardQueries", () => {
     mocks.rpc.mockResolvedValue({
       data: {
         ...emptyDashboard,
-        metrics: { ...emptyDashboard.metrics, activeRooms: 1, activeSeasons: 1, editorialDrafts: 2 },
+        metrics: {
+          ...emptyDashboard.metrics,
+          activeRooms: 1,
+          activeSeasons: 1,
+          editorialDrafts: 2,
+        },
         rooms: [
           {
             roomId: "00000000-0000-4000-8000-000000000002",
@@ -80,7 +85,10 @@ describe("SupabaseSuperadminDashboardQueries", () => {
   });
 
   it("turns the authorization SQL error into a typed denial", async () => {
-    mocks.rpc.mockResolvedValue({ data: null, error: { code: "42501", message: "not_authorized" } });
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "not_authorized" },
+    });
 
     await expect(new SupabaseSuperadminDashboardQueries().getDashboard()).rejects.toBeInstanceOf(
       SuperadminAccessDeniedError,
@@ -88,7 +96,10 @@ describe("SupabaseSuperadminDashboardQueries", () => {
   });
 
   it("rejects an invalid payload instead of exposing an incomplete model", async () => {
-    mocks.rpc.mockResolvedValue({ data: { ...emptyDashboard, metrics: { activeRooms: 0 } }, error: null });
+    mocks.rpc.mockResolvedValue({
+      data: { ...emptyDashboard, metrics: { activeRooms: 0 } },
+      error: null,
+    });
 
     await expect(new SupabaseSuperadminDashboardQueries().getDashboard()).rejects.toThrow(
       "invalid payload",

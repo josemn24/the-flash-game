@@ -65,6 +65,20 @@ describe("SupabaseSuperadminCalendarQueries", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_calendar_context");
   });
 
+  it("limits the calendar read to the selected room when a room id is provided", async () => {
+    mocks.rpc.mockResolvedValue({ data: { entries: [entry] }, error: null });
+
+    await expect(
+      new SupabaseSuperadminCalendarQueries().getContext(entry.roomId),
+    ).resolves.toMatchObject({
+      entries: [entry],
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_room_calendar_context", {
+      target_room_id: entry.roomId,
+    });
+  });
+
   it("uses only the administrative RPCs and marks results as Supabase sourced", async () => {
     mocks.rpc.mockResolvedValue({ data: result, error: null });
     const queries = new SupabaseSuperadminCalendarQueries();
@@ -82,7 +96,9 @@ describe("SupabaseSuperadminCalendarQueries", () => {
       ...result,
       source: "supabase",
     });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_scheduled_challenge", { input: createInput });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_scheduled_challenge", {
+      input: createInput,
+    });
 
     const updateInput = {
       idempotencyKey: "calendar-update-1",
@@ -94,33 +110,47 @@ describe("SupabaseSuperadminCalendarQueries", () => {
       closesAt: entry.closesAt,
       reason: "Ajustar ventana",
     };
-    await expect(queries.updateScheduledChallenge(updateInput)).resolves.toMatchObject({ source: "supabase" });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("update_superadmin_scheduled_challenge", { input: updateInput });
+    await expect(queries.updateScheduledChallenge(updateInput)).resolves.toMatchObject({
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("update_superadmin_scheduled_challenge", {
+      input: updateInput,
+    });
   });
 
   it("maps authorization and domain errors without falling back", async () => {
-    mocks.rpc.mockResolvedValue({ data: null, error: { code: "42501", message: "not_authorized" } });
-    await expect(new SupabaseSuperadminCalendarQueries().createScheduledChallenge({
-      idempotencyKey: "calendar-auth-1",
-      seasonId: entry.seasonId,
-      challengeVersionId: entry.challengeVersionId,
-      number: 1,
-      opensAt: entry.opensAt,
-      closesAt: entry.closesAt,
-      reason: "Denied",
-    })).rejects.toBeInstanceOf(SuperadminAccessDeniedError);
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "not_authorized" },
+    });
+    await expect(
+      new SupabaseSuperadminCalendarQueries().createScheduledChallenge({
+        idempotencyKey: "calendar-auth-1",
+        seasonId: entry.seasonId,
+        challengeVersionId: entry.challengeVersionId,
+        number: 1,
+        opensAt: entry.opensAt,
+        closesAt: entry.closesAt,
+        reason: "Denied",
+      }),
+    ).rejects.toBeInstanceOf(SuperadminAccessDeniedError);
 
-    mocks.rpc.mockResolvedValue({ data: null, error: { code: "55000", message: "schedule_overlap" } });
-    await expect(new SupabaseSuperadminCalendarQueries().updateScheduledChallenge({
-      idempotencyKey: "calendar-domain-1",
-      scheduledChallengeId: entry.scheduledChallengeId,
-      expectedUpdatedAt: entry.updatedAt,
-      challengeVersionId: entry.challengeVersionId,
-      number: 1,
-      opensAt: entry.opensAt,
-      closesAt: entry.closesAt,
-      reason: "Overlap",
-    })).rejects.toMatchObject({
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "55000", message: "schedule_overlap" },
+    });
+    await expect(
+      new SupabaseSuperadminCalendarQueries().updateScheduledChallenge({
+        idempotencyKey: "calendar-domain-1",
+        scheduledChallengeId: entry.scheduledChallengeId,
+        expectedUpdatedAt: entry.updatedAt,
+        challengeVersionId: entry.challengeVersionId,
+        number: 1,
+        opensAt: entry.opensAt,
+        closesAt: entry.closesAt,
+        reason: "Overlap",
+      }),
+    ).rejects.toMatchObject({
       code: "schedule_overlap",
       name: "SuperadminCalendarCommandError",
     } satisfies Partial<SuperadminCalendarCommandError>);
@@ -133,35 +163,45 @@ describe("SupabaseSuperadminCalendarQueries", () => {
     );
 
     mocks.rpc.mockResolvedValue({ data: { ...result, status: "invalid" }, error: null });
-    await expect(new SupabaseSuperadminCalendarQueries().createScheduledChallenge({
-      idempotencyKey: "calendar-invalid-1",
-      seasonId: entry.seasonId,
-      challengeVersionId: entry.challengeVersionId,
-      number: 1,
-      opensAt: entry.opensAt,
-      closesAt: entry.closesAt,
-      reason: "Invalid response",
-    })).rejects.toMatchObject({ code: "invalid_response" });
+    await expect(
+      new SupabaseSuperadminCalendarQueries().createScheduledChallenge({
+        idempotencyKey: "calendar-invalid-1",
+        seasonId: entry.seasonId,
+        challengeVersionId: entry.challengeVersionId,
+        number: 1,
+        opensAt: entry.opensAt,
+        closesAt: entry.closesAt,
+        reason: "Invalid response",
+      }),
+    ).rejects.toMatchObject({ code: "invalid_response" });
   });
 
   it("runs the tick through PostgreSQL with a local service-role transaction", async () => {
     const client = {
-      query: vi.fn()
+      query: vi
+        .fn()
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce({
-          rows: [{ result: {
-            runId: "calendar-run-1",
-            evaluatedAt: "2026-09-16T10:00:00.000Z",
-            opened: 1,
-            closed: 0,
-            finishedSeasons: 0,
-          } }],
+          rows: [
+            {
+              result: {
+                runId: "calendar-run-1",
+                evaluatedAt: "2026-09-16T10:00:00.000Z",
+                opened: 1,
+                closed: 0,
+                finishedSeasons: 0,
+              },
+            },
+          ],
         })
         .mockResolvedValueOnce({}),
       release: vi.fn(),
     };
-    const pool = { connect: vi.fn().mockResolvedValue(client), end: vi.fn().mockResolvedValue(undefined) };
+    const pool = {
+      connect: vi.fn().mockResolvedValue(client),
+      end: vi.fn().mockResolvedValue(undefined),
+    };
     pgMocks.Pool.mockImplementation(() => pool);
     const previousUrl = process.env.SUPABASE_DB_URL;
     process.env.SUPABASE_DB_URL = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";

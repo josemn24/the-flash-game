@@ -44,8 +44,8 @@ Dashboard del portal `/admin`
 → métricas, resúmenes de salas, próximos desafíos y alertas derivadas
 → `components/admin/AdminDashboard` sin formularios ni contexto editorial completo
 
-Áreas operativas del portal `/admin/rooms`, `/admin/seasons`, `/admin/content`,
-`/admin/questions` y `/admin/calendar`
+Áreas operativas del portal `/admin/rooms`, `/admin/rooms/[roomId]`, `/admin/content` y
+`/admin/questions`
 → shell y navegación comunes de `components/admin`
 → cada página mantiene su propia autorización, loader especializado y mutaciones existentes
 
@@ -64,7 +64,7 @@ Mutaciones de temporadas del portal `/admin`
   public.activate_superadmin_season()
 → comando privado transaccional, idempotencia y private.audit_log
 
-Calendario temporal del portal `/admin`
+Calendario temporal del detalle de sala `/admin/rooms/[roomId]?tab=calendar`
 → `app/admin/calendar-actions.ts`
 → `server/admin-calendar.ts`
 → `infrastructure/supabase/superadminCalendarQueries.ts`
@@ -232,26 +232,27 @@ caché persistente ni compartida entre usuarios.
 ### Separación del portal de superadministración
 
 `SuperadminPortalContext` conserva el contexto amplio que necesitan las operaciones actuales de
-`/admin` durante la migración: salas con temporadas, editorial, biblioteca de preguntas y
-calendario. `SuperadminDashboardModel` es un contrato independiente y deliberadamente pequeño para
+`/admin` y la entrada al listado de salas: salas con temporadas, editorial, biblioteca de preguntas
+y calendario opcional. `SuperadminRoomDetailModel` es el contrato acotado del detalle: una sala
+activa, todas sus temporadas, miembros activos, calendario filtrado por sala y contenido Flash
+publicado necesario para programar. `SuperadminDashboardModel` es un contrato independiente y deliberadamente pequeño para
 el dashboard: operador, métricas, resúmenes de salas, próximos desafíos, alertas y destinos de
 navegación. No contiene documentos editoriales, soluciones, la biblioteca completa ni formularios.
 
 La navegación canónica queda fijada así:
 
-| Ruta | Responsabilidad |
-| --- | --- |
-| `/admin` | Dashboard operativo breve, sin formularios ni documentos editoriales |
-| `/admin/rooms` | Área especializada de salas y creación de salas |
-| `/admin/seasons` | Área especializada de temporadas |
-| `/admin/content` | Área especializada de contenido Flash y biblioteca necesaria |
-| `/admin/questions` | Biblioteca de preguntas existente, integrada en el shell común |
-| `/admin/calendar` | Área especializada de calendario y programación |
+| Ruta                    | Responsabilidad                                                               |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `/admin`                | Dashboard operativo breve, sin formularios ni documentos editoriales          |
+| `/admin/rooms`          | Área especializada de salas activas y creación de salas                       |
+| `/admin/rooms/[roomId]` | Detalle de sala; temporadas, miembros y calendario como subáreas contextuales |
+| `/admin/content`        | Área especializada de contenido Flash y biblioteca necesaria                  |
+| `/admin/questions`      | Biblioteca de preguntas existente, integrada en el shell común                |
 
 El dashboard no carga documentos editoriales, soluciones, la biblioteca completa ni todas las
-entradas del calendario. Las operaciones se ejecutan en sus áreas especializadas y, tras una
-operación correcta, la Server Action revalida el dashboard y su propia ruta antes de redirigir al
-usuario a esa misma área con un aviso contextual. El shell visual no es una frontera de seguridad:
+entradas del calendario. Las operaciones de temporada y calendario se ejecutan en el detalle de la
+sala y, tras una operación correcta, la Server Action revalida el dashboard y la ruta de esa sala
+antes de redirigir al usuario a la pestaña correspondiente con un aviso contextual. El shell visual no es una frontera de seguridad:
 cada página y cada Server Action continúa usando `requireSuperadmin()`.
 
 ### Estructura de las subpáginas administrativas
@@ -273,10 +274,10 @@ La biblioteca de preguntas y sus editores también se montan dentro de `AdminShe
 específicos devuelven el operador y el detalle mínimo necesario, sin cambiar las acciones ni los
 contratos del editor:
 
-| Ruta | Loader / composición |
-| --- | --- |
-| `/admin/questions` | `getSuperadminQuestionLibraryPageModel` + biblioteca |
-| `/admin/questions/new` | `getSuperadminNewQuestionPageModel` + editor vacío |
+| Ruta                                   | Loader / composición                                     |
+| -------------------------------------- | -------------------------------------------------------- |
+| `/admin/questions`                     | `getSuperadminQuestionLibraryPageModel` + biblioteca     |
+| `/admin/questions/new`                 | `getSuperadminNewQuestionPageModel` + editor vacío       |
 | `/admin/questions/[questionVersionId]` | `getSuperadminQuestionVersionPageModel` + detalle/editor |
 
 No existen rutas de detalle para salas, temporadas o contenido. Los RPCs, comandos, payloads de

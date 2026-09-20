@@ -529,6 +529,54 @@ begin
 end;
 $$;
 
+create function public.get_superadmin_room_calendar_context(target_room_id uuid) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare
+  actor uuid := (select private.current_player_id());
+begin
+  if actor is null or not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  return jsonb_build_object(
+    'entries', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'scheduledChallengeId', schedule.id,
+        'roomId', room.id,
+        'roomSlug', room.slug,
+        'roomTitle', room.title,
+        'timeZone', room.time_zone,
+        'seasonId', season.id,
+        'seasonTitle', season.title,
+        'seasonStatus', season.status,
+        'challengeVersionId', version.id,
+        'challengeSlug', definition.slug,
+        'versionNumber', version.version_number,
+        'challengeTitle', version.title,
+        'challengeSubtitle', version.subtitle,
+        'mode', version.mode,
+        'number', schedule.number,
+        'status', schedule.status,
+        'opensAt', schedule.opens_at,
+        'closesAt', schedule.closes_at,
+        'updatedAt', schedule.updated_at
+      ) order by schedule.opens_at desc, schedule.id)
+      from public.scheduled_challenges schedule
+      join public.seasons season on season.id = schedule.season_id
+      join public.rooms room on room.id = season.room_id
+      join private.challenge_versions version on version.id = schedule.challenge_version_id
+      join private.challenge_definitions definition on definition.id = version.challenge_definition_id
+      where room.id = target_room_id
+        and room.status = 'active'
+        and version.status = 'published'
+        and version.mode = 'flash'
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
 create function public.get_room_calendar(target_room_slug text)
 returns table (
   room_id uuid,
@@ -617,6 +665,7 @@ alter function private.create_scheduled_challenge_command(jsonb) owner to postgr
 alter function private.update_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.run_calendar_tick_command(jsonb) owner to postgres;
 alter function public.get_superadmin_calendar_context() owner to postgres;
+alter function public.get_superadmin_room_calendar_context(uuid) owner to postgres;
 alter function public.get_room_calendar(text) owner to postgres;
 alter function public.create_superadmin_scheduled_challenge(jsonb) owner to postgres;
 alter function public.update_superadmin_scheduled_challenge(jsonb) owner to postgres;
@@ -624,9 +673,9 @@ alter function public.update_superadmin_scheduled_challenge(jsonb) owner to post
 revoke all on function private.assert_supported_calendar_content(uuid),
   private.create_scheduled_challenge_command(jsonb), private.update_scheduled_challenge_command(jsonb),
   private.run_calendar_tick_command(jsonb) from public, anon, authenticated, service_role;
-revoke all on function public.get_superadmin_calendar_context(), public.get_room_calendar(text),
+revoke all on function public.get_superadmin_calendar_context(), public.get_superadmin_room_calendar_context(uuid), public.get_room_calendar(text),
   public.create_superadmin_scheduled_challenge(jsonb), public.update_superadmin_scheduled_challenge(jsonb)
   from public, anon, service_role;
-grant execute on function public.get_superadmin_calendar_context(), public.get_room_calendar(text),
+grant execute on function public.get_superadmin_calendar_context(), public.get_superadmin_room_calendar_context(uuid), public.get_room_calendar(text),
   public.create_superadmin_scheduled_challenge(jsonb), public.update_superadmin_scheduled_challenge(jsonb)
   to authenticated;

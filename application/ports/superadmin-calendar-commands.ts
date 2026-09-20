@@ -34,12 +34,16 @@ export type RunCalendarTickResult = {
 };
 
 export interface SuperadminCalendarCommands {
-  createScheduledChallenge(input: CreateScheduledChallengeInput): Promise<SuperadminCalendarCommandResult>;
-  updateScheduledChallenge(input: UpdateScheduledChallengeInput): Promise<SuperadminCalendarCommandResult>;
+  createScheduledChallenge(
+    input: CreateScheduledChallengeInput,
+  ): Promise<SuperadminCalendarCommandResult>;
+  updateScheduledChallenge(
+    input: UpdateScheduledChallengeInput,
+  ): Promise<SuperadminCalendarCommandResult>;
 }
 
 export interface SuperadminCalendarQueries {
-  getContext(): Promise<SuperadminCalendarContext>;
+  getContext(roomId?: string): Promise<SuperadminCalendarContext>;
 }
 
 export interface CalendarTickRunner {
