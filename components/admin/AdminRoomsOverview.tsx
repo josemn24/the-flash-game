@@ -1,6 +1,7 @@
-import { ButtonLink, Card, Chip } from "@/components/ui";
+import { Card, Chip } from "@/components/ui";
 import Link from "next/link";
 import type { SuperadminPortalRoom } from "@/types/view-models";
+import { CreateRoomForm } from "./CreateRoomForm.client";
 import styles from "./AdminRoomsOverview.module.css";
 
 type AdminRoomsOverviewProps = {
@@ -55,11 +56,7 @@ export function AdminRoomsOverview({ rooms, showAction = false }: AdminRoomsOver
         </Card>
       )}
 
-      {showAction ? (
-        <ButtonLink href="#crear-sala" variant="secondary" className={styles.action}>
-          Crear sala
-        </ButtonLink>
-      ) : null}
+      {showAction ? <CreateRoomForm /> : null}
     </section>
   );
 }

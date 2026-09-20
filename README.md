@@ -66,22 +66,23 @@ necesita configuración adicional. Para probar S01–S12 y E01–E04 con persist
 
 ## Comandos disponibles
 
-| Comando                          | Descripción                                                              |
-| -------------------------------- | ------------------------------------------------------------------------ |
-| `npm run dev`                    | Inicia el servidor de desarrollo.                                        |
-| `npm run lint`                   | Comprueba la calidad estática del código.                                |
-| `npm run typecheck`              | Valida todos los contratos TypeScript sin emitir código.                 |
-| `npm run type-architecture`      | Comprueba las dependencias entre las capas de tipos.                     |
-| `npm test`                       | Ejecuta los tests unitarios con Vitest.                                  |
-| `npm run build`                  | Genera la compilación optimizada de producción.                          |
-| `npm run start`                  | Sirve localmente una compilación de producción.                          |
-| `npm run supabase:start`         | Inicia el stack local de Supabase.                                       |
-| `npm run supabase:status`        | Muestra el estado del stack local de Supabase.                           |
-| `npm run supabase:browser:setup` | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales. |
-| `npm run supabase:schema:test`   | Verifica esquema, RLS, comandos y concurrencia.                          |
-| `npm run dictionary:generate`    | Regenera el vocabulario español de Mini-Wordle.                          |
-| `npm run dictionary:check`       | Comprueba que el vocabulario versionado esté actualizado.                |
-| `npm run format:check`           | Comprueba el formato con Prettier.                                       |
+| Comando                           | Descripción                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------------- |
+| `npm run dev`                     | Inicia el servidor de desarrollo.                                                  |
+| `npm run lint`                    | Comprueba la calidad estática del código.                                          |
+| `npm run typecheck`               | Valida todos los contratos TypeScript sin emitir código.                           |
+| `npm run type-architecture`       | Comprueba las dependencias entre las capas de tipos.                               |
+| `npm test`                        | Ejecuta los tests unitarios con Vitest.                                            |
+| `npm run build`                   | Genera la compilación optimizada de producción.                                    |
+| `npm run start`                   | Sirve localmente una compilación de producción.                                    |
+| `npm run supabase:start`          | Inicia el stack local de Supabase.                                                 |
+| `npm run supabase:status`         | Muestra el estado del stack local de Supabase.                                     |
+| `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.           |
+| `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con Steel Ball Run. |
+| `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                    |
+| `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                    |
+| `npm run dictionary:check`        | Comprueba que el vocabulario versionado esté actualizado.                          |
+| `npm run format:check`            | Comprueba el formato con Prettier.                                                 |
 
 ## Estructura principal
 

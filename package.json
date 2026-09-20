@@ -12,6 +12,7 @@
     "supabase:db:reset": "supabase db reset --local",
     "supabase:db:schema:sync": "supabase db schema declarative sync",
     "supabase:fixture": "node scripts/supabase-fixture.mjs",
+    "supabase:tabarnia:setup": "node scripts/seed-tabarnia.mjs",
     "sbr:asset:generate": "node scripts/generate-sbr-assets.mjs",
     "supabase:browser:setup": "node scripts/seed-browser.mjs",
     "test:integration:supabase": "node scripts/supabase-integration.mjs",

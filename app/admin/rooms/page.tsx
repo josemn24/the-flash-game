@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
-import {
-  AdminNotice,
-  AdminRoomsOverview,
-  AdminShell,
-} from "@/components/admin";
-import { CreateRoomForm } from "@/components/admin/CreateRoomForm.client";
+import { AdminNotice, AdminRoomsOverview, AdminShell } from "@/components/admin";
 import { getSuperadminRoomsPageModel } from "@/server/data-access";
 import { loadAdminPageModel } from "../section-page";
 
@@ -27,16 +22,13 @@ export default async function AdminRoomsPage({ searchParams }: AdminRoomsPagePro
       activeSection="rooms"
       breadcrumbs={[{ label: "Resumen", href: "/admin" }, { label: "Salas" }]}
     >
-      <AdminRoomsOverview rooms={page.rooms} />
+      <AdminRoomsOverview rooms={page.rooms} showAction />
       {params.created === "1" ? (
         <AdminNotice
           title="Sala creada correctamente."
           description="La nueva sala ya aparece en el contexto operativo."
         />
       ) : null}
-      <div id="crear-sala">
-        <CreateRoomForm />
-      </div>
     </AdminShell>
   );
 }

@@ -61,6 +61,21 @@ Para incluir también resultados históricos:
 npm run supabase:browser:setup -- --with-history
 ```
 
+## Alpha local de Tabarnia
+
+Para preparar la sala realista de la alpha con sus doce jugadores, una temporada activa y el primer
+desafío Steel Ball Run:
+
+```bash
+npm run supabase:tabarnia:setup
+npm run dev
+```
+
+El setup crea a `xesmona` como superadmin fuera de la sala, a `Ches` como propietario y jugador, y
+al resto de la cohorte como miembros jugadores. Las credenciales fijas y los IDs generados se
+guardan en `output/fixtures/tabarnia.json`, una ruta ignorada por Git. El comando reinicia la base
+local en cada ejecución y no crea intentos ni resultados históricos.
+
 El setup realiza estas operaciones únicamente contra Supabase local:
 
 1. Reinicia la base.
