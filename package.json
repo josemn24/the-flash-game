@@ -23,6 +23,7 @@
     "dictionary:check": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 --check && node scripts/generate-mini-wordle-dictionary.mjs --length=5 --check",
     "supabase:dictionary:load": "node scripts/load-mini-wordle-dictionary.mjs",
     "test": "vitest run",
+    "test:pwa:worker": "node --test scripts/pwa-service-worker.test.mjs",
     "test:e2e": "playwright test",
     "mock-data:check": "vitest run data/mock/store.test.ts data/mock/validate.test.ts",
     "typecheck": "tsc --noEmit",

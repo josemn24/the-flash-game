@@ -20,6 +20,9 @@ function parseLocalStatus() {
 }
 
 const localStatus = parseLocalStatus();
+const isPwaE2e = process.env.PWA_E2E === "1";
+const e2ePort = isPwaE2e ? process.env.PWA_E2E_PORT || "3001" : "3000";
+const e2eBaseURL = `http://127.0.0.1:${e2ePort}`;
 const localEnv = {
   ...process.env,
   SUPABASE_DB_URL: process.env.SUPABASE_DB_URL || localStatus.DB_URL || "",
@@ -51,13 +54,15 @@ export default defineConfig({
   reporter: "line",
   use: {
     ...devices["Desktop Chrome"],
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: e2eBaseURL,
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run dev -- --hostname 127.0.0.1 --port 3000",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: process.env.FLASH_RUNTIME_SCOPE !== "pilot",
+    command: isPwaE2e
+      ? `npm run start -- --hostname 127.0.0.1 --port ${e2ePort}`
+      : "npm run dev -- --hostname 127.0.0.1 --port 3000",
+    url: e2eBaseURL,
+    reuseExistingServer: isPwaE2e ? false : process.env.FLASH_RUNTIME_SCOPE !== "pilot",
     timeout: 120_000,
     env: localEnv,
   },
