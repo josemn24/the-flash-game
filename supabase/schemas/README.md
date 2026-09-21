@@ -122,6 +122,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [80_rankings.sql](80_rankings.sql)                       | Vista privada invoker y funciones públicas autorizadas por membresía.                                                               |
 | [85_flash_history_reads.sql](85_flash_history_reads.sql) | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                        |
 | [90_commands.sql](90_commands.sql)                       | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                           |
+| [91_room_membership_commands.sql](91_room_membership_commands.sql) | Gestión autenticada de roles y estado de membresías por el propietario, con idempotencia y auditoría. |
 | [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)     | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                         |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql) | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior. |
 | [93_logic_code.sql](93_logic_code.sql) | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code. |

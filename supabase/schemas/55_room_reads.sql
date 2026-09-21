@@ -72,7 +72,8 @@ language sql stable security definer set search_path = '' as $$
         jsonb_build_object(
           'id', p.id,
           'name', p.display_name,
-          'avatarPath', p.avatar_path
+          'avatarPath', p.avatar_path,
+          'role', active_members.role
         ) order by active_members.joined_at, p.id
       )
       from public.room_memberships active_members

@@ -17,8 +17,8 @@ describe("room settings route", () => {
     if (!model) throw new Error("Expected settings model");
     const markup = renderToStaticMarkup(<FlashPopRoomSettings model={model} />);
 
-    expect(markup).toContain("Acciones");
     expect(markup).toContain("Tabarnia");
+    expect(markup).not.toContain('aria-labelledby="room-actions-title"');
     expect(markup).toContain('href="/salas/tabarnia-room"');
   });
 

@@ -3,6 +3,7 @@ import { mockDomainStore } from "@/data/mock/store";
 import { MockChallengeQueries } from "@/infrastructure/mock/challengeQueries";
 import { MockCurrentViewerProvider } from "@/infrastructure/mock/currentViewer";
 import { MockRoomQueries } from "@/infrastructure/mock/roomQueries";
+import { MockRoomMembershipCommands } from "@/infrastructure/mock/roomMembershipCommands";
 import { mocksEnabled } from "@/server/runtime-scope";
 
 export const mockCurrentViewerProvider = new MockCurrentViewerProvider(
@@ -11,6 +12,10 @@ export const mockCurrentViewerProvider = new MockCurrentViewerProvider(
 );
 export const mockRoomQueries = new MockRoomQueries(mockDomainStore);
 export const mockChallengeQueries = new MockChallengeQueries(mockDomainStore);
+export const mockRoomMembershipCommands = new MockRoomMembershipCommands(
+  mockDomainStore,
+  mockCurrentViewerProvider,
+);
 
 export function isMockRoomRoute(roomKey: string) {
   return Object.hasOwn(roomRouteAliases, roomKey);

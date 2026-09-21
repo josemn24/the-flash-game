@@ -68,6 +68,7 @@ export type RoomCardModel = {
     name: string;
     initials: string;
     src?: string;
+    role?: RoomMembershipRole;
   }>;
   memberCount: number;
   href: string;
@@ -155,6 +156,8 @@ export type RoomSettingsModel = {
   roomId: string;
   title: string;
   currentUserId: string;
+  viewerRole: RoomMembershipRole;
+  canManageMembers: boolean;
   memberCount: number;
   members: Array<{
     id: string;
@@ -162,6 +165,8 @@ export type RoomSettingsModel = {
     initials: string;
     avatarSrc?: string;
     totalFlashPoints: number;
+    role: RoomMembershipRole;
+    canManage: boolean;
     isCurrentUser: boolean;
   }>;
 };

@@ -11,6 +11,7 @@ import {
   Eye,
   Heart,
   Lock,
+  MoreHorizontal,
   Notebook,
   Pencil,
   RotateCcw,
@@ -18,6 +19,7 @@ import {
   TriangleAlert,
   Trophy,
   UserRoundPlus,
+  UserRoundMinus,
   Undo2,
   X,
 } from "lucide-react";
@@ -187,6 +189,14 @@ export function PencilIcon(props: IconProps) {
 
 export function UserPlusIcon(props: IconProps) {
   return <UserRoundPlus {...baseProps} {...props} />;
+}
+
+export function UserMinusIcon(props: IconProps) {
+  return <UserRoundMinus {...baseProps} {...props} />;
+}
+
+export function MoreIcon(props: IconProps) {
+  return <MoreHorizontal {...baseProps} {...props} />;
 }
 
 export function RotateIcon(props: IconProps) {

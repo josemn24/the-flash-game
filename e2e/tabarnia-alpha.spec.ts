@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 type Account = { email: string; password: string };
 type Fixture = {
-  users: { ches: Account; xesmona: Account };
+  users: { ches: Account; dark: Account; xesmona: Account };
   data: {
     room: { slug: string };
     publicationId: string;
@@ -45,6 +45,42 @@ test.describe("Tabarnia alpha", () => {
 
     const unauthorizedResponse = await page.goto(`/salas/${data.data.room.slug}/ajustes`);
     expect(unauthorizedResponse?.status()).toBe(404);
+  });
+
+  test("Ches puede promover y degradar miembros desde ajustes", async ({ page }) => {
+    const data = await fixture();
+    await signIn(page, data.users.ches);
+    await page.goto(`/salas/${data.data.room.slug}/ajustes`);
+
+    const actions = page.getByRole("button", { name: "Acciones para Dark" });
+    await expect(actions).toBeVisible();
+    await actions.click();
+    await page.getByRole("button", { name: "Dar permisos de administrador" }).click();
+    await expect(page.getByText("Admin", { exact: true })).toBeVisible();
+
+    await actions.click();
+    await page.getByRole("button", { name: "Quitar permisos de administrador" }).click();
+    await expect(page.getByText("Admin", { exact: true })).toHaveCount(0);
+  });
+
+  test("un miembro normal no ve acciones administrativas", async ({ page }) => {
+    const data = await fixture();
+    await signIn(page, data.users.dark);
+    await page.goto(`/salas/${data.data.room.slug}/ajustes`);
+
+    await expect(page.getByRole("heading", { name: "Miembros", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Acciones para/ })).toHaveCount(0);
+  });
+
+  test("Ches puede expulsar lógicamente a un miembro", async ({ page }) => {
+    const data = await fixture();
+    await signIn(page, data.users.ches);
+    await page.goto(`/salas/${data.data.room.slug}/ajustes`);
+
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: "Acciones para Carlos" }).click();
+    await page.getByRole("button", { name: "Expulsar de la sala" }).click();
+    await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
   test("Ches puede abrir la sala y comenzar Steel Ball Run", async ({ page }) => {

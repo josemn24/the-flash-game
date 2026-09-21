@@ -511,12 +511,16 @@ function asMemberPreviews(value: unknown) {
     ) {
       return [];
     }
+    const role = roomRoles.has(row.role as RoomMembershipRole)
+      ? (row.role as RoomMembershipRole)
+      : undefined;
     return [
       {
         id: row.id,
         name: row.name,
         initials: initials(row.name),
         src: resolveAvatarPath(row.avatarPath),
+        role,
       },
     ];
   });
@@ -1652,6 +1656,8 @@ export class SupabaseRoomQueries
       roomId: row.room_slug,
       title: row.room_title,
       currentUserId: viewer.playerId,
+      viewerRole: row.membership_role,
+      canManageMembers: row.membership_role === "owner",
       memberCount: row.member_count,
       members: asMemberPreviews(row.member_previews).map((member) => ({
         id: member.id,
@@ -1659,6 +1665,11 @@ export class SupabaseRoomQueries
         initials: member.initials,
         avatarSrc: member.src,
         totalFlashPoints: flashPointsByPlayer.get(member.id) ?? 0,
+        role: member.id === viewer.playerId ? row.membership_role : (member.role ?? "member"),
+        canManage:
+          row.membership_role === "owner" &&
+          member.id !== viewer.playerId &&
+          (member.role ?? "member") !== "owner",
         isCurrentUser: member.id === viewer.playerId,
       })),
     };

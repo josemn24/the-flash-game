@@ -56,8 +56,7 @@
     transform: translateY(-1px);
   }
 
-  .backButton:focus-visible,
-  .actionButton:focus-visible {
+  .backButton:focus-visible {
     outline: 3px solid var(--color-brand);
     outline-offset: 3px;
   }
@@ -135,67 +134,16 @@
     padding-bottom: var(--space-10);
   }
 
-  .actions,
   .membersSection {
     display: grid;
     gap: var(--space-3);
   }
 
-  .actions h2,
   .sectionHeading h2 {
     margin: 0;
     font-family: var(--type-display);
     font-size: 25px;
     letter-spacing: -0.045em;
-  }
-
-  .actions h2 {
-    margin-bottom: var(--space-1);
-  }
-
-  .actionButton {
-    display: grid;
-    grid-template-columns: 36px 1fr auto;
-    min-height: 64px;
-    align-items: center;
-    gap: var(--space-3);
-    padding: 0 var(--space-5);
-    border: var(--border-subtle);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-ink);
-    box-shadow: var(--shadow-card);
-    font-size: 15px;
-    font-weight: 800;
-    text-align: left;
-  }
-
-  .actionButton:disabled {
-    cursor: not-allowed;
-    opacity: 0.62;
-  }
-
-  .actionIcon {
-    display: inline-grid;
-    width: 36px;
-    height: 36px;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--color-brand);
-  }
-
-  .actionIcon svg,
-  .actionChevron {
-    width: 19px;
-    height: 19px;
-  }
-
-  .actionChevron {
-    color: var(--color-ink-muted);
-  }
-
-  .membersSection {
-    margin-top: var(--space-8);
   }
 
   .sectionHeading {
@@ -214,33 +162,50 @@
 
   .memberList {
     display: grid;
-    gap: 6px;
+    gap: 10px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   .memberRow {
+    position: relative;
     display: flex;
+    width: 100%;
+    min-width: 0;
     min-height: 58px;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: var(--radius-control);
+    gap: 12px;
+    padding: 12px 14px 12px 12px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-control);
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+
+  .memberRow:hover,
+  .memberRow:focus-within {
+    z-index: 10;
+    border-color: var(--color-social);
+    transform: translateY(-2px);
+  }
+
+  .memberRow:focus-within {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .memberRow:has(.memberActionsOpen) {
+    z-index: 10;
   }
 
   .currentMember {
-    background: var(--color-surface);
-    box-shadow: var(--shadow-card);
-  }
-
-  .memberRank {
-    width: 18px;
-    color: var(--color-ink-muted);
-    font-family: var(--type-mono);
-    font-size: 11px;
-    font-weight: 700;
-    text-align: center;
+    border-color: var(--color-social);
+    background: var(--color-surface-soft);
   }
 
   .memberName {
@@ -248,7 +213,7 @@
     min-width: 0;
     flex: 1;
     flex-direction: column;
-    gap: 2px;
+    gap: 5px;
   }
 
   .memberName strong {
@@ -257,10 +222,144 @@
     white-space: nowrap;
   }
 
-  .memberName small {
+  .memberNameLine {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .memberNameLine strong {
+    font-family: var(--type-display);
+    font-size: 18px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .memberRole,
+  .memberYou {
+    flex: 0 0 auto;
+    border-radius: var(--radius-pill);
+    padding: 3px 7px;
+    color: var(--color-ink-muted);
+    background: var(--color-canvas);
+    font-family: var(--type-mono);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .memberRole {
+    color: var(--color-social);
+  }
+
+  .memberYou {
+    color: var(--color-ink);
+    background: var(--color-brand);
+  }
+
+  .memberActions {
+    position: relative;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .memberActionsOpen {
+    z-index: 20;
+  }
+
+  .memberActionsTrigger {
+    width: 36px;
+    height: 36px;
+  }
+
+  .memberActionsTrigger svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .memberPoints {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
     color: var(--color-ink-muted);
     font-family: var(--type-mono);
     font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .currentMember .memberPoints {
+    background: var(--color-surface);
+  }
+
+  .memberActionMenu {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 4px);
+    right: 0;
+    display: grid;
+    min-width: 220px;
+    gap: 2px;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    padding: 6px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-dialog);
+  }
+
+  .memberActionMenu form {
+    display: contents;
+  }
+
+  .memberActionItem {
+    display: flex;
+    width: 100%;
+    min-height: 42px;
+    align-items: center;
+    border: 0;
+    border-radius: var(--radius-control);
+    padding: 0 10px;
+    color: var(--color-ink);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .memberActionItem:hover:not(:disabled),
+  .memberActionItem:focus-visible {
+    background: var(--color-canvas);
+    outline: none;
+  }
+
+  .memberActionItem:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+
+  .dangerAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-danger);
+  }
+
+  .dangerAction svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .memberActionError {
+    margin: 4px 8px;
+    color: var(--color-danger);
+    font-size: 11px;
+    font-weight: 700;
   }
 
   @media (max-width: 600px) {

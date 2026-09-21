@@ -13,6 +13,7 @@ import {
   selectSeasonRanking,
 } from "@/data/mock/selectors";
 import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
+import { getMockMembershipOverride } from "@/infrastructure/mock/roomMembershipCommands";
 import {
   getChallengeDisplayTitle,
   getChallengeFormatLabel,
@@ -63,15 +64,18 @@ export class MockRoomQueries implements RoomQueries {
   private roomAccess(roomKey: string, viewerId: PlayerId) {
     const roomId = resolveRoomRouteKey(roomKey);
     const room = roomId ? this.store.rooms.find(({ id }) => id === roomId) : undefined;
-    const membership = room
-      ? this.store.roomMemberships.find(
-          (candidate) =>
-            candidate.roomId === room.id &&
-            candidate.playerId === viewerId &&
-            candidate.status === "active",
-        )
-      : undefined;
+    const membership = room ? this.effectiveMembership(room.id, viewerId) : undefined;
     return room && membership ? { room, membership } : null;
+  }
+
+  private effectiveMembership(roomId: RoomId, playerId: PlayerId) {
+    const membership = this.store.roomMemberships.find(
+      (candidate) => candidate.roomId === roomId && candidate.playerId === playerId,
+    );
+    if (!membership) return undefined;
+    const override = getMockMembershipOverride(roomId, playerId);
+    if (!override) return membership.status === "active" ? membership : undefined;
+    return override.status === "active" ? { ...membership, ...override } : undefined;
   }
 
   private activeSeason(roomId: RoomId) {
@@ -90,8 +94,11 @@ export class MockRoomQueries implements RoomQueries {
 
   private activePlayers(roomId: RoomId) {
     return this.store.roomMemberships
-      .filter((membership) => membership.roomId === roomId && membership.status === "active")
-      .map((membership) => ({ membership, ...this.player(membership.playerId) }));
+      .filter((membership) => this.effectiveMembership(roomId, membership.playerId))
+      .map((membership) => ({
+        membership: this.effectiveMembership(roomId, membership.playerId)!,
+        ...this.player(membership.playerId),
+      }));
   }
 
   private seasonLeaderboard(roomId: RoomId, season: Season): RoomLeaderboardEntry[] {
@@ -341,8 +348,24 @@ export class MockRoomQueries implements RoomQueries {
       roomId: roomKey,
       title: access.room.title,
       currentUserId: currentKey,
+      viewerRole: access.membership.role,
+      canManageMembers: access.membership.role === "owner",
       memberCount: members.length,
-      members,
+      members: members.map((member) => {
+        const membership = this.effectiveMembership(
+          access.room.id,
+          resolvePlayerRouteKey(member.id)!,
+        );
+        const role = membership?.role ?? "member";
+        return {
+          ...member,
+          role,
+          canManage:
+            access.membership.role === "owner" &&
+            member.id !== currentKey &&
+            role !== "owner",
+        };
+      }),
     };
   }
 

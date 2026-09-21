@@ -17,6 +17,7 @@ import type {
   ViewerProfile,
 } from "@/types/view-models";
 import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
+import type { RoomMembershipCommands } from "@/application/ports/room-membership-commands";
 
 export interface CurrentViewerProvider {
   getCurrentViewer(): Promise<ViewerProfile>;
@@ -56,6 +57,8 @@ export interface RoomRankingQueries {
 export interface RoomSettingsQueries {
   getSettings(roomKey: string): Promise<RoomSettingsModel | null>;
 }
+
+export type { RoomMembershipCommands };
 
 /** Narrow read surface for the authenticated S07 Flash history slice. */
 export interface RoomHistoryQueries {

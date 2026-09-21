@@ -46,16 +46,19 @@ const roomRow = {
       id: "00000000-0000-0000-0000-000000000001",
       name: "Alice Owner",
       avatarPath: null,
+      role: "owner",
     },
     {
       id: viewer.id,
       name: "Bob Viewer",
       avatarPath: "/avatars/bob.png",
+      role: "member",
     },
     {
       id: "00000000-0000-0000-0000-000000000004",
       name: "Dora Spectator",
       avatarPath: null,
+      role: "spectator",
     },
   ],
   member_count: 3,
@@ -190,6 +193,8 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       roomId: "s06-main",
       title: "Sala competitiva S06",
       currentUserId: viewer.id,
+      viewerRole: "member",
+      canManageMembers: false,
       memberCount: 3,
     });
     expect(model?.members).toEqual([
@@ -197,20 +202,54 @@ describe("SupabaseRoomQueries S06 rankings", () => {
         id: seasonRows[0].player_id,
         name: "Alice Owner",
         totalFlashPoints: 120,
+        role: "owner",
+        canManage: false,
         isCurrentUser: false,
       }),
       expect.objectContaining({
         id: viewer.id,
         name: "Bob Viewer",
         totalFlashPoints: 80,
+        role: "member",
+        canManage: false,
         isCurrentUser: true,
       }),
       expect.objectContaining({
         name: "Dora Spectator",
         totalFlashPoints: 0,
+        role: "spectator",
+        canManage: false,
         isCurrentUser: false,
       }),
     ]);
+  });
+
+  it("marks the owner as the only viewer who can manage members", async () => {
+    mocks.getCurrentViewerProfile.mockResolvedValue({
+      id: "00000000-0000-0000-0000-000000000001",
+      playerId: "00000000-0000-0000-0000-000000000001",
+      name: "Alice Owner",
+      avatarSrc: undefined,
+    });
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") {
+          return { data: [{ ...roomRow, membership_role: "owner" }], error: null };
+        }
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        return { data: [], error: null };
+      }),
+    });
+
+    await expect(new SupabaseRoomQueries().getSettings("s06-main")).resolves.toMatchObject({
+      viewerRole: "owner",
+      canManageMembers: true,
+      members: [
+        expect.objectContaining({ name: "Alice Owner", role: "owner", canManage: false }),
+        expect.objectContaining({ name: "Bob Viewer", role: "member", canManage: true }),
+        expect.objectContaining({ name: "Dora Spectator", role: "spectator", canManage: true }),
+      ],
+    });
   });
 
   it("keeps accessible members when a room has no active season", async () => {
