@@ -35,9 +35,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flash Pop — Bricolage vs Fredoka",
+  title: "The Flash — Bricolage vs Fredoka",
   description:
-    "Comparativa controlada de Bricolage Grotesque y Fredoka para la tipografía display de Flash Pop.",
+    "Comparativa controlada de Bricolage Grotesque y Fredoka para la tipografía display de The Flash.",
 };
 
 const sharedConcept = {
@@ -53,7 +53,7 @@ export default function FlashPopTypographyPage() {
       className={`${styles.page} ${bricolage.variable} ${fredoka.variable} ${manrope.variable} ${plexMono.variable}`}
     >
       <header className={styles.pageHeader}>
-        <p className={styles.kicker}>Flash Pop · Decisión tipográfica</p>
+        <p className={styles.kicker}>The Flash · Decisión tipográfica</p>
         <h1>Bricolage vs Fredoka</h1>
         <p>
           Dos lobbies Soft Diorama idénticos. Manrope se mantiene en la interfaz e IBM Plex Mono en
@@ -61,7 +61,7 @@ export default function FlashPopTypographyPage() {
         </p>
       </header>
 
-      <section className={styles.comparisonGrid} aria-label="Comparativa tipográfica Flash Pop">
+      <section className={styles.comparisonGrid} aria-label="Comparativa tipográfica The Flash">
         <LobbyConcept
           {...sharedConcept}
           id="A"

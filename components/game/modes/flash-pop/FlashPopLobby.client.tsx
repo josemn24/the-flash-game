@@ -70,11 +70,11 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
   return (
     <Canvas contentClassName={styles.shell}>
       <header className={styles.appHeader}>
-        <div className={styles.brand} aria-label="Flash Pop">
+        <div className={styles.brand} aria-label="The Flash">
           <span className={styles.brandMark}>
             <BoltIcon />
           </span>
-          <span>Flash Pop</span>
+          <span>The Flash</span>
         </div>
 
         <div className={styles.identity}>

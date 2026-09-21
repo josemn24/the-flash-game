@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const room = await getRoomHistoryPageModel(roomId);
 
   return {
-    title: room ? `Historial de ${room.roomTitle} — Flash Pop` : "Historial — Flash Pop",
+    title: room ? `Historial de ${room.roomTitle} — The Flash` : "Historial — The Flash",
   };
 }
 

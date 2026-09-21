@@ -30,7 +30,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const introduction = roomId ? await getRoomIntroductionPageModel(roomId, challengeId) : null;
   return introduction
     ? {
-        title: `${introduction.challengeTitle} — Flash Pop`,
+        title: `${introduction.challengeTitle} — The Flash`,
         description: `Introducción autorizada del desafío de ${introduction.roomTitle}.`,
       }
     : { title: "Desafío no encontrado — The Flash" };

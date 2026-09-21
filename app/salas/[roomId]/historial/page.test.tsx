@@ -10,7 +10,7 @@ describe("room history route", () => {
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({
-      title: "Historial de Tabarnia — Flash Pop",
+      title: "Historial de Tabarnia — The Flash",
     });
 
     const model = await mockRoomQueries.listHistory("tabarnia-room", mockQueryContext());

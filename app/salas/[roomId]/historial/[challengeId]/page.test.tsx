@@ -12,7 +12,7 @@ describe("room history detail route", () => {
         params: Promise.resolve({ roomId: "tabarnia-room", challengeId: "tabarnia-challenge-05" }),
       }),
     ).resolves.toMatchObject({
-      title: "Ranking de La Pirámide: Cumbre lógica — Tabarnia — Flash Pop",
+      title: "Ranking de La Pirámide: Cumbre lógica — Tabarnia — The Flash",
     });
 
     const model = await mockRoomQueries.getHistoryDetail(

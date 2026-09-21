@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const model = await getRoomMemberDetailPageModel(roomId, memberId, challengeId);
   return {
     title: model
-      ? `${model.member.name} — ${model.roomTitle} — Flash Pop`
-      : "Resultado — Flash Pop",
+      ? `${model.member.name} — ${model.roomTitle} — The Flash`
+      : "Resultado — The Flash",
   };
 }
 

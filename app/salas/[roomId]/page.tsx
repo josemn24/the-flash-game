@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return room
     ? {
-        title: `${room.title} — Flash Pop`,
+        title: `${room.title} — The Flash`,
         description: `Detalle de la sala ${room.title} y su desafío diario.`,
       }
     : {
-        title: "Sala no encontrada — Flash Pop",
+        title: "Sala no encontrada — The Flash",
       };
 }
 

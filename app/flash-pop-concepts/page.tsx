@@ -3,8 +3,8 @@ import styles from "./FlashPopConcepts.module.css";
 import { LobbyConcept } from "./LobbyConcept";
 
 export const metadata: Metadata = {
-  title: "Flash Pop — Arte de formatos",
-  description: "Una dirección visual para cada formato de Flash Pop.",
+  title: "The Flash — Arte de formatos",
+  description: "Una dirección visual para cada formato de The Flash.",
 };
 
 const concepts = [
@@ -69,7 +69,7 @@ export default function FlashPopConceptsPage() {
   return (
     <main className={styles.page}>
       <header className={styles.pageHeader}>
-        <p className={styles.kicker}>Flash Pop · Fase visual</p>
+        <p className={styles.kicker}>The Flash · Fase visual</p>
         <h1>Un arte para cada formato</h1>
         <p>
           La misma familia visual acompaña cada forma de jugar. La Pirámide conserva una única
@@ -77,7 +77,7 @@ export default function FlashPopConceptsPage() {
         </p>
       </header>
 
-      <section className={styles.conceptGrid} aria-label="Direcciones visuales Flash Pop">
+      <section className={styles.conceptGrid} aria-label="Direcciones visuales The Flash">
         {concepts.map((concept) => (
           <LobbyConcept {...concept} key={concept.id} />
         ))}

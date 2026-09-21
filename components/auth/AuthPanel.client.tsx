@@ -37,11 +37,11 @@ export function AuthPanel() {
   return (
     <Canvas className={styles.panel} contentClassName={styles.content}>
       <Card className={styles.card}>
-        <div className={styles.brand} aria-label="Flash Pop">
+        <div className={styles.brand} aria-label="The Flash">
           <span className={styles.brandMark}>
             <BoltIcon />
           </span>
-          <span className={styles.brandName}>Flash Pop</span>
+          <span className={styles.brandName}>The Flash</span>
         </div>
 
         <div className={styles.heading}>

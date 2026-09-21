@@ -30,7 +30,7 @@ export function AdminShell({ operator, activeSection, breadcrumbs = [], children
             <BoltIcon />
           </span>
           <div>
-            <p className={styles.eyebrow}>Flash Pop · beta privada</p>
+            <p className={styles.eyebrow}>The Flash · beta privada</p>
             <p className={styles.brandName}>Portal de operaciones</p>
           </div>
         </div>

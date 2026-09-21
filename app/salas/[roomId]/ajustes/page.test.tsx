@@ -10,7 +10,7 @@ describe("room settings route", () => {
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({
-      title: "Ajustes de Tabarnia — Flash Pop",
+      title: "Ajustes de Tabarnia — The Flash",
     });
 
     const model = await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext());

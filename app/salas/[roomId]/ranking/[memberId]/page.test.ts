@@ -12,7 +12,7 @@ describe("room member ranking route", () => {
     expect(dynamic).toBe("force-dynamic");
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room", memberId: "ches" }) }),
-    ).resolves.toMatchObject({ title: "Dark — Tabarnia — Flash Pop" });
+    ).resolves.toMatchObject({ title: "Dark — Tabarnia — The Flash" });
   });
 
   it("resolves a known member", async () => {

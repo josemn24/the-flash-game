@@ -82,7 +82,7 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
         <div className={styles.challengeArt}>
           <Image
             src={ROOM_ART_FALLBACK}
-            alt="Ilustración genérica de Flash Pop"
+            alt="Ilustración genérica de The Flash"
             fill
             priority
             sizes="(max-width: 760px) 100vw, 760px"

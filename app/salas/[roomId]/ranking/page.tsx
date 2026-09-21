@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const room = await getRoomRankingPageModel(roomId);
 
   return {
-    title: room ? `Ranking de ${room.roomTitle} — Flash Pop` : "Ranking — Flash Pop",
+    title: room ? `Ranking de ${room.roomTitle} — The Flash` : "Ranking — The Flash",
   };
 }
 

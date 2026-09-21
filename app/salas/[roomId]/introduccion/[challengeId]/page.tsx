@@ -7,7 +7,7 @@ type Props = {
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Desafío — Flash Pop" };
+export const metadata: Metadata = { title: "Desafío — The Flash" };
 
 export default async function RoomIntroductionPage({ params }: Props) {
   const { roomId, challengeId } = await params;

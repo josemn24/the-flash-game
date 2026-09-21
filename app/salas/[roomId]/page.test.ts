@@ -7,7 +7,7 @@ describe("room detail route", () => {
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({
-      title: "Tabarnia — Flash Pop",
+      title: "Tabarnia — The Flash",
     });
   });
 });

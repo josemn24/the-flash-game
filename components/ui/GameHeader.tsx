@@ -30,11 +30,11 @@ export function GameHeader({
       className={`${styles.header} ${mobileLabel ? styles.compactOnMobile : ""} ${className ?? ""}`}
     >
       {branded ? (
-        <div className={styles.brand} aria-label="Flash Pop">
+        <div className={styles.brand} aria-label="The Flash">
           <span className={styles.brandMark}>
             <BoltIcon />
           </span>
-          <span className={styles.brandName}>Flash Pop</span>
+          <span className={styles.brandName}>The Flash</span>
           <span className={styles.separator} aria-hidden="true">
             /
           </span>

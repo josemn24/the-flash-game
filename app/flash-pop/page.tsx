@@ -4,8 +4,8 @@ import { FlashPopLobby } from "@/components/game";
 import { getFlashPopLobbyPageModel } from "@/server/data-access";
 
 export const metadata: Metadata = {
-  title: "Flash Pop — Lobby",
-  description: "Lobby demo de Flash Pop: asciende por siete niveles de La Pirámide.",
+  title: "The Flash — Lobby",
+  description: "Lobby demo de The Flash: asciende por siete niveles de La Pirámide.",
 };
 
 export const dynamic = "force-dynamic";

@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return model
     ? {
-        title: `${model.member.name} — ${model.roomTitle} — Flash Pop`,
+        title: `${model.member.name} — ${model.roomTitle} — The Flash`,
         description: `Detalle del intento de ${model.member.name} en el ranking de hoy de ${model.roomTitle}.`,
       }
-    : { title: "Jugador no encontrado — Flash Pop" };
+    : { title: "Jugador no encontrado — The Flash" };
 }
 
 export default async function RoomMemberRankingPage({ params }: Props) {

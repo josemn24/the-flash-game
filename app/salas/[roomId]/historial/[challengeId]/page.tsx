@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: model
-      ? `Ranking de ${model.entry.title} — ${model.roomTitle} — Flash Pop`
-      : "Ranking — Flash Pop",
+      ? `Ranking de ${model.entry.title} — ${model.roomTitle} — The Flash`
+      : "Ranking — The Flash",
   };
 }
 

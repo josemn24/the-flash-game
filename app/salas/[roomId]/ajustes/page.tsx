@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const room = await getRoomSettingsPageModel(roomId);
 
   return {
-    title: room ? `Ajustes de ${room.title} — Flash Pop` : "Ajustes — Flash Pop",
+    title: room ? `Ajustes de ${room.title} — The Flash` : "Ajustes — The Flash",
   };
 }
 

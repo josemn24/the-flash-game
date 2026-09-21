@@ -119,11 +119,11 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.homeHeader}>
-        <div className={styles.brand} aria-label="Flash Pop">
+        <div className={styles.brand} aria-label="The Flash">
           <span className={styles.brandMark}>
             <BoltIcon />
           </span>
-          <span className={styles.brandName}>Flash Pop</span>
+          <span className={styles.brandName}>The Flash</span>
         </div>
 
         <nav className={styles.headerActions} aria-label="Acciones de cuenta">

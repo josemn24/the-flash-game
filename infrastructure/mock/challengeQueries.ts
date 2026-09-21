@@ -174,10 +174,10 @@ export class MockChallengeQueries implements ChallengeQueries {
       this.getPlayable(PRIMARY_CHALLENGE_KEY, null, context),
       this.getPlayable(SECONDARY_CHALLENGE_KEY, null, context),
     ]);
-    if (!primary || !secondary) throw new Error("The Flash Pop lobby challenges are missing.");
+    if (!primary || !secondary) throw new Error("The Flash lobby challenges are missing.");
     const viewer = this.store.players.find(({ id }) => id === context.viewerId);
     const viewerKey = getPlayerRouteKey(context.viewerId);
-    if (!viewer || !viewerKey) throw new Error("The Flash Pop lobby viewer is missing.");
+    if (!viewer || !viewerKey) throw new Error("The Flash lobby viewer is missing.");
     return {
       primary,
       secondary,

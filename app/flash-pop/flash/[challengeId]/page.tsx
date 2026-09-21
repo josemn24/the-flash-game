@@ -16,9 +16,9 @@ export async function generateMetadata({
   return {
     title:
       model?.challenge.mode === "flash"
-        ? `${model.challenge.title} — Flash Pop`
-        : "Flash Pop — Preview",
-    description: "Preview del sistema Flash Pop aplicado al desafío Flash clásico.",
+        ? `${model.challenge.title} — The Flash`
+        : "The Flash — Preview",
+    description: "Preview del sistema The Flash aplicado al desafío Flash clásico.",
   };
 }
 

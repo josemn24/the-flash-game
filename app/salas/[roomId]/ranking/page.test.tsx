@@ -10,7 +10,7 @@ describe("room ranking route", () => {
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({
-      title: "Ranking de Tabarnia — Flash Pop",
+      title: "Ranking de Tabarnia — The Flash",
     });
 
     const model = await mockRoomQueries.getRanking("tabarnia-room", mockQueryContext());
