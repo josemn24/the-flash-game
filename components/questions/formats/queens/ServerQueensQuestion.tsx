@@ -2,8 +2,12 @@
 
 import { type KeyboardEvent, useMemo, useRef, useState } from "react";
 import { CrownIcon, CrossIcon } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import { QueensBoard } from "./QueensQuestion";
-import type { ServerQueensProgress, ServerQueensQuestion as ServerQuestion } from "@/types/gameplay/challenge";
+import type {
+  ServerQueensProgress,
+  ServerQueensQuestion as ServerQuestion,
+} from "@/types/gameplay/challenge";
 import { getQueensConflicts, QUEENS_COLUMNS, QUEENS_ROWS } from "@/lib/queens";
 import styles from "./QueensQuestion.module.css";
 
@@ -91,10 +95,22 @@ export function ServerQueensQuestion({
   return (
     <section className={styles.root} aria-label="Queens, puzzle de cinco coronas">
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
-        <button type="button" className={tool === "queen" ? styles.toolActive : ""} aria-pressed={tool === "queen"} onClick={() => setTool("queen")} disabled={locked}>
+        <button
+          type="button"
+          className={tool === "queen" ? styles.toolActive : ""}
+          aria-pressed={tool === "queen"}
+          onClick={() => setTool("queen")}
+          disabled={locked}
+        >
           <CrownIcon /> Corona <kbd>C</kbd>
         </button>
-        <button type="button" className={tool === "mark" ? styles.toolActive : ""} aria-pressed={tool === "mark"} onClick={() => setTool("mark")} disabled={locked}>
+        <button
+          type="button"
+          className={tool === "mark" ? styles.toolActive : ""}
+          aria-pressed={tool === "mark"}
+          onClick={() => setTool("mark")}
+          disabled={locked}
+        >
           <CrossIcon /> Marcar X <kbd>X</kbd>
         </button>
       </div>
@@ -114,19 +130,21 @@ export function ServerQueensQuestion({
         <span>{conflicts.size ? `${conflicts.size} en conflicto` : "Sin conflictos"}</span>
       </div>
       <p className={styles.instructions}>
-        La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se toquen.
+        La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
+        toquen.
       </p>
-      {placementState !== "idle" ? (
-        <div role="status" aria-live="polite">
-          <p>
-            {placementState === "submitting" && placementStatusVisible
-              ? "Guardando movimiento…"
-              : (placementError ?? "No hemos podido guardar el movimiento.")}
-          </p>
-          {placementState === "error" && onRetry ? (
-            <button type="button" onClick={onRetry}>Reintentar</button>
-          ) : null}
-        </div>
+      <ServerOperationStatus
+        state={placementState}
+        visible={placementStatusVisible}
+        pendingMessage="Guardando movimiento…"
+        errorMessage={placementError ?? "No hemos podido guardar el movimiento."}
+        retryLabel="Reintentar movimiento"
+        onRetry={onRetry}
+      />
+      {placementState === "idle" && placementError ? (
+        <p className="mt-4" role="status" aria-live="polite">
+          {placementError}
+        </p>
       ) : null}
     </section>
   );

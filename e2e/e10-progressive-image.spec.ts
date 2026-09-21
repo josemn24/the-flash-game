@@ -28,7 +28,9 @@ async function openFlash(page: Page, account: FixtureAccount) {
 }
 
 test.describe("E10 — Progressive-image competitivo", () => {
-  test("revela desde el timestamp del servidor y conserva el estado al reintentar", async ({ page }) => {
+  test("revela desde el timestamp del servidor y conserva el estado al reintentar", async ({
+    page,
+  }) => {
     test.setTimeout(90_000);
     const data = await fixture();
     await openFlash(page, data.users.alice);
@@ -37,14 +39,18 @@ test.describe("E10 — Progressive-image competitivo", () => {
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: /monumento aparece/ })).toBeVisible();
     await expect(page.getByRole("progressbar", { name: "Progreso de revelado" })).toBeVisible();
-    await expect(page.locator('img[alt="Imagen progresivamente revelada de un monumento europeo"]')).toBeVisible();
+    await expect(
+      page.locator('img[alt="Imagen progresivamente revelada de un monumento europeo"]'),
+    ).toBeVisible();
 
     const deadline = await page.getByRole("timer").getAttribute("aria-label");
     expect(deadline).toMatch(/segundos restantes/);
     await page.getByLabel("¿Qué aparece?").fill("eiffel tower");
 
     let firstResponse = true;
+    const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/answer", async (route) => {
+      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
       if (!firstResponse) return route.continue();
       firstResponse = false;
       const response = await route.fetch();
@@ -58,6 +64,8 @@ test.describe("E10 — Progressive-image competitivo", () => {
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
     await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
     await page.getByRole("button", { name: "Reintentar" }).click();
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();

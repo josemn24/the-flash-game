@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
+import { AnswerOption, QuestionMedia, ServerOperationStatus } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
@@ -105,6 +105,16 @@ export function ServerFlashQuestionStage({
     question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
   const showSubmissionStatus =
     submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
+  const submissionStatus = (
+    <ServerOperationStatus
+      state={submissionState}
+      visible={submissionStatusVisible}
+      pendingMessage="Comprobando respuesta…"
+      errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
+      retryLabel="Reintentar"
+      onRetry={onRetrySubmission}
+    />
+  );
 
   return (
     <div className={`${variantStyles.stageFrame} ${styles.stage}`}>
@@ -193,6 +203,10 @@ export function ServerFlashQuestionStage({
             presentedAtMs={presentedAt ?? undefined}
             onTimedResponseStart={() => undefined}
             onSubmit={onSubmit}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetrySubmission={onRetrySubmission}
           />
         ) : question.type === "queens" ? (
           <ServerQueensQuestion
@@ -209,38 +223,12 @@ export function ServerFlashQuestionStage({
         ) : question.type === "true-false" ? (
           <>
             <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "odd-one-out" ? (
           <>
             <OddOneOutQuestion items={[...question.items]} locked={locked} onSubmit={onSubmit} />
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "ordering" ? (
           <>
@@ -250,20 +238,7 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "anagram" ? (
           <>
@@ -273,20 +248,7 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "classification" ? (
           <>
@@ -302,20 +264,7 @@ export function ServerFlashQuestionStage({
               onProgress={onProgress}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "estimation" ? (
           <>
@@ -328,28 +277,13 @@ export function ServerFlashQuestionStage({
               min={question.min}
               max={question.max}
               step={question.step}
-              value={
-                typeof pendingAnswer === "number" ? pendingAnswer : question.initialValue
-              }
+              value={typeof pendingAnswer === "number" ? pendingAnswer : question.initialValue}
               unit={question.unit}
               locked={locked}
               onChange={onProgress}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "heat-map" ? (
           <>
@@ -373,20 +307,7 @@ export function ServerFlashQuestionStage({
                 />
               </div>
             ) : null}
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : (
           <>
@@ -408,20 +329,7 @@ export function ServerFlashQuestionStage({
                 />
               ))}
             </div>
-            {showSubmissionStatus ? (
-              <div className="mt-4" role="status" aria-live="polite">
-                <p>
-                  {submissionState === "submitting"
-                    ? "Comprobando respuesta…"
-                    : (submissionError ?? "No hemos podido confirmar tu respuesta.")}
-                </p>
-                {submissionState === "error" && onRetrySubmission ? (
-                  <button type="button" onClick={onRetrySubmission}>
-                    Reintentar
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+            {showSubmissionStatus ? submissionStatus : null}
           </>
         )}
       </section>

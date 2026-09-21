@@ -1,0 +1,61 @@
+@layer app-formats {
+  .root {
+    display: flex;
+    min-height: 2.75rem;
+    margin-top: var(--space-3);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pending,
+  .error {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    color: var(--color-ink-muted);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    border: 2px solid color-mix(in srgb, var(--color-social) 28%, transparent);
+    border-top-color: var(--color-social);
+    border-radius: var(--radius-pill);
+    animation: server-operation-spin 650ms linear infinite;
+  }
+
+  .pending p,
+  .error p {
+    margin: 0;
+  }
+
+  .error {
+    flex-wrap: wrap;
+    color: var(--color-danger);
+  }
+
+  @keyframes server-operation-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .pending,
+    .error {
+      flex-direction: column;
+    }
+  }
+}

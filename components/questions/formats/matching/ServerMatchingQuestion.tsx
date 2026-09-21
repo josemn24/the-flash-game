@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import type { ServerMatchingPair, ServerMatchingProgress } from "@/types/gameplay/challenge";
 import type { MatchingItem, MatchingLeftItem } from "@/types/question";
@@ -83,11 +84,6 @@ export function ServerMatchingQuestion({
     if (selectedLeft) choosePair(selectedLeft, id);
   };
 
-  const status =
-    matchingState === "submitting" && matchingStatusVisible
-      ? "Comprobando pareja…"
-      : (matchingError ?? "");
-
   return (
     <div className={styles.root}>
       <div className={styles.scoreRow}>
@@ -141,18 +137,19 @@ export function ServerMatchingQuestion({
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </p>
-      <div className="mt-4" aria-busy={matchingState === "submitting"}>
-        {status ? (
-          <p role="status" aria-live="polite">
-            {status}
-          </p>
-        ) : null}
-        {matchingState === "error" && onRetry ? (
-          <button type="button" className="text-sm underline" onClick={onRetry}>
-            Reintentar pareja
-          </button>
-        ) : null}
-      </div>
+      <ServerOperationStatus
+        state={matchingState}
+        visible={matchingStatusVisible}
+        pendingMessage="Comprobando pareja…"
+        errorMessage={matchingError ?? "No hemos podido confirmar la pareja."}
+        retryLabel="Reintentar pareja"
+        onRetry={onRetry}
+      />
+      {matchingState === "idle" && matchingError ? (
+        <p className="mt-4" role="status" aria-live="polite">
+          {matchingError}
+        </p>
+      ) : null}
     </div>
   );
 }

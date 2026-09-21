@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    exclude: ["**/node_modules/**", "e2e/**"],
+    exclude: ["**/node_modules/**", "e2e/**", "scripts/pwa-service-worker.test.mjs"],
   },
   resolve: {
     alias: {

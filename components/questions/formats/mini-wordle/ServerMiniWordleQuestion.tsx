@@ -2,6 +2,7 @@
 
 import { type CSSProperties, type FormEvent, useId, useState } from "react";
 import { MotionButton } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import type { ServerMiniWordleProgress } from "@/types/gameplay/challenge";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import styles from "./MiniWordleQuestion.module.css";
@@ -106,18 +107,24 @@ export function ServerMiniWordleQuestion({
           </MotionButton>
         </div>
         <div className={styles.formMeta}>
-          <span>Intento {Math.min(progress.attemptsUsed + 1, question.maxAttempts)} de {question.maxAttempts}</span>
-          <span className={styles.error} role="status" aria-live="polite">
-            {submissionState === "submitting" && submissionStatusVisible
-              ? "Comprobando palabra…"
-              : submissionError ?? ""}
+          <span>
+            Intento {Math.min(progress.attemptsUsed + 1, question.maxAttempts)} de{" "}
+            {question.maxAttempts}
           </span>
+          {submissionState === "idle" && submissionError ? (
+            <span className={styles.error} role="status" aria-live="polite">
+              {submissionError}
+            </span>
+          ) : null}
         </div>
-        {submissionState === "error" && onRetry ? (
-          <MotionButton type="button" variant="secondary" onClick={onRetry}>
-            Reintentar
-          </MotionButton>
-        ) : null}
+        <ServerOperationStatus
+          state={submissionState}
+          visible={submissionStatusVisible}
+          pendingMessage="Comprobando palabra…"
+          errorMessage={submissionError ?? "No hemos podido confirmar tu palabra."}
+          retryLabel="Reintentar"
+          onRetry={onRetry}
+        />
       </form>
     </div>
   );

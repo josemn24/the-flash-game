@@ -46,7 +46,9 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     expect(await page.content()).not.toContain("Caída del muro de Berlín");
 
     let firstResponse = true;
+    const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/progressive-clues/reveal", async (route) => {
+      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
       if (!firstResponse) {
         await route.continue();
         return;
@@ -64,6 +66,8 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     await page.getByRole("button", { name: /Revelar otra pista/ }).click();
     await expect(page.getByRole("button", { name: "Reintentar revelación" })).toBeVisible();
     await page.getByRole("button", { name: "Reintentar revelación" }).click();
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("2 de 3 pistas")).toBeVisible();
     await expect(page.getByText("Máximo: 25 pts")).toBeVisible();
     await expect(page.getByText("Está relacionado con una caída de muro.")).toBeVisible();

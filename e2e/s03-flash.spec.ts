@@ -60,17 +60,29 @@ test.describe("S03 — Flash competitivo persistido", () => {
   });
 
   test("persiste un resultado válido con score cero", async ({ page }) => {
+    let firstResponse = true;
+    const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/answer", async (route) => {
+      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
+      if (!firstResponse) return route.continue();
+      firstResponse = false;
       const response = await route.fetch();
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      await route.fulfill({ response });
+      await route.fulfill({
+        status: 503,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ error: { code: "command_failed", requestId: "s03-lost-response" } }),
+      });
+      await response.body();
     });
 
     await openFlash(page, (await fixture()).users.carol);
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await page.getByRole("button", { name: "Oporto" }).click();
-    await expect(page.getByText("Comprobando respuesta…")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Oporto" })).toBeDisabled();
+    await page.getByRole("button", { name: "Reintentar" }).click();
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();
     await expect(page.getByText("Desafío completado")).toBeVisible();

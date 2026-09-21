@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { type FormEvent, useId, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import type { ServerProgressiveCluesProgress } from "@/types/gameplay/challenge";
 import styles from "./ProgressiveCluesQuestion.module.css";
 
@@ -44,14 +45,10 @@ export function ServerProgressiveCluesQuestion({
     if (value && !locked) onSubmit(value);
   };
 
-  const revealStatus =
-    revealState === "submitting" && revealStatusVisible
-      ? "Solicitando otra pista…"
-      : (revealError ?? "");
   const answerStatus =
-    submissionState === "submitting" && submissionStatusVisible
-      ? "Comprobando respuesta…"
-      : (submissionError ?? "");
+    submissionState === "idle"
+      ? "Solo tienes un intento. No importan mayúsculas, tildes ni espacios."
+      : "";
 
   return (
     <div className={styles.challenge}>
@@ -72,10 +69,6 @@ export function ServerProgressiveCluesQuestion({
         ))}
       </ol>
 
-      <p className="sr-only" role="status" aria-live="polite">
-        {revealStatus}
-      </p>
-
       <div className={styles.actions}>
         {progress.revealedClues < progress.totalClues ? (
           <motion.button
@@ -91,10 +84,18 @@ export function ServerProgressiveCluesQuestion({
         ) : (
           <p className={styles.allRevealed}>Todas las pistas están reveladas.</p>
         )}
-        {revealState === "error" && onRetryReveal ? (
-          <button type="button" className="text-sm underline" onClick={onRetryReveal}>
-            Reintentar revelación
-          </button>
+        <ServerOperationStatus
+          state={revealState}
+          visible={revealStatusVisible}
+          pendingMessage="Solicitando otra pista…"
+          errorMessage={revealError ?? "No hemos podido revelar la siguiente pista."}
+          retryLabel="Reintentar revelación"
+          onRetry={onRetryReveal}
+        />
+        {revealState === "idle" && revealError ? (
+          <p className="sr-only" role="status" aria-live="polite">
+            {revealError}
+          </p>
         ) : null}
 
         <form className={styles.answerPanel} onSubmit={submit}>
@@ -119,14 +120,15 @@ export function ServerProgressiveCluesQuestion({
               <ArrowIcon className="h-6 w-6" />
             </motion.button>
           </div>
-          <p>
-            {answerStatus || "Solo tienes un intento. No importan mayúsculas, tildes ni espacios."}
-          </p>
-          {submissionState === "error" && onRetry ? (
-            <button type="button" className="text-sm underline" onClick={onRetry}>
-              Reintentar respuesta
-            </button>
-          ) : null}
+          <p>{answerStatus}</p>
+          <ServerOperationStatus
+            state={submissionState}
+            visible={submissionStatusVisible}
+            pendingMessage="Comprobando respuesta…"
+            errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
+            retryLabel="Reintentar respuesta"
+            onRetry={onRetry}
+          />
         </form>
       </div>
     </div>

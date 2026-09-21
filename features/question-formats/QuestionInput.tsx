@@ -35,8 +35,9 @@ import {
   WordHashtagQuestion,
   WordSearchQuestion,
   ZipQuestion,
+  ServerOperationStatus,
 } from "@/components/questions";
-import { ArrowIcon, Button } from "@/components/ui";
+import { ArrowIcon } from "@/components/ui";
 import styles from "./QuestionInput.module.css";
 import textStyles from "./TextAnswerControls.module.css";
 import { isQueensAnswer } from "@/lib/queens";
@@ -49,7 +50,13 @@ import {
   isWordHashtagAnswer,
   isWordSearchAnswer,
 } from "@/lib/scoring";
-import type { AnswerValue, ClassificationAnswer, Question, QuestionOfType, QuestionType } from "@/types/game";
+import type {
+  AnswerValue,
+  ClassificationAnswer,
+  Question,
+  QuestionOfType,
+  QuestionType,
+} from "@/types/game";
 
 type CommonProps = {
   locked: boolean;
@@ -106,30 +113,14 @@ function MultipleChoiceInput({
         ))}
       </div>
       {submissionFeedbackEnabled ? (
-        <div
-          className={styles.submissionStatusSlot}
-          aria-busy={resolvedSubmissionState === "submitting"}
-        >
-          {resolvedSubmissionState === "submitting" && submissionStatusVisible ? (
-            <p className={styles.submissionStatus} role="status" aria-live="polite">
-              <span className={styles.submissionSpinner} aria-hidden="true" />
-              Comprobando respuesta…
-            </p>
-          ) : null}
-          {resolvedSubmissionState === "error" ? (
-            <div
-              className={styles.submissionError}
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <p>{submissionError ?? "No hemos podido confirmar tu respuesta."}</p>
-              <Button type="button" variant="secondary" size="sm" onClick={onRetrySubmission}>
-                Reintentar
-              </Button>
-            </div>
-          ) : null}
-        </div>
+        <ServerOperationStatus
+          state={resolvedSubmissionState}
+          visible={submissionStatusVisible}
+          pendingMessage="Comprobando respuesta…"
+          errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
+          retryLabel="Reintentar"
+          onRetry={onRetrySubmission}
+        />
       ) : null}
     </>
   );

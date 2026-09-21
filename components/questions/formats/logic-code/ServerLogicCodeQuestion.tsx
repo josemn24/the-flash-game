@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { ChangeEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import type { ServerLogicCodeProgress } from "@/types/gameplay/challenge";
 import styles from "./LogicCodeQuestion.module.css";
 
@@ -88,10 +89,10 @@ export function ServerLogicCodeQuestion({
   };
 
   const statusText =
-    submissionState === "submitting" && submissionStatusVisible
-      ? "Comprobando código…"
-      : (submissionError ?? feedback) ||
-        "Cada intento incorrecto reduce la puntuación. El reloj sigue corriendo.";
+    submissionState === "idle"
+      ? (submissionError ?? feedback) ||
+        "Cada intento incorrecto reduce la puntuación. El reloj sigue corriendo."
+      : "";
 
   return (
     <div className={styles.challenge}>
@@ -165,11 +166,14 @@ export function ServerLogicCodeQuestion({
           Enviar código
           <ArrowIcon className="h-5 w-5" />
         </motion.button>
-        {submissionState === "error" && onRetry ? (
-          <button type="button" className="mt-2 w-full text-sm underline" onClick={onRetry}>
-            Reintentar
-          </button>
-        ) : null}
+        <ServerOperationStatus
+          state={submissionState}
+          visible={submissionStatusVisible}
+          pendingMessage="Comprobando código…"
+          errorMessage={submissionError ?? "No hemos podido confirmar tu código."}
+          retryLabel="Reintentar"
+          onRetry={onRetry}
+        />
       </div>
     </div>
   );

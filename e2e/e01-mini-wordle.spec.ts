@@ -38,14 +38,18 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
 
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await page.getByRole("button", { name: "Lisboa" }).click();
-    await expect(page.getByRole("heading", { name: "Descubre el personaje bíblico" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Descubre el personaje bíblico" }),
+    ).toBeVisible();
     expect(await page.content()).not.toContain("JESUS");
     expect(await page.content()).not.toContain("dictionaryId");
 
     const input = page.getByLabel("Escribe tu intento");
     await input.fill("ZZZZZ");
     await page.getByRole("button", { name: "Enviar" }).click();
-    await expect(page.getByText("Esta palabra no está disponible para este desafío.")).toBeVisible();
+    await expect(
+      page.getByText("Esta palabra no está disponible para este desafío."),
+    ).toBeVisible();
     await expect(page.getByText("Intento 1 de 4")).toBeVisible();
 
     await input.fill("JOSUE");
@@ -61,7 +65,9 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
 
     await input.fill("JOSUE");
     await page.getByRole("button", { name: "Enviar" }).click();
-    await expect(page.getByText("Ya has probado esa palabra. El intento no se ha consumido.")).toBeVisible();
+    await expect(
+      page.getByText("Ya has probado esa palabra. El intento no se ha consumido."),
+    ).toBeVisible();
     await expect(page.getByText("Intento 2 de 4")).toBeVisible();
 
     await input.fill("SALON");
@@ -70,7 +76,9 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     await expect(page.getByText("Intento 3 de 4")).toBeVisible();
 
     let firstResponse = true;
+    const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/mini-wordle/guess", async (route) => {
+      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
       if (!firstResponse) {
         await route.continue();
         return;
@@ -89,17 +97,15 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     await page.getByRole("button", { name: "Enviar" }).click();
     await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
     await page.getByRole("button", { name: "Reintentar" }).click();
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
 
     await page.reload();
     await expect(page.getByText("Desafío completado")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
-    await page
-      .locator("details")
-      .filter({ hasText: "Mini-Wordle" })
-      .locator("summary")
-      .click();
+    await page.locator("details").filter({ hasText: "Mini-Wordle" }).locator("summary").click();
     await expect(page.getByText("Jesús es una figura central del cristianismo.")).toBeVisible();
   });
 

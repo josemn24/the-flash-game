@@ -56,7 +56,9 @@ test.describe("E02 — Logic-code competitivo", () => {
     await expect(page.getByText("1 intento incorrecto")).toBeVisible();
 
     let firstResponse = true;
+    const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/logic-code/attempt", async (route) => {
+      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
       if (!firstResponse) {
         await route.continue();
         return;
@@ -75,6 +77,8 @@ test.describe("E02 — Logic-code competitivo", () => {
     await page.getByRole("button", { name: "Enviar código" }).click();
     await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
     await page.getByRole("button", { name: "Reintentar" }).click();
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();

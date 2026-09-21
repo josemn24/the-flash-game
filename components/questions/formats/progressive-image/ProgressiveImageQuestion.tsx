@@ -4,6 +4,7 @@ import Image from "next/image";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
 import { MotionButton } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import {
   calculateProgressiveImageReveal,
   PROGRESSIVE_IMAGE_INITIAL_BLUR,
@@ -22,6 +23,10 @@ type ProgressiveImageQuestionProps = {
   onTimedResponseStart: () => void;
   /** Competitive mode keeps the server clock authoritative for the response deadline. */
   presentedAtMs?: number;
+  submissionState?: "idle" | "submitting" | "error";
+  submissionStatusVisible?: boolean;
+  submissionError?: string;
+  onRetrySubmission?: () => void;
 };
 
 type ImageState = "loading" | "ready" | "error";
@@ -39,6 +44,10 @@ export function ProgressiveImageQuestion({
   onSubmit,
   onTimedResponseStart,
   presentedAtMs,
+  submissionState = "idle",
+  submissionStatusVisible = false,
+  submissionError,
+  onRetrySubmission,
 }: ProgressiveImageQuestionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
@@ -55,8 +64,7 @@ export function ProgressiveImageQuestion({
 
     const reducedMotion = prefersReducedMotion();
     const updateProgress = () => {
-      const elapsed =
-        (performance.now() - startedAt) / 1000;
+      const elapsed = (performance.now() - startedAt) / 1000;
       const exactProgress = calculateProgressiveImageReveal(elapsed, revealDuration);
       const displayedProgress = reducedMotion
         ? exactProgress >= 1
@@ -118,10 +126,7 @@ export function ProgressiveImageQuestion({
   const unavailable = locked || imageState !== "ready";
 
   return (
-    <section
-      className={`${styles.root}`}
-      aria-label="Imagen progresivamente revelada"
-    >
+    <section className={`${styles.root}`} aria-label="Imagen progresivamente revelada">
       <div className={styles.progressHeader}>
         <span>Revelado</span>
         <strong>{progressPercentage} %</strong>
@@ -209,6 +214,14 @@ export function ProgressiveImageQuestion({
           </MotionButton>
         </div>
         <p>No importan las mayúsculas, las tildes ni los espacios.</p>
+        <ServerOperationStatus
+          state={submissionState}
+          visible={submissionStatusVisible}
+          pendingMessage="Comprobando respuesta…"
+          errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
+          retryLabel="Reintentar"
+          onRetry={onRetrySubmission}
+        />
       </form>
     </section>
   );

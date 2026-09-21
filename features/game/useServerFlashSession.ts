@@ -437,15 +437,18 @@ export function useServerFlashSession({
       );
     } catch (error) {
       clearQueensStatusTimer();
-      setQueensState("error");
-      setQueensStatusVisible(true);
-      setQueensError(
-        error instanceof CompetitiveCommandError && error.code === "prefilled_queen_locked"
-          ? "Esa corona es una pista fija."
-          : "No hemos podido guardar la corona.",
-      );
+      if (error instanceof CompetitiveCommandError && error.code === "prefilled_queen_locked") {
+        pendingQueensPlacementRef.current = null;
+        setQueensState("idle");
+        setQueensStatusVisible(true);
+        setQueensError("Esa corona es una pista fija.");
+        setLocked(false);
+      } else {
+        setQueensState("error");
+        setQueensStatusVisible(true);
+        setQueensError("No hemos podido guardar el movimiento.");
+      }
       setBusy(false);
-      setLocked(false);
     }
   };
 
@@ -510,9 +513,7 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points),
         timeUsed: Number(response.timeUsedMs) / 1000,
-        ...(response.details
-          ? { details: response.details as AnswerResult["details"] }
-          : {}),
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
       };
       const nextResults = [...results, result];
       const nextLockVersion = Number(response.lockVersion);
@@ -658,7 +659,6 @@ export function useServerFlashSession({
       setSubmissionStatusVisible(true);
       setSubmissionError("No hemos podido confirmar tu palabra.");
       setBusy(false);
-      setLocked(false);
     }
   };
 
@@ -758,7 +758,6 @@ export function useServerFlashSession({
       setSubmissionStatusVisible(true);
       setSubmissionError("No hemos podido confirmar tu código.");
       setBusy(false);
-      setLocked(false);
     }
   };
 
@@ -809,15 +808,18 @@ export function useServerFlashSession({
       setBusy(false);
     } catch (error) {
       clearRevealStatusTimer();
-      setRevealState("error");
-      setRevealStatusVisible(true);
-      setRevealError(
-        error instanceof CompetitiveCommandError && error.code === "all_clues_revealed"
-          ? "Ya has revelado todas las pistas."
-          : "No hemos podido revelar la siguiente pista.",
-      );
+      if (error instanceof CompetitiveCommandError && error.code === "all_clues_revealed") {
+        pendingRevealRef.current = null;
+        setRevealState("idle");
+        setRevealStatusVisible(true);
+        setRevealError("Ya has revelado todas las pistas.");
+        setLocked(false);
+      } else {
+        setRevealState("error");
+        setRevealStatusVisible(true);
+        setRevealError("No hemos podido revelar la siguiente pista.");
+      }
       setBusy(false);
-      setLocked(false);
     }
   };
 
@@ -927,13 +929,13 @@ export function useServerFlashSession({
               ? "Esa pareja ya ha sido enviada."
               : "Esa pareja no está disponible.",
         );
+        setLocked(false);
       } else {
         setMatchingState("error");
         setMatchingStatusVisible(true);
         setMatchingError("No hemos podido confirmar la pareja.");
       }
       setBusy(false);
-      setLocked(false);
     }
   };
 

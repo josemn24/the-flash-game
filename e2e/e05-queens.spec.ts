@@ -47,7 +47,9 @@ test.describe("E05 — Queens competitivo", () => {
     await expect(page.getByText("2/5 coronas")).toBeVisible();
 
     let firstResponse = true;
+    const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/queens/place", async (route) => {
+      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
       if (!firstResponse) {
         await route.continue();
         return;
@@ -63,8 +65,10 @@ test.describe("E05 — Queens competitivo", () => {
     });
 
     await board.getByRole("gridcell", { name: /Fila 3, columna 1/ }).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar movimiento" })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar movimiento" }).click();
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("3/5 coronas")).toBeVisible();
 
     await board.getByRole("gridcell", { name: /Fila 4, columna 4/ }).click();
