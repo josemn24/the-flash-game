@@ -123,7 +123,7 @@ describe("P-17 narrative session", () => {
     );
   });
 
-  it("keeps the three chapters and eight evidence entries in narrative order", () => {
+  it("keeps the three chapters and eight questions in narrative order", () => {
     const challenge = getNarrativeChallenge();
     const scenes = getNarrativeSequence(challenge).flatMap((step, index) =>
       step.type === "scene" ? [{ ...step.scene, page: index + 1 }] : [],
@@ -133,17 +133,6 @@ describe("P-17 narrative session", () => {
       "Mantenerse fuera",
       "La línea completa",
     ]);
-    expect(challenge.notebookEntries.map((entry) => entry.id)).toEqual([
-      "note-direction",
-      "note-polar-context",
-      "note-polar-fauna",
-      "note-intervention",
-      "note-nadir",
-      "note-route",
-      "note-chronology",
-      "note-final",
-    ]);
-    expect(challenge.notebookEntries.every((entry) => entry.relevance === "context")).toBe(true);
     expect(
       scenes
         .filter((scene) => scene.presentation === "chapter-opening")
@@ -205,17 +194,15 @@ describe("P-17 narrative session", () => {
       { ...correctResult, answer: null, status: "unanswered", isCorrect: false, points: 0 },
       true,
     ],
-  ] as const)("unlocks the same evidence after %s", (_label, result, timedOut) => {
+  ] as const)("records the answer transition after %s", (_label, result, timedOut) => {
     const transition = narrativeSessionReducer(reachFirstQuestion(), {
       type: "answer",
       result,
       timedOut,
-      unlockEntryIds: ["note-direction"],
     });
 
     expect(transition).toMatchObject({
       phase: "transition",
-      unlockedEntryIds: ["note-direction"],
       lastTimedOut: timedOut,
       locked: true,
     });
@@ -226,7 +213,6 @@ describe("P-17 narrative session", () => {
       type: "answer",
       result: correctResult,
       timedOut: false,
-      unlockEntryIds: ["note-direction"],
     });
 
     const scene = narrativeSessionReducer(transition, {
@@ -239,7 +225,6 @@ describe("P-17 narrative session", () => {
       stepIndex: 4,
       locked: false,
       results: [correctResult],
-      unlockedEntryIds: ["note-direction"],
     });
   });
 
@@ -248,7 +233,6 @@ describe("P-17 narrative session", () => {
       type: "answer",
       result: correctResult,
       timedOut: false,
-      unlockEntryIds: ["note-direction"],
     });
 
     expect(
@@ -256,7 +240,6 @@ describe("P-17 narrative session", () => {
         type: "answer",
         result: { ...correctResult, timeUsed: 5.1 },
         timedOut: false,
-        unlockEntryIds: ["note-direction"],
       }),
     ).toMatchObject({
       phase: "transition",
@@ -305,7 +288,7 @@ describe("P-17 narrative session", () => {
     expect(reaction.some((block) => block.text.includes(expected))).toBe(true);
   });
 
-  it("finishes after the blackout while preserving every result and evidence entry", () => {
+  it("finishes after the blackout while preserving every result", () => {
     const challenge = getNarrativeChallenge();
     const results = challenge.beats
       .flatMap((beat) => beat.steps)
@@ -319,14 +302,12 @@ describe("P-17 narrative session", () => {
       phase: "scene" as const,
       stepIndex: 26,
       results,
-      unlockedEntryIds: challenge.notebookEntries.map((entry) => entry.id),
       locked: false,
     };
 
     expect(narrativeSessionReducer(state, { type: "advance", nextStepType: null })).toMatchObject({
       phase: "results",
       results,
-      unlockedEntryIds: challenge.notebookEntries.map((entry) => entry.id),
     });
   });
 

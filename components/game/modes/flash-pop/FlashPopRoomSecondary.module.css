@@ -1,0 +1,162 @@
+@layer app-formats {
+  .content {
+    width: min(100%, 820px);
+  }
+
+  .toolbar {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+  }
+
+  .backLink {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-line);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 76%);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-control);
+  }
+
+  .backLink:hover {
+    background: var(--color-surface);
+  }
+
+  .backLink:focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+
+  .backIcon {
+    width: 21px;
+    transform: rotate(180deg);
+  }
+
+  .pageIntro {
+    margin: var(--space-8) 0 var(--space-5);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+  }
+
+  .pageIntro h1 {
+    margin: 5px 0 0;
+    font-family: var(--type-display);
+    font-size: clamp(42px, 7vw, 68px);
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+  }
+
+  .historyList {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .historyEntry {
+    overflow: hidden;
+  }
+
+  .historyArt {
+    position: relative;
+    aspect-ratio: 2.1;
+    overflow: hidden;
+    background: var(--color-surface-soft);
+  }
+
+  .historyArt img {
+    object-fit: cover;
+  }
+
+  .historyArt::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgb(23 23 32 / 50%));
+    content: "";
+  }
+
+  .historyBadges {
+    position: absolute;
+    z-index: 1;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    left: var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .historyBody {
+    padding: var(--space-4) var(--space-5) var(--space-5);
+  }
+
+  .historyBody h2 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(24px, 4vw, 34px);
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .winner {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+  }
+
+  .winner strong {
+    color: var(--color-ink);
+  }
+
+  .historyAction {
+    margin-top: var(--space-4);
+  }
+
+  .detailBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .detailRanking {
+    margin-top: var(--space-8);
+  }
+
+  .emptyState h2 {
+    margin: 0;
+    font-family: var(--type-display);
+  }
+
+  @media (max-width: 600px) {
+    .pageIntro {
+      margin-top: var(--space-6);
+    }
+
+    .historyArt {
+      aspect-ratio: 1.35;
+    }
+
+    .historyBadges {
+      right: var(--space-3);
+      bottom: var(--space-3);
+      left: var(--space-3);
+    }
+
+    .historyBody {
+      padding-inline: var(--space-4);
+    }
+  }
+}

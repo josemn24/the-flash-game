@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getChallengeById } from "@/data/challenges";
 import {
   CHALLENGE_MAX_SCORE,
   getConfiguredChallengeQuestionPointValues,
@@ -198,5 +199,18 @@ describe("challenge scoring", () => {
 
     expect(scoredChallenge.questions.map((question) => question.points)).toEqual(Array(20).fill(5));
     expect(scoredChallenge.lives).toBe(3);
+  });
+
+  it("keeps the configured scoring of the Spain Survival challenge", () => {
+    const challenge = getChallengeById("tabarnia-challenge-03");
+    if (challenge?.mode !== "survival") throw new Error("Expected survival challenge");
+
+    const scoredChallenge = withChallengeScoring(challenge);
+    expect(scoredChallenge.questions.map((question) => question.points)).toEqual([
+      5, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6,
+    ]);
+    expect(scoredChallenge.questions.reduce((total, question) => total + question.points, 0)).toBe(
+      100,
+    );
   });
 });

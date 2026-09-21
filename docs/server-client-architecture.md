@@ -63,7 +63,7 @@ Client Components will be identified with `"use client"` and used when a compone
 - client-side contexts.
 
 ```tsx
-// components/FlashGameApp.client.tsx
+// components/game/shells/FlashGameApp.client.tsx
 "use client";
 
 export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {

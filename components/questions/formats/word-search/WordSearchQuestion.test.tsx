@@ -1,0 +1,38 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+import { questionsById } from "@/data/questions";
+import { WordSearchQuestion } from "@/components/questions/formats/word-search/WordSearchQuestion";
+
+describe("Word-search target list", () => {
+  it("hides target words visually during the game", () => {
+    const question = questionsById["abrahamic-word-search-biblical-characters"];
+    const markup = renderToStaticMarkup(
+      <WordSearchQuestion
+        question={question}
+        locked={false}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain('class="sr-only" aria-label="Palabras objetivo"');
+    expect(markup).not.toContain("WordSearchQuestion_wordList");
+  });
+
+  it("exposes the found-cell state for visual feedback", () => {
+    const question = questionsById["abrahamic-word-search-biblical-characters"];
+    const markup = renderToStaticMarkup(
+      <WordSearchQuestion
+        question={question}
+        initialAnswer={{ foundWordIds: ["isaac"] }}
+        locked={false}
+        onProgress={vi.fn()}
+        onIncorrectAttempt={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(markup.match(/data-state="found"/g)).toHaveLength(5);
+  });
+});

@@ -379,7 +379,9 @@ export type EscapeQuestion = BaseQuestion & {
   referenceSolution: EscapeMove[];
   optimalMoves: number;
   instruction?: string;
+  hideInstruction?: boolean;
   objectiveLabel?: string;
+  hideObjectiveLabel?: boolean;
   completionMessage?: string;
   boardLabel?: string;
 };

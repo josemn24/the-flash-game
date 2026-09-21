@@ -13,9 +13,8 @@ import {
   isSurvivalMistake,
   shouldEliminateAfterIncorrectAttempt,
 } from "@/features/game/survivalRules";
+import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
-
-const TRANSITION_DURATION = 650;
 
 type SessionState = {
   phase: GamePhase;
@@ -32,6 +31,7 @@ type SessionState = {
 };
 
 type SessionAction =
+  | { type: "begin-countdown" }
   | { type: "start"; lives: number }
   | {
       type: "answer";
@@ -68,6 +68,8 @@ function getInitialState(lives: number): SessionState {
 
 function reducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
+    case "begin-countdown":
+      return { ...state, phase: "countdown" };
     case "start":
       return { ...getInitialState(action.lives), phase: "playing" };
     case "answer":
@@ -146,6 +148,12 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     dispatch({ type: "start", lives: challenge.lives });
   }, [challenge.lives, clearAdvanceTimeout, resetQuestionRefs]);
 
+  const beginCountdown = useCallback(() => {
+    clearAdvanceTimeout();
+    resetQuestionRefs();
+    dispatch({ type: "begin-countdown" });
+  }, [clearAdvanceTimeout, resetQuestionRefs]);
+
   const replay = useCallback(() => {
     clearAdvanceTimeout();
     resetQuestionRefs();
@@ -186,6 +194,8 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
         survived,
       });
 
+      const transitionDuration = FLASH_POP_FEEDBACK_DURATION[result.status];
+
       advanceTimeout.current = setTimeout(() => {
         if (eliminated || lastQuestion) {
           dispatch({ type: "finish" });
@@ -194,7 +204,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
         resetQuestionRefs();
         questionStartedAt.current = performance.now();
         dispatch({ type: "advance" });
-      }, TRANSITION_DURATION);
+      }, transitionDuration);
     },
     [
       challenge.questions.length,
@@ -280,6 +290,7 @@ export function useSurvivalSession(challenge: SurvivalChallenge) {
     score,
     reachedQuestionCount: getSurvivalReachedQuestionCount(state.results.length),
     start,
+    beginCountdown,
     replay,
     submitAnswer,
     handleCodeAttempt,

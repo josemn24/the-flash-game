@@ -1,0 +1,108 @@
+@layer app-components {
+  .header {
+    --header-ink: var(--color-ink);
+    --header-muted: var(--color-ink-muted);
+    --header-faint: var(--color-ink-faint);
+    display: flex;
+    min-height: 54px;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .mobileLabel {
+    display: none;
+  }
+
+  .brand,
+  .actions,
+  .customLeft {
+    display: flex;
+    align-items: center;
+  }
+
+  .customLeft {
+    min-width: 0;
+  }
+
+  .brand {
+    min-width: 0;
+    gap: 9px;
+    color: var(--header-ink);
+    font-family: var(--type-display);
+    font-weight: var(--type-display-strong-weight);
+  }
+
+  .brandMark {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: var(--border-flash);
+    border-radius: 13px;
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  .brandMark svg {
+    width: 19px;
+  }
+
+  .brandName {
+    font-size: 18px;
+    letter-spacing: -0.04em;
+  }
+
+  .separator {
+    color: var(--header-faint);
+    font-family: var(--type-mono);
+    font-size: 12px;
+  }
+
+  .title {
+    overflow: hidden;
+    color: var(--header-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .actions {
+    flex: 0 0 auto;
+    gap: var(--space-2);
+  }
+
+  @media (max-width: 520px) {
+    .brandName,
+    .separator {
+      display: none;
+    }
+
+    .title {
+      max-width: 130px;
+    }
+
+    .compactOnMobile .brand {
+      display: none;
+    }
+
+    .compactOnMobile .mobileLabel {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      color: var(--header-ink);
+      font-family: var(--type-mono);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+  }
+}

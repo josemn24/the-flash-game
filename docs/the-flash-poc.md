@@ -43,7 +43,7 @@ Alfabeto añade cuenta atrás, feedback inmediato de estado y vueltas sobre letr
 
 ## Desafíos disponibles
 
-### Steel Ball Run: primera etapa
+### Steel Ball Run
 
 - Identificador: `tabarnia-flash-01`.
 - Modo: `flash`.

@@ -1,1 +1,1 @@
-export type GamePhase = "intro" | "playing" | "transition" | "results" | "review";
+export type GamePhase = "intro" | "countdown" | "playing" | "transition" | "results" | "review";

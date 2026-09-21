@@ -248,6 +248,30 @@ export function calculateConnectPairsMetrics(
   };
 }
 
+export function startConnectPairsDrag(
+  question: ConnectPairsQuestion,
+  paths: Record<string, number[]>,
+  cell: number,
+  activePairId = question.pairs[0]?.id ?? "",
+): ConnectPairsCellSelectionResult {
+  const pair = findPairForCell(question, cell);
+  if (!pair) {
+    return {
+      paths,
+      activePairId,
+      message: "Arrastra desde un extremo para empezar.",
+      changed: false,
+    };
+  }
+
+  return {
+    paths: { ...paths, [pair.id]: [cell] },
+    activePairId: pair.id,
+    message: `${pair.label}: ruta iniciada.`,
+    changed: true,
+  };
+}
+
 export function applyConnectPairsCellSelection(
   question: ConnectPairsQuestion,
   paths: Record<string, number[]>,

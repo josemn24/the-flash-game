@@ -47,6 +47,7 @@ describe("pyramid attempt rules", () => {
     const challenge = getChallenge();
     const started = createPyramidAttempt(challenge, 1_000);
     expect(started.phase).toBe("briefing");
+    expect(started.progressiveCluesRevealed).toBe(1);
     expect(armPyramidLevel(started, challenge.levels[0].question, null, 2_000)).toEqual(started);
 
     const playing = beginPyramidLevel(started);
@@ -72,6 +73,9 @@ describe("pyramid attempt rules", () => {
     expect(parsePyramidAttempt(JSON.stringify(completed), challenge)).toEqual(completed);
     expect(getPyramidAttemptStorageKey(challenge)).toBe(
       "the-flash:pyramid-attempt:tabarnia-challenge-05:v2",
+    );
+    expect(getPyramidAttemptStorageKey(challenge, "flash-pop-pyramid-slice")).toBe(
+      "the-flash:flash-pop-pyramid-slice:tabarnia-challenge-05:v2",
     );
   });
 
@@ -119,6 +123,11 @@ describe("pyramid attempt rules", () => {
     expect(
       parsePyramidAttempt(JSON.stringify({ ...record, schemaVersion: 1 }), challenge),
     ).toBeNull();
+    const legacyRecord = { ...record } as Record<string, unknown>;
+    delete legacyRecord.progressiveCluesRevealed;
+    expect(
+      parsePyramidAttempt(JSON.stringify({ ...legacyRecord, schemaVersion: 2 }), challenge),
+    ).toMatchObject({ schemaVersion: 3, progressiveCluesRevealed: 1 });
     expect(
       parsePyramidAttempt(
         JSON.stringify({ ...record, currentLevelIndex: 3, results: [], deadlineAt: 900 }),

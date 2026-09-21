@@ -1,0 +1,240 @@
+@layer app-formats {
+
+  .valueDisplay {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .valueDisplay > span {
+    color: var(--format-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .valueDisplay small {
+    margin-left: 0.3rem;
+    color: var(--format-muted);
+    font-family: var(--type-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+  }
+
+  .controls {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 0.2rem;
+  }
+
+  .adjustButton span {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .adjustButton:hover:not(:disabled) {
+    border-color: var(--format-interactive-ink);
+    color: var(--format-interactive-ink);
+    background: color-mix(in srgb, var(--format-interactive-ink) 8%, var(--format-surface));
+  }
+
+  .adjustButton:focus-visible,
+  .range:focus-visible,
+  .submitButton:focus-visible {
+    outline: 3px solid var(--format-focus);
+    outline-offset: 3px;
+  }
+
+  .adjustButton:disabled,
+  .range:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+
+  .rangeWrap {
+    min-width: 0;
+  }
+
+  .range {
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 2.75rem;
+    margin: 0;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .range::-webkit-slider-runnable-track {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--format-range-active) var(--range-progress),
+      var(--format-track) var(--range-progress)
+    );
+  }
+
+  .range::-webkit-slider-thumb {
+    appearance: none;
+    width: 2rem;
+    height: 2rem;
+    margin-top: -0.72rem;
+    border: 4px solid var(--format-surface-raised);
+    border-radius: 999px;
+    background: var(--format-range-thumb);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--format-range-thumb) 42%, transparent);
+  }
+
+  .range::-moz-range-track {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--format-track);
+  }
+
+  .range::-moz-range-progress {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--format-range-active);
+  }
+
+  .range::-moz-range-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 4px solid var(--format-surface-raised);
+    border-radius: 999px;
+    background: var(--format-range-thumb);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--format-range-thumb) 42%, transparent);
+  }
+
+  .limits {
+    display: flex;
+    justify-content: space-between;
+    color: var(--format-faint);
+    font-family: var(--type-mono);
+    font-size: 0.55rem;
+    font-weight: 800;
+  }
+
+  .hint {
+    margin: 0;
+    color: var(--format-faint);
+    font-size: 0.68rem;
+    font-weight: 650;
+    line-height: 1.1rem;
+    text-align: center;
+  }
+
+  .submitButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+    box-shadow: none;
+  }
+
+  @media (min-width: 640px) {
+    .challenge {
+      margin-top: 1.25rem;
+      border: 1px solid color-mix(in srgb, var(--format-accent) 14%, transparent);
+      border-radius: 1rem;
+      padding: 1.15rem;
+      background: var(--format-surface-raised);
+      backdrop-filter: blur(14px);
+    }
+
+    .controls {
+      gap: 1rem;
+    }
+
+    .adjustRow {
+      grid-template-columns: repeat(2, 4rem);
+      justify-content: center;
+    }
+  }
+
+  .challenge {
+    display: grid;
+    min-width: 0;
+    width: 100%;
+    --format-ink: var(--color-ink);
+    --format-muted: var(--color-ink);
+    --format-faint: var(--color-ink-muted);
+    --format-surface: var(--color-surface);
+    --format-surface-raised: var(--color-surface-raised);
+    --format-border: var(--color-border);
+    --format-accent: var(--color-brand);
+    --format-value-ink: var(--color-ink);
+    --format-interactive-ink: var(--color-social);
+    --format-range-active: var(--color-social);
+    --format-range-thumb: var(--color-social);
+    --format-focus: var(--color-focus);
+    --format-track: color-mix(in srgb, var(--color-ink) 12%, transparent);
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .adjustRow {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .valueDisplay strong {
+    color: var(--format-value-ink);
+    font-size: 2.85rem;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 1;
+    font-family: var(--type-display);
+  }
+
+  .adjustButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--format-ink);
+    transition:
+      border-color 160ms,
+      color 160ms,
+      background 160ms,
+      opacity 160ms;
+    min-height: var(--control-height-icon);
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    background: var(--format-surface-raised);
+    box-shadow: var(--shadow-control);
+  }
+
+  .range::-webkit-slider-thumb,
+  .range::-moz-range-thumb {
+    border-color: var(--color-surface);
+  }
+
+  .submitButton {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 0.1rem;
+    font-size: 0.8rem;
+    font-weight: 900;
+    min-height: var(--control-height);
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  .submitButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+  }
+}

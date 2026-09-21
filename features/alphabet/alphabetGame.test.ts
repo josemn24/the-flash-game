@@ -98,7 +98,9 @@ describe("alphabet reducer", () => {
     let state = createAlphabetInitialState(challenge);
     state = alphabetReducer(state, { type: "begin-countdown" });
     state = alphabetReducer(state, { type: "start" });
+    expect(state.playedCount).toBe(1);
     state = alphabetReducer(state, { type: "pass" });
+    expect(state.playedCount).toBe(2);
 
     expect(state.letters[0]?.status).toBe("passed");
     expect(state.currentIndex).toBe(1);
@@ -151,6 +153,7 @@ describe("alphabet reducer", () => {
     expect(state.phase).toBe("intro");
     expect(state.round).toBe(1);
     expect(state.lastCorrectAt).toBeNull();
+    expect(state.playedCount).toBe(0);
     expect(state.letters.every((letter) => letter.status === "unvisited")).toBe(true);
   });
 });

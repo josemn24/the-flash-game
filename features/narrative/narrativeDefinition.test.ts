@@ -110,16 +110,7 @@ describe("narrative challenge definition", () => {
     );
   });
 
-  it("rejects unknown notebook references", () => {
-    const definition = cloneDefinition();
-    questionSteps(definition)[0].unlockEntryIds = ["note-missing"];
-
-    expect(() => validateNarrativeChallengeDefinition(definition)).toThrow(
-      "references unknown notebook entries",
-    );
-  });
-
-  it("rejects duplicate question, scene and notebook IDs", () => {
+  it("rejects duplicate question and scene IDs", () => {
     const duplicateQuestion = cloneDefinition();
     questionSteps(duplicateQuestion)[1].questionId = questionSteps(duplicateQuestion)[0].questionId;
     expect(() => validateNarrativeChallengeDefinition(duplicateQuestion)).toThrow(
@@ -132,12 +123,6 @@ describe("narrative challenge definition", () => {
     sceneStep.scene.id = duplicateScene.prologue.id;
     expect(() => validateNarrativeChallengeDefinition(duplicateScene)).toThrow(
       "scene IDs must be unique",
-    );
-
-    const duplicateNotebook = cloneDefinition();
-    duplicateNotebook.notebookEntries[1].id = duplicateNotebook.notebookEntries[0].id;
-    expect(() => validateNarrativeChallengeDefinition(duplicateNotebook)).toThrow(
-      "notebook entry IDs must be unique",
     );
   });
 

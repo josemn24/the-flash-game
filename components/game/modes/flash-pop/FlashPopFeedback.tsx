@@ -1,0 +1,121 @@
+"use client";
+
+import { motion } from "motion/react";
+import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
+import { Card } from "@/components/ui";
+import type { AnswerStatus } from "@/types/game";
+import styles from "./FlashPopFeedback.module.css";
+
+type Props = {
+  status: AnswerStatus;
+  eyebrow?: string;
+  title: string;
+  body: string;
+  points?: number;
+  variant?: "default" | "inline";
+};
+
+export function getFlashPopFeedbackCopy({
+  status,
+  timedOut = false,
+  isLast = false,
+  nextLabel = "pregunta",
+}: {
+  status: AnswerStatus;
+  timedOut?: boolean;
+  isLast?: boolean;
+  nextLabel?: "pregunta" | "escena";
+}) {
+  const title = timedOut
+    ? "Tiempo agotado"
+    : status === "correct"
+      ? "Respuesta correcta"
+      : status === "partial"
+        ? "Aproximación válida"
+        : "Respuesta fallada";
+  const body = isLast
+    ? "Calculando tu resultado…"
+    : status === "correct"
+      ? `Siguiente ${nextLabel} en marcha.`
+      : `Sigue: aún quedan ${nextLabel}s.`;
+
+  return { title, body };
+}
+
+type FeedbackIconAnimation = {
+  initial: { opacity: number; scale: number; rotate: number };
+  animate: { opacity: number; scale: number; rotate: number };
+  transition: { type: "spring"; stiffness: number; damping: number };
+};
+
+export function getFlashPopFeedbackIconAnimation(status: AnswerStatus): FeedbackIconAnimation {
+  const failure = status === "incorrect" || status === "unanswered";
+
+  return {
+    initial: { opacity: 0, scale: 0.45, rotate: failure ? 12 : -12 },
+    animate: { opacity: 1, scale: 1, rotate: 0 },
+    transition: { type: "spring", stiffness: 280, damping: 18 },
+  };
+}
+
+function FeedbackIcon({ status }: { status: AnswerStatus }) {
+  if (status === "unanswered") return <ClockIcon aria-hidden="true" />;
+  if (status === "incorrect") return <CrossIcon aria-hidden="true" />;
+  return <CheckIcon aria-hidden="true" />;
+}
+
+export function FlashPopFeedback({
+  status,
+  eyebrow,
+  title,
+  body,
+  points,
+  variant = "default",
+}: Props) {
+  const failure = status === "incorrect" || status === "unanswered";
+  const inline = variant === "inline";
+  const iconAnimation = getFlashPopFeedbackIconAnimation(status);
+
+  return (
+    <div
+      className={`${styles.root} ${inline ? styles.inlineRoot : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <motion.div
+        className={`${styles.stage} ${inline ? styles.inlineStage : ""}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <Card
+          padding={inline ? "compact" : "default"}
+          className={`${styles.card} ${inline ? styles.inlineCard : ""} ${failure ? styles.failure : ""}`}
+        >
+          <motion.span
+            className={`${styles.icon} ${inline ? styles.inlineIcon : ""}`}
+            aria-hidden="true"
+            {...iconAnimation}
+          >
+            <FeedbackIcon status={status} />
+          </motion.span>
+          {!inline && eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+          <h1>{title}</h1>
+          {!inline ? <p>{body}</p> : null}
+          {!inline && typeof points === "number" ? (
+            <motion.p
+              className={styles.points}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.25 }}
+            >
+              {points > 0 ? "+" : ""}
+              {points} puntos
+            </motion.p>
+          ) : null}
+        </Card>
+      </motion.div>
+    </div>
+  );
+}

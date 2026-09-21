@@ -1,0 +1,38 @@
+@layer app-formats {
+  .countdown {
+    display: grid;
+    min-height: min(70dvh, 500px);
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  .countdownChip {
+    background: var(--color-focus);
+    color: var(--color-text-on-social);
+    font-weight: 800;
+  }
+
+  .countdown p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .countdown strong {
+    color: var(--color-ink);
+    font-family: var(--type-display);
+    font-size: clamp(100px, 30vw, 180px);
+    line-height: 0.8;
+  }
+
+  .countdownHint {
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,263 @@
+@layer app-formats {
+  .homeEntrance {
+    animation: home-fade-in 300ms both;
+  }
+  .eyebrowEntrance {
+    animation: home-slide-from-left 300ms 120ms both;
+  }
+  .titleEntrance {
+    animation: home-slide-from-bottom 550ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .copyEntrance {
+    animation: home-copy-in 300ms 280ms both;
+  }
+  .stageSelectorEntrance {
+    animation: home-stage-list-in 450ms 340ms both;
+  }
+  .libraryEntrance {
+    animation: home-library-in 300ms 440ms both;
+  }
+  @keyframes home-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes home-slide-from-left {
+    from {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes home-slide-from-bottom {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes home-copy-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes home-stage-list-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes home-library-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .heroTitle {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--type-display);
+    font-size: clamp(3.8rem, 15vw, 7.7rem);
+    font-stretch: condensed;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: -0.075em;
+    line-height: 0.77;
+    text-transform: uppercase;
+  }
+  .heroTitle span:nth-child(2) {
+    color: rgba(255, 255, 255, 0.46);
+  }
+  .heroTitleAccent {
+    color: var(--color-brand);
+    text-shadow: 0 0 45px rgb(var(--color-brand-rgb) / 0.2);
+    transform: skewX(-4deg);
+  }
+  .stageSelector {
+    display: grid;
+    max-width: 58rem;
+    gap: 0.9rem;
+  }
+  .stageSelectCard {
+    position: relative;
+    display: flex;
+    min-height: 10rem;
+    overflow: hidden;
+    align-items: stretch;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.35rem;
+    padding: 0;
+    text-align: left;
+    text-decoration: none;
+    background: linear-gradient(120deg, rgba(24, 27, 31, 0.96), rgba(11, 12, 15, 0.98));
+    transition:
+      border-color 180ms,
+      transform 180ms,
+      background 180ms;
+  }
+  .libraryCard {
+    display: flex;
+    max-width: 58rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 0.9rem;
+    border: 1px solid rgba(53, 232, 255, 0.22);
+    border-radius: 1.35rem;
+    padding: 1.25rem 1.4rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(120deg, rgba(53, 232, 255, 0.08), rgba(16, 18, 22, 0.96));
+    transition:
+      border-color 180ms,
+      transform 180ms;
+  }
+  .libraryCard:hover {
+    border-color: rgba(53, 232, 255, 0.55);
+    transform: translateY(-2px);
+  }
+  .libraryCard small {
+    display: block;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .libraryCard strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: var(--type-display);
+    font-size: 1.65rem;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: -0.045em;
+  }
+  .libraryCard p {
+    max-width: 37rem;
+    margin: 0.35rem 0 0;
+    color: rgba(255, 255, 255, 0.43);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+  .libraryAction {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-social);
+    font-size: 0.75rem;
+    font-weight: 900;
+  }
+  @media (max-width: 639px) {
+    .libraryCard {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+  .stageSelectCard:hover {
+    border-color: rgb(var(--color-brand-rgb) / 0.48);
+    background: linear-gradient(120deg, rgba(32, 36, 37, 0.98), rgba(11, 13, 12, 0.98));
+    transform: translateY(-2px);
+  }
+  .stageSelectCardDisabled {
+    cursor: default;
+    opacity: 0.58;
+  }
+  .stageSelectCardDisabled:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(120deg, rgba(24, 27, 31, 0.96), rgba(11, 12, 15, 0.98));
+    transform: none;
+  }
+  .stageSelectNumber {
+    display: grid;
+    width: 5.5rem;
+    flex: 0 0 auto;
+    place-items: center;
+    color: rgb(var(--color-brand-rgb) / 0.84);
+    background: rgb(var(--color-brand-rgb) / 0.055);
+    font-family: var(--type-display);
+    font-size: 2.55rem;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: -0.06em;
+  }
+  .stageSelectContent {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.15rem 1.25rem;
+  }
+  .stageSelectContent strong {
+    margin-top: 0.75rem;
+    color: white;
+    font-family: var(--type-display);
+    font-size: 1.8rem;
+    font-weight: var(--type-display-soft-weight);
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+  .stageSelectSubtitle {
+    margin-top: 0.35rem;
+    color: rgba(255, 255, 255, 0.46);
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+  .stageSelectDate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+    color: rgba(255, 255, 255, 0.36);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+  .stageSelectAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: auto;
+    padding-top: 0.8rem;
+    color: var(--color-brand);
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+  @media (min-width: 640px) {
+    .stageSelector {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .stageSelectCard {
+      min-height: 13rem;
+      flex-direction: column;
+    }
+    .stageSelectNumber {
+      width: 100%;
+      min-height: 3.3rem;
+      justify-content: start;
+      padding-inline: 1.25rem;
+      font-size: 2rem;
+    }
+  }
+}

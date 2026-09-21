@@ -1,11 +1,11 @@
 # The Flash
 
-The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. La versión actual permite elegir entre dos desafíos de diez preguntas, consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva de formatos.
+The Flash es un juego de preguntas en solitario diseñado como un sprint contra el reloj. La versión actual permite elegir entre dos desafíos de diez preguntas, consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva de 31 formatos.
 
 ## Qué incluye
 
 - Una sala demo local con temporada activa, publicaciones de desafío y dos definiciones de diez preguntas.
-- Veinticinco formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, rompecabezas deslizante, reconstrucción del error, anagramas, Mini-Wordle, imagen progresivamente revelada y laberinto contrarreloj.
+- Treinta y un formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, Queens, rompecabezas deslizante, Escape, reconstrucción del error, anagramas, Hashtag de palabras, Mini-Wordle, sopa de letras, imagen progresivamente revelada, laberinto contrarreloj, Zip y Tuberías.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
 - Preguntas con imágenes o ilustraciones integradas en elección múltiple, encontrar el intruso y estimación.
@@ -96,3 +96,12 @@ El laberinto contrarreloj usa una cuadrícula ortogonal controlada mediante cruc
 Conectar parejas usa una cuadrícula 5 × 5 con rutas ortogonales entre símbolos iguales. Conserva rutas parciales en timeout, concede crédito por parejas conectadas y cobertura, y exige cubrir todo el tablero para resolver.
 
 Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos, emojis o imágenes y etiqueta accesible. Conserva el historial de intentos para la revisión, concede crédito por cada pareja encontrada y resta un 10 % de los puntos base por cada fallo.
+
+Todos los formatos de la biblioteca usan Flash Pop directamente mediante el registry único
+`QuestionInput`. Las variantes que permanecen en los controles son semánticas (`primary`,
+`secondary`, `reward`, etc.) y no representan temas. La cobertura automatizada y el estado de la
+revisión manual se mantienen en [`docs/qa-fase-4.md`](docs/qa-fase-4.md).
+
+## Rediseño Flash Pop
+
+La evolución visual y de experiencia hacia un juego más alegre, social, casual y cercano está especificada en [`docs/redesign/README.md`](docs/redesign/README.md). El contrato visual se ha extendido a los 31 formatos mediante la variante `flash-pop`; el estado de sus quality gates está documentado en [`docs/qa-fase-4.md`](docs/qa-fase-4.md).

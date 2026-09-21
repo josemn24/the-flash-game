@@ -1,0 +1,381 @@
+@layer app-formats {
+  .challenge {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1.25rem;
+  }
+
+  .surface {
+    position: relative;
+    width: min(100%, 30rem);
+    margin-inline: auto;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    background: #111419;
+  }
+
+  .surface > img {
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .anchors {
+    position: absolute;
+    inset: 0;
+  }
+
+  .anchor {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    min-width: 4.5rem;
+    max-width: 7.5rem;
+    min-height: 2.35rem;
+    align-items: center;
+    gap: 0.3rem;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(13, 16, 20, 0.82);
+    border-radius: 0.65rem;
+    padding: 0.25rem 0.4rem;
+    color: #111419;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.3);
+    font-size: clamp(0.5rem, 2vw, 0.66rem);
+    line-height: 1.05;
+    text-align: left;
+  }
+
+  .anchor > span {
+    display: grid;
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 999px;
+    color: white;
+    background: #111419;
+    font-family: var(--type-mono);
+    font-size: 0.55rem;
+  }
+
+  .anchor strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reviewAnchor {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    min-width: 4.8rem;
+    max-width: 8rem;
+    transform: translate(-50%, -50%);
+    border: 2px solid;
+    border-radius: 0.65rem;
+    padding: 0.3rem 0.42rem;
+    color: #111419;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.3);
+    font-size: clamp(0.48rem, 1.8vw, 0.62rem);
+    line-height: 1.1;
+  }
+
+  .reviewAnchor > span {
+    position: absolute;
+    top: -0.55rem;
+    left: -0.45rem;
+    display: grid;
+    width: 1.15rem;
+    height: 1.15rem;
+    place-items: center;
+    border-radius: 999px;
+    color: white;
+    background: #111419;
+    font-family: var(--type-mono);
+    font-size: 0.55rem;
+  }
+
+  .reviewAnchor small {
+    margin-top: 0.15rem;
+    font-size: 0.48rem;
+  }
+
+  .reviewCorrect {
+    border-color: #43deb7;
+    background: #d9fff5;
+  }
+
+  .reviewWrong {
+    border-color: #ff6370;
+    background: #fff0f2;
+  }
+
+  .singleTarget {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    width: 3.25rem;
+    height: 3.25rem;
+    transform: translate(-50%, -50%);
+    place-items: center;
+    border: 0.25rem solid white;
+    border-radius: 999px;
+    color: #111419;
+    background: var(--color-brand);
+    box-shadow:
+      0 0 0 0.3rem rgba(13, 16, 20, 0.72),
+      0 0.4rem 1.2rem rgba(0, 0, 0, 0.38);
+    font-family: var(--type-display);
+    font-size: 1.55rem;
+    font-weight: var(--type-display-strong-weight);
+  }
+
+  .singleReviewAnchor {
+    min-width: 6rem;
+    text-align: center;
+  }
+
+  .anchor:hover:not(:disabled),
+  .anchor:focus-visible,
+  .anchorSelected {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  .anchorAssigned {
+    border-color: var(--color-brand);
+    background: #f5ffc4;
+  }
+
+  .labelPanel,
+  .assignmentList,
+  .confirmButton {
+    width: min(100%, 30rem);
+    margin-inline: auto;
+  }
+
+  .choiceGrid,
+  .textForm {
+    width: min(100%, 30rem);
+    margin-inline: auto;
+  }
+
+  .choiceGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .textForm > label {
+    display: block;
+    margin-bottom: 0.65rem;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .textForm > p {
+    margin-top: 0.65rem;
+    color: rgba(255, 255, 255, 0.36);
+    font-size: 0.68rem;
+  }
+
+  .labelHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .labelHeading h3 {
+    color: rgba(255, 255, 255, 0.52);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .labelHeading button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 0;
+    color: rgba(255, 255, 255, 0.55);
+    background: transparent;
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+
+  .labelHeading button svg {
+    width: 0.85rem;
+  }
+
+  .labelHeading button:disabled {
+    opacity: 0.25;
+  }
+
+  .labelBank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.55rem;
+  }
+
+  .labelBank button {
+    min-height: 2.55rem;
+    flex: 1 1 7rem;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 0.7rem;
+    padding: 0.45rem 0.6rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.045);
+    font-size: 0.7rem;
+    font-weight: 850;
+  }
+
+  .labelBank button:hover:not(:disabled),
+  .labelBank button:focus-visible {
+    border-color: var(--color-brand);
+    outline: 2px solid rgb(var(--color-brand-rgb) / 0.25);
+  }
+
+  .labelBank .labelAssigned {
+    border-color: rgba(67, 222, 183, 0.45);
+    color: white;
+    background: rgba(67, 222, 183, 0.09);
+  }
+
+  .labelBank button:disabled {
+    opacity: 0.32;
+  }
+
+  .assignmentList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .assignmentList li {
+    display: grid;
+    gap: 0.12rem;
+    border-radius: 0.55rem;
+    padding: 0.4rem 0.5rem;
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .assignmentList span {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.54rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .assignmentList strong {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.65rem;
+  }
+
+  .confirmButton {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border: 0;
+    border-radius: 0.75rem;
+    color: var(--color-ink);
+    background: var(--color-brand);
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+
+  .confirmButton:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 2px;
+  }
+
+  .confirmButton:disabled {
+    opacity: 0.25;
+  }
+
+  @media (min-width: 640px) {
+    .challenge {
+      margin-top: 1.5rem;
+    }
+  }
+
+  .challenge .surface {
+    border-color: var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-card);
+  }
+  .challenge .anchor,
+  .challenge .reviewAnchor {
+    border-color: var(--color-border);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-control);
+  }
+  .challenge .anchor > span,
+  .challenge .reviewAnchor > span {
+    color: var(--color-surface);
+    background: var(--color-social);
+  }
+  .challenge .reviewCorrect {
+    border-color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+  }
+  .challenge .reviewWrong {
+    border-color: var(--state-error);
+    background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+  }
+  .challenge .singleTarget {
+    border-color: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow:
+      0 0 0 0.3rem color-mix(in srgb, var(--color-ink) 22%, transparent),
+      var(--shadow-card);
+  }
+  .challenge .textForm > label,
+  .challenge .labelHeading h3,
+  .challenge .labelHeading button,
+  .challenge .assignmentList span,
+  .challenge .textForm > p {
+    color: var(--color-ink-muted);
+  }
+  .challenge .labelBank button {
+    border-color: var(--color-border);
+    color: var(--color-ink);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-control);
+  }
+  .challenge .labelBank button:hover:not(:disabled),
+  .challenge .labelBank button:focus-visible {
+    border-color: var(--state-focus);
+    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+  }
+  .challenge .labelBank .labelAssigned {
+    border-color: var(--state-correct);
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+  }
+  .challenge .assignmentList li {
+    background: var(--color-surface-raised);
+  }
+  .challenge .assignmentList strong {
+    color: var(--color-ink);
+  }
+  .challenge .confirmButton {
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-control);
+  }
+  .challenge .confirmButton:focus-visible {
+    outline-color: var(--state-focus);
+  }
+}

@@ -1,0 +1,138 @@
+@layer app-formats {
+
+  .surface img {
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .surfaceInteractive {
+    cursor: crosshair;
+    touch-action: manipulation;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .toleranceArea {
+    fill: color-mix(in srgb, var(--format-danger) 8%, transparent);
+    stroke: color-mix(in srgb, var(--format-danger) 35%, transparent);
+    stroke-width: 3;
+    stroke-dasharray: 9 8;
+  }
+
+  .targetArea {
+    fill: color-mix(in srgb, var(--format-accent) 11%, transparent);
+    stroke: color-mix(in srgb, var(--format-accent) 72%, transparent);
+    stroke-width: 4;
+  }
+
+  .distanceLine {
+    stroke: var(--format-line);
+    stroke-width: 4;
+    stroke-dasharray: 8 7;
+  }
+
+  .targetMarker circle {
+    fill: var(--format-surface);
+    stroke: var(--format-accent);
+    stroke-width: 5;
+  }
+
+  .targetMarker path {
+    stroke: var(--format-accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+
+  .selectedMarker circle:first-child {
+    fill: color-mix(in srgb, var(--format-surface) 85%, transparent);
+    stroke: var(--format-ink);
+    stroke-width: 5;
+  }
+
+  .selectedMarker circle:last-child {
+    fill: var(--format-ink);
+  }
+
+  .confirmButton:focus-visible {
+    outline: 3px solid var(--format-focus);
+    outline-offset: 3px;
+  }
+
+  .confirmButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+
+  @media (min-width: 640px) {
+    .challenge {
+      margin-top: 1.5rem;
+    }
+
+    .confirmButton {
+      width: min(100%, 30rem);
+      margin-inline: auto;
+    }
+  }
+
+  .challenge {
+    display: grid;
+    min-width: 0;
+    --format-ink: var(--color-ink);
+    --format-surface: var(--color-surface-raised);
+    --format-border: var(--color-border);
+    --format-accent: var(--color-social);
+    --format-focus: var(--color-focus);
+    --format-danger: var(--color-danger);
+    --format-line: var(--color-ink-muted);
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .surface {
+    position: relative;
+    display: block;
+    width: min(100%, 30rem);
+    min-width: 0;
+    margin-inline: auto;
+    overflow: hidden;
+    padding: 0;
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-card);
+  }
+
+  .surfaceInteractive:hover,
+  .surfaceInteractive:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--format-focus) 18%, transparent);
+    outline-offset: 2px;
+    border-color: var(--color-social);
+  }
+
+  .confirmButton {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 900;
+    min-height: var(--control-height);
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  .confirmButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+  }
+}
