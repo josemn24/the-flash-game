@@ -1,13 +1,14 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-20.
+Última actualización documental: 2026-09-21.
 
 # Estado actual del proyecto
 
 ## Resumen
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S12 y la base transversal del
+migradas usan fixtures y un store mock normalizado. Las slices S01–S13, S17a, S18b parcial, D08a/D08b,
+S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E05/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
@@ -59,8 +60,9 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   historial/rankings, pero no respuestas ni soluciones ajenas (S07).
 - Portal privado en `/admin`: contexto del operador superadmin, listado de salas activas y creación
   de salas activas con owner explícito y grupo inicial opcional. La creación usa resolución exacta de
-  usuarios, slug server-side, transacción, idempotencia y una auditoría agregada; no hay todavía
-  gestión posterior de miembros. S10 añade creación/edición de borradores y activación explícita de
+  usuarios, slug server-side, transacción, idempotencia y una auditoría agregada. S18b ya permite al
+  owner conceder/quitar admin y eliminar lógicamente miembros desde ajustes; transferencia de
+  propiedad, bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade creación/edición de borradores y activación explícita de
   temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC. S11 añade
   creación, edición, preview y publicación separada de Flash mínimo; E01 añade Mini-Wordle y permite
   publicar mezclas con soluciones privadas, palabras específicas fuera del diccionario general e
@@ -110,7 +112,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                     |
 | `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                |
 | `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                             |
-| `/salas/[roomId]/ajustes`                            | Vista mock de miembros y ajustes; gestión real está pendiente.                                            |
+| `/salas/[roomId]/ajustes`                            | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
 | `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.   |
 | `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                   |
 | `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.              |
@@ -130,15 +132,18 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
-  Flash mínimo; la gestión posterior de miembros, reemplazo/archivado de contenido publicado y
-  calendario S12 es local-first y no forma parte de la UI pública de administración. D08a/S13 ya
+  Flash mínimo; la gestión posterior de miembros es parcial en ajustes (S18b), mientras que
+  transferencia, bloqueo/desbloqueo e invitaciones completas, además del reemplazo/archivado de
+  contenido publicado y calendario S12, siguen siendo local-first y no forman parte de la UI pública.
+  D08a/S13 ya
   cubren avatares persistidos y assets privados de E10 y `multiple-choice`. La subida de imágenes de
   `multiple-choice` vive en la biblioteca de preguntas; el editor inline de Flash solo reutiliza
   versiones publicadas.
 - El flujo de invitaciones conserva sus reglas de producto, pero no se ofrece en la UI pública ni se
   necesita para bootstrappear la beta: el superadmin añade directamente usuarios autenticados.
-- Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre únicamente el
-  provisioning inicial directo desde el portal; la gestión posterior e invitaciones permanecen
+- Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre el provisioning
+  inicial directo desde el portal y S18b cubre solo concesión/revocación de admin y eliminación
+  lógica por el owner; transferencia, bloqueo/desbloqueo y el flujo completo de invitaciones permanecen
   pendientes.
 - Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
 - `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
@@ -150,9 +155,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación
 
-Última verificación: 2026-09-20.
+Última verificación: 2026-09-21.
 
-- `npm test`: 104 archivos y 664 tests superados; incluye reglas, adaptadores, UI pública de E01–E05,
+- `npm test`: 121 archivos y 712 tests superados; incluye reglas, adaptadores, health check y ruta HTTP,
+  UI pública de E01–E05,
   navegación del portal y acciones administrativas; además de S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
@@ -170,13 +176,17 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   No se observó un fallo de la UI administrativa. `npm run stylelint` mantiene un fallo histórico
   fuera del portal en el selector duplicado de `app/flash-pop-concepts/FlashPopConcepts.module.css`;
   los estilos modificados de administración pasan Stylelint de forma aislada.
-- `npm run type-architecture`: correcto.
+- `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
+  `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto; 36 archivos declarativos, inventario, provisioning,
-  S02–S08, S05-Alphabet, S10–S13, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run supabase:schema:test`: correcto sobre 38 archivos declarativos y la revisión canónica
+  `20260921073245_room_membership_commands`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
+  S10–S13, S17a, S18b parcial, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
+- `npm run schema:revision:check`: correcto; las cuatro fuentes de configuración coinciden con la
+  última migración versionada.
 - `npm run supabase:db:schema:sync -- --name s05_alphabet`: correcto; generó
   `supabase/migrations/20260919184450_s05_alphabet.sql`.
 - La segunda ejecución de `npm run supabase:db:schema:sync -- --name s05_alphabet_check` informó

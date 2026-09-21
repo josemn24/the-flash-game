@@ -1,11 +1,11 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-19. La ampliación S17a y D08a/D08b/S13 están aplicadas
+Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-21. La ampliación S17a, S18b parcial y D08a/D08b/S13 están aplicadas
 localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
-**28 tablas**, una vista
+**29 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
-privados de servidor. S01–S12 conectan
+privados de servidor. S01–S13, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
 además del editor Flash mínimo de S11. S17a añade biblioteca editorial y reutilización exacta de
 `question_version` sin nuevas tablas.
@@ -14,7 +14,9 @@ S07 consulta el historial Flash cerrado y la revisión autorizada desde versione
 persistidos, sin materializar tablas adicionales. El portal consulta el contexto global de
 superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
-Las capacidades restantes siguen usando mocks o están pendientes. S10 añade preparación/edición de
+Las capacidades restantes siguen usando mocks o están pendientes. S18b permite al owner conceder/quitar
+admin y eliminar lógicamente miembros mediante `public.manage_room_member(jsonb)`; transferencia,
+bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade preparación/edición de
 borradores y activación explícita de temporadas; S11 añade el editor Flash de 2 a 20 preguntas y
 publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. E01
 añade Mini-Wordle competitivo con eventos intermedios, diccionario privado versionado y palabras
@@ -293,12 +295,12 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **36 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **38 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
 26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las 654 pruebas TypeScript
-superadas. También pasan comprobación
-de tipos, ESLint, arquitectura y los enlaces de documentación. La suite SQL no sustituye
+y las 712 pruebas TypeScript
+superadas. También pasan comprobación de tipos, ESLint, arquitectura y los enlaces de documentación.
+La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
 portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,

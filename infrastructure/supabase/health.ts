@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20260919090805_declarative_sync";
+const canonicalSchemaRevision = "20260921073245_room_membership_commands";
 
 function databaseUrl() {
   const configured = process.env.SUPABASE_DB_URL;
@@ -53,9 +53,13 @@ async function checkDatabase() {
           and to_regprocedure('private.submit_queens_placement(jsonb)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null
           and to_regprocedure('public.get_flash_member_review(text,uuid,uuid)') is not null
+          and to_regprocedure('public.get_superadmin_challenge_catalog()') is not null
+          and to_regprocedure('public.get_superadmin_challenge_detail(uuid)') is not null
+          and to_regprocedure('public.manage_room_member(jsonb)') is not null
           and pg_get_function_result(
             to_regprocedure('public.get_flash_member_review(text,uuid,uuid)')
           ) like '%item_points integer%'
+          and pg_get_function_result(to_regprocedure('public.get_my_room_cards()')) like '%member_previews jsonb%'
           as schema_revision_marker
     `);
     const row = result.rows[0];

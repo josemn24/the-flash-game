@@ -2,14 +2,17 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S12 y el portal privado añaden la primera integración real de Supabase y completan el
+La fase 4 está cerrada. S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12,
+E01–E05/E10 y el portal privado consolidan la integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
-server-only y los comandos competitivos existentes; Supervivencia, Pirámide y Narrativa siguen mock
+server-only y los comandos competitivos existentes; los ajustes de sala ya tienen gestión parcial de
+membresías (conceder/quitar admin y eliminación lógica por el owner), mientras que transferencia,
+bloqueo/desbloqueo e invitaciones completas siguen pendientes. Supervivencia, Pirámide y Narrativa siguen mock
 hasta sus propias vertical slices.
 
 La dirección vigente es:

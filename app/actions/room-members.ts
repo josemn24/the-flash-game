@@ -1,15 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import {
-  isMockRoomRoute,
-  isMockRoomRouteEnabled,
-  mockRoomMembershipCommands,
-} from "@/infrastructure/mock/composition";
 import { RoomMembershipCommandError } from "@/application/administration/errors";
 import type { RoomMemberManagementAction } from "@/application/ports/room-membership-commands";
-import { supabaseRoomMembershipCommands } from "@/infrastructure/supabase/roomMembershipCommands";
-import { mocksEnabled } from "@/server/runtime-scope";
+import { isValidRoomMemberTarget, manageRoomMemberCommand } from "@/server/room-members";
 
 export type RoomMemberActionState = {
   readonly ok?: boolean;
@@ -17,9 +11,6 @@ export type RoomMemberActionState = {
 };
 
 const actions = new Set<RoomMemberManagementAction>(["grant_admin", "revoke_admin", "remove"]);
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const mockMemberPattern = /^[a-z][a-z0-9-]*$/;
-
 function textValue(formData: FormData, name: string) {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
@@ -60,9 +51,7 @@ export async function manageRoomMember(
   const targetMemberKey = textValue(formData, "targetMemberKey");
   const action = textValue(formData, "action") as RoomMemberManagementAction;
   const idempotencyKey = textValue(formData, "idempotencyKey");
-  const validTarget =
-    uuidPattern.test(targetMemberKey) ||
-    (isMockRoomRoute(roomKey) && mockMemberPattern.test(targetMemberKey));
+  const validTarget = isValidRoomMemberTarget(roomKey, targetMemberKey);
   if (
     !roomKey ||
     !validTarget ||
@@ -74,11 +63,7 @@ export async function manageRoomMember(
   }
 
   try {
-    const commands =
-      isMockRoomRouteEnabled(roomKey) && mocksEnabled()
-        ? mockRoomMembershipCommands
-        : supabaseRoomMembershipCommands;
-    await commands.manageMember({ roomKey, targetMemberKey, action, idempotencyKey });
+    await manageRoomMemberCommand({ roomKey, targetMemberKey, action, idempotencyKey });
     revalidatePath(`/salas/${roomKey}/ajustes`);
     revalidatePath(`/salas/${roomKey}`);
     return { ok: true };

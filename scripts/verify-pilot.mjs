@@ -31,7 +31,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260919090805_declarative_sync",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260921073245_room_membership_commands",
 };
 
 async function run(label, command, args, options = {}) {
@@ -68,6 +68,7 @@ await mkdir(logDirectory, { recursive: true, mode: 0o700 });
 
 try {
   await run("supabase-start", "npx", ["supabase", "start"]);
+  await run("schema-revision", "npm", ["run", "schema:revision:check"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
   await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {

@@ -5,18 +5,22 @@
 
 ## Última verificación
 
-2026-09-18, sobre el estado actual del repositorio y el stack local de Supabase.
+2026-09-21, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 98 archivos de test y 634 tests superados.
+- `npm test`: 121 archivos de test y 712 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
-- `npm run type-architecture`: correcto.
+- `npm run type-architecture`: correcto; las capas de tipos y la fachada server-only de membresías
+  respetan las fronteras declaradas.
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
+- `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
+  `20260921073245_room_membership_commands`.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto; 32 archivos declarativos, inventario, provisioning,
+- `npm run supabase:schema:test`: correcto sobre 38 archivos declarativos, 29 tablas y 132 funciones
+  públicas/privadas, inventario, provisioning,
   S02–S08, S10–S13, E01–E05 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
@@ -101,9 +105,9 @@ incorporar la misma matriz y adaptar únicamente el texto o la presentación al 
 - Prettier todavía informa 71 archivos sin formato canónico.
 - Stylelint mantiene un selector duplicado preexistente en
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
-- La validación E2E de S01–S12 usa escenarios locales reproducibles; no se ha verificado un proyecto
+- La validación E2E de las slices persistidas usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
-- `results_locked_at`, abandono automático, takeover, Storage, modos distintos de Flash y E06–E09 y
+- `results_locked_at`, abandono automático, takeover, partes del ciclo de Storage, modos distintos de Flash y E06–E09 y
   la revisión administrativa de intentos invalidados siguen fuera del piloto.
 - No existe una ronda manual vigente y exhaustiva documentada para todos los formatos, viewports,
   VoiceOver y `prefers-reduced-motion`.

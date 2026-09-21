@@ -1,9 +1,9 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F12 y S17a están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07 y F12 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-19. Alcance: pasar del prototipo mock a competición persistida,
+> Fecha de análisis: 2026-09-21. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
 > privado de superadmin; no forman parte de la UI pública.
@@ -28,12 +28,12 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Área      | Existe y conviene conservar                                                                                                                                                                                                                                                            | Falta para un recorrido real                                                                                                                       |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                                                                   | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta. |
-| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07, más los contextos privados de temporadas, editorial y calendario en S10–S12. | Ajustes y el resto de proyecciones autorizadas.                                                                                                    |
+| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales, más los contextos privados de temporadas, editorial, calendario y ajustes parciales de sala. | Transferencia, bloqueo/desbloqueo, invitaciones y el resto de proyecciones autorizadas. |
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash y Alphabet.                                                                                                                                              | Sustituir autoridad cliente en Supervivencia, Pirámide y Narrativa; Pirámide también usa `localStorage` en práctica.                                        |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 28 tablas, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                      | Aplicación controlada a un proyecto remoto y operación de assets editoriales desde un portal privado.                                              |
-| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
+| SQL       | 29 tablas, 38 archivos declarativos, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional. |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash y Alphabet reconstruyen contexto privado, persisten resultado y producen feedback público.                                                                                                                               | Contextos y reglas autoritativas de Supervivencia, Pirámide, Narrativa y los demás modos.                                                                                    |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E05, E10 y `multiple-choice` con assets privados.                                                                                                 | Verificación contra un entorno remoto.                                                                                                             |
 
@@ -52,7 +52,8 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 ### Diferencias que el plan debe respetar
 
 - Algunas páginas de documentación general todavía describen una aplicación sin base de datos; son
-  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S12.
+  referencias históricas que deben actualizarse. Ya existe una integración real local en las slices
+  persistidas actuales; la documentación de `current/` mantiene el detalle por slice.
   No hay que rediseñar el esquema ni sustituirlo por CRUD.
 - `supabase/tests/support/bootstrap.sql` simula las funciones mínimas de Auth; sus fixtures no son
   un seed ni prueban un login GoTrue. La integración con Supabase completo se valida en S01.
@@ -881,20 +882,25 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ### S18b — Administrar roles, expulsión y bloqueo
 
+> Estado: parcialmente implementada y verificada en local. La nomenclatura histórica del test SQL es
+> `s17_room_membership_commands.test.sql`; conceptualmente pertenece a S18b.
+
 - **Objetivo / CU:** resto de membresías de CU-07 según matriz aprobada.
-- **Superficie:** lista de miembros y acciones en el portal privado de superadmin, con errores de
-  conflicto. La UI pública no permitirá cambiar roles, expulsar, bloquear ni desbloquear.
+- **Superficie:** ajustes de sala con acciones del owner y errores de conflicto. La UI permite
+  conceder/quitar admin y eliminar lógicamente miembros; el resto de operaciones sigue pendiente.
 - **Mocks retirados:** roles/estados inmutables de demo y controles deshabilitados correspondientes.
-- **Backend/dominio:** operaciones explícitas de cambio de rol, expulsar, bloquear y desbloquear
-  solo según D05; revalidar permisos al escribir. No permitir autoconcederse owner/superadmin.
-- **Persistencia:** comandos acotados, locks y auditoría; conservar membresía/reactivación e histórico.
-  DTO de miembro actualizado y revalidación de accesos.
-- **Tests:** matriz actor/objetivo, intento activo tras pérdida de membresía, bloqueado no acepta
-  invitación, cambio simultáneo con sesión competitiva activa y exclusión de nuevos inicios de
-  spectator.
-- **Dependencias:** S18a y D05 con política explícita de desbloqueo.
-- **Terminada:** cada acción habilitada tiene autorización de servidor y sus efectos se reflejan
-  también en una sesión ya abierta del afectado.
+- **Backend/dominio:** operaciones explícitas `grant_admin`, `revoke_admin` y `remove`, solo para el
+  owner activo; revalidar permisos al escribir. No permitir actuar sobre el owner, sobre uno mismo ni
+  autoconcederse owner/superadmin. Transferencia, bloqueo/desbloqueo e invitaciones completas quedan
+  para slices posteriores.
+- **Persistencia:** `public.manage_room_member(jsonb)` delega en el comando privado, con locks,
+  idempotencia y auditoría; la eliminación es lógica y conserva el histórico. DTO de miembro
+  actualizado y revalidación de accesos.
+- **Tests:** matriz actor/objetivo, idempotencia, auditoría, owner/admin, eliminación lógica y
+  actualización de `member_previews` en las tarjetas de sala.
+- **Dependencias:** S08 y D05. S18a, bloqueo/desbloqueo e invitaciones completas siguen pendientes.
+- **Terminada parcialmente:** cada acción habilitada tiene autorización de servidor y sus efectos se
+  reflejan en la siguiente lectura; no se declara cerrada la matriz completa de CU-07.
 
 ### S18c — Eliminar lógicamente una sala y recuperarla
 
@@ -1101,8 +1107,9 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 ## 10. Cierre de una slice y uso como backlog
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
-incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S12
-están **implementadas**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
+incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S13,
+S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E05/E10 están
+**implementadas localmente**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
 Una slice se cierra cuando:

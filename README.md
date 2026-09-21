@@ -29,7 +29,8 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S12 y E01–E04 conectan Auth, provisioning de jugador,
+recorridos competitivos persistidos en Supabase. S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
+F01/F02/F03/F04/F06/F07/F12 y E01–E05/E10 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
 los rankings de temporada/publicación actual, el historial Flash y la revisión después de volver. El
 portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
@@ -38,7 +39,10 @@ son transaccionales, idempotentes y auditadas.
 La beta cerrada se operará mediante un portal privado de superadmin: la UI pública no crea salas,
 gestiona invitaciones ni prepara temporadas. El superadmin añadirá directamente a los usuarios
 autenticados a las salas; la publicación mínima de contenido, la programación y la ejecución del
-calendario podrán formar parte de ese portal. Los demás modos y Storage siguen pendientes.
+calendario podrán formar parte de ese portal. La gestión posterior de miembros es parcial: el owner
+puede conceder/quitar admin y eliminar lógicamente miembros; transferencia, bloqueo/desbloqueo e
+invitaciones completas siguen pendientes. Los demás modos competitivos y parte del ciclo de Storage
+siguen pendientes.
 
 ## Requisitos
 
@@ -61,7 +65,7 @@ npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
-necesita configuración adicional. Para probar S01–S12 y E01–E04 con persistencia real, copia `.env.example` a
+necesita configuración adicional. Para probar las slices persistidas actuales, copia `.env.example` a
 `.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
 
 ## Comandos disponibles
@@ -80,6 +84,7 @@ necesita configuración adicional. Para probar S01–S12 y E01–E04 con persist
 | `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                |
 | `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con Steel Ball Run y sus siete avatares. |
 | `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                                         |
+| `npm run schema:revision:check`   | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.              |
 | `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                                         |
 | `npm run dictionary:check`        | Comprueba que el vocabulario versionado esté actualizado.                                               |
 | `npm run format:check`            | Comprueba el formato con Prettier.                                                                      |
@@ -154,11 +159,13 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 ## Alcance
 
 Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
-competitivo real acotado. S01–S12 cubren autenticación, perfil, lecturas autorizadas de salas, un
+competitivo real acotado. Las slices persistidas actuales cubren autenticación, perfil, lecturas autorizadas de salas, un
 Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión;
-E01–E04 amplían ese Flash con eventos autoritativos de Mini-Wordle, Logic-code, Progressive-clues y Matching.
+E01–E05/E10 y F* amplían ese Flash con eventos autoritativos y payloads versionados para los formatos habilitados.
 histórica autorizada. Incluye el portal privado de `/admin` para consultar el contexto, crear salas
-iniciales y preparar/activar temporadas; todavía no incluye la gestión posterior de miembros,
+iniciales y preparar/activar temporadas; incluye una gestión parcial de miembros desde ajustes para
+el owner (conceder/quitar admin y eliminación lógica), pero todavía no incluye la transferencia de propiedad,
+bloqueo/desbloqueo ni invitaciones completas,
 contenido, otros modos ni Storage. La
 UI pública no incluye creación de salas, gestión de invitaciones ni configuración de temporadas;
 durante la beta esas tareas, incluido el alta directa de miembros, corresponden al superadmin. La

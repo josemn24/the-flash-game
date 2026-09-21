@@ -218,7 +218,7 @@ en el MVP. La recuperación debe ser una operación de dominio: reconcilia una r
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
-auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S12
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de las slices
 verifica Auth y establece identidad con claims locales a cada transacción. No se expone `private` por
 PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 
@@ -233,7 +233,7 @@ Adaptadores previstos:
 ```text
 infrastructure/
   mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S12
+  supabase/   adaptador real sobre PostgreSQL/Supabase para las slices persistidas actuales
 ```
 
 Reglas de persistencia:
@@ -420,7 +420,7 @@ Page server
 
 En las rutas aún mock, la situación actual difiere en tres puntos intencionados del prototipo:
 `demoIdentity` sustituye la autenticación, `RoomSessionProvider` mantiene resultados y snapshots en
-memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S12 ya usan Auth/RPC
+memoria, y el cliente todavía recibe soluciones para evaluar localmente. Las slices persistidas ya usan Auth/RPC
 reales en sus recorridos; esas piezas mock son puntos de sustitución, no el contrato productivo.
 
 ## 6. Decisiones técnicas relevantes

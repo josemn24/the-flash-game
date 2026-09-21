@@ -9,7 +9,7 @@
 
 La clasificación indica prioridad para una primera versión productiva del loop de salas privadas,
 temporadas y desafíos asíncronos. No equivale al estado actual de implementación: hoy la aplicación
-usa mocks en los recorridos aún no migrados; S01–S12 ya cubren identidad, salas, competición Flash,
+usa mocks en los recorridos aún no migrados; las slices persistidas actuales ya cubren identidad, salas, competición Flash,
 rankings, historial, portal y temporadas reales sobre Supabase local.
 
 - **V1**: esencial para que exista una competición productiva usable.

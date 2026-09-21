@@ -10,7 +10,7 @@ import type {
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { AnswerValueOfType, QuestionType } from "@/types/contracts/questions";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
-import type { AnswerResultDetails } from "@/types/gameplay/result";
+import type { AnswerResultDetails } from "@/types/contracts/result-details";
 
 /** Caller identity always comes from the verified server session, never this input. */
 export type StartAttemptInput = {
