@@ -4,7 +4,7 @@ import { ChallengeResultScreen } from "./ChallengeResultScreen";
 
 function getModel(metricCount: 3 | 4 = 3) {
   return {
-    gameTitle: "Flash clásico",
+    gameTitle: "Flash",
     statusLabel: "Completado",
     eyebrow: "Desafío completado",
     title: "Sprint brutal.",

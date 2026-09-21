@@ -18,7 +18,7 @@ export async function generateMetadata({
       model?.challenge.mode === "flash"
         ? `${model.challenge.title} — The Flash`
         : "The Flash — Preview",
-    description: "Preview del sistema The Flash aplicado al desafío Flash clásico.",
+    description: "Preview del sistema The Flash aplicado al desafío Flash.",
   };
 }
 

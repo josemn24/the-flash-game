@@ -83,7 +83,7 @@ export function buildResultModel(results: AnswerResult[], score: number): Challe
     accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío duro.";
 
   return {
-    gameTitle: "Flash clásico",
+    gameTitle: "Flash",
     statusLabel: "Completado",
     eyebrow: "Desafío completado",
     title: message,
@@ -211,7 +211,7 @@ export function FlashPopFlashGame({
         </motion.div>
       ) : null}
       {session.phase === "countdown" ? (
-        <StartCountdown label="Flash clásico" key="countdown" onComplete={session.start} />
+        <StartCountdown label="Flash" key="countdown" onComplete={session.start} />
       ) : null}
       {session.phase === "playing" && session.question ? (
         <motion.div

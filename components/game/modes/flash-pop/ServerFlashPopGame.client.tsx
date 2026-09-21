@@ -60,7 +60,7 @@ export function ServerFlashPopGame({
         </Card>
       ) : null}
       {session.phase === "countdown" ? (
-        <StartCountdown label="Flash clásico" key="countdown" onComplete={session.startQuestions} />
+        <StartCountdown label="Flash" key="countdown" onComplete={session.startQuestions} />
       ) : null}
       {session.phase === "playing" && session.question ? (
         <motion.div

@@ -118,7 +118,7 @@ describe("canonical UI primitives", () => {
 
   it("supports a mobile-only game progress label", () => {
     const markup = renderToStaticMarkup(
-      <GameHeader title="Flash clásico" mobileLabel="Pregunta 04 de 16" />,
+      <GameHeader title="Flash" mobileLabel="Pregunta 04 de 16" />,
     );
 
     expect(markup).toContain("Pregunta 04 de 16");

@@ -52,7 +52,7 @@ function getModeLabel(challenge: Challenge) {
 function getModeLabelForMode(mode: GameMode) {
   switch (mode) {
     case "flash":
-      return "Flash clásico";
+      return "Flash";
     case "survival":
       return "Supervivencia";
     case "alphabet":

@@ -92,7 +92,7 @@ absoluta de finalización (`completedAt`) y métricas como `lastCorrectAt` sigue
 historial y análisis, pero no son criterios competitivos. El ranking de temporada solo usa Flash
 Points acumulados.
 
-## 1. Flash clásico (`flash`)
+## 1. Flash (`flash`)
 
 ### Contrato recomendado
 

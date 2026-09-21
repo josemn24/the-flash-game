@@ -11,7 +11,7 @@ const serverChallenge = {
   definitionId: "definition-1",
   number: 1,
   title: "Flash de pruebas",
-  subtitle: "Flash clásico",
+  subtitle: "Flash",
   description: "Desafío de prueba",
   mode: "flash" as const,
   maxScore: 100,
