@@ -5,6 +5,7 @@ import type {
   RoomLobbyQueries,
   RoomMemberDetailQueries,
   RoomRankingQueries,
+  RoomSettingsQueries,
 } from "@/application/queries";
 import {
   getChallengeDisplayTitle,
@@ -46,6 +47,7 @@ import type {
   RoomMemberDetailModel,
   RoomMembershipRole,
   RoomRankingModel,
+  RoomSettingsModel,
 } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
@@ -1548,7 +1550,12 @@ function toHistoricalMember(
 }
 
 export class SupabaseRoomQueries
-  implements RoomHistoryQueries, RoomLobbyQueries, RoomMemberDetailQueries, RoomRankingQueries
+  implements
+    RoomHistoryQueries,
+    RoomLobbyQueries,
+    RoomMemberDetailQueries,
+    RoomRankingQueries,
+    RoomSettingsQueries
 {
   async listCards() {
     return (await callRoomRead("get_my_room_cards")).map(toCard);
@@ -1619,6 +1626,41 @@ export class SupabaseRoomQueries
       roomTitle: row.room_title,
       currentUserId: viewer.playerId,
       entries: toSeasonLeaderboard(rankingRows),
+    };
+  }
+
+  async getSettings(roomKey: string): Promise<RoomSettingsModel | null> {
+    const viewer = await getCurrentViewerProfile();
+    if (!viewer) return null;
+
+    const rows = await callRoomRead("get_room_detail", { target_room_slug: roomKey });
+    const row = rows[0];
+    if (!row) return null;
+
+    const seasonRows = row.season_id
+      ? await callRankingRead(
+          "get_season_ranking",
+          { target_season_id: row.season_id },
+          isSeasonRankingReadRow,
+        )
+      : [];
+    const flashPointsByPlayer = new Map(
+      seasonRows.map(({ player_id, flash_points }) => [player_id, flash_points]),
+    );
+
+    return {
+      roomId: row.room_slug,
+      title: row.room_title,
+      currentUserId: viewer.playerId,
+      memberCount: row.member_count,
+      members: asMemberPreviews(row.member_previews).map((member) => ({
+        id: member.id,
+        name: member.name,
+        initials: member.initials,
+        avatarSrc: member.src,
+        totalFlashPoints: flashPointsByPlayer.get(member.id) ?? 0,
+        isCurrentUser: member.id === viewer.playerId,
+      })),
     };
   }
 

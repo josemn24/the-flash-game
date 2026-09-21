@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopRoomSettings } from "@/components/game/modes/flash-pop/FlashPopRoomSettings";
 import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
-import { dynamic, generateMetadata } from "./page";
+import RoomSettingsPage, { dynamic, generateMetadata } from "./page";
 
 describe("room settings route", () => {
   it("exposes Tabarnia and its settings view", async () => {
@@ -20,5 +20,16 @@ describe("room settings route", () => {
     expect(markup).toContain("Acciones");
     expect(markup).toContain("Tabarnia");
     expect(markup).toContain('href="/salas/tabarnia-room"');
+  });
+
+  it("renders the full route through the data-access boundary", async () => {
+    const element = await RoomSettingsPage({
+      params: Promise.resolve({ roomId: "tabarnia-room" }),
+    });
+    const markup = renderToStaticMarkup(element);
+
+    expect(markup).toContain("Tabarnia");
+    expect(markup).toContain("Miembros");
+    expect(markup).toContain("Flash Points");
   });
 });

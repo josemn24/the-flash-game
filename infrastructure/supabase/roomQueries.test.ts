@@ -41,7 +41,23 @@ const roomRow = {
   competitive_playable: true,
   current_flash_points: 80,
   current_position: 2,
-  member_previews: [],
+  member_previews: [
+    {
+      id: "00000000-0000-0000-0000-000000000001",
+      name: "Alice Owner",
+      avatarPath: null,
+    },
+    {
+      id: viewer.id,
+      name: "Bob Viewer",
+      avatarPath: "/avatars/bob.png",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000004",
+      name: "Dora Spectator",
+      avatarPath: null,
+    },
+  ],
   member_count: 3,
 };
 
@@ -165,6 +181,77 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       }),
       expect.objectContaining({ memberId: seasonRows[0].player_id, rank: 2 }),
     ]);
+  });
+
+  it("maps room settings from member previews and season points", async () => {
+    const model = await new SupabaseRoomQueries().getSettings("s06-main");
+
+    expect(model).toMatchObject({
+      roomId: "s06-main",
+      title: "Sala competitiva S06",
+      currentUserId: viewer.id,
+      memberCount: 3,
+    });
+    expect(model?.members).toEqual([
+      expect.objectContaining({
+        id: seasonRows[0].player_id,
+        name: "Alice Owner",
+        totalFlashPoints: 120,
+        isCurrentUser: false,
+      }),
+      expect.objectContaining({
+        id: viewer.id,
+        name: "Bob Viewer",
+        totalFlashPoints: 80,
+        isCurrentUser: true,
+      }),
+      expect.objectContaining({
+        name: "Dora Spectator",
+        totalFlashPoints: 0,
+        isCurrentUser: false,
+      }),
+    ]);
+  });
+
+  it("keeps accessible members when a room has no active season", async () => {
+    const client = await mocks.createClient();
+    client.rpc = vi.fn(async (functionName: string) => {
+      if (functionName === "get_room_detail") {
+        return { data: [{ ...roomRow, season_id: null }], error: null };
+      }
+      throw new Error(`Unexpected settings RPC: ${functionName}`);
+    });
+    mocks.createClient.mockResolvedValue(client);
+
+    await expect(new SupabaseRoomQueries().getSettings("s06-no-season")).resolves.toMatchObject({
+      memberCount: 3,
+      members: [
+        expect.objectContaining({ name: "Alice Owner", totalFlashPoints: 0 }),
+        expect.objectContaining({ name: "Bob Viewer", totalFlashPoints: 0 }),
+        expect.objectContaining({ name: "Dora Spectator", totalFlashPoints: 0 }),
+      ],
+    });
+  });
+
+  it("returns null without a viewer or for an inaccessible room", async () => {
+    mocks.getCurrentViewerProfile.mockResolvedValueOnce(null);
+    await expect(new SupabaseRoomQueries().getSettings("s06-main")).resolves.toBeNull();
+
+    mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: [], error: null })),
+    });
+    await expect(new SupabaseRoomQueries().getSettings("s06-missing")).resolves.toBeNull();
+  });
+
+  it("propagates settings RPC errors instead of falling back to mock data", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
+    });
+
+    await expect(new SupabaseRoomQueries().getSettings("s06-main")).rejects.toThrow(
+      "Supabase room read failed (get_room_detail): permission denied",
+    );
   });
 
   it("returns null without a season and does not leak ranking data", async () => {

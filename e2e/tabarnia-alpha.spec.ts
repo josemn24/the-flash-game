@@ -24,6 +24,29 @@ async function signIn(page: Page, account: Account) {
 }
 
 test.describe("Tabarnia alpha", () => {
+  test("Ches puede abrir los ajustes de la sala persistida", async ({ page }) => {
+    const data = await fixture();
+    await signIn(page, data.users.ches);
+    await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
+
+    const response = await page.goto(`/salas/${data.data.room.slug}/ajustes`);
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole("heading", { name: "Tabarnia", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Miembros", exact: true })).toBeVisible();
+    await expect(page.getByText(/Flash Points/).first()).toBeVisible();
+  });
+
+  test("mantiene 404 para una sala inexistente o no autorizada", async ({ page }) => {
+    const data = await fixture();
+    await signIn(page, data.users.xesmona);
+
+    const missingResponse = await page.goto("/salas/sala-inexistente/ajustes");
+    expect(missingResponse?.status()).toBe(404);
+
+    const unauthorizedResponse = await page.goto(`/salas/${data.data.room.slug}/ajustes`);
+    expect(unauthorizedResponse?.status()).toBe(404);
+  });
+
   test("Ches puede abrir la sala y comenzar Steel Ball Run", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.ches);

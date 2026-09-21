@@ -52,6 +52,11 @@ export interface RoomRankingQueries {
   getRanking(roomKey: string): Promise<RoomRankingModel | null>;
 }
 
+/** Narrow read surface for the authenticated room settings slice. */
+export interface RoomSettingsQueries {
+  getSettings(roomKey: string): Promise<RoomSettingsModel | null>;
+}
+
 /** Narrow read surface for the authenticated S07 Flash history slice. */
 export interface RoomHistoryQueries {
   listHistory(roomKey: string): Promise<RoomHistoryListModel | null>;
