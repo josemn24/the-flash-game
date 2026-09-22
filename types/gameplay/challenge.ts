@@ -201,6 +201,7 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "estimation"
       | "heat-map"
       | "word-search"
+      | "word-hashtag"
       | "zip"
       | "escape";
     payloadSchemaVersion: number;
@@ -333,6 +334,22 @@ export type ServerWordSearchQuestion = ServerFlashQuestionBase & {
   readonly letters: readonly string[];
   readonly targets: readonly { readonly id: string; readonly word: string }[];
   readonly progress: ServerWordSearchProgress;
+};
+
+export type ServerWordHashtagProgress = {
+  readonly kind: "word-hashtag";
+  readonly letters: readonly (string | null)[];
+  readonly swaps: readonly { readonly fromCell: number; readonly toCell: number }[];
+  readonly movesUsed: number;
+  readonly movesRemaining: number;
+};
+
+export type ServerWordHashtagQuestion = ServerFlashQuestionBase & {
+  readonly type: "word-hashtag";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly initialLetters: readonly (string | null)[];
+  readonly maxMoves: number;
+  readonly progress: ServerWordHashtagProgress;
 };
 
 export type ServerZipQuestion = ServerFlashQuestionBase & {
@@ -483,6 +500,7 @@ export type ServerFlashQuestion =
   | ServerEstimationQuestion
   | ServerHeatMapQuestion
   | ServerWordSearchQuestion
+  | ServerWordHashtagQuestion
   | ServerZipQuestion
   | ServerEscapeQuestion;
 

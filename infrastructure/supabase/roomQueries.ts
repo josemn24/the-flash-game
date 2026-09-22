@@ -27,6 +27,7 @@ import type {
   EscapeQuestion,
   LogicMatrixQuestion,
   WordSearchQuestion,
+  WordHashtagQuestion,
   ZipQuestion,
 } from "@/types/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
@@ -41,6 +42,7 @@ import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidZipConfiguration } from "@/lib/zip";
 import { isValidEscapeConfiguration } from "@/lib/escape";
+import { isValidWordHashtagConfiguration } from "@/lib/wordHashtag";
 import type {
   RoomCardModel,
   RoomCalendarEntry,
@@ -224,6 +226,7 @@ type FlashMemberReviewReadRow = {
     | "estimation"
     | "heat-map"
     | "word-search"
+    | "word-hashtag"
     | "zip"
     | "escape";
   payload_schema_version: number;
@@ -473,6 +476,7 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "estimation" ||
       row.question_type === "heat-map" ||
       row.question_type === "word-search" ||
+      row.question_type === "word-hashtag" ||
       row.question_type === "zip" ||
       row.question_type === "escape") &&
     (row.payload_schema_version === 1 ||
@@ -1328,6 +1332,42 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
     } satisfies WordSearchQuestion;
     if (!isValidWordSearchConfiguration(question)) {
       throw new Error(`Invalid historical word-search payload (${row.challenge_item_id})`);
+    }
+    return question;
+  }
+  if (row.question_type === "word-hashtag") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const grid = publicPayload.grid;
+    const initialLetters = publicPayload.initialLetters;
+    const words = solutionPayload.words;
+    if (
+      typeof publicPayload.question !== "string" ||
+      !isRecord(grid) ||
+      grid.rows !== 5 ||
+      grid.columns !== 5 ||
+      !Array.isArray(initialLetters) ||
+      typeof publicPayload.maxMoves !== "number" ||
+      !isRecord(words)
+    ) {
+      throw new Error(`Invalid historical word-hashtag payload (${row.challenge_item_id})`);
+    }
+    const question = {
+      id: row.challenge_item_id,
+      type: "word-hashtag" as const,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: publicPayload.question,
+      grid: { rows: 5, columns: 5 } as const,
+      initialLetters: initialLetters as Array<string | null>,
+      maxMoves: publicPayload.maxMoves,
+      words: words as WordHashtagQuestion["words"],
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordHashtagQuestion;
+    if (!isValidWordHashtagConfiguration(question)) {
+      throw new Error(`Invalid historical word-hashtag payload (${row.challenge_item_id})`);
     }
     return question;
   }

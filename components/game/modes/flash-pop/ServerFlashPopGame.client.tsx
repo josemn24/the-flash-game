@@ -105,6 +105,9 @@ export function ServerFlashPopGame({
               void session.submitWordSearchSelection(startCell, endCell)
             }
             onRetryWordSearch={() => void session.retryWordSearchSelection()}
+            onWordHashtagSwap={(fromCell, toCell) =>
+              void session.submitWordHashtagSwap(fromCell, toCell)
+            }
             revealState={session.revealState}
             revealStatusVisible={session.revealStatusVisible}
             revealError={session.revealError}

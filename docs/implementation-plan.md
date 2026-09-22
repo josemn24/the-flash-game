@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16 y F18 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-22. Alcance: pasar del prototipo mock a competición persistida,
@@ -720,7 +720,7 @@ Ficha común, obligatoria para **cada** F*:
 | F16   | `zip`                  | **Implementado localmente.** Payload público v1 sin solución, recorrido local con checkpoints, respuesta final/draft de timeout, evaluación server-side, revisión protegida, validación de solución única e integración E2E sin fallback mock. |
 | F17   | `pipes`                | Rotaciones válidas y conectividad desde origen; no aceptar solo `completed: true`.                                                                                     |
 | F18   | `escape`               | **Implementado y verificado localmente.** Payload público v1 sin solución, movimientos locales, draft de timeout, replay server-side, revisión protegida, helper SQL inmutable y E2E 3/3 sobre fixture limpio; el cierre queda acotado al stack local hasta validar un entorno remoto. |
-| F19   | `word-hashtag`         | Movimiento/reordenación válida y límite; palabras solución privadas y conteo derivado del registro verificable.                                                        |
+| F19   | `word-hashtag`         | **Implementado y verificado localmente.** Payload público v1 sin solución, swaps validados server-side, progreso en `attempts.progress_payload`, límite terminal, timeout recuperable, evaluación/scoring server-side, revisión protegida e E2E 3/3 sobre fixture limpio. |
 
 ### E01–E10 — Formatos con eventos, penalizaciones o revelaciones
 

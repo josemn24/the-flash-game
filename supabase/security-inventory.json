@@ -634,6 +634,26 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.word_hashtag_solution_letters": {
+      "arguments": "solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.word_hashtag_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.word_hashtag_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_word_hashtag_swap": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.queens_board": {
       "arguments": "target_attempt uuid, target_item uuid",
       "securityDefiner": true,

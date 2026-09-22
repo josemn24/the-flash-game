@@ -12,6 +12,7 @@ import type {
   ProgressiveCluesQuestion,
   ProgressiveImageQuestion,
   QuestionOfType,
+  WordHashtagQuestion,
   ZipQuestion,
 } from "@/types/game";
 import type {
@@ -32,6 +33,7 @@ import type {
   ServerEstimationQuestion,
   ServerHeatMapQuestion,
   ServerWordSearchQuestion,
+  ServerWordHashtagQuestion,
   ServerZipQuestion,
   ServerEscapeQuestion,
 } from "@/types/gameplay/challenge";
@@ -47,6 +49,10 @@ import { getWordSearchPath } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
 import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
+import {
+  isValidWordHashtagConfiguration,
+  isValidWordHashtagPublicConfiguration,
+} from "@/lib/wordHashtag";
 
 type TerminalReviewResponseRow = {
   challenge_item_id: string;
@@ -166,6 +172,7 @@ export function questionFromPayload(
     | "estimation"
     | "heat-map"
   | "word-search"
+    | "word-hashtag"
     | "zip"
     | "escape",
   progress?: unknown,
@@ -193,6 +200,7 @@ export function questionFromPayload(
     | "estimation"
     | "heat-map"
   | "word-search"
+    | "word-hashtag"
     | "zip"
     | "escape",
   progress?: unknown,
@@ -837,6 +845,67 @@ export function questionFromPayload(
       progress: safeProgress,
     };
   }
+  if (questionType === "word-hashtag") {
+    const configuration = {
+      grid: value.grid,
+      initialLetters: value.initialLetters,
+      maxMoves: value.maxMoves,
+    };
+    if (
+      !isValidWordHashtagPublicConfiguration(configuration as never) ||
+      !Array.isArray(value.initialLetters) ||
+      value.initialLetters.length !== 25 ||
+      !value.initialLetters.every((letter) => letter === null || typeof letter === "string")
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
+    const progressLetters = Array.isArray(rawProgress.letters)
+      ? rawProgress.letters
+      : value.initialLetters;
+    const swaps = Array.isArray(rawProgress.swaps)
+      ? rawProgress.swaps.filter(
+          (swap): swap is { fromCell: number; toCell: number } =>
+            Boolean(swap) &&
+            typeof swap === "object" &&
+            Number.isSafeInteger((swap as Record<string, unknown>).fromCell) &&
+            Number.isSafeInteger((swap as Record<string, unknown>).toCell),
+        )
+      : [];
+    const safeProgress = {
+      kind: "word-hashtag" as const,
+      letters: progressLetters as Array<string | null>,
+      swaps,
+      movesUsed: Number.isSafeInteger(rawProgress.movesUsed)
+        ? Number(rawProgress.movesUsed)
+        : 0,
+      movesRemaining: Number.isSafeInteger(rawProgress.movesRemaining)
+        ? Number(rawProgress.movesRemaining)
+        : Number(value.maxMoves),
+    } satisfies ServerWordHashtagQuestion["progress"];
+    if (
+      safeProgress.letters.length !== 25 ||
+      safeProgress.swaps.length !== (Array.isArray(rawProgress.swaps) ? rawProgress.swaps.length : 0) ||
+      !safeProgress.letters.every((letter) => letter === null || typeof letter === "string") ||
+      safeProgress.movesUsed < 0 ||
+      safeProgress.movesUsed > Number(value.maxMoves) ||
+      safeProgress.movesRemaining < 0 ||
+      safeProgress.movesRemaining > Number(value.maxMoves)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "word-hashtag",
+      grid: { rows: 5, columns: 5 },
+      initialLetters: value.initialLetters as Array<string | null>,
+      maxMoves: value.maxMoves as number,
+      progress: safeProgress,
+    } satisfies ServerWordHashtagQuestion;
+  }
   if (questionType === "zip") {
     const configuration = { grid: value.grid, checkpoints: value.checkpoints };
     if (
@@ -954,6 +1023,7 @@ function questionWithSolution(
   | EstimationQuestion
   | HeatMapQuestion
   | import("@/types/game").WordSearchQuestion
+  | WordHashtagQuestion
   | ZipQuestion
   | EscapeQuestion {
   const solution =
@@ -1322,6 +1392,30 @@ function questionWithSolution(
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     };
+  }
+  if (question.type === "word-hashtag") {
+    const words = solution.words;
+    if (!words || typeof words !== "object" || Array.isArray(words)) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "word-hashtag",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      initialLetters: [...question.initialLetters],
+      maxMoves: question.maxMoves,
+      words: words as WordHashtagQuestion["words"],
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies WordHashtagQuestion;
+    if (!isValidWordHashtagConfiguration(fullQuestion)) {
+      throw new ServerFlashQuestionError();
+    }
+    return fullQuestion;
   }
   if (question.type === "zip") {
     if (

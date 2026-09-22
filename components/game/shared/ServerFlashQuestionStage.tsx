@@ -19,6 +19,7 @@ import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMap
 import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
 import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
 import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
+import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -63,6 +64,7 @@ export function ServerFlashQuestionStage({
   lastWordSearchSelection,
   onWordSearchSelection,
   onRetryWordSearch,
+  onWordHashtagSwap,
   revealState,
   revealStatusVisible,
   revealError,
@@ -110,6 +112,7 @@ export function ServerFlashQuestionStage({
   };
   readonly onWordSearchSelection: (startCell: number, endCell: number) => void;
   readonly onRetryWordSearch?: () => void;
+  readonly onWordHashtagSwap: (fromCell: number, toCell: number) => void;
   readonly revealState: "idle" | "submitting" | "error";
   readonly revealStatusVisible: boolean;
   readonly revealError?: string;
@@ -251,6 +254,17 @@ export function ServerFlashQuestionStage({
             lastSelection={lastWordSearchSelection}
             onSelect={onWordSearchSelection}
             onRetry={onRetryWordSearch}
+          />
+        ) : question.type === "word-hashtag" ? (
+          <ServerWordHashtagQuestion
+            key={question.id}
+            question={question}
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onSwap={onWordHashtagSwap}
           />
         ) : question.type === "logic-matrix" ? (
           <>

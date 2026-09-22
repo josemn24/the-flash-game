@@ -139,6 +139,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [99_queens.sql](99_queens.sql) | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada. |
 | [99_word_search.sql](99_word_search.sql) | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side. |
 | [99_escape.sql](99_escape.sql) | Validación inmutable de configuración y solución privada de Escape para publicación editorial. |
+| [99_word_hashtag.sql](99_word_hashtag.sql) | Contrato privado de Word-hashtag, progreso en `attempts.progress_payload` y comando transaccional de swap server-side. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de

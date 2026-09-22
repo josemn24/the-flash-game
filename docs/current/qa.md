@@ -16,13 +16,13 @@
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260922113254_f18_escape`.
+  `20260922180514_declarative_sync`.
 - `npm run verify:pilot`: correcto el 2026-09-22 sobre Supabase local reconstruido desde cero;
   pasan portal, S02, S03, E01–E06, F08, S04, S06, S07 y S10–S12 en integración y E2E, junto con
   `browser-fixture`, `flash-layout`, `dictionary-check` y `backup-restore`.
 - `npm run supabase:schema:test`: correcto sobre 41 archivos declarativos, 30 tablas y 136 funciones
   públicas/privadas, inventario, provisioning,
-  S02–S08, S10–S13, E01–E06, F08, F16, F18 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  S02–S08, S10–S13, E01–E06, F08, F16, F18, F19 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
   privada, preparación temporal y evaluación normalizada.
@@ -38,6 +38,10 @@
   integración Auth/PostgREST/RLS y documentación correctos. El E2E enfocado pasa 3/3 sobre un fixture
   limpio: solución Escape con reintento idempotente, timeout con movimientos conservados y spectator
   sin permiso de inicio.
+- F19: tests de dominio/adaptador, `typecheck`, schema, revisión de esquema, integración Auth/PostgREST/RLS
+  y E2E enfocado 3/3 sobre fixture limpio; cubre publicación sin solución, swaps válidos e inválidos,
+  idempotencia, `stale_version`, retry tras 503, agotamiento de movimientos, timeout con draft y review
+  terminal protegida.
 - `npm run test:integration:supabase -- --scenario e06`: correcto con publicación editorial, Auth, PostgREST y RLS local.
 - `npm run test:e2e -- e2e/e06-word-search.spec.ts`: 2 casos correctos; recuperación tras recarga,
   reintento idempotente, revisión terminal y aislamiento de spectator.

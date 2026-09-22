@@ -21,6 +21,7 @@ import type {
   SubmitMiniWordleGuessResult,
   SubmitMatchingPairResult,
   SubmitWordSearchSelectionResult,
+  SubmitWordHashtagSwapResult,
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementResult,
   RevealProgressiveClueResult,
@@ -48,6 +49,7 @@ import type {
   HeatMapQuestion,
   ShortTextQuestion,
   WordSearchQuestion,
+  WordHashtagQuestion,
   ZipQuestion,
 } from "@/types/game";
 import {
@@ -64,6 +66,7 @@ import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
 import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
+import { isValidWordHashtagConfiguration, isValidWordHashtagPublicConfiguration } from "@/lib/wordHashtag";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -168,6 +171,9 @@ function commandCode(error: unknown) {
     "invalid_word_search_selection",
     "word_search_target_already_found",
     "word_search_requires_selection_command",
+    "invalid_word_hashtag_swap",
+    "word_hashtag_moves_exhausted",
+    "word_hashtag_requires_swap_command",
     "invalid_queens_placement",
     "queens_requires_placement_command",
     "prefilled_queen_locked",
@@ -234,7 +240,8 @@ function asQuestion(
   | EstimationQuestion
   | HeatMapQuestion
   | ShortTextQuestion
-  | WordSearchQuestion
+    | WordSearchQuestion
+  | WordHashtagQuestion
   | ZipQuestion
   | EscapeQuestion {
   if (
@@ -255,6 +262,7 @@ function asQuestion(
       "estimation",
       "heat-map",
       "word-search",
+      "word-hashtag",
       "zip",
       "escape",
       "short-text",
@@ -951,6 +959,36 @@ function asQuestion(
     }
     return question;
   }
+  if (context.questionType === "word-hashtag") {
+    const configuration = {
+      grid: publicPayload.grid,
+      initialLetters: publicPayload.initialLetters,
+      maxMoves: publicPayload.maxMoves,
+    };
+    const words = solutionPayload.words;
+    if (
+      !isValidWordHashtagPublicConfiguration(configuration as never) ||
+      !words ||
+      typeof words !== "object" ||
+      Array.isArray(words)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "word-hashtag" as const,
+      grid: { rows: 5, columns: 5 } as const,
+      initialLetters: configuration.initialLetters as Array<string | null>,
+      maxMoves: configuration.maxMoves as number,
+      words: words as WordHashtagQuestion["words"],
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordHashtagQuestion;
+    if (!isValidWordHashtagConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
   if (context.questionType === "zip") {
     const configuration = {
       grid: publicPayload.grid,
@@ -1055,6 +1093,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "pass"
   | "submitMatchingPair"
   | "submitWordSearchSelection"
+  | "submitWordHashtagSwap"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
@@ -1162,6 +1201,29 @@ export class SupabaseAttemptCommands implements Pick<
       lockVersion: evaluated.lockVersion,
       status: evaluated.status,
       points: evaluated.points,
+    };
+  }
+
+  async submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
+    const accepted = await callCommand<SubmitWordHashtagSwapResult>(
+      this.identity,
+      "submit_word_hashtag_swap",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+      details: evaluated.details,
     };
   }
 

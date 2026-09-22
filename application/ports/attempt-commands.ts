@@ -21,6 +21,8 @@ import type {
   SubmitMatchingPairResult,
   SubmitWordSearchSelectionInput,
   SubmitWordSearchSelectionResult,
+  SubmitWordHashtagSwapInput,
+  SubmitWordHashtagSwapResult,
   SubmitMiniWordleGuessInput,
   SubmitMiniWordleGuessResult,
   SubmitLogicCodeAttemptInput,
@@ -102,6 +104,7 @@ export interface AttemptCommands {
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
   submitMatchingPair(input: SubmitMatchingPairInput): Promise<SubmitMatchingPairResult>;
   submitWordSearchSelection(input: SubmitWordSearchSelectionInput): Promise<SubmitWordSearchSelectionResult>;
+  submitWordHashtagSwap(input: SubmitWordHashtagSwapInput): Promise<SubmitWordHashtagSwapResult>;
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
   submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;

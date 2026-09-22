@@ -531,6 +531,30 @@ export type FlashEditorialWordSearchQuestion = {
   readonly solutionPayload: FlashEditorialWordSearchSolutionPayload;
 };
 
+export type FlashEditorialWordHashtagPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly initialLetters: readonly (string | null)[];
+  readonly maxMoves: number;
+};
+
+export type FlashEditorialWordHashtagSolutionPayload = {
+  readonly words: import("@/types/question").WordHashtagWords;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialWordHashtagQuestion = {
+  readonly slug: string;
+  readonly type: "word-hashtag";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialWordHashtagPublicPayload;
+  readonly solutionPayload: FlashEditorialWordHashtagSolutionPayload;
+};
+
 export type FlashEditorialZipQuestion = {
   readonly slug: string;
   readonly type: "zip";
@@ -567,6 +591,7 @@ export type FlashEditorialQuestion =
   | FlashEditorialClassificationQuestion
   | FlashEditorialProgressiveImageQuestion
   | FlashEditorialWordSearchQuestion
+  | FlashEditorialWordHashtagQuestion
   | FlashEditorialZipQuestion
   | FlashEditorialEscapeQuestion
   | {
@@ -599,6 +624,7 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialClassificationQuestion, "points">
   | Omit<FlashEditorialProgressiveImageQuestion, "points">
   | Omit<FlashEditorialWordSearchQuestion, "points">
+  | Omit<FlashEditorialWordHashtagQuestion, "points">
   | Omit<FlashEditorialZipQuestion, "points">
   | Omit<FlashEditorialEscapeQuestion, "points">
   | Omit<Extract<FlashEditorialQuestion, { readonly type: "short-text" }>, "points">;
@@ -653,6 +679,7 @@ export type SuperadminQuestionLibraryEntry = {
     | "progressive-image"
     | "short-text"
     | "word-search"
+    | "word-hashtag"
     | "zip"
     | "escape";
   readonly question: string;

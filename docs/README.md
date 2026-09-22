@@ -51,9 +51,9 @@ decisiones y después los documentos afectados.
 
 - Fecha: 2026-09-22.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
-  actuales incluyen S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18
+  actuales incluyen S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19
   y E01–E06/E10 sobre Supabase local.
-- La revisión declarativa canónica es `20260922113254_f18_escape`; la comprobación de
+- La revisión declarativa canónica es `20260922180514_declarative_sync`; la comprobación de
   esquema cubre 41 archivos declarativos, 30 tablas y 136 funciones públicas/privadas.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run docs:check` y
   `npm run supabase:schema:test` se deben leer junto con el resultado vigente de `current/qa.md`;

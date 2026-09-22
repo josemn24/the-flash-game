@@ -8,7 +8,7 @@
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
 migradas usan fixtures y un store mock normalizado. Las slices S01–S13, S17a, S18b parcial, D08a/D08b,
-S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18 y E01–E06/E10, junto con la base transversal del
+S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
@@ -32,6 +32,10 @@ F18 añade `escape` como respuesta final server-side: el tablero y los bloques s
 referencia permanece privada, los movimientos se mantienen localmente y el servidor reproduce el
 recorrido completo o el draft de timeout. La integración está verificada localmente con E2E 3/3; la
 capacidad queda acotada al stack local hasta validar un entorno remoto.
+F19 añade `word-hashtag` como interacción server-side por swap: el tablero inicial es público, las
+cuatro palabras permanecen privadas, los swaps aceptados viven en `attempts.progress_payload` y el
+servidor decide validez, terminalidad, timeout, evaluación y scoring. La review solo revela solución y
+métricas después del cierre; no se añade tabla de eventos.
 S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
@@ -135,7 +139,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F08/F12/F16/F18 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -186,8 +190,8 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
   `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
 - `npm run supabase:schema:test`: correcto sobre 41 archivos declarativos y la revisión canónica
-  `20260922113254_f18_escape`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
-  S10–S13, S17a, S18b parcial, E01–E06, F08, F16, F18 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+  `20260922180514_declarative_sync`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
+  S10–S13, S17a, S18b parcial, E01–E06, F08, F16, F18, F19 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
 - `npm run schema:revision:check`: correcto; las cuatro fuentes de configuración coinciden con la
@@ -200,6 +204,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   `supabase:schema:test`, `schema:revision:check`, `docs:check` e integración Auth/PostgREST/RLS
   correctos. El E2E enfocado pasa 3/3 sobre fixture limpio; no se ejecutó `verify:pilot` completo
   tras esta slice.
+- Validación enfocada F19: `supabase:schema:test`, `schema:revision:check`, `typecheck`, integración
+  Auth/PostgREST/RLS y `e2e/f19-word-hashtag.spec.ts` (3/3) correctos sobre fixture limpio; el
+  fixture se limpia al terminar la verificación.
 - `npm run supabase:db:schema:sync -- --name s05_alphabet`: correcto; generó
   `supabase/migrations/20260919184450_s05_alphabet.sql`.
 - La segunda ejecución de `npm run supabase:db:schema:sync -- --name s05_alphabet_check` informó

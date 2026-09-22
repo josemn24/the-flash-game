@@ -114,6 +114,24 @@ export type SubmitWordSearchSelectionResult = AttemptCommandResult & {
   readonly points?: number;
   readonly timeUsedMs?: DurationMs;
 };
+export type SubmitWordHashtagSwapInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly fromCell: number;
+  readonly toCell: number;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitWordHashtagSwapResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly letters: readonly (string | null)[];
+  readonly movesUsed: number;
+  readonly movesRemaining: number;
+  readonly terminal: boolean;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly details?: AnswerResultDetails;
+  readonly timeUsedMs?: DurationMs;
+};
 export type SubmitMiniWordleGuessInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly guess: string;

@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a/D08b, E01–E06, F08, F16 y E10; F18 añade validación declarativa sin nuevas tablas.
+- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a/D08b, E01–E06, F08, F16, F18 y E10; F18 y F19 añaden validación declarativa sin nuevas tablas.
 - Fecha: 2026-09-22.
 - Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
@@ -11,7 +11,7 @@
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a/D08b, E01–E06, F08, F16, F18 y E10 ya tienen
+actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 ya tienen
 persistencia real verificada en Supabase local.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
@@ -417,6 +417,12 @@ Constraints y reglas:
   elimina o invalida. En esta fase `terminal_reason` distingue abandono voluntario o invalidación
   administrativa; una desconexión se resuelve por recuperación y no es motivo terminal. Una futura
   política de inactividad podrá añadir su motivo de sistema aprobado.
+
+Para F19, `progress_payload` contiene únicamente el tipo, el `challengeItemId` y la secuencia de
+swaps aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap
+se valida dentro del comando transaccional y el payload se limpia al resolver, agotar movimientos o
+cerrar por timeout. La recuperación materializa esa secuencia en la respuesta evaluada, sin conceder
+puntos por una interrupción.
 
 ### `attempt_sessions`
 

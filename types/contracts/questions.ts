@@ -333,7 +333,7 @@ export type QuestionContractMap = {
       readonly initialLetters: readonly (string | null)[];
       readonly maxMoves: number;
     };
-    readonly solution: { readonly words: Legacy.WordHashtagWords };
+    readonly solution: { readonly words: Legacy.WordHashtagWords; readonly explanation?: string };
     readonly answer: Legacy.WordHashtagAnswer;
     readonly reveal: never;
   };

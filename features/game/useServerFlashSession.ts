@@ -45,6 +45,15 @@ type PendingLogicCodeSubmission = {
   code: string;
   idempotencyKey: string;
 };
+type PendingWordHashtagSubmission = {
+  kind: "word-hashtag";
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  fromCell: number;
+  toCell: number;
+  idempotencyKey: string;
+};
 type PendingProgressiveClueReveal = {
   attemptId: string;
   lockVersion: number;
@@ -77,7 +86,10 @@ type PendingQueensPlacement = {
   idempotencyKey: string;
 };
 type PendingSubmission =
-  PendingAnswerSubmission | PendingMiniWordleSubmission | PendingLogicCodeSubmission;
+  | PendingAnswerSubmission
+  | PendingMiniWordleSubmission
+  | PendingLogicCodeSubmission
+  | PendingWordHashtagSubmission;
 
 const SUBMISSION_STATUS_DELAY_MS = 250;
 
@@ -342,6 +354,7 @@ export function useServerFlashSession({
     pendingWordSearchSelectionRef.current = null;
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
+    setBusy(false);
   };
 
   const recover = async () => {
@@ -801,6 +814,108 @@ export function useServerFlashSession({
     }
   };
 
+  const submitWordHashtagToServer = async (submission: PendingWordHashtagSubmission) => {
+    startSubmissionStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/word-hashtag/swap`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          fromCell: submission.fromCell,
+          toCell: submission.toCell,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      setQuestion((current) =>
+        current?.type === "word-hashtag"
+          ? {
+              ...current,
+              progress: {
+                kind: "word-hashtag",
+                letters: Array.isArray(response.letters)
+                  ? response.letters.filter((letter): letter is string | null => letter === null || typeof letter === "string")
+                  : current.progress.letters,
+                swaps: [
+                  ...current.progress.swaps,
+                  { fromCell: submission.fromCell, toCell: submission.toCell },
+                ],
+                movesUsed: Number(response.movesUsed),
+                movesRemaining: Number(response.movesRemaining),
+              },
+            }
+          : current,
+      );
+      clearSubmissionStatusTimer();
+      pendingSubmissionRef.current = null;
+      setSubmissionState("idle");
+      setSubmissionStatusVisible(false);
+      setSubmissionError(undefined);
+      if (response.terminal !== true) {
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const swaps =
+        question?.type === "word-hashtag"
+          ? [
+              ...question.progress.swaps,
+              { fromCell: submission.fromCell, toCell: submission.toCell },
+            ]
+          : [{ fromCell: submission.fromCell, toCell: submission.toCell }];
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: { swaps },
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (questionIndex === challenge.slots.length - 1) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(challengeWithReview(challenge, review));
+            setPhase("results");
+          } else {
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearSubmissionStatusTimer();
+      if (error instanceof CompetitiveCommandError && error.code === "invalid_word_hashtag_swap") {
+        pendingSubmissionRef.current = null;
+        setSubmissionState("error");
+        setSubmissionStatusVisible(true);
+        setSubmissionError("Ese intercambio no está permitido.");
+        setLocked(false);
+      } else {
+        setSubmissionState("error");
+        setSubmissionStatusVisible(true);
+        setSubmissionError("No hemos podido guardar el intercambio.");
+      }
+      setBusy(false);
+    }
+  };
+
   const revealProgressiveClueToServer = async (reveal: PendingProgressiveClueReveal) => {
     startRevealStatus();
     setBusy(true);
@@ -1138,6 +1253,21 @@ export function useServerFlashSession({
     await submitLogicCodeToServer(submission);
   };
 
+  const submitWordHashtagSwap = async (fromCell: number, toCell: number) => {
+    if (!attempt || !question || question.type !== "word-hashtag" || locked || busy) return;
+    const submission: PendingWordHashtagSubmission = {
+      kind: "word-hashtag",
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      fromCell,
+      toCell,
+      idempotencyKey: idempotencyKey("word-hashtag-swap"),
+    };
+    pendingSubmissionRef.current = submission;
+    await submitWordHashtagToServer(submission);
+  };
+
   const revealProgressiveClue = async () => {
     if (!attempt || !question || question.type !== "progressive-clues" || locked || busy) return;
     const reveal: PendingProgressiveClueReveal = {
@@ -1200,6 +1330,8 @@ export function useServerFlashSession({
       await submitMiniWordleToServer(pending);
     } else if (pending.kind === "logic-code") {
       await submitLogicCodeToServer(pending);
+    } else if (pending.kind === "word-hashtag") {
+      await submitWordHashtagToServer(pending);
     } else {
       await submitAnswerToServer(pending);
     }
@@ -1280,6 +1412,7 @@ export function useServerFlashSession({
     updateDraft,
     submitMiniWordleGuess,
     submitLogicCodeAttempt,
+    submitWordHashtagSwap,
     retrySubmit,
     revealProgressiveClue,
     retryReveal,

@@ -1,10 +1,667 @@
--- S11 — Publish the minimum supported Flash content from the private portal.
--- This boundary uses the existing versioned content model. The browser never receives table DML.
+SET local check_function_bodies = off;
 
-set local check_function_bodies = off;
+CREATE OR REPLACE FUNCTION private.execute_command (
+  op    text,
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  received timestamptz := clock_timestamp();
+  instant timestamptz;
+  key text := input->>'idempotencyKey';
+  safe_input jsonb := input;
+  cached private.command_requests%rowtype;
+  a public.attempts%rowtype;
+  cv private.challenge_versions%rowtype;
+  sc public.scheduled_challenges%rowtype;
+  member public.room_memberships%rowtype;
+  invitation private.room_invitations%rowtype;
+  unit private.attempt_timing_units%rowtype;
+  segment private.interaction_intervals%rowtype;
+  receipt private.answer_receipts%rowtype;
+  session_row private.attempt_sessions%rowtype;
+  item private.challenge_items%rowtype;
+  result jsonb;
+  previous jsonb;
+  allowed text[];
+  required text[];
+  target uuid;
+  expected bigint;
+  points integer;
+  balance integer;
+  presented timestamptz;
+  effective timestamptz;
+  used_ms bigint;
+  late boolean;
+  resumed boolean := false;
+  control_required boolean := false;
+  is_admin boolean;
+  target_status text;
+begin
+  case op
+    when 'start' then
+      allowed := array['idempotencyKey','scheduledChallengeId','sessionToken']; required := allowed;
+    when 'takeover' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','newSessionToken']; required := allowed;
+    when 'prepare' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'receive' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','answer'];
+      allowed := required || array['clientTimeUsedMs'];
+    when 'pass' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId']; required := allowed;
+    when 'evaluate' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','receiptId','status','points'];
+      allowed := required || array['resultDetails'];
+    when 'complete' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','score'];
+      allowed := required || array['outcome'];
+    when 'abandon' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'accept_invitation' then
+      allowed := array['idempotencyKey','invitationToken']; required := allowed;
+    when 'invalidate' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','reason']; required := allowed;
+    when 'adjust' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','reason','score']; required := allowed;
+    else raise exception 'unknown_command' using errcode = '22023';
+  end case;
+  if jsonb_typeof(input) is distinct from 'object' or key is null or btrim(key) = ''
+    or not input ?& required or exists (select 1 from jsonb_object_keys(input) k where not k = any(allowed))
+    or exists (select 1 from unnest(required) k where k <> 'answer' and input->k = 'null'::jsonb) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  -- Never persist reusable secrets, including in idempotency records or audit payloads.
+  if input ? 'sessionToken' then safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken'))); end if;
+  if input ? 'newSessionToken' then safe_input := jsonb_set(safe_input, '{newSessionToken}', to_jsonb(private.secret_hash(input->>'newSessionToken'))); end if;
+  if input ? 'invitationToken' then safe_input := jsonb_set(safe_input, '{invitationToken}', to_jsonb(private.secret_hash(input->>'invitationToken'))); end if;
+  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> op or cached.input <> safe_input) then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  is_admin := exists (select 1 from private.platform_role_assignments where player_id = actor);
+  if op in ('invalidate','adjust') and not is_admin then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
 
-create function private.validate_flash_editorial_document(document jsonb) returns void
-language plpgsql volatile set search_path = '' as $$
+  if op = 'accept_invitation' then
+    -- Room before invitation/membership is the shared lock order for membership writers.
+    select room_id into target from private.room_invitations where token_hash = safe_input->>'invitationToken';
+    perform 1 from public.rooms where id = target and status = 'active' for update;
+    if not found then raise exception 'invitation_unavailable' using errcode = '42501'; end if;
+    select * into invitation from private.room_invitations where token_hash = safe_input->>'invitationToken' for update;
+    select * into member from public.room_memberships where room_id = target and player_id = actor for update;
+    if member.status = 'banned' then raise exception 'invitation_unavailable' using errcode = '42501'; end if;
+    if cached.result is not null then return cached.result; end if;
+    if invitation.revoked_at is not null or invitation.expires_at <= clock_timestamp()
+      or (invitation.max_uses is not null and invitation.use_count >= invitation.max_uses) then
+      raise exception 'invitation_unavailable' using errcode = '42501';
+    end if;
+    if member.status = 'active' then
+      result := jsonb_build_object('membershipId', member.id, 'joined', false);
+    else
+      insert into public.room_memberships(room_id, player_id, role) values(target, actor, invitation.role)
+      on conflict (room_id, player_id) do update set status = 'active', ended_at = null,
+        joined_at = clock_timestamp(), role = excluded.role returning * into member;
+      update private.room_invitations set use_count = use_count + 1 where id = invitation.id;
+      result := jsonb_build_object('membershipId', member.id, 'joined', true);
+    end if;
+    target := invitation.id;
+  elsif op = 'start' then
+    target := (input->>'scheduledChallengeId')::uuid;
+    perform pg_advisory_xact_lock(hashtextextended('flash-start:' || actor || ':' || target, 0));
+    if is_admin then raise exception 'competitive_access_denied' using errcode = '42501'; end if;
+    select * into sc from public.scheduled_challenges where id = target for share;
+    if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
+    if not exists (select 1 from public.seasons s join public.rooms r on r.id = s.room_id
+      join public.room_memberships m on m.room_id = r.id
+      where s.id = sc.season_id and r.status = 'active' and m.player_id = actor
+        and m.status = 'active' and m.role in ('owner','admin','member')) then
+      raise exception 'not_authorized' using errcode = '42501';
+    end if;
+    select * into a from public.attempts where player_id = actor and scheduled_challenge_id = target and kind = 'competitive' for update;
+    if cached.result is not null then return cached.result; end if;
+    if found then
+      if a.status <> 'in_progress' then raise exception 'attempt_terminal' using errcode = '55000'; end if;
+      resumed := true;
+      select * into session_row from private.attempt_sessions where attempt_id = a.id and revoked_at is null;
+      control_required := session_row.session_token_hash is distinct from safe_input->>'sessionToken';
+    else
+      insert into public.attempts(player_id, scheduled_challenge_id, challenge_version_id, kind, client_state_schema_version)
+      values(actor, target, sc.challenge_version_id, 'competitive', 1)
+      returning * into a;
+      insert into private.attempt_sessions(attempt_id, session_token_hash, expires_at)
+        values(a.id, safe_input->>'sessionToken', a.deadline_at) returning * into session_row;
+    end if;
+    target := a.id;
+    result := jsonb_build_object('attemptId', a.id, 'sessionId', session_row.id, 'resumed', resumed,
+      'controlRequired', control_required, 'deadlineAt', a.deadline_at, 'lockVersion', a.lock_version);
+  else
+    target := (input->>'attemptId')::uuid;
+    select * into a from public.attempts where id = target for update;
+    if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
+    select * into sc from public.scheduled_challenges where id = a.scheduled_challenge_id for share;
+    select * into cv from private.challenge_versions where id = a.challenge_version_id;
+    if op not in ('invalidate','adjust') then
+      if a.player_id <> actor or a.kind <> 'competitive' or is_admin or not exists (
+        select 1 from public.seasons s join public.rooms r on r.id = s.room_id
+        join public.room_memberships m on m.room_id = r.id
+        where s.id = sc.season_id and r.status = 'active' and m.player_id = actor
+          and m.status = 'active' and m.role in ('owner','admin','member')
+      ) then raise exception 'not_authorized' using errcode = '42501'; end if;
+      if op <> 'takeover' then
+        select * into session_row from private.attempt_sessions where attempt_id = a.id
+          and session_token_hash = safe_input->>'sessionToken';
+        if not found or (session_row.revoked_at is not null and not (
+          op in ('complete','abandon') and cached.result is not null and a.status in ('completed','abandoned')
+        )) then raise exception 'session_revoked' using errcode = '42501'; end if;
+        -- The global game deadline stops new gameplay, not authenticated timeout/evaluation cleanup.
+      end if;
+    end if;
+    if cached.result is not null then return cached.result; end if;
+    expected := (input->>'lockVersion')::bigint;
+    if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+    if op not in ('invalidate','adjust') and a.status <> 'in_progress' then
+      raise exception 'attempt_terminal' using errcode = '55000';
+    end if;
+    if op not in ('invalidate','adjust','abandon') and sc.status = 'cancelled' then
+      raise exception 'publication_cancelled' using errcode = '55000';
+    end if;
+    previous := jsonb_build_object('status', a.status, 'lockVersion', a.lock_version, 'score', a.score);
+    instant := clock_timestamp();
+    case op
+      when 'takeover' then
+        if a.deadline_at is not null and instant >= a.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
+        update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+        insert into private.attempt_sessions(attempt_id, session_token_hash, expires_at)
+          values(a.id, safe_input->>'newSessionToken', a.deadline_at) returning * into session_row;
+        result := jsonb_build_object('sessionId', session_row.id, 'deadlineAt', a.deadline_at);
+      when 'prepare' then
+        if exists (select 1 from private.answer_receipts r where r.attempt_id = a.id and not exists (
+          select 1 from private.attempt_answers aa where aa.receipt_id = r.id
+        )) then raise exception 'evaluation_pending' using errcode = '55000'; end if;
+        select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
+        if found then
+          select * into item from private.challenge_items where id = segment.challenge_item_id;
+          select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+        else
+          select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
+          if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
+          select * into unit from private.attempt_timing_units where attempt_id = a.id and challenge_item_id = item.id;
+          if not found then
+            insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
+            select a.id, a.challenge_version_id, item.id,
+              case cv.mode when 'alphabet' then 'attempt' when 'pyramid' then 'level' else 'question' end,
+              case when cv.mode = 'alphabet' then a.started_at else instant end,
+              case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
+            from private.question_versions q where q.id = item.question_version_id returning * into unit;
+          end if;
+          insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
+            values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
+        end if;
+        perform private.ensure_progressive_clue_initial(a.id, item.id, a.challenge_version_id);
+        select jsonb_build_object('challengeItemId', item.id, 'questionType', q.type,
+          'payloadSchemaVersion', q.payload_schema_version,
+          'publicPayload', case
+            when instant >= unit.deadline_at then null
+            when q.type = 'progressive-clues' then private.progressive_clues_public_payload(item.id)
+            when q.type = 'matching' then private.matching_public_payload(item.id)
+            else q.public_payload
+          end,
+          'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
+          'progress', case
+            when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
+            when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
+            when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
+            when q.type = 'matching' then private.matching_progress(a.id, item.id)
+            when q.type = 'queens' then private.queens_progress(a.id, item.id)
+            when q.type = 'word-search' then private.word_search_progress(a.id, item.id)
+            when q.type = 'word-hashtag' then private.word_hashtag_progress(a.id, item.id) - 'solved'
+            when q.type = 'short-text' and cv.mode = 'alphabet' then (
+              select jsonb_build_object(
+                'kind', 'alphabet',
+                'round', greatest(1, 1 + floor((
+                  (select count(*) from private.interaction_intervals interval_row
+                    where interval_row.attempt_id = a.id)::numeric /
+                  nullif((select count(*) from private.challenge_items round_item
+                    where round_item.challenge_version_id = a.challenge_version_id)::numeric, 0)
+                ))::integer),
+                'currentIndex', item.position - 1,
+                'playedCount', (select count(distinct interval_row.challenge_item_id)::integer
+                  from private.interaction_intervals interval_row
+                  where interval_row.attempt_id = a.id),
+                'correctAnswers', (select count(*)::integer from private.attempt_answers answer_row
+                  where answer_row.attempt_id = a.id and answer_row.status = 'correct'),
+                'incorrectAnswers', (select count(*)::integer from private.attempt_answers answer_row
+                  where answer_row.attempt_id = a.id and answer_row.status = 'incorrect'),
+                'elapsedTimeMs', coalesce((select sum(floor(extract(epoch from
+                  (interval_row.ended_at - interval_row.started_at)) * 1000))::bigint
+                  from private.interaction_intervals interval_row where interval_row.attempt_id = a.id), 0)::bigint,
+                'deadlineAt', a.deadline_at,
+                'lastCorrectAt', (select max(answer_row.submitted_at) from private.attempt_answers answer_row
+                  where answer_row.attempt_id = a.id and answer_row.status = 'correct'),
+                'letters', coalesce((select jsonb_agg(jsonb_build_object(
+                  'letter', all_item.mode_config->>'letter',
+                  'challengeItemId', all_item.id,
+                  'status', case
+                    when answer_row.status is not null then answer_row.status
+                    when exists (select 1 from private.interaction_intervals open_interval
+                      where open_interval.attempt_id = a.id and open_interval.challenge_item_id = all_item.id
+                        and open_interval.ended_at is null) then 'active'
+                    when exists (select 1 from private.interaction_intervals visited
+                      where visited.attempt_id = a.id and visited.challenge_item_id = all_item.id) then 'passed'
+                    else 'unvisited' end,
+                  'answer', case when answer_row.answer is null then null
+                    else answer_row.answer #>> '{}' end
+                ) order by all_item.position)
+                  from private.challenge_items all_item
+                  left join private.attempt_answers answer_row
+                    on answer_row.attempt_id = a.id and answer_row.challenge_item_id = all_item.id
+                  where all_item.challenge_version_id = a.challenge_version_id), '[]'::jsonb)
+              )
+            )
+            else null end)
+          into result from private.question_versions q where q.id = item.question_version_id;
+      when 'receive', 'pass' then
+        select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
+        if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+          raise exception 'interaction_not_presented' using errcode = '55000';
+        end if;
+        select * into item from private.challenge_items where id = segment.challenge_item_id;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'mini-wordle'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'mini_wordle_requires_guess_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'logic-code'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'logic_code_requires_attempt_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'queens'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'queens_requires_placement_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'matching'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'matching_requires_pair_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'word-search'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'word_search_requires_selection_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'word-hashtag'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'word_hashtag_requires_swap_command' using errcode = '22023';
+        end if;
+        select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+        -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
+        if received < segment.started_at then raise exception 'request_predates_presentation' using errcode = '40001'; end if;
+        late := received >= unit.deadline_at;
+        effective := least(received, unit.deadline_at);
+        if op = 'pass' and (cv.mode <> 'alphabet' or late) then raise exception 'pass_unavailable' using errcode = '55000'; end if;
+        update private.interaction_intervals set ended_at = effective,
+          end_reason = case when op = 'pass' then 'pass' when late then 'timeout' else 'answer' end where id = segment.id;
+        if op = 'pass' then result := jsonb_build_object('passed', true);
+        else
+          select min(started_at), coalesce(sum(floor(extract(epoch from (ended_at - started_at)) * 1000)), 0)::bigint
+            into presented, used_ms from private.interaction_intervals where attempt_id = a.id and challenge_item_id = segment.challenge_item_id;
+          insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer,
+            received_at, presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
+          values(a.id, segment.challenge_item_id, a.challenge_version_id,
+            case when input->'answer' = 'null'::jsonb and exists (
+              select 1 from private.question_versions timeout_question
+              where timeout_question.id = item.question_version_id and timeout_question.type = 'word-hashtag'
+            ) then coalesce(a.progress_payload->'answer', jsonb_build_object('swaps', '[]'::jsonb))
+            else input->'answer' end,
+            received, presented,
+            effective, used_ms, late, (input->>'clientTimeUsedMs')::bigint) returning * into receipt;
+          if input->'answer' = 'null'::jsonb and exists (
+            select 1 from private.question_versions timeout_question
+            where timeout_question.id = item.question_version_id and timeout_question.type = 'word-hashtag'
+          ) then
+            update public.attempts set progress_payload = null where id = a.id;
+          end if;
+          result := jsonb_build_object('receiptId', receipt.id, 'timedOut', late, 'timeUsedMs', used_ms,
+            'receivedAt', received, 'presentedAt', presented);
+        end if;
+      when 'evaluate' then
+        select * into receipt from private.answer_receipts where id = (input->>'receiptId')::uuid and attempt_id = a.id;
+        if not found then raise exception 'receipt_not_found' using errcode = '55000'; end if;
+        if exists (select 1 from private.attempt_answers where receipt_id = receipt.id) then
+          raise exception 'already_evaluated' using errcode = '55000';
+        end if;
+        -- Only the trusted evaluator may call this wrapper. No browser route is granted EXECUTE.
+        insert into private.attempt_answers(attempt_id, challenge_item_id, challenge_version_id, receipt_id,
+          status, answer, result_details, points, presented_at, submitted_at, time_used_ms, idempotency_key)
+        values(a.id, receipt.challenge_item_id, receipt.challenge_version_id, receipt.id,
+          input->>'status', receipt.answer, input->'resultDetails', (input->>'points')::integer,
+          receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key);
+        result := jsonb_build_object('receiptId', receipt.id, 'status', input->>'status', 'points', (input->>'points')::integer);
+      when 'complete', 'abandon' then
+        if op = 'complete' then
+          if exists (select 1 from private.interaction_intervals where attempt_id = a.id and ended_at is null)
+            or exists (select 1 from private.answer_receipts r where r.attempt_id = a.id
+              and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id)) then
+            raise exception 'unfinished_interaction' using errcode = '55000';
+          end if;
+          if not exists (select 1 from private.attempt_answers where attempt_id = a.id) then
+            raise exception 'no_evaluated_answers' using errcode = '55000';
+          end if;
+          if cv.mode in ('flash','alphabet','narrative') and private.next_attempt_item(a.id) is not null then
+            raise exception 'incomplete_challenge' using errcode = '55000';
+          end if;
+          -- Mode evaluator decides early termination in survival/pyramid and normalized final score.
+          points := (input->>'score')::integer;
+          target_status := 'completed';
+        else
+          target_status := 'abandoned'; points := null;
+          update private.interaction_intervals x set ended_at = greatest(x.started_at, least(instant, u.deadline_at)), end_reason = 'abandon'
+            from private.attempt_timing_units u where x.attempt_id = a.id and x.ended_at is null and u.id = x.timing_unit_id;
+        end if;
+        update public.attempts set status = target_status, score = points, completed_at = instant,
+          outcome = input->>'outcome', progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
+        update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+        if op = 'complete' then
+          insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type, amount, idempotency_key)
+          values(sc.season_id, a.player_id, sc.id, a.id, 'accreditation', points, 'complete:' || a.id);
+        end if;
+        result := jsonb_build_object('status', a.status, 'score', a.score);
+      when 'invalidate', 'adjust' then
+        if nullif(btrim(input->>'reason'), '') is null then raise exception 'reason_required' using errcode = '22023'; end if;
+        if a.kind <> 'competitive' then raise exception 'not_competitive' using errcode = '55000'; end if;
+        select coalesce(sum(amount),0)::integer into balance from private.flash_point_entries where attempt_id = a.id;
+        if op = 'invalidate' then
+          if a.status not in ('completed','abandoned') then raise exception 'attempt_not_terminal' using errcode = '55000'; end if;
+          update public.attempts set status = 'invalidated', terminal_reason = input->>'reason', lock_version = lock_version + 1
+            where id = a.id returning * into a;
+          update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+          if exists (select 1 from private.flash_point_entries where attempt_id = a.id and entry_type = 'accreditation') then
+            insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,
+              amount, reason, created_by_player_id, idempotency_key)
+            values(sc.season_id, a.player_id, sc.id, a.id, 'reversal', -balance, input->>'reason', actor, 'invalidate:' || a.id);
+          end if;
+          result := jsonb_build_object('status', a.status, 'effectiveScore', 0);
+        else
+          points := (input->>'score')::integer;
+          if points not between 0 and 100 then raise exception 'invalid_score' using errcode = '22023'; end if;
+          insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,
+            amount, reason, created_by_player_id, idempotency_key)
+          values(sc.season_id, a.player_id, sc.id, a.id, 'adjustment', points - balance, input->>'reason', actor, 'adjust:' || actor || ':' || key);
+          update public.attempts set lock_version = lock_version + 1 where id = a.id returning * into a;
+          -- Corrections preserve the immutable original score/status.
+          result := jsonb_build_object('status', a.status, 'effectiveScore', points);
+        end if;
+    end case;
+    if op not in ('complete','abandon','invalidate','adjust') then
+      update public.attempts set lock_version = lock_version + 1, last_activity_at = instant
+        where id = a.id returning * into a;
+    end if;
+    result := result || jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version);
+  end if;
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload)
+  values(actor, op, case when op = 'accept_invitation' then 'invitation' else 'attempt' end,
+    target, input->>'reason', key, previous,
+    -- Avoid persisting playable payloads or free-text answers into a second store.
+    result - 'publicPayload');
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, op, safe_input, result);
+  return result;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.recover_attempt (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor(); key text := input->>'idempotencyKey';
+  safe_input jsonb := input; cached private.command_requests%rowtype;
+  a public.attempts%rowtype; s private.attempt_sessions%rowtype;
+  cv private.challenge_versions%rowtype;
+  segment private.interaction_intervals%rowtype; unit private.attempt_timing_units%rowtype;
+  item private.challenge_items%rowtype; question private.question_versions%rowtype;
+  receipt private.answer_receipts%rowtype; instant timestamptz := clock_timestamp();
+  expected bigint; presented timestamptz; used_ms bigint; effective timestamptz; result jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object' or key is null or btrim(key) = ''
+    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken']
+    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array['idempotencyKey','attemptId','lockVersion','sessionToken'])) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
+  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> 'recover' or cached.input <> safe_input) then raise exception 'idempotency_conflict' using errcode = '40001'; end if;
+  if cached.result is not null then return cached.result; end if;
+  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
+  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
+    or exists (select 1 from private.platform_role_assignments where player_id = actor) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into s from private.attempt_sessions where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
+  if not found or s.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  expected := (input->>'lockVersion')::bigint;
+  if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+  select * into receipt from private.answer_receipts r where r.attempt_id = a.id and not exists (
+    select 1 from private.attempt_answers aa where aa.receipt_id = r.id
+  ) order by r.received_at limit 1 for update;
+  if found then
+    result := jsonb_build_object('receiptId', receipt.id, 'recovered', false);
+  else
+    select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+    if found then
+      select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+      select * into item from private.challenge_items where id = segment.challenge_item_id;
+      select * into question from private.question_versions where id = item.question_version_id;
+      select * into cv from private.challenge_versions where id = a.challenge_version_id;
+      if cv.mode = 'alphabet' and instant < unit.deadline_at then
+        update private.interaction_intervals
+        set ended_at = greatest(segment.started_at, least(instant, unit.deadline_at)),
+            end_reason = 'recovery_interrupted'
+        where id = segment.id;
+        result := jsonb_build_object('receiptId', null, 'recovered', true,
+          'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
+      elsif question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'word-hashtag', 'zip', 'escape') and instant < unit.deadline_at then
+        result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
+      else
+        effective := greatest(segment.started_at, least(instant, unit.deadline_at));
+        update private.interaction_intervals set ended_at = effective, end_reason = 'recovery_interrupted' where id = segment.id;
+        select min(started_at), coalesce(sum(floor(extract(epoch from (ended_at - started_at)) * 1000)), 0)::bigint
+          into presented, used_ms from private.interaction_intervals where attempt_id = a.id and challenge_item_id = segment.challenge_item_id;
+        insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
+          presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
+        values(a.id, segment.challenge_item_id, a.challenge_version_id,
+          case when question.type = 'word-hashtag'
+            then coalesce(a.progress_payload->'answer', jsonb_build_object('swaps', '[]'::jsonb))
+            else null end,
+          instant, presented, effective, used_ms,
+          instant >= unit.deadline_at, null) returning * into receipt;
+        result := jsonb_build_object('receiptId', receipt.id, 'recovered', true);
+      end if;
+    else
+      result := jsonb_build_object('receiptId', null, 'recovered', false);
+    end if;
+  end if;
+  update public.attempts set lock_version = lock_version + 1, last_activity_at = instant where id = a.id returning * into a;
+  result := result || jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version);
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
+    values(actor, 'recover', 'attempt', a.id, key, jsonb_build_object('lockVersion', expected), result);
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, 'recover', safe_input, result);
+  return result;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.submit_word_hashtag_swap (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  key text := input->>'idempotencyKey';
+  safe_input jsonb := input;
+  cached private.command_requests%rowtype;
+  a public.attempts%rowtype;
+  session_row private.attempt_sessions%rowtype;
+  segment private.interaction_intervals%rowtype;
+  unit private.attempt_timing_units%rowtype;
+  item private.challenge_items%rowtype;
+  question private.question_versions%rowtype;
+  solution private.question_version_solutions%rowtype;
+  receipt private.answer_receipts%rowtype;
+  instant timestamptz := clock_timestamp();
+  presented timestamptz;
+  effective timestamptz;
+  used_ms bigint;
+  expected bigint;
+  from_cell integer;
+  to_cell integer;
+  max_moves integer;
+  current_progress jsonb;
+  next_progress jsonb;
+  state jsonb;
+  letters jsonb;
+  solution_letters jsonb;
+  terminal boolean;
+  result jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object'
+    or key is null or btrim(key) = ''
+    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','fromCell','toCell']
+    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array[
+      'idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','fromCell','toCell','clientTimeUsedMs'
+    ]))
+    or jsonb_typeof(input->'fromCell') is distinct from 'number'
+    or jsonb_typeof(input->'toCell') is distinct from 'number'
+    or (input->>'fromCell')::numeric <> trunc((input->>'fromCell')::numeric)
+    or (input->>'toCell')::numeric <> trunc((input->>'toCell')::numeric) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  from_cell := (input->>'fromCell')::integer;
+  to_cell := (input->>'toCell')::integer;
+  if from_cell not between 0 and 24 or to_cell not between 0 and 24 or from_cell = to_cell then
+    raise exception 'invalid_word_hashtag_swap' using errcode = '22023';
+  end if;
+  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
+  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> 'submit_word_hashtag_swap' or cached.input <> safe_input) then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  if cached.result is not null then return cached.result; end if;
+
+  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
+  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
+    or exists (select 1 from private.platform_role_assignments where player_id = actor) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  select * into session_row from private.attempt_sessions
+    where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
+  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  expected := (input->>'lockVersion')::bigint;
+  if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+  select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+  if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+    raise exception 'interaction_not_presented' using errcode = '55000';
+  end if;
+  select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  if instant >= unit.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
+  select * into item from private.challenge_items where id = segment.challenge_item_id;
+  select * into question from private.question_versions where id = item.question_version_id;
+  select * into solution from private.question_version_solutions where question_version_id = question.id;
+  if question.type <> 'word-hashtag' or question.payload_schema_version <> 1
+    or not private.word_hashtag_content_valid(question.public_payload, solution.solution_payload) then
+    raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+  max_moves := (question.public_payload->>'maxMoves')::integer;
+  current_progress := coalesce(a.progress_payload, jsonb_build_object(
+    'kind', 'word-hashtag', 'challengeItemId', item.id,
+    'answer', jsonb_build_object('swaps', '[]'::jsonb)));
+  if current_progress->>'kind' <> 'word-hashtag' or current_progress->>'challengeItemId' <> item.id::text then
+    raise exception 'invalid_progress' using errcode = '22023';
+  end if;
+  if jsonb_array_length(coalesce(current_progress->'answer'->'swaps', '[]'::jsonb)) >= max_moves then
+    raise exception 'word_hashtag_moves_exhausted' using errcode = '55000';
+  end if;
+  state := private.word_hashtag_progress(a.id, item.id);
+  letters := state->'letters';
+  solution_letters := private.word_hashtag_solution_letters(solution.solution_payload);
+  if ((from_cell / 5) not in (1, 3) and (from_cell % 5) not in (1, 3))
+    or ((to_cell / 5) not in (1, 3) and (to_cell % 5) not in (1, 3))
+    or letters->from_cell is null or letters->to_cell is null
+    or letters->from_cell = letters->to_cell
+    or letters->from_cell = solution_letters->from_cell
+    or letters->to_cell = solution_letters->to_cell then
+    raise exception 'invalid_word_hashtag_swap' using errcode = '22023';
+  end if;
+  next_progress := jsonb_build_object(
+    'kind', 'word-hashtag', 'challengeItemId', item.id,
+    'answer', jsonb_build_object('swaps', coalesce(current_progress->'answer'->'swaps', '[]'::jsonb)
+      || jsonb_build_array(jsonb_build_object('fromCell', from_cell, 'toCell', to_cell))));
+  update public.attempts
+    set progress_payload = next_progress, last_activity_at = instant
+    where id = a.id returning * into a;
+  state := private.word_hashtag_progress(a.id, item.id);
+  terminal := state->>'solved' = 'true' or (state->>'movesUsed')::integer >= max_moves;
+  effective := least(instant, unit.deadline_at);
+  if instant < segment.started_at then raise exception 'request_predates_presentation' using errcode = '40001'; end if;
+  select min(started_at), coalesce(sum(floor(extract(epoch from (coalesce(ended_at, effective) - started_at)) * 1000)), 0)::bigint)
+    into presented, used_ms from private.interaction_intervals where attempt_id = a.id and challenge_item_id = item.id;
+  if terminal then
+    update private.interaction_intervals set ended_at = effective, end_reason = 'answer' where id = segment.id;
+    insert into private.answer_receipts(
+      attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
+      presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
+    values(a.id, item.id, a.challenge_version_id, next_progress->'answer', instant, presented,
+      effective, used_ms, false, (input->>'clientTimeUsedMs')::bigint) returning * into receipt;
+    update public.attempts set progress_payload = null where id = a.id returning * into a;
+  end if;
+  update public.attempts set lock_version = lock_version + 1, last_activity_at = instant where id = a.id returning * into a;
+  result := jsonb_build_object(
+    'attemptId', a.id, 'challengeItemId', item.id, 'lockVersion', a.lock_version,
+    'letters', state->'letters', 'movesUsed', state->'movesUsed',
+    'movesRemaining', state->'movesRemaining', 'terminal', terminal);
+  if terminal then result := result || jsonb_build_object('receiptId', receipt.id, 'timeUsedMs', used_ms); end if;
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
+    values(actor, 'submit_word_hashtag_swap', 'attempt', a.id, key,
+      jsonb_build_object('lockVersion', expected),
+      jsonb_build_object('lockVersion', a.lock_version, 'movesUsed', state->'movesUsed', 'terminal', terminal));
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, 'submit_word_hashtag_swap', safe_input, result);
+  return result;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_flash_editorial_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
 declare
   challenge jsonb;
   question jsonb;
@@ -1278,632 +1935,206 @@ begin
     raise exception 'points_total_invalid' using errcode = '22023';
   end if;
 end;
-$$;
+$function$;
 
-create function private.create_flash_draft_command(input jsonb) returns jsonb
-language plpgsql volatile security definer set search_path = '' as $$
+CREATE OR REPLACE FUNCTION private.word_hashtag_content_valid (
+  public_payload   jsonb,
+  solution_payload jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  IMMUTABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
 declare
-  actor uuid := (select private.current_player_id());
-  key text;
-  reason_value text;
-  document_value jsonb;
-  document_hash text;
-  safe_input jsonb;
-  cached private.command_requests%rowtype;
-  challenge_definition_id uuid := gen_random_uuid();
-  challenge_version_id uuid := gen_random_uuid();
-  question_definition_id uuid;
-  question_version_id uuid;
-  item_id uuid;
-  question jsonb;
-  question_index integer;
-  result jsonb;
+  solution jsonb;
+  initial jsonb;
+  entry jsonb;
+  index integer;
+  cell integer;
 begin
-  if actor is null or not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  if input is null or jsonb_typeof(input) is distinct from 'object'
-    or not input ?& array['idempotencyKey', 'document', 'reason']
-    or exists (select 1 from jsonb_object_keys(input) key_name where key_name <> all(array['idempotencyKey', 'document', 'reason']))
-    or input->'idempotencyKey' is null or input->'document' is null or input->'reason' is null then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-  key := btrim(input->>'idempotencyKey');
-  reason_value := btrim(input->>'reason');
-  document_value := input->'document';
-  if char_length(key) not between 8 and 160 or char_length(reason_value) not between 1 and 500 then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-  perform private.validate_flash_editorial_document(document_value);
-  document_hash := encode(sha256(convert_to(document_value::text, 'UTF8')), 'hex');
-  safe_input := jsonb_build_object('idempotencyKey', key, 'documentHash', document_hash, 'reason', reason_value);
-  perform pg_advisory_xact_lock(hashtextextended('superadmin-editorial-command:' || actor || ':' || key, 0));
-  select * into cached from private.command_requests request
-  where request.actor_id = actor and request.idempotency_key = key;
-  if found then
-    if cached.operation <> 'create_flash_draft' or cached.input <> safe_input then
-      raise exception 'idempotency_conflict' using errcode = '40001';
-    end if;
-    return cached.result;
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or jsonb_typeof(solution_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'grid', 'initialLetters', 'maxMoves']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name
+      where key_name <> all(array['category', 'tags', 'question', 'grid', 'initialLetters', 'maxMoves']))
+    or jsonb_typeof(public_payload->'grid') is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(public_payload->'grid') key_name
+      where key_name <> all(array['rows', 'columns']))
+    or (public_payload->'grid'->>'rows')::numeric <> 5
+    or (public_payload->'grid'->>'columns')::numeric <> 5
+    or jsonb_typeof(public_payload->'initialLetters') is distinct from 'array'
+    or jsonb_array_length(public_payload->'initialLetters') <> 25
+    or jsonb_typeof(public_payload->'maxMoves') is distinct from 'number'
+    or (public_payload->>'maxMoves')::numeric <> trunc((public_payload->>'maxMoves')::numeric)
+    or (public_payload->>'maxMoves')::integer <= 0
+    or not solution_payload ? 'words'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name
+      where key_name <> all(array['words', 'explanation'])) then
+    return false;
   end if;
 
-  begin
-    insert into private.challenge_definitions(id, slug, created_by_player_id)
-    values (challenge_definition_id, document_value->'challenge'->>'slug', actor);
-    insert into private.challenge_versions(
-      id, challenge_definition_id, version_number, config_schema_version, status, mode,
-      title, subtitle, description, max_score, global_time_limit_ms, mode_config, created_by_player_id
-    ) values (
-      challenge_version_id, challenge_definition_id, 1, 1, 'draft', document_value->'challenge'->>'mode',
-      document_value->'challenge'->>'title', document_value->'challenge'->>'subtitle',
-      document_value->'challenge'->>'description', 100,
-      (document_value->'challenge'->>'globalTimeLimitMs')::integer,
-      document_value->'challenge'->'modeConfig', actor
-    );
-    for question, question_index in
-      select value, ordinality::integer
-      from jsonb_array_elements(document_value->'questions') with ordinality
-    loop
-      item_id := gen_random_uuid();
-      if question->>'source' = 'library' then
-        question_version_id := (question->>'questionVersionId')::uuid;
-        if not exists (
-          select 1 from private.question_versions version
-          where version.id = question_version_id and version.status = 'published'
-        ) then
-          raise exception 'question_not_published' using errcode = '55000';
-        end if;
-      else
-        question_definition_id := gen_random_uuid();
-        question_version_id := gen_random_uuid();
-        insert into private.question_definitions(id, slug, created_by_player_id)
-        values (question_definition_id, question->>'slug', actor);
-        insert into private.question_versions(
-          id, question_definition_id, version_number, payload_schema_version, status, type,
-          time_limit_ms, public_payload, created_by_player_id
-        ) values (
-          question_version_id, question_definition_id, 1, (question->>'payloadSchemaVersion')::integer, 'draft', question->>'type',
-          (question->>'timeLimitMs')::integer, question->'publicPayload', actor
-        );
-        insert into private.question_version_solutions(question_version_id, solution_payload)
-        values (question_version_id, question->'solutionPayload');
+  initial := public_payload->'initialLetters';
+  for entry, index in select value, ordinality::integer from jsonb_array_elements(initial) with ordinality loop
+    cell := index - 1;
+    if ((cell / 5) in (0, 2, 4) and (cell % 5) in (0, 2, 4))
+      and entry <> 'null'::jsonb then
+      return false;
+    end if;
+    if ((cell / 5) in (1, 3) or (cell % 5) in (1, 3)) then
+      if jsonb_typeof(entry) is distinct from 'string'
+        or upper(entry #>> '{}') !~ '^[A-ZÑ]$' then
+        return false;
       end if;
-      insert into private.challenge_items(
-        id, challenge_version_id, question_version_id, position, points,
-        config_schema_version, mode_config
-      ) values (item_id, challenge_version_id, question_version_id, question_index,
-        (question->>'points')::integer, 1, coalesce(question->'modeConfig', '{}'::jsonb));
-    end loop;
-  exception when unique_violation then
-    raise exception 'content_slug_conflict' using errcode = '23505';
-  end;
-
-  select jsonb_build_object(
-    'challengeDefinitionId', definition.id,
-    'challengeVersionId', version.id,
-    'versionNumber', version.version_number,
-    'status', version.status,
-    'slug', definition.slug,
-    'title', version.title,
-    'subtitle', version.subtitle,
-    'description', version.description,
-    'mode', version.mode,
-    'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = version.id),
-    'createdAt', version.created_at,
-    'updatedAt', version.updated_at,
-    'publishedAt', version.published_at,
-    'document', null
-  ) into result
-  from private.challenge_definitions definition
-  join private.challenge_versions version on version.challenge_definition_id = definition.id
-  where version.id = challenge_version_id;
-  insert into private.audit_log(
-    actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-    ) values (
-      actor, 'create_flash_draft', 'challenge_version', challenge_version_id, reason_value, key, null,
-    jsonb_build_object(
-      'documentHash', document_hash,
-      'status', 'draft',
-      'questionCount', jsonb_array_length(document_value->'questions'),
-      'maxScore', (select coalesce(sum((value->>'points')::integer), 0)
-        from jsonb_array_elements(document_value->'questions') value)
-    )
-  );
-  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
-  values (actor, key, 'create_flash_draft', safe_input, result);
-  return result;
-end;
-$$;
-
-create function private.update_flash_draft_command(input jsonb) returns jsonb
-language plpgsql volatile security definer set search_path = '' as $$
-declare
-  actor uuid := (select private.current_player_id());
-  key text;
-  reason_value text;
-  document_value jsonb;
-  document_hash text;
-  expected_updated_at timestamptz;
-  challenge_version_id_value uuid;
-  safe_input jsonb;
-  cached private.command_requests%rowtype;
-  challenge_row private.challenge_versions%rowtype;
-  definition_row private.challenge_definitions%rowtype;
-  item_row private.challenge_items%rowtype;
-  question_row private.question_versions%rowtype;
-  question_definition_row private.question_definitions%rowtype;
-  old_question_definition_id uuid;
-  existing_item_count integer;
-  desired_item_count integer;
-  question_index integer;
-  question_definition_id uuid;
-  question_version_id uuid;
-  item_id uuid;
-  question jsonb;
-  result jsonb;
-  before_payload jsonb;
-begin
-  if actor is null or not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  if input is null or jsonb_typeof(input) is distinct from 'object'
-    or not input ?& array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'document', 'reason']
-    or exists (select 1 from jsonb_object_keys(input) key_name where key_name <> all(array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'document', 'reason']))
-    or input->'idempotencyKey' is null or input->'challengeVersionId' is null
-    or input->'expectedUpdatedAt' is null or input->'document' is null or input->'reason' is null then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-  key := btrim(input->>'idempotencyKey');
-  reason_value := btrim(input->>'reason');
-  document_value := input->'document';
-  begin
-    challenge_version_id_value := (input->>'challengeVersionId')::uuid;
-    expected_updated_at := (input->>'expectedUpdatedAt')::timestamptz;
-  exception when others then
-    raise exception 'invalid_command' using errcode = '22023';
-  end;
-  if char_length(key) not between 8 and 160 or char_length(reason_value) not between 1 and 500 then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-  perform private.validate_flash_editorial_document(document_value);
-  document_hash := encode(sha256(convert_to(document_value::text, 'UTF8')), 'hex');
-  safe_input := jsonb_build_object(
-    'idempotencyKey', key, 'challengeVersionId', challenge_version_id_value,
-    'expectedUpdatedAt', expected_updated_at, 'documentHash', document_hash, 'reason', reason_value
-  );
-  perform pg_advisory_xact_lock(hashtextextended('superadmin-editorial-command:' || actor || ':' || key, 0));
-  select * into cached from private.command_requests request
-  where request.actor_id = actor and request.idempotency_key = key;
-  if found then
-    if cached.operation <> 'update_flash_draft' or cached.input <> safe_input then
-      raise exception 'idempotency_conflict' using errcode = '40001';
-    end if;
-    return cached.result;
-  end if;
-
-  select * into challenge_row from private.challenge_versions version
-  where version.id = challenge_version_id_value for update;
-  if not found then raise exception 'content_not_found' using errcode = 'P0002'; end if;
-  if challenge_row.status <> 'draft' then raise exception 'content_not_draft' using errcode = '55000'; end if;
-  if challenge_row.updated_at <> expected_updated_at then raise exception 'content_conflict' using errcode = '40001'; end if;
-  select * into definition_row from private.challenge_definitions definition
-  where definition.id = challenge_row.challenge_definition_id for update;
-
-  desired_item_count := jsonb_array_length(document_value->'questions');
-  select count(*) into existing_item_count
-  from private.challenge_items item
-  where item.challenge_version_id = challenge_version_id_value;
-  before_payload := jsonb_build_object(
-    'challengeDefinitionId', definition_row.id, 'challengeVersionId', challenge_row.id,
-    'status', challenge_row.status, 'slug', definition_row.slug, 'title', challenge_row.title,
-    'updatedAt', challenge_row.updated_at, 'questionCount', existing_item_count
-  );
-
-  begin
-    update private.challenge_definitions
-    set slug = document_value->'challenge'->>'slug'
-    where id = definition_row.id;
-    update private.challenge_versions
-    set config_schema_version = 1,
-        mode = document_value->'challenge'->>'mode',
-        title = document_value->'challenge'->>'title',
-        subtitle = document_value->'challenge'->>'subtitle',
-        description = document_value->'challenge'->>'description',
-        global_time_limit_ms = (document_value->'challenge'->>'globalTimeLimitMs')::integer,
-        max_score = (select coalesce(sum((value->>'points')::integer), 0)
-          from jsonb_array_elements(document_value->'questions') value),
-        mode_config = document_value->'challenge'->'modeConfig'
-    where id = challenge_version_id_value;
-
-    if existing_item_count > desired_item_count then
-      for item_row in
-        select item.* from private.challenge_items item
-        where item.challenge_version_id = challenge_version_id_value
-          and item.position > desired_item_count
-        order by item.position desc for update
-      loop
-        select version.question_definition_id into old_question_definition_id
-        from private.question_versions version
-        where version.id = item_row.question_version_id;
-        delete from private.challenge_items where id = item_row.id;
-        delete from private.question_version_solutions solution
-        where solution.question_version_id = item_row.question_version_id;
-        delete from private.question_versions where id = item_row.question_version_id;
-        delete from private.question_definitions
-        where id = old_question_definition_id
-          and not exists (
-            select 1 from private.question_versions version
-            where version.question_definition_id = old_question_definition_id
-          );
-      end loop;
-    elsif existing_item_count < desired_item_count then
-      for question, question_index in
-        select value, ordinality::integer
-        from jsonb_array_elements(document_value->'questions') with ordinality
-        where ordinality > existing_item_count
-      loop
-        item_id := gen_random_uuid();
-        if question->>'source' = 'library' then
-          question_version_id := (question->>'questionVersionId')::uuid;
-          if not exists (
-            select 1 from private.question_versions version
-            where version.id = question_version_id and version.status = 'published'
-          ) then
-            raise exception 'question_not_published' using errcode = '55000';
-          end if;
-        else
-          question_definition_id := gen_random_uuid();
-          question_version_id := gen_random_uuid();
-          insert into private.question_definitions(id, slug, created_by_player_id)
-          values (question_definition_id, question->>'slug', actor);
-          insert into private.question_versions(
-            id, question_definition_id, version_number, payload_schema_version, status, type,
-            time_limit_ms, public_payload, created_by_player_id
-          ) values (
-            question_version_id, question_definition_id, 1, (question->>'payloadSchemaVersion')::integer, 'draft', question->>'type',
-            (question->>'timeLimitMs')::integer, question->'publicPayload', actor
-          );
-          insert into private.question_version_solutions(question_version_id, solution_payload)
-          values (question_version_id, question->'solutionPayload');
-        end if;
-        insert into private.challenge_items(
-          id, challenge_version_id, question_version_id, position, points,
-          config_schema_version, mode_config
-        ) values (item_id, challenge_version_id_value, question_version_id, question_index,
-          (question->>'points')::integer, 1, coalesce(question->'modeConfig', '{}'::jsonb));
-      end loop;
-    end if;
-
-    for item_row in
-      select item.* from private.challenge_items item
-      where item.challenge_version_id = challenge_version_id_value
-      order by item.position for update
-    loop
-      question := coalesce(
-        (
-          select value from jsonb_array_elements(document_value->'questions') value
-          where value->>'challengeItemId' = item_row.id::text
-          limit 1
-        ),
-        document_value->'questions'->(item_row.position - 1)
-      );
-      if question->>'source' = 'library' then
-        question_version_id := (question->>'questionVersionId')::uuid;
-        if not exists (
-          select 1 from private.question_versions version
-          where version.id = question_version_id and version.status = 'published'
-        ) then
-          raise exception 'question_not_published' using errcode = '55000';
-        end if;
-        update private.challenge_items
-        set question_version_id = (question->>'questionVersionId')::uuid,
-            points = (question->>'points')::integer,
-            config_schema_version = 1,
-            mode_config = coalesce(question->'modeConfig', '{}'::jsonb)
-        where id = item_row.id;
-      else
-        select * into question_row from private.question_versions version
-        where version.id = item_row.question_version_id for update;
-        select * into question_definition_row from private.question_definitions definition
-        where definition.id = question_row.question_definition_id for update;
-        if question_row.status <> 'draft' then raise exception 'content_not_draft' using errcode = '55000'; end if;
-        update private.question_definitions
-        set slug = question->>'slug'
-        where id = question_definition_row.id;
-        update private.question_versions
-        set payload_schema_version = (question->>'payloadSchemaVersion')::integer,
-            type = question->>'type',
-            time_limit_ms = (question->>'timeLimitMs')::integer,
-            public_payload = question->'publicPayload'
-        where id = question_row.id;
-        update private.question_version_solutions solution
-        set solution_payload = question->'solutionPayload'
-        where solution.question_version_id = question_row.id;
-        update private.challenge_items
-        set points = (question->>'points')::integer, config_schema_version = 1,
-            mode_config = coalesce(question->'modeConfig', '{}'::jsonb)
-        where id = item_row.id;
-      end if;
-    end loop;
-  exception when unique_violation then
-    raise exception 'content_slug_conflict' using errcode = '23505';
-  end;
-
-  select jsonb_build_object(
-    'challengeDefinitionId', definition.id,
-    'challengeVersionId', version.id,
-    'versionNumber', version.version_number,
-    'status', version.status,
-    'slug', definition.slug,
-    'title', version.title,
-    'subtitle', version.subtitle,
-    'description', version.description,
-    'mode', version.mode,
-    'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = version.id),
-    'createdAt', version.created_at,
-    'updatedAt', version.updated_at,
-    'publishedAt', version.published_at,
-    'document', null
-  ) into result
-  from private.challenge_definitions definition
-  join private.challenge_versions version on version.challenge_definition_id = definition.id
-  where version.id = challenge_version_id_value;
-  insert into private.audit_log(
-    actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-  ) values (
-    actor, 'update_flash_draft', 'challenge_version', challenge_version_id_value, reason_value, key,
-    before_payload, jsonb_build_object(
-      'documentHash', document_hash,
-      'status', 'draft',
-      'updatedAt', result->>'updatedAt',
-      'questionCount', result->>'questionCount',
-      'maxScore', (select max_score from private.challenge_versions where id = challenge_version_id_value)
-    )
-  );
-  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
-  values (actor, key, 'update_flash_draft', safe_input, result);
-  return result;
-end;
-$$;
-
-create function private.publish_flash_command(input jsonb) returns jsonb
-language plpgsql volatile security definer set search_path = '' as $$
-declare
-  actor uuid := (select private.current_player_id());
-  key text;
-  reason_value text;
-  expected_updated_at timestamptz;
-  challenge_version_id_value uuid;
-  safe_input jsonb;
-  cached private.command_requests%rowtype;
-  challenge_row private.challenge_versions%rowtype;
-  definition_row private.challenge_definitions%rowtype;
-  item_row private.challenge_items%rowtype;
-  question_row private.question_versions%rowtype;
-  result jsonb;
-begin
-  if actor is null or not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  if input is null or jsonb_typeof(input) is distinct from 'object'
-    or not input ?& array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'reason']
-    or exists (select 1 from jsonb_object_keys(input) key_name where key_name <> all(array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'reason']))
-    or input->'idempotencyKey' is null or input->'challengeVersionId' is null
-    or input->'expectedUpdatedAt' is null or input->'reason' is null then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-  key := btrim(input->>'idempotencyKey');
-  reason_value := btrim(input->>'reason');
-  begin
-    challenge_version_id_value := (input->>'challengeVersionId')::uuid;
-    expected_updated_at := (input->>'expectedUpdatedAt')::timestamptz;
-  exception when others then
-    raise exception 'invalid_command' using errcode = '22023';
-  end;
-  if char_length(key) not between 8 and 160 or char_length(reason_value) not between 1 and 500 then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-  safe_input := jsonb_build_object(
-    'idempotencyKey', key, 'challengeVersionId', challenge_version_id_value,
-    'expectedUpdatedAt', expected_updated_at, 'reason', reason_value
-  );
-  perform pg_advisory_xact_lock(hashtextextended('superadmin-editorial-command:' || actor || ':' || key, 0));
-  select * into cached from private.command_requests request
-  where request.actor_id = actor and request.idempotency_key = key;
-  if found then
-    if cached.operation <> 'publish_flash' or cached.input <> safe_input then
-      raise exception 'idempotency_conflict' using errcode = '40001';
-    end if;
-    return cached.result;
-  end if;
-
-  select * into challenge_row from private.challenge_versions version
-  where version.id = challenge_version_id_value for update;
-  if not found then raise exception 'content_not_found' using errcode = 'P0002'; end if;
-  if challenge_row.status = 'published' then raise exception 'content_already_published' using errcode = '55000'; end if;
-  if challenge_row.status <> 'draft' then raise exception 'content_not_draft' using errcode = '55000'; end if;
-  if challenge_row.updated_at <> expected_updated_at then raise exception 'content_conflict' using errcode = '40001'; end if;
-  select * into definition_row from private.challenge_definitions definition
-  where definition.id = challenge_row.challenge_definition_id for update;
-  if (select count(*) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value)
-    not between 2 and 20 then
-    raise exception 'incomplete_content' using errcode = '22023';
-  end if;
-  if (select coalesce(sum(item.points), 0) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value) <> 100 then
-    raise exception 'points_total_invalid' using errcode = '22023';
-  end if;
-
-  for item_row in
-    select item.* from private.challenge_items item
-    where item.challenge_version_id = challenge_version_id_value
-    order by item.position for update
-  loop
-    select * into question_row from private.question_versions version
-    where version.id = item_row.question_version_id for update;
-    if question_row.status <> 'published' or not exists (
-      select 1 from private.question_version_solutions solution
-      where solution.question_version_id = question_row.id
-    ) then
-      raise exception 'question_not_published' using errcode = '55000';
+    elsif entry <> 'null'::jsonb then
+      return false;
     end if;
   end loop;
-  update private.challenge_versions version
-  set status = 'published'
-  where version.id = challenge_version_id_value
-  returning jsonb_build_object(
-    'challengeDefinitionId', definition_row.id,
-    'challengeVersionId', version.id,
-    'versionNumber', version.version_number,
-    'status', version.status,
-    'slug', definition_row.slug,
-    'title', version.title,
-    'subtitle', version.subtitle,
-    'description', version.description,
-    'mode', version.mode,
-    'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = version.id),
-    'createdAt', version.created_at,
-    'updatedAt', version.updated_at,
-    'publishedAt', version.published_at,
-    'document', null
-  ) into result;
-  insert into private.audit_log(
-    actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-  ) values (
-    actor, 'publish_flash', 'challenge_version', challenge_version_id_value, reason_value, key,
-    jsonb_build_object('status', 'draft', 'slug', definition_row.slug),
-    jsonb_build_object(
-      'status', 'published',
-      'slug', definition_row.slug,
-      'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value),
-      'maxScore', challenge_row.max_score
-    )
-  );
-  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
-  values (actor, key, 'publish_flash', safe_input, result);
-  return result;
-end;
-$$;
 
-create function private.read_superadmin_editorial_context() returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
-declare
-  actor uuid := (select private.current_player_id());
-begin
-  if actor is null or not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
+  solution := private.word_hashtag_solution_letters(solution_payload);
+  if solution is null then return false; end if;
+  if (select count(*) from jsonb_array_elements(solution) s where s.value is not null) <> 16 then
+    return false;
   end if;
+  for index in 0..24 loop
+    if initial->index is not null and upper(initial->>index) <> solution->>index then
+      return false;
+    end if;
+  end loop;
+  return true;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.word_hashtag_progress (
+  target_attempt uuid,
+  target_item    uuid
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+  progress_payload jsonb;
+  letters text[];
+  solution text[];
+  swap jsonb;
+  from_cell integer;
+  to_cell integer;
+  moves_used integer := 0;
+  index integer;
+  temporary text;
+  solved boolean := false;
+begin
+  select q.public_payload, qs.solution_payload, a.progress_payload
+    into public_payload, solution_payload, progress_payload
+    from public.attempts a
+    join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
+    join private.question_versions q on q.id = i.question_version_id
+    join private.question_version_solutions qs on qs.question_version_id = q.id
+    where a.id = target_attempt and i.id = target_item and q.type = 'word-hashtag';
+  if public_payload is null or solution_payload is null then return null; end if;
+
+  select array_agg(nullif(value #>> '{}', '') order by ordinality)
+    into letters from jsonb_array_elements(public_payload->'initialLetters') with ordinality;
+  select array_agg(nullif(value #>> '{}', '') order by ordinality)
+    into solution from jsonb_array_elements(private.word_hashtag_solution_letters(solution_payload)) with ordinality;
+  letters := array_fill(null::text, array[25]);
+  for index in 0..24 loop
+    letters[index + 1] := nullif(public_payload->'initialLetters'->>index, '');
+  end loop;
+  for swap in select value from jsonb_array_elements(
+    coalesce(progress_payload->'answer'->'swaps', '[]'::jsonb)
+  ) loop
+    from_cell := (swap->>'fromCell')::integer;
+    to_cell := (swap->>'toCell')::integer;
+    if from_cell between 0 and 24 and to_cell between 0 and 24 then
+      temporary := letters[from_cell + 1];
+      letters[from_cell + 1] := letters[to_cell + 1];
+      letters[to_cell + 1] := temporary;
+    end if;
+    moves_used := moves_used + 1;
+  end loop;
+  solved := true;
+  for index in 1..25 loop
+    if letters[index] is distinct from solution[index] then solved := false; exit; end if;
+  end loop;
   return jsonb_build_object(
-    'entries', coalesce((
-      select jsonb_agg(
-        jsonb_build_object(
-          'challengeDefinitionId', definition.id,
-          'challengeVersionId', version.id,
-          'versionNumber', version.version_number,
-          'status', version.status,
-          'slug', definition.slug,
-          'title', version.title,
-          'subtitle', version.subtitle,
-          'description', version.description,
-          'mode', version.mode,
-          'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = version.id),
-          'createdAt', version.created_at,
-          'updatedAt', version.updated_at,
-          'publishedAt', version.published_at,
-          'document', case when version.status = 'draft' then jsonb_build_object(
-            'challenge', jsonb_build_object(
-              'slug', definition.slug,
-              'title', version.title,
-              'subtitle', version.subtitle,
-              'description', version.description,
-              'mode', version.mode,
-              'configSchemaVersion', version.config_schema_version,
-              'modeConfig', version.mode_config
-            ),
-            'questions', coalesce((
-              select jsonb_agg(
-                case when question.status <> 'draft' then jsonb_build_object(
-                  'source', 'library',
-                  'questionVersionId', question.id,
-                  'points', item.points,
-                  'modeConfig', item.mode_config,
-                  'challengeItemId', item.id
-                ) else jsonb_build_object(
-                  'slug', question_definition.slug,
-                  'type', question.type,
-                  'payloadSchemaVersion', question.payload_schema_version,
-                  'timeLimitMs', question.time_limit_ms,
-                  'points', item.points,
-                  'publicPayload', question.public_payload,
-                  'solutionPayload', solution.solution_payload
-                ) end order by item.position
-              )
-              from private.challenge_items item
-              join private.question_versions question on question.id = item.question_version_id
-              join private.question_definitions question_definition on question_definition.id = question.question_definition_id
-              join private.question_version_solutions solution on solution.question_version_id = question.id
-              where item.challenge_version_id = version.id
-            ), '[]'::jsonb)
-          ) else null end
-        ) order by version.updated_at desc, version.id
-      )
-      from private.challenge_versions version
-      join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where version.mode = 'flash'
-    ), '[]'::jsonb)
+    'kind', 'word-hashtag',
+    'letters', to_jsonb(letters),
+    'swaps', coalesce(progress_payload->'answer'->'swaps', '[]'::jsonb),
+    'movesUsed', moves_used,
+    'movesRemaining', greatest(0, (public_payload->>'maxMoves')::integer - moves_used),
+    'solved', solved
   );
 end;
-$$;
+$function$;
 
-create function public.get_superadmin_editorial_context() returns jsonb
-language sql stable security definer set search_path = '' as $$
-  select private.read_superadmin_editorial_context();
-$$;
+CREATE OR REPLACE FUNCTION private.word_hashtag_solution_letters (
+  solution_payload jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  IMMUTABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  letters text[] := array_fill(null::text, array[25]);
+  word_name text;
+  word_value text;
+  cells integer[];
+  index integer;
+  cell integer;
+  letter text;
+begin
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'words'
+    or jsonb_typeof(solution_payload->'words') is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(solution_payload->'words') key_name
+      where key_name <> all(array['top', 'bottom', 'left', 'right'])) then
+    return null;
+  end if;
+  foreach word_name in array['top', 'bottom', 'left', 'right'] loop
+    word_value := upper(btrim(solution_payload->'words'->>word_name));
+    if word_value is null or char_length(word_value) <> 5 or word_value !~ '^[A-ZÑ]+$' then
+      return null;
+    end if;
+    cells := case word_name
+      when 'top' then array[5, 6, 7, 8, 9]
+      when 'bottom' then array[15, 16, 17, 18, 19]
+      when 'left' then array[1, 6, 11, 16, 21]
+      else array[3, 8, 13, 18, 23]
+    end;
+    for index in 1..5 loop
+      cell := cells[index];
+      letter := substr(word_value, index, 1);
+      if letters[cell + 1] is not null and letters[cell + 1] <> letter then
+        return null;
+      end if;
+      letters[cell + 1] := letter;
+    end loop;
+  end loop;
+  return to_jsonb(letters);
+end;
+$function$;
 
-create function public.create_superadmin_flash_draft(input jsonb) returns jsonb
-language sql volatile security definer set search_path = '' as $$
-  select private.create_flash_draft_command(input);
-$$;
+REVOKE ALL ON FUNCTION "private"."submit_word_hashtag_swap"(jsonb) FROM PUBLIC;
 
-create function public.update_superadmin_flash_draft(input jsonb) returns jsonb
-language sql volatile security definer set search_path = '' as $$
-  select private.update_flash_draft_command(input);
-$$;
+GRANT EXECUTE ON FUNCTION "private"."submit_word_hashtag_swap"(jsonb) TO "postgres", "service_role";
 
-create function public.publish_superadmin_flash(input jsonb) returns jsonb
-language sql volatile security definer set search_path = '' as $$
-  select private.publish_flash_command(input);
-$$;
+REVOKE ALL ON FUNCTION "private"."word_hashtag_content_valid"(jsonb, jsonb) FROM PUBLIC;
 
-alter function private.editorial_has_secret_key(jsonb) owner to postgres;
-alter function private.validate_flash_editorial_document(jsonb) owner to postgres;
-alter function private.create_flash_draft_command(jsonb) owner to postgres;
-alter function private.update_flash_draft_command(jsonb) owner to postgres;
-alter function private.publish_flash_command(jsonb) owner to postgres;
-alter function private.read_superadmin_editorial_context() owner to postgres;
-alter function public.get_superadmin_editorial_context() owner to postgres;
-alter function public.create_superadmin_flash_draft(jsonb) owner to postgres;
-alter function public.update_superadmin_flash_draft(jsonb) owner to postgres;
-alter function public.publish_superadmin_flash(jsonb) owner to postgres;
+GRANT EXECUTE ON FUNCTION "private"."word_hashtag_content_valid"(jsonb, jsonb) TO "postgres";
 
-revoke all on function private.editorial_has_secret_key(jsonb), private.validate_flash_editorial_document(jsonb),
-  private.create_flash_draft_command(jsonb), private.update_flash_draft_command(jsonb),
-  private.publish_flash_command(jsonb), private.read_superadmin_editorial_context()
-  from public, anon, authenticated, service_role;
-revoke all on function public.get_superadmin_editorial_context(),
-  public.create_superadmin_flash_draft(jsonb), public.update_superadmin_flash_draft(jsonb),
-  public.publish_superadmin_flash(jsonb) from public, anon, service_role;
-grant execute on function public.get_superadmin_editorial_context(),
-  public.create_superadmin_flash_draft(jsonb), public.update_superadmin_flash_draft(jsonb),
-  public.publish_superadmin_flash(jsonb) to authenticated;
+REVOKE ALL ON FUNCTION "private"."word_hashtag_progress"(uuid, uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."word_hashtag_progress"(uuid, uuid) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."word_hashtag_solution_letters"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."word_hashtag_solution_letters"(jsonb) TO "postgres";

@@ -1,45 +1,14 @@
--- Internal command engine: only the named wrappers at the end receive EXECUTE.
--- The connection adapter MUST verify Auth and set request.jwt.claims transaction-locally.
--- A service JWT by itself is not a human identity. Never copy browser claims without verification.
-set local check_function_bodies = off;
-create function private.command_actor() returns uuid
-language plpgsql stable security definer set search_path = '' as $$
-declare actor uuid := private.current_player_id();
-begin
-  if actor is null then raise exception 'not_authorized' using errcode = '42501'; end if;
-  return actor;
-end;
-$$;
+SET local check_function_bodies = off;
 
-create function private.secret_hash(secret text) returns text
-language plpgsql immutable set search_path = '' as $$
-begin
-  if secret is null or length(secret) < 32 then raise exception 'invalid_token' using errcode = '22023'; end if;
-  return encode(sha256(convert_to(secret, 'UTF8')), 'hex');
-end;
-$$;
-
-create function private.next_attempt_item(target_attempt uuid) returns uuid
-language sql stable set search_path = '' as $$
-  select i.id from public.attempts a
-  join private.challenge_versions cv on cv.id = a.challenge_version_id
-  join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
-  where a.id = target_attempt and not exists (
-    select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id
-  )
-  order by
-    case when cv.mode = 'alphabet' and exists (select 1 from private.interaction_intervals x
-      where x.attempt_id = a.id and x.challenge_item_id = i.id) then 1 else 0 end,
-    case when cv.mode = 'alphabet' and i.position <= coalesce((
-      select ci.position from private.interaction_intervals x
-      join private.challenge_items ci on ci.id = x.challenge_item_id
-      where x.attempt_id = a.id order by x.started_at desc, x.id desc limit 1
-    ), 0) then 1 else 0 end,
-    i.position limit 1
-$$;
-
-create function private.execute_command(op text, input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
+CREATE OR REPLACE FUNCTION private.execute_command (
+  op    text,
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
 declare
   actor uuid := private.command_actor();
   received timestamptz := clock_timestamp();
@@ -459,193 +428,16 @@ begin
     values(actor, key, op, safe_input, result);
   return result;
 end;
-$$;
+$function$;
 
-create function private.start_attempt(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('start', input)
-$$;
-alter function private.start_attempt(jsonb) owner to postgres;
-revoke all on function private.start_attempt(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.start_attempt(jsonb) to service_role;
-
-create function private.take_over_attempt(input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-begin
-  -- Cross-device control transfer is deliberately deferred for the MVP.
-  raise exception 'takeover_disabled' using errcode = '55000';
-end;
-$$;
-alter function private.take_over_attempt(jsonb) owner to postgres;
-revoke all on function private.take_over_attempt(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.take_over_attempt(jsonb) to service_role;
-
-create function private.prepare_interaction(input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-begin
-  -- A lost prepare response or a countdown race may leave the interval open.
-  -- Re-reading is safe: execute_command exposes only public payload/progress,
-  -- and an already received answer is still blocked as evaluation_pending.
-  if exists (
-    select 1 from private.command_requests
-    where actor_id = private.command_actor() and idempotency_key = prepare_interaction.input->>'idempotencyKey'
-      and operation = 'prepare'
-  ) then
-    return private.execute_command('prepare', input);
-  end if;
-  return private.execute_command('prepare', input);
-end;
-$$;
-alter function private.prepare_interaction(jsonb) owner to postgres;
-revoke all on function private.prepare_interaction(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.prepare_interaction(jsonb) to service_role;
-
-create function private.receive_answer(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('receive', input)
-$$;
-alter function private.receive_answer(jsonb) owner to postgres;
-revoke all on function private.receive_answer(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.receive_answer(jsonb) to service_role;
-
-create function private.pass_interaction(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('pass', input)
-$$;
-alter function private.pass_interaction(jsonb) owner to postgres;
-revoke all on function private.pass_interaction(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.pass_interaction(jsonb) to service_role;
-
-create function private.record_evaluation(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('evaluate', input)
-$$;
-alter function private.record_evaluation(jsonb) owner to postgres;
-revoke all on function private.record_evaluation(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.record_evaluation(jsonb) to service_role;
-
-create function private.complete_attempt(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('complete', input)
-$$;
-alter function private.complete_attempt(jsonb) owner to postgres;
-revoke all on function private.complete_attempt(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.complete_attempt(jsonb) to service_role;
-
-create function private.abandon_attempt(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('abandon', input)
-$$;
-alter function private.abandon_attempt(jsonb) owner to postgres;
-revoke all on function private.abandon_attempt(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.abandon_attempt(jsonb) to service_role;
-
-create function private.accept_invitation(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('accept_invitation', input)
-$$;
-alter function private.accept_invitation(jsonb) owner to postgres;
-revoke all on function private.accept_invitation(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.accept_invitation(jsonb) to service_role;
-
-create function private.invalidate_attempt(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('invalidate', input)
-$$;
-alter function private.invalidate_attempt(jsonb) owner to postgres;
-revoke all on function private.invalidate_attempt(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.invalidate_attempt(jsonb) to service_role;
-
-create function private.adjust_result(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('adjust', input)
-$$;
-alter function private.adjust_result(jsonb) owner to postgres;
-revoke all on function private.adjust_result(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.adjust_result(jsonb) to service_role;
-
-alter function private.execute_command(text, jsonb) owner to postgres;
-alter function private.command_actor() owner to postgres;
-revoke all on function private.execute_command(text, jsonb), private.command_actor(),
-  private.secret_hash(text), private.next_attempt_item(uuid) from public, anon, authenticated, service_role;
-
--- Internal evaluator input: immutable reception plus the exact frozen content version.
--- This result includes solutions and MUST NEVER be serialized to the browser.
-create function private.read_evaluation_context(target_receipt uuid, session_token text) returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
-declare actor uuid := private.command_actor(); result jsonb;
-begin
-  select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'matching' then coalesce((
-      select jsonb_object_agg(e.left_item_id, e.right_item_id)
-      from private.matching_pair_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then coalesce((
-      select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
-      from private.word_search_selection_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '[]'::jsonb) else r.answer end, 'receivedAt', r.received_at,
-    'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
-    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
-    'publicPayload', q.public_payload,
-    'submittedCodes', case when q.type = 'logic-code' then coalesce((
-      select jsonb_agg(e.code order by e.sequence)
-      from private.logic_code_attempt_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
-    ), '[]'::jsonb) else null end,
-    'progressiveCluesRevealed', case when q.type = 'progressive-clues' then coalesce((
-      select max(e.clue_index)::integer
-      from private.progressive_clue_reveal_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
-    ), 1) else null end,
-    'matchingIncorrectAttempts', case when q.type = 'matching' then coalesce((
-      select count(*)::integer from private.matching_pair_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
-    ), 0) else null end,
-    'incorrectAttempts', case when q.type = 'logic-code' then coalesce((
-      select count(*)::integer
-      from private.logic_code_attempt_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
-    ), 0) when q.type = 'queens' then coalesce((
-      select count(*)::integer
-      from private.queens_placement_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
-    ), 0) when q.type = 'word-search' then coalesce((
-      select count(*)::integer from private.word_search_selection_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
-    ), 0) else null end,
-    'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
-    'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
-    'itemConfig', i.mode_config, 'mode', cv.mode,
-    'modeConfigSchemaVersion', cv.config_schema_version, 'modeConfig', cv.mode_config)
-  into result from private.answer_receipts r
-  join public.attempts a on a.id = r.attempt_id
-  join private.attempt_sessions s on s.attempt_id = a.id
-  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
-  join public.seasons season on season.id = sc.season_id
-  join public.rooms room on room.id = season.room_id
-  join public.room_memberships m on m.room_id = room.id and m.player_id = actor
-  join private.challenge_items i on i.id = r.challenge_item_id
-  join private.challenge_versions cv on cv.id = a.challenge_version_id
-  join private.question_versions q on q.id = i.question_version_id
-  join private.question_version_solutions qs on qs.question_version_id = q.id
-  where r.id = target_receipt and a.player_id = actor and a.status = 'in_progress'
-    and a.kind = 'competitive' and sc.status <> 'cancelled' and room.status = 'active'
-    and m.status = 'active' and m.role in ('owner', 'admin', 'member')
-    and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
-    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
-  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
-  return result;
-end;
-$$;
-alter function private.read_evaluation_context(uuid, text) owner to postgres;
-revoke all on function private.read_evaluation_context(uuid, text) from public, anon, authenticated, service_role;
-grant execute on function private.read_evaluation_context(uuid, text) to service_role;
-
--- S04 recovery has a separate private command because it intentionally turns an
--- already prepared interval into a null-answer receipt before evaluating it.
-create function private.recover_attempt(input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
+CREATE OR REPLACE FUNCTION private.recover_attempt (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
 declare
   actor uuid := private.command_actor(); key text := input->>'idempotencyKey';
   safe_input jsonb := input; cached private.command_requests%rowtype;
@@ -722,33 +514,4 @@ begin
     values(actor, key, 'recover', safe_input, result);
   return result;
 end;
-$$;
-alter function private.recover_attempt(jsonb) owner to postgres;
-revoke all on function private.recover_attempt(jsonb) from public, anon, authenticated, service_role;
-grant execute on function private.recover_attempt(jsonb) to service_role;
-
-create function private.read_attempt_recovery(target_attempt uuid, session_token text) returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
-declare actor uuid := private.command_actor(); result jsonb;
-begin
-  select jsonb_build_object(
-    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
-    'lockVersion', a.lock_version,
-    'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
-    'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
-      and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
-    'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
-      'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms) order by i.position)
-      from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
-  ) into result
-  from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id
-  where a.id = target_attempt and a.player_id = actor and a.kind = 'competitive'
-    and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
-    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
-  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
-  return result;
-end;
-$$;
-alter function private.read_attempt_recovery(uuid, text) owner to postgres;
-revoke all on function private.read_attempt_recovery(uuid, text) from public, anon, authenticated, service_role;
-grant execute on function private.read_attempt_recovery(uuid, text) to service_role;
+$function$;

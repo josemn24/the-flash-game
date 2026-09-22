@@ -4,7 +4,7 @@
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
 El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluidos E01
-Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape y E10 Progressive-image,
+Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
 además de los formatos F habilitados. Los demás modos, formatos no migrados, E07–E09, abandono
 automático, takeover y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y
 D08b habilita assets privados de E10 y `multiple-choice` desde el editor y el recorrido competitivo.

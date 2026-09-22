@@ -109,7 +109,10 @@ export function requireLockVersion(body: JsonObject) {
   return body.lockVersion;
 }
 
-export function requireCell(body: JsonObject, key: "startCell" | "endCell") {
+export function requireCell(
+  body: JsonObject,
+  key: "startCell" | "endCell" | "fromCell" | "toCell",
+) {
   const value = body[key];
   if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
     throw new AttemptApiError(`invalid_${key}`, 400);
@@ -262,6 +265,8 @@ export function mapAttemptError(error: unknown): AttemptApiError {
       error.code === "mini_wordle_requires_guess_command" ||
       error.code === "invalid_logic_code" ||
       error.code === "logic_code_requires_attempt_command" ||
+      error.code === "invalid_word_hashtag_swap" ||
+      error.code === "word_hashtag_requires_swap_command" ||
       error.code === "invalid_question_payload" ||
       error.code === "unsupported_question"
         ? 400

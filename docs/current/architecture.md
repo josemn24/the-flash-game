@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S13, D08a/D08b, E01–E06, F08, F16, F18 y E10 implementadas sobre Supabase local; el
+> Estado: vigente. Arquitectura de transición con S01–S13, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 implementadas sobre Supabase local; el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -45,6 +45,11 @@ persistencia conserva hechos y estados.
 
 La elección entre Server Action y Route Handler es de transporte. Ambos deben llamar a los mismos
 casos de uso y no duplicar autorización ni reglas de negocio.
+
+F19 sigue esta frontera con `POST /api/competitive/attempts/:attemptId/word-hashtag/swap`: el Route
+Handler solo autentica y adapta el comando; la validación del swap, el lock optimista, la idempotencia,
+la persistencia de `attempts.progress_payload` y la evaluación terminal viven en el comando privado de
+Supabase. El componente cliente recibe únicamente el tablero y contadores autorizados por el servidor.
 
 ### Portal operativo de la beta cerrada
 

@@ -52,6 +52,7 @@ export type FlashReadRow = {
     | "estimation"
     | "heat-map"
     | "word-search"
+    | "word-hashtag"
     | "zip"
     | "escape";
   payload_schema_version: number;
@@ -82,6 +83,7 @@ export type FlashResultRow = {
     | "estimation"
     | "heat-map"
     | "word-search"
+    | "word-hashtag"
     | "zip"
     | "escape";
   payload_schema_version: number;
@@ -154,6 +156,7 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "estimation" ||
       value.question_type === "heat-map" ||
       value.question_type === "word-search" ||
+      value.question_type === "word-hashtag" ||
       value.question_type === "zip" ||
       value.question_type === "escape") &&
     (value.payload_schema_version === 1 ||
@@ -192,6 +195,7 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "estimation" ||
       value.question_type === "heat-map" ||
       value.question_type === "word-search" ||
+      value.question_type === "word-hashtag" ||
       value.question_type === "zip" ||
       value.question_type === "escape") &&
     (value.payload_schema_version === 1 ||
