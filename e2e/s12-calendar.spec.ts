@@ -39,16 +39,16 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     await signIn(page, data.users.superadmin);
     await page.goto("/admin/rooms");
     await page.getByRole("link", { name: "Ver detalle de Sala S12" }).click();
-    await page.getByRole("link", { name: "Calendario" }).click();
-    const calendar = page.getByRole("region", { name: /Calendario de desafíos/ });
+    await page.getByRole("link", { name: "Calendario", exact: true }).click();
+    await page.getByRole("button", { name: "Programar nuevo desafío" }).click();
     const now = Date.now();
-    await calendar.getByLabel("Apertura").fill(madridLocal(new Date(now - 60_000)));
-    await calendar.getByLabel("Cierre").fill(madridLocal(new Date(now + 3_600_000)));
-    await calendar.getByLabel("Motivo de auditoría").fill("Programar calendario S12");
-    await calendar.getByRole("button", { name: "Programar desafío" }).click();
+    await page.getByLabel("Apertura").fill(madridLocal(new Date(now - 60_000)));
+    await page.getByLabel("Cierre").fill(madridLocal(new Date(now + 3_600_000)));
+    await page.getByLabel("Motivo de auditoría").fill("Programar calendario S12");
+    await page.getByRole("button", { name: "Programar desafío" }).click();
     await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=calendar&calendar=created$/);
     await page.reload();
-    await expect(calendar.getByText("Programado")).toBeVisible();
+    await expect(page.getByText("Programado")).toBeVisible();
 
     const tick = await page.request.post("/api/internal/calendar/tick", {
       headers: {
@@ -61,12 +61,12 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     const member = await memberContext.newPage();
     await signIn(member, data.users.member);
     await member.goto("/salas/s12-room");
-    await expect(member.getByRole("heading", { name: "Desafíos de la temporada" })).toBeVisible();
-    await expect(member.getByText("Disponible")).toBeVisible();
-    await member.getByRole("link", { name: "Introducción" }).click();
+    await expect(member.getByRole("heading", { name: "Flash S12 calendario" })).toBeVisible();
+    await expect(member.getByText("Pendiente", { exact: true })).toBeVisible();
+    await member.getByRole("link", { name: "Jugar" }).click();
+    await expect(member).toHaveURL(/\/desafios\//);
     await expect(member.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
     await member.getByRole("button", { name: "Empezar desafío" }).click();
-    await expect(member).toHaveURL(/\/desafios\//);
     await memberContext.close();
   });
 

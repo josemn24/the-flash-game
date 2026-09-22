@@ -73,9 +73,7 @@ test.describe("S06 — dos rankings reales", () => {
       await expect(page.getByRole("link", { name: /Ver detalle de/ })).toHaveCount(0);
 
       await page.goto(rankingPath);
-      await expect(
-        page.getByRole("heading", { name: "Ranking de Sala competitiva S06" }),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Ranking global" })).toBeVisible();
       await expect(page.getByText("Alice")).toBeVisible();
       await expect(page.getByText("Carol")).toBeVisible();
       await expect(page.getByText("Dave")).toBeVisible();

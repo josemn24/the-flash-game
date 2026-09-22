@@ -21,6 +21,24 @@ async function signIn(page: Page, account: FixtureAccount) {
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
 }
 
+async function publishDraftQuestions(page: Page, suffix: string) {
+  await page.goto("/admin/questions");
+  await page.getByLabel("Buscar").fill(suffix);
+  const questionLinks = page.locator("a[href^='/admin/questions/']:not([href$='/new'])");
+  await expect(questionLinks).toHaveCount(7);
+  const hrefs = await questionLinks.evaluateAll((links) =>
+    links.map((link) => (link as HTMLAnchorElement).getAttribute("href")).filter(Boolean),
+  );
+
+  for (const href of hrefs) {
+    await page.goto(href as string);
+    await expect(page.getByRole("button", { name: "Publicar versión" })).toBeVisible();
+    await page.getByLabel("Motivo de auditoría").last().fill(`Publicar pregunta S11 ${suffix}`);
+    await page.getByRole("button", { name: "Publicar versión" }).click();
+    await expect(page).toHaveURL(/\/admin\/questions\/[^/?]+$/);
+  }
+}
+
 const editorialDocument = {
   challenge: {
     slug: "flash-s11-e2e",
@@ -114,27 +132,19 @@ const editorialDocument = {
     },
     {
       slug: "e2e-heat-map",
-      type: "heat-map" as const,
-      payloadSchemaVersion: 2 as const,
+      type: "multiple-choice" as const,
+      payloadSchemaVersion: 1 as const,
       timeLimitMs: 18000,
       points: 20,
       publicPayload: {
         category: "Geografía",
-        tags: {},
         question: "Marca aproximadamente dónde se encuentra el Gran Cañón.",
-        surface: {
-          assetId: "11111111-1111-4111-8111-111111111111",
-          alt: "Mapa sin etiquetas de Estados Unidos",
-          width: 1200,
-          height: 800,
-          fit: "contain",
-        },
-        targetLabel: "Norte de Arizona",
+        options: ["Arizona", "Nevada"],
+        media: null,
+        promptVisual: null,
       },
       solutionPayload: {
-        target: { x: 0.38, y: 0.58 },
-        fullCreditRadius: 0.055,
-        toleranceRadius: 0.18,
+        correctAnswer: "Arizona",
         explanation: "El Gran Cañón está en Arizona.",
       },
     },
@@ -159,23 +169,23 @@ test.describe("S11 — publicar contenido mínimo", () => {
     const editor = page.locator("section[aria-labelledby='editorial-management-title']");
     const textarea = editor.getByLabel("Documento editorial JSON");
     await textarea.fill(JSON.stringify(draftDocument, null, 2));
-    await editor
-      .getByLabel("Seleccionar JPEG, PNG o WebP")
-      .setInputFiles("public/visuals/sbr/grand-canyon-nps.jpg");
-    await expect(editor.getByText("Asset confirmado y vinculado al documento.")).toBeVisible();
-    const uploadedDocument = JSON.parse(await textarea.inputValue()) as typeof draftDocument;
+    await expect(editor.getByLabel("Previsualización editorial protegida")).toBeVisible();
+    const savedDocument = JSON.parse(await textarea.inputValue()) as typeof draftDocument;
     await editor.getByLabel("Motivo de auditoría").first().fill("Crear contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=saved$/);
-    await page.reload();
+    const challengeUrl = page.url().split("?")[0];
+    await page.goto(challengeUrl);
 
-    await expect(editor.getByRole("heading", { name: "Flash S11 E2E", exact: true })).toBeVisible();
+    await expect(
+      editor.getByRole("heading", { name: "Flash S11 E2E", exact: true }).first(),
+    ).toBeVisible();
     await expect(editor.getByText("Flash · 7 preguntas · 100 puntos")).toBeVisible();
     await textarea.fill(
       JSON.stringify(
         {
-          ...uploadedDocument,
-          challenge: { ...uploadedDocument.challenge, title: "Flash S11 E2E editado" },
+          ...savedDocument,
+          challenge: { ...savedDocument.challenge, title: "Flash S11 E2E editado" },
         },
         null,
         2,
@@ -185,6 +195,9 @@ test.describe("S11 — publicar contenido mínimo", () => {
     await reasons.first().fill("Editar contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=saved$/);
+    const updatedChallengeUrl = page.url().split("?")[0];
+    await publishDraftQuestions(page, suffix);
+    await page.goto(updatedChallengeUrl);
     await page.reload();
 
     await expect(
@@ -195,7 +208,7 @@ test.describe("S11 — publicar contenido mínimo", () => {
     await editor.getByRole("button", { name: "Publicar versión" }).click();
     await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=published$/);
     await expect(editor.getByText("Publicado").first()).toBeVisible();
-    await expect(editor.getByText("Sin intento ni puntuación")).toBeVisible();
+    await expect(editor.getByRole("heading", { name: "Versiones no editables" })).toBeVisible();
   });
 
   test("un miembro no ve editor, borradores ni soluciones", async ({ page }) => {

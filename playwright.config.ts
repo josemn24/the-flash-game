@@ -21,7 +21,9 @@ function parseLocalStatus() {
 
 const localStatus = parseLocalStatus();
 const isPwaE2e = process.env.PWA_E2E === "1";
-const e2ePort = isPwaE2e ? process.env.PWA_E2E_PORT || "3001" : "3000";
+const e2ePort = isPwaE2e
+  ? process.env.PWA_E2E_PORT || "3001"
+  : process.env.E2E_PORT || "3000";
 const e2eBaseURL = `http://127.0.0.1:${e2ePort}`;
 const localEnv = {
   ...process.env,
@@ -38,13 +40,13 @@ const localEnv = {
     process.env.SUPABASE_SERVICE_ROLE_KEY || localStatus.SERVICE_ROLE_KEY || "",
   CALENDAR_TICK_SECRET: process.env.CALENDAR_TICK_SECRET || "local-s12-calendar-secret",
   FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
-  APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
+  APP_ORIGIN: process.env.APP_ORIGIN || e2eBaseURL,
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   // E2E scenarios intentionally exercise recovery/retry sequences; keep the
   // production default of 5 while giving the test process a bounded headroom.
   FLASH_RATE_LIMIT_BURST: process.env.FLASH_RATE_LIMIT_BURST || "30",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260919090805_declarative_sync",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260921073245_room_membership_commands",
 };
 
 export default defineConfig({
@@ -60,7 +62,7 @@ export default defineConfig({
   webServer: {
     command: isPwaE2e
       ? `npm run start -- --hostname 127.0.0.1 --port ${e2ePort}`
-      : "npm run dev -- --hostname 127.0.0.1 --port 3000",
+      : `npm run dev -- --hostname 127.0.0.1 --port ${e2ePort}`,
     url: e2eBaseURL,
     reuseExistingServer: isPwaE2e ? false : process.env.FLASH_RUNTIME_SCOPE !== "pilot",
     timeout: 120_000,

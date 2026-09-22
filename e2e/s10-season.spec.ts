@@ -23,6 +23,8 @@ test.describe("S10 — preparar y activar una temporada", () => {
     await page.goto("/admin/rooms");
     await page.getByRole("link", { name: "Ver detalle de Sala S10" }).click();
     await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+$/);
+    await page.getByRole("link", { name: "Temporadas", exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=seasons$/);
 
     const roomSection = page.getByRole("region", { name: "Sala S10" }).last();
     const createForm = roomSection

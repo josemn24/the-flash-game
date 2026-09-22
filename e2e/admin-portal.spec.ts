@@ -51,6 +51,6 @@ test.describe("Portal privado mínimo", () => {
     await page.getByRole("button", { name: "Salir" }).click();
     await expect(page.getByRole("button", { name: "Iniciar sesión" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Iniciar sesión" })).toBeVisible();
-    await expect(page).toHaveURL("http://127.0.0.1:3000/");
+    await expect(page).toHaveURL(/\/$/);
   });
 });
