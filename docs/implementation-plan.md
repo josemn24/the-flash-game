@@ -1,9 +1,9 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07 y F12 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07 y F12 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-21. Alcance: pasar del prototipo mock a competición persistida,
+> Fecha de análisis: 2026-09-22. Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
 > privado de superadmin; no forman parte de la UI pública.
@@ -32,10 +32,10 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash y Alphabet.                                                                                                                                              | Sustituir autoridad cliente en Supervivencia, Pirámide y Narrativa; Pirámide también usa `localStorage` en práctica.                                        |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 29 tablas, 38 archivos declarativos, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| SQL       | 30 tablas, 39 archivos declarativos, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, eventos de selección Word-search, libro de puntos, auditoría, rankings y migraciones versionadas. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional. |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash y Alphabet reconstruyen contexto privado, persisten resultado y producen feedback público.                                                                                                                               | Contextos y reglas autoritativas de Supervivencia, Pirámide, Narrativa y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E05, E10 y `multiple-choice` con assets privados.                                                                                                 | Verificación contra un entorno remoto.                                                                                                             |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E06, E10 y `multiple-choice` con assets privados.                                                                                                 | Verificación contra un entorno remoto.                                                                                                             |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -757,7 +757,7 @@ Ficha común, obligatoria para **cada** E*:
 | E04     | `matching`          | **Implementado localmente.** Comprobar cada asociación con feedback inmediato; conservar fallos y parejas correctas en eventos privados, aplicar 10% por error, recuperar tras recarga y evaluar timeout con crédito parcial sin `correctMatchId` público.                                                                                                                                          |
 | E05     | `queens`            | **Implementado localmente.** Persistir cada colocación/retirada como evento privado; calcular conflictos y penalización del 5% server-side, recuperar el tablero sin marcas X y cerrar automáticamente al resolver las cinco regiones. La solución solo aparece en la revisión autorizada.                                                                                                          |
 | S05     | `alphabet`          | **Implementado localmente.** Publicar desafíos Alphabet con referencias `short-text`, reloj global, vueltas y pases; persistir intervalos y respuestas mediante los comandos existentes, reconstruir progreso/timeout server-side y exponer soluciones solo en revisión terminal autorizada. |
-| E06     | `word-search`       | Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos para impedir borrar penalizaciones del payload final.                                                                                                                                                                                                                                                            |
+| E06     | `word-search`       | **Implementado localmente.** Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos, recuperar desde eventos, cerrar al encontrar todos los objetivos y evaluar crédito parcial sin penalización. La solución solo aparece en revisión terminal autorizada. |
 | E07     | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                                                                                                                                                   |
 | E08     | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                                                                                                                                           |
 | E09     | `simon-sequence`    | Secuencia visible solo en fase autorizada y registro de su entrega; impedir reiniciar presentación/reloj con recarga. Respuesta final evaluada en servidor.                                                                                                                                                                                                                                         |
@@ -1108,7 +1108,7 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
 incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S13,
-S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E05/E10 están
+S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 están
 **implementadas localmente**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
@@ -1135,9 +1135,9 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S13, D08a/D08b, E01–E05, E10, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+S01–S13, D08a/D08b, E01–E06, E10, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
 sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues, Matching y Queens,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local
-del calendario. Estas slices no habilitan S13+, otros modos ni E06–E09; el piloto sigue acotado a
-las rutas reales documentadas en S22.
+del calendario. Estas slices no habilitan S13+ ni otros modos; E06 queda habilitado y E07–E09 siguen
+fuera de alcance. El piloto sigue acotado a las rutas reales documentadas en S22.

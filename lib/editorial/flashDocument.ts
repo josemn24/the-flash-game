@@ -13,6 +13,7 @@ import type {
   FlashEditorialAnagramQuestion,
   FlashEditorialClassificationQuestion,
   FlashEditorialProgressiveImageQuestion,
+  FlashEditorialWordSearchQuestion,
   FlashEditorialQuestion,
   FlashEditorialQuestionDocument,
   FlashEditorialQuestionReference,
@@ -22,6 +23,7 @@ import type {
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
+import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,
@@ -104,6 +106,7 @@ const progressiveImagePublicPayloadKeys = [
   "answerPlaceholder",
 ];
 const shortTextPublicPayloadKeys = ["category", "tags", "question", "answerPlaceholder"];
+const wordSearchPublicPayloadKeys = ["category", "tags", "question", "grid", "letters", "targets"];
 const shortTextSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const estimationSolutionKeys = ["correctAnswer", "tolerance", "explanation"];
@@ -128,6 +131,7 @@ const progressiveImageSolutionKeys = [
   "solutionAlt",
   "explanation",
 ];
+const wordSearchSolutionKeys = ["positionsByTargetId", "explanation"];
 
 export const FLASH_MIN_QUESTIONS = 2;
 export const FLASH_MAX_QUESTIONS = 20;
@@ -370,7 +374,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       !("matches" in solutionPayload) &&
       !("correctOrder" in solutionPayload) &&
       !("categoriesByItem" in solutionPayload) &&
-      !("target" in solutionPayload))
+      !("target" in solutionPayload) &&
+      !("positionsByTargetId" in solutionPayload))
   ) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
@@ -397,6 +402,98 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
 
   if (!commonValid) {
     throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
+  }
+
+  if (value.type === "word-search") {
+    const grid = publicPayload.grid;
+    const letters = publicPayload.letters;
+    const targets = publicPayload.targets;
+    const positions = solutionPayload.positionsByTargetId;
+    const validGrid =
+      isRecord(grid) &&
+      hasOnlyKeys(grid, ["rows", "columns"]) &&
+      Number.isSafeInteger(grid.rows) &&
+      Number.isSafeInteger(grid.columns) &&
+      (grid.rows as number) >= 6 &&
+      (grid.rows as number) <= 10 &&
+      (grid.columns as number) >= 6 &&
+      (grid.columns as number) <= 10;
+    const gridRows = validGrid ? grid.rows as number : 0;
+    const gridColumns = validGrid ? grid.columns as number : 0;
+    const validLetters =
+      Array.isArray(letters) &&
+      validGrid &&
+      letters.length === gridRows * gridColumns &&
+      letters.every(
+        (letter) =>
+          typeof letter === "string" &&
+          Array.from(letter.normalize("NFC").trim().toLocaleUpperCase("es-ES")).length === 1 &&
+          /^[A-ZÁÉÍÓÚÜÑ]$/u.test(letter.normalize("NFC").trim().toLocaleUpperCase("es-ES")),
+      );
+    const validTargets =
+      Array.isArray(targets) &&
+      targets.length >= 2 &&
+      targets.length <= 8 &&
+      targets.every(
+        (target) =>
+          isRecord(target) &&
+          hasOnlyKeys(target, ["id", "word"]) &&
+          nonEmptyString(target.id, 120) &&
+          nonEmptyString(target.word, 120),
+      );
+    const targetIds = validTargets ? (targets as Array<Record<string, unknown>>).map((t) => t.id as string) : [];
+    const validPositions =
+      isRecord(positions) &&
+      validTargets &&
+      Object.keys(positions).length === targetIds.length &&
+      targetIds.every((id) => {
+        const position = positions[id];
+        return (
+          isRecord(position) &&
+          hasOnlyKeys(position, ["startCell", "endCell"]) &&
+          Number.isSafeInteger(position.startCell) &&
+          Number.isSafeInteger(position.endCell)
+        );
+      });
+    const candidate = {
+      type: "word-search",
+      grid,
+      letters,
+      targets: validTargets && validPositions
+        ? (targets as Array<Record<string, unknown>>).map((target) => ({
+            id: target.id as string,
+            word: target.word as string,
+            startCell: (positions as Record<string, Record<string, unknown>>)[target.id as string]
+              .startCell as number,
+            endCell: (positions as Record<string, Record<string, unknown>>)[target.id as string]
+              .endCell as number,
+          }))
+        : [],
+    };
+    if (
+      value.payloadSchemaVersion !== 1 ||
+      !hasOnlyKeys(publicPayload, wordSearchPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, wordSearchSolutionKeys) ||
+      !validGrid ||
+      !validLetters ||
+      !validTargets ||
+      new Set(targetIds).size !== targetIds.length ||
+      !validPositions ||
+      !isValidWordSearchConfiguration(candidate as never)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato word-search.`,
+      ]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "word-search",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialWordSearchQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialWordSearchQuestion["solutionPayload"],
+    };
   }
 
   if (value.type === "heat-map") {

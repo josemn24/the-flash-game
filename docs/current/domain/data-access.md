@@ -3,7 +3,7 @@
 ## Estado y alcance
 
 La fase 4 está cerrada. S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12,
-E01–E05/E10 y el portal privado consolidan la integración real de Supabase y completan el
+E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
 introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o

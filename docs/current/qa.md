@@ -5,7 +5,7 @@
 
 ## Última verificación
 
-2026-09-21, sobre el estado actual del repositorio y el stack local de Supabase.
+2026-09-22, sobre el estado actual del repositorio y el stack local de Supabase.
 
 - `npm test`: 121 archivos de test y 712 tests superados.
 - `npm run typecheck`: correcto.
@@ -16,16 +16,18 @@
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260921073245_room_membership_commands`.
+  `20260922081502_declarative_sync`.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto sobre 38 archivos declarativos, 29 tablas y 132 funciones
+- `npm run supabase:schema:test`: correcto sobre 39 archivos declarativos, 30 tablas y 134 funciones
   públicas/privadas, inventario, provisioning,
-  S02–S08, S10–S13, E01–E05 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  S02–S08, S10–S13, E01–E06 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
   privada, preparación temporal y evaluación normalizada.
-- `npm run test:integration:supabase -- --scenario portal`: correcto con Auth y PostgREST local.
+- `npm run test:integration:supabase -- --scenario e06`: correcto con publicación editorial, Auth, PostgREST y RLS local.
+- `npm run test:e2e -- e2e/e06-word-search.spec.ts`: 2 casos correctos; recuperación tras recarga,
+  reintento idempotente, revisión terminal y aislamiento de spectator.
 - `npm run test:integration:supabase -- --scenario s11`: correcto con Auth/PostgREST, grafo
   editorial de cinco preguntas, idempotencia, publicación e aislamiento del contexto protegido.
 - `npm run test:e2e -- e2e/admin-portal.spec.ts`: 2/2 correcto con acceso superadmin, recarga y
@@ -107,7 +109,7 @@ incorporar la misma matriz y adaptar únicamente el texto o la presentación al 
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - La validación E2E de las slices persistidas usa escenarios locales reproducibles; no se ha verificado un proyecto
   remoto porque no hay uno vinculado en este entorno.
-- `results_locked_at`, abandono automático, takeover, partes del ciclo de Storage, modos distintos de Flash y E06–E09 y
+- `results_locked_at`, abandono automático, takeover, partes del ciclo de Storage, modos distintos de Flash y E07–E09 y
   la revisión administrativa de intentos invalidados siguen fuera del piloto.
 - No existe una ronda manual vigente y exhaustiva documentada para todos los formatos, viewports,
   VoiceOver y `prefers-reduced-motion`.

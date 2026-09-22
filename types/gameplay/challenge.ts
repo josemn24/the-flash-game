@@ -197,7 +197,8 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "anagram"
       | "classification"
       | "estimation"
-      | "heat-map";
+      | "heat-map"
+      | "word-search";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -312,6 +313,29 @@ export type ServerHeatMapQuestion = ServerFlashQuestionBase & {
   readonly targetLabel: string;
 };
 
+export type ServerWordSearchSelection = {
+  readonly targetId: string;
+  readonly startCell: number;
+  readonly endCell: number;
+};
+
+export type ServerWordSearchProgress = {
+  readonly kind: "word-search";
+  readonly foundSelections: readonly ServerWordSearchSelection[];
+  readonly foundWordIds: readonly string[];
+  readonly foundCount: number;
+  readonly totalWords: number;
+  readonly incorrectAttempts: number;
+};
+
+export type ServerWordSearchQuestion = ServerFlashQuestionBase & {
+  readonly type: "word-search";
+  readonly grid: { readonly rows: number; readonly columns: number };
+  readonly letters: readonly string[];
+  readonly targets: readonly { readonly id: string; readonly word: string }[];
+  readonly progress: ServerWordSearchProgress;
+};
+
 export type ServerMiniWordleProgress = {
   readonly kind: "mini-wordle";
   readonly guesses: readonly string[];
@@ -420,7 +444,8 @@ export type ServerFlashQuestion =
   | ServerAnagramQuestion
   | ServerClassificationQuestion
   | ServerEstimationQuestion
-  | ServerHeatMapQuestion;
+  | ServerHeatMapQuestion
+  | ServerWordSearchQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

@@ -20,6 +20,7 @@ import type {
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
   SubmitMatchingPairResult,
+  SubmitWordSearchSelectionResult,
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementResult,
   RevealProgressiveClueResult,
@@ -44,6 +45,7 @@ import type {
   EstimationQuestion,
   HeatMapQuestion,
   ShortTextQuestion,
+  WordSearchQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -55,6 +57,7 @@ import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
+import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -156,6 +159,9 @@ function commandCode(error: unknown) {
     "matching_item_already_resolved",
     "duplicate_matching_pair",
     "matching_requires_pair_command",
+    "invalid_word_search_selection",
+    "word_search_target_already_found",
+    "word_search_requires_selection_command",
     "invalid_queens_placement",
     "queens_requires_placement_command",
     "prefilled_queen_locked",
@@ -220,7 +226,8 @@ function asQuestion(
   | ClassificationQuestion
   | EstimationQuestion
   | HeatMapQuestion
-  | ShortTextQuestion {
+  | ShortTextQuestion
+  | WordSearchQuestion {
   if (
     ![
       "multiple-choice",
@@ -237,6 +244,7 @@ function asQuestion(
       "classification",
       "estimation",
       "heat-map",
+      "word-search",
       "short-text",
     ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -845,6 +853,52 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
+  if (context.questionType === "word-search") {
+    const grid = publicPayload.grid;
+    const letters = publicPayload.letters;
+    const publicTargets = publicPayload.targets;
+    const positions = solutionPayload.positionsByTargetId;
+    if (
+      !grid || typeof grid !== "object" || Array.isArray(grid) ||
+      !Number.isSafeInteger((grid as Record<string, unknown>).rows) ||
+      !Number.isSafeInteger((grid as Record<string, unknown>).columns) ||
+      !Array.isArray(letters) ||
+      !Array.isArray(publicTargets) ||
+      !positions || typeof positions !== "object" || Array.isArray(positions) ||
+      !publicTargets.every((target) => {
+        if (!target || typeof target !== "object" || Array.isArray(target)) return false;
+        const value = target as Record<string, unknown>;
+        const position = (positions as Record<string, unknown>)[String(value.id)];
+        return typeof value.id === "string" && typeof value.word === "string" &&
+          position && typeof position === "object" && !Array.isArray(position) &&
+          Number.isSafeInteger((position as Record<string, unknown>).startCell) &&
+          Number.isSafeInteger((position as Record<string, unknown>).endCell);
+      })
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "word-search" as const,
+      grid: grid as WordSearchQuestion["grid"],
+      letters: letters as string[],
+      targets: publicTargets.map((target) => {
+        const value = target as Record<string, unknown>;
+        const position = (positions as Record<string, Record<string, unknown>>)[value.id as string];
+        return {
+          id: value.id as string,
+          word: value.word as string,
+          startCell: position.startCell as number,
+          endCell: position.endCell as number,
+        };
+      }),
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordSearchQuestion;
+    if (!isValidWordSearchConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
   if (context.questionType !== "mini-wordle") throw new AttemptCommandError("unsupported_question");
   const wordLength = publicPayload.wordLength;
   const maxAttempts = publicPayload.maxAttempts;
@@ -881,6 +935,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "receiveAnswer"
   | "pass"
   | "submitMatchingPair"
+  | "submitWordSearchSelection"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
@@ -949,6 +1004,28 @@ export class SupabaseAttemptCommands implements Pick<
     const accepted = await callCommand<SubmitMatchingPairResult>(
       this.identity,
       "submit_matching_pair",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+    };
+  }
+
+  async submitWordSearchSelection(input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0]) {
+    const accepted = await callCommand<SubmitWordSearchSelectionResult>(
+      this.identity,
+      "submit_word_search_selection",
       input,
     );
     if (!accepted.terminal || !accepted.receiptId) return accepted;
@@ -1078,6 +1155,7 @@ export class SupabaseAttemptCommands implements Pick<
       answer: (resolvedContext.answer as AnswerValue | null) ?? null,
       progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
       matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
+      incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
     });
     const evaluated = await this.recordEvaluation({
       attemptId: input.receive.attemptId,
@@ -1120,6 +1198,7 @@ export class SupabaseAttemptCommands implements Pick<
       answer: (resolvedContext.answer as AnswerValue | null) ?? null,
       progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
       matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
+      incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
     });
     return this.recordEvaluation({
       attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],

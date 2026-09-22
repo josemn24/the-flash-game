@@ -86,6 +86,34 @@ export type SubmitMatchingPairResult = AttemptCommandResult & {
   readonly points?: number;
   readonly timeUsedMs?: DurationMs;
 };
+export type SubmitWordSearchSelectionInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly startCell: number;
+  readonly endCell: number;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitWordSearchSelection = {
+  readonly targetId: string;
+  readonly startCell: number;
+  readonly endCell: number;
+};
+export type SubmitWordSearchSelectionResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly startCell: number;
+  readonly endCell: number;
+  readonly correct: boolean;
+  readonly terminal: boolean;
+  readonly matchedTargetId: string | null;
+  readonly foundSelections: readonly SubmitWordSearchSelection[];
+  readonly foundWordIds: readonly string[];
+  readonly foundCount: number;
+  readonly totalWords: number;
+  readonly incorrectAttempts: number;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
 export type SubmitMiniWordleGuessInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly guess: string;

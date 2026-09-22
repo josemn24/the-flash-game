@@ -97,6 +97,14 @@ export function ServerFlashPopGame({
             queensError={session.queensError}
             onQueensPlacement={(cell, action) => void session.submitQueensPlacement(cell, action)}
             onRetryQueens={() => void session.retryQueensPlacement()}
+            wordSearchState={session.wordSearchState}
+            wordSearchStatusVisible={session.wordSearchStatusVisible}
+            wordSearchError={session.wordSearchError}
+            lastWordSearchSelection={session.lastWordSearchSelection}
+            onWordSearchSelection={(startCell, endCell) =>
+              void session.submitWordSearchSelection(startCell, endCell)
+            }
+            onRetryWordSearch={() => void session.retryWordSearchSelection()}
             revealState={session.revealState}
             revealStatusVisible={session.revealStatusVisible}
             revealError={session.revealError}

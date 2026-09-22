@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-21.
+Última actualización documental: 2026-09-22.
 
 # Estado actual del proyecto
 
@@ -8,14 +8,14 @@
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
 migradas usan fixtures y un store mock normalizado. Las slices S01–S13, S17a, S18b parcial, D08a/D08b,
-S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E05/E10, junto con la base transversal del
+S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
 persistidos, E02 Logic-code con eventos privados y evaluación al acertar, E03 Progressive-clues
 con revelaciones privadas y penalización basada en eventos, E04 Matching con parejas privadas,
 feedback incremental y crédito parcial, y E05 Queens con colocaciones persistidas y penalización
-server-side, además del acceso seguro server-side para
+server-side, y E06 Word-search con selecciones privadas, recuperación e idempotencia, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. F01/F02/F06 añaden
 `true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
@@ -128,7 +128,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F04/F06/F07/F12 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F12 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -155,10 +155,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación
 
-Última verificación: 2026-09-21.
+Última verificación: 2026-09-22.
 
 - `npm test`: 121 archivos y 712 tests superados; incluye reglas, adaptadores, health check y ruta HTTP,
-  UI pública de E01–E05,
+  UI pública de E01–E06,
   navegación del portal y acciones administrativas; además de S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
@@ -180,9 +180,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
 - `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
   fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto sobre 38 archivos declarativos y la revisión canónica
-  `20260921073245_room_membership_commands`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
-  S10–S13, S17a, S18b parcial, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run supabase:schema:test`: correcto sobre 39 archivos declarativos y la revisión canónica
+  `20260922081502_declarative_sync`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
+  S10–S13, S17a, S18b parcial, E01–E06 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
 - `npm run schema:revision:check`: correcto; las cuatro fuentes de configuración coinciden con la

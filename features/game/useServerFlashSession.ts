@@ -59,6 +59,14 @@ type PendingMatchingPair = {
   rightItemId: string;
   idempotencyKey: string;
 };
+type PendingWordSearchSelection = {
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  startCell: number;
+  endCell: number;
+  idempotencyKey: string;
+};
 type PendingQueensPlacement = {
   kind: "queens";
   attemptId: string;
@@ -161,8 +169,14 @@ export function useServerFlashSession({
   const [queensState, setQueensState] = useState<SubmissionState>("idle");
   const [queensStatusVisible, setQueensStatusVisible] = useState(false);
   const [queensError, setQueensError] = useState<string>();
+  const [wordSearchState, setWordSearchState] = useState<SubmissionState>("idle");
+  const [wordSearchStatusVisible, setWordSearchStatusVisible] = useState(false);
+  const [wordSearchError, setWordSearchError] = useState<string>();
   const [lastMatchingPair, setLastMatchingPair] = useState<
     { readonly leftId: string; readonly rightId: string; readonly correct: boolean } | undefined
+  >();
+  const [lastWordSearchSelection, setLastWordSearchSelection] = useState<
+    { readonly startCell: number; readonly endCell: number; readonly correct: boolean } | undefined
   >();
   const [pendingAnswer, setPendingAnswer] = useState<AnswerValue | null>(null);
   const [startNotice, setStartNotice] = useState<string>();
@@ -171,10 +185,12 @@ export function useServerFlashSession({
   const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const matchingStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queensStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const wordSearchStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const pendingRevealRef = useRef<PendingProgressiveClueReveal | null>(null);
   const pendingMatchingPairRef = useRef<PendingMatchingPair | null>(null);
   const pendingQueensPlacementRef = useRef<PendingQueensPlacement | null>(null);
+  const pendingWordSearchSelectionRef = useRef<PendingWordSearchSelection | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
 
@@ -250,6 +266,24 @@ export function useServerFlashSession({
     }, SUBMISSION_STATUS_DELAY_MS);
   };
 
+  const clearWordSearchStatusTimer = () => {
+    if (wordSearchStatusTimerRef.current) {
+      clearTimeout(wordSearchStatusTimerRef.current);
+      wordSearchStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startWordSearchStatus = () => {
+    clearWordSearchStatusTimer();
+    setWordSearchState("submitting");
+    setWordSearchStatusVisible(false);
+    setWordSearchError(undefined);
+    wordSearchStatusTimerRef.current = setTimeout(() => {
+      setWordSearchStatusVisible(true);
+      wordSearchStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
+  };
+
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -257,6 +291,7 @@ export function useServerFlashSession({
       clearRevealStatusTimer();
       clearMatchingStatusTimer();
       clearQueensStatusTimer();
+      clearWordSearchStatusTimer();
     },
     [],
   );
@@ -300,6 +335,11 @@ export function useServerFlashSession({
     setQueensStatusVisible(false);
     setQueensError(undefined);
     pendingQueensPlacementRef.current = null;
+    setWordSearchState("idle");
+    setWordSearchStatusVisible(false);
+    setWordSearchError(undefined);
+    setLastWordSearchSelection(undefined);
+    pendingWordSearchSelectionRef.current = null;
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
   };
@@ -939,6 +979,106 @@ export function useServerFlashSession({
     }
   };
 
+  const submitWordSearchSelectionToServer = async (submission: PendingWordSearchSelection) => {
+    startWordSearchStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/word-search/select`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          startCell: submission.startCell,
+          endCell: submission.endCell,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const foundSelections = Array.isArray(response.foundSelections)
+        ? response.foundSelections.filter((selection): selection is { targetId: string; startCell: number; endCell: number } =>
+            Boolean(selection) && typeof selection === "object" && typeof (selection as Record<string, unknown>).targetId === "string" &&
+            Number.isSafeInteger((selection as Record<string, unknown>).startCell) && Number.isSafeInteger((selection as Record<string, unknown>).endCell))
+        : [];
+      const foundWordIds = Array.isArray(response.foundWordIds)
+        ? response.foundWordIds.filter((id): id is string => typeof id === "string")
+        : foundSelections.map((selection) => selection.targetId);
+      const correct = response.correct === true;
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      setLastWordSearchSelection({ startCell: submission.startCell, endCell: submission.endCell, correct });
+      setQuestion((current) =>
+        current?.type === "word-search"
+          ? {
+              ...current,
+              progress: {
+                kind: "word-search",
+                foundSelections,
+                foundWordIds,
+                foundCount: Number(response.foundCount),
+                totalWords: Number(response.totalWords),
+                incorrectAttempts: Number(response.incorrectAttempts),
+              },
+            }
+          : current,
+      );
+      clearWordSearchStatusTimer();
+      pendingWordSearchSelectionRef.current = null;
+      setWordSearchState("idle");
+      setWordSearchStatusVisible(false);
+      setWordSearchError(undefined);
+      if (response.terminal !== true) {
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: { foundWordIds },
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (questionIndex === challenge.slots.length - 1) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(challengeWithReview(challenge, review));
+            setPhase("results");
+          } else {
+            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ?? 1800,
+      );
+    } catch (error) {
+      clearWordSearchStatusTimer();
+      const commandError = error instanceof CompetitiveCommandError ? error.code : "";
+      if (commandError === "word_search_target_already_found" || commandError === "invalid_word_search_selection") {
+        pendingWordSearchSelectionRef.current = null;
+        setWordSearchState("idle");
+        setWordSearchStatusVisible(true);
+        setWordSearchError(commandError === "word_search_target_already_found" ? "Esa palabra ya está encontrada." : "La selección no es válida.");
+        setLocked(false);
+      } else {
+        setWordSearchState("error");
+        setWordSearchStatusVisible(true);
+        setWordSearchError("No hemos podido confirmar la selección.");
+      }
+      setBusy(false);
+    }
+  };
+
   const submit = async (answer: AnswerValue | null) => {
     if (!attempt || !question || locked || busy) return;
     const submission: PendingAnswerSubmission = {
@@ -1037,6 +1177,20 @@ export function useServerFlashSession({
     await submitQueensPlacementToServer(submission);
   };
 
+  const submitWordSearchSelection = async (startCell: number, endCell: number) => {
+    if (!attempt || !question || question.type !== "word-search" || locked || busy) return;
+    const submission: PendingWordSearchSelection = {
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      startCell,
+      endCell,
+      idempotencyKey: idempotencyKey("word-search-selection"),
+    };
+    pendingWordSearchSelectionRef.current = submission;
+    await submitWordSearchSelectionToServer(submission);
+  };
+
   const retrySubmit = async () => {
     if (busy || !pendingSubmissionRef.current) return;
     const pending = pendingSubmissionRef.current;
@@ -1047,6 +1201,11 @@ export function useServerFlashSession({
     } else {
       await submitAnswerToServer(pending);
     }
+  };
+
+  const retryWordSearchSelection = async () => {
+    if (busy || !pendingWordSearchSelectionRef.current) return;
+    await submitWordSearchSelectionToServer(pendingWordSearchSelectionRef.current);
   };
 
   const retryReveal = async () => {
@@ -1106,6 +1265,10 @@ export function useServerFlashSession({
     queensState,
     queensStatusVisible,
     queensError,
+    wordSearchState,
+    wordSearchStatusVisible,
+    wordSearchError,
+    lastWordSearchSelection,
     pendingAnswer,
     startNotice,
     displayChallenge: display,
@@ -1122,6 +1285,8 @@ export function useServerFlashSession({
     retryMatchingPair,
     submitQueensPlacement,
     retryQueensPlacement,
+    submitWordSearchSelection,
+    retryWordSearchSelection,
     abandon,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

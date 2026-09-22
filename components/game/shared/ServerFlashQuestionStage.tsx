@@ -15,6 +15,7 @@ import { AnagramQuestion } from "@/components/questions/formats/anagram/AnagramQ
 import { ClassificationQuestion } from "@/components/questions/formats/classification/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
 import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMapQuestion";
+import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -53,6 +54,12 @@ export function ServerFlashQuestionStage({
   queensError,
   onQueensPlacement,
   onRetryQueens,
+  wordSearchState,
+  wordSearchStatusVisible,
+  wordSearchError,
+  lastWordSearchSelection,
+  onWordSearchSelection,
+  onRetryWordSearch,
   revealState,
   revealStatusVisible,
   revealError,
@@ -90,6 +97,16 @@ export function ServerFlashQuestionStage({
   readonly queensError?: string;
   readonly onQueensPlacement: (cell: number, action: "place" | "remove") => void;
   readonly onRetryQueens?: () => void;
+  readonly wordSearchState: "idle" | "submitting" | "error";
+  readonly wordSearchStatusVisible: boolean;
+  readonly wordSearchError?: string;
+  readonly lastWordSearchSelection?: {
+    readonly startCell: number;
+    readonly endCell: number;
+    readonly correct: boolean;
+  };
+  readonly onWordSearchSelection: (startCell: number, endCell: number) => void;
+  readonly onRetryWordSearch?: () => void;
   readonly revealState: "idle" | "submitting" | "error";
   readonly revealStatusVisible: boolean;
   readonly revealError?: string;
@@ -220,6 +237,18 @@ export function ServerFlashQuestionStage({
             onPlace={onQueensPlacement}
             onRetry={onRetryQueens}
           />
+        ) : question.type === "word-search" ? (
+          <ServerWordSearchQuestion
+            question={question}
+            progress={question.progress}
+            locked={locked}
+            selectionState={wordSearchState}
+            selectionStatusVisible={wordSearchStatusVisible}
+            selectionError={wordSearchError}
+            lastSelection={lastWordSearchSelection}
+            onSelect={onWordSearchSelection}
+            onRetry={onRetryWordSearch}
+          />
         ) : question.type === "true-false" ? (
           <>
             <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
@@ -317,7 +346,7 @@ export function ServerFlashQuestionStage({
               </div>
             ) : null}
             <div className="mt-7 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
-              {question.options.map((option, index) => (
+              {question.type === "multiple-choice" ? question.options.map((option, index) => (
                 <AnswerOption
                   key={option}
                   label={option}
@@ -327,7 +356,7 @@ export function ServerFlashQuestionStage({
                   disabled={locked}
                   onSelect={() => onSubmit(option)}
                 />
-              ))}
+              )) : null}
             </div>
             {showSubmissionStatus ? submissionStatus : null}
           </>

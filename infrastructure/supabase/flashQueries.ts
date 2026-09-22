@@ -49,7 +49,8 @@ export type FlashReadRow = {
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map";
+    | "heat-map"
+    | "word-search";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -75,7 +76,8 @@ export type FlashResultRow = {
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map";
+    | "heat-map"
+    | "word-search";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -143,7 +145,8 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "anagram" ||
       value.question_type === "classification" ||
       value.question_type === "estimation" ||
-      value.question_type === "heat-map") &&
+      value.question_type === "heat-map" ||
+      value.question_type === "word-search") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
       (value.question_type === "estimation" && value.payload_schema_version === 2) ||
@@ -177,7 +180,8 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "anagram" ||
       value.question_type === "classification" ||
       value.question_type === "estimation" ||
-      value.question_type === "heat-map") &&
+      value.question_type === "heat-map" ||
+      value.question_type === "word-search") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
       (value.question_type === "estimation" && value.payload_schema_version === 2) ||

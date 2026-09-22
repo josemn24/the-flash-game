@@ -252,6 +252,7 @@ begin
             when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
             when q.type = 'matching' then private.matching_progress(a.id, item.id)
             when q.type = 'queens' then private.queens_progress(a.id, item.id)
+            when q.type = 'word-search' then private.word_search_progress(a.id, item.id)
             when q.type = 'short-text' and cv.mode = 'alphabet' then (
               select jsonb_build_object(
                 'kind', 'alphabet',
@@ -326,6 +327,12 @@ begin
           where q.id = item.question_version_id and q.type = 'matching'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'matching_requires_pair_command' using errcode = '22023';
+        end if;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'word-search'
+        ) and jsonb_typeof(input->'answer') <> 'null' then
+          raise exception 'word_search_requires_selection_command' using errcode = '22023';
         end if;
         select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
@@ -550,7 +557,11 @@ begin
       select jsonb_object_agg(e.left_item_id, e.right_item_id)
       from private.matching_pair_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) else r.answer end, 'receivedAt', r.received_at,
+    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then coalesce((
+      select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
+      from private.word_search_selection_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
+    ), '[]'::jsonb) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
     'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
@@ -576,6 +587,9 @@ begin
       select count(*)::integer
       from private.queens_placement_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
+    ), 0) when q.type = 'word-search' then coalesce((
+      select count(*)::integer from private.word_search_selection_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
@@ -655,7 +669,7 @@ begin
         where id = segment.id;
         result := jsonb_build_object('receiptId', null, 'recovered', true,
           'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
-      elsif question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens') and instant < unit.deadline_at then
+      elsif question.type in ('mini-wordle', 'logic-code', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

@@ -1,9 +1,9 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-21. La ampliación S17a, S18b parcial y D08a/D08b/S13 están aplicadas
+Estado: baseline probado sobre PostgreSQL 17 local, 2026-09-22. La ampliación S17a, S18b parcial y D08a/D08b/S13 están aplicadas
 localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
-**29 tablas**, una vista
+**30 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S13, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas y el vertical Flash competitivo,
@@ -26,7 +26,8 @@ autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita
 revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
 E04 añade Matching con eventos privados de aciertos/fallos, penalización del 10%, progreso seguro y
 evaluación parcial desde eventos. E05 añade Queens con eventos privados de colocación/retirada,
-penalización del 5%, recuperación del tablero y resolución terminal server-side. S05 añade Alphabet
+penalización del 5%, recuperación del tablero y resolución terminal server-side. E06 añade Word-search
+con soluciones privadas, selecciones server-side, errores persistidos, recuperación e idempotencia. S05 añade Alphabet
 con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
 no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
 
@@ -136,6 +137,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql) | Validación interna de assets de preguntas listos para publicación/uso. |
 | [98_question_asset_commands.sql](98_question_asset_commands.sql) | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas. |
 | [99_queens.sql](99_queens.sql) | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada. |
+| [99_word_search.sql](99_word_search.sql) | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -295,7 +297,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **38 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **39 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
 26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
 y las 712 pruebas TypeScript

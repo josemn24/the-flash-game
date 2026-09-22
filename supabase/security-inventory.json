@@ -88,6 +88,9 @@
     "private.matching_pair_events": {
       "kind": "r"
     },
+    "private.word_search_selection_events": {
+      "kind": "r"
+    },
     "private.queens_placement_events": {
       "kind": "r"
     },
@@ -607,6 +610,16 @@
       "executeRoles": []
     },
     "private.submit_matching_pair": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.word_search_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_word_search_selection": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

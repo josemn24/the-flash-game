@@ -109,6 +109,14 @@ export function requireLockVersion(body: JsonObject) {
   return body.lockVersion;
 }
 
+export function requireCell(body: JsonObject, key: "startCell" | "endCell") {
+  const value = body[key];
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new AttemptApiError(`invalid_${key}`, 400);
+  }
+  return value;
+}
+
 export function optionalClientTime(body: JsonObject) {
   if (body.clientTimeUsedMs === undefined) return undefined;
   if (

@@ -49,12 +49,12 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-21.
+- Fecha: 2026-09-22.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12
-  y E01–E05/E10 sobre Supabase local.
-- La revisión declarativa canónica es `20260921073245_room_membership_commands`; la comprobación de
-  esquema cubre 38 archivos declarativos, 29 tablas y 132 funciones públicas/privadas.
+  y E01–E06/E10 sobre Supabase local.
+- La revisión declarativa canónica es `20260922081502_declarative_sync`; la comprobación de
+  esquema cubre 39 archivos declarativos, 30 tablas y 134 funciones públicas/privadas.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run docs:check` y
   `npm run supabase:schema:test` se deben leer junto con el resultado vigente de `current/qa.md`;
   `npm run type-architecture` completa correctamente.

@@ -156,6 +156,25 @@ export type FlashEditorialShortTextPublicPayload = {
   readonly answerPlaceholder?: string | null;
 };
 
+export type FlashEditorialWordSearchCell = {
+  readonly startCell: number;
+  readonly endCell: number;
+};
+
+export type FlashEditorialWordSearchTarget = {
+  readonly id: string;
+  readonly word: string;
+};
+
+export type FlashEditorialWordSearchPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: { readonly rows: number; readonly columns: number };
+  readonly letters: readonly string[];
+  readonly targets: readonly FlashEditorialWordSearchTarget[];
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
   | FlashEditorialEstimationPublicPayload
@@ -169,7 +188,8 @@ export type FlashEditorialPublicPayload =
   | FlashEditorialAnagramPublicPayload
   | FlashEditorialClassificationPublicPayload
   | FlashEditorialProgressiveImagePublicPayload
-  | FlashEditorialShortTextPublicPayload;
+  | FlashEditorialShortTextPublicPayload
+  | FlashEditorialWordSearchPublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -246,6 +266,11 @@ export type FlashEditorialShortTextSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialWordSearchSolutionPayload = {
+  readonly positionsByTargetId: Readonly<Record<string, FlashEditorialWordSearchCell>>;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
   | FlashEditorialEstimationSolutionPayload
@@ -259,7 +284,8 @@ export type FlashEditorialSolutionPayload =
   | FlashEditorialAnagramSolutionPayload
   | FlashEditorialClassificationSolutionPayload
   | FlashEditorialProgressiveImageSolutionPayload
-  | FlashEditorialShortTextSolutionPayload;
+  | FlashEditorialShortTextSolutionPayload
+  | FlashEditorialWordSearchSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -406,6 +432,16 @@ export type FlashEditorialProgressiveImageQuestion = {
   readonly solutionPayload: FlashEditorialProgressiveImageSolutionPayload;
 };
 
+export type FlashEditorialWordSearchQuestion = {
+  readonly slug: string;
+  readonly type: "word-search";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialWordSearchPublicPayload;
+  readonly solutionPayload: FlashEditorialWordSearchSolutionPayload;
+};
+
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialEstimationQuestion
@@ -420,6 +456,7 @@ export type FlashEditorialQuestion =
   | FlashEditorialAnagramQuestion
   | FlashEditorialClassificationQuestion
   | FlashEditorialProgressiveImageQuestion
+  | FlashEditorialWordSearchQuestion
   | {
       readonly slug: string;
       readonly type: "short-text";
@@ -448,6 +485,7 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialAnagramQuestion, "points">
   | Omit<FlashEditorialClassificationQuestion, "points">
   | Omit<FlashEditorialProgressiveImageQuestion, "points">
+  | Omit<FlashEditorialWordSearchQuestion, "points">
   | Omit<Extract<FlashEditorialQuestion, { readonly type: "short-text" }>, "points">;
 
 export type FlashEditorialQuestionReference = {
@@ -497,7 +535,8 @@ export type SuperadminQuestionLibraryEntry = {
     | "anagram"
     | "classification"
     | "progressive-image"
-    | "short-text";
+    | "short-text"
+    | "word-search";
   readonly question: string;
   readonly category: string | null;
   readonly tags: EditorialJsonObject;
