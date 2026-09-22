@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12 y F16 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16 y F18 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-22. Alcance: pasar del prototipo mock a competición persistida,
@@ -32,10 +32,10 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash y Alphabet.                                                                                                                                              | Sustituir autoridad cliente en Supervivencia, Pirámide y Narrativa; Pirámide también usa `localStorage` en práctica.                                        |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 30 tablas, 39 archivos declarativos, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, eventos de selección Word-search, libro de puntos, auditoría, rankings y migraciones versionadas. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| SQL       | 30 tablas, 41 archivos declarativos, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, eventos de selección Word-search, libro de puntos, auditoría, rankings y migraciones versionadas. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional. |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash y Alphabet reconstruyen contexto privado, persisten resultado y producen feedback público.                                                                                                                               | Contextos y reglas autoritativas de Supervivencia, Pirámide, Narrativa y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E06, F08, F16, E10 y `multiple-choice` con assets privados.                                                                                       | Verificación contra un entorno remoto.                                                                                                             |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                                                                       | Verificación contra un entorno remoto.                                                                                                             |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -719,7 +719,7 @@ Ficha común, obligatoria para **cada** F*:
 | F15   | `time-maze`            | Reproducir recorrido legal hasta salida; no confiar en una bandera cliente de llegada.                                                                                 |
 | F16   | `zip`                  | **Implementado localmente.** Payload público v1 sin solución, recorrido local con checkpoints, respuesta final/draft de timeout, evaluación server-side, revisión protegida, validación de solución única e integración E2E sin fallback mock. |
 | F17   | `pipes`                | Rotaciones válidas y conectividad desde origen; no aceptar solo `completed: true`.                                                                                     |
-| F18   | `escape`               | Reproducir movimientos legales; `optimalMoves`/ruta de referencia privados; revisión sin recalcular puntos históricos.                                                 |
+| F18   | `escape`               | **Implementado y verificado localmente.** Payload público v1 sin solución, movimientos locales, draft de timeout, replay server-side, revisión protegida, helper SQL inmutable y E2E 3/3 sobre fixture limpio; el cierre queda acotado al stack local hasta validar un entorno remoto. |
 | F19   | `word-hashtag`         | Movimiento/reordenación válida y límite; palabras solución privadas y conteo derivado del registro verificable.                                                        |
 
 ### E01–E10 — Formatos con eventos, penalizaciones o revelaciones
@@ -1137,7 +1137,7 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S13, D08a/D08b, E01–E06, E10, F08, F16, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+S01–S13, D08a/D08b, E01–E06, E10, F08, F16, F18, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
 sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues, Matching y Queens,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local

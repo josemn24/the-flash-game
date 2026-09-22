@@ -24,6 +24,7 @@ export type {
   EscapeBlock,
   EscapeMove,
   EscapeQuestion,
+  EscapeQuestionConfiguration,
   ErrorReconstructionAnswer,
   ErrorReconstructionCorrection,
   ErrorReconstructionQuestion,

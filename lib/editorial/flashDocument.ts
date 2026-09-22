@@ -16,22 +16,21 @@ import type {
   FlashEditorialProgressiveImageQuestion,
   FlashEditorialWordSearchQuestion,
   FlashEditorialZipQuestion,
+  FlashEditorialEscapeQuestion,
   FlashEditorialQuestion,
   FlashEditorialQuestionDocument,
   FlashEditorialQuestionReference,
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
-import type { ZipQuestion } from "@/types/game";
+import type { EscapeQuestion, ZipQuestion } from "@/types/game";
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
-import {
-  isValidZipConfiguration,
-  isValidZipPublicConfiguration,
-} from "@/lib/zip";
+import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
+import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,
@@ -134,6 +133,19 @@ const zipPublicPayloadKeys = [
   "mapNote",
   "boardLabel",
 ];
+const escapePublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "grid",
+  "initialBlocks",
+  "instruction",
+  "hideInstruction",
+  "objectiveLabel",
+  "hideObjectiveLabel",
+  "completionMessage",
+  "boardLabel",
+];
 const shortTextSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const estimationSolutionKeys = ["correctAnswer", "tolerance", "explanation"];
@@ -161,6 +173,7 @@ const progressiveImageSolutionKeys = [
 ];
 const wordSearchSolutionKeys = ["positionsByTargetId", "explanation"];
 const zipSolutionKeys = ["solution", "explanation"];
+const escapeSolutionKeys = ["referenceSolution", "optimalMoves", "explanation"];
 
 export const FLASH_MIN_QUESTIONS = 2;
 export const FLASH_MAX_QUESTIONS = 20;
@@ -406,7 +419,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       !("target" in solutionPayload) &&
       !("correctOptionId" in solutionPayload) &&
       !("positionsByTargetId" in solutionPayload) &&
-      !("solution" in solutionPayload))
+      !("solution" in solutionPayload) &&
+      !("referenceSolution" in solutionPayload))
   ) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
@@ -581,6 +595,87 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialZipQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialZipQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "escape") {
+    if (
+      !hasOnlyKeys(publicPayload, escapePublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, escapeSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato escape.`,
+      ]);
+    }
+    const configuration = {
+      grid: publicPayload.grid,
+      initialBlocks: publicPayload.initialBlocks,
+    };
+    const referenceSolution = solutionPayload.referenceSolution;
+    const legacyQuestion: EscapeQuestion = {
+      id: value.slug as string,
+      type: "escape",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: { domains: [], topics: [], cognitiveSkills: [], formatSkills: [], lifeSkills: [] },
+      question: publicPayload.question as string,
+      grid: configuration.grid as EscapeQuestion["grid"],
+      initialBlocks: configuration.initialBlocks as EscapeQuestion["initialBlocks"],
+      referenceSolution: referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: solutionPayload.optimalMoves as number,
+      timeLimit: (value.timeLimitMs as number) / 1000,
+      points: value.points as number,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      ...(typeof publicPayload.instruction === "string"
+        ? { instruction: publicPayload.instruction }
+        : {}),
+      ...(typeof publicPayload.hideInstruction === "boolean"
+        ? { hideInstruction: publicPayload.hideInstruction }
+        : {}),
+      ...(typeof publicPayload.objectiveLabel === "string"
+        ? { objectiveLabel: publicPayload.objectiveLabel }
+        : {}),
+      ...(typeof publicPayload.hideObjectiveLabel === "boolean"
+        ? { hideObjectiveLabel: publicPayload.hideObjectiveLabel }
+        : {}),
+      ...(typeof publicPayload.completionMessage === "string"
+        ? { completionMessage: publicPayload.completionMessage }
+        : {}),
+      ...(typeof publicPayload.boardLabel === "string"
+        ? { boardLabel: publicPayload.boardLabel }
+        : {}),
+    };
+    const validPresentation = [
+      "instruction",
+      "objectiveLabel",
+      "completionMessage",
+      "boardLabel",
+    ].every(
+      (key) => publicPayload[key] === undefined || nonEmptyString(publicPayload[key], 500),
+    );
+    const validVisibility = ["hideInstruction", "hideObjectiveLabel"].every(
+      (key) => publicPayload[key] === undefined || typeof publicPayload[key] === "boolean",
+    );
+    if (
+      value.payloadSchemaVersion !== 1 ||
+      !isValidEscapePublicConfiguration(configuration as EscapeQuestion) ||
+      !validPresentation ||
+      !validVisibility ||
+      !Array.isArray(referenceSolution) ||
+      !Number.isSafeInteger(solutionPayload.optimalMoves) ||
+      !isValidEscapeConfiguration(legacyQuestion)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato escape.`,
+      ]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "escape",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialEscapeQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialEscapeQuestion["solutionPayload"],
     };
   }
 

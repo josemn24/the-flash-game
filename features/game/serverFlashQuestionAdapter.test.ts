@@ -784,4 +784,56 @@ describe("server flash question adapter", () => {
       surface: { src: "/visuals/connections/eiffel-tower.png" },
     });
   });
+
+  it("maps Escape without private reference data and restores it only in terminal review", () => {
+    const publicPayload = {
+      category: "Lógica espacial",
+      question: "Libera la pieza amarilla.",
+      grid: { rows: 6, columns: 6, exit: { side: "right" as const, row: 2 } },
+      initialBlocks: [
+        { id: "target", kind: "target" as const, orientation: "horizontal" as const, row: 2, column: 0, length: 2 as const },
+        { id: "a", kind: "obstacle" as const, orientation: "vertical" as const, row: 1, column: 2, length: 2 as const },
+        { id: "b", kind: "obstacle" as const, orientation: "vertical" as const, row: 0, column: 4, length: 3 as const },
+        { id: "c", kind: "obstacle" as const, orientation: "horizontal" as const, row: 0, column: 1, length: 2 as const },
+        { id: "d", kind: "obstacle" as const, orientation: "horizontal" as const, row: 4, column: 1, length: 2 as const },
+      ],
+    };
+    const referenceSolution = [
+      { blockId: "c", from: 1, to: 0 },
+      { blockId: "a", from: 1, to: 0 },
+      { blockId: "b", from: 0, to: 3 },
+      { blockId: "target", from: 0, to: 4 },
+    ];
+    const question = questionFromPayload("item-escape", publicPayload, 30_000, 50, "escape");
+    expect(question).toMatchObject({ type: "escape", grid: publicPayload.grid });
+    expect(question).not.toHaveProperty("referenceSolution");
+    expect(question).not.toHaveProperty("optimalMoves");
+    expect(() =>
+      questionFromPayload(
+        "item-escape",
+        { ...publicPayload, referenceSolution },
+        30_000,
+        50,
+        "escape",
+      ),
+    ).toThrow(ServerFlashQuestionError);
+
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-escape",
+            position: 1,
+            questionType: "escape" as const,
+            payloadSchemaVersion: 1,
+            timeLimitMs: 30_000,
+            points: 50,
+          },
+        ],
+      },
+      [{ challengeItemId: "item-escape", publicPayload, solutionPayload: { referenceSolution, optimalMoves: 4 } }],
+    );
+    expect(review.questions[0]).toMatchObject({ type: "escape", optimalMoves: 4 });
+  });
 });

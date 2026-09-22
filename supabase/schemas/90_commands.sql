@@ -669,7 +669,7 @@ begin
         where id = segment.id;
         result := jsonb_build_object('receiptId', null, 'recovered', true,
           'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
-      elsif question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'zip') and instant < unit.deadline_at then
+      elsif question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'zip', 'escape') and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));

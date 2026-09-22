@@ -115,7 +115,8 @@ export function ServerFlashPopGame({
                 session.question?.type === "classification" ||
                   session.question?.type === "estimation" ||
                   session.question?.type === "heat-map" ||
-                  session.question?.type === "zip"
+                  session.question?.type === "zip" ||
+                  session.question?.type === "escape"
                   ? session.pendingAnswer
                   : null,
               )

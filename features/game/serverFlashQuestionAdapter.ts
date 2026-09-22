@@ -1,5 +1,6 @@
 import type {
   AnagramQuestion,
+  EscapeQuestion,
   ClassificationQuestion,
   EstimationQuestion,
   HeatMapQuestion,
@@ -32,6 +33,7 @@ import type {
   ServerHeatMapQuestion,
   ServerWordSearchQuestion,
   ServerZipQuestion,
+  ServerEscapeQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -43,6 +45,7 @@ import {
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { getWordSearchPath } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
+import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
 
 type TerminalReviewResponseRow = {
@@ -163,7 +166,8 @@ export function questionFromPayload(
     | "estimation"
     | "heat-map"
   | "word-search"
-    | "zip",
+    | "zip"
+    | "escape",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -189,7 +193,8 @@ export function questionFromPayload(
     | "estimation"
     | "heat-map"
   | "word-search"
-    | "zip",
+    | "zip"
+    | "escape",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -852,6 +857,51 @@ export function questionFromPayload(
       boardLabel: typeof value.boardLabel === "string" ? value.boardLabel : null,
     } satisfies ServerZipQuestion;
   }
+  if (questionType === "escape") {
+    const configuration = {
+      grid: value.grid,
+      initialBlocks: value.initialBlocks,
+    };
+    if (
+      !Object.keys(value).every((key) =>
+        [
+          "category",
+          "tags",
+          "question",
+          "grid",
+          "initialBlocks",
+          "instruction",
+          "hideInstruction",
+          "objectiveLabel",
+          "hideObjectiveLabel",
+          "completionMessage",
+          "boardLabel",
+        ].includes(key),
+      ) ||
+      !isValidEscapePublicConfiguration(configuration as EscapeQuestion) ||
+      (value.instruction !== undefined && typeof value.instruction !== "string") ||
+      (value.hideInstruction !== undefined && typeof value.hideInstruction !== "boolean") ||
+      (value.objectiveLabel !== undefined && typeof value.objectiveLabel !== "string") ||
+      (value.hideObjectiveLabel !== undefined && typeof value.hideObjectiveLabel !== "boolean") ||
+      (value.completionMessage !== undefined && typeof value.completionMessage !== "string") ||
+      (value.boardLabel !== undefined && typeof value.boardLabel !== "string")
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "escape",
+      grid: configuration.grid as ServerEscapeQuestion["grid"],
+      initialBlocks: configuration.initialBlocks as ServerEscapeQuestion["initialBlocks"],
+      instruction: typeof value.instruction === "string" ? value.instruction : null,
+      hideInstruction: value.hideInstruction === true,
+      objectiveLabel: typeof value.objectiveLabel === "string" ? value.objectiveLabel : null,
+      hideObjectiveLabel: value.hideObjectiveLabel === true,
+      completionMessage:
+        typeof value.completionMessage === "string" ? value.completionMessage : null,
+      boardLabel: typeof value.boardLabel === "string" ? value.boardLabel : null,
+    } satisfies ServerEscapeQuestion;
+  }
   const wordLength = value.wordLength;
   const maxAttempts = value.maxAttempts;
   if ((wordLength !== 4 && wordLength !== 5) || typeof maxAttempts !== "number") {
@@ -904,7 +954,8 @@ function questionWithSolution(
   | EstimationQuestion
   | HeatMapQuestion
   | import("@/types/game").WordSearchQuestion
-  | ZipQuestion {
+  | ZipQuestion
+  | EscapeQuestion {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -1297,6 +1348,47 @@ function questionWithSolution(
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     } satisfies ZipQuestion;
     if (!isValidZipConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
+    return fullQuestion;
+  }
+  if (question.type === "escape") {
+    const referenceSolution = solution.referenceSolution;
+    const optimalMoves = solution.optimalMoves;
+    if (
+      !Array.isArray(referenceSolution) ||
+      !Number.isSafeInteger(optimalMoves) ||
+      !referenceSolution.every(
+        (move) =>
+          move &&
+          typeof move === "object" &&
+          !Array.isArray(move) &&
+          typeof (move as Record<string, unknown>).blockId === "string" &&
+          Number.isSafeInteger((move as Record<string, unknown>).from) &&
+          Number.isSafeInteger((move as Record<string, unknown>).to),
+      )
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "escape",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      initialBlocks: [...question.initialBlocks],
+      referenceSolution: referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: optimalMoves as number,
+      instruction: question.instruction ?? undefined,
+      hideInstruction: question.hideInstruction,
+      objectiveLabel: question.objectiveLabel ?? undefined,
+      hideObjectiveLabel: question.hideObjectiveLabel,
+      completionMessage: question.completionMessage ?? undefined,
+      boardLabel: question.boardLabel ?? undefined,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies EscapeQuestion;
+    if (!isValidEscapeConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
     return fullQuestion;
   }
   return {

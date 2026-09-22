@@ -24,6 +24,7 @@ import type {
   QuestionMedia,
   EstimationQuestion,
   HeatMapQuestion,
+  EscapeQuestion,
   LogicMatrixQuestion,
   WordSearchQuestion,
   ZipQuestion,
@@ -39,6 +40,7 @@ import {
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidZipConfiguration } from "@/lib/zip";
+import { isValidEscapeConfiguration } from "@/lib/escape";
 import type {
   RoomCardModel,
   RoomCalendarEntry,
@@ -222,7 +224,8 @@ type FlashMemberReviewReadRow = {
     | "estimation"
     | "heat-map"
     | "word-search"
-    | "zip";
+    | "zip"
+    | "escape";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -470,7 +473,8 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "estimation" ||
       row.question_type === "heat-map" ||
       row.question_type === "word-search" ||
-      row.question_type === "zip") &&
+      row.question_type === "zip" ||
+      row.question_type === "escape") &&
     (row.payload_schema_version === 1 ||
       (row.question_type === "progressive-image" && row.payload_schema_version === 2) ||
       (row.question_type === "estimation" && row.payload_schema_version === 2) ||
@@ -1313,7 +1317,7 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       type: "word-search" as const,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
       tags: tags as Question["tags"],
-      question: publicPayload.question,
+      question: typeof publicPayload.question === "string" ? publicPayload.question : "",
       grid: { rows: grid.rows as number, columns: grid.columns as number },
       letters: letters as string[],
       targets,
@@ -1361,6 +1365,40 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
     } satisfies ZipQuestion;
     if (!isValidZipConfiguration(question)) {
       throw new Error(`Invalid historical zip payload (${row.challenge_item_id})`);
+    }
+    return question;
+  }
+  if (row.question_type === "escape") {
+    const publicPayload = row.public_payload as Record<string, unknown>;
+    const solutionPayload = row.solution_payload as Record<string, unknown>;
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const question = {
+      id: row.challenge_item_id,
+      type: "escape" as const,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: typeof publicPayload.question === "string" ? publicPayload.question : "",
+      grid: publicPayload.grid as EscapeQuestion["grid"],
+      initialBlocks: publicPayload.initialBlocks as EscapeQuestion["initialBlocks"],
+      referenceSolution: solutionPayload.referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: solutionPayload.optimalMoves as number,
+      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      hideInstruction: publicPayload.hideInstruction === true,
+      objectiveLabel:
+        typeof publicPayload.objectiveLabel === "string" ? publicPayload.objectiveLabel : undefined,
+      hideObjectiveLabel: publicPayload.hideObjectiveLabel === true,
+      completionMessage:
+        typeof publicPayload.completionMessage === "string"
+          ? publicPayload.completionMessage
+          : undefined,
+      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies EscapeQuestion;
+    if (!isValidEscapeConfiguration(question)) {
+      throw new Error(`Invalid historical escape payload (${row.challenge_item_id})`);
     }
     return question;
   }

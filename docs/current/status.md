@@ -8,7 +8,7 @@
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
 migradas usan fixtures y un store mock normalizado. Las slices S01–S13, S17a, S18b parcial, D08a/D08b,
-S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16 y E01–E06/E10, junto con la base transversal del
+S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
@@ -28,6 +28,10 @@ objetivo y radios privados, y crédito parcial espacial server-side.
 F16 añade `zip` como respuesta final server-side: la cuadrícula y checkpoints son públicos, la solución
 única permanece privada, el recorrido parcial se conserva como draft de timeout y la revisión terminal
 reutiliza el contenido privado autorizado.
+F18 añade `escape` como respuesta final server-side: el tablero y los bloques son públicos, la ruta de
+referencia permanece privada, los movimientos se mantienen localmente y el servidor reproduce el
+recorrido completo o el draft de timeout. La integración está verificada localmente con E2E 3/3; la
+capacidad queda acotada al stack local hasta validar un entorno remoto.
 S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
@@ -131,7 +135,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F08/F12 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F08/F12/F16/F18 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -181,9 +185,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   los estilos modificados de administración pasan Stylelint de forma aislada.
 - `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
   `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
-- `npm run supabase:schema:test`: correcto sobre 40 archivos declarativos y la revisión canónica
-  `20260922103932_declarative_sync`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
-  S10–S13, S17a, S18b parcial, E01–E06, F08, F16 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run supabase:schema:test`: correcto sobre 41 archivos declarativos y la revisión canónica
+  `20260922113254_f18_escape`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
+  S10–S13, S17a, S18b parcial, E01–E06, F08, F16, F18 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
 - `npm run schema:revision:check`: correcto; las cuatro fuentes de configuración coinciden con la
@@ -192,6 +196,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   `docs:check`, integración Auth/PostgREST/RLS y `npm run test:e2e -- e2e/f16-zip.spec.ts` (3/3).
 - No se ejecutó `npm run verify:pilot` completo para F16; sus puertas equivalentes se ejecutaron de
   forma dirigida según el alcance de la slice.
+- Validación enfocada F18: tests de dominio/adaptadores, `typecheck`, arquitectura, lint, build,
+  `supabase:schema:test`, `schema:revision:check`, `docs:check` e integración Auth/PostgREST/RLS
+  correctos. El E2E enfocado pasa 3/3 sobre fixture limpio; no se ejecutó `verify:pilot` completo
+  tras esta slice.
 - `npm run supabase:db:schema:sync -- --name s05_alphabet`: correcto; generó
   `supabase/migrations/20260919184450_s05_alphabet.sql`.
 - La segunda ejecución de `npm run supabase:db:schema:sync -- --name s05_alphabet_check` informó

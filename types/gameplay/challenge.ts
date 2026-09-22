@@ -201,7 +201,8 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "estimation"
       | "heat-map"
       | "word-search"
-      | "zip";
+      | "zip"
+      | "escape";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -343,6 +344,22 @@ export type ServerZipQuestion = ServerFlashQuestionBase & {
   readonly boardLabel: string | null;
 };
 
+export type ServerEscapeQuestion = ServerFlashQuestionBase & {
+  readonly type: "escape";
+  readonly grid: {
+    readonly rows: 6;
+    readonly columns: 6;
+    readonly exit: { readonly side: "right"; readonly row: number };
+  };
+  readonly initialBlocks: readonly import("@/types/question").EscapeBlock[];
+  readonly instruction: string | null;
+  readonly hideInstruction: boolean;
+  readonly objectiveLabel: string | null;
+  readonly hideObjectiveLabel: boolean;
+  readonly completionMessage: string | null;
+  readonly boardLabel: string | null;
+};
+
 export type ServerMiniWordleProgress = {
   readonly kind: "mini-wordle";
   readonly guesses: readonly string[];
@@ -466,7 +483,8 @@ export type ServerFlashQuestion =
   | ServerEstimationQuestion
   | ServerHeatMapQuestion
   | ServerWordSearchQuestion
-  | ServerZipQuestion;
+  | ServerZipQuestion
+  | ServerEscapeQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

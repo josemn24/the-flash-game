@@ -44,6 +44,7 @@ import type {
   AnagramQuestion,
   ClassificationQuestion,
   EstimationQuestion,
+  EscapeQuestion,
   HeatMapQuestion,
   ShortTextQuestion,
   WordSearchQuestion,
@@ -62,6 +63,7 @@ import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
+import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -233,7 +235,8 @@ function asQuestion(
   | HeatMapQuestion
   | ShortTextQuestion
   | WordSearchQuestion
-  | ZipQuestion {
+  | ZipQuestion
+  | EscapeQuestion {
   if (
     ![
       "multiple-choice",
@@ -253,6 +256,7 @@ function asQuestion(
       "heat-map",
       "word-search",
       "zip",
+      "escape",
       "short-text",
     ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -974,6 +978,42 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies ZipQuestion;
     if (!isValidZipConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
+  if (context.questionType === "escape") {
+    const configuration = {
+      grid: publicPayload.grid,
+      initialBlocks: publicPayload.initialBlocks,
+    };
+    const referenceSolution = solutionPayload.referenceSolution;
+    const question = {
+      ...base,
+      type: "escape" as const,
+      grid: configuration.grid as EscapeQuestion["grid"],
+      initialBlocks: configuration.initialBlocks as EscapeQuestion["initialBlocks"],
+      referenceSolution: referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: solutionPayload.optimalMoves as number,
+      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      hideInstruction: publicPayload.hideInstruction === true,
+      objectiveLabel:
+        typeof publicPayload.objectiveLabel === "string" ? publicPayload.objectiveLabel : undefined,
+      hideObjectiveLabel: publicPayload.hideObjectiveLabel === true,
+      completionMessage:
+        typeof publicPayload.completionMessage === "string"
+          ? publicPayload.completionMessage
+          : undefined,
+      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies EscapeQuestion;
+    if (
+      !isValidEscapePublicConfiguration(configuration as EscapeQuestion) ||
+      !Array.isArray(referenceSolution) ||
+      !Number.isSafeInteger(solutionPayload.optimalMoves) ||
+      !isValidEscapeConfiguration(question)
+    ) {
       throw new AttemptCommandError("invalid_question_payload");
     }
     return question;

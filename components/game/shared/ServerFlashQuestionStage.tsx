@@ -18,6 +18,7 @@ import { EstimationQuestion } from "@/components/questions/formats/estimation/Es
 import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMapQuestion";
 import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
 import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
+import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -275,6 +276,17 @@ export function ServerFlashQuestionStage({
                 ? (pendingAnswer as { path: number[] })
                 : undefined
             }
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
+          />
+        ) : question.type === "escape" ? (
+          <ServerEscapeQuestion
+            question={question}
             locked={locked}
             submissionState={submissionState}
             submissionStatusVisible={submissionStatusVisible}

@@ -1,4 +1,10 @@
-import type { ImageSurface, MultipleChoicePromptVisual, QuestionMedia } from "@/types/question";
+import type {
+  EscapeBlock,
+  EscapeMove,
+  ImageSurface,
+  MultipleChoicePromptVisual,
+  QuestionMedia,
+} from "@/types/question";
 
 export type FlashEditorialImageAssetReference = {
   readonly assetId: string;
@@ -208,6 +214,24 @@ export type FlashEditorialZipPublicPayload = {
   readonly boardLabel?: string;
 };
 
+export type FlashEditorialEscapePublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: {
+    readonly rows: 6;
+    readonly columns: 6;
+    readonly exit: { readonly side: "right"; readonly row: number };
+  };
+  readonly initialBlocks: readonly EscapeBlock[];
+  readonly instruction?: string;
+  readonly hideInstruction?: boolean;
+  readonly objectiveLabel?: string;
+  readonly hideObjectiveLabel?: boolean;
+  readonly completionMessage?: string;
+  readonly boardLabel?: string;
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
   | FlashEditorialEstimationPublicPayload
@@ -224,7 +248,8 @@ export type FlashEditorialPublicPayload =
   | FlashEditorialProgressiveImagePublicPayload
   | FlashEditorialShortTextPublicPayload
   | FlashEditorialWordSearchPublicPayload
-  | FlashEditorialZipPublicPayload;
+  | FlashEditorialZipPublicPayload
+  | FlashEditorialEscapePublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -316,6 +341,12 @@ export type FlashEditorialZipSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialEscapeSolutionPayload = {
+  readonly referenceSolution: readonly EscapeMove[];
+  readonly optimalMoves: number;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
   | FlashEditorialEstimationSolutionPayload
@@ -332,7 +363,8 @@ export type FlashEditorialSolutionPayload =
   | FlashEditorialProgressiveImageSolutionPayload
   | FlashEditorialShortTextSolutionPayload
   | FlashEditorialWordSearchSolutionPayload
-  | FlashEditorialZipSolutionPayload;
+  | FlashEditorialZipSolutionPayload
+  | FlashEditorialEscapeSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -509,6 +541,16 @@ export type FlashEditorialZipQuestion = {
   readonly solutionPayload: FlashEditorialZipSolutionPayload;
 };
 
+export type FlashEditorialEscapeQuestion = {
+  readonly slug: string;
+  readonly type: "escape";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialEscapePublicPayload;
+  readonly solutionPayload: FlashEditorialEscapeSolutionPayload;
+};
+
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialEstimationQuestion
@@ -526,6 +568,7 @@ export type FlashEditorialQuestion =
   | FlashEditorialProgressiveImageQuestion
   | FlashEditorialWordSearchQuestion
   | FlashEditorialZipQuestion
+  | FlashEditorialEscapeQuestion
   | {
       readonly slug: string;
       readonly type: "short-text";
@@ -557,6 +600,7 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialProgressiveImageQuestion, "points">
   | Omit<FlashEditorialWordSearchQuestion, "points">
   | Omit<FlashEditorialZipQuestion, "points">
+  | Omit<FlashEditorialEscapeQuestion, "points">
   | Omit<Extract<FlashEditorialQuestion, { readonly type: "short-text" }>, "points">;
 
 export type FlashEditorialQuestionReference = {
@@ -609,7 +653,8 @@ export type SuperadminQuestionLibraryEntry = {
     | "progressive-image"
     | "short-text"
     | "word-search"
-    | "zip";
+    | "zip"
+    | "escape";
   readonly question: string;
   readonly category: string | null;
   readonly tags: EditorialJsonObject;

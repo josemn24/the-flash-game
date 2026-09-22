@@ -389,6 +389,8 @@ export type EscapeQuestion = BaseQuestion & {
   boardLabel?: string;
 };
 
+export type EscapeQuestionConfiguration = Pick<EscapeQuestion, "grid" | "initialBlocks">;
+
 export type ErrorReconstructionStep = {
   id: string;
   text: string;

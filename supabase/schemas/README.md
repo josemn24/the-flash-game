@@ -138,6 +138,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [98_question_asset_commands.sql](98_question_asset_commands.sql) | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas. |
 | [99_queens.sql](99_queens.sql) | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada. |
 | [99_word_search.sql](99_word_search.sql) | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side. |
+| [99_escape.sql](99_escape.sql) | Validación inmutable de configuración y solución privada de Escape para publicación editorial. |
 
 Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
 El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
@@ -297,10 +298,10 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Validación local actual: `check-supabase-schema` carga **39 archivos declarativos**, verifica el
+Validación local actual: `check-supabase-schema` carga **41 archivos declarativos**, verifica el
 inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 24 de E02, 28 de E03,
 26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las 712 pruebas TypeScript
+y las 714 pruebas TypeScript
 superadas. También pasan comprobación de tipos, ESLint, arquitectura y los enlaces de documentación.
 La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales del portal, S02, S03, S04, S06,

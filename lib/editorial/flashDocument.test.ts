@@ -335,6 +335,45 @@ describe("Flash editorial document", () => {
     ).toThrow();
   });
 
+  it("keeps Escape reference moves private and validates the editorial contract", () => {
+    const question = {
+      slug: "escape-private",
+      type: "escape",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30_000,
+      publicPayload: {
+        question: "Libera el bloque amarillo.",
+        grid: { rows: 6, columns: 6, exit: { side: "right", row: 2 } },
+        initialBlocks: [
+          { id: "target", kind: "target", orientation: "horizontal", row: 2, column: 0, length: 2 },
+          { id: "a", kind: "obstacle", orientation: "vertical", row: 1, column: 2, length: 2 },
+          { id: "b", kind: "obstacle", orientation: "vertical", row: 0, column: 4, length: 3 },
+          { id: "c", kind: "obstacle", orientation: "horizontal", row: 0, column: 1, length: 2 },
+          { id: "d", kind: "obstacle", orientation: "horizontal", row: 4, column: 1, length: 2 },
+        ],
+      },
+      solutionPayload: {
+        referenceSolution: [
+          { blockId: "c", from: 1, to: 0 },
+          { blockId: "a", from: 1, to: 0 },
+          { blockId: "b", from: 0, to: 3 },
+          { blockId: "target", from: 0, to: 4 },
+        ],
+        optimalMoves: 4,
+      },
+    };
+    const parsed = parseFlashEditorialQuestionDocument(question);
+    expect(parsed.type).toBe("escape");
+    expect(parsed.publicPayload).not.toHaveProperty("referenceSolution");
+    expect(parsed.publicPayload).not.toHaveProperty("optimalMoves");
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        ...question,
+        publicPayload: { ...question.publicPayload, referenceSolution: [] },
+      }),
+    ).toThrow();
+  });
+
   it("rejects invalid final-answer contracts", () => {
     const trueFalse = {
       slug: "invalid-true-false",

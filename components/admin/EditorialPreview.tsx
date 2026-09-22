@@ -3,12 +3,15 @@ import { AnswerOption } from "@/components/questions/shared/AnswerOption";
 import { WordSearchBoard } from "@/components/questions/formats/word-search/WordSearchQuestion";
 import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
 import { ZipBoard } from "@/components/questions/formats/zip/ZipQuestion";
+import { EscapeBoard } from "@/components/questions/formats/escape/EscapeQuestion";
 import { Chip } from "@/components/ui";
+import { replayEscapeMoves } from "@/lib/escape";
 import type {
   LogicMatrixQuestion as LegacyLogicMatrixQuestion,
   MultipleChoiceQuestion,
   WordSearchQuestion as LegacyWordSearchQuestion,
   ZipQuestion as LegacyZipQuestion,
+  EscapeQuestion as LegacyEscapeQuestion,
 } from "@/types/question";
 import type { ReactNode } from "react";
 import type {
@@ -241,6 +244,47 @@ function renderQuestion(
         <ZipBoard question={boardQuestion} path={[]} solutionPath={boardQuestion.solution} disabled />
         <p className={styles.solution}>
           Solución privada: <strong>{boardQuestion.solution.length} celdas verificadas</strong>
+        </p>
+      </QuestionFrame>
+    );
+  }
+  if (question.type === "escape") {
+    const boardQuestion = {
+      id: question.slug,
+      type: "escape" as const,
+      category: question.publicPayload.category ?? "",
+      tags: { domains: [], topics: [], cognitiveSkills: [], formatSkills: [], lifeSkills: [] },
+      question: question.publicPayload.question,
+      grid: question.publicPayload.grid,
+      initialBlocks: [...question.publicPayload.initialBlocks],
+      referenceSolution: [...question.solutionPayload.referenceSolution],
+      optimalMoves: question.solutionPayload.optimalMoves,
+      instruction: question.publicPayload.instruction,
+      hideInstruction: question.publicPayload.hideInstruction,
+      objectiveLabel: question.publicPayload.objectiveLabel,
+      hideObjectiveLabel: question.publicPayload.hideObjectiveLabel,
+      completionMessage: question.publicPayload.completionMessage,
+      boardLabel: question.publicPayload.boardLabel,
+      timeLimit: question.timeLimitMs / 1000,
+      points: question.points,
+      explanation: question.solutionPayload.explanation ?? "",
+    } satisfies LegacyEscapeQuestion;
+    const reference = replayEscapeMoves(boardQuestion, boardQuestion.referenceSolution);
+    return (
+      <QuestionFrame
+        key={question.slug}
+        index={index}
+        meta={`${question.timeLimitMs / 1000}s · ${question.points} puntos`}
+      >
+        <p className={styles.category}>{question.publicPayload.category ?? ""}</p>
+        <h4>{question.publicPayload.question}</h4>
+        <EscapeBoard
+          question={boardQuestion}
+          blocks={reference.blocks}
+          label="Solución de referencia de Escape"
+        />
+        <p className={styles.solution}>
+          Solución privada: <strong>{question.solutionPayload.optimalMoves} movimientos óptimos</strong>
         </p>
       </QuestionFrame>
     );
