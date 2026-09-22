@@ -168,18 +168,16 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - La reorganización del portal valida el adaptador del dashboard, el dashboard sin formularios y la
   compatibilidad de las redirecciones con 19 tests dirigidos; `npm run supabase:schema:test` también pasa con la nueva función de
   lectura registrada en el inventario de seguridad.
-- `npm run test:e2e -- e2e/admin-portal.spec.ts` arrancó con Supabase local, pero no completó el
-  login del fixture y no llegó a validar la página; queda pendiente repetirlo con el entorno de
-  autenticación E2E operativo.
-- La repetición de `npm run test:e2e -- e2e/s10-season.spec.ts` con Supabase local confirmó el
-  mismo bloqueo previo al portal: el fixture no alcanza el heading `Mis salas` tras iniciar sesión.
-  No se observó un fallo de la UI administrativa. `npm run stylelint` mantiene un fallo histórico
-  fuera del portal en el selector duplicado de `app/flash-pop-concepts/FlashPopConcepts.module.css`;
+- `npm run verify:pilot`, ejecutado sobre Supabase local reconstruido desde cero, es correcto:
+  el runner carga fixtures aislados y ejecuta integración y E2E para portal, S02, S03, E01–E06,
+  S04, S06, S07 y S10–S12; también pasan el fixture de navegador, `flash-layout`, diccionario
+  y backup/restore.
+- Las pruebas E2E administrativas y de slices que antes estaban bloqueadas por el fixture de login
+  quedan cerradas dentro del piloto completo. `npm run stylelint` mantiene un fallo histórico fuera
+  del portal en el selector duplicado de `app/flash-pop-concepts/FlashPopConcepts.module.css`;
   los estilos modificados de administración pasan Stylelint de forma aislada.
 - `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
   `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
-- `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
-  fixture, integración y E2E además de los recorridos existentes.
 - `npm run supabase:schema:test`: correcto sobre 39 archivos declarativos y la revisión canónica
   `20260922081502_declarative_sync`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
   S10–S13, S17a, S18b parcial, E01–E06 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
@@ -197,32 +195,30 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   - D08a/S13 valida los bytes reales de avatares, limita JPEG/PNG/WebP a 5 MB y 2048 px, confirma
     `media_assets` antes de cambiar `players.avatar_path` y conserva el avatar anterior ante fallos.
 - `npm run test:integration:supabase -- --scenario e10`: correcto; el E2E E10 incluye el recorrido
-  completo y el control de spectator. En esta sesión el caso jugador quedó pendiente por un timeout
-  del entorno local al iniciar el intento, con artefactos de trace incompletos.
+  completo y el control de spectator. Su verificación se mantiene fuera de la matriz S22 de
+  ejecución del piloto, pero está cubierta por su escenario dedicado.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.
 - `npm run test:e2e -- e2e/s10-season.spec.ts`: 2/2 correctos; superadmin crea/edita/activa en `/admin`
   y un miembro no accede al portal.
 - `npm run test:integration:supabase -- --scenario s11`: el escenario declarativo de publicación
   queda cubierto por la suite de schema, incluida la pregunta `estimation` v2.
-- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: el test fue ampliado a siete preguntas e incluye
-  `estimation` y `heat-map`, pero queda pendiente por el fixture de login local: no llega a mostrar
-  `Mis salas`.
-- `npm run test:integration:supabase -- --scenario e03`: escenario añadido para publicación mixta,
-  proyección sin solución ni pistas futuras y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: escenario añadido para primera pista,
-  revelación idempotente, reducción del máximo, recarga, respuesta normalizada y revisión.
-- `npm run test:integration:supabase -- --scenario e04`: escenario añadido para publicación mixta,
-  payload jugable sin correspondencias y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e04-matching.spec.ts`: escenario añadido para parejas, penalización,
-  recarga, respuesta HTTP perdida, reintento idempotente y revisión autorizada.
+- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: correcto dentro del piloto; cubre creación, edición,
+  preview protegido, publicación explícita de siete preguntas y publicación del Flash, además de la
+  invisibilidad del editor para un miembro.
+- `npm run test:integration:supabase -- --scenario e03` y
+  `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: correctos; cubren publicación mixta,
+  proyección sin solución/pistas futuras, revelación idempotente, recarga, penalización y revisión.
+- `npm run test:integration:supabase -- --scenario e04` y
+  `npm run test:e2e -- e2e/e04-matching.spec.ts`: correctos; cubren correspondencias privadas,
+  penalización, recarga, reintento idempotente, cierre y revisión autorizada.
 - `npm run test:integration:supabase -- --scenario e05`: correcto con fixture mixto, lectura Queens
   sin solución y aislamiento del spectator; el fixture temporal se limpió tras la prueba.
-- `npm run test:e2e -- e2e/e05-queens.spec.ts`: escenario añadido para coronas persistidas, recarga,
-  reintento idempotente, resolución y revisión autorizada; pendiente de ejecutar con el servidor E2E.
-- `npm run test:integration:supabase -- --scenario s12`: pendiente de aplicar la migración S12 al
-  Supabase persistente local; la suite declarativa sobre una base aislada ya pasa y la prueba no se
-  repite con un reset global para no eliminar fixtures no relacionados.
+- `npm run test:e2e -- e2e/e05-queens.spec.ts`: correcto; cubre coronas persistidas, recarga,
+  conflicto, reintento idempotente, resolución y revisión autorizada.
+- `npm run test:integration:supabase -- --scenario s12` y
+  `npm run test:e2e -- e2e/s12-calendar.spec.ts`: correctos tras reconstruir la base local; cubren
+  programación, tick temporal protegido, calendario y acceso del miembro al desafío.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth, PostgREST y
   denegación de acceso privado contra Supabase local.
 - `npm run test:e2e -- e2e/admin-portal.spec.ts`: 2/2 correctos; superadmin, recarga, miembro

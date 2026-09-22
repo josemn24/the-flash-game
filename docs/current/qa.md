@@ -17,8 +17,9 @@
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
   `20260922081502_declarative_sync`.
-- `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
-  fixture, integración y E2E además de los recorridos existentes.
+- `npm run verify:pilot`: correcto el 2026-09-22 sobre Supabase local reconstruido desde cero;
+  pasan portal, S02, S03, E01–E06, S04, S06, S07 y S10–S12 en integración y E2E, junto con
+  `browser-fixture`, `flash-layout`, `dictionary-check` y `backup-restore`.
 - `npm run supabase:schema:test`: correcto sobre 39 archivos declarativos, 30 tablas y 134 funciones
   públicas/privadas, inventario, provisioning,
   S02–S08, S10–S13, E01–E06 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
@@ -51,22 +52,18 @@
   público sin solución, progreso de códigos, duplicados sin penalización y ceros iniciales.
 - `npm run test:e2e -- e2e/e02-logic-code.spec.ts`: cubre Auth, elección múltiple + Logic-code,
   recarga, duplicado, respuesta HTTP perdida, reintento idempotente y spectator.
-- `npm run test:integration:supabase -- --scenario e03`: preparado para cubrir publicación editorial mixta, ausencia
-  de solución/pistas futuras en la proyección jugable y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: preparado para cubrir primera pista, revelación secuencial,
-  respuesta HTTP perdida, reintento idempotente, recarga, penalización visible, variante normalizada
-  y revisión autorizada.
-- `npm run test:integration:supabase -- --scenario e04`: preparado para cubrir publicación mixta,
-  correspondencias privadas y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e04-matching.spec.ts`: preparado para cubrir feedback por pareja,
-  penalización, recarga, reintento idempotente, cierre automático y revisión.
-- `npm run test:integration:supabase -- --scenario e05`: preparado para cubrir tablero mixto,
-  publicación de Queens, ausencia de solución y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e05-queens.spec.ts`: preparado para cubrir persistencia de coronas,
-  recarga, conflicto, respuesta HTTP perdida, reintento idempotente y revisión.
-- La integración Auth/PostgREST y el E2E de S12 quedan preparados en `scripts/integration/scenarios/s12.mjs`
-  y `e2e/s12-calendar.spec.ts`, pero requieren aplicar primero las migraciones S12 al Supabase local
-  persistente; no se ejecutó un reset global para conservar fixtures ajenos.
+- `npm run test:integration:supabase -- --scenario e03` y
+  `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: correctos; cubren publicación mixta,
+  ausencia de solución/pistas futuras, revelación secuencial, idempotencia, recarga y revisión.
+- `npm run test:integration:supabase -- --scenario e04` y
+  `npm run test:e2e -- e2e/e04-matching.spec.ts`: correctos; cubren correspondencias privadas,
+  penalización, recarga, idempotencia, cierre y revisión.
+- `npm run test:integration:supabase -- --scenario e05` y
+  `npm run test:e2e -- e2e/e05-queens.spec.ts`: correctos; cubren publicación de Queens, tablero,
+  coronas persistidas, conflicto, recarga, idempotencia y revisión.
+- La integración Auth/PostgREST y el E2E de S12 en `scripts/integration/scenarios/s12.mjs` y
+  `e2e/s12-calendar.spec.ts` son correctos; el piloto aplica las migraciones S12 mediante reset
+  global antes de cada fixture aislado.
 - S06 continúa verificado por `s06` y `e2e/s06-ranking.spec.ts`.
 - `npm run format:check`: avisos de formato en 71 archivos; quedan fuera del alcance de esta
   actualización documental.

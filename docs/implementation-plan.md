@@ -1002,7 +1002,9 @@ rate limit y respuestas `no-store`. Existe health privado en `/api/internal/heal
 redactados y `npm run verify:pilot` para reconstruir Supabase local, probar escenarios por separado,
 ejecutar E2E y ensayar backup/restore. El alcance sigue siendo local/CI: no declara staging o
 producción remota, integración de `question-assets` en otros formatos, otros modos, abandono automático,
-takeover ni `results_locked_at`.
+takeover ni `results_locked_at`. El 2026-09-22, `npm run verify:pilot` completó correctamente
+la matriz local de portal, S02, S03, E01–E06, S04, S06, S07 y S10–S12, incluidos sus fixtures,
+integraciones y E2E, además de layout, diccionario y backup/restore.
 
 ### S23 — Ejecutar una prueba fantasma interna
 

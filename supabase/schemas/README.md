@@ -303,7 +303,8 @@ inventario y ejecuta los casos existentes, incluidos **26 checks pgTAP de E01, 2
 y las 712 pruebas TypeScript
 superadas. También pasan comprobación de tipos, ESLint, arquitectura y los enlaces de documentación.
 La suite SQL no sustituye
-las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales de S01–S11 y portal; S06 añade
+las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales del portal, S02, S03, S04, S06,
+S07, S10, S11 y S12, además de E01–E06; S06 añade
 integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
 portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,
 rollback y recarga del portal.

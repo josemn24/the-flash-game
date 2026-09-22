@@ -30,7 +30,7 @@ de 31 formatos.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
 recorridos competitivos persistidos en Supabase. S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
-F01/F02/F03/F04/F06/F07/F12 y E01–E05/E10 conectan Auth, provisioning de jugador,
+F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
 los rankings de temporada/publicación actual, el historial Flash y la revisión después de volver. El
 portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
