@@ -624,6 +624,11 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.zip_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.queens_board": {
       "arguments": "target_attempt uuid, target_item uuid",
       "securityDefiner": true,

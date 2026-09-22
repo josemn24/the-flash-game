@@ -1,32 +1,21 @@
 "use client";
 
-import {
-  type KeyboardEvent,
-  type PointerEvent as ReactPointerEvent,
-  type RefObject,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type KeyboardEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import {
   applyZipCellSelection,
   calculateZipMetrics,
   isCompleteZipPath,
-  ZIP_CELL_COUNT,
+  isValidZipPath,
   ZIP_COLUMNS,
   ZIP_ROWS,
 } from "@/lib/zip";
-import type { ZipAnswer, ZipPublicQuestion, ZipQuestion as ZipQuestionType } from "@/types/game";
+import type { ZipAnswer } from "@/types/game";
+import type { ServerZipQuestion as ServerQuestion } from "@/types/gameplay/challenge";
+import { ZipBoard } from "./ZipQuestion";
 import styles from "./ZipQuestion.module.css";
 
 type Point = { x: number; y: number };
-
-function pathPoints(path: number[]) {
-  return path
-    .map((cell) => `${(cell % ZIP_COLUMNS) + 0.5},${Math.floor(cell / ZIP_COLUMNS) + 0.5}`)
-    .join(" ");
-}
 
 function neighborForKey(cell: number, key: string) {
   const row = Math.floor(cell / ZIP_COLUMNS);
@@ -38,120 +27,37 @@ function neighborForKey(cell: number, key: string) {
   return null;
 }
 
-export function ZipBoard({
+export function ServerZipQuestion({
   question,
-  path,
-  solutionPath,
-  boardRef,
-  onCellSelect,
-  onKeyDown,
-  onPointerDown,
-  onPointerMove,
-  onPointerUp,
-  label = "Tablero Zip.",
-  disabled = false,
-}: {
-  question: Pick<ZipPublicQuestion, "grid" | "checkpoints" | "boardLabel">;
-  path: number[];
-  solutionPath?: number[];
-  boardRef?: RefObject<HTMLDivElement | null>;
-  onCellSelect?: (cell: number) => void;
-  onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
-  onPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void;
-  onPointerMove?: (event: ReactPointerEvent<HTMLDivElement>) => void;
-  onPointerUp?: (event: ReactPointerEvent<HTMLDivElement>) => void;
-  label?: string;
-  disabled?: boolean;
-}) {
-  const checkpoints = useMemo(
-    () => new Map(question.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint])),
-    [question.checkpoints],
-  );
-  const visited = new Set(path);
-  const current = path.at(-1);
-  const interactive = Boolean(onCellSelect) && !disabled;
-
-  return (
-    <div
-      ref={boardRef}
-      className={`${styles.board} ${interactive ? styles.boardInteractive : ""}`}
-      role="grid"
-      aria-label={label}
-      tabIndex={interactive ? 0 : undefined}
-      onKeyDown={onKeyDown}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-    >
-      <svg
-        className={styles.routeOverlay}
-        viewBox={`0 0 ${ZIP_COLUMNS} ${ZIP_ROWS}`}
-        aria-hidden="true"
-      >
-        {solutionPath && solutionPath.length > 1 && (
-          <polyline className={styles.solutionRoute} points={pathPoints(solutionPath)} />
-        )}
-        {path.length > 1 && <polyline className={styles.playerRoute} points={pathPoints(path)} />}
-      </svg>
-
-      {Array.from({ length: ZIP_CELL_COUNT }, (_, cell) => {
-        const row = Math.floor(cell / ZIP_COLUMNS) + 1;
-        const column = (cell % ZIP_COLUMNS) + 1;
-        const checkpoint = checkpoints.get(cell);
-        const description = checkpoint
-          ? `, punto ${checkpoint.value}${checkpoint.label ? `, ${checkpoint.label}` : ""}`
-          : "";
-        return (
-          <div
-            key={cell}
-            className={`${styles.cell} ${visited.has(cell) ? styles.visited : ""} ${
-              current === cell ? styles.current : ""
-            } ${checkpoint ? styles.checkpoint : ""}`}
-            role="gridcell"
-            aria-label={`Fila ${row}, columna ${column}${description}${
-              current === cell ? ", extremo actual" : visited.has(cell) ? ", recorrida" : ""
-            }`}
-          >
-            {interactive ? (
-              <button
-                type="button"
-                className={styles.cellButton}
-                disabled={disabled}
-                onClick={() => onCellSelect?.(cell)}
-                aria-label={`Seleccionar fila ${row}, columna ${column}${description}`}
-              >
-                {checkpoint && <span className={styles.checkpointMarker}>{checkpoint.value}</span>}
-              </button>
-            ) : (
-              checkpoint && <span className={styles.checkpointMarker}>{checkpoint.value}</span>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-export function ZipQuestion({
-  question,
+  initialAnswer,
   locked,
+  submissionState,
+  submissionStatusVisible,
+  submissionError,
+  onRetry,
   onProgress,
   onSubmit,
 }: {
-  question: ZipQuestionType;
-  locked: boolean;
-  onProgress: (answer: ZipAnswer) => void;
-  onSubmit: (answer: ZipAnswer) => void;
+  readonly question: ServerQuestion;
+  readonly initialAnswer?: ZipAnswer | null;
+  readonly locked: boolean;
+  readonly submissionState: "idle" | "submitting" | "error";
+  readonly submissionStatusVisible: boolean;
+  readonly submissionError?: string;
+  readonly onRetry?: () => void;
+  readonly onProgress: (answer: ZipAnswer) => void;
+  readonly onSubmit: (answer: ZipAnswer) => void;
 }) {
-  const start = question.checkpoints[0].cell;
+  const start = question.checkpoints[0]?.cell ?? 0;
   const boardRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<number[]>([start]);
+  const initialPath =
+    initialAnswer && isValidZipPath(question, initialAnswer.path) ? initialAnswer.path : [start];
+  const pathRef = useRef<number[]>(initialPath);
   const pointerIdRef = useRef<number | null>(null);
   const lastPointerPointRef = useRef<Point | null>(null);
-  const [path, setPath] = useState([start]);
+  const [path, setPath] = useState(initialPath);
   const [announcement, setAnnouncement] = useState("Empieza en el número 1.");
-  const metrics = useMemo(() => calculateZipMetrics(question, { path }), [path, question]);
+  const metrics = calculateZipMetrics(question, { path });
 
   useEffect(() => {
     boardRef.current?.focus();
@@ -214,9 +120,8 @@ export function ZipQuestion({
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     pointerIdRef.current = event.pointerId;
-    const point = { x: event.clientX, y: event.clientY };
-    lastPointerPointRef.current = point;
-    const cell = cellAtPoint(point);
+    lastPointerPointRef.current = { x: event.clientX, y: event.clientY };
+    const cell = cellAtPoint({ x: event.clientX, y: event.clientY });
     if (cell !== null) selectCell(cell);
   };
 
@@ -258,11 +163,12 @@ export function ZipQuestion({
     boardRef.current?.focus();
   };
 
+  const statusVisible =
+    submissionState === "error" ||
+    (submissionState === "submitting" && submissionStatusVisible);
+
   return (
-    <section
-      className={styles.root}
-      aria-label="Zip, una línea"
-    >
+    <section className={styles.root} aria-label="Zip, una línea">
       <div className={styles.header}>
         <strong>
           {metrics.coveredCells}/{metrics.totalCells} · {metrics.reachedCheckpoint}/
@@ -270,7 +176,7 @@ export function ZipQuestion({
         </strong>
       </div>
       <ZipBoard
-        question={question}
+        question={{ ...question, boardLabel: question.boardLabel ?? undefined }}
         path={path}
         boardRef={boardRef}
         onCellSelect={selectCell}
@@ -279,21 +185,11 @@ export function ZipQuestion({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         disabled={locked}
-        label={
-          question.boardLabel ??
-          "Tablero Zip. Arrastra, toca una celda adyacente o usa las flechas para extender el camino."
-        }
+        label={question.boardLabel ?? "Tablero Zip. Usa las flechas, el tacto o el arrastre."}
       />
-      {question.checkpoints.some((checkpoint) => checkpoint.label) && (
-        <ol className={styles.legend} aria-label="Puntos de observación">
-          {question.checkpoints.map((checkpoint) => (
-            <li key={checkpoint.value}>
-              <span>{checkpoint.value}</span>
-              {checkpoint.label}
-            </li>
-          ))}
-        </ol>
-      )}
+      <p className={styles.instructions}>
+        {question.instruction ?? "Usa cada celda una sola vez."}
+      </p>
       <p className="sr-only" role="status" aria-live="polite">
         {announcement}
       </p>
@@ -305,7 +201,16 @@ export function ZipQuestion({
           Reiniciar
         </button>
       </div>
-      <p className={styles.instructions}>Usa cada celda una sola vez.</p>
+      {statusVisible ? (
+        <ServerOperationStatus
+          state={submissionState}
+          visible={submissionStatusVisible}
+          pendingMessage="Comprobando recorrido…"
+          errorMessage={submissionError ?? "No hemos podido confirmar el recorrido."}
+          retryLabel="Reintentar"
+          onRetry={onRetry}
+        />
+      ) : null}
     </section>
   );
 }

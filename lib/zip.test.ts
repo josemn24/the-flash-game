@@ -7,6 +7,7 @@ import {
   countZipSolutions,
   isCompleteZipPath,
   isValidZipConfiguration,
+  isValidZipPublicConfiguration,
   isValidZipPath,
 } from "@/lib/zip";
 
@@ -18,6 +19,30 @@ describe("Zip", () => {
     expect(countZipSolutions(question)).toBe(1);
     expect(isValidZipPath(question, question.solution)).toBe(true);
     expect(isCompleteZipPath(question, question.solution)).toBe(true);
+  });
+
+  it("validates the public board without requiring or exposing the solution", () => {
+    const publicConfiguration = {
+      grid: question.grid,
+      checkpoints: question.checkpoints,
+    };
+    expect(isValidZipPublicConfiguration(publicConfiguration)).toBe(true);
+    expect(JSON.stringify(publicConfiguration)).not.toContain("solution");
+    expect(
+      isValidZipPublicConfiguration({
+        ...publicConfiguration,
+        checkpoints: [{ value: 2, cell: 0 }, ...question.checkpoints.slice(1)],
+      }),
+    ).toBe(false);
+    expect(
+      isValidZipPublicConfiguration({
+        ...publicConfiguration,
+        checkpoints: question.checkpoints.map((checkpoint) => ({
+          ...checkpoint,
+          cell: checkpoint.cell === 4 ? 0 : checkpoint.cell,
+        })),
+      }),
+    ).toBe(false);
   });
 
   it("rejects malformed configurations and invalid paths", () => {

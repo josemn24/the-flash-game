@@ -8,7 +8,7 @@
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
 migradas usan fixtures y un store mock normalizado. Las slices S01–S13, S17a, S18b parcial, D08a/D08b,
-S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10, junto con la base transversal del
+S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
@@ -19,12 +19,15 @@ server-side, y E06 Word-search con selecciones privadas, recuperación e idempot
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. F01/F02/F06 añaden
 `true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
-F07/F12 añaden `classification` y `anagram` con validación de labels/categorías, consumo de fichas,
+F07/F08/F12 añaden `classification`, `logic-matrix` y `anagram` con validación de labels/categorías, consumo de fichas,
 asignaciones parciales y soluciones privadas en payloads v1.
 F03 añade `estimation` al Flash competitivo con payload v2, tolerancia privada, crédito parcial
 por proximidad y soporte opcional para imágenes privadas de `question-assets`.
 F04 añade `heat-map` al Flash competitivo con payload v2, superficie privada resuelta por URL firmada,
 objetivo y radios privados, y crédito parcial espacial server-side.
+F16 añade `zip` como respuesta final server-side: la cuadrícula y checkpoints son públicos, la solución
+única permanece privada, el recorrido parcial se conserva como draft de timeout y la revisión terminal
+reutiliza el contenido privado autorizado.
 S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
@@ -78,7 +81,7 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   automática con evaluación server-side.
   S05 añade Alphabet competitivo persistido: referencias `short-text` publicadas, reloj global,
   vueltas, pases, recuperación de la letra activa y revisión terminal sin solución durante el juego.
-  F01/F02/F06/F07/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
+  F01/F02/F06/F07/F08/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
   `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
   permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
 - La reorganización del portal ya convierte `/admin` en un dashboard breve basado en
@@ -128,7 +131,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F12 sobre el stack local; no hay
+- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F08/F12 sobre el stack local; no hay
   proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
@@ -157,8 +160,8 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 Última verificación: 2026-09-22.
 
-- `npm test`: 121 archivos y 712 tests superados; incluye reglas, adaptadores, health check y ruta HTTP,
-  UI pública de E01–E06,
+- `npm test`: 121 archivos y 714 tests superados en la última ejecución completa registrada; incluye reglas, adaptadores, health check y ruta HTTP,
+  UI pública de E01–E06 y F08,
   navegación del portal y acciones administrativas; además de S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
@@ -169,7 +172,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   compatibilidad de las redirecciones con 19 tests dirigidos; `npm run supabase:schema:test` también pasa con la nueva función de
   lectura registrada en el inventario de seguridad.
 - `npm run verify:pilot`, ejecutado sobre Supabase local reconstruido desde cero, es correcto:
-  el runner carga fixtures aislados y ejecuta integración y E2E para portal, S02, S03, E01–E06,
+  el runner carga fixtures aislados y ejecuta integración y E2E para portal, S02, S03, E01–E06, F08,
   S04, S06, S07 y S10–S12; también pasan el fixture de navegador, `flash-layout`, diccionario
   y backup/restore.
 - Las pruebas E2E administrativas y de slices que antes estaban bloqueadas por el fixture de login
@@ -178,13 +181,17 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   los estilos modificados de administración pasan Stylelint de forma aislada.
 - `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
   `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
-- `npm run supabase:schema:test`: correcto sobre 39 archivos declarativos y la revisión canónica
-  `20260922081502_declarative_sync`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
-  S10–S13, S17a, S18b parcial, E01–E06 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run supabase:schema:test`: correcto sobre 40 archivos declarativos y la revisión canónica
+  `20260922103932_declarative_sync`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
+  S10–S13, S17a, S18b parcial, E01–E06, F08, F16 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
 - `npm run schema:revision:check`: correcto; las cuatro fuentes de configuración coinciden con la
   última migración versionada.
+- Validación enfocada F16: tests de dominio/adaptadores, `typecheck`, arquitectura, lint, build,
+  `docs:check`, integración Auth/PostgREST/RLS y `npm run test:e2e -- e2e/f16-zip.spec.ts` (3/3).
+- No se ejecutó `npm run verify:pilot` completo para F16; sus puertas equivalentes se ejecutaron de
+  forma dirigida según el alcance de la slice.
 - `npm run supabase:db:schema:sync -- --name s05_alphabet`: correcto; generó
   `supabase/migrations/20260919184450_s05_alphabet.sql`.
 - La segunda ejecución de `npm run supabase:db:schema:sync -- --name s05_alphabet_check` informó

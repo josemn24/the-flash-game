@@ -25,6 +25,7 @@ import {
   isSlidingPuzzleAnswer,
   isSimonSequenceAnswer,
   isValidLogicMatrixConfiguration,
+  isValidLogicMatrixPublicPayload,
   isValidMiniNonogramConfiguration,
   isValidMiniSudokuConfiguration,
   isValidSlidingPuzzleConfiguration,
@@ -1498,6 +1499,22 @@ describe("question evaluation", () => {
 
     expect(isValidLogicMatrixConfiguration(question)).toBe(true);
     expect(
+      isValidLogicMatrixPublicPayload({
+        pieces: question.pieces,
+        cells: question.cells,
+        optionIds: question.optionIds,
+        showPieceLabels: true,
+      }),
+    ).toBe(true);
+    expect(
+      isValidLogicMatrixPublicPayload({
+        pieces: question.pieces,
+        cells: question.cells,
+        optionIds: question.optionIds,
+        correctOptionId: question.correctOptionId,
+      }),
+    ).toBe(false);
+    expect(
       isValidLogicMatrixConfiguration({ ...question, cells: question.cells.slice(0, 8) }),
     ).toBe(false);
     expect(
@@ -1795,11 +1812,15 @@ describe("question evaluation", () => {
 
   it("rejects estimation answers outside the published range or step grid", () => {
     const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
-    expect(evaluateAnswer({ question, answer: question.max + question.step, timeUsed: 0 })).toMatchObject({
+    expect(
+      evaluateAnswer({ question, answer: question.max + question.step, timeUsed: 0 }),
+    ).toMatchObject({
       status: "incorrect",
       points: 0,
     });
-    expect(evaluateAnswer({ question, answer: question.min + question.step / 2, timeUsed: 0 })).toMatchObject({
+    expect(
+      evaluateAnswer({ question, answer: question.min + question.step / 2, timeUsed: 0 }),
+    ).toMatchObject({
       status: "incorrect",
       points: 0,
     });
@@ -1810,11 +1831,15 @@ describe("question evaluation", () => {
       ...QUESTION_FORMAT_CATALOG.estimation.examples[0].question,
       tolerance: 0,
     };
-    expect(evaluateAnswer({ question, answer: question.correctAnswer, timeUsed: 0 })).toMatchObject({
-      status: "correct",
-      points: question.points,
-    });
-    expect(evaluateAnswer({ question, answer: question.correctAnswer - question.step, timeUsed: 0 })).toMatchObject({
+    expect(evaluateAnswer({ question, answer: question.correctAnswer, timeUsed: 0 })).toMatchObject(
+      {
+        status: "correct",
+        points: question.points,
+      },
+    );
+    expect(
+      evaluateAnswer({ question, answer: question.correctAnswer - question.step, timeUsed: 0 }),
+    ).toMatchObject({
       status: "partial",
       points: 0,
     });

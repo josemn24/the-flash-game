@@ -96,6 +96,7 @@ export type {
   WordSearchTarget,
   ZipAnswer,
   ZipCheckpoint,
+  ZipPublicQuestion,
   ZipQuestion,
 } from "@/types/question";
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/result";

@@ -324,14 +324,17 @@ export type ZipCheckpoint = {
   label?: string;
 };
 
-export type ZipQuestion = BaseQuestion & {
+export type ZipPublicQuestion = BaseQuestion & {
   type: "zip";
   grid: { rows: 5; columns: 5 };
-  checkpoints: ZipCheckpoint[];
-  solution: number[];
+  checkpoints: readonly ZipCheckpoint[];
   instruction?: string;
   mapNote?: string;
   boardLabel?: string;
+};
+
+export type ZipQuestion = ZipPublicQuestion & {
+  solution: number[];
 };
 
 export type PipesTileKind = "end" | "straight" | "corner" | "tee";

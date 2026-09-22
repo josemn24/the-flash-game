@@ -46,7 +46,7 @@ const localEnv = {
   // production default of 5 while giving the test process a bounded headroom.
   FLASH_RATE_LIMIT_BURST: process.env.FLASH_RATE_LIMIT_BURST || "30",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260922081502_declarative_sync",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260922103932_declarative_sync",
 };
 
 export default defineConfig({

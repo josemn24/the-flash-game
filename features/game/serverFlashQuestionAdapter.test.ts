@@ -380,6 +380,106 @@ describe("server flash question adapter", () => {
     });
   });
 
+  it("maps logic-matrix without its solution and restores it only in terminal review", () => {
+    const publicPayload = {
+      question: "Completa la matriz",
+      pieces: [
+        { id: "a", symbol: "A", label: "A" },
+        { id: "b", symbol: "B", label: "B" },
+        { id: "c", symbol: "C", label: "C" },
+        { id: "d", symbol: "D", label: "D" },
+      ],
+      cells: ["a", "b", "c", "b", "c", "a", "c", "a", null],
+      optionIds: ["d", "a", "b", "c"],
+      showPieceLabels: false,
+    };
+    const question = questionFromPayload(
+      "item-logic-matrix",
+      publicPayload,
+      20_000,
+      100,
+      "logic-matrix",
+    );
+    expect(question).toMatchObject({
+      type: "logic-matrix",
+      pieces: publicPayload.pieces,
+      cells: publicPayload.cells,
+      optionIds: publicPayload.optionIds,
+    });
+    expect(question).not.toHaveProperty("correctOptionId");
+
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-logic-matrix",
+            position: 1,
+            questionType: "logic-matrix",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 20_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-logic-matrix",
+          publicPayload,
+          solutionPayload: { correctOptionId: "d", explanation: "La opción D completa el patrón." },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({ type: "logic-matrix", correctOptionId: "d" });
+  });
+
+  it("maps zip without its solution and restores it only in terminal review", () => {
+    const publicPayload = {
+      question: "Une los números y cubre todas las celdas.",
+      grid: { rows: 5, columns: 5 },
+      checkpoints: [
+        { value: 1, cell: 0 },
+        { value: 2, cell: 4 },
+        { value: 3, cell: 5 },
+        { value: 4, cell: 14 },
+        { value: 5, cell: 15 },
+        { value: 6, cell: 24 },
+      ],
+    };
+    const solution = [
+      0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23,
+      24,
+    ];
+    const question = questionFromPayload("item-zip", publicPayload, 35_000, 50, "zip");
+    expect(question).toMatchObject({ type: "zip", grid: publicPayload.grid });
+    expect(question).not.toHaveProperty("solution");
+
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-zip",
+            position: 1,
+            questionType: "zip",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 35_000,
+            points: 50,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-zip",
+          publicPayload,
+          solutionPayload: { solution, explanation: "Recorrido serpenteante." },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({ type: "zip", solution });
+    expect(review.questions[0]).toHaveProperty("explanation", "Recorrido serpenteante.");
+  });
+
   it("propagates a runtime-safe multiple-choice image without exposing an asset id", () => {
     const question = questionFromPayload(
       "item-1",

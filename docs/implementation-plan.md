@@ -1,6 +1,6 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07 y F12 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S13, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12 y F16 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-22. Alcance: pasar del prototipo mock a competición persistida,
@@ -35,7 +35,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | SQL       | 30 tablas, 39 archivos declarativos, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, eventos de selección Word-search, libro de puntos, auditoría, rankings y migraciones versionadas. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional. |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash y Alphabet reconstruyen contexto privado, persisten resultado y producen feedback público.                                                                                                                               | Contextos y reglas autoritativas de Supervivencia, Pirámide, Narrativa y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E06, E10 y `multiple-choice` con assets privados.                                                                                                 | Verificación contra un entorno remoto.                                                                                                             |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E06, F08, F16, E10 y `multiple-choice` con assets privados.                                                                                       | Verificación contra un entorno remoto.                                                                                                             |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -709,7 +709,7 @@ Ficha común, obligatoria para **cada** F*:
 | F05   | `image-labeling`       | Dos variantes `assign-all`/`identify-one`; asociaciones privadas, texto/elección y crédito parcial.                                                                    |
 | F06   | `ordering`             | **Implementado localmente.** Permutación válida sin omitir/duplicar items; timeout y revisión del orden.                                                               |
 | F07   | `classification`       | **Implementado localmente.** Labels/categorías válidos, asignaciones parciales y claves privadas excluidas.                                                            |
-| F08   | `logic-matrix`         | Opción válida; solución no necesaria para pintar la matriz.                                                                                                            |
+| F08   | `logic-matrix`         | **Implementado localmente.** Matriz pública v1 sin solución, respuesta final server-side, penalización del 20 %, recuperación conservando la interacción abierta, revisión terminal protegida y E2E competitivo con idempotencia. |
 | F09   | `mini-sudoku`          | Tablero consistente con pistas fijas y tamaño; validar solución/timeout privado.                                                                                       |
 | F10   | `mini-nonogram`        | Dimensiones y celdas; no incluir tablero resuelto en el cliente.                                                                                                       |
 | F11   | `sliding-puzzle`       | El componente actual recibe `solution`; sustituirlo. Validar movimientos alcanzables si cuentan para score.                                                            |
@@ -717,7 +717,7 @@ Ficha común, obligatoria para **cada** F*:
 | F13   | `error-reconstruction` | Paso y corrección válidos, incluida variante sin corrección; borrador parcial persistido cuando aplique.                                                               |
 | F14   | `connect-pairs`        | Reproducir rutas ortogonales, símbolos, solapamientos/cobertura; parcial en timeout sin rutas solución.                                                                |
 | F15   | `time-maze`            | Reproducir recorrido legal hasta salida; no confiar en una bandera cliente de llegada.                                                                                 |
-| F16   | `zip`                  | Camino y checkpoints en orden; recorrido parcial y solución privada.                                                                                                   |
+| F16   | `zip`                  | **Implementado localmente.** Payload público v1 sin solución, recorrido local con checkpoints, respuesta final/draft de timeout, evaluación server-side, revisión protegida, validación de solución única e integración E2E sin fallback mock. |
 | F17   | `pipes`                | Rotaciones válidas y conectividad desde origen; no aceptar solo `completed: true`.                                                                                     |
 | F18   | `escape`               | Reproducir movimientos legales; `optimalMoves`/ruta de referencia privados; revisión sin recalcular puntos históricos.                                                 |
 | F19   | `word-hashtag`         | Movimiento/reordenación válida y límite; palabras solución privadas y conteo derivado del registro verificable.                                                        |
@@ -1003,7 +1003,7 @@ redactados y `npm run verify:pilot` para reconstruir Supabase local, probar esce
 ejecutar E2E y ensayar backup/restore. El alcance sigue siendo local/CI: no declara staging o
 producción remota, integración de `question-assets` en otros formatos, otros modos, abandono automático,
 takeover ni `results_locked_at`. El 2026-09-22, `npm run verify:pilot` completó correctamente
-la matriz local de portal, S02, S03, E01–E06, S04, S06, S07 y S10–S12, incluidos sus fixtures,
+la matriz local de portal, S02, S03, E01–E06, F08, S04, S06, S07 y S10–S12, incluidos sus fixtures,
 integraciones y E2E, además de layout, diccionario y backup/restore.
 
 ### S23 — Ejecutar una prueba fantasma interna
@@ -1110,7 +1110,7 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
 incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S13,
-S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 están
+S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16 y E01–E06/E10 están
 **implementadas localmente**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
@@ -1137,7 +1137,7 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S13, D08a/D08b, E01–E06, E10, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+S01–S13, D08a/D08b, E01–E06, E10, F08, F16, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
 sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues, Matching y Queens,
 recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
 activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local

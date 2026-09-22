@@ -4,6 +4,7 @@ import { useId } from "react";
 import { AnswerOption, QuestionMedia, ServerOperationStatus } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
+import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
 import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
 import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
@@ -16,6 +17,7 @@ import { ClassificationQuestion } from "@/components/questions/formats/classific
 import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
 import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMapQuestion";
 import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
+import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
@@ -249,6 +251,38 @@ export function ServerFlashQuestionStage({
             onSelect={onWordSearchSelection}
             onRetry={onRetryWordSearch}
           />
+        ) : question.type === "logic-matrix" ? (
+          <>
+            <LogicMatrixQuestion
+              pieces={[...question.pieces]}
+              cells={[...question.cells]}
+              optionIds={[...question.optionIds]}
+              showPieceLabels={question.showPieceLabels}
+              locked={locked}
+              onSubmit={onSubmit}
+            />
+            {showSubmissionStatus ? submissionStatus : null}
+          </>
+        ) : question.type === "zip" ? (
+          <ServerZipQuestion
+            question={question}
+            initialAnswer={
+              pendingAnswer &&
+              typeof pendingAnswer === "object" &&
+              !Array.isArray(pendingAnswer) &&
+              "path" in pendingAnswer &&
+              Array.isArray((pendingAnswer as { path?: unknown }).path)
+                ? (pendingAnswer as { path: number[] })
+                : undefined
+            }
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
+          />
         ) : question.type === "true-false" ? (
           <>
             <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
@@ -346,17 +380,19 @@ export function ServerFlashQuestionStage({
               </div>
             ) : null}
             <div className="mt-7 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
-              {question.type === "multiple-choice" ? question.options.map((option, index) => (
-                <AnswerOption
-                  key={option}
-                  label={option}
-                  index={index}
-                  selected={selected === option}
-                  pending={selected === option}
-                  disabled={locked}
-                  onSelect={() => onSubmit(option)}
-                />
-              )) : null}
+              {question.type === "multiple-choice"
+                ? question.options.map((option, index) => (
+                    <AnswerOption
+                      key={option}
+                      label={option}
+                      index={index}
+                      selected={selected === option}
+                      pending={selected === option}
+                      disabled={locked}
+                      onSelect={() => onSubmit(option)}
+                    />
+                  ))
+                : null}
             </div>
             {showSubmissionStatus ? submissionStatus : null}
           </>

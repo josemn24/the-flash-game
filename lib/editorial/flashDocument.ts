@@ -5,6 +5,7 @@ import type {
   FlashEditorialMiniWordleQuestion,
   FlashEditorialMultipleChoiceQuestion,
   FlashEditorialLogicCodeQuestion,
+  FlashEditorialLogicMatrixQuestion,
   FlashEditorialProgressiveCluesQuestion,
   FlashEditorialMatchingQuestion,
   FlashEditorialTrueFalseQuestion,
@@ -14,16 +15,23 @@ import type {
   FlashEditorialClassificationQuestion,
   FlashEditorialProgressiveImageQuestion,
   FlashEditorialWordSearchQuestion,
+  FlashEditorialZipQuestion,
   FlashEditorialQuestion,
   FlashEditorialQuestionDocument,
   FlashEditorialQuestionReference,
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
+import type { ZipQuestion } from "@/types/game";
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
+import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
+import {
+  isValidZipConfiguration,
+  isValidZipPublicConfiguration,
+} from "@/lib/zip";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,
@@ -89,6 +97,15 @@ const miniWordlePublicPayloadKeys = [
   "maxAttempts",
 ];
 const logicCodePublicPayloadKeys = ["category", "tags", "question", "clues", "codeLength"];
+const logicMatrixPublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "pieces",
+  "cells",
+  "optionIds",
+  "showPieceLabels",
+];
 const progressiveCluesPublicPayloadKeys = ["category", "tags", "question", "clues", "cluePenalty"];
 const matchingPublicPayloadKeys = ["category", "tags", "question", "leftItems", "rightItems"];
 const trueFalsePublicPayloadKeys = ["category", "tags", "question"];
@@ -107,6 +124,16 @@ const progressiveImagePublicPayloadKeys = [
 ];
 const shortTextPublicPayloadKeys = ["category", "tags", "question", "answerPlaceholder"];
 const wordSearchPublicPayloadKeys = ["category", "tags", "question", "grid", "letters", "targets"];
+const zipPublicPayloadKeys = [
+  "category",
+  "tags",
+  "question",
+  "grid",
+  "checkpoints",
+  "instruction",
+  "mapNote",
+  "boardLabel",
+];
 const shortTextSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const multipleChoiceSolutionKeys = ["correctAnswer", "explanation"];
 const estimationSolutionKeys = ["correctAnswer", "tolerance", "explanation"];
@@ -118,6 +145,7 @@ const miniWordleSolutionKeys = [
   "explanation",
 ];
 const logicCodeSolutionKeys = ["correctAnswer", "explanation"];
+const logicMatrixSolutionKeys = ["correctOptionId", "explanation"];
 const progressiveCluesSolutionKeys = ["correctAnswer", "acceptedAnswers", "explanation"];
 const matchingSolutionKeys = ["matches", "explanation"];
 const trueFalseSolutionKeys = ["correctAnswer", "explanation"];
@@ -132,6 +160,7 @@ const progressiveImageSolutionKeys = [
   "explanation",
 ];
 const wordSearchSolutionKeys = ["positionsByTargetId", "explanation"];
+const zipSolutionKeys = ["solution", "explanation"];
 
 export const FLASH_MIN_QUESTIONS = 2;
 export const FLASH_MAX_QUESTIONS = 20;
@@ -375,7 +404,9 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       !("correctOrder" in solutionPayload) &&
       !("categoriesByItem" in solutionPayload) &&
       !("target" in solutionPayload) &&
-      !("positionsByTargetId" in solutionPayload))
+      !("correctOptionId" in solutionPayload) &&
+      !("positionsByTargetId" in solutionPayload) &&
+      !("solution" in solutionPayload))
   ) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }
@@ -418,8 +449,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       (grid.rows as number) <= 10 &&
       (grid.columns as number) >= 6 &&
       (grid.columns as number) <= 10;
-    const gridRows = validGrid ? grid.rows as number : 0;
-    const gridColumns = validGrid ? grid.columns as number : 0;
+    const gridRows = validGrid ? (grid.rows as number) : 0;
+    const gridColumns = validGrid ? (grid.columns as number) : 0;
     const validLetters =
       Array.isArray(letters) &&
       validGrid &&
@@ -441,7 +472,9 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
           nonEmptyString(target.id, 120) &&
           nonEmptyString(target.word, 120),
       );
-    const targetIds = validTargets ? (targets as Array<Record<string, unknown>>).map((t) => t.id as string) : [];
+    const targetIds = validTargets
+      ? (targets as Array<Record<string, unknown>>).map((t) => t.id as string)
+      : [];
     const validPositions =
       isRecord(positions) &&
       validTargets &&
@@ -459,16 +492,17 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       type: "word-search",
       grid,
       letters,
-      targets: validTargets && validPositions
-        ? (targets as Array<Record<string, unknown>>).map((target) => ({
-            id: target.id as string,
-            word: target.word as string,
-            startCell: (positions as Record<string, Record<string, unknown>>)[target.id as string]
-              .startCell as number,
-            endCell: (positions as Record<string, Record<string, unknown>>)[target.id as string]
-              .endCell as number,
-          }))
-        : [],
+      targets:
+        validTargets && validPositions
+          ? (targets as Array<Record<string, unknown>>).map((target) => ({
+              id: target.id as string,
+              word: target.word as string,
+              startCell: (positions as Record<string, Record<string, unknown>>)[target.id as string]
+                .startCell as number,
+              endCell: (positions as Record<string, Record<string, unknown>>)[target.id as string]
+                .endCell as number,
+            }))
+          : [],
     };
     if (
       value.payloadSchemaVersion !== 1 ||
@@ -493,6 +527,60 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialWordSearchQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialWordSearchQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "zip") {
+    if (
+      !hasOnlyKeys(publicPayload, zipPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, zipSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato zip.`,
+      ]);
+    }
+    const configuration = {
+      grid: publicPayload.grid,
+      checkpoints: publicPayload.checkpoints,
+    };
+    const solution = solutionPayload.solution;
+    const validPresentation = ["instruction", "mapNote", "boardLabel"].every(
+      (key) => publicPayload[key] === undefined || nonEmptyString(publicPayload[key], 500),
+    );
+    const legacyQuestion: ZipQuestion = {
+      id: value.slug as string,
+      type: "zip",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: { domains: [], topics: [], cognitiveSkills: [], formatSkills: [], lifeSkills: [] },
+      question: publicPayload.question as string,
+      grid: configuration.grid as { rows: 5; columns: 5 },
+      checkpoints: configuration.checkpoints as ZipQuestion["checkpoints"],
+      solution: solution as number[],
+      timeLimit: (value.timeLimitMs as number) / 1000,
+      points: value.points as number,
+      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    };
+    if (
+      value.payloadSchemaVersion !== 1 ||
+      !isValidZipPublicConfiguration(configuration) ||
+      !validPresentation ||
+      !Array.isArray(solution) ||
+      solution.length !== 25 ||
+      !solution.every((cell) => Number.isSafeInteger(cell)) ||
+      !isValidZipConfiguration(legacyQuestion)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato zip.`,
+      ]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "zip",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as FlashEditorialZipQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialZipQuestion["solutionPayload"],
     };
   }
 
@@ -597,8 +685,14 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       payloadSchemaVersion: 1,
       timeLimitMs: value.timeLimitMs as number,
       points: value.points as number,
-      publicPayload: publicPayload as Extract<FlashEditorialQuestion, { type: "short-text" }>["publicPayload"],
-      solutionPayload: solutionPayload as Extract<FlashEditorialQuestion, { type: "short-text" }>["solutionPayload"],
+      publicPayload: publicPayload as Extract<
+        FlashEditorialQuestion,
+        { type: "short-text" }
+      >["publicPayload"],
+      solutionPayload: solutionPayload as Extract<
+        FlashEditorialQuestion,
+        { type: "short-text" }
+      >["solutionPayload"],
     };
   }
 
@@ -748,6 +842,42 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       points: value.points as number,
       publicPayload: publicPayload as FlashEditorialLogicCodeQuestion["publicPayload"],
       solutionPayload: solutionPayload as FlashEditorialLogicCodeQuestion["solutionPayload"],
+    };
+  }
+
+  if (value.type === "logic-matrix") {
+    if (
+      !hasOnlyKeys(publicPayload, logicMatrixPublicPayloadKeys) ||
+      !hasOnlyKeys(solutionPayload, logicMatrixSolutionKeys)
+    ) {
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
+    }
+    const correctOptionId = solutionPayload.correctOptionId;
+    const validPublicPayload = isValidLogicMatrixPublicPayload({
+      pieces: publicPayload.pieces,
+      cells: publicPayload.cells,
+      optionIds: publicPayload.optionIds,
+      showPieceLabels: publicPayload.showPieceLabels,
+    });
+    const optionIds = publicPayload.optionIds;
+    if (
+      !validPublicPayload ||
+      !Array.isArray(optionIds) ||
+      typeof correctOptionId !== "string" ||
+      !optionIds.includes(correctOptionId)
+    ) {
+      throw new FlashEditorialValidationError([
+        `questions[${index}] no cumple el contrato logic-matrix.`,
+      ]);
+    }
+    return {
+      slug: value.slug as string,
+      type: "logic-matrix",
+      payloadSchemaVersion: 1,
+      timeLimitMs: value.timeLimitMs as number,
+      points: value.points as number,
+      publicPayload: publicPayload as unknown as FlashEditorialLogicMatrixQuestion["publicPayload"],
+      solutionPayload: solutionPayload as FlashEditorialLogicMatrixQuestion["solutionPayload"],
     };
   }
 
@@ -1293,8 +1423,8 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
       letters.some((letter) => typeof letter !== "string" || letter.trim().length === 0) ||
       new Set(letters.map((letter) => (letter as string).toLocaleUpperCase("es-ES"))).size !==
         letters.length ||
-      parsedQuestions.some(
-        (question) => ("source" in question ? false : question.type !== "short-text"),
+      parsedQuestions.some((question) =>
+        "source" in question ? false : question.type !== "short-text",
       )
     ) {
       throw new FlashEditorialValidationError([

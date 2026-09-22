@@ -6,6 +6,7 @@ import type {
   AnagramTile,
   Question,
   QuestionMedia,
+  ZipCheckpoint,
 } from "@/types/question";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
@@ -187,6 +188,7 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "multiple-choice"
       | "mini-wordle"
       | "logic-code"
+      | "logic-matrix"
       | "progressive-clues"
       | "matching"
       | "progressive-image"
@@ -198,7 +200,8 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "classification"
       | "estimation"
       | "heat-map"
-      | "word-search";
+      | "word-search"
+      | "zip";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -207,12 +210,7 @@ export type ServerFlashChallenge = ChallengeBase & {
 };
 
 export type ServerAlphabetLetterStatus =
-  | "unvisited"
-  | "active"
-  | "passed"
-  | "correct"
-  | "incorrect"
-  | "unanswered";
+  "unvisited" | "active" | "passed" | "correct" | "incorrect" | "unanswered";
 
 export type ServerAlphabetLetter = {
   readonly letter: string;
@@ -336,6 +334,15 @@ export type ServerWordSearchQuestion = ServerFlashQuestionBase & {
   readonly progress: ServerWordSearchProgress;
 };
 
+export type ServerZipQuestion = ServerFlashQuestionBase & {
+  readonly type: "zip";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly checkpoints: readonly ZipCheckpoint[];
+  readonly instruction: string | null;
+  readonly mapNote: string | null;
+  readonly boardLabel: string | null;
+};
+
 export type ServerMiniWordleProgress = {
   readonly kind: "mini-wordle";
   readonly guesses: readonly string[];
@@ -363,6 +370,18 @@ export type ServerLogicCodeQuestion = ServerFlashQuestionBase & {
   readonly clues: readonly { readonly code: string; readonly hint: string }[];
   readonly codeLength: number;
   readonly progress: ServerLogicCodeProgress;
+};
+
+export type ServerLogicMatrixQuestion = ServerFlashQuestionBase & {
+  readonly type: "logic-matrix";
+  readonly pieces: readonly {
+    readonly id: string;
+    readonly symbol: string;
+    readonly label: string;
+  }[];
+  readonly cells: readonly (string | null)[];
+  readonly optionIds: readonly string[];
+  readonly showPieceLabels: boolean;
 };
 
 export type ServerMatchingPair = {
@@ -434,6 +453,7 @@ export type ServerFlashQuestion =
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
   | ServerLogicCodeQuestion
+  | ServerLogicMatrixQuestion
   | ServerProgressiveCluesQuestion
   | ServerMatchingQuestion
   | ServerProgressiveImageQuestion
@@ -445,7 +465,8 @@ export type ServerFlashQuestion =
   | ServerClassificationQuestion
   | ServerEstimationQuestion
   | ServerHeatMapQuestion
-  | ServerWordSearchQuestion;
+  | ServerWordSearchQuestion
+  | ServerZipQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

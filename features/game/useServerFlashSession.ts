@@ -1099,7 +1099,8 @@ export function useServerFlashSession({
       !question ||
       (question.type !== "classification" &&
         question.type !== "estimation" &&
-        question.type !== "heat-map") ||
+        question.type !== "heat-map" &&
+        question.type !== "zip") ||
       locked ||
       busy
     ) {

@@ -7,7 +7,7 @@
 
 2026-09-22, sobre el estado actual del repositorio y el stack local de Supabase.
 
-- `npm test`: 121 archivos de test y 712 tests superados.
+- `npm test`: 121 archivos de test y 714 tests superados.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto tras añadir el runtime fail-closed, límites HTTP y health privado.
@@ -16,16 +16,24 @@
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260922081502_declarative_sync`.
+  `20260922103932_declarative_sync`.
 - `npm run verify:pilot`: correcto el 2026-09-22 sobre Supabase local reconstruido desde cero;
-  pasan portal, S02, S03, E01–E06, S04, S06, S07 y S10–S12 en integración y E2E, junto con
+  pasan portal, S02, S03, E01–E06, F08, S04, S06, S07 y S10–S12 en integración y E2E, junto con
   `browser-fixture`, `flash-layout`, `dictionary-check` y `backup-restore`.
 - `npm run supabase:schema:test`: correcto sobre 39 archivos declarativos, 30 tablas y 134 funciones
   públicas/privadas, inventario, provisioning,
-  S02–S08, S10–S13, E01–E06 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
+  S02–S08, S10–S13, E01–E06, F08 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
   privada, preparación temporal y evaluación normalizada.
+- `npm run test:integration:supabase -- --scenario f08`: correcto con Auth, PostgREST y RLS local; valida
+  la proyección pública sin solución y el aislamiento del spectator.
+- `npm run test:e2e -- e2e/f08-logic-matrix.spec.ts`: 2/2 correctos; cubre recarga, respuesta incorrecta,
+  reintento idempotente, revisión terminal y spectator.
+- `npm run test:integration:supabase -- --scenario f16`: correcto con publicación editorial, payload sin
+  solución, Auth, PostgREST y RLS local.
+- `npm run test:e2e -- e2e/f16-zip.spec.ts`: 3/3 correctos; cubre recorrido completo, reintento con la
+  misma clave idempotente, timeout con métricas parciales y aislamiento del spectator.
 - `npm run test:integration:supabase -- --scenario e06`: correcto con publicación editorial, Auth, PostgREST y RLS local.
 - `npm run test:e2e -- e2e/e06-word-search.spec.ts`: 2 casos correctos; recuperación tras recarga,
   reintento idempotente, revisión terminal y aislamiento de spectator.

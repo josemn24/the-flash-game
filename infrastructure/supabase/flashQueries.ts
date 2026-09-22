@@ -39,6 +39,7 @@ export type FlashReadRow = {
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -50,7 +51,8 @@ export type FlashReadRow = {
     | "classification"
     | "estimation"
     | "heat-map"
-    | "word-search";
+    | "word-search"
+    | "zip";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -66,6 +68,7 @@ export type FlashResultRow = {
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -77,7 +80,8 @@ export type FlashResultRow = {
     | "classification"
     | "estimation"
     | "heat-map"
-    | "word-search";
+    | "word-search"
+    | "zip";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -135,6 +139,7 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     (value.question_type === "multiple-choice" ||
       value.question_type === "mini-wordle" ||
       value.question_type === "logic-code" ||
+      value.question_type === "logic-matrix" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
@@ -146,7 +151,8 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "classification" ||
       value.question_type === "estimation" ||
       value.question_type === "heat-map" ||
-      value.question_type === "word-search") &&
+      value.question_type === "word-search" ||
+      value.question_type === "zip") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
       (value.question_type === "estimation" && value.payload_schema_version === 2) ||
@@ -170,6 +176,7 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
     (value.question_type === "multiple-choice" ||
       value.question_type === "mini-wordle" ||
       value.question_type === "logic-code" ||
+      value.question_type === "logic-matrix" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
@@ -181,7 +188,8 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "classification" ||
       value.question_type === "estimation" ||
       value.question_type === "heat-map" ||
-      value.question_type === "word-search") &&
+      value.question_type === "word-search" ||
+      value.question_type === "zip") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
       (value.question_type === "estimation" && value.payload_schema_version === 2) ||

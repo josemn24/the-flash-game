@@ -220,6 +220,68 @@ describe("Flash editorial document", () => {
           explanation: "Clasificación histórica.",
         },
       },
+      {
+        slug: "logic-matrix-question",
+        type: "logic-matrix",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 20_000,
+        publicPayload: {
+          category: "Lógica visual",
+          tags: {},
+          question: "¿Qué pieza completa la matriz?",
+          pieces: [
+            { id: "circle-up", symbol: "●↑", label: "Círculo arriba" },
+            { id: "triangle-right", symbol: "▲→", label: "Triángulo derecha" },
+            { id: "square-down", symbol: "■↓", label: "Cuadrado abajo" },
+            { id: "triangle-up", symbol: "▲↑", label: "Triángulo arriba" },
+          ],
+          cells: [
+            "circle-up",
+            "triangle-right",
+            "square-down",
+            "triangle-right",
+            "square-down",
+            "circle-up",
+            "square-down",
+            "circle-up",
+            null,
+          ],
+          optionIds: ["triangle-up", "triangle-right", "circle-up", "square-down"],
+          showPieceLabels: false,
+        },
+        solutionPayload: {
+          correctOptionId: "triangle-up",
+          explanation: "La tercera pieza completa la rotación.",
+        },
+      },
+      {
+        slug: "zip-final-answer",
+        type: "zip",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 35_000,
+        publicPayload: {
+          category: "Lógica espacial",
+          tags: {},
+          question: "Une los números y cubre todas las celdas.",
+          grid: { rows: 5, columns: 5 },
+          checkpoints: [
+            { value: 1, cell: 0 },
+            { value: 2, cell: 4 },
+            { value: 3, cell: 5 },
+            { value: 4, cell: 14 },
+            { value: 5, cell: 15 },
+            { value: 6, cell: 24 },
+          ],
+          boardLabel: "Tablero Zip",
+        },
+        solutionPayload: {
+          solution: [
+            0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22,
+            23, 24,
+          ],
+          explanation: "Recorrido serpenteante.",
+        },
+      },
     ];
 
     expect(
@@ -232,7 +294,45 @@ describe("Flash editorial document", () => {
       { type: "heat-map" },
       { type: "anagram" },
       { type: "classification" },
+      { type: "logic-matrix" },
+      { type: "zip" },
     ]);
+  });
+
+  it("keeps logic-matrix solutions private and validates the matrix contract", () => {
+    const question = {
+      slug: "logic-matrix-private",
+      type: "logic-matrix",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 20_000,
+      publicPayload: {
+        question: "Completa la matriz",
+        pieces: [
+          { id: "a", symbol: "A", label: "A" },
+          { id: "b", symbol: "B", label: "B" },
+          { id: "c", symbol: "C", label: "C" },
+          { id: "d", symbol: "D", label: "D" },
+        ],
+        cells: ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        optionIds: ["d", "a", "b", "c"],
+      },
+      solutionPayload: { correctOptionId: "d" },
+    };
+    const parsed = parseFlashEditorialQuestionDocument(question);
+    expect(parsed.type).toBe("logic-matrix");
+    expect(parsed.publicPayload).not.toHaveProperty("correctOptionId");
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        ...question,
+        publicPayload: { ...question.publicPayload, correctOptionId: "d" },
+      }),
+    ).toThrow();
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        ...question,
+        solutionPayload: { correctOptionId: "missing" },
+      }),
+    ).toThrow();
   });
 
   it("rejects invalid final-answer contracts", () => {

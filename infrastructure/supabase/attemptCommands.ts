@@ -30,6 +30,7 @@ import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type {
   AnswerValue,
   LogicCodeQuestion,
+  LogicMatrixQuestion,
   MatchingQuestion,
   MiniWordleQuestion,
   MultipleChoiceQuestion,
@@ -46,6 +47,7 @@ import type {
   HeatMapQuestion,
   ShortTextQuestion,
   WordSearchQuestion,
+  ZipQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -58,6 +60,8 @@ import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/que
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
+import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
+import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -215,6 +219,7 @@ function asQuestion(
   | MultipleChoiceQuestion
   | MiniWordleQuestion
   | LogicCodeQuestion
+  | LogicMatrixQuestion
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
   | MatchingQuestion
@@ -227,12 +232,14 @@ function asQuestion(
   | EstimationQuestion
   | HeatMapQuestion
   | ShortTextQuestion
-  | WordSearchQuestion {
+  | WordSearchQuestion
+  | ZipQuestion {
   if (
     ![
       "multiple-choice",
       "mini-wordle",
       "logic-code",
+      "logic-matrix",
       "progressive-clues",
       "matching",
       "progressive-image",
@@ -245,6 +252,7 @@ function asQuestion(
       "estimation",
       "heat-map",
       "word-search",
+      "zip",
       "short-text",
     ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -713,6 +721,36 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
+  if (context.questionType === "logic-matrix") {
+    const matrixPayload = {
+      pieces: publicPayload.pieces,
+      cells: publicPayload.cells,
+      optionIds: publicPayload.optionIds,
+      ...(publicPayload.showPieceLabels !== undefined
+        ? { showPieceLabels: publicPayload.showPieceLabels }
+        : {}),
+    };
+    const correctOptionId = solutionPayload.correctOptionId;
+    if (
+      !isValidLogicMatrixPublicPayload(matrixPayload) ||
+      typeof correctOptionId !== "string" ||
+      !matrixPayload.optionIds.includes(correctOptionId)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "logic-matrix",
+      pieces: matrixPayload.pieces,
+      cells: matrixPayload.cells,
+      optionIds: matrixPayload.optionIds,
+      correctOptionId,
+      showPieceLabels:
+        typeof matrixPayload.showPieceLabels === "boolean" ? matrixPayload.showPieceLabels : true,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies LogicMatrixQuestion;
+  }
   if (context.questionType === "progressive-clues") {
     const clues = publicPayload.clues;
     const cluePenalty = publicPayload.cluePenalty;
@@ -859,20 +897,29 @@ function asQuestion(
     const publicTargets = publicPayload.targets;
     const positions = solutionPayload.positionsByTargetId;
     if (
-      !grid || typeof grid !== "object" || Array.isArray(grid) ||
+      !grid ||
+      typeof grid !== "object" ||
+      Array.isArray(grid) ||
       !Number.isSafeInteger((grid as Record<string, unknown>).rows) ||
       !Number.isSafeInteger((grid as Record<string, unknown>).columns) ||
       !Array.isArray(letters) ||
       !Array.isArray(publicTargets) ||
-      !positions || typeof positions !== "object" || Array.isArray(positions) ||
+      !positions ||
+      typeof positions !== "object" ||
+      Array.isArray(positions) ||
       !publicTargets.every((target) => {
         if (!target || typeof target !== "object" || Array.isArray(target)) return false;
         const value = target as Record<string, unknown>;
         const position = (positions as Record<string, unknown>)[String(value.id)];
-        return typeof value.id === "string" && typeof value.word === "string" &&
-          position && typeof position === "object" && !Array.isArray(position) &&
+        return (
+          typeof value.id === "string" &&
+          typeof value.word === "string" &&
+          position &&
+          typeof position === "object" &&
+          !Array.isArray(position) &&
           Number.isSafeInteger((position as Record<string, unknown>).startCell) &&
-          Number.isSafeInteger((position as Record<string, unknown>).endCell);
+          Number.isSafeInteger((position as Record<string, unknown>).endCell)
+        );
       })
     ) {
       throw new AttemptCommandError("invalid_question_payload");
@@ -892,9 +939,41 @@ function asQuestion(
           endCell: position.endCell as number,
         };
       }),
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies WordSearchQuestion;
     if (!isValidWordSearchConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
+  if (context.questionType === "zip") {
+    const configuration = {
+      grid: publicPayload.grid,
+      checkpoints: publicPayload.checkpoints,
+    };
+    const solution = solutionPayload.solution;
+    if (
+      !isValidZipPublicConfiguration(configuration) ||
+      !Array.isArray(solution) ||
+      solution.length !== 25 ||
+      !solution.every((cell) => Number.isSafeInteger(cell))
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "zip" as const,
+      grid: configuration.grid,
+      checkpoints: configuration.checkpoints,
+      solution,
+      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      mapNote: typeof publicPayload.mapNote === "string" ? publicPayload.mapNote : undefined,
+      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies ZipQuestion;
+    if (!isValidZipConfiguration(question)) {
       throw new AttemptCommandError("invalid_question_payload");
     }
     return question;
@@ -1022,7 +1101,9 @@ export class SupabaseAttemptCommands implements Pick<
     };
   }
 
-  async submitWordSearchSelection(input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0]) {
+  async submitWordSearchSelection(
+    input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0],
+  ) {
     const accepted = await callCommand<SubmitWordSearchSelectionResult>(
       this.identity,
       "submit_word_search_selection",
