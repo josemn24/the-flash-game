@@ -3,7 +3,17 @@
 
 # QA actual
 
-## Validación focal S15 — 2026-09-23
+## Validación de formatos competitivos de Pirámide — 2026-09-23
+
+- Las migraciones incrementales `20260923100000_s15_true_false` a `20260923160000_s15_word_hashtag` se aplicaron en Supabase local. No se conectó ni desplegó a un proyecto remoto.
+- `npm run supabase:schema:test`: correcto con 46 archivos declarativos e inventario de seguridad. Pasan las suites SQL anteriores, las 23 pruebas autoritativas S15, las 13 editoriales S15, las 10 nuevas comprobaciones de formatos/admisión/calendario y las carreras PostgreSQL.
+- 81 pruebas focales de adaptador server-backed, reglas de Pirámide y validadores editoriales/Zip/Escape/Hashtag pasan. Además, pasan 168 pruebas de scoring, adaptador y reglas de Supervivencia/Pirámide; también pasan `npm run typecheck`, `npm run docs:check`, `npm run schema:revision:check` y `git diff --check`.
+- El fixture S15 local se reconstruyó con autorización explícita al fallar Auth contra las credenciales anteriores. `npm run test:integration:supabase -- --scenario s15` pasa con Auth, PostgREST, RLS y publicación/programación de los siete formatos en Pirámide, y publicación/programación de Zip, Escape y Word Hashtag en Flash y Supervivencia.
+- `FLASH_RUNTIME_SCOPE=pilot npm run test:e2e -- e2e/s15-pyramid.spec.ts`: 1/1 correcto; cubre publicación/programación, los siete formatos, cima con 100 puntos, fallo parcial con cero puntos, recuperación de nivel interrumpido, revisión terminal protegida, spectator y ranking.
+- El E2E confirma que el contenido de juego no expone soluciones y que el spectator no recibe acceso al recorrido de Pirámide. Los contratos existentes conservan el borrador al expirar Zip/Escape y los swaps de Word Hashtag persisten en servidor.
+- `allowedDevOrigins: ["127.0.0.1"]` mantiene la carga del editor y la hidratación en Next 16 durante Playwright. No se ejecutó `npm run verify:pilot` completo.
+
+## Validación focal S15 — 2026-09-23 (estado previo a formatos)
 
 - `npm run supabase:schema:test`: correcto sobre 45 archivos declarativos; inventario de seguridad,
   suites anteriores, 23 checks autoritativos y 13 editoriales de S15, y concurrencia PostgreSQL.

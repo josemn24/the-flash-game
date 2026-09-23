@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
 type FixtureAccount = { email: string; password: string };
@@ -18,10 +18,65 @@ async function fixture() {
 
 async function signIn(page: Page, account: FixtureAccount) {
   await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.waitForFunction(() => {
+    const submitButton = document.querySelector('form button[type="submit"]');
+    return Boolean(
+      submitButton && Object.keys(submitButton).some((key) => key.startsWith("__reactProps$")),
+    );
+  });
   await page.getByLabel("Correo electrónico").fill(account.email);
   await page.getByLabel("Contraseña").fill(account.password);
   await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
+}
+
+async function solveZip(page: Page) {
+  const path = [
+    0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
+  ];
+  const cells = page.locator('[role="gridcell"] button');
+  for (const cell of path) await cells.nth(cell).click();
+}
+
+async function solveEscape(page: Page) {
+  const board = page.getByRole("group", { name: "Tablero Escape de Pirámide" });
+  const move = async (button: Locator, axis: "x" | "y", distance: number) => {
+    const [buttonBox, boardBox] = await Promise.all([button.boundingBox(), board.boundingBox()]);
+    expect(buttonBox).not.toBeNull();
+    expect(boardBox).not.toBeNull();
+    const cellSize = (axis === "x" ? boardBox!.width : boardBox!.height) / 6;
+    const startX = buttonBox!.x + buttonBox!.width / 2;
+    const startY = buttonBox!.y + buttonBox!.height / 2;
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(
+      startX + (axis === "x" ? distance * cellSize : 0),
+      startY + (axis === "y" ? distance * cellSize : 0),
+      { steps: 8 },
+    );
+    await page.mouse.up();
+  };
+
+  await move(page.getByRole("button", { name: /bloque C/ }), "x", -1);
+  await move(page.getByRole("button", { name: /bloque A/ }), "y", -1);
+  await move(page.getByRole("button", { name: /bloque B/ }), "y", 3);
+  await move(page.getByRole("button", { name: /pieza objetivo/ }), "x", 4);
+}
+
+async function solveWordHashtag(page: Page) {
+  for (const [fromCell, toCell] of [
+    [1, 7],
+    [5, 13],
+    [16, 19],
+  ]) {
+    const from = page.locator(`[data-word-hashtag-cell="${fromCell}"]`);
+    const to = page.locator(`[data-word-hashtag-cell="${toCell}"]`);
+    await expect(from).toBeEnabled();
+    await from.click();
+    await expect(from).toHaveAttribute("aria-selected", "true");
+    await to.click();
+  }
 }
 
 function madridLocal(date: Date) {
@@ -115,34 +170,233 @@ test.describe("S15 — La Pirámide competitiva", () => {
         configSchemaVersion: 1,
         modeConfig: {},
       },
-      questions: Array.from({ length: 7 }, (_, index) => ({
-        slug: `${questionSlugSuffix}-q${index + 1}`,
-        type: "multiple-choice",
-        payloadSchemaVersion: 1,
-        timeLimitMs: 30_000,
-        points: index < 5 ? 14 : 15,
-        publicPayload: {
-          category: "Lógica",
-          tags: {},
-          question: `Nivel ${index + 1}: ¿qué color se mezcla con azul para formar violeta?`,
-          options: ["Rojo", "Verde"],
-          media: null,
-          promptVisual: null,
-        },
-        solutionPayload: {
-          correctAnswer: "Rojo",
-          explanation: "El rojo mezclado con azul forma violeta.",
-        },
-        modeConfig: {
-          levelId: `level-${index + 1}`,
-          label: `Nivel ${index + 1}`,
-          briefing: {
-            title: `Briefing ${index + 1}`,
-            format: "Lógica",
-            description: `Resuelve la prueba del nivel ${index + 1} para seguir ascendiendo.`,
+      questions: Array.from({ length: 7 }, (_, index) => {
+        const level = index + 1;
+        const formatQuestion =
+          level === 1
+            ? {
+                type: "true-false",
+                publicPayload: { question: "El agua se congela a 0 °C." },
+                solutionPayload: {
+                  correctAnswer: true,
+                  explanation: "A presión normal, sí.",
+                },
+              }
+            : level === 2
+              ? {
+                  type: "ordering",
+                  publicPayload: {
+                    question: "Ordena las letras alfabéticamente.",
+                    items: ["A", "C", "B"],
+                  },
+                  solutionPayload: {
+                    correctOrder: ["A", "B", "C"],
+                    explanation: "El orden alfabético es A, B, C.",
+                  },
+                }
+              : level === 3
+                ? {
+                    type: "classification",
+                    publicPayload: {
+                      question: "Clasifica cada elemento.",
+                      items: [{ label: "Gato" }, { label: "Rosa" }],
+                      categories: ["Animal", "Planta"],
+                    },
+                    solutionPayload: {
+                      categoriesByItem: { Gato: "Animal", Rosa: "Planta" },
+                      explanation: "El gato es un animal y la rosa es una planta.",
+                    },
+                  }
+                : level === 4
+                  ? {
+                      type: "logic-matrix",
+                      publicPayload: {
+                        question: "¿Qué pieza completa la matriz?",
+                        pieces: [
+                          { id: "a", symbol: "A", label: "Pieza A" },
+                          { id: "b", symbol: "B", label: "Pieza B" },
+                          { id: "c", symbol: "C", label: "Pieza C" },
+                          { id: "d", symbol: "D", label: "Pieza D" },
+                        ],
+                        cells: ["a", "b", "c", "b", "c", "a", "c", "a", null],
+                        optionIds: ["d", "a", "b", "c"],
+                        showPieceLabels: true,
+                      },
+                      solutionPayload: {
+                        correctOptionId: "d",
+                        explanation: "La pieza D completa el patrón.",
+                      },
+                    }
+                  : level === 5
+                    ? {
+                        type: "zip",
+                        publicPayload: {
+                          category: "Lógica espacial",
+                          tags: {},
+                          question: "Une los números en orden y cubre la cuadrícula.",
+                          grid: { rows: 5, columns: 5 },
+                          checkpoints: [
+                            { value: 1, cell: 0 },
+                            { value: 2, cell: 4 },
+                            { value: 3, cell: 5 },
+                            { value: 4, cell: 14 },
+                            { value: 5, cell: 15 },
+                            { value: 6, cell: 24 },
+                          ],
+                        },
+                        solutionPayload: {
+                          solution: [
+                            0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15,
+                            20, 21, 22, 23, 24,
+                          ],
+                          explanation:
+                            "El camino visita los seis checkpoints y recorre las 25 celdas.",
+                        },
+                      }
+                    : level === 6
+                      ? {
+                          type: "escape",
+                          publicPayload: {
+                            category: "Lógica espacial",
+                            tags: {},
+                            question: "Mueve los bloques para liberar la pieza amarilla.",
+                            grid: { rows: 6, columns: 6, exit: { side: "right", row: 2 } },
+                            initialBlocks: [
+                              {
+                                id: "target",
+                                kind: "target",
+                                orientation: "horizontal",
+                                row: 2,
+                                column: 0,
+                                length: 2,
+                              },
+                              {
+                                id: "a",
+                                kind: "obstacle",
+                                orientation: "vertical",
+                                row: 1,
+                                column: 2,
+                                length: 2,
+                              },
+                              {
+                                id: "b",
+                                kind: "obstacle",
+                                orientation: "vertical",
+                                row: 0,
+                                column: 4,
+                                length: 3,
+                              },
+                              {
+                                id: "c",
+                                kind: "obstacle",
+                                orientation: "horizontal",
+                                row: 0,
+                                column: 1,
+                                length: 2,
+                              },
+                              {
+                                id: "d",
+                                kind: "obstacle",
+                                orientation: "horizontal",
+                                row: 4,
+                                column: 1,
+                                length: 2,
+                              },
+                            ],
+                            boardLabel: "Tablero Escape de Pirámide",
+                          },
+                          solutionPayload: {
+                            referenceSolution: [
+                              { blockId: "c", from: 1, to: 0 },
+                              { blockId: "a", from: 1, to: 0 },
+                              { blockId: "b", from: 0, to: 3 },
+                              { blockId: "target", from: 0, to: 4 },
+                            ],
+                            optimalMoves: 4,
+                            explanation: "Despeja la fila del objetivo y llévalo a la salida.",
+                          },
+                        }
+                      : level === 7
+                        ? {
+                            type: "word-hashtag",
+                            publicPayload: {
+                              category: "Lengua",
+                              tags: {},
+                              question:
+                                "Intercambia las letras para completar las cuatro palabras.",
+                              grid: { rows: 5, columns: 5 },
+                              initialLetters: [
+                                null,
+                                "G",
+                                null,
+                                "Q",
+                                null,
+                                "E",
+                                "O",
+                                "P",
+                                "U",
+                                "I",
+                                null,
+                                "N",
+                                null,
+                                "Y",
+                                null,
+                                "R",
+                                "A",
+                                "U",
+                                "M",
+                                "E",
+                                null,
+                                "R",
+                                null,
+                                "A",
+                                null,
+                              ],
+                              maxMoves: 3,
+                            },
+                            solutionPayload: {
+                              words: {
+                                top: "YOGUI",
+                                bottom: "REUMA",
+                                left: "PONER",
+                                right: "QUEMA",
+                              },
+                              explanation:
+                                "Tres intercambios completan YOGUI, REUMA, PONER y QUEMA.",
+                            },
+                          }
+                        : {
+                            type: "multiple-choice",
+                            publicPayload: {
+                              category: "Lógica",
+                              tags: {},
+                              question: `Nivel ${level}: ¿qué color se mezcla con azul para formar violeta?`,
+                              options: ["Rojo", "Verde"],
+                              media: null,
+                              promptVisual: null,
+                            },
+                            solutionPayload: {
+                              correctAnswer: "Rojo",
+                              explanation: "El rojo mezclado con azul forma violeta.",
+                            },
+                          };
+        return {
+          slug: `${questionSlugSuffix}-q${level}`,
+          ...formatQuestion,
+          payloadSchemaVersion: 1,
+          timeLimitMs: level === 5 ? 90_000 : level === 6 || level === 7 ? 60_000 : 30_000,
+          points: index < 5 ? 14 : 15,
+          modeConfig: {
+            levelId: `level-${level}`,
+            label: `Nivel ${level}`,
+            briefing: {
+              title: `Briefing ${level}`,
+              format: "Lógica",
+              description: `Resuelve la prueba del nivel ${level} para seguir ascendiendo.`,
+            },
           },
-        },
-      })),
+        };
+      }),
     };
 
     await signIn(page, data.users.superadmin);
@@ -220,16 +474,51 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await expect(member.getByRole("heading", { name: "Briefing 1" })).toBeVisible();
       await member.reload();
       await expect(member.getByRole("heading", { name: "Briefing 1" })).toBeVisible();
-      expect(await member.content()).not.toContain("El rojo mezclado con azul forma violeta.");
+      expect(await member.content()).not.toContain("A presión normal, sí.");
 
       for (let level = 1; level <= 7; level += 1) {
         await expect(member.getByRole("heading", { name: `Briefing ${level}` })).toBeVisible();
         await member.getByRole("button", { name: "Empezar nivel" }).click();
-        await expect(
-          member.getByRole("heading", { name: /qué color se mezcla con azul para formar violeta/ }),
-        ).toBeVisible();
-        await expect(member.getByText(`Nivel ${level}:`, { exact: true })).toBeVisible();
-        await member.getByRole("button", { name: "Rojo" }).click();
+        if (level === 1) {
+          await expect(
+            member.getByRole("heading", { name: /agua se congela a 0 °C/ }),
+          ).toBeVisible();
+          await member.getByRole("button", { name: "Verdadero" }).click();
+        } else if (level === 2) {
+          await expect(member.getByRole("heading", { name: /Ordena las letras/ })).toBeVisible();
+          await member.getByRole("button", { name: "Mover B arriba" }).click();
+          await member.getByRole("button", { name: "Confirmar orden" }).click();
+        } else if (level === 3) {
+          await expect(
+            member.getByRole("heading", { name: /Clasifica cada elemento/ }),
+          ).toBeVisible();
+          await member.getByRole("button", { name: "Clasificar Gato como Animal" }).click();
+          await member.getByRole("button", { name: "Clasificar Rosa como Planta" }).click();
+          await member.getByRole("button", { name: "Confirmar clasificación" }).click();
+        } else if (level === 4) {
+          await expect(
+            member.getByRole("heading", { name: /Qué pieza completa la matriz/ }),
+          ).toBeVisible();
+          await member.getByRole("button", { name: "Opción 1: Pieza D" }).click();
+        } else if (level === 5) {
+          await expect(
+            member.getByRole("heading", { name: /Une los números en orden/ }),
+          ).toBeVisible();
+          expect(await member.content()).not.toContain("El camino visita los seis checkpoints");
+          expect(await member.content()).not.toContain('"solution"');
+          await solveZip(member);
+        } else if (level === 6) {
+          await expect(member.getByRole("heading", { name: /Mueve los bloques/ })).toBeVisible();
+          expect(await member.content()).not.toContain("referenceSolution");
+          expect(await member.content()).not.toContain("optimalMoves");
+          await solveEscape(member);
+        } else {
+          await expect(
+            member.getByRole("heading", { name: /Intercambia las letras/ }),
+          ).toBeVisible();
+          expect(await member.content()).not.toContain('"words"');
+          await solveWordHashtag(member);
+        }
         if (level < 7) {
           await expect(member.getByRole("heading", { name: `Briefing ${level + 1}` })).toBeVisible({
             timeout: 20_000,
@@ -251,15 +540,25 @@ test.describe("S15 — La Pirámide competitiva", () => {
       );
       expect(score).toBe(100);
       await member.getByRole("button", { name: "Ver respuestas" }).click();
-      await expect(
-        member.getByText("El rojo mezclado con azul forma violeta.").first(),
-      ).toBeVisible();
-      await member.locator("details").nth(6).locator("summary").click();
-      await expect(member.getByText("Nivel 7", { exact: true })).toBeVisible();
-      await expect(
-        member.getByText("El rojo mezclado con azul forma violeta.").last(),
-      ).toBeVisible();
-      await expect(member.getByText(/15 puntos ·/).last()).toBeVisible();
+      const reviewExplanations = [
+        [0, "A presión normal, sí."],
+        [1, "El orden alfabético es A, B, C."],
+        [2, "El gato es un animal y la rosa es una planta."],
+        [3, "La pieza D completa el patrón."],
+        [4, "El camino visita los seis checkpoints y recorre las 25 celdas."],
+        [5, "Despeja la fila del objetivo y llévalo a la salida."],
+        [6, "Tres intercambios completan YOGUI, REUMA, PONER y QUEMA."],
+      ] as const;
+      for (const [levelIndex, explanation] of reviewExplanations) {
+        const answer = member.locator("details").nth(levelIndex);
+        if (levelIndex > 0) {
+          await answer.locator("summary").click();
+        }
+        await expect(answer.getByText(explanation, { exact: false })).toBeVisible();
+      }
+      const seventhAnswer = member.locator("details").nth(6);
+      await expect(seventhAnswer.getByText("Nivel 7", { exact: true })).toBeVisible();
+      await expect(seventhAnswer.getByText(/15 puntos ·/)).toBeVisible();
 
       await signIn(owner, data.users.owner);
       await owner.goto(`/salas/${room.roomSlug}`);
@@ -268,18 +567,34 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await owner.getByRole("button", { name: "Empezar desafío" }).click();
       await expect(owner.getByRole("heading", { name: "Briefing 1" })).toBeVisible();
       await owner.getByRole("button", { name: "Empezar nivel" }).click();
-      await expect(
-        owner.getByRole("heading", { name: /qué color se mezcla con azul para formar violeta/ }),
-      ).toBeVisible();
-      await owner.getByRole("button", { name: "Verde" }).click();
+      await expect(owner.getByRole("heading", { name: /agua se congela a 0 °C/ })).toBeVisible();
+      await owner.getByRole("button", { name: "Verdadero" }).click();
+      await expect(owner.getByRole("heading", { name: "Briefing 2" })).toBeVisible();
+      await owner.getByRole("button", { name: "Empezar nivel" }).click();
+      await owner.getByRole("button", { name: "Mover B arriba" }).click();
+      await owner.getByRole("button", { name: "Confirmar orden" }).click();
+      await expect(owner.getByRole("heading", { name: "Briefing 3" })).toBeVisible();
+      await owner.getByRole("button", { name: "Empezar nivel" }).click();
+      await owner.getByRole("button", { name: "Clasificar Gato como Animal" }).click();
+      await owner.getByRole("button", { name: "Clasificar Rosa como Animal" }).click();
+      await owner.getByRole("button", { name: "Confirmar clasificación" }).click();
       await expect(owner.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible({
         timeout: 20_000,
       });
       await owner.reload();
       await expect(owner.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+      await expect(
+        owner.locator('section[aria-labelledby="challenge-result-title"] strong').first(),
+      ).toHaveText("28");
       await owner.getByRole("button", { name: "Ver respuestas" }).click();
+      const thirdAnswer = owner.locator("details").nth(2);
+      await thirdAnswer.locator("summary").click();
+      await expect(thirdAnswer.getByText("Parcial", { exact: true })).toBeVisible();
+      await expect(thirdAnswer.getByText(/0 puntos ·/)).toBeVisible();
       await expect(owner.getByText("Nivel 1", { exact: true })).toBeVisible();
-      await expect(owner.getByText("Nivel 2", { exact: true })).toHaveCount(0);
+      await expect(owner.getByText("Nivel 2", { exact: true })).toBeVisible();
+      await expect(owner.getByText("Nivel 3", { exact: true })).toBeVisible();
+      await expect(owner.getByText("Nivel 4", { exact: true })).toHaveCount(0);
 
       await signIn(interrupted, data.users.interrupted);
       await interrupted.goto(`/salas/${room.roomSlug}`);
@@ -290,7 +605,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await interrupted.getByRole("button", { name: "Empezar nivel" }).click();
       await expect(
         interrupted.getByRole("heading", {
-          name: /qué color se mezcla con azul para formar violeta/,
+          name: /agua se congela a 0 °C/,
         }),
       ).toBeVisible();
       await interrupted.reload();
@@ -305,9 +620,16 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await spectator.goto(playableUrl);
       await expect(spectator.getByRole("button", { name: "Empezar desafío" })).toHaveCount(0);
       expect(await spectator.content()).not.toContain(
-        "¿qué color se mezcla con azul para formar violeta?",
+        "Une los números en orden y cubre la cuadrícula.",
       );
-      expect(await spectator.content()).not.toContain("El rojo mezclado con azul forma violeta.");
+      expect(await spectator.content()).not.toContain(
+        "Mueve los bloques para liberar la pieza amarilla.",
+      );
+      expect(await spectator.content()).not.toContain(
+        "Intercambia las letras para completar las cuatro palabras.",
+      );
+      expect(await spectator.content()).not.toContain("referenceSolution");
+      expect(await spectator.content()).not.toContain('"words"');
 
       await member.goto(`/salas/${room.roomSlug}/ranking`);
       await expect(member.getByText("Member S15")).toBeVisible();

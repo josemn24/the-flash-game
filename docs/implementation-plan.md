@@ -32,10 +32,10 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                               | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                      | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                             | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 30 tablas, 45 archivos declarativos, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría, rankings y migraciones versionadas.                                                      | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado.                                     |
+| SQL       | 30 tablas, 46 archivos declarativos, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría, rankings y migraciones versionadas.                                                      | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado.                                     |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional.                                       |
-| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet y Supervivencia persisten evaluación; el servidor deriva además vidas y final reglamentario de Survival.                                           | Contextos y reglas autoritativas de Pirámide, Narrativa y los demás modos.                                                                         |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S14, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                   | Verificación contra un entorno remoto.                                                                                                             |
+| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                    | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                   | Verificación contra un entorno remoto.                                                                                                             |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -801,8 +801,8 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ### S15 — Pirámide con niveles persistidos
 
-**Estado 2026-09-23:** implementada y verificada en Supabase local. Pasan schema/pgTAP con 45
-archivos declarativos, integración Auth/PostgREST/RLS, migración incremental y E2E focal. No hay
+**Estado 2026-09-23:** implementada y verificada en Supabase local. Pasan schema/pgTAP con 46
+archivos declarativos, integración Auth/PostgREST/RLS, migraciones incrementales y E2E focal. No hay
 proyecto remoto vinculado, así que no se declara despliegue ni validación remota.
 
 - **Objetivo / CU:** CU-15–CU-21 para `pyramid`.
@@ -821,6 +821,20 @@ proyecto remoto vinculado, así que no se declara despliegue ni validación remo
 - **Terminada:** el ascenso se reanuda solo desde la sesión original antes de comenzar un nivel; una
   interrupción de nivel lo falla reglamentariamente, nunca se muestra como abandono ni concede otra
   oportunidad.
+
+#### S15 — formatos competitivos adicionales
+
+Se habilitan en siete migraciones acumulativas y ordenadas (`true-false`, `ordering`,
+`classification`, `logic-matrix`, `zip`, `escape`, `word-hashtag`) a través del gate compartido de
+compatibilidad, por lo que la admisión también queda disponible en Flash y Supervivencia. El editor
+reutiliza la biblioteca y sus validadores; la partida reutiliza inputs, transporte, evaluación,
+progreso server-side de Word Hashtag y revisión terminal existentes. Pirámide conserva el cierre al
+primer resultado que no sea `correct` y asigna cero puntos a ese nivel, incluso cuando el evaluador
+calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
+
+- **Estado:** las siete slices están completas en Supabase local. pgTAP valida los payloads y el gate
+  compartido; integración Auth/PostgREST/RLS y E2E focal verifican la Pirámide mixta y los tres modos.
+  No se verificó ni desplegó un proyecto remoto.
 
 ### S16 — Narrativa con escenas y epílogo persistidos
 

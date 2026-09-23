@@ -245,7 +245,7 @@ export function EditorialManagement({
                     : pyramidLevelModeConfig(index, "Prueba competitiva"),
               }))
             : parsedDocument.questions.map((question) => {
-              if ("source" in question) return { ...question, modeConfig: {} };
+                if ("source" in question) return { ...question, modeConfig: {} };
                 const standaloneQuestion = { ...question };
                 Reflect.deleteProperty(standaloneQuestion, "modeConfig");
                 return standaloneQuestion;
@@ -312,7 +312,7 @@ export function EditorialManagement({
         points: current?.points ?? 50,
         modeConfig:
           document.challenge.mode === "pyramid"
-            ? current?.modeConfig ?? pyramidLevelModeConfig(index, entry.type)
+            ? (current?.modeConfig ?? pyramidLevelModeConfig(index, entry.type))
             : {},
         ...(current && "challengeItemId" in current && current.challengeItemId
           ? { challengeItemId: current.challengeItemId }
@@ -450,8 +450,10 @@ export function EditorialManagement({
                 {parsedDocument.challenge.mode === "pyramid" ? (
                   <p className={styles.helper}>
                     Configura siete niveles, con una pregunta de biblioteca compatible por nivel,
-                    briefings y 100 puntos en total. El evaluador server-side valida los formatos
-                    al publicar.
+                    briefings y 100 puntos en total. Admite los formatos competitivos evaluados por
+                    servidor, incluidos Verdadero/Falso, Ordenar, Clasificar, Matriz lógica, Zip,
+                    Escape y Hashtag de palabras. Solo una respuesta completamente correcta abre el
+                    nivel siguiente y acredita sus puntos.
                   </p>
                 ) : null}
               </div>

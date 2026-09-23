@@ -1,8 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: S15 probado sobre PostgreSQL 17 de Supabase local el 2026-09-23. Los 45 archivos
+Estado: S15 probado sobre PostgreSQL 17 de Supabase local el 2026-09-23. Los 46 archivos
 declarativos, el inventario, pgTAP y las carreras pasan; la migración incremental
-`20260923000000_s15_pyramid.sql` está aplicada localmente. No hay proyecto remoto vinculado.
+`20260923100000_s15_true_false.sql`–`20260923160000_s15_word_hashtag.sql` están aplicadas localmente, además de S15. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -21,7 +21,9 @@ comando transaccional específico de S08, sin DML directo ni proyecto remoto vin
 Las capacidades restantes siguen usando mocks o están pendientes. S14 amplía edición, publicación,
 calendario, lecturas autorizadas, recuperación y cierre server-side a `survival`, sin nuevas tablas.
 S15 añade validación editorial de siete niveles, calendario, proyecciones seguras y comandos de
-recuperación/finalización para `pyramid`; pgTAP, integración Auth y E2E local pasan.
+recuperación/finalización para `pyramid`; pgTAP, integración Auth y E2E local pasan. Las cuatro
+slices competitivas de `true-false`, `ordering`, `classification` y `logic-matrix` amplían el gate
+compartido de Flash, Supervivencia y Pirámide mediante los validadores editoriales existentes.
 S18b permite al owner conceder/quitar
 admin y eliminar lógicamente miembros mediante `public.manage_room_member(jsonb)`; transferencia,
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade preparación/edición de
@@ -148,6 +150,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [96_media_asset_commands.sql](96_media_asset_commands.sql)                   | Handshake idempotente de preparación, lectura, confirmación y aborto de avatar.                                                                                 |
 | [97_media_asset_acl.sql](97_media_asset_acl.sql)                             | ACL explícita de `media_assets` y comandos server-only.                                                                                                         |
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql)               | Validación interna de assets de preguntas listos para publicación/uso.                                                                                          |
+| [68_competitive_question_formats.sql](68_competitive_question_formats.sql)   | Allowlist acumulativa para siete formatos competitivos; valida la versión publicada completa con el contrato editorial existente.                              |
 | [98_question_asset_commands.sql](98_question_asset_commands.sql)             | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas.                                                                           |
 | [99_queens.sql](99_queens.sql)                                               | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada.                                                   |
 | [99_word_search.sql](99_word_search.sql)                                     | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side.                                                              |
@@ -317,7 +320,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local registrada (S15, 2026-09-23): `check-supabase-schema` cargó **45 archivos declarativos**
+Última validación local registrada (S15, 2026-09-23): `check-supabase-schema` cargó **46 archivos declarativos**
 y el inventario de seguridad; pasan S15 autoritativo (23 checks), S15 editorial (13 checks), todas
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,

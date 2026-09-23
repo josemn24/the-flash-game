@@ -399,8 +399,18 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.is_supported_competitive_question_extension": {
+      "arguments": "target_question uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.is_supported_flash_question": {
       "arguments": "target_question uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.is_valid_published_competitive_question_format": {
+      "arguments": "target_question uuid, expected_type text",
       "securityDefiner": true,
       "executeRoles": []
     },

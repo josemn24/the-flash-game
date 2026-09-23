@@ -75,6 +75,10 @@ fallback de las rutas competitivas. Consulta
   deriva progreso, `summit`/`failed`, puntos y cierre desde evaluaciones guardadas. La recuperación
   conserva un briefing sin iniciar el reloj y finaliza como `failed` un nivel temporizado interrumpido.
   Resultado y revisión terminal propios exponen solo niveles alcanzados.
+  `true-false`, `ordering`, `classification`, `logic-matrix`, `zip`, `escape` y `word-hashtag` pasan por
+  la misma admisión editorial, ejecución server-backed y revisión protegida; la allowlist se comparte
+  también con Flash y Supervivencia.
+  En Pirámide solo `correct` avanza y acredita puntos; timeout, incorrecta o parcial terminan el nivel con cero.
 - Ranking de temporada y de la publicación abierta actual desde los RPCs reales, con posición
   persistida en las tarjetas de sala y lectura autorizada para spectators (S06).
 - Historial Flash de publicaciones cerradas, ranking histórico y detalle de resultados reconstruidos

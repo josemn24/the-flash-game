@@ -87,14 +87,16 @@ select is((public.create_superadmin_scheduled_challenge(jsonb_build_object(
 
 select set_config('s15.unsupported_document', jsonb_set(jsonb_set(jsonb_set(
   current_setting('s15.document')::jsonb,
-  '{challenge,slug}', '"s15-pyramid-unsupported-format"'::jsonb),
+  '{challenge,slug}', '"s15-pyramid-unevaluated-format"'::jsonb),
   '{challenge,title}', '"La Pirámide S15 formato no evaluado"'::jsonb),
   '{questions,0}',
   jsonb_build_object(
-    'slug', 's15-pyramid-true-false', 'type', 'true-false', 'payloadSchemaVersion', 1,
+    'slug', 's15-pyramid-odd-one-out', 'type', 'odd-one-out', 'payloadSchemaVersion', 1,
     'timeLimitMs', 15000, 'points', 14,
-    'publicPayload', jsonb_build_object('question', '¿Es correcta esta respuesta?'),
-    'solutionPayload', jsonb_build_object('correctAnswer', false, 'explanation', 'No es correcta.'),
+    'publicPayload', jsonb_build_object('question', '¿Qué elemento no pertenece?', 'items', jsonb_build_array(
+      jsonb_build_object('id', 'a', 'label', 'A'), jsonb_build_object('id', 'b', 'label', 'B'),
+      jsonb_build_object('id', 'c', 'label', 'C'))),
+    'solutionPayload', jsonb_build_object('correctAnswer', 'c', 'explanation', 'C no pertenece.'),
     'modeConfig', jsonb_build_object(
       'levelId', 'level-1', 'label', 'Nivel 1',
       'briefing', jsonb_build_object('title', 'Briefing 1', 'format', 'Texto', 'description', 'Resuelve el nivel.')
@@ -111,19 +113,19 @@ select set_config('s15.unsupported_version_id', (
   select id::text from private.challenge_versions where title = 'La Pirámide S15 formato no evaluado'
     and status = 'draft' order by created_at desc limit 1
 ), true);
-select set_config('s15.true_false_version_id', (
+select set_config('s15.unevaluated_version_id', (
   select question.id::text from private.question_versions question
   join private.question_definitions definition on definition.id = question.question_definition_id
-  where definition.slug = 's15-pyramid-true-false'
+  where definition.slug = 's15-pyramid-odd-one-out'
 ), true);
-select set_config('s15.true_false_updated_at', (
-  select updated_at::text from private.question_versions where id = current_setting('s15.true_false_version_id')::uuid
+select set_config('s15.unevaluated_updated_at', (
+  select updated_at::text from private.question_versions where id = current_setting('s15.unevaluated_version_id')::uuid
 ), true);
 set local role authenticated;
 select lives_ok($$select public.publish_superadmin_question(jsonb_build_object(
-  'idempotencyKey', 's15-editorial-publish-true-false',
-  'questionVersionId', current_setting('s15.true_false_version_id')::uuid,
-  'expectedUpdatedAt', current_setting('s15.true_false_updated_at')::timestamptz,
+  'idempotencyKey', 's15-editorial-publish-unevaluated',
+  'questionVersionId', current_setting('s15.unevaluated_version_id')::uuid,
+  'expectedUpdatedAt', current_setting('s15.unevaluated_updated_at')::timestamptz,
   'reason', 'Publicar formato para validar el gate'
 ))$$, 'The unsupported question is otherwise publishable');
 reset role;
