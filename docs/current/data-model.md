@@ -2,8 +2,8 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; implementación parcial local hasta S13, D08a/D08b, E01–E06, F08, F16, F18 y E10; F18 y F19 añaden validación declarativa sin nuevas tablas.
-- Fecha: 2026-09-22.
+- Estado: modelo de persistencia aprobado; S14/S15/F18/F19 reutilizan tablas existentes. S15 está verificada sobre Supabase local.
+- Fecha: 2026-09-23.
 - Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
   [`domain-model.md`](domain/domain-model.md), que sigue siendo la referencia para el
@@ -11,8 +11,9 @@
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
 intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S13, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 ya tienen
-persistencia real verificada en Supabase local.
+actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S15, D08a/D08b, E01–E06,
+F08, F16, F18, F19 y E10 ya tienen persistencia real verificada en Supabase local. S15 implementa
+Pirámide sobre las tablas existentes y su suite focal local pasa.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
 comandos transaccionales competitivos en una base aislada de pruebas. La conexión productiva sigue
@@ -760,8 +761,11 @@ El wrapper técnico de takeover está deshabilitado durante el MVP. Heartbeat, l
 automático quedan fuera de esta fase; no son requisitos para ejecutar los comandos actuales. S04 ya
 implementa para Flash `recover_attempt` y `read_attempt_recovery`: un intervalo abierto se cierra
 como `recovery_interrupted`, genera una recepción interna nula y se evalúa como `unanswered` antes de
-autorizar otra preparación. Alfabeto, Supervivencia, Pirámide y Narrativa siguen pendientes de sus
-vertical slices. Siguen abiertas la matriz owner/admin y la política de retención/anonimización.
+autorizar otra preparación. S14 reutiliza ese cierre para Supervivencia y deriva vidas/resultados de
+respuestas evaluadas. S15 reutiliza scope `level` para Pirámide y deriva cima/fallo, score y resultado
+desde las evaluaciones persistidas; está validada en Supabase local. Narrativa sigue pendiente de
+su vertical slice. Siguen abiertas
+la matriz owner/admin y la política de retención/anonimización.
 
 ## 14. Evolución desde el repositorio actual
 

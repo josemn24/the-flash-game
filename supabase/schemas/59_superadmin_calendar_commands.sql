@@ -25,7 +25,7 @@ begin
   if version_status <> 'published' then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if version_mode <> 'flash' then
+  if version_mode not in ('flash', 'survival', 'pyramid') then
     raise exception 'unsupported_content' using errcode = '22023';
   end if;
 
@@ -34,7 +34,9 @@ begin
       where item.position between 1 and 20
         and item.points > 0
         and item.config_schema_version = 1
-        and item.mode_config = '{}'::jsonb
+        and (version_mode = 'pyramid'
+          and private.is_valid_pyramid_level_config(item.mode_config)
+          or version_mode <> 'pyramid' and item.mode_config = '{}'::jsonb)
         and private.is_supported_flash_question(question.id)
     )::integer,
     coalesce(sum(item.points), 0)::integer
@@ -49,8 +51,22 @@ begin
     on solution.question_version_id = item.question_version_id
   where item.challenge_version_id = version_id;
 
-  if version_schema <> 1 or version_score <> 100 or version_config <> '{}'::jsonb
-    or item_count not between 2 and 20
+  if version_schema <> 1 or version_score <> 100
+    or (version_mode = 'flash' and version_config <> '{}'::jsonb)
+    or (version_mode = 'survival' and (
+      (select count(*) from jsonb_object_keys(version_config)) <> 1
+      or jsonb_typeof(version_config->'lives') is distinct from 'number'
+      or (version_config->>'lives')::numeric <> trunc((version_config->>'lives')::numeric)
+      or (version_config->>'lives')::integer not between 1 and item_count
+    ))
+    or (version_mode = 'pyramid' and (
+      version_config <> '{}'::jsonb or item_count <> 7
+      or (select count(distinct item.mode_config->>'levelId')
+        from private.challenge_items item where item.challenge_version_id = version_id) <> 7
+      or exists (select 1 from private.challenge_items item
+        where item.challenge_version_id = version_id and item.position not between 1 and 7)
+    ))
+    or (version_mode <> 'pyramid' and item_count not between 2 and 20)
     or compatible_item_count <> item_count
     or solution_count <> item_count
     or points_total <> 100 then
@@ -523,7 +539,7 @@ begin
       join public.rooms room on room.id = season.room_id
       join private.challenge_versions version on version.id = schedule.challenge_version_id
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status = 'published' and version.mode = 'flash'
+      where room.status = 'active' and version.status = 'published' and version.mode in ('flash', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
@@ -571,7 +587,7 @@ begin
       where room.id = target_room_id
         and room.status = 'active'
         and version.status = 'published'
-        and version.mode = 'flash'
+        and version.mode in ('flash', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
@@ -614,7 +630,15 @@ language sql stable security definer set search_path = '' as $$
     version.title, version.subtitle, version.mode,
     compatibility.question_count,
     attempt.status,
-    membership.role <> 'spectator' and version.mode_config = '{}'::jsonb and compatibility.is_supported and private.publication_is_effectively_open(
+    membership.role <> 'spectator' and (
+      version.mode = 'flash' and version.mode_config = '{}'::jsonb
+      or version.mode = 'survival'
+        and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
+        and jsonb_typeof(version.mode_config->'lives') = 'number'
+        and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
+      or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
+        and compatibility.question_count = 7
+    ) and compatibility.is_supported and private.publication_is_effectively_open(
       schedule.status, season.status, season.starts_at, season.ends_at,
       schedule.opens_at, schedule.closes_at, statement_timestamp()
     ),
@@ -627,10 +651,15 @@ language sql stable security definer set search_path = '' as $$
   join lateral (
     select
       count(*)::bigint as question_count,
-      count(*) between 2 and 20
-        and coalesce(bool_and(item.position between 1 and 20), false)
+      (count(*) between 2 and 20 and version.mode in ('flash', 'survival')
+        or count(*) = 7 and version.mode = 'pyramid')
+        and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)
         and coalesce(bool_and(item.points > 0), false)
-        and coalesce(bool_and(item.config_schema_version = 1 and item.mode_config = '{}'::jsonb), false)
+        and coalesce(bool_and(item.config_schema_version = 1 and (
+          version.mode = 'pyramid' and private.is_valid_pyramid_level_config(item.mode_config)
+          or version.mode <> 'pyramid' and item.mode_config = '{}'::jsonb
+        )), false)
+        and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
         and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
         and coalesce(sum(item.points), 0) = 100 as is_supported
     from private.challenge_items item
@@ -644,7 +673,7 @@ language sql stable security definer set search_path = '' as $$
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
     and version.status = 'published'
-    and version.mode = 'flash'
+    and version.mode in ('flash', 'survival', 'pyramid')
     and version.config_schema_version = 1
     and version.max_score = 100
   order by schedule.number

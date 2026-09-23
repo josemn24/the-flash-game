@@ -211,6 +211,31 @@ export type ServerFlashChallenge = ChallengeBase & {
   maxScore: number;
 };
 
+export type ServerSurvivalChallenge = Omit<ServerFlashChallenge, "mode"> & {
+  readonly mode: "survival";
+  readonly lives: number;
+};
+
+export type ServerPyramidChallenge = Omit<ServerFlashChallenge, "mode" | "slots"> & {
+  readonly mode: "pyramid";
+  readonly attemptVersion: number;
+  readonly availableFrom: string;
+  readonly availableUntil: string;
+  readonly levels: readonly {
+    readonly id: string;
+    readonly position: number;
+    readonly levelId: string;
+    readonly label: string;
+    readonly briefing: PyramidLevelBriefing;
+    readonly questionType: ServerFlashChallenge["slots"][number]["questionType"];
+    readonly payloadSchemaVersion: number;
+    readonly timeLimitMs: number;
+    readonly points: number;
+  }[];
+};
+
+export type ServerPyramidOutcome = "failed" | "summit";
+
 export type ServerAlphabetLetterStatus =
   "unvisited" | "active" | "passed" | "correct" | "incorrect" | "unanswered";
 

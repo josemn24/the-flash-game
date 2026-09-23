@@ -1,22 +1,19 @@
 import type {
-  AnagramQuestion,
   EscapeQuestion,
-  ClassificationQuestion,
   EstimationQuestion,
   HeatMapQuestion,
   FlashChallenge,
-  LogicCodeQuestion,
+  PyramidChallenge,
+  Question,
   LogicMatrixQuestion,
-  MatchingQuestion,
-  MiniWordleQuestion,
-  ProgressiveCluesQuestion,
-  ProgressiveImageQuestion,
   QuestionOfType,
   WordHashtagQuestion,
   ZipQuestion,
 } from "@/types/game";
 import type {
   ServerFlashChallenge,
+  ServerSurvivalChallenge,
+  ServerPyramidChallenge,
   ServerFlashQuestion,
   ServerFlashTerminalReview,
   ServerLogicCodeQuestion,
@@ -55,9 +52,12 @@ import {
 } from "@/lib/wordHashtag";
 
 type TerminalReviewResponseRow = {
-  challenge_item_id: string;
-  public_payload: unknown;
-  solution_payload: unknown;
+  challenge_item_id?: unknown;
+  challengeItemId?: unknown;
+  public_payload?: unknown;
+  publicPayload?: unknown;
+  solution_payload?: unknown;
+  solutionPayload?: unknown;
 };
 
 export class ServerFlashQuestionError extends Error {
@@ -171,7 +171,7 @@ export function questionFromPayload(
     | "classification"
     | "estimation"
     | "heat-map"
-  | "word-search"
+    | "word-search"
     | "word-hashtag"
     | "zip"
     | "escape",
@@ -199,7 +199,7 @@ export function questionFromPayload(
     | "classification"
     | "estimation"
     | "heat-map"
-  | "word-search"
+    | "word-search"
     | "word-hashtag"
     | "zip"
     | "escape",
@@ -879,16 +879,15 @@ export function questionFromPayload(
       kind: "word-hashtag" as const,
       letters: progressLetters as Array<string | null>,
       swaps,
-      movesUsed: Number.isSafeInteger(rawProgress.movesUsed)
-        ? Number(rawProgress.movesUsed)
-        : 0,
+      movesUsed: Number.isSafeInteger(rawProgress.movesUsed) ? Number(rawProgress.movesUsed) : 0,
       movesRemaining: Number.isSafeInteger(rawProgress.movesRemaining)
         ? Number(rawProgress.movesRemaining)
         : Number(value.maxMoves),
     } satisfies ServerWordHashtagQuestion["progress"];
     if (
       safeProgress.letters.length !== 25 ||
-      safeProgress.swaps.length !== (Array.isArray(rawProgress.swaps) ? rawProgress.swaps.length : 0) ||
+      safeProgress.swaps.length !==
+        (Array.isArray(rawProgress.swaps) ? rawProgress.swaps.length : 0) ||
       !safeProgress.letters.every((letter) => letter === null || typeof letter === "string") ||
       safeProgress.movesUsed < 0 ||
       safeProgress.movesUsed > Number(value.maxMoves) ||
@@ -1003,29 +1002,10 @@ export function questionFromPayload(
   };
 }
 
-function questionWithSolution(
+export function questionWithSolution(
   question: ServerFlashQuestion,
   row?: ServerFlashTerminalReview,
-):
-  | QuestionOfType<"multiple-choice">
-  | MiniWordleQuestion
-  | LogicCodeQuestion
-  | LogicMatrixQuestion
-  | ProgressiveCluesQuestion
-  | ProgressiveImageQuestion
-  | MatchingQuestion
-  | QuestionOfType<"queens">
-  | QuestionOfType<"true-false">
-  | QuestionOfType<"odd-one-out">
-  | QuestionOfType<"ordering">
-  | AnagramQuestion
-  | ClassificationQuestion
-  | EstimationQuestion
-  | HeatMapQuestion
-  | import("@/types/game").WordSearchQuestion
-  | WordHashtagQuestion
-  | ZipQuestion
-  | EscapeQuestion {
+): Question {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -1501,10 +1481,18 @@ function questionWithSolution(
   };
 }
 
-export function displayChallenge(challenge: ServerFlashChallenge): FlashChallenge {
-  const { slots, ...challengeBase } = challenge;
+type ServerPlayableChallenge =
+  ServerFlashChallenge | ServerSurvivalChallenge | ServerPyramidChallenge;
+
+export function displayChallenge(challenge: ServerPlayableChallenge): FlashChallenge {
+  const slots = challenge.mode === "pyramid" ? challenge.levels : challenge.slots;
   return {
-    ...challengeBase,
+    id: challenge.id,
+    definitionId: challenge.definitionId,
+    number: challenge.number,
+    title: challenge.title,
+    subtitle: challenge.subtitle,
+    description: challenge.description,
     mode: "flash",
     questions: slots.map((slot) => ({
       id: slot.id,
@@ -1522,14 +1510,66 @@ export function displayChallenge(challenge: ServerFlashChallenge): FlashChalleng
 }
 
 export function challengeWithReview(
-  challenge: ServerFlashChallenge,
+  challenge: ServerFlashChallenge | ServerSurvivalChallenge,
   review: readonly ServerFlashTerminalReview[],
-): FlashChallenge {
+): FlashChallenge;
+export function challengeWithReview(
+  challenge: ServerPyramidChallenge,
+  review: readonly ServerFlashTerminalReview[],
+): PyramidChallenge;
+export function challengeWithReview(
+  challenge: ServerPlayableChallenge,
+  review: readonly ServerFlashTerminalReview[],
+): FlashChallenge | PyramidChallenge {
+  if (challenge.mode === "pyramid") {
+    const levels = challenge.levels.flatMap((level) => {
+      const row = review.find((item) => item.challengeItemId === level.id);
+      if (!row) return [];
+      const question = questionFromPayload(
+        level.id,
+        row.publicPayload,
+        level.timeLimitMs,
+        level.points,
+        level.questionType,
+        undefined,
+        true,
+      );
+      return [
+        {
+          id: level.levelId,
+          label: level.label,
+          briefing: level.briefing,
+          question: questionWithSolution(question, row),
+        },
+      ];
+    });
+    const questionPoints = Object.fromEntries(
+      levels.map((level) => [level.question.id, level.question.points]),
+    );
+    return {
+      id: challenge.id,
+      definitionId: challenge.definitionId,
+      number: challenge.number,
+      title: challenge.title,
+      subtitle: challenge.subtitle,
+      description: challenge.description,
+      mode: "pyramid",
+      attemptVersion: challenge.attemptVersion,
+      availableFrom: challenge.availableFrom,
+      availableUntil: challenge.availableUntil,
+      levels,
+      questionPoints,
+    };
+  }
   const { slots, ...challengeBase } = challenge;
+  const reviewSlots =
+    challenge.mode === "survival"
+      ? slots.filter((slot) => review.some((item) => item.challengeItemId === slot.id))
+      : slots;
   return {
     ...challengeBase,
     mode: "flash",
-    questions: slots.map((slot) => {
+    questions: reviewSlots.map((slot) => {
       const row = review.find((item) => item.challengeItemId === slot.id);
       return questionWithSolution(
         questionFromPayload(
@@ -1549,14 +1589,19 @@ export function challengeWithReview(
 
 function isTerminalReviewResponseRow(value: unknown): value is TerminalReviewResponseRow {
   if (!value || typeof value !== "object") return false;
-  return "challenge_item_id" in value && "solution_payload" in value && "public_payload" in value;
+  const row = value as TerminalReviewResponseRow;
+  return (
+    (typeof row.challenge_item_id === "string" || typeof row.challengeItemId === "string") &&
+    ("public_payload" in row || "publicPayload" in row) &&
+    ("solution_payload" in row || "solutionPayload" in row)
+  );
 }
 
 export function terminalReviewFromResponse(value: unknown): ServerFlashTerminalReview[] {
   if (!Array.isArray(value)) return [];
   return value.filter(isTerminalReviewResponseRow).map((row) => ({
-    challengeItemId: row.challenge_item_id,
-    publicPayload: row.public_payload,
-    solutionPayload: row.solution_payload,
+    challengeItemId: (row.challenge_item_id ?? row.challengeItemId) as string,
+    publicPayload: row.public_payload ?? row.publicPayload,
+    solutionPayload: row.solution_payload ?? row.solutionPayload,
   }));
 }

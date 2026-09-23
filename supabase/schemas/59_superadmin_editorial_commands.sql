@@ -52,6 +52,7 @@ declare
   seen_ids text[] := array[]::text[];
   seen_words text[] := array[]::text[];
   seen_segments text[] := array[]::text[];
+  seen_level_ids text[] := array[]::text[];
 begin
   if document is null or jsonb_typeof(document) is distinct from 'object'
     or not document ?& array['challenge', 'questions']
@@ -77,7 +78,7 @@ begin
     or char_length(challenge->>'subtitle') > 300
     or jsonb_typeof(challenge->'description') is distinct from 'string'
     or char_length(challenge->>'description') > 2000
-    or challenge->>'mode' not in ('flash', 'alphabet')
+    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'pyramid')
     or challenge->'configSchemaVersion' <> '1'::jsonb
     or jsonb_typeof(challenge->'modeConfig') is distinct from 'object'
     or (challenge->>'mode' = 'alphabet' and (
@@ -85,19 +86,41 @@ begin
       or (challenge->>'globalTimeLimitMs')::numeric <> trunc((challenge->>'globalTimeLimitMs')::numeric)
       or (challenge->>'globalTimeLimitMs')::integer <= 0
     ))
-    or (challenge->>'mode' = 'flash' and challenge ? 'globalTimeLimitMs') then
+    or (challenge->>'mode' <> 'alphabet' and challenge ? 'globalTimeLimitMs')
+    or (challenge->>'mode' = 'survival' and (
+      (select count(*) from jsonb_object_keys(challenge->'modeConfig')) <> 1
+      or jsonb_typeof(challenge->'modeConfig'->'lives') is distinct from 'number'
+      or (challenge->'modeConfig'->>'lives')::numeric <> trunc((challenge->'modeConfig'->>'lives')::numeric)
+      or (challenge->'modeConfig'->>'lives')::integer not between 1 and 20
+    ))
+    or (challenge->>'mode' = 'pyramid' and challenge->'modeConfig' <> '{}'::jsonb) then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
   if jsonb_typeof(document->'questions') is distinct from 'array'
-    or jsonb_array_length(document->'questions') not between 2 and 20 then
+    or (challenge->>'mode' = 'pyramid' and jsonb_array_length(document->'questions') <> 7)
+    or (challenge->>'mode' <> 'pyramid' and jsonb_array_length(document->'questions') not between 2 and 20) then
     raise exception 'incomplete_content' using errcode = '22023';
+  end if;
+
+  if challenge->>'mode' = 'survival'
+    and (challenge->'modeConfig'->>'lives')::integer > jsonb_array_length(document->'questions') then
+    raise exception 'invalid_content' using errcode = '22023';
   end if;
 
   for question, question_index in
     select value, ordinality::integer
     from jsonb_array_elements(document->'questions') with ordinality
   loop
+    if challenge->>'mode' = 'pyramid' then
+      if not private.is_valid_pyramid_level_config(question->'modeConfig') then
+        raise exception 'invalid_content' using errcode = '22023';
+      end if;
+      if question->'modeConfig'->>'levelId' = any(seen_level_ids) then
+        raise exception 'invalid_content' using errcode = '22023';
+      end if;
+      seen_level_ids := seen_level_ids || (question->'modeConfig'->>'levelId');
+    end if;
     if jsonb_typeof(question) = 'object' and question->>'source' = 'library' then
       if exists (
           select 1 from jsonb_object_keys(question) key_name
@@ -119,6 +142,14 @@ begin
         raise exception 'invalid_question_reference' using errcode = '22023';
       end if;
       seen_question_versions := seen_question_versions || (question->>'questionVersionId');
+      if challenge->>'mode' in ('survival', 'pyramid') and not exists (
+        select 1 from private.question_versions supported
+        where supported.id = (question->>'questionVersionId')::uuid
+          and supported.type <> 'short-text'
+          and private.is_supported_flash_question(supported.id)
+      ) then
+        raise exception 'unsupported_question' using errcode = '22023';
+      end if;
       total_points := total_points + (question->>'points')::integer;
       continue;
     end if;
@@ -126,9 +157,15 @@ begin
       or not question ?& array['slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'points', 'publicPayload', 'solutionPayload']
       or exists (
         select 1 from jsonb_object_keys(question) key_name
-        where key_name <> all(array['slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'points', 'publicPayload', 'solutionPayload'])
-      ) then
+        where key_name <> all(array['slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'points', 'publicPayload', 'solutionPayload', 'modeConfig'])
+      )
+      or (challenge->>'mode' = 'pyramid' and not private.is_valid_pyramid_level_config(question->'modeConfig'))
+      or (challenge->>'mode' <> 'pyramid' and question ? 'modeConfig') then
       raise exception 'invalid_content' using errcode = '22023';
+    end if;
+
+    if challenge->>'mode' = 'survival' and question->>'type' = 'short-text' then
+      raise exception 'unsupported_question' using errcode = '22023';
     end if;
 
     question_slug := btrim(question->>'slug');
@@ -1741,6 +1778,30 @@ begin
   if (select coalesce(sum(item.points), 0) from private.challenge_items item where item.challenge_version_id = challenge_version_id_value) <> 100 then
     raise exception 'points_total_invalid' using errcode = '22023';
   end if;
+  if challenge_row.mode = 'survival' and (
+    (select count(*) from jsonb_object_keys(challenge_row.mode_config)) <> 1
+    or jsonb_typeof(challenge_row.mode_config->'lives') is distinct from 'number'
+    or (challenge_row.mode_config->>'lives')::numeric <> trunc((challenge_row.mode_config->>'lives')::numeric)
+    or (challenge_row.mode_config->>'lives')::integer not between 1 and (
+      select count(*)::integer from private.challenge_items item
+      where item.challenge_version_id = challenge_version_id_value
+    )
+  ) then
+    raise exception 'invalid_content' using errcode = '22023';
+  end if;
+  if challenge_row.mode = 'pyramid' and (
+    challenge_row.mode_config <> '{}'::jsonb
+    or (select count(*) from private.challenge_items item
+      where item.challenge_version_id = challenge_version_id_value) <> 7
+    or (select count(distinct item.mode_config->>'levelId') from private.challenge_items item
+      where item.challenge_version_id = challenge_version_id_value) <> 7
+    or exists (select 1 from private.challenge_items item
+      where item.challenge_version_id = challenge_version_id_value
+        and (item.position not between 1 and 7
+          or not private.is_valid_pyramid_level_config(item.mode_config)))
+  ) then
+    raise exception 'invalid_content' using errcode = '22023';
+  end if;
 
   for item_row in
     select item.* from private.challenge_items item
@@ -1754,6 +1815,12 @@ begin
       where solution.question_version_id = question_row.id
     ) then
       raise exception 'question_not_published' using errcode = '55000';
+    end if;
+    if challenge_row.mode in ('flash', 'survival', 'pyramid') and (
+      not private.is_supported_flash_question(question_row.id)
+      or (challenge_row.mode = 'survival' and question_row.type = 'short-text')
+    ) then
+      raise exception 'unsupported_question' using errcode = '22023';
     end if;
   end loop;
   update private.challenge_versions version
@@ -1847,7 +1914,9 @@ begin
                   'points', item.points,
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload
-                ) end order by item.position
+                ) || case when version.mode = 'pyramid'
+                  then jsonb_build_object('modeConfig', item.mode_config) else '{}'::jsonb end end
+                order by item.position
               )
               from private.challenge_items item
               join private.question_versions question on question.id = item.question_version_id
@@ -1860,7 +1929,7 @@ begin
       )
       from private.challenge_versions version
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where version.mode = 'flash'
+      where version.mode in ('flash', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;

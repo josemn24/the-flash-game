@@ -57,7 +57,7 @@ function isCalendarEntry(value: unknown): value is SuperadminCalendarEntry {
     value.versionNumber > 0 &&
     typeof value.challengeTitle === "string" &&
     typeof value.challengeSubtitle === "string" &&
-    value.mode === "flash" &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
     typeof value.number === "number" &&
     Number.isSafeInteger(value.number) &&
     value.number > 0 &&

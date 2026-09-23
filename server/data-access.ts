@@ -11,6 +11,8 @@ import {
 import { supabaseRoomQueries } from "@/infrastructure/supabase/roomQueries";
 import { supabaseFlashQueries } from "@/infrastructure/supabase/flashQueries";
 import { supabaseAlphabetQueries } from "@/infrastructure/supabase/alphabetQueries";
+import { supabaseSurvivalQueries } from "@/infrastructure/supabase/survivalQueries";
+import { supabasePyramidQueries } from "@/infrastructure/supabase/pyramidQueries";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
@@ -109,7 +111,9 @@ export const getPlayableChallengePageModel = cache(
       if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
       return (
         (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
-        supabaseAlphabetQueries.getPlayable(roomKey, challengeKey)
+        (await supabaseAlphabetQueries.getPlayable(roomKey, challengeKey)) ??
+        (await supabaseSurvivalQueries.getPlayable(roomKey, challengeKey)) ??
+        supabasePyramidQueries.getPlayable(roomKey, challengeKey)
       );
     }
     if (!mocksEnabled()) return null;
@@ -154,10 +158,16 @@ export const getSuperadminRoomsPageModel = cache(async () => {
   };
 });
 
-function summarizeChallengeEntries(entries: readonly SuperadminEditorialEntry[]): SuperadminChallengeSummary {
+function summarizeChallengeEntries(
+  entries: readonly SuperadminEditorialEntry[],
+): SuperadminChallengeSummary {
   const latest = entries[0];
   if (!latest) throw new Error("A challenge detail must contain at least one Flash version.");
-  const statusCounts: Record<EditorialContentStatus, number> = { draft: 0, published: 0, archived: 0 };
+  const statusCounts: Record<EditorialContentStatus, number> = {
+    draft: 0,
+    published: 0,
+    archived: 0,
+  };
   for (const entry of entries) statusCounts[entry.status] += 1;
   return {
     challengeDefinitionId: latest.challengeDefinitionId,
@@ -201,21 +211,23 @@ export const getSuperadminNewChallengePageModel = cache(async () => {
   };
 });
 
-export const getSuperadminChallengeDetailPageModel = cache(async (challengeDefinitionId: string) => {
-  const access = await requireSuperadmin();
-  const [detail, questionLibrary] = await Promise.all([
-    supabaseSuperadminEditorialQueries.getChallengeDetail(challengeDefinitionId),
-    supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
-  ]);
-  if (!detail) return null;
-  return {
-    operator: access.context.operator,
-    challenge: summarizeChallengeEntries(detail.entries),
-    editorial: { entries: detail.entries, source: "supabase" as const },
-    questionLibrary,
-    source: "supabase" as const,
-  };
-});
+export const getSuperadminChallengeDetailPageModel = cache(
+  async (challengeDefinitionId: string) => {
+    const access = await requireSuperadmin();
+    const [detail, questionLibrary] = await Promise.all([
+      supabaseSuperadminEditorialQueries.getChallengeDetail(challengeDefinitionId),
+      supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
+    ]);
+    if (!detail) return null;
+    return {
+      operator: access.context.operator,
+      challenge: summarizeChallengeEntries(detail.entries),
+      editorial: { entries: detail.entries, source: "supabase" as const },
+      questionLibrary,
+      source: "supabase" as const,
+    };
+  },
+);
 
 export const getSuperadminRoomDetailPageModel = cache(async (roomId: string) => {
   const access = await requireSuperadmin();

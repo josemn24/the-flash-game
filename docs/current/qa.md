@@ -3,9 +3,42 @@
 
 # QA actual
 
+## Validación focal S15 — 2026-09-23
+
+- `npm run supabase:schema:test`: correcto sobre 45 archivos declarativos; inventario de seguridad,
+  suites anteriores, 23 checks autoritativos y 13 editoriales de S15, y concurrencia PostgreSQL.
+- `npm run supabase:migration:up -- --local`: migración `20260923000000_s15_pyramid` aplicada.
+- `npm run test:integration:supabase -- --scenario s15`: correcto con Auth, PostgREST y RLS local.
+- `npm run test:e2e -- e2e/s15-pyramid.spec.ts`: 1/1 correcto; cubre alta de sala/temporada,
+  publicación y programación de siete niveles, cima, fallo temprano, recuperación de nivel abierto,
+  revisión propia tras recarga, spectator y ranking.
+- `npx vitest run server/competitive/rate-limit.test.ts features/game/serverFlashQuestionAdapter.test.ts features/pyramid/pyramidRules.test.ts lib/editorial/flashDocument.test.ts`:
+  57 tests correctos. Incluye normalización de revisión terminal en DTO snake_case/camelCase.
+- Typecheck, lint, arquitectura de tipos, links y revisión de esquema pasan; lint conserva una
+  advertencia preexistente en `FlashPopRoomRanking.tsx`. `style-architecture` sigue fallando por
+  nueve hojas CSS históricas bajo `components/admin`.
+- No se ejecutó `npm run verify:pilot`; `linked_project: null` limita la evidencia a Supabase local.
+
 ## Última verificación
 
-2026-09-22, sobre el estado actual del repositorio y el stack local de Supabase.
+2026-09-23, sobre el estado actual del repositorio y el stack local de Supabase.
+
+Validación focal S14 ejecutada el 2026-09-22:
+
+- `npm run supabase:schema:test`: correcto sobre 43 archivos declarativos; S14 comprueba publicación,
+  ACL, resultado terminal, score desde evaluaciones, recuperación, cierre idempotente y error de
+  Matching al agotar la última vida; `timeout` también descuenta vida en reglas puras y PostgreSQL.
+- `npm run test:integration:supabase -- --scenario s14`: correcto con Auth, PostgREST y RLS local;
+  cubre borrador, publicación, calendario, lectura jugable del miembro y denegación al spectator.
+- `npm run test:e2e -- e2e/s14-survival.spec.ts`: 1/1 correcto; cubre portal, programación,
+  respuesta, recuperación de eliminación, recarga, revisión propia, spectator y ranking.
+- `npm run typecheck`, `npm run lint`, `npm run type-architecture`, `npm run docs:check` y
+  `npm run schema:revision:check`: correctos. ESLint conserva una advertencia preexistente en
+  `FlashPopRoomRanking.tsx`.
+- `npm run style-architecture` sigue fallando por la ubicación histórica de nueve hojas CSS de
+  administración bajo `components/admin`; S14 no añadió hojas CSS.
+- `npm run verify:pilot` **no se ejecutó** para S14, según la instrucción de esta slice. Tampoco se
+  validó un proyecto remoto: Supabase informa `linked_project: null`.
 
 - `npm test`: 121 archivos de test y 714 tests superados.
 - `npm run typecheck`: correcto.
@@ -16,12 +49,12 @@
 - `npm run dictionary:check`: correcto.
 - `npm run docs:check`: correcto; 64 archivos Markdown comprobados.
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260922180514_declarative_sync`.
+  `20260922202508_s14_survival`.
 - `npm run verify:pilot`: correcto el 2026-09-22 sobre Supabase local reconstruido desde cero;
   pasan portal, S02, S03, E01–E06, F08, S04, S06, S07 y S10–S12 en integración y E2E, junto con
   `browser-fixture`, `flash-layout`, `dictionary-check` y `backup-restore`.
-- `npm run supabase:schema:test`: correcto sobre 41 archivos declarativos, 30 tablas y 136 funciones
-  públicas/privadas, inventario, provisioning,
+- `npm run supabase:schema:test`: correcto sobre 43 archivos declarativos y 30 tablas, con inventario
+  de seguridad, provisioning,
   S02–S08, S10–S13, E01–E06, F08, F16, F18, F19 y E10, portal privado, comandos editoriales/calendario y pruebas concurrentes
   con conexiones PostgreSQL independientes. S13 cubre 2–20 preguntas, puntos por item, suma 100,
   crecimiento y reducción del grafo editorial. E10 cubre payload público con imagen, solución
@@ -81,7 +114,7 @@
   `e2e/s12-calendar.spec.ts` son correctos; el piloto aplica las migraciones S12 mediante reset
   global antes de cada fixture aislado.
 - S06 continúa verificado por `s06` y `e2e/s06-ranking.spec.ts`.
-- `npm run format:check`: avisos de formato en 71 archivos; quedan fuera del alcance de esta
+- `npm run format:check`: avisos de formato en 141 archivos en la última comprobación global; quedan fuera del alcance de esta
   actualización documental.
 
 ## Cobertura

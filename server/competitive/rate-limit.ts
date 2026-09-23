@@ -6,10 +6,15 @@ type Bucket = {
 };
 
 const configuredCapacity = Number(process.env.FLASH_RATE_LIMIT_BURST ?? 5);
-const capacity = Number.isSafeInteger(configuredCapacity) && configuredCapacity > 0 ? configuredCapacity : 5;
+const capacity =
+  Number.isSafeInteger(configuredCapacity) && configuredCapacity > 0 ? configuredCapacity : 5;
 const refillPerSecond = 0.5;
 const buckets = new Map<string, Bucket>();
-const adminCapacity = 10;
+const configuredAdminCapacity = Number(process.env.FLASH_ADMIN_RATE_LIMIT_BURST ?? 10);
+const adminCapacity =
+  Number.isSafeInteger(configuredAdminCapacity) && configuredAdminCapacity > 0
+    ? configuredAdminCapacity
+    : 10;
 const adminRefillPerSecond = 10 / 60;
 const adminBuckets = new Map<string, Bucket>();
 

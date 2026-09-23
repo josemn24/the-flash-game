@@ -66,7 +66,10 @@ import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
 import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
-import { isValidWordHashtagConfiguration, isValidWordHashtagPublicConfiguration } from "@/lib/wordHashtag";
+import {
+  isValidWordHashtagConfiguration,
+  isValidWordHashtagPublicConfiguration,
+} from "@/lib/wordHashtag";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -240,7 +243,7 @@ function asQuestion(
   | EstimationQuestion
   | HeatMapQuestion
   | ShortTextQuestion
-    | WordSearchQuestion
+  | WordSearchQuestion
   | WordHashtagQuestion
   | ZipQuestion
   | EscapeQuestion {
@@ -1009,9 +1012,11 @@ function asQuestion(
       grid: configuration.grid,
       checkpoints: configuration.checkpoints,
       solution,
-      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      instruction:
+        typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
       mapNote: typeof publicPayload.mapNote === "string" ? publicPayload.mapNote : undefined,
-      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      boardLabel:
+        typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
       explanation:
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies ZipQuestion;
@@ -1033,7 +1038,8 @@ function asQuestion(
       initialBlocks: configuration.initialBlocks as EscapeQuestion["initialBlocks"],
       referenceSolution: referenceSolution as EscapeQuestion["referenceSolution"],
       optimalMoves: solutionPayload.optimalMoves as number,
-      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      instruction:
+        typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
       hideInstruction: publicPayload.hideInstruction === true,
       objectiveLabel:
         typeof publicPayload.objectiveLabel === "string" ? publicPayload.objectiveLabel : undefined,
@@ -1042,7 +1048,8 @@ function asQuestion(
         typeof publicPayload.completionMessage === "string"
           ? publicPayload.completionMessage
           : undefined,
-      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      boardLabel:
+        typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
       explanation:
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies EscapeQuestion;
@@ -1329,17 +1336,19 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: context.publicPayload,
       })) as EvaluationContext["publicPayload"],
     };
-    const result = evaluateReceipt({
-      receipt: {
-        timeUsedMs: resolvedContext.timeUsedMs,
-        timedOut: resolvedContext.timedOut,
-      },
-      question: asQuestion(resolvedContext),
-      answer: (resolvedContext.answer as AnswerValue | null) ?? null,
-      progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
-      matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
-      incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
-    });
+    const result: Pick<ReturnType<typeof evaluateReceipt>, "status" | "points" | "details"> = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
+      ? { status: "unanswered" as const, points: 0 }
+      : evaluateReceipt({
+          receipt: {
+            timeUsedMs: resolvedContext.timeUsedMs,
+            timedOut: resolvedContext.timedOut,
+          },
+          question: asQuestion(resolvedContext),
+          answer: (resolvedContext.answer as AnswerValue | null) ?? null,
+          progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+          matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
+          incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
+        });
     const evaluated = await this.recordEvaluation({
       attemptId: input.receive.attemptId,
       sessionToken: input.receive.sessionToken,
@@ -1375,15 +1384,17 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: context.publicPayload,
       })) as EvaluationContext["publicPayload"],
     };
-    const result = evaluateReceipt({
-      receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
-      question: asQuestion(resolvedContext),
-      answer: (resolvedContext.answer as AnswerValue | null) ?? null,
-      progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
-      matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
-      incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
-    });
-    return this.recordEvaluation({
+    const result: Pick<ReturnType<typeof evaluateReceipt>, "status" | "points" | "details"> = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
+      ? { status: "unanswered" as const, points: 0 }
+      : evaluateReceipt({
+          receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
+          question: asQuestion(resolvedContext),
+          answer: (resolvedContext.answer as AnswerValue | null) ?? null,
+          progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+          matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
+          incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
+        });
+    const evaluated = await this.recordEvaluation({
       attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],
       sessionToken: input.sessionToken,
       lockVersion: input.lockVersion,
@@ -1393,6 +1404,7 @@ export class SupabaseAttemptCommands implements Pick<
       points: result.points,
       ...(result.details ? { resultDetails: result.details } : {}),
     });
+    return { ...evaluated, ...(result.details ? { details: result.details } : {}) };
   }
 
   completeFromPersistedAnswers(input: {

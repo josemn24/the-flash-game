@@ -576,7 +576,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       words: words as WordHashtagQuestion["words"],
       timeLimit: (value.timeLimitMs as number) / 1000,
       points: value.points as number,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies WordHashtagQuestion;
     if (
       value.payloadSchemaVersion !== 1 ||
@@ -606,9 +607,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       !hasOnlyKeys(publicPayload, zipPublicPayloadKeys) ||
       !hasOnlyKeys(solutionPayload, zipSolutionKeys)
     ) {
-      throw new FlashEditorialValidationError([
-        `questions[${index}] no cumple el contrato zip.`,
-      ]);
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato zip.`]);
     }
     const configuration = {
       grid: publicPayload.grid,
@@ -629,7 +628,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       solution: solution as number[],
       timeLimit: (value.timeLimitMs as number) / 1000,
       points: value.points as number,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
     if (
       value.payloadSchemaVersion !== 1 ||
@@ -640,9 +640,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       !solution.every((cell) => Number.isSafeInteger(cell)) ||
       !isValidZipConfiguration(legacyQuestion)
     ) {
-      throw new FlashEditorialValidationError([
-        `questions[${index}] no cumple el contrato zip.`,
-      ]);
+      throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato zip.`]);
     }
     return {
       slug: value.slug as string,
@@ -681,7 +679,8 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       optimalMoves: solutionPayload.optimalMoves as number,
       timeLimit: (value.timeLimitMs as number) / 1000,
       points: value.points as number,
-      explanation: typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
       ...(typeof publicPayload.instruction === "string"
         ? { instruction: publicPayload.instruction }
         : {}),
@@ -706,9 +705,7 @@ function parseQuestion(value: unknown, index: number): FlashEditorialQuestion {
       "objectiveLabel",
       "completionMessage",
       "boardLabel",
-    ].every(
-      (key) => publicPayload[key] === undefined || nonEmptyString(publicPayload[key], 500),
-    );
+    ].every((key) => publicPayload[key] === undefined || nonEmptyString(publicPayload[key], 500));
     const validVisibility = ["hideInstruction", "hideObjectiveLabel"].every(
       (key) => publicPayload[key] === undefined || typeof publicPayload[key] === "boolean",
     );
@@ -1533,32 +1530,98 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     challenge.subtitle.length > 300 ||
     typeof challenge.description !== "string" ||
     challenge.description.length > 2000 ||
-    (challenge.mode !== "flash" && challenge.mode !== "alphabet") ||
+    (challenge.mode !== "flash" &&
+      challenge.mode !== "alphabet" &&
+      challenge.mode !== "survival" &&
+      challenge.mode !== "pyramid") ||
     challenge.configSchemaVersion !== 1 ||
     !isRecord(challenge.modeConfig) ||
     !Object.values(challenge.modeConfig).every(isJsonValue) ||
     (challenge.mode === "alphabet" &&
       (!Number.isSafeInteger(challenge.globalTimeLimitMs) ||
         (challenge.globalTimeLimitMs as number) <= 0)) ||
-    (challenge.mode === "flash" && challenge.globalTimeLimitMs !== undefined)
+    (challenge.mode !== "alphabet" && challenge.globalTimeLimitMs !== undefined) ||
+    (challenge.mode === "survival" &&
+      (!hasExactKeys(challenge.modeConfig, ["lives"]) ||
+        !Number.isSafeInteger(challenge.modeConfig.lives) ||
+        (challenge.modeConfig.lives as number) < 1 ||
+        (challenge.modeConfig.lives as number) > FLASH_MAX_QUESTIONS)) ||
+    (challenge.mode === "pyramid" && Object.keys(challenge.modeConfig).length !== 0)
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
-  if (
-    !Array.isArray(questions) ||
-    questions.length < FLASH_MIN_QUESTIONS ||
-    questions.length > FLASH_MAX_QUESTIONS
-  ) {
+  const validQuestionCount =
+    Array.isArray(questions) &&
+    (challenge.mode === "pyramid"
+      ? questions.length === 7
+      : questions.length >= FLASH_MIN_QUESTIONS && questions.length <= FLASH_MAX_QUESTIONS);
+  if (!validQuestionCount) {
     throw new FlashEditorialValidationError([
-      `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
+      challenge.mode === "pyramid"
+        ? "La Pirámide requiere exactamente siete niveles."
+        : `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
     ]);
   }
 
-  const parsedQuestions = questions.map((question, index) =>
-    isRecord(question) && question.source === "library"
-      ? parseQuestionReference(question, index)
-      : parseQuestion(question, index),
-  );
+  if (challenge.mode === "survival" && (challenge.modeConfig.lives as number) > questions.length) {
+    throw new FlashEditorialValidationError([
+      "Supervivencia requiere vidas entre 1 y el número de preguntas.",
+    ]);
+  }
+
+  const parsedQuestions = questions.map((question, index) => {
+    if (isRecord(question) && question.source === "library") {
+      return parseQuestionReference(question, index);
+    }
+    if (isRecord(question) && "modeConfig" in question) {
+      if (
+        !isRecord(question.modeConfig) ||
+        !Object.values(question.modeConfig).every(isJsonValue)
+      ) {
+        throw new FlashEditorialValidationError([
+          `questions[${index}] tiene una configuración de nivel inválida.`,
+        ]);
+      }
+      const { modeConfig, ...questionDocument } = question;
+      return {
+        ...parseQuestion(questionDocument, index),
+        modeConfig: modeConfig as EditorialJsonObject,
+      };
+    }
+    return parseQuestion(question, index);
+  });
+  if (
+    challenge.mode === "survival" &&
+    parsedQuestions.some((question) => !("source" in question) && question.type === "short-text")
+  ) {
+    throw new FlashEditorialValidationError([
+      "Supervivencia requiere formatos con evaluación competitiva de Flash.",
+    ]);
+  }
+  if (challenge.mode === "pyramid") {
+    const levelIds = parsedQuestions.map((question) =>
+      "modeConfig" in question ? question.modeConfig?.levelId : undefined,
+    );
+    const validLevels = parsedQuestions.every((question) => {
+      const modeConfig = "modeConfig" in question ? question.modeConfig : undefined;
+      return (
+        isRecord(modeConfig) &&
+        hasExactKeys(modeConfig, ["levelId", "label", "briefing"]) &&
+        nonEmptyString(modeConfig.levelId, 120) &&
+        nonEmptyString(modeConfig.label, 120) &&
+        isRecord(modeConfig.briefing) &&
+        hasExactKeys(modeConfig.briefing, ["title", "format", "description"]) &&
+        nonEmptyString(modeConfig.briefing.title, 200) &&
+        nonEmptyString(modeConfig.briefing.format, 120) &&
+        nonEmptyString(modeConfig.briefing.description, 1000)
+      );
+    });
+    if (!validLevels || new Set(levelIds).size !== parsedQuestions.length) {
+      throw new FlashEditorialValidationError([
+        "La Pirámide requiere siete niveles con id, etiqueta y briefing válidos y únicos.",
+      ]);
+    }
+  }
   if (challenge.mode === "alphabet") {
     const letters = parsedQuestions.map((question) =>
       "source" in question ? question.modeConfig.letter : undefined,

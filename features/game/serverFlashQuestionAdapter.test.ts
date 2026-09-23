@@ -4,6 +4,7 @@ import {
   challengeWithReview,
   questionFromPayload,
   ServerFlashQuestionError,
+  terminalReviewFromResponse,
 } from "./serverFlashQuestionAdapter";
 
 const serverChallenge = {
@@ -28,6 +29,33 @@ const serverChallenge = {
 };
 
 describe("server flash question adapter", () => {
+  it("normalizes terminal review rows returned by both SQL and mode adapters", () => {
+    const snakeCase = {
+      challenge_item_id: "item-snake",
+      public_payload: { question: "Pregunta snake" },
+      solution_payload: { correctAnswer: "A" },
+    };
+    const camelCase = {
+      challengeItemId: "item-camel",
+      publicPayload: { question: "Pregunta camel" },
+      solutionPayload: { correctAnswer: "B" },
+    };
+
+    expect(terminalReviewFromResponse([snakeCase, camelCase])).toEqual([
+      {
+        challengeItemId: "item-snake",
+        publicPayload: snakeCase.public_payload,
+        solutionPayload: snakeCase.solution_payload,
+      },
+      {
+        challengeItemId: "item-camel",
+        publicPayload: camelCase.publicPayload,
+        solutionPayload: camelCase.solutionPayload,
+      },
+    ]);
+    expect(terminalReviewFromResponse([{ challenge_item_id: "incomplete" }])).toEqual([]);
+  });
+
   it("maps a validated public payload without exposing a solution", () => {
     const question = questionFromPayload(
       "item-1",
@@ -447,8 +475,7 @@ describe("server flash question adapter", () => {
       ],
     };
     const solution = [
-      0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23,
-      24,
+      0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
     ];
     const question = questionFromPayload("item-zip", publicPayload, 35_000, 50, "zip");
     expect(question).toMatchObject({ type: "zip", grid: publicPayload.grid });
@@ -791,11 +818,46 @@ describe("server flash question adapter", () => {
       question: "Libera la pieza amarilla.",
       grid: { rows: 6, columns: 6, exit: { side: "right" as const, row: 2 } },
       initialBlocks: [
-        { id: "target", kind: "target" as const, orientation: "horizontal" as const, row: 2, column: 0, length: 2 as const },
-        { id: "a", kind: "obstacle" as const, orientation: "vertical" as const, row: 1, column: 2, length: 2 as const },
-        { id: "b", kind: "obstacle" as const, orientation: "vertical" as const, row: 0, column: 4, length: 3 as const },
-        { id: "c", kind: "obstacle" as const, orientation: "horizontal" as const, row: 0, column: 1, length: 2 as const },
-        { id: "d", kind: "obstacle" as const, orientation: "horizontal" as const, row: 4, column: 1, length: 2 as const },
+        {
+          id: "target",
+          kind: "target" as const,
+          orientation: "horizontal" as const,
+          row: 2,
+          column: 0,
+          length: 2 as const,
+        },
+        {
+          id: "a",
+          kind: "obstacle" as const,
+          orientation: "vertical" as const,
+          row: 1,
+          column: 2,
+          length: 2 as const,
+        },
+        {
+          id: "b",
+          kind: "obstacle" as const,
+          orientation: "vertical" as const,
+          row: 0,
+          column: 4,
+          length: 3 as const,
+        },
+        {
+          id: "c",
+          kind: "obstacle" as const,
+          orientation: "horizontal" as const,
+          row: 0,
+          column: 1,
+          length: 2 as const,
+        },
+        {
+          id: "d",
+          kind: "obstacle" as const,
+          orientation: "horizontal" as const,
+          row: 4,
+          column: 1,
+          length: 2 as const,
+        },
       ],
     };
     const referenceSolution = [
@@ -832,7 +894,13 @@ describe("server flash question adapter", () => {
           },
         ],
       },
-      [{ challengeItemId: "item-escape", publicPayload, solutionPayload: { referenceSolution, optimalMoves: 4 } }],
+      [
+        {
+          challengeItemId: "item-escape",
+          publicPayload,
+          solutionPayload: { referenceSolution, optimalMoves: 4 },
+        },
+      ],
     );
     expect(review.questions[0]).toMatchObject({ type: "escape", optimalMoves: 4 });
   });

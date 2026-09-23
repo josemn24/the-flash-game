@@ -21,22 +21,51 @@ insert into public.seasons(id,room_id,title,status,starts_at,ends_at)
 select test_support.id('season-'||m),test_support.id('room-'||m),m,'active',now()-interval '2 days',now()+interval '2 days'
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
 insert into private.question_definitions(id,slug,created_by_player_id)
-select test_support.id('q-'||m),'commands-q-'||m,test_support.id('superadmin') from unnest(array['normal','normal-2','fast','fast-2']) m;
+select test_support.id('q-'||m),'commands-q-'||m,test_support.id('superadmin')
+from unnest(array['normal','normal-2','fast','fast-2','pyramid-1','pyramid-2','pyramid-3','pyramid-4','pyramid-5','pyramid-6','pyramid-7']) m;
 insert into private.question_versions(id,question_definition_id,version_number,type,time_limit_ms,public_payload,created_by_player_id)
-select test_support.id('qv-'||m),test_support.id('q-'||m),1,'true-false',case m when 'fast' then 10 else 60000 end,
-  '{"prompt":"Test?"}',test_support.id('superadmin') from unnest(array['normal','normal-2','fast','fast-2']) m;
+select test_support.id('qv-'||m),test_support.id('q-'||m),1,
+  case when m like 'pyramid-%' then 'multiple-choice' else 'true-false' end,
+  case m when 'fast' then 10 else 60000 end,
+  case when m like 'pyramid-%' then '{"question":"Test?","options":["A","B"]}'::jsonb else '{"prompt":"Test?"}'::jsonb end,
+  test_support.id('superadmin')
+from unnest(array['normal','normal-2','fast','fast-2','pyramid-1','pyramid-2','pyramid-3','pyramid-4','pyramid-5','pyramid-6','pyramid-7']) m;
 insert into private.question_version_solutions(question_version_id,solution_payload)
-select id,'{"correctAnswer":true}' from private.question_versions;
+select id,case when type = 'multiple-choice' then '{"correctAnswer":"A"}'::jsonb else '{"correctAnswer":true}'::jsonb end from private.question_versions;
 update private.question_versions set status='published';
 insert into private.challenge_definitions(id,slug,created_by_player_id)
 select test_support.id('cd-'||m),'commands-cd-'||m,test_support.id('superadmin') from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
-insert into private.challenge_versions(id,challenge_definition_id,version_number,mode,title,global_time_limit_ms,created_by_player_id)
+insert into private.challenge_versions(id,challenge_definition_id,version_number,mode,title,global_time_limit_ms,created_by_player_id,mode_config)
 select test_support.id('cv-'||m),test_support.id('cd-'||m),1,case when m='fast' then 'flash' when m='alphabet-fast' then 'alphabet' else m end,m,
-  case when m='alphabet' then 60000 when m='alphabet-fast' then 100 else null end,test_support.id('superadmin')
+  case when m='alphabet' then 60000 when m='alphabet-fast' then 100 else null end,test_support.id('superadmin'),
+  case when m='survival' then '{"lives":1}'::jsonb else '{}'::jsonb end
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
 insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points)
-select test_support.id('item-'||m||'-'||n),test_support.id('cv-'||m),test_support.id('qv-'||case when m='fast' and n=2 then 'fast-2' when m='fast' then 'fast' when n=2 then 'normal-2' else 'normal' end),n,50
+select test_support.id('item-'||m||'-'||n),test_support.id('cv-'||m),test_support.id('qv-'||case
+  when m='pyramid' then 'pyramid-'||n
+  when m='fast' and n=2 then 'fast-2'
+  when m='fast' then 'fast'
+  when n=2 then 'normal-2'
+  else 'normal'
+end),n,50
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m cross join generate_series(1,2) n;
+insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points)
+select test_support.id('item-pyramid-'||n),test_support.id('cv-pyramid'),test_support.id('qv-pyramid-'||n),n,
+  case when n < 6 then 14 else 15 end
+from generate_series(3,7) n;
+update private.challenge_items
+set points = case position when 1 then 14 when 2 then 14 when 3 then 14 when 4 then 14
+  when 5 then 14 when 6 then 15 else 15 end,
+  mode_config = jsonb_build_object(
+    'levelId', 'level-' || position,
+    'label', 'Nivel ' || position,
+    'briefing', jsonb_build_object(
+      'title', 'Prueba ' || position,
+      'format', 'Lógica',
+      'description', 'Resuelve el nivel para avanzar.'
+    )
+  )
+where challenge_version_id = test_support.id('cv-pyramid');
 update private.challenge_versions set status='published';
 insert into public.scheduled_challenges(id,season_id,challenge_version_id,number,status,opens_at,closes_at)
 select test_support.id('sc-'||m),test_support.id('season-'||m),test_support.id('cv-'||m),1,'open',now()-interval '1 day',now()+interval '1 day'

@@ -94,6 +94,105 @@ describe("Flash editorial document", () => {
     expect(isFlashEditorialDocument(parsed)).toBe(true);
   });
 
+  it("accepts Survival with a valid integer lives configuration", () => {
+    const document = documentFixture();
+    document.challenge.mode = "survival";
+    document.challenge.modeConfig = { lives: 2 };
+
+    expect(parseFlashEditorialDocument(document).challenge).toMatchObject({
+      mode: "survival",
+      modeConfig: { lives: 2 },
+    });
+  });
+
+  it("rejects invalid Survival lives and the unsupported short-text format", () => {
+    for (const modeConfig of [{ lives: 0 }, { lives: 3 }, { lives: 1, extra: true }]) {
+      const document = documentFixture();
+      document.challenge.mode = "survival";
+      document.challenge.modeConfig = modeConfig;
+      expect(() => parseFlashEditorialDocument(document)).toThrow();
+    }
+
+    const document = documentFixture();
+    document.challenge.mode = "survival";
+    document.challenge.modeConfig = { lives: 1 };
+    document.questions[0] = {
+      slug: "short-text-question",
+      type: "short-text",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 15000,
+      points: 50,
+      publicPayload: {
+        category: "Cultura",
+        tags: {},
+        question: "¿Cuál es la capital de Portugal?",
+        answerPlaceholder: "Escribe una ciudad",
+      },
+      solutionPayload: {
+        correctAnswer: "Lisboa",
+        acceptedAnswers: ["lisboa"],
+        explanation: "Lisboa es la capital.",
+      },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow(
+      "Supervivencia requiere formatos con evaluación competitiva de Flash.",
+    );
+  });
+
+  it("accepts seven Pyramid levels with unique metadata and 100 points", () => {
+    const document = documentFixture();
+    document.challenge.mode = "pyramid";
+    document.questions = Array.from({ length: 7 }, (_, index) => ({
+      ...document.questions[index % 2]!,
+      slug: `pyramid-question-${index + 1}`,
+      points: index === 6 ? 40 : 10,
+      modeConfig: {
+        levelId: `level-${index + 1}`,
+        label: `Nivel ${index + 1}`,
+        briefing: {
+          title: `Prueba ${index + 1}`,
+          format: "Opción múltiple",
+          description: "Resuelve la prueba para avanzar.",
+        },
+      },
+    })) as unknown as TestQuestion[];
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.challenge.mode).toBe("pyramid");
+    expect(parsed.questions).toHaveLength(7);
+    expect(parsed.questions[0]).toMatchObject({ modeConfig: { levelId: "level-1" } });
+  });
+
+  it("rejects Pyramid with the wrong level count, invalid briefing, or duplicate level IDs", () => {
+    const document = documentFixture();
+    document.challenge.mode = "pyramid";
+    document.questions = Array.from({ length: 7 }, (_, index) => ({
+      ...document.questions[index % 2]!,
+      slug: `pyramid-question-${index + 1}`,
+      points: index === 6 ? 40 : 10,
+      modeConfig: {
+        levelId: `level-${index + 1}`,
+        label: `Nivel ${index + 1}`,
+        briefing: {
+          title: `Prueba ${index + 1}`,
+          format: "Opción múltiple",
+          description: "Resuelve la prueba para avanzar.",
+        },
+      },
+    })) as unknown as TestQuestion[];
+
+    expect(() => parseFlashEditorialDocument({ ...document, questions: document.questions.slice(0, 6) }))
+      .toThrow("exactamente siete niveles");
+    const duplicate = structuredClone(document);
+    (duplicate.questions[6] as unknown as { modeConfig: { levelId: string } }).modeConfig.levelId =
+      "level-1";
+    expect(() => parseFlashEditorialDocument(duplicate)).toThrow("válidos y únicos");
+    const invalidBriefing = structuredClone(document);
+    (invalidBriefing.questions[0] as unknown as { modeConfig: { briefing: unknown } }).modeConfig.briefing =
+      { title: "", format: "", description: "" };
+    expect(() => parseFlashEditorialDocument(invalidBriefing)).toThrow("válidos y únicos");
+  });
+
   it("accepts the supported final-answer editorial formats", () => {
     const documents = [
       {
@@ -276,8 +375,8 @@ describe("Flash editorial document", () => {
         },
         solutionPayload: {
           solution: [
-            0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22,
-            23, 24,
+            0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23,
+            24,
           ],
           explanation: "Recorrido serpenteante.",
         },

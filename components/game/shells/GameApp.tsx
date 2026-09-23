@@ -4,13 +4,20 @@ import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
   ServerFlashTerminalReview,
+  ServerSurvivalChallenge,
+  ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
 import type { ChallengeCompletionResult } from "@/types/game";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import type { GameplayPersistence } from "@/types/view-models";
 
 type GameAppProps = {
-  challenge: Challenge | ServerFlashChallenge | ServerAlphabetChallenge;
+  challenge:
+    | Challenge
+    | ServerFlashChallenge
+    | ServerAlphabetChallenge
+    | ServerSurvivalChallenge
+    | ServerPyramidChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
   socialSnapshot: FlashPopSocialSnapshot;
@@ -51,6 +58,16 @@ const FlashPopSurvivalGame = dynamic(() =>
     (module) => module.FlashPopSurvivalGame,
   ),
 );
+const ServerFlashPopSurvivalGame = dynamic(() =>
+  import("@/components/game/modes/flash-pop/ServerFlashPopSurvivalGame.client").then(
+    (module) => module.ServerFlashPopSurvivalGame,
+  ),
+);
+const ServerFlashPopPyramidGame = dynamic(() =>
+  import("@/components/game/modes/flash-pop/ServerFlashPopPyramidGame.client").then(
+    (module) => module.ServerFlashPopPyramidGame,
+  ),
+);
 const NarrativeGameApp = dynamic(() =>
   import("@/components/game/modes/narrative/NarrativeGameApp.client").then(
     (module) => module.NarrativeGameApp,
@@ -89,9 +106,18 @@ export function GameApp({
     );
   }
   if (challenge.mode === "pyramid") {
+    if (persistence === "server" && roomContext && "maxScore" in challenge) {
+      return (
+        <ServerFlashPopPyramidGame
+          challenge={challenge}
+          roomContext={roomContext}
+          terminalReview={terminalReview}
+        />
+      );
+    }
     return (
       <FlashPopPyramidGame
-        challenge={challenge}
+        challenge={challenge as Extract<Challenge, { mode: "pyramid" }>}
         roomContext={roomContext}
         onComplete={onComplete}
         socialSnapshot={socialSnapshot}
@@ -99,9 +125,18 @@ export function GameApp({
     );
   }
   if (challenge.mode === "survival") {
+    if (persistence === "server" && roomContext && "slots" in challenge) {
+      return (
+        <ServerFlashPopSurvivalGame
+          challenge={challenge}
+          roomContext={roomContext}
+          terminalReview={terminalReview}
+        />
+      );
+    }
     return (
       <FlashPopSurvivalGame
-        challenge={challenge}
+        challenge={challenge as Extract<Challenge, { mode: "survival" }>}
         roomContext={roomContext}
         onComplete={onComplete}
         socialSnapshot={socialSnapshot}

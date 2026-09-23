@@ -74,6 +74,13 @@ declare
   is_admin boolean;
   clear_progress boolean := false;
   target_status text;
+  completion_outcome text;
+  survival_lives integer;
+  survival_mistakes integer;
+  survival_resolved integer;
+  survival_total integer;
+  pyramid_resolved integer;
+  pyramid_total integer;
 begin
   case op
     when 'start' then
@@ -215,6 +222,12 @@ begin
           values(a.id, safe_input->>'newSessionToken', a.deadline_at) returning * into session_row;
         result := jsonb_build_object('sessionId', session_row.id, 'deadlineAt', a.deadline_at);
       when 'prepare' then
+        if cv.mode = 'pyramid' and exists (
+          select 1 from private.attempt_answers answer
+          where answer.attempt_id = a.id and answer.status <> 'correct'
+        ) then
+          raise exception 'pyramid_level_failed' using errcode = '55000';
+        end if;
         if exists (select 1 from private.answer_receipts r where r.attempt_id = a.id and not exists (
           select 1 from private.attempt_answers aa where aa.receipt_id = r.id
         )) then raise exception 'evaluation_pending' using errcode = '55000'; end if;
@@ -383,9 +396,13 @@ begin
         insert into private.attempt_answers(attempt_id, challenge_item_id, challenge_version_id, receipt_id,
           status, answer, result_details, points, presented_at, submitted_at, time_used_ms, idempotency_key)
         values(a.id, receipt.challenge_item_id, receipt.challenge_version_id, receipt.id,
-          input->>'status', receipt.answer, input->'resultDetails', (input->>'points')::integer,
+          input->>'status', receipt.answer, input->'resultDetails',
+          case when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
+            else (input->>'points')::integer end,
           receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key);
-        result := jsonb_build_object('receiptId', receipt.id, 'status', input->>'status', 'points', (input->>'points')::integer);
+        result := jsonb_build_object('receiptId', receipt.id, 'status', input->>'status',
+          'points', case when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
+            else (input->>'points')::integer end);
       when 'complete', 'abandon' then
         if op = 'complete' then
           if exists (select 1 from private.interaction_intervals where attempt_id = a.id and ended_at is null)
@@ -396,11 +413,52 @@ begin
           if not exists (select 1 from private.attempt_answers where attempt_id = a.id) then
             raise exception 'no_evaluated_answers' using errcode = '55000';
           end if;
-          if cv.mode in ('flash','alphabet','narrative') and private.next_attempt_item(a.id) is not null then
-            raise exception 'incomplete_challenge' using errcode = '55000';
+          if cv.mode = 'survival' then
+            select count(*)::integer,
+              coalesce(sum(case
+                when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+                when answer_question.type in ('matching', 'queens')
+                  and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+                else 0
+              end), 0)::integer
+            into survival_resolved, survival_mistakes
+            from private.attempt_answers answer
+            join private.challenge_items answer_item on answer_item.id = answer.challenge_item_id
+            join private.question_versions answer_question on answer_question.id = answer_item.question_version_id
+            where answer.attempt_id = a.id;
+            select count(*)::integer into survival_total
+            from private.challenge_items challenge_item
+            where challenge_item.challenge_version_id = a.challenge_version_id;
+            survival_lives := greatest((cv.mode_config->>'lives')::integer - survival_mistakes, 0);
+            if survival_lives > 0 and survival_resolved < survival_total then
+              raise exception 'survival_not_terminal' using errcode = '55000';
+            end if;
+            completion_outcome := case when survival_lives = 0 then 'eliminated' else 'survived' end;
+            select coalesce(sum(answer.points), 0)::integer into points
+            from private.attempt_answers answer where answer.attempt_id = a.id;
+          elsif cv.mode = 'pyramid' then
+            select count(*)::integer into pyramid_total
+            from private.challenge_items challenge_item
+            where challenge_item.challenge_version_id = a.challenge_version_id;
+            select count(*)::integer into pyramid_resolved
+            from private.attempt_answers answer where answer.attempt_id = a.id;
+            if exists (select 1 from private.attempt_answers answer
+              where answer.attempt_id = a.id and answer.status <> 'correct') then
+              completion_outcome := 'failed';
+            elsif pyramid_total = 7 and pyramid_resolved = pyramid_total then
+              completion_outcome := 'summit';
+            else
+              raise exception 'pyramid_not_terminal' using errcode = '55000';
+            end if;
+            select coalesce(sum(answer.points), 0)::integer into points
+            from private.attempt_answers answer where answer.attempt_id = a.id;
+          else
+            if cv.mode in ('flash','alphabet','narrative') and private.next_attempt_item(a.id) is not null then
+              raise exception 'incomplete_challenge' using errcode = '55000';
+            end if;
+            points := (input->>'score')::integer;
+            completion_outcome := input->>'outcome';
           end if;
-          -- Mode evaluator decides early termination in survival/pyramid and normalized final score.
-          points := (input->>'score')::integer;
           target_status := 'completed';
         else
           target_status := 'abandoned'; points := null;
@@ -408,13 +466,15 @@ begin
             from private.attempt_timing_units u where x.attempt_id = a.id and x.ended_at is null and u.id = x.timing_unit_id;
         end if;
         update public.attempts set status = target_status, score = points, completed_at = instant,
-          outcome = input->>'outcome', progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
+          outcome = completion_outcome, progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
         update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
         if op = 'complete' then
           insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type, amount, idempotency_key)
           values(sc.season_id, a.player_id, sc.id, a.id, 'accreditation', points, 'complete:' || a.id);
         end if;
-        result := jsonb_build_object('status', a.status, 'score', a.score);
+        result := jsonb_build_object('status', a.status, 'score', a.score,
+          'outcome', a.outcome,
+          'livesRemaining', case when cv.mode = 'survival' then survival_lives else null end);
       when 'invalidate', 'adjust' then
         if nullif(btrim(input->>'reason'), '') is null then raise exception 'reason_required' using errcode = '22023'; end if;
         if a.kind <> 'competitive' then raise exception 'not_competitive' using errcode = '55000'; end if;
@@ -692,7 +752,9 @@ begin
         where id = segment.id;
         result := jsonb_build_object('receiptId', null, 'recovered', true,
           'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
-      elsif question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'word-hashtag', 'zip', 'escape') and instant < unit.deadline_at then
+      elsif cv.mode <> 'pyramid'
+        and question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'word-hashtag', 'zip', 'escape')
+        and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
       else
         effective := greatest(segment.started_at, least(instant, unit.deadline_at));
@@ -735,13 +797,52 @@ begin
     'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
     'lockVersion', a.lock_version,
     'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
+    'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
+      where interval_row.attempt_id = a.id and interval_row.ended_at is null),
     'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
       and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
+    'challengeMode', cv.mode,
+    'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer else null end,
+    'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
+      select sum(case
+        when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+        when question.type in ('matching', 'queens')
+          and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+        else 0 end)::integer
+      from private.attempt_answers answer
+      join private.challenge_items item on item.id = answer.challenge_item_id
+      join private.question_versions question on question.id = item.question_version_id
+      where answer.attempt_id = a.id
+    ), 0), 0) else null end,
+    'terminalOutcome', case when cv.mode = 'survival' and (
+      greatest((cv.mode_config->>'lives')::integer - coalesce((
+        select sum(case
+          when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+          when question.type in ('matching', 'queens')
+            and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+          else 0 end)::integer
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        join private.question_versions question on question.id = item.question_version_id
+        where answer.attempt_id = a.id
+      ), 0), 0) = 0
+    ) then 'eliminated' when cv.mode = 'survival' and not exists (
+      select 1 from private.challenge_items item where item.challenge_version_id = a.challenge_version_id
+        and not exists (select 1 from private.attempt_answers answer where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+    ) then 'survived'
+      when cv.mode = 'pyramid' and exists (select 1 from private.attempt_answers answer
+        where answer.attempt_id = a.id and answer.status <> 'correct') then 'failed'
+      when cv.mode = 'pyramid' and (
+        select count(*) from private.attempt_answers answer where answer.attempt_id = a.id
+      ) = 7 then 'summit'
+      else null end,
     'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
-      'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms) order by i.position)
+      'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms,
+      'resultDetails', aa.result_details) order by i.position)
       from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
   ) into result
   from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
   where a.id = target_attempt and a.player_id = actor and a.kind = 'competitive'
     and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
     and not exists (select 1 from private.platform_role_assignments where player_id = actor);

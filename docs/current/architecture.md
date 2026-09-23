@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S13, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 implementadas sobre Supabase local; el
+> Estado: vigente. Arquitectura de transición con S01–S14, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 implementadas sobre Supabase local; el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -63,7 +63,8 @@ En la beta, el superadmin provisiona directamente a usuarios autenticados en una
 simula la aceptación de una invitación y no consume un token. La emisión, aceptación y revocación de
 invitaciones siguen siendo capacidades del producto para una fase posterior, sin UI pública en esta
 versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-calendario ya están habilitadas localmente en el mismo portal interno para el Flash mínimo de S11/S12.
+calendario ya están habilitadas localmente en el mismo portal interno para Flash de S11/S12 y
+Supervivencia de S14.
 La ejecución temporal se realiza mediante un Route Handler protegido y CLI local; no hay scheduler
 remoto, cola ni worker propio.
 
@@ -455,7 +456,7 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 ### Contenido y seguridad
 
 - La publicación referencia versiones inmutables de desafío y pregunta.
-- El editor S11 conserva un único documento editorial Flash mínimo como contrato de entrada, pero
+- El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia, pero
   persiste sus campos públicos y soluciones en las tablas versionadas existentes; no crea una
   representación paralela del runtime.
 - En competición se entrega `PublicQuestion`; solución, tolerancias, rutas y métricas permanecen en

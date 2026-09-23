@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-09-15.
+Última actualización: 2026-09-23.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -165,6 +165,8 @@ seguir aplicando la política de `roomContext`.
 
 - **Inicio:** la cuenta atrás termina y empieza la primera pregunta. En ese momento se crea o
   recupera el intento competitivo.
+- **Vidas:** el desafío publicado congela las vidas iniciales como configuración del modo, de 1 a
+  la cantidad de preguntas. El editor ofrece 3 por defecto, limitadas al número de preguntas.
 - **Duración:** un `timeLimit` por pregunta. Las vidas pertenecen al modo y no son un saldo de
   temporada ni una segunda recompensa.
 - **Agotamiento del tiempo:** genera `unanswered` y aplica la pérdida de vida definida por el modo.
@@ -172,6 +174,9 @@ seguir aplicando la política de `roomContext`.
 - **Finalización:** termina al agotar todas las vidas o al resolver la última pregunta. `eliminated`
   y `survived` son feedback interno; ambos producen un intento global `completed` si el flujo llegó
   a su final reglamentario.
+- **Pérdida de vida:** `incorrect` y `unanswered` descuentan una vida. Matching y Queens también
+  descuentan por errores parciales guardados en sus eventos; Matching cierra inmediatamente ante un
+  error cuando queda una sola vida.
 - **Estado global:** `inProgress` mientras se puede responder; `completed` al ser eliminado por la
   mecánica o al llegar al final.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
@@ -189,9 +194,11 @@ seguir aplicando la política de `roomContext`.
 
 ### Observación de implementación
 
-`useSurvivalSession` ya representa vidas, errores, eliminación, supervivencia, timeout y snapshot.
-La regla de descuento por tipo de resultado está centralizada en `survivalRules.ts`. La detección
-automática de abandono y la validación autoritativa siguen pendientes.
+`ServerFlashPopSurvivalGame` reutiliza la pantalla de supervivencia y conecta el intento persistido
+mediante `useServerFlashSession`; `survivalRules.ts` reconstruye vidas, outcome y preguntas
+alcanzadas a partir de evaluaciones persistidas. El servidor cierra el intento y acredita el score.
+La recuperación evalúa como `unanswered` una interacción abierta sin respuesta. El abandono sigue
+siendo explícito; su automatización continúa pendiente.
 
 ## 4. Narrativa (`narrative`)
 
@@ -260,22 +267,27 @@ con la sesión original.
 - **Replay:** el preview independiente conserva replay; con `roomContext` el resultado y la revisión
   solo ofrecen navegación y consulta.
 
-### Observación de implementación
+### Implementación S15 (verificada en Supabase local)
 
-`completePyramidAttempt` y `parsePyramidAttempt` ya conservan `status: "completed"`, la puntuación,
-los niveles alcanzados y `outcome`. La proyección social también trata ambos resultados internos como
-`completed`. El abandono automático todavía no se implementa.
+La ruta competitiva carga una proyección de siete briefings sin payloads de preguntas; al iniciar un
+nivel obtiene solo su pregunta preparada. Las unidades temporales usan scope `level`. El servidor
+guarda recibos y evaluaciones, deriva los niveles superados, `summit`/`failed`, el score y el cierre,
+y no permite preparar después de una respuesta no correcta. La recuperación en briefing reanuda sin
+iniciar reloj; si se interrumpe un nivel temporizado lo resuelve como `unanswered` y finaliza el
+intento. El propietario puede leer el resultado terminal y la revisión de niveles alcanzados. El
+editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
+pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
 
 ## Matriz de estados y consulta
 
-| Situación                       | Estado global                | ¿Se reanuda?              | ¿Se repite?       | ¿Hay resultado/revisión?        |
-| ------------------------------- | ---------------------------- | ------------------------- | ----------------- | ------------------------------- |
-| Publicación cerrada sin iniciar | `expired` en la publicación  | No aplica                 | No                | No hay resultado propio         |
-| Intento activo                  | `inProgress`                 | Sí, tras resolver la interacción abierta por modo | No crea otro | No se muestran soluciones |
-| Final reglamentario del modo    | `completed`                  | No                        | No en competición | Sí, si se inició                |
-| Abandono tras iniciar           | `abandoned` / `notCompleted` | No                        | No                | Sí, con respuestas disponibles  |
-| Intento invalidado              | `invalidated`                | No                        | No                | Acceso administrativo pendiente |
-| Preview sin sala                | Estado local del preview     | Sí mientras exista sesión | Sí                | Sí, como exploración            |
+| Situación                       | Estado global                | ¿Se reanuda?                                      | ¿Se repite?       | ¿Hay resultado/revisión?        |
+| ------------------------------- | ---------------------------- | ------------------------------------------------- | ----------------- | ------------------------------- |
+| Publicación cerrada sin iniciar | `expired` en la publicación  | No aplica                                         | No                | No hay resultado propio         |
+| Intento activo                  | `inProgress`                 | Sí, tras resolver la interacción abierta por modo | No crea otro      | No se muestran soluciones       |
+| Final reglamentario del modo    | `completed`                  | No                                                | No en competición | Sí, si se inició                |
+| Abandono tras iniciar           | `abandoned` / `notCompleted` | No                                                | No                | Sí, con respuestas disponibles  |
+| Intento invalidado              | `invalidated`                | No                                                | No                | Acceso administrativo pendiente |
+| Preview sin sala                | Estado local del preview     | Sí mientras exista sesión                         | Sí                | Sí, como exploración            |
 
 ## Pendientes que no debe resolver este documento
 

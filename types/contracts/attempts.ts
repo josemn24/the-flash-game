@@ -237,6 +237,7 @@ export type AttemptRecoveryAnswer = {
   readonly answer: JsonValue;
   readonly points: number;
   readonly timeUsedMs: DurationMs;
+  readonly resultDetails?: AnswerResultDetails | null;
 };
 /** Deliberately excludes question public/solution payloads. */
 export type AttemptRecoverySnapshot = {
@@ -245,12 +246,19 @@ export type AttemptRecoverySnapshot = {
   readonly status: AttemptStatus;
   readonly lockVersion: number;
   readonly hasStartedInteraction: boolean;
+  readonly hasOpenInteraction?: boolean;
   readonly allItemsResolved: boolean;
+  readonly challengeMode?: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+  readonly initialLives?: number | null;
+  readonly livesRemaining?: number | null;
+  readonly terminalOutcome?: "eliminated" | "survived" | "failed" | "summit" | null;
   readonly answers: readonly AttemptRecoveryAnswer[];
 };
 export type FinishAttemptResult = AttemptCommandResult & {
   readonly status: Extract<AttemptStatus, "completed" | "abandoned">;
   readonly score: number | null;
+  readonly outcome?: string | null;
+  readonly livesRemaining?: number | null;
 };
 export type AcceptInvitationInput = {
   readonly invitationToken: string;

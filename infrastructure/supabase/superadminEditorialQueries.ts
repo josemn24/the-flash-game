@@ -16,7 +16,10 @@ import {
   SuperadminAccessDeniedError,
   SuperadminEditorialCommandError,
 } from "@/application/administration/errors";
-import { isFlashEditorialDocument, parseFlashEditorialQuestionDocument } from "@/lib/editorial/flashDocument";
+import {
+  isFlashEditorialDocument,
+  parseFlashEditorialQuestionDocument,
+} from "@/lib/editorial/flashDocument";
 import { createClient } from "@/lib/supabase/server";
 import type {
   SuperadminEditorialCommandResult,
@@ -48,98 +51,184 @@ function isEditorialEntry(
   if (!isRecord(value)) return false;
   const isDraft = value.status === "draft";
   return (
-    typeof value.challengeDefinitionId === "string" && uuidPattern.test(value.challengeDefinitionId) &&
-    typeof value.challengeVersionId === "string" && uuidPattern.test(value.challengeVersionId) &&
-    typeof value.versionNumber === "number" && Number.isSafeInteger(value.versionNumber) && value.versionNumber > 0 &&
-    typeof value.status === "string" && statuses.has(value.status) &&
-    typeof value.slug === "string" && value.slug.trim().length > 0 &&
-    typeof value.title === "string" && value.title.trim().length > 0 &&
-    typeof value.subtitle === "string" && typeof value.description === "string" &&
-    value.mode === "flash" && typeof value.questionCount === "number" && Number.isSafeInteger(value.questionCount) && value.questionCount >= 0 &&
-    isIsoDate(value.createdAt) && isIsoDate(value.updatedAt) &&
+    typeof value.challengeDefinitionId === "string" &&
+    uuidPattern.test(value.challengeDefinitionId) &&
+    typeof value.challengeVersionId === "string" &&
+    uuidPattern.test(value.challengeVersionId) &&
+    typeof value.versionNumber === "number" &&
+    Number.isSafeInteger(value.versionNumber) &&
+    value.versionNumber > 0 &&
+    typeof value.status === "string" &&
+    statuses.has(value.status) &&
+    typeof value.slug === "string" &&
+    value.slug.trim().length > 0 &&
+    typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
+    typeof value.subtitle === "string" &&
+    typeof value.description === "string" &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
+    typeof value.questionCount === "number" &&
+    Number.isSafeInteger(value.questionCount) &&
+    value.questionCount >= 0 &&
+    isIsoDate(value.createdAt) &&
+    isIsoDate(value.updatedAt) &&
     (value.publishedAt === null || isIsoDate(value.publishedAt)) &&
     (isDraft
-      ? (allowDraftWithoutDocument && value.document === null) || isFlashEditorialDocument(value.document)
+      ? (allowDraftWithoutDocument && value.document === null) ||
+        isFlashEditorialDocument(value.document)
       : value.document === null)
   );
 }
 
 function isEditorialContext(value: unknown): value is Omit<SuperadminEditorialContext, "source"> {
-  return isRecord(value) && Array.isArray(value.entries) && value.entries.every((entry) => isEditorialEntry(entry));
-}
-
-function isChallengeSummary(value: unknown): value is SuperadminChallengeSummary {
-  if (!isRecord(value) || !isRecord(value.latestVersion) || !isRecord(value.statusCounts)) return false;
-  const latest = value.latestVersion;
-  const counts = value.statusCounts;
   return (
-    typeof value.challengeDefinitionId === "string" && uuidPattern.test(value.challengeDefinitionId) &&
-    typeof value.slug === "string" && value.slug.trim().length > 0 &&
-    typeof value.title === "string" && value.title.trim().length > 0 &&
-    typeof value.subtitle === "string" && typeof value.description === "string" &&
-    value.mode === "flash" &&
-    typeof value.questionCount === "number" && Number.isSafeInteger(value.questionCount) && value.questionCount >= 0 &&
-    typeof value.versionCount === "number" && Number.isSafeInteger(value.versionCount) && value.versionCount > 0 &&
-    statuses.has(String(value.status)) && isIsoDate(value.updatedAt) &&
-    ("draft" in counts && "published" in counts && "archived" in counts) &&
-    ["draft", "published", "archived"].every((status) => typeof counts[status] === "number" && Number.isSafeInteger(counts[status]) && counts[status] >= 0) &&
-    typeof latest.challengeVersionId === "string" && uuidPattern.test(latest.challengeVersionId) &&
-    typeof latest.versionNumber === "number" && Number.isSafeInteger(latest.versionNumber) && latest.versionNumber > 0 &&
-    statuses.has(String(latest.status)) &&
-    typeof latest.questionCount === "number" && Number.isSafeInteger(latest.questionCount) && latest.questionCount >= 0 &&
-    isIsoDate(latest.updatedAt) && (latest.publishedAt === null || isIsoDate(latest.publishedAt))
+    isRecord(value) &&
+    Array.isArray(value.entries) &&
+    value.entries.every((entry) => isEditorialEntry(entry))
   );
 }
 
-function isChallengeCatalog(value: unknown): value is Omit<SuperadminChallengeCatalogContext, "source"> {
+function isChallengeSummary(value: unknown): value is SuperadminChallengeSummary {
+  if (!isRecord(value) || !isRecord(value.latestVersion) || !isRecord(value.statusCounts))
+    return false;
+  const latest = value.latestVersion;
+  const counts = value.statusCounts;
+  return (
+    typeof value.challengeDefinitionId === "string" &&
+    uuidPattern.test(value.challengeDefinitionId) &&
+    typeof value.slug === "string" &&
+    value.slug.trim().length > 0 &&
+    typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
+    typeof value.subtitle === "string" &&
+    typeof value.description === "string" &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
+    typeof value.questionCount === "number" &&
+    Number.isSafeInteger(value.questionCount) &&
+    value.questionCount >= 0 &&
+    typeof value.versionCount === "number" &&
+    Number.isSafeInteger(value.versionCount) &&
+    value.versionCount > 0 &&
+    statuses.has(String(value.status)) &&
+    isIsoDate(value.updatedAt) &&
+    "draft" in counts &&
+    "published" in counts &&
+    "archived" in counts &&
+    ["draft", "published", "archived"].every(
+      (status) =>
+        typeof counts[status] === "number" &&
+        Number.isSafeInteger(counts[status]) &&
+        counts[status] >= 0,
+    ) &&
+    typeof latest.challengeVersionId === "string" &&
+    uuidPattern.test(latest.challengeVersionId) &&
+    typeof latest.versionNumber === "number" &&
+    Number.isSafeInteger(latest.versionNumber) &&
+    latest.versionNumber > 0 &&
+    statuses.has(String(latest.status)) &&
+    typeof latest.questionCount === "number" &&
+    Number.isSafeInteger(latest.questionCount) &&
+    latest.questionCount >= 0 &&
+    isIsoDate(latest.updatedAt) &&
+    (latest.publishedAt === null || isIsoDate(latest.publishedAt))
+  );
+}
+
+function isChallengeCatalog(
+  value: unknown,
+): value is Omit<SuperadminChallengeCatalogContext, "source"> {
   return isRecord(value) && Array.isArray(value.entries) && value.entries.every(isChallengeSummary);
 }
 
-function isChallengeDetail(value: unknown): value is Omit<SuperadminChallengeDetailContext, "source"> {
-  return isRecord(value) && typeof value.challengeDefinitionId === "string" &&
-    uuidPattern.test(value.challengeDefinitionId) && Array.isArray(value.entries) &&
-    value.entries.length > 0 && value.entries.every((entry) => isEditorialEntry(entry));
+function isChallengeDetail(
+  value: unknown,
+): value is Omit<SuperadminChallengeDetailContext, "source"> {
+  return (
+    isRecord(value) &&
+    typeof value.challengeDefinitionId === "string" &&
+    uuidPattern.test(value.challengeDefinitionId) &&
+    Array.isArray(value.entries) &&
+    value.entries.length > 0 &&
+    value.entries.every((entry) => isEditorialEntry(entry))
+  );
 }
 
 function isQuestionLibraryEntry(value: unknown): value is SuperadminQuestionLibraryEntry {
-  return isRecord(value) &&
-    typeof value.questionDefinitionId === "string" && uuidPattern.test(value.questionDefinitionId) &&
-    typeof value.questionVersionId === "string" && uuidPattern.test(value.questionVersionId) &&
-    typeof value.versionNumber === "number" && Number.isSafeInteger(value.versionNumber) && value.versionNumber > 0 &&
-    typeof value.status === "string" && statuses.has(value.status) &&
-    typeof value.slug === "string" && value.slug.length > 0 &&
+  return (
+    isRecord(value) &&
+    typeof value.questionDefinitionId === "string" &&
+    uuidPattern.test(value.questionDefinitionId) &&
+    typeof value.questionVersionId === "string" &&
+    uuidPattern.test(value.questionVersionId) &&
+    typeof value.versionNumber === "number" &&
+    Number.isSafeInteger(value.versionNumber) &&
+    value.versionNumber > 0 &&
+    typeof value.status === "string" &&
+    statuses.has(value.status) &&
+    typeof value.slug === "string" &&
+    value.slug.length > 0 &&
     typeof value.type === "string" &&
-    typeof value.question === "string" && value.question.length > 0 &&
+    typeof value.question === "string" &&
+    value.question.length > 0 &&
     (value.category === null || typeof value.category === "string") &&
     isRecord(value.tags) &&
-    typeof value.timeLimitMs === "number" && Number.isSafeInteger(value.timeLimitMs) && value.timeLimitMs > 0 &&
-    isIsoDate(value.createdAt) && isIsoDate(value.updatedAt) &&
+    typeof value.timeLimitMs === "number" &&
+    Number.isSafeInteger(value.timeLimitMs) &&
+    value.timeLimitMs > 0 &&
+    isIsoDate(value.createdAt) &&
+    isIsoDate(value.updatedAt) &&
     (value.publishedAt === null || isIsoDate(value.publishedAt)) &&
-    typeof value.versionCount === "number" && Number.isSafeInteger(value.versionCount) && value.versionCount > 0 &&
-    typeof value.usageCount === "number" && Number.isSafeInteger(value.usageCount) && value.usageCount >= 0;
+    typeof value.versionCount === "number" &&
+    Number.isSafeInteger(value.versionCount) &&
+    value.versionCount > 0 &&
+    typeof value.usageCount === "number" &&
+    Number.isSafeInteger(value.usageCount) &&
+    value.usageCount >= 0
+  );
 }
 
-function isQuestionLibraryContext(value: unknown): value is Omit<SuperadminQuestionLibraryContext, "source"> {
-  return isRecord(value) && Array.isArray(value.entries) && value.entries.every(isQuestionLibraryEntry) &&
-    typeof value.total === "number" && Number.isSafeInteger(value.total) && value.total >= 0 &&
-    typeof value.page === "number" && Number.isSafeInteger(value.page) && value.page > 0 &&
-    typeof value.pageSize === "number" && Number.isSafeInteger(value.pageSize) && value.pageSize > 0;
+function isQuestionLibraryContext(
+  value: unknown,
+): value is Omit<SuperadminQuestionLibraryContext, "source"> {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.entries) &&
+    value.entries.every(isQuestionLibraryEntry) &&
+    typeof value.total === "number" &&
+    Number.isSafeInteger(value.total) &&
+    value.total >= 0 &&
+    typeof value.page === "number" &&
+    Number.isSafeInteger(value.page) &&
+    value.page > 0 &&
+    typeof value.pageSize === "number" &&
+    Number.isSafeInteger(value.pageSize) &&
+    value.pageSize > 0
+  );
 }
 
 function isQuestionVersionDetail(value: unknown): value is SuperadminQuestionVersionDetail {
-  return isRecord(value) && typeof value.questionDefinitionId === "string" && uuidPattern.test(value.questionDefinitionId) &&
-    typeof value.slug === "string" && value.slug.length > 0 && Array.isArray(value.versions) &&
+  return (
+    isRecord(value) &&
+    typeof value.questionDefinitionId === "string" &&
+    uuidPattern.test(value.questionDefinitionId) &&
+    typeof value.slug === "string" &&
+    value.slug.length > 0 &&
+    Array.isArray(value.versions) &&
     value.versions.every((version) => {
       if (!isQuestionLibraryEntry(version) || !("document" in version)) return false;
-      return version.document === null || (() => {
-        try {
-          parseFlashEditorialQuestionDocument(version.document);
-          return true;
-        } catch {
-          return false;
-        }
-      })();
-    });
+      return (
+        version.document === null ||
+        (() => {
+          try {
+            parseFlashEditorialQuestionDocument(version.document);
+            return true;
+          } catch {
+            return false;
+          }
+        })()
+      );
+    })
+  );
 }
 
 function commandErrorCode(error: { code?: string; message?: string }) {
@@ -166,7 +255,9 @@ function commandErrorCode(error: { code?: string; message?: string }) {
     "question_not_published",
     "idempotency_conflict",
   ];
-  return candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed";
+  return (
+    candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed"
+  );
 }
 
 async function callQuestionCommand<T>(
@@ -175,7 +266,11 @@ async function callQuestionCommand<T>(
     | "update_superadmin_question_draft"
     | "publish_superadmin_question"
     | "archive_superadmin_question",
-  input: CreateQuestionDraftInput | UpdateQuestionDraftInput | PublishQuestionInput | ArchiveQuestionInput,
+  input:
+    | CreateQuestionDraftInput
+    | UpdateQuestionDraftInput
+    | PublishQuestionInput
+    | ArchiveQuestionInput,
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(functionName, { input });
@@ -193,9 +288,7 @@ async function callQuestionCommand<T>(
 
 async function callCommand<T>(
   functionName:
-    | "create_superadmin_flash_draft"
-    | "update_superadmin_flash_draft"
-    | "publish_superadmin_flash",
+    "create_superadmin_flash_draft" | "update_superadmin_flash_draft" | "publish_superadmin_flash",
   input: CreateFlashDraftInput | UpdateFlashDraftInput | PublishFlashInput,
 ) {
   const supabase = await createClient();
@@ -239,11 +332,14 @@ export class SupabaseSuperadminEditorialQueries
       }
       throw new Error(`Supabase challenge catalog read failed: ${error.message}`);
     }
-    if (!isChallengeCatalog(data)) throw new Error("Supabase challenge catalog returned an invalid payload.");
+    if (!isChallengeCatalog(data))
+      throw new Error("Supabase challenge catalog returned an invalid payload.");
     return { ...data, source: "supabase" };
   }
 
-  async getChallengeDetail(challengeDefinitionId: string): Promise<SuperadminChallengeDetailContext | null> {
+  async getChallengeDetail(
+    challengeDefinitionId: string,
+  ): Promise<SuperadminChallengeDetailContext | null> {
     if (!uuidPattern.test(challengeDefinitionId)) return null;
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("get_superadmin_challenge_detail", {
@@ -256,7 +352,8 @@ export class SupabaseSuperadminEditorialQueries
       throw new Error(`Supabase challenge detail read failed: ${error.message}`);
     }
     if (data === null) return null;
-    if (!isChallengeDetail(data)) throw new Error("Supabase challenge detail returned an invalid payload.");
+    if (!isChallengeDetail(data))
+      throw new Error("Supabase challenge detail returned an invalid payload.");
     return { ...data, source: "supabase" };
   }
 
@@ -272,16 +369,21 @@ export class SupabaseSuperadminEditorialQueries
     return callCommand("publish_superadmin_flash", input);
   }
 
-  async getQuestionLibrary(filters: QuestionLibraryFilters = {}): Promise<SuperadminQuestionLibraryContext> {
+  async getQuestionLibrary(
+    filters: QuestionLibraryFilters = {},
+  ): Promise<SuperadminQuestionLibraryContext> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_question_library", { input: filters });
+    const { data, error } = await supabase.rpc("get_superadmin_question_library", {
+      input: filters,
+    });
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();
       }
       throw new Error(`Supabase question library read failed: ${error.message}`);
     }
-    if (!isQuestionLibraryContext(data)) throw new Error("Supabase question library returned an invalid payload.");
+    if (!isQuestionLibraryContext(data))
+      throw new Error("Supabase question library returned an invalid payload.");
     return { ...data, source: "supabase" };
   }
 
@@ -299,7 +401,8 @@ export class SupabaseSuperadminEditorialQueries
       }
       throw new Error(`Supabase question version read failed: ${error.message}`);
     }
-    if (!isQuestionVersionDetail(data)) throw new Error("Supabase question version returned an invalid payload.");
+    if (!isQuestionVersionDetail(data))
+      throw new Error("Supabase question version returned an invalid payload.");
     return { ...data, source: "supabase" };
   }
 

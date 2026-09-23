@@ -3,12 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AnswerResult, AnswerValue, FlashChallenge, GameRoomContext } from "@/types/game";
+import { deriveSurvivalProgress } from "@/features/game/survivalRules";
 import type {
   ServerFlashChallenge,
   ServerFlashQuestion,
   ServerFlashTerminalReview,
+  ServerSurvivalChallenge,
+  ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
+import type { PyramidChallenge } from "@/types/game";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
+import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import {
   challengeWithReview,
   displayChallenge,
@@ -17,7 +22,27 @@ import {
 } from "@/features/game/serverFlashQuestionAdapter";
 
 export type ServerFlashPhase =
-  "intro" | "recovering" | "countdown" | "playing" | "transition" | "results" | "review";
+  | "intro"
+  | "recovering"
+  | "countdown"
+  | "briefing"
+  | "playing"
+  | "transition"
+  | "results"
+  | "review";
+
+type ServerPlayableChallenge =
+  | ServerFlashChallenge
+  | ServerSurvivalChallenge
+  | ServerPyramidChallenge;
+
+function terminalReviewChallenge(
+  challenge: ServerPlayableChallenge,
+  review: readonly ServerFlashTerminalReview[],
+) {
+  if (challenge.mode === "pyramid") return challengeWithReview(challenge, review);
+  return challengeWithReview(challenge, review);
+}
 
 type AttemptState = { id: string; lockVersion: number };
 type SubmissionState = "idle" | "submitting" | "error";
@@ -144,7 +169,7 @@ export function useServerFlashSession({
   roomContext,
   terminalReview,
 }: {
-  challenge: ServerFlashChallenge;
+  challenge: ServerPlayableChallenge;
   roomContext: GameRoomContext;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
@@ -164,8 +189,8 @@ export function useServerFlashSession({
   const [results, setResults] = useState<AnswerResult[]>(() => initialResults(roomContext));
   const [lastResult, setLastResult] = useState<AnswerResult>();
   const [score, setScore] = useState(roomContext.result?.flashPoints ?? 0);
-  const [reviewChallenge, setReviewChallenge] = useState<FlashChallenge | null>(() =>
-    terminalReview?.length ? challengeWithReview(challenge, terminalReview) : null,
+  const [reviewChallenge, setReviewChallenge] = useState<FlashChallenge | PyramidChallenge | null>(
+    () => (terminalReview?.length ? terminalReviewChallenge(challenge, terminalReview) : null),
   );
   const [locked, setLocked] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -205,6 +230,40 @@ export function useServerFlashSession({
   const pendingWordSearchSelectionRef = useRef<PendingWordSearchSelection | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
+
+  const isTerminalForMode = (candidateResults: readonly AnswerResult[]) => {
+    if (challenge.mode === "pyramid") {
+      return deriveCompetitivePyramidProgress(challenge.levels.length, candidateResults).outcome !==
+        "in_progress";
+    }
+    if (challenge.mode === "survival") {
+      return (
+        deriveSurvivalProgress(challenge.lives, challenge.slots.length, candidateResults).outcome !==
+        "in_progress"
+      );
+    }
+    return questionIndex >= challenge.slots.length - 1;
+  };
+  const survivalProgress =
+    challenge.mode === "survival"
+      ? deriveSurvivalProgress(challenge.lives, challenge.slots.length, results)
+      : null;
+  const pyramidProgress =
+    challenge.mode === "pyramid"
+      ? deriveCompetitivePyramidProgress(challenge.levels.length, results)
+      : null;
+
+  const advanceToNextQuestion = async (attemptId: string, lockVersion: number, nextResults: AnswerResult[]) => {
+    if (challenge.mode === "pyramid") {
+      setQuestionIndex(nextResults.length);
+      setQuestion(null);
+      setQuestionPresentedAt(null);
+      setQuestionDeadlineAt(null);
+      setPhase("briefing");
+      return;
+    }
+    await prepare({ id: attemptId, lockVersion });
+  };
 
   const clearSubmissionStatusTimer = () => {
     if (submissionStatusTimerRef.current) {
@@ -315,9 +374,10 @@ export function useServerFlashSession({
     });
     const nextLockVersion = Number(prepared.lockVersion);
     const itemId = String(prepared.challengeItemId);
-    const nextIndex = challenge.slots.findIndex((item) => item.id === itemId);
+    const challengeSlots = challenge.mode === "pyramid" ? challenge.levels : challenge.slots;
+    const nextIndex = challengeSlots.findIndex((item) => item.id === itemId);
     if (nextIndex < 0) throw new Error("competitive_question_not_found");
-    const slot = challenge.slots[nextIndex]!;
+    const slot = challengeSlots[nextIndex]!;
     const presentedAt = serverTimestamp(prepared.presentedAt);
     const deadlineAt = serverTimestamp(prepared.deadlineAt);
     setAttempt({ id: currentAttempt.id, lockVersion: nextLockVersion });
@@ -380,6 +440,9 @@ export function useServerFlashSession({
             isCorrect: item.status === "correct" || item.status === "partial",
             points: Number(item.points),
             timeUsed: Number(item.timeUsedMs) / 1000,
+            ...(item.resultDetails
+              ? { details: item.resultDetails as AnswerResult["details"] }
+              : {}),
           } satisfies AnswerResult;
         })
       : [];
@@ -388,10 +451,13 @@ export function useServerFlashSession({
     if (response.phase === "results") {
       const rows = terminalReviewFromResponse(response.review);
       setScore(Number(response.score ?? 0));
-      setReviewChallenge(rows.length ? challengeWithReview(challenge, rows) : null);
+      setReviewChallenge(rows.length ? terminalReviewChallenge(challenge, rows) : null);
       setQuestionPresentedAt(null);
       setQuestionDeadlineAt(null);
       setPhase("results");
+    } else if (response.phase === "briefing") {
+      setQuestionIndex(recoveredResults.length);
+      setPhase("briefing");
     } else if (response.phase === "countdown") {
       setPhase("countdown");
     } else if (response.resolved) {
@@ -464,6 +530,7 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points ?? 0),
         timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
       };
       const nextResults = [...results, result];
       setResults(nextResults);
@@ -471,17 +538,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -526,7 +593,7 @@ export function useServerFlashSession({
         idempotencyKey: idempotencyKey("start"),
       });
       setAttempt({ id: String(started.attemptId), lockVersion: Number(started.lockVersion) });
-      setPhase("countdown");
+      setPhase(challenge.mode === "pyramid" ? "briefing" : "countdown");
     } catch (error) {
       setStartNotice(
         error instanceof CompetitiveCommandError && error.code === "attempt_control_required"
@@ -582,7 +649,7 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               {
@@ -592,10 +659,10 @@ export function useServerFlashSession({
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -673,17 +740,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -772,17 +839,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -838,7 +905,10 @@ export function useServerFlashSession({
               progress: {
                 kind: "word-hashtag",
                 letters: Array.isArray(response.letters)
-                  ? response.letters.filter((letter): letter is string | null => letter === null || typeof letter === "string")
+                  ? response.letters.filter(
+                      (letter): letter is string | null =>
+                        letter === null || typeof letter === "string",
+                    )
                   : current.progress.letters,
                 swaps: [
                   ...current.progress.swaps,
@@ -882,17 +952,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -1042,6 +1112,7 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points ?? 0),
         timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
       };
       const nextResults = [...results, result];
       setResults(nextResults);
@@ -1049,17 +1120,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -1111,16 +1182,25 @@ export function useServerFlashSession({
       );
       const nextLockVersion = Number(response.lockVersion);
       const foundSelections = Array.isArray(response.foundSelections)
-        ? response.foundSelections.filter((selection): selection is { targetId: string; startCell: number; endCell: number } =>
-            Boolean(selection) && typeof selection === "object" && typeof (selection as Record<string, unknown>).targetId === "string" &&
-            Number.isSafeInteger((selection as Record<string, unknown>).startCell) && Number.isSafeInteger((selection as Record<string, unknown>).endCell))
+        ? response.foundSelections.filter(
+            (selection): selection is { targetId: string; startCell: number; endCell: number } =>
+              Boolean(selection) &&
+              typeof selection === "object" &&
+              typeof (selection as Record<string, unknown>).targetId === "string" &&
+              Number.isSafeInteger((selection as Record<string, unknown>).startCell) &&
+              Number.isSafeInteger((selection as Record<string, unknown>).endCell),
+          )
         : [];
       const foundWordIds = Array.isArray(response.foundWordIds)
         ? response.foundWordIds.filter((id): id is string => typeof id === "string")
         : foundSelections.map((selection) => selection.targetId);
       const correct = response.correct === true;
       setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
-      setLastWordSearchSelection({ startCell: submission.startCell, endCell: submission.endCell, correct });
+      setLastWordSearchSelection({
+        startCell: submission.startCell,
+        endCell: submission.endCell,
+        correct,
+      });
       setQuestion((current) =>
         current?.type === "word-search"
           ? {
@@ -1153,6 +1233,7 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points ?? 0),
         timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
       };
       const nextResults = [...results, result];
       setResults(nextResults);
@@ -1160,30 +1241,38 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
-        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ?? 1800,
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
       );
     } catch (error) {
       clearWordSearchStatusTimer();
       const commandError = error instanceof CompetitiveCommandError ? error.code : "";
-      if (commandError === "word_search_target_already_found" || commandError === "invalid_word_search_selection") {
+      if (
+        commandError === "word_search_target_already_found" ||
+        commandError === "invalid_word_search_selection"
+      ) {
         pendingWordSearchSelectionRef.current = null;
         setWordSearchState("idle");
         setWordSearchStatusVisible(true);
-        setWordSearchError(commandError === "word_search_target_already_found" ? "Esa palabra ya está encontrada." : "La selección no es válida.");
+        setWordSearchError(
+          commandError === "word_search_target_already_found"
+            ? "Esa palabra ya está encontrada."
+            : "La selección no es válida.",
+        );
         setLocked(false);
       } else {
         setWordSearchState("error");
@@ -1377,6 +1466,9 @@ export function useServerFlashSession({
     phase,
     attempt,
     questionIndex,
+    isTerminalQuestion: isTerminalForMode(results),
+    survivalProgress,
+    pyramidProgress,
     question,
     questionPresentedAt,
     questionDeadlineAt,

@@ -638,7 +638,8 @@ export type FlashEditorialQuestionReference = {
 };
 
 export type FlashEditorialChallengeQuestion =
-  FlashEditorialQuestion | FlashEditorialQuestionReference;
+  | (FlashEditorialQuestion & { readonly modeConfig?: EditorialJsonObject })
+  | FlashEditorialQuestionReference;
 
 export type FlashEditorialDocument = {
   readonly challenge: {
@@ -646,7 +647,7 @@ export type FlashEditorialDocument = {
     readonly title: string;
     readonly subtitle: string;
     readonly description: string;
-    readonly mode: "flash" | "alphabet";
+    readonly mode: "flash" | "alphabet" | "survival" | "pyramid";
     readonly configSchemaVersion: 1;
     readonly modeConfig: EditorialJsonObject;
     readonly globalTimeLimitMs?: number;
@@ -721,7 +722,7 @@ export type SuperadminEditorialEntry = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash";
+  readonly mode: "flash" | "survival" | "pyramid";
   readonly questionCount: number;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -742,7 +743,7 @@ export type SuperadminChallengeSummary = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash";
+  readonly mode: "flash" | "survival" | "pyramid";
   readonly questionCount: number;
   readonly versionCount: number;
   readonly status: EditorialContentStatus;

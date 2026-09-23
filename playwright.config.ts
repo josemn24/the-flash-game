@@ -21,9 +21,7 @@ function parseLocalStatus() {
 
 const localStatus = parseLocalStatus();
 const isPwaE2e = process.env.PWA_E2E === "1";
-const e2ePort = isPwaE2e
-  ? process.env.PWA_E2E_PORT || "3001"
-  : process.env.E2E_PORT || "3000";
+const e2ePort = isPwaE2e ? process.env.PWA_E2E_PORT || "3001" : process.env.E2E_PORT || "3000";
 const e2eBaseURL = `http://127.0.0.1:${e2ePort}`;
 const localEnv = {
   ...process.env,
@@ -45,8 +43,10 @@ const localEnv = {
   // E2E scenarios intentionally exercise recovery/retry sequences; keep the
   // production default of 5 while giving the test process a bounded headroom.
   FLASH_RATE_LIMIT_BURST: process.env.FLASH_RATE_LIMIT_BURST || "30",
-  EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260922180514_declarative_sync",
+  // Editorial E2E scenarios create and publish several records in one flow.
+  // Keep production's smaller admin burst while allowing the local browser run to complete.
+  FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
+  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20260923000000_s15_pyramid",
 };
 
 export default defineConfig({

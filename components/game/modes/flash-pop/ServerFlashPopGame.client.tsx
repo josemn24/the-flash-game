@@ -156,7 +156,7 @@ export function ServerFlashPopGame({
           />
         </motion.div>
       ) : null}
-      {session.phase === "review" && session.reviewChallenge ? (
+      {session.phase === "review" && session.reviewChallenge?.mode === "flash" ? (
         <motion.div
           key="review"
           initial={{ opacity: 0 }}

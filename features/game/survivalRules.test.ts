@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   getSurvivalLivesAfterResult,
   getSurvivalReachedQuestionCount,
+  deriveSurvivalProgress,
   isSurvivalMistake,
   shouldEliminateAfterIncorrectAttempt,
 } from "@/features/game/survivalRules";
 import type { AnswerResultDetails, AnswerStatus } from "@/types/game";
 
-function result(status: AnswerStatus, details?: AnswerResultDetails) {
+function result(status: AnswerStatus | "timeout", details?: AnswerResultDetails) {
   return { status, details };
 }
 
@@ -40,6 +41,11 @@ describe("survival rules", () => {
     expect(isSurvivalMistake(result("partial"))).toBe(false);
     expect(isSurvivalMistake(result("incorrect"))).toBe(true);
     expect(isSurvivalMistake(result("unanswered"))).toBe(true);
+  });
+
+  it("consumes a life when a timed-out receipt is evaluated as timeout", () => {
+    expect(isSurvivalMistake(result("timeout"))).toBe(true);
+    expect(getSurvivalLivesAfterResult(2, result("timeout"))).toBe(1);
   });
 
   it("preserves lives for partial answers", () => {
@@ -82,5 +88,23 @@ describe("survival rules", () => {
   it("uses answered results as the reached question count", () => {
     expect(getSurvivalReachedQuestionCount(0)).toBe(0);
     expect(getSurvivalReachedQuestionCount(20)).toBe(20);
+  });
+
+  it("derives elimination and survival only from evaluated answers", () => {
+    expect(deriveSurvivalProgress(1, 3, [result("incorrect")])).toEqual({
+      livesRemaining: 0,
+      reachedQuestionCount: 1,
+      outcome: "eliminated",
+    });
+    expect(deriveSurvivalProgress(3, 2, [result("correct"), result("partial")])).toEqual({
+      livesRemaining: 3,
+      reachedQuestionCount: 2,
+      outcome: "survived",
+    });
+    expect(deriveSurvivalProgress(3, 3, [result("correct")])).toEqual({
+      livesRemaining: 3,
+      reachedQuestionCount: 1,
+      outcome: "in_progress",
+    });
   });
 });

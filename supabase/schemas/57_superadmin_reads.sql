@@ -183,7 +183,7 @@ begin
       'editorialDrafts', (
         select count(*)
         from private.challenge_versions version
-        where version.mode = 'flash' and version.status = 'draft'
+        where version.mode in ('flash', 'survival', 'pyramid') and version.status = 'draft'
       ),
       'upcomingChallenges', (
         select count(*)
@@ -193,7 +193,7 @@ begin
         join private.challenge_versions version on version.id = schedule.challenge_version_id
         where room.status = 'active'
           and season.status = 'active'
-          and version.mode = 'flash'
+          and version.mode in ('flash', 'survival', 'pyramid')
           and version.status = 'published'
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
@@ -264,7 +264,7 @@ begin
         join private.challenge_versions version on version.id = schedule.challenge_version_id
         where room.status = 'active'
           and season.status = 'active'
-          and version.mode = 'flash'
+          and version.mode in ('flash', 'survival', 'pyramid')
           and version.status = 'published'
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
