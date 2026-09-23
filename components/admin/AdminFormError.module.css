@@ -1,7 +1,9 @@
+@layer app-components {
 .root {
   margin: 0;
   color: var(--color-danger, #a71930);
   font-size: 12px;
   font-weight: 800;
   line-height: 1.45;
+}
 }

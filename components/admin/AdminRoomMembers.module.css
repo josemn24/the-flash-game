@@ -1,3 +1,4 @@
+@layer app-components {
 .section {
   margin-top: clamp(1.5rem, 3vw, 3rem);
 }
@@ -47,4 +48,5 @@
   .grid {
     grid-template-columns: 1fr;
   }
+}
 }

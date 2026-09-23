@@ -1,3 +1,4 @@
+@layer app-components {
 .notice {
   display: flex;
   flex-wrap: wrap;
@@ -9,4 +10,5 @@
 
 .notice strong {
   color: var(--color-success, #168879);
+}
 }
