@@ -302,7 +302,10 @@ function assetReference(key, alt, spainAssets, fit = "contain") {
   };
 }
 
-function persistedQuestion(mockQuestion, points, spainAssets) {
+function persistedQuestion(mockQuestion, points, spainAssets, expectedSlug) {
+  if (!mockQuestion) {
+    throw new Error(`No existe la pregunta mock "${expectedSlug}" referenciada por Tabarnia.`);
+  }
   const { publicPayload: mockPublic, privatePayload } = mockQuestion;
   const source = mockPublic.payload ?? {};
   const solution = privatePayload.solution.payload ?? {};
@@ -393,14 +396,6 @@ function tabarniaChallenges() {
   );
   return [
     {
-      ...spanish,
-      definitionSlug: "tabarnia-supervivencia-espana",
-      id: challengeId(spanish.slug),
-      versionId: challengeVersionId(spanish.slug),
-      modeConfig: { lives: 3 },
-      items: spanish.items.map((item) => ({ ...item, modeConfig: {} })),
-    },
-    {
       ...bible,
       definitionSlug: "tabarnia-piramide-biblia",
       id: challengeId(bible.slug),
@@ -420,6 +415,14 @@ function tabarniaChallenges() {
       modeConfig: {},
       items: SBR_QUESTIONS.map((item) => ({ ...item, questionSlug: item.slug, modeConfig: {} })),
     },
+    {
+      ...spanish,
+      definitionSlug: "tabarnia-supervivencia-espana",
+      id: challengeId(spanish.slug),
+      versionId: challengeVersionId(spanish.slug),
+      modeConfig: { lives: 3 },
+      items: spanish.items.map((item) => ({ ...item, modeConfig: {} })),
+    },
   ];
 }
 
@@ -434,17 +437,27 @@ export function buildTabarniaDomainSql({
   const seasonId = stableId("season:tabarnia-alpha");
   const challenges = tabarniaChallenges();
   const items = [];
-  const spainItems = challenges[0].items;
-  const bibleItems = challenges[1].items;
+  const spainItems = challenges.find((challenge) => challenge.slug === "spain-survival-definition").items;
+  const bibleItems = challenges.find((challenge) => challenge.slug === "pyramid-abrahamic-definition").items;
   const mockQuestions = new Map(
     TABARNIA_MOCK_CONTENT.questions.map((question) => [question.slug, question]),
   );
   const questions = [
     ...spainItems.map((item) =>
-      persistedQuestion(mockQuestions.get(item.questionSlug), item.points, spainAssets),
+      persistedQuestion(
+        mockQuestions.get(item.questionSlug),
+        item.points,
+        spainAssets,
+        item.questionSlug,
+      ),
     ),
     ...bibleItems.map((item) =>
-      persistedQuestion(mockQuestions.get(item.questionSlug), item.points, spainAssets),
+      persistedQuestion(
+        mockQuestions.get(item.questionSlug),
+        item.points,
+        spainAssets,
+        item.questionSlug,
+      ),
     ),
     ...SBR_QUESTIONS.map((item) => ({
       ...item,
@@ -648,9 +661,9 @@ export function tabarniaManifest(accounts, avatarMetadata) {
   return {
     room: { id: stableId("room:tabarnia"), slug: "tabarnia" },
     seasonId: stableId("season:tabarnia-alpha"),
-    challengeId: challengeId("spain-survival-definition"),
-    challengeVersionId: challengeVersionId("spain-survival-definition"),
-    publicationId: publicationId("spain-survival-definition"),
+    challengeId: challengeId("pyramid-abrahamic-definition"),
+    challengeVersionId: challengeVersionId("pyramid-abrahamic-definition"),
+    publicationId: publicationId("pyramid-abrahamic-definition"),
     publications: tabarniaChallenges().map((challenge, index) => ({
       id: publicationId(challenge.slug),
       number: index + 1,

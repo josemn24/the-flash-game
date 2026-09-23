@@ -197,9 +197,15 @@ describe("Tabarnia seed", () => {
         publication.pointsTotal,
       ]),
     ).toEqual([
-      ["survival", 20, 100],
       ["pyramid", 7, 100],
       ["flash", 16, 100],
+      ["survival", 20, 100],
+    ]);
+    expect(output.publicationId).toBe(output.publications[0]?.id);
+    expect(output.publications.map((publication) => publication.title)).toEqual([
+      "La Pirámide: Biblia y religiones abrahámicas",
+      "Steel Ball Run",
+      "Supervivencia: España",
     ]);
     expect(output.publications.map((publication) => publication.status)).toEqual([
       "open",

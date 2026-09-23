@@ -84,7 +84,7 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
-  test("Ches puede comenzar España, primera publicación del orden Tabarnia", async ({ page }) => {
+  test("Ches ve La Pirámide como primera publicación del orden Tabarnia", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.ches);
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
@@ -107,18 +107,24 @@ test.describe("Tabarnia alpha", () => {
 
     await page.getByRole("link", { name: "Jugar" }).click();
     await expect(
-      page.getByRole("heading", { name: "Supervivencia: España" }).first(),
+      page.getByRole("heading", { name: "La Pirámide: Biblia y religiones abrahámicas" }).first(),
     ).toBeVisible();
-    await expect(page.getByText(/3 vidas para llegar lejos/)).toBeVisible();
-    await page.getByRole("button", { name: "Empezar desafío" }).click();
-    await expect(
-      page.getByRole("heading", { name: /El Teide es el pico más alto de España/ }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
     expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
     expect(data.data.publications[0]).toMatchObject({
+      title: "La Pirámide: Biblia y religiones abrahámicas",
+      mode: "pyramid",
+      status: "open",
+    });
+    expect(data.data.publications[1]).toMatchObject({
+      title: "Steel Ball Run",
+      mode: "flash",
+      status: "scheduled",
+    });
+    expect(data.data.publications.at(-1)).toMatchObject({
       title: "Supervivencia: España",
       mode: "survival",
-      status: "open",
+      status: "scheduled",
     });
   });
 

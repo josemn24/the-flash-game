@@ -4,30 +4,29 @@ export const scenario = {
   id: "tabarnia",
 
   async run({ fixture, clients, config, assert }) {
-    const [spain, bible, sbr] = fixture.data.publications;
-    const playable = await rpc(clients.ches, "get_my_survival_challenge", {
-      target_room_slug: fixture.data.room.slug,
-      target_publication_id: spain.id,
-    });
-    assert(playable.length === 20, "Ches recibe las 20 preguntas de Supervivencia: España");
-    assert(
-      playable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
-      "Supervivencia: España conserva los 100 puntos",
-    );
-    assert(playable[0]?.question_type === "true-false", "España empieza por la pregunta del Teide");
-    assert(
-      !JSON.stringify(playable).includes("correctAnswer") &&
-        !JSON.stringify(playable).includes("solutionPayload"),
-      "La lectura jugable no expone las soluciones",
-    );
-
-    const scheduledBible = await rpc(clients.ches, "get_my_pyramid_challenge", {
+    const [bible, sbr, spain] = fixture.data.publications;
+    const playablePyramid = await rpc(clients.ches, "get_my_pyramid_challenge", {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: bible.id,
     });
+    assert(playablePyramid.length === 7, "Ches recibe los siete niveles de La Pirámide");
     assert(
-      scheduledBible.length === 0,
-      "La Pirámide programada todavía no expone preguntas jugables",
+      playablePyramid.reduce((total, row) => total + Number(row.item_points), 0) === 100,
+      "La Pirámide conserva los 100 puntos",
+    );
+    assert(
+      !JSON.stringify(playablePyramid).includes("correctAnswer") &&
+        !JSON.stringify(playablePyramid).includes("solutionPayload"),
+      "La lectura jugable no expone las soluciones",
+    );
+
+    const scheduledSpain = await rpc(clients.ches, "get_my_survival_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: spain.id,
+    });
+    assert(
+      scheduledSpain.length === 0,
+      "Supervivencia, programada al final, todavía no expone preguntas jugables",
     );
     const scheduledSbr = await rpc(clients.ches, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,
@@ -44,7 +43,7 @@ export const scenario = {
     );
     assert(
       publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled",
-      "España está abierta; Biblia y Steel Ball Run quedan programados en orden",
+      "La Pirámide está abierta; Steel Ball Run y Supervivencia quedan programados en orden",
     );
     for (const publication of [spain, bible, sbr]) {
       const points = await dockerSql(

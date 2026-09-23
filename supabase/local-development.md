@@ -67,14 +67,16 @@ Para preparar la sala realista de la alpha con sus doce jugadores, una temporada
 desafíos competitivos:
 
 ```bash
+npm run supabase:start
 npm run supabase:tabarnia:setup
 npm run dev
 ```
 
 El setup crea 13 cuentas Auth: `xesmona` como superadmin fuera de la sala, `Ches` como propietario
-y jugador, y otros once miembros jugadores. Programa Supervivencia: España (20 preguntas, 3 vidas,
-100 puntos) como desafío actual; La Pirámide: Biblia y religiones abrahámicas (7 niveles, 100
-puntos) y Steel Ball Run (16 retos, 100 puntos) quedan en ventanas consecutivas de 24 horas.
+y jugador, y otros once miembros jugadores. Programa La Pirámide: Biblia y religiones abrahámicas
+(7 niveles, 100 puntos) como desafío actual; Steel Ball Run (16 retos, 100 puntos) queda en segundo
+lugar y Supervivencia: España (20 preguntas, 3 vidas, 100 puntos) cierra la secuencia, en ventanas
+consecutivas de 24 horas.
 
 Las credenciales fijas y los IDs generados se guardan en `output/fixtures/tabarnia.json`, una ruta
 ignorada por Git. El comando reinicia Supabase local en cada ejecución, carga los diccionarios de
