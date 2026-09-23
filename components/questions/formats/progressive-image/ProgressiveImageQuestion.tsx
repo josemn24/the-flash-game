@@ -156,6 +156,7 @@ export function ProgressiveImageQuestion({
           src={surface.src}
           alt={surface.alt}
           fill
+          unoptimized={process.env.NODE_ENV === "development" && /^https?:\/\//.test(surface.src)}
           preload
           sizes="(max-width: 768px) calc(100vw - 2rem), 48rem"
           className={surface.fit === "contain" ? styles.imageContain : styles.imageCover}

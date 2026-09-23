@@ -1,9 +1,10 @@
 "use client";
 
-import { HeartIcon, NotebookIcon } from "@/components/ui";
+import { NotebookIcon } from "@/components/ui";
 import { GameHeader } from "@/components/ui";
 import type { QuestionStageProps } from "./QuestionStage";
 import { QuestionStage } from "./QuestionStage";
+import { LifeHearts } from "./LifeHearts";
 import styles from "./QuestionStageVariants.module.css";
 
 type StagePresetProps = Omit<QuestionStageProps, "renderHeader" | "renderQuestionMeta"> & {
@@ -163,33 +164,5 @@ function NotebookAction({
       <NotebookIcon className="h-4 w-4" />
       <span>{entryCount}</span>
     </button>
-  );
-}
-
-function LifeHearts({
-  livesRemaining,
-  totalLives,
-}: {
-  livesRemaining: number;
-  totalLives: number;
-}) {
-  const safeTotalLives = Math.max(0, totalLives);
-  const safeLivesRemaining = Math.min(Math.max(0, livesRemaining), safeTotalLives);
-
-  return (
-    <span
-      className={styles.lifeHearts}
-      aria-label={`${safeLivesRemaining} de ${safeTotalLives} vidas restantes`}
-    >
-      {Array.from({ length: safeTotalLives }, (_, index) => {
-        const active = index < safeLivesRemaining;
-        return (
-          <HeartIcon
-            key={index}
-            className={`${styles.lifeHeart} ${active ? styles.lifeHeartActive : styles.lifeHeartLost}`}
-          />
-        );
-      })}
-    </span>
   );
 }

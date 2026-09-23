@@ -20,7 +20,8 @@ import { ServerWordSearchQuestion } from "@/components/questions/formats/word-se
 import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
 import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
 import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
-import { Timer, GameHeader, HeartIcon } from "@/components/ui";
+import { Timer, GameHeader } from "@/components/ui";
+import { LifeHearts } from "./LifeHearts";
 import type { AnswerValue } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
 import styles from "./QuestionStage.module.css";
@@ -142,6 +143,16 @@ export function ServerFlashQuestionStage({
       onRetry={onRetrySubmission}
     />
   );
+  const timer = (
+    <Timer
+      duration={question.timeLimit}
+      active={!locked}
+      onTimeUp={onTimeUp}
+      resetKey={question.id}
+      deadlineAt={deadlineAt ?? undefined}
+      size="compact"
+    />
+  );
 
   return (
     <div className={`${variantStyles.stageFrame} ${styles.stage}`}>
@@ -155,25 +166,13 @@ export function ServerFlashQuestionStage({
             <span>de {String(totalQuestions).padStart(2, "0")}</span>
           </p>
         }
-        timer={
-          <Timer
-            duration={question.timeLimit}
-            active={!locked}
-            onTimeUp={onTimeUp}
-            resetKey={question.id}
-            deadlineAt={deadlineAt ?? undefined}
-            size="compact"
-          />
-        }
+        timer={timer}
         right={
           typeof livesRemaining === "number" && typeof totalLives === "number" ? (
-            <span
-              className="inline-flex items-center gap-1.5 text-sm font-semibold"
-              aria-label={`${livesRemaining} de ${totalLives} vidas`}
-            >
-              <HeartIcon className="h-4 w-4 text-[var(--color-brand)]" />
-              {livesRemaining}/{totalLives}
-            </span>
+            <div className={variantStyles.headerActions}>
+              <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
+              {timer}
+            </div>
           ) : undefined
         }
       />

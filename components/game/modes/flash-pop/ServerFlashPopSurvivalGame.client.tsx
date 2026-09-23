@@ -6,17 +6,73 @@ import {
   Transition,
 } from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
-import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
+import { ChallengeIntro, ChallengeResultScreen } from "@/components/game/shared";
 import { ServerFlashQuestionStage, StartCountdown } from "@/components/game/shared";
-import { Card } from "@/components/ui";
-import { SurvivalResultScreen } from "@/components/game/shared/SurvivalResultScreen/SurvivalResultScreen";
+import { CheckIcon, ClockIcon, CrossIcon, HeartIcon, Card } from "@/components/ui";
+import type { ChallengeResultModel } from "@/components/game/shared";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
-import type { GameRoomContext, SurvivalChallenge } from "@/types/game";
+import type { AnswerResult, GameRoomContext } from "@/types/game";
 import type {
   ServerFlashTerminalReview,
   ServerSurvivalChallenge,
 } from "@/types/gameplay/challenge";
+import type { SurvivalProgress } from "@/features/game/survivalRules";
 import styles from "./FlashPopFlashGame.module.css";
+
+function getSurvivalResultModel(
+  challenge: ServerSurvivalChallenge,
+  results: AnswerResult[],
+  score: number,
+  progress: SurvivalProgress,
+): ChallengeResultModel {
+  const unanswered = results.filter((result) => result.status === "unanswered").length;
+  const survived = progress.outcome === "survived";
+  const eliminated = progress.outcome === "eliminated";
+
+  return {
+    gameTitle: "Supervivencia",
+    statusLabel: survived ? "Completado" : "Partida terminada",
+    eyebrow: challenge.title,
+    title: survived ? "Has sobrevivido" : eliminated ? "Sin vidas" : "Buen intento",
+    subtitle: survived
+      ? `Has completado los ${challenge.slots.length} retos.`
+      : `Has llegado al reto ${progress.reachedQuestionCount} de ${challenge.slots.length}.`,
+    score,
+    maxScore: challenge.maxScore,
+    scoreUnit: "flashPoints",
+    accuracy: calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit)),
+    totalTime: results.reduce((total, result) => total + result.timeUsed, 0),
+    metrics: [
+      {
+        label: "Retos alcanzados",
+        value: `${progress.reachedQuestionCount} / ${challenge.slots.length}`,
+        icon: <CheckIcon />,
+        tone: "success",
+      },
+      {
+        label: "Vidas consumidas",
+        value: challenge.lives - progress.livesRemaining,
+        icon: <CrossIcon />,
+        tone: "danger",
+      },
+      {
+        label: "Vidas restantes",
+        value: progress.livesRemaining,
+        icon: <HeartIcon />,
+        tone: "social",
+      },
+      {
+        label: "Sin contestar",
+        value: unanswered,
+        icon: <ClockIcon />,
+      },
+    ],
+  };
+}
 
 export function ServerFlashPopSurvivalGame({
   challenge,
@@ -28,17 +84,9 @@ export function ServerFlashPopSurvivalGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerFlashSession({ challenge, roomContext, terminalReview });
-  const survivalChallenge: SurvivalChallenge = {
-    id: challenge.id,
-    definitionId: challenge.definitionId,
-    number: challenge.number,
-    title: challenge.title,
-    subtitle: challenge.subtitle,
-    description: challenge.description,
-    mode: "survival",
-    lives: challenge.lives,
-    questions: session.displayChallenge.questions,
-  };
+  const resultModel = session.survivalProgress
+    ? getSurvivalResultModel(challenge, session.results, session.score, session.survivalProgress)
+    : null;
 
   return (
     <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
@@ -153,7 +201,7 @@ export function ServerFlashPopSurvivalGame({
           />
         </motion.div>
       ) : null}
-      {session.phase === "results" && session.survivalProgress ? (
+      {session.phase === "results" && resultModel ? (
         <motion.div
           className={styles.stageFrame}
           key="results"
@@ -161,15 +209,11 @@ export function ServerFlashPopSurvivalGame({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <SurvivalResultScreen
-            challenge={survivalChallenge}
-            results={session.results}
-            score={session.score}
-            livesRemaining={session.survivalProgress.livesRemaining}
-            reachedQuestionCount={session.survivalProgress.reachedQuestionCount}
-            eliminated={session.survivalProgress.outcome === "eliminated"}
-            survived={session.survivalProgress.outcome === "survived"}
+          <ChallengeResultScreen
+            model={resultModel}
             onReview={() => session.reviewChallenge && session.showReview()}
+            returnTo={roomContext.returnTo}
+            returnLabel="Volver a la sala"
           />
         </motion.div>
       ) : null}

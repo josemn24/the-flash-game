@@ -166,7 +166,7 @@ test.describe("S14 — supervivencia competitiva", () => {
         timeout: 15_000,
       });
       await member.reload();
-      await expect(member.getByText("Has caído en supervivencia.")).toBeVisible({
+      await expect(member.getByText("Sin vidas", { exact: true })).toBeVisible({
         timeout: 20_000,
       });
       const score = Number(await member.locator("main").getByText(/^\d+$/).first().textContent());
@@ -174,7 +174,7 @@ test.describe("S14 — supervivencia competitiva", () => {
       await expect(member.getByText("2 / 2", { exact: true }).first()).toBeVisible();
 
       await member.reload();
-      await expect(member.getByText("Has caído en supervivencia.")).toBeVisible();
+      await expect(member.getByText("Sin vidas", { exact: true })).toBeVisible();
       await member.getByRole("button", { name: "Ver respuestas" }).click();
       await expect(member.getByText("Lisboa es la capital de Portugal.")).toBeVisible();
       await member.locator("details").nth(1).locator("summary").click();

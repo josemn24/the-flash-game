@@ -63,33 +63,35 @@ npm run supabase:browser:setup -- --with-history
 
 ## Alpha local de Tabarnia
 
-Para preparar la sala realista de la alpha con sus doce jugadores, una temporada activa y el primer
-desafío Steel Ball Run:
+Para preparar la sala realista de la alpha con sus doce jugadores, una temporada activa y tres
+desafíos competitivos:
 
 ```bash
 npm run supabase:tabarnia:setup
 npm run dev
 ```
 
-El setup crea a `xesmona` como superadmin fuera de la sala, a `Ches` como propietario y jugador, y
-al resto de la cohorte como miembros jugadores. Las credenciales fijas y los IDs generados se
-guardan en `output/fixtures/tabarnia.json`, una ruta ignorada por Git. El comando reinicia la base
-local en cada ejecución y no crea intentos ni resultados históricos.
+El setup crea 13 cuentas Auth: `xesmona` como superadmin fuera de la sala, `Ches` como propietario
+y jugador, y otros once miembros jugadores. Programa Supervivencia: España (20 preguntas, 3 vidas,
+100 puntos) como desafío actual; La Pirámide: Biblia y religiones abrahámicas (7 niveles, 100
+puntos) y Steel Ball Run (16 retos, 100 puntos) quedan en ventanas consecutivas de 24 horas.
+
+Las credenciales fijas y los IDs generados se guardan en `output/fixtures/tabarnia.json`, una ruta
+ignorada por Git. El comando reinicia Supabase local en cada ejecución, carga los diccionarios de
+Mini-Wordle que necesita la Pirámide y no crea intentos ni resultados históricos. Los recursos de
+España se guardan en el bucket privado `question-assets`; el mapa SVG de Canarias se rasteriza a PNG
+durante el setup.
 
 El setup realiza estas operaciones únicamente contra Supabase local:
 
-1. Reinicia la base.
-2. Crea seis cuentas Auth locales.
-3. Aprovisiona sus `players`.
-4. Ejecuta `supabase/seed.sql` con los `player_id` generados.
-5. Opcionalmente ejecuta `supabase/seed-browser-history.sql`.
+1. Comprueba que Supabase apunta a localhost y reinicia la base local.
+2. Carga el diccionario de Mini-Wordle.
+3. Crea las 13 cuentas Auth y aprovisiona sus `players`.
+4. Carga los recursos de imagen privados, crea la sala, temporada y publicaciones.
+5. Escribe `output/fixtures/tabarnia.json` con las cuentas y metadatos de los tres desafíos.
 
-Las credenciales se imprimen al terminar y se guardan en
-`output/fixtures/browser.json`. No se mantienen contraseñas en esta documentación ni deben
-reutilizarse contra un proyecto remoto.
-
-El dataset incluye las salas `browser-playground` y `browser-isolated`, además de publicaciones
-abiertas, futuras y cerradas. El comando devuelve la ruta del desafío abierto.
+El comando imprime las credenciales locales y la ruta del desafío que está abierto. No reutilices
+esas credenciales contra un proyecto remoto.
 
 ## Verificación
 

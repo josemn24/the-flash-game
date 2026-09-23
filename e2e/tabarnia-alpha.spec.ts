@@ -7,6 +7,7 @@ type Fixture = {
   data: {
     room: { slug: string };
     publicationId: string;
+    publications: Array<{ id: string; title: string; mode: string; status: string }>;
     avatars: Array<{ label: string; objectPath: string }>;
   };
 };
@@ -33,7 +34,7 @@ test.describe("Tabarnia alpha", () => {
     expect(response?.status()).toBe(200);
     await expect(page.getByRole("heading", { name: "Tabarnia", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Miembros", exact: true })).toBeVisible();
-    await expect(page.getByText(/Flash Points/).first()).toBeVisible();
+    await expect(page.getByRole("img", { name: /Flash Points/ }).first()).toBeVisible();
   });
 
   test("mantiene 404 para una sala inexistente o no autorizada", async ({ page }) => {
@@ -83,7 +84,7 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
-  test("Ches puede abrir la sala y comenzar Steel Ball Run", async ({ page }) => {
+  test("Ches puede comenzar España, primera publicación del orden Tabarnia", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.ches);
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
@@ -105,9 +106,20 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("link", { name: "Volver al detalle de la sala" }).click();
 
     await page.getByRole("link", { name: "Jugar" }).click();
-    await expect(page.getByRole("heading", { name: "Steel Ball Run" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Supervivencia: España" }).first(),
+    ).toBeVisible();
+    await expect(page.getByText(/3 vidas para llegar lejos/)).toBeVisible();
     await page.getByRole("button", { name: "Empezar desafío" }).click();
-    await expect(page.getByRole("heading", { name: /Caballo de Fuego/ })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /El Teide es el pico más alto de España/ }),
+    ).toBeVisible();
+    expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
+    expect(data.data.publications[0]).toMatchObject({
+      title: "Supervivencia: España",
+      mode: "survival",
+      status: "open",
+    });
   });
 
   test("xesmona queda fuera de la sala competitiva", async ({ page }) => {
