@@ -3,6 +3,36 @@
 
 # QA actual
 
+## Corrección de evaluación server-backed de Word-search en Pirámide — 2026-09-24
+
+- El esquema canónico y la migración `20260924100000_word_search_answer_shape` reconstruyen y
+  guardan la respuesta terminal como `{ foundWordIds: [...] }`, que es la forma que acepta el
+  evaluador. Se conserva el recuento server-side de selecciones fallidas.
+- `npm run supabase:schema:test` pasa con 46 esquemas, inventario, todas las pruebas SQL y
+  concurrencia PostgreSQL; E06 pasa 26 checks. Vitest dirigido pasa 20 pruebas y
+  `npm run schema:revision:check` pasa.
+- El E2E S15 ahora resuelve una sopa completa después de un error y comprueba ascenso, puntuación y
+  revisión. En esta ejecución no alcanzó el flujo: el login rechazó al usuario fixture S15
+  (`No se ha podido iniciar sesión. Revisa tus datos.`). No se regeneraron identidades Auth.
+
+## Corrección de puntuación de Progressive-clues — 2026-09-23
+
+- La migración `20260923170000_progressive_clue_scoring` se aplicó a Supabase local sin reconstruir
+  la base ni cambiar filas existentes. No se conectó ni desplegó a un proyecto remoto.
+- `npm run supabase:schema:test` pasa con 46 archivos declarativos, inventario de seguridad,
+  pruebas SQL completas y concurrencia PostgreSQL. E03 pasa 35 checks, incluidos el ejemplo
+  20/100 aplicado a un nivel de 12 puntos y la coincidencia del máximo de 10 puntos entre la pista
+  revelada y el contexto de evaluación.
+- `npx vitest run lib/scoring.test.ts lib/challengeScoring.test.ts`: 146 pruebas pasan. Incluye el
+  máximo persistido de 10 puntos con acierto a los 11,8 s de un límite de 35 s (9 puntos otorgados)
+  y la escala equivalente del mock.
+- `npm run typecheck`, `npm run docs:check` y `npm run schema:revision:check` pasan.
+- El E2E S15 no llegó al flujo: Playwright rechazó el inicio de sesión del usuario fixture
+  `fixture-s15-…` (`No se ha podido iniciar sesión. Revisa tus datos.`). No se reconstruyó el fixture
+  porque requiere renovar las identidades Auth locales. La especificación queda extendida para
+  comprobar revelación, puntuación positiva y revisión coherente cuando se ejecute con el fixture
+  autenticable.
+
 ## Validación de formatos competitivos de Pirámide — 2026-09-23
 
 - Las migraciones incrementales `20260923100000_s15_true_false` a `20260923160000_s15_word_hashtag` se aplicaron en Supabase local. No se conectó ni desplegó a un proyecto remoto.

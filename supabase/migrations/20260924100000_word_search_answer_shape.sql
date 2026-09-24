@@ -1,63 +1,85 @@
--- E06 — Authoritative word-search selection events and command.
+-- Normalize server-backed Word Search receipts for the shared evaluator.
+begin;
 
-create table private.word_search_selection_events (
-  id uuid primary key default gen_random_uuid(),
-  attempt_id uuid not null,
-  challenge_item_id uuid not null,
-  challenge_version_id uuid not null,
-  sequence integer not null check (sequence > 0),
-  start_cell integer not null check (start_cell >= 0),
-  end_cell integer not null check (end_cell >= 0),
-  matched_target_id text,
-  correct boolean not null,
-  received_at timestamptz not null,
-  presented_at timestamptz not null,
-  time_used_ms bigint not null check (time_used_ms >= 0),
-  idempotency_key text not null check (btrim(idempotency_key) <> ''),
-  foreign key (attempt_id, challenge_version_id)
-    references public.attempts(id, challenge_version_id) on delete restrict,
-  foreign key (challenge_item_id, challenge_version_id)
-    references private.challenge_items(id, challenge_version_id) on delete restrict,
-  unique (attempt_id, challenge_item_id, sequence),
-  unique (attempt_id, idempotency_key),
-  unique (id, attempt_id, challenge_item_id, challenge_version_id),
-  check (received_at >= presented_at),
-  check (start_cell <> end_cell)
-);
-
-create index word_search_selection_events_item_idx
-  on private.word_search_selection_events(attempt_id, challenge_item_id, sequence);
-create index word_search_selection_events_target_idx
-  on private.word_search_selection_events(attempt_id, challenge_item_id, matched_target_id)
-  where correct;
-create unique index word_search_selection_events_correct_target_idx
-  on private.word_search_selection_events(attempt_id, challenge_item_id, matched_target_id)
-  where correct and matched_target_id is not null;
-
-create function private.word_search_progress(target_attempt uuid, target_item uuid) returns jsonb
-language sql stable security definer set search_path = '' as $$
+create or replace function private.read_evaluation_context(target_receipt uuid, session_token text) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare actor uuid := private.command_actor(); result jsonb;
+begin
   select jsonb_build_object(
-    'kind', 'word-search',
-    'foundSelections', coalesce(jsonb_agg(jsonb_build_object(
-      'targetId', e.matched_target_id,
-      'startCell', e.start_cell,
-      'endCell', e.end_cell
-    ) order by e.sequence) filter (where e.correct), '[]'::jsonb),
-    'foundWordIds', coalesce(jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
-      filter (where e.correct), '[]'::jsonb),
-    'foundCount', count(*) filter (where e.correct)::integer,
-    'totalWords', jsonb_array_length(q.public_payload->'targets'),
-    'incorrectAttempts', count(*) filter (where not e.correct)::integer
-  )
-  from private.challenge_items i
+    'receiptId', r.id, 'answer', case when q.type = 'matching' then coalesce((
+      select jsonb_object_agg(e.left_item_id, e.right_item_id)
+      from private.matching_pair_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
+    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+      select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
+      from private.word_search_selection_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
+    ), '[]'::jsonb)) else r.answer end, 'receivedAt', r.received_at,
+    'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
+    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
+    'publicPayload', q.public_payload,
+    'submittedCodes', case when q.type = 'logic-code' then coalesce((
+      select jsonb_agg(e.code order by e.sequence)
+      from private.logic_code_attempt_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
+    ), '[]'::jsonb) else null end,
+    'progressiveCluesRevealed', case when q.type = 'progressive-clues' then coalesce((
+      select max(e.clue_index)::integer
+      from private.progressive_clue_reveal_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
+    ), 1) else null end,
+    'progressiveClueAvailablePoints', case when q.type = 'progressive-clues' then coalesce((
+      select e.available_points
+      from private.progressive_clue_reveal_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
+      order by e.clue_index desc
+      limit 1
+    ), i.points) else null end,
+    'matchingIncorrectAttempts', case when q.type = 'matching' then coalesce((
+      select count(*)::integer from private.matching_pair_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) else null end,
+    'incorrectAttempts', case when q.type = 'logic-code' then coalesce((
+      select count(*)::integer
+      from private.logic_code_attempt_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) when q.type = 'queens' then coalesce((
+      select count(*)::integer
+      from private.queens_placement_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
+    ), 0) when q.type = 'word-search' then coalesce((
+      select count(*)::integer from private.word_search_selection_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) else null end,
+    'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
+    'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
+    'itemConfig', i.mode_config, 'mode', cv.mode,
+    'modeConfigSchemaVersion', cv.config_schema_version, 'modeConfig', cv.mode_config)
+  into result from private.answer_receipts r
+  join public.attempts a on a.id = r.attempt_id
+  join private.attempt_sessions s on s.attempt_id = a.id
+  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+  join public.seasons season on season.id = sc.season_id
+  join public.rooms room on room.id = season.room_id
+  join public.room_memberships m on m.room_id = room.id and m.player_id = actor
+  join private.challenge_items i on i.id = r.challenge_item_id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
   join private.question_versions q on q.id = i.question_version_id
-  left join private.word_search_selection_events e
-    on e.attempt_id = target_attempt and e.challenge_item_id = target_item
-  where i.id = target_item and q.type = 'word-search'
-  group by q.public_payload
+  join private.question_version_solutions qs on qs.question_version_id = q.id
+  where r.id = target_receipt and a.player_id = actor and a.status = 'in_progress'
+    and a.kind = 'competitive' and sc.status <> 'cancelled' and room.status = 'active'
+    and m.status = 'active' and m.role in ('owner', 'admin', 'member')
+    and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
+    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
+  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  return result;
+end;
 $$;
+alter function private.read_evaluation_context(uuid, text) owner to postgres;
+revoke all on function private.read_evaluation_context(uuid, text) from public, anon, authenticated, service_role;
+grant execute on function private.read_evaluation_context(uuid, text) to service_role;
 
-create function private.submit_word_search_selection(input jsonb) returns jsonb
+create or replace function private.submit_word_search_selection(input jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare
   actor uuid := private.command_actor();
@@ -239,11 +261,8 @@ begin
   return result;
 end;
 $$;
-
-alter function private.word_search_progress(uuid, uuid) owner to postgres;
 alter function private.submit_word_search_selection(jsonb) owner to postgres;
-alter table private.word_search_selection_events enable row level security;
-revoke all on table private.word_search_selection_events from public, anon, authenticated, service_role;
-revoke all on function private.word_search_progress(uuid, uuid), private.submit_word_search_selection(jsonb)
-  from public, anon, authenticated, service_role;
+revoke all on function private.submit_word_search_selection(jsonb) from public, anon, authenticated, service_role;
 grant execute on function private.submit_word_search_selection(jsonb) to service_role;
+
+commit;

@@ -103,7 +103,9 @@ npm run test:e2e -- e2e/e03-progressive-clues.spec.ts
 Progressive-clues registra la primera pista con penalización cero y las siguientes mediante
 `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`. El payload jugable no
 contiene la solución ni pistas futuras; `lockVersion`, el plazo, la secuencia, la idempotencia y
-los puntos disponibles los decide PostgreSQL. Una respuesta incorrecta o timeout recibe cero puntos.
+los puntos disponibles los decide PostgreSQL. `cluePenalty` se expresa sobre 100 puntos y escala al
+valor del nivel: con 12 puntos y penalización 20, cada pista adicional resta 2. La evaluación usa el
+máximo persistido por la última revelación. Una respuesta incorrecta o timeout recibe cero puntos.
 
 Para E04:
 

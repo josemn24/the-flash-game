@@ -2,7 +2,7 @@
 
 Estado: S15 probado sobre PostgreSQL 17 de Supabase local el 2026-09-23. Los 46 archivos
 declarativos, el inventario, pgTAP y las carreras pasan; la migración incremental
-`20260923100000_s15_true_false.sql`–`20260923160000_s15_word_hashtag.sql` están aplicadas localmente, además de S15. No hay proyecto remoto vinculado.
+`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. La migración incremental `20260924100000_word_search_answer_shape.sql` añade el formato de recibo que espera el evaluador server-side; aún no se ha aplicado a una base persistente. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.

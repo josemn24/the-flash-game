@@ -17,6 +17,7 @@ function buildDefaultEvaluationContext(input: NormalizedEvaluationInput): Evalua
     submittedCodes: input.submittedCodes,
     incorrectAttempts: input.incorrectAttempts,
     revealedClues: 1,
+    availablePoints: input.progressiveClueAvailablePoints,
   };
 }
 
@@ -27,6 +28,7 @@ function buildDefaultUnansweredDetailsContext(
     submittedCodes: input.submittedCodes,
     incorrectAttempts: input.incorrectAttempts,
     revealedClues: input.progressiveCluesRevealed,
+    availablePoints: input.progressiveClueAvailablePoints,
   };
 }
 
@@ -77,6 +79,7 @@ export function evaluateAnswer({
   incorrectAttempts = 0,
   matchingIncorrectAttempts = 0,
   progressiveCluesRevealed = 1,
+  progressiveClueAvailablePoints,
 }: EvaluationInput): AnswerResult {
   const safeTime = clampTime(timeUsed, question.timeLimit);
   const scoring = SCORING[question.type];
@@ -91,6 +94,7 @@ export function evaluateAnswer({
       incorrectAttempts,
       matchingIncorrectAttempts,
       progressiveCluesRevealed,
+      progressiveClueAvailablePoints,
     };
     return {
       questionId: question.id,
@@ -132,6 +136,7 @@ export function evaluateAnswer({
     incorrectAttempts,
     matchingIncorrectAttempts,
     progressiveCluesRevealed,
+    progressiveClueAvailablePoints,
     isCorrect,
   };
   const evaluation = scoring.evaluate(
@@ -148,9 +153,7 @@ export function evaluateAnswer({
     ...evaluation,
     status: timedOutStatus ?? evaluation.status,
     points:
-      timedOut && !scoring.timeoutPolicy?.preservePoints
-        ? 0
-        : normalizeScore(evaluation.points),
+      timedOut && !scoring.timeoutPolicy?.preservePoints ? 0 : normalizeScore(evaluation.points),
     timeUsed: safeTime,
   };
 }

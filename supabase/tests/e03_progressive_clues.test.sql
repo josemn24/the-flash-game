@@ -29,6 +29,10 @@ $$,
   'El validador editorial acepta un Flash mixto con Progressive-clues');
 select is(to_regclass('private.progressive_clue_events_item_idx')::text,
   'private.progressive_clue_events_item_idx', 'Existe el índice de consulta por intento/item/pista');
+select is(private.progressive_clue_effective_penalty(20, 12), 2,
+  'La penalización editorial se escala desde la base de 100 puntos');
+select is(private.progressive_clue_effective_penalty(1, 12), 1,
+  'Una penalización positiva conserva un mínimo de un punto');
 select ok((select relrowsecurity from pg_class where oid = 'private.progressive_clue_reveal_events'::regclass),
   'RLS está habilitado en los eventos Progressive-clues');
 select ok(not has_table_privilege('service_role', 'private.progressive_clue_reveal_events', 'SELECT'),
@@ -48,7 +52,7 @@ insert into private.question_versions(
   time_limit_ms, public_payload, created_by_player_id)
 values (
   test_support.id('e03-qv'), test_support.id('e03-q'), 1, 1, 'draft', 'progressive-clues',
-  60000, '{"category":"Historia","question":"Identifica el acontecimiento","clues":["Ocurrió en Europa.","Está relacionado con una caída de muro.","Sucedió en 1989."],"cluePenalty":25}',
+  60000, '{"category":"Historia","question":"Identifica el acontecimiento","clues":["Ocurrió en Europa.","Está relacionado con una caída de muro.","Sucedió en 1989."],"cluePenalty":50}',
   test_support.id('superadmin'));
 insert into private.question_version_solutions(question_version_id, solution_payload)
 values (test_support.id('e03-qv'), '{"correctAnswer":"Caída del muro de Berlín","acceptedAnswers":["caida del muro de berlin"," Muro de Berlín "],"explanation":"La respuesta identifica el acontecimiento."}');
@@ -131,6 +135,10 @@ select is((select (private.read_evaluation_context(
   (select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('e', 40)
 )->>'progressiveCluesRevealed')::integer from test_support.runtime), 3,
   'La evaluación reconstruye las pistas desde los eventos');
+select is((select (private.read_evaluation_context(
+  (select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('e', 40)
+)->>'progressiveClueAvailablePoints')::integer from test_support.runtime), 0,
+  'La evaluación usa el máximo disponible del último evento de pista');
 reset role;
 select test_support.run('record_evaluation', '{"status":"correct","points":0}');
 select throws_ok($$select test_support.run('reveal_progressive_clue')$$,
@@ -144,6 +152,19 @@ select is((select (last_result->>'preserved')::boolean from test_support.runtime
 select test_support.run('prepare_interaction');
 select is((select last_result->'progress'->'revealedClues' from test_support.runtime), '1'::jsonb,
   'La recarga reconstruye la primera pista del siguiente item');
+select lives_ok($$select test_support.run('reveal_progressive_clue')$$,
+  'El item de 20 puntos revela su segunda pista');
+select is((select (last_result->>'availablePoints')::integer from test_support.runtime), 10,
+  'La pista deja el mismo máximo proporcional que verá la evaluación');
+select lives_ok($$select test_support.run('receive_answer', '{"answer":"Caída del muro de Berlín"}')$$,
+  'La respuesta se recibe tras revelar la pista');
+select test_support.as_actor('owner');
+set local role service_role;
+select is((select (private.read_evaluation_context(
+  (select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('e', 40)
+)->>'progressiveClueAvailablePoints')::integer from test_support.runtime), 10,
+  'La evaluación usa el máximo devuelto al revelar la pista');
+reset role;
 
 select * from finish();
 rollback;

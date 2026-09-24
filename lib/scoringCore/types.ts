@@ -31,6 +31,7 @@ export type EvaluationContext = {
   submittedCodes: string[];
   incorrectAttempts: number;
   revealedClues: number;
+  availablePoints?: number;
 };
 
 export type EvaluationInput = {
@@ -42,6 +43,7 @@ export type EvaluationInput = {
   incorrectAttempts?: number;
   matchingIncorrectAttempts?: number;
   progressiveCluesRevealed?: number;
+  progressiveClueAvailablePoints?: number;
 };
 
 export type NormalizedEvaluationInput = {
@@ -53,6 +55,7 @@ export type NormalizedEvaluationInput = {
   incorrectAttempts: number;
   matchingIncorrectAttempts: number;
   progressiveCluesRevealed: number;
+  progressiveClueAvailablePoints?: number;
   isCorrect: boolean;
 };
 
@@ -65,12 +68,14 @@ export type NormalizedUnansweredInput = {
   incorrectAttempts: number;
   matchingIncorrectAttempts: number;
   progressiveCluesRevealed: number;
+  progressiveClueAvailablePoints?: number;
 };
 
 export type UnansweredDetailsContext = {
   submittedCodes: string[];
   incorrectAttempts: number;
   revealedClues: number;
+  availablePoints?: number;
 };
 
 export type TimeoutAnswerSource = "none" | "draft" | "last-submitted-code";

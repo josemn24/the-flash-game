@@ -1336,7 +1336,10 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: context.publicPayload,
       })) as EvaluationContext["publicPayload"],
     };
-    const result: Pick<ReturnType<typeof evaluateReceipt>, "status" | "points" | "details"> = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
+    const result: Pick<
+      ReturnType<typeof evaluateReceipt>,
+      "status" | "points" | "details"
+    > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
       ? { status: "unanswered" as const, points: 0 }
       : evaluateReceipt({
           receipt: {
@@ -1346,6 +1349,7 @@ export class SupabaseAttemptCommands implements Pick<
           question: asQuestion(resolvedContext),
           answer: (resolvedContext.answer as AnswerValue | null) ?? null,
           progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+          progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
           matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
           incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
         });
@@ -1384,13 +1388,17 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: context.publicPayload,
       })) as EvaluationContext["publicPayload"],
     };
-    const result: Pick<ReturnType<typeof evaluateReceipt>, "status" | "points" | "details"> = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
+    const result: Pick<
+      ReturnType<typeof evaluateReceipt>,
+      "status" | "points" | "details"
+    > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
       ? { status: "unanswered" as const, points: 0 }
       : evaluateReceipt({
           receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
           question: asQuestion(resolvedContext),
           answer: (resolvedContext.answer as AnswerValue | null) ?? null,
           progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+          progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
           matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
           incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
         });

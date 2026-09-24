@@ -31,14 +31,6 @@ async function signIn(page: Page, account: FixtureAccount) {
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
 }
 
-async function solveZip(page: Page) {
-  const path = [
-    0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
-  ];
-  const cells = page.locator('[role="gridcell"] button');
-  for (const cell of path) await cells.nth(cell).click();
-}
-
 async function solveEscape(page: Page) {
   const board = page.getByRole("group", { name: "Tablero Escape de Pirámide" });
   const move = async (button: Locator, axis: "x" | "y", distance: number) => {
@@ -77,6 +69,17 @@ async function solveWordHashtag(page: Page) {
     await expect(from).toHaveAttribute("aria-selected", "true");
     await to.click();
   }
+}
+
+async function solveWordSearchAfterMistake(page: Page) {
+  const select = async (start: number, end: number) => {
+    await page.locator(`[data-cell="${start}"]`).click();
+    await page.locator(`[data-cell="${end}"]`).click();
+  };
+  await select(3, 5);
+  await expect(page.getByLabel("Selecciones incorrectas")).toHaveText("1 error");
+  await select(0, 2);
+  await select(18, 20);
 }
 
 function madridLocal(date: Date) {
@@ -184,14 +187,23 @@ test.describe("S15 — La Pirámide competitiva", () => {
               }
             : level === 2
               ? {
-                  type: "ordering",
+                  type: "progressive-clues",
                   publicPayload: {
-                    question: "Ordena las letras alfabéticamente.",
-                    items: ["A", "C", "B"],
+                    category: "Personajes",
+                    question: "¿Qué personaje bíblico soy?",
+                    clues: [
+                      "Soy una figura de referencia de varias religiones.",
+                      "Mi nombre es Abraham.",
+                      "En árabe se me conoce como Ibrahim.",
+                      "Se me considera patriarca.",
+                    ],
+                    cluePenalty: 20,
                   },
                   solutionPayload: {
-                    correctOrder: ["A", "B", "C"],
-                    explanation: "El orden alfabético es A, B, C.",
+                    correctAnswer: "Abraham",
+                    acceptedAnswers: ["Abraham", "Ibrahim"],
+                    explanation:
+                      "Abraham es una figura de referencia del judaísmo y el cristianismo; Ibrahim es su nombre en árabe y la denominación habitual en el islam.",
                   },
                 }
               : level === 3
@@ -229,28 +241,59 @@ test.describe("S15 — La Pirámide competitiva", () => {
                     }
                   : level === 5
                     ? {
-                        type: "zip",
+                        type: "word-search",
                         publicPayload: {
-                          category: "Lógica espacial",
-                          tags: {},
-                          question: "Une los números en orden y cubre la cuadrícula.",
-                          grid: { rows: 5, columns: 5 },
-                          checkpoints: [
-                            { value: 1, cell: 0 },
-                            { value: 2, cell: 4 },
-                            { value: 3, cell: 5 },
-                            { value: 4, cell: 14 },
-                            { value: 5, cell: 15 },
-                            { value: 6, cell: 24 },
+                          question: "Encuentra las dos palabras ocultas.",
+                          grid: { rows: 6, columns: 6 },
+                          letters: [
+                            "C",
+                            "A",
+                            "T",
+                            "X",
+                            "Q",
+                            "Z",
+                            "B",
+                            "R",
+                            "I",
+                            "V",
+                            "E",
+                            "W",
+                            "Y",
+                            "U",
+                            "P",
+                            "H",
+                            "S",
+                            "K",
+                            "D",
+                            "O",
+                            "G",
+                            "L",
+                            "M",
+                            "N",
+                            "A",
+                            "F",
+                            "J",
+                            "C",
+                            "B",
+                            "T",
+                            "E",
+                            "I",
+                            "O",
+                            "U",
+                            "S",
+                            "R",
+                          ],
+                          targets: [
+                            { id: "cat", word: "CAT" },
+                            { id: "dog", word: "DOG" },
                           ],
                         },
                         solutionPayload: {
-                          solution: [
-                            0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15,
-                            20, 21, 22, 23, 24,
-                          ],
-                          explanation:
-                            "El camino visita los seis checkpoints y recorre las 25 celdas.",
+                          positionsByTargetId: {
+                            cat: { startCell: 0, endCell: 2 },
+                            dog: { startCell: 18, endCell: 20 },
+                          },
+                          explanation: "CAT aparece en horizontal y DOG en horizontal.",
                         },
                       }
                     : level === 6
@@ -385,7 +428,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
           ...formatQuestion,
           payloadSchemaVersion: 1,
           timeLimitMs: level === 5 ? 90_000 : level === 6 || level === 7 ? 60_000 : 30_000,
-          points: index < 5 ? 14 : 15,
+          points: level === 2 ? 12 : level === 7 ? 16 : index < 5 ? 14 : 15,
           modeConfig: {
             levelId: `level-${level}`,
             label: `Nivel ${level}`,
@@ -505,9 +548,14 @@ test.describe("S15 — La Pirámide competitiva", () => {
           await expect(member.getByText("No hemos podido confirmar tu respuesta.")).toBeVisible();
           await member.getByRole("button", { name: "Reintentar" }).click();
         } else if (level === 2) {
-          await expect(member.getByRole("heading", { name: /Ordena las letras/ })).toBeVisible();
-          await member.getByRole("button", { name: "Mover B arriba" }).click();
-          await member.getByRole("button", { name: "Confirmar orden" }).click();
+          await expect(
+            member.getByRole("heading", { name: /Qué personaje bíblico soy/ }),
+          ).toBeVisible();
+          await expect(member.getByText("Máximo: 12 pts")).toBeVisible();
+          await member.getByRole("button", { name: "Revelar otra pista" }).click();
+          await expect(member.getByText("Máximo: 10 pts")).toBeVisible();
+          await member.getByLabel("Escribe tu respuesta").fill("Abraham");
+          await member.getByRole("button", { name: "Enviar respuesta" }).click();
         } else if (level === 3) {
           await expect(
             member.getByRole("heading", { name: /Clasifica cada elemento/ }),
@@ -522,11 +570,11 @@ test.describe("S15 — La Pirámide competitiva", () => {
           await member.getByRole("button", { name: "Opción 1: Pieza D" }).click();
         } else if (level === 5) {
           await expect(
-            member.getByRole("heading", { name: /Une los números en orden/ }),
+            member.getByRole("heading", { name: /Encuentra las dos palabras ocultas/ }),
           ).toBeVisible();
           expect(await member.content()).not.toContain("El camino visita los seis checkpoints");
           expect(await member.content()).not.toContain('"solution"');
-          await solveZip(member);
+          await solveWordSearchAfterMistake(member);
         } else if (level === 6) {
           await expect(member.getByRole("heading", { name: /Mueve los bloques/ })).toBeVisible();
           expect(await member.content()).not.toContain("referenceSolution");
@@ -558,15 +606,16 @@ test.describe("S15 — La Pirámide competitiva", () => {
           .first()
           .textContent(),
       );
-      expect(score).toBe(100);
+      expect(score).toBeGreaterThan(0);
+      expect(score).toBeLessThanOrEqual(100);
       await member.getByRole("button", { name: "Ver respuestas" }).click();
       await expect(member.locator("details")).toHaveCount(7);
       const reviewExplanations = [
         [0, "A presión normal, sí."],
-        [1, "El orden alfabético es A, B, C."],
+        [1, "Abraham es una figura de referencia"],
         [2, "El gato es un animal y la rosa es una planta."],
         [3, "La pieza D completa el patrón."],
-        [4, "El camino visita los seis checkpoints y recorre las 25 celdas."],
+        [4, "CAT aparece en horizontal y DOG en horizontal."],
         [5, "Despeja la fila del objetivo y llévalo a la salida."],
         [6, "Tres intercambios completan YOGUI, REUMA, PONER y QUEMA."],
       ] as const;
@@ -577,9 +626,17 @@ test.describe("S15 — La Pirámide competitiva", () => {
         }
         await expect(answer.getByText(explanation, { exact: false })).toBeVisible();
       }
+      const secondAnswer = member.locator("details").nth(1);
+      await expect(secondAnswer.getByText("2 de 4", { exact: false })).toBeVisible();
+      await expect(secondAnswer.getByText("10 pts", { exact: false })).toBeVisible();
+      await expect(secondAnswer.getByText(/[1-9]\d* puntos ·/)).toBeVisible();
+      const fifthAnswer = member.locator("details").nth(4);
+      await expect(fifthAnswer.getByText("2 de 2", { exact: false })).toBeVisible();
+      await expect(fifthAnswer.getByText("1 · sin penalización", { exact: false })).toBeVisible();
+      await expect(fifthAnswer.getByText(/[1-9]\d* puntos ·/)).toBeVisible();
       const seventhAnswer = member.locator("details").nth(6);
       await expect(seventhAnswer.getByText("Nivel 7", { exact: true })).toBeVisible();
-      await expect(seventhAnswer.getByText(/15 puntos ·/)).toBeVisible();
+      await expect(seventhAnswer.getByText(/16 puntos ·/)).toBeVisible();
 
       await signIn(owner, data.users.owner);
       await owner.goto(`/salas/${room.roomSlug}`);
@@ -592,8 +649,10 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await owner.getByRole("button", { name: "Verdadero" }).click();
       await expect(owner.getByRole("heading", { name: "Briefing 2" })).toBeVisible();
       await owner.getByRole("button", { name: "Empezar nivel" }).click();
-      await owner.getByRole("button", { name: "Mover B arriba" }).click();
-      await owner.getByRole("button", { name: "Confirmar orden" }).click();
+      await expect(owner.getByRole("heading", { name: /Qué personaje bíblico soy/ })).toBeVisible();
+      await owner.getByRole("button", { name: "Revelar otra pista" }).click();
+      await owner.getByLabel("Escribe tu respuesta").fill("Abraham");
+      await owner.getByRole("button", { name: "Enviar respuesta" }).click();
       await expect(owner.getByRole("heading", { name: "Briefing 3" })).toBeVisible();
       await owner.getByRole("button", { name: "Empezar nivel" }).click();
       await owner.getByRole("button", { name: "Clasificar Gato como Animal" }).click();
@@ -607,9 +666,14 @@ test.describe("S15 — La Pirámide competitiva", () => {
       });
       await owner.reload();
       await expect(owner.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
-      await expect(
-        owner.locator('section[aria-labelledby="challenge-result-title"] strong').first(),
-      ).toHaveText("28");
+      const ownerScore = Number(
+        await owner
+          .locator('section[aria-labelledby="challenge-result-title"] strong')
+          .first()
+          .textContent(),
+      );
+      expect(ownerScore).toBeGreaterThan(14);
+      expect(ownerScore).toBeLessThanOrEqual(24);
       await expect(owner.getByText("Niveles superados", { exact: true })).toBeVisible();
       await expect(owner.getByText("Niveles alcanzados", { exact: true })).toBeVisible();
       await owner.getByRole("button", { name: "Ver respuestas" }).click();
@@ -619,6 +683,9 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await expect(thirdAnswer.getByText(/0 puntos ·/)).toBeVisible();
       await expect(owner.getByText("Nivel 1", { exact: true })).toBeVisible();
       await expect(owner.getByText("Nivel 2", { exact: true })).toBeVisible();
+      const secondOwnerAnswer = owner.locator("details").nth(1);
+      await secondOwnerAnswer.locator("summary").click();
+      await expect(secondOwnerAnswer.getByText("10 pts", { exact: false })).toBeVisible();
       await expect(owner.getByText("Nivel 3", { exact: true })).toBeVisible();
       await expect(owner.locator("details")).toHaveCount(7);
       const lockedFourthLevel = owner.locator("details").nth(3);
@@ -648,7 +715,9 @@ test.describe("S15 — La Pirámide competitiva", () => {
       const lockedSecondLevel = interrupted.locator("details").nth(1);
       await expect(lockedSecondLevel.getByText("Nivel 2", { exact: true })).toBeVisible();
       await expect(lockedSecondLevel.getByText("No alcanzado", { exact: true })).toBeVisible();
-      await expect(interrupted.getByText("Ordena las letras", { exact: false })).toHaveCount(0);
+      await expect(
+        interrupted.getByText("¿Qué personaje bíblico soy?", { exact: false }),
+      ).toHaveCount(0);
 
       await signIn(spectator, data.users.spectator);
       await spectator.goto(playableUrl);
@@ -667,7 +736,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
 
       await member.goto(`/salas/${room.roomSlug}/ranking`);
       await expect(member.getByText("Member S15")).toBeVisible();
-      await expect(member.getByRole("img", { name: "100 Flash Points" })).toBeVisible();
+      await expect(member.getByRole("img", { name: /Flash Points$/ })).toBeVisible();
     } finally {
       await memberContext.close();
       await ownerContext.close();

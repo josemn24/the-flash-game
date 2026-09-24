@@ -91,9 +91,10 @@ select throws_ok($$select test_support.run('submit_word_search_selection', '{"st
 
 select test_support.as_actor('owner');
 set local role service_role;
-select is((select private.read_evaluation_context((select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('w', 40))->'answer' from test_support.runtime), '["abc","mno"]'::jsonb, 'La evaluación reconstruye la respuesta desde eventos');
+select is((select private.read_evaluation_context((select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('w', 40))->'answer' from test_support.runtime), '{"foundWordIds":["abc","mno"]}'::jsonb, 'La evaluación reconstruye el objeto de respuesta desde eventos');
 select is((select (private.read_evaluation_context((select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('w', 40))->>'incorrectAttempts')::integer from test_support.runtime), 1, 'La evaluación cuenta los fallos persistidos');
 reset role;
+select is((select answer from private.answer_receipts), '{"foundWordIds":["abc","mno"]}'::jsonb, 'El recibo terminal conserva el formato esperado por el evaluador y la revisión');
 
 select * from finish();
 rollback;

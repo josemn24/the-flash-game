@@ -755,6 +755,25 @@ describe("question evaluation", () => {
     ).toMatchObject({ points: 70, details: { availablePoints: 70 } });
   });
 
+  it("uses the server-recorded maximum after scaled clue penalties", () => {
+    const source = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
+    const question = { ...source, points: 12, cluePenalty: 20, timeLimit: 35 };
+
+    expect(
+      evaluateAnswer({
+        question,
+        answer: question.correctAnswer,
+        timeUsed: 11.8,
+        progressiveCluesRevealed: 2,
+        progressiveClueAvailablePoints: 10,
+      }),
+    ).toMatchObject({
+      status: "correct",
+      points: 9,
+      details: { type: "progressive-clues", revealedClues: 2, totalClues: 4, availablePoints: 10 },
+    });
+  });
+
   it("returns zero for failed or timed-out progressive-clues answers", () => {
     const question = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
     expect(

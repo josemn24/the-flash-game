@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20260923160000_s15_word_hashtag";
+const canonicalSchemaRevision = "20260924100000_word_search_answer_shape";
 
 function databaseUrl() {
   const configured = process.env.SUPABASE_DB_URL;
@@ -51,6 +51,11 @@ async function checkDatabase() {
           and to_regprocedure('private.reveal_progressive_clue(jsonb)') is not null
           and to_regprocedure('private.submit_matching_pair(jsonb)') is not null
         and to_regprocedure('private.submit_queens_placement(jsonb)') is not null
+        and to_regprocedure('private.submit_word_search_selection(jsonb)') is not null
+        and pg_get_functiondef(to_regprocedure('private.read_evaluation_context(uuid,text)'))
+          like '%jsonb_build_object(''foundWordIds''%'
+        and pg_get_functiondef(to_regprocedure('private.submit_word_search_selection(jsonb)'))
+          like '%jsonb_build_object(''foundWordIds''%'
         and to_regprocedure('private.zip_content_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.escape_content_valid(jsonb,jsonb)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null

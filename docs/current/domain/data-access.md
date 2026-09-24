@@ -151,9 +151,13 @@ de Auth/DB/PostgREST no cambia la selección a un adaptador mock.
 E03 entrega solo `question`, metadatos de conteo/penalización y el prefijo de pistas concedidas.
 `private.progressive_clue_reveal_events` registra la primera pista gratuita y cada revelación
 posterior; el comando resuelve la siguiente pista desde la versión congelada, aplica la penalización
-contra `challenge_items.points`, incrementa `lock_version` y devuelve únicamente esa pista. La
-evaluación ignora cualquier contador del navegador y reconstruye `progressiveCluesRevealed` desde
-los eventos persistidos.
+como porcentaje de una base editorial de 100 puntos, redondea al entero más cercano y mantiene una
+penalización mínima de un punto cuando el porcentaje es positivo. El descuento escala con
+`challenge_items.points`; por ejemplo, una penalización de 20 en un nivel de 12 puntos resta 2.
+El comando incrementa `lock_version` y devuelve únicamente la pista y el máximo actualizado. La
+evaluación ignora cualquier contador del navegador, reconstruye `progressiveCluesRevealed` y usa el
+máximo del último evento persistido, de modo que puntuación y revisión coinciden y los intentos
+abiertos conservan el máximo que ya se les había mostrado.
 
 E04 entrega las dos columnas públicas y solo el progreso de parejas correctas. Cada solicitud valida
 la correspondencia contra la versión congelada, registra como máximo un evento por clave, penaliza el

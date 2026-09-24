@@ -87,6 +87,7 @@ export type EvaluationContext = EvaluationReceipt & {
   readonly incorrectAttempts?: number;
   readonly matchingIncorrectAttempts?: number;
   readonly progressiveCluesRevealed?: number;
+  readonly progressiveClueAvailablePoints?: number;
 };
 
 /**

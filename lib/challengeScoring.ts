@@ -1,10 +1,5 @@
-import type {
-  FlashChallenge,
-  ProgressiveCluesQuestion,
-  PyramidChallenge,
-  Question,
-  SurvivalChallenge,
-} from "@/types/game";
+import type { FlashChallenge, PyramidChallenge, Question, SurvivalChallenge } from "@/types/game";
+import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 
 export const CHALLENGE_MAX_SCORE = 100;
 
@@ -66,17 +61,16 @@ export function getConfiguredChallengeQuestionPointValues(
   return pointValues as number[];
 }
 
-function scaleProgressiveCluePenalty(question: ProgressiveCluesQuestion, challengePoints: number) {
-  if (question.points <= 0 || question.cluePenalty <= 0) return 0;
-  return Math.max(1, Math.round((question.cluePenalty / question.points) * challengePoints));
-}
-
 export function withChallengeQuestionPoints(question: Question, challengePoints: number): Question {
   if (question.type === "progressive-clues") {
     return {
       ...question,
       points: challengePoints,
-      cluePenalty: scaleProgressiveCluePenalty(question, challengePoints),
+      cluePenalty: scaleProgressiveCluePenalty(
+        question.cluePenalty,
+        question.points,
+        challengePoints,
+      ),
     };
   }
 

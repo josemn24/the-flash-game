@@ -53,7 +53,7 @@ decisiones y después los documentos afectados.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
-- La revisión declarativa canónica es `20260923160000_s15_word_hashtag`; la comprobación de
+- La revisión declarativa canónica es `20260924100000_word_search_answer_shape`; la comprobación de
   esquema cubre 46 archivos declarativos, además de tablas, funciones públicas/privadas y políticas RLS.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run docs:check` y
   `npm run supabase:schema:test` se deben leer junto con el resultado vigente de `current/qa.md`;

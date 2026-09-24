@@ -640,11 +640,11 @@ begin
       select jsonb_object_agg(e.left_item_id, e.right_item_id)
       from private.matching_pair_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then coalesce((
+    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '[]'::jsonb) else r.answer end, 'receivedAt', r.received_at,
+    ), '[]'::jsonb)) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
     'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
@@ -658,6 +658,13 @@ begin
       from private.progressive_clue_reveal_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
     ), 1) else null end,
+    'progressiveClueAvailablePoints', case when q.type = 'progressive-clues' then coalesce((
+      select e.available_points
+      from private.progressive_clue_reveal_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id
+      order by e.clue_index desc
+      limit 1
+    ), i.points) else null end,
     'matchingIncorrectAttempts', case when q.type = 'matching' then coalesce((
       select count(*)::integer from private.matching_pair_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
