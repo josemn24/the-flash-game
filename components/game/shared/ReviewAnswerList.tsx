@@ -73,10 +73,6 @@ function resultSummary(result: AnswerResult) {
   return summary.join(" · ");
 }
 
-function firstOpenId(entries: ReviewAnswerEntry[]) {
-  return entries.find((entry) => statusFor(entry) !== "locked")?.id ?? entries[0]?.id;
-}
-
 export function ReviewAnswerList({
   entries,
   initialOpenId,
@@ -84,8 +80,6 @@ export function ReviewAnswerList({
   entries: ReviewAnswerEntry[];
   initialOpenId?: string;
 }) {
-  const openId = initialOpenId ?? firstOpenId(entries);
-
   return (
     <div className={styles.reviewAnswerList}>
       {entries.map((entry) => {
@@ -99,7 +93,7 @@ export function ReviewAnswerList({
           <details
             className={`${styles.reviewAnswerRow} ${styles[`reviewAnswer_${status}`]}`}
             key={entry.id}
-            open={entry.id === openId}
+            open={entry.id === initialOpenId}
           >
             <summary>
               <span className={styles.reviewAnswerNumber}>{entry.marker}</span>
