@@ -76,6 +76,7 @@ export function ServerFlashQuestionStage({
   presentedAt,
   livesRemaining,
   totalLives,
+  presentation,
 }: {
   readonly question: ServerFlashQuestion;
   readonly questionNumber: number;
@@ -126,9 +127,13 @@ export function ServerFlashQuestionStage({
   readonly presentedAt?: number | null;
   readonly livesRemaining?: number;
   readonly totalLives?: number;
+  readonly presentation?: "default" | "pyramid";
 }) {
   const titleId = useId();
-  const prompt = splitPrompt(question.question);
+  const pyramidPresentation = presentation === "pyramid";
+  const prompt = pyramidPresentation
+    ? { title: question.question }
+    : splitPrompt(question.question);
   const selected =
     question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
   const showSubmissionStatus =
@@ -150,33 +155,59 @@ export function ServerFlashQuestionStage({
       onTimeUp={onTimeUp}
       resetKey={question.id}
       deadlineAt={deadlineAt ?? undefined}
-      size="compact"
+      size={pyramidPresentation ? "default" : "compact"}
     />
   );
 
   return (
-    <div className={`${variantStyles.stageFrame} ${styles.stage}`}>
-      <GameHeader
-        left={
+    <div
+      className={`${variantStyles.stageFrame} ${styles.stage} ${pyramidPresentation ? styles.pyramidStage : ""}`}
+    >
+      {pyramidPresentation ? (
+        <>
+          <GameHeader
+            title="La Pirámide"
+            timer={timer}
+            mobileLabel={
+              <>
+                Nivel {questionNumber} <span>de {totalQuestions}</span>
+              </>
+            }
+            mobileLabelAriaLabel={`Nivel ${questionNumber} de ${totalQuestions}`}
+          />
           <p
-            className={variantStyles.questionIndicator}
-            aria-label={`Pregunta ${questionNumber} de ${totalQuestions}`}
+            className={variantStyles.pyramidLevelIndicator}
+            aria-label={`Nivel ${questionNumber} de ${totalQuestions}`}
           >
-            Pregunta {String(questionNumber).padStart(2, "0")}{" "}
-            <span>de {String(totalQuestions).padStart(2, "0")}</span>
+            Nivel {questionNumber} <span>de {totalQuestions}</span>
           </p>
-        }
-        timer={timer}
-        right={
-          typeof livesRemaining === "number" && typeof totalLives === "number" ? (
-            <div className={variantStyles.headerActions}>
-              <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
-              {timer}
-            </div>
-          ) : undefined
-        }
-      />
-      <section className={styles.questionCard} aria-labelledby={titleId}>
+        </>
+      ) : (
+        <GameHeader
+          left={
+            <p
+              className={variantStyles.questionIndicator}
+              aria-label={`Pregunta ${questionNumber} de ${totalQuestions}`}
+            >
+              Pregunta {String(questionNumber).padStart(2, "0")}{" "}
+              <span>de {String(totalQuestions).padStart(2, "0")}</span>
+            </p>
+          }
+          timer={timer}
+          right={
+            typeof livesRemaining === "number" && typeof totalLives === "number" ? (
+              <div className={variantStyles.headerActions}>
+                <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
+                {timer}
+              </div>
+            ) : undefined
+          }
+        />
+      )}
+      <section
+        className={`${styles.questionCard} ${pyramidPresentation ? styles.pyramidQuestionCard : ""}`}
+        aria-labelledby={titleId}
+      >
         {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
         <h1 id={titleId}>{prompt.title}</h1>
         {question.type === "mini-wordle" ? (

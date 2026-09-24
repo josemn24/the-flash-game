@@ -472,6 +472,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await expect(member.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
       await member.getByRole("button", { name: "Empezar desafío" }).click();
       await expect(member.getByRole("heading", { name: "Briefing 1" })).toBeVisible();
+      await expect(member.getByRole("list", { name: "Niveles de La Pirámide" })).toBeVisible();
       await member.reload();
       await expect(member.getByRole("heading", { name: "Briefing 1" })).toBeVisible();
       expect(await member.content()).not.toContain("A presión normal, sí.");
@@ -483,7 +484,26 @@ test.describe("S15 — La Pirámide competitiva", () => {
           await expect(
             member.getByRole("heading", { name: /agua se congela a 0 °C/ }),
           ).toBeVisible();
+          await expect(member.getByRole("list", { name: "Niveles de La Pirámide" })).toHaveCount(0);
+          await expect(member.getByRole("timer")).toBeVisible();
+          await member.setViewportSize({ width: 390, height: 844 });
+          await expect(member.getByRole("list", { name: "Niveles de La Pirámide" })).toHaveCount(0);
+          await expect(member.getByRole("timer")).toBeVisible();
+          await expect(member.locator("header").getByText(/Nivel 1/)).toBeVisible();
+          await member.setViewportSize({ width: 1280, height: 720 });
+          await expect(member.locator("p[aria-label='Nivel 1 de 7']")).toBeVisible();
+          let failFirstAnswerRequest = true;
+          await member.route("**/api/competitive/attempts/*/answer", async (route) => {
+            if (failFirstAnswerRequest) {
+              failFirstAnswerRequest = false;
+              await route.abort();
+              return;
+            }
+            await route.continue();
+          });
           await member.getByRole("button", { name: "Verdadero" }).click();
+          await expect(member.getByText("No hemos podido confirmar tu respuesta.")).toBeVisible();
+          await member.getByRole("button", { name: "Reintentar" }).click();
         } else if (level === 2) {
           await expect(member.getByRole("heading", { name: /Ordena las letras/ })).toBeVisible();
           await member.getByRole("button", { name: "Mover B arriba" }).click();
@@ -540,6 +560,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
       );
       expect(score).toBe(100);
       await member.getByRole("button", { name: "Ver respuestas" }).click();
+      await expect(member.locator("details")).toHaveCount(7);
       const reviewExplanations = [
         [0, "A presión normal, sí."],
         [1, "El orden alfabético es A, B, C."],
@@ -578,6 +599,9 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await owner.getByRole("button", { name: "Clasificar Gato como Animal" }).click();
       await owner.getByRole("button", { name: "Clasificar Rosa como Animal" }).click();
       await owner.getByRole("button", { name: "Confirmar clasificación" }).click();
+      await expect(owner.getByRole("heading", { name: "Casi." })).toBeVisible({
+        timeout: 10_000,
+      });
       await expect(owner.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible({
         timeout: 20_000,
       });
@@ -586,6 +610,8 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await expect(
         owner.locator('section[aria-labelledby="challenge-result-title"] strong').first(),
       ).toHaveText("28");
+      await expect(owner.getByText("Niveles superados", { exact: true })).toBeVisible();
+      await expect(owner.getByText("Niveles alcanzados", { exact: true })).toBeVisible();
       await owner.getByRole("button", { name: "Ver respuestas" }).click();
       const thirdAnswer = owner.locator("details").nth(2);
       await thirdAnswer.locator("summary").click();
@@ -594,7 +620,11 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await expect(owner.getByText("Nivel 1", { exact: true })).toBeVisible();
       await expect(owner.getByText("Nivel 2", { exact: true })).toBeVisible();
       await expect(owner.getByText("Nivel 3", { exact: true })).toBeVisible();
-      await expect(owner.getByText("Nivel 4", { exact: true })).toHaveCount(0);
+      await expect(owner.locator("details")).toHaveCount(7);
+      const lockedFourthLevel = owner.locator("details").nth(3);
+      await expect(lockedFourthLevel.getByText("Nivel 4", { exact: true })).toBeVisible();
+      await expect(lockedFourthLevel.getByText("No alcanzado", { exact: true })).toBeVisible();
+      await expect(owner.getByText(/Nivel 4: ¿qué color se mezcla/)).toHaveCount(0);
 
       await signIn(interrupted, data.users.interrupted);
       await interrupted.goto(`/salas/${room.roomSlug}`);
@@ -613,8 +643,12 @@ test.describe("S15 — La Pirámide competitiva", () => {
         timeout: 20_000,
       });
       await interrupted.getByRole("button", { name: "Ver respuestas" }).click();
+      await expect(interrupted.locator("details")).toHaveCount(7);
       await expect(interrupted.getByText("Nivel 1", { exact: true })).toBeVisible();
-      await expect(interrupted.getByText("Nivel 2", { exact: true })).toHaveCount(0);
+      const lockedSecondLevel = interrupted.locator("details").nth(1);
+      await expect(lockedSecondLevel.getByText("Nivel 2", { exact: true })).toBeVisible();
+      await expect(lockedSecondLevel.getByText("No alcanzado", { exact: true })).toBeVisible();
+      await expect(interrupted.getByText("Ordena las letras", { exact: false })).toHaveCount(0);
 
       await signIn(spectator, data.users.spectator);
       await spectator.goto(playableUrl);

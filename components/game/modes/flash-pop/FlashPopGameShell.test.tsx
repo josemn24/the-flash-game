@@ -25,4 +25,20 @@ describe("FlashPopGameShell", () => {
     expect(markup).toContain('data-gameplay-layout="intro"');
     expect(markup).toContain("Introducción");
   });
+
+  it("applies the mock canvas rhythm only to the pyramid presentation", () => {
+    const pyramidMarkup = renderToStaticMarkup(
+      <FlashPopGameShell layout="game" presentation="pyramid">
+        <section>La Pirámide</section>
+      </FlashPopGameShell>,
+    );
+    const defaultMarkup = renderToStaticMarkup(
+      <FlashPopGameShell layout="game">
+        <section>Flash</section>
+      </FlashPopGameShell>,
+    );
+
+    expect(pyramidMarkup).toContain("pyramidScreen");
+    expect(defaultMarkup).not.toContain("pyramidScreen");
+  });
 });

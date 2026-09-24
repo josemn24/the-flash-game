@@ -46,7 +46,11 @@ export function ServerWordHashtagQuestion({
     submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
 
   return (
-    <section className={styles.root} aria-label="Hashtag de cuatro palabras" data-format="word-hashtag">
+    <section
+      className={styles.root}
+      aria-label="Hashtag de cuatro palabras"
+      data-format="word-hashtag"
+    >
       <div className={styles.header}>
         <span>Tablero de palabras</span>
         <strong>
@@ -86,7 +90,7 @@ export function ServerWordHashtagQuestion({
           <strong>{question.progress.movesUsed}</strong> movimientos usados
         </span>
       </div>
-      <p className={styles.instructions}>Selecciona dos fichas para solicitar un intercambio al servidor.</p>
+      <p className={styles.instructions}>Selecciona dos fichas para intercambiarlas.</p>
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {selectedCell === null ? "Selecciona una letra." : "Letra seleccionada. Elige otra letra."}
       </p>

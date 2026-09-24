@@ -2,18 +2,65 @@
 
 import { motion } from "motion/react";
 import { ArrowIcon, Button, Card, CheckIcon } from "@/components/ui";
+import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { ChallengeResultScreen } from "@/components/game/shared";
 import { ServerFlashQuestionStage, StartCountdown } from "@/components/game/shared";
-import { Transition } from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
-import { calculateResultAccuracy, getAnswerResultAccuracyUnit } from "@/features/game/resultSummary";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import type { PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
-import type { GameRoomContext } from "@/types/game";
+import type { AnswerResult, GameRoomContext } from "@/types/game";
 import type { ServerFlashTerminalReview, ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import styles from "./FlashPopPyramidGame.module.css";
+
+function formatTime(seconds: number) {
+  const rounded = Math.max(0, Math.round(seconds));
+  if (rounded < 60) return `${rounded} s`;
+  const minutes = Math.floor(rounded / 60);
+  const rest = rounded % 60;
+  return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
+}
+
+function PyramidFeedback({
+  result,
+  levelLabel,
+  isLast,
+}: {
+  result: AnswerResult;
+  levelLabel: string;
+  isLast: boolean;
+}) {
+  const passed = result.status === "correct" && result.isCorrect;
+  const timedOut = result.status === "unanswered";
+  const status = passed ? "correct" : timedOut ? "unanswered" : "incorrect";
+  const title = passed
+    ? isLast
+      ? "Desafío completado"
+      : "Nivel superado"
+    : timedOut
+      ? "¡Se escapó por poco!"
+      : "Casi.";
+  const body = passed
+    ? isLast
+      ? "Has superado todos los niveles."
+      : "Preparando la siguiente pregunta…"
+    : "El ascenso termina en este nivel.";
+
+  return (
+    <FlashPopFeedback
+      status={status}
+      eyebrow={levelLabel}
+      title={title}
+      body={body}
+      points={passed ? result.points : undefined}
+    />
+  );
+}
 
 function PyramidLevelMap({
   challenge,
@@ -65,7 +112,18 @@ export function ServerFlashPopPyramidGame({
   const totalTime = session.results.reduce((sum, result) => sum + result.timeUsed, 0);
   const accuracy = calculateResultAccuracy(session.results.map(getAnswerResultAccuracyUnit));
   const outcome = session.pyramidProgress?.outcome;
-  const reviewChallenge = session.reviewChallenge?.mode === "pyramid" ? session.reviewChallenge : null;
+  const reviewChallenge =
+    session.reviewChallenge?.mode === "pyramid" ? session.reviewChallenge : null;
+  const reviewLevels = challenge.levels.map((level) => {
+    const reached = reviewChallenge?.levels.find((reviewLevel) => reviewLevel.id === level.levelId);
+    return {
+      id: level.levelId,
+      resultQuestionId: level.id,
+      label: level.label,
+      briefingTitle: level.briefing.title,
+      ...(reached ? { question: reached.question } : {}),
+    };
+  });
   const reviewSummary: PyramidAttemptSummary = {
     challengeId: challenge.id,
     startedAt: 0,
@@ -77,7 +135,7 @@ export function ServerFlashPopPyramidGame({
   };
 
   return (
-    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
+    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"} presentation="pyramid">
       {session.phase === "intro" ? (
         <ChallengeIntro
           introduction={{
@@ -96,20 +154,26 @@ export function ServerFlashPopPyramidGame({
       {session.phase === "recovering" ? (
         <Card key="recovering" role="status" aria-live="polite" className="mx-auto mt-12 max-w-xl">
           <h1>Recuperando ascenso</h1>
-          <p className="mt-2">Comprobamos el nivel y las respuestas confirmadas antes de continuar.</p>
+          <p className="mt-2">
+            Comprobamos el nivel y las respuestas confirmadas antes de continuar.
+          </p>
         </Card>
       ) : null}
 
       {session.phase === "briefing" && currentLevel ? (
         <motion.div className={styles.briefing} key={`briefing-${currentLevel.id}`}>
           <PyramidLevelMap challenge={challenge} currentIndex={session.questionIndex} />
-          <Card as="section" className={styles.briefingCard} aria-labelledby="pyramid-briefing-title">
+          <Card
+            as="section"
+            className={styles.briefingCard}
+            aria-labelledby="pyramid-briefing-title"
+          >
             <p className={styles.briefingFormat}>{currentLevel.briefing.format}</p>
             <h1 id="pyramid-briefing-title">{currentLevel.briefing.title}</h1>
             <p className={styles.briefingDescription}>{currentLevel.briefing.description}</p>
             <div className={styles.briefingStats} aria-label="Condiciones del nivel">
               <div className={styles.briefingStat}>
-                <strong>{Math.round(currentLevel.timeLimitMs / 1000)} s</strong>
+                <strong>{formatTime(currentLevel.timeLimitMs / 1000)}</strong>
                 <span>tiempo límite</span>
               </div>
               <div className={styles.briefingStat}>
@@ -117,7 +181,12 @@ export function ServerFlashPopPyramidGame({
                 <span>máximo</span>
               </div>
             </div>
-            <Button size="hero" fullWidth trailingIcon={<ArrowIcon />} onClick={session.startQuestions}>
+            <Button
+              size="hero"
+              fullWidth
+              trailingIcon={<ArrowIcon />}
+              onClick={session.startQuestions}
+            >
               Empezar nivel
             </Button>
           </Card>
@@ -129,9 +198,9 @@ export function ServerFlashPopPyramidGame({
       ) : null}
 
       {session.phase === "playing" && session.question ? (
-        <motion.div className={styles.stageFrame} key={session.question.id}>
-          <PyramidLevelMap challenge={challenge} currentIndex={session.questionIndex} />
+        <motion.div className={styles.question} key={session.question.id}>
           <ServerFlashQuestionStage
+            presentation="pyramid"
             question={session.question}
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.levels.length}
@@ -166,7 +235,9 @@ export function ServerFlashPopPyramidGame({
               void session.submitWordSearchSelection(startCell, endCell)
             }
             onRetryWordSearch={() => void session.retryWordSearchSelection()}
-            onWordHashtagSwap={(fromCell, toCell) => void session.submitWordHashtagSwap(fromCell, toCell)}
+            onWordHashtagSwap={(fromCell, toCell) =>
+              void session.submitWordHashtagSwap(fromCell, toCell)
+            }
             revealState={session.revealState}
             revealStatusVisible={session.revealStatusVisible}
             revealError={session.revealError}
@@ -187,11 +258,11 @@ export function ServerFlashPopPyramidGame({
         </motion.div>
       ) : null}
 
-      {session.phase === "transition" ? (
-        <Transition
+      {session.phase === "transition" && session.lastResult ? (
+        <PyramidFeedback
           key={`transition-${session.questionIndex}`}
           result={session.lastResult}
-          timedOut={session.lastResult?.status === "unanswered"}
+          levelLabel={currentLevel?.label ?? `Nivel ${session.questionIndex + 1}`}
           isLast={session.isTerminalQuestion}
         />
       ) : null}
@@ -234,6 +305,8 @@ export function ServerFlashPopPyramidGame({
           challenge={reviewChallenge}
           results={session.results}
           summary={reviewSummary}
+          levelMetadata={reviewLevels}
+          totalLevelCount={challenge.levels.length}
           onBack={session.showResults}
         />
       ) : null}

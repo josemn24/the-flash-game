@@ -5,6 +5,20 @@
     justify-content: center;
   }
 
+  .pyramidScreen {
+    min-height: 100dvh;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+    padding-bottom: max(var(--space-10), env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 720px) {
+    .pyramidScreen {
+      gap: var(--space-8);
+    }
+  }
+
   .introCanvasContent {
     width: 100%;
     max-width: none;

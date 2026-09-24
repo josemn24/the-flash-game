@@ -1,6 +1,12 @@
 "use client";
 
-import { type KeyboardEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ServerOperationStatus } from "@/components/questions/shared";
 import {
   applyZipCellSelection,
@@ -164,17 +170,10 @@ export function ServerZipQuestion({
   };
 
   const statusVisible =
-    submissionState === "error" ||
-    (submissionState === "submitting" && submissionStatusVisible);
+    submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
 
   return (
     <section className={styles.root} aria-label="Zip, una línea">
-      <div className={styles.header}>
-        <strong>
-          {metrics.coveredCells}/{metrics.totalCells} · {metrics.reachedCheckpoint}/
-          {metrics.totalCheckpoints}
-        </strong>
-      </div>
       <ZipBoard
         question={{ ...question, boardLabel: question.boardLabel ?? undefined }}
         path={path}
@@ -187,6 +186,24 @@ export function ServerZipQuestion({
         disabled={locked}
         label={question.boardLabel ?? "Tablero Zip. Usa las flechas, el tacto o el arrastre."}
       />
+      {question.checkpoints.some((checkpoint) => checkpoint.label) ? (
+        <ol className={styles.legend} aria-label="Puntos de observación">
+          {question.checkpoints.map((checkpoint) => (
+            <li key={checkpoint.value}>
+              <span>{checkpoint.value}</span>
+              {checkpoint.label}
+            </li>
+          ))}
+        </ol>
+      ) : null}
+      <div className={styles.serverMetrics} aria-label="Progreso del recorrido">
+        <span>
+          {metrics.coveredCells}/{metrics.totalCells} celdas
+        </span>
+        <span>
+          {metrics.reachedCheckpoint}/{metrics.totalCheckpoints} checkpoints
+        </span>
+      </div>
       <p className={styles.instructions}>
         {question.instruction ?? "Usa cada celda una sola vez."}
       </p>

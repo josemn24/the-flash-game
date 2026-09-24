@@ -8,6 +8,12 @@
     gap: var(--space-6);
   }
 
+  .pyramidStage {
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+  }
+
   .questionIndicator {
     margin: 0;
     color: var(--color-ink);
@@ -40,6 +46,15 @@
     font-weight: var(--type-display-strong-weight);
     letter-spacing: var(--type-display-strong-tracking);
     line-height: 0.98;
+  }
+
+  .pyramidQuestionCard h1 {
+    max-width: none;
+    margin: 8px 0 0;
+    font-size: clamp(24px, 6.4vw, 32px);
+    letter-spacing: -0.045em;
+    line-height: 1.04;
+    text-wrap: pretty;
   }
 
   .promptContext {
