@@ -63,7 +63,7 @@ npm run supabase:browser:setup -- --with-history
 
 ## Alpha local de Tabarnia
 
-Para preparar la sala realista de la alpha con sus doce jugadores, una temporada activa y tres
+Para preparar la sala realista de la alpha con sus doce jugadores, una temporada activa y cuatro
 desafíos competitivos:
 
 ```bash
@@ -73,10 +73,11 @@ npm run dev
 ```
 
 El setup crea 13 cuentas Auth: `xesmona` como superadmin fuera de la sala, `Ches` como propietario
-y jugador, y otros once miembros jugadores. Programa «Biblia y religiones abrahámicas» en el modo
-La Pirámide (7 niveles, 100 puntos) como desafío actual; Steel Ball Run (16 retos, 100 puntos) queda en segundo
-lugar y Supervivencia: España (20 preguntas, 3 vidas, 100 puntos) cierra la secuencia, en ventanas
-consecutivas de 24 horas.
+y jugador, y otros once miembros jugadores. Programa «Reino de animales» en modo Alphabet (18
+letras, 135 segundos, 100 puntos) como desafío actual; «Biblia y religiones abrahámicas» en La
+Pirámide (7 niveles, 100 puntos), Steel Ball Run (16 retos, 100 puntos) y Supervivencia: España
+(20 preguntas, 3 vidas, 100 puntos) quedan detrás, en ese orden y en ventanas consecutivas de 24
+horas.
 
 Las credenciales fijas y los IDs generados se guardan en `output/fixtures/tabarnia.json`, una ruta
 ignorada por Git. El comando reinicia Supabase local en cada ejecución, carga los diccionarios de
@@ -90,7 +91,7 @@ El setup realiza estas operaciones únicamente contra Supabase local:
 2. Carga el diccionario de Mini-Wordle.
 3. Crea las 13 cuentas Auth y aprovisiona sus `players`.
 4. Carga los recursos de imagen privados, crea la sala, temporada y publicaciones.
-5. Escribe `output/fixtures/tabarnia.json` con las cuentas y metadatos de los tres desafíos.
+5. Escribe `output/fixtures/tabarnia.json` con las cuentas y metadatos de los cuatro desafíos.
 
 El comando imprime las credenciales locales y la ruta del desafío que está abierto. No reutilices
 esas credenciales contra un proyecto remoto.

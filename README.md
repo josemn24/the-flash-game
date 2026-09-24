@@ -82,7 +82,7 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 | `npm run supabase:start`          | Inicia el stack local de Supabase.                                                                      |
 | `npm run supabase:status`         | Muestra el estado del stack local de Supabase.                                                          |
 | `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                |
-| `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con Steel Ball Run y sus siete avatares. |
+| `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
 | `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                                         |
 | `npm run schema:revision:check`   | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.              |
 | `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                                         |

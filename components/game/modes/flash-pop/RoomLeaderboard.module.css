@@ -96,7 +96,6 @@
     outline-offset: 3px;
   }
 
-  .playerCard.current,
   .playerCard.selected {
     border-color: var(--color-social);
     background: var(--color-surface-soft);
@@ -199,7 +198,7 @@
     transform: translateX(2px);
   }
 
-  .current {
+  .row.current {
     background: var(--color-surface-soft);
   }
 

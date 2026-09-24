@@ -84,7 +84,9 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
-  test("Ches ve La Pirámide como primera publicación del orden Tabarnia", async ({ page }) => {
+  test("Ches ve y juega Reino de animales como primera publicación de Tabarnia", async ({
+    page,
+  }) => {
     const data = await fixture();
     await signIn(page, data.users.ches);
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
@@ -106,22 +108,33 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("link", { name: "Volver al detalle de la sala" }).click();
 
     await page.getByRole("link", { name: "Jugar" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Biblia y religiones abrahámicas" }).first(),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Reino de animales" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
+    await page.getByRole("button", { name: "Empezar desafío" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Mamífero protegido por una coraza de placas óseas." }),
+    ).toBeVisible({ timeout: 10_000 });
+    await page.getByLabel("Tu respuesta").fill("armadillo");
+    await page.getByRole("button", { name: "Responder" }).click();
+    await expect(page.getByRole("status").getByText("Correcto")).toBeVisible();
+
     expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
     expect(data.data.publications[0]).toMatchObject({
-      title: "Biblia y religiones abrahámicas",
-      mode: "pyramid",
+      title: "Reino de animales",
+      mode: "alphabet",
       status: "open",
     });
     expect(data.data.publications[1]).toMatchObject({
+      title: "Biblia y religiones abrahámicas",
+      mode: "pyramid",
+      status: "scheduled",
+    });
+    expect(data.data.publications[2]).toMatchObject({
       title: "Steel Ball Run",
       mode: "flash",
       status: "scheduled",
     });
-    expect(data.data.publications.at(-1)).toMatchObject({
+    expect(data.data.publications[3]).toMatchObject({
       title: "Supervivencia: España",
       mode: "survival",
       status: "scheduled",
