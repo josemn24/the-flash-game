@@ -62,6 +62,11 @@
     line-height: 1;
   }
 
+  .reviewPanelHeadingCompact h1 {
+    font-size: clamp(28px, 4.5vw, 36px);
+    line-height: 1.1;
+  }
+
   .reviewPanelCount {
     display: inline-flex;
     min-height: 44px;
@@ -339,6 +344,10 @@
 
     .reviewPanelHeading h1 {
       font-size: clamp(32px, 8.5vw, 40px);
+    }
+
+    .reviewPanelHeadingCompact h1 {
+      font-size: clamp(27px, 7vw, 32px);
     }
 
     .reviewPanelCount {

@@ -418,6 +418,9 @@ function Review({ challenge, session }: { challenge: AlphabetChallenge; session:
       showMeta: false,
     };
   });
+  const correctCount = entries.filter(
+    (entry) => entry.result.status === "correct" && entry.result.isCorrect,
+  ).length;
 
   return (
     <motion.section
@@ -426,19 +429,14 @@ function Review({ challenge, session }: { challenge: AlphabetChallenge; session:
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <AlphabetTopbar
-        challengeTitle={challenge.title}
-        right={
-          <button className={styles.resultsBack} type="button" onClick={session.showResults}>
-            Resultados
-          </button>
-        }
-      />
       <ReviewAnswerPanel
         entries={entries}
-        countLabel={`${entries.length} respuestas`}
+        countLabel={`${correctCount} de ${entries.length} letras acertadas`}
         title="Historial de respuestas"
-        description="Consulta tu respuesta, la solución aceptada y la explicación de cada letra."
+        progress={{ value: correctCount, max: entries.length }}
+        progressLabel="Letras acertadas"
+        compactHeading
+        backAtTop
         onBack={session.showResults}
         onReplay={session.replay}
         backLabel="Volver a resultados"

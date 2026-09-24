@@ -236,14 +236,20 @@ export function AlphabetReviewPresentation({
   onBack: () => void;
   onReplay?: () => void;
 }) {
+  const correctCount = entries.filter(
+    (entry) => entry.result?.status === "correct" && entry.result.isCorrect,
+  ).length;
+
   return (
     <div className={styles.stage}>
-      <GameHeader title="Alfabeto" />
       <ReviewAnswerPanel
         entries={entries}
-        countLabel={`${entries.length} respuestas`}
+        countLabel={`${correctCount} de ${entries.length} letras acertadas`}
         title="Historial de respuestas"
-        description="Consulta tu respuesta, la solución aceptada y la explicación de cada letra."
+        progress={{ value: correctCount, max: entries.length }}
+        progressLabel="Letras acertadas"
+        compactHeading
+        backAtTop
         onBack={onBack}
         onReplay={onReplay}
       />

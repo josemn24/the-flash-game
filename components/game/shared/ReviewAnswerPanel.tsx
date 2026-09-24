@@ -10,6 +10,8 @@ export function ReviewAnswerPanel({
   title = "Historial de respuestas",
   description,
   progress,
+  progressLabel = "Niveles superados",
+  compactHeading = false,
   backAtTop = false,
   onBack,
   onReplay,
@@ -23,6 +25,8 @@ export function ReviewAnswerPanel({
   title?: string;
   description?: string;
   progress?: { value: number; max: number };
+  progressLabel?: string;
+  compactHeading?: boolean;
   backAtTop?: boolean;
   onBack?: () => void;
   onReplay?: () => void;
@@ -50,7 +54,9 @@ export function ReviewAnswerPanel({
         </button>
       ) : null}
 
-      <div className={styles.reviewPanelHeading}>
+      <div
+        className={`${styles.reviewPanelHeading} ${compactHeading ? styles.reviewPanelHeadingCompact : ""}`}
+      >
         <div>
           <h1 id="review-answers-title">{title}</h1>
         </div>
@@ -65,7 +71,7 @@ export function ReviewAnswerPanel({
           <div
             className={styles.reviewPanelProgressTrack}
             role="progressbar"
-            aria-label="Niveles superados"
+            aria-label={progressLabel}
             aria-valuetext={countLabel}
             aria-valuemin={0}
             aria-valuemax={progress.max}
