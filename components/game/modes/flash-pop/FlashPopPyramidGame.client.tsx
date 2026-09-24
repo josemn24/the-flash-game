@@ -572,7 +572,6 @@ export function FlashPopPyramidGame({
               exit={{ opacity: 0 }}
             >
               <div className={styles.review}>
-                <Topbar />
                 <FlashPopReview
                   challenge={scoredChallenge}
                   results={session.record.results}

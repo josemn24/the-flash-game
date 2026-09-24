@@ -70,9 +70,13 @@ export function FlashPopReview({
   return (
     <ReviewAnswerPanel
       entries={entries}
-      countLabel={`${summary.levelsCleared}/${totalLevelCount ?? challenge.levels.length} niveles`}
+      countLabel={`${summary.levelsCleared} de ${totalLevelCount ?? challenge.levels.length} superados`}
+      progress={{
+        value: summary.levelsCleared,
+        max: totalLevelCount ?? challenge.levels.length,
+      }}
+      backAtTop
       title="Historial de respuestas"
-      description="Consulta cada nivel alcanzado y descubre dónde terminó tu ascenso."
       onBack={onBack}
       onReplay={onReplay}
     />

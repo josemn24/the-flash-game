@@ -34,7 +34,7 @@ describe("FlashPopReview", () => {
       />,
     );
 
-    expect(markup).toContain("Volver al resultado");
+    expect(markup).toContain('aria-label="Volver al resultado"');
     expect(markup).not.toContain("Jugar de nuevo");
     expect(markup).toContain("Historial de respuestas");
     expect(markup).toContain("No alcanzado");
