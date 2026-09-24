@@ -65,3 +65,13 @@ export class RoomMembershipCommandError extends Error {
     this.code = code;
   }
 }
+
+export class SuperadminUserCommandError extends Error {
+  readonly code: string;
+
+  constructor(code: string, cause?: unknown) {
+    super(code, { cause });
+    this.name = "SuperadminUserCommandError";
+    this.code = code;
+  }
+}

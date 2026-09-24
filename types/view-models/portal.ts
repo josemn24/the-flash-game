@@ -84,7 +84,7 @@ export type SuperadminPortalContext = {
   readonly calendar?: SuperadminCalendarContext;
 };
 
-export type AdminSection = "overview" | "rooms" | "challenges" | "questions";
+export type AdminSection = "overview" | "rooms" | "challenges" | "questions" | "users";
 
 export type SuperadminDashboardRoom = {
   readonly roomId: string;

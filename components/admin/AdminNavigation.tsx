@@ -7,6 +7,7 @@ export const ADMIN_NAV_ITEMS = [
   { id: "rooms", label: "Salas", href: "/admin/rooms" },
   { id: "challenges", label: "Desafíos", href: "/admin/challenges" },
   { id: "questions", label: "Preguntas", href: "/admin/questions" },
+  { id: "users", label: "Usuarios", href: "/admin/users" },
 ] as const satisfies ReadonlyArray<{ id: AdminSection; label: string; href: string }>;
 
 type AdminNavigationProps = {

@@ -1,8 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: S15 probado sobre PostgreSQL 17 de Supabase local el 2026-09-23. Los 46 archivos
+Estado: S15 probado sobre PostgreSQL 17 de Supabase local el 2026-09-23. Los 47 archivos
 declarativos, el inventario, pgTAP y las carreras pasan; la migración incremental
-`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones incrementales `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden el formato de recibo Word Search y los indicadores de casillas correctas de Word Hashtag; aún no se han aplicado a una base persistente. No hay proyecto remoto vinculado.
+`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal. Las migraciones del 2026-09-24 aún no se han aplicado a una base persistente. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -129,6 +129,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [50_access_helpers.sql](50_access_helpers.sql)                               | Resolución del jugador y ayudas RLS sin recursión.                                                                                                              |
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)                           | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                                             |
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql)           | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal.                                                      |
+| [58_superadmin_user_commands.sql](58_superadmin_user_commands.sql)            | Provisioning auditado/idempotente de perfiles vinculados a Auth y membresías de sala para superadmins; no almacena credenciales.                               |
 | [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql) | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash/Supervivencia/Pirámide desde el portal; no añade tablas ni columnas.    |
 | [61_question_library.sql](61_question_library.sql)                           | Biblioteca protegida de preguntas standalone, historial de versiones, publicación/archivo e índice para impedir duplicados de una versión dentro de un desafío. |
 | [62_media_assets.sql](62_media_assets.sql)                                   | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |

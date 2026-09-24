@@ -12,6 +12,8 @@ describe("AdminNavigation", () => {
     expect(markup).toContain("Desafíos");
     expect(markup).not.toContain("Contenido Flash");
     expect(markup).toContain('href="/admin/questions"');
+    expect(markup).toContain('href="/admin/users"');
+    expect(markup).toContain("Usuarios");
     expect(markup).not.toContain('href="/admin/seasons"');
     expect(markup).not.toContain('href="/admin/calendar"');
   });

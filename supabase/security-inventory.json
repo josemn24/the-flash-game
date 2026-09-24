@@ -249,7 +249,17 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.add_superadmin_room_member_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.create_room_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_superadmin_player_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": []
@@ -839,12 +849,22 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.add_superadmin_room_member": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.manage_room_member": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
     "public.create_superadmin_room": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_player": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]

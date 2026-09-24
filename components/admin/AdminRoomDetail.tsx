@@ -119,7 +119,11 @@ export function AdminRoomDetail({
 
       {tab === "seasons" ? <SeasonManagement room={model.room} /> : null}
       {tab === "members" ? (
-        <AdminRoomMembers members={model.members} timeZone={model.room.timeZone} />
+        <AdminRoomMembers
+          roomId={model.room.roomId}
+          members={model.members}
+          timeZone={model.room.timeZone}
+        />
       ) : null}
       {tab === "calendar" ? (
         <CalendarManagement

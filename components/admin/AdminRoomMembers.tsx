@@ -2,6 +2,7 @@ import { Avatar, Card, Chip } from "@/components/ui";
 import type { SuperadminRoomMember } from "@/types/view-models";
 import { AdminEmptyState } from "./AdminEmptyState";
 import { AdminSectionHeader } from "./AdminSectionHeader";
+import { AddSuperadminRoomMember } from "./AddSuperadminRoomMember.client";
 import styles from "./AdminRoomMembers.module.css";
 
 const roleLabels: Record<SuperadminRoomMember["role"], string> = {
@@ -18,9 +19,11 @@ function joinedDate(value: string, timeZone: string) {
 }
 
 export function AdminRoomMembers({
+  roomId,
   members,
   timeZone,
 }: {
+  readonly roomId: string;
   readonly members: readonly SuperadminRoomMember[];
   readonly timeZone: string;
 }) {
@@ -59,6 +62,7 @@ export function AdminRoomMembers({
           ))}
         </div>
       )}
+      <AddSuperadminRoomMember roomId={roomId} />
     </section>
   );
 }
