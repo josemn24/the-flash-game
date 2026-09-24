@@ -44,6 +44,7 @@ import {
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { getWordSearchPath } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
+import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
 import {
@@ -604,7 +605,14 @@ export function questionFromPayload(
         : typeof rawProgress.totalClues === "number"
           ? rawProgress.totalClues
           : rawClues.length;
-    const cluePenalty = typeof value.cluePenalty === "number" ? value.cluePenalty : Number.NaN;
+    const editorialCluePenalty =
+      typeof value.cluePenalty === "number" ? value.cluePenalty : Number.NaN;
+    const cluePenalty =
+      typeof rawProgress.cluePenalty === "number"
+        ? rawProgress.cluePenalty
+        : Number.isSafeInteger(editorialCluePenalty) && editorialCluePenalty >= 0
+          ? scaleProgressiveCluePenalty(editorialCluePenalty, 100, points)
+          : Number.NaN;
     const revealedClues =
       typeof rawProgress.revealedClues === "number" ? rawProgress.revealedClues : rawClues.length;
     const availablePoints =

@@ -552,8 +552,11 @@ test.describe("S15 — La Pirámide competitiva", () => {
             member.getByRole("heading", { name: /Qué personaje bíblico soy/ }),
           ).toBeVisible();
           await expect(member.getByText("Máximo: 12 pts")).toBeVisible();
-          await member.getByRole("button", { name: "Revelar otra pista" }).click();
+          const revealClue = member.getByRole("button", { name: /Revelar otra pista/ });
+          await expect(revealClue).toContainText("−2 pts");
+          await revealClue.click();
           await expect(member.getByText("Máximo: 10 pts")).toBeVisible();
+          await expect(revealClue).toContainText("−2 pts");
           await member.getByLabel("Escribe tu respuesta").fill("Abraham");
           await member.getByRole("button", { name: "Enviar respuesta" }).click();
         } else if (level === 3) {

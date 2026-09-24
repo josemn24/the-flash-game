@@ -636,12 +636,40 @@ describe("server flash question adapter", () => {
       type: "progressive-clues",
       clues: ["Ocurrió en Europa."],
       totalClues: 3,
-      cluePenalty: 25,
-      progress: { revealedClues: 1, availablePoints: 80 },
+      cluePenalty: 40,
+      progress: { revealedClues: 1, availablePoints: 80, cluePenalty: 40 },
     });
     if (question.type !== "progressive-clues") throw new Error("Expected Progressive-clues");
     expect(question.clues).not.toContain("Pista futura");
     expect(question).not.toHaveProperty("correctAnswer");
+  });
+
+  it("scales the editorial Progressive-clues penalty when effective progress is missing", () => {
+    const question = questionFromPayload(
+      "item-progressive-fallback",
+      {
+        category: "Historia",
+        question: "Identifica el acontecimiento",
+        clueCount: 3,
+        cluePenalty: 25,
+      },
+      30_000,
+      80,
+      "progressive-clues",
+      {
+        kind: "progressive-clues",
+        clues: ["Ocurrió en Europa."],
+        revealedClues: 1,
+        totalClues: 3,
+        availablePoints: 80,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "progressive-clues",
+      cluePenalty: 20,
+      progress: { cluePenalty: 20 },
+    });
   });
 
   it("maps the complete Progressive-clues payload only for review", () => {
