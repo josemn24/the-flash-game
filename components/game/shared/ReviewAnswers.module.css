@@ -184,6 +184,27 @@
     padding: 0 var(--space-4) var(--space-5) 68px;
   }
 
+  .reviewAnswerBody .wordSearchReviewList li {
+    border-color: var(--color-border);
+    color: var(--color-ink-muted);
+    background: var(--color-surface-raised);
+  }
+
+  .reviewAnswerBody .wordSearchReviewList li > svg,
+  .reviewAnswerBody .wordSearchReviewList li > span:first-child {
+    color: var(--color-ink-muted);
+  }
+
+  .reviewAnswerBody .wordSearchReviewList .wordSearchReviewFound {
+    border-color: color-mix(in srgb, var(--state-correct) 42%, var(--color-surface));
+    color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 8%, var(--color-surface));
+  }
+
+  .reviewAnswerBody .wordSearchReviewList .wordSearchReviewFound > svg {
+    color: var(--state-correct);
+  }
+
   .reviewAnswerMeta {
     color: var(--color-ink);
     font-family: var(--type-mono);
@@ -966,14 +987,6 @@
     color: rgba(255, 255, 255, 0.68);
     background: var(--state-neutral);
   }
-  .wordHashtagReviewCorrect {
-    color: var(--color-text-on-success);
-    background: var(--state-correct);
-  }
-  .wordHashtagReviewDisplaced {
-    background: var(--state-movable);
-  }
-
   /* Keep every specialized review renderer on the Pop palette. */
   .connectPairsReviewGrid {
     display: grid;
@@ -1020,5 +1033,14 @@
     border-radius: clamp(0.35rem, 1vw, 0.58rem);
     box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
     color: var(--color-ink);
+  }
+
+  .wordHashtagReviewCorrect {
+    color: var(--color-text-on-success);
+    background: var(--state-correct);
+  }
+
+  .wordHashtagReviewDisplaced {
+    background: var(--state-movable);
   }
 }

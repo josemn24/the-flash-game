@@ -1234,11 +1234,14 @@ function WordSearchReview({ question, result }: ReviewProps<QuestionOfType<"word
   return (
     <div className="grid gap-4">
       <WordSearchBoard question={question} foundWordIds={answer.foundWordIds} revealSolution />
-      <ul className={wordSearchStyles.wordList} aria-label="Resultado de las palabras objetivo">
+      <ul
+        className={`${wordSearchStyles.wordList} ${styles.wordSearchReviewList}`}
+        aria-label="Resultado de las palabras objetivo"
+      >
         {question.targets.map((target) => {
           const found = foundIds.has(target.id);
           return (
-            <li key={target.id} className={found ? wordSearchStyles.wordFound : ""}>
+            <li key={target.id} className={found ? styles.wordSearchReviewFound : ""}>
               {found ? <CheckIcon aria-hidden="true" /> : <span aria-hidden="true">•</span>}
               <span>{target.word}</span>
               <span className="sr-only">{found ? "encontrada" : "no encontrada"}</span>
