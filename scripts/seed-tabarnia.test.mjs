@@ -101,7 +101,7 @@ describe("Tabarnia seed", () => {
     expect(TABARNIA_USERS.filter((user) => user.role === "member")).toHaveLength(11);
   });
 
-  it("generates three sequential publications in the requested order without history", () => {
+  it("generates four sequential publications in the requested order without history", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),
       sbrAssetMetadata: {
@@ -119,6 +119,7 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
     expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
+    expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
     expect(sql).toContain("'superadmin'");
     expect(sql.match(/'owner'/g)).toHaveLength(1);
     expect(sql.match(/'member'/g)).toHaveLength(11);
@@ -150,6 +151,7 @@ describe("Tabarnia seed", () => {
     const saveFixture = vi.fn();
     const uploadStorageObject = vi.fn();
     const reset = vi.fn();
+    const removeFixture = vi.fn();
     const loadDictionary = vi.fn();
     const cleanupSpainAssets = vi.fn();
     const output = await setupTabarniaDataset({
@@ -159,6 +161,7 @@ describe("Tabarnia seed", () => {
           dbContainer: "supabase_db_test",
         })),
         resetLocalDatabase: reset,
+        removeFixture,
         loadMiniWordleDictionary: loadDictionary,
         createFixedAuthAccounts: vi.fn(async () => accounts()),
         getMapMetadata: vi.fn(async () => ({
@@ -179,6 +182,10 @@ describe("Tabarnia seed", () => {
     });
 
     expect(reset).toHaveBeenCalledOnce();
+    expect(removeFixture).toHaveBeenCalledWith("betavip");
+    expect(removeFixture.mock.invocationCallOrder[0]).toBeLessThan(
+      reset.mock.invocationCallOrder[0],
+    );
     expect(loadDictionary).toHaveBeenCalledOnce();
     expect(reset.mock.invocationCallOrder[0]).toBeLessThan(
       loadDictionary.mock.invocationCallOrder[0],
@@ -197,18 +204,21 @@ describe("Tabarnia seed", () => {
         publication.pointsTotal,
       ]),
     ).toEqual([
+      ["alphabet", 18, 100],
       ["pyramid", 7, 100],
       ["flash", 16, 100],
       ["survival", 20, 100],
     ]);
     expect(output.publicationId).toBe(output.publications[0]?.id);
     expect(output.publications.map((publication) => publication.title)).toEqual([
+      "Reino de animales",
       "Biblia y religiones abrahámicas",
       "Steel Ball Run",
       "Supervivencia: España",
     ]);
     expect(output.publications.map((publication) => publication.status)).toEqual([
       "open",
+      "scheduled",
       "scheduled",
       "scheduled",
     ]);
@@ -229,6 +239,7 @@ describe("Tabarnia seed", () => {
             dbContainer: "supabase_db_test",
           }),
           resetLocalDatabase: vi.fn(),
+          removeFixture: vi.fn(),
           loadMiniWordleDictionary: vi.fn(),
           createFixedAuthAccounts: async () => accounts(),
           getMapMetadata: async () => ({

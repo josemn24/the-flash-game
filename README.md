@@ -70,24 +70,35 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 
 ## Comandos disponibles
 
-| Comando                           | Descripción                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                     | Inicia el servidor de desarrollo.                                                                       |
-| `npm run lint`                    | Comprueba la calidad estática del código.                                                               |
-| `npm run typecheck`               | Valida todos los contratos TypeScript sin emitir código.                                                |
-| `npm run type-architecture`       | Comprueba las dependencias entre las capas de tipos.                                                    |
-| `npm test`                        | Ejecuta los tests unitarios con Vitest.                                                                 |
-| `npm run build`                   | Genera la compilación optimizada de producción.                                                         |
-| `npm run start`                   | Sirve localmente una compilación de producción.                                                         |
-| `npm run supabase:start`          | Inicia el stack local de Supabase.                                                                      |
-| `npm run supabase:status`         | Muestra el estado del stack local de Supabase.                                                          |
-| `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                |
+| Comando                           | Descripción                                                                                              |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Inicia el servidor de desarrollo.                                                                        |
+| `npm run lint`                    | Comprueba la calidad estática del código.                                                                |
+| `npm run typecheck`               | Valida todos los contratos TypeScript sin emitir código.                                                 |
+| `npm run type-architecture`       | Comprueba las dependencias entre las capas de tipos.                                                     |
+| `npm test`                        | Ejecuta los tests unitarios con Vitest.                                                                  |
+| `npm run build`                   | Genera la compilación optimizada de producción.                                                          |
+| `npm run start`                   | Sirve localmente una compilación de producción.                                                          |
+| `npm run supabase:start`          | Inicia el stack local de Supabase.                                                                       |
+| `npm run supabase:status`         | Muestra el estado del stack local de Supabase.                                                           |
+| `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
 | `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
-| `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                                         |
-| `npm run schema:revision:check`   | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.              |
-| `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                                         |
-| `npm run dictionary:check`        | Comprueba que el vocabulario versionado esté actualizado.                                               |
-| `npm run format:check`            | Comprueba el formato con Prettier.                                                                      |
+| `npm run supabase:betavip:setup`  | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo».                    |
+| `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                                          |
+| `npm run schema:revision:check`   | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
+| `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                                          |
+| `npm run dictionary:check`        | Comprueba que el vocabulario versionado esté actualizado.                                                |
+| `npm run format:check`            | Comprueba el formato con Prettier.                                                                       |
+
+Para comprobar el escenario conjunto, ejecuta `npm run supabase:betavip:setup` y después
+`npm run test:integration:supabase -- --scenario betavip`. Vuelve a ejecutar el setup antes de
+`npm run test:e2e -- e2e/betavip.spec.ts` para que las pruebas de navegador empiecen sin la partida
+que crea la integración. Las credenciales locales generadas para Manuel y Genís quedan en
+`output/fixtures/betavip.json`.
+
+En BetaVIP, «La vuelta al mundo» está abierto durante las primeras 24 horas y Steel Ball Run
+queda programado para las 24 siguientes. El manifiesto lista ambas publicaciones en orden;
+`data.publicationId` apunta al Alphabet y `data.steelBallRunPublicationId` a Steel Ball Run.
 
 ## Estructura principal
 

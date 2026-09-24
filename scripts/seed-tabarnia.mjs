@@ -12,6 +12,7 @@ import {
   deterministicUuid,
   dockerSql,
   localSupabaseConfig,
+  removeFixture,
   removeStorageObject,
   resetLocalDatabase,
   sqlString,
@@ -731,6 +732,7 @@ export function tabarniaManifest(accounts, avatarMetadata) {
 export async function setupTabarniaDataset({ dependencies = {} } = {}) {
   const loadConfig = dependencies.localSupabaseConfig ?? localSupabaseConfig;
   const reset = dependencies.resetLocalDatabase ?? resetLocalDatabase;
+  const removeStaleFixture = dependencies.removeFixture ?? removeFixture;
   const createAccounts = dependencies.createFixedAuthAccounts ?? createFixedAuthAccounts;
   const runSql = dependencies.dockerSql ?? dockerSql;
   const saveFixture = dependencies.writeFixture ?? writeFixture;
@@ -743,6 +745,7 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
 
   const config = await loadConfig({ requireServiceRole: true });
   assertLocalTabarniaUrl(config.url);
+  await removeStaleFixture("betavip");
   await reset();
   await loadDictionary({ runSql });
 
