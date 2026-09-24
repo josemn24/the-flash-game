@@ -150,6 +150,155 @@ export const scenario = {
       "El seed no crea intentos históricos",
     );
 
+    const timeoutCheck = await dockerSql(
+      `
+begin;
+do $$
+declare
+  auth_user uuid;
+  token text := 'integration-tabarnia-timeout-token';
+  started jsonb;
+  prepared jsonb;
+  received jsonb;
+  evaluated jsonb;
+  completed jsonb;
+  v_attempt_id uuid;
+  current_item uuid;
+  current_points integer;
+  lock_version bigint;
+  item_count integer;
+  item_index integer;
+  final_status text;
+  final_answer_count integer;
+  final_timeout_count integer;
+  preserved_points integer;
+  final_score integer;
+begin
+  select auth_user_id into auth_user from public.players where id = '${fixture.users.ches.playerId}';
+  perform set_config('request.jwt.claim.sub', auth_user::text, true);
+  perform set_config(
+    'request.jwt.claims',
+    jsonb_build_object('sub', auth_user::text, 'role', 'authenticated', 'is_anonymous', false)::text,
+    true
+  );
+  started := private.execute_command('start', jsonb_build_object(
+    'idempotencyKey', 'integration-tabarnia-timeout-start',
+    'scheduledChallengeId', '${animals.id}'::uuid,
+    'sessionToken', token
+  ));
+  v_attempt_id := (started->>'attemptId')::uuid;
+  lock_version := (started->>'lockVersion')::bigint;
+
+  prepared := private.execute_command('prepare', jsonb_build_object(
+    'idempotencyKey', 'integration-tabarnia-timeout-first-prepare',
+    'attemptId', v_attempt_id,
+    'lockVersion', lock_version,
+    'sessionToken', token
+  ));
+  if (prepared->>'timedOut')::boolean or prepared->'publicPayload' = 'null'::jsonb then
+    raise exception 'The initial Alphabet item should be playable before its deadline';
+  end if;
+  current_item := (prepared->>'challengeItemId')::uuid;
+  select points into current_points from private.challenge_items where id = current_item;
+  received := private.execute_command('receive', jsonb_build_object(
+    'idempotencyKey', 'integration-tabarnia-timeout-first-answer',
+    'attemptId', v_attempt_id,
+    'lockVersion', (prepared->>'lockVersion')::bigint,
+    'sessionToken', token,
+    'challengeItemId', current_item,
+    'answer', to_jsonb('armadillo'::text)
+  ));
+  evaluated := private.execute_command('evaluate', jsonb_build_object(
+    'idempotencyKey', 'integration-tabarnia-timeout-first-evaluation',
+    'attemptId', v_attempt_id,
+    'lockVersion', (received->>'lockVersion')::bigint,
+    'sessionToken', token,
+    'receiptId', received->>'receiptId',
+    'status', 'correct',
+    'points', current_points
+  ));
+
+  execute 'alter table public.attempts disable trigger attempts_guard';
+  update public.attempts
+  set started_at = clock_timestamp() - interval '136 seconds',
+      deadline_at = clock_timestamp() - interval '1 second'
+  where id = v_attempt_id;
+  execute 'alter table public.attempts enable trigger attempts_guard';
+
+  select count(*) into item_count from private.challenge_items
+  where challenge_version_id = (select challenge_version_id from public.attempts where id = v_attempt_id);
+  lock_version := (evaluated->>'lockVersion')::bigint;
+  for item_index in 2..item_count loop
+    prepared := private.execute_command('prepare', jsonb_build_object(
+      'idempotencyKey', 'integration-tabarnia-timeout-prepare-' || item_index,
+      'attemptId', v_attempt_id,
+      'lockVersion', lock_version,
+      'sessionToken', token
+    ));
+    if (prepared->>'timedOut')::boolean is distinct from true
+      or prepared->'publicPayload' is distinct from 'null'::jsonb then
+      raise exception 'Expired Alphabet items must be returned as timed out without a public payload';
+    end if;
+    current_item := (prepared->>'challengeItemId')::uuid;
+    received := private.execute_command('receive', jsonb_build_object(
+      'idempotencyKey', 'integration-tabarnia-timeout-answer-' || item_index,
+      'attemptId', v_attempt_id,
+      'lockVersion', (prepared->>'lockVersion')::bigint,
+      'sessionToken', token,
+      'challengeItemId', current_item,
+      'answer', null
+    ));
+    if (received->>'timedOut')::boolean is distinct from true then
+      raise exception 'The server must mark a post-deadline answer as timed out';
+    end if;
+    evaluated := private.execute_command('evaluate', jsonb_build_object(
+      'idempotencyKey', 'integration-tabarnia-timeout-evaluation-' || item_index,
+      'attemptId', v_attempt_id,
+      'lockVersion', (received->>'lockVersion')::bigint,
+      'sessionToken', token,
+      'receiptId', received->>'receiptId',
+      'status', 'timeout',
+      'points', 0
+    ));
+    lock_version := (evaluated->>'lockVersion')::bigint;
+  end loop;
+
+  completed := private.execute_command('complete', jsonb_build_object(
+    'idempotencyKey', 'integration-tabarnia-timeout-complete',
+    'attemptId', v_attempt_id,
+    'lockVersion', lock_version,
+    'sessionToken', token,
+    'score', current_points
+  ));
+  select a.status, count(answer.*), count(*) filter (where answer.status = 'timeout'),
+    max(answer.points) filter (where answer.status = 'correct'), a.score
+  into final_status, final_answer_count, final_timeout_count, preserved_points, final_score
+  from public.attempts a
+  join private.attempt_answers answer on answer.attempt_id = a.id
+  where a.id = v_attempt_id
+  group by a.status, a.score;
+  if final_status <> 'completed' or final_answer_count <> item_count
+    or final_timeout_count <> item_count - 1 or preserved_points <> current_points
+    or final_score <> current_points or completed->>'status' <> 'completed' then
+    raise exception 'Unexpected Alphabet timeout finalization: %, %, %, %, %',
+      final_status, final_answer_count, final_timeout_count, preserved_points, final_score;
+  end if;
+end;
+$$;
+select 'timeout-finalization-ok';
+rollback;
+`,
+      config.dbContainer,
+    );
+    assert(
+      timeoutCheck.stdout.trim() === "timeout-finalization-ok",
+      "Alphabet guarda el timeout, conserva la respuesta previa y completa todas las letras tras vencer el plazo",
+    );
+    assert(
+      (await sqlCount("select count(*) from public.attempts;", config.dbContainer)) === 0,
+      "La verificación de timeout revierte el intento de prueba y no deja historial",
+    );
+
     const superadminView = await rpc(clients.xesmona, "get_my_survival_challenge", {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: spain.id,

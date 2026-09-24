@@ -13,6 +13,7 @@ import {
   verifiedIdentity,
 } from "@/server/competitive/attempt-api";
 import type { AttemptId, ChallengeItemId } from "@/types/domain/identifiers";
+import { consumeAlphabetActionRateLimit } from "@/server/competitive/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +31,12 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    const result = await commandsFor(identity).pass({
+    const commands = commandsFor(identity);
+    const snapshot = await commands.readRecovery(attemptId, sessionToken);
+    if (snapshot.challengeMode === "alphabet") {
+      consumeAlphabetActionRateLimit(identity.authUserId, attemptId);
+    }
+    const result = await commands.pass({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

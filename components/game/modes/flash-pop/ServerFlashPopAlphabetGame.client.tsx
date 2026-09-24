@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
-import { Card, Canvas, Timer } from "@/components/ui";
+import { Button, Card, Canvas, Timer } from "@/components/ui";
 import { ChallengeIntro, ChallengeResultScreen, StartCountdown } from "@/components/game/shared";
 import { buildReviewAnswerEntries } from "@/components/game/shared/ReviewAnswerList";
 import {
@@ -70,7 +70,12 @@ export function ServerFlashPopAlphabetGame({
       >
         <Card>
           <h1>Recuperando partida</h1>
-          <p>Comprobamos el estado seguro de tu intento.</p>
+          <p>{session.startNotice ?? "Comprobamos el estado seguro de tu intento."}</p>
+          {session.startNotice ? (
+            <Button type="button" onClick={session.retryRecovery} disabled={session.busy}>
+              {session.busy ? "Reintentando…" : "Reintentar recuperación"}
+            </Button>
+          ) : null}
         </Card>
       </motion.div>
     );

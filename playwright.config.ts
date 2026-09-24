@@ -40,8 +40,7 @@ const localEnv = {
   FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || e2eBaseURL,
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
-  // E2E scenarios intentionally exercise recovery/retry sequences; keep the
-  // production default of 5 while giving the test process a bounded headroom.
+  // Keep E2E scenarios on the same competitive burst budget as the server default.
   FLASH_RATE_LIMIT_BURST: process.env.FLASH_RATE_LIMIT_BURST || "30",
   // Editorial E2E scenarios create and publish several records in one flow.
   // Keep production's smaller admin burst while allowing the local browser run to complete.

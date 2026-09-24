@@ -5,11 +5,20 @@ type Bucket = {
   updatedAt: number;
 };
 
-const configuredCapacity = Number(process.env.FLASH_RATE_LIMIT_BURST ?? 5);
+const configuredCapacity = Number(process.env.FLASH_RATE_LIMIT_BURST ?? 30);
 const capacity =
-  Number.isSafeInteger(configuredCapacity) && configuredCapacity > 0 ? configuredCapacity : 5;
+  Number.isSafeInteger(configuredCapacity) && configuredCapacity > 0 ? configuredCapacity : 30;
 const refillPerSecond = 0.5;
 const buckets = new Map<string, Bucket>();
+const configuredAlphabetActionCapacity = Number(
+  process.env.FLASH_ALPHABET_ACTION_RATE_LIMIT_BURST ?? 5,
+);
+const alphabetActionCapacity =
+  Number.isSafeInteger(configuredAlphabetActionCapacity) && configuredAlphabetActionCapacity > 0
+    ? configuredAlphabetActionCapacity
+    : 5;
+const alphabetActionRefillPerSecond = 1;
+const alphabetActionBuckets = new Map<string, Bucket>();
 const configuredAdminCapacity = Number(process.env.FLASH_ADMIN_RATE_LIMIT_BURST ?? 10);
 const adminCapacity =
   Number.isSafeInteger(configuredAdminCapacity) && configuredAdminCapacity > 0
@@ -53,8 +62,43 @@ export function consumeCompetitiveRateLimit(key: string, now = Date.now()): { re
   return { remaining: Math.floor(next.tokens) };
 }
 
+export function consumeAlphabetActionRateLimit(
+  authUserId: string,
+  attemptId: string,
+  now = Date.now(),
+): { remaining: number } {
+  const key = `${authUserId}:${attemptId}`;
+  const previous = alphabetActionBuckets.get(key) ?? {
+    tokens: alphabetActionCapacity,
+    updatedAt: now,
+  };
+  const elapsedSeconds = Math.max(0, now - previous.updatedAt) / 1000;
+  const tokens = Math.min(
+    alphabetActionCapacity,
+    previous.tokens + elapsedSeconds * alphabetActionRefillPerSecond,
+  );
+
+  if (tokens < 1) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((1 - tokens) / alphabetActionRefillPerSecond));
+    alphabetActionBuckets.set(key, { tokens, updatedAt: now });
+    throw new CompetitiveRateLimitError(retryAfterSeconds);
+  }
+
+  const next = { tokens: tokens - 1, updatedAt: now };
+  alphabetActionBuckets.set(key, next);
+
+  if (alphabetActionBuckets.size > 1000) {
+    for (const [bucketKey, bucket] of alphabetActionBuckets) {
+      if (now - bucket.updatedAt > 120_000) alphabetActionBuckets.delete(bucketKey);
+    }
+  }
+
+  return { remaining: Math.floor(next.tokens) };
+}
+
 export function resetCompetitiveRateLimitForTests() {
   buckets.clear();
+  alphabetActionBuckets.clear();
   adminBuckets.clear();
 }
 

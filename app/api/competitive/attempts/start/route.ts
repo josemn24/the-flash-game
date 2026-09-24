@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       identity.authUserId,
       scheduledChallengeId,
       sessionToken,
-      result.deadlineAt,
     );
     return responseFor(
       {
