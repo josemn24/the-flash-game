@@ -88,12 +88,14 @@
 
   .avatarField {
     display: flex;
+    min-width: 0;
     align-items: center;
     gap: var(--space-4);
   }
 
   .avatarCopy {
     display: grid;
+    min-width: 0;
     gap: 6px;
     color: var(--color-ink-muted);
     font-size: 12px;
@@ -107,7 +109,8 @@
   }
 
   .avatarCopy input {
-    max-width: 100%;
+    width: 100%;
+    min-width: 0;
     color: var(--color-ink);
     font-size: 12px;
   }
