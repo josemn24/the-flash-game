@@ -344,26 +344,27 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
                 onStart={session.beginLevel}
               />
             )}
-            {session.phase === "playing" && session.currentLevel && (
-              <PyramidQuestionStage
-                key={session.currentLevel.question.id}
-                question={session.currentLevel.question}
-                questionNumber={currentIndex + 1}
-                totalQuestions={scoredChallenge.levels.length}
-                locked={session.locked}
-                codeAttemptCount={session.codeAttempts.length}
-                deadlineAt={session.deadlineAt}
-                initialAnswer={session.initialAnswer}
-                onReady={session.armCurrentLevel}
-                onSubmit={(answer) => session.submitAnswer(answer)}
-                onTimeUp={session.handleTimeUp}
-                onCodeAttempt={session.handleCodeAttempt}
-                onProgress={session.handleAnswerProgress}
-                onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={() => {}}
-                onTimedResponseStart={() => {}}
-              />
-            )}
+            {(session.phase === "playing" || session.phase === "answer-reveal") &&
+              session.currentLevel && (
+                <PyramidQuestionStage
+                  key={session.currentLevel.question.id}
+                  question={session.currentLevel.question}
+                  questionNumber={currentIndex + 1}
+                  totalQuestions={scoredChallenge.levels.length}
+                  locked={session.locked}
+                  codeAttemptCount={session.codeAttempts.length}
+                  deadlineAt={session.deadlineAt}
+                  initialAnswer={session.initialAnswer}
+                  onReady={session.armCurrentLevel}
+                  onSubmit={(answer) => session.submitAnswer(answer)}
+                  onTimeUp={session.handleTimeUp}
+                  onCodeAttempt={session.handleCodeAttempt}
+                  onProgress={session.handleAnswerProgress}
+                  onIncorrectAttempt={session.handleIncorrectAttempt}
+                  onProgressiveClueReveal={() => {}}
+                  onTimedResponseStart={() => {}}
+                />
+              )}
             {session.phase === "transition" && session.record && (
               <PyramidTransition
                 key={`transition-${currentIndex}`}

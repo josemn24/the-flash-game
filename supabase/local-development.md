@@ -73,8 +73,8 @@ npm run dev
 ```
 
 El setup crea 13 cuentas Auth: `xesmona` como superadmin fuera de la sala, `Ches` como propietario
-y jugador, y otros once miembros jugadores. Programa La Pirámide: Biblia y religiones abrahámicas
-(7 niveles, 100 puntos) como desafío actual; Steel Ball Run (16 retos, 100 puntos) queda en segundo
+y jugador, y otros once miembros jugadores. Programa «Biblia y religiones abrahámicas» en el modo
+La Pirámide (7 niveles, 100 puntos) como desafío actual; Steel Ball Run (16 retos, 100 puntos) queda en segundo
 lugar y Supervivencia: España (20 preguntas, 3 vidas, 100 puntos) cierra la secuencia, en ventanas
 consecutivas de 24 horas.
 

@@ -504,7 +504,7 @@ export function FlashPopPyramidGame({
               />
             </motion.div>
           ) : null}
-          {session.phase === "playing" ? (
+          {session.phase === "playing" || session.phase === "answer-reveal" ? (
             <motion.div
               key="playing"
               initial={{ opacity: 0, x: 18 }}

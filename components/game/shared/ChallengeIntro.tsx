@@ -71,7 +71,10 @@ export function ChallengeIntro({
             <Chip tone="social">{model.contextLabel}</Chip>
             <h1 id="challenge-intro-title">{model.title}</h1>
 
-            <div className={styles.metrics} aria-label="Resumen del desafío">
+            <div
+              className={`${styles.metrics} ${model.metrics.length === 2 ? styles.metricsTwo : ""}`}
+              aria-label="Resumen del desafío"
+            >
               {model.metrics.map((metric) => (
                 <div className={styles.metric} key={metric.label}>
                   <strong>{metric.value}</strong>

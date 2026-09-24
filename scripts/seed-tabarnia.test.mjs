@@ -123,7 +123,7 @@ describe("Tabarnia seed", () => {
     expect(sql.match(/'owner'/g)).toHaveLength(1);
     expect(sql.match(/'member'/g)).toHaveLength(11);
     expect(sql).toContain("'Supervivencia: España'");
-    expect(sql).toContain("'La Pirámide: Biblia y religiones abrahámicas'");
+    expect(sql).toContain("'Biblia y religiones abrahámicas'");
     expect(sql).toContain("'Steel Ball Run'");
     expect(sql).toContain("'survival'");
     expect(sql).toContain("'pyramid'");
@@ -203,7 +203,7 @@ describe("Tabarnia seed", () => {
     ]);
     expect(output.publicationId).toBe(output.publications[0]?.id);
     expect(output.publications.map((publication) => publication.title)).toEqual([
-      "La Pirámide: Biblia y religiones abrahámicas",
+      "Biblia y religiones abrahámicas",
       "Steel Ball Run",
       "Supervivencia: España",
     ]);

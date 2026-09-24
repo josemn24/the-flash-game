@@ -1,3 +1,4 @@
+import { getChallengeDisplayTitle } from "@/application/presentation/room";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/game";
@@ -16,7 +17,7 @@ export type ChallengeIntroModel = {
   modeLabel: string;
   contextLabel: string;
   title: string;
-  metrics: [ChallengeIntroMetric, ChallengeIntroMetric, ChallengeIntroMetric];
+  metrics: ChallengeIntroMetric[];
   rules: [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule];
 };
 
@@ -95,11 +96,10 @@ export function buildSafeChallengeIntroModel(
   return {
     modeLabel,
     contextLabel: `Reto de hoy · ${modeLabel}`,
-    title: introduction.title,
+    title: getChallengeDisplayTitle(introduction.title, introduction.mode),
     metrics: [
       { value: introduction.questionCount, label: "Preguntas" },
       { value: introduction.maxScore, label: "Puntos" },
-      { value: modeLabel, label: "Formato" },
     ],
     rules: buildSafeRules(introduction.mode),
   };
@@ -194,6 +194,7 @@ function buildPyramidRules(): [ChallengeIntroRule, ChallengeIntroRule, Challenge
 
 export function buildChallengeIntroModel(challenge: Challenge): ChallengeIntroModel {
   const modeLabel = getModeLabel(challenge);
+  const title = getChallengeDisplayTitle(challenge.title, challenge.mode);
   const formats = new Set(getQuestionFormats(challenge));
 
   switch (challenge.mode) {
@@ -206,7 +207,7 @@ export function buildChallengeIntroModel(challenge: Challenge): ChallengeIntroMo
       return {
         modeLabel,
         contextLabel: `Reto de hoy · ${modeLabel}`,
-        title: challenge.title,
+        title,
         metrics: [
           { value: challenge.questions.length, label: "Preguntas" },
           { value: formatEstimatedMinutes(totalTime), label: "Tiempo estimado" },
@@ -224,7 +225,7 @@ export function buildChallengeIntroModel(challenge: Challenge): ChallengeIntroMo
       return {
         modeLabel,
         contextLabel: `Reto de hoy · ${modeLabel}`,
-        title: challenge.title,
+        title,
         metrics: [
           { value: challenge.questions.length, label: "Retos" },
           { value: challenge.lives, label: "Vidas" },
@@ -237,7 +238,7 @@ export function buildChallengeIntroModel(challenge: Challenge): ChallengeIntroMo
       return {
         modeLabel,
         contextLabel: `Reto de hoy · ${modeLabel}`,
-        title: challenge.title,
+        title,
         metrics: [
           { value: challenge.entries.length, label: "Letras" },
           { value: formatEstimatedMinutes(challenge.timeLimit), label: "Tiempo estimado" },
@@ -257,7 +258,7 @@ export function buildChallengeIntroModel(challenge: Challenge): ChallengeIntroMo
       return {
         modeLabel,
         contextLabel: `Reto de hoy · ${modeLabel}`,
-        title: challenge.title,
+        title,
         metrics: [
           { value: questionCount, label: "Pruebas" },
           { value: challenge.maxScore, label: "Puntos" },
@@ -274,7 +275,7 @@ export function buildChallengeIntroModel(challenge: Challenge): ChallengeIntroMo
       return {
         modeLabel,
         contextLabel: `Reto de hoy · ${modeLabel}`,
-        title: challenge.title,
+        title,
         metrics: [
           { value: challenge.levels.length, label: "Niveles" },
           { value: formatEstimatedMinutes(totalTime), label: "Tiempo estimado" },

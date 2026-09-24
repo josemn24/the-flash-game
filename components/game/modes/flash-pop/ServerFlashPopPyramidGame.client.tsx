@@ -197,7 +197,7 @@ export function ServerFlashPopPyramidGame({
         <StartCountdown label="La Pirámide" key="countdown" onComplete={session.startQuestions} />
       ) : null}
 
-      {session.phase === "playing" && session.question ? (
+      {(session.phase === "playing" || session.phase === "answer-reveal") && session.question ? (
         <motion.div className={styles.question} key={session.question.id}>
           <ServerFlashQuestionStage
             presentation="pyramid"

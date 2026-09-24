@@ -13,7 +13,10 @@ import type {
 } from "@/types/gameplay/challenge";
 import type { PyramidChallenge } from "@/types/game";
 import { WORD_HASHTAG_ACTIVE_CELLS } from "@/lib/wordHashtag";
-import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
+import {
+  FLASH_POP_FEEDBACK_DURATION,
+  MINI_WORDLE_ANSWER_REVEAL_DURATION,
+} from "@/features/game/transitionTiming";
 import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import {
   challengeWithReview,
@@ -28,6 +31,7 @@ export type ServerFlashPhase =
   | "countdown"
   | "briefing"
   | "playing"
+  | "answer-reveal"
   | "transition"
   | "results"
   | "review";
@@ -738,26 +742,53 @@ export function useServerFlashSession({
       const nextResults = [...results, result];
       setResults(nextResults);
       setLastResult(result);
-      setPhase("transition");
-      timerRef.current = setTimeout(
-        async () => {
-          if (isTerminalForMode(nextResults)) {
-            const completed = await postJson(
-              `/api/competitive/attempts/${submission.attemptId}/complete`,
-              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
-            );
-            const review = terminalReviewFromResponse(completed.review);
-            setScore(Number(completed.score ?? 0));
-            setReviewChallenge(terminalReviewChallenge(challenge, review));
-            setPhase("results");
-          } else {
-            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
-          }
-          setBusy(false);
-        },
-        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
-          1800,
-      );
+      const showTransition = () => {
+        setPhase("transition");
+        timerRef.current = setTimeout(
+          async () => {
+            if (isTerminalForMode(nextResults)) {
+              const completed = await postJson(
+                `/api/competitive/attempts/${submission.attemptId}/complete`,
+                { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+              );
+              const review = terminalReviewFromResponse(completed.review);
+              setScore(Number(completed.score ?? 0));
+              setReviewChallenge(terminalReviewChallenge(challenge, review));
+              setPhase("results");
+            } else {
+              await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
+            }
+            setBusy(false);
+          },
+          FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+            1800,
+        );
+      };
+      const revealMiniWordleAnswer =
+        challenge.mode === "pyramid" &&
+        currentQuestion?.type === "mini-wordle" &&
+        response.status === "correct";
+      if (revealMiniWordleAnswer) {
+        setQuestion((current) =>
+          current?.type === "mini-wordle"
+            ? {
+                ...current,
+                progress: {
+                  kind: "mini-wordle",
+                  guesses: responseGuesses,
+                  feedback: [...current.progress.feedback, feedback],
+                  attemptsUsed: Number(response.attemptsUsed),
+                  maxAttempts: current.maxAttempts,
+                },
+              }
+            : current,
+        );
+        setQuestionDeadlineAt(null);
+        setPhase("answer-reveal");
+        timerRef.current = setTimeout(showTransition, MINI_WORDLE_ANSWER_REVEAL_DURATION);
+      } else {
+        showTransition();
+      }
     } catch (error) {
       clearSubmissionStatusTimer();
       if (

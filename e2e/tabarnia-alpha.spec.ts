@@ -107,12 +107,12 @@ test.describe("Tabarnia alpha", () => {
 
     await page.getByRole("link", { name: "Jugar" }).click();
     await expect(
-      page.getByRole("heading", { name: "La Pirámide: Biblia y religiones abrahámicas" }).first(),
+      page.getByRole("heading", { name: "Biblia y religiones abrahámicas" }).first(),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
     expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
     expect(data.data.publications[0]).toMatchObject({
-      title: "La Pirámide: Biblia y religiones abrahámicas",
+      title: "Biblia y religiones abrahámicas",
       mode: "pyramid",
       status: "open",
     });
