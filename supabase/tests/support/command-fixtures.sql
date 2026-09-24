@@ -91,6 +91,7 @@ begin
     when 'submit_logic_code_attempt' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_matching_pair' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_word_search_selection' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
+    when 'submit_word_hashtag_swap' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_queens_placement' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'reveal_progressive_clue' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'pass_interaction' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];

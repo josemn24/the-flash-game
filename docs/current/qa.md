@@ -3,6 +3,17 @@
 
 # QA actual
 
+## Indicadores de casilla correcta en Word Hashtag — 2026-09-24
+
+- El progreso server-backed deriva en PostgreSQL las casillas correctas y las devuelve en el
+  tablero inicial y tras cada intercambio. La interfaz las colorea y bloquea como el mock; las
+  palabras y el payload de solución siguen privados.
+- `npm run supabase:schema:test` pasa, incluida la nueva regresión F19 de estado inicial, estado
+  tras intercambio, privacidad y rechazo de fichas correctas. Vitest dirigido pasa 21 pruebas;
+  también pasan typecheck, ESLint dirigido, comprobación documental y schema revision.
+- El E2E S15 no alcanza la pregunta: el login de usuario de prueba no llega a «Mis salas» en este
+  entorno local.
+
 ## Corrección de evaluación server-backed de Word-search en Pirámide — 2026-09-24
 
 - El esquema canónico y la migración `20260924100000_word_search_answer_shape` reconstruyen y

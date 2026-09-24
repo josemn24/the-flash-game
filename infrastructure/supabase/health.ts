@@ -5,7 +5,7 @@ import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20260924100000_word_search_answer_shape";
+const canonicalSchemaRevision = "20260924110000_word_hashtag_correct_cells";
 
 function databaseUrl() {
   const configured = process.env.SUPABASE_DB_URL;

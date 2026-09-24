@@ -50,6 +50,7 @@ import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zi
 import {
   isValidWordHashtagConfiguration,
   isValidWordHashtagPublicConfiguration,
+  WORD_HASHTAG_ACTIVE_CELLS,
 } from "@/lib/wordHashtag";
 
 type TerminalReviewResponseRow = {
@@ -874,6 +875,7 @@ export function questionFromPayload(
     const progressLetters = Array.isArray(rawProgress.letters)
       ? rawProgress.letters
       : value.initialLetters;
+    const correctCells = Array.isArray(rawProgress.correctCells) ? rawProgress.correctCells : [];
     const swaps = Array.isArray(rawProgress.swaps)
       ? rawProgress.swaps.filter(
           (swap): swap is { fromCell: number; toCell: number } =>
@@ -886,6 +888,7 @@ export function questionFromPayload(
     const safeProgress = {
       kind: "word-hashtag" as const,
       letters: progressLetters as Array<string | null>,
+      correctCells: correctCells as number[],
       swaps,
       movesUsed: Number.isSafeInteger(rawProgress.movesUsed) ? Number(rawProgress.movesUsed) : 0,
       movesRemaining: Number.isSafeInteger(rawProgress.movesRemaining)
@@ -894,6 +897,15 @@ export function questionFromPayload(
     } satisfies ServerWordHashtagQuestion["progress"];
     if (
       safeProgress.letters.length !== 25 ||
+      !safeProgress.correctCells.every(
+        (cell, index) =>
+          Number.isSafeInteger(cell) &&
+          cell >= 0 &&
+          cell < 25 &&
+          WORD_HASHTAG_ACTIVE_CELLS.includes(cell) &&
+          safeProgress.letters[cell] !== null &&
+          (index === 0 || safeProgress.correctCells[index - 1]! < cell),
+      ) ||
       safeProgress.swaps.length !==
         (Array.isArray(rawProgress.swaps) ? rawProgress.swaps.length : 0) ||
       !safeProgress.letters.every((letter) => letter === null || typeof letter === "string") ||

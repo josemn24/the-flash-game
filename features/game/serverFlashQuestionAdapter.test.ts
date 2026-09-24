@@ -932,4 +932,82 @@ describe("server flash question adapter", () => {
     );
     expect(review.questions[0]).toMatchObject({ type: "escape", optimalMoves: 4 });
   });
+
+  it("maps only sorted, occupied Word-hashtag correct cells", () => {
+    const initialLetters = [
+      null,
+      "G",
+      null,
+      "Q",
+      null,
+      "E",
+      "O",
+      "P",
+      "U",
+      "I",
+      null,
+      "N",
+      null,
+      "Y",
+      null,
+      "R",
+      "A",
+      "U",
+      "M",
+      "E",
+      null,
+      "R",
+      null,
+      "A",
+      null,
+    ];
+    const question = questionFromPayload(
+      "item-word-hashtag",
+      {
+        question: "Intercambia las letras.",
+        grid: { rows: 5, columns: 5 },
+        initialLetters,
+        maxMoves: 3,
+      },
+      60_000,
+      15,
+      "word-hashtag",
+      {
+        kind: "word-hashtag",
+        letters: initialLetters,
+        correctCells: [3, 6, 8, 9, 11, 15, 17, 18, 21, 23],
+        swaps: [],
+        movesUsed: 0,
+        movesRemaining: 3,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "word-hashtag",
+      progress: { correctCells: [3, 6, 8, 9, 11, 15, 17, 18, 21, 23] },
+    });
+    expect(question).not.toHaveProperty("words");
+    expect(() =>
+      questionFromPayload(
+        "item-word-hashtag-invalid",
+        {
+          question: "Intercambia las letras.",
+          grid: { rows: 5, columns: 5 },
+          initialLetters,
+          maxMoves: 3,
+        },
+        60_000,
+        15,
+        "word-hashtag",
+        {
+          kind: "word-hashtag",
+          letters: initialLetters,
+          correctCells: [0],
+          swaps: [],
+          movesUsed: 0,
+          movesRemaining: 3,
+        },
+      ),
+    ).toThrow(ServerFlashQuestionError);
+  });
 });

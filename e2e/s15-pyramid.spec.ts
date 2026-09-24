@@ -57,10 +57,10 @@ async function solveEscape(page: Page) {
 }
 
 async function solveWordHashtag(page: Page) {
-  for (const [fromCell, toCell] of [
-    [1, 7],
-    [5, 13],
-    [16, 19],
+  for (const [move, fromCell, toCell] of [
+    [0, 1, 7],
+    [1, 5, 13],
+    [2, 16, 19],
   ]) {
     const from = page.locator(`[data-word-hashtag-cell="${fromCell}"]`);
     const to = page.locator(`[data-word-hashtag-cell="${toCell}"]`);
@@ -68,6 +68,12 @@ async function solveWordHashtag(page: Page) {
     await from.click();
     await expect(from).toHaveAttribute("aria-selected", "true");
     await to.click();
+    if (move === 0) {
+      await expect(from).toHaveAttribute("data-state", "correct");
+      await expect(to).toHaveAttribute("data-state", "correct");
+      await expect(from).toBeDisabled();
+      await expect(to).toBeDisabled();
+    }
   }
 }
 
@@ -588,6 +594,15 @@ test.describe("S15 — La Pirámide competitiva", () => {
             member.getByRole("heading", { name: /Intercambia las letras/ }),
           ).toBeVisible();
           expect(await member.content()).not.toContain('"words"');
+          for (const cell of [3, 6, 8, 9, 11, 15, 17, 18, 21, 23]) {
+            const correctCell = member.locator(`[data-word-hashtag-cell="${cell}"]`);
+            await expect(correctCell).toHaveAttribute("data-state", "correct");
+            await expect(correctCell).toBeDisabled();
+          }
+          await expect(member.locator('[data-word-hashtag-cell="1"]')).toHaveAttribute(
+            "data-state",
+            "displaced",
+          );
           await solveWordHashtag(member);
         }
         if (level < 7) {

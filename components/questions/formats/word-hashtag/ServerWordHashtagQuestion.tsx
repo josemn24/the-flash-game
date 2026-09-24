@@ -25,10 +25,11 @@ export function ServerWordHashtagQuestion({
 }) {
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
   const letters = question.progress.letters;
+  const correctCells = new Set(question.progress.correctCells);
   const remainingMoves = question.progress.movesRemaining;
 
   const selectCell = (cell: number) => {
-    if (locked || remainingMoves <= 0 || letters[cell] === null) return;
+    if (locked || remainingMoves <= 0 || letters[cell] === null || correctCells.has(cell)) return;
     if (selectedCell === null) {
       setSelectedCell(cell);
       return;
@@ -64,6 +65,7 @@ export function ServerWordHashtagQuestion({
             return <span key={cell} className={styles.empty} aria-hidden="true" />;
           }
           const selected = selectedCell === cell;
+          const correct = correctCells.has(cell);
           const row = Math.floor(cell / 5) + 1;
           const column = (cell % 5) + 1;
           return (
@@ -72,15 +74,15 @@ export function ServerWordHashtagQuestion({
               type="button"
               role="gridcell"
               data-word-hashtag-cell={cell}
-              data-state={selected ? "selected" : "displaced"}
-              className={`${styles.tile} ${styles.displaced} ${selected ? styles.selected : ""}`}
-              disabled={locked || remainingMoves <= 0}
+              data-state={correct ? "correct" : selected ? "selected" : "displaced"}
+              className={`${styles.tile} ${correct ? styles.correct : styles.displaced} ${selected ? styles.selected : ""}`}
+              disabled={locked || remainingMoves <= 0 || correct}
               aria-selected={selected}
-              aria-label={`Letra ${letter}, fila ${row}, columna ${column}${selected ? ", seleccionada" : ""}`}
+              aria-label={`Letra ${letter}, fila ${row}, columna ${column}: ${correct ? "posición correcta y bloqueada" : selected ? "desplazada y seleccionada" : "desplazada"}`}
               onClick={() => selectCell(cell)}
             >
               <b aria-hidden="true">{letter}</b>
-              <small aria-hidden="true">{selected ? "✓" : "↔"}</small>
+              <small aria-hidden="true">{correct || selected ? "✓" : "↔"}</small>
             </button>
           );
         })}

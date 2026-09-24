@@ -364,6 +364,7 @@ export type ServerWordSearchQuestion = ServerFlashQuestionBase & {
 export type ServerWordHashtagProgress = {
   readonly kind: "word-hashtag";
   readonly letters: readonly (string | null)[];
+  readonly correctCells: readonly number[];
   readonly swaps: readonly { readonly fromCell: number; readonly toCell: number }[];
   readonly movesUsed: number;
   readonly movesRemaining: number;

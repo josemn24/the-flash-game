@@ -12,6 +12,7 @@ import type {
   ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
 import type { PyramidChallenge } from "@/types/game";
+import { WORD_HASHTAG_ACTIVE_CELLS } from "@/lib/wordHashtag";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import {
@@ -897,6 +898,24 @@ export function useServerFlashSession({
         },
       );
       const nextLockVersion = Number(response.lockVersion);
+      const responseLetters = Array.isArray(response.letters)
+        ? response.letters.filter(
+            (letter): letter is string | null => letter === null || typeof letter === "string",
+          )
+        : [];
+      const responseCorrectCells = Array.isArray(response.correctCells)
+        ? response.correctCells
+        : [];
+      const validResponseCorrectCells = responseCorrectCells.every(
+        (cell, index) =>
+          Number.isSafeInteger(cell) &&
+          cell >= 0 &&
+          cell < 25 &&
+          WORD_HASHTAG_ACTIVE_CELLS.includes(cell) &&
+          responseLetters.length === 25 &&
+          responseLetters[cell] !== null &&
+          (index === 0 || responseCorrectCells[index - 1]! < cell),
+      );
       setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
       setQuestion((current) =>
         current?.type === "word-hashtag"
@@ -904,12 +923,10 @@ export function useServerFlashSession({
               ...current,
               progress: {
                 kind: "word-hashtag",
-                letters: Array.isArray(response.letters)
-                  ? response.letters.filter(
-                      (letter): letter is string | null =>
-                        letter === null || typeof letter === "string",
-                    )
-                  : current.progress.letters,
+                letters: responseLetters.length === 25 ? responseLetters : current.progress.letters,
+                correctCells: validResponseCorrectCells
+                  ? (responseCorrectCells as number[])
+                  : current.progress.correctCells,
                 swaps: [
                   ...current.progress.swaps,
                   { fromCell: submission.fromCell, toCell: submission.toCell },
