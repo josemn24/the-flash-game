@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
+import { validateQuestionTags } from "../lib/questionTags.ts";
 import { BETA_VIP_ALPHABET } from "./fixtures/scenarios/betavip-alphabet.mjs";
+import {
+  BETA_VIP_SURVIVAL,
+  betaVipSurvivalQuestions,
+} from "./fixtures/scenarios/betavip-survival.mjs";
 import { betaVipManifest, buildBetaVipDomainSql, setupBetaVipDataset } from "./seed-betavip.mjs";
 
 const tabarniaFixture = {
@@ -31,6 +36,12 @@ const newAccounts = {
   manuel: { email: "manuel@example.test", password: "local-only", playerId: "player-manuel" },
   genis: { email: "genis@example.test", password: "local-only", playerId: "player-genis" },
 };
+const cassetteAssetMetadata = { byteSize: 2048, sha256: "a".repeat(64) };
+const prepareCassetteAsset = async () => ({
+  filePath: "/tmp/betavip-cassette.png",
+  metadata: cassetteAssetMetadata,
+  cleanup: vi.fn(),
+});
 
 describe("BetaVIP seed", () => {
   it("defines eighteen playable geography letters with the agreed answers", () => {
@@ -77,9 +88,44 @@ describe("BetaVIP seed", () => {
     expect(BETA_VIP_ALPHABET.globalTimeLimitMs).toBe(135_000);
   });
 
-  it("publishes the Alphabet first and reuses Tabarnia's Steel Ball Run version second", () => {
+  it("defines twenty survival questions with five per topic and interleaved clues", () => {
+    const questions = betaVipSurvivalQuestions("00000000-0000-4000-8000-000000000001");
+    expect(BETA_VIP_SURVIVAL.modeConfig).toEqual({ lives: 3 });
+    expect(questions).toHaveLength(20);
+    expect(new Set(questions.map((item) => item.slug)).size).toBe(20);
+    expect(questions.map((item) => item.points)).toEqual([4, ...Array(18).fill(5), 6]);
+    expect(questions.reduce((total, item) => total + item.points, 0)).toBe(100);
+    for (const topic of ["Cine", "Series", "Música", "Videojuegos"]) {
+      expect(questions.filter((item) => item.topic === topic)).toHaveLength(5);
+    }
+    expect(
+      questions.filter((item) => item.type === "progressive-clues").map((item) => item.position),
+    ).toEqual([5, 10, 14, 18]);
+    expect(questions.find((item) => item.position === 3)).toMatchObject({
+      type: "progressive-image",
+      publicPayload: { revealDurationMs: 7000 },
+      solutionPayload: { acceptedAnswers: ["casete", "cassette", "cinta de casete"] },
+    });
+    expect(
+      questions
+        .filter((item) => item.type === "progressive-clues")
+        .every((item) => item.publicPayload.cluePenalty === 30),
+    ).toBe(true);
+    expect(
+      questions.every((item) => !JSON.stringify(item.publicPayload).includes("correctAnswer")),
+    ).toBe(true);
+    expect(questions.every((item) => validateQuestionTags(item.publicPayload.tags).valid)).toBe(
+      true,
+    );
+  });
+
+  it("publishes Alphabet, shared Steel Ball Run, then Survival on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
-    const sql = buildBetaVipDomainSql({ tabarniaFixture, accounts: newAccounts });
+    const sql = buildBetaVipDomainSql({
+      tabarniaFixture,
+      accounts: newAccounts,
+      cassetteAssetMetadata,
+    });
 
     expect(data.room.slug).toBe("beta-vip");
     expect(data.tabarnia.room).toEqual(tabarniaFixture.data.room);
@@ -91,10 +137,12 @@ describe("BetaVIP seed", () => {
     ).toEqual([
       [1, "La vuelta al mundo", "alphabet", "open"],
       [2, "Steel Ball Run", "flash", "scheduled"],
+      [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
     ]);
-    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 16]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 16, 20]);
     expect(data.steelBallRunPublicationId).toBe(data.publications[1].id);
+    expect(data.survivalPublicationId).toBe(data.publications[2].id);
     expect(data.steelBallRunPublicationId).not.toBe(data.tabarnia.steelBallRunPublicationId);
     expect(data.publications[1].challengeVersionId).toBe("version-sbr");
     expect(sql).toContain("'BetaVIP'");
@@ -103,9 +151,10 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'La vuelta al mundo'");
     expect(sql).toContain("'alphabet'");
     expect(sql).toContain("'short-text'");
-    expect(sql).toContain("'active', now(), now() + interval '48 hours'");
+    expect(sql).toContain("'active', now(), now() + interval '72 hours'");
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
+    expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
     expect(sql.match(/'owner', 'active'/g)).toHaveLength(1);
     expect(sql.match(/'member', 'active'/g)).toHaveLength(3);
     for (const playerId of ["player-ches", "player-dark", "player-manuel", "player-genis"]) {
@@ -118,7 +167,8 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("player-xesmona");
     expect(sql).toContain("insert into private.question_definitions");
     expect(sql).toContain("insert into private.challenge_definitions");
-    expect(sql).not.toContain("media_assets");
+    expect(sql).toContain("insert into private.media_assets");
+    expect(sql).toContain("private.assert_supported_calendar_content");
     expect(sql).not.toContain("insert into public.attempts");
   });
 
@@ -137,6 +187,9 @@ describe("BetaVIP seed", () => {
         createAuthAccounts,
         dockerSql,
         writeFixture,
+        prepareCassetteAsset,
+        uploadStorageObject: vi.fn(),
+        removeStorageObject: vi.fn(),
       },
     });
 
@@ -170,6 +223,7 @@ describe("BetaVIP seed", () => {
 
   it("does not write the BetaVIP manifest when SQL fails", async () => {
     const writeFixture = vi.fn();
+    const removeStorageObject = vi.fn();
     await expect(
       setupBetaVipDataset({
         dependencies: {
@@ -181,9 +235,16 @@ describe("BetaVIP seed", () => {
             throw new Error("BetaVIP SQL failed");
           },
           writeFixture,
+          prepareCassetteAsset,
+          uploadStorageObject: vi.fn(),
+          removeStorageObject,
         },
       }),
     ).rejects.toThrow("BetaVIP SQL failed");
     expect(writeFixture).not.toHaveBeenCalled();
+    expect(removeStorageObject).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ bucket: "question-assets", contentType: "image/png" }),
+    );
   });
 });

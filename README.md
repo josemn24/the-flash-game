@@ -93,12 +93,15 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 Para comprobar el escenario conjunto, ejecuta `npm run supabase:betavip:setup` y después
 `npm run test:integration:supabase -- --scenario betavip`. Vuelve a ejecutar el setup antes de
 `npm run test:e2e -- e2e/betavip.spec.ts` para que las pruebas de navegador empiecen sin la partida
-que crea la integración. Las credenciales locales generadas para Manuel y Genís quedan en
+que crea la integración. Repite el setup al terminar: el E2E abre temporalmente Survival y crea
+una partida. Las credenciales locales generadas para Manuel y Genís quedan en
 `output/fixtures/betavip.json`.
 
-En BetaVIP, «La vuelta al mundo» está abierto durante las primeras 24 horas y Steel Ball Run
-queda programado para las 24 siguientes. El manifiesto lista ambas publicaciones en orden;
-`data.publicationId` apunta al Alphabet y `data.steelBallRunPublicationId` a Steel Ball Run.
+En BetaVIP, «La vuelta al mundo» está abierto durante las primeras 24 horas, Steel Ball Run
+queda programado para el segundo día y «Supervivencia: Cultura pop» para el tercero. La temporada
+dura 72 horas. El manifiesto lista las tres publicaciones en orden: `data.publicationId` apunta
+al Alphabet, `data.steelBallRunPublicationId` a Steel Ball Run y `data.survivalPublicationId` a
+Supervivencia. `data.questionAssets` contiene el recurso propio del casete.
 
 ## Estructura principal
 

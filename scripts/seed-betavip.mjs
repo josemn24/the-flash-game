@@ -1,17 +1,30 @@
+import { createHash } from "node:crypto";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
+import sharp from "sharp";
 import { BETA_VIP_ALPHABET } from "./fixtures/scenarios/betavip-alphabet.mjs";
+import {
+  BETA_VIP_SURVIVAL,
+  betaVipSurvivalQuestions,
+} from "./fixtures/scenarios/betavip-survival.mjs";
 import {
   createAuthAccounts,
   deterministicUuid,
   dockerSql,
   localSupabaseConfig,
   readFixture,
+  removeStorageObject,
   sqlString,
+  uploadStorageObject,
   writeFixture,
 } from "./support/supabase-local.mjs";
 import { setupTabarniaDataset } from "./seed-tabarnia.mjs";
 
 const namespace = "the-flash-game:betavip";
+const cassetteAssetId = stableId("question-asset:betavip-pop-culture-cassette");
+const cassetteObjectPath = `question-assets/${cassetteAssetId}.png`;
 const newUsers = [
   { label: "manuel", displayName: "Manuel" },
   { label: "genis", displayName: "Genís" },
@@ -32,6 +45,40 @@ const alphabetItems = BETA_VIP_ALPHABET.entries.map((entry, index) => {
     itemId: stableId(`challenge-item:${slug}`),
   };
 });
+const survivalItems = betaVipSurvivalQuestions(cassetteAssetId).map((item) => ({
+  ...item,
+  definitionId: stableId(`question:${item.slug}`),
+  versionId: stableId(`question-version:${item.slug}`),
+  itemId: stableId(`challenge-item:${item.slug}`),
+}));
+
+async function prepareCassetteAsset() {
+  const tempDirectory = await mkdtemp(path.join(os.tmpdir(), "betavip-cassette-"));
+  try {
+    const svg = await readFile(path.resolve("public/visuals/betavip/audio-medium.svg"));
+    const bytes = await sharp(svg).resize(1200, 800).png().toBuffer();
+    const image = await sharp(bytes).metadata();
+    if (image.format !== "png" || image.width !== 1200 || image.height !== 800) {
+      throw new Error("La ilustración del casete no se ha generado en PNG de 1200 × 800.");
+    }
+    const filePath = path.join(tempDirectory, "audio-medium.png");
+    await writeFile(filePath, bytes);
+    return {
+      filePath,
+      metadata: {
+        mimeType: "image/png",
+        byteSize: bytes.byteLength,
+        width: image.width,
+        height: image.height,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+      },
+      cleanup: () => rm(tempDirectory, { recursive: true, force: true }),
+    };
+  } catch (error) {
+    await rm(tempDirectory, { recursive: true, force: true });
+    throw error;
+  }
+}
 
 function steelBallRun(tabarniaFixture) {
   const publication = tabarniaFixture.data.publications.find(
@@ -73,6 +120,20 @@ export function betaVipManifest(tabarniaFixture) {
     durationHours: 24,
     status: "scheduled",
   };
+  const survivalPublication = {
+    id: stableId("publication:beta-vip-pop-culture-survival"),
+    number: 3,
+    slug: BETA_VIP_SURVIVAL.slug,
+    title: BETA_VIP_SURVIVAL.title,
+    mode: "survival",
+    challengeId: stableId(`challenge:${BETA_VIP_SURVIVAL.slug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
+    questionCount: survivalItems.length,
+    pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
+    opensAfterHours: 48,
+    durationHours: 24,
+    status: "scheduled",
+  };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
     seasonId: stableId("season:beta-vip"),
@@ -82,7 +143,16 @@ export function betaVipManifest(tabarniaFixture) {
     questionCount: alphabet.questionCount,
     pointsTotal: alphabet.pointsTotal,
     steelBallRunPublicationId: steelPublication.id,
-    publications: [alphabet, steelPublication],
+    survivalPublicationId: survivalPublication.id,
+    publications: [alphabet, steelPublication, survivalPublication],
+    questionAssets: [
+      {
+        id: cassetteAssetId,
+        bucket: "question-assets",
+        objectPath: cassetteObjectPath,
+        mimeType: "image/png",
+      },
+    ],
     tabarnia: {
       room: tabarniaFixture.data.room,
       seasonId: tabarniaFixture.data.seasonId,
@@ -91,7 +161,7 @@ export function betaVipManifest(tabarniaFixture) {
   };
 }
 
-export function buildBetaVipDomainSql({ tabarniaFixture, accounts }) {
+export function buildBetaVipDomainSql({ tabarniaFixture, accounts, cassetteAssetMetadata }) {
   const data = betaVipManifest(tabarniaFixture);
   const players = {
     ches: tabarniaFixture.users.ches?.playerId,
@@ -108,13 +178,17 @@ export function buildBetaVipDomainSql({ tabarniaFixture, accounts }) {
   }
   const alphabet = data.publications[0];
   const steel = data.publications[1];
-  const questionDefinitions = alphabetItems
+  const survival = data.publications[2];
+  if (!cassetteAssetMetadata) {
+    throw new Error("Faltan metadatos del recurso de imagen de BetaVIP.");
+  }
+  const questionDefinitions = [...alphabetItems, ...survivalItems]
     .map(
       (item) =>
         `(${sqlString(item.definitionId)}, ${sqlString(item.slug)}, ${sqlString(authorId)})`,
     )
     .join(",\n");
-  const questionVersions = alphabetItems
+  const alphabetQuestionVersions = alphabetItems
     .map((item) => {
       const publicPayload = {
         category: "Geografía",
@@ -130,7 +204,13 @@ export function buildBetaVipDomainSql({ tabarniaFixture, accounts }) {
       return `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, 1, 'draft', 'short-text', ${BETA_VIP_ALPHABET.questionTimeLimitMs}, ${sqlString(JSON.stringify(publicPayload))}, ${sqlString(authorId)})`;
     })
     .join(",\n");
-  const questionSolutions = alphabetItems
+  const survivalQuestionVersions = survivalItems
+    .map(
+      (item) =>
+        `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, ${item.payloadSchemaVersion}, 'draft', ${sqlString(item.type)}, ${item.timeLimitMs}, ${sqlString(JSON.stringify(item.publicPayload))}, ${sqlString(authorId)})`,
+    )
+    .join(",\n");
+  const alphabetQuestionSolutions = alphabetItems
     .map((item) => {
       const solutionPayload = {
         correctAnswer: item.correctAnswer,
@@ -140,10 +220,22 @@ export function buildBetaVipDomainSql({ tabarniaFixture, accounts }) {
       return `(${sqlString(item.versionId)}, ${sqlString(JSON.stringify(solutionPayload))})`;
     })
     .join(",\n");
-  const challengeItems = alphabetItems
+  const survivalQuestionSolutions = survivalItems
+    .map(
+      (item) =>
+        `(${sqlString(item.versionId)}, ${sqlString(JSON.stringify(item.solutionPayload))})`,
+    )
+    .join(",\n");
+  const alphabetChallengeItems = alphabetItems
     .map(
       (item, index) =>
         `(${sqlString(item.itemId)}, ${sqlString(alphabet.challengeVersionId)}, ${sqlString(item.versionId)}, ${index + 1}, ${item.points}, 1, ${sqlString(JSON.stringify({ letter: item.letter }))})`,
+    )
+    .join(",\n");
+  const survivalChallengeItems = survivalItems
+    .map(
+      (item) =>
+        `(${sqlString(item.itemId)}, ${sqlString(survival.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, '{}')`,
     )
     .join(",\n");
 
@@ -161,7 +253,11 @@ values
   (${sqlString(data.room.id)}, ${sqlString(players.dark)}, 'member', 'active', now());
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '48 hours');
+values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '72 hours');
+
+insert into private.media_assets
+  (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
+values (${sqlString(cassetteAssetId)}, 'question-assets', ${sqlString(cassetteObjectPath)}, 'question-asset', 'ready', ${sqlString(authorId)}, 'image/png', ${cassetteAssetMetadata.byteSize}, 1200, 800, ${sqlString(cassetteAssetMetadata.sha256)});
 
 insert into private.question_definitions (id, slug, created_by_player_id)
 values
@@ -171,18 +267,22 @@ insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, status, type,
    time_limit_ms, public_payload, created_by_player_id)
 values
-${questionVersions};
+${alphabetQuestionVersions},
+${survivalQuestionVersions};
 
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-${questionSolutions};
+${alphabetQuestionSolutions},
+${survivalQuestionSolutions};
 
 update private.question_versions
 set status = 'published', published_at = now()
-where id in (${alphabetItems.map((item) => sqlString(item.versionId)).join(", ")});
+where id in (${[...alphabetItems, ...survivalItems].map((item) => sqlString(item.versionId)).join(", ")});
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
-values (${sqlString(alphabet.challengeId)}, ${sqlString(BETA_VIP_ALPHABET.definitionSlug)}, ${sqlString(authorId)});
+values
+  (${sqlString(alphabet.challengeId)}, ${sqlString(BETA_VIP_ALPHABET.definitionSlug)}, ${sqlString(authorId)}),
+  (${sqlString(survival.challengeId)}, ${sqlString(BETA_VIP_SURVIVAL.slug)}, ${sqlString(authorId)});
 
 insert into private.challenge_versions
   (id, challenge_definition_id, version_number, config_schema_version, status, mode,
@@ -192,16 +292,23 @@ values
   (${sqlString(alphabet.challengeVersionId)}, ${sqlString(alphabet.challengeId)}, 1, 1, 'draft',
    'alphabet', ${sqlString(BETA_VIP_ALPHABET.title)}, ${sqlString(BETA_VIP_ALPHABET.subtitle)},
    ${sqlString(BETA_VIP_ALPHABET.description)}, 100, ${BETA_VIP_ALPHABET.globalTimeLimitMs}, '{}',
+   ${sqlString(authorId)}, null),
+  (${sqlString(survival.challengeVersionId)}, ${sqlString(survival.challengeId)}, 1, 1, 'draft',
+   'survival', ${sqlString(BETA_VIP_SURVIVAL.title)}, ${sqlString(BETA_VIP_SURVIVAL.subtitle)},
+   ${sqlString(BETA_VIP_SURVIVAL.description)}, 100, null, ${sqlString(JSON.stringify(BETA_VIP_SURVIVAL.modeConfig))},
    ${sqlString(authorId)}, null);
 
 insert into private.challenge_items
   (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
 values
-${challengeItems};
+${alphabetChallengeItems},
+${survivalChallengeItems};
 
 update private.challenge_versions
 set status = 'published', published_at = now()
-where id = ${sqlString(alphabet.challengeVersionId)};
+where id in (${sqlString(alphabet.challengeVersionId)}, ${sqlString(survival.challengeVersionId)});
+
+select private.assert_supported_calendar_content(${sqlString(survival.challengeVersionId)});
 
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
@@ -209,7 +316,9 @@ values
   (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1,
    'open', now(), now() + interval '24 hours'),
   (${sqlString(steel.id)}, ${sqlString(data.seasonId)}, ${sqlString(steel.challengeVersionId)}, 2,
-   'scheduled', now() + interval '24 hours', now() + interval '48 hours');
+   'scheduled', now() + interval '24 hours', now() + interval '48 hours'),
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3,
+   'scheduled', now() + interval '48 hours', now() + interval '72 hours');
 set constraints all immediate;
 commit;
 `;
@@ -222,12 +331,41 @@ export async function setupBetaVipDataset({ dependencies = {} } = {}) {
   const createAccounts = dependencies.createAuthAccounts ?? createAuthAccounts;
   const runSql = dependencies.dockerSql ?? dockerSql;
   const saveFixture = dependencies.writeFixture ?? writeFixture;
+  const prepareAsset = dependencies.prepareCassetteAsset ?? prepareCassetteAsset;
+  const uploadAsset = dependencies.uploadStorageObject ?? uploadStorageObject;
+  const removeAsset = dependencies.removeStorageObject ?? removeStorageObject;
 
   await seedTabarnia();
   const tabarniaFixture = await loadFixture("tabarnia");
   const config = await loadConfig({ requireServiceRole: true });
   const accounts = await createAccounts({ id: "betavip", users: newUsers }, config);
-  await runSql(buildBetaVipDomainSql({ tabarniaFixture, accounts }), config.dbContainer);
+  const preparedAsset = await prepareAsset();
+  const storageObject = {
+    bucket: "question-assets",
+    objectPath: cassetteObjectPath,
+    filePath: preparedAsset.filePath,
+    contentType: "image/png",
+  };
+  try {
+    await uploadAsset(config, { ...storageObject, upsert: true });
+    await runSql(
+      buildBetaVipDomainSql({
+        tabarniaFixture,
+        accounts,
+        cassetteAssetMetadata: preparedAsset.metadata,
+      }),
+      config.dbContainer,
+    );
+  } catch (error) {
+    try {
+      await removeAsset(config, storageObject);
+    } catch (cleanupError) {
+      throw new AggregateError([error, cleanupError], "Falló BetaVIP y la limpieza del recurso.");
+    }
+    throw error;
+  } finally {
+    await preparedAsset.cleanup();
+  }
 
   const data = betaVipManifest(tabarniaFixture);
   const users = {

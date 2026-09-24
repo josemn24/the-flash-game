@@ -120,6 +120,8 @@ export const TOPIC_TAGS = [
     primaryDomain: "media_entertainment",
     relatedDomains: ["culture"],
   },
+  { id: "television_series", label: "Series de televisión", primaryDomain: "media_entertainment" },
+  { id: "video_games", label: "Videojuegos", primaryDomain: "media_entertainment" },
   {
     id: "popular_music",
     label: "Musica popular",

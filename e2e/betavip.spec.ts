@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-import { sqlCount } from "../scripts/support/supabase-local.mjs";
+import { dockerSql, sqlCount } from "../scripts/support/supabase-local.mjs";
 
 type Account = { email: string; password: string; playerId: string };
 type Fixture = {
@@ -10,6 +10,8 @@ type Fixture = {
     publicationId: string;
     challengeVersionId: string;
     steelBallRunPublicationId: string;
+    survivalPublicationId: string;
+    questionAssets: Array<{ id: string; objectPath: string }>;
     publications: Array<{ id: string; number: number; title: string; mode: string }>;
   };
 };
@@ -33,6 +35,7 @@ test("Ches juega la primera letra de La vuelta al mundo en BetaVIP", async ({ pa
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Steel Ball Run", "flash"],
+    [3, "Supervivencia: Cultura pop", "survival"],
   ]);
   await signIn(page, data.users.ches);
 
@@ -63,4 +66,63 @@ test("Ches juega la primera letra de La vuelta al mundo en BetaVIP", async ({ pa
       `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${data.data.steelBallRunPublicationId}';`,
     ),
   ).toBe(0);
+});
+
+test("Ches juega Supervivencia y carga la imagen progresiva de la tercera prueba", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const data = await fixture();
+  const [alphabet, steel, survival] = data.data.publications;
+  expect(data.data.survivalPublicationId).toBe(survival.id);
+
+  await dockerSql(`
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id in ('${alphabet.id}', '${steel.id}');
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${survival.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-e2e-survival"}'::jsonb);
+commit;
+`);
+  expect(
+    await sqlCount(
+      `select count(*) from public.scheduled_challenges where id = '${survival.id}' and status = 'open';`,
+    ),
+  ).toBe(1);
+
+  await signIn(page, data.users.ches);
+  await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
+  await page.getByRole("link", { name: "Jugar" }).click();
+  await expect(page.getByRole("heading", { name: "Cultura pop", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await expect(page.getByLabel("3 de 3 vidas")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /DeLorean es la máquina del tiempo/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Verdadero" }).click();
+  await expect(page.getByRole("heading", { name: /cafetería donde se reúnen/ })).toBeVisible();
+  await page.getByRole("button", { name: "Central Perk" }).click();
+  await expect(page.getByRole("heading", { name: /soporte de audio aparece/ })).toBeVisible();
+  const picture = page.getByRole("img", { name: /soporte de audio rectangular con dos carretes/ });
+  await expect(picture).toBeVisible();
+  await expect
+    .poll(() =>
+      picture.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 1200),
+    )
+    .toBe(true);
+  expect(
+    await sqlCount(
+      `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${survival.id}';`,
+    ),
+  ).toBe(1);
+  expect(
+    await sqlCount(
+      `select count(*) from private.attempt_answers answer join public.attempts attempt on attempt.id = answer.attempt_id join private.challenge_items item on item.id = answer.challenge_item_id where attempt.player_id = '${data.users.ches.playerId}' and attempt.scheduled_challenge_id = '${survival.id}' and item.position = 1 and answer.status = 'correct';`,
+    ),
+  ).toBe(1);
 });
