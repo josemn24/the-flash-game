@@ -233,6 +233,17 @@
     line-height: 1.45;
   }
 
+  .serverMessage {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--state-error) 38%, var(--color-border));
+    border-radius: var(--radius-control);
+    color: var(--state-error);
+    background: color-mix(in srgb, var(--state-error) 9%, var(--color-surface));
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   @media (min-width: 720px) {
     .playGrid {
       grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);

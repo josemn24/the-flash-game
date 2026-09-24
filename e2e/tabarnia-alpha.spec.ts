@@ -87,6 +87,8 @@ test.describe("Tabarnia alpha", () => {
   test("Ches ve y juega Reino de animales como primera publicación de Tabarnia", async ({
     page,
   }) => {
+    await page.setViewportSize({ width: 406, height: 847 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
     const data = await fixture();
     await signIn(page, data.users.ches);
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
@@ -114,9 +116,53 @@ test.describe("Tabarnia alpha", () => {
     await expect(
       page.getByRole("heading", { name: "Mamífero protegido por una coraza de placas óseas." }),
     ).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('[data-gameplay-shell="flash-pop-alphabet"]')).toHaveAttribute(
+      "data-gameplay-layout",
+      "playing",
+    );
+    const viewportRight = 386;
+    const board = await page
+      .getByRole("list", { name: "Estado de las letras" })
+      .locator("..")
+      .boundingBox();
+    const question = await page
+      .getByRole("heading", {
+        name: "Mamífero protegido por una coraza de placas óseas.",
+      })
+      .boundingBox();
+    const answer = await page.getByRole("textbox", { name: "Tu respuesta" }).boundingBox();
+    expect(board).not.toBeNull();
+    expect(question).not.toBeNull();
+    expect(answer).not.toBeNull();
+    for (const [label, box] of [
+      ["tablero", board!],
+      ["pregunta", question!],
+      ["campo de respuesta", answer!],
+    ] as const) {
+      expect(box.x).toBeGreaterThanOrEqual(20);
+      expect(box.x + box.width, `${label} rebasa el margen derecho`).toBeLessThanOrEqual(
+        viewportRight,
+      );
+    }
+    await expect(page.getByText(/^Solución:/)).toHaveCount(0);
+    let failFirstAnswer = true;
+    await page.route(/\/api\/competitive\/attempts\/[^/]+\/answer$/, async (route) => {
+      if (failFirstAnswer) {
+        failFirstAnswer = false;
+        await route.abort();
+        return;
+      }
+      await route.continue();
+    });
     await page.getByLabel("Tu respuesta").fill("armadillo");
     await page.getByRole("button", { name: "Responder" }).click();
+    await expect(
+      page.getByText("No se ha podido confirmar la respuesta.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Responder" })).toBeEnabled();
+    await page.getByRole("button", { name: "Responder" }).click();
     await expect(page.getByRole("status").getByText("Correcto")).toBeVisible();
+    await page.unroute(/\/api\/competitive\/attempts\/[^/]+\/answer$/);
 
     expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
     expect(data.data.publications[0]).toMatchObject({
