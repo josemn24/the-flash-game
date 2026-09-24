@@ -1233,7 +1233,9 @@ function WordSearchReview({ question, result }: ReviewProps<QuestionOfType<"word
   const foundIds = new Set(answer.foundWordIds);
   return (
     <div className="grid gap-4">
-      <WordSearchBoard question={question} foundWordIds={answer.foundWordIds} revealSolution />
+      <div className={wordSearchStyles.reviewBoardTheme}>
+        <WordSearchBoard question={question} foundWordIds={answer.foundWordIds} revealSolution />
+      </div>
       <ul
         className={`${wordSearchStyles.wordList} ${styles.wordSearchReviewList}`}
         aria-label="Resultado de las palabras objetivo"
