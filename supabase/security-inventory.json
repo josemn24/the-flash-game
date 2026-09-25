@@ -359,6 +359,21 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.handle_attempt_admin_command": {
+      "arguments": "op text, input jsonb, actor uuid, target_attempt attempts, target_schedule scheduled_challenges, instant timestamp with time zone, key text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.handle_attempt_command": {
+      "arguments": "op text, input jsonb, safe_input jsonb, actor uuid, cached_result jsonb, received_at timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.handle_invitation_command": {
+      "arguments": "input jsonb, safe_input jsonb, actor uuid, cached_result jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
     "private.guard_answer": {
       "arguments": "",
       "securityDefiner": false,
@@ -408,6 +423,11 @@
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.lock_command_key": {
+      "arguments": "target_actor uuid, target_key text",
+      "securityDefiner": false,
+      "executeRoles": []
     },
     "private.is_supported_competitive_question_extension": {
       "arguments": "target_question uuid",

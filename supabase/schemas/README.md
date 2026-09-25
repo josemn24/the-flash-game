@@ -1,10 +1,10 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 48 archivos y su revisión canónica es
-`20260925130000_s20_attempt_inspection_projection`. La validación local más reciente corresponde
-a PostgreSQL 17 de Supabase local el 2026-09-25; los 48 archivos declarativos, el inventario y
+Estado: el esquema declarativo vigente se compone de 51 archivos y su revisión canónica es
+`20260925175228_refactor_command_engine`. La validación local más reciente corresponde
+a PostgreSQL 17 de Supabase local el 2026-09-25; los 51 archivos declarativos, el inventario y
 las suites pgTAP pasaron en esa ejecución. La migración incremental
-`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal; `20260925120000_s20_superadmin_attempt_inspection.sql` añade lecturas privilegiadas de intentos y conserva las correcciones mediante comandos auditados; `20260925130000_s20_attempt_inspection_projection.sql` alinea la proyección de detalle con el contrato del portal. No hay proyecto remoto vinculado.
+`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal; `20260925120000_s20_superadmin_attempt_inspection.sql` añade lecturas privilegiadas de intentos y conserva las correcciones mediante comandos auditados; `20260925130000_s20_attempt_inspection_projection.sql` alinea la proyección de detalle con el contrato del portal; `20260925175228_refactor_command_engine.sql` separa el motor común, los handlers privados y la recuperación S04. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -143,7 +143,10 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [71_storage_acl.sql](71_storage_acl.sql)                                     | Lectura pública de `avatars` y ausencia de lectura de `question-assets` para roles de navegador.                                                                |
 | [80_rankings.sql](80_rankings.sql)                                           | Vista privada invoker y funciones públicas autorizadas por membresía.                                                                                           |
 | [85_flash_history_reads.sql](85_flash_history_reads.sql)                     | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                                                      |
-| [90_commands.sql](90_commands.sql)                                           | Operaciones transaccionales, ajuste protegido de resultados y lectura privada del contexto del evaluador.                                                        |
+| [88_command_support.sql](88_command_support.sql)                             | Resolución del actor, hash de secretos y bloqueo idempotente compartido.                                                                                       |
+| [89z_command_handlers.sql](89z_command_handlers.sql)                         | Operaciones privadas de intentos, invitaciones y administración, llamadas dentro de la transacción común.                                                     |
+| [90_commands.sql](90_commands.sql)                                           | Validación de comandos, idempotencia, despacho, auditoría y wrappers server-only.                                                                              |
+| [91_attempt_recovery.sql](91_attempt_recovery.sql)                           | Contexto privado del evaluador y operaciones de recuperación/lectura de intentos.                                                                             |
 | [91_room_membership_commands.sql](91_room_membership_commands.sql)           | Gestión autenticada de roles y estado de membresías por el propietario, con idempotencia y auditoría.                                                           |
 | [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)                         | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                                                     |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql)                   | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior.                                                             |
@@ -325,7 +328,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (S20, 2026-09-25): `check-supabase-schema` cargó **48 archivos declarativos**
+Última validación local completa registrada (refactor del motor, 2026-09-25): `check-supabase-schema` cargó **51 archivos declarativos**
 y el inventario de seguridad; pasan las suites existentes y S20 (21 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,

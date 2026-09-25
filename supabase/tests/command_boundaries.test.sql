@@ -3,6 +3,16 @@ set local search_path=public,extensions;
 select no_plan();
 -- @command-fixtures
 
+select ok(not exists (
+  select 1
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  cross join unnest(array['anon','authenticated','service_role']) role_name
+  where n.nspname = 'private'
+    and p.proname in ('handle_attempt_command', 'handle_attempt_admin_command', 'handle_invitation_command', 'lock_command_key')
+    and has_function_privilege(role_name, p.oid, 'EXECUTE')
+), 'Internal command handlers and shared lock helper are not executable by API roles');
+
 set local role service_role;
 select throws_ok($$select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-flash')))$$,'42501',null,'No verified identity means no command access');
 reset role;
