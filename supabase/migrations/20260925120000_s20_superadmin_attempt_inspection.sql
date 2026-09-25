@@ -262,6 +262,7 @@ begin
       'attemptId', attempt.id,
       'playerId', attempt.player_id,
       'displayName', player.display_name,
+      'avatarPath', player.avatar_path,
       'email', auth_user.email,
       'status', attempt.status,
       'outcome', attempt.outcome,
@@ -273,6 +274,8 @@ begin
       'effectiveScore', coalesce((select sum(entry.amount)::integer
         from private.flash_point_entries entry where entry.attempt_id = attempt.id), 0),
       'lockVersion', attempt.lock_version,
+      'isCorrected', exists (select 1 from private.flash_point_entries entry
+        where entry.attempt_id = attempt.id and entry.entry_type in ('adjustment', 'reversal')),
       'terminalReason', attempt.terminal_reason
     ),
     'items', coalesce((

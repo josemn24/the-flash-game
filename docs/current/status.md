@@ -200,7 +200,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado documentado a 2026-09-25:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260925120000_s20_superadmin_attempt_inspection`.
+  `20260925130000_s20_attempt_inspection_projection`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
@@ -209,7 +209,7 @@ Estado documentado a 2026-09-25:
   `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
 - `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera de esta actualización.
 - `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas declarativos,
-  verificó el inventario y todas las suites pgTAP, incluida S20 con 20 checks. La suite no acredita
+  verificó el inventario y todas las suites pgTAP, incluida S20 con 21 checks. La suite no acredita
   staging o producción.
 - No hay proyecto remoto vinculado; ninguna de estas comprobaciones acredita staging o producción.
 

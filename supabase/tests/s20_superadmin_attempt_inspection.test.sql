@@ -45,6 +45,13 @@ select is(jsonb_array_length(public.get_superadmin_attempt_inspection(
   test_support.id('room-flash'), test_support.id('sc-flash'),
   (select attempt_id from s20_context))->'items'), 2,
   'Inspection returns the frozen item projection and evaluated answers');
+select ok((public.get_superadmin_attempt_inspection(
+  test_support.id('room-flash'), test_support.id('sc-flash'),
+  (select attempt_id from s20_context))->'attempt' ? 'avatarPath')
+  and (public.get_superadmin_attempt_inspection(
+    test_support.id('room-flash'), test_support.id('sc-flash'),
+    (select attempt_id from s20_context))->'attempt' ? 'isCorrected'),
+  'Inspection returns the complete attempt projection required by the portal');
 select ok(not (public.get_superadmin_attempt_inspection(
   test_support.id('room-flash'), test_support.id('sc-flash'),
   (select attempt_id from s20_context)))::text like '%solution_payload%',

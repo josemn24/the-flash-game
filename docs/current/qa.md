@@ -16,7 +16,7 @@ Narrativa, E07–E09, abandono automático, takeover, `results_locked_at`, prueb
 siguen pendientes; S20 ya cubre las correcciones administrativas de resultados.
 
 El esquema declarativo vigente contiene 48 archivos y la revisión canónica es
-`20260925120000_s20_superadmin_attempt_inspection`. Hay 90 migraciones versionadas, 30 tablas, una vista
+`20260925130000_s20_attempt_inspection_projection`. Hay 91 migraciones versionadas, 30 tablas, una vista
 interna y un inventario de seguridad registrado. No hay proyecto remoto de Supabase vinculado.
 
 ## Comprobaciones ejecutadas actualmente
@@ -31,7 +31,7 @@ interna y un inventario de seguridad registrado. No hay proyecto remoto de Supab
 - `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera del alcance de
   esta actualización documental.
 - `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas, verificó el
-  inventario y todas las suites pgTAP, incluida S20 con 20 checks.
+  inventario y todas las suites pgTAP, incluida S20 con 21 checks.
 
 La validación local no equivale a
 validación de staging o producción.
