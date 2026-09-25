@@ -33,6 +33,8 @@ insert into private.question_version_solutions(question_version_id, solution_pay
 select test_support.id('e01-qv-2'), solution_payload from private.question_version_solutions where question_version_id = test_support.id('e01-qv');
 update private.question_versions set status = 'published', published_at = now()
 where id in (test_support.id('e01-qv'), test_support.id('e01-qv-2'));
+select ok(private.is_supported_flash_question(test_support.id('e01-qv')),
+  'Mini-Wordle publicado válido sigue admitido como pregunta Flash');
 insert into private.challenge_definitions(id, slug, created_by_player_id)
 values (test_support.id('e01-cd'), 'e01-mini-wordle-flash', test_support.id('superadmin'));
 insert into private.challenge_versions(

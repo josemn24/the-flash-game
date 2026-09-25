@@ -1,8 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 48 archivos y su revisión canónica es
+Estado: el esquema declarativo vigente se compone de 49 archivos y su revisión canónica es
 `20260925130000_s20_attempt_inspection_projection`. La validación local más reciente corresponde
-a PostgreSQL 17 de Supabase local el 2026-09-25; los 48 archivos declarativos, el inventario y
+a PostgreSQL 17 de Supabase local el 2026-09-25; los 49 archivos declarativos, el inventario y
 las suites pgTAP pasaron en esa ejecución. La migración incremental
 `20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal; `20260925120000_s20_superadmin_attempt_inspection.sql` añade lecturas privilegiadas de intentos y conserva las correcciones mediante comandos auditados; `20260925130000_s20_attempt_inspection_projection.sql` alinea la proyección de detalle con el contrato del portal. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
@@ -129,6 +129,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [57_pyramid_reads.sql](57_pyramid_reads.sql)                                 | Proyección de briefings/niveles permitidos y lectura propia de resultado/revisión terminal.                                                                     |
 | [40_indexes.sql](40_indexes.sql)                                             | Índices de autorización, calendario, unicidad y consultas competitivas.                                                                                         |
 | [50_access_helpers.sql](50_access_helpers.sql)                               | Resolución del jugador y ayudas RLS sin recursión.                                                                                                              |
+| [54_question_validation.sql](54_question_validation.sql)                     | Valida preguntas publicadas para su admisión competitiva en Flash, Supervivencia y Pirámide.                                                                     |
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)                           | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                                             |
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql)           | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal.                                                      |
 | [58_superadmin_user_commands.sql](58_superadmin_user_commands.sql)            | Provisioning auditado/idempotente de perfiles vinculados a Auth y membresías de sala para superadmins; no almacena credenciales.                               |
@@ -154,7 +155,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [96_media_asset_commands.sql](96_media_asset_commands.sql)                   | Handshake idempotente de preparación, lectura, confirmación y aborto de avatar.                                                                                 |
 | [97_media_asset_acl.sql](97_media_asset_acl.sql)                             | ACL explícita de `media_assets` y comandos server-only.                                                                                                         |
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql)               | Validación interna de assets de preguntas listos para publicación/uso.                                                                                          |
-| [68_competitive_question_formats.sql](68_competitive_question_formats.sql)   | Allowlist acumulativa para siete formatos competitivos; valida la versión publicada completa con el contrato editorial existente.                              |
+| [68_competitive_question_formats.sql](68_competitive_question_formats.sql)   | Allowlist y validadores de formatos competitivos compartidos entre Flash, Supervivencia y Pirámide.                              |
 | [98_question_asset_commands.sql](98_question_asset_commands.sql)             | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas.                                                                           |
 | [99_queens.sql](99_queens.sql)                                               | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada.                                                   |
 | [99_word_search.sql](99_word_search.sql)                                     | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side.                                                              |
@@ -325,7 +326,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (S20, 2026-09-25): `check-supabase-schema` cargó **48 archivos declarativos**
+Última validación local completa registrada (S20, 2026-09-25): `check-supabase-schema` cargó **49 archivos declarativos**
 y el inventario de seguridad; pasan las suites existentes y S20 (21 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,
