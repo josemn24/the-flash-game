@@ -1,32 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopRoomHistory } from "@/components/game/modes/flash-pop/FlashPopRoomHistory";
-import { demoRoom } from "@/data/demoRoom";
-import { getRoomHistory } from "@/data/roomHistory";
-import { getHistoryLeaderboard } from "@/lib/roomRankings";
-import { generateMetadata, generateStaticParams } from "./page";
+import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { dynamic, generateMetadata } from "./page";
 
 describe("room history route", () => {
   it("exposes Tabarnia and renders previous games", async () => {
-    expect(generateStaticParams()).toEqual([{ roomId: "tabarnia-room" }]);
+    expect(dynamic).toBe("force-dynamic");
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({
-      title: "Historial de Tabarnia — Flash Pop",
+      title: "Historial de Tabarnia — The Flash",
     });
 
-    const markup = renderToStaticMarkup(
-      <FlashPopRoomHistory
-        roomId={demoRoom.id}
-        entries={getRoomHistory(demoRoom.id)}
-        rankings={Object.fromEntries(
-          getRoomHistory(demoRoom.id).map((entry) => [
-            entry.challengeId,
-            getHistoryLeaderboard(demoRoom, entry),
-          ]),
-        )}
-      />,
-    );
+    const model = await mockRoomQueries.listHistory("tabarnia-room", mockQueryContext());
+    if (!model) throw new Error("Expected history model");
+    const markup = renderToStaticMarkup(<FlashPopRoomHistory {...model} />);
 
     expect(markup).toContain("Historial");
     expect(markup).toContain("5 sept");
@@ -35,6 +24,6 @@ describe("room history route", () => {
     expect(markup).toContain("Dark");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial/tabarnia-challenge-05"');
-    expect(markup.match(/Ver ranking/g)).toHaveLength(3);
+    expect(markup.match(/Ver ranking/g)).toHaveLength(5);
   });
 });

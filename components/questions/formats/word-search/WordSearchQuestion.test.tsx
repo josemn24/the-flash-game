@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { questionsById } from "@/data/questions";
+import { questionsById } from "@/test-utils/mockGameplay";
 import { WordSearchQuestion } from "@/components/questions/formats/word-search/WordSearchQuestion";
 
 describe("Word-search target list", () => {

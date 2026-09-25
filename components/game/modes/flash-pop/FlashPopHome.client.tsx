@@ -14,7 +14,15 @@ import {
   IconButton,
   TrophyIcon,
 } from "@/components/ui";
-import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { LogoutButton } from "@/components/auth/LogoutButton.client";
+import {
+  abortProfileAvatar,
+  confirmProfileAvatar,
+  prepareProfileAvatar,
+  updateProfileName,
+} from "@/app/actions/profile";
+import { createClient } from "@/lib/supabase/client";
+import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/game";
 import type { UserProfile } from "@/types/user";
@@ -62,20 +70,60 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
     }
   }, [profileOpen]);
 
-  const handleProfileSave = useCallback((nextProfile: UserProfile) => {
-    setProfile(nextProfile);
-    setProfileOpen(false);
-    setStatusMessage("Cambios guardados.");
+  const handleProfileSave = useCallback(async ({ name, file }: { name: string; file: File | null }) => {
+    const nameResult = await updateProfileName(name);
+    if (!nameResult.ok) return nameResult;
+    if (!file) {
+      setProfile(nameResult.profile);
+      setProfileOpen(false);
+      setStatusMessage("Cambios guardados.");
+      return nameResult;
+    }
+
+    const idempotencyKey = crypto.randomUUID();
+    const prepared = await prepareProfileAvatar({
+      mimeType: file.type,
+      byteSize: file.size,
+      idempotencyKey,
+    });
+    if (!prepared.ok) return prepared;
+
+    const uploadClient = createClient();
+    const { error: uploadError } = await uploadClient.storage
+      .from("avatars")
+      .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+    if (uploadError) {
+      await abortProfileAvatar(prepared.assetId);
+      return {
+        ok: false as const,
+        code: "storage_unavailable" as const,
+        message: "No se ha podido subir la imagen. Inténtalo de nuevo.",
+      };
+    }
+
+    const confirmed = await confirmProfileAvatar({
+      assetId: prepared.assetId,
+      idempotencyKey: prepared.confirmIdempotencyKey,
+    });
+    if (confirmed.ok) {
+      setProfile(confirmed.profile);
+      setProfileOpen(false);
+      setStatusMessage("Cambios guardados.");
+    }
+    return confirmed;
   }, []);
 
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.homeHeader}>
-        <div className={styles.brand} aria-label="Flash Pop">
+        <div className={styles.brand} aria-label="The Flash">
           <span className={styles.brandMark}>
             <BoltIcon />
           </span>
-          <span className={styles.brandName}>Flash Pop</span>
+          <span className={styles.brandName}>The Flash</span>
         </div>
 
         <nav className={styles.headerActions} aria-label="Acciones de cuenta">
@@ -93,6 +141,7 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
           >
             <Avatar name={profile.name} src={profile.avatarSrc} tone="social" size="sm" />
           </IconButton>
+          <LogoutButton />
         </nav>
       </header>
 
@@ -107,7 +156,7 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
               const imageAlt = challenge
                 ? `Ilustración del desafío ${challenge.title}`
                 : `Ilustración de la sala ${room.title}`;
-              const isClosed = room.seasonStatus !== "active";
+              const isClosed = room.seasonStatus !== null && room.seasonStatus !== "active";
 
               return (
                 <Link
@@ -162,14 +211,21 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
                         className={styles.roomStats}
                         aria-label={`Estadísticas de ${room.title}`}
                       >
-                        <span className={styles.statBadge}>
+                        <span
+                          className={styles.statBadge}
+                          role="img"
+                          aria-label={`${room.currentUser.totalFlashPoints} Flash Points`}
+                        >
+                          <strong aria-hidden="true">{room.currentUser.totalFlashPoints}</strong>
                           <BoltIcon aria-hidden="true" />
-                          <strong>{room.currentUser.totalPoints}</strong>
-                          <span className={styles.visuallyHidden}> Flash Points</span>
                         </span>
                         <span className={styles.statBadge}>
                           <TrophyIcon aria-hidden="true" />
-                          <strong>#{room.currentUser.roomRank}</strong>
+                          <strong>
+                            {room.currentUser.roomRank === null
+                              ? "—"
+                              : `#${room.currentUser.roomRank}`}
+                          </strong>
                           <span className={styles.visuallyHidden}> ranking</span>
                         </span>
                       </div>

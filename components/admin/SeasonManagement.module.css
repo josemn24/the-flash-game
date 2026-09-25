@@ -1,0 +1,139 @@
+@layer app-components {
+  .section {
+    margin-top: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .sectionHeading,
+  .roomHeading,
+  .seasonTopline,
+  .formHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .sectionHeading h2,
+  .roomHeading h3,
+  .seasonTopline h4,
+  .formHeading h4 {
+    margin: var(--space-2) 0 0;
+    font-family: var(--type-display);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .sectionHeading h2 {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+  }
+
+  .roomHeading h3 {
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+  }
+
+  .seasonTopline h4,
+  .formHeading h4 {
+    font-size: 1.5rem;
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .roomSections {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  .roomSection {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .seasonList {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .seasonCard {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .window,
+  .helper {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .form,
+  .activateForm {
+    display: grid;
+    gap: var(--space-4);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .seasonActions {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .field {
+    display: grid;
+    gap: var(--space-2);
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font: inherit;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .field textarea {
+    resize: vertical;
+  }
+
+  .dateGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 680px) {
+    .sectionHeading,
+    .roomHeading,
+    .seasonTopline,
+    .formHeading {
+      align-items: flex-start;
+    }
+
+    .dateGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

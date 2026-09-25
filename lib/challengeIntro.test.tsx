@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { challenges } from "@/data/challenges";
+import { challenges } from "@/test-utils/mockGameplay";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { buildChallengeIntroModel } from "@/lib/challengeIntro";
 

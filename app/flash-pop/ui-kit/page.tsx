@@ -17,8 +17,8 @@ import { LiveTimerDemo } from "./LiveTimerDemo.client";
 import styles from "./UiKit.module.css";
 
 export const metadata: Metadata = {
-  title: "Flash Pop — UI Kit",
-  description: "Laboratorio aislado de tokens, primitivas y estados de Flash Pop.",
+  title: "The Flash — UI Kit",
+  description: "Laboratorio aislado de tokens, primitivas y estados de The Flash.",
 };
 
 const colors = [
@@ -80,7 +80,7 @@ export default function FlashPopUiKitPage() {
     <Canvas maxWidth="content" contentClassName={styles.page}>
       <header className={styles.hero}>
         <Chip tone="social">Laboratorio aislado</Chip>
-        <h1>Flash Pop UI Kit</h1>
+        <h1>The Flash UI Kit</h1>
         <p>
           Tokens, primitivas y estados aprobados para el vertical slice. Usa Tab para comprobar el
           foco y activa reducción de movimiento para validar la alternativa estática.
@@ -111,7 +111,7 @@ export default function FlashPopUiKitPage() {
           <p className={styles.uiType}>
             Manrope mantiene clara la interfaz incluso cuando aumenta la densidad de información.
           </p>
-          <p className={styles.monoType}>02:14 · 680 / 900 ⚡ · NIVEL 4</p>
+          <p className={styles.monoType}>02:14 · 680 ⚡</p>
         </Card>
         <div className={styles.foundationGrid}>
           <Card elevation="flat" className={styles.tokenPanel}>
@@ -210,7 +210,9 @@ export default function FlashPopUiKitPage() {
               Cerrado
             </Chip>
             <Chip variant="data">2 h 14 min</Chip>
-            <Chip variant="reward">Hasta +120 ⚡</Chip>
+            <Chip variant="flashPoints" ariaLabel="Hasta +100 Flash Points">
+              Hasta +100 ⚡
+            </Chip>
           </div>
         </Card>
       </section>

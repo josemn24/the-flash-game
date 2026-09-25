@@ -1,0 +1,855 @@
+{
+  "relations": {
+    "private.answer_receipts": {
+      "kind": "r"
+    },
+    "private.attempt_answers": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.attempt_sessions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.attempt_timing_units": {
+      "kind": "r"
+    },
+    "private.audit_log": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.challenge_definitions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.challenge_items": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.challenge_versions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.command_requests": {
+      "kind": "r"
+    },
+    "private.effective_results": {
+      "kind": "v",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
+    },
+    "private.flash_point_entries": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.interaction_intervals": {
+      "kind": "r"
+    },
+    "private.mini_wordle_dictionary_words": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.mini_wordle_guess_events": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.logic_code_attempt_events": {
+      "kind": "r"
+    },
+    "private.media_assets": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.progressive_clue_reveal_events": {
+      "kind": "r"
+    },
+    "private.matching_pair_events": {
+      "kind": "r"
+    },
+    "private.queens_placement_events": {
+      "kind": "r"
+    },
+    "private.platform_role_assignments": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.question_definitions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.question_version_solutions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.question_versions": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "private.room_invitations": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.attempts": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "columns": {
+          "id": ["SELECT"],
+          "player_id": ["SELECT"],
+          "scheduled_challenge_id": ["SELECT"],
+          "status": ["SELECT"],
+          "started_at": ["SELECT"],
+          "deadline_at": ["SELECT"],
+          "completed_at": ["SELECT"],
+          "score": ["SELECT"]
+        }
+      }
+    },
+    "public.players": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "columns": {
+          "id": ["SELECT"],
+          "display_name": ["SELECT", "UPDATE"],
+          "avatar_path": ["SELECT"],
+          "status": ["SELECT"]
+        }
+      }
+    },
+    "public.room_memberships": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.rooms": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.scheduled_challenges": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    },
+    "public.seasons": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "authenticated": {
+        "table": ["SELECT"]
+      }
+    }
+  },
+  "functions": {
+    "private.abort_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.abort_question_asset_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.assert_supported_calendar_content": {
+      "arguments": "version_id uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.abandon_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.accept_invitation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.adjust_result": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.can_read_own_attempt": {
+      "arguments": "target_publication_id uuid, target_player_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.can_read_profile": {
+      "arguments": "target_player_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.confirm_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.confirm_question_asset_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.command_actor": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_room_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_season_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_scheduled_challenge_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.complete_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.current_player_id": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.editorial_has_secret_key": {
+      "arguments": "value jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.validate_flash_editorial_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.create_flash_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_question_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.update_question_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.publish_question_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.archive_question_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.question_version_document": {
+      "arguments": "target_question_version uuid",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.question_version_detail": {
+      "arguments": "target_question_version uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.read_superadmin_question_library": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.validate_flash_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.update_flash_draft_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.publish_flash_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.read_superadmin_editorial_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.execute_command": {
+      "arguments": "op text, input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.guard_answer": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_attempt": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_content_child": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_player": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_point_entry": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_publication": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_room": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_season": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.guard_version": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.invalidate_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.is_supported_flash_question": {
+      "arguments": "target_question uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.activate_season_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.is_room_member": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.is_ready_question_asset": {
+      "arguments": "target_asset uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.is_usable_question_asset": {
+      "arguments": "target_asset uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.archive_question_asset_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.publication_effective_status": {
+      "arguments": "raw_status text, season_status text, season_starts_at timestamp with time zone, season_ends_at timestamp with time zone, opens_at timestamp with time zone, closes_at timestamp with time zone, at_time timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.publication_is_effectively_open": {
+      "arguments": "raw_status text, season_status text, season_starts_at timestamp with time zone, season_ends_at timestamp with time zone, opens_at timestamp with time zone, closes_at timestamp with time zone, at_time timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.prepare_avatar_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.prepare_question_asset_upload_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.run_calendar_tick_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.update_scheduled_challenge_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.lock_membership_room": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.mini_wordle_feedback": {
+      "arguments": "guess_value text, solution_value text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.mini_wordle_normalize": {
+      "arguments": "value text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.mini_wordle_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.logic_code_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.manage_room_member_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.progressive_clue_effective_penalty": {
+      "arguments": "configured_penalty integer, item_points integer",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.progressive_clues_public_payload": {
+      "arguments": "target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.progressive_clues_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.ensure_progressive_clue_initial": {
+      "arguments": "target_attempt uuid, target_item uuid, target_version uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.next_attempt_item": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.pass_interaction": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.prepare_interaction": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.receive_answer": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.record_evaluation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.recover_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_attempt_recovery": {
+      "arguments": "target_attempt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_avatar_upload_asset": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_competitive_question_asset": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_question_asset_upload": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.reject_rewrite": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.require_room_owner": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.room_slug_base": {
+      "arguments": "value text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.secret_hash": {
+      "arguments": "secret text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.start_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.submit_mini_wordle_guess": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.submit_logic_code_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.reveal_progressive_clue": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.matching_public_payload": {
+      "arguments": "target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.matching_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_matching_pair": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.queens_board": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.queens_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.queens_cell_conflicts": {
+      "arguments": "regions jsonb, target_cell integer, queens integer[]",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.queens_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.queens_answer": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_queens_placement": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.take_over_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.touch_updated_at": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.update_season_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "public.get_challenge_ranking": {
+      "arguments": "target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_flash_history": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_flash_member_review": {
+      "arguments": "target_room_slug text, target_publication_id uuid, target_player_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_room_cards": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_flash_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_flash_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_alphabet_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_alphabet_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_room_detail": {
+      "arguments": "target_room_slug text",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_room_introduction": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_room_calendar": {
+      "arguments": "target_room_slug text",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_season_ranking": {
+      "arguments": "target_season_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_portal_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_dashboard_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_challenge_catalog": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_challenge_detail": {
+      "arguments": "target_challenge_definition_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_editorial_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_calendar_context": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_room_calendar_context": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_room_detail": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.lookup_superadmin_players": {
+      "arguments": "target_emails text[]",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.manage_room_member": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_room": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.activate_superadmin_season": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_season": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.provision_player": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_season": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_flash_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_question_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_question_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.publish_superadmin_question": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.archive_superadmin_question": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_question_library": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_question_version": {
+      "arguments": "question_version_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_scheduled_challenge": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_flash_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.publish_superadmin_flash": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.update_superadmin_scheduled_challenge": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.read_evaluation_context": {
+      "arguments": "target_receipt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    }
+  }
+}

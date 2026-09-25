@@ -5,6 +5,10 @@ export const TRUE_FALSE_PENALTY_RATIO = 0.4;
 export const CHOICE_PENALTY_RATIO = 0.2;
 export const ATTEMPT_PENALTY_RATIO = 0.1;
 
+export function normalizeScore(score: number) {
+  return Math.max(0, score);
+}
+
 export function clampTime(timeUsed: number, timeLimit: number) {
   const safeLimit = Math.max(0, timeLimit);
   return Math.min(Math.max(timeUsed, 0), safeLimit);
@@ -22,12 +26,12 @@ export function calculateProportionalScore(
   speedMultiplier: number,
 ) {
   if (totalItems <= 0) return 0;
-  return Math.round(points * (correctItems / totalItems) * speedMultiplier);
+  return normalizeScore(Math.round(points * (correctItems / totalItems) * speedMultiplier));
 }
 
 export function applyAttemptPenalty(score: number, points: number, incorrectAttempts: number) {
   const penalty = Math.round(points * ATTEMPT_PENALTY_RATIO) * Math.max(0, incorrectAttempts);
-  return Math.max(0, score - penalty);
+  return normalizeScore(score - penalty);
 }
 
 export function calculateQuestionScore(
@@ -40,9 +44,9 @@ export function calculateQuestionScore(
     const score = Math.round(
       question.points * calculateSpeedMultiplier(timeUsed, question.timeLimit),
     );
-    return Math.max(score, Math.ceil(question.points * MIN_SPEED_MULTIPLIER));
+    return normalizeScore(Math.max(score, Math.ceil(question.points * MIN_SPEED_MULTIPLIER)));
   }
 
   if (incorrectPenaltyRatio <= 0) return 0;
-  return -Math.round(question.points * incorrectPenaltyRatio);
+  return normalizeScore(-Math.round(question.points * incorrectPenaltyRatio));
 }

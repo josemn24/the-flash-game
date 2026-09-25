@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getMockChallengeById as getChallengeById } from "@/test-utils/mockGameplay";
 import {
   getNarrativeReaction,
   getNarrativeSequence,
@@ -75,7 +75,7 @@ describe("P-17 narrative session", () => {
     const questions = sequence.flatMap((step) => (step.type === "question" ? [step.question] : []));
     expect(questions).toHaveLength(8);
     expect(questions.reduce((total, question) => total + question.points, 0)).toBe(100);
-    expect(questions.reduce((total, question) => total + question.timeLimit, 0)).toBe(284);
+    expect(questions.reduce((total, question) => total + question.timeLimit, 0)).toBe(279);
     expect(
       sequence.flatMap((step, index) =>
         step.type === "question" ? [{ question: step.question.id, page: index + 1 }] : [],

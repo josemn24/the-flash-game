@@ -4,7 +4,7 @@ import { ChallengeResultScreen } from "./ChallengeResultScreen";
 
 function getModel(metricCount: 3 | 4 = 3) {
   return {
-    gameTitle: "Flash clásico",
+    gameTitle: "Flash",
     statusLabel: "Completado",
     eyebrow: "Desafío completado",
     title: "Sprint brutal.",
@@ -37,6 +37,17 @@ describe("ChallengeResultScreen", () => {
   });
 
   it("supports three and four mode-specific metrics", () => {
+    const flashMarkup = renderToStaticMarkup(
+      <ChallengeResultScreen
+        model={{ ...getModel(), score: 84, scoreUnit: "flashPoints" }}
+        onReview={() => {}}
+      />,
+    );
+
+    expect(flashMarkup).toContain(">84</strong>");
+    expect(flashMarkup).toContain("/100 puntos");
+    expect(flashMarkup).toContain('aria-label="84 de 100 puntos"');
+    expect(flashMarkup).not.toContain("+84");
     const three = renderToStaticMarkup(
       <ChallengeResultScreen model={getModel(3)} onReview={() => {}} />,
     );

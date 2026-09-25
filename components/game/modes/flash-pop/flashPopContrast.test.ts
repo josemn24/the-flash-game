@@ -164,9 +164,7 @@ describe("Flash Pop token contrast", () => {
   });
 
   it("uses white text on solid green review tiles", () => {
-    expect(reviewStyles).toContain(
-      ".wordle-correct {\n    color: var(--color-text-on-success);",
-    );
+    expect(reviewStyles).toContain(".wordle-correct {\n    color: var(--color-text-on-success);");
     expect(reviewStyles).toContain(
       ".wordHashtagReviewCorrect {\n    color: var(--color-text-on-success);",
     );
@@ -174,7 +172,7 @@ describe("Flash Pop token contrast", () => {
 
   it("keeps Classification selections visible without overpowering the table", () => {
     expect(classificationStyles).toMatch(
-      /\.matrix,\s*\.binaryList\s*\{[\s\S]*?border: var\(--border-subtle\);[\s\S]*?border-radius: var\(--radius-card\);[\s\S]*?padding: var\(--space-2\);[\s\S]*?background: var\(--color-surface\);/s,
+      /\.matrix,\s*\.binaryList\s*\{[\s\S]*?border: var\(--border-subtle\);[\s\S]*?border-radius: var\(--radius-card\);[\s\S]*?padding: var\(--space-2\);[\s\S]*?background: var\(--color-surface\);/,
     );
     expect(classificationStyles).toContain("border: 1px solid rgb(23 23 32 / 17%);");
     expect(classificationStyles).toContain("box-shadow: 0 1px 2px rgb(23 23 32 / 5%);");
@@ -185,7 +183,7 @@ describe("Flash Pop token contrast", () => {
       "color-mix(in srgb, var(--color-social) 14%, transparent)",
     );
     expect(classificationStyles).toMatch(
-      /\.choiceButtonSelected:focus-visible,\s*\.binaryChoiceSelected:focus-visible/s,
+      /\.choiceButtonSelected:focus-visible,\s*\.binaryChoiceSelected:focus-visible/,
     );
   });
 

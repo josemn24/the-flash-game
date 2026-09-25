@@ -100,40 +100,16 @@
     line-height: 1.35;
   }
 
-  .fileButton {
-    display: inline-flex;
-    width: fit-content;
-    min-height: 40px;
-    align-items: center;
-    justify-content: center;
-    border: var(--border-subtle);
-    border-radius: var(--radius-control);
-    padding: 0 var(--space-4);
+  .avatarCopy label {
     color: var(--color-ink);
-    background: var(--color-surface);
-    box-shadow: 0 3px 10px rgb(35 30 70 / 10%);
-    cursor: pointer;
     font-size: 13px;
     font-weight: 800;
   }
 
-  .fileButton:hover {
-    border-color: var(--color-social);
-    transform: translateY(-1px);
-  }
-
-  .fileButton:focus-visible {
-    outline: 3px solid var(--color-focus);
-    outline-offset: 3px;
-  }
-
-  .fileInput {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  .avatarCopy input {
+    max-width: 100%;
+    color: var(--color-ink);
+    font-size: 12px;
   }
 
   .field {
@@ -214,8 +190,5 @@
       animation: none;
     }
 
-    .fileButton:hover {
-      transform: none;
-    }
   }
 }

@@ -1,4 +1,5 @@
 import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/game";
+import { compareChallengeRankingMetrics } from "@/lib/challengeRanking";
 
 export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 3;
 
@@ -7,6 +8,7 @@ export type PyramidAttemptPhase = "briefing" | "playing" | "transition" | "compl
 
 export type PyramidAttemptSummary = {
   challengeId: string;
+  startedAt: number;
   levelsCleared: number;
   score: number;
   timeUsed: number;
@@ -138,10 +140,12 @@ export function getPyramidAttemptSummary(
   challengeId: string,
   results: AnswerResult[],
   outcome: PyramidAttemptOutcome,
+  startedAt: number,
   completedAt: number,
 ): PyramidAttemptSummary {
   return {
     challengeId,
+    startedAt,
     levelsCleared: results.filter(isPyramidLevelPassed).length,
     score: Math.max(
       0,
@@ -173,7 +177,13 @@ export function completePyramidAttempt(
     progressiveCluesRevealed: 1,
     outcome,
     completedAt,
-    summary: getPyramidAttemptSummary(record.challengeId, results, outcome, completedAt),
+    summary: getPyramidAttemptSummary(
+      record.challengeId,
+      results,
+      outcome,
+      record.startedAt,
+      completedAt,
+    ),
   };
 }
 
@@ -181,10 +191,17 @@ export function comparePyramidAttemptSummaries(
   left: PyramidAttemptSummary,
   right: PyramidAttemptSummary,
 ) {
-  return (
-    right.levelsCleared - left.levelsCleared ||
-    right.score - left.score ||
-    left.timeUsed - right.timeUsed
+  return compareChallengeRankingMetrics(
+    {
+      flashPoints: left.score,
+      durationMs: left.timeUsed * 1_000,
+      startedAt: new Date(left.startedAt).toISOString(),
+    },
+    {
+      flashPoints: right.score,
+      durationMs: right.timeUsed * 1_000,
+      startedAt: new Date(right.startedAt).toISOString(),
+    },
   );
 }
 
@@ -212,6 +229,7 @@ function hasValidSummary(
     value.status !== "completed" ||
     value.phase !== "completed" ||
     (value.outcome !== "failed" && value.outcome !== "summit") ||
+    !isFiniteNumber(value.startedAt) ||
     !isFiniteNumber(value.completedAt) ||
     !value.summary ||
     typeof value.summary !== "object"
@@ -223,6 +241,7 @@ function hasValidSummary(
     String(value.challengeId),
     results,
     value.outcome,
+    value.startedAt,
     value.completedAt,
   );
   return (

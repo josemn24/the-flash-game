@@ -1,1 +1,2 @@
-export type GamePhase = "intro" | "countdown" | "playing" | "transition" | "results" | "review";
+/** @deprecated Usa `@/types/gameplay` para código nuevo. */
+export type * from "@/types/gameplay/session";

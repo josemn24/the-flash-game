@@ -5,7 +5,7 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Link from "next/link";
 import { Logo } from "@/components/navigation/Logo";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
+import { PyramidQuestionStage } from "@/components/game/shared";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { SpeedBackground } from "@/components/effects/SpeedBackground";
 import { ArrowIcon, CheckIcon, CrossIcon, CrownIcon, EyeIcon, RotateIcon } from "@/components/ui";
@@ -345,18 +345,18 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
               />
             )}
             {session.phase === "playing" && session.currentLevel && (
-              <QuestionScreen
+              <PyramidQuestionStage
                 key={session.currentLevel.question.id}
                 question={session.currentLevel.question}
                 questionNumber={currentIndex + 1}
                 totalQuestions={scoredChallenge.levels.length}
                 locked={session.locked}
+                codeAttemptCount={session.codeAttempts.length}
                 deadlineAt={session.deadlineAt}
                 initialAnswer={session.initialAnswer}
                 onReady={session.armCurrentLevel}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}

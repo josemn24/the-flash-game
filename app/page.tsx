@@ -1,25 +1,12 @@
+import { AuthPanel } from "@/components/auth/AuthPanel.client";
 import { FlashPopHome } from "@/components/game";
-import { demoRoom, demoRooms } from "@/data/demoRoom";
-import { buildRoomCardModel } from "@/lib/roomCard";
+import { getHomePageModel } from "@/server/data-access";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const rooms = demoRooms.map((room) => buildRoomCardModel(room));
-  const currentUser = demoRoom.members.find((member) => member.id === demoRoom.currentUserId);
+export default async function Home() {
+  const model = await getHomePageModel();
+  if (!model) return <AuthPanel />;
 
-  if (!currentUser) {
-    throw new Error("The demo room must have a current user.");
-  }
-
-  return (
-    <FlashPopHome
-      rooms={rooms}
-      initialProfile={{
-        id: currentUser.id,
-        name: currentUser.name,
-        avatarSrc: currentUser.avatarSrc,
-      }}
-    />
-  );
+  return <FlashPopHome rooms={model.rooms} initialProfile={model.currentViewer} />;
 }

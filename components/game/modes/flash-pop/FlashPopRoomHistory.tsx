@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowIcon, Avatar, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
-import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
 import styles from "./FlashPopRoomSecondary.module.css";
 
@@ -15,10 +15,12 @@ function formatHistoryDate(value: string) {
 
 export function FlashPopRoomHistory({
   roomId,
+  roomTitle,
   entries,
   rankings,
 }: {
   roomId: string;
+  roomTitle: string;
   entries: RoomHistoryEntry[];
   rankings: Record<string, RoomDailyLeaderboardEntry[]>;
 }) {
@@ -35,7 +37,7 @@ export function FlashPopRoomHistory({
       </header>
 
       <div className={styles.pageIntro}>
-        <p className={styles.eyebrow}>TABARNIA</p>
+        <p className={styles.eyebrow}>{roomTitle.toUpperCase()}</p>
         <h1>Historial</h1>
       </div>
 

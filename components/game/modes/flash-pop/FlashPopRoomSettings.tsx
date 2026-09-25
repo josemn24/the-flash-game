@@ -1,40 +1,15 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import {
-  ArrowIcon,
-  Avatar,
-  BellIcon,
-  Button,
-  Canvas,
-  ChevronIcon,
-  PencilIcon,
-  UserPlusIcon,
-} from "@/components/ui";
+import { ArrowIcon, Avatar, Button, Canvas, UserPlusIcon } from "@/components/ui";
 import type { RoomSettingsModel } from "@/types/game";
+import { RoomMemberActions } from "./RoomMemberActions.client";
 import styles from "./FlashPopRoomSettings.module.css";
 
-function SettingsAction({
-  label,
-  icon,
-}: {
-  label: string;
-  icon: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      disabled
-      className={styles.actionButton}
-      aria-label={`${label}, próximamente`}
-    >
-      <span className={styles.actionIcon} aria-hidden="true">
-        {icon}
-      </span>
-      <span>{label}</span>
-      <ChevronIcon className={styles.actionChevron} aria-hidden="true" />
-    </button>
-  );
-}
+const roleLabels = {
+  owner: "Propietario",
+  admin: "Admin",
+  member: "",
+  spectator: "Espectador",
+} as const;
 
 export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
   return (
@@ -60,7 +35,10 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
         </header>
 
         <div className={styles.heroContent}>
-          <div className={styles.memberHero} aria-label={`${model.memberCount} miembros de ${model.title}`}>
+          <div
+            className={styles.memberHero}
+            aria-label={`${model.memberCount} miembros de ${model.title}`}
+          >
             {model.members.map((member, index) => (
               <Avatar
                 key={member.id}
@@ -79,24 +57,17 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
       </section>
 
       <div className={styles.body}>
-        <section className={styles.actions} aria-labelledby="room-actions-title">
-          <h2 id="room-actions-title">Acciones</h2>
-          <SettingsAction label="Editar perfil" icon={<PencilIcon />} />
-          <SettingsAction label="Notificaciones" icon={<BellIcon />} />
-        </section>
-
         <section className={styles.membersSection} aria-labelledby="members-title">
           <div className={styles.sectionHeading}>
             <h2 id="members-title">Miembros</h2>
             <span>{model.memberCount}</span>
           </div>
           <ul className={styles.memberList}>
-            {model.members.map((member, index) => (
+            {model.members.map((member) => (
               <li
                 key={member.id}
                 className={`${styles.memberRow} ${member.isCurrentUser ? styles.currentMember : ""}`}
               >
-                <span className={styles.memberRank}>{index + 1}</span>
                 <Avatar
                   name={member.name}
                   src={member.avatarSrc}
@@ -105,9 +76,29 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
                   size="sm"
                 />
                 <span className={styles.memberName}>
-                  <strong>{member.name}</strong>
-                  <small>{member.totalPoints} Flash Points</small>
+                  <span className={styles.memberNameLine}>
+                    <strong>{member.name}</strong>
+                    {roleLabels[member.role] ? (
+                      <span className={styles.memberRole}>{roleLabels[member.role]}</span>
+                    ) : null}
+                    {member.isCurrentUser ? <span className={styles.memberYou}>Tú</span> : null}
+                  </span>
+                  <small
+                    className={styles.memberPoints}
+                    role="img"
+                    aria-label={`${member.totalFlashPoints} Flash Points`}
+                  >
+                    {member.totalFlashPoints} ⚡
+                  </small>
                 </span>
+                {model.canManageMembers && member.canManage ? (
+                  <RoomMemberActions
+                    roomKey={model.roomId}
+                    targetMemberKey={member.id}
+                    targetName={member.name}
+                    role={member.role}
+                  />
+                ) : null}
               </li>
             ))}
           </ul>

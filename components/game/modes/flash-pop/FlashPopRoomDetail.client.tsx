@@ -16,8 +16,8 @@ import {
   TrophyIcon,
 } from "@/components/ui";
 import { formatDailyCountdown, getDailyCountdownSeconds } from "@/lib/dailyCountdown";
-import { applyRoomChallengeResult } from "@/lib/roomDetail";
-import { ROOM_ART_FALLBACK } from "@/lib/roomCard";
+import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
+import { applyRoomChallengeResult } from "@/features/rooms/localResults";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import type { RoomDetailModel } from "@/types/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
@@ -64,10 +64,10 @@ function StatItem({
 }) {
   return (
     <span className={styles.statItem}>
+      <strong>{value}</strong>
       <span className={styles.statIcon} aria-hidden="true">
         {icon}
       </span>
-      <strong>{value}</strong>
       <span className={styles.visuallyHidden}>{label}</span>
     </span>
   );
@@ -82,7 +82,7 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
         <div className={styles.challengeArt}>
           <Image
             src={ROOM_ART_FALLBACK}
-            alt="Ilustración genérica de Flash Pop"
+            alt="Ilustración genérica de The Flash"
             fill
             priority
             sizes="(max-width: 760px) 100vw, 760px"
@@ -94,6 +94,18 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
       </Card>
     );
   }
+
+  const attemptStatus = model.currentUser.dailyAttemptStatus;
+  const isSpectator = model.currentUser.role === "spectator";
+  const resultHref = `/salas/${model.roomId}/ranking/${model.currentUser.id}`;
+  const actionHref =
+    attemptStatus === "completed" || attemptStatus === "notCompleted" ? resultHref : challenge.href;
+  const actionLabel =
+    attemptStatus === "inProgress"
+      ? "Continuar"
+      : attemptStatus === "completed" || attemptStatus === "notCompleted"
+        ? "Ver resultado"
+        : "Jugar";
 
   return (
     <Card
@@ -113,7 +125,13 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
         />
         <div className={styles.challengeOverlay}>
           <Chip variant="data">
-            {model.currentUser.dailyCompleted ? "Completado" : "Pendiente"}
+            {attemptStatus === "completed"
+              ? "Completado"
+              : attemptStatus === "notCompleted"
+                ? "No completado"
+                : attemptStatus === "inProgress"
+                  ? "En progreso"
+                  : "Pendiente"}
           </Chip>
           <DailyCountdown endsAt={challenge.endsAt} />
         </div>
@@ -124,9 +142,15 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 
       <div className={styles.challengeFooter}>
         <span className={styles.challengeFormat}>{challenge.formatLabel}</span>
-        <ButtonLink href={challenge.href} size="sm" trailingIcon={<ArrowIcon />}>
-          Jugar
-        </ButtonLink>
+        {isSpectator ? (
+          <ButtonLink href={challenge.href} size="sm" trailingIcon={<ArrowIcon />}>
+            Ver introducción
+          </ButtonLink>
+        ) : (
+          <ButtonLink href={actionHref} size="sm" trailingIcon={<ArrowIcon />}>
+            {actionLabel}
+          </ButtonLink>
+        )}
       </div>
     </Card>
   );
@@ -134,25 +158,36 @@ function DailyChallengeCard({ model }: { model: RoomDetailModel }) {
 
 export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
   const { getCompletion } = useRoomSession();
-  const completion = model.dailyChallenge
-    ? getCompletion(model.roomId, model.dailyChallenge.id)
-    : undefined;
+  const completion =
+    model.source === "supabase"
+      ? undefined
+      : model.dailyChallenge
+        ? getCompletion(model.roomId, model.dailyChallenge.id)
+        : undefined;
   const visibleModel = completion
     ? applyRoomChallengeResult(model, {
         roomId: model.roomId,
         challengeId: model.dailyChallenge?.id ?? "",
-        points: completion.points,
+        startedAt: completion.attempt?.startedAt ?? new Date().toISOString(),
+        flashPoints: completion.flashPoints,
         completed: completion.completed,
         playedAt: completion.attempt?.playedAt ?? new Date().toISOString(),
+        durationMs: completion.attempt?.durationMs ?? 0,
         answers: completion.attempt?.answers ?? [],
       })
     : model;
 
   const rankingHref = `/salas/${visibleModel.roomId}/ranking`;
   const historyHref = `/salas/${visibleModel.roomId}/historial`;
+  const positionLabel =
+    visibleModel.currentUser.roomRank === null
+      ? "sin posición"
+      : `posición ${visibleModel.currentUser.roomRank}`;
   const pendingCount = Math.max(
     0,
-    visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length,
+    visibleModel.dailyChallenge
+      ? visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length
+      : 0,
   );
 
   return (
@@ -185,12 +220,20 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       <Link
         href={rankingHref}
         className={styles.statPill}
-        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalPoints} Flash Points, posición ${visibleModel.currentUser.roomRank}`}
+        aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalFlashPoints} Flash Points, ${positionLabel}`}
       >
-        <StatItem label="Flash Points" value={visibleModel.currentUser.totalPoints} icon={<BoltIcon />} />
+        <StatItem
+          label="Flash Points"
+          value={visibleModel.currentUser.totalFlashPoints}
+          icon={<BoltIcon />}
+        />
         <StatItem
           label="Posición"
-          value={`#${visibleModel.currentUser.roomRank}`}
+          value={
+            visibleModel.currentUser.roomRank === null
+              ? "—"
+              : `#${visibleModel.currentUser.roomRank}`
+          }
           icon={<TrophyIcon />}
         />
       </Link>
@@ -199,20 +242,23 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
         <p className={styles.todayLabel}>HOY</p>
         <DailyChallengeCard model={visibleModel} />
 
-        {visibleModel.dailyChallenge ? (
-          <div className={styles.dailyRanking}>
-            <RoomLeaderboard
-              title="Ranking de hoy"
-              entries={visibleModel.dailyLeaderboard}
-              currentUserId={visibleModel.currentUser.id}
-              daily
-              compact
-              variant="cards"
-              pendingCount={pendingCount}
-              memberHrefBase={`/salas/${visibleModel.roomId}/ranking`}
-            />
-          </div>
-        ) : null}
+        <div className={styles.dailyRanking}>
+          <RoomLeaderboard
+            title="Ranking de hoy"
+            entries={visibleModel.dailyLeaderboard}
+            currentUserId={visibleModel.currentUser.id}
+            daily
+            dailyAvailable={Boolean(visibleModel.dailyChallenge)}
+            compact
+            variant="cards"
+            pendingCount={pendingCount}
+            memberHrefBase={
+              visibleModel.source === "supabase"
+                ? undefined
+                : `/salas/${visibleModel.roomId}/ranking`
+            }
+          />
+        </div>
       </div>
     </Canvas>
   );

@@ -9,6 +9,7 @@ import type {
 export type NarrativePhase = "intro" | "scene" | "playing" | "transition" | "results" | "review";
 
 export type NarrativeSessionState = {
+  startedAt?: string;
   phase: NarrativePhase;
   stepIndex: number;
   results: AnswerResult[];
@@ -17,7 +18,7 @@ export type NarrativeSessionState = {
 };
 
 export type NarrativeSessionAction =
-  | { type: "start" }
+  | { type: "start"; startedAt?: string }
   | { type: "answer"; result: AnswerResult; timedOut: boolean }
   | {
       type: "advance";
@@ -25,6 +26,7 @@ export type NarrativeSessionAction =
     }
   | { type: "show-review" }
   | { type: "show-results" }
+  | { type: "hydrate"; state: NarrativeSessionState }
   | { type: "replay" };
 
 export const initialNarrativeSessionState: NarrativeSessionState = {
@@ -63,7 +65,12 @@ export function narrativeSessionReducer(
 ): NarrativeSessionState {
   switch (action.type) {
     case "start":
-      return { ...initialNarrativeSessionState, phase: "scene", stepIndex: 0 };
+      return {
+        ...initialNarrativeSessionState,
+        phase: "scene",
+        stepIndex: 0,
+        startedAt: action.startedAt,
+      };
     case "answer":
       if (state.phase !== "playing") return state;
       return {
@@ -91,6 +98,8 @@ export function narrativeSessionReducer(
       return { ...state, phase: "review" };
     case "show-results":
       return { ...state, phase: "results" };
+    case "hydrate":
+      return action.state;
     case "replay":
       return initialNarrativeSessionState;
   }

@@ -51,10 +51,6 @@ export function LobbyConcept({
           </div>
 
           <div className={styles.headerActions}>
-            <span className={styles.levelPill}>
-              <BoltIcon />
-              Nv. 4
-            </span>
             <span className={styles.iconButton}>
               <BellIcon />
             </span>
@@ -93,7 +89,9 @@ export function LobbyConcept({
                 <span className={styles.avatarMore}>+3</span>
               </div>
               <span className={styles.played}>6 ya jugaron</span>
-              <span className={styles.reward}>Hasta +120 ⚡</span>
+              <span className={styles.reward} role="img" aria-label="Hasta +100 Flash Points">
+                Hasta +100 ⚡
+              </span>
             </div>
 
             <span className={styles.primaryCta}>
@@ -103,16 +101,15 @@ export function LobbyConcept({
           </div>
         </section>
 
-        <section className={styles.seasonCard} aria-label="Progreso de temporada">
+        <section className={styles.seasonCard} aria-label="Total de Flash Points de la temporada">
           <div className={styles.sectionTitleRow}>
             <div>
               <p className={styles.eyebrow}>Temporada</p>
               <p className={styles.seasonPosition}>4.º de 8</p>
             </div>
-            <span className={styles.seasonXp}>680 / 900 ⚡</span>
-          </div>
-          <div className={styles.progressTrack}>
-            <span />
+            <span className={styles.seasonFlashPoints} role="img" aria-label="680 Flash Points">
+              680 ⚡
+            </span>
           </div>
         </section>
 
@@ -127,7 +124,7 @@ export function LobbyConcept({
               <p>
                 <strong>Ana</strong> subió al 1.º puesto
               </p>
-              <span>Hace 12 min · 91 puntos</span>
+              <span>Hace 12 min · 91 ⚡</span>
             </div>
             <span className={styles.activityArrow}>
               <ArrowIcon />

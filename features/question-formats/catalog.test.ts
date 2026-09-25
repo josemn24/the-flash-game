@@ -1,20 +1,20 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { challengeDefinitions } from "@/data/challengeDefinitions";
+import { mockChallengeDefinitions as challengeDefinitions } from "@/test-utils/mockGameplay";
 import {
   challenges,
   getChallengeById,
   getNarrativeQuestionIds,
   getPyramidQuestionIds,
-} from "@/data/challenges";
-import { demoRoom } from "@/data/demoRoom";
+} from "@/test-utils/mockGameplay";
+import { demoRoom } from "@/test-utils/mockRoom";
 import {
   getQuestionsByIds,
   questionGroups,
   questionsById,
   type QuestionId,
-} from "@/data/questions";
+} from "@/test-utils/mockGameplay";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
@@ -31,22 +31,12 @@ import {
 } from "@/lib/wordHashtag";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
-import type {
-  PlaceholderScheduledChallenge,
-  PlayableScheduledChallenge,
-  ScheduledChallenge,
-} from "@/types/game";
+import type { PlayableScheduledChallenge, ScheduledChallenge } from "@/types/game";
 
 function isPlayableScheduledChallenge(
   challenge: ScheduledChallenge,
 ): challenge is PlayableScheduledChallenge {
   return typeof challenge.challengeDefinitionId === "string";
-}
-
-function isPlaceholderScheduledChallenge(
-  challenge: ScheduledChallenge,
-): challenge is PlaceholderScheduledChallenge {
-  return !isPlayableScheduledChallenge(challenge);
 }
 
 describe("question format catalog", () => {
@@ -329,7 +319,7 @@ describe("question format catalog", () => {
     expect(demoRoom.title).toBe("Tabarnia");
     expect(demoRoom.activeSeason.title).toBe("Primera temporada");
     expect(demoRoom.activeSeason.status).toBe("active");
-    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(9);
+    expect(demoRoom.activeSeason.scheduledChallenges).toHaveLength(6);
     expect(demoRoom.activeSeason.scheduledChallenges.map((challenge) => challenge.id)).toEqual([
       "tabarnia-flash-01",
       "tabarnia-challenge-02",
@@ -337,9 +327,6 @@ describe("question format catalog", () => {
       "tabarnia-challenge-04",
       "tabarnia-challenge-05",
       "tabarnia-challenge-06",
-      "tabarnia-challenge-07",
-      "tabarnia-challenge-08",
-      "tabarnia-challenge-09",
     ]);
     expect(
       demoRoom.activeSeason.scheduledChallenges.every(
@@ -352,23 +339,10 @@ describe("question format catalog", () => {
         .every((challenge) => challenge.challengeDefinitionId in challengeDefinitions),
     ).toBe(true);
     expect(
-      demoRoom.activeSeason.scheduledChallenges
-        .filter(isPlaceholderScheduledChallenge)
-        .every(
-          (challenge) =>
-            typeof challenge.title === "string" &&
-            challenge.title.startsWith("Desafío ") &&
-            challenge.subtitle === "Próximamente",
-        ),
-    ).toBe(true);
-    expect(
       demoRoom.activeSeason.scheduledChallenges.map(
         (challenge) => Date.parse(challenge.availableUntil) - Date.parse(challenge.availableFrom),
       ),
-    ).toEqual([
-      1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999, 1_295_999_999,
-      86_399_999, 86_399_999, 86_399_999,
-    ]);
+    ).toEqual([86_400_000, 86_400_000, 86_400_000, 86_400_000, 86_400_000, 1_296_000_000]);
     expect(challenges).toHaveLength(6);
     const flashChallenge = challenges.find((challenge) => challenge.mode === "flash");
     const alphabetChallenge = challenges.find((challenge) => challenge.mode === "alphabet");
@@ -424,7 +398,7 @@ describe("question format catalog", () => {
     ).toMatchObject({ status: "correct", points: 10 });
     expect(
       evaluateAnswer({ question: direction, answer: "Montes Ellsworth", timeUsed: 0 }),
-    ).toMatchObject({ status: "incorrect", points: -2 });
+    ).toMatchObject({ status: "incorrect", points: 0 });
 
     const polarContext = narrativeQuestions[1];
     expect(polarContext.type).toBe("multiple-choice");

@@ -1,0 +1,158 @@
+.content {
+  width: min(100%, 1180px);
+}
+
+.skipLink {
+  position: fixed;
+  z-index: 10;
+  top: 12px;
+  left: 12px;
+  transform: translateY(-180%);
+  border: 2px solid var(--color-ink, #17171f);
+  border-radius: var(--radius-control, 12px);
+  background: var(--color-brand, #c8ff00);
+  color: var(--color-ink, #17171f);
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.skipLink:focus-visible {
+  transform: translateY(0);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 0 22px;
+}
+
+.brand,
+.account {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  gap: 12px;
+}
+
+.brandMark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--color-accent, #c8ff00);
+  color: var(--color-ink, #17171f);
+}
+
+.brandMark :global(svg) {
+  width: 24px;
+  height: 24px;
+}
+
+.eyebrow,
+.accountLabel {
+  margin: 0;
+  color: var(--color-muted, #777783);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.brandName,
+.account strong {
+  margin: 2px 0 0;
+  color: var(--color-ink, #17171f);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.account {
+  gap: 10px;
+}
+
+.accountCopy {
+  display: grid;
+}
+
+.navigation {
+  border-block: 1px solid color-mix(in srgb, var(--color-ink, #17171f) 10%, transparent);
+  overflow-x: auto;
+}
+
+.navList {
+  display: flex;
+  min-width: max-content;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+}
+
+.navLink {
+  display: block;
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: var(--color-muted, #777783);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.navLink:hover,
+.navLink[data-active="true"] {
+  background: var(--color-ink, #17171f);
+  color: white;
+}
+
+.breadcrumbs {
+  margin-top: 22px;
+  color: var(--color-muted, #777783);
+  font-size: 0.78rem;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.breadcrumbs a {
+  color: inherit;
+}
+
+.main {
+  min-width: 0;
+  outline: none;
+}
+
+@media (max-width: 680px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account {
+    width: 100%;
+  }
+
+  .account :global(button) {
+    margin-left: auto;
+  }
+}

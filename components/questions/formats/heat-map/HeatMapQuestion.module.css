@@ -20,44 +20,44 @@
   }
 
   .toleranceArea {
-    fill: color-mix(in srgb, var(--format-danger) 8%, transparent);
-    stroke: color-mix(in srgb, var(--format-danger) 35%, transparent);
+    fill: color-mix(in srgb, var(--color-danger) 8%, transparent);
+    stroke: color-mix(in srgb, var(--color-danger) 35%, transparent);
     stroke-width: 3;
     stroke-dasharray: 9 8;
   }
 
   .targetArea {
-    fill: color-mix(in srgb, var(--format-accent) 11%, transparent);
-    stroke: color-mix(in srgb, var(--format-accent) 72%, transparent);
+    fill: color-mix(in srgb, var(--color-social) 11%, transparent);
+    stroke: color-mix(in srgb, var(--color-social) 72%, transparent);
     stroke-width: 4;
   }
 
   .distanceLine {
-    stroke: var(--format-line);
+    stroke: var(--color-ink-muted);
     stroke-width: 4;
     stroke-dasharray: 8 7;
   }
 
   .targetMarker circle {
-    fill: var(--format-surface);
-    stroke: var(--format-accent);
+    fill: var(--color-surface-raised);
+    stroke: var(--color-social);
     stroke-width: 5;
   }
 
   .targetMarker path {
-    stroke: var(--format-accent);
+    stroke: var(--color-social);
     stroke-width: 4;
     stroke-linecap: round;
   }
 
   .selectedMarker circle:first-child {
-    fill: color-mix(in srgb, var(--format-surface) 85%, transparent);
-    stroke: var(--format-ink);
+    fill: color-mix(in srgb, var(--color-surface) 85%, transparent);
+    stroke: var(--color-ink);
     stroke-width: 5;
   }
 
   .selectedMarker circle:last-child {
-    fill: var(--format-ink);
+    fill: var(--color-ink);
   }
 
   .confirmButton:focus-visible {

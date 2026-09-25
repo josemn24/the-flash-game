@@ -1,0 +1,13 @@
+@layer app-formats {
+  .screen {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .introCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+}

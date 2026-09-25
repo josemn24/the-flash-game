@@ -16,17 +16,9 @@ import {
   FLASH_POP_CHALLENGE_ID,
   FLASH_POP_SECONDARY_CHALLENGE_ID,
   getFlashPopLobbyChallenge,
-  flashPopPlayers,
 } from "@/features/flash-pop/demoSocial";
-import type { PyramidChallenge } from "@/types/game";
+import type { FlashPopLobbyPageModel } from "@/types/view-models";
 import styles from "@/app/flash-pop/FlashPop.module.css";
-
-const players: AvatarData[] = flashPopPlayers.slice(1).map((player) => ({
-  id: player.id,
-  name: player.displayName,
-  initials: player.initials,
-  tone: player.tone,
-}));
 
 function getActionLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["status"]) {
   return status === "available"
@@ -46,37 +38,54 @@ function getStatusLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["st
         : "Nuevo";
 }
 
-export function FlashPopLobby({
-  primaryChallenge,
-  secondaryChallenge,
-}: {
-  primaryChallenge: PyramidChallenge;
-  secondaryChallenge: PyramidChallenge;
-}) {
-  const primaryModel = getFlashPopLobbyChallenge(null, FLASH_POP_CHALLENGE_ID);
-  const secondaryModel = getFlashPopLobbyChallenge(null, FLASH_POP_SECONDARY_CHALLENGE_ID);
+export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
+  const primaryChallenge = model.primary.challenge;
+  const secondaryChallenge = model.secondary.challenge;
+  if (primaryChallenge.mode !== "pyramid" || secondaryChallenge.mode !== "pyramid") return null;
+  const flashPopPlayers = model.primary.socialSnapshot.players;
+  const players: AvatarData[] = flashPopPlayers
+    .filter(({ id }) => id !== model.primary.socialSnapshot.currentPlayer.id)
+    .map((player) => ({
+      id: player.id,
+      name: player.displayName,
+      initials: player.initials,
+      tone: player.tone,
+    }));
+  const primaryModel = getFlashPopLobbyChallenge(
+    null,
+    FLASH_POP_CHALLENGE_ID,
+    model.primary.socialSnapshot,
+    primaryChallenge,
+  );
+  const secondaryModel = getFlashPopLobbyChallenge(
+    null,
+    FLASH_POP_SECONDARY_CHALLENGE_ID,
+    model.secondary.socialSnapshot,
+    secondaryChallenge,
+  );
 
   const actionLabel = getActionLabel(primaryModel.status);
-  const progress = Math.min(
-    100,
-    Math.round((primaryModel.seasonXp.current / primaryModel.seasonXp.nextLevelAt) * 100),
-  );
   const playerById = (id: string) => flashPopPlayers.find((player) => player.id === id)!;
 
   return (
     <Canvas contentClassName={styles.shell}>
       <header className={styles.appHeader}>
-        <div className={styles.brand} aria-label="Flash Pop">
+        <div className={styles.brand} aria-label="The Flash">
           <span className={styles.brandMark}>
             <BoltIcon />
           </span>
-          <span>Flash Pop</span>
+          <span>The Flash</span>
         </div>
 
         <div className={styles.identity}>
-          <Avatar name="Javi Moreno" initials="JM" tone="social" size="md" />
+          <Avatar
+            name={model.currentViewer.name}
+            src={model.currentViewer.avatarSrc}
+            tone="social"
+            size="md"
+          />
           <span className={styles.identityCopy}>
-            <strong>Hola, Javi</strong>
+            <strong>Hola, {model.currentViewer.name}</strong>
             <small>Tabarnia · Día 7</small>
           </span>
         </div>
@@ -85,7 +94,6 @@ export function FlashPopLobby({
           <Chip tone="social" className={styles.previewBadge}>
             Demo
           </Chip>
-          <Chip icon={<BoltIcon />}>Nv. 4</Chip>
           <IconButton label="Notificaciones" className={styles.notificationButton}>
             <BellIcon />
           </IconButton>
@@ -145,8 +153,13 @@ export function FlashPopLobby({
                 maxVisible={3}
                 label={`${primaryModel.participants.length} ya jugaron`}
               />
-              <Chip variant="reward" icon={<BoltIcon />} className={styles.rewardChip}>
-                Hasta +120
+              <Chip
+                variant="flashPoints"
+                icon={<BoltIcon />}
+                className={styles.flashPointsChip}
+                ariaLabel={"Hasta +" + primaryModel.maxFlashPoints + " Flash Points"}
+              >
+                Hasta +{primaryModel.maxFlashPoints}
               </Chip>
             </div>
             <ButtonLink
@@ -158,7 +171,7 @@ export function FlashPopLobby({
               {actionLabel}
             </ButtonLink>
             <p className={styles.attemptNote}>
-              {primaryChallenge.levels.length} niveles · Puedes volver a jugar cuando quieras.
+              {primaryChallenge.levels.length} niveles · Tienes un único intento.
             </p>
           </div>
         </Card>
@@ -171,20 +184,17 @@ export function FlashPopLobby({
                 <h2>
                   {primaryModel.playerRank
                     ? `Vas ${primaryModel.playerRank}.º de ${primaryModel.totalPlayers}`
-                    : "Vas 4.º de 8"}
+                    : `Aún sin posición · ${primaryModel.totalPlayers} jugadores`}
                 </h2>
               </div>
-              <span className={styles.seasonValue}>
-                {primaryModel.seasonXp.current} / {primaryModel.seasonXp.nextLevelAt} ⚡
+              <span
+                className={styles.seasonValue}
+                role="img"
+                aria-label={primaryModel.seasonFlashPoints + " Flash Points"}
+              >
+                {primaryModel.seasonFlashPoints} <BoltIcon aria-hidden="true" />
               </span>
             </div>
-            <div className={styles.progressTrack} aria-label={`${progress} % del nivel completado`}>
-              <span style={{ width: `${progress}%` }} />
-            </div>
-            <p className={styles.progressCopy}>
-              {Math.max(0, primaryModel.seasonXp.nextLevelAt - primaryModel.seasonXp.current)} rayos
-              para alcanzar el siguiente nivel.
-            </p>
           </Card>
 
           <Card as="section" className={styles.secondaryChallengeCard}>
@@ -226,7 +236,7 @@ export function FlashPopLobby({
 
           <Card as="section" className={styles.classicPreviewCard}>
             <p className={styles.eyebrow}>Nuevo preview</p>
-            <h2>Flash clásico, en versión Pop</h2>
+            <h2>Flash</h2>
             <p className={styles.challengeCopy}>
               Juega las 16 preguntas del reto original con la nueva presentación clara y eléctrica.
             </p>
@@ -236,7 +246,7 @@ export function FlashPopLobby({
               fullWidth
               trailingIcon={<ArrowIcon />}
             >
-              Probar Flash clásico
+              Probar Flash
             </ButtonLink>
           </Card>
 

@@ -1,27 +1,32 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import { useMemo } from "react";
+import { motion, MotionConfig } from "motion/react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
-import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import {
   FlashPopFeedback,
   getFlashPopFeedbackCopy,
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { QuestionInput } from "@/features/question-formats/QuestionInput";
-import { ButtonLink, Card, Canvas, GameHeader, Timer } from "@/components/ui";
+import { ButtonLink, Card, Canvas, GameHeader } from "@/components/ui";
 import {
   ChallengeResultScreen,
+  FlashQuestionStage,
   ReviewAnswerPanel,
   StartCountdown,
   type ChallengeResultModel,
 } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { useGameSession } from "@/features/game/useGameSession";
+import { useGameSession, type GameSessionSnapshot } from "@/features/game/useGameSession";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { CHALLENGE_MAX_SCORE, withChallengeScoring } from "@/lib/challengeScoring";
+import { FlashPopGameShell } from "./FlashPopGameShell";
 import {
   calculateResultAccuracy,
   getAnswerResultAccuracyUnit,
@@ -31,20 +36,8 @@ import type {
   ChallengeCompletionResult,
   FlashChallenge,
   GameRoomContext,
-  Question,
-  QuestionMedia as QuestionMediaType,
 } from "@/types/game";
 import styles from "./FlashPopFlashGame.module.css";
-
-function getMedia(question: Question): QuestionMediaType | undefined {
-  return "media" in question ? question.media : undefined;
-}
-
-function getPromptCopy(prompt: string) {
-  const start = prompt.lastIndexOf("¿");
-  if (start <= 0) return { title: prompt };
-  return { context: prompt.slice(0, start).trim(), title: prompt.slice(start).trim() };
-}
 
 function Intro({
   challenge,
@@ -58,102 +51,7 @@ function Intro({
   return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
 }
 
-function QuestionStage({
-  challenge,
-  question,
-  questionIndex,
-  locked,
-  onSubmit,
-  onTimeUp,
-  onProgress,
-  onIncorrectAttempt,
-  onProgressiveClueReveal,
-  onCodeAttempt,
-  onTimedResponseStart,
-  attemptCount,
-}: {
-  challenge: FlashChallenge;
-  question: Question;
-  questionIndex: number;
-  locked: boolean;
-  onSubmit: (answer: import("@/types/game").AnswerValue) => void;
-  onTimeUp: () => void;
-  onProgress: (answer: import("@/types/game").AnswerValue) => void;
-  onIncorrectAttempt: () => void;
-  onProgressiveClueReveal: (revealedClues: number) => void;
-  onCodeAttempt: (code: string) => boolean;
-  onTimedResponseStart: () => void;
-  attemptCount: number;
-}) {
-  const delayedTimer =
-    question.type === "flash-memory" ||
-    question.type === "simon-sequence" ||
-    question.type === "mini-wordle" ||
-    question.type === "progressive-image";
-  const [timedResponseStarted, setTimedResponseStarted] = useState(!delayedTimer);
-  const prompt = getPromptCopy(question.question);
-  const questionPosition = `${String(questionIndex + 1).padStart(2, "0")} de ${String(challenge.questions.length).padStart(2, "0")}`;
-  const startTimedResponse = () => {
-    setTimedResponseStarted(true);
-    onTimedResponseStart();
-  };
-
-  return (
-    <div className={styles.stage}>
-      <GameHeader
-        title="Flash clásico"
-        mobileLabel={
-          <>
-            Pregunta {String(questionIndex + 1).padStart(2, "0")}{" "}
-            <span className={styles.mobileLabelMuted}>
-              de {String(challenge.questions.length).padStart(2, "0")}
-            </span>
-          </>
-        }
-        mobileLabelAriaLabel={`Pregunta ${questionPosition}`}
-        timer={
-          <Timer
-            duration={question.timeLimit}
-            active={!locked && timedResponseStarted}
-            onTimeUp={onTimeUp}
-            resetKey={question.id}
-            size="compact"
-          />
-        }
-      />
-      <p
-        className={styles.questionIndicator}
-        aria-label={`Pregunta ${questionIndex + 1} de ${challenge.questions.length}`}
-      >
-        Pregunta {String(questionIndex + 1).padStart(2, "0")}{" "}
-        <span>de {String(challenge.questions.length).padStart(2, "0")}</span>
-      </p>
-
-      <section className={styles.questionCard} aria-labelledby="flash-pop-question-title">
-        {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
-        <h1 id="flash-pop-question-title">{prompt.title}</h1>
-        {getMedia(question) ? (
-          <div className={styles.questionMedia}>
-            <QuestionMedia media={getMedia(question)!} prominent />
-          </div>
-        ) : null}
-        <QuestionInput
-          question={question}
-          locked={locked}
-          onSubmit={onSubmit}
-          onProgress={onProgress}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onProgressiveClueReveal={onProgressiveClueReveal}
-          onCodeAttempt={onCodeAttempt}
-          onTimedResponseStart={startTimedResponse}
-          codeAttemptCount={attemptCount}
-        />
-      </section>
-    </div>
-  );
-}
-
-function Transition({
+export function Transition({
   result,
   timedOut,
   isLast,
@@ -175,7 +73,7 @@ function Transition({
   );
 }
 
-function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
+export function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
   const correct = results.filter((result) => result.status === "correct").length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
   const unanswered = results.filter((result) => result.status === "unanswered").length;
@@ -185,12 +83,13 @@ function buildResultModel(results: AnswerResult[], score: number): ChallengeResu
     accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío duro.";
 
   return {
-    gameTitle: "Flash clásico",
+    gameTitle: "Flash",
     statusLabel: "Completado",
     eyebrow: "Desafío completado",
     title: message,
     score,
     maxScore: CHALLENGE_MAX_SCORE,
+    scoreUnit: "flashPoints",
     accuracy,
     totalTime,
     metrics: [
@@ -201,7 +100,7 @@ function buildResultModel(results: AnswerResult[], score: number): ChallengeResu
   };
 }
 
-function ReviewStage({
+export function ReviewStage({
   challenge,
   results,
   onBack,
@@ -212,7 +111,7 @@ function ReviewStage({
   challenge: FlashChallenge;
   results: AnswerResult[];
   onBack: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
   returnTo: string;
   roomContext?: GameRoomContext;
 }) {
@@ -256,17 +155,25 @@ export function FlashPopFlashGame({
   onComplete?: (result: ChallengeCompletionResult) => void;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
+  const resumeState = useRoomAttemptResume<GameSessionSnapshot>(roomContext, challenge.id, "flash");
   const session = useGameSession(scoredChallenge, {
     transitionDuration: FLASH_POP_FEEDBACK_DURATION,
+    resumeState,
   });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "flash", session.phase, session.snapshot);
   const lastResult = session.results[session.results.length - 1];
 
   useChallengeCompletionReporter(
     session.phase === "results"
       ? {
           challengeId: challenge.id,
-          points: session.score,
+          startedAt:
+            session.startedAt ??
+            roomContext?.result?.attempt?.startedAt ??
+            new Date().toISOString(),
+          flashPoints: session.score,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.results),
           answers: session.results,
         }
       : null,
@@ -280,7 +187,7 @@ export function FlashPopFlashGame({
           <Card>
             <h1>Preview no disponible</h1>
             <p>Este piloto está limitado a tabarnia-flash-01.</p>
-            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>"Volver"</ButtonLink>
+            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>&quot;Volver&quot;</ButtonLink>
           </Card>
         </Canvas>
       </MotionConfig>
@@ -288,101 +195,94 @@ export function FlashPopFlashGame({
   }
 
   return (
-    <MotionConfig reducedMotion="user">
-      <Canvas
-        maxWidth={session.phase === "intro" ? "none" : "wide"}
-        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
-      >
-        <AnimatePresence mode="wait">
-          {session.phase === "intro" ? (
-            <motion.div
-              key="intro"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Intro
-                challenge={scoredChallenge}
-                onStart={session.beginCountdown}
-                returnTo={roomContext?.returnTo}
-              />
-            </motion.div>
-          ) : null}
-          {session.phase === "countdown" ? (
-            <StartCountdown label="Flash clásico" key="countdown" onComplete={session.start} />
-          ) : null}
-          {session.phase === "playing" && session.question ? (
-            <motion.div
-              className={styles.stageFrame}
-              key={session.question.id}
-              initial={{ opacity: 0, x: 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18 }}
-            >
-              <QuestionStage
-                challenge={scoredChallenge}
-                question={session.question}
-                questionIndex={session.questionIndex}
-                locked={session.locked}
-                onSubmit={session.submitAnswer}
-                onTimeUp={session.handleTimeUp}
-                onProgress={session.handleAnswerProgress}
-                onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={session.handleProgressiveClueReveal}
-                onCodeAttempt={session.handleCodeAttempt}
-                onTimedResponseStart={session.handleTimedResponseStart}
-                attemptCount={session.codeAttempts.length}
-              />
-            </motion.div>
-          ) : null}
-          {session.phase === "transition" ? (
-            <motion.div
-              key={`transition-${session.questionIndex}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Transition
-                result={lastResult}
-                timedOut={session.lastTimedOut}
-                isLast={session.questionIndex === scoredChallenge.questions.length - 1}
-              />
-            </motion.div>
-          ) : null}
-          {session.phase === "results" ? (
-            <motion.div
-              className={styles.stageFrame}
-              key="results"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <ChallengeResultScreen
-                model={buildResultModel(session.results, session.score)}
-                onReview={session.showReview}
-                returnTo={roomContext?.returnTo ?? "/flash-pop"}
-              />
-            </motion.div>
-          ) : null}
-          {session.phase === "review" ? (
-            <motion.div
-              key="review"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <ReviewStage
-                challenge={scoredChallenge}
-                results={session.results}
-                onBack={session.showResults}
-                onReplay={session.replay}
-                returnTo={roomContext?.returnTo ?? "/flash-pop"}
-                roomContext={roomContext}
-              />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </Canvas>
-    </MotionConfig>
+    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
+      {session.phase === "intro" ? (
+        <motion.div
+          key="intro"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <Intro
+            challenge={scoredChallenge}
+            onStart={session.beginCountdown}
+            returnTo={roomContext?.returnTo}
+          />
+        </motion.div>
+      ) : null}
+      {session.phase === "countdown" ? (
+        <StartCountdown label="Flash" key="countdown" onComplete={session.start} />
+      ) : null}
+      {session.phase === "playing" && session.question ? (
+        <motion.div
+          className={styles.stageFrame}
+          key={session.question.id}
+          initial={{ opacity: 0, x: 18 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -18 }}
+        >
+          <FlashQuestionStage
+            question={session.question}
+            questionNumber={session.questionIndex + 1}
+            totalQuestions={scoredChallenge.questions.length}
+            locked={session.locked}
+            codeAttemptCount={session.codeAttempts.length}
+            onSubmit={session.submitAnswer}
+            onTimeUp={session.handleTimeUp}
+            onProgress={session.handleAnswerProgress}
+            onIncorrectAttempt={session.handleIncorrectAttempt}
+            onProgressiveClueReveal={session.handleProgressiveClueReveal}
+            onCodeAttempt={session.handleCodeAttempt}
+            onTimedResponseStart={session.handleTimedResponseStart}
+          />
+        </motion.div>
+      ) : null}
+      {session.phase === "transition" ? (
+        <motion.div
+          key={`transition-${session.questionIndex}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <Transition
+            result={lastResult}
+            timedOut={session.lastTimedOut}
+            isLast={session.questionIndex === scoredChallenge.questions.length - 1}
+          />
+        </motion.div>
+      ) : null}
+      {session.phase === "results" ? (
+        <motion.div
+          className={styles.stageFrame}
+          key="results"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <ChallengeResultScreen
+            model={buildResultModel(session.results, session.score)}
+            onReview={session.showReview}
+            returnTo={roomContext?.returnTo ?? "/flash-pop"}
+          />
+        </motion.div>
+      ) : null}
+      {session.phase === "review" ? (
+        <motion.div
+          key="review"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <ReviewStage
+            challenge={scoredChallenge}
+            results={session.results}
+            onBack={session.showResults}
+            onReplay={roomContext ? undefined : session.replay}
+            returnTo={roomContext?.returnTo ?? "/flash-pop"}
+            roomContext={roomContext}
+          />
+        </motion.div>
+      ) : null}
+    </FlashPopGameShell>
   );
 }

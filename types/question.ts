@@ -457,12 +457,14 @@ export type MiniWordleQuestion = BaseQuestion & {
   type: "mini-wordle";
   correctAnswer: string;
   additionalGuesses?: string[];
+  /** Versioned dictionary metadata used by the competitive editorial contract. */
+  dictionaryId?: "es-general-4.v1" | "es-general-5.v1";
   hint?: string;
   wordLength?: 4 | 5;
   maxAttempts?: number;
 };
 
-export type Question =
+export type LegacyQuestion =
   | MultipleChoiceQuestion
   | OddOneOutQuestion
   | MatchingQuestion
@@ -495,8 +497,15 @@ export type Question =
   | LogicCodeQuestion
   | EstimationQuestion;
 
-export type QuestionType = Question["type"];
-export type QuestionOfType<T extends QuestionType> = Extract<Question, { type: T }>;
+/**
+ * @deprecated Contrato completo del prototipo. Para código nuevo usa
+ * `PublicQuestion`, `QuestionSolution` o `AuthoringQuestion` desde
+ * `@/types/contracts`.
+ */
+export type Question = LegacyQuestion;
+
+export type QuestionType = LegacyQuestion["type"];
+export type QuestionOfType<T extends QuestionType> = Extract<LegacyQuestion, { type: T }>;
 
 export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;
@@ -516,27 +525,41 @@ export type ErrorReconstructionAnswer = { stepId: string; correction?: string | 
 export type WordHashtagAnswer = { swaps: WordHashtagSwap[] };
 export type WordSearchAnswer = { foundWordIds: string[] };
 export type MiniWordleAnswer = { guesses: string[] };
-export type AnswerValue =
-  | string
-  | number
-  | boolean
-  | string[]
-  | ClassificationAnswer
-  | MatchingAnswer
-  | ConnectPairsAnswer
-  | FlashMemoryAnswer
-  | MemoryPairsAnswer
-  | MiniSudokuAnswer
-  | MiniNonogramAnswer
-  | QueensAnswer
-  | TimeMazeAnswer
-  | ZipAnswer
-  | PipesAnswer
-  | SlidingPuzzleAnswer
-  | EscapeAnswer
-  | ErrorReconstructionAnswer
-  | WordHashtagAnswer
-  | WordSearchAnswer
-  | MiniWordleAnswer
-  | HeatMapAnswer
-  | ImageLabelingAnswer;
+
+export type LegacyAnswerValueMap = {
+  "multiple-choice": string;
+  "odd-one-out": string;
+  matching: MatchingAnswer;
+  "connect-pairs": ConnectPairsAnswer;
+  "true-false": boolean;
+  "short-text": string;
+  "progressive-clues": string;
+  "progressive-image": string;
+  "heat-map": HeatMapAnswer;
+  "image-labeling": ImageLabelingAnswer | string;
+  ordering: string[];
+  classification: ClassificationAnswer;
+  "flash-memory": FlashMemoryAnswer;
+  "memory-pairs": MemoryPairsAnswer;
+  "simon-sequence": SimonSequenceAnswer;
+  "logic-matrix": string;
+  "mini-sudoku": MiniSudokuAnswer;
+  "mini-nonogram": MiniNonogramAnswer;
+  queens: QueensAnswer;
+  "time-maze": TimeMazeAnswer;
+  zip: ZipAnswer;
+  pipes: PipesAnswer;
+  "sliding-puzzle": SlidingPuzzleAnswer;
+  escape: EscapeAnswer;
+  "error-reconstruction": ErrorReconstructionAnswer;
+  anagram: string;
+  "word-hashtag": WordHashtagAnswer;
+  "word-search": WordSearchAnswer;
+  "mini-wordle": MiniWordleAnswer;
+  "logic-code": string;
+  estimation: number;
+};
+
+export type LegacyAnswerValueOfType<T extends QuestionType> = LegacyAnswerValueMap[T];
+/** @deprecated Usa `AnswerValue` o `AnswerValueOfType<T>` desde `@/types/contracts`. */
+export type AnswerValue = LegacyAnswerValueMap[QuestionType];

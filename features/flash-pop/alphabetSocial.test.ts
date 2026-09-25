@@ -1,17 +1,28 @@
 import { describe, expect, it } from "vitest";
-import {
-  calculateAlphabetSeasonXp,
-  getFlashPopAlphabetResult,
-} from "@/features/flash-pop/alphabetSocial";
+import { getFlashPopAlphabetResult } from "@/features/flash-pop/alphabetSocial";
+import { makeSocialSnapshot } from "@/features/flash-pop/socialSnapshot.test-utils";
 
 describe("Flash Pop Alphabet social adapter", () => {
-  it("caps a complete fast run at 120 XP", () => {
-    expect(
-      calculateAlphabetSeasonXp({ correctAnswers: 18, totalLetters: 18, elapsedTime: 0 }, 135),
-    ).toBe(120);
+  it("uses the challenge score as Flash Points", () => {
+    const result = getFlashPopAlphabetResult(
+      {
+        challengeId: "future-alphabet",
+        score: 100,
+        correctAnswers: 18,
+        totalLetters: 18,
+        elapsedTime: 0,
+        lastCorrectAt: 0,
+        completedAt: "2026-09-01T12:00:00.000Z",
+        startedAt: "2026-09-01T11:00:00.000Z",
+      },
+      makeSocialSnapshot(0),
+    );
+
+    expect(result.flashPointsEarned).toBe(100);
+    expect(result.seasonFlashPoints).toBe(740);
   });
 
-  it("uses a demo fallback for an unknown Alphabet challenge", () => {
+  it("does not invent peers for an unknown Alphabet challenge", () => {
     const result = getFlashPopAlphabetResult(
       {
         challengeId: "future-alphabet",
@@ -20,26 +31,48 @@ describe("Flash Pop Alphabet social adapter", () => {
         totalLetters: 18,
         elapsedTime: 80,
         lastCorrectAt: 70,
+        completedAt: "2026-09-01T12:00:00.000Z",
+        startedAt: "2026-09-01T11:00:00.000Z",
       },
-      { timeLimit: 135 },
+      makeSocialSnapshot(0),
+      { seasonFlashPoints: 640 },
     );
 
     expect(result.socialSource).toBe("demo");
-    expect(result.totalPlayers).toBe(7);
-    expect(result.peers.some((row) => row.player.id === "javi")).toBe(true);
+    expect(result.totalPlayers).toBe(1);
+    expect(result.peers.some((row) => row.player.id === "player")).toBe(true);
   });
 
-  it("orders equal scores by the last correct answer time", () => {
-    const result = getFlashPopAlphabetResult({
-      challengeId: "future-alphabet",
-      score: 89,
-      correctAnswers: 16,
-      totalLetters: 18,
-      elapsedTime: 100,
-      lastCorrectAt: 90,
-    });
+  it("ignores Alphabet completion timestamps after applying the common tie-breaker", () => {
+    const snapshot = makeSocialSnapshot(1);
+    const peer = snapshot.peers[0];
+    if (!peer) throw new Error("Expected a peer");
+    const result = getFlashPopAlphabetResult(
+      {
+        challengeId: "future-alphabet",
+        score: 89,
+        correctAnswers: 16,
+        totalLetters: 18,
+        elapsedTime: 100,
+        lastCorrectAt: 90,
+        completedAt: "2026-09-02T12:00:00.000Z",
+        startedAt: "2026-09-02T11:00:00.000Z",
+      },
+      {
+        ...snapshot,
+        peers: [
+          {
+            ...peer,
+            flashPoints: 89,
+            timeUsed: 120,
+            lastCorrectAt: 0,
+            completedAt: "2020-01-01T00:00:00.000Z",
+          },
+        ],
+      },
+    );
 
     expect(result.playerRank).toBe(1);
-    expect(result.peers[0]?.player.id).toBe("javi");
+    expect(result.peers[0]?.player.id).toBe("player");
   });
 });

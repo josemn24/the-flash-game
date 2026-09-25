@@ -13,6 +13,7 @@ import {
   calculateHeatMapMetrics,
   calculateImageLabelingMetrics,
   calculateProgressiveCluesMetrics,
+  calculateQuestionScore,
   calculateTotalScore,
   evaluateAnswer,
   getTimedOutAnswer,
@@ -124,8 +125,7 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
       } else {
         correctAnswer = example.response.correctAnswer;
         incorrectAnswer = "__incorrect__";
-        incorrectPoints =
-          example.response.kind === "choice" ? -Math.round(example.points * 0.2) : 0;
+        incorrectPoints = 0;
       }
       break;
     case "matching":
@@ -177,7 +177,7 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "logic-matrix":
       correctAnswer = example.correctOptionId;
       incorrectAnswer = example.optionIds.find((optionId) => optionId !== example.correctOptionId)!;
-      incorrectPoints = -Math.round(example.points * 0.2);
+      incorrectPoints = 0;
       break;
     case "mini-sudoku":
       correctAnswer = Object.fromEntries(
@@ -275,7 +275,7 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     case "true-false":
       correctAnswer = example.correctAnswer;
       incorrectAnswer = !example.correctAnswer;
-      incorrectPoints = -Math.round(example.points * 0.4);
+      incorrectPoints = 0;
       break;
     case "estimation":
       correctAnswer = example.correctAnswer;
@@ -285,10 +285,7 @@ const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) =>
     default:
       correctAnswer = example.correctAnswer;
       incorrectAnswer = "__incorrect__";
-      incorrectPoints =
-        example.type === "multiple-choice" || example.type === "odd-one-out"
-          ? -Math.round(example.points * 0.2)
-          : 0;
+      incorrectPoints = 0;
   }
 
   return {
@@ -979,7 +976,7 @@ describe("question evaluation", () => {
     });
     expect(evaluateAnswer({ question, answer: "Torso", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: -20,
+      points: 0,
     });
     expect(evaluateAnswer({ question, answer: 42, timeUsed: 0 })).toMatchObject({
       status: "incorrect",
@@ -1045,14 +1042,21 @@ describe("question evaluation", () => {
     });
   });
 
-  it("preserves the speed floor and incorrect penalties", () => {
+  it("preserves the speed floor and clamps incorrect penalties per question", () => {
     const choice = QUESTION_FORMAT_CATALOG["multiple-choice"].examples[0].question;
     const trueFalse = QUESTION_FORMAT_CATALOG["true-false"].examples[0].question;
     expect(calculateAnswerScore(choice, choice.correctAnswer, 0)).toBe(100);
     expect(calculateAnswerScore(choice, choice.correctAnswer, choice.timeLimit)).toBe(60);
-    expect(calculateAnswerScore(choice, "Toronto", 0)).toBe(-20);
+    expect(calculateAnswerScore(choice, "Toronto", 0)).toBe(0);
     expect(calculateAnswerScore(choice, 42, 0)).toBe(0);
-    expect(calculateAnswerScore(trueFalse, true, 0)).toBe(-40);
+    expect(calculateAnswerScore(trueFalse, true, 0)).toBe(0);
+    expect(calculateQuestionScore(choice, false, 0, { incorrectPenaltyRatio: 0.2 })).toBe(0);
+    expect(
+      calculateTotalScore([
+        calculateAnswerScore(choice, choice.correctAnswer, 0),
+        calculateAnswerScore(choice, "Toronto", 0),
+      ]),
+    ).toBe(100);
   });
 
   it("evaluates odd-one-out answers and applies its incorrect penalty", () => {
@@ -1063,11 +1067,11 @@ describe("question evaluation", () => {
     });
     expect(evaluateAnswer({ question, answer: "venus", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: -20,
+      points: 0,
     });
     expect(evaluateAnswer({ question, answer: "desconocido", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: -20,
+      points: 0,
     });
     expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
       status: "unanswered",
@@ -1093,6 +1097,24 @@ describe("question evaluation", () => {
       evaluateAnswer({
         question,
         answer: { Delfín: "ave", Águila: "mamífero", Tortuga: "ave" },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+  });
+
+  it("rejects unknown classification labels and categories", () => {
+    const question = QUESTION_FORMAT_CATALOG.classification.examples[0].question;
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { Delfín: "mamífero", Desconocido: "ave" },
+        timeUsed: 0,
+      }),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(
+      evaluateAnswer({
+        question,
+        answer: { Delfín: "desconocido" },
         timeUsed: 0,
       }),
     ).toMatchObject({ status: "incorrect", points: 0 });
@@ -1466,7 +1488,7 @@ describe("question evaluation", () => {
     ).toMatchObject({ status: "correct", points: 78 });
     expect(evaluateAnswer({ question, answer: "circle", timeUsed: 0 })).toMatchObject({
       status: "incorrect",
-      points: -26,
+      points: 0,
     });
     expect(evaluateAnswer({ question, answer: null, timeUsed: 99, timedOut: true })).toMatchObject({
       status: "unanswered",
@@ -1771,6 +1793,33 @@ describe("question evaluation", () => {
     expect(result.details).toEqual({ type: "estimation", difference: 100, proximity: 0.5 });
   });
 
+  it("rejects estimation answers outside the published range or step grid", () => {
+    const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
+    expect(evaluateAnswer({ question, answer: question.max + question.step, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+    expect(evaluateAnswer({ question, answer: question.min + question.step / 2, timeUsed: 0 })).toMatchObject({
+      status: "incorrect",
+      points: 0,
+    });
+  });
+
+  it("uses exact equality when estimation tolerance is zero", () => {
+    const question = {
+      ...QUESTION_FORMAT_CATALOG.estimation.examples[0].question,
+      tolerance: 0,
+    };
+    expect(evaluateAnswer({ question, answer: question.correctAnswer, timeUsed: 0 })).toMatchObject({
+      status: "correct",
+      points: question.points,
+    });
+    expect(evaluateAnswer({ question, answer: question.correctAnswer - question.step, timeUsed: 0 })).toMatchObject({
+      status: "partial",
+      points: 0,
+    });
+  });
+
   it("penalizes failed code attempts", () => {
     const question = QUESTION_FORMAT_CATALOG["logic-code"].examples[0].question;
     const result = evaluateAnswer({
@@ -1905,8 +1954,8 @@ describe("question evaluation", () => {
     );
   });
 
-  it("floors the aggregate score at zero", () => {
-    expect(calculateTotalScore([100, -20, 50])).toBe(130);
+  it("keeps the aggregate score defensive without applying unit penalties globally", () => {
+    expect(calculateTotalScore([100, 0, 50])).toBe(150);
     expect(calculateTotalScore([-40, -20])).toBe(0);
   });
 

@@ -16,6 +16,7 @@ export type ChallengeResultModel = {
   subtitle?: string;
   score: number;
   maxScore: number;
+  scoreUnit?: "points" | "flashPoints";
   accuracy: number;
   totalTime: number;
   metrics: ResultMetric[];

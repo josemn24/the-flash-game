@@ -18,6 +18,11 @@ import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";
 
+export type QueensBoardQuestion = {
+  regions: readonly number[];
+  prefilledQueens?: readonly number[];
+};
+
 const CONFLICT_LABELS: Record<QueensConflictType, string> = {
   row: "fila repetida",
   column: "columna repetida",
@@ -36,7 +41,7 @@ export function QueensBoard({
   onCellKeyDown,
   disabled = false,
 }: {
-  question: QueensQuestionType;
+  question: QueensBoardQuestion;
   answer: QueensAnswer;
   label: string;
   focusedCell?: number;

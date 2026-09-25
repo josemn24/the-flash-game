@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import type { AnswerResult } from "@/types/game";
 
 describe("FlashPopReview", () => {
-  it("exposes result navigation and an explicit replay action", () => {
+  it("exposes result navigation without a competitive replay action", () => {
     const challenge = getChallengeById("tabarnia-challenge-05");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
@@ -28,14 +28,14 @@ describe("FlashPopReview", () => {
           timeUsed: result.timeUsed,
           outcome: "failed",
           completedAt: 100,
+          startedAt: 0,
         }}
         onBack={() => {}}
-        onReplay={() => {}}
       />,
     );
 
     expect(markup).toContain("Volver al resultado");
-    expect(markup).toContain("Jugar de nuevo");
+    expect(markup).not.toContain("Jugar de nuevo");
     expect(markup).toContain("Historial de respuestas");
     expect(markup).toContain("No alcanzado");
   });

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
-import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
+import { FlashQuestionStage } from "@/components/game/shared";
 import { QuestionTransition } from "@/components/game/shared/QuestionTransition";
 import { ResultScreen } from "@/components/game/shared/ResultScreen";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
@@ -26,7 +26,7 @@ export function FlashGameApp({
     <MotionConfig reducedMotion="user">
       <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
         <SpeedBackground />
-        <div className="relative z-10">
+        <div className="relative z-10 px-4 py-5 sm:px-6 sm:py-7">
           <AnimatePresence mode="wait">
             {session.phase === "intro" && (
               <ChallengeIntro
@@ -37,15 +37,15 @@ export function FlashGameApp({
               />
             )}
             {session.phase === "playing" && session.question && (
-              <QuestionScreen
+              <FlashQuestionStage
                 key={session.question.id}
                 question={session.question}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}
+                codeAttemptCount={session.codeAttempts.length}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}
@@ -67,7 +67,7 @@ export function FlashGameApp({
                 results={session.results}
                 score={session.score}
                 onReview={session.showReview}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
               />
             )}
             {session.phase === "review" && (
@@ -76,7 +76,7 @@ export function FlashGameApp({
                 challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
               />
             )}
           </AnimatePresence>

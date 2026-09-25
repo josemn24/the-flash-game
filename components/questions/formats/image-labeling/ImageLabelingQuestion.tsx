@@ -7,13 +7,13 @@ import { useState } from "react";
 import { AnswerOption } from "@/components/questions/shared/AnswerOption";
 import { ArrowIcon, CheckIcon, CrossIcon } from "@/components/ui";
 import styles from "./ImageLabelingQuestion.module.css";
-import questionStyles from "@/components/game/shared/QuestionScreen.module.css";
+import textStyles from "@/features/question-formats/TextAnswerControls.module.css";
 import type {
   AssignAllImageLabelingQuestion,
   ImageLabelingAnswer,
   ImageLabelingQuestion as ImageLabelingQuestionType,
   IdentifyOneImageLabelingQuestion,
-  } from "@/types/game";
+} from "@/types/game";
 
 type Props = {
   question: ImageLabelingQuestionType;
@@ -333,10 +333,10 @@ function IdentifyOneImageLabelingQuestion({
       ) : (
         <form className={styles.textForm} onSubmit={submitText}>
           <label htmlFor={`image-label-answer-${question.id}`}>Escribe tu respuesta</label>
-          <div className={questionStyles.textAnswerRow}>
+          <div className={textStyles.row}>
             <input
               id={`image-label-answer-${question.id}`}
-              className={questionStyles.textAnswerInput}
+              className={textStyles.input}
               type="text"
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
@@ -346,7 +346,7 @@ function IdentifyOneImageLabelingQuestion({
               autoFocus
             />
             <motion.button
-              className={questionStyles.textSubmitButton}
+              className={textStyles.submitButton}
               type="submit"
               disabled={locked || !answer.trim()}
               whileTap={{ scale: 0.96 }}

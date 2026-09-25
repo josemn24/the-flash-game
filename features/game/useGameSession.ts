@@ -17,7 +17,8 @@ import type {
 
 const TRANSITION_DURATION = 650;
 
-type SessionState = {
+export type GameSessionSnapshot = {
+  startedAt?: string;
   phase: GamePhase;
   questionIndex: number;
   results: AnswerResult[];
@@ -25,20 +26,23 @@ type SessionState = {
   lastTimedOut: boolean;
   codeAttempts: string[];
 };
+type SessionState = GameSessionSnapshot;
 
 type SessionAction =
   | { type: "begin-countdown" }
-  | { type: "start" }
+  | { type: "start"; startedAt?: string }
   | { type: "answer"; result: AnswerResult; timedOut: boolean }
   | { type: "advance" }
   | { type: "finish" }
   | { type: "code-attempts"; attempts: string[] }
   | { type: "show-review" }
   | { type: "show-results" }
+  | { type: "hydrate"; state: GameSessionSnapshot }
   | { type: "replay" };
 
 type GameSessionOptions = {
   transitionDuration?: Partial<Record<AnswerStatus, number>>;
+  resumeState?: GameSessionSnapshot;
 };
 
 const initialState: SessionState = {
@@ -55,7 +59,7 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
     case "begin-countdown":
       return { ...state, phase: "countdown" };
     case "start":
-      return { ...initialState, phase: "playing" };
+      return { ...initialState, phase: "playing", startedAt: action.startedAt };
     case "answer":
       return {
         ...state,
@@ -80,6 +84,8 @@ function reducer(state: SessionState, action: SessionAction): SessionState {
       return { ...state, phase: "review" };
     case "show-results":
       return { ...state, phase: "results" };
+    case "hydrate":
+      return action.state;
     case "replay":
       return initialState;
   }
@@ -100,6 +106,7 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
   const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeApplied = useRef(false);
 
   const clearAdvanceTimeout = useCallback(() => {
     if (advanceTimeout.current) {
@@ -109,6 +116,16 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
   }, []);
 
   useEffect(() => clearAdvanceTimeout, [clearAdvanceTimeout]);
+
+  useEffect(() => {
+    if (!options.resumeState || resumeApplied.current) return;
+    resumeApplied.current = true;
+    clearAdvanceTimeout();
+    answerLock.current = false;
+    codeAttemptsRef.current = options.resumeState.codeAttempts;
+    questionStartedAt.current = performance.now();
+    dispatch({ type: "hydrate", state: options.resumeState });
+  }, [clearAdvanceTimeout, options.resumeState]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -122,7 +139,7 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
     incorrectAttemptsRef.current = 0;
     progressiveCluesRevealedRef.current = 1;
     questionStartedAt.current = performance.now();
-    dispatch({ type: "start" });
+    dispatch({ type: "start", startedAt: new Date().toISOString() });
   }, [clearAdvanceTimeout]);
 
   const beginCountdown = useCallback(() => {
@@ -257,6 +274,7 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
 
   return {
     ...state,
+    snapshot: state,
     question,
     score,
     start,

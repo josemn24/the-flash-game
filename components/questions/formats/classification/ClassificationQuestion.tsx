@@ -9,7 +9,7 @@ import { MotionButton } from "@/components/ui";
 import type { ClassificationAnswer, ClassificationItem } from "@/types/game";
 
 type ClassificationQuestionProps = {
-  items: ClassificationItem[];
+  items: Array<Pick<ClassificationItem, "label">>;
   categories: string[];
   initialAnswer?: ClassificationAnswer;
   locked: boolean;
@@ -35,13 +35,11 @@ export function ClassificationQuestion({
   const isBinary = categories.length === 2;
   const categoryGridStyle = { "--category-count": categories.length } as CSSProperties;
 
-  const chooseCategory = (item: ClassificationItem, category: string) => {
+  const chooseCategory = (item: Pick<ClassificationItem, "label">, category: string) => {
     if (locked) return;
-    setAnswers((current) => {
-      const next = { ...current, [item.label]: category };
-      onProgress?.(next);
-      return next;
-    });
+    const next = { ...answers, [item.label]: category };
+    setAnswers(next);
+    onProgress?.(next);
   };
 
   return (

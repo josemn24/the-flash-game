@@ -1,5 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
-import ChallengePage, { generateStaticParams } from "./page";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import ChallengePage, { dynamic } from "./page";
+
+const originalScope = process.env.FLASH_RUNTIME_SCOPE;
+
+afterEach(() => {
+  if (originalScope === undefined) delete process.env.FLASH_RUNTIME_SCOPE;
+  else process.env.FLASH_RUNTIME_SCOPE = originalScope;
+});
 
 vi.mock("next/navigation", () => ({
   notFound: () => {
@@ -14,10 +21,16 @@ describe("challenge route room context", () => {
       searchParams: Promise.resolve({ roomId: "tabarnia-room" }),
     });
 
-    expect(element.props.roomContext).toEqual({
+    expect(element.props.roomContext).toMatchObject({
       roomId: "tabarnia-room",
       roomTitle: "Tabarnia",
       returnTo: "/salas/tabarnia-room",
+      memberId: "player",
+      attemptStatus: "completed",
+    });
+    expect(element.props.roomContext.result).toMatchObject({
+      flashPoints: expect.any(Number),
+      completed: true,
     });
   });
 
@@ -30,6 +43,28 @@ describe("challenge route room context", () => {
     expect(element.props.roomContext).toBeUndefined();
   });
 
+  it("rejects roomless mock access in pilot", async () => {
+    process.env.FLASH_RUNTIME_SCOPE = "pilot";
+
+    await expect(
+      ChallengePage({
+        params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("rejects mock room aliases in pilot", async () => {
+    process.env.FLASH_RUNTIME_SCOPE = "pilot";
+
+    await expect(
+      ChallengePage({
+        params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }),
+        searchParams: Promise.resolve({ roomId: "tabarnia-room" }),
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+  });
+
   it("rejects an unknown contextual room", async () => {
     await expect(
       ChallengePage({
@@ -39,7 +74,7 @@ describe("challenge route room context", () => {
     ).rejects.toThrow("NOT_FOUND");
   });
 
-  it("continues exposing every playable challenge", () => {
-    expect(generateStaticParams().length).toBeGreaterThanOrEqual(5);
+  it("does not enumerate challenge routes at build time", () => {
+    expect(dynamic).toBe("force-dynamic");
   });
 });

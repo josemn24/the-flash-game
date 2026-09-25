@@ -8,6 +8,11 @@ import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeed
 import { ChallengeResultScreen } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
+import type { PyramidAttemptRecord } from "@/features/pyramid/pyramidAttempt";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import { CHALLENGE_MAX_SCORE, withPyramidScoring } from "@/lib/challengeScoring";
 import {
   calculateResultAccuracy,
@@ -17,6 +22,7 @@ import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { FlashPopReview } from "@/components/game/modes/flash-pop/FlashPopReview";
 import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import type {
   AnswerValue,
   ChallengeCompletionResult,
@@ -25,6 +31,7 @@ import type {
   PyramidLevel,
   AnswerResult,
 } from "@/types/game";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import styles from "./FlashPopPyramidGame.module.css";
 
 function formatTime(seconds: number) {
@@ -33,10 +40,6 @@ function formatTime(seconds: number) {
   const minutes = Math.floor(rounded / 60);
   const rest = rounded % 60;
   return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
-}
-
-function getChallengeTimeLimit(challenge: PyramidChallenge) {
-  return challenge.levels.reduce((total, level) => total + level.question.timeLimit, 0);
 }
 
 function LevelIndicator({ levelIndex, levelCount }: { levelIndex: number; levelCount: number }) {
@@ -350,8 +353,9 @@ function Result({
         eyebrow: "Desafío completado",
         title: summit ? "Cima conquistada" : "Ascenso terminado",
         subtitle: challenge.subtitle,
-        score: result.score,
+        score: result.flashPointsEarned,
         maxScore: CHALLENGE_MAX_SCORE,
+        scoreUnit: "flashPoints",
         accuracy,
         totalTime,
         metrics: [
@@ -373,8 +377,14 @@ function Result({
             : []),
           {
             icon: <BoltIcon />,
-            label: "XP de temporada",
-            value: `+${result.seasonXpEarned} ⚡`,
+            label: "Flash Points obtenidos",
+            value: `+${result.flashPointsEarned} ⚡`,
+            tone: "social",
+          },
+          {
+            icon: <BoltIcon />,
+            label: "Total de Flash Points",
+            value: `${result.seasonFlashPoints} ⚡`,
             tone: "social",
           },
         ],
@@ -390,16 +400,25 @@ export function FlashPopPyramidGame({
   challenge,
   roomContext,
   onComplete,
+  socialSnapshot,
 }: {
   challenge: PyramidChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
+  socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
+  const resumeRecord = useRoomAttemptResume<PyramidAttemptRecord>(
+    roomContext,
+    challenge.id,
+    "pyramid",
+  );
   const session = usePyramidSession(scoredChallenge, {
     persistence: "memory",
+    initialRecord: resumeRecord,
     feedbackDuration: { correct: 1100, incorrect: 1800, unanswered: 1800 },
   });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "pyramid", session.phase, session.record);
   const currentLevel = session.currentLevel ?? challenge.levels[0];
   const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 
@@ -407,8 +426,12 @@ export function FlashPopPyramidGame({
     session.phase === "results" && session.summary
       ? {
           challengeId: challenge.id,
-          points: session.summary.score,
+          startedAt: session.record
+            ? new Date(session.record.startedAt).toISOString()
+            : new Date().toISOString(),
+          flashPoints: session.summary.score,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.record?.results ?? []),
           answers: session.record?.results ?? [],
         }
       : null,
@@ -429,12 +452,7 @@ export function FlashPopPyramidGame({
     );
   }
 
-  const result = session.summary
-    ? getFlashPopResult(session.summary, {
-        levelCount: challenge.levels.length,
-        totalTimeLimit: getChallengeTimeLimit(challenge),
-      })
-    : null;
+  const result = session.summary ? getFlashPopResult(session.summary, socialSnapshot) : null;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -560,7 +578,7 @@ export function FlashPopPyramidGame({
                   results={session.record.results}
                   summary={session.summary}
                   onBack={session.showResults}
-                  onReplay={session.restart}
+                  onReplay={roomContext ? undefined : session.restart}
                 />
               </div>
             </motion.div>

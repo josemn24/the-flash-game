@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Chip } from "@/components/ui";
 import styles from "./StartCountdown.module.css";
 
-export type StartCountdownLabel = "Flash clásico" | "Supervivencia" | "Alfabeto";
+export type StartCountdownLabel = "Flash" | "Supervivencia" | "Alfabeto";
 
 type StartCountdownProps = {
   label: StartCountdownLabel;

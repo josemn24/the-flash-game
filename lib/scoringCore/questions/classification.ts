@@ -25,10 +25,23 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
   );
 }
 
+export function isValidClassificationAnswer(
+  question: ClassificationQuestion,
+  answer: AnswerValue | null,
+): answer is ClassificationAnswer {
+  if (!isClassificationAnswer(answer)) return false;
+  const labels = new Set(question.items.map((item) => item.label));
+  const categories = new Set(question.categories);
+  return (
+    Object.keys(answer).every((label) => labels.has(label)) &&
+    Object.values(answer).every((category) => categories.has(category))
+  );
+}
+
 function isCorrect(question: Question, answer: AnswerValue) {
   const classificationQuestion = asQuestion(question);
   return (
-    isClassificationAnswer(answer) &&
+    isValidClassificationAnswer(classificationQuestion, answer) &&
     classificationQuestion.items.every((item) => answer[item.label] === item.correctCategory)
   );
 }
@@ -40,7 +53,7 @@ export function evaluateClassification({
 }: EvaluationContext): InternalEvaluation {
   const classificationQuestion = asQuestion(question);
   const correct = isCorrect(question, answer);
-  if (!isClassificationAnswer(answer)) {
+  if (!isValidClassificationAnswer(classificationQuestion, answer)) {
     return { isCorrect: correct, status: "incorrect", points: 0 };
   }
 

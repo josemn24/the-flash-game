@@ -14,6 +14,7 @@ export type AlphabetLetterState = {
 export type AlphabetPhase = "intro" | "countdown" | "playing" | "feedback" | "results" | "review";
 
 export type AlphabetState = {
+  startedAt?: string;
   phase: AlphabetPhase;
   round: number;
   currentIndex: number;
@@ -26,7 +27,7 @@ export type AlphabetState = {
 
 export type AlphabetAction =
   | { type: "begin-countdown" }
-  | { type: "start" }
+  | { type: "start"; startedAt?: string }
   | { type: "pass" }
   | {
       type: "submit";
@@ -38,6 +39,7 @@ export type AlphabetAction =
   | { type: "finish"; elapsedTime: number }
   | { type: "show-review" }
   | { type: "show-results" }
+  | { type: "hydrate"; state: AlphabetState }
   | { type: "replay" };
 
 export function createAlphabetInitialState(challenge: AlphabetChallenge): AlphabetState {
@@ -109,6 +111,7 @@ export function alphabetReducer(state: AlphabetState, action: AlphabetAction): A
     case "start":
       return {
         ...state,
+        startedAt: action.startedAt,
         phase: "playing",
         playedCount: 1,
         letters: state.letters.map((letter, index) =>
@@ -157,9 +160,12 @@ export function alphabetReducer(state: AlphabetState, action: AlphabetAction): A
       return { ...state, phase: "review" };
     case "show-results":
       return { ...state, phase: "results" };
+    case "hydrate":
+      return action.state;
     case "replay":
       return {
         ...state,
+        startedAt: undefined,
         phase: "intro",
         round: 1,
         currentIndex: 0,
@@ -200,22 +206,4 @@ export function isAlphabetAnswerCorrect(question: ShortTextQuestion, answer: str
 export function calculateAlphabetScore(correctAnswers: number, totalLetters: number) {
   if (totalLetters <= 0) return 0;
   return Math.round((Math.max(0, correctAnswers) / totalLetters) * 100);
-}
-
-export type AlphabetCompetitiveResult = {
-  correctAnswers: number;
-  lastCorrectAt: number | null;
-};
-
-export function compareAlphabetResults(
-  left: AlphabetCompetitiveResult,
-  right: AlphabetCompetitiveResult,
-) {
-  if (left.correctAnswers !== right.correctAnswers) {
-    return right.correctAnswers - left.correctAnswers;
-  }
-  if (left.lastCorrectAt === right.lastCorrectAt) return 0;
-  if (left.lastCorrectAt === null) return 1;
-  if (right.lastCorrectAt === null) return -1;
-  return left.lastCorrectAt - right.lastCorrectAt;
 }

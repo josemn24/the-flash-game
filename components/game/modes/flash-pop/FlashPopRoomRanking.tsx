@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowIcon, Avatar, Canvas } from "@/components/ui";
+import { ArrowIcon, Canvas } from "@/components/ui";
 import type { RoomLeaderboardEntry } from "@/types/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomSecondary.module.css";
@@ -18,17 +18,17 @@ export function FlashPopRoomRanking({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <Link href={`/salas/${roomId}`} className={styles.backLink} aria-label="Volver al detalle de la sala">
+        <Link
+          href={`/salas/${roomId}`}
+          className={styles.backLink}
+          aria-label="Volver al detalle de la sala"
+        >
           <ArrowIcon className={styles.backIcon} />
         </Link>
-        <div className={styles.roomIdentity}>
-          <Avatar name={roomTitle} initials={roomTitle.slice(0, 2).toUpperCase()} tone="social" size="md" />
-          <span className={styles.roomName}>{roomTitle}</span>
-        </div>
       </header>
 
       <RoomLeaderboard
-        title={`Ranking de ${roomTitle}`}
+        title="Ranking global"
         entries={entries}
         currentUserId={currentUserId}
         bare

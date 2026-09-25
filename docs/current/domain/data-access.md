@@ -1,0 +1,396 @@
+# Capa de acceso y consultas
+
+## Estado y alcance
+
+La fase 4 está cerrada. S01–S12 y el portal privado añaden la primera integración real de Supabase y completan el
+recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
+recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
+introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
+mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
+superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
+transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
+server-only y los comandos competitivos existentes; Supervivencia, Pirámide y Narrativa siguen mock
+hasta sus propias vertical slices.
+
+La dirección vigente es:
+
+```text
+Server Components
+→ server/data-access.ts
+→ server/profile.ts
+→ Supabase Auth/RPC/RLS
+→ PostgreSQL
+
+Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
+
+Server Components
+→ server/data-access.ts
+→ infrastructure/supabase/roomQueries.ts
+→ RPCs públicas de lectura estrecha
+→ PostgreSQL privado/RLS
+
+Portal privado `/admin`
+→ server/data-access.ts
+→ server/admin.ts
+→ infrastructure/supabase/superadminQueries.ts
+→ public.get_superadmin_portal_context() con temporadas y zona horaria
+→ asignación privada de plataforma y salas activas
+
+Dashboard del portal `/admin`
+→ server/data-access.ts
+→ server/admin.ts
+→ infrastructure/supabase/superadminDashboardQueries.ts
+→ public.get_superadmin_dashboard_context()
+→ métricas, resúmenes de salas, próximos desafíos y alertas derivadas
+→ `components/admin/AdminDashboard` sin formularios ni contexto editorial completo
+
+Áreas operativas del portal `/admin/rooms`, `/admin/rooms/[roomId]`, `/admin/challenges` y
+`/admin/questions`
+→ shell y navegación comunes de `components/admin`
+→ cada página mantiene su propia autorización, loader especializado y mutaciones existentes
+
+Mutaciones del portal `/admin`
+→ app/admin/actions.ts
+→ server/admin.ts + server/admin-room.ts
+→ infrastructure/supabase/superadminQueries.ts
+→ public.lookup_superadmin_players() / public.create_superadmin_room()
+→ comando privado transaccional + private.audit_log
+
+Mutaciones de temporadas del portal `/admin`
+→ app/admin/season-actions.ts
+→ server/admin.ts + server/admin-season.ts
+→ infrastructure/supabase/superadminSeasonQueries.ts
+→ public.create_superadmin_season() / public.update_superadmin_season() /
+  public.activate_superadmin_season()
+→ comando privado transaccional, idempotencia y private.audit_log
+
+Calendario temporal del detalle de sala `/admin/rooms/[roomId]?tab=calendar`
+→ `app/admin/calendar-actions.ts`
+→ `server/admin-calendar.ts`
+→ `infrastructure/supabase/superadminCalendarQueries.ts`
+→ `public.create_superadmin_scheduled_challenge()` / `public.update_superadmin_scheduled_challenge()`
+→ publicación `scheduled` con ventana UTC, locks, conflictos optimistas, idempotencia y auditoría
+
+Tick local protegido
+→ `POST /api/internal/calendar/tick` o `npm run calendar:tick`
+→ conexión PostgreSQL server-only con `SET LOCAL ROLE service_role`
+→ `private.run_calendar_tick_command()`
+→ estados efectivos, auditoría de sistema y finalización de temporadas sin DML de cliente
+
+Lectura editorial protegida del portal `/admin`
+→ server/data-access.ts
+→ server/admin-editorial.ts
+→ infrastructure/supabase/superadminEditorialQueries.ts
+→ public.get_superadmin_editorial_context()
+→ borradores completos solo para superadmin; publicados/archivados como metadatos
+
+Mutaciones editoriales del portal `/admin`
+→ app/admin/editorial-actions.ts
+→ server/admin-editorial.ts
+→ infrastructure/supabase/superadminEditorialQueries.ts
+→ public.create_superadmin_flash_draft() / public.update_superadmin_flash_draft() /
+  public.publish_superadmin_flash()
+→ grafo versionado, idempotencia, concurrencia optimista, auditoría y publicación atómica
+
+Eventos Mini-Wordle del Flash competitivo
+→ `features/game/useServerFlashSession.ts`
+→ `POST /api/competitive/attempts/[attemptId]/mini-wordle/guess`
+→ `server/competitive/attempt-api.ts`
+→ `infrastructure/supabase/attemptCommands.ts`
+→ `private.submit_mini_wordle_guess(jsonb)`
+→ `private.mini_wordle_guess_events` + `private.answer_receipts`
+→ evaluador confiable desde la respuesta final construida por PostgreSQL
+
+Eventos Logic-code del Flash competitivo
+→ `features/game/useServerFlashSession.ts`
+→ `POST /api/competitive/attempts/[attemptId]/logic-code/attempt`
+→ `server/competitive/attempt-api.ts`
+→ `infrastructure/supabase/attemptCommands.ts`
+→ `private.submit_logic_code_attempt(jsonb)`
+→ `private.logic_code_attempt_events` + `private.answer_receipts`
+→ evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
+
+Eventos Progressive-clues del Flash competitivo
+→ `features/game/useServerFlashSession.ts`
+→ `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`
+→ `server/competitive/attempt-api.ts`
+→ `infrastructure/supabase/attemptCommands.ts`
+→ `private.reveal_progressive_clue(jsonb)`
+→ `private.progressive_clue_reveal_events` + `private.answer_receipts`
+→ evaluador confiable desde `progressiveCluesRevealed` reconstruido por PostgreSQL
+
+Las consultas aún no migradas conservan este flujo:
+
+Server Components
+→ server/data-access.ts
+→ application/queries
+→ infrastructure/mock
+→ mockDomainStore
+→ DTOs y view models
+→ Client Components
+```
+
+En S22 la selección de esa composición está gobernada por `FLASH_RUNTIME_SCOPE`. En `pilot`, los
+aliases mock y la rama roomless devuelven ausencia y no llegan al adaptador mock; un fallo de la
+fuente persistida se propaga como error recuperable. `RoomSessionProvider` puede seguir montado para
+las demos, pero `RoomChallengeClient` solo consulta y escribe sus resultados locales cuando la
+persistencia declarada es `mock`; un modelo `server` nunca se sobrescribe con `localResults`.
+
+E01 entrega a la UI únicamente el payload público y `progress` seguro (`guesses`, `feedback`,
+`attemptsUsed`, `maxAttempts`). La solución, `additionalGuesses` y `dictionaryId` quedan en el
+servidor. Una palabra se acepta si está en el diccionario versionado de
+`private.mini_wordle_dictionary_words` o en `additionalGuesses` de esa pregunta; la solución se
+acepta implícitamente aunque sea temática. El diccionario general se carga desde los JSON de
+`public/dictionaries`, pero las palabras específicas no se añaden al diccionario global. Un error
+de Auth/DB/PostgREST no cambia la selección a un adaptador mock.
+
+E03 entrega solo `question`, metadatos de conteo/penalización y el prefijo de pistas concedidas.
+`private.progressive_clue_reveal_events` registra la primera pista gratuita y cada revelación
+posterior; el comando resuelve la siguiente pista desde la versión congelada, aplica la penalización
+contra `challenge_items.points`, incrementa `lock_version` y devuelve únicamente esa pista. La
+evaluación ignora cualquier contador del navegador y reconstruye `progressiveCluesRevealed` desde
+los eventos persistidos.
+
+E04 entrega las dos columnas públicas y solo el progreso de parejas correctas. Cada solicitud valida
+la correspondencia contra la versión congelada, registra como máximo un evento por clave, penaliza el
+10% de los puntos del item en fallos y reconstruye el mapa final desde eventos. `correctMatchId` y la
+solución completa aparecen únicamente en la revisión autorizada.
+
+E05 entrega el tablero 5×5, las regiones, las coronas precolocadas y un progreso seguro. Cada
+colocación o retirada pasa por `private.submit_queens_placement(jsonb)`, que bloquea el intento,
+reconstruye las coronas desde `private.queens_placement_events`, calcula conflictos y aplica el 5%
+de penalización sin confiar en contadores del navegador. Las marcas X son estado local y se descartan
+al recuperar. Al completar el tablero se crea una única recepción terminal; la solución solo se
+reconstruye en el contexto privado de evaluación y revisión autorizada.
+
+S05 entrega `public.get_my_alphabet_challenge` con letras y payloads públicos `short-text`, y
+`public.get_my_alphabet_result` solo tras un intento completado. El cliente conserva únicamente el
+estado visual de la sesión; `prepare_interaction`, `pass_interaction`, `receive_answer` y la
+evaluación server-side son la autoridad del reloj, los pases, las respuestas y el resultado.
+
+La matriz operativa completa, los límites HTTP y el procedimiento reproducible de Supabase están en
+[`s22-operacion.md`](../s22-operacion.md).
+
+Las rutas de sala y desafío son dinámicas. La galería editorial `/formatos` y sus fichas siguen
+siendo públicas y estáticas. La beta no añade rutas públicas para crear salas, gestionar
+invitaciones o preparar temporadas: esas operaciones pertenecerán a una frontera privada de
+superadmin. El alta directa de un miembro será un comando de provisioning, no una aceptación de
+invitación.
+
+## Contratos de aplicación
+
+`application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
+`RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
+`SuperadminDashboardQueries`,
+`SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
+`SuperadminRoomCommands`, `SuperadminEditorialCommands`, `SuperadminCalendarCommands` y
+`SuperadminCalendarQueries` para separar las mutaciones administrativas de las consultas. Esta capa
+solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
+
+Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
+la petición. Las entradas usan aliases de ruta legibles. Los UUID canónicos se resuelven y quedan
+encapsulados en infraestructura.
+
+Los DTOs de sala no devuelven identidades de autenticación, roles globales, filas canónicas ni
+payloads privados. Los rankings y el historial se calculan desde membresías, publicaciones,
+intentos y respuestas normalizados.
+
+## Composición de servidor
+
+`server/data-access.ts` lleva el marcador `server-only`. Para la home, delega en
+`server/profile.ts`, que valida la sesión con `auth.getUser()`, llama al RPC estrecho
+`public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
+del propio jugador; no existe DML de aplicación con `service_role`.
+
+La home, el detalle S02, los rankings S06 y el historial/revisión S07 delegan en
+`SupabaseRoomQueries`. El adaptador implementa `listCards`, `getDetail`, `getIntroduction`,
+`getRanking`, `listHistory`, `getHistoryDetail` y `getMemberDetail`. Para una sala real resuelve la
+temporada desde `get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
+`get_challenge_ranking`. S07 usa `get_flash_history` para agrupar publicaciones cerradas y
+`get_flash_member_review` para reconstruir el resultado desde la versión histórica enlazada; carga
+en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de
+convertirse a view models; los UUID de jugador son el `memberId` canónico y un error RPC o una fila
+inválida se propaga. Las consultas todavía mock se limitan a los aliases explícitos del demo, por lo
+que una sala real no puede caer silenciosamente en `MockRoomQueries`.
+
+`get_my_room_cards` reutiliza el mismo `get_season_ranking` para `current_position`. Así, puntos,
+empates y la posición visible en home/detalle proceden de una sola semántica SQL. El RPC de desafío
+mantiene privado `started_at`: el servidor lo usa para ordenar y S06 no lo muestra; el detalle de
+miembro/histórico que pueda necesitarlo se mantiene dentro de la proyección autorizada S07.
+
+El detalle real carga además `public.get_room_calendar(target_room_slug)`. Esa proyección expone solo
+metadatos de publicaciones Flash y deriva `upcoming`, `available`, `closed` o `cancelled` con el reloj
+de PostgreSQL; `can_start` requiere una publicación compatible y `can_continue` conserva el enlace de
+un intento propio en curso incluso después del cierre o de finalizar la temporada. El portal usa una
+lectura separada de calendario y comandos de programación/reprogramación exclusivos de superadmin.
+
+La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del cliente puede elegir
+la identidad de consulta. Sus funciones usan `cache` de React para compartir una misma promesa
+dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página. No hay
+caché persistente ni compartida entre usuarios.
+
+### Separación del portal de superadministración
+
+`SuperadminPortalContext` conserva el contexto amplio que necesitan las operaciones actuales de
+`/admin` y la entrada al listado de salas: salas con temporadas, editorial, biblioteca de preguntas
+y calendario opcional. `SuperadminRoomDetailModel` es el contrato acotado del detalle: una sala
+activa, todas sus temporadas, miembros activos, calendario filtrado por sala y desafíos Flash
+publicado necesario para programar. `SuperadminDashboardModel` es un contrato independiente y deliberadamente pequeño para
+el dashboard: operador, métricas, resúmenes de salas, próximos desafíos, alertas y destinos de
+navegación. No contiene documentos editoriales, soluciones, la biblioteca completa ni formularios.
+
+La navegación canónica queda fijada así:
+
+| Ruta                    | Responsabilidad                                                               |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `/admin`                | Dashboard operativo breve, sin formularios ni documentos editoriales          |
+| `/admin/rooms`          | Área especializada de salas activas y creación de salas                       |
+| `/admin/rooms/[roomId]` | Detalle de sala; temporadas, miembros y calendario como subáreas contextuales |
+| `/admin/challenges`     | Catálogo especializado de desafíos Flash definidos                             |
+| `/admin/challenges/new` | Creación de un nuevo desafío Flash                                              |
+| `/admin/challenges/[challengeDefinitionId]` | Detalle, borrador e historial de versiones Flash                 |
+| `/admin/questions`      | Biblioteca de preguntas existente, integrada en el shell común                |
+
+El dashboard no carga documentos editoriales, soluciones, la biblioteca completa ni todas las
+entradas del calendario. Las operaciones de temporada y calendario se ejecutan en el detalle de la
+sala y, tras una operación correcta, la Server Action revalida el dashboard y la ruta de esa sala
+antes de redirigir al usuario a la pestaña correspondiente con un aviso contextual. El shell visual no es una frontera de seguridad:
+cada página y cada Server Action continúa usando `requireSuperadmin()`.
+
+### Estructura de las subpáginas administrativas
+
+Las páginas administrativas siguen la frontera `Server Page + Client Panels`. Cada `page.tsx`
+autoriza, carga un page model mínimo, interpreta los avisos de URL y compone `AdminShell` con el
+panel de su área. Los paneles cliente concentran únicamente estado local, `useActionState`,
+transiciones y controles interactivos; no contienen una frontera de permisos alternativa.
+
+Los paneles operativos se organizan por responsabilidad: temporadas separa sus formularios de
+creación, edición, activación, fechas y tarjetas; calendario separa la programación de nuevas
+publicaciones y la reprogramación de entradas; salas separa la búsqueda de propietario y la lista
+de miembros; contenido separa la previsualización protegida del coordinador editorial. Los patrones
+visuales repetidos viven en `components/admin` (`AdminSectionHeader`, `AdminEmptyState`,
+`AdminFormError` y `AdminAuditReasonField`) sin ocultar las diferencias de validación de cada
+acción.
+
+La biblioteca de preguntas y sus editores también se montan dentro de `AdminShell`. Sus loaders
+específicos devuelven el operador y el detalle mínimo necesario, sin cambiar las acciones ni los
+contratos del editor:
+
+| Ruta                                   | Loader / composición                                     |
+| -------------------------------------- | -------------------------------------------------------- |
+| `/admin/questions`                     | `getSuperadminQuestionLibraryPageModel` + biblioteca     |
+| `/admin/questions/new`                 | `getSuperadminNewQuestionPageModel` + editor vacío       |
+| `/admin/questions/[questionVersionId]` | `getSuperadminQuestionVersionPageModel` + detalle/editor |
+
+No existen rutas de detalle para salas, temporadas o contenido. Los RPCs, comandos, payloads de
+Server Actions y permisos permanecen en sus módulos originales; esta extracción solo cambia la
+composición y la mantenibilidad de la UI.
+
+### Criterios de pulido y validación
+
+El portal debe conservar un shell navegable por teclado, con enlace para saltar al contenido,
+foco visible, breadcrumbs y estados de operación anunciados de forma no intrusiva. Las áreas
+operativas deben apilar sus formularios y tarjetas en pantallas pequeñas sin perder etiquetas,
+acciones ni mensajes de error. La validación final cubre composición del dashboard, navegación,
+editor de preguntas, estados vacíos, autorización, acciones idempotentes y los flujos E2E de
+salas, temporadas, contenido y calendario.
+
+## Autorización
+
+- Una consulta de sala exige una membresía activa.
+- Owners, admins, members y spectators pueden leer las vistas de sala.
+- Los spectators no aparecen en rankings competitivos y no pueden obtener un desafío competitivo
+  contextualizado en una sala.
+- Los miembros antiguos pueden figurar en resultados históricos si eran competitivos cuando
+  iniciaron el intento, pero ya no pueden leer la sala.
+- El historial exige una membresía activa del lector, incluye publicaciones Flash `closed` sin
+  intentos `in_progress` y conserva publicaciones sin participantes. Las filas competitivas excluyen
+  `test`, `invalidated` y `cancelled`; los espectadores no aparecen como jugadores.
+- La revisión propia terminal está disponible aunque el rol actual sea `spectator`. La revisión de
+  otra persona exige `owner`, `admin` o `member`, y solo expone intentos `completed` o `abandoned`.
+  Los abandonos conservan respuestas parciales y proyectan los huecos como `unanswered`.
+- Un recurso inexistente y uno inaccesible devuelven igualmente `null`.
+- Las relaciones canónicas imposibles provocan un error de integridad; no se sustituyen por datos
+  inventados.
+- El acceso sin sala es una rama explícita de preview. No concede autorización competitiva.
+
+Las proyecciones S02 (`public.get_my_room_cards`, `public.get_room_detail` y
+`public.get_room_introduction`) son `SECURITY DEFINER`, fijan `search_path = ''`, pertenecen a
+`postgres` y solo tienen `EXECUTE` para `authenticated`. Devuelven metadatos y perfiles mínimos;
+no entregan `public_payload`, soluciones, preguntas completas, filas `private` ni identidades Auth.
+Una sala inexistente y una sala ajena devuelven la misma ausencia observable. El rol `spectator`
+puede leer la introducción, pero no recibe un CTA competitivo ni puede crear un intento.
+
+El portal `/admin` delega las lecturas en `SupabaseSuperadminPortalQueries` y las mutaciones en
+`SupabaseSuperadminRoomCommands`. Su RPC de contexto devuelve únicamente el operador y salas
+`active`; los RPC de S08 resuelven emails exactos, crean la sala y escriben una auditoría agregada
+en una transacción. Ninguno requiere exponer la tabla privada de asignaciones.
+`requireSuperadmin()` valida primero Auth y el provisioning existente, y después exige la asignación
+persistida `superadmin`. Una sesión ausente vuelve al inicio y una cuenta autenticada sin ese rol
+recibe ausencia de ruta. La Server Action vuelve a invocar el guard antes de cada lookup y creación;
+el guard también deberá invocarse en cada futuro Route Handler. Ocultar controles en la UI no es una
+frontera de seguridad.
+
+## Compatibilidad temporal
+
+`PlayableChallengePageModel` conserva el `Challenge` gameplay completo para no reescribir los 31
+formatos ni la evaluación local en esta fase. Por ello todavía envía soluciones al bundle cliente
+y no constituye una frontera de seguridad.
+
+`RoomSessionProvider` y el `localStorage` de Pirámide continúan combinando el resultado local con el
+snapshot recibido del servidor mediante funciones puras en recorridos mock/práctica. Los modelos
+Supabase de S06/S07 no fusionan `localResults` ni `RoomSessionProvider`: el servidor es la única
+fuente de los rankings, historial y revisión históricos.
+
+Los helpers de test viven en `test-utils/mockGameplay.ts` y `test-utils/mockRoom.ts`. Las fachadas
+legacy de nivel superior en `data/` y los helpers de `test-utils/legacy` ya se han retirado; los tests
+usan modelos explícitos respaldados por el store canónico. La infraestructura mock conserva solo los
+adaptadores internos que todavía necesita para entregar los modelos de gameplay actuales.
+
+## Fronteras verificadas
+
+`npm run type-architecture` comprueba, además de las capas de tipos, que:
+
+- `application` no depende de UI, Next.js, infraestructura, servidor ni datos;
+- `app` no importa datos ni infraestructura y usa la fachada de servidor;
+- componentes, features y utilidades cliente no importan servidor, infraestructura ni datos;
+- solo `infrastructure/mock` y el código de test pueden leer `data/mock`;
+- la infraestructura mock no consume proyecciones legacy de nivel superior;
+- la fachada conserva `server-only` y la memoización de petición.
+
+Los tests de contrato se ejecutan contra los adaptadores mock y el adaptador Supabase incluye acceso
+inexistente/temporada ausente, transformación de filas, UUID del usuario actual, agrupación de
+historial, payloads versionados, abandonos parciales y propagación de errores RPC. La cobertura SQL incluye acceso inexistente o
+ajeno, owner, admin, spectator, antiguo miembro, alias inválido, empates, intentos invalidados,
+publicaciones canceladas, historial vacío, publicaciones sin participantes y conteo de intentos
+iniciados.
+
+## Siguiente frontera
+
+El runner reproducible de escenarios vive en `scripts/supabase-fixture.mjs` y escribe sus
+credenciales en `output/fixtures/<scenario>.json`, que está ignorado por Git. S06 se crea y valida
+con:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario s06
+npm run test:integration:supabase -- --scenario s06
+npm run test:e2e -- e2e/s06-ranking.spec.ts
+```
+
+La limpieza usa `npm run supabase:fixture -- --scenario s06 --clean` y reinicia únicamente la base
+local. La definición de datos de S06, basada en el fixture Flash de S03, está aislada en
+`scripts/fixtures/scenarios/s06.mjs`, con aserciones en `scripts/integration/scenarios/s06.mjs` y
+el recorrido de navegador en `e2e/s06-ranking.spec.ts`.
+
+S07 se crea y valida con:
+
+```bash
+npm run supabase:db:reset
+npm run supabase:fixture -- --scenario s07
+npm run test:integration:supabase -- --scenario s07
+npm run test:e2e -- e2e/s07-history-review.spec.ts
+```
+
+El escenario cubre publicaciones Flash cerradas, vacías, abandonadas, en curso, canceladas y con
+versión archivada. La ruta histórica usa UUIDs; los aliases permanecen limitados al adaptador mock.

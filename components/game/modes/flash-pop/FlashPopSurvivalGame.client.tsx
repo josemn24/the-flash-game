@@ -4,15 +4,20 @@ import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { Canvas } from "@/components/ui";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { ChallengeIntro, StartCountdown } from "@/components/game/shared";
-import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
+import { ChallengeIntro, StartCountdown, SurvivalQuestionStage } from "@/components/game/shared";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { useSurvivalSession } from "@/features/game/useSurvivalSession";
+import type { SurvivalSessionSnapshot } from "@/features/game/useSurvivalSession";
+import {
+  useRoomAttemptResume,
+  useRoomAttemptSnapshot,
+} from "@/features/rooms/useRoomAttemptSnapshot";
 import {
   getFlashPopSurvivalResult,
   type FlashPopSurvivalSummary,
 } from "@/features/flash-pop/survivalSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { withChallengeScoring } from "@/lib/challengeScoring";
 import type {
   AnswerResult,
@@ -20,12 +25,9 @@ import type {
   GameRoomContext,
   SurvivalChallenge,
 } from "@/types/game";
+import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";
-
-function totalTimeLimit(challenge: SurvivalChallenge) {
-  return challenge.questions.reduce((total, question) => total + question.timeLimit, 0);
-}
 
 function Intro({
   challenge,
@@ -98,6 +100,7 @@ function toSummary(
     livesRemaining: session.livesRemaining,
     totalTime: session.results.reduce((total, result) => total + result.timeUsed, 0),
     survived: session.survived,
+    startedAt: session.startedAt ?? new Date().toISOString(),
   };
 }
 
@@ -105,26 +108,37 @@ export function FlashPopSurvivalGame({
   challenge,
   roomContext,
   onComplete,
+  socialSnapshot,
 }: {
   challenge: SurvivalChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
+  socialSnapshot: FlashPopSocialSnapshot;
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
-  const session = useSurvivalSession(scoredChallenge);
+  const resumeState = useRoomAttemptResume<SurvivalSessionSnapshot>(
+    roomContext,
+    challenge.id,
+    "survival",
+  );
+  const session = useSurvivalSession(scoredChallenge, { resumeState });
+  useRoomAttemptSnapshot(roomContext, challenge.id, "survival", session.phase, session.snapshot);
   const latestResult = session.results.at(-1);
   const finished = session.phase === "results" || session.phase === "review";
   const summary = finished ? toSummary(scoredChallenge, session) : null;
-  const result = summary
-    ? getFlashPopSurvivalResult(summary, { totalTimeLimit: totalTimeLimit(scoredChallenge) })
-    : null;
+  const result = summary ? getFlashPopSurvivalResult(summary, socialSnapshot) : null;
 
   useChallengeCompletionReporter(
     session.phase === "results" && result
       ? {
           challengeId: challenge.id,
-          points: result.score,
+          startedAt:
+            session.startedAt ??
+            roomContext?.result?.attempt?.startedAt ??
+            new Date().toISOString(),
+          flashPoints: result.flashPointsEarned,
           completed: true,
+          durationMs: sumEffectiveDurationMs(session.results),
           answers: session.results,
         }
       : null,
@@ -164,14 +178,14 @@ export function FlashPopSurvivalGame({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -18 }}
             >
-              <QuestionScreen
+              <SurvivalQuestionStage
                 question={session.question}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}
+                codeAttemptCount={session.codeAttempts.length}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}
@@ -232,7 +246,7 @@ export function FlashPopSurvivalGame({
                 challenge={scoredChallenge}
                 results={session.results}
                 onBack={session.showResults}
-                onReplay={session.replay}
+                onReplay={roomContext ? undefined : session.replay}
               />
             </motion.div>
           ) : null}

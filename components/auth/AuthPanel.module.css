@@ -1,0 +1,112 @@
+@layer app-components {
+  .panel {
+    min-height: 100dvh;
+  }
+
+  .content {
+    display: grid;
+    min-height: calc(100dvh - 48px);
+    place-items: center;
+  }
+
+  .card {
+    width: min(100%, 480px);
+  }
+
+  .brand,
+  .heading,
+  .form,
+  .field {
+    display: grid;
+  }
+
+  .brand {
+    gap: var(--space-2);
+    justify-items: center;
+  }
+
+  .brandMark {
+    display: grid;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  .brandMark svg {
+    width: 24px;
+  }
+
+  .brandName {
+    font-family: var(--type-display);
+    font-size: 28px;
+    font-weight: var(--type-display-strong-weight);
+    letter-spacing: var(--type-display-strong-tracking);
+  }
+
+  .heading {
+    gap: var(--space-2);
+    margin: var(--space-8) 0 var(--space-6);
+    text-align: center;
+  }
+
+  .heading h1,
+  .heading p {
+    margin: 0;
+  }
+
+  .heading h1 {
+    font-family: var(--type-display);
+    font-size: 36px;
+    letter-spacing: var(--type-display-strong-tracking);
+    line-height: 0.98;
+  }
+
+  .heading p {
+    color: var(--color-ink-muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .form {
+    gap: var(--space-4);
+  }
+
+  .field {
+    gap: var(--space-2);
+  }
+
+  .field label {
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .field input {
+    width: 100%;
+    min-height: var(--control-height);
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    padding: 0 var(--space-4);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    font-size: 16px;
+  }
+
+  .field input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+
+  .message {
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .message {
+    min-height: 18px;
+    color: var(--color-ink-muted);
+    text-align: center;
+  }
+}

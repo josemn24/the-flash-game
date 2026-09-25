@@ -18,7 +18,7 @@ const tabarnia: RoomCardModel = {
     questionCount: 16,
     imageSrc: "/flash-pop/concepts/pyramid-soft-diorama.webp",
   },
-  currentUser: { totalPoints: 136, roomRank: 3 },
+  currentUser: { totalFlashPoints: 136, roomRank: 3 },
   memberPreviews: [
     { id: "player", name: "Kike", initials: "KI" },
     { id: "ches", name: "Dark", initials: "DA" },
@@ -55,8 +55,7 @@ describe("FlashPopHome", () => {
     expect(markup).not.toContain('aria-label="Configuración"');
     expect(markup).toContain("Tu perfil");
     expect(markup).toContain("Nombre visible");
-    expect(markup).toContain("Cambiar imagen");
-    expect(markup).toContain('accept="image/*"');
+    expect(markup).toContain("Imagen de perfil");
     expect(markup).toContain('aria-label="Kike"');
   });
 

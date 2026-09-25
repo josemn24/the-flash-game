@@ -1,5 +1,6 @@
 import { Fredoka, IBM_Plex_Mono, Manrope } from "next/font/google";
 import type { Metadata } from "next";
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration.client";
 import { RoomSessionProvider } from "@/features/rooms/RoomSessionProvider.client";
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${manrope.variable} ${fredoka.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        <ServiceWorkerRegistration />
         <RoomSessionProvider>{children}</RoomSessionProvider>
       </body>
     </html>

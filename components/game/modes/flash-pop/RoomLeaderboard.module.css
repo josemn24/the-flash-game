@@ -71,7 +71,19 @@
     color: var(--color-ink);
     cursor: pointer;
     text-align: left;
-    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+
+  .staticCard {
+    cursor: default;
+  }
+
+  .staticCard:hover {
+    border-color: var(--color-line);
+    transform: none;
   }
 
   .playerCard:hover {
@@ -91,7 +103,9 @@
   }
 
   .playerCard.selected {
-    box-shadow: 0 0 0 2px var(--color-social), var(--shadow-control);
+    box-shadow:
+      0 0 0 2px var(--color-social),
+      var(--shadow-control);
   }
 
   .cardRank {
@@ -174,7 +188,9 @@
     height: 18px;
     flex: 0 0 auto;
     color: var(--color-ink-muted);
-    transition: transform 160ms ease, color 160ms ease;
+    transition:
+      transform 160ms ease,
+      color 160ms ease;
   }
 
   .playerCard:hover .cardArrow,
@@ -262,9 +278,9 @@
 
   .bare .heading h1 {
     font-family: var(--type-display);
-    font-size: clamp(42px, 7vw, 68px);
+    font-size: clamp(36px, 5vw, 48px);
     letter-spacing: -0.06em;
-    line-height: 0.9;
+    line-height: 1;
   }
 
   .bare .list {

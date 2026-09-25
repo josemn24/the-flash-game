@@ -43,7 +43,7 @@ export function Avatar({
           fill
           sizes="56px"
           className={styles.image}
-          unoptimized={src.startsWith("data:")}
+          unoptimized={src.startsWith("data:") || /^https?:\/\//.test(src)}
         />
       ) : (
         <span aria-hidden="true">{initials ?? getInitials(name)}</span>

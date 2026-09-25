@@ -4,6 +4,7 @@ import Image from "next/image";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
 import { MotionButton } from "@/components/ui";
+import { ServerOperationStatus } from "@/components/questions/shared";
 import {
   calculateProgressiveImageReveal,
   PROGRESSIVE_IMAGE_INITIAL_BLUR,
@@ -20,6 +21,12 @@ type ProgressiveImageQuestionProps = {
   locked: boolean;
   onSubmit: (answer: string) => void;
   onTimedResponseStart: () => void;
+  /** Competitive mode keeps the server clock authoritative for the response deadline. */
+  presentedAtMs?: number;
+  submissionState?: "idle" | "submitting" | "error";
+  submissionStatusVisible?: boolean;
+  submissionError?: string;
+  onRetrySubmission?: () => void;
 };
 
 type ImageState = "loading" | "ready" | "error";
@@ -36,6 +43,11 @@ export function ProgressiveImageQuestion({
   locked,
   onSubmit,
   onTimedResponseStart,
+  presentedAtMs,
+  submissionState = "idle",
+  submissionStatusVisible = false,
+  submissionError,
+  onRetrySubmission,
 }: ProgressiveImageQuestionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
@@ -80,12 +92,15 @@ export function ProgressiveImageQuestion({
     if (startedRef.current) return;
     startedRef.current = true;
     lastMilestoneRef.current = 0;
+    // Provisional client-side fix: the visual reveal starts when the image is
+    // actually available to the player. The competitive deadline remains
+    // server-authoritative and is still enforced by the answer command.
     const start = performance.now();
     setProgress(0);
     setStartedAt(start);
     setImageState("ready");
     setAnnouncement("Imagen preparada. Comienza el revelado.");
-    onTimedResponseStart();
+    if (presentedAtMs === undefined) onTimedResponseStart();
     window.requestAnimationFrame(() => inputRef.current?.focus());
   };
 
@@ -111,10 +126,7 @@ export function ProgressiveImageQuestion({
   const unavailable = locked || imageState !== "ready";
 
   return (
-    <section
-      className={`${styles.root}`}
-      aria-label="Imagen progresivamente revelada"
-    >
+    <section className={`${styles.root}`} aria-label="Imagen progresivamente revelada">
       <div className={styles.progressHeader}>
         <span>Revelado</span>
         <strong>{progressPercentage} %</strong>
@@ -163,7 +175,11 @@ export function ProgressiveImageQuestion({
         {imageState === "error" && (
           <div className={styles.errorPanel} role="alert">
             <strong>No se pudo cargar la imagen.</strong>
-            <span>El tiempo todavía no ha comenzado.</span>
+            <span>
+              {presentedAtMs === undefined
+                ? "El tiempo todavía no ha comenzado."
+                : "El reloj competitivo ya está en marcha."}
+            </span>
             <MotionButton className={styles.retryButton} type="button" onClick={retryLoad}>
               Reintentar
             </MotionButton>
@@ -198,6 +214,14 @@ export function ProgressiveImageQuestion({
           </MotionButton>
         </div>
         <p>No importan las mayúsculas, las tildes ni los espacios.</p>
+        <ServerOperationStatus
+          state={submissionState}
+          visible={submissionStatusVisible}
+          pendingMessage="Comprobando respuesta…"
+          errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
+          retryLabel="Reintentar"
+          onRetry={onRetrySubmission}
+        />
       </form>
     </section>
   );

@@ -45,7 +45,7 @@ describe("StartCountdown", () => {
     expect(alphabetSource).toContain("onStart={session.beginCountdown}");
     expect(alphabetSource).toContain('label="Alfabeto"');
     expect(flashSource).toContain("onStart={session.beginCountdown}");
-    expect(flashSource).toContain('label="Flash clásico"');
+    expect(flashSource).toContain('label="Flash"');
     expect(survivalSource).toContain("onStart={session.beginCountdown}");
     expect(survivalSource).toContain('label="Supervivencia"');
   });

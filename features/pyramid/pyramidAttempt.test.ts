@@ -11,7 +11,7 @@ import {
   parsePyramidAttempt,
   type PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
-import { getChallengeById } from "@/data/challenges";
+import { getChallengeById } from "@/test-utils/mockGameplay";
 import type { AnswerResult } from "@/types/game";
 
 function getChallenge() {
@@ -168,7 +168,7 @@ describe("pyramid attempt rules", () => {
     expect(parsePyramidAttempt(JSON.stringify(summit), challenge)).toEqual(summit);
   });
 
-  it("orders future ranking summaries by levels, points and time", () => {
+  it("orders future ranking summaries by points, effective time and start time", () => {
     const base: PyramidAttemptSummary = {
       challengeId: "challenge",
       levelsCleared: 4,
@@ -176,6 +176,7 @@ describe("pyramid attempt rules", () => {
       timeUsed: 50,
       outcome: "failed",
       completedAt: 1,
+      startedAt: 0,
     };
     const attempts = [
       base,
@@ -184,10 +185,10 @@ describe("pyramid attempt rules", () => {
       { ...base, score: 45, timeUsed: 40 },
     ];
     expect(attempts.sort(comparePyramidAttemptSummaries)).toEqual([
-      { ...base, levelsCleared: 5, score: 35 },
       { ...base, score: 45, timeUsed: 40 },
       { ...base, score: 45, timeUsed: 60 },
       base,
+      { ...base, levelsCleared: 5, score: 35 },
     ]);
   });
 });

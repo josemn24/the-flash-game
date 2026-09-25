@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { challengeDefinitions } from "@/data/challengeDefinitions";
-import { validateNarrativeChallengeDefinition } from "@/data/challenges";
-import type { QuestionId } from "@/data/questions";
+import { mockChallengeDefinitions as challengeDefinitions } from "@/test-utils/mockGameplay";
+import { validateNarrativeChallengeDefinition } from "@/test-utils/mockGameplay";
+import type { MockQuestionId as QuestionId } from "@/test-utils/mockGameplay";
 import type { NarrativeChallengeDefinition, NarrativeReactionMap } from "@/types/game";
 
 function cloneDefinition() {

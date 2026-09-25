@@ -1,0 +1,451 @@
+# Server and Client Component Architecture
+
+> La arquitectura transversal de aplicación, persistencia, autenticación y casos de uso está en
+> [`../architecture.md`](../architecture.md). Este documento se centra en las fronteras entre
+> Server Components y Client Components.
+
+> **Estado: vigente.** Esta guía describe las fronteras implementadas actualmente. La composición
+> anterior del prototipo se conserva en [`../../archive/the-flash-poc.md`](../../archive/the-flash-poc.md).
+
+## Purpose
+
+This document defines how Server Components and Client Components should be separated in The Flash. Its goal is to maintain a clear and scalable architecture without compromising the gameplay experience.
+
+The main rule is:
+
+> Content, navigation, and data loading are handled on the server. Interactive, immediate, and coordinated experiences run on the client.
+
+The goal is not to maximize the number of Server Components. The goal is to place each boundary where it improves performance, code clarity, and the player experience.
+
+## Principles
+
+1. **Server by default.** Every new component will be a Server Component unless it requires client-only capabilities.
+2. **Client for a specific reason.** State, events, effects, browser APIs, or a cohesive interactive experience justify a client boundary.
+3. **Low and explicit boundaries.** An animation or interactive button should not unnecessarily turn an entire page into a Client Component.
+4. **The game is an interactive unit.** The gameplay session may keep a broad client boundary when its screens share state and require immediate responses.
+5. **Minimal data between server and client.** Only the information actually required by the client interface will be serialized.
+6. **CSS before JavaScript for decoration.** Hover, focus, and simple animations should preferably be implemented with CSS.
+7. **Motion is used intentionally.** It is reserved for coordinated transitions, presence, gestures, dragging, and state-dependent animations.
+
+For the closed beta, public pages remain limited to consultation and gameplay in already provisioned
+rooms. Room creation, direct member provisioning, invitations, season setup and calendar operations
+belong to a protected private superadmin portal; they are not public controls hidden inside these
+pages.
+
+## Component categories
+
+### Server Components
+
+Server Components are the default in the App Router. They will be used for:
+
+- pages and layouts;
+- reading and composing data;
+- resolving route parameters;
+- `generateMetadata` and `generateStaticParams`;
+- validation and `notFound()`;
+- editorial content;
+- lists and detail pages;
+- navigation with `Link`;
+- non-interactive examples;
+- structures that do not require state or browser events.
+
+A Server Component does not add its implementation to the browser's JavaScript bundle.
+
+```tsx
+// app/formatos/page.tsx
+import { questionFormats } from "@/features/question-formats/catalog";
+import { FormatList } from "@/features/format-library/FormatList";
+
+export default function FormatsPage() {
+  return <FormatList formats={questionFormats} />;
+}
+```
+
+### Client Components
+
+Client Components will be identified with `"use client"` and used when a component requires:
+
+- `useState`, `useReducer`, `useEffect`, or other lifecycle hooks;
+- handlers such as `onClick`, `onChange`, or `onSubmit`;
+- `window`, `document`, local storage, or other browser APIs;
+- timers that are part of the interaction;
+- game session state;
+- drag-and-drop, gestures, or user input;
+- animations coordinated with state;
+- client-side contexts.
+
+```tsx
+// components/game/shells/FlashGameApp.client.tsx
+"use client";
+
+export function FlashGameApp({ challenge }: { challenge: FlashChallenge }) {
+  const session = useGameSession(challenge);
+  // Complete interactive Flash flow.
+}
+```
+
+Client Components can also generate HTML during the initial server render. The difference is that their code is sent to and hydrated in the browser.
+
+## Asynchronous server-authoritative gameplay
+
+When an interaction is evaluated or persisted by the server, the client must represent the period
+between the player's action and the authoritative response explicitly. This is a recommended UX and
+architecture pattern, not a mandatory visual component for every mode or format.
+
+The standard interaction lifecycle is:
+
+1. **Acknowledge immediately.** Reflect the selected answer or submitted action in the UI.
+2. **Lock the interaction.** Prevent duplicate submissions and stop the client-side interaction timer
+   while the server command is pending. The competitive time remains authoritative on the server and
+   must not be extended by network latency.
+3. **Delay visible loading briefly.** Use a short default threshold of `250 ms`; do not show a loading
+   indicator for responses that arrive sooner. If the threshold is crossed, show a compact,
+   format-appropriate status such as `Comprobando respuesta…`.
+4. **Reveal authoritative feedback only after confirmation.** Correct, incorrect, partial, points and
+   mode consequences must not be inferred from the pending state.
+5. **Recover safely from failures.** Show an actionable error and retry the same command with its
+   original idempotency key when a response is lost or the network fails. Do not silently advance or
+   create a second competitive answer.
+
+The loading presentation may vary by format: a selected option for multiple choice, a loading submit
+control for text answers, or a locked board with inline status for a puzzle. The semantic contract is
+the same even when the visual treatment differs. `idle`, `submitting` and `error` are the recommended
+client states for this boundary.
+
+This pattern applies to server-authoritative modes. Practice, previews and other local sessions should
+remain immediate and should not add a network loading state. The persisted server flow is implemented
+for competitive Flash and Alphabet; Narrative, Supervivencia, Pirámide and the other formats still use
+client-side evaluation or local persistence. When those modes migrate to server-side validation, they
+should adopt this lifecycle by default and adapt only the visible status to their mechanics.
+
+### Universal components
+
+Universal components are pure components without `"use client"`, server access, or browser APIs. They can become part of either the server or client graph depending on where they are imported.
+
+Examples:
+
+- `Badge`;
+- `AppHeader`;
+- `Logo`;
+- class and variant functions;
+- SVG icons;
+- HTML primitives without their own interactive behavior.
+
+This category allows UI to be reused without forcing hydration on every usage.
+
+## Decision tree
+
+Before adding `"use client"`, answer these questions in order:
+
+1. **Does the component use state, effects, events, or browser APIs?**
+   - Yes: Client Component.
+   - No: continue.
+2. **Is it part of an existing cohesive client experience, such as the gameplay session?**
+   - Yes: it may remain inside that client boundary.
+   - No: continue.
+3. **Does it only need a simple decorative animation?**
+   - Yes: use CSS and keep it on the server.
+   - No: continue.
+4. **Does it need Motion for presence, layout, gestures, or state coordination?**
+   - Yes: extract a small client island or use the existing client boundary.
+   - No: Server Component.
+5. **Is the data it receives larger than the data it displays?**
+   - Yes: create a specific DTO before crossing the boundary.
+
+## Dependency direction
+
+Dependencies must follow these rules:
+
+```text
+Server Component ──may import──▶ Client Component
+Server Component ──may import──▶ universal component
+Client Component ──may import──▶ universal component
+Client Component ──must not import▶ Server Component
+```
+
+A Server Component that renders a Client Component does not become a Client Component. The boundary begins at the file marked with `"use client"`.
+
+A Client Component must not directly import a Server Component. If it needs to display server-produced content, that content must be composed by the server parent and passed as `children` or another React slot.
+
+```tsx
+// Server Component
+export function Page() {
+  return (
+    <InteractivePanel>
+      <ServerRenderedContent />
+    </InteractivePanel>
+  );
+}
+```
+
+## Data crossing the boundary
+
+Props sent from server to client must be serializable and minimal.
+
+Normally allowed:
+
+- strings, numbers, and booleans;
+- arrays and plain objects;
+- `null` values;
+- serializable domain structures.
+
+Do not pass:
+
+- regular functions;
+- class instances;
+- connections, database clients, or secrets;
+- large objects when the interface only uses a summary;
+- entire content modules for convenience.
+
+### Home page view model
+
+The home page does not need the questions from every challenge. The server page reads the demo room, keeps room and active-season context as small strings, and passes the active-season challenge summaries to the `FlashPopHome` client boundary. Challenges resolve their ordered question IDs from the mock `questionsById` table before any playable UI boundary receives them:
+
+```ts
+export type ChallengeSummary = {
+  id: string;
+  number: number;
+  title: string;
+  subtitle: string;
+  mode: GameMode;
+  questionCount: number;
+};
+```
+
+The complete challenge only crosses a server-client boundary when entering the playable route, where `GameApp` actually needs it. A format detail sends each example question separately to its own playable-example island.
+
+```text
+HomePage (server) ──Room/Season context + ChallengeSummary[]──▶ FlashPopHome (client)
+ChallengePage (server) ──Challenge──────▶ GameApp (client)
+FormatDetailPage (server) ──Question──▶ PlayableFormatExample (client)
+```
+
+## Using Motion
+
+Motion supports the App Router in two ways:
+
+```tsx
+// Explicit Client Component
+"use client";
+import { motion } from "motion/react";
+```
+
+```tsx
+// Usage from React Server Components
+import * as motion from "motion/react-client";
+```
+
+Both options require client-side code to run the animation. `motion/react-client` allows the importing file to remain a Server Component, but it does not remove the hydration cost of the animated element.
+
+### Project convention
+
+1. Use CSS for simple hover, focus, opacity, or movement effects.
+2. Use `motion/react` inside the game because the session is already a client experience.
+3. On content pages, prefer an explicitly named island such as `AnimatedHero.client.tsx`.
+4. Reserve `motion/react-client` for small, self-contained elements when it avoids an artificial boundary.
+5. Do not turn an entire page into a Client Component only to animate its entrance.
+6. Respect `prefers-reduced-motion`, and never make an animation essential to understanding or completing an action.
+
+### When to use Motion
+
+- `AnimatePresence` between game states;
+- question transitions;
+- immediate feedback after answering;
+- reorderable or draggable elements;
+- animations connected to the timer or progress;
+- touch gestures;
+- layout changes that are difficult to maintain with CSS.
+
+### When to use CSS
+
+- card hover and focus states;
+- border or color changes;
+- simple press feedback;
+- static page entrance animations;
+- glows, backgrounds, lines, and ambient effects;
+- animations that do not depend on React state.
+
+## UI primitives
+
+Basic primitives must not impose Motion on the whole application.
+
+The preferred button architecture is:
+
+```text
+Button.tsx                 universal, HTML and styles
+MotionButton.client.tsx    client, gestures and animations
+buttonStyles.ts            shared variants
+```
+
+`Button` can be used from either server or client code. When imported by a Client Component, it can receive events. From a Server Component, it can serve as a form button, invoke a Server Action, or provide visual structure without client event handlers.
+
+`MotionButton` should be used when `whileHover`, `whileTap`, gestures, or other Motion features provide meaningful value.
+
+Colors, sizes, and variants must not be duplicated between the two primitives; both must share the same styling function.
+
+Use `Link` for navigation rather than a button with `router.push`, unless there is a reason tied to client state.
+
+## Architecture by area
+
+### Home page
+
+The home page primarily contains content and navigation.
+
+```text
+app/page.tsx                   Server Component
+└── FlashPopHome.client        Client Component
+    ├── sala y temporada mock
+    ├── tarjetas de desafío y navegación
+    └── perfil local y estado visual
+```
+
+Requirements:
+
+- receive room/season context and `ChallengeSummary[]`, not complete challenges;
+- build summaries from resolved challenges, while room data stores scheduled challenge publications;
+- use `Link` to open challenges and formats;
+- keep metadata and content on the server;
+- use CSS for decorative animations whenever it is sufficient.
+
+### Format library
+
+The format library and its detail pages contain server-rendered editorial content and navigation. Each detail page includes one explicit client island per playable example.
+
+```text
+app/formatos/page.tsx          Server Component
+app/formatos/[slug]/page.tsx   Server Component
+└── PlayableFormatExample      Client Component
+    ├── dialog and attempt state
+    ├── Timer and QuestionInput
+    └── evaluation and feedback
+```
+
+`PlayableFormatExample.client.tsx` receives one serializable `Question`, opens a native dialog, and reuses the same input renderers and scoring functions as a stage. Its local phases are `ready`, `playing`, and `feedback`; closing or retrying resets the attempt without changing the route.
+
+The correct answer is included in this client DTO because the example is evaluated locally and has no persistent or competitive value. It must never contain secrets or privileged server data.
+
+Only add another client island when a real interaction appears, such as local search or complex dynamic filters.
+
+A filter based on URL parameters should still preferably be resolved on the server.
+
+### Gameplay session
+
+Gameplay must prioritize minimal latency, continuity, and immediate responses.
+
+```text
+app/desafios/[challengeId]/page.tsx  Server Component, dynamic
+└── RoomChallengeClient.client
+    └── GameApp                  Client mode dispatcher
+        ├── Flash Pop Flash / Alphabet / Survival / Pyramid
+        └── NarrativeGameApp.client
+```
+
+The server route:
+
+- validates `challengeId`;
+- loads the resolved challenge by scheduled publication ID;
+- generates metadata;
+- returns a 404 when appropriate;
+- passes serializable configuration to `GameApp`.
+
+The client tree:
+
+- keeps the session in memory;
+- measures time;
+- processes answers;
+- coordinates transitions;
+- calculates and displays results without network round trips.
+
+Results and review must not be split into Server Components while they depend on the local reducer. Doing so would require external persistence or navigation with serialized data and would break gameplay continuity.
+
+## Organization and naming
+
+When the nature of a component is not obvious, use explicit suffixes:
+
+```text
+FlashGameApp.client.tsx
+AlphabetGameApp.client.tsx
+MotionButton.client.tsx
+AnimatedHero.client.tsx
+ChallengePage.tsx
+FormatDetail.tsx
+```
+
+Adding `.server.tsx` to every Server Component is not required because server is already the default. It may be used in sensitive modules to make an important restriction visible.
+
+Barrel files or `index.ts` files must not indiscriminately mix server and client exports. An accidental import from a client barrel can expand the bundle or violate the intended dependency direction.
+
+## Anti-patterns
+
+### Making a whole page client-side for one animation
+
+```tsx
+"use client";
+
+export default function FormatsPage() {
+  return <motion.main>{/* Entire catalog */}</motion.main>;
+}
+```
+
+Solution: keep the page on the server and use CSS or extract only the animated element.
+
+### Sending complete objects to a card
+
+```tsx
+<FlashPopHome challenges={challengesWithAllQuestions} />
+```
+
+Solution: map the data to `ChallengeSummary[]` on the server.
+
+### Creating a client island for every game element
+
+Artificially fragmenting an experience that shares a reducer, timer, and transitions increases complexity without meaningfully reducing the bundle.
+
+Solution: keep a cohesive client boundary around `GameApp`.
+
+### Duplicating server and client UI
+
+Do not create two independent visual systems. Variants, tokens, and classes must be shared between the universal primitive and its Motion enhancement.
+
+### Navigating with events unnecessarily
+
+```tsx
+<button onClick={() => router.push("/formatos")}>Formatos</button>
+```
+
+Solution: use `<Link href="/formatos">Formatos</Link>` to preserve semantics, prefetching, and accessible navigation.
+
+## Checklist for new components
+
+Before approving a new component:
+
+- [ ] Can it remain a Server Component?
+- [ ] If it uses `"use client"`, is there a specific, documentable need?
+- [ ] Is the client boundary placed as low as possible without fragmenting a cohesive experience?
+- [ ] Are props crossing the boundary serializable?
+- [ ] Is only the required information being sent?
+- [ ] Would a CSS animation be sufficient?
+- [ ] If it uses Motion, does Motion provide meaningful interaction or feedback?
+- [ ] Does it respect reduced-motion preferences?
+- [ ] Does navigation use `Link` where appropriate?
+- [ ] Does it avoid importing server code from the client?
+- [ ] Does it avoid barrels that mix server and client dependencies?
+- [ ] Does the interaction preserve keyboard accessibility and visible focus?
+
+## Final criterion
+
+The decision is not based on whether a screen is visually complex, but on where its data and interaction live:
+
+- **Display, explain, list, and navigate:** server.
+- **Play, answer, measure time, and react without latency:** client.
+- **Decorate:** CSS first; Motion when it adds value.
+- **Share UI:** universal primitives with explicit client enhancements.
+
+This separation allows the application to grow in content without unnecessarily increasing its JavaScript while keeping gameplay fluid, immediate, and interaction-rich.
+
+## References
+
+- [Next.js: Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components)
+- [Next.js: App Router](https://nextjs.org/docs/app)
+- [Motion: Installation with Next.js](https://motion.dev/docs/react-installation)
+- [Motion: `motion` component](https://motion.dev/docs/react-motion-component)

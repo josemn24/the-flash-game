@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { challengeDefinitions } from "@/data/challengeDefinitions";
+import { mockChallengeDefinitions as challengeDefinitions } from "@/test-utils/mockGameplay";
 import {
-  getChallengeById,
   getPyramidQuestionIds,
   validatePyramidChallengeDefinition,
-} from "@/data/challenges";
-import { questionsById } from "@/data/questions";
+} from "@/test-utils/mockGameplay";
+import { getChallengeById } from "@/test-utils/mockGameplay";
+import { mockQuestionsById as questionsById } from "@/test-utils/mockGameplay";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";

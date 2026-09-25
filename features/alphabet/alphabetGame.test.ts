@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/data/challenges";
+import { getMockChallengeById as getChallengeById } from "@/test-utils/mockGameplay";
 import {
   alphabetReducer,
   calculateAlphabetScore,
-  compareAlphabetResults,
   createAlphabetInitialState,
   isAlphabetAnswerCorrect,
 } from "@/features/alphabet/alphabetGame";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { isAnswerCorrect } from "@/lib/scoring";
+import { compareChallengeRankingMetrics, rankChallengeEntries } from "@/lib/challengeRanking";
 import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
 
 function getAlphabetChallenge() {
@@ -70,25 +70,38 @@ describe("alphabet scoring and ranking", () => {
     expect(calculateAlphabetScore(15, 15)).toBe(100);
   });
 
-  it("ranks by correct answers and then time to the last correct answer", () => {
+  it("ranks by Flash Points, effective duration and start time", () => {
     expect(
-      compareAlphabetResults(
-        { correctAnswers: 12, lastCorrectAt: 80 },
-        { correctAnswers: 11, lastCorrectAt: 20 },
+      compareChallengeRankingMetrics(
+        { flashPoints: 80, durationMs: 80_000, startedAt: "2026-09-01T12:00:00.000Z" },
+        { flashPoints: 70, durationMs: 20_000, startedAt: "2026-09-01T11:00:00.000Z" },
       ),
     ).toBeLessThan(0);
     expect(
-      compareAlphabetResults(
-        { correctAnswers: 10, lastCorrectAt: 50 },
-        { correctAnswers: 10, lastCorrectAt: 65 },
+      compareChallengeRankingMetrics(
+        { flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
+        { flashPoints: 70, durationMs: 65_000, startedAt: "2026-09-01T11:00:00.000Z" },
       ),
     ).toBeLessThan(0);
     expect(
-      compareAlphabetResults(
-        { correctAnswers: 0, lastCorrectAt: null },
-        { correctAnswers: 0, lastCorrectAt: null },
+      compareChallengeRankingMetrics(
+        { flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T11:00:00.000Z" },
+        { flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
+      ),
+    ).toBeLessThan(0);
+    expect(
+      compareChallengeRankingMetrics(
+        { flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
+        { flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
       ),
     ).toBe(0);
+    expect(
+      rankChallengeEntries([
+        { id: "a", flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
+        { id: "b", flashPoints: 70, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
+        { id: "c", flashPoints: 60, durationMs: 50_000, startedAt: "2026-09-01T12:00:00.000Z" },
+      ]).map(({ rank }) => rank),
+    ).toEqual([1, 1, 3]);
   });
 });
 

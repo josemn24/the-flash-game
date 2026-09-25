@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { QuestionScreen } from "@/components/game/shared/QuestionScreen";
+import { SurvivalQuestionStage } from "@/components/game/shared";
 import { QuestionTransition } from "@/components/game/shared/QuestionTransition";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { SpeedBackground } from "@/components/effects/SpeedBackground";
@@ -21,7 +21,7 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
     <MotionConfig reducedMotion="user">
       <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
         <SpeedBackground />
-        <div className="relative z-10">
+        <div className="relative z-10 px-4 py-5 sm:px-6 sm:py-7">
           <AnimatePresence mode="wait">
             {session.phase === "intro" && (
               <ChallengeIntro
@@ -31,15 +31,15 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
               />
             )}
             {session.phase === "playing" && session.question && (
-              <QuestionScreen
+              <SurvivalQuestionStage
                 key={session.question.id}
                 question={session.question}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
                 locked={session.locked}
+                codeAttemptCount={session.codeAttempts.length}
                 onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                codeAttemptCount={session.codeAttempts.length}
                 onCodeAttempt={session.handleCodeAttempt}
                 onProgress={session.handleAnswerProgress}
                 onIncorrectAttempt={session.handleIncorrectAttempt}

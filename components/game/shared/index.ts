@@ -1,4 +1,6 @@
 export { ChallengeIntro } from "./ChallengeIntro";
+export { RoomChallengeIntroduction } from "./RoomChallengeIntroduction";
+export { CompetitiveResultScreen } from "./CompetitiveResultScreen";
 export { ChallengeResultScreen } from "./ChallengeResultScreen/ChallengeResultScreen";
 export type {
   ChallengeResultModel,
@@ -6,7 +8,15 @@ export type {
   ResultMetric,
 } from "./ChallengeResultScreen/ChallengeResultScreen";
 export { ProgressBar } from "./ProgressBar";
-export { QuestionScreen } from "./QuestionScreen";
+export { QuestionStage } from "./QuestionStage";
+export { ServerFlashQuestionStage } from "./ServerFlashQuestionStage";
+export type { QuestionStageProps, QuestionStageHeaderRenderParams } from "./QuestionStage";
+export {
+  FlashQuestionStage,
+  LegacyQuestionStage,
+  PyramidQuestionStage,
+  SurvivalQuestionStage,
+} from "./QuestionStagePresets";
 export { QuestionTransition } from "./QuestionTransition";
 export { ResultScreen } from "./ResultScreen";
 export { ReviewAnswers } from "./ReviewAnswers";

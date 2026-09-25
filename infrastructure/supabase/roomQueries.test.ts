@@ -1,0 +1,635 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SupabaseRoomQueries } from "./roomQueries";
+
+const mocks = vi.hoisted(() => ({
+  createClient: vi.fn(),
+  getCurrentViewerProfile: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/server/profile", () => ({
+  getCurrentViewerProfile: mocks.getCurrentViewerProfile,
+}));
+
+const viewer = {
+  id: "00000000-0000-0000-0000-000000000002",
+  playerId: "00000000-0000-0000-0000-000000000002",
+  name: "Bob Viewer",
+  avatarSrc: "/avatars/bob.png",
+};
+
+const roomRow = {
+  room_id: "00000000-0000-0000-0000-000000000010",
+  room_slug: "s06-main",
+  room_title: "Sala competitiva S06",
+  room_description: "Ranking persistido",
+  membership_role: "member",
+  season_id: "00000000-0000-0000-0000-000000000011",
+  season_title: "Temporada S06",
+  season_status: "active",
+  season_starts_at: "2000-01-01T00:00:00Z",
+  season_ends_at: "2999-01-01T00:00:00Z",
+  publication_id: "00000000-0000-0000-0000-000000000012",
+  publication_status: "open",
+  opens_at: "2000-01-01T00:00:00Z",
+  closes_at: "2999-01-01T00:00:00Z",
+  challenge_title: "Flash competitivo",
+  challenge_subtitle: "Dos preguntas",
+  challenge_mode: "flash",
+  challenge_max_score: 100,
+  question_count: 2,
+  competitive_playable: true,
+  current_flash_points: 80,
+  current_position: 2,
+  member_previews: [
+    {
+      id: "00000000-0000-0000-0000-000000000001",
+      name: "Alice Owner",
+      avatarPath: null,
+      role: "owner",
+    },
+    {
+      id: viewer.id,
+      name: "Bob Viewer",
+      avatarPath: "/avatars/bob.png",
+      role: "member",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000004",
+      name: "Dora Spectator",
+      avatarPath: null,
+      role: "spectator",
+    },
+  ],
+  member_count: 3,
+};
+
+const seasonRows = [
+  {
+    player_id: "00000000-0000-0000-0000-000000000001",
+    display_name: "Alice Owner",
+    avatar_path: null,
+    flash_points: 120,
+    is_former_member: false,
+    position: 1,
+  },
+  {
+    player_id: viewer.id,
+    display_name: "Bob Viewer",
+    avatar_path: "/avatars/bob.png",
+    flash_points: 80,
+    is_former_member: false,
+    position: 2,
+  },
+  {
+    player_id: "00000000-0000-0000-0000-000000000003",
+    display_name: "Former Carol",
+    avatar_path: null,
+    flash_points: 20,
+    is_former_member: true,
+    position: 3,
+  },
+];
+
+const challengeRows = [
+  {
+    player_id: viewer.id,
+    display_name: "Bob Viewer",
+    avatar_path: "/avatars/bob.png",
+    flash_points: 80,
+    duration_ms: 1400,
+    position: 1,
+  },
+  {
+    player_id: "00000000-0000-0000-0000-000000000001",
+    display_name: "Alice Owner",
+    avatar_path: null,
+    flash_points: 50,
+    duration_ms: 1600,
+    position: 2,
+  },
+];
+
+describe("SupabaseRoomQueries S06 rankings", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") return { data: [roomRow], error: null };
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        if (functionName === "get_challenge_ranking") return { data: challengeRows, error: null };
+        if (functionName === "get_room_calendar") return { data: [], error: null };
+        return { data: [], error: null };
+      }),
+    });
+  });
+
+  it("maps the season ranking and keeps UUIDs as member IDs", async () => {
+    const model = await new SupabaseRoomQueries().getRanking("s06-main");
+
+    expect(model).toMatchObject({
+      roomId: "s06-main",
+      roomTitle: "Sala competitiva S06",
+      currentUserId: viewer.id,
+    });
+    expect(model?.entries).toEqual([
+      expect.objectContaining({
+        rank: 1,
+        memberId: seasonRows[0].player_id,
+        name: "Alice Owner",
+        initials: "AO",
+        flashPoints: 120,
+      }),
+      expect.objectContaining({
+        rank: 2,
+        memberId: viewer.id,
+        name: "Bob Viewer",
+        initials: "BV",
+        avatarSrc: "/avatars/bob.png",
+        flashPoints: 80,
+      }),
+      expect.objectContaining({
+        rank: 3,
+        memberId: seasonRows[2].player_id,
+        name: "Former Carol",
+        flashPoints: 20,
+      }),
+    ]);
+  });
+
+  it("loads both leaderboards in parallel for a real room detail", async () => {
+    const detail = await new SupabaseRoomQueries().getDetail("s06-main");
+
+    expect(detail?.source).toBe("supabase");
+    expect(detail?.currentUser).toMatchObject({
+      id: viewer.id,
+      totalFlashPoints: 80,
+      roomRank: 2,
+      dailyFlashPoints: 80,
+      dailyCompleted: true,
+    });
+    expect(detail?.roomLeaderboard.map(({ memberId, rank }) => ({ memberId, rank }))).toEqual([
+      { memberId: seasonRows[0].player_id, rank: 1 },
+      { memberId: viewer.id, rank: 2 },
+      { memberId: seasonRows[2].player_id, rank: 3 },
+    ]);
+    expect(detail?.dailyLeaderboard).toEqual([
+      expect.objectContaining({
+        memberId: viewer.id,
+        rank: 1,
+        durationMs: 1400,
+        startedAt: "",
+        completed: true,
+      }),
+      expect.objectContaining({ memberId: seasonRows[0].player_id, rank: 2 }),
+    ]);
+  });
+
+  it("maps room settings from member previews and season points", async () => {
+    const model = await new SupabaseRoomQueries().getSettings("s06-main");
+
+    expect(model).toMatchObject({
+      roomId: "s06-main",
+      title: "Sala competitiva S06",
+      currentUserId: viewer.id,
+      viewerRole: "member",
+      canManageMembers: false,
+      memberCount: 3,
+    });
+    expect(model?.members).toEqual([
+      expect.objectContaining({
+        id: seasonRows[0].player_id,
+        name: "Alice Owner",
+        totalFlashPoints: 120,
+        role: "owner",
+        canManage: false,
+        isCurrentUser: false,
+      }),
+      expect.objectContaining({
+        id: viewer.id,
+        name: "Bob Viewer",
+        totalFlashPoints: 80,
+        role: "member",
+        canManage: false,
+        isCurrentUser: true,
+      }),
+      expect.objectContaining({
+        name: "Dora Spectator",
+        totalFlashPoints: 0,
+        role: "spectator",
+        canManage: false,
+        isCurrentUser: false,
+      }),
+    ]);
+  });
+
+  it("marks the owner as the only viewer who can manage members", async () => {
+    mocks.getCurrentViewerProfile.mockResolvedValue({
+      id: "00000000-0000-0000-0000-000000000001",
+      playerId: "00000000-0000-0000-0000-000000000001",
+      name: "Alice Owner",
+      avatarSrc: undefined,
+    });
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") {
+          return { data: [{ ...roomRow, membership_role: "owner" }], error: null };
+        }
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        return { data: [], error: null };
+      }),
+    });
+
+    await expect(new SupabaseRoomQueries().getSettings("s06-main")).resolves.toMatchObject({
+      viewerRole: "owner",
+      canManageMembers: true,
+      members: [
+        expect.objectContaining({ name: "Alice Owner", role: "owner", canManage: false }),
+        expect.objectContaining({ name: "Bob Viewer", role: "member", canManage: true }),
+        expect.objectContaining({ name: "Dora Spectator", role: "spectator", canManage: true }),
+      ],
+    });
+  });
+
+  it("keeps accessible members when a room has no active season", async () => {
+    const client = await mocks.createClient();
+    client.rpc = vi.fn(async (functionName: string) => {
+      if (functionName === "get_room_detail") {
+        return { data: [{ ...roomRow, season_id: null }], error: null };
+      }
+      throw new Error(`Unexpected settings RPC: ${functionName}`);
+    });
+    mocks.createClient.mockResolvedValue(client);
+
+    await expect(new SupabaseRoomQueries().getSettings("s06-no-season")).resolves.toMatchObject({
+      memberCount: 3,
+      members: [
+        expect.objectContaining({ name: "Alice Owner", totalFlashPoints: 0 }),
+        expect.objectContaining({ name: "Bob Viewer", totalFlashPoints: 0 }),
+        expect.objectContaining({ name: "Dora Spectator", totalFlashPoints: 0 }),
+      ],
+    });
+  });
+
+  it("returns null without a viewer or for an inaccessible room", async () => {
+    mocks.getCurrentViewerProfile.mockResolvedValueOnce(null);
+    await expect(new SupabaseRoomQueries().getSettings("s06-main")).resolves.toBeNull();
+
+    mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: [], error: null })),
+    });
+    await expect(new SupabaseRoomQueries().getSettings("s06-missing")).resolves.toBeNull();
+  });
+
+  it("propagates settings RPC errors instead of falling back to mock data", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
+    });
+
+    await expect(new SupabaseRoomQueries().getSettings("s06-main")).rejects.toThrow(
+      "Supabase room read failed (get_room_detail): permission denied",
+    );
+  });
+
+  it("returns null without a season and does not leak ranking data", async () => {
+    const client = await mocks.createClient();
+    client.rpc = vi.fn(async (functionName: string) => {
+      if (functionName === "get_room_detail") {
+        return { data: [{ ...roomRow, season_id: null, publication_id: null }], error: null };
+      }
+      if (functionName === "get_room_calendar") return { data: [], error: null };
+      throw new Error(`Unexpected ranking RPC: ${functionName}`);
+    });
+    mocks.createClient.mockResolvedValue(client);
+
+    await expect(new SupabaseRoomQueries().getRanking("s06-no-season")).resolves.toBeNull();
+    await expect(new SupabaseRoomQueries().getDetail("s06-no-season")).resolves.toMatchObject({
+      roomLeaderboard: [],
+      dailyLeaderboard: [],
+    });
+  });
+
+  it("propagates an RPC error instead of falling back to mock data", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") return { data: [roomRow], error: null };
+        return { data: null, error: { message: "permission denied" } };
+      }),
+    });
+
+    await expect(new SupabaseRoomQueries().getRanking("s06-main")).rejects.toThrow(
+      "Supabase ranking read failed (get_season_ranking): permission denied",
+    );
+  });
+
+  it("rejects malformed ranking rows instead of silently dropping them", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") return { data: [roomRow], error: null };
+        return { data: [{ ...seasonRows[0], position: "1" }], error: null };
+      }),
+    });
+
+    await expect(new SupabaseRoomQueries().getRanking("s06-main")).rejects.toThrow(
+      "Supabase ranking read returned an invalid row (get_season_ranking, 0)",
+    );
+  });
+
+  it("rejects malformed calendar rows instead of silently dropping them", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") return { data: [roomRow], error: null };
+        if (functionName === "get_room_calendar") return { data: [{ time_zone: 42 }], error: null };
+        return { data: [], error: null };
+      }),
+    });
+
+    await expect(new SupabaseRoomQueries().getDetail("s06-main")).rejects.toThrow(
+      "Supabase room read returned an invalid row (get_room_calendar, 0)",
+    );
+  });
+});
+
+describe("SupabaseRoomQueries room card resilience", () => {
+  it("keeps a room without an active season when member previews are null", async () => {
+    const rpc = vi.fn(async (functionName: string) => {
+      if (functionName === "get_my_room_cards") {
+        return {
+          data: [
+            {
+              ...roomRow,
+              room_slug: "s02-no-season",
+              room_title: "Sala sin temporada",
+              season_id: null,
+              season_title: null,
+              season_status: null,
+              season_starts_at: null,
+              season_ends_at: null,
+              publication_id: null,
+              publication_status: null,
+              opens_at: null,
+              closes_at: null,
+              challenge_title: null,
+              challenge_subtitle: null,
+              challenge_mode: null,
+              challenge_max_score: null,
+              question_count: null,
+              competitive_playable: null,
+              member_previews: null,
+            },
+          ],
+          error: null,
+        };
+      }
+      return { data: [], error: null };
+    });
+    mocks.createClient.mockResolvedValue({ rpc });
+
+    await expect(new SupabaseRoomQueries().listCards()).resolves.toMatchObject([
+      { roomId: "s02-no-season", title: "Sala sin temporada", dailyChallenge: null },
+    ]);
+  });
+});
+
+const historyRows = [
+  {
+    room_id: roomRow.room_id,
+    room_slug: roomRow.room_slug,
+    room_title: roomRow.room_title,
+    viewer_role: "member",
+    season_id: roomRow.season_id,
+    season_title: "Temporada S06",
+    publication_id: "00000000-0000-0000-0000-000000000012",
+    publication_number: 1,
+    publication_status: "closed",
+    publication_opens_at: "2026-01-01T00:00:00Z",
+    publication_closes_at: "2026-01-02T00:00:00Z",
+    challenge_id: "00000000-0000-0000-0000-000000000013",
+    challenge_slug: "s07-flash-history",
+    challenge_version_id: "00000000-0000-0000-0000-000000000014",
+    challenge_title: "Flash histórico",
+    challenge_subtitle: "Dos preguntas",
+    challenge_description: "Revisión",
+    challenge_mode: "flash",
+    challenge_max_score: 100,
+    question_count: 2,
+    played_at: "2026-01-02T00:00:00Z",
+    player_count: 1,
+    player_id: viewer.id,
+    display_name: viewer.name,
+    avatar_path: viewer.avatarSrc,
+    flash_points: 80,
+    duration_ms: 1400,
+    started_at: "2026-01-01T10:00:00Z",
+    position: 1,
+  },
+  {
+    room_id: roomRow.room_id,
+    room_slug: roomRow.room_slug,
+    room_title: roomRow.room_title,
+    viewer_role: "member",
+    season_id: roomRow.season_id,
+    season_title: "Temporada S06",
+    publication_id: "00000000-0000-0000-0000-000000000015",
+    publication_number: 2,
+    publication_status: "closed",
+    publication_opens_at: "2026-01-03T00:00:00Z",
+    publication_closes_at: "2026-01-04T00:00:00Z",
+    challenge_id: "00000000-0000-0000-0000-000000000013",
+    challenge_slug: "s07-flash-history",
+    challenge_version_id: "00000000-0000-0000-0000-000000000014",
+    challenge_title: "Flash histórico",
+    challenge_subtitle: "Dos preguntas",
+    challenge_description: "Revisión",
+    challenge_mode: "flash",
+    challenge_max_score: 100,
+    question_count: 2,
+    played_at: "2026-01-04T00:00:00Z",
+    player_count: 0,
+    player_id: null,
+    display_name: null,
+    avatar_path: null,
+    flash_points: null,
+    duration_ms: null,
+    started_at: null,
+    position: null,
+  },
+];
+
+const reviewRows = [
+  {
+    room_id: roomRow.room_id,
+    room_slug: roomRow.room_slug,
+    room_title: roomRow.room_title,
+    viewer_role: "member",
+    publication_id: historyRows[0].publication_id,
+    publication_status: "closed",
+    publication_closes_at: historyRows[0].publication_closes_at,
+    challenge_id: historyRows[0].challenge_id,
+    challenge_slug: historyRows[0].challenge_slug,
+    challenge_version_id: historyRows[0].challenge_version_id,
+    challenge_title: historyRows[0].challenge_title,
+    challenge_subtitle: historyRows[0].challenge_subtitle,
+    challenge_description: historyRows[0].challenge_description,
+    challenge_mode: "flash",
+    challenge_max_score: 100,
+    player_id: viewer.id,
+    display_name: viewer.name,
+    avatar_path: viewer.avatarSrc,
+    attempt_id: "00000000-0000-0000-0000-000000000016",
+    attempt_status: "completed",
+    attempt_score: 80,
+    attempt_started_at: "2026-01-01T10:00:00Z",
+    attempt_completed_at: "2026-01-01T10:01:00Z",
+    attempt_lock_version: 4,
+    challenge_item_id: "00000000-0000-0000-0000-000000000017",
+    item_position: 1,
+    question_version_id: "00000000-0000-0000-0000-000000000018",
+    question_type: "multiple-choice",
+    payload_schema_version: 1,
+    public_payload: {
+      category: "Cultura",
+      tags: {
+        domains: ["culture"],
+        topics: ["general"],
+        cognitiveSkills: ["memory"],
+        formatSkills: ["recall"],
+        lifeSkills: [],
+      },
+      prompt: "¿Capital?",
+      context: null,
+      timeLimitMs: 15000,
+      payload: { options: ["Lisboa", "Oporto"], media: null, promptVisual: null },
+    },
+    solution_payload: {
+      solution: { explanation: "Explicación persistida", payload: { correctAnswer: "Lisboa" } },
+      reveals: [],
+    },
+    answer: "Lisboa",
+    answer_status: "correct",
+    points: 50,
+    result_details: null,
+    presented_at: "2026-01-01T10:00:00Z",
+    submitted_at: "2026-01-01T10:00:01Z",
+    time_used_ms: 900,
+    item_points: 50,
+  },
+  {
+    ...historyRows[0],
+    viewer_role: "member",
+    publication_status: "closed",
+    publication_closes_at: historyRows[0].publication_closes_at,
+    challenge_id: historyRows[0].challenge_id,
+    challenge_slug: historyRows[0].challenge_slug,
+    challenge_version_id: historyRows[0].challenge_version_id,
+    player_id: viewer.id,
+    display_name: viewer.name,
+    avatar_path: viewer.avatarSrc,
+    attempt_id: "00000000-0000-0000-0000-000000000016",
+    attempt_status: "completed",
+    attempt_score: 80,
+    attempt_started_at: "2026-01-01T10:00:00Z",
+    attempt_completed_at: "2026-01-01T10:01:00Z",
+    attempt_lock_version: 4,
+    challenge_item_id: "00000000-0000-0000-0000-000000000019",
+    item_position: 2,
+    question_version_id: "00000000-0000-0000-0000-000000000020",
+    question_type: "multiple-choice",
+    payload_schema_version: 1,
+    public_payload: {
+      category: "Cultura",
+      tags: {
+        domains: ["culture"],
+        topics: ["general"],
+        cognitiveSkills: ["memory"],
+        formatSkills: ["recall"],
+        lifeSkills: [],
+      },
+      prompt: "¿Planeta?",
+      context: null,
+      timeLimitMs: 15000,
+      payload: { options: ["Venus", "Marte"], media: null, promptVisual: null },
+    },
+    solution_payload: {
+      solution: { explanation: "Segunda explicación", payload: { correctAnswer: "Marte" } },
+      reveals: [],
+    },
+    answer: null,
+    answer_status: null,
+    points: null,
+    result_details: null,
+    presented_at: null,
+    submitted_at: null,
+    time_used_ms: null,
+    item_points: 50,
+  },
+];
+
+describe("SupabaseRoomQueries S07 history and review", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+  });
+
+  it("groups historical rows and keeps empty publications", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) =>
+        functionName === "get_flash_history"
+          ? { data: historyRows, error: null }
+          : { data: [], error: null },
+      ),
+    });
+    const model = await new SupabaseRoomQueries().listHistory("s06-main");
+    expect(model?.entries).toHaveLength(2);
+    expect(model?.rankings[historyRows[0].publication_id]).toEqual([
+      expect.objectContaining({ memberId: viewer.id, startedAt: historyRows[0].started_at }),
+    ]);
+    expect(model?.rankings[historyRows[1].publication_id]).toEqual([]);
+    expect(model?.source).toBe("supabase");
+  });
+
+  it("reconstructs a persisted completed review without local session data", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_flash_history") return { data: historyRows, error: null };
+        if (functionName === "get_flash_member_review") return { data: reviewRows, error: null };
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        return { data: challengeRows, error: null };
+      }),
+    });
+    const model = await new SupabaseRoomQueries().getMemberDetail(
+      "s06-main",
+      viewer.id,
+      historyRows[0].publication_id,
+    );
+    expect(model).toMatchObject({
+      source: "supabase",
+      challengeSummary: { id: historyRows[0].publication_id },
+      challengeRank: 1,
+      result: { completed: true, flashPoints: 80 },
+    });
+    expect(model?.challenge?.mode).toBe("flash");
+    expect(
+      model?.challenge && "questions" in model.challenge ? model.challenge.questions : null,
+    ).toHaveLength(2);
+    expect(model?.result?.attempt?.answers[1]?.status).toBe("unanswered");
+    expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
+  });
+
+  it("propagates malformed history rows and RPC errors", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: [{ ...historyRows[0], player_count: "1" }], error: null })),
+    });
+    await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
+      "Supabase history read returned an invalid row",
+    );
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
+    });
+    await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
+      "Supabase history read failed (get_flash_history): permission denied",
+    );
+  });
+});

@@ -67,10 +67,14 @@ describe("canonical UI primitives", () => {
 
   it("renders semantic chip variants", () => {
     const status = renderToStaticMarkup(<Chip tone="success">Completado</Chip>);
-    const reward = renderToStaticMarkup(<Chip variant="reward">+120 ⚡</Chip>);
+    const flashPoints = renderToStaticMarkup(
+      <Chip variant="flashPoints" ariaLabel="+100 Flash Points">
+        +100 ⚡
+      </Chip>,
+    );
 
     expect(status).toContain("success");
-    expect(reward).toContain("reward");
+    expect(flashPoints).toContain("flashPoints");
   });
 
   it("renders avatar fallback, overflow and associated text", () => {
@@ -114,7 +118,7 @@ describe("canonical UI primitives", () => {
 
   it("supports a mobile-only game progress label", () => {
     const markup = renderToStaticMarkup(
-      <GameHeader title="Flash clásico" mobileLabel="Pregunta 04 de 16" />,
+      <GameHeader title="Flash" mobileLabel="Pregunta 04 de 16" />,
     );
 
     expect(markup).toContain("Pregunta 04 de 16");

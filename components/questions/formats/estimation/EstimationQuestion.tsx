@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
 import { ArrowIcon } from "@/components/ui";
 import styles from "./EstimationQuestion.module.css";
 
@@ -9,9 +8,10 @@ type EstimationQuestionProps = {
   min: number;
   max: number;
   step: number;
-  initialValue: number;
+  value: number;
   unit: string;
   locked: boolean;
+  onChange: (value: number) => void;
   onSubmit: (value: number) => void;
 };
 
@@ -19,15 +19,15 @@ export function EstimationQuestion({
   min,
   max,
   step,
-  initialValue,
+  value,
   unit,
   locked,
+  onChange,
   onSubmit,
 }: EstimationQuestionProps) {
-  const [value, setValue] = useState(initialValue);
-
   const adjust = (amount: number) => {
-    setValue((current) => Math.min(max, Math.max(min, current + amount)));
+    const next = Math.min(max, Math.max(min, value + amount));
+    onChange(next);
   };
 
   const progress = ((value - min) / (max - min)) * 100;
@@ -52,7 +52,10 @@ export function EstimationQuestion({
             step={step}
             value={value}
             disabled={locked}
-            onChange={(event) => setValue(Number(event.target.value))}
+            onChange={(event) => {
+              const next = Number(event.target.value);
+              onChange(next);
+            }}
             style={{ "--range-progress": `${progress}%` } as React.CSSProperties}
             aria-label={`Estimación en ${unit}`}
             aria-valuetext={`${value} ${unit}`}
