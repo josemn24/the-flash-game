@@ -1,5 +1,6 @@
 import type {
   ImageSurface,
+  ConnectPairsPair,
   MatchingItem,
   MatchingLeftItem,
   OddOneOutItem,
@@ -189,6 +190,7 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "mini-wordle"
       | "logic-code"
       | "logic-matrix"
+      | "connect-pairs"
       | "progressive-clues"
       | "matching"
       | "progressive-image"
@@ -403,6 +405,13 @@ export type ServerEscapeQuestion = ServerFlashQuestionBase & {
   readonly boardLabel: string | null;
 };
 
+export type ServerConnectPairsQuestion = ServerFlashQuestionBase & {
+  readonly type: "connect-pairs";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly pairs: readonly ConnectPairsPair[];
+  readonly requireFullCoverage: true;
+};
+
 export type ServerMiniWordleProgress = {
   readonly kind: "mini-wordle";
   readonly guesses: readonly string[];
@@ -528,7 +537,8 @@ export type ServerFlashQuestion =
   | ServerWordSearchQuestion
   | ServerWordHashtagQuestion
   | ServerZipQuestion
-  | ServerEscapeQuestion;
+  | ServerEscapeQuestion
+  | ServerConnectPairsQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

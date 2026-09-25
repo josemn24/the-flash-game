@@ -208,6 +208,17 @@ begin
         where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
           regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
   end if;
+  if question.type = 'odd-one-out' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'items') = 'array'
+      and jsonb_array_length(question.public_payload->'items') between 3 and 8
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and exists (select 1 from jsonb_array_elements(question.public_payload->'items') item
+        where item->>'id' = solution->>'correctAnswer');
+  end if;
   if question.type = 'logic-code' then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
@@ -307,6 +318,20 @@ begin
           where item->>'id' = match.value))
       and (select count(*) from jsonb_each_text(solution->'matches')) =
         (select count(distinct value) from jsonb_each_text(solution->'matches'));
+  end if;
+  if question.type = 'connect-pairs' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'grid') = 'object'
+      and (question.public_payload->'grid'->>'rows')::integer = 5
+      and (question.public_payload->'grid'->>'columns')::integer = 5
+      and jsonb_typeof(question.public_payload->'pairs') = 'array'
+      and jsonb_array_length(question.public_payload->'pairs') between 3 and 5
+      and question.public_payload->>'requireFullCoverage' = 'true'
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'paths') = 'object'
+      and (select count(*) from jsonb_object_keys(solution->'paths')) = jsonb_array_length(question.public_payload->'pairs');
   end if;
   if question.type = 'progressive-image' then
     return jsonb_typeof(question.public_payload) = 'object'

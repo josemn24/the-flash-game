@@ -15,25 +15,27 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [survival, alphabet, steel] = beta.publications;
+    const [pyramid, survival, alphabet, steel] = beta.publications;
 
     assert(
       JSON.stringify(
         beta.publications.map(({ number, title, mode, status }) => [number, title, mode, status]),
       ) ===
         JSON.stringify([
-          [1, "Supervivencia: Cultura pop", "survival", "open"],
-          [2, "La vuelta al mundo", "alphabet", "scheduled"],
-          [3, "Steel Ball Run", "flash", "scheduled"],
+          [1, "Cumbre lógica II", "pyramid", "open"],
+          [2, "Supervivencia: Cultura pop", "survival", "scheduled"],
+          [3, "La vuelta al mundo", "alphabet", "scheduled"],
+          [4, "Steel Ball Run", "flash", "scheduled"],
         ]),
-      "BetaVIP publica Survival y programa Alphabet y Steel Ball Run en ese orden",
+      "BetaVIP publica Cumbre lógica II y programa los tres desafíos restantes en ese orden",
     );
-    assert(beta.publicationId === survival.id, "El manifiesto apunta al primer desafío");
-    assert(beta.challengeId === survival.challengeId, "El manifiesto apunta al desafío Survival");
+    assert(beta.publicationId === pyramid.id, "El manifiesto apunta al primer desafío");
+    assert(beta.challengeId === pyramid.challengeId, "El manifiesto apunta al desafío Pyramid");
     assert(
-      beta.challengeVersionId === survival.challengeVersionId,
-      "El manifiesto apunta a la versión Survival",
+      beta.challengeVersionId === pyramid.challengeVersionId,
+      "El manifiesto apunta a la versión Cumbre lógica II",
     );
+    assert(beta.pyramidPublicationId === pyramid.id, "La Pirámide tiene ID explícito");
     assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
     assert(beta.steelBallRunPublicationId === steel.id, "Steel Ball Run tiene ID propio");
     assert(beta.survivalPublicationId === survival.id, "Survival tiene ID propio");
@@ -127,6 +129,20 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
+        `select count(*) from private.challenge_versions where id = '${pyramid.challengeVersionId}' and status = 'published' and mode = 'pyramid' and mode_config = '{}'::jsonb and max_score = 100;`,
+        config.dbContainer,
+      )) === 1,
+      "Cumbre lógica II está publicada como Pirámide con 100 puntos",
+    );
+    assert(
+      (await dockerSql(
+        `select string_agg(question.type, ',' order by item.position) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${pyramid.challengeVersionId}';`,
+        config.dbContainer,
+      )).stdout.trim() === "odd-one-out,logic-matrix,zip,connect-pairs,escape,logic-code,queens",
+      "Cumbre lógica II conserva el orden de formatos acordado",
+    );
+    assert(
+      (await sqlCount(
         `select count(*) from private.challenge_items where challenge_version_id = '${survival.challengeVersionId}';`,
         config.dbContainer,
       )) === 20,
@@ -151,22 +167,22 @@ export const scenario = {
       config.dbContainer,
     );
     assert(
-      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled",
+      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled",
       "Las publicaciones de BetaVIP están en orden y estado correctos",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '72 hours';`,
+        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '96 hours';`,
         config.dbContainer,
       )) === 1,
-      "La temporada BetaVIP cubre exactamente tres ventanas de 24 horas",
+      "La temporada BetaVIP cubre exactamente cuatro ventanas de 24 horas",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${survival.id}' and second.id = '${alphabet.id}' and third.id = '${steel.id}' and first.number = 1 and second.number = 2 and third.number = 3 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = season.ends_at and private.publication_is_effectively_open(second.status, season.status, season.starts_at, season.ends_at, second.opens_at, second.closes_at, second.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${pyramid.id}' and second.id = '${survival.id}' and third.id = '${alphabet.id}' and fourth.id = '${steel.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fourth.closes_at - fourth.opens_at)) = 86400 and private.publication_is_effectively_open(second.status, season.status, season.starts_at, season.ends_at, second.opens_at, second.closes_at, second.opens_at + interval '1 hour');`,
         config.dbContainer,
       )) === 1,
-      "Las tres publicaciones quedan disponibles en sus días, sin huecos ni solapes",
+      "Las cuatro publicaciones quedan disponibles en sus días, sin huecos ni solapes",
     );
     assert(
       (await sqlCount(
@@ -200,29 +216,52 @@ export const scenario = {
     }
 
     for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
+      const pyramidPlayable = await rpc(client, "get_my_pyramid_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: pyramid.id,
+      });
+      assert(pyramidPlayable.length === 7, "Los miembros de BetaVIP reciben los siete niveles");
+      assert(
+        pyramidPlayable.map((row) => row.question_type).join(",") ===
+          "odd-one-out,logic-matrix,zip,connect-pairs,escape,logic-code,queens",
+        "La Pirámide proyecta los siete formatos en orden",
+      );
+      assert(
+        pyramidPlayable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
+        "Cumbre lógica II suma 100 puntos",
+      );
+      assert(
+        !JSON.stringify(pyramidPlayable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
+        "La lectura de la Pirámide no expone soluciones",
+      );
       const playable = await rpc(client, "get_my_survival_challenge", {
         target_room_slug: betaSlug,
         target_publication_id: survival.id,
       });
-      assert(playable.length === 20, "Los miembros de BetaVIP reciben las veinte pruebas");
-      assert(
-        playable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
-        "Survival suma 100 puntos",
-      );
-      assert(
-        playable.every((row) => row.initial_lives === 3 && row.challenge_mode === "survival"),
-        "La proyección jugable conserva las tres vidas",
-      );
+      assert(playable.length === 0, "Survival aún no está disponible durante el primer día");
       assert(
         !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
         "La lectura jugable no expone soluciones",
       );
       const calendar = await rpc(client, "get_room_calendar", { target_room_slug: betaSlug });
       assert(
-        calendar.some((entry) => entry.publication_id === survival.id && entry.can_start),
-        "La sala permite iniciar Survival el primer día",
+        calendar.some((entry) => entry.publication_id === pyramid.id && entry.can_start),
+        "La sala permite iniciar Cumbre lógica II el primer día",
+      );
+      assert(
+        !calendar.some((entry) => entry.publication_id === survival.id && entry.can_start),
+        "Survival permanece programado durante el primer día",
       );
     }
+    assert(
+      (
+        await rpc(kike, "get_my_pyramid_challenge", {
+          target_room_slug: betaSlug,
+          target_publication_id: pyramid.id,
+        })
+      ).length === 0,
+      "Un miembro exclusivo de Tabarnia no recibe la Pirámide de BetaVIP",
+    );
     assert(
       (
         await rpc(kike, "get_my_survival_challenge", {
@@ -278,6 +317,23 @@ export const scenario = {
     assert(
       (await sqlCount("select count(*) from public.attempts;", config.dbContainer)) === 0,
       "El seed no crea partidas",
+    );
+
+    await dockerSql(
+      `
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id = '${pyramid.id}';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${survival.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-integration-survival-before-ranking"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
     );
 
     const attemptId = "00000000-0000-4000-8000-00000000be7a";

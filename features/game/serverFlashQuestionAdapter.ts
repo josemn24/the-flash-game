@@ -2,6 +2,7 @@ import type {
   EscapeQuestion,
   EstimationQuestion,
   HeatMapQuestion,
+  ConnectPairsQuestion,
   FlashChallenge,
   PyramidChallenge,
   Question,
@@ -33,6 +34,7 @@ import type {
   ServerWordHashtagQuestion,
   ServerZipQuestion,
   ServerEscapeQuestion,
+  ServerConnectPairsQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -47,6 +49,7 @@ import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/log
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
+import { isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import {
   isValidWordHashtagConfiguration,
   isValidWordHashtagPublicConfiguration,
@@ -176,7 +179,8 @@ export function questionFromPayload(
     | "word-search"
     | "word-hashtag"
     | "zip"
-    | "escape",
+    | "escape"
+    | "connect-pairs",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -204,7 +208,8 @@ export function questionFromPayload(
     | "word-search"
     | "word-hashtag"
     | "zip"
-    | "escape",
+    | "escape"
+    | "connect-pairs",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -990,6 +995,60 @@ export function questionFromPayload(
       boardLabel: typeof value.boardLabel === "string" ? value.boardLabel : null,
     } satisfies ServerEscapeQuestion;
   }
+  if (questionType === "connect-pairs") {
+    const grid = value.grid;
+    const pairs = value.pairs;
+    const validGrid =
+      grid &&
+      typeof grid === "object" &&
+      !Array.isArray(grid) &&
+      (grid as Record<string, unknown>).rows === 5 &&
+      (grid as Record<string, unknown>).columns === 5;
+    const validPairs =
+      Array.isArray(pairs) &&
+      pairs.length >= 3 &&
+      pairs.length <= 5 &&
+      pairs.every((pair) => {
+        if (!pair || typeof pair !== "object" || Array.isArray(pair)) return false;
+        const item = pair as Record<string, unknown>;
+        const endpoints = item.endpoints;
+        return (
+          typeof item.id === "string" &&
+          item.id.trim().length > 0 &&
+          typeof item.label === "string" &&
+          item.label.trim().length > 0 &&
+          typeof item.symbol === "string" &&
+          item.symbol.trim().length > 0 &&
+          Array.isArray(endpoints) &&
+          endpoints.length === 2 &&
+          endpoints.every(
+            (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < 25,
+          ) &&
+          endpoints[0] !== endpoints[1] &&
+          (item.color === undefined || typeof item.color === "string")
+        );
+      });
+    const pairIds = validPairs ? (pairs as Array<Record<string, unknown>>).map((pair) => pair.id) : [];
+    const endpoints = validPairs
+      ? (pairs as Array<Record<string, unknown>>).flatMap((pair) => pair.endpoints as number[])
+      : [];
+    if (
+      !validGrid ||
+      !validPairs ||
+      new Set(pairIds).size !== pairIds.length ||
+      new Set(endpoints).size !== endpoints.length ||
+      value.requireFullCoverage !== true
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "connect-pairs",
+      grid: { rows: 5, columns: 5 },
+      pairs: pairs as ServerConnectPairsQuestion["pairs"],
+      requireFullCoverage: true,
+    } satisfies ServerConnectPairsQuestion;
+  }
   const wordLength = value.wordLength;
   const maxAttempts = value.maxAttempts;
   if ((wordLength !== 4 && wordLength !== 5) || typeof maxAttempts !== "number") {
@@ -1483,6 +1542,28 @@ export function questionWithSolution(
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     } satisfies EscapeQuestion;
     if (!isValidEscapeConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
+    return fullQuestion;
+  }
+  if (question.type === "connect-pairs") {
+    const paths = solution.paths;
+    if (!paths || typeof paths !== "object" || Array.isArray(paths)) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "connect-pairs",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      pairs: [...question.pairs],
+      solutionPaths: paths as ConnectPairsQuestion["solutionPaths"],
+      requireFullCoverage: true,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies ConnectPairsQuestion;
+    if (!isValidConnectPairsConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
     return fullQuestion;
   }
   return {

@@ -11,7 +11,7 @@ declare
 begin
   if expected_type not in (
     'true-false', 'ordering', 'classification', 'logic-matrix',
-    'zip', 'escape', 'word-hashtag'
+    'zip', 'escape', 'word-hashtag', 'connect-pairs'
   ) then
     return false;
   end if;
@@ -38,6 +38,7 @@ language sql stable security definer set search_path = '' as $$
     or private.is_valid_published_competitive_question_format(target_question, 'zip')
     or private.is_valid_published_competitive_question_format(target_question, 'escape')
     or private.is_valid_published_competitive_question_format(target_question, 'word-hashtag')
+    or private.is_valid_published_competitive_question_format(target_question, 'connect-pairs')
 $$;
 
 alter function private.is_valid_published_competitive_question_format(uuid, text) owner to postgres;

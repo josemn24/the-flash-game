@@ -30,6 +30,7 @@ import type {
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type {
   AnswerValue,
+  ConnectPairsQuestion,
   LogicCodeQuestion,
   LogicMatrixQuestion,
   MatchingQuestion,
@@ -66,6 +67,7 @@ import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
 import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
 import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
+import { isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import {
   isValidWordHashtagConfiguration,
   isValidWordHashtagPublicConfiguration,
@@ -231,6 +233,7 @@ function asQuestion(
   | MiniWordleQuestion
   | LogicCodeQuestion
   | LogicMatrixQuestion
+  | ConnectPairsQuestion
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
   | MatchingQuestion
@@ -268,6 +271,7 @@ function asQuestion(
       "word-hashtag",
       "zip",
       "escape",
+      "connect-pairs",
       "short-text",
     ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -765,6 +769,28 @@ function asQuestion(
       explanation:
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies LogicMatrixQuestion;
+  }
+  if (context.questionType === "connect-pairs") {
+    const grid = publicPayload.grid;
+    const pairs = publicPayload.pairs;
+    const paths = solutionPayload.paths;
+    if (publicPayload.requireFullCoverage !== true) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "connect-pairs" as const,
+      grid: grid as ConnectPairsQuestion["grid"],
+      pairs: pairs as ConnectPairsQuestion["pairs"],
+      solutionPaths: paths as ConnectPairsQuestion["solutionPaths"],
+      requireFullCoverage: true as const,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies ConnectPairsQuestion;
+    if (!isValidConnectPairsConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
   }
   if (context.questionType === "progressive-clues") {
     const clues = publicPayload.clues;

@@ -40,6 +40,7 @@ export type FlashReadRow = {
     | "mini-wordle"
     | "logic-code"
     | "logic-matrix"
+    | "connect-pairs"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -71,6 +72,7 @@ export type FlashResultRow = {
     | "mini-wordle"
     | "logic-code"
     | "logic-matrix"
+    | "connect-pairs"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -148,6 +150,7 @@ export function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "mini-wordle" ||
       value.question_type === "logic-code" ||
       value.question_type === "logic-matrix" ||
+      value.question_type === "connect-pairs" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
@@ -187,6 +190,7 @@ export function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "mini-wordle" ||
       value.question_type === "logic-code" ||
       value.question_type === "logic-matrix" ||
+      value.question_type === "connect-pairs" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||

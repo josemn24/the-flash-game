@@ -5,6 +5,10 @@ import {
   BETA_VIP_SURVIVAL,
   betaVipSurvivalQuestions,
 } from "./fixtures/scenarios/betavip-survival.mjs";
+import {
+  BETA_VIP_PYRAMID,
+  betaVipPyramidQuestions,
+} from "./fixtures/scenarios/betavip-pyramid.mjs";
 import { betaVipManifest, buildBetaVipDomainSql, setupBetaVipDataset } from "./seed-betavip.mjs";
 
 const tabarniaFixture = {
@@ -133,31 +137,49 @@ describe("BetaVIP seed", () => {
     expect(data.publicationId).toBe(data.publications[0].id);
     expect(data.challengeId).toBe(data.publications[0].challengeId);
     expect(data.challengeVersionId).toBe(data.publications[0].challengeVersionId);
+    expect(betaVipPyramidQuestions).toHaveLength(7);
+    expect(betaVipPyramidQuestions.map((item) => item.type)).toEqual([
+      "odd-one-out",
+      "logic-matrix",
+      "zip",
+      "connect-pairs",
+      "escape",
+      "logic-code",
+      "queens",
+    ]);
+    expect(betaVipPyramidQuestions.reduce((total, item) => total + item.points, 0)).toBe(100);
+    expect(BETA_VIP_PYRAMID.modeConfig).toEqual({});
     expect(
       data.publications.map((item) => [item.number, item.title, item.mode, item.status]),
     ).toEqual([
-      [1, "Supervivencia: Cultura pop", "survival", "open"],
-      [2, "La vuelta al mundo", "alphabet", "scheduled"],
-      [3, "Steel Ball Run", "flash", "scheduled"],
+      [1, "Cumbre lógica II", "pyramid", "open"],
+      [2, "Supervivencia: Cultura pop", "survival", "scheduled"],
+      [3, "La vuelta al mundo", "alphabet", "scheduled"],
+      [4, "Steel Ball Run", "flash", "scheduled"],
     ]);
-    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48]);
-    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([20, 18, 16]);
-    expect(data.survivalPublicationId).toBe(data.publications[0].id);
-    expect(data.alphabetPublicationId).toBe(data.publications[1].id);
-    expect(data.steelBallRunPublicationId).toBe(data.publications[2].id);
+    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([7, 20, 18, 16]);
+    expect(data.pyramidPublicationId).toBe(data.publications[0].id);
+    expect(data.survivalPublicationId).toBe(data.publications[1].id);
+    expect(data.alphabetPublicationId).toBe(data.publications[2].id);
+    expect(data.steelBallRunPublicationId).toBe(data.publications[3].id);
     expect(data.steelBallRunPublicationId).not.toBe(data.tabarnia.steelBallRunPublicationId);
-    expect(data.publications[2].challengeVersionId).toBe("version-sbr");
+    expect(data.publications[3].challengeVersionId).toBe("version-sbr");
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");
     expect(sql).toContain("'version-sbr'");
     expect(sql).toContain("'La vuelta al mundo'");
     expect(sql).toContain("'alphabet'");
     expect(sql).toContain("'short-text'");
-    expect(sql).toContain("'active', now(), now() + interval '72 hours'");
+    expect(sql).toContain("'active', now(), now() + interval '96 hours'");
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
     expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
+    expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
+    expect(sql).toContain("'Cumbre lógica II'");
+    expect(sql).toContain("'pyramid'");
+    expect(sql).toContain("'connect-pairs'");
     for (const [publication, status, start, end] of [
       [data.publications[0], "open", "now()", "now() + interval '24 hours'"],
       [
@@ -171,6 +193,12 @@ describe("BetaVIP seed", () => {
         "scheduled",
         "now() + interval '48 hours'",
         "now() + interval '72 hours'",
+      ],
+      [
+        data.publications[3],
+        "scheduled",
+        "now() + interval '72 hours'",
+        "now() + interval '96 hours'",
       ],
     ]) {
       expect(sql).toContain(

@@ -19,10 +19,11 @@ import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMap
 import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
 import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
 import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
+import { ConnectPairsQuestion } from "@/components/questions/formats/connect-pairs/ConnectPairsQuestion";
 import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import { LifeHearts } from "./LifeHearts";
-import type { AnswerValue } from "@/types/game";
+import type { AnswerValue, ConnectPairsQuestion as ClientConnectPairsQuestion } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
 import styles from "./QuestionStage.module.css";
 import variantStyles from "./QuestionStageVariants.module.css";
@@ -351,6 +352,39 @@ export function ServerFlashQuestionStage({
             submissionStatusVisible={submissionStatusVisible}
             submissionError={submissionError}
             onRetry={onRetrySubmission}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
+          />
+        ) : question.type === "connect-pairs" ? (
+          <ConnectPairsQuestion
+            question={
+              {
+                id: question.id,
+                type: "connect-pairs",
+                category: question.category,
+                tags: question.tags,
+                question: question.question,
+                grid: question.grid,
+                pairs: [...question.pairs],
+                solutionPaths: {},
+                requireFullCoverage: true,
+                timeLimit: question.timeLimit,
+                points: question.points,
+                explanation: "",
+              } satisfies ClientConnectPairsQuestion
+            }
+            initialAnswer={
+              pendingAnswer &&
+              typeof pendingAnswer === "object" &&
+              !Array.isArray(pendingAnswer) &&
+              "paths" in pendingAnswer &&
+              pendingAnswer.paths &&
+              typeof pendingAnswer.paths === "object" &&
+              !Array.isArray(pendingAnswer.paths)
+                ? (pendingAnswer as { paths: Record<string, number[]> })
+                : undefined
+            }
+            locked={locked}
             onProgress={onProgress}
             onSubmit={onSubmit}
           />
