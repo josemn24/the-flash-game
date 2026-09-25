@@ -91,12 +91,12 @@ select set_config('s15.unsupported_document', jsonb_set(jsonb_set(jsonb_set(
   '{challenge,title}', '"La Pirámide S15 formato no evaluado"'::jsonb),
   '{questions,0}',
   jsonb_build_object(
-    'slug', 's15-pyramid-odd-one-out', 'type', 'odd-one-out', 'payloadSchemaVersion', 1,
+    'slug', 's15-pyramid-anagram', 'type', 'anagram', 'payloadSchemaVersion', 1,
     'timeLimitMs', 15000, 'points', 14,
-    'publicPayload', jsonb_build_object('question', '¿Qué elemento no pertenece?', 'items', jsonb_build_array(
-      jsonb_build_object('id', 'a', 'label', 'A'), jsonb_build_object('id', 'b', 'label', 'B'),
-      jsonb_build_object('id', 'c', 'label', 'C'))),
-    'solutionPayload', jsonb_build_object('correctAnswer', 'c', 'explanation', 'C no pertenece.'),
+    'publicPayload', jsonb_build_object('question', 'Forma una palabra.', 'tiles', jsonb_build_array(
+      jsonb_build_object('id', 'a', 'value', 'A'), jsonb_build_object('id', 'b', 'value', 'B'),
+      jsonb_build_object('id', 'c', 'value', 'C'))),
+    'solutionPayload', jsonb_build_object('correctAnswer', 'CBA', 'explanation', 'Reordena las fichas.'),
     'modeConfig', jsonb_build_object(
       'levelId', 'level-1', 'label', 'Nivel 1',
       'briefing', jsonb_build_object('title', 'Briefing 1', 'format', 'Texto', 'description', 'Resuelve el nivel.')
@@ -116,7 +116,7 @@ select set_config('s15.unsupported_version_id', (
 select set_config('s15.unevaluated_version_id', (
   select question.id::text from private.question_versions question
   join private.question_definitions definition on definition.id = question.question_definition_id
-  where definition.slug = 's15-pyramid-odd-one-out'
+  where definition.slug = 's15-pyramid-anagram'
 ), true);
 select set_config('s15.unevaluated_updated_at', (
   select updated_at::text from private.question_versions where id = current_setting('s15.unevaluated_version_id')::uuid

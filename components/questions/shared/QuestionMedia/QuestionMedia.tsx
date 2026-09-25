@@ -66,6 +66,7 @@ export function QuestionMedia({
 
   if (media.type === "image") {
     const isSvg = media.src.endsWith(".svg");
+    const isRemote = /^https?:\/\//.test(media.src);
 
     return (
       <div className={stageClassName}>
@@ -74,7 +75,7 @@ export function QuestionMedia({
           alt={media.alt}
           fill
           sizes="(max-width: 768px) calc(100vw - 2rem), 48rem"
-          unoptimized={isSvg}
+          unoptimized={isSvg || isRemote}
           className={media.fit === "contain" ? "object-contain" : "object-cover"}
           style={{ objectPosition: media.position }}
         />

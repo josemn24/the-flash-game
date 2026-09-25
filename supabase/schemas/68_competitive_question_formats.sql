@@ -1,5 +1,5 @@
 -- S15 — server-evaluated competitive formats shared by Flash, Survival and Pyramid.
--- All seven formats are checked against the standalone editorial contract before admission.
+-- Every format in this allowlist is checked against the standalone editorial contract before admission.
 
 create or replace function private.is_valid_published_competitive_question_format(
   target_question uuid,
@@ -11,7 +11,7 @@ declare
 begin
   if expected_type not in (
     'true-false', 'ordering', 'classification', 'logic-matrix',
-    'zip', 'escape', 'word-hashtag', 'connect-pairs'
+    'zip', 'escape', 'word-hashtag', 'odd-one-out', 'connect-pairs'
   ) then
     return false;
   end if;
@@ -38,6 +38,7 @@ language sql stable security definer set search_path = '' as $$
     or private.is_valid_published_competitive_question_format(target_question, 'zip')
     or private.is_valid_published_competitive_question_format(target_question, 'escape')
     or private.is_valid_published_competitive_question_format(target_question, 'word-hashtag')
+    or private.is_valid_published_competitive_question_format(target_question, 'odd-one-out')
     or private.is_valid_published_competitive_question_format(target_question, 'connect-pairs')
 $$;
 

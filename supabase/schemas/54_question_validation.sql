@@ -136,7 +136,7 @@ begin
   end if;
   if question.type in (
     'true-false', 'ordering', 'classification', 'logic-matrix',
-    'zip', 'escape', 'word-hashtag'
+    'zip', 'escape', 'word-hashtag', 'odd-one-out', 'connect-pairs'
   ) then
     return private.is_supported_competitive_question_extension(target_question);
   end if;
