@@ -1100,6 +1100,7 @@ function ZipReview({ question, result }: ReviewProps<QuestionOfType<"zip">>) {
         question={question}
         path={path}
         solutionPath={question.solution}
+        variant="review"
         label="Revisión de Zip con recorrido realizado y solución correcta."
       />
       <div className={styles.mazeLegend} aria-label="Leyenda de rutas">

@@ -154,6 +154,10 @@ function commandCode(error: unknown) {
     "interaction_not_presented",
     "evaluation_pending",
     "publication_cancelled",
+    "attempt_not_terminal",
+    "reason_required",
+    "invalid_score",
+    "not_competitive",
     "incomplete_challenge",
     "unfinished_interaction",
     "no_evaluated_answers",
@@ -212,7 +216,7 @@ async function transaction<T>(
   }
 }
 
-async function callCommand<T>(
+export async function callAttemptCommand<T>(
   identity: VerifiedAuthIdentity,
   functionName: string,
   input: object,
@@ -1141,11 +1145,11 @@ export class SupabaseAttemptCommands implements Pick<
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
   start(input: StartAttemptCommand) {
-    return callCommand<StartAttemptResult>(this.identity, "start_attempt", input);
+    return callAttemptCommand<StartAttemptResult>(this.identity, "start_attempt", input);
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    const prepared = await callCommand<PrepareInteractionResult>(
+    const prepared = await callAttemptCommand<PrepareInteractionResult>(
       this.identity,
       "prepare_interaction",
       input,
@@ -1162,15 +1166,15 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   receiveAnswer(input: SubmitAnswerInput) {
-    return callCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
+    return callAttemptCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
   }
 
   pass(input: Parameters<AttemptCommands["pass"]>[0]) {
-    return callCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
+    return callAttemptCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
   }
 
   async submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
-    const accepted = await callCommand<SubmitMiniWordleGuessResult>(
+    const accepted = await callAttemptCommand<SubmitMiniWordleGuessResult>(
       this.identity,
       "submit_mini_wordle_guess",
       input,
@@ -1192,7 +1196,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async submitMatchingPair(input: Parameters<AttemptCommands["submitMatchingPair"]>[0]) {
-    const accepted = await callCommand<SubmitMatchingPairResult>(
+    const accepted = await callAttemptCommand<SubmitMatchingPairResult>(
       this.identity,
       "submit_matching_pair",
       input,
@@ -1216,7 +1220,7 @@ export class SupabaseAttemptCommands implements Pick<
   async submitWordSearchSelection(
     input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0],
   ) {
-    const accepted = await callCommand<SubmitWordSearchSelectionResult>(
+    const accepted = await callAttemptCommand<SubmitWordSearchSelectionResult>(
       this.identity,
       "submit_word_search_selection",
       input,
@@ -1238,7 +1242,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
-    const accepted = await callCommand<SubmitWordHashtagSwapResult>(
+    const accepted = await callAttemptCommand<SubmitWordHashtagSwapResult>(
       this.identity,
       "submit_word_hashtag_swap",
       input,
@@ -1261,7 +1265,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
-    const accepted = await callCommand<SubmitLogicCodeAttemptResult>(
+    const accepted = await callAttemptCommand<SubmitLogicCodeAttemptResult>(
       this.identity,
       "submit_logic_code_attempt",
       input,
@@ -1283,7 +1287,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
-    const accepted = await callCommand<SubmitQueensPlacementResult>(
+    const accepted = await callAttemptCommand<SubmitQueensPlacementResult>(
       this.identity,
       "submit_queens_placement",
       input,
@@ -1305,7 +1309,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   revealProgressiveClue(input: Parameters<AttemptCommands["revealProgressiveClue"]>[0]) {
-    return callCommand<RevealProgressiveClueResult>(
+    return callAttemptCommand<RevealProgressiveClueResult>(
       this.identity,
       "reveal_progressive_clue",
       input,
@@ -1323,19 +1327,19 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   recordEvaluation(input: RecordEvaluationCommand) {
-    return callCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
+    return callAttemptCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
   }
 
   complete(input: CompleteAttemptCommand) {
-    return callCommand<FinishAttemptResult>(this.identity, "complete_attempt", input);
+    return callAttemptCommand<FinishAttemptResult>(this.identity, "complete_attempt", input);
   }
 
   abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
-    return callCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
+    return callAttemptCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
   }
 
   recover(input: RecoverAttemptCommand) {
-    return callCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
+    return callAttemptCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
   }
 
   readRecovery(attemptId: string, sessionToken: string) {

@@ -5,18 +5,18 @@
 
 ## Estado de la aplicación
 
-La integración local cubre S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
+La integración local cubre S01–S15, S17a, S18b parcial, S20, D08a/D08b, S05-Alphabet,
 F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 y E01–E06/E10. Incluye Auth, perfil, salas,
 temporadas, calendario, Flash, Alphabet, Supervivencia, Pirámide, rankings, historial Flash,
 revisión autorizada, portal de superadmin, biblioteca editorial y assets privados.
 
 S18b solo habilita actualmente concesión/revocación de admin y eliminación lógica de miembros.
 Transferencia de propiedad, bloqueo/desbloqueo e invitaciones completas siguen pendientes.
-Narrativa, E07–E09, abandono automático, takeover, `results_locked_at`, correcciones administrativas,
-pruebas fantasma y anonimización también permanecen fuera del alcance operativo actual.
+Narrativa, E07–E09, abandono automático, takeover, `results_locked_at`, pruebas fantasma y anonimización
+siguen pendientes; S20 ya cubre las correcciones administrativas de resultados.
 
-El esquema declarativo vigente contiene 47 archivos y la revisión canónica es
-`20260924120000_s18_superadmin_user_commands`. Hay 89 migraciones versionadas, 30 tablas, una vista
+El esquema declarativo vigente contiene 48 archivos y la revisión canónica es
+`20260925120000_s20_superadmin_attempt_inspection`. Hay 90 migraciones versionadas, 30 tablas, una vista
 interna y un inventario de seguridad registrado. No hay proyecto remoto de Supabase vinculado.
 
 ## Comprobaciones ejecutadas actualmente
@@ -26,14 +26,14 @@ interna y un inventario de seguridad registrado. No hay proyecto remoto de Supab
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
   `scripts/integration/scenarios/s15.mjs`.
-- `npm test`: 130 archivos correctos y 1 fallido; 773 tests pasan de 774. El fallo está en
+- `npm test`: 132 archivos correctos y 1 fallido; 778 tests pasan de 779. El fallo está en
   `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
 - `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera del alcance de
   esta actualización documental.
-- `npm run supabase:schema:test`: no se pudo repetir en esta sesión porque Docker no está accesible.
+- `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas, verificó el
+  inventario y todas las suites pgTAP, incluida S20 con 20 checks.
 
-La última validación completa registrada de Supabase local cargó los 47 schemas declarativos,
-verificó el inventario de seguridad, pgTAP y las carreras PostgreSQL. Esa evidencia no equivale a
+La validación local no equivale a
 validación de staging o producción.
 
 ## Evidencia funcional vigente
@@ -52,7 +52,6 @@ No se debe interpretar la existencia de un test focal histórico como validació
 
 ## Limitaciones conocidas
 
-- Docker no está disponible en la sesión actual para repetir `supabase:schema:test` o el piloto completo.
 - No existe proyecto Supabase remoto vinculado.
 - La validación E2E persistida es local y reproducible; no cubre staging o producción.
 - Prettier mantiene 151 archivos sin formato canónico.

@@ -50,6 +50,7 @@ export function ZipBoard({
   onPointerUp,
   label = "Tablero Zip.",
   disabled = false,
+  variant = "play",
 }: {
   question: Pick<ZipPublicQuestion, "grid" | "checkpoints" | "boardLabel">;
   path: number[];
@@ -62,6 +63,7 @@ export function ZipBoard({
   onPointerUp?: (event: ReactPointerEvent<HTMLDivElement>) => void;
   label?: string;
   disabled?: boolean;
+  variant?: "play" | "review";
 }) {
   const checkpoints = useMemo(
     () => new Map(question.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint])),
@@ -74,7 +76,9 @@ export function ZipBoard({
   return (
     <div
       ref={boardRef}
-      className={`${styles.board} ${interactive ? styles.boardInteractive : ""}`}
+      className={`${styles.board} ${interactive ? styles.boardInteractive : ""} ${
+        variant === "review" ? styles.boardReview : ""
+      }`}
       role="grid"
       aria-label={label}
       tabIndex={interactive ? 0 : undefined}
@@ -259,10 +263,7 @@ export function ZipQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Zip, una línea"
-    >
+    <section className={styles.root} aria-label="Zip, una línea">
       <div className={styles.header}>
         <strong>
           {metrics.coveredCells}/{metrics.totalCells} · {metrics.reachedCheckpoint}/

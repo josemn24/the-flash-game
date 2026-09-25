@@ -491,6 +491,9 @@ begin
           end if;
           result := jsonb_build_object('status', a.status, 'effectiveScore', 0);
         else
+          if a.status not in ('completed','abandoned') then
+            raise exception 'attempt_not_terminal' using errcode = '55000';
+          end if;
           points := (input->>'score')::integer;
           if points not between 0 and 100 then raise exception 'invalid_score' using errcode = '22023'; end if;
           insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,

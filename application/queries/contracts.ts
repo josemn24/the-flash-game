@@ -14,6 +14,9 @@ import type {
   SuperadminPortalContext,
   SuperadminDashboardModel,
   SuperadminRoomDetailData,
+  SuperadminAttemptInspectionModel,
+  SuperadminAttemptListModel,
+  SuperadminAttemptPublication,
   ViewerProfile,
 } from "@/types/view-models";
 import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
@@ -87,6 +90,20 @@ export interface SuperadminDashboardQueries {
 
 export interface SuperadminRoomQueries {
   getDetail(roomId: string): Promise<SuperadminRoomDetailData | null>;
+}
+
+export interface SuperadminAttemptQueries {
+  listPublications(roomId: string): Promise<readonly SuperadminAttemptPublication[] | null>;
+  listAttempts(
+    roomId: string,
+    scheduledChallengeId: string,
+    cursor?: { readonly startedAt: string; readonly attemptId: string } | null,
+  ): Promise<Omit<SuperadminAttemptListModel, "operator" | "source"> | null>;
+  getInspection(
+    roomId: string,
+    scheduledChallengeId: string,
+    attemptId: string,
+  ): Promise<Omit<SuperadminAttemptInspectionModel, "operator" | "source"> | null>;
 }
 
 export type { SuperadminEditorialQueries };

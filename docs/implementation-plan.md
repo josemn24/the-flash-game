@@ -1,10 +1,10 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S15, S17a, S18b parcial, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S15, S17a, S18b parcial, S20, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-25. El esquema actual contiene 47 archivos declarativos y la revisión canónica es
-> `20260924120000_s18_superadmin_user_commands`; las 89 migraciones versionadas y las validaciones locales recientes
+> Fecha de análisis: 2026-09-25. El esquema actual contiene 48 archivos declarativos y la revisión canónica es
+> `20260925120000_s20_superadmin_attempt_inspection`; las 90 migraciones versionadas y las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -34,7 +34,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                               | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                      | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                             | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 30 tablas, 47 archivos declarativos, 89 migraciones versionadas, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| SQL       | 30 tablas, 48 archivos declarativos, 90 migraciones versionadas, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional.                                       |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                    | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                   | Verificación contra un entorno remoto.                                                                                                             |
@@ -803,7 +803,7 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ### S15 — Pirámide con niveles persistidos
 
-**Estado 2026-09-25:** implementada y verificada en Supabase local. Pasan schema/pgTAP con 47
+**Estado 2026-09-25:** implementada y verificada en Supabase local. Pasan schema/pgTAP con 48
 archivos declarativos, integración Auth/PostgREST/RLS, migraciones incrementales y E2E focal. No hay
 proyecto remoto vinculado, así que no se declara despliegue ni validación remota.
 
@@ -963,19 +963,30 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
+- **Estado 2026-09-25:** implementada y verificada sobre Supabase local. La revisión canónica es
+  `20260925120000_s20_superadmin_attempt_inspection`; el esquema reconstruye 48 archivos declarativos
+  y 90 migraciones versionadas. No hay proyecto remoto vinculado, por lo que la aplicación y validación
+  contra staging/producción siguen pendientes.
 - **Objetivo / CU:** CU-25.
-- **Superficie:** pantalla interna del portal privado de superadmin para inspección por intento y
-  acción de ajuste/invalidación con motivo.
+- **Superficie:** `/admin/rooms/[roomId]/attempts`, `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`
+  y `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]`; la última permite inspección
+  por intento y acción de ajuste/invalidación con motivo.
 - **Mocks retirados:** correcciones simuladas o modificación manual de fixtures/resultados.
-- **Backend/dominio:** comprobar superadmin real; consulta de inspección mínima auditada; conectar
-  `adjust_result`/`invalidate_attempt`. Separar score original de saldo efectivo y de revisión visible.
-- **Persistencia:** comandos existentes de ajuste/reversión y auditoría; añadir lectura privilegiada
-  limitada cuando haga falta. Nunca sobrescribir respuesta ni acreditación original.
-- **Tests:** rol falsificado, motivo vacío, cero puntos, ajuste repetido, corrección concurrente con
-  invalidación, rollback de auditoría, originales intactos y rankings actualizados.
+- **Backend/dominio:** `get_superadmin_attempt_publications`, `get_superadmin_room_attempts` y
+  `get_superadmin_attempt_inspection` son lecturas `security definer` limitadas por sala/publicación,
+  con cursor estable y sin soluciones. `adjust_result` e `invalidate_attempt` reutilizan los comandos
+  existentes; el adaptador server-only valida Auth, rol, payload, `lock_version`, motivo, puntuación
+  efectiva e idempotencia.
+- **Persistencia:** `supabase/schemas/s20_superadmin_attempt_reads.sql` añade el índice compuesto y
+  las RPC protegidas; las correcciones preservan respuestas, score original y estado/historial, y
+  actualizan el ledger, la auditoría, `effective_results` y rankings cuando corresponde.
+- **Tests:** S20 añade 20 checks pgTAP de rol falsificado, aislamiento, exclusión de tests, payload sin
+  soluciones, ajuste a saldo efectivo, idempotencia, motivo vacío, puntuación fuera de rango,
+  invalidación, rollback y rechazo de intentos en curso; typecheck, lint y contratos de aplicación
+  quedan verificados localmente.
 - **Dependencias:** S06, S07, D05 y D07 para inspección/invalidados.
-- **Terminada:** un operador corrige/invalida con trazabilidad; jugadores ordinarios no pueden
-  invocar esa operación y las proyecciones muestran el saldo efectivo correcto.
+- **Terminada:** un operador superadmin corrige/invalida con trazabilidad desde el portal; jugadores
+  ordinarios no pueden invocar ni leer la operación y las proyecciones muestran el saldo efectivo correcto.
 
 ### S21 — Resolver inactividad y consolidar publicaciones
 

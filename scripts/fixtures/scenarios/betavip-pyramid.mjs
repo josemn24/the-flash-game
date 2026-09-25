@@ -83,7 +83,7 @@ export const betaVipPyramidQuestions = [
     "betavip-cumbre-logica-ii-intruso",
     "odd-one-out",
     "¿Qué número rompe el patrón?",
-    12000,
+    25000,
     {
       items: [
         { id: "cube-8", label: "8" },
@@ -157,7 +157,7 @@ export const betaVipPyramidQuestions = [
     "betavip-cumbre-logica-ii-cerradura",
     "logic-code",
     "Deduce la cerradura de tres cifras.",
-    45000,
+    60000,
     {
       codeLength: 3,
       clues: [

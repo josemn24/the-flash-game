@@ -554,7 +554,7 @@
   .logicReviewClues strong {
     font-family: var(--type-mono);
     letter-spacing: 0.12em;
-    color: var(--color-brand);
+    color: var(--color-success);
   }
   .logicReviewClues span {
     font-size: 0.72rem;
@@ -577,7 +577,7 @@
   }
   .logicReviewAttempts .logicReviewLast {
     outline: 1px solid rgb(var(--color-brand-rgb) / 0.5);
-    color: var(--color-brand);
+    color: var(--color-success);
   }
   .classificationReviewList {
     display: grid;

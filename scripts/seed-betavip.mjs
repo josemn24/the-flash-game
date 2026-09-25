@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -66,11 +66,19 @@ const pyramidItems = betaVipPyramidQuestions.map((item, index) => ({
 async function prepareCassetteAsset() {
   const tempDirectory = await mkdtemp(path.join(os.tmpdir(), "betavip-cassette-"));
   try {
-    const svg = await readFile(path.resolve("public/visuals/betavip/audio-medium.svg"));
-    const bytes = await sharp(svg).resize(1200, 800).png().toBuffer();
+    const sourcePath = path.resolve("public/visuals/betavip/audio-medium.png");
+    const bytes = await sharp(sourcePath)
+      .resize({
+        width: 1200,
+        height: 800,
+        fit: "contain",
+        background: { r: 255, g: 255, b: 255, alpha: 1 },
+      })
+      .png()
+      .toBuffer();
     const image = await sharp(bytes).metadata();
     if (image.format !== "png" || image.width !== 1200 || image.height !== 800) {
-      throw new Error("La ilustración del casete no se ha generado en PNG de 1200 × 800.");
+      throw new Error("La imagen del casete no se ha generado en PNG de 1200 × 800.");
     }
     const filePath = path.join(tempDirectory, "audio-medium.png");
     await writeFile(filePath, bytes);

@@ -5,6 +5,7 @@ import { AuthenticationRequiredError } from "@/application/administration/errors
 import { getCurrentViewerProfile } from "@/server/profile";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
 import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/superadminQueries";
+import { createClient } from "@/lib/supabase/server";
 import type { SuperadminPortalContext } from "@/types/view-models";
 
 export type SuperadminActor = {
@@ -24,6 +25,7 @@ export type AdminAuditContext = {
 export type SuperadminAccess = {
   readonly actor: SuperadminActor;
   readonly context: SuperadminPortalContext;
+  readonly authUserId: string;
 };
 
 /**
@@ -34,6 +36,10 @@ export type SuperadminAccess = {
 export async function requireSuperadmin(): Promise<SuperadminAccess> {
   const viewer = await getCurrentViewerProfile();
   if (!viewer) throw new AuthenticationRequiredError();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) throw new AuthenticationRequiredError();
 
   const context = await supabaseSuperadminPortalQueries.getContext();
   if (context.operator.playerId !== viewer.playerId) throw new SuperadminAccessDeniedError();
@@ -46,5 +52,6 @@ export async function requireSuperadmin(): Promise<SuperadminAccess> {
       requestId,
     },
     context,
+    authUserId: data.user.id,
   };
 }

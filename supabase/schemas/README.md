@@ -1,10 +1,10 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 47 archivos y su revisión canónica es
-`20260924120000_s18_superadmin_user_commands`. La última validación completa registrada corresponde
-a PostgreSQL 17 de Supabase local el 2026-09-23; los 47 archivos declarativos, el inventario, pgTAP
-y las carreras pasaron en esa ejecución. La migración incremental
-`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal. Las migraciones del 2026-09-24 aún no se han aplicado a una base persistente. No hay proyecto remoto vinculado.
+Estado: el esquema declarativo vigente se compone de 48 archivos y su revisión canónica es
+`20260925120000_s20_superadmin_attempt_inspection`. La validación local más reciente corresponde
+a PostgreSQL 17 de Supabase local el 2026-09-25; los 48 archivos declarativos, el inventario y
+las suites pgTAP pasaron en esa ejecución. La migración incremental
+`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal; `20260925120000_s20_superadmin_attempt_inspection.sql` añade lecturas privilegiadas de intentos y conserva las correcciones mediante comandos auditados. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -136,6 +136,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [61_question_library.sql](61_question_library.sql)                           | Biblioteca protegida de preguntas standalone, historial de versiones, publicación/archivo e índice para impedir duplicados de una versión dentro de un desafío. |
 | [62_media_assets.sql](62_media_assets.sql)                                   | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |
 | [59_superadmin_calendar_commands.sql](59_superadmin_calendar_commands.sql)   | Programación/reprogramación de Flash/Supervivencia/Pirámide publicados, lecturas de calendario y tick temporal con locks/auditoría.                             |
+| [s20_superadmin_attempt_reads.sql](s20_superadmin_attempt_reads.sql)         | Lecturas protegidas por sala/publicación para inspección de intentos competitivos; cursor estable, score original/efectivo y detalle sin soluciones.         |
 | [61_s12_effective_attempt_guard.sql](61_s12_effective_attempt_guard.sql)     | Admisión competitiva coherente con la ventana efectiva cuando el tick se retrasa.                                                                               |
 | [60_integrity.sql](60_integrity.sql)                                         | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                                                 |
 | [70_rls.sql](70_rls.sql)                                                     | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                                                           |
@@ -316,6 +317,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `s14_survival_attempts.test.sql`          | Evaluación/puntos/vidas autoritativos, eliminación, recuperación, revisión propia y spectator sin acceso.                                                         |
 | `s15_pyramid_editorial.test.sql`          | Validación de siete niveles/briefings y rechazo de formatos sin evaluador competitivo.                                                                            |
 | `s15_pyramid_authoritative.test.sql`      | Avance, salto/cierre manipulado, recibos, timeout, recuperación, cima/fallo, revisión propia y acreditación única.                                                |
+| `s20_superadmin_attempt_inspection.test.sql` | ACL de lecturas, aislamiento por sala/publicación, exclusión de tests, detalle sin soluciones, ajustes idempotentes, invalidación, rollback y ranking efectivo. |
 | `test-supabase-concurrency.mjs`           | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación. |
 | Contratos y evaluador TS                  | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                          |
 
@@ -323,8 +325,8 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (S15, 2026-09-23): `check-supabase-schema` cargó **47 archivos declarativos**
-y el inventario de seguridad; pasan S15 autoritativo (23 checks), S15 editorial (13 checks), todas
+Última validación local completa registrada (S20, 2026-09-25): `check-supabase-schema` cargó **48 archivos declarativos**
+y el inventario de seguridad; pasan las suites existentes y S20 (20 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,
 26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes

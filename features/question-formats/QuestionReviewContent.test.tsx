@@ -81,4 +81,33 @@ describe("Connect Pairs review", () => {
     expect(markup).toContain("Respuesta parcial");
     expect(markup).toContain("extremo no incluido en tu respuesta");
   });
+
+  it("uses the light board variant for Zip review", () => {
+    const zipQuestion = questionsById["p17-route-zip"];
+    if (zipQuestion.type !== "zip") throw new Error("Expected zip question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionReviewContent
+        question={zipQuestion}
+        result={{
+          questionId: zipQuestion.id,
+          answer: null,
+          status: "unanswered",
+          isCorrect: false,
+          points: 0,
+          timeUsed: 0,
+          details: {
+            type: "zip",
+            coveredCells: 1,
+            totalCells: 25,
+            reachedCheckpoint: 1,
+            totalCheckpoints: zipQuestion.checkpoints.length,
+            completed: false,
+          },
+        }}
+      />,
+    );
+
+    expect(markup).toContain("boardReview");
+  });
 });

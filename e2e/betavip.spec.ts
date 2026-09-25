@@ -140,7 +140,7 @@ commit;
   await expect(page.getByRole("heading", { name: /cafetería donde se reúnen/ })).toBeVisible();
   await page.getByRole("button", { name: "Central Perk" }).click();
   await expect(page.getByRole("heading", { name: /soporte de audio aparece/ })).toBeVisible();
-  const picture = page.getByRole("img", { name: /soporte de audio rectangular con dos carretes/ });
+  const picture = page.getByRole("img", { name: /Fotografía de tres casetes de audio/ });
   await expect(picture).toBeVisible();
   await expect
     .poll(() =>

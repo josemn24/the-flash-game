@@ -7,7 +7,8 @@
 ## Resumen
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S14, S17a, S18b parcial, D08a/D08b,
+migradas usan fixtures y un store mock normalizado. Las slices S01–S15, S17a, S18b parcial, S20,
+D08a/D08b,
 S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, S15 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
@@ -110,6 +111,11 @@ fallback de las rutas competitivas. Consulta
   F01/F02/F06/F07/F08/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
   `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
   permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
+- S20 añade inspección privada de intentos competitivos por sala/publicación para Flash, Alphabet,
+  Supervivencia y Pirámide. El superadmin puede consultar respuestas evaluadas, score original,
+  saldo efectivo, ledger y auditoría; puede ajustar o invalidar únicamente intentos terminales,
+  con motivo, `lock_version`, idempotencia y revalidación de rankings. Las respuestas, el score
+  original y el historial no se sobrescriben.
 - La reorganización del portal ya convierte `/admin` en un dashboard breve basado en
   `SuperadminDashboardModel`. `/admin/rooms` es la entrada operativa principal: sus tarjetas llevan a
   `/admin/rooms/[roomId]`, donde viven las pestañas `overview`, `seasons`, `members` y `calendar`.
@@ -145,6 +151,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
 | `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                                              |
 | `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.                                         |
+| `/admin/rooms/[roomId]/attempts`                     | Publicaciones competitivas de la sala para inspección administrativa.                                                               |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]` | Intentos competitivos de una publicación, con paginación por cursor.                                                              |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]` | Detalle protegido del intento y acciones de ajuste/invalidación según estado.                              |
 | `/admin/challenges`                                  | Catálogo protegido de desafíos Flash, Supervivencia y Pirámide definidos.                                                            |
 | `/admin/challenges/new`                              | Preparación protegida de un nuevo desafío Flash, Supervivencia o Pirámide.                                                           |
 | `/admin/challenges/[challengeDefinitionId]`          | Detalle protegido, edición de borradores e historial de versiones Flash/Supervivencia/Pirámide.                                      |
@@ -179,8 +188,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - Narrativa todavía no tiene gameplay competitivo real.
 - `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
   siguen fuera de S07 y deshabilitados.
-- El historial solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
+- El historial de usuario solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
   `test`/`invalidated` y publicaciones `cancelled` quedan fuera de las proyecciones de usuario.
+- S20 ya permite corrección administrativa local; la aplicación de la migración y la validación de
+  estas RPC contra un proyecto Supabase remoto siguen pendientes.
 - Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
   confundirse con el recorrido competitivo migrado.
 
@@ -189,24 +200,24 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado documentado a 2026-09-25:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260924120000_s18_superadmin_user_commands`.
+  `20260925120000_s20_superadmin_attempt_inspection`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
   `scripts/integration/scenarios/s15.mjs`.
-- `npm test`: 130 archivos correctos y 1 fallido; 773 tests pasan de 774. El fallo pendiente está en
+- `npm test`: 132 archivos correctos y 1 fallido; 778 tests pasan de 779. El fallo pendiente está en
   `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
 - `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera de esta actualización.
-- `npm run supabase:schema:test` no se pudo repetir en esta sesión porque Docker no está accesible.
-  La última ejecución completa registrada cargó los 47 schemas declarativos, verificó el inventario,
-  pgTAP y las carreras PostgreSQL sobre Supabase local.
+- `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas declarativos,
+  verificó el inventario y todas las suites pgTAP, incluida S20 con 20 checks. La suite no acredita
+  staging o producción.
 - No hay proyecto remoto vinculado; ninguna de estas comprobaciones acredita staging o producción.
 
 ### Registros históricos de slices
 
-Última verificación focal de S15 registrada: 2026-09-23, sobre Supabase local.
+Última verificación focal anterior a S20: 2026-09-23, sobre Supabase local.
 
-- `npm test`: 121 archivos y 714 tests superados en la última ejecución completa registrada; incluye reglas, adaptadores, health check y ruta HTTP,
+- `npm test`: 121 archivos y 714 tests superados en la ejecución histórica del 2026-09-23; incluye reglas, adaptadores, health check y ruta HTTP,
   UI pública de E01–E06 y F08,
   navegación del portal y acciones administrativas; además de S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
@@ -227,7 +238,8 @@ Estado documentado a 2026-09-25:
   los estilos modificados de administración pasan Stylelint de forma aislada.
 - `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
   `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
-- `npm run supabase:schema:test`: correcto sobre 43 archivos declarativos y la revisión canónica
+- En una ejecución histórica anterior a S18b y S20, `npm run supabase:schema:test` fue correcto
+  sobre 43 archivos declarativos y la revisión canónica
   `20260922202508_s14_survival`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
   S10–S13, S17a, S18b parcial, E01–E06, F08, F16, F18, F19 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción

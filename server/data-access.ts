@@ -20,6 +20,7 @@ import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
 import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
 import { supabaseSuperadminRoomQueries } from "@/infrastructure/supabase/superadminQueries";
+import { supabaseSuperadminAttemptQueries } from "@/infrastructure/supabase/superadminAttemptQueries";
 import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/superadminDashboardQueries";
 import { mocksEnabled } from "@/server/runtime-scope";
 import type {
@@ -248,6 +249,59 @@ export const getSuperadminRoomDetailPageModel = cache(async (roomId: string) => 
     source: "supabase" as const,
   };
 });
+
+export const getSuperadminAttemptPublicationsPageModel = cache(async (roomId: string) => {
+  const access = await requireSuperadmin();
+  const publications = await supabaseSuperadminAttemptQueries.listPublications(roomId);
+  if (!publications) return null;
+  const room = access.context.rooms.find((entry) => entry.roomId === roomId);
+  if (!room) return null;
+  return {
+    operator: access.context.operator,
+    roomId,
+    roomTitle: room.title,
+    publications,
+    source: "supabase" as const,
+  };
+});
+
+export const getSuperadminAttemptListPageModel = cache(
+  async (
+    roomId: string,
+    scheduledChallengeId: string,
+    cursor?: { readonly startedAt: string; readonly attemptId: string } | null,
+  ) => {
+    const access = await requireSuperadmin();
+    const list = await supabaseSuperadminAttemptQueries.listAttempts(
+      roomId,
+      scheduledChallengeId,
+      cursor,
+    );
+    if (!list) return null;
+    return {
+      operator: access.context.operator,
+      ...list,
+      source: "supabase" as const,
+    };
+  },
+);
+
+export const getSuperadminAttemptInspectionPageModel = cache(
+  async (roomId: string, scheduledChallengeId: string, attemptId: string) => {
+    const access = await requireSuperadmin();
+    const inspection = await supabaseSuperadminAttemptQueries.getInspection(
+      roomId,
+      scheduledChallengeId,
+      attemptId,
+    );
+    if (!inspection) return null;
+    return {
+      operator: access.context.operator,
+      ...inspection,
+      source: "supabase" as const,
+    };
+  },
+);
 
 export const getSuperadminSeasonsPageModel = getSuperadminRoomsPageModel;
 

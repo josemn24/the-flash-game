@@ -844,6 +844,21 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_attempt_publications": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_room_attempts": {
+      "arguments": "target_room_id uuid, target_scheduled_challenge_id uuid, cursor_started_at timestamp with time zone, cursor_attempt_id uuid, page_size integer",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_attempt_inspection": {
+      "arguments": "target_room_id uuid, target_scheduled_challenge_id uuid, target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.lookup_superadmin_players": {
       "arguments": "target_emails text[]",
       "securityDefiner": true,

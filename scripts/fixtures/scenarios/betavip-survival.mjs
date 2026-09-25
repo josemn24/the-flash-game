@@ -135,7 +135,7 @@ export function betaVipSurvivalQuestions(cassetteAssetId) {
       {
         surface: {
           assetId: cassetteAssetId,
-          alt: "Ilustración de un soporte de audio rectangular con dos carretes visibles",
+          alt: "Fotografía de tres casetes de audio",
           width: 1200,
           height: 800,
           fit: "contain",
@@ -146,8 +146,8 @@ export function betaVipSurvivalQuestions(cassetteAssetId) {
       },
       {
         correctAnswer: "casete",
-        acceptedAnswers: ["casete", "cassette", "cinta de casete"],
-        solutionAlt: "Ilustración de un casete de audio",
+        acceptedAnswers: ["casete", "caset", "cassette", "cinta de casete"],
+        solutionAlt: "Fotografía de tres casetes de audio",
         explanation: "El casete almacena audio en una cinta magnética entre dos carretes.",
       },
     ),
