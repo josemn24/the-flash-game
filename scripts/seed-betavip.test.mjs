@@ -119,7 +119,7 @@ describe("BetaVIP seed", () => {
     );
   });
 
-  it("publishes Alphabet, shared Steel Ball Run, then Survival on consecutive days", () => {
+  it("publishes Survival, Alphabet, then shared Steel Ball Run on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -131,20 +131,23 @@ describe("BetaVIP seed", () => {
     expect(data.tabarnia.room).toEqual(tabarniaFixture.data.room);
     expect(data.tabarnia.steelBallRunPublicationId).toBe("publication-tabarnia-sbr");
     expect(data.publicationId).toBe(data.publications[0].id);
+    expect(data.challengeId).toBe(data.publications[0].challengeId);
     expect(data.challengeVersionId).toBe(data.publications[0].challengeVersionId);
     expect(
       data.publications.map((item) => [item.number, item.title, item.mode, item.status]),
     ).toEqual([
-      [1, "La vuelta al mundo", "alphabet", "open"],
-      [2, "Steel Ball Run", "flash", "scheduled"],
-      [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
+      [1, "Supervivencia: Cultura pop", "survival", "open"],
+      [2, "La vuelta al mundo", "alphabet", "scheduled"],
+      [3, "Steel Ball Run", "flash", "scheduled"],
     ]);
+    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 16, 20]);
-    expect(data.steelBallRunPublicationId).toBe(data.publications[1].id);
-    expect(data.survivalPublicationId).toBe(data.publications[2].id);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([20, 18, 16]);
+    expect(data.survivalPublicationId).toBe(data.publications[0].id);
+    expect(data.alphabetPublicationId).toBe(data.publications[1].id);
+    expect(data.steelBallRunPublicationId).toBe(data.publications[2].id);
     expect(data.steelBallRunPublicationId).not.toBe(data.tabarnia.steelBallRunPublicationId);
-    expect(data.publications[1].challengeVersionId).toBe("version-sbr");
+    expect(data.publications[2].challengeVersionId).toBe("version-sbr");
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");
     expect(sql).toContain("'version-sbr'");
@@ -155,6 +158,25 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
     expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
+    for (const [publication, status, start, end] of [
+      [data.publications[0], "open", "now()", "now() + interval '24 hours'"],
+      [
+        data.publications[1],
+        "scheduled",
+        "now() + interval '24 hours'",
+        "now() + interval '48 hours'",
+      ],
+      [
+        data.publications[2],
+        "scheduled",
+        "now() + interval '48 hours'",
+        "now() + interval '72 hours'",
+      ],
+    ]) {
+      expect(sql).toContain(
+        `('${publication.id}', '${data.seasonId}', '${publication.challengeVersionId}', ${publication.number},\n   '${status}', ${start}, ${end})`,
+      );
+    }
     expect(sql.match(/'owner', 'active'/g)).toHaveLength(1);
     expect(sql.match(/'member', 'active'/g)).toHaveLength(3);
     for (const playerId of ["player-ches", "player-dark", "player-manuel", "player-genis"]) {

@@ -94,7 +94,7 @@ export function betaVipManifest(tabarniaFixture) {
   const steel = steelBallRun(tabarniaFixture);
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
-    number: 1,
+    number: 2,
     slug: BETA_VIP_ALPHABET.slug,
     title: BETA_VIP_ALPHABET.title,
     mode: "alphabet",
@@ -102,13 +102,13 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 0,
+    opensAfterHours: 24,
     durationHours: 24,
-    status: "open",
+    status: "scheduled",
   };
   const steelPublication = {
     id: stableId("publication:beta-vip-steel-ball-run"),
-    number: 2,
+    number: 3,
     slug: steel.slug,
     title: steel.title,
     mode: steel.mode,
@@ -116,13 +116,13 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: steel.challengeVersionId,
     questionCount: steel.questionCount,
     pointsTotal: steel.pointsTotal,
-    opensAfterHours: 24,
+    opensAfterHours: 48,
     durationHours: 24,
     status: "scheduled",
   };
   const survivalPublication = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 3,
+    number: 1,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -130,21 +130,22 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 48,
+    opensAfterHours: 0,
     durationHours: 24,
-    status: "scheduled",
+    status: "open",
   };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
     seasonId: stableId("season:beta-vip"),
-    publicationId: alphabet.id,
-    challengeId: alphabet.challengeId,
-    challengeVersionId: alphabet.challengeVersionId,
-    questionCount: alphabet.questionCount,
-    pointsTotal: alphabet.pointsTotal,
+    publicationId: survivalPublication.id,
+    challengeId: survivalPublication.challengeId,
+    challengeVersionId: survivalPublication.challengeVersionId,
+    questionCount: survivalPublication.questionCount,
+    pointsTotal: survivalPublication.pointsTotal,
+    alphabetPublicationId: alphabet.id,
     steelBallRunPublicationId: steelPublication.id,
     survivalPublicationId: survivalPublication.id,
-    publications: [alphabet, steelPublication, survivalPublication],
+    publications: [survivalPublication, alphabet, steelPublication],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -176,9 +177,9 @@ export function buildBetaVipDomainSql({ tabarniaFixture, accounts, cassetteAsset
   if (!authorId) {
     throw new Error("Falta Xesmona para publicar el Alphabet de BetaVIP.");
   }
-  const alphabet = data.publications[0];
-  const steel = data.publications[1];
-  const survival = data.publications[2];
+  const alphabet = data.publications.find((publication) => publication.mode === "alphabet");
+  const steel = data.publications.find((publication) => publication.mode === "flash");
+  const survival = data.publications.find((publication) => publication.mode === "survival");
   if (!cassetteAssetMetadata) {
     throw new Error("Faltan metadatos del recurso de imagen de BetaVIP.");
   }
@@ -313,11 +314,11 @@ select private.assert_supported_calendar_content(${sqlString(survival.challengeV
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1,
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 1,
    'open', now(), now() + interval '24 hours'),
-  (${sqlString(steel.id)}, ${sqlString(data.seasonId)}, ${sqlString(steel.challengeVersionId)}, 2,
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 2,
    'scheduled', now() + interval '24 hours', now() + interval '48 hours'),
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3,
+  (${sqlString(steel.id)}, ${sqlString(data.seasonId)}, ${sqlString(steel.challengeVersionId)}, 3,
    'scheduled', now() + interval '48 hours', now() + interval '72 hours');
 set constraints all immediate;
 commit;

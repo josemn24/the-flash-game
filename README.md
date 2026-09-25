@@ -83,7 +83,7 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 | `npm run supabase:status`         | Muestra el estado del stack local de Supabase.                                                           |
 | `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
 | `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
-| `npm run supabase:betavip:setup`  | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo».                    |
+| `npm run supabase:betavip:setup`  | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Supervivencia: Cultura pop».            |
 | `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                                          |
 | `npm run schema:revision:check`   | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
 | `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                                          |
@@ -93,15 +93,16 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 Para comprobar el escenario conjunto, ejecuta `npm run supabase:betavip:setup` y después
 `npm run test:integration:supabase -- --scenario betavip`. Vuelve a ejecutar el setup antes de
 `npm run test:e2e -- e2e/betavip.spec.ts` para que las pruebas de navegador empiecen sin la partida
-que crea la integración. Repite el setup al terminar: el E2E abre temporalmente Survival y crea
+que crea la integración. Repite el setup al terminar: el E2E abre temporalmente el Alphabet y crea
 una partida. Las credenciales locales generadas para Manuel y Genís quedan en
 `output/fixtures/betavip.json`.
 
-En BetaVIP, «La vuelta al mundo» está abierto durante las primeras 24 horas, Steel Ball Run
-queda programado para el segundo día y «Supervivencia: Cultura pop» para el tercero. La temporada
-dura 72 horas. El manifiesto lista las tres publicaciones en orden: `data.publicationId` apunta
-al Alphabet, `data.steelBallRunPublicationId` a Steel Ball Run y `data.survivalPublicationId` a
-Supervivencia. `data.questionAssets` contiene el recurso propio del casete.
+En BetaVIP, «Supervivencia: Cultura pop» está abierto durante las primeras 24 horas, «La vuelta al
+mundo» queda programado para el segundo día y Steel Ball Run para el tercero. La temporada dura
+72 horas. El manifiesto lista las tres publicaciones en orden: `data.publicationId` apunta a
+Supervivencia; `data.alphabetPublicationId`, `data.steelBallRunPublicationId` y
+`data.survivalPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
+contiene el recurso propio del casete.
 
 ## Estructura principal
 
