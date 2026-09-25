@@ -89,7 +89,7 @@ test.describe("F19 — word-hashtag competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
     await startWordHashtag(page);
-    await swap(page, 3, 8);
+    await swap(page, 5, 19);
     await expect(page.getByText("Ese intercambio no está permitido.")).toBeVisible();
     await swap(page, 1, 7);
     await expect(page.getByText(/movimientos usados/)).toBeVisible();

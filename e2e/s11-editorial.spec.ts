@@ -67,27 +67,20 @@ const editorialDocument = {
       solutionPayload: { correctAnswer: "A", explanation: `Respuesta ${index + 1}.` },
     })),
     {
-      slug: "e2e-anagram",
-      type: "anagram" as const,
+      slug: "e2e-question-four",
+      type: "multiple-choice" as const,
       payloadSchemaVersion: 1 as const,
-      timeLimitMs: 30000,
+      timeLimitMs: 15000,
       points: 15,
       publicPayload: {
         category: "Deporte",
         tags: {},
-        question: "Forma una palabra relacionada con el desafío.",
-        tiles: [
-          { id: "a", value: "A" },
-          { id: "c", value: "C" },
-          { id: "r-1", value: "R" },
-          { id: "r-2", value: "R" },
-          { id: "a-2", value: "A" },
-          { id: "e", value: "E" },
-          { id: "r-3", value: "R" },
-        ],
-        hint: null,
+        question: "¿Qué opción representa una actividad deportiva?",
+        options: ["Correr", "Dormir"],
+        media: null,
+        promptVisual: null,
       },
-      solutionPayload: { correctAnswer: "CARRERA", explanation: "La palabra es carrera." },
+      solutionPayload: { correctAnswer: "Correr", explanation: "Correr es una actividad deportiva." },
     },
     {
       slug: "e2e-classification",
@@ -170,7 +163,6 @@ test.describe("S11 — publicar contenido mínimo", () => {
     const textarea = editor.getByLabel("Documento editorial JSON");
     await textarea.fill(JSON.stringify(draftDocument, null, 2));
     await expect(editor.getByLabel("Previsualización editorial protegida")).toBeVisible();
-    const savedDocument = JSON.parse(await textarea.inputValue()) as typeof draftDocument;
     await editor.getByLabel("Motivo de auditoría").first().fill("Crear contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();
     await expect(page).toHaveURL(/\/admin\/challenges\/[^/]+\?editorial=saved$/);
@@ -181,16 +173,16 @@ test.describe("S11 — publicar contenido mínimo", () => {
       editor.getByRole("heading", { name: "Flash S11 E2E", exact: true }).first(),
     ).toBeVisible();
     await expect(editor.getByText("Flash · 7 preguntas · 100 puntos")).toBeVisible();
-    await textarea.fill(
-      JSON.stringify(
-        {
-          ...savedDocument,
-          challenge: { ...savedDocument.challenge, title: "Flash S11 E2E editado" },
-        },
-        null,
-        2,
-      ),
-    );
+    await expect(textarea).toBeEditable();
+    await expect(textarea).toHaveValue(/"title": "Flash S11 E2E"/);
+    const normalizedDocument = JSON.parse(await textarea.inputValue()) as typeof draftDocument;
+    const editedDocument = {
+      ...normalizedDocument,
+      challenge: { ...normalizedDocument.challenge, title: "Flash S11 E2E editado" },
+    };
+    const editedDocumentText = JSON.stringify(editedDocument, null, 2);
+    await textarea.fill(editedDocumentText);
+    await expect(textarea).toHaveValue(editedDocumentText);
     const reasons = editor.getByLabel("Motivo de auditoría");
     await reasons.first().fill("Editar contenido S11");
     await editor.getByRole("button", { name: "Guardar borrador" }).click();

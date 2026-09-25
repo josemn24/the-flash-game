@@ -42,7 +42,7 @@ test.describe("E04 — Matching competitivo", () => {
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Relaciona cada concepto" })).toBeVisible();
     expect(await page.content()).not.toContain("correctMatchId");
-    await expect(page.getByText("0 de 3 parejas")).toBeVisible();
+    await expect(page.getByText("0/3")).toBeVisible();
 
     await choose(page, "Uno", "Segundo");
     await expect(page.getByText("No forman una pareja. Puedes volver a intentarlo.")).toBeVisible();
@@ -50,7 +50,7 @@ test.describe("E04 — Matching competitivo", () => {
 
     await page.reload();
     await expect(page.getByRole("heading", { name: "Relaciona cada concepto" })).toBeVisible();
-    await expect(page.getByText("0 de 3 parejas")).toBeVisible();
+    await expect(page.getByText("0/3")).toBeVisible();
     await expect(page.getByText("1 error")).toBeVisible();
 
     let firstResponse = true;
@@ -76,10 +76,10 @@ test.describe("E04 — Matching competitivo", () => {
     await page.getByRole("button", { name: "Reintentar pareja" }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("1 de 3 parejas")).toBeVisible();
+    await expect(page.getByText("1/3")).toBeVisible();
 
     await choose(page, "Dos", "Segundo");
-    await expect(page.getByText("2 de 3 parejas")).toBeVisible();
+    await expect(page.getByText("2/3")).toBeVisible();
     await choose(page, "Tres", "Tercero");
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.reload();

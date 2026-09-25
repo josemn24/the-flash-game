@@ -75,3 +75,13 @@ export class SuperadminUserCommandError extends Error {
     this.code = code;
   }
 }
+
+export class SuperadminAttemptCommandError extends Error {
+  readonly code: string;
+
+  constructor(code: string, cause?: unknown) {
+    super(code, { cause });
+    this.name = "SuperadminAttemptCommandError";
+    this.code = code;
+  }
+}

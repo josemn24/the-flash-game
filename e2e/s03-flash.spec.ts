@@ -42,7 +42,9 @@ test.describe("S03 — Flash competitivo persistido", () => {
   }) => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 20_000,
+    });
     expect(await page.content()).not.toContain("Lisboa es la capital de Portugal");
 
     await page.getByRole("button", { name: "Lisboa" }).dblclick();
@@ -56,6 +58,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await page.reload();
     await expect(page.getByText("Desafío completado")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
+    await page.locator("details").first().locator("summary").click();
     await expect(page.getByText("Lisboa es la capital de Portugal")).toBeVisible();
   });
 

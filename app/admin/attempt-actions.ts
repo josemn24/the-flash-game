@@ -4,11 +4,14 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import {
   AuthenticationRequiredError,
+  SuperadminAttemptCommandError,
   SuperadminAccessDeniedError,
 } from "@/application/administration/errors";
 import { requireSuperadmin } from "@/server/admin";
-import { SupabaseSuperadminAttemptCommands } from "@/infrastructure/supabase/superadminAttemptCommands";
-import { AttemptCommandError } from "@/infrastructure/supabase/attemptCommands";
+import {
+  adjustSuperadminAttempt as executeAdjustSuperadminAttempt,
+  invalidateSuperadminAttempt as executeInvalidateSuperadminAttempt,
+} from "@/server/admin-attempt";
 
 export type AttemptActionState = {
   readonly message?: string;
@@ -98,7 +101,7 @@ export async function adjustSuperadminAttempt(
     }
 
     try {
-      await new SupabaseSuperadminAttemptCommands({ authUserId: access.authUserId }).adjust({
+      await executeAdjustSuperadminAttempt(access.authUserId, {
         attemptId: parsed.attemptId,
         lockVersion: parsed.lockVersion,
         reason: parsed.reason,
@@ -106,7 +109,7 @@ export async function adjustSuperadminAttempt(
         score,
       });
     } catch (error) {
-      if (error instanceof AttemptCommandError) {
+      if (error instanceof SuperadminAttemptCommandError) {
         return { message: commandMessage(error.code) };
       }
       throw error;
@@ -140,14 +143,14 @@ export async function invalidateSuperadminAttempt(
     }
 
     try {
-      await new SupabaseSuperadminAttemptCommands({ authUserId: access.authUserId }).invalidate({
+      await executeInvalidateSuperadminAttempt(access.authUserId, {
         attemptId: parsed.attemptId,
         lockVersion: parsed.lockVersion,
         reason: parsed.reason,
         idempotencyKey: parsed.idempotencyKey,
       });
     } catch (error) {
-      if (error instanceof AttemptCommandError) {
+      if (error instanceof SuperadminAttemptCommandError) {
         return { message: commandMessage(error.code) };
       }
       throw error;
