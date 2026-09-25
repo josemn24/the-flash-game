@@ -49,14 +49,16 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-23.
+- Fecha: 2026-09-25.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
 - La revisión declarativa canónica es `20260924120000_s18_superadmin_user_commands`; la comprobación de
   esquema cubre 47 archivos declarativos, además de tablas, funciones públicas/privadas y políticas RLS.
-- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run docs:check` y
-  `npm run supabase:schema:test` se deben leer junto con el resultado vigente de `current/qa.md`;
-  `npm run type-architecture` completa correctamente.
-- `npm run format:check` mantiene avisos en 71 archivos; están registrados en [`current/qa.md`](current/qa.md).
+- `npm run typecheck`, `npm run docs:check` y `npm run schema:revision:check` pasan en la comprobación
+  actual. `npm test` tiene un fallo unitario pendiente y `npm run lint` conserva dos warnings; el
+  detalle vigente está en [`current/qa.md`](current/qa.md).
+- `npm run format:check` mantiene avisos en 151 archivos en la comprobación actual.
+- `npm run supabase:schema:test` no se pudo repetir en esta sesión porque Docker no está accesible;
+  la última validación local registrada y sus límites están documentados en [`supabase/schemas/README.md`](../supabase/schemas/README.md).
 - No hay proyecto remoto de Supabase vinculado desde este entorno.

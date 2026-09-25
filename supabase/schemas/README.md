@@ -1,7 +1,9 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: S15 probado sobre PostgreSQL 17 de Supabase local el 2026-09-23. Los 47 archivos
-declarativos, el inventario, pgTAP y las carreras pasan; la migración incremental
+Estado: el esquema declarativo vigente se compone de 47 archivos y su revisión canónica es
+`20260924120000_s18_superadmin_user_commands`. La última validación completa registrada corresponde
+a PostgreSQL 17 de Supabase local el 2026-09-23; los 47 archivos declarativos, el inventario, pgTAP
+y las carreras pasaron en esa ejecución. La migración incremental
 `20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal. Las migraciones del 2026-09-24 aún no se han aplicado a una base persistente. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
@@ -321,13 +323,13 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local registrada (S15, 2026-09-23): `check-supabase-schema` cargó **46 archivos declarativos**
+Última validación local completa registrada (S15, 2026-09-23): `check-supabase-schema` cargó **47 archivos declarativos**
 y el inventario de seguridad; pasan S15 autoritativo (23 checks), S15 editorial (13 checks), todas
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,
 26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las 714 pruebas TypeScript
-superadas. También pasan comprobación de tipos, ESLint, arquitectura y los enlaces de documentación.
+y las pruebas TypeScript registradas en esa ejecución. También pasaron comprobación de tipos, ESLint,
+arquitectura y los enlaces de documentación.
 La suite SQL no sustituye
 las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales del portal, S02, S03, S04, S06,
 S07, S10, S11 y S12, además de E01–E06; S06 añade

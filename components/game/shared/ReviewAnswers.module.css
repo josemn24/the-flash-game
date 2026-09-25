@@ -1048,6 +1048,7 @@
   }
   /* Keep every specialized review renderer on the Pop palette. */
   .connectPairsReviewGrid {
+    position: relative;
     display: grid;
     width: min(100%, 18rem);
     overflow: hidden;
@@ -1057,7 +1058,35 @@
     background: var(--color-surface);
   }
 
+  .connectPairsReviewRouteOverlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .connectPairsReviewRouteLine,
+  .connectPairsReviewSubmittedLine {
+    fill: none;
+    stroke: color-mix(in srgb, var(--pair-color) 86%, white);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 0.28;
+    filter: drop-shadow(0 0 0.08rem color-mix(in srgb, var(--pair-color) 54%, transparent));
+  }
+
+  .connectPairsReviewSubmittedLine {
+    stroke: color-mix(in srgb, var(--pair-color) 72%, var(--color-ink));
+    stroke-dasharray: 0.22 0.16;
+    stroke-width: 0.12;
+    filter: none;
+  }
+
   .connectPairsReviewCell {
+    position: relative;
+    z-index: 1;
     display: grid;
     aspect-ratio: 1;
     place-items: center;
@@ -1067,20 +1096,77 @@
     font-weight: 900;
     border-color: var(--color-border);
     color: var(--color-ink-muted);
-    background: var(--color-surface-raised);
+    background: color-mix(in srgb, var(--color-surface-raised) 72%, transparent);
   }
 
   .connectPairsReviewEndpoint {
-    background: var(--color-brand);
+    z-index: 3;
+    border-color: color-mix(in srgb, var(--pair-color) 52%, var(--color-border));
     color: var(--color-ink);
+    background: color-mix(in srgb, var(--pair-color) 78%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--pair-color) 82%, transparent);
   }
 
   .connectPairsReviewEndpointMissing {
-    outline: 1px dashed rgb(255 255 255 / 28%);
+    outline: 2px dashed var(--state-error);
     outline-offset: -0.25rem;
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--pair-color) 72%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--state-error) 42%, transparent);
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--pair-color) 58%, var(--color-surface-soft));
+  }
+
+  .connectPairsReviewLegend {
+    display: grid;
+    gap: 0.75rem;
+    width: min(100%, 18rem);
     color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
-    outline-color: var(--color-border-hover);
+    font-size: 0.7rem;
+    font-weight: 750;
+  }
+
+  .connectPairsReviewPairLegend,
+  .connectPairsReviewLineLegend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.7rem;
+  }
+
+  .connectPairsReviewLegendItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .connectPairsReviewLegendSymbol {
+    display: inline-grid;
+    width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--pair-color) 85%, var(--color-border));
+    border-radius: 999px;
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--pair-color) 76%, var(--color-surface-raised));
+    font-size: 0.65rem;
+  }
+
+  .connectPairsReviewLegendLine {
+    display: inline-block;
+    width: 1.7rem;
+    height: 0.22rem;
+    border-radius: 999px;
+    background: var(--color-social);
+  }
+
+  .connectPairsReviewLegendLineSubmitted {
+    height: 0.14rem;
+    background: repeating-linear-gradient(
+      to right,
+      var(--color-ink-muted) 0 0.35rem,
+      transparent 0.35rem 0.58rem
+    );
   }
 
   .wordHashtagReviewTile {

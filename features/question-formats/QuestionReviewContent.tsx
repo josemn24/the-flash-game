@@ -11,7 +11,11 @@ import {
 } from "@/components/questions";
 import wordSearchStyles from "@/components/questions/formats/word-search/WordSearchQuestion.module.css";
 import { CheckIcon, CrossIcon } from "@/components/ui";
-import { CONNECT_PAIRS_COLUMNS } from "@/lib/connectPairs";
+import {
+  connectPairsRoutePoints,
+  CONNECT_PAIRS_COLUMNS,
+  getConnectPairsPairColor,
+} from "@/lib/connectPairs";
 import {
   AssignAllImageLabelingReviewSurface,
   IdentifyOneImageLabelingReviewSurface,
@@ -158,63 +162,142 @@ function MatchingReview({ question, result }: ReviewProps<QuestionOfType<"matchi
 function ConnectPairsReview({ question, result }: ReviewProps<QuestionOfType<"connect-pairs">>) {
   const answer = isConnectPairsAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "connect-pairs" ? result.details : undefined;
-  const cellOwner = new Map<
-    number,
-    { symbol: string; label: string; isEndpoint: boolean; inAnswer: boolean }
-  >();
+  const showSubmittedPaths = answer !== null && !result.isCorrect;
+  const solutionCells = new Set(Object.values(question.solutionPaths).flat());
+  const solutionOwner = new Map<number, (typeof question.pairs)[number]>();
+  const submittedOwner = new Map<number, (typeof question.pairs)[number]>();
 
   question.pairs.forEach((pair) => {
-    pair.endpoints.forEach((endpoint) =>
-      cellOwner.set(endpoint, {
-        symbol: pair.symbol,
-        label: pair.label,
-        isEndpoint: true,
-        inAnswer: false,
-      }),
-    );
-    (answer?.paths[pair.id] ?? []).forEach((cell) => {
-      cellOwner.set(cell, {
-        symbol: pair.symbol,
-        label: pair.label,
-        isEndpoint: pair.endpoints.includes(cell),
-        inAnswer: true,
-      });
-    });
+    (question.solutionPaths[pair.id] ?? []).forEach((cell) => solutionOwner.set(cell, pair));
+    (answer?.paths[pair.id] ?? []).forEach((cell) => submittedOwner.set(cell, pair));
   });
+
+  const reviewStatus = result.isCorrect
+    ? "Solución completa"
+    : answer === null || result.status === "unanswered"
+      ? "Sin respuesta"
+      : result.status === "partial"
+        ? "Respuesta parcial"
+        : "Respuesta incorrecta";
+
+  const pathLayerLabel = showSubmittedPaths
+    ? "Muestra la solución oficial y tu respuesta"
+    : result.isCorrect
+      ? "Muestra la solución oficial, coincidente con tu respuesta"
+      : "Muestra la solución oficial";
 
   return (
     <div className="grid gap-3">
       <div
         className={styles.connectPairsReviewGrid}
         style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
-        aria-label="Rutas enviadas"
+        aria-label={`Tablero de conexiones. ${pathLayerLabel}.`}
       >
+        <svg
+          className={styles.connectPairsReviewRouteOverlay}
+          viewBox={`0 0 ${CONNECT_PAIRS_COLUMNS} ${question.grid.rows}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {question.pairs.map((pair, index) => {
+            const solutionPath = question.solutionPaths[pair.id] ?? [];
+            const color = getConnectPairsPairColor(pair.color, index);
+            return solutionPath.length > 1 ? (
+              <polyline
+                key={`solution-${pair.id}`}
+                className={styles.connectPairsReviewRouteLine}
+                points={connectPairsRoutePoints(solutionPath)}
+                style={{ "--pair-color": color } as CSSProperties}
+              />
+            ) : null;
+          })}
+          {showSubmittedPaths
+            ? question.pairs.map((pair, index) => {
+                const submittedPath = answer?.paths[pair.id] ?? [];
+                const color = getConnectPairsPairColor(pair.color, index);
+                return submittedPath.length > 1 ? (
+                  <polyline
+                    key={`submitted-${pair.id}`}
+                    className={styles.connectPairsReviewSubmittedLine}
+                    points={connectPairsRoutePoints(submittedPath)}
+                    style={{ "--pair-color": color } as CSSProperties}
+                  />
+                ) : null;
+              })
+            : null}
+        </svg>
         {Array.from({ length: question.grid.rows * question.grid.columns }, (_, cell) => {
-          const owner = cellOwner.get(cell);
+          const owner = solutionOwner.get(cell);
+          const submittedPair = submittedOwner.get(cell);
+          const isEndpoint = owner ? owner.endpoints.includes(cell) : false;
+          const answerIncludesEndpoint = owner?.endpoints.some((endpoint) =>
+            (answer?.paths[owner.id] ?? []).includes(endpoint),
+          );
+          const color = owner
+            ? getConnectPairsPairColor(
+                owner.color,
+                question.pairs.findIndex((pair) => pair.id === owner.id),
+              )
+            : undefined;
           return (
             <span
               key={cell}
-              className={`${styles.connectPairsReviewCell} ${
-                owner?.inAnswer ? styles.connectPairsReviewRoute : ""
-              } ${owner?.isEndpoint ? styles.connectPairsReviewEndpoint : ""} ${
-                owner?.isEndpoint && !owner.inAnswer ? styles.connectPairsReviewEndpointMissing : ""
+              className={`${styles.connectPairsReviewCell} ${isEndpoint ? styles.connectPairsReviewEndpoint : ""} ${
+                isEndpoint && showSubmittedPaths && !answerIncludesEndpoint
+                  ? styles.connectPairsReviewEndpointMissing
+                  : ""
               }`}
+              style={{ "--pair-color": color } as CSSProperties}
               aria-label={
                 owner
-                  ? `Casilla ${cell + 1}: ${
-                      owner.isEndpoint && !owner.inAnswer
-                        ? "extremo no incluido en la ruta enviada"
-                        : owner.isEndpoint
-                          ? "extremo incluido en la ruta enviada"
-                          : "ruta enviada"
-                    } de ${owner.label}`
+                  ? `Casilla ${cell + 1}: ${isEndpoint ? "extremo" : "ruta"} de ${owner.label}${
+                      showSubmittedPaths && submittedPair && submittedPair.id !== owner.id
+                        ? `; tu respuesta la asigna a ${submittedPair.label}`
+                        : showSubmittedPaths && isEndpoint && !answerIncludesEndpoint
+                          ? "; extremo no incluido en tu respuesta"
+                          : ""
+                    }`
                   : `Casilla ${cell + 1}: vacía`
               }
             >
-              {owner?.isEndpoint ? owner.symbol : owner?.inAnswer ? "•" : ""}
+              {owner ? (isEndpoint ? owner.symbol : solutionCells.has(cell) ? "·" : "") : ""}
             </span>
           );
         })}
+      </div>
+      <div className={styles.connectPairsReviewLegend} aria-label="Leyenda de conexiones">
+        <div className={styles.connectPairsReviewPairLegend}>
+          {question.pairs.map((pair, index) => {
+            const color = getConnectPairsPairColor(pair.color, index);
+            return (
+              <div key={pair.id} className={styles.connectPairsReviewLegendItem}>
+                <span
+                  className={styles.connectPairsReviewLegendSymbol}
+                  style={{ "--pair-color": color } as CSSProperties}
+                  aria-hidden="true"
+                >
+                  {pair.symbol}
+                </span>
+                <span>{pair.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className={styles.connectPairsReviewLineLegend}>
+          <span className={styles.connectPairsReviewLegendLine} aria-hidden="true" />
+          <span>Solución</span>
+          {showSubmittedPaths ? (
+            <>
+              <span
+                className={`${styles.connectPairsReviewLegendLine} ${styles.connectPairsReviewLegendLineSubmitted}`}
+                aria-hidden="true"
+              />
+              <span>Tu respuesta</span>
+            </>
+          ) : result.isCorrect ? (
+            <span>Tu respuesta: coincide</span>
+          ) : null}
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className={styles.answerBox}>
@@ -228,10 +311,8 @@ function ConnectPairsReview({ question, result }: ReviewProps<QuestionOfType<"co
           <strong>{details ? `${Math.round(details.coverage * 100)} %` : "0 %"}</strong>
         </div>
         <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
-          <span>Solución</span>
-          <strong>
-            {question.requireFullCoverage ? "Cobertura completa" : "Parejas conectadas"}
-          </strong>
+          <span>Estado</span>
+          <strong>{reviewStatus}</strong>
         </div>
       </div>
     </div>

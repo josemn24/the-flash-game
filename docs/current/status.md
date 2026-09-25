@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-23.
+Última actualización documental: 2026-09-25.
 
 # Estado actual del proyecto
 
@@ -164,7 +164,8 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
   Flash mínimo; la gestión posterior de miembros es parcial en ajustes (S18b), mientras que
   transferencia, bloqueo/desbloqueo e invitaciones completas, además del reemplazo/archivado de
-  contenido publicado y calendario S12, siguen siendo local-first y no forman parte de la UI pública.
+  contenido publicado, siguen siendo local-first y no forman parte de la UI pública. S12 ya opera
+  localmente el calendario de publicaciones.
   D08a/S13 ya
   cubren avatares persistidos y assets privados de E10 y `multiple-choice`. La subida de imágenes de
   `multiple-choice` vive en la biblioteca de preguntas; el editor inline de Flash solo reutiliza
@@ -183,7 +184,25 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
   confundirse con el recorrido competitivo migrado.
 
-## Verificación
+## Verificación actual
+
+Estado documentado a 2026-09-25:
+
+- `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
+  `20260924120000_s18_superadmin_user_commands`.
+- `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
+- `npm run typecheck`: correcto.
+- `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
+  `scripts/integration/scenarios/s15.mjs`.
+- `npm test`: 130 archivos correctos y 1 fallido; 773 tests pasan de 774. El fallo pendiente está en
+  `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
+- `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera de esta actualización.
+- `npm run supabase:schema:test` no se pudo repetir en esta sesión porque Docker no está accesible.
+  La última ejecución completa registrada cargó los 47 schemas declarativos, verificó el inventario,
+  pgTAP y las carreras PostgreSQL sobre Supabase local.
+- No hay proyecto remoto vinculado; ninguna de estas comprobaciones acredita staging o producción.
+
+### Registros históricos de slices
 
 Última verificación focal de S15 registrada: 2026-09-23, sobre Supabase local.
 

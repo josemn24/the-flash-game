@@ -12,8 +12,10 @@ import {
 import {
   applyConnectPairsCellSelection,
   calculateConnectPairsMetrics,
+  connectPairsRoutePoints,
   CONNECT_PAIRS_COLUMNS,
   CONNECT_PAIRS_ROWS,
+  getConnectPairsPairColor,
   isRestorableConnectPairsDraft,
   startConnectPairsDrag,
 } from "@/lib/connectPairs";
@@ -21,10 +23,8 @@ import type {
   ConnectPairsAnswer,
   ConnectPairsPair,
   ConnectPairsQuestion as Question,
-  } from "@/types/game";
+} from "@/types/game";
 import styles from "./ConnectPairsQuestion.module.css";
-
-const DEFAULT_COLORS = ["#35e8ff", "#d7ff18", "#ff6d73", "#43deb7", "#b994ff"];
 
 type CellOwner = {
   pair: ConnectPairsPair;
@@ -66,16 +66,6 @@ function areNeighbors(left: number, right: number) {
 
 function hasProgress(paths: Record<string, number[]>) {
   return Object.values(paths).some((path) => path.length > 1);
-}
-
-function routePoints(path: number[]) {
-  return path
-    .map((cell) => {
-      const row = Math.floor(cell / CONNECT_PAIRS_COLUMNS);
-      const column = cell % CONNECT_PAIRS_COLUMNS;
-      return `${column + 0.5},${row + 0.5}`;
-    })
-    .join(" ");
 }
 
 export function ConnectPairsQuestion({
@@ -333,7 +323,7 @@ export function ConnectPairsQuestion({
 
   const cellOwners = new Map<number, CellOwner>();
   question.pairs.forEach((pair, index) => {
-    const color = pair.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+    const color = getConnectPairsPairColor(pair.color, index);
     pair.endpoints.forEach((endpoint) =>
       cellOwners.set(endpoint, {
         pair: { ...pair, color },
@@ -350,10 +340,7 @@ export function ConnectPairsQuestion({
   });
 
   return (
-    <section
-      className={`${styles.root}`}
-      aria-label="Conectar parejas"
-    >
+    <section className={`${styles.root}`} aria-label="Conectar parejas">
       <div className={styles.header}>
         <span>Conecta sin cruzar rutas</span>
         <strong>
@@ -384,12 +371,12 @@ export function ConnectPairsQuestion({
           {question.pairs.map((pair, index) => {
             const path = paths[pair.id] ?? [];
             if (path.length < 2) return null;
-            const color = pair.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+            const color = getConnectPairsPairColor(pair.color, index);
             return (
               <polyline
                 key={pair.id}
                 className={styles.routeLine}
-                points={routePoints(path)}
+                points={connectPairsRoutePoints(path)}
                 style={{ "--pair-color": color } as CSSProperties}
               />
             );
