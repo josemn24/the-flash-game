@@ -9,13 +9,16 @@ El esquema declarativo es la fuente de verdad:
 
 - `supabase/schemas/*.sql` define el estado deseado de la base de datos.
 - `supabase/migrations/*.sql` conserva el historial versionado que permite reproducir ese estado.
-- El orden de los archivos declarativos es lexicográfico; los nombres deben respetar las
-  dependencias entre objetos.
+- `pg-delta` ordena las declaraciones según sus dependencias; los prefijos numéricos de los
+  archivos se conservan para facilitar la lectura humana y las pruebas directas del esquema.
 - Los cambios declarativos se hacen primero en `schemas/`, nunca directamente en Studio, el SQL
   Editor o `psql` esperando que después se detecten automáticamente.
 
-La configuración de Supabase usa `schema_paths = ["./schemas/*.sql"]`. El detalle de tablas,
-funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
+La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./schemas"`. El detalle
+de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
+
+El historial activo está consolidado en una única migración base generada desde los 51 archivos
+declarativos. La rama de respaldo conserva el historial incremental anterior.
 
 ## Flujo para un cambio de esquema
 
@@ -97,8 +100,8 @@ Si la excepción también tiene una representación declarativa, actualiza ambas
 tiene, documenta en la migración por qué queda fuera del diff declarativo y revisa posibles pérdidas
 de datos.
 
-El comando `db diff` no sustituye a este flujo: su baseline es el historial de migraciones, no la
-ruta declarativa configurada para este repositorio.
+El comando `db diff` no sustituye a este flujo en este proyecto: para cambios declarativos se debe
+usar `db schema declarative sync`, que compara `schemas/` con el historial de migraciones.
 
 ## Versionado
 

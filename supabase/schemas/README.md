@@ -1,10 +1,10 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 51 archivos y su revisión canónica es
-`20260925175228_refactor_command_engine`. La validación local más reciente corresponde
-a PostgreSQL 17 de Supabase local el 2026-09-25; los 51 archivos declarativos, el inventario y
-las suites pgTAP pasaron en esa ejecución. La migración incremental
-`20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal; `20260925120000_s20_superadmin_attempt_inspection.sql` añade lecturas privilegiadas de intentos y conserva las correcciones mediante comandos auditados; `20260925130000_s20_attempt_inspection_projection.sql` alinea la proyección de detalle con el contrato del portal; `20260925175228_refactor_command_engine.sql` separa el motor común, los handlers privados y la recuperación S04. No hay proyecto remoto vinculado.
+`20260925181322_initial_schema`. La migración base activa se ha regenerado desde esos archivos
+mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
+local corresponde a PostgreSQL 17 de Supabase local; los archivos declarativos, el inventario y
+las suites pgTAP pasan en esa ejecución. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
