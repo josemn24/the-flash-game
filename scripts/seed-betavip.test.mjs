@@ -161,9 +161,9 @@ describe("BetaVIP seed", () => {
 
     expect(question?.publicPayload.initialBlocks).toHaveLength(7);
     expect(question?.solutionPayload.optimalMoves).toBe(7);
-    expect(new Set(question?.solutionPayload.referenceSolution.map((move) => move.blockId))).toEqual(
-      new Set(["a", "b", "c", "d", "e", "f", "target"]),
-    );
+    expect(
+      new Set(question?.solutionPayload.referenceSolution.map((move) => move.blockId)),
+    ).toEqual(new Set(["a", "b", "c", "d", "e", "f", "target"]));
   });
 
   it("uses a distinct full-coverage Connect Pairs board for BetaVIP", () => {
@@ -187,7 +187,7 @@ describe("BetaVIP seed", () => {
     expect(new Set(Object.values(paths).flat()).size).toBe(25);
   });
 
-  it("publishes Cumbre lógica II, Survival and Alphabet on consecutive days", () => {
+  it("publishes Survival, Alphabet and Cumbre lógica II on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -201,6 +201,8 @@ describe("BetaVIP seed", () => {
     expect(data.publicationId).toBe(data.publications[0].id);
     expect(data.challengeId).toBe(data.publications[0].challengeId);
     expect(data.challengeVersionId).toBe(data.publications[0].challengeVersionId);
+    expect(data.questionCount).toBe(data.publications[0].questionCount);
+    expect(data.pointsTotal).toBe(data.publications[0].pointsTotal);
     expect(betaVipPyramidQuestions).toHaveLength(7);
     expect(betaVipPyramidQuestions.map((item) => item.type)).toEqual([
       "zip",
@@ -216,16 +218,16 @@ describe("BetaVIP seed", () => {
     expect(
       data.publications.map((item) => [item.number, item.title, item.mode, item.status]),
     ).toEqual([
-      [1, "Cumbre lógica II", "pyramid", "open"],
-      [2, "Supervivencia: Cultura pop", "survival", "scheduled"],
-      [3, "La vuelta al mundo", "alphabet", "scheduled"],
+      [1, "Supervivencia: Cultura pop", "survival", "open"],
+      [2, "La vuelta al mundo", "alphabet", "scheduled"],
+      [3, "Cumbre lógica II", "pyramid", "scheduled"],
     ]);
     expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([7, 20, 18]);
-    expect(data.pyramidPublicationId).toBe(data.publications[0].id);
-    expect(data.survivalPublicationId).toBe(data.publications[1].id);
-    expect(data.alphabetPublicationId).toBe(data.publications[2].id);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([20, 18, 7]);
+    expect(data.survivalPublicationId).toBe(data.publications[0].id);
+    expect(data.alphabetPublicationId).toBe(data.publications[1].id);
+    expect(data.pyramidPublicationId).toBe(data.publications[2].id);
     expect(data.publications.some((item) => item.slug === "steel-ball-run")).toBe(false);
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");

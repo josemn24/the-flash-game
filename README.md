@@ -98,10 +98,10 @@ una partida. Las credenciales locales generadas para Manuel y Genís quedan en
 `output/fixtures/betavip.json`.
 
 En BetaVIP, «Supervivencia: Cultura pop» está abierto durante las primeras 24 horas, «La vuelta al
-mundo» queda programado para el segundo día y Steel Ball Run para el tercero. La temporada dura
-72 horas. El manifiesto lista las tres publicaciones en orden: `data.publicationId` apunta a
-Supervivencia; `data.alphabetPublicationId`, `data.steelBallRunPublicationId` y
-`data.survivalPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
+mundo» queda programado para el segundo día y «Cumbre lógica II» para el tercero. La temporada dura
+72 horas. El manifiesto lista las tres publicaciones en ese orden: `data.publicationId` apunta a
+Supervivencia, mientras `data.survivalPublicationId`, `data.alphabetPublicationId` y
+`data.pyramidPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
 contiene el recurso propio del casete.
 
 ## Estructura principal

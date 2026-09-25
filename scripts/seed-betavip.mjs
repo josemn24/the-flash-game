@@ -113,7 +113,7 @@ export function betaVipManifest(tabarniaFixture) {
   const steel = steelBallRun(tabarniaFixture);
   const pyramid = {
     id: stableId("publication:beta-vip-cumbre-logica-ii"),
-    number: 1,
+    number: 3,
     slug: BETA_VIP_PYRAMID.slug,
     title: BETA_VIP_PYRAMID.title,
     mode: "pyramid",
@@ -121,13 +121,13 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
     questionCount: pyramidItems.length,
     pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 0,
+    opensAfterHours: 48,
     durationHours: 24,
-    status: "open",
+    status: "scheduled",
   };
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
-    number: 3,
+    number: 2,
     slug: BETA_VIP_ALPHABET.slug,
     title: BETA_VIP_ALPHABET.title,
     mode: "alphabet",
@@ -135,13 +135,13 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 48,
+    opensAfterHours: 24,
     durationHours: 24,
     status: "scheduled",
   };
   const survivalPublication = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 2,
+    number: 1,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -149,22 +149,22 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 24,
+    opensAfterHours: 0,
     durationHours: 24,
-    status: "scheduled",
+    status: "open",
   };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
     seasonId: stableId("season:beta-vip"),
-    publicationId: pyramid.id,
-    challengeId: pyramid.challengeId,
-    challengeVersionId: pyramid.challengeVersionId,
-    questionCount: pyramid.questionCount,
-    pointsTotal: pyramid.pointsTotal,
+    publicationId: survivalPublication.id,
+    challengeId: survivalPublication.challengeId,
+    challengeVersionId: survivalPublication.challengeVersionId,
+    questionCount: survivalPublication.questionCount,
+    pointsTotal: survivalPublication.pointsTotal,
     pyramidPublicationId: pyramid.id,
     alphabetPublicationId: alphabet.id,
     survivalPublicationId: survivalPublication.id,
-    publications: [pyramid, survivalPublication, alphabet],
+    publications: [survivalPublication, alphabet, pyramid],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -360,11 +360,11 @@ select private.assert_supported_calendar_content(${sqlString(pyramid.challengeVe
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 1,
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 1,
    'open', now(), now() + interval '24 hours'),
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 2,
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 2,
    'scheduled', now() + interval '24 hours', now() + interval '48 hours'),
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 3,
+  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 3,
    'scheduled', now() + interval '48 hours', now() + interval '72 hours');
 set constraints all immediate;
 commit;

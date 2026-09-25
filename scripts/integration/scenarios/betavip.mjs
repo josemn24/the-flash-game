@@ -15,7 +15,7 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [pyramid, survival, alphabet] = beta.publications;
+    const [survival, alphabet, pyramid] = beta.publications;
     const tabarniaSteel = tabarnia.data.publications.find(
       (publication) => publication.slug === "steel-ball-run",
     );
@@ -25,21 +25,29 @@ export const scenario = {
         beta.publications.map(({ number, title, mode, status }) => [number, title, mode, status]),
       ) ===
         JSON.stringify([
-          [1, "Cumbre lógica II", "pyramid", "open"],
-          [2, "Supervivencia: Cultura pop", "survival", "scheduled"],
-          [3, "La vuelta al mundo", "alphabet", "scheduled"],
+          [1, "Supervivencia: Cultura pop", "survival", "open"],
+          [2, "La vuelta al mundo", "alphabet", "scheduled"],
+          [3, "Cumbre lógica II", "pyramid", "scheduled"],
         ]),
-      "BetaVIP publica Cumbre lógica II, Survival y Alphabet en ese orden",
+      "BetaVIP publica Survival, Alphabet y Cumbre lógica II en ese orden",
     );
-    assert(beta.publicationId === pyramid.id, "El manifiesto apunta al primer desafío");
-    assert(beta.challengeId === pyramid.challengeId, "El manifiesto apunta al desafío Pyramid");
+    assert(beta.publicationId === survival.id, "El manifiesto apunta al primer desafío");
+    assert(beta.challengeId === survival.challengeId, "El manifiesto apunta al desafío Survival");
     assert(
-      beta.challengeVersionId === pyramid.challengeVersionId,
-      "El manifiesto apunta a la versión Cumbre lógica II",
+      beta.challengeVersionId === survival.challengeVersionId,
+      "El manifiesto apunta a la versión Supervivencia: Cultura pop",
     );
-    assert(beta.pyramidPublicationId === pyramid.id, "La Pirámide tiene ID explícito");
-    assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
+    assert(
+      beta.questionCount === survival.questionCount,
+      "El manifiesto conserva las veinte preguntas de Survival",
+    );
+    assert(
+      beta.pointsTotal === survival.pointsTotal,
+      "El manifiesto conserva los puntos de Survival",
+    );
     assert(beta.survivalPublicationId === survival.id, "Survival tiene ID propio");
+    assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
+    assert(beta.pyramidPublicationId === pyramid.id, "La Pirámide tiene ID explícito");
 
     assert(fixture.users.ches.playerId === tabarnia.users.ches.playerId, "Ches conserva su Player");
     assert(fixture.users.dark.playerId === tabarnia.users.dark.playerId, "Dark conserva su Player");
@@ -130,10 +138,12 @@ export const scenario = {
       "Cumbre lógica II está publicada como Pirámide con 100 puntos",
     );
     assert(
-      (await dockerSql(
-        `select string_agg(question.type, ',' order by item.position) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${pyramid.challengeVersionId}';`,
-        config.dbContainer,
-      )).stdout.trim() === "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
+      (
+        await dockerSql(
+          `select string_agg(question.type, ',' order by item.position) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${pyramid.challengeVersionId}';`,
+          config.dbContainer,
+        )
+      ).stdout.trim() === "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
       "Cumbre lógica II conserva el orden de formatos acordado",
     );
     assert(
@@ -174,7 +184,7 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${pyramid.id}' and second.id = '${survival.id}' and third.id = '${alphabet.id}' and first.number = 1 and second.number = 2 and third.number = 3 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (third.closes_at - third.opens_at)) = 86400 and private.publication_is_effectively_open(second.status, season.status, season.starts_at, season.ends_at, second.opens_at, second.closes_at, second.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${survival.id}' and second.id = '${alphabet.id}' and third.id = '${pyramid.id}' and first.number = 1 and second.number = 2 and third.number = 3 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (third.closes_at - third.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
         config.dbContainer,
       )) === 1,
       "Las tres publicaciones quedan disponibles en sus días, sin huecos ni solapes",
@@ -215,37 +225,29 @@ export const scenario = {
         target_room_slug: betaSlug,
         target_publication_id: pyramid.id,
       });
-      assert(pyramidPlayable.length === 7, "Los miembros de BetaVIP reciben los siete niveles");
-      assert(
-        pyramidPlayable.map((row) => row.question_type).join(",") ===
-          "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
-        "La Pirámide proyecta los siete formatos en orden",
-      );
-      assert(
-        pyramidPlayable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
-        "Cumbre lógica II suma 100 puntos",
-      );
-      assert(
-        !JSON.stringify(pyramidPlayable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
-        "La lectura de la Pirámide no expone soluciones",
-      );
+      assert(pyramidPlayable.length === 0, "La Pirámide permanece bloqueada durante el primer día");
       const playable = await rpc(client, "get_my_survival_challenge", {
         target_room_slug: betaSlug,
         target_publication_id: survival.id,
       });
-      assert(playable.length === 0, "Survival aún no está disponible durante el primer día");
+      assert(playable.length === 20, "Survival está disponible durante el primer día");
       assert(
         !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
         "La lectura jugable no expone soluciones",
       );
+      const pyramidLocked = await rpc(client, "get_my_pyramid_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: pyramid.id,
+      });
+      assert(pyramidLocked.length === 0, "La Pirámide permanece bloqueada durante el primer día");
       const calendar = await rpc(client, "get_room_calendar", { target_room_slug: betaSlug });
       assert(
-        calendar.some((entry) => entry.publication_id === pyramid.id && entry.can_start),
-        "La sala permite iniciar Cumbre lógica II el primer día",
+        calendar.some((entry) => entry.publication_id === survival.id && entry.can_start),
+        "La sala permite iniciar Survival el primer día",
       );
       assert(
-        !calendar.some((entry) => entry.publication_id === survival.id && entry.can_start),
-        "Survival permanece programado durante el primer día",
+        !calendar.some((entry) => entry.publication_id === pyramid.id && entry.can_start),
+        "La Pirámide permanece programada durante el primer día",
       );
     }
     assert(
@@ -308,13 +310,6 @@ export const scenario = {
     await dockerSql(
       `
 begin;
-update public.scheduled_challenges
-set status = 'cancelled', cancelled_at = clock_timestamp()
-where id = '${pyramid.id}';
-update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
-    closes_at = clock_timestamp() + interval '1 hour'
-where id = '${survival.id}';
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-survival-before-ranking"}'::jsonb);
 commit;
@@ -438,6 +433,39 @@ commit;
       ).length === 0,
       "Un miembro exclusivo de Tabarnia no recibe el Alphabet de BetaVIP",
     );
+
+    await dockerSql(
+      `
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id = '${alphabet.id}';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${pyramid.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-integration-pyramid"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
+    );
+    for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
+      const playable = await rpc(client, "get_my_pyramid_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: pyramid.id,
+      });
+      assert(playable.length === 7, "La Pirámide se desbloquea como tercer desafío");
+      assert(
+        playable.map((row) => row.question_type).join(",") ===
+          "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
+        "La Pirámide proyecta los siete formatos en orden",
+      );
+      assert(
+        !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
+        "La lectura de la Pirámide no expone soluciones",
+      );
+    }
   },
 };
 
