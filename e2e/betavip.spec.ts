@@ -12,7 +12,6 @@ type Fixture = {
     challengeVersionId: string;
     pyramidPublicationId: string;
     alphabetPublicationId: string;
-    steelBallRunPublicationId: string;
     survivalPublicationId: string;
     publications: Publication[];
   };
@@ -33,14 +32,13 @@ async function signIn(page: Page, account: Account) {
 test("Ches inicia Cumbre lógica II y desbloquea el segundo nivel", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [pyramid, survival, alphabet, steel] = data.data.publications;
+  const [pyramid, survival, alphabet] = data.data.publications;
   expect(data.data.publicationId).toBe(pyramid.id);
   expect(data.data.pyramidPublicationId).toBe(pyramid.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "Cumbre lógica II", "pyramid"],
     [2, "Supervivencia: Cultura pop", "survival"],
     [3, "La vuelta al mundo", "alphabet"],
-    [4, "Steel Ball Run", "flash"],
   ]);
 
   await signIn(page, data.users.ches);
@@ -65,7 +63,7 @@ test("Ches inicia Cumbre lógica II y desbloquea el segundo nivel", async ({ pag
   ).toBe(1);
   expect(
     await sqlCount(
-      `select count(*) from public.attempts where scheduled_challenge_id in ('${survival.id}', '${alphabet.id}', '${steel.id}');`,
+      `select count(*) from public.attempts where scheduled_challenge_id in ('${survival.id}', '${alphabet.id}');`,
     ),
   ).toBe(0);
 });
@@ -73,16 +71,14 @@ test("Ches inicia Cumbre lógica II y desbloquea el segundo nivel", async ({ pag
 test("Ches juega Supervivencia y carga la imagen progresiva tras avanzar la Pirámide", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [pyramid, survival, alphabet, steel] = data.data.publications;
+  const [pyramid, survival, alphabet] = data.data.publications;
   expect(data.data.publicationId).toBe(pyramid.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
-  expect(data.data.steelBallRunPublicationId).toBe(steel.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "Cumbre lógica II", "pyramid"],
     [2, "Supervivencia: Cultura pop", "survival"],
     [3, "La vuelta al mundo", "alphabet"],
-    [4, "Steel Ball Run", "flash"],
   ]);
 
   await dockerSql(`
@@ -133,7 +129,7 @@ commit;
   ).toBe(1);
   expect(
     await sqlCount(
-      `select count(*) from public.attempts where scheduled_challenge_id in ('${alphabet.id}', '${steel.id}');`,
+      `select count(*) from public.attempts where scheduled_challenge_id in ('${alphabet.id}');`,
     ),
   ).toBe(0);
 });

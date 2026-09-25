@@ -131,20 +131,6 @@ export function betaVipManifest(tabarniaFixture) {
     durationHours: 24,
     status: "scheduled",
   };
-  const steelPublication = {
-    id: stableId("publication:beta-vip-steel-ball-run"),
-    number: 4,
-    slug: steel.slug,
-    title: steel.title,
-    mode: steel.mode,
-    challengeId: steel.challengeId,
-    challengeVersionId: steel.challengeVersionId,
-    questionCount: steel.questionCount,
-    pointsTotal: steel.pointsTotal,
-    opensAfterHours: 72,
-    durationHours: 24,
-    status: "scheduled",
-  };
   const survivalPublication = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
     number: 2,
@@ -169,9 +155,8 @@ export function betaVipManifest(tabarniaFixture) {
     pointsTotal: pyramid.pointsTotal,
     pyramidPublicationId: pyramid.id,
     alphabetPublicationId: alphabet.id,
-    steelBallRunPublicationId: steelPublication.id,
     survivalPublicationId: survivalPublication.id,
-    publications: [pyramid, survivalPublication, alphabet, steelPublication],
+    publications: [pyramid, survivalPublication, alphabet],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -204,7 +189,6 @@ export function buildBetaVipDomainSql({ tabarniaFixture, accounts, cassetteAsset
     throw new Error("Falta Xesmona para publicar el Alphabet de BetaVIP.");
   }
   const alphabet = data.publications.find((publication) => publication.mode === "alphabet");
-  const steel = data.publications.find((publication) => publication.mode === "flash");
   const survival = data.publications.find((publication) => publication.mode === "survival");
   const pyramid = data.publications.find((publication) => publication.mode === "pyramid");
   if (!cassetteAssetMetadata) {
@@ -299,7 +283,7 @@ values
   (${sqlString(data.room.id)}, ${sqlString(players.dark)}, 'member', 'active', now());
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '96 hours');
+values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '72 hours');
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
@@ -373,9 +357,7 @@ values
   (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 2,
    'scheduled', now() + interval '24 hours', now() + interval '48 hours'),
   (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 3,
-   'scheduled', now() + interval '48 hours', now() + interval '72 hours'),
-  (${sqlString(steel.id)}, ${sqlString(data.seasonId)}, ${sqlString(steel.challengeVersionId)}, 4,
-   'scheduled', now() + interval '72 hours', now() + interval '96 hours');
+   'scheduled', now() + interval '48 hours', now() + interval '72 hours');
 set constraints all immediate;
 commit;
 `;

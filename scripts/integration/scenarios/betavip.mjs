@@ -15,7 +15,10 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [pyramid, survival, alphabet, steel] = beta.publications;
+    const [pyramid, survival, alphabet] = beta.publications;
+    const tabarniaSteel = tabarnia.data.publications.find(
+      (publication) => publication.slug === "steel-ball-run",
+    );
 
     assert(
       JSON.stringify(
@@ -25,9 +28,8 @@ export const scenario = {
           [1, "Cumbre lógica II", "pyramid", "open"],
           [2, "Supervivencia: Cultura pop", "survival", "scheduled"],
           [3, "La vuelta al mundo", "alphabet", "scheduled"],
-          [4, "Steel Ball Run", "flash", "scheduled"],
         ]),
-      "BetaVIP publica Cumbre lógica II y programa los tres desafíos restantes en ese orden",
+      "BetaVIP publica Cumbre lógica II, Survival y Alphabet en ese orden",
     );
     assert(beta.publicationId === pyramid.id, "El manifiesto apunta al primer desafío");
     assert(beta.challengeId === pyramid.challengeId, "El manifiesto apunta al desafío Pyramid");
@@ -37,20 +39,13 @@ export const scenario = {
     );
     assert(beta.pyramidPublicationId === pyramid.id, "La Pirámide tiene ID explícito");
     assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
-    assert(beta.steelBallRunPublicationId === steel.id, "Steel Ball Run tiene ID propio");
     assert(beta.survivalPublicationId === survival.id, "Survival tiene ID propio");
 
     assert(fixture.users.ches.playerId === tabarnia.users.ches.playerId, "Ches conserva su Player");
     assert(fixture.users.dark.playerId === tabarnia.users.dark.playerId, "Dark conserva su Player");
     assert(
-      steel.challengeVersionId ===
-        tabarnia.data.publications.find((publication) => publication.slug === "steel-ball-run")
-          ?.challengeVersionId,
-      "Las dos publicaciones comparten la versión de Steel Ball Run",
-    );
-    assert(
-      steel.id !== beta.tabarnia.steelBallRunPublicationId,
-      "Cada sala tiene una publicación propia",
+      typeof tabarniaSteel?.challengeVersionId === "string",
+      "Tabarnia conserva la versión compartida de Steel Ball Run",
     );
 
     assert(
@@ -94,14 +89,14 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        `select count(*) from private.challenge_versions where id = '${steel.challengeVersionId}';`,
+        `select count(*) from private.challenge_versions where id = '${tabarniaSteel?.challengeVersionId}';`,
         config.dbContainer,
       )) === 1,
       "Steel Ball Run no se duplica",
     );
     assert(
       (await sqlCount(
-        `select count(*) from private.challenge_items where challenge_version_id = '${steel.challengeVersionId}';`,
+        `select count(*) from private.challenge_items where challenge_version_id = '${tabarniaSteel?.challengeVersionId}';`,
         config.dbContainer,
       )) === 16,
       "La versión compartida conserva sus dieciséis preguntas",
@@ -167,22 +162,22 @@ export const scenario = {
       config.dbContainer,
     );
     assert(
-      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled",
-      "Las publicaciones de BetaVIP están en orden y estado correctos",
+      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled",
+      "Las tres publicaciones de BetaVIP están en orden y estado correctos",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '96 hours';`,
+        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '72 hours';`,
         config.dbContainer,
       )) === 1,
-      "La temporada BetaVIP cubre exactamente cuatro ventanas de 24 horas",
+      "La temporada BetaVIP cubre exactamente tres ventanas de 24 horas",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${pyramid.id}' and second.id = '${survival.id}' and third.id = '${alphabet.id}' and fourth.id = '${steel.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fourth.closes_at - fourth.opens_at)) = 86400 and private.publication_is_effectively_open(second.status, season.status, season.starts_at, season.ends_at, second.opens_at, second.closes_at, second.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${pyramid.id}' and second.id = '${survival.id}' and third.id = '${alphabet.id}' and first.number = 1 and second.number = 2 and third.number = 3 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (third.closes_at - third.opens_at)) = 86400 and private.publication_is_effectively_open(second.status, season.status, season.starts_at, season.ends_at, second.opens_at, second.closes_at, second.opens_at + interval '1 hour');`,
         config.dbContainer,
       )) === 1,
-      "Las cuatro publicaciones quedan disponibles en sus días, sin huecos ni solapes",
+      "Las tres publicaciones quedan disponibles en sus días, sin huecos ni solapes",
     );
     assert(
       (await sqlCount(
@@ -285,15 +280,6 @@ export const scenario = {
     assert(
       (
         await rpc(clients.ches, "get_my_flash_challenge", {
-          target_room_slug: betaSlug,
-          target_publication_id: steel.id,
-        })
-      ).length === 0,
-      "Steel Ball Run aún está programado en BetaVIP",
-    );
-    assert(
-      (
-        await rpc(clients.ches, "get_my_flash_challenge", {
           target_room_slug: tabarniaSlug,
           target_publication_id: beta.tabarnia.steelBallRunPublicationId,
         })
@@ -390,14 +376,6 @@ commit;
         })
       ).length === 0,
       "El Alphabet no recibe la partida de Survival",
-    );
-    assert(
-      (
-        await rpc(clients.ches, "get_challenge_ranking", {
-          target_publication_id: steel.id,
-        })
-      ).length === 0,
-      "Steel Ball Run de BetaVIP no recibe la partida de Survival",
     );
     assert(
       (

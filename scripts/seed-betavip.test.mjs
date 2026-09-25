@@ -123,7 +123,7 @@ describe("BetaVIP seed", () => {
     );
   });
 
-  it("publishes Survival, Alphabet, then shared Steel Ball Run on consecutive days", () => {
+  it("publishes Cumbre lógica II, Survival and Alphabet on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -155,28 +155,24 @@ describe("BetaVIP seed", () => {
       [1, "Cumbre lógica II", "pyramid", "open"],
       [2, "Supervivencia: Cultura pop", "survival", "scheduled"],
       [3, "La vuelta al mundo", "alphabet", "scheduled"],
-      [4, "Steel Ball Run", "flash", "scheduled"],
     ]);
-    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72]);
-    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([7, 20, 18, 16]);
+    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([7, 20, 18]);
     expect(data.pyramidPublicationId).toBe(data.publications[0].id);
     expect(data.survivalPublicationId).toBe(data.publications[1].id);
     expect(data.alphabetPublicationId).toBe(data.publications[2].id);
-    expect(data.steelBallRunPublicationId).toBe(data.publications[3].id);
-    expect(data.steelBallRunPublicationId).not.toBe(data.tabarnia.steelBallRunPublicationId);
-    expect(data.publications[3].challengeVersionId).toBe("version-sbr");
+    expect(data.publications.some((item) => item.slug === "steel-ball-run")).toBe(false);
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");
-    expect(sql).toContain("'version-sbr'");
+    expect(sql).not.toContain("publication:beta-vip-steel-ball-run");
     expect(sql).toContain("'La vuelta al mundo'");
     expect(sql).toContain("'alphabet'");
     expect(sql).toContain("'short-text'");
-    expect(sql).toContain("'active', now(), now() + interval '96 hours'");
+    expect(sql).toContain("'active', now(), now() + interval '72 hours'");
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
     expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
     expect(sql).toContain("'Cumbre lógica II'");
     expect(sql).toContain("'pyramid'");
     expect(sql).toContain("'connect-pairs'");
@@ -193,12 +189,6 @@ describe("BetaVIP seed", () => {
         "scheduled",
         "now() + interval '48 hours'",
         "now() + interval '72 hours'",
-      ],
-      [
-        data.publications[3],
-        "scheduled",
-        "now() + interval '72 hours'",
-        "now() + interval '96 hours'",
       ],
     ]) {
       expect(sql).toContain(
