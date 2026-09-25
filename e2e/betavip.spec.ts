@@ -46,9 +46,39 @@ test("Ches inicia Cumbre lógica II y desbloquea el segundo nivel", async ({ pag
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Cumbre lógica II", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByRole("heading", { name: "¿Qué número rompe el patrón?" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Une los puntos en orden y cubre todo el tablero." }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Empezar nivel" }).click();
-  await page.getByRole("button", { name: "81" }).click();
+  const zipPath = [
+    [1, 2],
+    [1, 3],
+    [1, 4],
+    [1, 5],
+    [2, 5],
+    [2, 4],
+    [2, 3],
+    [2, 2],
+    [2, 1],
+    [3, 1],
+    [3, 2],
+    [3, 3],
+    [3, 4],
+    [3, 5],
+    [4, 5],
+    [4, 4],
+    [4, 3],
+    [4, 2],
+    [4, 1],
+    [5, 1],
+    [5, 2],
+    [5, 3],
+    [5, 4],
+    [5, 5],
+  ];
+  for (const [row, column] of zipPath) {
+    await page.getByRole("button", { name: `Seleccionar fila ${row}, columna ${column}` }).click();
+  }
   await expect(page.getByRole("heading", { name: "Nivel superado" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "¿Qué pieza completa la matriz?" })).toBeVisible();
   expect(

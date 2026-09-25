@@ -133,7 +133,7 @@ export const scenario = {
       (await dockerSql(
         `select string_agg(question.type, ',' order by item.position) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${pyramid.challengeVersionId}';`,
         config.dbContainer,
-      )).stdout.trim() === "odd-one-out,logic-matrix,zip,connect-pairs,escape,logic-code,queens",
+      )).stdout.trim() === "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
       "Cumbre lógica II conserva el orden de formatos acordado",
     );
     assert(
@@ -218,7 +218,7 @@ export const scenario = {
       assert(pyramidPlayable.length === 7, "Los miembros de BetaVIP reciben los siete niveles");
       assert(
         pyramidPlayable.map((row) => row.question_type).join(",") ===
-          "odd-one-out,logic-matrix,zip,connect-pairs,escape,logic-code,queens",
+          "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
         "La Pirámide proyecta los siete formatos en orden",
       );
       assert(

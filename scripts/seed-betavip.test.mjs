@@ -123,6 +123,68 @@ describe("BetaVIP seed", () => {
     );
   });
 
+  it("keeps the BetaVIP logic code clues from revealing the solution", () => {
+    const question = betaVipPyramidQuestions.find(
+      (item) => item.slug === "betavip-cumbre-logica-ii-cerradura",
+    );
+
+    expect(question?.solutionPayload.correctAnswer).toBe("427");
+    expect(question?.publicPayload.clues).toEqual([
+      {
+        code: "123",
+        hint: "Una cifra es correcta y está bien colocada; las otras dos no aparecen.",
+      },
+      {
+        code: "406",
+        hint: "Una cifra es correcta y está bien colocada; las otras dos no aparecen.",
+      },
+      {
+        code: "795",
+        hint: "Una cifra es correcta, pero está desplazada; las otras dos no aparecen.",
+      },
+      {
+        code: "172",
+        hint: "Dos cifras son correctas, pero ambas están desplazadas; la tercera no aparece.",
+      },
+    ]);
+    expect(question?.publicPayload.clues).not.toContainEqual(
+      expect.objectContaining({ code: "427" }),
+    );
+  });
+
+  it("defines a denser Escape level with every obstacle in the reference solution", () => {
+    const question = betaVipPyramidQuestions.find(
+      (item) => item.slug === "betavip-cumbre-logica-ii-escape",
+    );
+
+    expect(question?.publicPayload.initialBlocks).toHaveLength(7);
+    expect(question?.solutionPayload.optimalMoves).toBe(7);
+    expect(new Set(question?.solutionPayload.referenceSolution.map((move) => move.blockId))).toEqual(
+      new Set(["a", "b", "c", "d", "e", "f", "target"]),
+    );
+  });
+
+  it("uses a distinct full-coverage Connect Pairs board for BetaVIP", () => {
+    const question = betaVipPyramidQuestions.find(
+      (item) => item.slug === "betavip-cumbre-logica-ii-conexiones",
+    );
+    const paths = question?.solutionPayload.paths ?? {};
+
+    expect(question?.publicPayload.pairs.map((pair) => pair.endpoints)).toEqual([
+      [0, 9],
+      [14, 21],
+      [20, 7],
+      [8, 12],
+    ]);
+    expect(paths).toEqual({
+      circle: [0, 1, 2, 3, 4, 9],
+      triangle: [14, 19, 24, 23, 22, 21],
+      diamond: [20, 15, 10, 5, 6, 7],
+      star: [8, 13, 18, 17, 16, 11, 12],
+    });
+    expect(new Set(Object.values(paths).flat()).size).toBe(25);
+  });
+
   it("publishes Cumbre lógica II, Survival and Alphabet on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
@@ -139,9 +201,9 @@ describe("BetaVIP seed", () => {
     expect(data.challengeVersionId).toBe(data.publications[0].challengeVersionId);
     expect(betaVipPyramidQuestions).toHaveLength(7);
     expect(betaVipPyramidQuestions.map((item) => item.type)).toEqual([
-      "odd-one-out",
-      "logic-matrix",
       "zip",
+      "logic-matrix",
+      "odd-one-out",
       "connect-pairs",
       "escape",
       "logic-code",
