@@ -5,31 +5,6 @@
 create index attempts_publication_started_idx
   on public.attempts (scheduled_challenge_id, started_at desc, id desc);
 
-create or replace function private.adjust_result(input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-declare
-  actor uuid := private.command_actor();
-  attempt_status text;
-begin
-  if not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  if jsonb_typeof(input) = 'object'
-    and input->>'attemptId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
-    select attempt.status into attempt_status
-    from public.attempts attempt
-    where attempt.id = (input->>'attemptId')::uuid;
-    if attempt_status is not null and attempt_status not in ('completed', 'abandoned') then
-      raise exception 'attempt_not_terminal' using errcode = '55000';
-    end if;
-  end if;
-  return private.execute_command('adjust', input);
-end;
-$$;
-
 create function public.get_superadmin_attempt_publications(target_room_id uuid)
 returns jsonb
 language plpgsql stable security definer set search_path = '' as $$

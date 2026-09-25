@@ -1,8 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 49 archivos y su revisión canónica es
+Estado: el esquema declarativo vigente se compone de 48 archivos y su revisión canónica es
 `20260925130000_s20_attempt_inspection_projection`. La validación local más reciente corresponde
-a PostgreSQL 17 de Supabase local el 2026-09-25; los 49 archivos declarativos, el inventario y
+a PostgreSQL 17 de Supabase local el 2026-09-25; los 48 archivos declarativos, el inventario y
 las suites pgTAP pasaron en esa ejecución. La migración incremental
 `20260923100000_s15_true_false.sql`–`20260923170000_progressive_clue_scoring.sql` están aplicadas localmente, además de S15. Las migraciones `20260924100000_word_search_answer_shape.sql` y `20260924110000_word_hashtag_correct_cells.sql` añaden cambios de Word Search y Word Hashtag; `20260924120000_s18_superadmin_user_commands.sql` añade el provisioning auditado de perfiles Auth y membresías desde el portal; `20260925120000_s20_superadmin_attempt_inspection.sql` añade lecturas privilegiadas de intentos y conserva las correcciones mediante comandos auditados; `20260925130000_s20_attempt_inspection_projection.sql` alinea la proyección de detalle con el contrato del portal. No hay proyecto remoto vinculado.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
@@ -138,13 +138,12 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [62_media_assets.sql](62_media_assets.sql)                                   | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |
 | [59_superadmin_calendar_commands.sql](59_superadmin_calendar_commands.sql)   | Programación/reprogramación de Flash/Supervivencia/Pirámide publicados, lecturas de calendario y tick temporal con locks/auditoría.                             |
 | [s20_superadmin_attempt_reads.sql](s20_superadmin_attempt_reads.sql)         | Lecturas protegidas por sala/publicación para inspección de intentos competitivos; cursor estable, score original/efectivo y detalle sin soluciones.         |
-| [61_s12_effective_attempt_guard.sql](61_s12_effective_attempt_guard.sql)     | Admisión competitiva coherente con la ventana efectiva cuando el tick se retrasa.                                                                               |
-| [60_integrity.sql](60_integrity.sql)                                         | Integridad estructural, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción.                                                 |
+| [60_integrity.sql](60_integrity.sql)                                         | Integridad estructural, admisión de intentos según la ventana efectiva, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción. |
 | [70_rls.sql](70_rls.sql)                                                     | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                                                           |
 | [71_storage_acl.sql](71_storage_acl.sql)                                     | Lectura pública de `avatars` y ausencia de lectura de `question-assets` para roles de navegador.                                                                |
 | [80_rankings.sql](80_rankings.sql)                                           | Vista privada invoker y funciones públicas autorizadas por membresía.                                                                                           |
 | [85_flash_history_reads.sql](85_flash_history_reads.sql)                     | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                                                      |
-| [90_commands.sql](90_commands.sql)                                           | Operaciones transaccionales y lectura privada del contexto del evaluador.                                                                                       |
+| [90_commands.sql](90_commands.sql)                                           | Operaciones transaccionales, ajuste protegido de resultados y lectura privada del contexto del evaluador.                                                        |
 | [91_room_membership_commands.sql](91_room_membership_commands.sql)           | Gestión autenticada de roles y estado de membresías por el propietario, con idempotencia y auditoría.                                                           |
 | [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)                         | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                                                     |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql)                   | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior.                                                             |
@@ -326,7 +325,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (S20, 2026-09-25): `check-supabase-schema` cargó **49 archivos declarativos**
+Última validación local completa registrada (S20, 2026-09-25): `check-supabase-schema` cargó **48 archivos declarativos**
 y el inventario de seguridad; pasan las suites existentes y S20 (21 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,

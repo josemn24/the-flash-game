@@ -620,8 +620,28 @@ revoke all on function private.invalidate_attempt(jsonb) from public, anon, auth
 grant execute on function private.invalidate_attempt(jsonb) to service_role;
 
 create function private.adjust_result(input jsonb) returns jsonb
-language sql security definer set search_path = '' as $$
-  select private.execute_command('adjust', input)
+language plpgsql security definer set search_path = '' as $$
+declare
+  actor uuid := private.command_actor();
+  attempt_status text;
+begin
+  if not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  if jsonb_typeof(input) = 'object'
+    and input->>'attemptId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    select attempt.status into attempt_status
+    from public.attempts attempt
+    where attempt.id = (input->>'attemptId')::uuid;
+    if attempt_status is not null and attempt_status not in ('completed', 'abandoned') then
+      raise exception 'attempt_not_terminal' using errcode = '55000';
+    end if;
+  end if;
+  return private.execute_command('adjust', input);
+end;
 $$;
 alter function private.adjust_result(jsonb) owner to postgres;
 revoke all on function private.adjust_result(jsonb) from public, anon, authenticated, service_role;
