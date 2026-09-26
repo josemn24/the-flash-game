@@ -63,7 +63,7 @@ const pyramidItems = betaVipPyramidQuestions.map((item, index) => ({
   itemId: stableId(`challenge-item:${item.slug}`),
 }));
 
-async function prepareCassetteAsset() {
+export async function prepareCassetteAsset() {
   const tempDirectory = await mkdtemp(path.join(os.tmpdir(), "betavip-cassette-"));
   try {
     const sourcePath = path.resolve("public/visuals/betavip/audio-medium.png");
@@ -368,6 +368,260 @@ values
    'scheduled', now() + interval '48 hours', now() + interval '72 hours');
 set constraints all immediate;
 commit;
+`;
+}
+
+export function stagingBetaVipManifest() {
+  const pyramid = {
+    id: stableId("publication:beta-vip-cumbre-logica-ii"),
+    number: 3,
+    slug: BETA_VIP_PYRAMID.slug,
+    title: BETA_VIP_PYRAMID.title,
+    mode: "pyramid",
+    challengeId: stableId(`challenge:${BETA_VIP_PYRAMID.slug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
+    questionCount: pyramidItems.length,
+    pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
+    opensAfterHours: 48,
+    durationHours: 24,
+    status: "scheduled",
+  };
+  const alphabet = {
+    id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
+    number: 2,
+    slug: BETA_VIP_ALPHABET.slug,
+    title: BETA_VIP_ALPHABET.title,
+    mode: "alphabet",
+    challengeId: stableId(`challenge:${BETA_VIP_ALPHABET.definitionSlug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
+    questionCount: alphabetItems.length,
+    pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
+    opensAfterHours: 24,
+    durationHours: 24,
+    status: "scheduled",
+  };
+  const survival = {
+    id: stableId("publication:beta-vip-pop-culture-survival"),
+    number: 1,
+    slug: BETA_VIP_SURVIVAL.slug,
+    title: BETA_VIP_SURVIVAL.title,
+    mode: "survival",
+    challengeId: stableId(`challenge:${BETA_VIP_SURVIVAL.slug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
+    questionCount: survivalItems.length,
+    pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
+    opensAfterHours: 0,
+    durationHours: 24,
+    status: "open",
+  };
+  return {
+    room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
+    seasonId: stableId("season:beta-vip"),
+    publicationId: survival.id,
+    challengeId: survival.challengeId,
+    challengeVersionId: survival.challengeVersionId,
+    questionCount: survival.questionCount,
+    pointsTotal: survival.pointsTotal,
+    pyramidPublicationId: pyramid.id,
+    alphabetPublicationId: alphabet.id,
+    survivalPublicationId: survival.id,
+    publications: [survival, alphabet, pyramid],
+    questionAssets: [
+      {
+        id: cassetteAssetId,
+        bucket: "question-assets",
+        objectPath: cassetteObjectPath,
+        mimeType: "image/png",
+      },
+    ],
+  };
+}
+
+export function stagingBetaVipExpectedContent() {
+  const alphabet = alphabetItems.map((item) => ({
+    ...item,
+    type: "short-text",
+    timeLimitMs: BETA_VIP_ALPHABET.questionTimeLimitMs,
+    publicPayload: {
+      category: "Geografía",
+      tags: {
+        domains: ["geography"],
+        topics: [item.topic],
+        cognitiveSkills: ["memory"],
+        formatSkills: ["recall"],
+        lifeSkills: [],
+      },
+      question: item.prompt,
+    },
+    solutionPayload: {
+      correctAnswer: item.correctAnswer,
+      acceptedAnswers: item.acceptedAnswers,
+      explanation: item.explanation,
+    },
+  }));
+  return { alphabet, survival: survivalItems, pyramid: pyramidItems };
+}
+
+export function buildStagingBetaVipDomainSql({
+  xesmonaPlayerId,
+  chesPlayerId,
+  cassetteAssetMetadata,
+}) {
+  const data = stagingBetaVipManifest();
+  if (!xesmonaPlayerId || !chesPlayerId) throw new Error("Faltan los players de staging.");
+  if (!cassetteAssetMetadata) throw new Error("Faltan metadatos del recurso de imagen de BetaVIP.");
+  const alphabet = data.publications.find((publication) => publication.mode === "alphabet");
+  const survival = data.publications.find((publication) => publication.mode === "survival");
+  const pyramid = data.publications.find((publication) => publication.mode === "pyramid");
+  const allItems = [...alphabetItems, ...survivalItems, ...pyramidItems];
+  const questionDefinitions = allItems
+    .map(
+      (item) =>
+        `(${sqlString(item.definitionId)}, ${sqlString(item.slug)}, ${sqlString(xesmonaPlayerId)})`,
+    )
+    .join(",\n");
+  const alphabetQuestionVersions = alphabetItems
+    .map((item) => {
+      const publicPayload = {
+        category: "Geografía",
+        tags: {
+          domains: ["geography"],
+          topics: [item.topic],
+          cognitiveSkills: ["memory"],
+          formatSkills: ["recall"],
+          lifeSkills: [],
+        },
+        question: item.prompt,
+      };
+      return `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, 1, 'draft', 'short-text', ${BETA_VIP_ALPHABET.questionTimeLimitMs}, ${sqlString(JSON.stringify(publicPayload))}, ${sqlString(xesmonaPlayerId)})`;
+    })
+    .join(",\n");
+  const survivalQuestionVersions = survivalItems
+    .map(
+      (item) =>
+        `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, ${item.payloadSchemaVersion}, 'draft', ${sqlString(item.type)}, ${item.timeLimitMs}, ${sqlString(JSON.stringify(item.publicPayload))}, ${sqlString(xesmonaPlayerId)})`,
+    )
+    .join(",\n");
+  const pyramidQuestionVersions = pyramidItems
+    .map(
+      (item) =>
+        `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, ${item.payloadSchemaVersion}, 'draft', ${sqlString(item.type)}, ${item.timeLimitMs}, ${sqlString(JSON.stringify(item.publicPayload))}, ${sqlString(xesmonaPlayerId)})`,
+    )
+    .join(",\n");
+  const questionSolutions = [...alphabetItems, ...survivalItems, ...pyramidItems]
+    .map((item) => {
+      const solutionPayload = item.solutionPayload ?? {
+        correctAnswer: item.correctAnswer,
+        acceptedAnswers: item.acceptedAnswers,
+        explanation: item.explanation,
+      };
+      return `(${sqlString(item.versionId)}, ${sqlString(JSON.stringify(solutionPayload))})`;
+    })
+    .join(",\n");
+  const alphabetChallengeItems = alphabetItems
+    .map(
+      (item, index) =>
+        `(${sqlString(item.itemId)}, ${sqlString(alphabet.challengeVersionId)}, ${sqlString(item.versionId)}, ${index + 1}, ${item.points}, 1, ${sqlString(JSON.stringify({ letter: item.letter }))})`,
+    )
+    .join(",\n");
+  const survivalChallengeItems = survivalItems
+    .map(
+      (item) =>
+        `(${sqlString(item.itemId)}, ${sqlString(survival.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, '{}')`,
+    )
+    .join(",\n");
+  const pyramidChallengeItems = pyramidItems
+    .map(
+      (item) =>
+        `(${sqlString(item.itemId)}, ${sqlString(pyramid.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, ${sqlString(JSON.stringify({ levelId: `cumbre-logica-ii-${item.position}`, label: ["Entrada", "Patrón", "Recorrido", "Conexiones", "Escape", "Cerradura", "Cima"][item.position - 1], briefing: { title: item.publicPayload.question, format: item.type, description: "Resuelve este tramo y desbloquea el siguiente." } }))})`,
+    )
+    .join(",\n");
+  const questionIds = allItems.map((item) => sqlString(item.versionId)).join(", ");
+  const challengeVersionIds = [alphabet, survival, pyramid]
+    .map((item) => sqlString(item.challengeVersionId))
+    .join(", ");
+
+  return `
+insert into private.platform_role_assignments (player_id, role)
+values (${sqlString(xesmonaPlayerId)}, 'superadmin')
+on conflict (player_id) do nothing;
+
+insert into public.rooms (id, slug, title, description, time_zone, status)
+values (${sqlString(data.room.id)}, 'beta-vip', 'BetaVIP', 'Sala privada de pruebas BetaVIP.', 'Europe/Madrid', 'active')
+on conflict (id) do nothing;
+
+insert into public.room_memberships (room_id, player_id, role, status, joined_at)
+values (${sqlString(data.room.id)}, ${sqlString(chesPlayerId)}, 'owner', 'active', now())
+on conflict (room_id, player_id) do nothing;
+
+insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
+values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '72 hours')
+on conflict (id) do nothing;
+
+insert into private.media_assets
+  (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
+values (${sqlString(cassetteAssetId)}, 'question-assets', ${sqlString(cassetteObjectPath)}, 'question-asset', 'ready', ${sqlString(xesmonaPlayerId)}, 'image/png', ${cassetteAssetMetadata.byteSize}, 1200, 800, ${sqlString(cassetteAssetMetadata.sha256)})
+on conflict (id) do nothing;
+
+insert into private.question_definitions (id, slug, created_by_player_id)
+values
+${questionDefinitions}
+on conflict (id) do nothing;
+
+insert into private.question_versions
+  (id, question_definition_id, version_number, payload_schema_version, status, type, time_limit_ms, public_payload, created_by_player_id)
+values
+${alphabetQuestionVersions},
+${survivalQuestionVersions},
+${pyramidQuestionVersions}
+on conflict (id) do nothing;
+
+insert into private.question_version_solutions (question_version_id, solution_payload)
+values
+${questionSolutions}
+on conflict (question_version_id) do nothing;
+
+update private.question_versions
+set status = 'published', published_at = coalesce(published_at, now())
+where id in (${questionIds});
+
+insert into private.challenge_definitions (id, slug, created_by_player_id)
+values
+  (${sqlString(alphabet.challengeId)}, ${sqlString(BETA_VIP_ALPHABET.definitionSlug)}, ${sqlString(xesmonaPlayerId)}),
+  (${sqlString(survival.challengeId)}, ${sqlString(BETA_VIP_SURVIVAL.slug)}, ${sqlString(xesmonaPlayerId)}),
+  (${sqlString(pyramid.challengeId)}, ${sqlString(BETA_VIP_PYRAMID.slug)}, ${sqlString(xesmonaPlayerId)})
+on conflict (id) do nothing;
+
+insert into private.challenge_versions
+  (id, challenge_definition_id, version_number, config_schema_version, status, mode, title, subtitle, description, max_score, global_time_limit_ms, mode_config, created_by_player_id, published_at)
+values
+  (${sqlString(alphabet.challengeVersionId)}, ${sqlString(alphabet.challengeId)}, 1, 1, 'draft', 'alphabet', ${sqlString(BETA_VIP_ALPHABET.title)}, ${sqlString(BETA_VIP_ALPHABET.subtitle)}, ${sqlString(BETA_VIP_ALPHABET.description)}, 100, ${BETA_VIP_ALPHABET.globalTimeLimitMs}, '{}', ${sqlString(xesmonaPlayerId)}, null),
+  (${sqlString(survival.challengeVersionId)}, ${sqlString(survival.challengeId)}, 1, 1, 'draft', 'survival', ${sqlString(BETA_VIP_SURVIVAL.title)}, ${sqlString(BETA_VIP_SURVIVAL.subtitle)}, ${sqlString(BETA_VIP_SURVIVAL.description)}, 100, null, ${sqlString(JSON.stringify(BETA_VIP_SURVIVAL.modeConfig))}, ${sqlString(xesmonaPlayerId)}, null),
+  (${sqlString(pyramid.challengeVersionId)}, ${sqlString(pyramid.challengeId)}, 1, 1, 'draft', 'pyramid', ${sqlString(BETA_VIP_PYRAMID.title)}, ${sqlString(BETA_VIP_PYRAMID.subtitle)}, ${sqlString(BETA_VIP_PYRAMID.description)}, 100, null, '{}', ${sqlString(xesmonaPlayerId)}, null)
+on conflict (id) do nothing;
+
+insert into private.challenge_items
+  (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
+values
+${alphabetChallengeItems},
+${survivalChallengeItems},
+${pyramidChallengeItems}
+on conflict (id) do nothing;
+
+update private.challenge_versions
+set status = 'published', published_at = coalesce(published_at, now())
+where id in (${challengeVersionIds});
+
+select private.assert_supported_calendar_content(${sqlString(survival.challengeVersionId)});
+select private.assert_supported_calendar_content(${sqlString(pyramid.challengeVersionId)});
+
+insert into public.scheduled_challenges
+  (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
+values
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 1, 'open', (select starts_at from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 2, 'scheduled', (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
+  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 3, 'scheduled', (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '72 hours' from public.seasons where id = ${sqlString(data.seasonId)}))
+on conflict (id) do nothing;
 `;
 }
 

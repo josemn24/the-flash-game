@@ -14,6 +14,7 @@
     "supabase:fixture": "node scripts/supabase-fixture.mjs",
     "supabase:tabarnia:setup": "node scripts/seed-tabarnia.mjs",
     "supabase:betavip:setup": "node scripts/seed-betavip.mjs",
+    "supabase:staging:bootstrap": "node scripts/bootstrap-staging.mjs",
     "sbr:asset:generate": "node scripts/generate-sbr-assets.mjs",
     "supabase:browser:setup": "node scripts/seed-browser.mjs",
     "test:integration:supabase": "node scripts/supabase-integration.mjs",

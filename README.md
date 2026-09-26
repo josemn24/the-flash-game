@@ -70,25 +70,26 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 
 ## Comandos disponibles
 
-| Comando                           | Descripción                                                                                              |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                     | Inicia el servidor de desarrollo.                                                                        |
-| `npm run lint`                    | Comprueba la calidad estática del código.                                                                |
-| `npm run typecheck`               | Valida todos los contratos TypeScript sin emitir código.                                                 |
-| `npm run type-architecture`       | Comprueba las dependencias entre las capas de tipos.                                                     |
-| `npm test`                        | Ejecuta los tests unitarios con Vitest.                                                                  |
-| `npm run build`                   | Genera la compilación optimizada de producción.                                                          |
-| `npm run start`                   | Sirve localmente una compilación de producción.                                                          |
-| `npm run supabase:start`          | Inicia el stack local de Supabase.                                                                       |
-| `npm run supabase:status`         | Muestra el estado del stack local de Supabase.                                                           |
-| `npm run supabase:browser:setup`  | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
-| `npm run supabase:tabarnia:setup` | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
-| `npm run supabase:betavip:setup`  | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Supervivencia: Cultura pop».            |
-| `npm run supabase:schema:test`    | Verifica esquema, RLS, comandos y concurrencia.                                                          |
-| `npm run schema:revision:check`   | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
-| `npm run dictionary:generate`     | Regenera el vocabulario español de Mini-Wordle.                                                          |
-| `npm run dictionary:check`        | Comprueba que el vocabulario versionado esté actualizado.                                                |
-| `npm run format:check`            | Comprueba el formato con Prettier.                                                                       |
+| Comando                              | Descripción                                                                                              |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                        | Inicia el servidor de desarrollo.                                                                        |
+| `npm run lint`                       | Comprueba la calidad estática del código.                                                                |
+| `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                 |
+| `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                     |
+| `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                  |
+| `npm run build`                      | Genera la compilación optimizada de producción.                                                          |
+| `npm run start`                      | Sirve localmente una compilación de producción.                                                          |
+| `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                       |
+| `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                           |
+| `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
+| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
+| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Supervivencia: Cultura pop».            |
+| `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                        |
+| `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                          |
+| `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
+| `npm run dictionary:generate`        | Regenera el vocabulario español de Mini-Wordle.                                                          |
+| `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                |
+| `npm run format:check`               | Comprueba el formato con Prettier.                                                                       |
 
 Para comprobar el escenario conjunto, ejecuta `npm run supabase:betavip:setup` y después
 `npm run test:integration:supabase -- --scenario betavip`. Vuelve a ejecutar el setup antes de
@@ -103,6 +104,20 @@ mundo» queda programado para el segundo día y «Cumbre lógica II» para el te
 Supervivencia, mientras `data.survivalPublicationId`, `data.alphabetPublicationId` y
 `data.pyramidPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
 contiene el recurso propio del casete.
+
+Para preparar el staging remoto, aplica antes las migraciones con `supabase db push` y proporciona
+las variables de bootstrap indicadas en `.env.example`. Comprueba el destino sin escribir nada y,
+solo después, ejecuta:
+
+```bash
+npm run supabase:staging:bootstrap -- --dry-run
+npm run supabase:staging:bootstrap
+```
+
+El script no cambia la configuración global de Auth. Escribe las credenciales generadas únicamente
+en `output/staging/bootstrap-credentials.json` con permisos `0600` y el estado no sensible en
+`output/staging/bootstrap-manifest.json`; copia las contraseñas a un gestor seguro y elimina el
+archivo de credenciales después.
 
 ## Estructura principal
 
