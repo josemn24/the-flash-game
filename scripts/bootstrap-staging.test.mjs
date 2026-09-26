@@ -125,6 +125,30 @@ describe("staging bootstrap", () => {
     for (const bucket of STAGING_BUCKETS) {
       expect(bucketMatches(bucket, bucket)).toBe(true);
     }
+    expect(
+      bucketMatches(
+        {
+          id: "avatars",
+          name: "avatars",
+          public: true,
+          file_size_limit: 5_000_000,
+          allowed_mime_types: ["image/jpeg", "image/png", "image/webp"],
+        },
+        STAGING_BUCKETS[0],
+      ),
+    ).toBe(true);
+    expect(
+      bucketMatches(
+        {
+          id: "question-assets",
+          name: "question-assets",
+          public: false,
+          file_size_limit: 50_000_000,
+          allowed_mime_types: ["image/jpeg", "image/png", "image/webp"],
+        },
+        STAGING_BUCKETS[1],
+      ),
+    ).toBe(true);
     expect(bucketMatches({ ...STAGING_BUCKETS[0], public: false }, STAGING_BUCKETS[0])).toBe(false);
     expect(
       bucketMatches({ ...STAGING_BUCKETS[1], allowedMimeTypes: ["image/png"] }, STAGING_BUCKETS[1]),

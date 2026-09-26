@@ -241,7 +241,8 @@ function comparableSize(value) {
   if (typeof value !== "string") return null;
   const match = value.trim().match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)?$/i);
   if (!match) return null;
-  const multipliers = { b: 1, kb: 1024, mb: 1024 ** 2, gb: 1024 ** 3 };
+  // Supabase Storage serializa los límites expresados como MB con unidades decimales.
+  const multipliers = { b: 1, kb: 1000, mb: 1000 ** 2, gb: 1000 ** 3 };
   return Math.round(Number(match[1]) * (multipliers[match[2]?.toLowerCase() ?? "b"] ?? 1));
 }
 
@@ -386,7 +387,7 @@ async function validateDomain(client, accounts, assetMetadata) {
     asset.bucket_id !== "question-assets" ||
     asset.object_path !== data.questionAssets[0].objectPath ||
     asset.status !== "ready" ||
-    asset.byte_size !== assetMetadata.byteSize ||
+    Number(asset.byte_size) !== assetMetadata.byteSize ||
     asset.width !== 1200 ||
     asset.height !== 800 ||
     asset.sha256 !== assetMetadata.sha256
