@@ -2,17 +2,14 @@ import "server-only";
 
 import { Pool } from "pg";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
 const canonicalSchemaRevision = "20260926080239_initial_schema";
 
 function databaseUrl() {
-  const configured = process.env.SUPABASE_DB_URL;
-  if (!configured) throw new Error("SUPABASE_DB_URL is missing");
-  const url = new URL(configured);
-  url.username = "authenticator";
-  return url.toString();
+  return getSupabaseDatabaseUrl();
 }
 
 function getPool() {
@@ -33,9 +30,8 @@ async function checkDatabase() {
   const client = await getPool().connect();
   try {
     await client.query("BEGIN");
-    // The authenticator role is intentionally used for the connection. The
-    // read is elevated only for this transaction, matching the command pool
-    // and avoiding a postgres-owner credential in the application.
+    // The role supplied by the connection URL is elevated only for this
+    // transaction, matching the command pool.
     await client.query("SET LOCAL ROLE service_role");
     await client.query("SET statement_timeout = '2000ms'");
     const result = await client.query<{

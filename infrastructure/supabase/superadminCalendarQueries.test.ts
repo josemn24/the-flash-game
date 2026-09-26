@@ -204,7 +204,9 @@ describe("SupabaseSuperadminCalendarQueries", () => {
     };
     pgMocks.Pool.mockImplementation(() => pool);
     const previousUrl = process.env.SUPABASE_DB_URL;
-    process.env.SUPABASE_DB_URL = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+    const configuredUrl =
+      "postgresql://postgres.bebmthwwyiyobaiertsm:p%40ssword@pooler.example:6543/postgres?sslmode=require";
+    process.env.SUPABASE_DB_URL = configuredUrl;
 
     try {
       await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).resolves.toEqual({
@@ -221,6 +223,13 @@ describe("SupabaseSuperadminCalendarQueries", () => {
     }
 
     expect(client.query).toHaveBeenNthCalledWith(1, "BEGIN");
+    expect(pgMocks.Pool).toHaveBeenCalledWith({
+      connectionString: configuredUrl,
+      max: 1,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 5_000,
+      application_name: "the-flash-game-calendar-tick",
+    });
     expect(client.query).toHaveBeenNthCalledWith(2, "SET LOCAL ROLE service_role");
     expect(client.query).toHaveBeenNthCalledWith(
       3,

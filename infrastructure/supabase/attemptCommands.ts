@@ -72,6 +72,7 @@ import {
   isValidWordHashtagConfiguration,
   isValidWordHashtagPublicConfiguration,
 } from "@/lib/wordHashtag";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -91,22 +92,11 @@ export class AttemptCommandError extends Error {
 }
 
 function connectionString() {
-  const configured = process.env.SUPABASE_DB_URL;
-  if (!configured) {
-    throw new AttemptCommandError("database_unavailable");
-  }
-
-  let url: URL;
   try {
-    url = new URL(configured);
+    return getSupabaseDatabaseUrl();
   } catch (error) {
     throw new AttemptCommandError("database_unavailable", error);
   }
-
-  // The local Supabase status command emits a postgres URL. The application
-  // deliberately changes only the login role; ownership remains with postgres.
-  url.username = "authenticator";
-  return url.toString();
 }
 
 function getPool() {
@@ -138,6 +128,7 @@ function commandCode(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   if (
     infrastructureCode.startsWith("08") ||
+    ["28P01", "28000", "42501"].includes(infrastructureCode) ||
     ["ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "EPIPE"].includes(infrastructureCode) ||
     /connection|timeout|socket/i.test(message)
   ) {

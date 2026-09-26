@@ -13,6 +13,7 @@ import {
   SuperadminAccessDeniedError,
   SuperadminCalendarCommandError,
 } from "@/application/administration/errors";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
 import { createClient } from "@/lib/supabase/server";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
@@ -120,6 +121,9 @@ function isTickResult(
 }
 
 function commandCode(error: { code?: string; message?: string }) {
+  if (["28P01", "28000", "42501"].includes(error.code ?? "")) {
+    return "database_unavailable";
+  }
   const message = error.message ?? "";
   const known = [
     "not_authorized",
@@ -192,13 +196,9 @@ export class SupabaseSuperadminCalendarQueries
   }
 
   async runCalendarTick() {
-    const configured = process.env.SUPABASE_DB_URL;
-    if (!configured) throw new SuperadminCalendarCommandError("database_unavailable");
     let connectionString: string;
     try {
-      const url = new URL(configured);
-      url.username = "authenticator";
-      connectionString = url.toString();
+      connectionString = getSupabaseDatabaseUrl();
     } catch (error) {
       throw new SuperadminCalendarCommandError("database_unavailable", error);
     }
