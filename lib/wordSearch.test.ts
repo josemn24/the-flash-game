@@ -140,4 +140,26 @@ describe("word search", () => {
       details: { type: "word-search", foundWords: 0, incorrectSelections: 2 },
     });
   });
+
+  it("scores a completed server answer even when earlier selections failed", () => {
+    const result = evaluateAnswer({
+      question,
+      answer: { foundWordIds: question.targets.map((target) => target.id) },
+      timeUsed: 5,
+      incorrectAttempts: 1,
+    });
+
+    expect(result).toMatchObject({
+      status: "correct",
+      isCorrect: true,
+      details: {
+        type: "word-search",
+        foundWords: question.targets.length,
+        totalWords: question.targets.length,
+        incorrectSelections: 1,
+        solved: true,
+      },
+    });
+    expect(result.points).toBeGreaterThan(0);
+  });
 });

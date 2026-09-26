@@ -20,6 +20,8 @@ import type {
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
   SubmitMatchingPairResult,
+  SubmitWordSearchSelectionResult,
+  SubmitWordHashtagSwapResult,
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementResult,
   RevealProgressiveClueResult,
@@ -28,7 +30,9 @@ import type {
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type {
   AnswerValue,
+  ConnectPairsQuestion,
   LogicCodeQuestion,
+  LogicMatrixQuestion,
   MatchingQuestion,
   MiniWordleQuestion,
   MultipleChoiceQuestion,
@@ -42,8 +46,12 @@ import type {
   AnagramQuestion,
   ClassificationQuestion,
   EstimationQuestion,
+  EscapeQuestion,
   HeatMapQuestion,
   ShortTextQuestion,
+  WordSearchQuestion,
+  WordHashtagQuestion,
+  ZipQuestion,
 } from "@/types/game";
 import {
   isMiniWordleMaxAttempts,
@@ -55,6 +63,15 @@ import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
+import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
+import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
+import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
+import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
+import { isValidConnectPairsConfiguration } from "@/lib/connectPairs";
+import {
+  isValidWordHashtagConfiguration,
+  isValidWordHashtagPublicConfiguration,
+} from "@/lib/wordHashtag";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -137,6 +154,10 @@ function commandCode(error: unknown) {
     "interaction_not_presented",
     "evaluation_pending",
     "publication_cancelled",
+    "attempt_not_terminal",
+    "reason_required",
+    "invalid_score",
+    "not_competitive",
     "incomplete_challenge",
     "unfinished_interaction",
     "no_evaluated_answers",
@@ -156,6 +177,12 @@ function commandCode(error: unknown) {
     "matching_item_already_resolved",
     "duplicate_matching_pair",
     "matching_requires_pair_command",
+    "invalid_word_search_selection",
+    "word_search_target_already_found",
+    "word_search_requires_selection_command",
+    "invalid_word_hashtag_swap",
+    "word_hashtag_moves_exhausted",
+    "word_hashtag_requires_swap_command",
     "invalid_queens_placement",
     "queens_requires_placement_command",
     "prefilled_queen_locked",
@@ -189,7 +216,7 @@ async function transaction<T>(
   }
 }
 
-async function callCommand<T>(
+export async function callAttemptCommand<T>(
   identity: VerifiedAuthIdentity,
   functionName: string,
   input: object,
@@ -209,6 +236,8 @@ function asQuestion(
   | MultipleChoiceQuestion
   | MiniWordleQuestion
   | LogicCodeQuestion
+  | LogicMatrixQuestion
+  | ConnectPairsQuestion
   | ProgressiveCluesQuestion
   | ProgressiveImageQuestion
   | MatchingQuestion
@@ -220,12 +249,17 @@ function asQuestion(
   | ClassificationQuestion
   | EstimationQuestion
   | HeatMapQuestion
-  | ShortTextQuestion {
+  | ShortTextQuestion
+  | WordSearchQuestion
+  | WordHashtagQuestion
+  | ZipQuestion
+  | EscapeQuestion {
   if (
     ![
       "multiple-choice",
       "mini-wordle",
       "logic-code",
+      "logic-matrix",
       "progressive-clues",
       "matching",
       "progressive-image",
@@ -237,6 +271,11 @@ function asQuestion(
       "classification",
       "estimation",
       "heat-map",
+      "word-search",
+      "word-hashtag",
+      "zip",
+      "escape",
+      "connect-pairs",
       "short-text",
     ].includes(context.questionType) ||
     (context.payloadSchemaVersion !== 1 &&
@@ -705,6 +744,58 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
+  if (context.questionType === "logic-matrix") {
+    const matrixPayload = {
+      pieces: publicPayload.pieces,
+      cells: publicPayload.cells,
+      optionIds: publicPayload.optionIds,
+      ...(publicPayload.showPieceLabels !== undefined
+        ? { showPieceLabels: publicPayload.showPieceLabels }
+        : {}),
+    };
+    const correctOptionId = solutionPayload.correctOptionId;
+    if (
+      !isValidLogicMatrixPublicPayload(matrixPayload) ||
+      typeof correctOptionId !== "string" ||
+      !matrixPayload.optionIds.includes(correctOptionId)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return {
+      ...base,
+      type: "logic-matrix",
+      pieces: matrixPayload.pieces,
+      cells: matrixPayload.cells,
+      optionIds: matrixPayload.optionIds,
+      correctOptionId,
+      showPieceLabels:
+        typeof matrixPayload.showPieceLabels === "boolean" ? matrixPayload.showPieceLabels : true,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies LogicMatrixQuestion;
+  }
+  if (context.questionType === "connect-pairs") {
+    const grid = publicPayload.grid;
+    const pairs = publicPayload.pairs;
+    const paths = solutionPayload.paths;
+    if (publicPayload.requireFullCoverage !== true) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "connect-pairs" as const,
+      grid: grid as ConnectPairsQuestion["grid"],
+      pairs: pairs as ConnectPairsQuestion["pairs"],
+      solutionPaths: paths as ConnectPairsQuestion["solutionPaths"],
+      requireFullCoverage: true as const,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies ConnectPairsQuestion;
+    if (!isValidConnectPairsConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
   if (context.questionType === "progressive-clues") {
     const clues = publicPayload.clues;
     const cluePenalty = publicPayload.cluePenalty;
@@ -845,6 +936,163 @@ function asQuestion(
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     };
   }
+  if (context.questionType === "word-search") {
+    const grid = publicPayload.grid;
+    const letters = publicPayload.letters;
+    const publicTargets = publicPayload.targets;
+    const positions = solutionPayload.positionsByTargetId;
+    if (
+      !grid ||
+      typeof grid !== "object" ||
+      Array.isArray(grid) ||
+      !Number.isSafeInteger((grid as Record<string, unknown>).rows) ||
+      !Number.isSafeInteger((grid as Record<string, unknown>).columns) ||
+      !Array.isArray(letters) ||
+      !Array.isArray(publicTargets) ||
+      !positions ||
+      typeof positions !== "object" ||
+      Array.isArray(positions) ||
+      !publicTargets.every((target) => {
+        if (!target || typeof target !== "object" || Array.isArray(target)) return false;
+        const value = target as Record<string, unknown>;
+        const position = (positions as Record<string, unknown>)[String(value.id)];
+        return (
+          typeof value.id === "string" &&
+          typeof value.word === "string" &&
+          position &&
+          typeof position === "object" &&
+          !Array.isArray(position) &&
+          Number.isSafeInteger((position as Record<string, unknown>).startCell) &&
+          Number.isSafeInteger((position as Record<string, unknown>).endCell)
+        );
+      })
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "word-search" as const,
+      grid: grid as WordSearchQuestion["grid"],
+      letters: letters as string[],
+      targets: publicTargets.map((target) => {
+        const value = target as Record<string, unknown>;
+        const position = (positions as Record<string, Record<string, unknown>>)[value.id as string];
+        return {
+          id: value.id as string,
+          word: value.word as string,
+          startCell: position.startCell as number,
+          endCell: position.endCell as number,
+        };
+      }),
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordSearchQuestion;
+    if (!isValidWordSearchConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
+  if (context.questionType === "word-hashtag") {
+    const configuration = {
+      grid: publicPayload.grid,
+      initialLetters: publicPayload.initialLetters,
+      maxMoves: publicPayload.maxMoves,
+    };
+    const words = solutionPayload.words;
+    if (
+      !isValidWordHashtagPublicConfiguration(configuration as never) ||
+      !words ||
+      typeof words !== "object" ||
+      Array.isArray(words)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "word-hashtag" as const,
+      grid: { rows: 5, columns: 5 } as const,
+      initialLetters: configuration.initialLetters as Array<string | null>,
+      maxMoves: configuration.maxMoves as number,
+      words: words as WordHashtagQuestion["words"],
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordHashtagQuestion;
+    if (!isValidWordHashtagConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
+  if (context.questionType === "zip") {
+    const configuration = {
+      grid: publicPayload.grid,
+      checkpoints: publicPayload.checkpoints,
+    };
+    const solution = solutionPayload.solution;
+    if (
+      !isValidZipPublicConfiguration(configuration) ||
+      !Array.isArray(solution) ||
+      solution.length !== 25 ||
+      !solution.every((cell) => Number.isSafeInteger(cell))
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    const question = {
+      ...base,
+      type: "zip" as const,
+      grid: configuration.grid,
+      checkpoints: configuration.checkpoints,
+      solution,
+      instruction:
+        typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      mapNote: typeof publicPayload.mapNote === "string" ? publicPayload.mapNote : undefined,
+      boardLabel:
+        typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies ZipQuestion;
+    if (!isValidZipConfiguration(question)) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
+  if (context.questionType === "escape") {
+    const configuration = {
+      grid: publicPayload.grid,
+      initialBlocks: publicPayload.initialBlocks,
+    };
+    const referenceSolution = solutionPayload.referenceSolution;
+    const question = {
+      ...base,
+      type: "escape" as const,
+      grid: configuration.grid as EscapeQuestion["grid"],
+      initialBlocks: configuration.initialBlocks as EscapeQuestion["initialBlocks"],
+      referenceSolution: referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: solutionPayload.optimalMoves as number,
+      instruction:
+        typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      hideInstruction: publicPayload.hideInstruction === true,
+      objectiveLabel:
+        typeof publicPayload.objectiveLabel === "string" ? publicPayload.objectiveLabel : undefined,
+      hideObjectiveLabel: publicPayload.hideObjectiveLabel === true,
+      completionMessage:
+        typeof publicPayload.completionMessage === "string"
+          ? publicPayload.completionMessage
+          : undefined,
+      boardLabel:
+        typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies EscapeQuestion;
+    if (
+      !isValidEscapePublicConfiguration(configuration as EscapeQuestion) ||
+      !Array.isArray(referenceSolution) ||
+      !Number.isSafeInteger(solutionPayload.optimalMoves) ||
+      !isValidEscapeConfiguration(question)
+    ) {
+      throw new AttemptCommandError("invalid_question_payload");
+    }
+    return question;
+  }
   if (context.questionType !== "mini-wordle") throw new AttemptCommandError("unsupported_question");
   const wordLength = publicPayload.wordLength;
   const maxAttempts = publicPayload.maxAttempts;
@@ -881,6 +1129,8 @@ export class SupabaseAttemptCommands implements Pick<
   | "receiveAnswer"
   | "pass"
   | "submitMatchingPair"
+  | "submitWordSearchSelection"
+  | "submitWordHashtagSwap"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
@@ -895,11 +1145,11 @@ export class SupabaseAttemptCommands implements Pick<
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
   start(input: StartAttemptCommand) {
-    return callCommand<StartAttemptResult>(this.identity, "start_attempt", input);
+    return callAttemptCommand<StartAttemptResult>(this.identity, "start_attempt", input);
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    const prepared = await callCommand<PrepareInteractionResult>(
+    const prepared = await callAttemptCommand<PrepareInteractionResult>(
       this.identity,
       "prepare_interaction",
       input,
@@ -916,15 +1166,15 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   receiveAnswer(input: SubmitAnswerInput) {
-    return callCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
+    return callAttemptCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
   }
 
   pass(input: Parameters<AttemptCommands["pass"]>[0]) {
-    return callCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
+    return callAttemptCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
   }
 
   async submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
-    const accepted = await callCommand<SubmitMiniWordleGuessResult>(
+    const accepted = await callAttemptCommand<SubmitMiniWordleGuessResult>(
       this.identity,
       "submit_mini_wordle_guess",
       input,
@@ -946,7 +1196,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async submitMatchingPair(input: Parameters<AttemptCommands["submitMatchingPair"]>[0]) {
-    const accepted = await callCommand<SubmitMatchingPairResult>(
+    const accepted = await callAttemptCommand<SubmitMatchingPairResult>(
       this.identity,
       "submit_matching_pair",
       input,
@@ -967,8 +1217,55 @@ export class SupabaseAttemptCommands implements Pick<
     };
   }
 
+  async submitWordSearchSelection(
+    input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0],
+  ) {
+    const accepted = await callAttemptCommand<SubmitWordSearchSelectionResult>(
+      this.identity,
+      "submit_word_search_selection",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+    };
+  }
+
+  async submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
+    const accepted = await callAttemptCommand<SubmitWordHashtagSwapResult>(
+      this.identity,
+      "submit_word_hashtag_swap",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+      details: evaluated.details,
+    };
+  }
+
   async submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
-    const accepted = await callCommand<SubmitLogicCodeAttemptResult>(
+    const accepted = await callAttemptCommand<SubmitLogicCodeAttemptResult>(
       this.identity,
       "submit_logic_code_attempt",
       input,
@@ -990,7 +1287,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
-    const accepted = await callCommand<SubmitQueensPlacementResult>(
+    const accepted = await callAttemptCommand<SubmitQueensPlacementResult>(
       this.identity,
       "submit_queens_placement",
       input,
@@ -1012,7 +1309,7 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   revealProgressiveClue(input: Parameters<AttemptCommands["revealProgressiveClue"]>[0]) {
-    return callCommand<RevealProgressiveClueResult>(
+    return callAttemptCommand<RevealProgressiveClueResult>(
       this.identity,
       "reveal_progressive_clue",
       input,
@@ -1030,19 +1327,19 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   recordEvaluation(input: RecordEvaluationCommand) {
-    return callCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
+    return callAttemptCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
   }
 
   complete(input: CompleteAttemptCommand) {
-    return callCommand<FinishAttemptResult>(this.identity, "complete_attempt", input);
+    return callAttemptCommand<FinishAttemptResult>(this.identity, "complete_attempt", input);
   }
 
   abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
-    return callCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
+    return callAttemptCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
   }
 
   recover(input: RecoverAttemptCommand) {
-    return callCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
+    return callAttemptCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
   }
 
   readRecovery(attemptId: string, sessionToken: string) {
@@ -1069,16 +1366,23 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: context.publicPayload,
       })) as EvaluationContext["publicPayload"],
     };
-    const result = evaluateReceipt({
-      receipt: {
-        timeUsedMs: resolvedContext.timeUsedMs,
-        timedOut: resolvedContext.timedOut,
-      },
-      question: asQuestion(resolvedContext),
-      answer: (resolvedContext.answer as AnswerValue | null) ?? null,
-      progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
-      matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
-    });
+    const result: Pick<
+      ReturnType<typeof evaluateReceipt>,
+      "status" | "points" | "details"
+    > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
+      ? { status: "unanswered" as const, points: 0 }
+      : evaluateReceipt({
+          receipt: {
+            timeUsedMs: resolvedContext.timeUsedMs,
+            timedOut: resolvedContext.timedOut,
+          },
+          question: asQuestion(resolvedContext),
+          answer: (resolvedContext.answer as AnswerValue | null) ?? null,
+          progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+          progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
+          matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
+          incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
+        });
     const evaluated = await this.recordEvaluation({
       attemptId: input.receive.attemptId,
       sessionToken: input.receive.sessionToken,
@@ -1114,14 +1418,21 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: context.publicPayload,
       })) as EvaluationContext["publicPayload"],
     };
-    const result = evaluateReceipt({
-      receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
-      question: asQuestion(resolvedContext),
-      answer: (resolvedContext.answer as AnswerValue | null) ?? null,
-      progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
-      matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
-    });
-    return this.recordEvaluation({
+    const result: Pick<
+      ReturnType<typeof evaluateReceipt>,
+      "status" | "points" | "details"
+    > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
+      ? { status: "unanswered" as const, points: 0 }
+      : evaluateReceipt({
+          receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
+          question: asQuestion(resolvedContext),
+          answer: (resolvedContext.answer as AnswerValue | null) ?? null,
+          progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
+          progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
+          matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
+          incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
+        });
+    const evaluated = await this.recordEvaluation({
       attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],
       sessionToken: input.sessionToken,
       lockVersion: input.lockVersion,
@@ -1131,6 +1442,7 @@ export class SupabaseAttemptCommands implements Pick<
       points: result.points,
       ...(result.details ? { resultDetails: result.details } : {}),
     });
+    return { ...evaluated, ...(result.details ? { details: result.details } : {}) };
   }
 
   completeFromPersistedAnswers(input: {

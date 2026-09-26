@@ -49,10 +49,17 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-16.
-- 31 formatos de pregunta, cinco modos, siete desafíos definidos y seis publicaciones mock; S01–S12
-  tienen integración real verificada sobre Supabase local.
-- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run type-architecture`,
-  `npm run docs:check` y `npm run supabase:schema:test` completan correctamente.
-- `npm run format:check` mantiene avisos en 71 archivos; están registrados en [`current/qa.md`](current/qa.md).
+- Fecha: 2026-09-25.
+- 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
+  actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
+  y E01–E06/E10 sobre Supabase local.
+- La revisión declarativa canónica es `20260925130000_s20_attempt_inspection_projection`; la comprobación de
+  esquema cubre 48 archivos declarativos y 91 migraciones versionadas, además de 30 tablas, una vista,
+  funciones públicas/privadas y políticas RLS.
+- `npm run typecheck`, `npm run docs:check` y `npm run schema:revision:check` pasan en la comprobación
+  actual. `npm test` tiene un fallo unitario pendiente y `npm run lint` conserva dos warnings; el
+  detalle vigente está en [`current/qa.md`](current/qa.md).
+- `npm run format:check` mantiene avisos en 151 archivos en la comprobación actual.
+- `npm run supabase:schema:test` pasa sobre Supabase local, incluida la suite S20; la validación remota
+  sigue pendiente y sus límites están documentados en [`supabase/schemas/README.md`](../supabase/schemas/README.md).
 - No hay proyecto remoto de Supabase vinculado desde este entorno.

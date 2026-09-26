@@ -1,3 +1,5 @@
+import { publishDraftQuestions } from "./publish-draft-questions.mjs";
+
 const document = {
   challenge: {
     slug: "flash-s11-integration",
@@ -80,6 +82,14 @@ export const scenario = {
       },
     });
     assert(!updated.error && updated.data?.title === "Flash S11 editado", "El superadmin edita el borrador");
+
+    await publishDraftQuestions({
+      client: clients.superadmin,
+      slugs: updatedDocument.questions.map((question) => question.slug),
+      idempotencyKeyPrefix: "integration-s11-publish-question",
+      reason: "Publicar preguntas S11",
+      assert,
+    });
 
     const published = await clients.superadmin.rpc("publish_superadmin_flash", {
       input: {

@@ -6,12 +6,10 @@ import styles from "./FlashPopRoomSecondary.module.css";
 
 export function FlashPopRoomRanking({
   roomId,
-  roomTitle,
   currentUserId,
   entries,
 }: {
   roomId: string;
-  roomTitle: string;
   currentUserId: string;
   entries: RoomLeaderboardEntry[];
 }) {

@@ -1,3 +1,4 @@
+@layer app-components {
 .content {
   width: min(100%, 1180px);
 }
@@ -155,4 +156,5 @@
   .account :global(button) {
     margin-left: auto;
   }
+}
 }

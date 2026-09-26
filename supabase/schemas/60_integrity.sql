@@ -195,6 +195,8 @@ $$;
 create trigger publications_guard before insert or update on public.scheduled_challenges
   for each row execute function private.guard_publication();
 
+-- Admit attempts against the effective publication window. A delayed calendar
+-- tick must not block a live window, and a closed or finished window rejects new attempts.
 create function private.guard_attempt() returns trigger
 language plpgsql set search_path = '' as $$
 begin
@@ -256,6 +258,8 @@ end;
 $$;
 create trigger attempts_guard before insert or update on public.attempts
   for each row execute function private.guard_attempt();
+alter function private.guard_attempt() owner to postgres;
+revoke all on function private.guard_attempt() from public, anon, authenticated, service_role;
 
 create function private.reject_rewrite() returns trigger
 language plpgsql set search_path = '' as $$

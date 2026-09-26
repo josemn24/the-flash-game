@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { MotionButton } from "@/components/ui";
-import { RotateIcon } from "@/components/ui";
+import { ArrowIcon, MotionButton, RotateIcon } from "@/components/ui";
 import type { ReviewAnswerEntry } from "./ReviewAnswerList";
 import { ReviewAnswerList } from "./ReviewAnswerList";
 import styles from "./ReviewAnswers.module.css";
@@ -8,9 +7,12 @@ import styles from "./ReviewAnswers.module.css";
 export function ReviewAnswerPanel({
   entries,
   countLabel,
-  eyebrow = "Desglose completo",
   title = "Historial de respuestas",
   description,
+  progress,
+  progressLabel = "Niveles superados",
+  compactHeading = false,
+  backAtTop = false,
   onBack,
   onReplay,
   backLabel = "Volver al resultado",
@@ -20,9 +22,12 @@ export function ReviewAnswerPanel({
 }: {
   entries: ReviewAnswerEntry[];
   countLabel: string;
-  eyebrow?: string;
   title?: string;
   description?: string;
+  progress?: { value: number; max: number };
+  progressLabel?: string;
+  compactHeading?: boolean;
+  backAtTop?: boolean;
   onBack?: () => void;
   onReplay?: () => void;
   backLabel?: string;
@@ -30,23 +35,64 @@ export function ReviewAnswerPanel({
   extraActions?: ReactNode;
   initialOpenId?: string;
 }) {
+  const progressPercent = progress
+    ? progress.max > 0
+      ? Math.max(0, Math.min(100, (progress.value / progress.max) * 100))
+      : 0
+    : 0;
+
   return (
     <section className={styles.reviewPanel} aria-labelledby="review-answers-title">
-      <div className={styles.reviewPanelHeading}>
+      {backAtTop && onBack ? (
+        <button
+          className={styles.reviewBackButton}
+          type="button"
+          onClick={onBack}
+          aria-label={backLabel}
+        >
+          <ArrowIcon />
+        </button>
+      ) : null}
+
+      <div
+        className={`${styles.reviewPanelHeading} ${compactHeading ? styles.reviewPanelHeadingCompact : ""}`}
+      >
         <div>
-          <p className={styles.reviewPanelEyebrow}>{eyebrow}</p>
           <h1 id="review-answers-title">{title}</h1>
         </div>
-        <span className={styles.reviewPanelCount}>{countLabel}</span>
+        {!progress ? (
+          <span className={styles.reviewPanelCount}>{countLabel}</span>
+        ) : null}
       </div>
+
+      {progress ? (
+        <div className={styles.reviewPanelProgress}>
+          <span>{countLabel}</span>
+          <div
+            className={styles.reviewPanelProgressTrack}
+            role="progressbar"
+            aria-label={progressLabel}
+            aria-valuetext={countLabel}
+            aria-valuemin={0}
+            aria-valuemax={progress.max}
+            aria-valuenow={progress.value}
+          >
+            <span
+              style={{
+                width: `${progressPercent}%`,
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
 
       {description ? <p className={styles.reviewPanelDescription}>{description}</p> : null}
 
       <ReviewAnswerList entries={entries} initialOpenId={initialOpenId} />
 
-      {onBack || onReplay || extraActions ? (
+      {(onBack && !backAtTop) || onReplay || extraActions ? (
         <div className={styles.reviewPanelActions}>
-          {onBack ? (
+          {onBack && !backAtTop ? (
             <MotionButton variant="secondary" onClick={onBack} whileTap={{ scale: 0.98 }}>
               {backLabel}
             </MotionButton>

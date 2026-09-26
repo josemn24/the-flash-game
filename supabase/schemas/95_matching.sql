@@ -92,6 +92,7 @@ declare
   unit private.attempt_timing_units%rowtype;
   item private.challenge_items%rowtype;
   question private.question_versions%rowtype;
+  challenge_version private.challenge_versions%rowtype;
   solution private.question_version_solutions%rowtype;
   event private.matching_pair_events%rowtype;
   receipt private.answer_receipts%rowtype;
@@ -105,6 +106,8 @@ declare
   penalty integer;
   solved boolean;
   terminal boolean;
+  lives_remaining integer;
+  mistakes_before integer;
   progress jsonb;
   result jsonb;
 begin
@@ -151,6 +154,7 @@ begin
     raise exception 'deadline_reached' using errcode = '55000';
   end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
+  select * into challenge_version from private.challenge_versions where id = a.challenge_version_id;
   select * into question from private.question_versions where id = item.question_version_id;
   select * into solution from private.question_version_solutions where question_version_id = question.id;
   if question.type <> 'matching' or question.payload_schema_version <> 1
@@ -203,6 +207,20 @@ begin
 
   progress := private.matching_progress(a.id, item.id);
   terminal := solved and (progress->>'matchedCount')::integer = total_pairs;
+  if not terminal and not solved and challenge_version.mode = 'survival' then
+    select coalesce(sum(case
+      when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+      when previous_question.type in ('matching', 'queens')
+        and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+      else 0 end), 0)::integer
+    into mistakes_before
+    from private.attempt_answers answer
+    join private.challenge_items previous_item on previous_item.id = answer.challenge_item_id
+    join private.question_versions previous_question on previous_question.id = previous_item.question_version_id
+    where answer.attempt_id = a.id;
+    lives_remaining := greatest((challenge_version.mode_config->>'lives')::integer - mistakes_before, 0);
+    terminal := lives_remaining = 1;
+  end if;
   if terminal then
     update private.interaction_intervals
       set ended_at = effective, end_reason = 'answer'

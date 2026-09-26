@@ -86,4 +86,7 @@ export { isPipesAnswer } from "@/lib/pipes";
 export { calculateEstimationMetrics } from "@/lib/scoringCore/questions/estimation";
 export { evaluateEscape } from "@/lib/scoringCore/questions/escape";
 export { isEscapeAnswer, isValidEscapeConfiguration } from "@/lib/escape";
-export { isValidLogicMatrixConfiguration } from "@/lib/scoringCore/questions/logicMatrix";
+export {
+  isValidLogicMatrixConfiguration,
+  isValidLogicMatrixPublicPayload,
+} from "@/lib/scoringCore/questions/logicMatrix";

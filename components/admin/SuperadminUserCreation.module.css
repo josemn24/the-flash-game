@@ -1,0 +1,99 @@
+@layer app-components {
+  .section {
+    width: min(100%, 720px);
+    margin: clamp(1.5rem, 4vw, 3rem) auto;
+  }
+
+  .heading {
+    margin-bottom: 1.5rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.45rem;
+    color: var(--color-muted, #777783);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .heading h1 {
+    margin: 0;
+    color: var(--color-ink, #17171f);
+    font-family: var(--type-display, sans-serif);
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    letter-spacing: -0.05em;
+  }
+
+  .heading > p:last-child {
+    color: var(--color-ink-muted, #777783);
+    line-height: 1.5;
+  }
+
+  .form {
+    display: grid;
+    gap: 1rem;
+    border: 1px solid var(--color-border, #dedee4);
+    border-radius: var(--radius-card, 20px);
+    background: var(--color-surface, #fff);
+    padding: clamp(1rem, 3vw, 1.75rem);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.45rem;
+    color: var(--color-ink-muted, #555560);
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    border: 1px solid var(--color-border-strong, #b8b8c2);
+    border-radius: var(--radius-control, 12px);
+    background: var(--color-surface, #fff);
+    color: var(--color-ink, #17171f);
+    padding: 0.8rem 0.9rem;
+    font: inherit;
+  }
+
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--color-brand, #c8ff00) 60%, transparent);
+    outline-offset: 1px;
+  }
+
+  .field small {
+    color: var(--color-ink-muted, #777783);
+    font-size: 0.76rem;
+    font-weight: 500;
+  }
+
+  .field small[role="alert"],
+  .error {
+    color: var(--color-danger, #a02222);
+  }
+
+  .success {
+    color: var(--color-success, #176d3a);
+  }
+
+  .submit {
+    justify-self: start;
+    min-height: 44px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-ink, #17171f);
+    color: #fff;
+    padding: 0.7rem 1.2rem;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .submit:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+}

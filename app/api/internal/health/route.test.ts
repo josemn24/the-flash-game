@@ -42,6 +42,8 @@ describe("private health route", () => {
       status: "ok",
       checks: { auth: true, database: true, schema: true },
     });
-    expect(JSON.stringify(body)).not.toMatch(/secret|password|token|jwt/i);
+    expect(JSON.stringify(body)).not.toMatch(
+      /secret|password|token|jwt|20260921073245|get_superadmin_challenge|manage_room_member|member_previews/i,
+    );
   });
 });

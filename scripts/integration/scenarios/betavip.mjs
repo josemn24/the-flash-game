@@ -1,0 +1,472 @@
+import {
+  createAuthenticatedClient,
+  dockerSql,
+  readFixture,
+  rpc,
+  sqlCount,
+} from "../../support/supabase-local.mjs";
+
+export const scenario = {
+  id: "betavip",
+
+  async run({ fixture, clients, config, assert }) {
+    const tabarnia = await readFixture("tabarnia");
+    const kike = await createAuthenticatedClient(config, tabarnia.users.kike);
+    const beta = fixture.data;
+    const betaSlug = beta.room.slug;
+    const tabarniaSlug = beta.tabarnia.room.slug;
+    const [survival, alphabet, pyramid] = beta.publications;
+    const tabarniaSteel = tabarnia.data.publications.find(
+      (publication) => publication.slug === "steel-ball-run",
+    );
+
+    assert(
+      JSON.stringify(
+        beta.publications.map(({ number, title, mode, status }) => [number, title, mode, status]),
+      ) ===
+        JSON.stringify([
+          [1, "Supervivencia: Cultura pop", "survival", "open"],
+          [2, "La vuelta al mundo", "alphabet", "scheduled"],
+          [3, "Cumbre lógica II", "pyramid", "scheduled"],
+        ]),
+      "BetaVIP publica Survival, Alphabet y Cumbre lógica II en ese orden",
+    );
+    assert(beta.publicationId === survival.id, "El manifiesto apunta al primer desafío");
+    assert(beta.challengeId === survival.challengeId, "El manifiesto apunta al desafío Survival");
+    assert(
+      beta.challengeVersionId === survival.challengeVersionId,
+      "El manifiesto apunta a la versión Supervivencia: Cultura pop",
+    );
+    assert(
+      beta.questionCount === survival.questionCount,
+      "El manifiesto conserva las veinte preguntas de Survival",
+    );
+    assert(
+      beta.pointsTotal === survival.pointsTotal,
+      "El manifiesto conserva los puntos de Survival",
+    );
+    assert(beta.survivalPublicationId === survival.id, "Survival tiene ID propio");
+    assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
+    assert(beta.pyramidPublicationId === pyramid.id, "La Pirámide tiene ID explícito");
+
+    assert(fixture.users.ches.playerId === tabarnia.users.ches.playerId, "Ches conserva su Player");
+    assert(fixture.users.dark.playerId === tabarnia.users.dark.playerId, "Dark conserva su Player");
+    assert(
+      typeof tabarniaSteel?.challengeVersionId === "string",
+      "Tabarnia conserva la versión compartida de Steel Ball Run",
+    );
+
+    assert(
+      (await sqlCount("select count(*) from public.rooms;", config.dbContainer)) === 2,
+      "El dataset conjunto tiene dos salas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.room_memberships where room_id = '${beta.room.id}' and status = 'active';`,
+        config.dbContainer,
+      )) === 4,
+      "BetaVIP tiene cuatro miembros activos",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.room_memberships where room_id = '${beta.tabarnia.room.id}' and status = 'active';`,
+        config.dbContainer,
+      )) === 12,
+      "Tabarnia mantiene sus doce miembros",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.room_memberships where player_id = '${fixture.users.ches.playerId}' and role = 'owner' and status = 'active';`,
+        config.dbContainer,
+      )) === 2,
+      "Ches es owner de ambas salas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.platform_role_assignments where player_id = '${fixture.users.xesmona.playerId}' and role = 'superadmin';`,
+        config.dbContainer,
+      )) === 1,
+      "Xesmona conserva el rol de superadmin",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.room_memberships where player_id = '${fixture.users.xesmona.playerId}';`,
+        config.dbContainer,
+      )) === 0,
+      "Xesmona no es miembro de las salas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_versions where id = '${tabarniaSteel?.challengeVersionId}';`,
+        config.dbContainer,
+      )) === 1,
+      "Steel Ball Run no se duplica",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items where challenge_version_id = '${tabarniaSteel?.challengeVersionId}';`,
+        config.dbContainer,
+      )) === 16,
+      "La versión compartida conserva sus dieciséis preguntas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_versions where id = '${alphabet.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 135000;`,
+        config.dbContainer,
+      )) === 1,
+      "El Alphabet de BetaVIP está publicado con 135 segundos",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items i join private.question_versions q on q.id = i.question_version_id where i.challenge_version_id = '${alphabet.challengeVersionId}' and q.type = 'short-text' and i.mode_config ? 'letter';`,
+        config.dbContainer,
+      )) === 18,
+      "La vuelta al mundo tiene dieciocho preguntas con letra",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_versions where id = '${survival.challengeVersionId}' and status = 'published' and mode = 'survival' and mode_config = '{"lives":3}'::jsonb and max_score = 100;`,
+        config.dbContainer,
+      )) === 1,
+      "Supervivencia: Cultura pop está publicada con tres vidas y 100 puntos",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_versions where id = '${pyramid.challengeVersionId}' and status = 'published' and mode = 'pyramid' and mode_config = '{}'::jsonb and max_score = 100;`,
+        config.dbContainer,
+      )) === 1,
+      "Cumbre lógica II está publicada como Pirámide con 100 puntos",
+    );
+    assert(
+      (
+        await dockerSql(
+          `select string_agg(question.type, ',' order by item.position) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${pyramid.challengeVersionId}';`,
+          config.dbContainer,
+        )
+      ).stdout.trim() === "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
+      "Cumbre lógica II conserva el orden de formatos acordado",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items where challenge_version_id = '${survival.challengeVersionId}';`,
+        config.dbContainer,
+      )) === 20,
+      "Survival tiene veinte pruebas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${survival.challengeVersionId}' and item.position in (5,10,14,18) and question.type = 'progressive-clues';`,
+        config.dbContainer,
+      )) === 4,
+      "Las pistas progresivas están intercaladas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${survival.challengeVersionId}' and item.position = 3 and question.type = 'progressive-image' and question.public_payload->>'revealDurationMs' = '7000';`,
+        config.dbContainer,
+      )) === 1,
+      "La tercera prueba muestra la imagen progresiva durante siete segundos",
+    );
+    const publicationOrder = await dockerSql(
+      `select string_agg(number::text || ':' || status, ',' order by number) from public.scheduled_challenges where season_id = '${beta.seasonId}';`,
+      config.dbContainer,
+    );
+    assert(
+      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled",
+      "Las tres publicaciones de BetaVIP están en orden y estado correctos",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '72 hours';`,
+        config.dbContainer,
+      )) === 1,
+      "La temporada BetaVIP cubre exactamente tres ventanas de 24 horas",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${survival.id}' and second.id = '${alphabet.id}' and third.id = '${pyramid.id}' and first.number = 1 and second.number = 2 and third.number = 3 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (third.closes_at - third.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
+        config.dbContainer,
+      )) === 1,
+      "Las tres publicaciones quedan disponibles en sus días, sin huecos ni solapes",
+    );
+    assert(
+      (await sqlCount(
+        "select count(*) from private.media_assets where bucket_id = 'question-assets';",
+        config.dbContainer,
+      )) === 5,
+      "BetaVIP añade un recurso de imagen y reutiliza los cuatro de Tabarnia",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.media_assets where id = '${beta.questionAssets[0].id}' and status = 'ready' and width = 1200 and height = 800;`,
+        config.dbContainer,
+      )) === 1,
+      "La imagen del casete está lista en Storage",
+    );
+
+    for (const [client, expectedSlugs] of [
+      [clients.ches, [tabarniaSlug, betaSlug]],
+      [clients.dark, [tabarniaSlug, betaSlug]],
+      [clients.manuel, [betaSlug]],
+      [clients.genis, [betaSlug]],
+      [clients.xesmona, []],
+      [kike, [tabarniaSlug]],
+    ]) {
+      const cards = await rpc(client, "get_my_room_cards", {});
+      assert(
+        JSON.stringify(cards.map((card) => card.room_slug).sort()) ===
+          JSON.stringify([...expectedSlugs].sort()),
+        `Las tarjetas muestran únicamente las salas permitidas: ${expectedSlugs.join(", ")}`,
+      );
+    }
+
+    for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
+      const pyramidPlayable = await rpc(client, "get_my_pyramid_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: pyramid.id,
+      });
+      assert(pyramidPlayable.length === 0, "La Pirámide permanece bloqueada durante el primer día");
+      const playable = await rpc(client, "get_my_survival_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: survival.id,
+      });
+      assert(playable.length === 20, "Survival está disponible durante el primer día");
+      assert(
+        !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
+        "La lectura jugable no expone soluciones",
+      );
+      const pyramidLocked = await rpc(client, "get_my_pyramid_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: pyramid.id,
+      });
+      assert(pyramidLocked.length === 0, "La Pirámide permanece bloqueada durante el primer día");
+      const calendar = await rpc(client, "get_room_calendar", { target_room_slug: betaSlug });
+      assert(
+        calendar.some((entry) => entry.publication_id === survival.id && entry.can_start),
+        "La sala permite iniciar Survival el primer día",
+      );
+      assert(
+        !calendar.some((entry) => entry.publication_id === pyramid.id && entry.can_start),
+        "La Pirámide permanece programada durante el primer día",
+      );
+    }
+    assert(
+      (
+        await rpc(kike, "get_my_pyramid_challenge", {
+          target_room_slug: betaSlug,
+          target_publication_id: pyramid.id,
+        })
+      ).length === 0,
+      "Un miembro exclusivo de Tabarnia no recibe la Pirámide de BetaVIP",
+    );
+    assert(
+      (
+        await rpc(kike, "get_my_survival_challenge", {
+          target_room_slug: betaSlug,
+          target_publication_id: survival.id,
+        })
+      ).length === 0,
+      "Un miembro exclusivo de Tabarnia no recibe el Survival de BetaVIP",
+    );
+    for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
+      assert(
+        (
+          await rpc(client, "get_my_alphabet_challenge", {
+            target_room_slug: betaSlug,
+            target_publication_id: alphabet.id,
+          })
+        ).length === 0,
+        "El Alphabet aún no es jugable durante el primer día",
+      );
+    }
+    assert(
+      (
+        await rpc(clients.ches, "get_my_flash_challenge", {
+          target_room_slug: tabarniaSlug,
+          target_publication_id: beta.tabarnia.steelBallRunPublicationId,
+        })
+      ).length === 0,
+      "Steel Ball Run sigue programado en Tabarnia",
+    );
+    assert(
+      (
+        await rpc(kike, "get_my_alphabet_challenge", {
+          target_room_slug: betaSlug,
+          target_publication_id: alphabet.id,
+        })
+      ).length === 0,
+      "Un miembro exclusivo de Tabarnia no puede jugar el Alphabet de BetaVIP",
+    );
+    assert(
+      (await rpc(clients.manuel, "get_room_detail", { target_room_slug: tabarniaSlug })).length ===
+        0,
+      "Manuel no puede abrir Tabarnia",
+    );
+    assert(
+      (await sqlCount("select count(*) from public.attempts;", config.dbContainer)) === 0,
+      "El seed no crea partidas",
+    );
+
+    await dockerSql(
+      `
+begin;
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-integration-survival-before-ranking"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
+    );
+
+    const attemptId = "00000000-0000-4000-8000-00000000be7a";
+    await dockerSql(
+      `
+begin;
+insert into public.attempts
+  (id, player_id, scheduled_challenge_id, challenge_version_id, kind, status,
+   client_state_schema_version)
+values
+  ('${attemptId}', '${fixture.users.ches.playerId}', '${survival.id}',
+   '${survival.challengeVersionId}', 'competitive', 'in_progress', 1);
+update public.attempts
+set status = 'completed', completed_at = clock_timestamp(), score = 40,
+    lock_version = lock_version + 1
+where id = '${attemptId}';
+insert into private.flash_point_entries
+  (season_id, player_id, scheduled_challenge_id, attempt_id, entry_type, amount, idempotency_key)
+values
+  ('${beta.seasonId}', '${fixture.users.ches.playerId}', '${survival.id}',
+   '${attemptId}', 'accreditation', 40, 'betavip-integration-score');
+commit;
+`,
+      config.dbContainer,
+    );
+
+    const betaRanking = await rpc(clients.ches, "get_season_ranking", {
+      target_season_id: beta.seasonId,
+    });
+    const tabarniaRanking = await rpc(clients.ches, "get_season_ranking", {
+      target_season_id: beta.tabarnia.seasonId,
+    });
+    assert(
+      betaRanking.find((row) => row.player_id === fixture.users.ches.playerId)?.flash_points === 40,
+      "La puntuación de Survival de Ches pertenece a BetaVIP",
+    );
+    assert(
+      tabarniaRanking.find((row) => row.player_id === fixture.users.ches.playerId)?.flash_points ===
+        0,
+      "La puntuación de BetaVIP no se suma a Tabarnia",
+    );
+    assert(
+      (
+        await rpc(clients.ches, "get_challenge_ranking", {
+          target_publication_id: survival.id,
+        })
+      ).length === 1,
+      "La partida figura en Survival de BetaVIP",
+    );
+    assert(
+      (
+        await rpc(clients.ches, "get_challenge_ranking", {
+          target_publication_id: alphabet.id,
+        })
+      ).length === 0,
+      "El Alphabet no recibe la partida de Survival",
+    );
+    assert(
+      (
+        await rpc(clients.ches, "get_challenge_ranking", {
+          target_publication_id: beta.tabarnia.steelBallRunPublicationId,
+        })
+      ).length === 0,
+      "La publicación de Tabarnia no recibe la partida de BetaVIP",
+    );
+
+    await dockerSql(
+      `
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id = '${survival.id}';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${alphabet.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-integration-alphabet"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.scheduled_challenges where id = '${alphabet.id}' and status = 'open';`,
+        config.dbContainer,
+      )) === 1,
+      "El tick abre Alphabet dentro de su ventana de prueba",
+    );
+    for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
+      const playable = await rpc(client, "get_my_alphabet_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: alphabet.id,
+      });
+      assert(playable.length === 18, "Los miembros de BetaVIP reciben las dieciocho letras");
+      assert(
+        playable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
+        "La vuelta al mundo suma 100 puntos",
+      );
+      assert(
+        playable.map((row) => row.alphabet_letter).join(",") ===
+          "A,B,C,D,E,F,G,H,I,J,L,M,O,P,R,S,T,Z",
+        "La vuelta al mundo conserva el orden de las letras",
+      );
+      assert(
+        !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
+        "La lectura del Alphabet no expone soluciones",
+      );
+    }
+    assert(
+      (
+        await rpc(kike, "get_my_alphabet_challenge", {
+          target_room_slug: betaSlug,
+          target_publication_id: alphabet.id,
+        })
+      ).length === 0,
+      "Un miembro exclusivo de Tabarnia no recibe el Alphabet de BetaVIP",
+    );
+
+    await dockerSql(
+      `
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id = '${alphabet.id}';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${pyramid.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-integration-pyramid"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
+    );
+    for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
+      const playable = await rpc(client, "get_my_pyramid_challenge", {
+        target_room_slug: betaSlug,
+        target_publication_id: pyramid.id,
+      });
+      assert(playable.length === 7, "La Pirámide se desbloquea como tercer desafío");
+      assert(
+        playable.map((row) => row.question_type).join(",") ===
+          "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
+        "La Pirámide proyecta los siete formatos en orden",
+      );
+      assert(
+        !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
+        "La lectura de la Pirámide no expone soluciones",
+      );
+    }
+  },
+};
+
+export default scenario;

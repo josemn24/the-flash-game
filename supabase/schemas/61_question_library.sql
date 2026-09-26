@@ -9,70 +9,7 @@ create unique index if not exists challenge_items_question_version_unique_idx
 create index if not exists question_versions_library_idx
   on private.question_versions (status, type, updated_at desc, id);
 
-create or replace function private.validate_flash_question_document(document jsonb) returns void
-language plpgsql volatile set search_path = '' as $$
-begin
-  if document is null or jsonb_typeof(document) is distinct from 'object' or document ? 'points' then
-    raise exception 'invalid_question_document' using errcode = '22023';
-  end if;
-  if document->>'type' = 'short-text' then
-    if exists (select 1 from jsonb_object_keys(document) key_name where key_name <> all(array[
-      'slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'publicPayload', 'solutionPayload'
-    ]))
-      or jsonb_typeof(document->'slug') is distinct from 'string'
-      or char_length(btrim(document->>'slug')) not between 1 and 120
-      or document->'payloadSchemaVersion' <> '1'::jsonb
-      or jsonb_typeof(document->'timeLimitMs') is distinct from 'number'
-      or (document->>'timeLimitMs')::numeric <> trunc((document->>'timeLimitMs')::numeric)
-      or (document->>'timeLimitMs')::integer <= 0
-      or jsonb_typeof(document->'publicPayload') is distinct from 'object'
-      or not document->'publicPayload' ? 'question'
-      or exists (select 1 from jsonb_object_keys(document->'publicPayload') key_name
-        where key_name <> all(array['category', 'tags', 'question', 'answerPlaceholder']))
-      or private.editorial_has_secret_key(document->'publicPayload')
-      or jsonb_typeof(document->'publicPayload'->'question') is distinct from 'string'
-      or char_length(btrim(document->'publicPayload'->>'question')) not between 1 and 2000
-      or (document->'publicPayload' ? 'category' and jsonb_typeof(document->'publicPayload'->'category') is distinct from 'string')
-      or (document->'publicPayload' ? 'tags' and jsonb_typeof(document->'publicPayload'->'tags') is distinct from 'object')
-      or (document->'publicPayload' ? 'answerPlaceholder' and jsonb_typeof(document->'publicPayload'->'answerPlaceholder') not in ('null', 'string'))
-      or jsonb_typeof(document->'solutionPayload') is distinct from 'object'
-      or not document->'solutionPayload' ?& array['correctAnswer', 'acceptedAnswers']
-      or exists (select 1 from jsonb_object_keys(document->'solutionPayload') key_name
-        where key_name <> all(array['correctAnswer', 'acceptedAnswers', 'explanation']))
-      or jsonb_typeof(document->'solutionPayload'->'correctAnswer') is distinct from 'string'
-      or char_length(btrim(document->'solutionPayload'->>'correctAnswer')) not between 1 and 500
-      or jsonb_typeof(document->'solutionPayload'->'acceptedAnswers') is distinct from 'array'
-      or jsonb_array_length(document->'solutionPayload'->'acceptedAnswers') not between 1 and 100
-      or exists (select 1 from jsonb_array_elements(document->'solutionPayload'->'acceptedAnswers') answer
-        where jsonb_typeof(answer) is distinct from 'string'
-          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
-      or not exists (select 1 from jsonb_array_elements_text(document->'solutionPayload'->'acceptedAnswers') answer
-        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
-          regexp_replace(lower(translate(btrim(document->'solutionPayload'->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')) then
-      raise exception 'invalid_question_document' using errcode = '22023';
-    end if;
-    return;
-  end if;
-  perform private.validate_flash_editorial_document(jsonb_build_object(
-    'challenge', jsonb_build_object(
-      'slug', 'question-library-validation',
-      'title', 'Question library validation',
-      'subtitle', '',
-      'description', '',
-      'mode', 'flash',
-      'configSchemaVersion', 1,
-      'modeConfig', '{}'::jsonb
-    ),
-    'questions', jsonb_build_array(
-      document || jsonb_build_object('points', 50),
-      document || jsonb_build_object(
-        'slug', (document->>'slug') || '-validation-copy',
-        'points', 50
-      )
-    )
-  ));
-end;
-$$;
+
 
 create or replace function private.question_version_document(target_question_version uuid)
 returns jsonb
@@ -470,7 +407,6 @@ language sql volatile security definer set search_path = '' as $$ select private
 create or replace function public.archive_superadmin_question(input jsonb) returns jsonb
 language sql volatile security definer set search_path = '' as $$ select private.archive_question_command(input); $$;
 
-alter function private.validate_flash_question_document(jsonb) owner to postgres;
 alter function private.question_version_document(uuid) owner to postgres;
 alter function private.question_version_detail(uuid) owner to postgres;
 alter function private.read_superadmin_question_library(jsonb) owner to postgres;
@@ -485,7 +421,7 @@ alter function public.update_superadmin_question_draft(jsonb) owner to postgres;
 alter function public.publish_superadmin_question(jsonb) owner to postgres;
 alter function public.archive_superadmin_question(jsonb) owner to postgres;
 
-revoke all on function private.validate_flash_question_document(jsonb), private.question_version_document(uuid),
+revoke all on function private.question_version_document(uuid),
   private.question_version_detail(uuid), private.read_superadmin_question_library(jsonb),
   private.create_question_draft_command(jsonb), private.update_question_draft_command(jsonb),
   private.publish_question_command(jsonb), private.archive_question_command(jsonb)

@@ -5,6 +5,28 @@ export const CONNECT_PAIRS_COLUMNS = 5;
 export const CONNECT_PAIRS_CELL_COUNT = CONNECT_PAIRS_ROWS * CONNECT_PAIRS_COLUMNS;
 export const CONNECT_PAIRS_MIN_PAIRS = 3;
 export const CONNECT_PAIRS_MAX_PAIRS = 5;
+export const CONNECT_PAIRS_DEFAULT_COLORS = [
+  "#35e8ff",
+  "#d7ff18",
+  "#ff6d73",
+  "#43deb7",
+  "#b994ff",
+] as const;
+
+export function getConnectPairsPairColor(color: string | undefined, pairIndex: number) {
+  return color ?? CONNECT_PAIRS_DEFAULT_COLORS[pairIndex % CONNECT_PAIRS_DEFAULT_COLORS.length];
+}
+
+export function connectPairsRoutePoints(path: number[]) {
+  return path
+    .filter(isBoardIndex)
+    .map((cell) => {
+      const row = Math.floor(cell / CONNECT_PAIRS_COLUMNS);
+      const column = cell % CONNECT_PAIRS_COLUMNS;
+      return `${column + 0.5},${row + 0.5}`;
+    })
+    .join(" ");
+}
 
 export type ConnectPairsMetrics = {
   valid: boolean;

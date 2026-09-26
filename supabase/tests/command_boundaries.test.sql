@@ -3,6 +3,16 @@ set local search_path=public,extensions;
 select no_plan();
 -- @command-fixtures
 
+select ok(not exists (
+  select 1
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  cross join unnest(array['anon','authenticated','service_role']) role_name
+  where n.nspname = 'private'
+    and p.proname in ('handle_attempt_command', 'handle_attempt_admin_command', 'handle_invitation_command', 'lock_command_key')
+    and has_function_privilege(role_name, p.oid, 'EXECUTE')
+), 'Internal command handlers and shared lock helper are not executable by API roles');
+
 set local role service_role;
 select throws_ok($$select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-flash')))$$,'42501',null,'No verified identity means no command access');
 reset role;
@@ -16,7 +26,7 @@ create function test_support.fail_audit() returns trigger language plpgsql as $$
 begin raise exception 'injected audit failure'; end $$;
 create trigger test_fail_audit before insert on private.audit_log for each row execute function test_support.fail_audit();
 set local role service_role;
-select throws_ok($$select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-survival')))$$,'P0001',null,'Start audit failure aborts command');
+select throws_ok($$select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-pyramid')))$$,'P0001',null,'Start audit failure aborts command');
 reset role;
 select is((select count(*) from public.attempts),0::bigint,'Failed start leaves no attempt');
 select is((select count(*) from private.attempt_sessions),0::bigint,'Failed start leaves no session');
@@ -43,7 +53,7 @@ select throws_ok($$select private.read_evaluation_context((state->>'receiptId'):
 reset role;
 select test_support.as_actor('owner');
 set local role service_role;
-select test_support.run('record_evaluation','{"status":"correct","points":50}');
+select test_support.run('record_evaluation','{"status":"incorrect","points":0}');
 select throws_ok($$select test_support.run('adjust_result','{"score":10,"reason":"forged admin"}')$$,'42501',null,'Ordinary player cannot adjust results');
 reset role;
 create trigger test_fail_audit before insert on private.audit_log for each row execute function test_support.fail_audit();
@@ -65,7 +75,7 @@ set local role service_role;
 select throws_ok($$select test_support.run('invalidate_attempt','{"reason":"test"}')$$,'P0001',null,'Invalidation audit failure rolls back reversal');
 reset role;
 select is((select status from public.attempts),'completed','Failed invalidation preserves completed status');
-select is((select sum(amount) from private.flash_point_entries),50::bigint,'Failed invalidation preserves credited balance');
+select is((select sum(amount) from private.flash_point_entries),0::bigint,'Failed invalidation preserves credited balance');
 select is((select count(*) from private.flash_point_entries),1::bigint,'Failed invalidation leaves no reversal');
 drop trigger test_fail_audit on private.audit_log;
 

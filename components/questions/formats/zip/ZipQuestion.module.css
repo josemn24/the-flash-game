@@ -25,6 +25,19 @@
     white-space: nowrap;
   }
 
+  .serverMetrics {
+    display: flex;
+    width: min(100%, 31rem);
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: rgb(255 255 255 / 42%);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
   .board {
     position: relative;
     display: grid;
@@ -45,6 +58,11 @@
   .boardInteractive:focus-visible {
     border-color: var(--color-social);
     box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
+  }
+
+  .boardReview {
+    border-color: var(--color-border);
+    background: var(--color-surface-raised);
   }
 
   .cell {
@@ -70,6 +88,22 @@
 
   .checkpoint {
     background: rgb(53 232 255 / 10%);
+  }
+
+  .boardReview .cell {
+    border-color: var(--color-border);
+    color: var(--color-ink-faint);
+    background:
+      radial-gradient(circle at 50% 50%, rgb(23 23 32 / 16%) 0 0.08rem, transparent 0.09rem),
+      var(--color-surface-raised);
+  }
+
+  .boardReview .visited {
+    background: color-mix(in srgb, var(--color-brand) 12%, var(--color-surface-raised));
+  }
+
+  .boardReview .checkpoint {
+    background: color-mix(in srgb, var(--color-social) 10%, var(--color-surface-raised));
   }
 
   .cellButton {
@@ -102,6 +136,12 @@
     font-size: clamp(0.8rem, 3vw, 1.1rem);
     font-weight: 950;
     box-shadow: 0 0 0 2px rgb(255 255 255 / 65%);
+  }
+
+  .boardReview .checkpointMarker {
+    border-color: var(--color-ink);
+    color: var(--color-text-on-social);
+    box-shadow: 0 0 0 2px var(--color-surface);
   }
 
   .routeOverlay {

@@ -57,6 +57,16 @@ select set_config('s11.document', jsonb_build_object(
   )
 )::text, true);
 
+reset role;
+select lives_ok($$select private.validate_flash_question_document(
+  (current_setting('s11.document')::jsonb->'questions'->0) - 'points'
+)$$, 'El validador común acepta directamente una pregunta individual válida');
+select throws_ok($$select private.validate_flash_question_document(
+  jsonb_set((current_setting('s11.document')::jsonb->'questions'->0) - 'points',
+    '{publicPayload,correctAnswer}', '"Lisboa"'::jsonb)
+)$$, '22023', 'invalid_public_payload', 'El validador común rechaza respuestas dentro del payload público');
+set local role authenticated;
+
 select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_object(
   'idempotencyKey', 's11-invalid-secret',
   'document', jsonb_set(current_setting('s11.document')::jsonb, '{questions,0,publicPayload,correctAnswer}', '"Lisboa"'::jsonb),

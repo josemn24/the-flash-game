@@ -22,7 +22,7 @@ export type FlashReadRow = {
   challenge_title: string;
   challenge_subtitle: string;
   challenge_description: string;
-  challenge_mode: "flash";
+  challenge_mode: "flash" | "survival" | "pyramid";
   challenge_max_score: number;
   question_count: number;
   own_attempt_id: string | null;
@@ -39,6 +39,8 @@ export type FlashReadRow = {
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
+    | "connect-pairs"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -49,7 +51,11 @@ export type FlashReadRow = {
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map";
+    | "heat-map"
+    | "word-search"
+    | "word-hashtag"
+    | "zip"
+    | "escape";
   payload_schema_version: number;
   time_limit_ms: number;
   item_points: number;
@@ -65,6 +71,8 @@ export type FlashResultRow = {
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
+    | "connect-pairs"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -75,7 +83,11 @@ export type FlashResultRow = {
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map";
+    | "heat-map"
+    | "word-search"
+    | "word-hashtag"
+    | "zip"
+    | "escape";
   payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
@@ -88,6 +100,7 @@ export type FlashResultRow = {
   time_used_ms: number;
   attempt_status: "completed";
   attempt_score: number;
+  attempt_outcome?: string | null;
   attempt_started_at: string;
   attempt_completed_at: string;
   attempt_lock_version: number;
@@ -101,7 +114,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function isFlashReadRow(value: unknown): value is FlashReadRow {
+export function isFlashReadRow(value: unknown): value is FlashReadRow {
   if (!isRecord(value)) return false;
   return (
     typeof value.room_id === "string" &&
@@ -116,12 +129,15 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     typeof value.challenge_title === "string" &&
     typeof value.challenge_subtitle === "string" &&
     typeof value.challenge_description === "string" &&
-    value.challenge_mode === "flash" &&
+    (value.challenge_mode === "flash" ||
+      value.challenge_mode === "survival" ||
+      value.challenge_mode === "pyramid") &&
     value.challenge_max_score === 100 &&
     typeof value.question_count === "number" &&
     Number.isSafeInteger(value.question_count) &&
-    value.question_count >= FLASH_MIN_QUESTIONS &&
-    value.question_count <= FLASH_MAX_QUESTIONS &&
+    (value.challenge_mode === "pyramid"
+      ? value.question_count === 7
+      : value.question_count >= FLASH_MIN_QUESTIONS && value.question_count <= FLASH_MAX_QUESTIONS) &&
     (value.own_attempt_id === null || typeof value.own_attempt_id === "string") &&
     (value.own_attempt_status === null || typeof value.own_attempt_status === "string") &&
     (value.own_attempt_score === null || typeof value.own_attempt_score === "number") &&
@@ -133,6 +149,8 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
     (value.question_type === "multiple-choice" ||
       value.question_type === "mini-wordle" ||
       value.question_type === "logic-code" ||
+      value.question_type === "logic-matrix" ||
+      value.question_type === "connect-pairs" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
@@ -143,7 +161,11 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
       value.question_type === "anagram" ||
       value.question_type === "classification" ||
       value.question_type === "estimation" ||
-      value.question_type === "heat-map") &&
+      value.question_type === "heat-map" ||
+      value.question_type === "word-search" ||
+      value.question_type === "word-hashtag" ||
+      value.question_type === "zip" ||
+      value.question_type === "escape") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
       (value.question_type === "estimation" && value.payload_schema_version === 2) ||
@@ -157,7 +179,7 @@ function isFlashReadRow(value: unknown): value is FlashReadRow {
   );
 }
 
-function isFlashResultRow(value: unknown): value is FlashResultRow {
+export function isFlashResultRow(value: unknown): value is FlashResultRow {
   if (!isRecord(value)) return false;
   return (
     typeof value.attempt_id === "string" &&
@@ -167,6 +189,8 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
     (value.question_type === "multiple-choice" ||
       value.question_type === "mini-wordle" ||
       value.question_type === "logic-code" ||
+      value.question_type === "logic-matrix" ||
+      value.question_type === "connect-pairs" ||
       value.question_type === "progressive-clues" ||
       value.question_type === "matching" ||
       value.question_type === "progressive-image" ||
@@ -177,7 +201,11 @@ function isFlashResultRow(value: unknown): value is FlashResultRow {
       value.question_type === "anagram" ||
       value.question_type === "classification" ||
       value.question_type === "estimation" ||
-      value.question_type === "heat-map") &&
+      value.question_type === "heat-map" ||
+      value.question_type === "word-search" ||
+      value.question_type === "word-hashtag" ||
+      value.question_type === "zip" ||
+      value.question_type === "escape") &&
     (value.payload_schema_version === 1 ||
       (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
       (value.question_type === "estimation" && value.payload_schema_version === 2) ||
@@ -208,8 +236,14 @@ function toTerminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
   };
 }
 
-async function callFlashRead(
-  functionName: "get_my_flash_challenge" | "get_my_flash_result",
+export async function callFlashRead(
+  functionName:
+    | "get_my_flash_challenge"
+    | "get_my_flash_result"
+    | "get_my_survival_challenge"
+    | "get_my_survival_result"
+    | "get_my_pyramid_challenge"
+    | "get_my_pyramid_result",
   args: Record<string, string>,
 ) {
   const supabase = await createClient();
@@ -218,7 +252,7 @@ async function callFlashRead(
   return Array.isArray(data) ? data : [];
 }
 
-function toRoomContext(
+export function toRoomContext(
   row: FlashReadRow,
   viewerId: string,
   result?: RoomChallengeResult,
@@ -253,7 +287,8 @@ export class SupabaseFlashQueries {
       })
     ).filter(isFlashReadRow);
     const first = rows[0];
-    if (!first || rows.length !== first.question_count) return null;
+    if (!first || first.challenge_mode !== "flash" || rows.length !== first.question_count)
+      return null;
 
     let resultRows: FlashResultRow[] = [];
     if (first.own_attempt_status === "completed" && first.own_attempt_id) {

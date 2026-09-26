@@ -20,6 +20,7 @@ import type {
   EscapeBlock,
   EscapeMove,
   EscapeQuestion as EscapeQuestionType,
+  EscapeQuestionConfiguration,
   } from "@/types/game";
 import styles from "./EscapeQuestion.module.css";
 
@@ -39,7 +40,7 @@ function blockStart(block: EscapeBlock) {
   return block.orientation === "horizontal" ? block.column : block.row;
 }
 
-function blockStyle(question: EscapeQuestionType, block: EscapeBlock): CSSProperties {
+function blockStyle(question: EscapeQuestionConfiguration, block: EscapeBlock): CSSProperties {
   const cellWidth = 100 / question.grid.columns;
   const cellHeight = 100 / question.grid.rows;
   return {
@@ -50,7 +51,7 @@ function blockStyle(question: EscapeQuestionType, block: EscapeBlock): CSSProper
   };
 }
 
-function boardStyle(question: EscapeQuestionType) {
+function boardStyle(question: EscapeQuestionConfiguration) {
   return {
     "--escape-exit-top": `${question.grid.exit.row * (100 / question.grid.rows)}%`,
   } as CSSProperties;
@@ -68,7 +69,7 @@ function blockLabel(block: EscapeBlock, symbol: string) {
       }`;
 }
 
-function blockSymbols(question: EscapeQuestionType) {
+function blockSymbols(question: EscapeQuestionConfiguration) {
   let obstacleIndex = 0;
   return Object.fromEntries(
     question.initialBlocks.map((block) => [
@@ -84,7 +85,7 @@ export function EscapeBoard({
   label,
   animateEscape = false,
 }: {
-  question: EscapeQuestionType;
+  question: EscapeQuestionConfiguration;
   blocks: EscapeBlock[];
   label: string;
   animateEscape?: boolean;

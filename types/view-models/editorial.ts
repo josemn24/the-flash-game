@@ -1,4 +1,10 @@
-import type { ImageSurface, MultipleChoicePromptVisual, QuestionMedia } from "@/types/question";
+import type {
+  EscapeBlock,
+  EscapeMove,
+  ImageSurface,
+  MultipleChoicePromptVisual,
+  QuestionMedia,
+} from "@/types/question";
 
 export type FlashEditorialImageAssetReference = {
   readonly assetId: string;
@@ -61,6 +67,22 @@ export type FlashEditorialLogicCodePublicPayload = {
   readonly question: string;
   readonly clues: readonly FlashEditorialLogicCodeClue[];
   readonly codeLength: number;
+};
+
+export type FlashEditorialLogicMatrixPiece = {
+  readonly id: string;
+  readonly symbol: string;
+  readonly label: string;
+};
+
+export type FlashEditorialLogicMatrixPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly pieces: readonly FlashEditorialLogicMatrixPiece[];
+  readonly cells: readonly (string | null)[];
+  readonly optionIds: readonly string[];
+  readonly showPieceLabels?: boolean | null;
 };
 
 export type FlashEditorialProgressiveCluesPublicPayload = {
@@ -156,11 +178,66 @@ export type FlashEditorialShortTextPublicPayload = {
   readonly answerPlaceholder?: string | null;
 };
 
+export type FlashEditorialWordSearchCell = {
+  readonly startCell: number;
+  readonly endCell: number;
+};
+
+export type FlashEditorialWordSearchTarget = {
+  readonly id: string;
+  readonly word: string;
+};
+
+export type FlashEditorialWordSearchPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: { readonly rows: number; readonly columns: number };
+  readonly letters: readonly string[];
+  readonly targets: readonly FlashEditorialWordSearchTarget[];
+};
+
+export type FlashEditorialZipCheckpoint = {
+  readonly value: number;
+  readonly cell: number;
+  readonly label?: string;
+};
+
+export type FlashEditorialZipPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly checkpoints: readonly FlashEditorialZipCheckpoint[];
+  readonly instruction?: string;
+  readonly mapNote?: string;
+  readonly boardLabel?: string;
+};
+
+export type FlashEditorialEscapePublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: {
+    readonly rows: 6;
+    readonly columns: 6;
+    readonly exit: { readonly side: "right"; readonly row: number };
+  };
+  readonly initialBlocks: readonly EscapeBlock[];
+  readonly instruction?: string;
+  readonly hideInstruction?: boolean;
+  readonly objectiveLabel?: string;
+  readonly hideObjectiveLabel?: boolean;
+  readonly completionMessage?: string;
+  readonly boardLabel?: string;
+};
+
 export type FlashEditorialPublicPayload =
   | FlashEditorialMultipleChoicePublicPayload
   | FlashEditorialEstimationPublicPayload
   | FlashEditorialMiniWordlePublicPayload
   | FlashEditorialLogicCodePublicPayload
+  | FlashEditorialLogicMatrixPublicPayload
   | FlashEditorialProgressiveCluesPublicPayload
   | FlashEditorialMatchingPublicPayload
   | FlashEditorialTrueFalsePublicPayload
@@ -169,7 +246,10 @@ export type FlashEditorialPublicPayload =
   | FlashEditorialAnagramPublicPayload
   | FlashEditorialClassificationPublicPayload
   | FlashEditorialProgressiveImagePublicPayload
-  | FlashEditorialShortTextPublicPayload;
+  | FlashEditorialShortTextPublicPayload
+  | FlashEditorialWordSearchPublicPayload
+  | FlashEditorialZipPublicPayload
+  | FlashEditorialEscapePublicPayload;
 
 export type FlashEditorialMultipleChoiceSolutionPayload = {
   readonly correctAnswer: string;
@@ -192,6 +272,11 @@ export type FlashEditorialMiniWordleSolutionPayload = {
 
 export type FlashEditorialLogicCodeSolutionPayload = {
   readonly correctAnswer: string;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialLogicMatrixSolutionPayload = {
+  readonly correctOptionId: string;
   readonly explanation?: string;
 };
 
@@ -246,11 +331,28 @@ export type FlashEditorialShortTextSolutionPayload = {
   readonly explanation?: string;
 };
 
+export type FlashEditorialWordSearchSolutionPayload = {
+  readonly positionsByTargetId: Readonly<Record<string, FlashEditorialWordSearchCell>>;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialZipSolutionPayload = {
+  readonly solution: readonly number[];
+  readonly explanation?: string;
+};
+
+export type FlashEditorialEscapeSolutionPayload = {
+  readonly referenceSolution: readonly EscapeMove[];
+  readonly optimalMoves: number;
+  readonly explanation?: string;
+};
+
 export type FlashEditorialSolutionPayload =
   | FlashEditorialMultipleChoiceSolutionPayload
   | FlashEditorialEstimationSolutionPayload
   | FlashEditorialMiniWordleSolutionPayload
   | FlashEditorialLogicCodeSolutionPayload
+  | FlashEditorialLogicMatrixSolutionPayload
   | FlashEditorialProgressiveCluesSolutionPayload
   | FlashEditorialMatchingSolutionPayload
   | FlashEditorialTrueFalseSolutionPayload
@@ -259,7 +361,10 @@ export type FlashEditorialSolutionPayload =
   | FlashEditorialAnagramSolutionPayload
   | FlashEditorialClassificationSolutionPayload
   | FlashEditorialProgressiveImageSolutionPayload
-  | FlashEditorialShortTextSolutionPayload;
+  | FlashEditorialShortTextSolutionPayload
+  | FlashEditorialWordSearchSolutionPayload
+  | FlashEditorialZipSolutionPayload
+  | FlashEditorialEscapeSolutionPayload;
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
@@ -324,6 +429,16 @@ export type FlashEditorialLogicCodeQuestion = {
   readonly points: number;
   readonly publicPayload: FlashEditorialLogicCodePublicPayload;
   readonly solutionPayload: FlashEditorialLogicCodeSolutionPayload;
+};
+
+export type FlashEditorialLogicMatrixQuestion = {
+  readonly slug: string;
+  readonly type: "logic-matrix";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialLogicMatrixPublicPayload;
+  readonly solutionPayload: FlashEditorialLogicMatrixSolutionPayload;
 };
 
 export type FlashEditorialProgressiveCluesQuestion = {
@@ -406,12 +521,67 @@ export type FlashEditorialProgressiveImageQuestion = {
   readonly solutionPayload: FlashEditorialProgressiveImageSolutionPayload;
 };
 
+export type FlashEditorialWordSearchQuestion = {
+  readonly slug: string;
+  readonly type: "word-search";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialWordSearchPublicPayload;
+  readonly solutionPayload: FlashEditorialWordSearchSolutionPayload;
+};
+
+export type FlashEditorialWordHashtagPublicPayload = {
+  readonly category?: string;
+  readonly tags?: EditorialJsonObject;
+  readonly question: string;
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly initialLetters: readonly (string | null)[];
+  readonly maxMoves: number;
+};
+
+export type FlashEditorialWordHashtagSolutionPayload = {
+  readonly words: import("@/types/question").WordHashtagWords;
+  readonly explanation?: string;
+};
+
+export type FlashEditorialWordHashtagQuestion = {
+  readonly slug: string;
+  readonly type: "word-hashtag";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialWordHashtagPublicPayload;
+  readonly solutionPayload: FlashEditorialWordHashtagSolutionPayload;
+};
+
+export type FlashEditorialZipQuestion = {
+  readonly slug: string;
+  readonly type: "zip";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialZipPublicPayload;
+  readonly solutionPayload: FlashEditorialZipSolutionPayload;
+};
+
+export type FlashEditorialEscapeQuestion = {
+  readonly slug: string;
+  readonly type: "escape";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: FlashEditorialEscapePublicPayload;
+  readonly solutionPayload: FlashEditorialEscapeSolutionPayload;
+};
+
 export type FlashEditorialQuestion =
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialEstimationQuestion
   | FlashEditorialHeatMapQuestion
   | FlashEditorialMiniWordleQuestion
   | FlashEditorialLogicCodeQuestion
+  | FlashEditorialLogicMatrixQuestion
   | FlashEditorialProgressiveCluesQuestion
   | FlashEditorialMatchingQuestion
   | FlashEditorialTrueFalseQuestion
@@ -420,6 +590,10 @@ export type FlashEditorialQuestion =
   | FlashEditorialAnagramQuestion
   | FlashEditorialClassificationQuestion
   | FlashEditorialProgressiveImageQuestion
+  | FlashEditorialWordSearchQuestion
+  | FlashEditorialWordHashtagQuestion
+  | FlashEditorialZipQuestion
+  | FlashEditorialEscapeQuestion
   | {
       readonly slug: string;
       readonly type: "short-text";
@@ -440,6 +614,7 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialHeatMapQuestion, "points">
   | Omit<FlashEditorialMiniWordleQuestion, "points">
   | Omit<FlashEditorialLogicCodeQuestion, "points">
+  | Omit<FlashEditorialLogicMatrixQuestion, "points">
   | Omit<FlashEditorialProgressiveCluesQuestion, "points">
   | Omit<FlashEditorialMatchingQuestion, "points">
   | Omit<FlashEditorialTrueFalseQuestion, "points">
@@ -448,6 +623,10 @@ export type FlashEditorialQuestionDocument =
   | Omit<FlashEditorialAnagramQuestion, "points">
   | Omit<FlashEditorialClassificationQuestion, "points">
   | Omit<FlashEditorialProgressiveImageQuestion, "points">
+  | Omit<FlashEditorialWordSearchQuestion, "points">
+  | Omit<FlashEditorialWordHashtagQuestion, "points">
+  | Omit<FlashEditorialZipQuestion, "points">
+  | Omit<FlashEditorialEscapeQuestion, "points">
   | Omit<Extract<FlashEditorialQuestion, { readonly type: "short-text" }>, "points">;
 
 export type FlashEditorialQuestionReference = {
@@ -459,7 +638,8 @@ export type FlashEditorialQuestionReference = {
 };
 
 export type FlashEditorialChallengeQuestion =
-  FlashEditorialQuestion | FlashEditorialQuestionReference;
+  | (FlashEditorialQuestion & { readonly modeConfig?: EditorialJsonObject })
+  | FlashEditorialQuestionReference;
 
 export type FlashEditorialDocument = {
   readonly challenge: {
@@ -467,7 +647,7 @@ export type FlashEditorialDocument = {
     readonly title: string;
     readonly subtitle: string;
     readonly description: string;
-    readonly mode: "flash" | "alphabet";
+    readonly mode: "flash" | "alphabet" | "survival" | "pyramid";
     readonly configSchemaVersion: 1;
     readonly modeConfig: EditorialJsonObject;
     readonly globalTimeLimitMs?: number;
@@ -489,6 +669,7 @@ export type SuperadminQuestionLibraryEntry = {
     | "heat-map"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
     | "progressive-clues"
     | "matching"
     | "true-false"
@@ -497,7 +678,11 @@ export type SuperadminQuestionLibraryEntry = {
     | "anagram"
     | "classification"
     | "progressive-image"
-    | "short-text";
+    | "short-text"
+    | "word-search"
+    | "word-hashtag"
+    | "zip"
+    | "escape";
   readonly question: string;
   readonly category: string | null;
   readonly tags: EditorialJsonObject;
@@ -537,7 +722,7 @@ export type SuperadminEditorialEntry = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash";
+  readonly mode: "flash" | "survival" | "pyramid";
   readonly questionCount: number;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -558,7 +743,7 @@ export type SuperadminChallengeSummary = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash";
+  readonly mode: "flash" | "survival" | "pyramid";
   readonly questionCount: number;
   readonly versionCount: number;
   readonly status: EditorialContentStatus;

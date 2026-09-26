@@ -1,11 +1,13 @@
 import type {
   ImageSurface,
+  ConnectPairsPair,
   MatchingItem,
   MatchingLeftItem,
   OddOneOutItem,
   AnagramTile,
   Question,
   QuestionMedia,
+  ZipCheckpoint,
 } from "@/types/question";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
@@ -187,6 +189,8 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "multiple-choice"
       | "mini-wordle"
       | "logic-code"
+      | "logic-matrix"
+      | "connect-pairs"
       | "progressive-clues"
       | "matching"
       | "progressive-image"
@@ -197,7 +201,11 @@ export type ServerFlashChallenge = ChallengeBase & {
       | "anagram"
       | "classification"
       | "estimation"
-      | "heat-map";
+      | "heat-map"
+      | "word-search"
+      | "word-hashtag"
+      | "zip"
+      | "escape";
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -205,13 +213,33 @@ export type ServerFlashChallenge = ChallengeBase & {
   maxScore: number;
 };
 
+export type ServerSurvivalChallenge = Omit<ServerFlashChallenge, "mode"> & {
+  readonly mode: "survival";
+  readonly lives: number;
+};
+
+export type ServerPyramidChallenge = Omit<ServerFlashChallenge, "mode" | "slots"> & {
+  readonly mode: "pyramid";
+  readonly attemptVersion: number;
+  readonly availableFrom: string;
+  readonly availableUntil: string;
+  readonly levels: readonly {
+    readonly id: string;
+    readonly position: number;
+    readonly levelId: string;
+    readonly label: string;
+    readonly briefing: PyramidLevelBriefing;
+    readonly questionType: ServerFlashChallenge["slots"][number]["questionType"];
+    readonly payloadSchemaVersion: number;
+    readonly timeLimitMs: number;
+    readonly points: number;
+  }[];
+};
+
+export type ServerPyramidOutcome = "failed" | "summit";
+
 export type ServerAlphabetLetterStatus =
-  | "unvisited"
-  | "active"
-  | "passed"
-  | "correct"
-  | "incorrect"
-  | "unanswered";
+  "unvisited" | "active" | "passed" | "correct" | "incorrect" | "unanswered";
 
 export type ServerAlphabetLetter = {
   readonly letter: string;
@@ -312,6 +340,78 @@ export type ServerHeatMapQuestion = ServerFlashQuestionBase & {
   readonly targetLabel: string;
 };
 
+export type ServerWordSearchSelection = {
+  readonly targetId: string;
+  readonly startCell: number;
+  readonly endCell: number;
+};
+
+export type ServerWordSearchProgress = {
+  readonly kind: "word-search";
+  readonly foundSelections: readonly ServerWordSearchSelection[];
+  readonly foundWordIds: readonly string[];
+  readonly foundCount: number;
+  readonly totalWords: number;
+  readonly incorrectAttempts: number;
+};
+
+export type ServerWordSearchQuestion = ServerFlashQuestionBase & {
+  readonly type: "word-search";
+  readonly grid: { readonly rows: number; readonly columns: number };
+  readonly letters: readonly string[];
+  readonly targets: readonly { readonly id: string; readonly word: string }[];
+  readonly progress: ServerWordSearchProgress;
+};
+
+export type ServerWordHashtagProgress = {
+  readonly kind: "word-hashtag";
+  readonly letters: readonly (string | null)[];
+  readonly correctCells: readonly number[];
+  readonly swaps: readonly { readonly fromCell: number; readonly toCell: number }[];
+  readonly movesUsed: number;
+  readonly movesRemaining: number;
+};
+
+export type ServerWordHashtagQuestion = ServerFlashQuestionBase & {
+  readonly type: "word-hashtag";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly initialLetters: readonly (string | null)[];
+  readonly maxMoves: number;
+  readonly progress: ServerWordHashtagProgress;
+};
+
+export type ServerZipQuestion = ServerFlashQuestionBase & {
+  readonly type: "zip";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly checkpoints: readonly ZipCheckpoint[];
+  readonly instruction: string | null;
+  readonly mapNote: string | null;
+  readonly boardLabel: string | null;
+};
+
+export type ServerEscapeQuestion = ServerFlashQuestionBase & {
+  readonly type: "escape";
+  readonly grid: {
+    readonly rows: 6;
+    readonly columns: 6;
+    readonly exit: { readonly side: "right"; readonly row: number };
+  };
+  readonly initialBlocks: readonly import("@/types/question").EscapeBlock[];
+  readonly instruction: string | null;
+  readonly hideInstruction: boolean;
+  readonly objectiveLabel: string | null;
+  readonly hideObjectiveLabel: boolean;
+  readonly completionMessage: string | null;
+  readonly boardLabel: string | null;
+};
+
+export type ServerConnectPairsQuestion = ServerFlashQuestionBase & {
+  readonly type: "connect-pairs";
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly pairs: readonly ConnectPairsPair[];
+  readonly requireFullCoverage: true;
+};
+
 export type ServerMiniWordleProgress = {
   readonly kind: "mini-wordle";
   readonly guesses: readonly string[];
@@ -339,6 +439,18 @@ export type ServerLogicCodeQuestion = ServerFlashQuestionBase & {
   readonly clues: readonly { readonly code: string; readonly hint: string }[];
   readonly codeLength: number;
   readonly progress: ServerLogicCodeProgress;
+};
+
+export type ServerLogicMatrixQuestion = ServerFlashQuestionBase & {
+  readonly type: "logic-matrix";
+  readonly pieces: readonly {
+    readonly id: string;
+    readonly symbol: string;
+    readonly label: string;
+  }[];
+  readonly cells: readonly (string | null)[];
+  readonly optionIds: readonly string[];
+  readonly showPieceLabels: boolean;
 };
 
 export type ServerMatchingPair = {
@@ -410,6 +522,7 @@ export type ServerFlashQuestion =
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
   | ServerLogicCodeQuestion
+  | ServerLogicMatrixQuestion
   | ServerProgressiveCluesQuestion
   | ServerMatchingQuestion
   | ServerProgressiveImageQuestion
@@ -420,7 +533,12 @@ export type ServerFlashQuestion =
   | ServerAnagramQuestion
   | ServerClassificationQuestion
   | ServerEstimationQuestion
-  | ServerHeatMapQuestion;
+  | ServerHeatMapQuestion
+  | ServerWordSearchQuestion
+  | ServerWordHashtagQuestion
+  | ServerZipQuestion
+  | ServerEscapeQuestion
+  | ServerConnectPairsQuestion;
 
 /**
  * Terminal-only projection used to rebuild the owner's answer review after a

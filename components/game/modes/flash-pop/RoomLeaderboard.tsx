@@ -62,7 +62,7 @@ export function RoomLeaderboard({
                   {memberHrefBase ? (
                     <Link
                       href={`${memberHrefBase}/${entry.memberId}`}
-                      className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""}`}
+                      className={styles.playerCard}
                       aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       data-rank={entry.rank}
                     >
@@ -71,7 +71,7 @@ export function RoomLeaderboard({
                   ) : onEntrySelect ? (
                     <button
                       type="button"
-                      className={`${styles.playerCard} ${isCurrentUser ? styles.current : ""} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
+                      className={`${styles.playerCard} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
                       aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       aria-pressed={selectedMemberId === entry.memberId}
                       data-rank={entry.rank}
@@ -85,7 +85,7 @@ export function RoomLeaderboard({
                     </button>
                   ) : (
                     <div
-                      className={`${styles.playerCard} ${styles.staticCard} ${isCurrentUser ? styles.current : ""}`}
+                      className={`${styles.playerCard} ${styles.staticCard}`}
                       aria-label={`${entry.name}, ${entry.flashPoints} Flash Points`}
                       data-rank={entry.rank}
                     >

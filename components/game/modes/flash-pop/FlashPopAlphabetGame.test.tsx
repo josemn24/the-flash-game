@@ -5,6 +5,10 @@ import { getChallengeById } from "@/test-utils/mockGameplay";
 import { FlashPopAlphabetGame } from "@/components/game/modes/flash-pop/FlashPopAlphabetGame.client";
 
 const source = readFileSync(new URL("./FlashPopAlphabetGame.client.tsx", import.meta.url), "utf8");
+const presentationSource = readFileSync(
+  new URL("./AlphabetPresentation.tsx", import.meta.url),
+  "utf8",
+);
 const styles = readFileSync(new URL("./FlashPopAlphabetGame.module.css", import.meta.url), "utf8");
 const countdownSource = readFileSync(
   new URL("../../shared/StartCountdown.client.tsx", import.meta.url),
@@ -45,8 +49,8 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("keeps the question panel full width outside the board card", () => {
-    expect(source).toContain("<section className={styles.questionPanel}");
-    expect(source).not.toContain("className={styles.questionCard}");
+    expect(presentationSource).toContain("<section className={styles.questionPanel}");
+    expect(presentationSource).not.toContain("className={styles.questionCard}");
     expect(styles).toContain(".questionPanel {");
     expect(styles).toContain("width: 100%;");
   });
@@ -94,7 +98,7 @@ describe("FlashPopAlphabetGame", () => {
 
   it("keeps feedback inline with the question and the global timer mounted", () => {
     expect(source).toContain('session.phase === "playing" || session.phase === "feedback"');
-    expect(source).toContain('variant="inline"');
+    expect(presentationSource).toContain('variant="inline"');
     expect(source).toContain("active\n");
     expect(source).not.toContain("active={!locked}");
     expect(styles).toContain(".inlineFeedback {");
@@ -109,14 +113,14 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("clears the answer when the next letter becomes active", () => {
-    expect(source).toContain("key={entry.question.id}");
-    expect(source).toContain("useEffect(() => {");
-    expect(source).toContain("inputRef.current?.focus();");
+    expect(presentationSource).toContain("key={question.id}");
+    expect(presentationSource).toContain("useEffect(() => {");
+    expect(presentationSource).toContain("inputRef.current?.focus();");
   });
 
   it("uses the Pop rotate icon and spacing for the pass action", () => {
-    expect(source).toContain("className={styles.passButton}");
-    expect(source).toContain("trailingIcon={<RotateIcon />}");
+    expect(presentationSource).toContain("className={styles.passButton}");
+    expect(presentationSource).toContain("trailingIcon={<RotateIcon />}");
     expect(styles).toContain(".passButton {");
     expect(styles).toContain("gap: var(--space-3);");
   });

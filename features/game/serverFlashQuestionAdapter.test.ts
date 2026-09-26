@@ -4,6 +4,7 @@ import {
   challengeWithReview,
   questionFromPayload,
   ServerFlashQuestionError,
+  terminalReviewFromResponse,
 } from "./serverFlashQuestionAdapter";
 
 const serverChallenge = {
@@ -28,6 +29,33 @@ const serverChallenge = {
 };
 
 describe("server flash question adapter", () => {
+  it("normalizes terminal review rows returned by both SQL and mode adapters", () => {
+    const snakeCase = {
+      challenge_item_id: "item-snake",
+      public_payload: { question: "Pregunta snake" },
+      solution_payload: { correctAnswer: "A" },
+    };
+    const camelCase = {
+      challengeItemId: "item-camel",
+      publicPayload: { question: "Pregunta camel" },
+      solutionPayload: { correctAnswer: "B" },
+    };
+
+    expect(terminalReviewFromResponse([snakeCase, camelCase])).toEqual([
+      {
+        challengeItemId: "item-snake",
+        publicPayload: snakeCase.public_payload,
+        solutionPayload: snakeCase.solution_payload,
+      },
+      {
+        challengeItemId: "item-camel",
+        publicPayload: camelCase.publicPayload,
+        solutionPayload: camelCase.solutionPayload,
+      },
+    ]);
+    expect(terminalReviewFromResponse([{ challenge_item_id: "incomplete" }])).toEqual([]);
+  });
+
   it("maps a validated public payload without exposing a solution", () => {
     const question = questionFromPayload(
       "item-1",
@@ -380,6 +408,105 @@ describe("server flash question adapter", () => {
     });
   });
 
+  it("maps logic-matrix without its solution and restores it only in terminal review", () => {
+    const publicPayload = {
+      question: "Completa la matriz",
+      pieces: [
+        { id: "a", symbol: "A", label: "A" },
+        { id: "b", symbol: "B", label: "B" },
+        { id: "c", symbol: "C", label: "C" },
+        { id: "d", symbol: "D", label: "D" },
+      ],
+      cells: ["a", "b", "c", "b", "c", "a", "c", "a", null],
+      optionIds: ["d", "a", "b", "c"],
+      showPieceLabels: false,
+    };
+    const question = questionFromPayload(
+      "item-logic-matrix",
+      publicPayload,
+      20_000,
+      100,
+      "logic-matrix",
+    );
+    expect(question).toMatchObject({
+      type: "logic-matrix",
+      pieces: publicPayload.pieces,
+      cells: publicPayload.cells,
+      optionIds: publicPayload.optionIds,
+    });
+    expect(question).not.toHaveProperty("correctOptionId");
+
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-logic-matrix",
+            position: 1,
+            questionType: "logic-matrix",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 20_000,
+            points: 100,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-logic-matrix",
+          publicPayload,
+          solutionPayload: { correctOptionId: "d", explanation: "La opción D completa el patrón." },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({ type: "logic-matrix", correctOptionId: "d" });
+  });
+
+  it("maps zip without its solution and restores it only in terminal review", () => {
+    const publicPayload = {
+      question: "Une los números y cubre todas las celdas.",
+      grid: { rows: 5, columns: 5 },
+      checkpoints: [
+        { value: 1, cell: 0 },
+        { value: 2, cell: 4 },
+        { value: 3, cell: 5 },
+        { value: 4, cell: 14 },
+        { value: 5, cell: 15 },
+        { value: 6, cell: 24 },
+      ],
+    };
+    const solution = [
+      0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
+    ];
+    const question = questionFromPayload("item-zip", publicPayload, 35_000, 50, "zip");
+    expect(question).toMatchObject({ type: "zip", grid: publicPayload.grid });
+    expect(question).not.toHaveProperty("solution");
+
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-zip",
+            position: 1,
+            questionType: "zip",
+            payloadSchemaVersion: 1,
+            timeLimitMs: 35_000,
+            points: 50,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-zip",
+          publicPayload,
+          solutionPayload: { solution, explanation: "Recorrido serpenteante." },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({ type: "zip", solution });
+    expect(review.questions[0]).toHaveProperty("explanation", "Recorrido serpenteante.");
+  });
+
   it("propagates a runtime-safe multiple-choice image without exposing an asset id", () => {
     const question = questionFromPayload(
       "item-1",
@@ -509,12 +636,40 @@ describe("server flash question adapter", () => {
       type: "progressive-clues",
       clues: ["Ocurrió en Europa."],
       totalClues: 3,
-      cluePenalty: 25,
-      progress: { revealedClues: 1, availablePoints: 80 },
+      cluePenalty: 40,
+      progress: { revealedClues: 1, availablePoints: 80, cluePenalty: 40 },
     });
     if (question.type !== "progressive-clues") throw new Error("Expected Progressive-clues");
     expect(question.clues).not.toContain("Pista futura");
     expect(question).not.toHaveProperty("correctAnswer");
+  });
+
+  it("scales the editorial Progressive-clues penalty when effective progress is missing", () => {
+    const question = questionFromPayload(
+      "item-progressive-fallback",
+      {
+        category: "Historia",
+        question: "Identifica el acontecimiento",
+        clueCount: 3,
+        cluePenalty: 25,
+      },
+      30_000,
+      80,
+      "progressive-clues",
+      {
+        kind: "progressive-clues",
+        clues: ["Ocurrió en Europa."],
+        revealedClues: 1,
+        totalClues: 3,
+        availablePoints: 80,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "progressive-clues",
+      cluePenalty: 20,
+      progress: { cluePenalty: 20 },
+    });
   });
 
   it("maps the complete Progressive-clues payload only for review", () => {
@@ -683,5 +838,176 @@ describe("server flash question adapter", () => {
       solutionAlt: "La Torre Eiffel en París",
       surface: { src: "/visuals/connections/eiffel-tower.png" },
     });
+  });
+
+  it("maps Escape without private reference data and restores it only in terminal review", () => {
+    const publicPayload = {
+      category: "Lógica espacial",
+      question: "Libera la pieza amarilla.",
+      grid: { rows: 6, columns: 6, exit: { side: "right" as const, row: 2 } },
+      initialBlocks: [
+        {
+          id: "target",
+          kind: "target" as const,
+          orientation: "horizontal" as const,
+          row: 2,
+          column: 0,
+          length: 2 as const,
+        },
+        {
+          id: "a",
+          kind: "obstacle" as const,
+          orientation: "vertical" as const,
+          row: 1,
+          column: 2,
+          length: 2 as const,
+        },
+        {
+          id: "b",
+          kind: "obstacle" as const,
+          orientation: "vertical" as const,
+          row: 0,
+          column: 4,
+          length: 3 as const,
+        },
+        {
+          id: "c",
+          kind: "obstacle" as const,
+          orientation: "horizontal" as const,
+          row: 0,
+          column: 1,
+          length: 2 as const,
+        },
+        {
+          id: "d",
+          kind: "obstacle" as const,
+          orientation: "horizontal" as const,
+          row: 4,
+          column: 1,
+          length: 2 as const,
+        },
+      ],
+    };
+    const referenceSolution = [
+      { blockId: "c", from: 1, to: 0 },
+      { blockId: "a", from: 1, to: 0 },
+      { blockId: "b", from: 0, to: 3 },
+      { blockId: "target", from: 0, to: 4 },
+    ];
+    const question = questionFromPayload("item-escape", publicPayload, 30_000, 50, "escape");
+    expect(question).toMatchObject({ type: "escape", grid: publicPayload.grid });
+    expect(question).not.toHaveProperty("referenceSolution");
+    expect(question).not.toHaveProperty("optimalMoves");
+    expect(() =>
+      questionFromPayload(
+        "item-escape",
+        { ...publicPayload, referenceSolution },
+        30_000,
+        50,
+        "escape",
+      ),
+    ).toThrow(ServerFlashQuestionError);
+
+    const review = challengeWithReview(
+      {
+        ...serverChallenge,
+        slots: [
+          {
+            id: "item-escape",
+            position: 1,
+            questionType: "escape" as const,
+            payloadSchemaVersion: 1,
+            timeLimitMs: 30_000,
+            points: 50,
+          },
+        ],
+      },
+      [
+        {
+          challengeItemId: "item-escape",
+          publicPayload,
+          solutionPayload: { referenceSolution, optimalMoves: 4 },
+        },
+      ],
+    );
+    expect(review.questions[0]).toMatchObject({ type: "escape", optimalMoves: 4 });
+  });
+
+  it("maps only sorted, occupied Word-hashtag correct cells", () => {
+    const initialLetters = [
+      null,
+      "G",
+      null,
+      "Q",
+      null,
+      "E",
+      "O",
+      "P",
+      "U",
+      "I",
+      null,
+      "N",
+      null,
+      "Y",
+      null,
+      "R",
+      "A",
+      "U",
+      "M",
+      "E",
+      null,
+      "R",
+      null,
+      "A",
+      null,
+    ];
+    const question = questionFromPayload(
+      "item-word-hashtag",
+      {
+        question: "Intercambia las letras.",
+        grid: { rows: 5, columns: 5 },
+        initialLetters,
+        maxMoves: 3,
+      },
+      60_000,
+      15,
+      "word-hashtag",
+      {
+        kind: "word-hashtag",
+        letters: initialLetters,
+        correctCells: [3, 6, 8, 9, 11, 15, 17, 18, 21, 23],
+        swaps: [],
+        movesUsed: 0,
+        movesRemaining: 3,
+      },
+    );
+
+    expect(question).toMatchObject({
+      type: "word-hashtag",
+      progress: { correctCells: [3, 6, 8, 9, 11, 15, 17, 18, 21, 23] },
+    });
+    expect(question).not.toHaveProperty("words");
+    expect(() =>
+      questionFromPayload(
+        "item-word-hashtag-invalid",
+        {
+          question: "Intercambia las letras.",
+          grid: { rows: 5, columns: 5 },
+          initialLetters,
+          maxMoves: 3,
+        },
+        60_000,
+        15,
+        "word-hashtag",
+        {
+          kind: "word-hashtag",
+          letters: initialLetters,
+          correctCells: [0],
+          swaps: [],
+          movesUsed: 0,
+          movesRemaining: 3,
+        },
+      ),
+    ).toThrow(ServerFlashQuestionError);
   });
 });

@@ -2,15 +2,19 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada. S01–S12 y el portal privado añaden la primera integración real de Supabase y completan el
-recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash competitivo →
+La fase 4 está cerrada para las slices verificadas. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
+E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
+recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Supervivencia/Pirámide competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
-introducción, el gameplay Flash, los dos rankings, el historial cerrado y la revisión consultan o
+introducción, el gameplay Flash/Supervivencia/Pirámide, los rankings, el historial Flash cerrado y la revisión consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
-server-only y los comandos competitivos existentes; Supervivencia, Pirámide y Narrativa siguen mock
-hasta sus propias vertical slices.
+server-only y los comandos competitivos existentes; los ajustes de sala ya tienen gestión parcial de
+membresías (conceder/quitar admin y eliminación lógica por el owner), mientras que transferencia,
+bloqueo/desbloqueo e invitaciones completas siguen pendientes. Supervivencia aporta vidas autoritativas;
+S15 integra Pirámide con niveles, evaluación, finalización y revisión server-side, verificada en el
+stack local. Narrativa sigue mock hasta su vertical slice.
 
 La dirección vigente es:
 
@@ -147,9 +151,13 @@ de Auth/DB/PostgREST no cambia la selección a un adaptador mock.
 E03 entrega solo `question`, metadatos de conteo/penalización y el prefijo de pistas concedidas.
 `private.progressive_clue_reveal_events` registra la primera pista gratuita y cada revelación
 posterior; el comando resuelve la siguiente pista desde la versión congelada, aplica la penalización
-contra `challenge_items.points`, incrementa `lock_version` y devuelve únicamente esa pista. La
-evaluación ignora cualquier contador del navegador y reconstruye `progressiveCluesRevealed` desde
-los eventos persistidos.
+como porcentaje de una base editorial de 100 puntos, redondea al entero más cercano y mantiene una
+penalización mínima de un punto cuando el porcentaje es positivo. El descuento escala con
+`challenge_items.points`; por ejemplo, una penalización de 20 en un nivel de 12 puntos resta 2.
+El comando incrementa `lock_version` y devuelve únicamente la pista y el máximo actualizado. La
+evaluación ignora cualquier contador del navegador, reconstruye `progressiveCluesRevealed` y usa el
+máximo del último evento persistido, de modo que puntuación y revisión coinciden y los intentos
+abiertos conservan el máximo que ya se les había mostrado.
 
 E04 entrega las dos columnas públicas y solo el progreso de parejas correctas. Cada solicitud valida
 la correspondencia contra la versión congelada, registra como máximo un evento por clave, penaliza el
@@ -241,15 +249,15 @@ navegación. No contiene documentos editoriales, soluciones, la biblioteca compl
 
 La navegación canónica queda fijada así:
 
-| Ruta                    | Responsabilidad                                                               |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| `/admin`                | Dashboard operativo breve, sin formularios ni documentos editoriales          |
-| `/admin/rooms`          | Área especializada de salas activas y creación de salas                       |
-| `/admin/rooms/[roomId]` | Detalle de sala; temporadas, miembros y calendario como subáreas contextuales |
-| `/admin/challenges`     | Catálogo especializado de desafíos Flash definidos                             |
-| `/admin/challenges/new` | Creación de un nuevo desafío Flash                                              |
-| `/admin/challenges/[challengeDefinitionId]` | Detalle, borrador e historial de versiones Flash                 |
-| `/admin/questions`      | Biblioteca de preguntas existente, integrada en el shell común                |
+| Ruta                                        | Responsabilidad                                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------- |
+| `/admin`                                    | Dashboard operativo breve, sin formularios ni documentos editoriales          |
+| `/admin/rooms`                              | Área especializada de salas activas y creación de salas                       |
+| `/admin/rooms/[roomId]`                     | Detalle de sala; temporadas, miembros y calendario como subáreas contextuales |
+| `/admin/challenges`                         | Catálogo especializado de desafíos Flash y Survival definidos                 |
+| `/admin/challenges/new`                     | Creación de un desafío Flash o Survival                                       |
+| `/admin/challenges/[challengeDefinitionId]` | Detalle, borrador e historial de versiones Flash/Survival                     |
+| `/admin/questions`                          | Biblioteca de preguntas existente, integrada en el shell común                |
 
 El dashboard no carga documentos editoriales, soluciones, la biblioteca completa ni todas las
 entradas del calendario. Las operaciones de temporada y calendario se ejecutan en el detalle de la
@@ -334,11 +342,11 @@ frontera de seguridad.
 ## Compatibilidad temporal
 
 `PlayableChallengePageModel` conserva el `Challenge` gameplay completo para no reescribir los 31
-formatos ni la evaluación local en esta fase. Por ello todavía envía soluciones al bundle cliente
-y no constituye una frontera de seguridad.
+formatos ni la evaluación local en rutas mock/práctica. El recorrido competitivo de Pirámide usa
+`ServerPyramidChallenge` y una lectura por checkpoint que no envía soluciones ni niveles futuros.
 
-`RoomSessionProvider` y el `localStorage` de Pirámide continúan combinando el resultado local con el
-snapshot recibido del servidor mediante funciones puras en recorridos mock/práctica. Los modelos
+`RoomSessionProvider` y el `localStorage` de Pirámide permanecen disponibles solo en recorridos
+mock/práctica. Los modelos
 Supabase de S06/S07 no fusionan `localResults` ni `RoomSessionProvider`: el servidor es la única
 fuente de los rankings, historial y revisión históricos.
 

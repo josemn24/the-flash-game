@@ -94,6 +94,105 @@ describe("Flash editorial document", () => {
     expect(isFlashEditorialDocument(parsed)).toBe(true);
   });
 
+  it("accepts Survival with a valid integer lives configuration", () => {
+    const document = documentFixture();
+    document.challenge.mode = "survival";
+    document.challenge.modeConfig = { lives: 2 };
+
+    expect(parseFlashEditorialDocument(document).challenge).toMatchObject({
+      mode: "survival",
+      modeConfig: { lives: 2 },
+    });
+  });
+
+  it("rejects invalid Survival lives and the unsupported short-text format", () => {
+    for (const modeConfig of [{ lives: 0 }, { lives: 3 }, { lives: 1, extra: true }]) {
+      const document = documentFixture();
+      document.challenge.mode = "survival";
+      document.challenge.modeConfig = modeConfig;
+      expect(() => parseFlashEditorialDocument(document)).toThrow();
+    }
+
+    const document = documentFixture();
+    document.challenge.mode = "survival";
+    document.challenge.modeConfig = { lives: 1 };
+    document.questions[0] = {
+      slug: "short-text-question",
+      type: "short-text",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 15000,
+      points: 50,
+      publicPayload: {
+        category: "Cultura",
+        tags: {},
+        question: "¿Cuál es la capital de Portugal?",
+        answerPlaceholder: "Escribe una ciudad",
+      },
+      solutionPayload: {
+        correctAnswer: "Lisboa",
+        acceptedAnswers: ["lisboa"],
+        explanation: "Lisboa es la capital.",
+      },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow(
+      "Supervivencia requiere formatos con evaluación competitiva de Flash.",
+    );
+  });
+
+  it("accepts seven Pyramid levels with unique metadata and 100 points", () => {
+    const document = documentFixture();
+    document.challenge.mode = "pyramid";
+    document.questions = Array.from({ length: 7 }, (_, index) => ({
+      ...document.questions[index % 2]!,
+      slug: `pyramid-question-${index + 1}`,
+      points: index === 6 ? 40 : 10,
+      modeConfig: {
+        levelId: `level-${index + 1}`,
+        label: `Nivel ${index + 1}`,
+        briefing: {
+          title: `Prueba ${index + 1}`,
+          format: "Opción múltiple",
+          description: "Resuelve la prueba para avanzar.",
+        },
+      },
+    })) as unknown as TestQuestion[];
+
+    const parsed = parseFlashEditorialDocument(document);
+    expect(parsed.challenge.mode).toBe("pyramid");
+    expect(parsed.questions).toHaveLength(7);
+    expect(parsed.questions[0]).toMatchObject({ modeConfig: { levelId: "level-1" } });
+  });
+
+  it("rejects Pyramid with the wrong level count, invalid briefing, or duplicate level IDs", () => {
+    const document = documentFixture();
+    document.challenge.mode = "pyramid";
+    document.questions = Array.from({ length: 7 }, (_, index) => ({
+      ...document.questions[index % 2]!,
+      slug: `pyramid-question-${index + 1}`,
+      points: index === 6 ? 40 : 10,
+      modeConfig: {
+        levelId: `level-${index + 1}`,
+        label: `Nivel ${index + 1}`,
+        briefing: {
+          title: `Prueba ${index + 1}`,
+          format: "Opción múltiple",
+          description: "Resuelve la prueba para avanzar.",
+        },
+      },
+    })) as unknown as TestQuestion[];
+
+    expect(() => parseFlashEditorialDocument({ ...document, questions: document.questions.slice(0, 6) }))
+      .toThrow("exactamente siete niveles");
+    const duplicate = structuredClone(document);
+    (duplicate.questions[6] as unknown as { modeConfig: { levelId: string } }).modeConfig.levelId =
+      "level-1";
+    expect(() => parseFlashEditorialDocument(duplicate)).toThrow("válidos y únicos");
+    const invalidBriefing = structuredClone(document);
+    (invalidBriefing.questions[0] as unknown as { modeConfig: { briefing: unknown } }).modeConfig.briefing =
+      { title: "", format: "", description: "" };
+    expect(() => parseFlashEditorialDocument(invalidBriefing)).toThrow("válidos y únicos");
+  });
+
   it("accepts the supported final-answer editorial formats", () => {
     const documents = [
       {
@@ -220,6 +319,68 @@ describe("Flash editorial document", () => {
           explanation: "Clasificación histórica.",
         },
       },
+      {
+        slug: "logic-matrix-question",
+        type: "logic-matrix",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 20_000,
+        publicPayload: {
+          category: "Lógica visual",
+          tags: {},
+          question: "¿Qué pieza completa la matriz?",
+          pieces: [
+            { id: "circle-up", symbol: "●↑", label: "Círculo arriba" },
+            { id: "triangle-right", symbol: "▲→", label: "Triángulo derecha" },
+            { id: "square-down", symbol: "■↓", label: "Cuadrado abajo" },
+            { id: "triangle-up", symbol: "▲↑", label: "Triángulo arriba" },
+          ],
+          cells: [
+            "circle-up",
+            "triangle-right",
+            "square-down",
+            "triangle-right",
+            "square-down",
+            "circle-up",
+            "square-down",
+            "circle-up",
+            null,
+          ],
+          optionIds: ["triangle-up", "triangle-right", "circle-up", "square-down"],
+          showPieceLabels: false,
+        },
+        solutionPayload: {
+          correctOptionId: "triangle-up",
+          explanation: "La tercera pieza completa la rotación.",
+        },
+      },
+      {
+        slug: "zip-final-answer",
+        type: "zip",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 35_000,
+        publicPayload: {
+          category: "Lógica espacial",
+          tags: {},
+          question: "Une los números y cubre todas las celdas.",
+          grid: { rows: 5, columns: 5 },
+          checkpoints: [
+            { value: 1, cell: 0 },
+            { value: 2, cell: 4 },
+            { value: 3, cell: 5 },
+            { value: 4, cell: 14 },
+            { value: 5, cell: 15 },
+            { value: 6, cell: 24 },
+          ],
+          boardLabel: "Tablero Zip",
+        },
+        solutionPayload: {
+          solution: [
+            0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23,
+            24,
+          ],
+          explanation: "Recorrido serpenteante.",
+        },
+      },
     ];
 
     expect(
@@ -232,7 +393,84 @@ describe("Flash editorial document", () => {
       { type: "heat-map" },
       { type: "anagram" },
       { type: "classification" },
+      { type: "logic-matrix" },
+      { type: "zip" },
     ]);
+  });
+
+  it("keeps logic-matrix solutions private and validates the matrix contract", () => {
+    const question = {
+      slug: "logic-matrix-private",
+      type: "logic-matrix",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 20_000,
+      publicPayload: {
+        question: "Completa la matriz",
+        pieces: [
+          { id: "a", symbol: "A", label: "A" },
+          { id: "b", symbol: "B", label: "B" },
+          { id: "c", symbol: "C", label: "C" },
+          { id: "d", symbol: "D", label: "D" },
+        ],
+        cells: ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        optionIds: ["d", "a", "b", "c"],
+      },
+      solutionPayload: { correctOptionId: "d" },
+    };
+    const parsed = parseFlashEditorialQuestionDocument(question);
+    expect(parsed.type).toBe("logic-matrix");
+    expect(parsed.publicPayload).not.toHaveProperty("correctOptionId");
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        ...question,
+        publicPayload: { ...question.publicPayload, correctOptionId: "d" },
+      }),
+    ).toThrow();
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        ...question,
+        solutionPayload: { correctOptionId: "missing" },
+      }),
+    ).toThrow();
+  });
+
+  it("keeps Escape reference moves private and validates the editorial contract", () => {
+    const question = {
+      slug: "escape-private",
+      type: "escape",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 30_000,
+      publicPayload: {
+        question: "Libera el bloque amarillo.",
+        grid: { rows: 6, columns: 6, exit: { side: "right", row: 2 } },
+        initialBlocks: [
+          { id: "target", kind: "target", orientation: "horizontal", row: 2, column: 0, length: 2 },
+          { id: "a", kind: "obstacle", orientation: "vertical", row: 1, column: 2, length: 2 },
+          { id: "b", kind: "obstacle", orientation: "vertical", row: 0, column: 4, length: 3 },
+          { id: "c", kind: "obstacle", orientation: "horizontal", row: 0, column: 1, length: 2 },
+          { id: "d", kind: "obstacle", orientation: "horizontal", row: 4, column: 1, length: 2 },
+        ],
+      },
+      solutionPayload: {
+        referenceSolution: [
+          { blockId: "c", from: 1, to: 0 },
+          { blockId: "a", from: 1, to: 0 },
+          { blockId: "b", from: 0, to: 3 },
+          { blockId: "target", from: 0, to: 4 },
+        ],
+        optimalMoves: 4,
+      },
+    };
+    const parsed = parseFlashEditorialQuestionDocument(question);
+    expect(parsed.type).toBe("escape");
+    expect(parsed.publicPayload).not.toHaveProperty("referenceSolution");
+    expect(parsed.publicPayload).not.toHaveProperty("optimalMoves");
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        ...question,
+        publicPayload: { ...question.publicPayload, referenceSolution: [] },
+      }),
+    ).toThrow();
   });
 
   it("rejects invalid final-answer contracts", () => {

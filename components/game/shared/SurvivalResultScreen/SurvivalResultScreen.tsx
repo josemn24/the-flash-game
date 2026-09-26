@@ -42,7 +42,7 @@ export function SurvivalResultScreen({
   eliminated: boolean;
   survived: boolean;
   onReview: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
   const partial = results.filter((result) => result.status === "partial").length;
@@ -113,10 +113,12 @@ export function SurvivalResultScreen({
             </div>
           </div>
 
-          <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
-            <RotateIcon className="h-5 w-5" />
-            Volver a jugar
-          </MotionButton>
+          {onReplay ? (
+            <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
+              <RotateIcon className="h-5 w-5" />
+              Volver a jugar
+            </MotionButton>
+          ) : null}
           <MotionButton
             variant="secondary"
             className="mt-3"

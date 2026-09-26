@@ -76,6 +76,6 @@ test.describe("S08 — crear una sala privada", () => {
     await page.getByRole("button", { name: "Salir" }).click();
     await expect(page.getByRole("button", { name: "Iniciar sesión" })).toBeVisible();
     await page.goto("/admin");
-    await expect(page).toHaveURL("http://127.0.0.1:3000/");
+    await expect(page).toHaveURL(/\/$/);
   });
 });

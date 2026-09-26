@@ -22,14 +22,28 @@ function clampRevealedClues(revealedClues: number, totalClues: number) {
   return Math.min(Math.max(safeValue, 1), totalClues);
 }
 
+export function scaleProgressiveCluePenalty(
+  cluePenalty: number,
+  sourcePoints: number,
+  targetPoints: number,
+) {
+  if (sourcePoints <= 0 || targetPoints <= 0 || cluePenalty <= 0) return 0;
+  return Math.max(1, Math.round((cluePenalty / sourcePoints) * targetPoints));
+}
+
 export function calculateProgressiveCluesMetrics(
   question: ProgressiveCluesQuestion,
   revealedClues: number,
+  availablePointsOverride?: number,
 ) {
   const totalClues = question.clues.length;
   const safeRevealedClues = clampRevealedClues(revealedClues, totalClues);
   const additionalClues = Math.max(0, safeRevealedClues - 1);
-  const availablePoints = Math.max(0, question.points - question.cluePenalty * additionalClues);
+  const calculatedPoints = Math.max(0, question.points - question.cluePenalty * additionalClues);
+  const availablePoints =
+    typeof availablePointsOverride === "number" && Number.isSafeInteger(availablePointsOverride)
+      ? Math.min(Math.max(0, question.points), Math.max(0, availablePointsOverride))
+      : calculatedPoints;
   return { revealedClues: safeRevealedClues, totalClues, availablePoints };
 }
 
@@ -43,11 +57,15 @@ function isCorrect(question: Question, answer: AnswerValue) {
 
 function unansweredDetails(
   question: Question,
-  context: { revealedClues: number },
+  context: { revealedClues: number; availablePoints?: number },
 ): AnswerResultDetails {
   return {
     type: "progressive-clues",
-    ...calculateProgressiveCluesMetrics(asQuestion(question), context.revealedClues),
+    ...calculateProgressiveCluesMetrics(
+      asQuestion(question),
+      context.revealedClues,
+      context.availablePoints,
+    ),
   };
 }
 
@@ -56,10 +74,11 @@ export function evaluateProgressiveClues({
   answer,
   timeUsed,
   revealedClues,
+  availablePoints,
 }: EvaluationContext): InternalEvaluation {
   const cluesQuestion = asQuestion(question);
   const correct = isCorrect(question, answer);
-  const metrics = calculateProgressiveCluesMetrics(cluesQuestion, revealedClues);
+  const metrics = calculateProgressiveCluesMetrics(cluesQuestion, revealedClues, availablePoints);
   return {
     isCorrect: correct,
     status: correct ? "correct" : "incorrect",
@@ -87,6 +106,7 @@ export const scoring = {
     submittedCodes: input.submittedCodes,
     incorrectAttempts: 0,
     revealedClues: input.progressiveCluesRevealed,
+    availablePoints: input.progressiveClueAvailablePoints,
   }),
   evaluate: evaluateProgressiveClues,
 } as const satisfies QuestionScoring;

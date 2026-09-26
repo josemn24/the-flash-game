@@ -7,17 +7,27 @@ import styles from "./FlashPopGameShell.module.css";
 
 type FlashPopGameShellProps = {
   layout: "intro" | "game";
+  presentation?: "default" | "pyramid";
   children: ReactNode;
 };
 
-export function FlashPopGameShell({ layout, children }: FlashPopGameShellProps) {
+export function FlashPopGameShell({
+  layout,
+  presentation = "default",
+  children,
+}: FlashPopGameShellProps) {
+  const contentClassName =
+    layout === "intro"
+      ? styles.introCanvasContent
+      : `${styles.screen} ${presentation === "pyramid" ? styles.pyramidScreen : ""}`;
+
   return (
     <MotionConfig reducedMotion="user">
       <Canvas
         data-gameplay-shell="flash-pop"
         data-gameplay-layout={layout}
         maxWidth={layout === "intro" ? "none" : "wide"}
-        contentClassName={layout === "intro" ? styles.introCanvasContent : styles.screen}
+        contentClassName={contentClassName}
       >
         <AnimatePresence mode="wait">{children}</AnimatePresence>
       </Canvas>

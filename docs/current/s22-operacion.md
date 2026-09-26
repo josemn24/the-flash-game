@@ -3,11 +3,12 @@
 > Estado: vigente. Alcance local/CI; no hay proyecto remoto enlazado.
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
-El piloto incluye Flash competitivo persistido y portal superadmin sobre Supabase, incluidos E01
-Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens y E10 Progressive-image. Los demás modos, formatos no migrados, E06–E09, Storage, abandono automático, takeover
-y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y D08b habilita assets
-privados de E10 desde el editor y el recorrido competitivo. `multiple-choice` todavía no consume
-assets privados.
+El piloto incluye Flash y Supervivencia competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
+Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
+además de los formatos F habilitados. Pirámide, Narrativa, formatos no migrados, E07–E09, abandono
+automático, takeover y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y
+D08b habilita assets privados de E10 y `multiple-choice` desde el editor y el recorrido competitivo.
+S14 limita el editor de Supervivencia a formatos con evaluación server-side.
 
 ## Runtime scope
 
@@ -21,14 +22,14 @@ El servidor lee `FLASH_RUNTIME_SCOPE`:
 Un build con `NODE_ENV=production` usa `pilot` si la variable no está definida. Un valor desconocido
 falla al arrancar la composición server-only.
 
-| Superficie | Pilot | Development/Test |
-| --- | --- | --- |
-| `/`, `/salas/[roomId]`, rankings, historial | Supabase | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>` | Supabase; Flash admite MC + Mini-Wordle + Logic-code + Progressive-clues + Matching + E10 | Supabase |
-| `/desafios/[challengeId]` sin sala | 404 | Preview mock explícito |
-| aliases como `tabarnia-room` | 404 | Demo mock |
-| `/formatos`, `/flash-pop/**` | Demo/práctica | Demo/práctica |
-| `/admin` y `/api/internal/calendar/tick` | Supabase + autorización | Supabase + autorización |
+| Superficie                                  | Pilot                                                                                   | Development/Test                           |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                | Supabase; mocks solo en aliases explícitos |
+| `/desafios/[challengeId]?roomId=<UUID>`     | Supabase; Flash y Supervivencia admiten los formatos con evaluación competitiva migrada | Supabase                                   |
+| `/desafios/[challengeId]` sin sala          | 404                                                                                     | Preview mock explícito                     |
+| aliases como `tabarnia-room`                | 404                                                                                     | Demo mock                                  |
+| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                           | Demo/práctica                              |
+| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                 | Supabase + autorización                    |
 
 ## Contrato HTTP
 
@@ -102,7 +103,9 @@ npm run test:e2e -- e2e/e03-progressive-clues.spec.ts
 Progressive-clues registra la primera pista con penalización cero y las siguientes mediante
 `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`. El payload jugable no
 contiene la solución ni pistas futuras; `lockVersion`, el plazo, la secuencia, la idempotencia y
-los puntos disponibles los decide PostgreSQL. Una respuesta incorrecta o timeout recibe cero puntos.
+los puntos disponibles los decide PostgreSQL. `cluePenalty` se expresa sobre 100 puntos y escala al
+valor del nivel: con 12 puntos y penalización 20, cada pista adicional resta 2. La evaluación usa el
+máximo persistido por la última revelación. Una respuesta incorrecta o timeout recibe cero puntos.
 
 Para E04:
 

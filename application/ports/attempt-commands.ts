@@ -19,6 +19,10 @@ import type {
   SubmitAnswerResult,
   SubmitMatchingPairInput,
   SubmitMatchingPairResult,
+  SubmitWordSearchSelectionInput,
+  SubmitWordSearchSelectionResult,
+  SubmitWordHashtagSwapInput,
+  SubmitWordHashtagSwapResult,
   SubmitMiniWordleGuessInput,
   SubmitMiniWordleGuessResult,
   SubmitLogicCodeAttemptInput,
@@ -83,6 +87,7 @@ export type EvaluationContext = EvaluationReceipt & {
   readonly incorrectAttempts?: number;
   readonly matchingIncorrectAttempts?: number;
   readonly progressiveCluesRevealed?: number;
+  readonly progressiveClueAvailablePoints?: number;
 };
 
 /**
@@ -99,6 +104,8 @@ export interface AttemptCommands {
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
   submitMatchingPair(input: SubmitMatchingPairInput): Promise<SubmitMatchingPairResult>;
+  submitWordSearchSelection(input: SubmitWordSearchSelectionInput): Promise<SubmitWordSearchSelectionResult>;
+  submitWordHashtagSwap(input: SubmitWordHashtagSwapInput): Promise<SubmitWordHashtagSwapResult>;
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
   submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;

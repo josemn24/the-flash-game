@@ -227,6 +227,12 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
       answer: { foundWordIds: ["isaac"] },
       timeUsed: 0,
     });
+    const solvedSearchAfterMiss = evaluateAnswer({
+      question: wordSearch,
+      answer: { foundWordIds: wordSearch.targets.map((target) => target.id) },
+      timeUsed: 10,
+      incorrectAttempts: 1,
+    });
     const partialClassification = evaluateAnswer({
       question: classification,
       answer: { Torá: "Judaísmo" },
@@ -234,6 +240,8 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
     });
     expect(partialSearch).toMatchObject({ status: "partial", isCorrect: false });
     expect(partialClassification).toMatchObject({ status: "partial", isCorrect: false });
+    expect(solvedSearchAfterMiss).toMatchObject({ status: "correct", isCorrect: true });
+    expect(normalizePyramidResult(solvedSearchAfterMiss).points).toBeGreaterThan(0);
     expect(normalizePyramidResult(partialSearch).points).toBe(0);
     expect(normalizePyramidResult(partialClassification).points).toBe(0);
   });

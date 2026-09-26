@@ -64,6 +64,7 @@ test.describe("S07 — historial y revisión Flash", () => {
     await page.getByRole("link", { name: /Ver detalle de Alice/ }).click();
     await expect(page.getByRole("heading", { name: "Alice" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Respuestas" })).toBeVisible();
+    await page.locator("details").first().locator("summary").click();
     await expect(page.getByText("Respuesta correcta").first()).toBeVisible();
     await expect(page.getByText("Partida abandonada")).toHaveCount(0);
 
@@ -73,6 +74,7 @@ test.describe("S07 — historial y revisión Flash", () => {
     await expect(page.getByRole("heading", { name: "Carol" })).toBeVisible();
     await expect(page.getByText("Partida abandonada")).toBeVisible();
     await expect(page.getByText("Sin responder", { exact: true })).toBeVisible();
+    await page.locator("details").first().locator("summary").click();
     await expect(page.getByText("Respuesta correcta").first()).toBeVisible();
 
     const spectatorContext = await browser.newContext();

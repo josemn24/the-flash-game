@@ -13,6 +13,8 @@
     "supabase:db:schema:sync": "supabase db schema declarative sync",
     "supabase:fixture": "node scripts/supabase-fixture.mjs",
     "supabase:tabarnia:setup": "node scripts/seed-tabarnia.mjs",
+    "supabase:betavip:setup": "node scripts/seed-betavip.mjs",
+    "supabase:staging:bootstrap": "node scripts/bootstrap-staging.mjs",
     "sbr:asset:generate": "node scripts/generate-sbr-assets.mjs",
     "supabase:browser:setup": "node scripts/seed-browser.mjs",
     "test:integration:supabase": "node scripts/supabase-integration.mjs",
@@ -34,6 +36,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docs:check": "node scripts/check-doc-links.mjs",
+    "schema:revision:check": "node scripts/check-schema-revision.mjs",
     "supabase:schema:test": "node scripts/check-supabase-schema.mjs",
     "verify:pilot": "node scripts/verify-pilot.mjs"
   },

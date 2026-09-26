@@ -11,6 +11,8 @@ import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
   ServerFlashTerminalReview,
+  ServerSurvivalChallenge,
+  ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
 import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
 
@@ -88,7 +90,12 @@ export function RoomChallengeClient({
   persistence: persistenceProp,
   terminalReview,
 }: {
-  challenge: Challenge | ServerFlashChallenge | ServerAlphabetChallenge;
+  challenge:
+    | Challenge
+    | ServerFlashChallenge
+    | ServerAlphabetChallenge
+    | ServerSurvivalChallenge
+    | ServerPyramidChallenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
@@ -148,7 +155,7 @@ export function RoomChallengeClient({
   if (
     persistence === "server" &&
     roomContext &&
-    ("slots" in challenge || "entries" in challenge) &&
+    ("slots" in challenge || "entries" in challenge || "levels" in challenge) &&
     attemptStatus === "completed" &&
     roomContext.result
   ) {

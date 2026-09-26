@@ -7,6 +7,7 @@ type Fixture = {
   data: {
     room: { slug: string };
     publicationId: string;
+    publications: Array<{ id: string; title: string; mode: string; status: string }>;
     avatars: Array<{ label: string; objectPath: string }>;
   };
 };
@@ -33,7 +34,7 @@ test.describe("Tabarnia alpha", () => {
     expect(response?.status()).toBe(200);
     await expect(page.getByRole("heading", { name: "Tabarnia", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Miembros", exact: true })).toBeVisible();
-    await expect(page.getByText(/Flash Points/).first()).toBeVisible();
+    await expect(page.getByRole("img", { name: /Flash Points/ }).first()).toBeVisible();
   });
 
   test("mantiene 404 para una sala inexistente o no autorizada", async ({ page }) => {
@@ -83,7 +84,11 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
-  test("Ches puede abrir la sala y comenzar Steel Ball Run", async ({ page }) => {
+  test("Ches ve y juega Reino de animales como primera publicación de Tabarnia", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 406, height: 847 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
     const data = await fixture();
     await signIn(page, data.users.ches);
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
@@ -105,9 +110,81 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("link", { name: "Volver al detalle de la sala" }).click();
 
     await page.getByRole("link", { name: "Jugar" }).click();
-    await expect(page.getByRole("heading", { name: "Steel Ball Run" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Reino de animales" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
     await page.getByRole("button", { name: "Empezar desafío" }).click();
-    await expect(page.getByRole("heading", { name: /Caballo de Fuego/ })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Mamífero protegido por una coraza de placas óseas." }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('[data-gameplay-shell="flash-pop-alphabet"]')).toHaveAttribute(
+      "data-gameplay-layout",
+      "playing",
+    );
+    const viewportRight = 386;
+    const board = await page
+      .getByRole("list", { name: "Estado de las letras" })
+      .locator("..")
+      .boundingBox();
+    const question = await page
+      .getByRole("heading", {
+        name: "Mamífero protegido por una coraza de placas óseas.",
+      })
+      .boundingBox();
+    const answer = await page.getByRole("textbox", { name: "Tu respuesta" }).boundingBox();
+    expect(board).not.toBeNull();
+    expect(question).not.toBeNull();
+    expect(answer).not.toBeNull();
+    for (const [label, box] of [
+      ["tablero", board!],
+      ["pregunta", question!],
+      ["campo de respuesta", answer!],
+    ] as const) {
+      expect(box.x).toBeGreaterThanOrEqual(20);
+      expect(box.x + box.width, `${label} rebasa el margen derecho`).toBeLessThanOrEqual(
+        viewportRight,
+      );
+    }
+    await expect(page.getByText(/^Solución:/)).toHaveCount(0);
+    let failFirstAnswer = true;
+    await page.route(/\/api\/competitive\/attempts\/[^/]+\/answer$/, async (route) => {
+      if (failFirstAnswer) {
+        failFirstAnswer = false;
+        await route.abort();
+        return;
+      }
+      await route.continue();
+    });
+    await page.getByLabel("Tu respuesta").fill("armadillo");
+    await page.getByRole("button", { name: "Responder" }).click();
+    await expect(
+      page.getByText("No se ha podido confirmar la respuesta.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Responder" })).toBeEnabled();
+    await page.getByRole("button", { name: "Responder" }).click();
+    await expect(page.getByRole("status").getByText("Correcto")).toBeVisible();
+    await page.unroute(/\/api\/competitive\/attempts\/[^/]+\/answer$/);
+
+    expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
+    expect(data.data.publications[0]).toMatchObject({
+      title: "Reino de animales",
+      mode: "alphabet",
+      status: "open",
+    });
+    expect(data.data.publications[1]).toMatchObject({
+      title: "Biblia y religiones abrahámicas",
+      mode: "pyramid",
+      status: "scheduled",
+    });
+    expect(data.data.publications[2]).toMatchObject({
+      title: "Steel Ball Run",
+      mode: "flash",
+      status: "scheduled",
+    });
+    expect(data.data.publications[3]).toMatchObject({
+      title: "Supervivencia: España",
+      mode: "survival",
+      status: "scheduled",
+    });
   });
 
   test("xesmona queda fuera de la sala competitiva", async ({ page }) => {

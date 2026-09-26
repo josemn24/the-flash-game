@@ -50,7 +50,11 @@ export async function POST(
       lockVersion = (resolved as { lockVersion: number }).lockVersion;
     }
     const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    if (snapshot.allItemsResolved) {
+    if (
+      snapshot.allItemsResolved ||
+      snapshot.terminalOutcome === "eliminated" ||
+      snapshot.terminalOutcome === "failed"
+    ) {
       const completed = await commands.completeFromPersistedAnswers({
         attemptId,
         sessionToken,
@@ -68,6 +72,16 @@ export async function POST(
           ...(resolved ? { resolved } : {}),
           review,
           score: completed.score,
+          ...(snapshot.challengeMode === "survival"
+            ? {
+                livesRemaining: completed.livesRemaining ?? snapshot.livesRemaining,
+                initialLives: snapshot.initialLives,
+                outcome: completed.outcome ?? snapshot.terminalOutcome,
+              }
+            : {}),
+          ...(snapshot.challengeMode === "pyramid"
+            ? { outcome: completed.outcome ?? snapshot.terminalOutcome }
+            : {}),
         },
         200,
         requestId,
@@ -80,7 +94,19 @@ export async function POST(
         status: snapshot.status,
         lockVersion: snapshot.lockVersion,
         answers: snapshot.answers,
-        phase: snapshot.hasStartedInteraction ? "prepare" : "countdown",
+        phase:
+          snapshot.challengeMode === "pyramid" && snapshot.hasOpenInteraction !== true
+            ? "briefing"
+            : snapshot.hasStartedInteraction
+              ? "prepare"
+              : "countdown",
+        ...(snapshot.challengeMode === "survival"
+          ? {
+              livesRemaining: snapshot.livesRemaining,
+              initialLives: snapshot.initialLives,
+              outcome: snapshot.terminalOutcome,
+            }
+          : {}),
         ...(resolved ? { resolved } : {}),
       },
       200,

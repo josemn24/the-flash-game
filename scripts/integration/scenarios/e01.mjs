@@ -1,4 +1,5 @@
 import { rpc, sqlCount } from "../../support/supabase-local.mjs";
+import { publishDraftQuestions } from "./publish-draft-questions.mjs";
 
 export const scenario = {
   id: "e01",
@@ -54,6 +55,13 @@ export const scenario = {
       (entry) => entry.challengeVersionId === created.data?.challengeVersionId,
     );
     assert(draft?.document?.questions?.[1]?.type === "mini-wordle", "El portal conserva Mini-Wordle");
+    await publishDraftQuestions({
+      client: clients.superadmin,
+      slugs: editorialDocument.questions.map((question) => question.slug),
+      idempotencyKeyPrefix: "integration-e01-publish-question",
+      reason: "Publicar preguntas E01",
+      assert,
+    });
     const published = await clients.superadmin.rpc("publish_superadmin_flash", {
       input: {
         idempotencyKey: "integration-e01-publish",

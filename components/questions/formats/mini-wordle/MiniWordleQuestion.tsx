@@ -65,6 +65,7 @@ export function MiniWordleQuestion({
   const [guesses, setGuesses] = useState<string[]>(() =>
     (initialAnswer?.guesses ?? []).slice(0, maxAttempts).map(normalizeMiniWordleWord),
   );
+  const previousGuessCountRef = useRef(guesses.length);
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const timedResponseStartedRef = useRef(false);
@@ -94,6 +95,18 @@ export function MiniWordleQuestion({
     onTimedResponseStart();
     inputRef.current?.focus();
   }, [dictionary, onTimedResponseStart]);
+
+  useEffect(() => {
+    const previousGuessCount = previousGuessCountRef.current;
+    previousGuessCountRef.current = guesses.length;
+    if (
+      guesses.length > previousGuessCount &&
+      guesses.length < maxAttempts &&
+      !locked
+    ) {
+      inputRef.current?.focus();
+    }
+  }, [guesses.length, locked, maxAttempts]);
 
   const normalizedValidGuesses = useMemo(
     () =>

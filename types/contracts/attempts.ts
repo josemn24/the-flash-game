@@ -10,7 +10,7 @@ import type {
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { AnswerValueOfType, QuestionType } from "@/types/contracts/questions";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
-import type { AnswerResultDetails } from "@/types/gameplay/result";
+import type { AnswerResultDetails } from "@/types/contracts/result-details";
 
 /** Caller identity always comes from the verified server session, never this input. */
 export type StartAttemptInput = {
@@ -84,6 +84,52 @@ export type SubmitMatchingPairResult = AttemptCommandResult & {
   readonly receiptId?: AnswerReceiptId;
   readonly status?: AnswerStatus;
   readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
+export type SubmitWordSearchSelectionInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly startCell: number;
+  readonly endCell: number;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitWordSearchSelection = {
+  readonly targetId: string;
+  readonly startCell: number;
+  readonly endCell: number;
+};
+export type SubmitWordSearchSelectionResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly startCell: number;
+  readonly endCell: number;
+  readonly correct: boolean;
+  readonly terminal: boolean;
+  readonly matchedTargetId: string | null;
+  readonly foundSelections: readonly SubmitWordSearchSelection[];
+  readonly foundWordIds: readonly string[];
+  readonly foundCount: number;
+  readonly totalWords: number;
+  readonly incorrectAttempts: number;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
+export type SubmitWordHashtagSwapInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly fromCell: number;
+  readonly toCell: number;
+  readonly clientTimeUsedMs?: DurationMs;
+};
+export type SubmitWordHashtagSwapResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly letters: readonly (string | null)[];
+  readonly movesUsed: number;
+  readonly movesRemaining: number;
+  readonly terminal: boolean;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly details?: AnswerResultDetails;
   readonly timeUsedMs?: DurationMs;
 };
 export type SubmitMiniWordleGuessInput = AttemptCommandInput & {
@@ -191,6 +237,7 @@ export type AttemptRecoveryAnswer = {
   readonly answer: JsonValue;
   readonly points: number;
   readonly timeUsedMs: DurationMs;
+  readonly resultDetails?: AnswerResultDetails | null;
 };
 /** Deliberately excludes question public/solution payloads. */
 export type AttemptRecoverySnapshot = {
@@ -199,12 +246,19 @@ export type AttemptRecoverySnapshot = {
   readonly status: AttemptStatus;
   readonly lockVersion: number;
   readonly hasStartedInteraction: boolean;
+  readonly hasOpenInteraction?: boolean;
   readonly allItemsResolved: boolean;
+  readonly challengeMode?: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+  readonly initialLives?: number | null;
+  readonly livesRemaining?: number | null;
+  readonly terminalOutcome?: "eliminated" | "survived" | "failed" | "summit" | null;
   readonly answers: readonly AttemptRecoveryAnswer[];
 };
 export type FinishAttemptResult = AttemptCommandResult & {
   readonly status: Extract<AttemptStatus, "completed" | "abandoned">;
   readonly score: number | null;
+  readonly outcome?: string | null;
+  readonly livesRemaining?: number | null;
 };
 export type AcceptInvitationInput = {
   readonly invitationToken: string;

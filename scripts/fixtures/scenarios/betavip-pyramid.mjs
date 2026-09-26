@@ -1,0 +1,196 @@
+const logicTags = {
+  domains: ["mathematics"],
+  topics: ["logic_puzzles"],
+  cognitiveSkills: ["logical_reasoning", "problem_solving"],
+  formatSkills: ["deduction", "planning"],
+  lifeSkills: [],
+};
+
+function question(slug, type, prompt, timeLimitMs, publicFields, solutionPayload) {
+  return {
+    slug,
+    type,
+    points: { "odd-one-out": 10, "logic-matrix": 12, zip: 13, "connect-pairs": 14, escape: 15, "logic-code": 17, queens: 19 }[type],
+    timeLimitMs,
+    payloadSchemaVersion: 1,
+    publicPayload: {
+      category: "Lógica",
+      tags: logicTags,
+      question: prompt,
+      ...publicFields,
+    },
+    solutionPayload,
+  };
+}
+
+export const BETA_VIP_PYRAMID = {
+  slug: "betavip-cumbre-logica-ii",
+  title: "Cumbre lógica II",
+  subtitle: "Siete formatos, una cima",
+  description: "Una ruta de lógica avanzada que combina clasificación, patrones, recorridos y restricciones.",
+  modeConfig: {},
+};
+
+export const betaVipPyramidQuestions = [
+  question(
+    "betavip-cumbre-logica-ii-zip",
+    "zip",
+    "Une los puntos en orden y cubre todo el tablero.",
+    45000,
+    {
+      grid: { rows: 5, columns: 5 },
+      checkpoints: [
+        { value: 1, cell: 0 },
+        { value: 2, cell: 4 },
+        { value: 3, cell: 5 },
+        { value: 4, cell: 14 },
+        { value: 5, cell: 15 },
+        { value: 6, cell: 24 },
+      ],
+      instruction: "Completa un único recorrido ortogonal del 1 al 8.",
+    },
+    {
+      solution: [0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24],
+      explanation: "El recorrido serpentea por las cinco filas sin repetir ninguna celda.",
+    },
+  ),
+  question(
+    "betavip-cumbre-logica-ii-matriz",
+    "logic-matrix",
+    "¿Qué pieza completa la matriz?",
+    35000,
+    {
+      pieces: [
+        { id: "circle-up", symbol: "●↑", label: "Círculo y flecha arriba" },
+        { id: "triangle-right", symbol: "▲→", label: "Triángulo y flecha derecha" },
+        { id: "square-down", symbol: "■↓", label: "Cuadrado y flecha abajo" },
+        { id: "triangle-down", symbol: "▲↓", label: "Triángulo y flecha abajo" },
+        { id: "square-up", symbol: "■↑", label: "Cuadrado y flecha arriba" },
+        { id: "circle-right", symbol: "●→", label: "Círculo y flecha derecha" },
+        { id: "square-right", symbol: "■→", label: "Cuadrado y flecha derecha" },
+        { id: "circle-down", symbol: "●↓", label: "Círculo y flecha abajo" },
+        { id: "triangle-up", symbol: "▲↑", label: "Triángulo y flecha arriba" },
+        { id: "triangle-left", symbol: "▲←", label: "Triángulo y flecha izquierda" },
+        { id: "square-left", symbol: "■←", label: "Cuadrado y flecha izquierda" },
+      ],
+      cells: ["circle-up", "triangle-right", "square-down", "triangle-down", "square-up", "circle-right", "square-right", "circle-down", null],
+      optionIds: ["triangle-up", "triangle-left", "circle-up", "square-left"],
+      showPieceLabels: false,
+    },
+    { correctOptionId: "triangle-up", explanation: "La última celda necesita el triángulo con la flecha hacia arriba." },
+  ),
+  question(
+    "betavip-cumbre-logica-ii-intruso",
+    "odd-one-out",
+    "¿Qué número rompe el patrón?",
+    25000,
+    {
+      items: [
+        { id: "cube-8", label: "8" },
+        { id: "cube-27", label: "27" },
+        { id: "cube-64", label: "64" },
+        { id: "cube-81", label: "81" },
+        { id: "cube-125", label: "125" },
+      ],
+    },
+    { correctAnswer: "cube-81", explanation: "8, 27, 64 y 125 son cubos perfectos; 81 es la única excepción." },
+  ),
+  question(
+    "betavip-cumbre-logica-ii-conexiones",
+    "connect-pairs",
+    "Encuentra las rutas que completen el tablero sin cruzarse.",
+    45000,
+    {
+      grid: { rows: 5, columns: 5 },
+      pairs: [
+        { id: "circle", label: "Círculo", symbol: "●", endpoints: [0, 9], color: "#35e8ff" },
+        { id: "triangle", label: "Triángulo", symbol: "▲", endpoints: [14, 21], color: "#d7ff18" },
+        { id: "diamond", label: "Rombo", symbol: "◆", endpoints: [20, 7], color: "#ff6d73" },
+        { id: "star", label: "Estrella", symbol: "★", endpoints: [8, 12], color: "#b994ff" },
+      ],
+      requireFullCoverage: true,
+    },
+    {
+      paths: {
+        circle: [0, 1, 2, 3, 4, 9],
+        triangle: [14, 19, 24, 23, 22, 21],
+        diamond: [20, 15, 10, 5, 6, 7],
+        star: [8, 13, 18, 17, 16, 11, 12],
+      },
+      explanation: "Las cuatro rutas forman una espiral fragmentada y cubren las 25 casillas sin cruces ni solapamientos.",
+    },
+  ),
+  question(
+    "betavip-cumbre-logica-ii-escape",
+    "escape",
+    "Mueve los obstáculos para liberar el bloque objetivo por la salida.",
+    45000,
+    {
+      grid: { rows: 6, columns: 6, exit: { side: "right", row: 2 } },
+      initialBlocks: [
+        { id: "target", kind: "target", orientation: "horizontal", row: 2, column: 0, length: 2 },
+        { id: "a", kind: "obstacle", orientation: "horizontal", row: 5, column: 0, length: 3 },
+        { id: "b", kind: "obstacle", orientation: "horizontal", row: 1, column: 2, length: 3 },
+        { id: "c", kind: "obstacle", orientation: "horizontal", row: 3, column: 4, length: 2 },
+        { id: "d", kind: "obstacle", orientation: "vertical", row: 4, column: 3, length: 2 },
+        { id: "e", kind: "obstacle", orientation: "vertical", row: 2, column: 2, length: 3 },
+        { id: "f", kind: "obstacle", orientation: "vertical", row: 4, column: 5, length: 2 },
+      ],
+      instruction: "Despeja la fila del bloque objetivo.",
+    },
+    {
+      referenceSolution: [
+        { blockId: "b", from: 2, to: 0 },
+        { blockId: "d", from: 4, to: 0 },
+        { blockId: "c", from: 4, to: 3 },
+        { blockId: "f", from: 4, to: 0 },
+        { blockId: "a", from: 0, to: 3 },
+        { blockId: "e", from: 2, to: 3 },
+        { blockId: "target", from: 0, to: 4 },
+      ],
+      optimalMoves: 7,
+      explanation:
+        "La salida exige preparar varias zonas de aparcamiento: B, D, C y F abren los carriles de A y E; después A y E dejan libre toda la fila del objetivo.",
+    },
+  ),
+  question(
+    "betavip-cumbre-logica-ii-cerradura",
+    "logic-code",
+    "Deduce la cerradura de tres cifras.",
+    60000,
+    {
+      codeLength: 3,
+      clues: [
+        {
+          code: "123",
+          hint: "Una cifra es correcta y está bien colocada; las otras dos no aparecen.",
+        },
+        {
+          code: "406",
+          hint: "Una cifra es correcta y está bien colocada; las otras dos no aparecen.",
+        },
+        {
+          code: "795",
+          hint: "Una cifra es correcta, pero está desplazada; las otras dos no aparecen.",
+        },
+        {
+          code: "172",
+          hint: "Dos cifras son correctas, pero ambas están desplazadas; la tercera no aparece.",
+        },
+      ],
+    },
+    { correctAnswer: "427", explanation: "Las pistas fijan el 4, el 2 y el 7 en ese orden." },
+  ),
+  question(
+    "betavip-cumbre-logica-ii-cima",
+    "queens",
+    "Coloca cinco coronas sin repetir fila, columna o región.",
+    60000,
+    {
+      grid: { rows: 5, columns: 5 },
+      regions: [0, 1, 1, 1, 4, 0, 2, 1, 4, 4, 0, 2, 1, 4, 3, 0, 2, 4, 4, 3, 2, 2, 3, 3, 3],
+      prefilledQueens: [2],
+    },
+    { solution: [2, 5, 13, 16, 24], explanation: "La solución respeta las cinco filas, columnas y regiones sin coronas adyacentes." },
+  ),
+];

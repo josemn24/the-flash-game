@@ -82,7 +82,7 @@ del contenido público. Incluye escenarios negativos aislados de relaciones y es
 ## Fase 4 cerrada y límite actual
 
 Las rutas de práctica y preview acceden al store mediante contratos asíncronos, el adaptador mock y
-la fachada `server/data-access.ts`. Las rutas reales de S01–S12 usan la misma fachada para seleccionar
+la fachada `server/data-access.ts`. Las rutas reales persistidas usan la misma fachada para seleccionar
 Auth, RPCs y PostgreSQL mediante `infrastructure/supabase/`. Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 

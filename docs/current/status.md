@@ -1,29 +1,42 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-20.
+Última actualización documental: 2026-09-25.
 
 # Estado actual del proyecto
 
 ## Resumen
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S12 y la base transversal del
+migradas usan fixtures y un store mock normalizado. Las slices S01–S15, S17a, S18b parcial, S20,
+D08a/D08b,
+S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, S15 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
 persistidos, E02 Logic-code con eventos privados y evaluación al acertar, E03 Progressive-clues
 con revelaciones privadas y penalización basada en eventos, E04 Matching con parejas privadas,
 feedback incremental y crédito parcial, y E05 Queens con colocaciones persistidas y penalización
-server-side, además del acceso seguro server-side para
+server-side, y E06 Word-search con selecciones privadas, recuperación e idempotencia, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
 de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. F01/F02/F06 añaden
 `true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
-F07/F12 añaden `classification` y `anagram` con validación de labels/categorías, consumo de fichas,
+F07/F08/F12 añaden `classification`, `logic-matrix` y `anagram` con validación de labels/categorías, consumo de fichas,
 asignaciones parciales y soluciones privadas en payloads v1.
 F03 añade `estimation` al Flash competitivo con payload v2, tolerancia privada, crédito parcial
 por proximidad y soporte opcional para imágenes privadas de `question-assets`.
 F04 añade `heat-map` al Flash competitivo con payload v2, superficie privada resuelta por URL firmada,
 objetivo y radios privados, y crédito parcial espacial server-side.
+F16 añade `zip` como respuesta final server-side: la cuadrícula y checkpoints son públicos, la solución
+única permanece privada, el recorrido parcial se conserva como draft de timeout y la revisión terminal
+reutiliza el contenido privado autorizado.
+F18 añade `escape` como respuesta final server-side: el tablero y los bloques son públicos, la ruta de
+referencia permanece privada, los movimientos se mantienen localmente y el servidor reproduce el
+recorrido completo o el draft de timeout. La integración está verificada localmente con E2E 3/3; la
+capacidad queda acotada al stack local hasta validar un entorno remoto.
+F19 añade `word-hashtag` como interacción server-side por swap: el tablero inicial es público, las
+cuatro palabras permanecen privadas, los swaps aceptados viven en `attempts.progress_payload` y el
+servidor decide validez, terminalidad, timeout, evaluación y scoring. La review solo revela solución y
+métricas después del cierre; no se añade tabla de eventos.
 S12 añade
 programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
@@ -36,8 +49,10 @@ en payload v2 y el runtime entrega únicamente `media.src` al jugador autorizado
 
 No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
 estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
-S22 fija el runtime `pilot` para operar únicamente Flash persistido y portal; las demos mock no son
-fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.md).
+S14 habilita Supervivencia persistida y S15 habilita Pirámide competitiva; ambas están verificadas en
+Supabase local dentro del runtime `pilot`. No hay proyecto remoto enlazado. Las demos mock no son
+fallback de las rutas competitivas. Consulta
+[`s22-operacion.md`](s22-operacion.md).
 
 ## Capacidades actuales
 
@@ -51,6 +66,20 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   palabras temáticas privadas de la pregunta, y el feedback/historial se calculan y persisten en
   PostgreSQL sin enviar la solución.
 - Recuperación tras recarga o fallo parcial, bloqueo de segunda sesión y abandono explícito (S04).
+- Supervivencia competitiva persistida (S14): vidas configurables de 1 a preguntas, score,
+  eliminación/supervivencia y cierre derivados de evaluaciones server-side; recuperación de una
+  pregunta abierta como `unanswered`, resultado terminal y revisión propia sin exposición durante la
+  partida. Matching aplica el cierre inmediato por error con una vida; el abandono sigue siendo
+  explícito. Ranking y Flash Points reutilizan las proyecciones existentes.
+- Pirámide (S15, verificada localmente): el editor exige siete niveles
+  con briefings y formatos evaluables; cada checkpoint entrega solo el nivel permitido, y el servidor
+  deriva progreso, `summit`/`failed`, puntos y cierre desde evaluaciones guardadas. La recuperación
+  conserva un briefing sin iniciar el reloj y finaliza como `failed` un nivel temporizado interrumpido.
+  Resultado y revisión terminal propios exponen solo niveles alcanzados.
+  `true-false`, `ordering`, `classification`, `logic-matrix`, `zip`, `escape` y `word-hashtag` pasan por
+  la misma admisión editorial, ejecución server-backed y revisión protegida; la allowlist se comparte
+  también con Flash y Supervivencia.
+  En Pirámide solo `correct` avanza y acredita puntos; timeout, incorrecta o parcial terminan el nivel con cero.
 - Ranking de temporada y de la publicación abierta actual desde los RPCs reales, con posición
   persistida en las tarjetas de sala y lectura autorizada para spectators (S06).
 - Historial Flash de publicaciones cerradas, ranking histórico y detalle de resultados reconstruidos
@@ -59,10 +88,13 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   historial/rankings, pero no respuestas ni soluciones ajenas (S07).
 - Portal privado en `/admin`: contexto del operador superadmin, listado de salas activas y creación
   de salas activas con owner explícito y grupo inicial opcional. La creación usa resolución exacta de
-  usuarios, slug server-side, transacción, idempotencia y una auditoría agregada; no hay todavía
-  gestión posterior de miembros. S10 añade creación/edición de borradores y activación explícita de
+  usuarios, slug server-side, transacción, idempotencia y una auditoría agregada. S18b ya permite al
+  owner conceder/quitar admin y eliminar lógicamente miembros desde ajustes; transferencia de
+  propiedad, bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade creación/edición de borradores y activación explícita de
   temporadas, con fechas editadas en la zona horaria de cada sala y persistidas en UTC. S11 añade
-  creación, edición, preview y publicación separada de Flash mínimo; E01 añade Mini-Wordle y permite
+  creación, edición, preview y publicación separada de Flash mínimo; S14 amplía el editor y calendario
+  a Supervivencia con vidas iniciales; S15 añade Pirámide de siete niveles al editor y al calendario;
+  E01 añade Mini-Wordle y permite
   publicar mezclas con soluciones privadas, palabras específicas fuera del diccionario general e
   inmutabilidad al publicar. E02 añade mezclas `multiple-choice` + `logic-code`, códigos numéricos
   con ceros iniciales, duplicados sin penalización, progreso tras recarga y reintento idempotente.
@@ -76,9 +108,14 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
   automática con evaluación server-side.
   S05 añade Alphabet competitivo persistido: referencias `short-text` publicadas, reloj global,
   vueltas, pases, recuperación de la letra activa y revisión terminal sin solución durante el juego.
-  F01/F02/F06/F07/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
+  F01/F02/F06/F07/F08/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
   `classification`, `anagram`, `estimation` y `heat-map`; las respuestas, asignaciones, fichas,
   permutaciones, estimaciones y coordenadas se validan y evalúan exclusivamente en el servidor.
+- S20 añade inspección privada de intentos competitivos por sala/publicación para Flash, Alphabet,
+  Supervivencia y Pirámide. El superadmin puede consultar respuestas evaluadas, score original,
+  saldo efectivo, ledger y auditoría; puede ajustar o invalidar únicamente intentos terminales,
+  con motivo, `lock_version`, idempotencia y revalidación de rankings. Las respuestas, el score
+  original y el historial no se sobrescriben.
 - La reorganización del portal ya convierte `/admin` en un dashboard breve basado en
   `SuperadminDashboardModel`. `/admin/rooms` es la entrada operativa principal: sus tarjetas llevan a
   `/admin/rooms/[roomId]`, donde viven las pestañas `overview`, `seasons`, `members` y `calendar`.
@@ -93,66 +130,95 @@ fallback de las rutas competitivas. Consulta [`s22-operacion.md`](s22-operacion.
 ### Modelo operativo de la beta cerrada
 
 La UI pública no permite crear salas privadas ni gestionar invitaciones. Un portal privado de
-superadmin prepara y activa temporadas, publica Flash mínimo y provisiona directamente a los
+superadmin prepara y activa temporadas, publica Flash/Supervivencia/Pirámide y provisiona directamente a los
 usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
-invitaciones. La superficie `/admin` permite programar y reprogramar publicaciones Flash futuras;
+invitaciones. La superficie `/admin` permite programar y reprogramar publicaciones Flash/Supervivencia/Pirámide futuras;
 el calendario se ejecuta localmente con `POST /api/internal/calendar/tick` y
 `npm run calendar:tick`. La superficie ya permite al superadmin crear salas activas y provisionar
 directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capacidad administrativa.
 
 ## Rutas principales
 
-| Ruta                                                 | Estado                                                                                                    |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `/`                                                  | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                      |
-| `/salas/[roomId]`                                    | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.      |
-| `/salas/[roomId]/ranking`                            | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                |
-| `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                     |
-| `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                             |
-| `/salas/[roomId]/ajustes`                            | Vista mock de miembros y ajustes; gestión real está pendiente.                                            |
-| `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.   |
-| `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                   |
-| `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.              |
-| `/admin/challenges`                                  | Catálogo protegido de desafíos Flash definidos.                                                          |
-| `/admin/challenges/new`                              | Preparación protegida de un nuevo desafío Flash.                                                         |
-| `/admin/challenges/[challengeDefinitionId]`         | Detalle protegido, edición de borradores e historial de versiones Flash.                                |
-| `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común.                                                   |
-| `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común.                              |
-| `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común.                                        |
-| `/desafios/[challengeId]`                            | Desafío Flash competitivo real con UUID y sala autorizada; en `pilot`, sin sala o con alias devuelve 404. |
-| `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                         |
-| `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                  |
+| Ruta                                                 | Estado                                                                                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                                                  | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                                 |
+| `/salas/[roomId]`                                    | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                                 |
+| `/salas/[roomId]/ranking`                            | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
+| `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                                                |
+| `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                           |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                                        |
+| `/salas/[roomId]/ajustes`                            | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
+| `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
+| `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                                              |
+| `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.                                         |
+| `/admin/rooms/[roomId]/attempts`                     | Publicaciones competitivas de la sala para inspección administrativa.                                                               |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]` | Intentos competitivos de una publicación, con paginación por cursor.                                                              |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]` | Detalle protegido del intento y acciones de ajuste/invalidación según estado.                              |
+| `/admin/challenges`                                  | Catálogo protegido de desafíos Flash, Supervivencia y Pirámide definidos.                                                            |
+| `/admin/challenges/new`                              | Preparación protegida de un nuevo desafío Flash, Supervivencia o Pirámide.                                                           |
+| `/admin/challenges/[challengeDefinitionId]`          | Detalle protegido, edición de borradores e historial de versiones Flash/Supervivencia/Pirámide.                                      |
+| `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común.                                                                              |
+| `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común.                                                         |
+| `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común.                                                                   |
+| `/desafios/[challengeId]`                            | Desafío Flash, Supervivencia o Pirámide competitivo. En `pilot`, sin sala o con alias devuelve 404.                                  |
+| `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                                                    |
+| `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                                             |
 
 ## Límites actuales
 
-- La persistencia real verificada cubre los verticales Flash de S01–S13, D08a/D08b, E01–E05/E10 y F01/F02/F03/F04/F06/F07/F12 sobre el stack local; no hay
-  proyecto remoto vinculado.
+- La persistencia verificada cubre Flash, Supervivencia (S14) y Pirámide (S15), además de S01–S13,
+  D08a/D08b, E01–E06/E10 y F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 sobre el stack local. No
+  hay proyecto remoto vinculado.
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
-  Flash mínimo; la gestión posterior de miembros, reemplazo/archivado de contenido publicado y
-  calendario S12 es local-first y no forma parte de la UI pública de administración. D08a/S13 ya
+  Flash mínimo; la gestión posterior de miembros es parcial en ajustes (S18b), mientras que
+  transferencia, bloqueo/desbloqueo e invitaciones completas, además del reemplazo/archivado de
+  contenido publicado, siguen siendo local-first y no forman parte de la UI pública. S12 ya opera
+  localmente el calendario de publicaciones.
+  D08a/S13 ya
   cubren avatares persistidos y assets privados de E10 y `multiple-choice`. La subida de imágenes de
   `multiple-choice` vive en la biblioteca de preguntas; el editor inline de Flash solo reutiliza
   versiones publicadas.
 - El flujo de invitaciones conserva sus reglas de producto, pero no se ofrece en la UI pública ni se
   necesita para bootstrappear la beta: el superadmin añade directamente usuarios autenticados.
-- Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre únicamente el
-  provisioning inicial directo desde el portal; la gestión posterior e invitaciones permanecen
+- Las políticas de permisos de sala e invitaciones ya están fijadas. S08 cubre el provisioning
+  inicial directo desde el portal y S18b cubre solo concesión/revocación de admin y eliminación
+  lógica por el owner; transferencia, bloqueo/desbloqueo y el flujo completo de invitaciones permanecen
   pendientes.
-- Supervivencia, Pirámide y Narrativa todavía no tienen gameplay competitivo real.
+- Narrativa todavía no tiene gameplay competitivo real.
 - `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
   siguen fuera de S07 y deshabilitados.
-- El historial solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
+- El historial de usuario solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
   `test`/`invalidated` y publicaciones `cancelled` quedan fuera de las proyecciones de usuario.
+- S20 ya permite corrección administrativa local; la aplicación de la migración y la validación de
+  estas RPC contra un proyecto Supabase remoto siguen pendientes.
 - Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
   confundirse con el recorrido competitivo migrado.
 
-## Verificación
+## Verificación actual
 
-Última verificación: 2026-09-20.
+Estado documentado a 2026-09-25:
 
-- `npm test`: 104 archivos y 664 tests superados; incluye reglas, adaptadores, UI pública de E01–E05,
+- `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
+  `20260925130000_s20_attempt_inspection_projection`.
+- `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
+- `npm run typecheck`: correcto.
+- `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
+  `scripts/integration/scenarios/s15.mjs`.
+- `npm test`: 132 archivos correctos y 1 fallido; 778 tests pasan de 779. El fallo pendiente está en
+  `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
+- `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera de esta actualización.
+- `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas declarativos,
+  verificó el inventario y todas las suites pgTAP, incluida S20 con 21 checks. La suite no acredita
+  staging o producción.
+- No hay proyecto remoto vinculado; ninguna de estas comprobaciones acredita staging o producción.
+
+### Registros históricos de slices
+
+Última verificación focal anterior a S20: 2026-09-23, sobre Supabase local.
+
+- `npm test`: 121 archivos y 714 tests superados en la ejecución histórica del 2026-09-23; incluye reglas, adaptadores, health check y ruta HTTP,
+  UI pública de E01–E06 y F08,
   navegación del portal y acciones administrativas; además de S05-Alphabet,
   el contrato E10, S11/S12 y la integración D08b-MC.
 - `npm run typecheck`, `npm run lint`, `npm run build` y
@@ -162,21 +228,48 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - La reorganización del portal valida el adaptador del dashboard, el dashboard sin formularios y la
   compatibilidad de las redirecciones con 19 tests dirigidos; `npm run supabase:schema:test` también pasa con la nueva función de
   lectura registrada en el inventario de seguridad.
-- `npm run test:e2e -- e2e/admin-portal.spec.ts` arrancó con Supabase local, pero no completó el
-  login del fixture y no llegó a validar la página; queda pendiente repetirlo con el entorno de
-  autenticación E2E operativo.
-- La repetición de `npm run test:e2e -- e2e/s10-season.spec.ts` con Supabase local confirmó el
-  mismo bloqueo previo al portal: el fixture no alcanza el heading `Mis salas` tras iniciar sesión.
-  No se observó un fallo de la UI administrativa. `npm run stylelint` mantiene un fallo histórico
-  fuera del portal en el selector duplicado de `app/flash-pop-concepts/FlashPopConcepts.module.css`;
+- `npm run verify:pilot`, ejecutado sobre Supabase local reconstruido desde cero, es correcto:
+  el runner carga fixtures aislados y ejecuta integración y E2E para portal, S02, S03, E01–E06, F08,
+  S04, S06, S07 y S10–S12; también pasan el fixture de navegador, `flash-layout`, diccionario
+  y backup/restore. Este resultado es histórico y anterior a S14; no se ejecutó `verify:pilot` para S14.
+- Las pruebas E2E administrativas y de slices que antes estaban bloqueadas por el fixture de login
+  quedan cerradas dentro del piloto completo. `npm run stylelint` mantiene un fallo histórico fuera
+  del portal en el selector duplicado de `app/flash-pop-concepts/FlashPopConcepts.module.css`;
   los estilos modificados de administración pasan Stylelint de forma aislada.
-- `npm run type-architecture`: correcto.
-- `npm run verify:pilot`: pendiente de ejecutar con los escenarios E03–E05; el runner ya incluye sus
-  fixture, integración y E2E además de los recorridos existentes.
-- `npm run supabase:schema:test`: correcto; 36 archivos declarativos, inventario, provisioning,
-  S02–S08, S05-Alphabet, S10–S13, E01–E05 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
+- `npm run type-architecture`: correcto; los contratos comparten `AnswerResultDetails` desde
+  `types/contracts` y `app/actions/room-members.ts` atraviesa la fachada server-only.
+- En una ejecución histórica anterior a S18b y S20, `npm run supabase:schema:test` fue correcto
+  sobre 43 archivos declarativos y la revisión canónica
+  `20260922202508_s14_survival`; cubre inventario, provisioning, S02–S08, S05-Alphabet,
+  S10–S13, S17a, S18b parcial, E01–E06, F08, F16, F18, F19 y E10, ACL del portal, idempotencia, rollback y carreras de comandos con
   conexiones PostgreSQL independientes. S13 verifica Flash de 2, 5 y 20 preguntas, reducción
   de 20 a 2 y suma de 100 puntos.
+- S14: `supabase:schema:test`, integración Auth/PostgREST/RLS y `e2e/s14-survival.spec.ts` (1/1)
+  correctos; el E2E cubre publicación desde el portal, eliminación al recuperar una pregunta sin
+  respuesta, revisión propia tras recarga, aislamiento del spectator y score en el ranking.
+- Las reglas puras y pgTAP verifican que `timeout` también descuenta vida; Matching termina la
+  interacción con error cuando solo queda una vida y la finalización puntúa/acredita una vez.
+- Para S14 no se ejecutó `npm run verify:pilot`. La migración se aplicó solo en Supabase local;
+  `linked_project: null` impide afirmar validación remota.
+- S15: `npm run supabase:schema:test`, migración local, `npm run test:integration:supabase -- --scenario s15`
+  y `npm run test:e2e -- e2e/s15-pyramid.spec.ts` correctos. El E2E cubre creación/publicación/
+  programación, cima, fallo, recuperación interrumpida como `unanswered`, revisión propia tras recarga,
+  aislamiento del spectator y ranking. Las reglas/editorial y rate-limit focales pasan 57 tests;
+  typecheck, lint (una advertencia preexistente), arquitectura de tipos y documentación pasan. No se ejecutó
+  `npm run verify:pilot`; la validación es local y no cubre despliegue remoto.
+- `npm run schema:revision:check`: correcto; las cuatro fuentes de configuración coinciden con la
+  última migración versionada.
+- Validación enfocada F16: tests de dominio/adaptadores, `typecheck`, arquitectura, lint, build,
+  `docs:check`, integración Auth/PostgREST/RLS y `npm run test:e2e -- e2e/f16-zip.spec.ts` (3/3).
+- No se ejecutó `npm run verify:pilot` completo para F16; sus puertas equivalentes se ejecutaron de
+  forma dirigida según el alcance de la slice.
+- Validación enfocada F18: tests de dominio/adaptadores, `typecheck`, arquitectura, lint, build,
+  `supabase:schema:test`, `schema:revision:check`, `docs:check` e integración Auth/PostgREST/RLS
+  correctos. El E2E enfocado pasa 3/3 sobre fixture limpio; no se ejecutó `verify:pilot` completo
+  tras esta slice.
+- Validación enfocada F19: `supabase:schema:test`, `schema:revision:check`, `typecheck`, integración
+  Auth/PostgREST/RLS y `e2e/f19-word-hashtag.spec.ts` (3/3) correctos sobre fixture limpio; el
+  fixture se limpia al terminar la verificación.
 - `npm run supabase:db:schema:sync -- --name s05_alphabet`: correcto; generó
   `supabase/migrations/20260919184450_s05_alphabet.sql`.
 - La segunda ejecución de `npm run supabase:db:schema:sync -- --name s05_alphabet_check` informó
@@ -187,32 +280,30 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   - D08a/S13 valida los bytes reales de avatares, limita JPEG/PNG/WebP a 5 MB y 2048 px, confirma
     `media_assets` antes de cambiar `players.avatar_path` y conserva el avatar anterior ante fallos.
 - `npm run test:integration:supabase -- --scenario e10`: correcto; el E2E E10 incluye el recorrido
-  completo y el control de spectator. En esta sesión el caso jugador quedó pendiente por un timeout
-  del entorno local al iniciar el intento, con artefactos de trace incompletos.
+  completo y el control de spectator. Su verificación se mantiene fuera de la matriz S22 de
+  ejecución del piloto, pero está cubierta por su escenario dedicado.
 - `npm run test:integration:supabase -- --scenario s10`: correcto con creación, edición, activación,
   RLS pública, Auth y ausencia de publicaciones ficticias.
 - `npm run test:e2e -- e2e/s10-season.spec.ts`: 2/2 correctos; superadmin crea/edita/activa en `/admin`
   y un miembro no accede al portal.
 - `npm run test:integration:supabase -- --scenario s11`: el escenario declarativo de publicación
   queda cubierto por la suite de schema, incluida la pregunta `estimation` v2.
-- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: el test fue ampliado a siete preguntas e incluye
-  `estimation` y `heat-map`, pero queda pendiente por el fixture de login local: no llega a mostrar
-  `Mis salas`.
-- `npm run test:integration:supabase -- --scenario e03`: escenario añadido para publicación mixta,
-  proyección sin solución ni pistas futuras y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: escenario añadido para primera pista,
-  revelación idempotente, reducción del máximo, recarga, respuesta normalizada y revisión.
-- `npm run test:integration:supabase -- --scenario e04`: escenario añadido para publicación mixta,
-  payload jugable sin correspondencias y aislamiento del spectator.
-- `npm run test:e2e -- e2e/e04-matching.spec.ts`: escenario añadido para parejas, penalización,
-  recarga, respuesta HTTP perdida, reintento idempotente y revisión autorizada.
+- `npm run test:e2e -- e2e/s11-editorial.spec.ts`: correcto dentro del piloto; cubre creación, edición,
+  preview protegido, publicación explícita de siete preguntas y publicación del Flash, además de la
+  invisibilidad del editor para un miembro.
+- `npm run test:integration:supabase -- --scenario e03` y
+  `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: correctos; cubren publicación mixta,
+  proyección sin solución/pistas futuras, revelación idempotente, recarga, penalización y revisión.
+- `npm run test:integration:supabase -- --scenario e04` y
+  `npm run test:e2e -- e2e/e04-matching.spec.ts`: correctos; cubren correspondencias privadas,
+  penalización, recarga, reintento idempotente, cierre y revisión autorizada.
 - `npm run test:integration:supabase -- --scenario e05`: correcto con fixture mixto, lectura Queens
   sin solución y aislamiento del spectator; el fixture temporal se limpió tras la prueba.
-- `npm run test:e2e -- e2e/e05-queens.spec.ts`: escenario añadido para coronas persistidas, recarga,
-  reintento idempotente, resolución y revisión autorizada; pendiente de ejecutar con el servidor E2E.
-- `npm run test:integration:supabase -- --scenario s12`: pendiente de aplicar la migración S12 al
-  Supabase persistente local; la suite declarativa sobre una base aislada ya pasa y la prueba no se
-  repite con un reset global para no eliminar fixtures no relacionados.
+- `npm run test:e2e -- e2e/e05-queens.spec.ts`: correcto; cubre coronas persistidas, recarga,
+  conflicto, reintento idempotente, resolución y revisión autorizada.
+- `npm run test:integration:supabase -- --scenario s12` y
+  `npm run test:e2e -- e2e/s12-calendar.spec.ts`: correctos tras reconstruir la base local; cubren
+  programación, tick temporal protegido, calendario y acceso del miembro al desafío.
 - `npm run test:integration:supabase -- --scenario portal`: correcto con Auth, PostgREST y
   denegación de acceso privado contra Supabase local.
 - `npm run test:e2e -- e2e/admin-portal.spec.ts`: 2/2 correctos; superadmin, recarga, miembro
@@ -223,7 +314,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - `npm run test:integration:supabase -- --scenario s07` y
   `npm run test:e2e -- e2e/s07-history-review.spec.ts`: correctos con Auth, PostgREST y sesiones
   de navegador contra Supabase local. S06 continúa cubierto por su escenario y E2E propios.
-- `npm run format:check`: avisos de formato en 71 archivos; queda fuera del alcance de esta
+- `npm run format:check`: avisos de formato en 141 archivos en la última comprobación global; queda fuera del alcance de esta
   actualización documental.
 - `npm run stylelint`: mantiene un selector duplicado preexistente en
   `app/flash-pop-concepts/FlashPopConcepts.module.css`; no pertenece al portal.

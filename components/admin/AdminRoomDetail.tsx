@@ -8,7 +8,7 @@ import { CalendarManagement } from "./CalendarManagement.client";
 import { SeasonManagement } from "./SeasonManagement.client";
 import styles from "./AdminRoomDetail.module.css";
 
-export type AdminRoomTab = "overview" | "seasons" | "members" | "calendar";
+export type AdminRoomTab = "overview" | "seasons" | "members" | "calendar" | "attempts";
 
 function dateRange(startsAt: string, endsAt: string, timeZone: string) {
   const formatter = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeZone });
@@ -29,11 +29,12 @@ export function AdminRoomDetail({
   readonly notice?: string | null;
 }) {
   const season = activeSeason(model);
-  const tabs: readonly { id: AdminRoomTab; label: string }[] = [
+  const tabs: readonly { id: AdminRoomTab; label: string; href?: string }[] = [
     { id: "overview", label: "Resumen" },
     { id: "seasons", label: "Temporadas" },
     { id: "members", label: "Usuarios activos" },
     { id: "calendar", label: "Calendario" },
+    { id: "attempts", label: "Intentos", href: `/admin/rooms/${model.room.roomId}/attempts` },
   ];
 
   return (
@@ -60,7 +61,7 @@ export function AdminRoomDetail({
         {tabs.map((item) => (
           <Link
             key={item.id}
-            href={`/admin/rooms/${model.room.roomId}?tab=${item.id}`}
+            href={item.href ?? `/admin/rooms/${model.room.roomId}?tab=${item.id}`}
             className={`${styles.tab} ${tab === item.id ? styles.tabActive : ""}`}
             aria-current={tab === item.id ? "page" : undefined}
           >
@@ -119,7 +120,11 @@ export function AdminRoomDetail({
 
       {tab === "seasons" ? <SeasonManagement room={model.room} /> : null}
       {tab === "members" ? (
-        <AdminRoomMembers members={model.members} timeZone={model.room.timeZone} />
+        <AdminRoomMembers
+          roomId={model.room.roomId}
+          members={model.members}
+          timeZone={model.room.timeZone}
+        />
       ) : null}
       {tab === "calendar" ? (
         <CalendarManagement

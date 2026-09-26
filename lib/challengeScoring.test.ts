@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getChallengeById } from "@/test-utils/mockGameplay";
+import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import {
   CHALLENGE_MAX_SCORE,
   getConfiguredChallengeQuestionPointValues,
@@ -73,6 +74,16 @@ describe("challenge scoring", () => {
 
     expect(scoredQuestion).toMatchObject({ points: 8, cluePenalty: 1 });
     expect(question).toMatchObject({ points: 160, cluePenalty: 20 });
+  });
+
+  it("scales the mock clue penalty from a 100-point question to its level value", () => {
+    const source = QUESTION_FORMAT_CATALOG["progressive-clues"].examples[0].question;
+    const scoredQuestion = withChallengeQuestionPoints(
+      { ...source, points: 100, cluePenalty: 20 },
+      12,
+    );
+
+    expect(scoredQuestion).toMatchObject({ points: 12, cluePenalty: 2 });
   });
 
   it("normalizes a challenge to the standard maximum score", () => {

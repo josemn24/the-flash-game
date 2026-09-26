@@ -88,6 +88,9 @@
     "private.matching_pair_events": {
       "kind": "r"
     },
+    "private.word_search_selection_events": {
+      "kind": "r"
+    },
     "private.queens_placement_events": {
       "kind": "r"
     },
@@ -246,7 +249,17 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.add_superadmin_room_member_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.create_room_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_superadmin_player_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": []
@@ -346,6 +359,21 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.handle_attempt_admin_command": {
+      "arguments": "op text, input jsonb, actor uuid, target_attempt attempts, target_schedule scheduled_challenges, instant timestamp with time zone, key text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.handle_attempt_command": {
+      "arguments": "op text, input jsonb, safe_input jsonb, actor uuid, cached_result jsonb, received_at timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.handle_invitation_command": {
+      "arguments": "input jsonb, safe_input jsonb, actor uuid, cached_result jsonb",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
     "private.guard_answer": {
       "arguments": "",
       "securityDefiner": false,
@@ -396,9 +424,29 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.lock_command_key": {
+      "arguments": "target_actor uuid, target_key text",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
+    "private.is_supported_competitive_question_extension": {
+      "arguments": "target_question uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.is_supported_flash_question": {
       "arguments": "target_question uuid",
       "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.is_valid_published_competitive_question_format": {
+      "arguments": "target_question uuid, expected_type text",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.is_valid_pyramid_level_config": {
+      "arguments": "value jsonb",
+      "securityDefiner": false,
       "executeRoles": []
     },
     "private.activate_season_command": {
@@ -611,6 +659,46 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.word_search_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_word_search_selection": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.zip_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.escape_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.word_hashtag_solution_letters": {
+      "arguments": "solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.word_hashtag_content_valid": {
+      "arguments": "public_payload jsonb, solution_payload jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.word_hashtag_progress": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.submit_word_hashtag_swap": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.queens_board": {
       "arguments": "target_attempt uuid, target_item uuid",
       "securityDefiner": true,
@@ -686,6 +774,26 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_my_survival_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_survival_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_pyramid_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_pyramid_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_my_alphabet_challenge": {
       "arguments": "target_room_slug text, target_publication_id uuid",
       "securityDefiner": true,
@@ -756,8 +864,28 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_superadmin_attempt_publications": {
+      "arguments": "target_room_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_room_attempts": {
+      "arguments": "target_room_id uuid, target_scheduled_challenge_id uuid, cursor_started_at timestamp with time zone, cursor_attempt_id uuid, page_size integer",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_attempt_inspection": {
+      "arguments": "target_room_id uuid, target_scheduled_challenge_id uuid, target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.lookup_superadmin_players": {
       "arguments": "target_emails text[]",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.add_superadmin_room_member": {
+      "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
@@ -767,6 +895,11 @@
       "executeRoles": ["authenticated"]
     },
     "public.create_superadmin_room": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_player": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]

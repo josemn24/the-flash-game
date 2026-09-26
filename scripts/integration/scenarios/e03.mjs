@@ -1,4 +1,5 @@
 import { rpc, sqlCount } from "../../support/supabase-local.mjs";
+import { publishDraftQuestions } from "./publish-draft-questions.mjs";
 
 export const scenario = {
   id: "e03",
@@ -66,6 +67,13 @@ export const scenario = {
       draft?.document?.questions?.[1]?.type === "progressive-clues",
       "El portal conserva Progressive-clues",
     );
+    await publishDraftQuestions({
+      client: clients.superadmin,
+      slugs: editorialDocument.questions.map((question) => question.slug),
+      idempotencyKeyPrefix: "integration-e03-publish-question",
+      reason: "Publicar preguntas E03",
+      assert,
+    });
     const published = await clients.superadmin.rpc("publish_superadmin_flash", {
       input: {
         idempotencyKey: "integration-e03-publish",

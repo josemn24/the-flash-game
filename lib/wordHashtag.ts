@@ -253,6 +253,25 @@ export function isValidWordHashtagConfiguration(question: WordHashtagQuestion) {
   return Number.isFinite(minimum) && minimum > 0 && minimum <= question.maxMoves;
 }
 
+export function isValidWordHashtagPublicConfiguration(configuration: {
+  grid: { rows: number; columns: number };
+  initialLetters: Array<string | null> | readonly (string | null)[];
+  maxMoves: number;
+}) {
+  if (
+    configuration.grid.rows !== WORD_HASHTAG_SIZE ||
+    configuration.grid.columns !== WORD_HASHTAG_SIZE ||
+    configuration.initialLetters.length !== WORD_HASHTAG_SIZE * WORD_HASHTAG_SIZE ||
+    !Number.isInteger(configuration.maxMoves) ||
+    configuration.maxMoves <= 0
+  ) {
+    return false;
+  }
+  return configuration.initialLetters.every((letter, cell) =>
+    ACTIVE_CELL_SET.has(cell) ? isValidLetter(letter) : letter === null,
+  );
+}
+
 export function isWordHashtagAnswer(answer: unknown): answer is WordHashtagAnswer {
   return (
     answer !== null &&

@@ -29,7 +29,6 @@ export default async function RoomRankingPage({ params }: Props) {
   return (
     <FlashPopRoomRanking
       roomId={room.roomId}
-      roomTitle={room.roomTitle}
       currentUserId={room.currentUserId}
       entries={room.entries}
     />

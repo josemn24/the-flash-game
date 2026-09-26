@@ -86,14 +86,6 @@ export function ServerMatchingQuestion({
 
   return (
     <div className={styles.root}>
-      <div className={styles.scoreRow}>
-        <span>
-          {progress.matchedCount} de {progress.totalPairs} parejas
-        </span>
-        <strong>
-          {progress.incorrectAttempts} {progress.incorrectAttempts === 1 ? "error" : "errores"}
-        </strong>
-      </div>
       <div className={styles.columns}>
         <section className={styles.column} aria-labelledby="server-matching-left-heading">
           <h3 id="server-matching-left-heading">Conceptos</h3>
@@ -133,6 +125,28 @@ export function ServerMatchingQuestion({
             );
           })}
         </section>
+      </div>
+      <div className={styles.completedList} aria-label="Progreso de parejas">
+        <span>
+          <strong>
+            {progress.matchedCount}/{progress.totalPairs}
+          </strong>{" "}
+          parejas
+        </span>
+        <span>
+          <strong>{progress.incorrectAttempts}</strong>{" "}
+          {progress.incorrectAttempts === 1 ? "error" : "errores"}
+        </span>
+        {progress.matchedPairs.map((pair) => {
+          const left = leftItems.find((item) => item.id === pair.leftId);
+          const right = rightItems.find((item) => item.id === pair.rightId);
+          return left && right ? (
+            <span key={`${pair.leftId}:${pair.rightId}`}>
+              <CheckIcon aria-hidden="true" />
+              {left.label} — {right.label}
+            </span>
+          ) : null;
+        })}
       </div>
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}

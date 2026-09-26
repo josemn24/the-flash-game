@@ -22,6 +22,7 @@ export class AttemptApiError extends Error {
   constructor(
     readonly code: string,
     readonly status: number,
+    readonly retryAfterSeconds?: number,
   ) {
     super(code);
     this.name = "AttemptApiError";
@@ -107,6 +108,17 @@ export function requireKey(body: JsonObject) {
 export function requireLockVersion(body: JsonObject) {
   if (!isLockVersion(body.lockVersion)) throw new AttemptApiError("invalid_lock_version", 400);
   return body.lockVersion;
+}
+
+export function requireCell(
+  body: JsonObject,
+  key: "startCell" | "endCell" | "fromCell" | "toCell",
+) {
+  const value = body[key];
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new AttemptApiError(`invalid_${key}`, 400);
+  }
+  return value;
 }
 
 export function optionalClientTime(body: JsonObject) {
@@ -198,23 +210,15 @@ export async function setAttemptToken(
   authUserId: string,
   scheduledChallengeId: string,
   token: string,
-  deadlineAt?: string | null,
 ) {
-  const maxAge = deadlineAt
-    ? Math.max(
-        60,
-        Math.min(
-          attemptTokenMaxAgeSeconds,
-          Math.ceil((Date.parse(deadlineAt) - Date.now()) / 1000),
-        ),
-      )
-    : attemptTokenMaxAgeSeconds;
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/api/competitive/attempts",
-    maxAge,
+    // The game deadline controls gameplay, not the ability to persist timeout cleanup.
+    // Keep the session for its bounded lifetime; complete/abandon clear it explicitly.
+    maxAge: attemptTokenMaxAgeSeconds,
   } as const;
   const store = await cookies();
   store.set(cookieName(attemptId), token, options);
@@ -254,6 +258,8 @@ export function mapAttemptError(error: unknown): AttemptApiError {
       error.code === "mini_wordle_requires_guess_command" ||
       error.code === "invalid_logic_code" ||
       error.code === "logic_code_requires_attempt_command" ||
+      error.code === "invalid_word_hashtag_swap" ||
+      error.code === "word_hashtag_requires_swap_command" ||
       error.code === "invalid_question_payload" ||
       error.code === "unsupported_question"
         ? 400
@@ -267,7 +273,7 @@ export function mapAttemptError(error: unknown): AttemptApiError {
     return new AttemptApiError(error.code, status);
   }
   if (error instanceof CompetitiveRateLimitError) {
-    return new AttemptApiError(error.code, error.status);
+    return new AttemptApiError(error.code, error.status, error.retryAfterSeconds);
   }
   return new AttemptApiError("command_failed", 500);
 }
@@ -292,7 +298,6 @@ export function responseFor(
     headers: {
       "Cache-Control": "no-store",
       "X-Request-Id": requestId,
-      ...(status === 429 ? { "Retry-After": "60" } : {}),
     },
   });
 }
@@ -320,7 +325,7 @@ export function errorResponse(
       headers: {
         "Cache-Control": "no-store",
         "X-Request-Id": requestId,
-        ...(mapped.status === 429 ? { "Retry-After": "60" } : {}),
+        ...(mapped.status === 429 ? { "Retry-After": String(mapped.retryAfterSeconds ?? 1) } : {}),
       },
     },
   );

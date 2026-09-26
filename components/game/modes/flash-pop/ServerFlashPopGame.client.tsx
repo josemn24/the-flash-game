@@ -97,6 +97,17 @@ export function ServerFlashPopGame({
             queensError={session.queensError}
             onQueensPlacement={(cell, action) => void session.submitQueensPlacement(cell, action)}
             onRetryQueens={() => void session.retryQueensPlacement()}
+            wordSearchState={session.wordSearchState}
+            wordSearchStatusVisible={session.wordSearchStatusVisible}
+            wordSearchError={session.wordSearchError}
+            lastWordSearchSelection={session.lastWordSearchSelection}
+            onWordSearchSelection={(startCell, endCell) =>
+              void session.submitWordSearchSelection(startCell, endCell)
+            }
+            onRetryWordSearch={() => void session.retryWordSearchSelection()}
+            onWordHashtagSwap={(fromCell, toCell) =>
+              void session.submitWordHashtagSwap(fromCell, toCell)
+            }
             revealState={session.revealState}
             revealStatusVisible={session.revealStatusVisible}
             revealError={session.revealError}
@@ -106,7 +117,9 @@ export function ServerFlashPopGame({
               void session.submit(
                 session.question?.type === "classification" ||
                   session.question?.type === "estimation" ||
-                  session.question?.type === "heat-map"
+                  session.question?.type === "heat-map" ||
+                  session.question?.type === "zip" ||
+                  session.question?.type === "escape"
                   ? session.pendingAnswer
                   : null,
               )
@@ -143,7 +156,7 @@ export function ServerFlashPopGame({
           />
         </motion.div>
       ) : null}
-      {session.phase === "review" && session.reviewChallenge ? (
+      {session.phase === "review" && session.reviewChallenge?.mode === "flash" ? (
         <motion.div
           key="review"
           initial={{ opacity: 0 }}

@@ -1,6 +1,6 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S13, D08a/D08b, E01–E05 y E10 implementadas sobre Supabase local y el
+> Estado: vigente. Arquitectura de transición con S01–S14, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 implementadas sobre Supabase local; el
 > resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
 > y no prescribe un endpoint por cada caso de uso.
 
@@ -46,6 +46,11 @@ persistencia conserva hechos y estados.
 La elección entre Server Action y Route Handler es de transporte. Ambos deben llamar a los mismos
 casos de uso y no duplicar autorización ni reglas de negocio.
 
+F19 sigue esta frontera con `POST /api/competitive/attempts/:attemptId/word-hashtag/swap`: el Route
+Handler solo autentica y adapta el comando; la validación del swap, el lock optimista, la idempotencia,
+la persistencia de `attempts.progress_payload` y la evaluación terminal viven en el comando privado de
+Supabase. El componente cliente recibe únicamente el tablero y contadores autorizados por el servidor.
+
 ### Portal operativo de la beta cerrada
 
 La UI pública está limitada a consultar y jugar en salas ya provisionadas. La creación de salas, el
@@ -58,7 +63,8 @@ En la beta, el superadmin provisiona directamente a usuarios autenticados en una
 simula la aceptación de una invitación y no consume un token. La emisión, aceptación y revocación de
 invitaciones siguen siendo capacidades del producto para una fase posterior, sin UI pública en esta
 versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-calendario ya están habilitadas localmente en el mismo portal interno para el Flash mínimo de S11/S12.
+calendario ya están habilitadas localmente en el mismo portal interno para Flash de S11/S12 y
+Supervivencia de S14.
 La ejecución temporal se realiza mediante un Route Handler protegido y CLI local; no hay scheduler
 remoto, cola ni worker propio.
 
@@ -218,7 +224,7 @@ en el MVP. La recuperación debe ser una operación de dominio: reconcilia una r
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
-auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de S01–S12
+auditoría y puntos atómicos; `service_role` carece de DML directo. El adaptador PostgreSQL de las slices
 verifica Auth y establece identidad con claims locales a cada transacción. No se expone `private` por
 PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 
@@ -233,7 +239,7 @@ Adaptadores previstos:
 ```text
 infrastructure/
   mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para S01–S12
+  supabase/   adaptador real sobre PostgreSQL/Supabase para las slices persistidas actuales
 ```
 
 Reglas de persistencia:
@@ -420,7 +426,7 @@ Page server
 
 En las rutas aún mock, la situación actual difiere en tres puntos intencionados del prototipo:
 `demoIdentity` sustituye la autenticación, `RoomSessionProvider` mantiene resultados y snapshots en
-memoria, y el cliente todavía recibe soluciones para evaluar localmente. S01–S12 ya usan Auth/RPC
+memoria, y el cliente todavía recibe soluciones para evaluar localmente. Las slices persistidas ya usan Auth/RPC
 reales en sus recorridos; esas piezas mock son puntos de sustitución, no el contrato productivo.
 
 ## 6. Decisiones técnicas relevantes
@@ -450,7 +456,7 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 ### Contenido y seguridad
 
 - La publicación referencia versiones inmutables de desafío y pregunta.
-- El editor S11 conserva un único documento editorial Flash mínimo como contrato de entrada, pero
+- El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia, pero
   persiste sus campos públicos y soluciones en las tablas versionadas existentes; no crea una
   representación paralela del runtime.
 - En competición se entrega `PublicQuestion`; solución, tolerancias, rutas y métricas permanecen en

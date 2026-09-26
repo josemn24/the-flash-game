@@ -50,12 +50,14 @@ describe("AdminRoomDetail", () => {
     expect(markup).toContain("Salas");
   });
 
-  it("renders active members as read-only information", () => {
+  it("renders active members and a superadmin add-member form", () => {
     const markup = renderToStaticMarkup(<AdminRoomDetail model={model} tab="members" />);
 
     expect(markup).toContain("Usuarios activos");
     expect(markup).toContain("Jugador beta");
     expect(markup).toContain("jugador@example.com");
-    expect(markup).not.toContain('name="role"');
+    expect(markup).toContain('name="role"');
+    expect(markup).toContain("Añadir usuario a la sala");
+    expect(markup).toContain("Motivo de auditoría");
   });
 });

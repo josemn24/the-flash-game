@@ -1,21 +1,24 @@
 import type {
-  AnagramQuestion,
-  ClassificationQuestion,
+  EscapeQuestion,
   EstimationQuestion,
   HeatMapQuestion,
+  ConnectPairsQuestion,
   FlashChallenge,
-  LogicCodeQuestion,
-  MatchingQuestion,
-  MiniWordleQuestion,
-  ProgressiveCluesQuestion,
-  ProgressiveImageQuestion,
+  PyramidChallenge,
+  Question,
+  LogicMatrixQuestion,
   QuestionOfType,
+  WordHashtagQuestion,
+  ZipQuestion,
 } from "@/types/game";
 import type {
   ServerFlashChallenge,
+  ServerSurvivalChallenge,
+  ServerPyramidChallenge,
   ServerFlashQuestion,
   ServerFlashTerminalReview,
   ServerLogicCodeQuestion,
+  ServerLogicMatrixQuestion,
   ServerMatchingQuestion,
   ServerProgressiveCluesQuestion,
   ServerProgressiveImageQuestion,
@@ -27,6 +30,11 @@ import type {
   ServerClassificationQuestion,
   ServerEstimationQuestion,
   ServerHeatMapQuestion,
+  ServerWordSearchQuestion,
+  ServerWordHashtagQuestion,
+  ServerZipQuestion,
+  ServerEscapeQuestion,
+  ServerConnectPairsQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
@@ -36,11 +44,25 @@ import {
   isValidEstimationSolution,
 } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
+import { getWordSearchPath } from "@/lib/wordSearch";
+import { isValidLogicMatrixPublicPayload } from "@/lib/scoringCore/questions/logicMatrix";
+import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
+import { isValidEscapeConfiguration, isValidEscapePublicConfiguration } from "@/lib/escape";
+import { isValidZipConfiguration, isValidZipPublicConfiguration } from "@/lib/zip";
+import { isValidConnectPairsConfiguration } from "@/lib/connectPairs";
+import {
+  isValidWordHashtagConfiguration,
+  isValidWordHashtagPublicConfiguration,
+  WORD_HASHTAG_ACTIVE_CELLS,
+} from "@/lib/wordHashtag";
 
 type TerminalReviewResponseRow = {
-  challenge_item_id: string;
-  public_payload: unknown;
-  solution_payload: unknown;
+  challenge_item_id?: unknown;
+  challengeItemId?: unknown;
+  public_payload?: unknown;
+  publicPayload?: unknown;
+  solution_payload?: unknown;
+  solutionPayload?: unknown;
 };
 
 export class ServerFlashQuestionError extends Error {
@@ -142,6 +164,7 @@ export function questionFromPayload(
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -152,7 +175,12 @@ export function questionFromPayload(
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map",
+    | "heat-map"
+    | "word-search"
+    | "word-hashtag"
+    | "zip"
+    | "escape"
+    | "connect-pairs",
   progress?: unknown,
   allowCompleteProgress?: boolean,
 ): ServerFlashQuestion;
@@ -165,6 +193,7 @@ export function questionFromPayload(
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -175,7 +204,12 @@ export function questionFromPayload(
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map",
+    | "heat-map"
+    | "word-search"
+    | "word-hashtag"
+    | "zip"
+    | "escape"
+    | "connect-pairs",
   progress?: unknown,
   allowCompleteProgress = false,
 ): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
@@ -541,6 +575,26 @@ export function questionFromPayload(
       },
     };
   }
+  if (questionType === "logic-matrix") {
+    const publicPayload = {
+      pieces: value.pieces,
+      cells: value.cells,
+      optionIds: value.optionIds,
+      ...(value.showPieceLabels !== undefined ? { showPieceLabels: value.showPieceLabels } : {}),
+    };
+    if (!isValidLogicMatrixPublicPayload(publicPayload)) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "logic-matrix",
+      pieces: publicPayload.pieces,
+      cells: publicPayload.cells,
+      optionIds: publicPayload.optionIds,
+      showPieceLabels:
+        typeof publicPayload.showPieceLabels === "boolean" ? publicPayload.showPieceLabels : true,
+    } satisfies ServerLogicMatrixQuestion;
+  }
   if (questionType === "progressive-clues") {
     const rawProgress =
       progress && typeof progress === "object" && !Array.isArray(progress)
@@ -557,7 +611,14 @@ export function questionFromPayload(
         : typeof rawProgress.totalClues === "number"
           ? rawProgress.totalClues
           : rawClues.length;
-    const cluePenalty = typeof value.cluePenalty === "number" ? value.cluePenalty : Number.NaN;
+    const editorialCluePenalty =
+      typeof value.cluePenalty === "number" ? value.cluePenalty : Number.NaN;
+    const cluePenalty =
+      typeof rawProgress.cluePenalty === "number"
+        ? rawProgress.cluePenalty
+        : Number.isSafeInteger(editorialCluePenalty) && editorialCluePenalty >= 0
+          ? scaleProgressiveCluePenalty(editorialCluePenalty, 100, points)
+          : Number.NaN;
     const revealedClues =
       typeof rawProgress.revealedClues === "number" ? rawProgress.revealedClues : rawClues.length;
     const availablePoints =
@@ -689,6 +750,305 @@ export function questionFromPayload(
       },
     };
   }
+  if (questionType === "word-search") {
+    const grid = value.grid;
+    const letters = value.letters;
+    const targets = value.targets;
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
+    const validGrid =
+      grid &&
+      typeof grid === "object" &&
+      !Array.isArray(grid) &&
+      Number.isSafeInteger((grid as Record<string, unknown>).rows) &&
+      Number.isSafeInteger((grid as Record<string, unknown>).columns) &&
+      Number((grid as Record<string, unknown>).rows) >= 6 &&
+      Number((grid as Record<string, unknown>).rows) <= 10 &&
+      Number((grid as Record<string, unknown>).columns) >= 6 &&
+      Number((grid as Record<string, unknown>).columns) <= 10;
+    const rows = validGrid ? Number((grid as Record<string, unknown>).rows) : 0;
+    const columns = validGrid ? Number((grid as Record<string, unknown>).columns) : 0;
+    const targetList = Array.isArray(targets) ? targets : [];
+    const validLetters =
+      Array.isArray(letters) &&
+      letters.length === rows * columns &&
+      letters.every((letter) => typeof letter === "string" && Array.from(letter).length === 1);
+    const validTargets =
+      targetList.length >= 2 &&
+      targetList.length <= 8 &&
+      targetList.every((target) => {
+        if (!target || typeof target !== "object" || Array.isArray(target)) return false;
+        const record = target as Record<string, unknown>;
+        return (
+          Object.keys(record).every((key) => ["id", "word"].includes(key)) &&
+          typeof record.id === "string" &&
+          record.id.trim().length > 0 &&
+          typeof record.word === "string" &&
+          record.word.trim().length > 0
+        );
+      });
+    const targetIds = targetList.map((target) => (target as Record<string, unknown>).id as string);
+    const rawSelections = Array.isArray(rawProgress.foundSelections)
+      ? rawProgress.foundSelections
+      : [];
+    const foundSelections = rawSelections.filter(
+      (
+        selection,
+      ): selection is {
+        targetId: string;
+        startCell: number;
+        endCell: number;
+      } => {
+        if (!selection || typeof selection !== "object" || Array.isArray(selection)) return false;
+        const record = selection as Record<string, unknown>;
+        return (
+          typeof record.targetId === "string" &&
+          Number.isSafeInteger(record.startCell) &&
+          Number.isSafeInteger(record.endCell)
+        );
+      },
+    );
+    const foundWordIds = Array.isArray(rawProgress.foundWordIds)
+      ? rawProgress.foundWordIds.filter((id): id is string => typeof id === "string")
+      : foundSelections.map((selection) => selection.targetId);
+    const foundCount =
+      typeof rawProgress.foundCount === "number" ? rawProgress.foundCount : foundSelections.length;
+    const totalWords =
+      typeof rawProgress.totalWords === "number" ? rawProgress.totalWords : targetList.length;
+    const incorrectAttempts =
+      typeof rawProgress.incorrectAttempts === "number" ? rawProgress.incorrectAttempts : 0;
+    if (
+      !validGrid ||
+      !validLetters ||
+      !validTargets ||
+      new Set(targetIds).size !== targetIds.length ||
+      foundSelections.length !== foundWordIds.length ||
+      new Set(foundWordIds).size !== foundWordIds.length ||
+      !foundWordIds.every((id) => targetIds.includes(id)) ||
+      !foundSelections.every((selection) => {
+        const path = getWordSearchPath(
+          { rows, columns } as ServerWordSearchQuestion["grid"],
+          selection.startCell,
+          selection.endCell,
+        );
+        return targetIds.includes(selection.targetId) && Boolean(path);
+      }) ||
+      foundCount !== foundSelections.length ||
+      totalWords !== targetList.length ||
+      !Number.isSafeInteger(incorrectAttempts) ||
+      incorrectAttempts < 0
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const safeProgress: ServerWordSearchQuestion["progress"] = {
+      kind: "word-search",
+      foundSelections,
+      foundWordIds,
+      foundCount,
+      totalWords,
+      incorrectAttempts,
+    };
+    return {
+      ...base,
+      type: "word-search",
+      grid: { rows, columns },
+      letters,
+      targets: targetList as ServerWordSearchQuestion["targets"],
+      progress: safeProgress,
+    };
+  }
+  if (questionType === "word-hashtag") {
+    const configuration = {
+      grid: value.grid,
+      initialLetters: value.initialLetters,
+      maxMoves: value.maxMoves,
+    };
+    if (
+      !isValidWordHashtagPublicConfiguration(configuration as never) ||
+      !Array.isArray(value.initialLetters) ||
+      value.initialLetters.length !== 25 ||
+      !value.initialLetters.every((letter) => letter === null || typeof letter === "string")
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const rawProgress =
+      progress && typeof progress === "object" && !Array.isArray(progress)
+        ? (progress as Record<string, unknown>)
+        : {};
+    const progressLetters = Array.isArray(rawProgress.letters)
+      ? rawProgress.letters
+      : value.initialLetters;
+    const correctCells = Array.isArray(rawProgress.correctCells) ? rawProgress.correctCells : [];
+    const swaps = Array.isArray(rawProgress.swaps)
+      ? rawProgress.swaps.filter(
+          (swap): swap is { fromCell: number; toCell: number } =>
+            Boolean(swap) &&
+            typeof swap === "object" &&
+            Number.isSafeInteger((swap as Record<string, unknown>).fromCell) &&
+            Number.isSafeInteger((swap as Record<string, unknown>).toCell),
+        )
+      : [];
+    const safeProgress = {
+      kind: "word-hashtag" as const,
+      letters: progressLetters as Array<string | null>,
+      correctCells: correctCells as number[],
+      swaps,
+      movesUsed: Number.isSafeInteger(rawProgress.movesUsed) ? Number(rawProgress.movesUsed) : 0,
+      movesRemaining: Number.isSafeInteger(rawProgress.movesRemaining)
+        ? Number(rawProgress.movesRemaining)
+        : Number(value.maxMoves),
+    } satisfies ServerWordHashtagQuestion["progress"];
+    if (
+      safeProgress.letters.length !== 25 ||
+      !safeProgress.correctCells.every(
+        (cell, index) =>
+          Number.isSafeInteger(cell) &&
+          cell >= 0 &&
+          cell < 25 &&
+          WORD_HASHTAG_ACTIVE_CELLS.includes(cell) &&
+          safeProgress.letters[cell] !== null &&
+          (index === 0 || safeProgress.correctCells[index - 1]! < cell),
+      ) ||
+      safeProgress.swaps.length !==
+        (Array.isArray(rawProgress.swaps) ? rawProgress.swaps.length : 0) ||
+      !safeProgress.letters.every((letter) => letter === null || typeof letter === "string") ||
+      safeProgress.movesUsed < 0 ||
+      safeProgress.movesUsed > Number(value.maxMoves) ||
+      safeProgress.movesRemaining < 0 ||
+      safeProgress.movesRemaining > Number(value.maxMoves)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "word-hashtag",
+      grid: { rows: 5, columns: 5 },
+      initialLetters: value.initialLetters as Array<string | null>,
+      maxMoves: value.maxMoves as number,
+      progress: safeProgress,
+    } satisfies ServerWordHashtagQuestion;
+  }
+  if (questionType === "zip") {
+    const configuration = { grid: value.grid, checkpoints: value.checkpoints };
+    if (
+      !isValidZipPublicConfiguration(configuration) ||
+      (value.instruction !== undefined && typeof value.instruction !== "string") ||
+      (value.mapNote !== undefined && typeof value.mapNote !== "string") ||
+      (value.boardLabel !== undefined && typeof value.boardLabel !== "string")
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "zip",
+      grid: configuration.grid,
+      checkpoints: configuration.checkpoints,
+      instruction: typeof value.instruction === "string" ? value.instruction : null,
+      mapNote: typeof value.mapNote === "string" ? value.mapNote : null,
+      boardLabel: typeof value.boardLabel === "string" ? value.boardLabel : null,
+    } satisfies ServerZipQuestion;
+  }
+  if (questionType === "escape") {
+    const configuration = {
+      grid: value.grid,
+      initialBlocks: value.initialBlocks,
+    };
+    if (
+      !Object.keys(value).every((key) =>
+        [
+          "category",
+          "tags",
+          "question",
+          "grid",
+          "initialBlocks",
+          "instruction",
+          "hideInstruction",
+          "objectiveLabel",
+          "hideObjectiveLabel",
+          "completionMessage",
+          "boardLabel",
+        ].includes(key),
+      ) ||
+      !isValidEscapePublicConfiguration(configuration as EscapeQuestion) ||
+      (value.instruction !== undefined && typeof value.instruction !== "string") ||
+      (value.hideInstruction !== undefined && typeof value.hideInstruction !== "boolean") ||
+      (value.objectiveLabel !== undefined && typeof value.objectiveLabel !== "string") ||
+      (value.hideObjectiveLabel !== undefined && typeof value.hideObjectiveLabel !== "boolean") ||
+      (value.completionMessage !== undefined && typeof value.completionMessage !== "string") ||
+      (value.boardLabel !== undefined && typeof value.boardLabel !== "string")
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "escape",
+      grid: configuration.grid as ServerEscapeQuestion["grid"],
+      initialBlocks: configuration.initialBlocks as ServerEscapeQuestion["initialBlocks"],
+      instruction: typeof value.instruction === "string" ? value.instruction : null,
+      hideInstruction: value.hideInstruction === true,
+      objectiveLabel: typeof value.objectiveLabel === "string" ? value.objectiveLabel : null,
+      hideObjectiveLabel: value.hideObjectiveLabel === true,
+      completionMessage:
+        typeof value.completionMessage === "string" ? value.completionMessage : null,
+      boardLabel: typeof value.boardLabel === "string" ? value.boardLabel : null,
+    } satisfies ServerEscapeQuestion;
+  }
+  if (questionType === "connect-pairs") {
+    const grid = value.grid;
+    const pairs = value.pairs;
+    const validGrid =
+      grid &&
+      typeof grid === "object" &&
+      !Array.isArray(grid) &&
+      (grid as Record<string, unknown>).rows === 5 &&
+      (grid as Record<string, unknown>).columns === 5;
+    const validPairs =
+      Array.isArray(pairs) &&
+      pairs.length >= 3 &&
+      pairs.length <= 5 &&
+      pairs.every((pair) => {
+        if (!pair || typeof pair !== "object" || Array.isArray(pair)) return false;
+        const item = pair as Record<string, unknown>;
+        const endpoints = item.endpoints;
+        return (
+          typeof item.id === "string" &&
+          item.id.trim().length > 0 &&
+          typeof item.label === "string" &&
+          item.label.trim().length > 0 &&
+          typeof item.symbol === "string" &&
+          item.symbol.trim().length > 0 &&
+          Array.isArray(endpoints) &&
+          endpoints.length === 2 &&
+          endpoints.every(
+            (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < 25,
+          ) &&
+          endpoints[0] !== endpoints[1] &&
+          (item.color === undefined || typeof item.color === "string")
+        );
+      });
+    const pairIds = validPairs ? (pairs as Array<Record<string, unknown>>).map((pair) => pair.id) : [];
+    const endpoints = validPairs
+      ? (pairs as Array<Record<string, unknown>>).flatMap((pair) => pair.endpoints as number[])
+      : [];
+    if (
+      !validGrid ||
+      !validPairs ||
+      new Set(pairIds).size !== pairIds.length ||
+      new Set(endpoints).size !== endpoints.length ||
+      value.requireFullCoverage !== true
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      ...base,
+      type: "connect-pairs",
+      grid: { rows: 5, columns: 5 },
+      pairs: pairs as ServerConnectPairsQuestion["pairs"],
+      requireFullCoverage: true,
+    } satisfies ServerConnectPairsQuestion;
+  }
   const wordLength = value.wordLength;
   const maxAttempts = value.maxAttempts;
   if ((wordLength !== 4 && wordLength !== 5) || typeof maxAttempts !== "number") {
@@ -721,24 +1081,10 @@ export function questionFromPayload(
   };
 }
 
-function questionWithSolution(
+export function questionWithSolution(
   question: ServerFlashQuestion,
   row?: ServerFlashTerminalReview,
-):
-  | QuestionOfType<"multiple-choice">
-  | MiniWordleQuestion
-  | LogicCodeQuestion
-  | ProgressiveCluesQuestion
-  | ProgressiveImageQuestion
-  | MatchingQuestion
-  | QuestionOfType<"queens">
-  | QuestionOfType<"true-false">
-  | QuestionOfType<"odd-one-out">
-  | QuestionOfType<"ordering">
-  | AnagramQuestion
-  | ClassificationQuestion
-  | EstimationQuestion
-  | HeatMapQuestion {
+): Question {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)
@@ -778,6 +1124,29 @@ function questionWithSolution(
       points: question.points,
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     };
+  }
+  if (question.type === "logic-matrix") {
+    if (
+      typeof solution.correctOptionId !== "string" ||
+      !question.optionIds.includes(solution.correctOptionId)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    return {
+      id: question.id,
+      type: "logic-matrix",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      pieces: [...question.pieces],
+      cells: [...question.cells],
+      optionIds: [...question.optionIds],
+      correctOptionId: solution.correctOptionId,
+      showPieceLabels: question.showPieceLabels,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies LogicMatrixQuestion;
   }
   if (question.type === "progressive-clues") {
     if (typeof solution.correctAnswer !== "string") throw new ServerFlashQuestionError();
@@ -1049,6 +1418,154 @@ function questionWithSolution(
       explanation: typeof solution.explanation === "string" ? solution.explanation : "",
     };
   }
+  if (question.type === "word-search") {
+    if (
+      !solution.positionsByTargetId ||
+      typeof solution.positionsByTargetId !== "object" ||
+      Array.isArray(solution.positionsByTargetId)
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const positions = solution.positionsByTargetId as Record<string, unknown>;
+    const targets = question.targets.map((target) => {
+      const position = positions[target.id];
+      if (!position || typeof position !== "object" || Array.isArray(position)) {
+        throw new ServerFlashQuestionError();
+      }
+      const value = position as Record<string, unknown>;
+      if (!Number.isSafeInteger(value.startCell) || !Number.isSafeInteger(value.endCell)) {
+        throw new ServerFlashQuestionError();
+      }
+      return { ...target, startCell: value.startCell as number, endCell: value.endCell as number };
+    });
+    return {
+      id: question.id,
+      type: "word-search",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      letters: [...question.letters],
+      targets,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    };
+  }
+  if (question.type === "word-hashtag") {
+    const words = solution.words;
+    if (!words || typeof words !== "object" || Array.isArray(words)) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "word-hashtag",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      initialLetters: [...question.initialLetters],
+      maxMoves: question.maxMoves,
+      words: words as WordHashtagQuestion["words"],
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies WordHashtagQuestion;
+    if (!isValidWordHashtagConfiguration(fullQuestion)) {
+      throw new ServerFlashQuestionError();
+    }
+    return fullQuestion;
+  }
+  if (question.type === "zip") {
+    if (
+      !Array.isArray(solution.solution) ||
+      solution.solution.length !== 25 ||
+      !solution.solution.every((cell) => Number.isSafeInteger(cell))
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "zip",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      checkpoints: [...question.checkpoints],
+      solution: solution.solution as number[],
+      instruction: question.instruction ?? undefined,
+      mapNote: question.mapNote ?? undefined,
+      boardLabel: question.boardLabel ?? undefined,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies ZipQuestion;
+    if (!isValidZipConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
+    return fullQuestion;
+  }
+  if (question.type === "escape") {
+    const referenceSolution = solution.referenceSolution;
+    const optimalMoves = solution.optimalMoves;
+    if (
+      !Array.isArray(referenceSolution) ||
+      !Number.isSafeInteger(optimalMoves) ||
+      !referenceSolution.every(
+        (move) =>
+          move &&
+          typeof move === "object" &&
+          !Array.isArray(move) &&
+          typeof (move as Record<string, unknown>).blockId === "string" &&
+          Number.isSafeInteger((move as Record<string, unknown>).from) &&
+          Number.isSafeInteger((move as Record<string, unknown>).to),
+      )
+    ) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "escape",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      initialBlocks: [...question.initialBlocks],
+      referenceSolution: referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: optimalMoves as number,
+      instruction: question.instruction ?? undefined,
+      hideInstruction: question.hideInstruction,
+      objectiveLabel: question.objectiveLabel ?? undefined,
+      hideObjectiveLabel: question.hideObjectiveLabel,
+      completionMessage: question.completionMessage ?? undefined,
+      boardLabel: question.boardLabel ?? undefined,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies EscapeQuestion;
+    if (!isValidEscapeConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
+    return fullQuestion;
+  }
+  if (question.type === "connect-pairs") {
+    const paths = solution.paths;
+    if (!paths || typeof paths !== "object" || Array.isArray(paths)) {
+      throw new ServerFlashQuestionError();
+    }
+    const fullQuestion = {
+      id: question.id,
+      type: "connect-pairs",
+      category: question.category,
+      tags: question.tags,
+      question: question.question,
+      grid: question.grid,
+      pairs: [...question.pairs],
+      solutionPaths: paths as ConnectPairsQuestion["solutionPaths"],
+      requireFullCoverage: true,
+      timeLimit: question.timeLimit,
+      points: question.points,
+      explanation: typeof solution.explanation === "string" ? solution.explanation : "",
+    } satisfies ConnectPairsQuestion;
+    if (!isValidConnectPairsConfiguration(fullQuestion)) throw new ServerFlashQuestionError();
+    return fullQuestion;
+  }
   return {
     id: question.id,
     type: "multiple-choice",
@@ -1065,10 +1582,18 @@ function questionWithSolution(
   };
 }
 
-export function displayChallenge(challenge: ServerFlashChallenge): FlashChallenge {
-  const { slots, ...challengeBase } = challenge;
+type ServerPlayableChallenge =
+  ServerFlashChallenge | ServerSurvivalChallenge | ServerPyramidChallenge;
+
+export function displayChallenge(challenge: ServerPlayableChallenge): FlashChallenge {
+  const slots = challenge.mode === "pyramid" ? challenge.levels : challenge.slots;
   return {
-    ...challengeBase,
+    id: challenge.id,
+    definitionId: challenge.definitionId,
+    number: challenge.number,
+    title: challenge.title,
+    subtitle: challenge.subtitle,
+    description: challenge.description,
     mode: "flash",
     questions: slots.map((slot) => ({
       id: slot.id,
@@ -1086,14 +1611,66 @@ export function displayChallenge(challenge: ServerFlashChallenge): FlashChalleng
 }
 
 export function challengeWithReview(
-  challenge: ServerFlashChallenge,
+  challenge: ServerFlashChallenge | ServerSurvivalChallenge,
   review: readonly ServerFlashTerminalReview[],
-): FlashChallenge {
+): FlashChallenge;
+export function challengeWithReview(
+  challenge: ServerPyramidChallenge,
+  review: readonly ServerFlashTerminalReview[],
+): PyramidChallenge;
+export function challengeWithReview(
+  challenge: ServerPlayableChallenge,
+  review: readonly ServerFlashTerminalReview[],
+): FlashChallenge | PyramidChallenge {
+  if (challenge.mode === "pyramid") {
+    const levels = challenge.levels.flatMap((level) => {
+      const row = review.find((item) => item.challengeItemId === level.id);
+      if (!row) return [];
+      const question = questionFromPayload(
+        level.id,
+        row.publicPayload,
+        level.timeLimitMs,
+        level.points,
+        level.questionType,
+        undefined,
+        true,
+      );
+      return [
+        {
+          id: level.levelId,
+          label: level.label,
+          briefing: level.briefing,
+          question: questionWithSolution(question, row),
+        },
+      ];
+    });
+    const questionPoints = Object.fromEntries(
+      levels.map((level) => [level.question.id, level.question.points]),
+    );
+    return {
+      id: challenge.id,
+      definitionId: challenge.definitionId,
+      number: challenge.number,
+      title: challenge.title,
+      subtitle: challenge.subtitle,
+      description: challenge.description,
+      mode: "pyramid",
+      attemptVersion: challenge.attemptVersion,
+      availableFrom: challenge.availableFrom,
+      availableUntil: challenge.availableUntil,
+      levels,
+      questionPoints,
+    };
+  }
   const { slots, ...challengeBase } = challenge;
+  const reviewSlots =
+    challenge.mode === "survival"
+      ? slots.filter((slot) => review.some((item) => item.challengeItemId === slot.id))
+      : slots;
   return {
     ...challengeBase,
     mode: "flash",
-    questions: slots.map((slot) => {
+    questions: reviewSlots.map((slot) => {
       const row = review.find((item) => item.challengeItemId === slot.id);
       return questionWithSolution(
         questionFromPayload(
@@ -1113,14 +1690,19 @@ export function challengeWithReview(
 
 function isTerminalReviewResponseRow(value: unknown): value is TerminalReviewResponseRow {
   if (!value || typeof value !== "object") return false;
-  return "challenge_item_id" in value && "solution_payload" in value && "public_payload" in value;
+  const row = value as TerminalReviewResponseRow;
+  return (
+    (typeof row.challenge_item_id === "string" || typeof row.challengeItemId === "string") &&
+    ("public_payload" in row || "publicPayload" in row) &&
+    ("solution_payload" in row || "solutionPayload" in row)
+  );
 }
 
 export function terminalReviewFromResponse(value: unknown): ServerFlashTerminalReview[] {
   if (!Array.isArray(value)) return [];
   return value.filter(isTerminalReviewResponseRow).map((row) => ({
-    challengeItemId: row.challenge_item_id,
-    publicPayload: row.public_payload,
-    solutionPayload: row.solution_payload,
+    challengeItemId: (row.challenge_item_id ?? row.challengeItemId) as string,
+    publicPayload: row.public_payload ?? row.publicPayload,
+    solutionPayload: row.solution_payload ?? row.solutionPayload,
   }));
 }

@@ -60,6 +60,46 @@
 
   .reviewBoard {
     touch-action: auto;
+    border-color: var(--color-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-raised);
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--color-social) 8%, transparent),
+        transparent 68%
+      );
+  }
+
+  .reviewBoard::after {
+    background: var(--color-surface-raised);
+  }
+
+  .reviewBoard .block {
+    border-color: var(--color-border);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-control);
+  }
+
+  .reviewBoard .target {
+    border-color: var(--state-movable);
+    color: var(--color-ink);
+    background: var(--color-brand);
+  }
+
+  .reviewBoard .selected,
+  .reviewBoard .block:focus-visible {
+    outline-color: var(--state-focus);
   }
 
   .exit {

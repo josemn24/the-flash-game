@@ -3,12 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AnswerResult, AnswerValue, FlashChallenge, GameRoomContext } from "@/types/game";
+import { deriveSurvivalProgress } from "@/features/game/survivalRules";
 import type {
   ServerFlashChallenge,
   ServerFlashQuestion,
   ServerFlashTerminalReview,
+  ServerSurvivalChallenge,
+  ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
-import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
+import type { PyramidChallenge } from "@/types/game";
+import { WORD_HASHTAG_ACTIVE_CELLS } from "@/lib/wordHashtag";
+import {
+  FLASH_POP_FEEDBACK_DURATION,
+  MINI_WORDLE_ANSWER_REVEAL_DURATION,
+} from "@/features/game/transitionTiming";
+import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import {
   challengeWithReview,
   displayChallenge,
@@ -17,7 +26,28 @@ import {
 } from "@/features/game/serverFlashQuestionAdapter";
 
 export type ServerFlashPhase =
-  "intro" | "recovering" | "countdown" | "playing" | "transition" | "results" | "review";
+  | "intro"
+  | "recovering"
+  | "countdown"
+  | "briefing"
+  | "playing"
+  | "answer-reveal"
+  | "transition"
+  | "results"
+  | "review";
+
+type ServerPlayableChallenge =
+  | ServerFlashChallenge
+  | ServerSurvivalChallenge
+  | ServerPyramidChallenge;
+
+function terminalReviewChallenge(
+  challenge: ServerPlayableChallenge,
+  review: readonly ServerFlashTerminalReview[],
+) {
+  if (challenge.mode === "pyramid") return challengeWithReview(challenge, review);
+  return challengeWithReview(challenge, review);
+}
 
 type AttemptState = { id: string; lockVersion: number };
 type SubmissionState = "idle" | "submitting" | "error";
@@ -45,6 +75,15 @@ type PendingLogicCodeSubmission = {
   code: string;
   idempotencyKey: string;
 };
+type PendingWordHashtagSubmission = {
+  kind: "word-hashtag";
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  fromCell: number;
+  toCell: number;
+  idempotencyKey: string;
+};
 type PendingProgressiveClueReveal = {
   attemptId: string;
   lockVersion: number;
@@ -59,6 +98,14 @@ type PendingMatchingPair = {
   rightItemId: string;
   idempotencyKey: string;
 };
+type PendingWordSearchSelection = {
+  attemptId: string;
+  lockVersion: number;
+  challengeItemId: string;
+  startCell: number;
+  endCell: number;
+  idempotencyKey: string;
+};
 type PendingQueensPlacement = {
   kind: "queens";
   attemptId: string;
@@ -69,7 +116,10 @@ type PendingQueensPlacement = {
   idempotencyKey: string;
 };
 type PendingSubmission =
-  PendingAnswerSubmission | PendingMiniWordleSubmission | PendingLogicCodeSubmission;
+  | PendingAnswerSubmission
+  | PendingMiniWordleSubmission
+  | PendingLogicCodeSubmission
+  | PendingWordHashtagSubmission;
 
 const SUBMISSION_STATUS_DELAY_MS = 250;
 
@@ -124,7 +174,7 @@ export function useServerFlashSession({
   roomContext,
   terminalReview,
 }: {
-  challenge: ServerFlashChallenge;
+  challenge: ServerPlayableChallenge;
   roomContext: GameRoomContext;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
@@ -144,8 +194,8 @@ export function useServerFlashSession({
   const [results, setResults] = useState<AnswerResult[]>(() => initialResults(roomContext));
   const [lastResult, setLastResult] = useState<AnswerResult>();
   const [score, setScore] = useState(roomContext.result?.flashPoints ?? 0);
-  const [reviewChallenge, setReviewChallenge] = useState<FlashChallenge | null>(() =>
-    terminalReview?.length ? challengeWithReview(challenge, terminalReview) : null,
+  const [reviewChallenge, setReviewChallenge] = useState<FlashChallenge | PyramidChallenge | null>(
+    () => (terminalReview?.length ? terminalReviewChallenge(challenge, terminalReview) : null),
   );
   const [locked, setLocked] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -161,8 +211,14 @@ export function useServerFlashSession({
   const [queensState, setQueensState] = useState<SubmissionState>("idle");
   const [queensStatusVisible, setQueensStatusVisible] = useState(false);
   const [queensError, setQueensError] = useState<string>();
+  const [wordSearchState, setWordSearchState] = useState<SubmissionState>("idle");
+  const [wordSearchStatusVisible, setWordSearchStatusVisible] = useState(false);
+  const [wordSearchError, setWordSearchError] = useState<string>();
   const [lastMatchingPair, setLastMatchingPair] = useState<
     { readonly leftId: string; readonly rightId: string; readonly correct: boolean } | undefined
+  >();
+  const [lastWordSearchSelection, setLastWordSearchSelection] = useState<
+    { readonly startCell: number; readonly endCell: number; readonly correct: boolean } | undefined
   >();
   const [pendingAnswer, setPendingAnswer] = useState<AnswerValue | null>(null);
   const [startNotice, setStartNotice] = useState<string>();
@@ -171,12 +227,48 @@ export function useServerFlashSession({
   const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const matchingStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queensStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const wordSearchStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const pendingRevealRef = useRef<PendingProgressiveClueReveal | null>(null);
   const pendingMatchingPairRef = useRef<PendingMatchingPair | null>(null);
   const pendingQueensPlacementRef = useRef<PendingQueensPlacement | null>(null);
+  const pendingWordSearchSelectionRef = useRef<PendingWordSearchSelection | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
+
+  const isTerminalForMode = (candidateResults: readonly AnswerResult[]) => {
+    if (challenge.mode === "pyramid") {
+      return deriveCompetitivePyramidProgress(challenge.levels.length, candidateResults).outcome !==
+        "in_progress";
+    }
+    if (challenge.mode === "survival") {
+      return (
+        deriveSurvivalProgress(challenge.lives, challenge.slots.length, candidateResults).outcome !==
+        "in_progress"
+      );
+    }
+    return questionIndex >= challenge.slots.length - 1;
+  };
+  const survivalProgress =
+    challenge.mode === "survival"
+      ? deriveSurvivalProgress(challenge.lives, challenge.slots.length, results)
+      : null;
+  const pyramidProgress =
+    challenge.mode === "pyramid"
+      ? deriveCompetitivePyramidProgress(challenge.levels.length, results)
+      : null;
+
+  const advanceToNextQuestion = async (attemptId: string, lockVersion: number, nextResults: AnswerResult[]) => {
+    if (challenge.mode === "pyramid") {
+      setQuestionIndex(nextResults.length);
+      setQuestion(null);
+      setQuestionPresentedAt(null);
+      setQuestionDeadlineAt(null);
+      setPhase("briefing");
+      return;
+    }
+    await prepare({ id: attemptId, lockVersion });
+  };
 
   const clearSubmissionStatusTimer = () => {
     if (submissionStatusTimerRef.current) {
@@ -250,6 +342,24 @@ export function useServerFlashSession({
     }, SUBMISSION_STATUS_DELAY_MS);
   };
 
+  const clearWordSearchStatusTimer = () => {
+    if (wordSearchStatusTimerRef.current) {
+      clearTimeout(wordSearchStatusTimerRef.current);
+      wordSearchStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startWordSearchStatus = () => {
+    clearWordSearchStatusTimer();
+    setWordSearchState("submitting");
+    setWordSearchStatusVisible(false);
+    setWordSearchError(undefined);
+    wordSearchStatusTimerRef.current = setTimeout(() => {
+      setWordSearchStatusVisible(true);
+      wordSearchStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
+  };
+
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -257,6 +367,7 @@ export function useServerFlashSession({
       clearRevealStatusTimer();
       clearMatchingStatusTimer();
       clearQueensStatusTimer();
+      clearWordSearchStatusTimer();
     },
     [],
   );
@@ -268,9 +379,10 @@ export function useServerFlashSession({
     });
     const nextLockVersion = Number(prepared.lockVersion);
     const itemId = String(prepared.challengeItemId);
-    const nextIndex = challenge.slots.findIndex((item) => item.id === itemId);
+    const challengeSlots = challenge.mode === "pyramid" ? challenge.levels : challenge.slots;
+    const nextIndex = challengeSlots.findIndex((item) => item.id === itemId);
     if (nextIndex < 0) throw new Error("competitive_question_not_found");
-    const slot = challenge.slots[nextIndex]!;
+    const slot = challengeSlots[nextIndex]!;
     const presentedAt = serverTimestamp(prepared.presentedAt);
     const deadlineAt = serverTimestamp(prepared.deadlineAt);
     setAttempt({ id: currentAttempt.id, lockVersion: nextLockVersion });
@@ -300,8 +412,14 @@ export function useServerFlashSession({
     setQueensStatusVisible(false);
     setQueensError(undefined);
     pendingQueensPlacementRef.current = null;
+    setWordSearchState("idle");
+    setWordSearchStatusVisible(false);
+    setWordSearchError(undefined);
+    setLastWordSearchSelection(undefined);
+    pendingWordSearchSelectionRef.current = null;
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
+    setBusy(false);
   };
 
   const recover = async () => {
@@ -327,6 +445,9 @@ export function useServerFlashSession({
             isCorrect: item.status === "correct" || item.status === "partial",
             points: Number(item.points),
             timeUsed: Number(item.timeUsedMs) / 1000,
+            ...(item.resultDetails
+              ? { details: item.resultDetails as AnswerResult["details"] }
+              : {}),
           } satisfies AnswerResult;
         })
       : [];
@@ -335,10 +456,13 @@ export function useServerFlashSession({
     if (response.phase === "results") {
       const rows = terminalReviewFromResponse(response.review);
       setScore(Number(response.score ?? 0));
-      setReviewChallenge(rows.length ? challengeWithReview(challenge, rows) : null);
+      setReviewChallenge(rows.length ? terminalReviewChallenge(challenge, rows) : null);
       setQuestionPresentedAt(null);
       setQuestionDeadlineAt(null);
       setPhase("results");
+    } else if (response.phase === "briefing") {
+      setQuestionIndex(recoveredResults.length);
+      setPhase("briefing");
     } else if (response.phase === "countdown") {
       setPhase("countdown");
     } else if (response.resolved) {
@@ -411,6 +535,7 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points ?? 0),
         timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
       };
       const nextResults = [...results, result];
       setResults(nextResults);
@@ -418,17 +543,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -473,7 +598,7 @@ export function useServerFlashSession({
         idempotencyKey: idempotencyKey("start"),
       });
       setAttempt({ id: String(started.attemptId), lockVersion: Number(started.lockVersion) });
-      setPhase("countdown");
+      setPhase(challenge.mode === "pyramid" ? "briefing" : "countdown");
     } catch (error) {
       setStartNotice(
         error instanceof CompetitiveCommandError && error.code === "attempt_control_required"
@@ -529,7 +654,7 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               {
@@ -539,10 +664,10 @@ export function useServerFlashSession({
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -617,26 +742,53 @@ export function useServerFlashSession({
       const nextResults = [...results, result];
       setResults(nextResults);
       setLastResult(result);
-      setPhase("transition");
-      timerRef.current = setTimeout(
-        async () => {
-          if (questionIndex === challenge.slots.length - 1) {
-            const completed = await postJson(
-              `/api/competitive/attempts/${submission.attemptId}/complete`,
-              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
-            );
-            const review = terminalReviewFromResponse(completed.review);
-            setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
-            setPhase("results");
-          } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
-          }
-          setBusy(false);
-        },
-        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
-          1800,
-      );
+      const showTransition = () => {
+        setPhase("transition");
+        timerRef.current = setTimeout(
+          async () => {
+            if (isTerminalForMode(nextResults)) {
+              const completed = await postJson(
+                `/api/competitive/attempts/${submission.attemptId}/complete`,
+                { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+              );
+              const review = terminalReviewFromResponse(completed.review);
+              setScore(Number(completed.score ?? 0));
+              setReviewChallenge(terminalReviewChallenge(challenge, review));
+              setPhase("results");
+            } else {
+              await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
+            }
+            setBusy(false);
+          },
+          FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+            1800,
+        );
+      };
+      const revealMiniWordleAnswer =
+        challenge.mode === "pyramid" &&
+        currentQuestion?.type === "mini-wordle" &&
+        response.status === "correct";
+      if (revealMiniWordleAnswer) {
+        setQuestion((current) =>
+          current?.type === "mini-wordle"
+            ? {
+                ...current,
+                progress: {
+                  kind: "mini-wordle",
+                  guesses: responseGuesses,
+                  feedback: [...current.progress.feedback, feedback],
+                  attemptsUsed: Number(response.attemptsUsed),
+                  maxAttempts: current.maxAttempts,
+                },
+              }
+            : current,
+        );
+        setQuestionDeadlineAt(null);
+        setPhase("answer-reveal");
+        timerRef.current = setTimeout(showTransition, MINI_WORDLE_ANSWER_REVEAL_DURATION);
+      } else {
+        showTransition();
+      }
     } catch (error) {
       clearSubmissionStatusTimer();
       if (
@@ -719,17 +871,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -757,6 +909,127 @@ export function useServerFlashSession({
       setSubmissionState("error");
       setSubmissionStatusVisible(true);
       setSubmissionError("No hemos podido confirmar tu código.");
+      setBusy(false);
+    }
+  };
+
+  const submitWordHashtagToServer = async (submission: PendingWordHashtagSubmission) => {
+    startSubmissionStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/word-hashtag/swap`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          fromCell: submission.fromCell,
+          toCell: submission.toCell,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const responseLetters = Array.isArray(response.letters)
+        ? response.letters.filter(
+            (letter): letter is string | null => letter === null || typeof letter === "string",
+          )
+        : [];
+      const responseCorrectCells = Array.isArray(response.correctCells)
+        ? response.correctCells
+        : [];
+      const validResponseCorrectCells = responseCorrectCells.every(
+        (cell, index) =>
+          Number.isSafeInteger(cell) &&
+          cell >= 0 &&
+          cell < 25 &&
+          WORD_HASHTAG_ACTIVE_CELLS.includes(cell) &&
+          responseLetters.length === 25 &&
+          responseLetters[cell] !== null &&
+          (index === 0 || responseCorrectCells[index - 1]! < cell),
+      );
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      setQuestion((current) =>
+        current?.type === "word-hashtag"
+          ? {
+              ...current,
+              progress: {
+                kind: "word-hashtag",
+                letters: responseLetters.length === 25 ? responseLetters : current.progress.letters,
+                correctCells: validResponseCorrectCells
+                  ? (responseCorrectCells as number[])
+                  : current.progress.correctCells,
+                swaps: [
+                  ...current.progress.swaps,
+                  { fromCell: submission.fromCell, toCell: submission.toCell },
+                ],
+                movesUsed: Number(response.movesUsed),
+                movesRemaining: Number(response.movesRemaining),
+              },
+            }
+          : current,
+      );
+      clearSubmissionStatusTimer();
+      pendingSubmissionRef.current = null;
+      setSubmissionState("idle");
+      setSubmissionStatusVisible(false);
+      setSubmissionError(undefined);
+      if (response.terminal !== true) {
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const swaps =
+        question?.type === "word-hashtag"
+          ? [
+              ...question.progress.swaps,
+              { fromCell: submission.fromCell, toCell: submission.toCell },
+            ]
+          : [{ fromCell: submission.fromCell, toCell: submission.toCell }];
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: { swaps },
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (isTerminalForMode(nextResults)) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
+            setPhase("results");
+          } else {
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearSubmissionStatusTimer();
+      if (error instanceof CompetitiveCommandError && error.code === "invalid_word_hashtag_swap") {
+        pendingSubmissionRef.current = null;
+        setSubmissionState("error");
+        setSubmissionStatusVisible(true);
+        setSubmissionError("Ese intercambio no está permitido.");
+        setLocked(false);
+      } else {
+        setSubmissionState("error");
+        setSubmissionStatusVisible(true);
+        setSubmissionError("No hemos podido guardar el intercambio.");
+      }
       setBusy(false);
     }
   };
@@ -887,6 +1160,7 @@ export function useServerFlashSession({
         isCorrect: response.status === "correct" || response.status === "partial",
         points: Number(response.points ?? 0),
         timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
       };
       const nextResults = [...results, result];
       setResults(nextResults);
@@ -894,17 +1168,17 @@ export function useServerFlashSession({
       setPhase("transition");
       timerRef.current = setTimeout(
         async () => {
-          if (questionIndex === challenge.slots.length - 1) {
+          if (isTerminalForMode(nextResults)) {
             const completed = await postJson(
               `/api/competitive/attempts/${submission.attemptId}/complete`,
               { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
             );
             const review = terminalReviewFromResponse(completed.review);
             setScore(Number(completed.score ?? 0));
-            setReviewChallenge(challengeWithReview(challenge, review));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
             setPhase("results");
           } else {
-            await prepare({ id: submission.attemptId, lockVersion: nextLockVersion });
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
           }
           setBusy(false);
         },
@@ -939,6 +1213,124 @@ export function useServerFlashSession({
     }
   };
 
+  const submitWordSearchSelectionToServer = async (submission: PendingWordSearchSelection) => {
+    startWordSearchStatus();
+    setBusy(true);
+    setLocked(true);
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${submission.attemptId}/word-search/select`,
+        {
+          lockVersion: submission.lockVersion,
+          idempotencyKey: submission.idempotencyKey,
+          challengeItemId: submission.challengeItemId,
+          startCell: submission.startCell,
+          endCell: submission.endCell,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const foundSelections = Array.isArray(response.foundSelections)
+        ? response.foundSelections.filter(
+            (selection): selection is { targetId: string; startCell: number; endCell: number } =>
+              Boolean(selection) &&
+              typeof selection === "object" &&
+              typeof (selection as Record<string, unknown>).targetId === "string" &&
+              Number.isSafeInteger((selection as Record<string, unknown>).startCell) &&
+              Number.isSafeInteger((selection as Record<string, unknown>).endCell),
+          )
+        : [];
+      const foundWordIds = Array.isArray(response.foundWordIds)
+        ? response.foundWordIds.filter((id): id is string => typeof id === "string")
+        : foundSelections.map((selection) => selection.targetId);
+      const correct = response.correct === true;
+      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      setLastWordSearchSelection({
+        startCell: submission.startCell,
+        endCell: submission.endCell,
+        correct,
+      });
+      setQuestion((current) =>
+        current?.type === "word-search"
+          ? {
+              ...current,
+              progress: {
+                kind: "word-search",
+                foundSelections,
+                foundWordIds,
+                foundCount: Number(response.foundCount),
+                totalWords: Number(response.totalWords),
+                incorrectAttempts: Number(response.incorrectAttempts),
+              },
+            }
+          : current,
+      );
+      clearWordSearchStatusTimer();
+      pendingWordSearchSelectionRef.current = null;
+      setWordSearchState("idle");
+      setWordSearchStatusVisible(false);
+      setWordSearchError(undefined);
+      if (response.terminal !== true) {
+        setLocked(false);
+        setBusy(false);
+        return;
+      }
+      const result: AnswerResult = {
+        questionId: submission.challengeItemId,
+        answer: { foundWordIds },
+        status: String(response.status) as AnswerResult["status"],
+        isCorrect: response.status === "correct" || response.status === "partial",
+        points: Number(response.points ?? 0),
+        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
+      };
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      setLastResult(result);
+      setPhase("transition");
+      timerRef.current = setTimeout(
+        async () => {
+          if (isTerminalForMode(nextResults)) {
+            const completed = await postJson(
+              `/api/competitive/attempts/${submission.attemptId}/complete`,
+              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
+            );
+            const review = terminalReviewFromResponse(completed.review);
+            setScore(Number(completed.score ?? 0));
+            setReviewChallenge(terminalReviewChallenge(challenge, review));
+            setPhase("results");
+          } else {
+            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
+          }
+          setBusy(false);
+        },
+        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
+          1800,
+      );
+    } catch (error) {
+      clearWordSearchStatusTimer();
+      const commandError = error instanceof CompetitiveCommandError ? error.code : "";
+      if (
+        commandError === "word_search_target_already_found" ||
+        commandError === "invalid_word_search_selection"
+      ) {
+        pendingWordSearchSelectionRef.current = null;
+        setWordSearchState("idle");
+        setWordSearchStatusVisible(true);
+        setWordSearchError(
+          commandError === "word_search_target_already_found"
+            ? "Esa palabra ya está encontrada."
+            : "La selección no es válida.",
+        );
+        setLocked(false);
+      } else {
+        setWordSearchState("error");
+        setWordSearchStatusVisible(true);
+        setWordSearchError("No hemos podido confirmar la selección.");
+      }
+      setBusy(false);
+    }
+  };
+
   const submit = async (answer: AnswerValue | null) => {
     if (!attempt || !question || locked || busy) return;
     const submission: PendingAnswerSubmission = {
@@ -959,7 +1351,9 @@ export function useServerFlashSession({
       !question ||
       (question.type !== "classification" &&
         question.type !== "estimation" &&
-        question.type !== "heat-map") ||
+        question.type !== "heat-map" &&
+        question.type !== "zip" &&
+        question.type !== "escape") ||
       locked ||
       busy
     ) {
@@ -994,6 +1388,21 @@ export function useServerFlashSession({
     };
     pendingSubmissionRef.current = submission;
     await submitLogicCodeToServer(submission);
+  };
+
+  const submitWordHashtagSwap = async (fromCell: number, toCell: number) => {
+    if (!attempt || !question || question.type !== "word-hashtag" || locked || busy) return;
+    const submission: PendingWordHashtagSubmission = {
+      kind: "word-hashtag",
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      fromCell,
+      toCell,
+      idempotencyKey: idempotencyKey("word-hashtag-swap"),
+    };
+    pendingSubmissionRef.current = submission;
+    await submitWordHashtagToServer(submission);
   };
 
   const revealProgressiveClue = async () => {
@@ -1037,6 +1446,20 @@ export function useServerFlashSession({
     await submitQueensPlacementToServer(submission);
   };
 
+  const submitWordSearchSelection = async (startCell: number, endCell: number) => {
+    if (!attempt || !question || question.type !== "word-search" || locked || busy) return;
+    const submission: PendingWordSearchSelection = {
+      attemptId: attempt.id,
+      lockVersion: attempt.lockVersion,
+      challengeItemId: question.id,
+      startCell,
+      endCell,
+      idempotencyKey: idempotencyKey("word-search-selection"),
+    };
+    pendingWordSearchSelectionRef.current = submission;
+    await submitWordSearchSelectionToServer(submission);
+  };
+
   const retrySubmit = async () => {
     if (busy || !pendingSubmissionRef.current) return;
     const pending = pendingSubmissionRef.current;
@@ -1044,9 +1467,16 @@ export function useServerFlashSession({
       await submitMiniWordleToServer(pending);
     } else if (pending.kind === "logic-code") {
       await submitLogicCodeToServer(pending);
+    } else if (pending.kind === "word-hashtag") {
+      await submitWordHashtagToServer(pending);
     } else {
       await submitAnswerToServer(pending);
     }
+  };
+
+  const retryWordSearchSelection = async () => {
+    if (busy || !pendingWordSearchSelectionRef.current) return;
+    await submitWordSearchSelectionToServer(pendingWordSearchSelectionRef.current);
   };
 
   const retryReveal = async () => {
@@ -1084,6 +1514,9 @@ export function useServerFlashSession({
     phase,
     attempt,
     questionIndex,
+    isTerminalQuestion: isTerminalForMode(results),
+    survivalProgress,
+    pyramidProgress,
     question,
     questionPresentedAt,
     questionDeadlineAt,
@@ -1106,6 +1539,10 @@ export function useServerFlashSession({
     queensState,
     queensStatusVisible,
     queensError,
+    wordSearchState,
+    wordSearchStatusVisible,
+    wordSearchError,
+    lastWordSearchSelection,
     pendingAnswer,
     startNotice,
     displayChallenge: display,
@@ -1115,6 +1552,7 @@ export function useServerFlashSession({
     updateDraft,
     submitMiniWordleGuess,
     submitLogicCodeAttempt,
+    submitWordHashtagSwap,
     retrySubmit,
     revealProgressiveClue,
     retryReveal,
@@ -1122,6 +1560,8 @@ export function useServerFlashSession({
     retryMatchingPair,
     submitQueensPlacement,
     retryQueensPlacement,
+    submitWordSearchSelection,
+    retryWordSearchSelection,
     abandon,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),

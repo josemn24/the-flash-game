@@ -4,6 +4,7 @@ import type {
   EscapeBlock,
   EscapeMove,
   EscapeQuestion,
+  EscapeQuestionConfiguration,
 } from "@/types/game";
 
 export type EscapeReplayResult = {
@@ -42,6 +43,60 @@ function occupiedCells(blocks: EscapeBlock[], excludedBlockId?: string) {
   return occupied;
 }
 
+export function isValidEscapePublicConfiguration(configuration: EscapeQuestionConfiguration) {
+  if (
+    configuration.grid.rows !== 6 ||
+    configuration.grid.columns !== 6 ||
+    configuration.grid.exit.side !== "right" ||
+    !isIntegerInRange(configuration.grid.exit.row, 0, configuration.grid.rows - 1) ||
+    configuration.initialBlocks.length === 0
+  ) {
+    return false;
+  }
+
+  const ids = new Set<string>();
+  const occupied = new Set<string>();
+  let target: EscapeBlock | null = null;
+
+  for (const block of configuration.initialBlocks) {
+    if (
+      !block.id.trim() ||
+      ids.has(block.id) ||
+      (block.kind !== "target" && block.kind !== "obstacle") ||
+      (block.orientation !== "horizontal" && block.orientation !== "vertical") ||
+      (block.length !== 2 && block.length !== 3) ||
+      !Number.isInteger(block.row) ||
+      !Number.isInteger(block.column) ||
+      block.row < 0 ||
+      block.column < 0 ||
+      block.row + (block.orientation === "vertical" ? block.length : 1) > configuration.grid.rows ||
+      block.column + (block.orientation === "horizontal" ? block.length : 1) >
+        configuration.grid.columns
+    ) {
+      return false;
+    }
+
+    ids.add(block.id);
+    if (block.kind === "target") {
+      if (target) return false;
+      target = block;
+    }
+
+    for (const cell of blockCells(block)) {
+      const key = cellKey(cell.row, cell.column);
+      if (occupied.has(key)) return false;
+      occupied.add(key);
+    }
+  }
+
+  return Boolean(
+    target &&
+      target.orientation === "horizontal" &&
+      target.row === configuration.grid.exit.row &&
+      !isEscapeSolved(configuration, configuration.initialBlocks),
+  );
+}
+
 export function isEscapeAnswer(answer: AnswerValue | null): answer is EscapeAnswer {
   return (
     answer !== null &&
@@ -64,7 +119,7 @@ export function isEscapeAnswer(answer: AnswerValue | null): answer is EscapeAnsw
 }
 
 export function getEscapeLegalDestinations(
-  question: EscapeQuestion,
+  question: EscapeQuestionConfiguration,
   blocks: EscapeBlock[],
   blockId: string,
 ) {
@@ -100,7 +155,7 @@ export function getEscapeLegalDestinations(
 }
 
 export function applyEscapeMove(
-  question: EscapeQuestion,
+  question: EscapeQuestionConfiguration,
   blocks: EscapeBlock[],
   move: EscapeMove,
 ): EscapeBlock[] | null {
@@ -119,7 +174,7 @@ export function applyEscapeMove(
 }
 
 export function reverseEscapeMove(
-  question: EscapeQuestion,
+  question: EscapeQuestionConfiguration,
   blocks: EscapeBlock[],
   move: EscapeMove,
 ) {
@@ -130,7 +185,7 @@ export function reverseEscapeMove(
   });
 }
 
-export function isEscapeSolved(question: EscapeQuestion, blocks: EscapeBlock[]) {
+export function isEscapeSolved(question: EscapeQuestionConfiguration, blocks: EscapeBlock[]) {
   const target = blocks.find((block) => block.kind === "target");
   return Boolean(
     target &&
@@ -141,7 +196,7 @@ export function isEscapeSolved(question: EscapeQuestion, blocks: EscapeBlock[]) 
 }
 
 export function replayEscapeMoves(
-  question: EscapeQuestion,
+  question: EscapeQuestionConfiguration,
   moves: EscapeMove[],
 ): EscapeReplayResult {
   let blocks = question.initialBlocks.map((block) => ({ ...block }));
@@ -171,57 +226,10 @@ export function replayEscapeMoves(
 
 export function isValidEscapeConfiguration(question: EscapeQuestion) {
   if (
-    question.grid.rows !== 6 ||
-    question.grid.columns !== 6 ||
-    question.grid.exit.side !== "right" ||
-    !isIntegerInRange(question.grid.exit.row, 0, question.grid.rows - 1) ||
+    !isValidEscapePublicConfiguration(question) ||
     !Number.isInteger(question.optimalMoves) ||
     question.optimalMoves <= 0 ||
-    question.referenceSolution.length !== question.optimalMoves ||
-    question.initialBlocks.length === 0
-  ) {
-    return false;
-  }
-
-  const ids = new Set<string>();
-  const occupied = new Set<string>();
-  let target: EscapeBlock | null = null;
-
-  for (const block of question.initialBlocks) {
-    if (
-      !block.id.trim() ||
-      ids.has(block.id) ||
-      (block.kind !== "target" && block.kind !== "obstacle") ||
-      (block.orientation !== "horizontal" && block.orientation !== "vertical") ||
-      (block.length !== 2 && block.length !== 3) ||
-      !Number.isInteger(block.row) ||
-      !Number.isInteger(block.column) ||
-      block.row < 0 ||
-      block.column < 0 ||
-      block.row + (block.orientation === "vertical" ? block.length : 1) > question.grid.rows ||
-      block.column + (block.orientation === "horizontal" ? block.length : 1) > question.grid.columns
-    ) {
-      return false;
-    }
-
-    ids.add(block.id);
-    if (block.kind === "target") {
-      if (target) return false;
-      target = block;
-    }
-
-    for (const cell of blockCells(block)) {
-      const key = cellKey(cell.row, cell.column);
-      if (occupied.has(key)) return false;
-      occupied.add(key);
-    }
-  }
-
-  if (
-    !target ||
-    target.orientation !== "horizontal" ||
-    target.row !== question.grid.exit.row ||
-    isEscapeSolved(question, question.initialBlocks)
+    question.referenceSolution.length !== question.optimalMoves
   ) {
     return false;
   }

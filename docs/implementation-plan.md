@@ -1,9 +1,11 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S13, D08a, D08b, E01–E05, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F12 y S17a están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S15, S17a, S18b parcial, S20, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-19. Alcance: pasar del prototipo mock a competición persistida,
+> Fecha de análisis: 2026-09-25. El esquema actual contiene 48 archivos declarativos y la revisión canónica es
+> `20260925130000_s20_attempt_inspection_projection`; las 91 migraciones versionadas y las validaciones locales recientes
+> deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
 > privado de superadmin; no forman parte de la UI pública.
@@ -25,17 +27,17 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 
 ### Evidencia del código actual
 
-| Área      | Existe y conviene conservar                                                                                                                                                                                                                                                            | Falta para un recorrido real                                                                                                                       |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                                                                   | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta. |
-| Lecturas  | `server/data-access.ts`, `infrastructure/supabase/roomQueries.ts` y `flashQueries.ts`; home, salas, detalle, introducción, Flash jugable, rankings actuales e historial/revisión Flash reales en S01–S07, más los contextos privados de temporadas, editorial y calendario en S10–S12. | Ajustes y el resto de proyecciones autorizadas.                                                                                                    |
-| Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                            |
-| Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash y Alphabet.                                                                                                                                              | Sustituir autoridad cliente en Supervivencia, Pirámide y Narrativa; Pirámide también usa `localStorage` en práctica.                                        |
-| Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 28 tablas, restricciones, RLS/ACL, Storage, `media_assets`, versiones congeladas, recepciones y tiempos privados, libro de puntos, auditoría, rankings y migraciones versionadas.                                                                                                      | Aplicación controlada a un proyecto remoto y operación de assets editoriales desde un portal privado.                                              |
-| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04. El takeover queda deshabilitado.                                                                                                          | Alta de jugador, aprovisionamiento administrativo, edición, publicación, emisión/revocación de invitaciones y administración.                      |
-| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash y Alphabet reconstruyen contexto privado, persisten resultado y producen feedback público.                                                                                                                               | Contextos y reglas autoritativas de Supervivencia, Pirámide, Narrativa y los demás modos.                                                                                    |
-| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S13, D08a/D08b, E01–E05, E10 y `multiple-choice` con assets privados.                                                                                                 | Verificación contra un entorno remoto.                                                                                                             |
+| Área      | Existe y conviene conservar                                                                                                                                                                                                             | Falta para un recorrido real                                                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| UI        | Next.js 16.2.10, React 19, Flash Pop, 31 formatos y cinco modos; páginas de salas, desafíos, resultados e historial.                                                                                                                    | Estados de red, portal privado de operación y otros modos aún no migrados. La UI pública no gestiona salas, invitaciones ni temporadas en la beta. |
+| Lecturas  | `server/data-access.ts`, `roomQueries.ts`, `flashQueries.ts` y `survivalQueries.ts`; home, salas, introducción, Flash/Supervivencia jugables, rankings e historial/revisión Flash, más portal y calendario.                             | Transferencia, bloqueo/desbloqueo, invitaciones y proyecciones pendientes de los otros modos.                                                      |
+| Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                               | Moderación, purga y assets editoriales.                                                                                                            |
+| Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                      | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
+| Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                             | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
+| SQL       | 30 tablas, 48 archivos declarativos, 91 migraciones versionadas, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional.                                       |
+| Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                    | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
+| Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                   | Verificación contra un entorno remoto.                                                                                                             |
 
 > Actualización 2026-09-16: el flujo Flash competitivo ya incorpora estados de espera y error de red
 > en la UI. La estandarización de este patrón para otros modos queda pendiente de sus respectivas
@@ -52,7 +54,8 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
 ### Diferencias que el plan debe respetar
 
 - Algunas páginas de documentación general todavía describen una aplicación sin base de datos; son
-  referencias históricas que deben actualizarse. Ya existe una integración real local en S01–S12.
+  referencias históricas que deben actualizarse. Ya existe una integración real local en las slices
+  persistidas actuales; la documentación de `current/` mantiene el detalle por slice.
   No hay que rediseñar el esquema ni sustituirlo por CRUD.
 - `supabase/tests/support/bootstrap.sql` simula las funciones mínimas de Auth; sus fixtures no son
   un seed ni prueban un login GoTrue. La integración con Supabase completo se valida en S01.
@@ -358,10 +361,11 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   Una segunda sesión solo recibe un bloqueo y no puede transferir el control; abandonar conserva
   respuestas, consume intento y no suma puntos. Desconexión sola todavía no promete abandono
   automático: corresponde a S21.
-- **Estado de implementación:** completado para Flash y Alphabet. `recover_attempt` cierra un
-  intervalo Alphabet abierto con `recovery_interrupted`, conserva el deadline global y permite que
-  el cliente resuelva después los items pendientes sin reentregar contenido. Supervivencia,
-  Pirámide y Narrativa mantienen esta política pendiente.
+- **Estado de implementación:** completado para Flash, Alphabet, Supervivencia y Pirámide. `recover_attempt`
+  cierra un intervalo Alphabet abierto con `recovery_interrupted`, conserva el deadline global y
+  permite resolver después los items pendientes sin reentregar contenido. En Supervivencia deriva
+  vidas tras un timeout recuperado; en Pirámide un nivel temporizado interrumpido se evalúa como
+  `unanswered` y termina reglamentariamente el ascenso. Narrativa mantiene esta política pendiente.
 
 ### S05 — Jugar Alfabeto con reloj global y vueltas reales
 
@@ -419,8 +423,8 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   `/salas/[roomId]/historial/[challengeId]` y
   `/salas/[roomId]/historial/[challengeId]/[memberId]`.
 - **Mocks retirados:** `MockRoomQueries.listHistory/getHistoryDetail/getMemberDetail`, historial de
-  fixtures y mezcla local de resultados para esos recorridos. Supervivencia, Pirámide y Narrativa
-  continúan mock.
+  fixtures y mezcla local de resultados para esos recorridos. La competición de Supervivencia y
+  Pirámide usa persistencia S14/S15; Narrativa continúa mock.
 - **Backend/dominio:** `RoomHistoryQueries` y `RoomMemberDetailQueries` delegan en
   `get_flash_history` y `get_flash_member_review`. El historial solo consolida publicaciones Flash
   `closed` sin intentos `in_progress`; conserva publicaciones sin participantes y excluye
@@ -699,27 +703,27 @@ Ficha común, obligatoria para **cada** F*:
 - **Terminada:** el formato se puede habilitar en la lista de capacidades y jugar tras recarga sin
   scoring cliente; pruebas de práctica existentes siguen pasando.
 
-| Slice | Formato                | Adaptación y prueba específica que cierra la ficha                                                                                                                     |
-| ----- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F01   | `true-false`           | **Implementado localmente.** Booleano estricto; no interpretar cadenas arbitrarias como verdadero.                                                                     |
-| F02   | `odd-one-out`          | **Implementado localmente.** Selección perteneciente a los items publicados; preservar medios sin solución.                                                            |
-| F03   | `estimation`           | **Implementado localmente.** Número finito, rango/paso/unidad; tolerancia privada, crédito parcial y media privada opcional.                                           |
-| F04   | `heat-map`             | **Implementado en código.** Superficie privada v2, coordenadas normalizadas, radios privados y precisión espacial server-side; pgTAP/E2E quedan como puerta de cierre. |
-| F05   | `image-labeling`       | Dos variantes `assign-all`/`identify-one`; asociaciones privadas, texto/elección y crédito parcial.                                                                    |
-| F06   | `ordering`             | **Implementado localmente.** Permutación válida sin omitir/duplicar items; timeout y revisión del orden.                                                               |
-| F07   | `classification`       | **Implementado localmente.** Labels/categorías válidos, asignaciones parciales y claves privadas excluidas.                                                            |
-| F08   | `logic-matrix`         | Opción válida; solución no necesaria para pintar la matriz.                                                                                                            |
-| F09   | `mini-sudoku`          | Tablero consistente con pistas fijas y tamaño; validar solución/timeout privado.                                                                                       |
-| F10   | `mini-nonogram`        | Dimensiones y celdas; no incluir tablero resuelto en el cliente.                                                                                                       |
-| F11   | `sliding-puzzle`       | El componente actual recibe `solution`; sustituirlo. Validar movimientos alcanzables si cuentan para score.                                                            |
-| F12   | `anagram`              | **Implementado localmente.** Consumo válido de fichas, normalización de respuesta y solución privada.                                                                  |
-| F13   | `error-reconstruction` | Paso y corrección válidos, incluida variante sin corrección; borrador parcial persistido cuando aplique.                                                               |
-| F14   | `connect-pairs`        | Reproducir rutas ortogonales, símbolos, solapamientos/cobertura; parcial en timeout sin rutas solución.                                                                |
-| F15   | `time-maze`            | Reproducir recorrido legal hasta salida; no confiar en una bandera cliente de llegada.                                                                                 |
-| F16   | `zip`                  | Camino y checkpoints en orden; recorrido parcial y solución privada.                                                                                                   |
-| F17   | `pipes`                | Rotaciones válidas y conectividad desde origen; no aceptar solo `completed: true`.                                                                                     |
-| F18   | `escape`               | Reproducir movimientos legales; `optimalMoves`/ruta de referencia privados; revisión sin recalcular puntos históricos.                                                 |
-| F19   | `word-hashtag`         | Movimiento/reordenación válida y límite; palabras solución privadas y conteo derivado del registro verificable.                                                        |
+| Slice | Formato                | Adaptación y prueba específica que cierra la ficha                                                                                                                                                                                                                                     |
+| ----- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F01   | `true-false`           | **Implementado localmente.** Booleano estricto; no interpretar cadenas arbitrarias como verdadero.                                                                                                                                                                                     |
+| F02   | `odd-one-out`          | **Implementado localmente.** Selección perteneciente a los items publicados; preservar medios sin solución.                                                                                                                                                                            |
+| F03   | `estimation`           | **Implementado localmente.** Número finito, rango/paso/unidad; tolerancia privada, crédito parcial y media privada opcional.                                                                                                                                                           |
+| F04   | `heat-map`             | **Implementado en código.** Superficie privada v2, coordenadas normalizadas, radios privados y precisión espacial server-side; pgTAP/E2E quedan como puerta de cierre.                                                                                                                 |
+| F05   | `image-labeling`       | Dos variantes `assign-all`/`identify-one`; asociaciones privadas, texto/elección y crédito parcial.                                                                                                                                                                                    |
+| F06   | `ordering`             | **Implementado localmente.** Permutación válida sin omitir/duplicar items; timeout y revisión del orden.                                                                                                                                                                               |
+| F07   | `classification`       | **Implementado localmente.** Labels/categorías válidos, asignaciones parciales y claves privadas excluidas.                                                                                                                                                                            |
+| F08   | `logic-matrix`         | **Implementado localmente.** Matriz pública v1 sin solución, respuesta final server-side, penalización del 20 %, recuperación conservando la interacción abierta, revisión terminal protegida y E2E competitivo con idempotencia.                                                      |
+| F09   | `mini-sudoku`          | Tablero consistente con pistas fijas y tamaño; validar solución/timeout privado.                                                                                                                                                                                                       |
+| F10   | `mini-nonogram`        | Dimensiones y celdas; no incluir tablero resuelto en el cliente.                                                                                                                                                                                                                       |
+| F11   | `sliding-puzzle`       | El componente actual recibe `solution`; sustituirlo. Validar movimientos alcanzables si cuentan para score.                                                                                                                                                                            |
+| F12   | `anagram`              | **Implementado localmente.** Consumo válido de fichas, normalización de respuesta y solución privada.                                                                                                                                                                                  |
+| F13   | `error-reconstruction` | Paso y corrección válidos, incluida variante sin corrección; borrador parcial persistido cuando aplique.                                                                                                                                                                               |
+| F14   | `connect-pairs`        | Reproducir rutas ortogonales, símbolos, solapamientos/cobertura; parcial en timeout sin rutas solución.                                                                                                                                                                                |
+| F15   | `time-maze`            | Reproducir recorrido legal hasta salida; no confiar en una bandera cliente de llegada.                                                                                                                                                                                                 |
+| F16   | `zip`                  | **Implementado localmente.** Payload público v1 sin solución, recorrido local con checkpoints, respuesta final/draft de timeout, evaluación server-side, revisión protegida, validación de solución única e integración E2E sin fallback mock.                                         |
+| F17   | `pipes`                | Rotaciones válidas y conectividad desde origen; no aceptar solo `completed: true`.                                                                                                                                                                                                     |
+| F18   | `escape`               | **Implementado y verificado localmente.** Payload público v1 sin solución, movimientos locales, draft de timeout, replay server-side, revisión protegida, helper SQL inmutable y E2E 3/3 sobre fixture limpio; el cierre queda acotado al stack local hasta validar un entorno remoto. |
+| F19   | `word-hashtag`         | **Implementado y verificado localmente.** Payload público v1 sin solución, swaps validados server-side, progreso en `attempts.progress_payload`, límite terminal, timeout recuperable, evaluación/scoring server-side, revisión protegida e E2E 3/3 sobre fixture limpio.              |
 
 ### E01–E10 — Formatos con eventos, penalizaciones o revelaciones
 
@@ -755,8 +759,8 @@ Ficha común, obligatoria para **cada** E*:
 | E03     | `progressive-clues` | **Implementado localmente.** Entregar la primera pista gratis y las siguientes mediante comando transaccional; persistir eventos privados, no enviar pistas futuras ni confiar en `revealedClues`, ajustar penalización con los puntos reales del item y recuperar tras recarga.                                                                                                                    |
 | E04     | `matching`          | **Implementado localmente.** Comprobar cada asociación con feedback inmediato; conservar fallos y parejas correctas en eventos privados, aplicar 10% por error, recuperar tras recarga y evaluar timeout con crédito parcial sin `correctMatchId` público.                                                                                                                                          |
 | E05     | `queens`            | **Implementado localmente.** Persistir cada colocación/retirada como evento privado; calcular conflictos y penalización del 5% server-side, recuperar el tablero sin marcas X y cerrar automáticamente al resolver las cinco regiones. La solución solo aparece en la revisión autorizada.                                                                                                          |
-| S05     | `alphabet`          | **Implementado localmente.** Publicar desafíos Alphabet con referencias `short-text`, reloj global, vueltas y pases; persistir intervalos y respuestas mediante los comandos existentes, reconstruir progreso/timeout server-side y exponer soluciones solo en revisión terminal autorizada. |
-| E06     | `word-search`       | Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos para impedir borrar penalizaciones del payload final.                                                                                                                                                                                                                                                            |
+| S05     | `alphabet`          | **Implementado localmente.** Publicar desafíos Alphabet con referencias `short-text`, reloj global, vueltas y pases; persistir intervalos y respuestas mediante los comandos existentes, reconstruir progreso/timeout server-side y exponer soluciones solo en revisión terminal autorizada.                                                                                                        |
+| E06     | `word-search`       | **Implementado localmente.** Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos, recuperar desde eventos, cerrar al encontrar todos los objetivos y evaluar crédito parcial sin penalización. La solución solo aparece en revisión terminal autorizada.                                                                                                             |
 | E07     | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                                                                                                                                                   |
 | E08     | `flash-memory`      | Presentación autorizada temporal y fase de respuesta separadas; checkpoint no vuelve a conceder una fase de memoria gratuita. Definir qué datos necesariamente vistos pueden conservarse.                                                                                                                                                                                                           |
 | E09     | `simon-sequence`    | Secuencia visible solo en fase autorizada y registro de su entrega; impedir reiniciar presentación/reloj con recarga. Respuesta final evaluada en servidor.                                                                                                                                                                                                                                         |
@@ -776,30 +780,38 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ## 7. Otros modos y operación del producto
 
-### S14 — Supervivencia con vidas y finalización autoritativas
+### S14 — Supervivencia con vidas y finalización autoritativas ✅ Implementada localmente
 
 - **Objetivo / CU:** CU-15–CU-21 para `survival`, incluyendo eliminación reglamentaria.
 - **UI:** `FlashPopSurvivalGame`, `useSurvivalSession`, resultado de supervivencia.
 - **Mocks retirados:** vidas, eliminación, score y ranking local como hechos oficiales.
-- **Backend/dominio:** reutilizar `survivalRules` y extraer del hook las decisiones puras; derivar
-  vidas de respuestas aceptadas. Decidir eliminación/última pregunta y puntuación en servidor antes
-  de llamar `complete`; SQL por sí solo no decide esa terminación temprana.
-- **Persistencia:** respuestas, checkpoint validado mínimo y `complete_attempt` existentes; datos
-  de modo congelados. DTO con vidas/estado confirmado, sin recalcular desde valores de la UI.
-- **Tests:** última vida por error/timeout, crédito parcial, cero puntos, cierre temprano falsificado,
-  recuperación de pregunta abierta como `unanswered` con pérdida de vida, recuperación tras
-  eliminación y acreditación única.
+- **Backend/dominio:** el editor acepta `survival` y `modeConfig.lives` de 1 a la cantidad de
+  preguntas; el publicador limita las preguntas a los formatos con evaluador competitivo y bloquea
+  `short-text`. El servidor deriva vidas desde evaluaciones persistidas, incluidos errores de
+  Matching/Queens, elimina o completa al alcanzar el terminal reglamentario y calcula los puntos.
+- **Persistencia:** lecturas competitivas entregan metadatos y posiciones sin soluciones. La
+  recuperación convierte una interacción abierta sin respuesta en `unanswered`; `complete_attempt`
+  rechaza cierres prematuros y deriva `eliminated`/`survived`, score y acreditación desde respuestas.
+  Las lecturas de resultado y revisión exigen al miembro dueño del intento terminal.
+- **Tests:** reglas puras, PgTAP de publicación/ACL, evaluación, vidas, recuperación, cierres e
+  idempotencia; integración Auth de portal/calendario/proyecciones; E2E de recarga, eliminación,
+  revisión y ranking. Checks focalizados ejecutados sin `verify:pilot`.
 - **Dependencias:** S04 y D03; únicamente las F*/E* del desafío seleccionado.
 - **Terminada:** sobrevivir o ser eliminado produce `completed`; dejar la partida produce abandono
-  solo por su operación/política. No quedan vidas ni resultados oficiales en estado cliente.
+  solo mediante la operación explícita. No quedan vidas, eliminación ni resultados oficiales en
+  estado cliente. Verificación local/CI únicamente; no hay proyecto remoto enlazado.
 
 ### S15 — Pirámide con niveles persistidos
 
+**Estado 2026-09-25:** implementada y verificada en Supabase local. Pasan schema/pgTAP con 48
+archivos declarativos, integración Auth/PostgREST/RLS, migraciones incrementales y E2E focal. No hay
+proyecto remoto vinculado, así que no se declara despliegue ni validación remota.
+
 - **Objetivo / CU:** CU-15–CU-21 para `pyramid`.
-- **UI:** `FlashPopPyramidGame`, `usePyramidSession`, briefing, nivel y revisión.
+- **UI:** cliente competitivo server-backed de Pirámide, `useServerFlashSession`, briefing, nivel y revisión.
 - **Mocks retirados:** `PyramidAttemptRecord`/`localStorage` como autoridad competitiva y resultado
   social local. Conservar el almacenamiento de práctica si sigue teniendo utilidad explícita.
-- **Backend/dominio:** reutilizar reglas puras de `pyramidAttempt`; validar nivel esperado,
+- **Backend/dominio:** reutilizar reglas puras competitivas de Pirámide; validar nivel esperado,
   transición briefing/pregunta y final temprano; `summit`/`failed` son outcome, ambos `completed`.
 - **Persistencia:** unidades de scope `level`, respuestas por item y checkpoint de fase, comandos
   de preparación/evaluación/cierre. No inventar un deadline global ni cortar por `closes_at` un
@@ -811,6 +823,20 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 - **Terminada:** el ascenso se reanuda solo desde la sesión original antes de comenzar un nivel; una
   interrupción de nivel lo falla reglamentariamente, nunca se muestra como abandono ni concede otra
   oportunidad.
+
+#### S15 — formatos competitivos adicionales
+
+Se habilitan en siete migraciones acumulativas y ordenadas (`true-false`, `ordering`,
+`classification`, `logic-matrix`, `zip`, `escape`, `word-hashtag`) a través del gate compartido de
+compatibilidad, por lo que la admisión también queda disponible en Flash y Supervivencia. El editor
+reutiliza la biblioteca y sus validadores; la partida reutiliza inputs, transporte, evaluación,
+progreso server-side de Word Hashtag y revisión terminal existentes. Pirámide conserva el cierre al
+primer resultado que no sea `correct` y asigna cero puntos a ese nivel, incluso cuando el evaluador
+calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
+
+- **Estado:** las siete slices están completas en Supabase local. pgTAP valida los payloads y el gate
+  compartido; integración Auth/PostgREST/RLS y E2E focal verifican la Pirámide mixta y los tres modos.
+  No se verificó ni desplegó un proyecto remoto.
 
 ### S16 — Narrativa con escenas y epílogo persistidos
 
@@ -881,20 +907,25 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ### S18b — Administrar roles, expulsión y bloqueo
 
+> Estado: parcialmente implementada y verificada en local. La nomenclatura histórica del test SQL es
+> `s17_room_membership_commands.test.sql`; conceptualmente pertenece a S18b.
+
 - **Objetivo / CU:** resto de membresías de CU-07 según matriz aprobada.
-- **Superficie:** lista de miembros y acciones en el portal privado de superadmin, con errores de
-  conflicto. La UI pública no permitirá cambiar roles, expulsar, bloquear ni desbloquear.
+- **Superficie:** ajustes de sala con acciones del owner y errores de conflicto. La UI permite
+  conceder/quitar admin y eliminar lógicamente miembros; el resto de operaciones sigue pendiente.
 - **Mocks retirados:** roles/estados inmutables de demo y controles deshabilitados correspondientes.
-- **Backend/dominio:** operaciones explícitas de cambio de rol, expulsar, bloquear y desbloquear
-  solo según D05; revalidar permisos al escribir. No permitir autoconcederse owner/superadmin.
-- **Persistencia:** comandos acotados, locks y auditoría; conservar membresía/reactivación e histórico.
-  DTO de miembro actualizado y revalidación de accesos.
-- **Tests:** matriz actor/objetivo, intento activo tras pérdida de membresía, bloqueado no acepta
-  invitación, cambio simultáneo con sesión competitiva activa y exclusión de nuevos inicios de
-  spectator.
-- **Dependencias:** S18a y D05 con política explícita de desbloqueo.
-- **Terminada:** cada acción habilitada tiene autorización de servidor y sus efectos se reflejan
-  también en una sesión ya abierta del afectado.
+- **Backend/dominio:** operaciones explícitas `grant_admin`, `revoke_admin` y `remove`, solo para el
+  owner activo; revalidar permisos al escribir. No permitir actuar sobre el owner, sobre uno mismo ni
+  autoconcederse owner/superadmin. Transferencia, bloqueo/desbloqueo e invitaciones completas quedan
+  para slices posteriores.
+- **Persistencia:** `public.manage_room_member(jsonb)` delega en el comando privado, con locks,
+  idempotencia y auditoría; la eliminación es lógica y conserva el histórico. DTO de miembro
+  actualizado y revalidación de accesos.
+- **Tests:** matriz actor/objetivo, idempotencia, auditoría, owner/admin, eliminación lógica y
+  actualización de `member_previews` en las tarjetas de sala.
+- **Dependencias:** S08 y D05. S18a, bloqueo/desbloqueo e invitaciones completas siguen pendientes.
+- **Terminada parcialmente:** cada acción habilitada tiene autorización de servidor y sus efectos se
+  reflejan en la siguiente lectura; no se declara cerrada la matriz completa de CU-07.
 
 ### S18c — Eliminar lógicamente una sala y recuperarla
 
@@ -932,19 +963,30 @@ autorizado, pero quedará accesible en el navegador después de la entrega.
 
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
+- **Estado 2026-09-25:** implementada y verificada sobre Supabase local. La revisión canónica es
+  `20260925130000_s20_attempt_inspection_projection`; el esquema reconstruye 48 archivos declarativos
+  y 91 migraciones versionadas. No hay proyecto remoto vinculado, por lo que la aplicación y validación
+  contra staging/producción siguen pendientes.
 - **Objetivo / CU:** CU-25.
-- **Superficie:** pantalla interna del portal privado de superadmin para inspección por intento y
-  acción de ajuste/invalidación con motivo.
+- **Superficie:** `/admin/rooms/[roomId]/attempts`, `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`
+  y `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]`; la última permite inspección
+  por intento y acción de ajuste/invalidación con motivo.
 - **Mocks retirados:** correcciones simuladas o modificación manual de fixtures/resultados.
-- **Backend/dominio:** comprobar superadmin real; consulta de inspección mínima auditada; conectar
-  `adjust_result`/`invalidate_attempt`. Separar score original de saldo efectivo y de revisión visible.
-- **Persistencia:** comandos existentes de ajuste/reversión y auditoría; añadir lectura privilegiada
-  limitada cuando haga falta. Nunca sobrescribir respuesta ni acreditación original.
-- **Tests:** rol falsificado, motivo vacío, cero puntos, ajuste repetido, corrección concurrente con
-  invalidación, rollback de auditoría, originales intactos y rankings actualizados.
+- **Backend/dominio:** `get_superadmin_attempt_publications`, `get_superadmin_room_attempts` y
+  `get_superadmin_attempt_inspection` son lecturas `security definer` limitadas por sala/publicación,
+  con cursor estable y sin soluciones. `adjust_result` e `invalidate_attempt` reutilizan los comandos
+  existentes; el adaptador server-only valida Auth, rol, payload, `lock_version`, motivo, puntuación
+  efectiva e idempotencia.
+- **Persistencia:** `supabase/schemas/s20_superadmin_attempt_reads.sql` añade el índice compuesto y
+  las RPC protegidas; las correcciones preservan respuestas, score original y estado/historial, y
+  actualizan el ledger, la auditoría, `effective_results` y rankings cuando corresponde.
+- **Tests:** S20 añade 21 checks pgTAP de rol falsificado, aislamiento, exclusión de tests, payload sin
+  soluciones, ajuste a saldo efectivo, idempotencia, motivo vacío, puntuación fuera de rango,
+  invalidación, rollback y rechazo de intentos en curso; typecheck, lint y contratos de aplicación
+  quedan verificados localmente.
 - **Dependencias:** S06, S07, D05 y D07 para inspección/invalidados.
-- **Terminada:** un operador corrige/invalida con trazabilidad; jugadores ordinarios no pueden
-  invocar esa operación y las proyecciones muestran el saldo efectivo correcto.
+- **Terminada:** un operador superadmin corrige/invalida con trazabilidad desde el portal; jugadores
+  ordinarios no pueden invocar ni leer la operación y las proyecciones muestran el saldo efectivo correcto.
 
 ### S21 — Resolver inactividad y consolidar publicaciones
 
@@ -996,7 +1038,9 @@ rate limit y respuestas `no-store`. Existe health privado en `/api/internal/heal
 redactados y `npm run verify:pilot` para reconstruir Supabase local, probar escenarios por separado,
 ejecutar E2E y ensayar backup/restore. El alcance sigue siendo local/CI: no declara staging o
 producción remota, integración de `question-assets` en otros formatos, otros modos, abandono automático,
-takeover ni `results_locked_at`.
+takeover ni `results_locked_at`. El 2026-09-22, `npm run verify:pilot` completó correctamente
+la matriz local de portal, S02, S03, E01–E06, F08, S04, S06, S07 y S10–S12, incluidos sus fixtures,
+integraciones y E2E, además de layout, diccionario y backup/restore.
 
 ### S23 — Ejecutar una prueba fantasma interna
 
@@ -1101,8 +1145,9 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 ## 10. Cierre de una slice y uso como backlog
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
-incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S12
-están **implementadas**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
+incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S15,
+S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 y E01–E06/E10 están
+**implementadas localmente**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
 Una slice se cierra cuando:
@@ -1128,9 +1173,9 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S13, D08a/D08b, E01–E05, E10, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
-sala, Flash competitivo persistido con Mini-Wordle, Logic-code, Progressive-clues, Matching y Queens,
-recuperación local, rankings, historial y revisión, además de la creación auditada de salas, la
-activación de temporadas, la publicación editorial mixta y la programación/ejecución temporal local
-del calendario. Estas slices no habilitan S13+, otros modos ni E06–E09; el piloto sigue acotado a
-las rutas reales documentadas en S22.
+S01–S15, D08a/D08b, E01–E06, E10, F08, F16, F18, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+sala, Flash y Supervivencia competitivos persistidos, recuperación, rankings, historial Flash y
+revisión propia de Survival, además de la creación auditada de salas, la activación de temporadas,
+la publicación editorial mixta, Pirámide competitiva y la programación/ejecución temporal local del calendario. E07–E09
+y Narrativa siguen fuera de alcance. El piloto sigue acotado a las rutas reales documentadas
+en S22.

@@ -8,22 +8,31 @@ import type {
   ServerAlphabetQuestion,
   ServerFlashTerminalReview,
 } from "@/types/gameplay/challenge";
-import { alphabetChallengeWithReview, questionFromAlphabetPayload } from "./serverAlphabetQuestionAdapter";
+import { createAlphabetTimeoutGuard } from "./alphabetTimeoutGuard";
+import {
+  alphabetChallengeWithReview,
+  questionFromAlphabetPayload,
+} from "./serverAlphabetQuestionAdapter";
 
 export type ServerAlphabetPhase =
-  | "intro"
-  | "recovering"
-  | "countdown"
-  | "playing"
-  | "results"
-  | "review";
+  "intro" | "recovering" | "countdown" | "playing" | "results" | "review";
 
 type AttemptState = { id: string; lockVersion: number };
 
 class CompetitiveCommandError extends Error {
-  constructor(readonly code: string) {
+  constructor(
+    readonly code: string,
+    readonly status: number,
+    readonly retryAfterSeconds?: number,
+  ) {
     super(code);
   }
+}
+
+function rateLimitMessage(error: unknown): string | undefined {
+  if (!(error instanceof CompetitiveCommandError) || error.status !== 429) return undefined;
+  const seconds = error.retryAfterSeconds ?? 1;
+  return `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`;
 }
 
 function idempotencyKey(prefix: string) {
@@ -43,7 +52,14 @@ async function postJson(path: string, body: object) {
       error && typeof error === "object" && "code" in error && typeof error.code === "string"
         ? error.code
         : "competitive_command_failed";
-    throw new CompetitiveCommandError(code);
+    const retryAfter = Number(response.headers.get("Retry-After"));
+    throw new CompetitiveCommandError(
+      code,
+      response.status,
+      response.status === 429 && Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.ceil(retryAfter)
+        : undefined,
+    );
   }
   return value;
 }
@@ -99,6 +115,9 @@ export function useServerAlphabetSession({
   const [startNotice, setStartNotice] = useState<string>();
   const [deadlineAt, setDeadlineAt] = useState<number | null>(null);
   const recoveryStarted = useRef(false);
+  const recoveryInFlight = useRef(false);
+  const commandInFlight = useRef(false);
+  const timeoutGuard = useRef(createAlphabetTimeoutGuard());
 
   const replaceResults = (nextResults: AnswerResult[]) => {
     resultsRef.current = nextResults;
@@ -113,7 +132,9 @@ export function useServerAlphabetSession({
     const review = Array.isArray(response.review)
       ? (response.review as ServerFlashTerminalReview[])
       : [];
-    setScore(Number(response.score ?? currentResults.reduce((sum, result) => sum + result.points, 0)));
+    setScore(
+      Number(response.score ?? currentResults.reduce((sum, result) => sum + result.points, 0)),
+    );
     setReviewChallenge(review.length ? alphabetChallengeWithReview(challenge, review) : null);
     setPhase("results");
     setQuestion(null);
@@ -132,12 +153,15 @@ export function useServerAlphabetSession({
     if (typeof response.deadlineAt === "string") setDeadlineAt(Date.parse(response.deadlineAt));
     if (response.timedOut === true && response.publicPayload === null) {
       const itemId = String(response.challengeItemId);
-      const timeoutResponse = await postJson(`/api/competitive/attempts/${currentAttempt.id}/answer`, {
-        lockVersion: nextAttempt.lockVersion,
-        idempotencyKey: idempotencyKey(`timeout:${itemId}`),
-        challengeItemId: itemId,
-        answer: null,
-      });
+      const timeoutResponse = await postJson(
+        `/api/competitive/attempts/${currentAttempt.id}/answer`,
+        {
+          lockVersion: nextAttempt.lockVersion,
+          idempotencyKey: idempotencyKey(`timeout:${itemId}`),
+          challengeItemId: itemId,
+          answer: null,
+        },
+      );
       const result: AnswerResult = {
         questionId: itemId,
         answer: null,
@@ -149,7 +173,10 @@ export function useServerAlphabetSession({
       const nextResults = [...resultsRef.current, result];
       replaceResults(nextResults);
       setLastResult(result);
-      const updatedAttempt = { id: currentAttempt.id, lockVersion: Number(timeoutResponse.lockVersion) };
+      const updatedAttempt = {
+        id: currentAttempt.id,
+        lockVersion: Number(timeoutResponse.lockVersion),
+      };
       setAttempt(updatedAttempt);
       if (nextResults.length >= challenge.entries.length) {
         await complete(updatedAttempt, nextResults);
@@ -158,40 +185,58 @@ export function useServerAlphabetSession({
       }
       return;
     }
-    setQuestion(
-      questionFromAlphabetPayload(
-        String(response.challengeItemId),
-        challenge.entries.find((entry) => entry.id === String(response.challengeItemId))?.letter ?? "",
-        response.publicPayload,
-        challenge.entries.find((entry) => entry.id === String(response.challengeItemId))?.timeLimitMs ?? 1,
-        challenge.entries.find((entry) => entry.id === String(response.challengeItemId))?.points ?? 0,
-      ),
+    const nextQuestion = questionFromAlphabetPayload(
+      String(response.challengeItemId),
+      challenge.entries.find((entry) => entry.id === String(response.challengeItemId))?.letter ??
+        "",
+      response.publicPayload,
+      challenge.entries.find((entry) => entry.id === String(response.challengeItemId))
+        ?.timeLimitMs ?? 1,
+      challenge.entries.find((entry) => entry.id === String(response.challengeItemId))?.points ?? 0,
     );
+    setQuestion(nextQuestion);
     setLocked(false);
     setPhase("playing");
   };
 
   const recover = async () => {
-    const started = await postJson("/api/competitive/attempts/start", {
-      scheduledChallengeId: challenge.id,
-      idempotencyKey: idempotencyKey("start"),
-    });
-    const currentAttempt = { id: String(started.attemptId), lockVersion: Number(started.lockVersion) };
-    setAttempt(currentAttempt);
-    const response = await postJson(`/api/competitive/attempts/${currentAttempt.id}/recover`, {
-      lockVersion: currentAttempt.lockVersion,
-    });
-    setAttempt({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
-    if (response.phase === "results") {
-      setScore(Number(response.score ?? 0));
-      const review = Array.isArray(response.review)
-        ? (response.review as ServerFlashTerminalReview[])
-        : [];
-      setReviewChallenge(review.length ? alphabetChallengeWithReview(challenge, review) : null);
-      setPhase("results");
-      return;
+    if (recoveryInFlight.current) return;
+    recoveryInFlight.current = true;
+    setPhase("recovering");
+    setLocked(true);
+    setBusy(true);
+    setStartNotice(undefined);
+    try {
+      const started = await postJson("/api/competitive/attempts/start", {
+        scheduledChallengeId: challenge.id,
+        idempotencyKey: idempotencyKey("start"),
+      });
+      const currentAttempt = {
+        id: String(started.attemptId),
+        lockVersion: Number(started.lockVersion),
+      };
+      setAttempt(currentAttempt);
+      const response = await postJson(`/api/competitive/attempts/${currentAttempt.id}/recover`, {
+        lockVersion: currentAttempt.lockVersion,
+      });
+      setAttempt({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
+      if (response.phase === "results") {
+        setScore(Number(response.score ?? 0));
+        const review = Array.isArray(response.review)
+          ? (response.review as ServerFlashTerminalReview[])
+          : [];
+        setReviewChallenge(review.length ? alphabetChallengeWithReview(challenge, review) : null);
+        setPhase("results");
+        return;
+      }
+      await prepare({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
+    } catch (cause) {
+      setStartNotice("No se ha podido recuperar la partida. Puedes reintentarlo.");
+      throw cause;
+    } finally {
+      recoveryInFlight.current = false;
+      setBusy(false);
     }
-    await prepare({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
   };
 
   useEffect(() => {
@@ -213,7 +258,12 @@ export function useServerAlphabetSession({
       setAttempt({ id: String(started.attemptId), lockVersion: Number(started.lockVersion) });
       setPhase("countdown");
     } catch (cause) {
-      setStartNotice(cause instanceof CompetitiveCommandError ? "No se ha podido iniciar el desafío." : "Error inesperado.");
+      setStartNotice(
+        rateLimitMessage(cause) ??
+          (cause instanceof CompetitiveCommandError
+            ? "No se ha podido iniciar el desafío."
+            : "Error inesperado."),
+      );
     } finally {
       setBusy(false);
     }
@@ -224,18 +274,25 @@ export function useServerAlphabetSession({
     setBusy(true);
     try {
       await prepare(attempt);
-    } catch {
-      setError("No se ha podido preparar la primera letra.");
+    } catch (cause) {
+      setLocked(true);
+      setStartNotice(
+        rateLimitMessage(cause) ??
+          "No se ha podido preparar la primera letra. Puedes recuperar la partida.",
+      );
+      setPhase("recovering");
     } finally {
       setBusy(false);
     }
   };
 
   const submit = async (answer: string | null) => {
-    if (!attempt || !question || busy) return;
+    if (!attempt || !question || busy || commandInFlight.current) return;
+    commandInFlight.current = true;
     setBusy(true);
     setLocked(true);
     setError(undefined);
+    let answerAccepted = false;
     try {
       const response = await postJson(`/api/competitive/attempts/${attempt.id}/answer`, {
         lockVersion: attempt.lockVersion,
@@ -243,6 +300,7 @@ export function useServerAlphabetSession({
         challengeItemId: question.id,
         answer,
       });
+      answerAccepted = true;
       const result: AnswerResult = {
         questionId: question.id,
         answer,
@@ -258,32 +316,75 @@ export function useServerAlphabetSession({
       setAttempt(nextAttempt);
       if (nextResults.length >= challenge.entries.length) await complete(nextAttempt, nextResults);
       else await prepare(nextAttempt);
-    } catch {
-      setError("No se ha podido confirmar la respuesta.");
-      setLocked(false);
+    } catch (cause) {
+      if (answer === null) {
+        setPhase("recovering");
+        const rateLimitNotice = rateLimitMessage(cause);
+        setStartNotice(rateLimitNotice ?? "Cerrando la partida tras agotarse el tiempo…");
+        if (!rateLimitNotice) {
+          try {
+            await recover();
+          } catch {
+            // recover leaves the player on a blocked recovery screen with a manual retry.
+          }
+        }
+      } else {
+        if (answerAccepted) {
+          setPhase("recovering");
+          setStartNotice(
+            rateLimitMessage(cause) ??
+              "No se ha podido preparar el siguiente estado. Puedes recuperar la partida.",
+          );
+        } else {
+          setError(rateLimitMessage(cause) ?? "No se ha podido confirmar la respuesta.");
+          setLocked(false);
+        }
+      }
     } finally {
+      commandInFlight.current = false;
       setBusy(false);
     }
   };
 
   const pass = async () => {
-    if (!attempt || !question || busy) return;
+    if (!attempt || !question || busy || commandInFlight.current) return;
+    commandInFlight.current = true;
     setBusy(true);
     setLocked(true);
     setError(undefined);
+    let passAccepted = false;
     try {
       const response = await postJson(`/api/competitive/attempts/${attempt.id}/alphabet/pass`, {
         lockVersion: attempt.lockVersion,
         idempotencyKey: idempotencyKey("alphabet-pass"),
         challengeItemId: question.id,
       });
+      passAccepted = true;
       await prepare({ id: attempt.id, lockVersion: Number(response.lockVersion) });
-    } catch {
-      setError("No se ha podido pasar la letra.");
-      setLocked(false);
+    } catch (cause) {
+      if (passAccepted) {
+        setPhase("recovering");
+        setStartNotice(
+          rateLimitMessage(cause) ??
+            "No se ha podido preparar la siguiente letra. Puedes recuperar la partida.",
+        );
+      } else {
+        setError(rateLimitMessage(cause) ?? "No se ha podido pasar la letra.");
+        setLocked(false);
+      }
     } finally {
+      commandInFlight.current = false;
       setBusy(false);
     }
+  };
+
+  const onTimeUp = () => {
+    if (!question || commandInFlight.current || !timeoutGuard.current.claim()) return;
+    void submit(null);
+  };
+
+  const retryRecovery = () => {
+    void recover().catch(() => undefined);
   };
 
   return {
@@ -303,8 +404,9 @@ export function useServerAlphabetSession({
     startQuestions,
     submit,
     pass,
+    retryRecovery,
     showReview: () => setPhase("review"),
     showResults: () => setPhase("results"),
-    onTimeUp: () => void submit(null),
+    onTimeUp,
   };
 }

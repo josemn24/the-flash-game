@@ -504,7 +504,7 @@ export function FlashPopPyramidGame({
               />
             </motion.div>
           ) : null}
-          {session.phase === "playing" ? (
+          {session.phase === "playing" || session.phase === "answer-reveal" ? (
             <motion.div
               key="playing"
               initial={{ opacity: 0, x: 18 }}
@@ -572,7 +572,6 @@ export function FlashPopPyramidGame({
               exit={{ opacity: 0 }}
             >
               <div className={styles.review}>
-                <Topbar />
                 <FlashPopReview
                   challenge={scoredChallenge}
                   results={session.record.results}

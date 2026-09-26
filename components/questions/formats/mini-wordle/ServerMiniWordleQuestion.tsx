@@ -1,6 +1,13 @@
 "use client";
 
-import { type CSSProperties, type FormEvent, useId, useState } from "react";
+import {
+  type CSSProperties,
+  type FormEvent,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { MotionButton } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
 import type { ServerMiniWordleProgress } from "@/types/gameplay/challenge";
@@ -39,8 +46,25 @@ export function ServerMiniWordleQuestion({
   readonly onSubmit: (guess: string) => void;
 }) {
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const previousAttemptsUsedRef = useRef(progress.attemptsUsed);
+  const focusAfterAcceptedGuessRef = useRef(false);
   const [value, setValue] = useState("");
   const canSubmit = !locked && progress.attemptsUsed < question.maxAttempts;
+
+  useEffect(() => {
+    const previousAttemptsUsed = previousAttemptsUsedRef.current;
+    previousAttemptsUsedRef.current = progress.attemptsUsed;
+    if (progress.attemptsUsed > previousAttemptsUsed) focusAfterAcceptedGuessRef.current = true;
+    if (
+      focusAfterAcceptedGuessRef.current &&
+      progress.attemptsUsed < question.maxAttempts &&
+      !locked
+    ) {
+      inputRef.current?.focus();
+      focusAfterAcceptedGuessRef.current = false;
+    }
+  }, [locked, progress.attemptsUsed, question.maxAttempts]);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,6 +116,7 @@ export function ServerMiniWordleQuestion({
         <label htmlFor={inputId}>Escribe tu intento</label>
         <div className={styles.inputRow}>
           <input
+            ref={inputRef}
             id={inputId}
             type="text"
             value={value}

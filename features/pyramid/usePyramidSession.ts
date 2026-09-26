@@ -14,6 +14,7 @@ import {
   type PyramidAttemptRecord,
 } from "@/features/pyramid/pyramidAttempt";
 import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
+import { MINI_WORDLE_ANSWER_REVEAL_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerValue, PyramidChallenge } from "@/types/game";
 
 const DEFAULT_TRANSITION_DURATION = 900;
@@ -36,7 +37,14 @@ export type PyramidSessionOptions = {
 };
 
 export type PyramidSessionPhase =
-  "loading" | "intro" | "briefing" | "playing" | "transition" | "results" | "review";
+  | "loading"
+  | "intro"
+  | "briefing"
+  | "playing"
+  | "answer-reveal"
+  | "transition"
+  | "results"
+  | "review";
 
 function storageIsAvailable() {
   try {
@@ -113,17 +121,28 @@ export function usePyramidSession(
       );
       const passed = isPyramidLevelPassed(result);
       const lastLevel = current.currentLevelIndex === challenge.levels.length - 1;
+      const revealMiniWordleAnswer =
+        passed && level.question.type === "mini-wordle";
 
       if (!passed || lastLevel) {
         persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));
-        setPhase("transition");
         const duration =
           result.status === "correct"
             ? feedbackDurations.correct
             : result.status === "unanswered"
               ? feedbackDurations.unanswered
               : feedbackDurations.incorrect;
-        transitionTimeout.current = setTimeout(() => setPhase("results"), duration);
+        const showFeedback = () => {
+          setPhase("transition");
+          transitionTimeout.current = setTimeout(() => setPhase("results"), duration);
+        };
+        if (revealMiniWordleAnswer) {
+          setPhase("answer-reveal");
+          transitionTimeout.current = setTimeout(showFeedback, MINI_WORDLE_ANSWER_REVEAL_DURATION);
+        } else {
+          setPhase("transition");
+          transitionTimeout.current = setTimeout(() => setPhase("results"), duration);
+        }
         return;
       }
 
@@ -138,11 +157,23 @@ export function usePyramidSession(
         progressiveCluesRevealed: 1,
       };
       persist(next);
-      setPhase("transition");
-      transitionTimeout.current = setTimeout(
-        () => advanceFromTransition(next),
-        feedbackDurations.correct,
-      );
+      const showFeedback = () => {
+        setPhase("transition");
+        transitionTimeout.current = setTimeout(
+          () => advanceFromTransition(next),
+          feedbackDurations.correct,
+        );
+      };
+      if (revealMiniWordleAnswer) {
+        setPhase("answer-reveal");
+        transitionTimeout.current = setTimeout(showFeedback, MINI_WORDLE_ANSWER_REVEAL_DURATION);
+      } else {
+        setPhase("transition");
+        transitionTimeout.current = setTimeout(
+          () => advanceFromTransition(next),
+          feedbackDurations.correct,
+        );
+      }
     },
     [
       advanceFromTransition,

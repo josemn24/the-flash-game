@@ -32,7 +32,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 - `/flash-pop`: shell responsive aislado, ya construido con las primitivas públicas.
 - `/flash-pop/desafios/tabarnia-challenge-05`: preview principal de La Pirámide.
 - `/formatos`: biblioteca con fichas y ejemplos jugables de los 31 formatos; cada renderer acepta `default` y `flash-pop`.
-- `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de La Pirámide: Biblia y religiones abrahámicas, con los formatos adaptados a Flash Pop.
+- `/flash-pop/desafios/tabarnia-challenge-06`: preview secundaria de «Biblia y religiones abrahámicas» en el modo La Pirámide, con los formatos adaptados a Flash Pop.
 
 Nota temporal: Supervivencia y Narrativa ya usan el shell Flash Pop para cualquier desafío con sus respectivos modos. Narrativa conserva sus escenas inmersivas como identidad de producto, sin cuaderno interactivo. En este prototipo la sesión vive en memoria; las previews aisladas pueden ofrecer replay, pero la experiencia de sala competitiva no lo ofrece tras completar. Todavía no existe enforcement de intento único en servidor ni ranking social real.
 

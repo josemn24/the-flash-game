@@ -4,6 +4,7 @@ import {
   getEscapeLegalDestinations,
   isEscapeSolved,
   isValidEscapeConfiguration,
+  isValidEscapePublicConfiguration,
   replayEscapeMoves,
   reverseEscapeMove,
 } from "@/lib/escape";
@@ -46,6 +47,24 @@ describe("escape", () => {
     const replay = replayEscapeMoves(question, question.referenceSolution);
     expect(replay).toMatchObject({ valid: true, appliedMoves: 4, escaped: true });
     expect(isEscapeSolved(question, replay.blocks)).toBe(true);
+  });
+
+  it("validates the public configuration without requiring private solution fields", () => {
+    expect(isValidEscapePublicConfiguration(question)).toBe(true);
+    expect(
+      isValidEscapePublicConfiguration({
+        grid: question.grid,
+        initialBlocks: question.initialBlocks.map((block) => ({ ...block })),
+      }),
+    ).toBe(true);
+    expect(
+      isValidEscapePublicConfiguration({
+        grid: question.grid,
+        initialBlocks: question.initialBlocks.map((block) =>
+          block.id === "target" ? { ...block, column: 4 } : block,
+        ),
+      }),
+    ).toBe(false);
   });
 
   it("finds intermediate and multi-cell destinations without crossing blockers", () => {

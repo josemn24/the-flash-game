@@ -69,7 +69,7 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("2 de 3 pistas")).toBeVisible();
-    await expect(page.getByText("Máximo: 25 pts")).toBeVisible();
+    await expect(page.getByText("Máximo: 37 pts")).toBeVisible();
     await expect(page.getByText("Está relacionado con una caída de muro.")).toBeVisible();
     await expect(page.getByText("Sucedió en 1989.")).toHaveCount(0);
 

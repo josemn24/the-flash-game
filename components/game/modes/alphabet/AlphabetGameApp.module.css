@@ -32,24 +32,9 @@
     white-space: nowrap;
   }
 
-  .resultsBack {
-    justify-self: start;
-    color: rgba(255, 255, 255, 0.5);
-    font-family: var(--type-mono);
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 160ms;
-  }
-
   .headerChallengeLink:hover {
     color: white;
     opacity: 0.78;
-  }
-
-  .resultsBack:hover {
-    color: white;
   }
 
   .topbarRight {
@@ -839,12 +824,10 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     border-color: var(--color-border);
   }
-  .headerChallengeLink,
-  .resultsBack {
+  .headerChallengeLink {
     color: var(--color-ink-muted);
   }
-  .headerChallengeLink:hover,
-  .resultsBack:hover {
+  .headerChallengeLink:hover {
     color: var(--color-ink);
   }
   .headerMark {

@@ -17,6 +17,7 @@ type AdminRoomPageProps = {
     season?: string;
     calendar?: string;
     created?: string;
+    member?: string;
   }>;
 };
 
@@ -43,7 +44,9 @@ export default async function AdminRoomPage({ params, searchParams }: AdminRoomP
         : "Publicación reprogramada correctamente.",
   };
   const notice =
-    query.created === "1"
+    query.member === "added"
+      ? "Usuario incorporado a la sala."
+      : query.created === "1"
       ? notices.created
       : query.season
         ? notices.season

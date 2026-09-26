@@ -18,3 +18,11 @@ export function getSupabasePublishableKey() {
   }
   return key;
 }
+
+export function getSupabaseServiceRoleKey() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+  }
+  return key;
+}

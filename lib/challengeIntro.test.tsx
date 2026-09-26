@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { challenges } from "@/test-utils/mockGameplay";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { buildChallengeIntroModel } from "@/lib/challengeIntro";
+import { getChallengeDisplayTitle } from "@/application/presentation/room";
 
 describe("challenge intro model", () => {
   it("builds the same three-metric contract for every challenge mode", () => {
@@ -13,7 +14,7 @@ describe("challenge intro model", () => {
       modes.add(challenge.mode);
 
       expect(model.metrics).toHaveLength(3);
-      expect(model.title).toBe(challenge.title);
+      expect(model.title).toBe(getChallengeDisplayTitle(challenge.title, challenge.mode));
       expect(model.rules).toHaveLength(3);
     });
 

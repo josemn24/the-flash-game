@@ -99,6 +99,10 @@
     margin-top: var(--space-1);
   }
 
+  .metricsTwo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .metric {
     display: grid;
     min-width: 0;
@@ -116,14 +120,21 @@
     overflow: hidden;
     font-family: var(--type-display);
     font-size: clamp(18px, 4vw, 28px);
-    font-weight: var(--type-display-strong-weight);
-    letter-spacing: var(--type-display-strong-tracking);
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .metric span,
+  .metric span {
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
   .note,
   .notice {
     font-family: var(--type-mono);
@@ -201,11 +212,6 @@
     .metric {
       min-height: 70px;
       padding-inline: 4px;
-    }
-
-    .metric span {
-      font-size: 8px;
-      letter-spacing: 0.04em;
     }
   }
 }

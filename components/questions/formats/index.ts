@@ -35,6 +35,7 @@ export { TimeMazeQuestion } from "./time-maze/TimeMazeQuestion";
 export { TimeMazeBoard } from "./time-maze/TimeMazeQuestion";
 export { TrueFalseQuestion } from "./true-false/TrueFalseQuestion";
 export { WordHashtagQuestion } from "./word-hashtag/WordHashtagQuestion";
+export { ServerWordHashtagQuestion } from "./word-hashtag/ServerWordHashtagQuestion";
 export { WordSearchQuestion } from "./word-search/WordSearchQuestion";
 export { WordSearchBoard } from "./word-search/WordSearchQuestion";
 export { ZipQuestion } from "./zip/ZipQuestion";

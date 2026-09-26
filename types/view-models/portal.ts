@@ -18,7 +18,7 @@ export type SuperadminCalendarEntry = {
   readonly versionNumber: number;
   readonly challengeTitle: string;
   readonly challengeSubtitle: string;
-  readonly mode: "flash";
+  readonly mode: "flash" | "survival" | "pyramid";
   readonly number: number;
   readonly status: "scheduled" | "open" | "closed" | "cancelled";
   readonly opensAt: string;
@@ -84,7 +84,7 @@ export type SuperadminPortalContext = {
   readonly calendar?: SuperadminCalendarContext;
 };
 
-export type AdminSection = "overview" | "rooms" | "challenges" | "questions";
+export type AdminSection = "overview" | "rooms" | "challenges" | "questions" | "users";
 
 export type SuperadminDashboardRoom = {
   readonly roomId: string;

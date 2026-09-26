@@ -29,9 +29,10 @@ create function private.progressive_clue_effective_penalty(
   item_points integer
 ) returns integer
 language sql immutable set search_path = '' as $$
+  -- cluePenalty is authored against the shared 100-point question baseline.
   select case
     when configured_penalty <= 0 or item_points <= 0 then 0
-    else greatest(1, round((configured_penalty::numeric / 50) * item_points)::integer)
+    else greatest(1, round((configured_penalty::numeric / 100) * item_points)::integer)
   end
 $$;
 

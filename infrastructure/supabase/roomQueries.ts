@@ -24,6 +24,11 @@ import type {
   QuestionMedia,
   EstimationQuestion,
   HeatMapQuestion,
+  EscapeQuestion,
+  LogicMatrixQuestion,
+  WordSearchQuestion,
+  WordHashtagQuestion,
+  ZipQuestion,
 } from "@/types/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
@@ -34,6 +39,10 @@ import {
   isValidEstimationSolution,
 } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
+import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
+import { isValidZipConfiguration } from "@/lib/zip";
+import { isValidEscapeConfiguration } from "@/lib/escape";
+import { isValidWordHashtagConfiguration } from "@/lib/wordHashtag";
 import type {
   RoomCardModel,
   RoomCalendarEntry,
@@ -204,6 +213,7 @@ type FlashMemberReviewReadRow = {
     | "multiple-choice"
     | "mini-wordle"
     | "logic-code"
+    | "logic-matrix"
     | "progressive-clues"
     | "matching"
     | "progressive-image"
@@ -214,7 +224,11 @@ type FlashMemberReviewReadRow = {
     | "anagram"
     | "classification"
     | "estimation"
-    | "heat-map";
+    | "heat-map"
+    | "word-search"
+    | "word-hashtag"
+    | "zip"
+    | "escape";
   payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown;
@@ -449,6 +463,7 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     (row.question_type === "multiple-choice" ||
       row.question_type === "mini-wordle" ||
       row.question_type === "logic-code" ||
+      row.question_type === "logic-matrix" ||
       row.question_type === "progressive-clues" ||
       row.question_type === "matching" ||
       row.question_type === "progressive-image" ||
@@ -459,7 +474,11 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       row.question_type === "anagram" ||
       row.question_type === "classification" ||
       row.question_type === "estimation" ||
-      row.question_type === "heat-map") &&
+      row.question_type === "heat-map" ||
+      row.question_type === "word-search" ||
+      row.question_type === "word-hashtag" ||
+      row.question_type === "zip" ||
+      row.question_type === "escape") &&
     (row.payload_schema_version === 1 ||
       (row.question_type === "progressive-image" && row.payload_schema_version === 2) ||
       (row.question_type === "estimation" && row.payload_schema_version === 2) ||
@@ -924,6 +943,54 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       type: "logic-code",
     };
   }
+  if (row.question_type === "logic-matrix") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const pieces = publicPayload.pieces;
+    const cells = publicPayload.cells;
+    const optionIds = publicPayload.optionIds;
+    const correctOptionId = solutionPayload.correctOptionId;
+    const prompt = publicPayload.question;
+    if (
+      typeof prompt !== "string" ||
+      !Array.isArray(pieces) ||
+      !pieces.every(
+        (piece) =>
+          isRecord(piece) &&
+          typeof piece.id === "string" &&
+          typeof piece.symbol === "string" &&
+          typeof piece.label === "string",
+      ) ||
+      !Array.isArray(cells) ||
+      cells.length !== 9 ||
+      !Array.isArray(optionIds) ||
+      optionIds.length !== 4 ||
+      !optionIds.every((optionId) => typeof optionId === "string") ||
+      typeof correctOptionId !== "string" ||
+      !optionIds.includes(correctOptionId) ||
+      (solutionPayload.explanation !== undefined && typeof solutionPayload.explanation !== "string")
+    ) {
+      throw new Error(`Invalid historical Logic-matrix payload (${row.challenge_item_id})`);
+    }
+    return {
+      id: row.challenge_item_id,
+      type: "logic-matrix",
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: prompt,
+      pieces: pieces as LogicMatrixQuestion["pieces"],
+      cells: cells as LogicMatrixQuestion["cells"],
+      optionIds,
+      correctOptionId,
+      showPieceLabels:
+        typeof publicPayload.showPieceLabels === "boolean"
+          ? publicPayload.showPieceLabels
+          : undefined,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies LogicMatrixQuestion;
+  }
   if (row.question_type === "progressive-clues") {
     const tags = requiredRecordField(publicPayload, "tags", "public_payload");
     const clues = publicPayload.clues;
@@ -1209,6 +1276,171 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       explanation:
         typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
     } satisfies HeatMapQuestion;
+  }
+  if (row.question_type === "word-search") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const grid = publicPayload.grid;
+    const letters = publicPayload.letters;
+    const publicTargets = publicPayload.targets;
+    const positions = solutionPayload.positionsByTargetId;
+    if (
+      typeof publicPayload.question !== "string" ||
+      !isRecord(grid) ||
+      typeof grid.rows !== "number" ||
+      !Number.isInteger(grid.rows) ||
+      typeof grid.columns !== "number" ||
+      !Number.isInteger(grid.columns) ||
+      !Array.isArray(letters) ||
+      !Array.isArray(publicTargets) ||
+      !isRecord(positions) ||
+      !publicTargets.every(
+        (target) =>
+          isRecord(target) && typeof target.id === "string" && typeof target.word === "string",
+      )
+    ) {
+      throw new Error(`Invalid historical word-search payload (${row.challenge_item_id})`);
+    }
+    const targets = publicTargets.map((target) => {
+      const position = positions[target.id as string];
+      if (
+        !isRecord(position) ||
+        typeof position.startCell !== "number" ||
+        typeof position.endCell !== "number"
+      ) {
+        throw new Error(`Invalid historical word-search solution (${row.challenge_item_id})`);
+      }
+      return {
+        id: target.id as string,
+        word: target.word as string,
+        startCell: position.startCell as number,
+        endCell: position.endCell as number,
+      };
+    });
+    const question = {
+      id: row.challenge_item_id,
+      type: "word-search" as const,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: typeof publicPayload.question === "string" ? publicPayload.question : "",
+      grid: { rows: grid.rows as number, columns: grid.columns as number },
+      letters: letters as string[],
+      targets,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordSearchQuestion;
+    if (!isValidWordSearchConfiguration(question)) {
+      throw new Error(`Invalid historical word-search payload (${row.challenge_item_id})`);
+    }
+    return question;
+  }
+  if (row.question_type === "word-hashtag") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const grid = publicPayload.grid;
+    const initialLetters = publicPayload.initialLetters;
+    const words = solutionPayload.words;
+    if (
+      typeof publicPayload.question !== "string" ||
+      !isRecord(grid) ||
+      grid.rows !== 5 ||
+      grid.columns !== 5 ||
+      !Array.isArray(initialLetters) ||
+      typeof publicPayload.maxMoves !== "number" ||
+      !isRecord(words)
+    ) {
+      throw new Error(`Invalid historical word-hashtag payload (${row.challenge_item_id})`);
+    }
+    const question = {
+      id: row.challenge_item_id,
+      type: "word-hashtag" as const,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: publicPayload.question,
+      grid: { rows: 5, columns: 5 } as const,
+      initialLetters: initialLetters as Array<string | null>,
+      maxMoves: publicPayload.maxMoves,
+      words: words as WordHashtagQuestion["words"],
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies WordHashtagQuestion;
+    if (!isValidWordHashtagConfiguration(question)) {
+      throw new Error(`Invalid historical word-hashtag payload (${row.challenge_item_id})`);
+    }
+    return question;
+  }
+  if (row.question_type === "zip") {
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const grid = publicPayload.grid;
+    const checkpoints = publicPayload.checkpoints;
+    const solution = solutionPayload.solution;
+    if (
+      typeof publicPayload.question !== "string" ||
+      !isRecord(grid) ||
+      grid.rows !== 5 ||
+      grid.columns !== 5 ||
+      !Array.isArray(checkpoints) ||
+      !Array.isArray(solution)
+    ) {
+      throw new Error(`Invalid historical zip payload (${row.challenge_item_id})`);
+    }
+    const question = {
+      id: row.challenge_item_id,
+      type: "zip" as const,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: publicPayload.question,
+      grid: { rows: 5, columns: 5 } as const,
+      checkpoints: checkpoints as ZipQuestion["checkpoints"],
+      solution: solution as number[],
+      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      mapNote: typeof publicPayload.mapNote === "string" ? publicPayload.mapNote : undefined,
+      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies ZipQuestion;
+    if (!isValidZipConfiguration(question)) {
+      throw new Error(`Invalid historical zip payload (${row.challenge_item_id})`);
+    }
+    return question;
+  }
+  if (row.question_type === "escape") {
+    const publicPayload = row.public_payload as Record<string, unknown>;
+    const solutionPayload = row.solution_payload as Record<string, unknown>;
+    const tags = requiredRecordField(publicPayload, "tags", "public_payload");
+    const question = {
+      id: row.challenge_item_id,
+      type: "escape" as const,
+      category: typeof publicPayload.category === "string" ? publicPayload.category : "",
+      tags: tags as Question["tags"],
+      question: typeof publicPayload.question === "string" ? publicPayload.question : "",
+      grid: publicPayload.grid as EscapeQuestion["grid"],
+      initialBlocks: publicPayload.initialBlocks as EscapeQuestion["initialBlocks"],
+      referenceSolution: solutionPayload.referenceSolution as EscapeQuestion["referenceSolution"],
+      optimalMoves: solutionPayload.optimalMoves as number,
+      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      hideInstruction: publicPayload.hideInstruction === true,
+      objectiveLabel:
+        typeof publicPayload.objectiveLabel === "string" ? publicPayload.objectiveLabel : undefined,
+      hideObjectiveLabel: publicPayload.hideObjectiveLabel === true,
+      completionMessage:
+        typeof publicPayload.completionMessage === "string"
+          ? publicPayload.completionMessage
+          : undefined,
+      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      timeLimit: (row.time_limit_ms ?? 0) / 1000,
+      points: row.item_points,
+      explanation:
+        typeof solutionPayload.explanation === "string" ? solutionPayload.explanation : "",
+    } satisfies EscapeQuestion;
+    if (!isValidEscapeConfiguration(question)) {
+      throw new Error(`Invalid historical escape payload (${row.challenge_item_id})`);
+    }
+    return question;
   }
   if (row.question_type === "anagram") {
     const tags = requiredRecordField(publicPayload, "tags", "public_payload");

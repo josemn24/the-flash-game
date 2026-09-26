@@ -21,6 +21,31 @@
     gap: var(--space-5);
   }
 
+  .reviewBackButton {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-control);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .reviewBackButton svg {
+    width: 20px;
+    height: 20px;
+    transform: rotate(180deg);
+  }
+
+  .reviewBackButton:focus-visible {
+    outline: 3px solid var(--color-social);
+    outline-offset: 3px;
+  }
+
   .reviewPanelHeading {
     display: flex;
     align-items: flex-start;
@@ -28,23 +53,18 @@
     gap: var(--space-4);
   }
 
-  .reviewPanelEyebrow {
+  .reviewPanelHeading h1 {
+    max-width: 24ch;
     margin: 0;
-    color: var(--color-social);
-    font-family: var(--type-mono);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    font-family: var(--type-display);
+    font-size: clamp(34px, 5vw, 48px);
+    letter-spacing: -0.045em;
+    line-height: 1;
   }
 
-  .reviewPanelHeading h1 {
-    max-width: 18ch;
-    margin: 5px 0 0;
-    font-family: var(--type-display);
-    font-size: clamp(42px, 7vw, 68px);
-    letter-spacing: -0.06em;
-    line-height: 0.9;
+  .reviewPanelHeadingCompact h1 {
+    font-size: clamp(28px, 4.5vw, 36px);
+    line-height: 1.1;
   }
 
   .reviewPanelCount {
@@ -61,6 +81,31 @@
     font-family: var(--type-mono);
     font-size: 13px;
     font-weight: 800;
+  }
+
+  .reviewPanelProgress {
+    display: grid;
+    width: min(100%, 240px);
+    gap: var(--space-2);
+    color: var(--color-ink-muted);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .reviewPanelProgressTrack {
+    height: 7px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
+  }
+
+  .reviewPanelProgressTrack span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-social);
+    transition: width 220ms ease;
   }
 
   .reviewPanelDescription {
@@ -93,6 +138,12 @@
     padding: var(--space-4);
     cursor: pointer;
     list-style: none;
+    touch-action: manipulation;
+  }
+
+  .reviewAnswerRow summary:focus-visible {
+    outline: 3px solid var(--color-social);
+    outline-offset: -3px;
   }
 
   .reviewAnswerRow summary::-webkit-details-marker {
@@ -184,6 +235,27 @@
     padding: 0 var(--space-4) var(--space-5) 68px;
   }
 
+  .reviewAnswerBody .wordSearchReviewList li {
+    border-color: var(--color-border);
+    color: var(--color-ink-muted);
+    background: var(--color-surface-raised);
+  }
+
+  .reviewAnswerBody .wordSearchReviewList li > svg,
+  .reviewAnswerBody .wordSearchReviewList li > span:first-child {
+    color: var(--color-ink-muted);
+  }
+
+  .reviewAnswerBody .wordSearchReviewList .wordSearchReviewFound {
+    border-color: color-mix(in srgb, var(--state-correct) 42%, var(--color-surface));
+    color: var(--state-correct);
+    background: color-mix(in srgb, var(--state-correct) 8%, var(--color-surface));
+  }
+
+  .reviewAnswerBody .wordSearchReviewList .wordSearchReviewFound > svg {
+    color: var(--state-correct);
+  }
+
   .reviewAnswerMeta {
     color: var(--color-ink);
     font-family: var(--type-mono);
@@ -271,13 +343,21 @@
     }
 
     .reviewPanelHeading h1 {
-      font-size: clamp(38px, 12vw, 56px);
+      font-size: clamp(32px, 8.5vw, 40px);
+    }
+
+    .reviewPanelHeadingCompact h1 {
+      font-size: clamp(27px, 7vw, 32px);
     }
 
     .reviewPanelCount {
       min-height: 38px;
       padding-inline: var(--space-3);
       font-size: 11px;
+    }
+
+    .reviewPanelProgress {
+      font-size: 12px;
     }
 
     .reviewAnswerRow summary {
@@ -474,7 +554,7 @@
   .logicReviewClues strong {
     font-family: var(--type-mono);
     letter-spacing: 0.12em;
-    color: var(--color-brand);
+    color: var(--color-success);
   }
   .logicReviewClues span {
     font-size: 0.72rem;
@@ -497,7 +577,7 @@
   }
   .logicReviewAttempts .logicReviewLast {
     outline: 1px solid rgb(var(--color-brand-rgb) / 0.5);
-    color: var(--color-brand);
+    color: var(--color-success);
   }
   .classificationReviewList {
     display: grid;
@@ -966,16 +1046,9 @@
     color: rgba(255, 255, 255, 0.68);
     background: var(--state-neutral);
   }
-  .wordHashtagReviewCorrect {
-    color: var(--color-text-on-success);
-    background: var(--state-correct);
-  }
-  .wordHashtagReviewDisplaced {
-    background: var(--state-movable);
-  }
-
   /* Keep every specialized review renderer on the Pop palette. */
   .connectPairsReviewGrid {
+    position: relative;
     display: grid;
     width: min(100%, 18rem);
     overflow: hidden;
@@ -985,7 +1058,35 @@
     background: var(--color-surface);
   }
 
+  .connectPairsReviewRouteOverlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .connectPairsReviewRouteLine,
+  .connectPairsReviewSubmittedLine {
+    fill: none;
+    stroke: color-mix(in srgb, var(--pair-color) 86%, white);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 0.28;
+    filter: drop-shadow(0 0 0.08rem color-mix(in srgb, var(--pair-color) 54%, transparent));
+  }
+
+  .connectPairsReviewSubmittedLine {
+    stroke: color-mix(in srgb, var(--pair-color) 72%, var(--color-ink));
+    stroke-dasharray: 0.22 0.16;
+    stroke-width: 0.12;
+    filter: none;
+  }
+
   .connectPairsReviewCell {
+    position: relative;
+    z-index: 1;
     display: grid;
     aspect-ratio: 1;
     place-items: center;
@@ -995,20 +1096,77 @@
     font-weight: 900;
     border-color: var(--color-border);
     color: var(--color-ink-muted);
-    background: var(--color-surface-raised);
+    background: color-mix(in srgb, var(--color-surface-raised) 72%, transparent);
   }
 
   .connectPairsReviewEndpoint {
-    background: var(--color-brand);
+    z-index: 3;
+    border-color: color-mix(in srgb, var(--pair-color) 52%, var(--color-border));
     color: var(--color-ink);
+    background: color-mix(in srgb, var(--pair-color) 78%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--pair-color) 82%, transparent);
   }
 
   .connectPairsReviewEndpointMissing {
-    outline: 1px dashed rgb(255 255 255 / 28%);
+    outline: 2px dashed var(--state-error);
     outline-offset: -0.25rem;
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--pair-color) 72%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--state-error) 42%, transparent);
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--pair-color) 58%, var(--color-surface-soft));
+  }
+
+  .connectPairsReviewLegend {
+    display: grid;
+    gap: 0.75rem;
+    width: min(100%, 18rem);
     color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
-    outline-color: var(--color-border-hover);
+    font-size: 0.7rem;
+    font-weight: 750;
+  }
+
+  .connectPairsReviewPairLegend,
+  .connectPairsReviewLineLegend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.7rem;
+  }
+
+  .connectPairsReviewLegendItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .connectPairsReviewLegendSymbol {
+    display: inline-grid;
+    width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--pair-color) 85%, var(--color-border));
+    border-radius: 999px;
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--pair-color) 76%, var(--color-surface-raised));
+    font-size: 0.65rem;
+  }
+
+  .connectPairsReviewLegendLine {
+    display: inline-block;
+    width: 1.7rem;
+    height: 0.22rem;
+    border-radius: 999px;
+    background: var(--color-social);
+  }
+
+  .connectPairsReviewLegendLineSubmitted {
+    height: 0.14rem;
+    background: repeating-linear-gradient(
+      to right,
+      var(--color-ink-muted) 0 0.35rem,
+      transparent 0.35rem 0.58rem
+    );
   }
 
   .wordHashtagReviewTile {
@@ -1020,5 +1178,14 @@
     border-radius: clamp(0.35rem, 1vw, 0.58rem);
     box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
     color: var(--color-ink);
+  }
+
+  .wordHashtagReviewCorrect {
+    color: var(--color-text-on-success);
+    background: var(--state-correct);
+  }
+
+  .wordHashtagReviewDisplaced {
+    background: var(--state-movable);
   }
 }

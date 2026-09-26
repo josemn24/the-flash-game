@@ -16,6 +16,11 @@ const e2eByScenario = {
   e03: ["e2e/e03-progressive-clues.spec.ts"],
   e04: ["e2e/e04-matching.spec.ts"],
   e05: ["e2e/e05-queens.spec.ts"],
+  e06: ["e2e/e06-word-search.spec.ts"],
+  f08: ["e2e/f08-logic-matrix.spec.ts"],
+  f16: ["e2e/f16-zip.spec.ts"],
+  f18: ["e2e/f18-escape.spec.ts"],
+  f19: ["e2e/f19-word-hashtag.spec.ts"],
   s04: ["e2e/s04-recovery.spec.ts"],
   s06: ["e2e/s06-ranking.spec.ts"],
   s07: ["e2e/s07-history-review.spec.ts"],
@@ -31,7 +36,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260919090805_declarative_sync",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260926080239_initial_schema",
 };
 
 async function run(label, command, args, options = {}) {
@@ -68,6 +73,7 @@ await mkdir(logDirectory, { recursive: true, mode: 0o700 });
 
 try {
   await run("supabase-start", "npx", ["supabase", "start"]);
+  await run("schema-revision", "npm", ["run", "schema:revision:check"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
   await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {

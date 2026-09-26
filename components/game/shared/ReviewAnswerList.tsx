@@ -1,11 +1,6 @@
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type {
-  AnswerResult,
-  AnswerStatus,
-  Challenge,
-  Question,
-} from "@/types/game";
+import type { AnswerResult, AnswerStatus, Challenge, Question } from "@/types/game";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import styles from "./ReviewAnswers.module.css";
 
@@ -13,7 +8,7 @@ export type ReviewAnswerVisualStatus = AnswerStatus | "locked";
 
 export type ReviewAnswerEntry = {
   id: string;
-  question: Question;
+  question?: Question;
   result?: AnswerResult;
   marker: string;
   title?: string;
@@ -78,10 +73,6 @@ function resultSummary(result: AnswerResult) {
   return summary.join(" · ");
 }
 
-function firstOpenId(entries: ReviewAnswerEntry[]) {
-  return entries.find((entry) => statusFor(entry) !== "locked")?.id ?? entries[0]?.id;
-}
-
 export function ReviewAnswerList({
   entries,
   initialOpenId,
@@ -89,21 +80,20 @@ export function ReviewAnswerList({
   entries: ReviewAnswerEntry[];
   initialOpenId?: string;
 }) {
-  const openId = initialOpenId ?? firstOpenId(entries);
-
   return (
     <div className={styles.reviewAnswerList}>
       {entries.map((entry) => {
         const status = statusFor(entry);
         const result = entry.result;
-        const title = entry.title ?? QUESTION_FORMAT_LABELS[entry.question.type];
-        const subtitle = entry.subtitle ?? entry.question.category;
+        const title =
+          entry.title ?? (entry.question ? QUESTION_FORMAT_LABELS[entry.question.type] : "Nivel");
+        const subtitle = entry.subtitle ?? entry.question?.category ?? "";
 
         return (
           <details
             className={`${styles.reviewAnswerRow} ${styles[`reviewAnswer_${status}`]}`}
             key={entry.id}
-            open={entry.id === openId}
+            open={entry.id === initialOpenId}
           >
             <summary>
               <span className={styles.reviewAnswerNumber}>{entry.marker}</span>
@@ -120,9 +110,11 @@ export function ReviewAnswerList({
             {status === "locked" ? (
               <div className={styles.reviewAnswerLockedBody}>
                 <LockIcon aria-hidden="true" />
-                <span>{entry.lockedMessage ?? "Este desafío terminó antes de esta respuesta."}</span>
+                <span>
+                  {entry.lockedMessage ?? "Este desafío terminó antes de esta respuesta."}
+                </span>
               </div>
-            ) : result ? (
+            ) : result && entry.question ? (
               <div className={styles.reviewAnswerBody}>
                 <QuestionReviewContent question={entry.question} result={result} />
                 {entry.showMeta !== false ? (

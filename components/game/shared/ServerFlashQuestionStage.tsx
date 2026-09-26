@@ -4,6 +4,7 @@ import { useId } from "react";
 import { AnswerOption, QuestionMedia, ServerOperationStatus } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
+import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
 import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
 import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
@@ -15,8 +16,14 @@ import { AnagramQuestion } from "@/components/questions/formats/anagram/AnagramQ
 import { ClassificationQuestion } from "@/components/questions/formats/classification/ClassificationQuestion";
 import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
 import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMapQuestion";
+import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
+import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
+import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
+import { ConnectPairsQuestion } from "@/components/questions/formats/connect-pairs/ConnectPairsQuestion";
+import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
 import { Timer, GameHeader } from "@/components/ui";
-import type { AnswerValue } from "@/types/game";
+import { LifeHearts } from "./LifeHearts";
+import type { AnswerValue, ConnectPairsQuestion as ClientConnectPairsQuestion } from "@/types/game";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
 import styles from "./QuestionStage.module.css";
 import variantStyles from "./QuestionStageVariants.module.css";
@@ -53,6 +60,13 @@ export function ServerFlashQuestionStage({
   queensError,
   onQueensPlacement,
   onRetryQueens,
+  wordSearchState,
+  wordSearchStatusVisible,
+  wordSearchError,
+  lastWordSearchSelection,
+  onWordSearchSelection,
+  onRetryWordSearch,
+  onWordHashtagSwap,
   revealState,
   revealStatusVisible,
   revealError,
@@ -61,6 +75,9 @@ export function ServerFlashQuestionStage({
   onTimeUp,
   deadlineAt,
   presentedAt,
+  livesRemaining,
+  totalLives,
+  presentation,
 }: {
   readonly question: ServerFlashQuestion;
   readonly questionNumber: number;
@@ -90,6 +107,17 @@ export function ServerFlashQuestionStage({
   readonly queensError?: string;
   readonly onQueensPlacement: (cell: number, action: "place" | "remove") => void;
   readonly onRetryQueens?: () => void;
+  readonly wordSearchState: "idle" | "submitting" | "error";
+  readonly wordSearchStatusVisible: boolean;
+  readonly wordSearchError?: string;
+  readonly lastWordSearchSelection?: {
+    readonly startCell: number;
+    readonly endCell: number;
+    readonly correct: boolean;
+  };
+  readonly onWordSearchSelection: (startCell: number, endCell: number) => void;
+  readonly onRetryWordSearch?: () => void;
+  readonly onWordHashtagSwap: (fromCell: number, toCell: number) => void;
   readonly revealState: "idle" | "submitting" | "error";
   readonly revealStatusVisible: boolean;
   readonly revealError?: string;
@@ -98,9 +126,15 @@ export function ServerFlashQuestionStage({
   readonly onTimeUp: () => void;
   readonly deadlineAt?: number | null;
   readonly presentedAt?: number | null;
+  readonly livesRemaining?: number;
+  readonly totalLives?: number;
+  readonly presentation?: "default" | "pyramid";
 }) {
   const titleId = useId();
-  const prompt = splitPrompt(question.question);
+  const pyramidPresentation = presentation === "pyramid";
+  const prompt = pyramidPresentation
+    ? { title: question.question }
+    : splitPrompt(question.question);
   const selected =
     question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
   const showSubmissionStatus =
@@ -115,31 +149,66 @@ export function ServerFlashQuestionStage({
       onRetry={onRetrySubmission}
     />
   );
+  const timer = (
+    <Timer
+      duration={question.timeLimit}
+      active={!locked}
+      onTimeUp={onTimeUp}
+      resetKey={question.id}
+      deadlineAt={deadlineAt ?? undefined}
+      size={pyramidPresentation ? "default" : "compact"}
+    />
+  );
 
   return (
-    <div className={`${variantStyles.stageFrame} ${styles.stage}`}>
-      <GameHeader
-        left={
-          <p
-            className={variantStyles.questionIndicator}
-            aria-label={`Pregunta ${questionNumber} de ${totalQuestions}`}
-          >
-            Pregunta {String(questionNumber).padStart(2, "0")}{" "}
-            <span>de {String(totalQuestions).padStart(2, "0")}</span>
-          </p>
-        }
-        timer={
-          <Timer
-            duration={question.timeLimit}
-            active={!locked}
-            onTimeUp={onTimeUp}
-            resetKey={question.id}
-            deadlineAt={deadlineAt ?? undefined}
-            size="compact"
+    <div
+      className={`${variantStyles.stageFrame} ${styles.stage} ${pyramidPresentation ? styles.pyramidStage : ""}`}
+    >
+      {pyramidPresentation ? (
+        <>
+          <GameHeader
+            title="La Pirámide"
+            timer={timer}
+            mobileLabel={
+              <>
+                Nivel {questionNumber} <span>de {totalQuestions}</span>
+              </>
+            }
+            mobileLabelAriaLabel={`Nivel ${questionNumber} de ${totalQuestions}`}
           />
-        }
-      />
-      <section className={styles.questionCard} aria-labelledby={titleId}>
+          <p
+            className={variantStyles.pyramidLevelIndicator}
+            aria-label={`Nivel ${questionNumber} de ${totalQuestions}`}
+          >
+            Nivel {questionNumber} <span>de {totalQuestions}</span>
+          </p>
+        </>
+      ) : (
+        <GameHeader
+          left={
+            <p
+              className={variantStyles.questionIndicator}
+              aria-label={`Pregunta ${questionNumber} de ${totalQuestions}`}
+            >
+              Pregunta {String(questionNumber).padStart(2, "0")}{" "}
+              <span>de {String(totalQuestions).padStart(2, "0")}</span>
+            </p>
+          }
+          timer={timer}
+          right={
+            typeof livesRemaining === "number" && typeof totalLives === "number" ? (
+              <div className={variantStyles.headerActions}>
+                <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
+                {timer}
+              </div>
+            ) : undefined
+          }
+        />
+      )}
+      <section
+        className={`${styles.questionCard} ${pyramidPresentation ? styles.pyramidQuestionCard : ""}`}
+        aria-labelledby={titleId}
+      >
         {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
         <h1 id={titleId}>{prompt.title}</h1>
         {question.type === "mini-wordle" ? (
@@ -219,6 +288,105 @@ export function ServerFlashQuestionStage({
             placementError={queensError}
             onPlace={onQueensPlacement}
             onRetry={onRetryQueens}
+          />
+        ) : question.type === "word-search" ? (
+          <ServerWordSearchQuestion
+            question={question}
+            progress={question.progress}
+            locked={locked}
+            selectionState={wordSearchState}
+            selectionStatusVisible={wordSearchStatusVisible}
+            selectionError={wordSearchError}
+            lastSelection={lastWordSearchSelection}
+            onSelect={onWordSearchSelection}
+            onRetry={onRetryWordSearch}
+          />
+        ) : question.type === "word-hashtag" ? (
+          <ServerWordHashtagQuestion
+            key={question.id}
+            question={question}
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onSwap={onWordHashtagSwap}
+          />
+        ) : question.type === "logic-matrix" ? (
+          <>
+            <LogicMatrixQuestion
+              pieces={[...question.pieces]}
+              cells={[...question.cells]}
+              optionIds={[...question.optionIds]}
+              showPieceLabels={question.showPieceLabels}
+              locked={locked}
+              onSubmit={onSubmit}
+            />
+            {showSubmissionStatus ? submissionStatus : null}
+          </>
+        ) : question.type === "zip" ? (
+          <ServerZipQuestion
+            question={question}
+            initialAnswer={
+              pendingAnswer &&
+              typeof pendingAnswer === "object" &&
+              !Array.isArray(pendingAnswer) &&
+              "path" in pendingAnswer &&
+              Array.isArray((pendingAnswer as { path?: unknown }).path)
+                ? (pendingAnswer as { path: number[] })
+                : undefined
+            }
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
+          />
+        ) : question.type === "escape" ? (
+          <ServerEscapeQuestion
+            question={question}
+            locked={locked}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onRetry={onRetrySubmission}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
+          />
+        ) : question.type === "connect-pairs" ? (
+          <ConnectPairsQuestion
+            question={
+              {
+                id: question.id,
+                type: "connect-pairs",
+                category: question.category,
+                tags: question.tags,
+                question: question.question,
+                grid: question.grid,
+                pairs: [...question.pairs],
+                solutionPaths: {},
+                requireFullCoverage: true,
+                timeLimit: question.timeLimit,
+                points: question.points,
+                explanation: "",
+              } satisfies ClientConnectPairsQuestion
+            }
+            initialAnswer={
+              pendingAnswer &&
+              typeof pendingAnswer === "object" &&
+              !Array.isArray(pendingAnswer) &&
+              "paths" in pendingAnswer &&
+              pendingAnswer.paths &&
+              typeof pendingAnswer.paths === "object" &&
+              !Array.isArray(pendingAnswer.paths)
+                ? (pendingAnswer as { paths: Record<string, number[]> })
+                : undefined
+            }
+            locked={locked}
+            onProgress={onProgress}
+            onSubmit={onSubmit}
           />
         ) : question.type === "true-false" ? (
           <>
@@ -317,17 +485,19 @@ export function ServerFlashQuestionStage({
               </div>
             ) : null}
             <div className="mt-7 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
-              {question.options.map((option, index) => (
-                <AnswerOption
-                  key={option}
-                  label={option}
-                  index={index}
-                  selected={selected === option}
-                  pending={selected === option}
-                  disabled={locked}
-                  onSelect={() => onSubmit(option)}
-                />
-              ))}
+              {question.type === "multiple-choice"
+                ? question.options.map((option, index) => (
+                    <AnswerOption
+                      key={option}
+                      label={option}
+                      index={index}
+                      selected={selected === option}
+                      pending={selected === option}
+                      disabled={locked}
+                      onSelect={() => onSubmit(option)}
+                    />
+                  ))
+                : null}
             </div>
             {showSubmissionStatus ? submissionStatus : null}
           </>

@@ -1,4 +1,4 @@
-import type { ZipAnswer, ZipQuestion } from "@/types/game";
+import type { ZipAnswer, ZipPublicQuestion, ZipQuestion } from "@/types/game";
 
 export const ZIP_ROWS = 5;
 export const ZIP_COLUMNS = 5;
@@ -18,6 +18,8 @@ export type ZipCellSelectionResult = {
   changed: boolean;
   message: string;
 };
+
+export type ZipBoardConfiguration = Pick<ZipPublicQuestion, "grid" | "checkpoints">;
 
 function isCell(cell: number) {
   return Number.isInteger(cell) && cell >= 0 && cell < ZIP_CELL_COUNT;
@@ -39,36 +41,48 @@ export function getZipNeighbors(cell: number) {
   );
 }
 
-function hasValidShape(question: ZipQuestion) {
-  const checkpointCells = question.checkpoints.map((checkpoint) => checkpoint.cell);
+function hasValidPublicShape(configuration: ZipBoardConfiguration) {
+  const checkpointCells = configuration.checkpoints.map((checkpoint) => checkpoint.cell);
   return (
-    question.grid.rows === ZIP_ROWS &&
-    question.grid.columns === ZIP_COLUMNS &&
-    question.checkpoints.length >= 2 &&
-    question.checkpoints.every(
+    configuration.grid.rows === ZIP_ROWS &&
+    configuration.grid.columns === ZIP_COLUMNS &&
+    configuration.checkpoints.length >= 2 &&
+    configuration.checkpoints.length <= ZIP_CELL_COUNT &&
+    configuration.checkpoints.every(
       (checkpoint, index) => checkpoint.value === index + 1 && isCell(checkpoint.cell),
     ) &&
-    new Set(checkpointCells).size === checkpointCells.length &&
-    question.solution.length === ZIP_CELL_COUNT
+    new Set(checkpointCells).size === checkpointCells.length
   );
 }
 
-function checkpointValueAt(question: ZipQuestion, cell: number) {
-  return question.checkpoints.find((checkpoint) => checkpoint.cell === cell)?.value;
+function hasValidShape(question: ZipQuestion) {
+  return hasValidPublicShape(question) && question.solution.length === ZIP_CELL_COUNT;
 }
 
-function validatePath(question: ZipQuestion, path: number[], requireComplete: boolean) {
-  if (!hasValidShape(question) || path.length === 0 || path.length > ZIP_CELL_COUNT) return false;
-  if (path[0] !== question.checkpoints[0].cell) return false;
+function checkpointValueAt(configuration: ZipBoardConfiguration, cell: number) {
+  return configuration.checkpoints.find((checkpoint) => checkpoint.cell === cell)?.value;
+}
+
+function validatePath(
+  configuration: ZipBoardConfiguration,
+  path: number[],
+  requireComplete: boolean,
+) {
+  if (!hasValidPublicShape(configuration) || path.length === 0 || path.length > ZIP_CELL_COUNT) {
+    return false;
+  }
+  if (path[0] !== configuration.checkpoints[0].cell) return false;
   if (path.some((cell) => !isCell(cell)) || new Set(path).size !== path.length) return false;
 
   let nextCheckpoint = 2;
   for (let index = 1; index < path.length; index += 1) {
     if (!areZipNeighbors(path[index - 1], path[index])) return false;
-    const checkpoint = checkpointValueAt(question, path[index]);
+    const checkpoint = checkpointValueAt(configuration, path[index]);
     if (checkpoint !== undefined) {
       if (checkpoint !== nextCheckpoint) return false;
-      if (checkpoint === question.checkpoints.length && index !== ZIP_CELL_COUNT - 1) return false;
+      if (checkpoint === configuration.checkpoints.length && index !== ZIP_CELL_COUNT - 1) {
+        return false;
+      }
       nextCheckpoint += 1;
     }
   }
@@ -76,27 +90,58 @@ function validatePath(question: ZipQuestion, path: number[], requireComplete: bo
   if (!requireComplete) return true;
   return (
     path.length === ZIP_CELL_COUNT &&
-    path.at(-1) === question.checkpoints.at(-1)?.cell &&
-    nextCheckpoint === question.checkpoints.length + 1
+    path.at(-1) === configuration.checkpoints.at(-1)?.cell &&
+    nextCheckpoint === configuration.checkpoints.length + 1
   );
 }
 
-export function isValidZipPath(question: ZipQuestion, path: number[]) {
-  return validatePath(question, path, false);
+export function isValidZipPublicConfiguration(value: unknown): value is ZipBoardConfiguration {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const candidate = value as Record<string, unknown>;
+  const grid = candidate.grid;
+  const checkpoints = candidate.checkpoints;
+  if (!grid || typeof grid !== "object" || Array.isArray(grid) || !Array.isArray(checkpoints)) {
+    return false;
+  }
+  const gridValue = grid as Record<string, unknown>;
+  if (
+    Object.keys(gridValue).some((key) => key !== "rows" && key !== "columns") ||
+    gridValue.rows !== ZIP_ROWS ||
+    gridValue.columns !== ZIP_COLUMNS ||
+    checkpoints.some((checkpoint) => {
+      if (!checkpoint || typeof checkpoint !== "object" || Array.isArray(checkpoint)) {
+        return true;
+      }
+      const value = checkpoint as Record<string, unknown>;
+      return (
+        Object.keys(value).some((key) => !["value", "cell", "label"].includes(key)) ||
+        !Number.isSafeInteger(value.value) ||
+        !Number.isSafeInteger(value.cell) ||
+        (value.label !== undefined && typeof value.label !== "string")
+      );
+    })
+  ) {
+    return false;
+  }
+  return hasValidPublicShape(candidate as unknown as ZipBoardConfiguration);
 }
 
-export function isCompleteZipPath(question: ZipQuestion, path: number[]) {
-  return validatePath(question, path, true);
+export function isValidZipPath(configuration: ZipBoardConfiguration, path: number[]) {
+  return validatePath(configuration, path, false);
 }
 
-export function countZipSolutions(question: ZipQuestion, limit = 2) {
-  if (!hasValidShape(question) || limit <= 0) return 0;
-  const start = question.checkpoints[0].cell;
-  const final = question.checkpoints.at(-1)?.cell;
+export function isCompleteZipPath(configuration: ZipBoardConfiguration, path: number[]) {
+  return validatePath(configuration, path, true);
+}
+
+export function countZipSolutions(configuration: ZipBoardConfiguration, limit = 2) {
+  if (!hasValidPublicShape(configuration) || limit <= 0) return 0;
+  const start = configuration.checkpoints[0].cell;
+  const final = configuration.checkpoints.at(-1)?.cell;
   if (final === undefined) return 0;
 
   const checkpointsByCell = new Map(
-    question.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint.value]),
+    configuration.checkpoints.map((checkpoint) => [checkpoint.cell, checkpoint.value]),
   );
   const visited = new Set([start]);
   let solutions = 0;
@@ -120,7 +165,9 @@ export function countZipSolutions(question: ZipQuestion, limit = 2) {
   const search = (cell: number, depth: number, nextCheckpoint: number) => {
     if (solutions >= limit) return;
     if (depth === ZIP_CELL_COUNT) {
-      if (cell === final && nextCheckpoint === question.checkpoints.length + 1) solutions += 1;
+      if (cell === final && nextCheckpoint === configuration.checkpoints.length + 1) {
+        solutions += 1;
+      }
       return;
     }
 
@@ -167,10 +214,13 @@ export function isValidZipAnswer(answer: unknown): answer is ZipAnswer {
   );
 }
 
-export function calculateZipMetrics(question: ZipQuestion, answer: ZipAnswer): ZipMetrics {
-  const valid = isValidZipPath(question, answer.path);
+export function calculateZipMetrics(
+  configuration: ZipBoardConfiguration,
+  answer: ZipAnswer,
+): ZipMetrics {
+  const valid = isValidZipPath(configuration, answer.path);
   const reachedCheckpoint = valid
-    ? question.checkpoints.reduce(
+    ? configuration.checkpoints.reduce(
         (highest, checkpoint) =>
           answer.path.includes(checkpoint.cell) ? checkpoint.value : highest,
         0,
@@ -181,13 +231,13 @@ export function calculateZipMetrics(question: ZipQuestion, answer: ZipAnswer): Z
     coveredCells: valid ? answer.path.length : 0,
     totalCells: ZIP_CELL_COUNT,
     reachedCheckpoint,
-    totalCheckpoints: question.checkpoints.length,
-    completed: valid && isCompleteZipPath(question, answer.path),
+    totalCheckpoints: configuration.checkpoints.length,
+    completed: valid && isCompleteZipPath(configuration, answer.path),
   };
 }
 
 export function applyZipCellSelection(
-  question: ZipQuestion,
+  configuration: ZipBoardConfiguration,
   path: number[],
   cell: number,
 ): ZipCellSelectionResult {
@@ -214,7 +264,7 @@ export function applyZipCellSelection(
   }
 
   const nextPath = [...path, cell];
-  if (!isValidZipPath(question, nextPath)) {
+  if (!isValidZipPath(configuration, nextPath)) {
     return {
       path,
       changed: false,
@@ -222,7 +272,7 @@ export function applyZipCellSelection(
     };
   }
 
-  const checkpoint = checkpointValueAt(question, cell);
+  const checkpoint = checkpointValueAt(configuration, cell);
   return {
     path: nextPath,
     changed: true,
