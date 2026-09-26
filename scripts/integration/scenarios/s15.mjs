@@ -236,7 +236,8 @@ const sharedGateDocuments = ["flash", "survival"].map((mode) => ({
     modeConfig: mode === "survival" ? { lives: 3 } : {},
   },
   questions: questions.slice(4).map((question, index) => {
-    const { modeConfig: _modeConfig, ...questionContent } = question;
+    const questionContent = { ...question };
+    delete questionContent.modeConfig;
     return {
       ...questionContent,
       slug: `s15-${mode}-${question.type}`,

@@ -15,7 +15,13 @@ describe("room ranking route", () => {
 
     const model = await mockRoomQueries.getRanking("tabarnia-room", mockQueryContext());
     if (!model) throw new Error("Expected ranking model");
-    const markup = renderToStaticMarkup(<FlashPopRoomRanking {...model} />);
+    const markup = renderToStaticMarkup(
+      <FlashPopRoomRanking
+        roomId={model.roomId}
+        currentUserId={model.currentUserId}
+        entries={model.entries}
+      />,
+    );
 
     expect(markup).toContain("Ranking global");
     expect(markup).toContain("Dark");
