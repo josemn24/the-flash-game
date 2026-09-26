@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Pool, type PoolClient } from "pg";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.media-asset-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -26,11 +27,11 @@ export type AvatarCommandResult = {
 
 function getPool() {
   if (!globalPool[poolKey]) {
-    const configured = process.env.SUPABASE_DB_URL;
-    if (!configured) throw new Error("database_unavailable");
-    const url = new URL(configured);
-    url.username = "authenticator";
-    globalPool[poolKey] = new Pool({ connectionString: url.toString(), max: 3, idleTimeoutMillis: 10_000 });
+    globalPool[poolKey] = new Pool({
+      connectionString: getSupabaseDatabaseUrl(),
+      max: 3,
+      idleTimeoutMillis: 10_000,
+    });
   }
   return globalPool[poolKey]!;
 }

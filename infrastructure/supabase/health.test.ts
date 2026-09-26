@@ -23,7 +23,8 @@ describe("readPrivateHealth", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (globalThis as Record<PropertyKey, unknown>)[poolKey] = undefined;
-    process.env.SUPABASE_DB_URL = "postgresql://postgres:postgres@localhost:54322/postgres";
+    process.env.SUPABASE_DB_URL =
+      "postgresql://postgres.bebmthwwyiyobaiertsm:p%40ssword@pooler.example:6543/postgres?sslmode=require";
     delete process.env.EXPECTED_SCHEMA_REVISION;
     client.query.mockImplementation(async (query: string) => {
       if (query.includes("schema_revision_marker")) {
@@ -46,6 +47,13 @@ describe("readPrivateHealth", () => {
     });
 
     const markerQuery = client.query.mock.calls.find(([query]) => String(query).includes("schema_revision_marker"))?.[0];
+    expect(pgMocks.Pool).toHaveBeenCalledWith({
+      connectionString: process.env.SUPABASE_DB_URL,
+      max: 1,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 2_000,
+      application_name: "the-flash-game-health",
+    });
     expect(markerQuery).toContain("public.get_superadmin_challenge_catalog()");
     expect(markerQuery).toContain("public.get_superadmin_challenge_detail(uuid)");
     expect(markerQuery).toContain("public.manage_room_member(jsonb)");
