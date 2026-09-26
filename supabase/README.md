@@ -17,8 +17,9 @@ El esquema declarativo es la fuente de verdad:
 La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./schemas"`. El detalle
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
-El historial activo está consolidado en una única migración base generada desde los 51 archivos
-declarativos. La rama de respaldo conserva el historial incremental anterior.
+El historial activo está consolidado en la migración base
+`20260926080239_initial_schema.sql`, generada desde los 51 archivos declarativos. La rama de
+respaldo conserva el historial incremental anterior.
 
 ## Flujo para un cambio de esquema
 

@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 51 archivos y su revisión canónica es
-`20260925181322_initial_schema`. La migración base activa se ha regenerado desde esos archivos
+`20260926080239_initial_schema`. La migración base activa se ha regenerado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; los archivos declarativos, el inventario y
 las suites pgTAP pasan en esa ejecución. No hay proyecto remoto vinculado.
