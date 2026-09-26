@@ -230,6 +230,7 @@ export function ServerFlashPopSurvivalGame({
             onBack={session.showResults}
             returnTo={roomContext.returnTo}
             roomContext={roomContext}
+            presentation="survival"
           />
         </motion.div>
       ) : null}
