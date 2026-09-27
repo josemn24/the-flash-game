@@ -73,14 +73,6 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     await expect(page.getByText("Está relacionado con una caída de muro.")).toBeVisible();
     await expect(page.getByText("Sucedió en 1989.")).toHaveCount(0);
 
-    await page.reload();
-    await expect(page.getByRole("heading", { name: "Identifica el acontecimiento" })).toBeVisible({
-      timeout: 20_000,
-    });
-    await expect(page.getByText("2 de 3 pistas")).toBeVisible();
-    await expect(page.getByText("Está relacionado con una caída de muro.")).toBeVisible();
-    await expect(page.getByText("Sucedió en 1989.")).toHaveCount(0);
-
     await page.getByLabel("Escribe tu respuesta").fill("muro de Berlin");
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });

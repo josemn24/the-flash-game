@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { AnswerOption, QuestionMedia, ServerOperationStatus } from "@/components/questions/shared";
+import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
@@ -123,18 +123,6 @@ export function ServerFlashQuestionStage({
     : splitPrompt(question.question);
   const selected =
     question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
-  const showSubmissionStatus =
-    submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
-  const submissionStatus = (
-    <ServerOperationStatus
-      state={submissionState}
-      visible={submissionStatusVisible}
-      pendingMessage="Comprobando respuesta…"
-      errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
-      retryLabel="Reintentar"
-      onRetry={onRetrySubmission}
-    />
-  );
   const timer = (
     <Timer
       duration={question.timeLimit}
@@ -310,7 +298,6 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "zip" ? (
           <ServerZipQuestion
@@ -379,12 +366,10 @@ export function ServerFlashQuestionStage({
         ) : question.type === "true-false" ? (
           <>
             <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "odd-one-out" ? (
           <>
             <OddOneOutQuestion items={[...question.items]} locked={locked} onSubmit={onSubmit} />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "ordering" ? (
           <>
@@ -394,7 +379,6 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "anagram" ? (
           <>
@@ -404,7 +388,6 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "classification" ? (
           <>
@@ -420,7 +403,6 @@ export function ServerFlashQuestionStage({
               onProgress={onProgress}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "estimation" ? (
           <>
@@ -439,7 +421,6 @@ export function ServerFlashQuestionStage({
               onChange={onProgress}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "heat-map" ? (
           <>
@@ -463,7 +444,6 @@ export function ServerFlashQuestionStage({
                 />
               </div>
             ) : null}
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : (
           <>
@@ -487,7 +467,6 @@ export function ServerFlashQuestionStage({
                   ))
                 : null}
             </div>
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         )}
       </section>

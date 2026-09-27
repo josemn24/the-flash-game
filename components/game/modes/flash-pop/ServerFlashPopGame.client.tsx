@@ -6,6 +6,7 @@ import {
   ReviewStage,
   Transition,
 } from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import {
@@ -111,6 +112,24 @@ export function ServerFlashPopGame({
             onTimeUp={() => void session.handleTimeUp()}
           />
         </motion.div>
+      ) : null}
+      {session.phase === "checking" ? (
+        session.answerVerificationState === "error" ? (
+          <AnswerFeedbackStage
+            key={`checking-error-${session.questionIndex}`}
+            state="error"
+            errorMessage={
+              session.answerVerificationError ?? "No hemos podido confirmar tu respuesta."
+            }
+            onRetry={session.retrySubmit}
+          />
+        ) : (
+          <AnswerFeedbackStage
+            key={`checking-${session.questionIndex}`}
+            state="checking"
+            indicatorVisible={session.answerVerificationStatusVisible}
+          />
+        )
       ) : null}
       {session.phase === "transition" ? (
         <motion.div

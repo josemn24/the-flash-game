@@ -31,6 +31,7 @@ export type ServerFlashPhase =
   | "countdown"
   | "briefing"
   | "playing"
+  | "checking"
   | "answer-reveal"
   | "transition"
   | "results"
@@ -192,6 +193,9 @@ export function useServerFlashSession({
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
   const [submissionStatusVisible, setSubmissionStatusVisible] = useState(false);
   const [submissionError, setSubmissionError] = useState<string>();
+  const [answerVerificationState, setAnswerVerificationState] = useState<SubmissionState>("idle");
+  const [answerVerificationStatusVisible, setAnswerVerificationStatusVisible] = useState(false);
+  const [answerVerificationError, setAnswerVerificationError] = useState<string>();
   const [revealState, setRevealState] = useState<SubmissionState>("idle");
   const [revealStatusVisible, setRevealStatusVisible] = useState(false);
   const [revealError, setRevealError] = useState<string>();
@@ -208,6 +212,9 @@ export function useServerFlashSession({
   const [startNotice, setStartNotice] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const answerVerificationStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queensStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wordSearchStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -266,6 +273,29 @@ export function useServerFlashSession({
       clearTimeout(submissionStatusTimerRef.current);
       submissionStatusTimerRef.current = undefined;
     }
+  };
+
+  const clearAnswerVerificationStatusTimer = () => {
+    if (answerVerificationStatusTimerRef.current) {
+      clearTimeout(answerVerificationStatusTimerRef.current);
+      answerVerificationStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startAnswerVerification = () => {
+    clearAnswerVerificationStatusTimer();
+    clearSubmissionStatusTimer();
+    setAnswerVerificationState("submitting");
+    setAnswerVerificationStatusVisible(false);
+    setAnswerVerificationError(undefined);
+    setSubmissionState("idle");
+    setSubmissionStatusVisible(false);
+    setSubmissionError(undefined);
+    setPhase("checking");
+    answerVerificationStatusTimerRef.current = setTimeout(() => {
+      setAnswerVerificationStatusVisible(true);
+      answerVerificationStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
   };
 
   const startSubmissionStatus = () => {
@@ -386,6 +416,7 @@ export function useServerFlashSession({
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       clearSubmissionStatusTimer();
+      clearAnswerVerificationStatusTimer();
       clearRevealStatusTimer();
       clearQueensStatusTimer();
       clearWordSearchStatusTimer();
@@ -442,6 +473,10 @@ export function useServerFlashSession({
     setWordSearchError(undefined);
     setLastWordSearchSelection(undefined);
     pendingWordSearchSelectionRef.current = null;
+    clearAnswerVerificationStatusTimer();
+    setAnswerVerificationState("idle");
+    setAnswerVerificationStatusVisible(false);
+    setAnswerVerificationError(undefined);
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
     setBusy(false);
@@ -649,7 +684,7 @@ export function useServerFlashSession({
   };
 
   const submitAnswerToServer = async (submission: PendingAnswerSubmission) => {
-    startSubmissionStatus();
+    startAnswerVerification();
     setBusy(true);
     setLocked(true);
     try {
@@ -670,12 +705,15 @@ export function useServerFlashSession({
       };
       const nextResults = [...results, result];
       const nextLockVersion = Number(response.lockVersion);
-      clearSubmissionStatusTimer();
+      clearAnswerVerificationStatusTimer();
       pendingSubmissionRef.current = null;
       setPendingAnswer(null);
       setSubmissionState("idle");
       setSubmissionStatusVisible(false);
       setSubmissionError(undefined);
+      setAnswerVerificationState("idle");
+      setAnswerVerificationStatusVisible(false);
+      setAnswerVerificationError(undefined);
       setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
       setResults(nextResults);
       setLastResult(result);
@@ -703,14 +741,20 @@ export function useServerFlashSession({
           1800,
       );
     } catch (error) {
-      clearSubmissionStatusTimer();
-      setSubmissionState("error");
-      setSubmissionStatusVisible(true);
+      clearAnswerVerificationStatusTimer();
       if (error instanceof CompetitiveCommandError && error.code === "invalid_matching_answer") {
+        setAnswerVerificationState("idle");
+        setAnswerVerificationStatusVisible(false);
+        setAnswerVerificationError(undefined);
+        setSubmissionState("error");
+        setSubmissionStatusVisible(true);
         setSubmissionError("La respuesta de parejas no es válida. Revisa todas las asociaciones.");
+        setPhase("playing");
         setLocked(false);
       } else {
-        setSubmissionError("No hemos podido confirmar tu respuesta.");
+        setAnswerVerificationState("error");
+        setAnswerVerificationStatusVisible(true);
+        setAnswerVerificationError("No hemos podido confirmar tu respuesta.");
       }
       setBusy(false);
     }
@@ -1086,7 +1130,9 @@ export function useServerFlashSession({
       const availablePoints = Number(response.availablePoints);
       const cluePenalty = Number(response.cluePenalty);
       const clue = String(response.clue);
-      setAttempt({ id: reveal.attemptId, lockVersion: nextLockVersion });
+      const nextAttempt = { id: reveal.attemptId, lockVersion: nextLockVersion };
+      attemptRef.current = nextAttempt;
+      setAttempt(nextAttempt);
       setQuestion((current) =>
         current?.type === "progressive-clues"
           ? {
@@ -1453,6 +1499,9 @@ export function useServerFlashSession({
     submissionState,
     submissionStatusVisible,
     submissionError,
+    answerVerificationState,
+    answerVerificationStatusVisible,
+    answerVerificationError,
     revealState,
     revealStatusVisible,
     revealError,

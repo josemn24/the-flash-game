@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { ArrowIcon, Button, Card, CheckIcon } from "@/components/ui";
+import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { ChallengeResultScreen } from "@/components/game/shared";
@@ -241,6 +242,25 @@ export function ServerFlashPopPyramidGame({
             onTimeUp={() => void session.handleTimeUp()}
           />
         </motion.div>
+      ) : null}
+
+      {session.phase === "checking" ? (
+        session.answerVerificationState === "error" ? (
+          <AnswerFeedbackStage
+            key={`checking-error-${session.questionIndex}`}
+            state="error"
+            errorMessage={
+              session.answerVerificationError ?? "No hemos podido confirmar tu respuesta."
+            }
+            onRetry={session.retrySubmit}
+          />
+        ) : (
+          <AnswerFeedbackStage
+            key={`checking-${session.questionIndex}`}
+            state="checking"
+            indicatorVisible={session.answerVerificationStatusVisible}
+          />
+        )
       ) : null}
 
       {session.phase === "transition" && session.lastResult ? (
