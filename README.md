@@ -44,6 +44,8 @@ puede conceder/quitar admin y eliminar lógicamente miembros; transferencia, blo
 invitaciones completas siguen pendientes. Los demás modos competitivos y parte del ciclo de Storage
 siguen pendientes.
 
+El historial de cambios por versión está disponible en [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Requisitos
 
 - Node.js 20.9 o superior.

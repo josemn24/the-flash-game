@@ -8,6 +8,7 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 
 | Necesito saber...                               | Consulta                                                                                                   |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Qué ha cambiado en cada versión                 | [`CHANGELOG.md`](../CHANGELOG.md)                                                                          |
 | Qué está implementado ahora                     | [`current/status.md`](current/status.md)                                                                   |
 | Cómo está organizado el dominio                 | [`current/domain/README.md`](current/domain/README.md)                                                     |
 | Qué casos de uso debe soportar                  | [`current/use-cases.md`](current/use-cases.md)                                                             |
