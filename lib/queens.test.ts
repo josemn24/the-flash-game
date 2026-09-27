@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateQueensMetrics,
+  calculateQueensDraftMetrics,
   countQueensSolutions,
   getQueensConflicts,
   isQueensAnswer,
@@ -73,6 +74,21 @@ describe("Queens configuration", () => {
 });
 
 describe("Queens conflicts and answers", () => {
+  it("calculates public draft metrics without needing the solution", () => {
+    expect(calculateQueensDraftMetrics(question, [2, 9])).toMatchObject({
+      placedQueens: 2,
+      completedRows: 2,
+      completedColumns: 2,
+      completedRegions: 2,
+      conflictingQueens: 0,
+      solved: false,
+    });
+    const invalid = calculateQueensDraftMetrics(question, [0, 2, 5, 14, 20]);
+    expect(invalid.placedQueens).toBe(5);
+    expect(invalid.conflictingQueens).toBeGreaterThan(0);
+    expect(invalid.solved).toBe(false);
+  });
+
   it("reports row, column, region and contact conflicts", () => {
     expect(getQueensConflicts(question, [0, 1]).get(0)).toContain("row");
     expect(getQueensConflicts(question, [0, 5]).get(0)).toContain("column");

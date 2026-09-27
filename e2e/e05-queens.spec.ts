@@ -40,21 +40,15 @@ test.describe("E05 — Queens competitivo", () => {
     expect(await page.content()).not.toContain('"solution"');
 
     const board = page.getByRole("grid", { name: "Tablero Queens de cinco por cinco" });
-    await board.getByRole("gridcell", { name: /Fila 2, columna 5/ }).click();
-    await expect(page.getByText("2/5 coronas")).toBeVisible();
-    await page.reload();
-    await expect(page.getByRole("heading", { name: "Coloca las cinco coronas" })).toBeVisible();
-    await expect(page.getByText("2/5 coronas")).toBeVisible();
-
-    let firstResponse = true;
-    const requestBodies: Array<Record<string, unknown>> = [];
-    await page.route("**/api/competitive/attempts/*/queens/place", async (route) => {
-      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) {
+    const validationBodies: Array<Record<string, unknown>> = [];
+    let loseNextValidation = false;
+    await page.route("**/api/competitive/attempts/*/queens/validate", async (route) => {
+      validationBodies.push(route.request().postDataJSON() as Record<string, unknown>);
+      if (!loseNextValidation) {
         await route.continue();
         return;
       }
-      firstResponse = false;
+      loseNextValidation = false;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -63,16 +57,29 @@ test.describe("E05 — Queens competitivo", () => {
       });
       await response.body();
     });
+    await board.getByRole("gridcell", { name: /Fila 2, columna 5/ }).click();
+    await expect(page.getByText("2/5 coronas")).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(validationBodies).toHaveLength(0);
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Coloca las cinco coronas" })).toBeVisible();
+    await expect(page.getByText("2/5 coronas")).toBeVisible();
 
     await board.getByRole("gridcell", { name: /Fila 3, columna 1/ }).click();
-    await expect(page.getByRole("button", { name: "Reintentar movimiento" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar movimiento" }).click();
-    expect(requestBodies).toHaveLength(2);
-    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("3/5 coronas")).toBeVisible();
+    await board.getByRole("gridcell", { name: /Fila 4, columna 1/ }).click();
+    await board.getByRole("gridcell", { name: /Fila 4, columna 5/ }).click();
+    await expect(page.getByText("El tablero no es correcto.")).toBeVisible();
+    expect(validationBodies).toHaveLength(1);
 
+    await board.getByRole("gridcell", { name: /Fila 4, columna 1/ }).click();
+    await board.getByRole("gridcell", { name: /Fila 4, columna 5/ }).click();
+    loseNextValidation = true;
     await board.getByRole("gridcell", { name: /Fila 4, columna 4/ }).click();
     await board.getByRole("gridcell", { name: /Fila 5, columna 2/ }).click();
+    await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar validación" }).click();
+    expect(validationBodies).toHaveLength(3);
+    expect(validationBodies[1]?.idempotencyKey).toBe(validationBodies[2]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Queens" }).locator("summary").click();

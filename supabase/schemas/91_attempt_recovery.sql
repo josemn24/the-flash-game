@@ -40,7 +40,7 @@ begin
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) when q.type = 'queens' then coalesce((
       select count(*)::integer
-      from private.queens_placement_events e
+      from private.queens_validation_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
     ), 0) when q.type = 'word-search' then coalesce((
       select count(*)::integer from private.word_search_selection_events e

@@ -27,6 +27,10 @@ import type {
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementInput,
   SubmitQueensPlacementResult,
+  SaveQueensDraftInput,
+  SaveQueensDraftResult,
+  ValidateQueensBoardInput,
+  ValidateQueensBoardResult,
   TakeOverAttemptInput,
   TakeOverAttemptResult,
   RevealProgressiveClueInput,
@@ -101,10 +105,14 @@ export interface AttemptCommands {
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
-  submitWordSearchSelection(input: SubmitWordSearchSelectionInput): Promise<SubmitWordSearchSelectionResult>;
+  submitWordSearchSelection(
+    input: SubmitWordSearchSelectionInput,
+  ): Promise<SubmitWordSearchSelectionResult>;
   submitWordHashtagSwap(input: SubmitWordHashtagSwapInput): Promise<SubmitWordHashtagSwapResult>;
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
   submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
+  saveQueensDraft(input: SaveQueensDraftInput): Promise<SaveQueensDraftResult>;
+  validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;
   readEvaluationContext(
     receiptId: AnswerReceiptId,

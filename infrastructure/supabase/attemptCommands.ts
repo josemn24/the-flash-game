@@ -23,6 +23,8 @@ import type {
   SubmitWordHashtagSwapResult,
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementResult,
+  SaveQueensDraftResult,
+  ValidateQueensBoardResult,
   RevealProgressiveClueResult,
   PassInteractionResult,
 } from "@/types/contracts/attempts";
@@ -171,6 +173,8 @@ function commandCode(error: unknown) {
     "word_hashtag_moves_exhausted",
     "word_hashtag_requires_swap_command",
     "invalid_queens_placement",
+    "invalid_queens_answer",
+    "queens_answer_incomplete",
     "queens_requires_placement_command",
     "prefilled_queen_locked",
     "all_clues_revealed",
@@ -1120,6 +1124,8 @@ export class SupabaseAttemptCommands implements Pick<
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
+  | "saveQueensDraft"
+  | "validateQueensBoard"
   | "revealProgressiveClue"
   | "readEvaluationContext"
   | "recordEvaluation"
@@ -1269,6 +1275,33 @@ export class SupabaseAttemptCommands implements Pick<
       lockVersion: evaluated.lockVersion,
       status: evaluated.status,
       points: evaluated.points,
+    };
+  }
+
+  saveQueensDraft(input: Parameters<AttemptCommands["saveQueensDraft"]>[0]) {
+    return callAttemptCommand<SaveQueensDraftResult>(this.identity, "save_queens_draft", input);
+  }
+
+  async validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {
+    const accepted = await callAttemptCommand<ValidateQueensBoardResult>(
+      this.identity,
+      "submit_queens_answer",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+      details: evaluated.details,
     };
   }
 

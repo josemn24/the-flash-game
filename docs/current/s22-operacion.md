@@ -132,9 +132,10 @@ npm run test:integration:supabase -- --scenario e05
 npm run test:e2e -- e2e/e05-queens.spec.ts
 ```
 
-Queens valida cada colocación o retirada con `POST /api/competitive/attempts/[attemptId]/queens/place`.
-El tablero se reconstruye desde eventos privados; las marcas X son locales y la solución solo aparece
-en la revisión autorizada.
+Queens actualiza el tablero localmente, guarda checkpoints con `POST /api/competitive/attempts/[attemptId]/queens/draft`
+y valida automáticamente el tablero completo con `POST /api/competitive/attempts/[attemptId]/queens/validate`
+al colocar las cinco coronas. Las validaciones incorrectas mantienen la interacción abierta y aplican
+una penalización del 5%; las marcas X son locales y la solución solo aparece en la revisión autorizada.
 
 No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
 es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build

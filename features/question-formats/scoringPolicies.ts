@@ -193,11 +193,11 @@ export const SCORING_POLICIES = {
     id: QUESTION_SCORING_POLICY.queens,
     label: "Resolución, errores y velocidad",
     summary:
-      "Solo resolver concede puntos ajustados por velocidad; cada corona colocada en conflicto resta un 5 % de los puntos base hasta un mínimo de cero.",
+      "Solo resolver concede puntos ajustados por velocidad; cada validación completa incorrecta resta un 5 % de los puntos base hasta un mínimo de cero.",
     partialCredit: false,
     incorrectPenalty: true,
     speedBonus: true,
-    incorrectPenaltyLabel: "Cada conflicto −5 %",
+    incorrectPenaltyLabel: "Cada validación incorrecta −5 %",
   },
   "time-maze": {
     id: QUESTION_SCORING_POLICY["time-maze"],

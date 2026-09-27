@@ -91,6 +91,9 @@
     "private.queens_placement_events": {
       "kind": "r"
     },
+    "private.queens_validation_events": {
+      "kind": "r"
+    },
     "private.platform_role_assignments": {
       "kind": "r",
       "service_role": {
@@ -732,6 +735,16 @@
       "executeRoles": []
     },
     "private.submit_queens_placement": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.save_queens_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.submit_queens_answer": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]

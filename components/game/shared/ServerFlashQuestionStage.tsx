@@ -52,8 +52,9 @@ export function ServerFlashQuestionStage({
   queensState,
   queensStatusVisible,
   queensError,
-  onQueensPlacement,
-  onRetryQueens,
+  onQueensDraft,
+  onQueensValidate,
+  onRetryQueensValidation,
   wordSearchState,
   wordSearchStatusVisible,
   wordSearchError,
@@ -89,8 +90,9 @@ export function ServerFlashQuestionStage({
   readonly queensState: "idle" | "submitting" | "error";
   readonly queensStatusVisible: boolean;
   readonly queensError?: string;
-  readonly onQueensPlacement: (cell: number, action: "place" | "remove") => void;
-  readonly onRetryQueens?: () => void;
+  readonly onQueensDraft: (queens: readonly number[]) => void;
+  readonly onQueensValidate: (queens: readonly number[]) => void;
+  readonly onRetryQueensValidation?: () => void;
   readonly wordSearchState: "idle" | "submitting" | "error";
   readonly wordSearchStatusVisible: boolean;
   readonly wordSearchError?: string;
@@ -268,11 +270,12 @@ export function ServerFlashQuestionStage({
             question={question}
             progress={question.progress}
             locked={locked}
-            placementState={queensState}
-            placementStatusVisible={queensStatusVisible}
-            placementError={queensError}
-            onPlace={onQueensPlacement}
-            onRetry={onRetryQueens}
+            validationState={queensState}
+            validationStatusVisible={queensStatusVisible}
+            validationError={queensError}
+            onDraft={onQueensDraft}
+            onValidate={onQueensValidate}
+            onRetry={onRetryQueensValidation}
           />
         ) : question.type === "word-search" ? (
           <ServerWordSearchQuestion

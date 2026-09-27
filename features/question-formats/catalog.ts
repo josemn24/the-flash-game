@@ -1499,7 +1499,7 @@ export const QUESTION_FORMAT_CATALOG = {
     timing: {
       recommendedSeconds: "45–75 s",
       notes:
-        "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada colocación conflictiva resta un 5 % de los puntos base hasta un mínimo de cero.",
+        "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada validación completa incorrecta resta un 5 % de los puntos base hasta un mínimo de cero.",
     },
     scoring: SCORING_POLICIES.queens,
     examples: [

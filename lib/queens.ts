@@ -18,6 +18,12 @@ export type QueensMetrics = {
   solved: boolean;
 };
 
+export type QueensDraftQuestion = {
+  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly regions: readonly number[];
+  readonly prefilledQueens?: readonly number[];
+};
+
 function isCell(cell: number) {
   return Number.isInteger(cell) && cell >= 0 && cell < QUEENS_CELL_COUNT;
 }
@@ -106,6 +112,41 @@ export function getQueensConflicts(
     }
   }
   return conflicts;
+}
+
+export function calculateQueensDraftMetrics(
+  question: QueensDraftQuestion,
+  queens: readonly number[],
+): Omit<QueensMetrics, "marksUsed"> {
+  const answer = { queens: [...queens], marks: [] } satisfies QueensAnswer;
+  const conflicts = getQueensConflicts(question, answer.queens);
+  const countCompleted = (groupFor: (cell: number) => number) => {
+    const counts = new Map<number, number>();
+    answer.queens.forEach((cell) =>
+      counts.set(groupFor(cell), (counts.get(groupFor(cell)) ?? 0) + 1),
+    );
+    return Array.from(
+      { length: QUEENS_REGION_COUNT },
+      (_, group) => counts.get(group) === 1,
+    ).filter(Boolean).length;
+  };
+  const completedRows = countCompleted((cell) => Math.floor(cell / QUEENS_COLUMNS));
+  const completedColumns = countCompleted((cell) => cell % QUEENS_COLUMNS);
+  const completedRegions = countCompleted((cell) => question.regions[cell]);
+  return {
+    valid: uniqueCells(answer.queens),
+    placedQueens: answer.queens.length,
+    completedRows,
+    completedColumns,
+    completedRegions,
+    conflictingQueens: conflicts.size,
+    solved:
+      answer.queens.length === QUEENS_ROWS &&
+      completedRows === QUEENS_ROWS &&
+      completedColumns === QUEENS_COLUMNS &&
+      completedRegions === QUEENS_REGION_COUNT &&
+      conflicts.size === 0,
+  };
 }
 
 function rawMetrics(question: QueensQuestion, answer: QueensAnswer): QueensMetrics {

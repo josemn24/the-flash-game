@@ -89,8 +89,9 @@ export function ServerFlashPopGame({
             queensState={session.queensState}
             queensStatusVisible={session.queensStatusVisible}
             queensError={session.queensError}
-            onQueensPlacement={(cell, action) => void session.submitQueensPlacement(cell, action)}
-            onRetryQueens={() => void session.retryQueensPlacement()}
+            onQueensDraft={session.updateQueensDraft}
+            onQueensValidate={(queens) => void session.validateQueensBoard(queens)}
+            onRetryQueensValidation={() => void session.retryQueensValidation()}
             wordSearchState={session.wordSearchState}
             wordSearchStatusVisible={session.wordSearchStatusVisible}
             wordSearchError={session.wordSearchError}
@@ -107,18 +108,7 @@ export function ServerFlashPopGame({
             revealError={session.revealError}
             onRevealProgressiveClue={() => void session.revealProgressiveClue()}
             onRetryReveal={() => void session.retryReveal()}
-            onTimeUp={() =>
-              void session.submit(
-                session.question?.type === "classification" ||
-                  session.question?.type === "estimation" ||
-                  session.question?.type === "heat-map" ||
-                  session.question?.type === "zip" ||
-                  session.question?.type === "escape" ||
-                  session.question?.type === "matching"
-                  ? session.pendingAnswer
-                  : null,
-              )
-            }
+            onTimeUp={() => void session.handleTimeUp()}
           />
         </motion.div>
       ) : null}

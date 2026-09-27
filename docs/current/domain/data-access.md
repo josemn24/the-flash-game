@@ -176,12 +176,13 @@ navegador y una sola recepción genérica valida todas las asociaciones contra l
 una respuesta completa con cualquier error es incorrecta y no existe puntuación parcial ni penalización
 por pareja. `correctMatchId` y la solución completa aparecen únicamente en la revisión autorizada.
 
-E05 entrega el tablero 5×5, las regiones, las coronas precolocadas y un progreso seguro. Cada
-colocación o retirada pasa por `private.submit_queens_placement(jsonb)`, que bloquea el intento,
-reconstruye las coronas desde `private.queens_placement_events`, calcula conflictos y aplica el 5%
-de penalización sin confiar en contadores del navegador. Las marcas X son estado local y se descartan
-al recuperar. Al completar el tablero se crea una única recepción terminal; la solución solo se
-reconstruye en el contexto privado de evaluación y revisión autorizada.
+E05 entrega el tablero 5×5, las regiones, las coronas precolocadas y un progreso seguro. El navegador
+edita las coronas localmente y guarda checkpoints mediante `private.save_queens_draft(jsonb)` sin
+crear resultados ni penalizaciones. Al alcanzar cinco coronas, el tablero completo pasa por
+`private.submit_queens_answer(jsonb)`, que bloquea el intento, reconstruye las métricas, registra una
+validación completa y solo crea una recepción terminal si la solución es correcta. Cada validación
+incorrecta aplica un 5% de penalización; las marcas X siguen siendo estado local y se descartan al
+recuperar. La solución solo se reconstruye en el contexto privado de evaluación y revisión autorizada.
 
 S05 entrega `public.get_my_alphabet_challenge` con letras y payloads públicos `short-text`, y
 `public.get_my_alphabet_result` solo tras un intento completado. El cliente conserva únicamente el

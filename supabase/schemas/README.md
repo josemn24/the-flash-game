@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 52 archivos y su revisión canónica es
-`20260927103813_matching_timeout_validation`. La migración incremental activa se ha generado desde esos archivos
+`20260927140000_queens_board_validation`. La migración incremental activa se ha generado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -40,8 +40,9 @@ mixto con intentos privados, duplicados rechazados sin penalización, progreso s
 autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita, eventos de
 revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
 E04 añade Matching con resolución local, una recepción final del mapa completo, validación server-side
-sin solución pública y evaluación binaria. E05 añade Queens con eventos privados de colocación/retirada,
-penalización del 5%, recuperación del tablero y resolución terminal server-side. E06 añade Word-search
+sin solución pública y evaluación binaria. E05 añade Queens con borradores locales, checkpoints,
+validación server-side del tablero completo, eventos privados de validación, penalización del 5%,
+recuperación del tablero y resolución terminal server-side. E06 añade Word-search
 con soluciones privadas, selecciones server-side, errores persistidos, recuperación e idempotencia. S05 añade Alphabet
 con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
 no hay seed global; la CLI local mantiene un enlace de staging sin que esta revisión se haya desplegado.

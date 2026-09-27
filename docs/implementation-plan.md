@@ -4,7 +4,7 @@
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-27. El esquema actual contiene 52 archivos declarativos y la revisión canónica es
-> `20260927103813_matching_timeout_validation`; la migración incremental activa y las validaciones locales recientes
+> `20260927140000_queens_board_validation`; la migración incremental activa y las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -755,7 +755,7 @@ Ficha común, obligatoria para **cada** E*:
 | E02     | `logic-code`        | **Implementado localmente.** Registrar cada código y su penalización; validar secreto privado, formato, plazo, secuencia e idempotencia; rechazar duplicados sin penalización, conservar intentos tras recarga y cerrar al acertar con evaluación server-side.                                                                                                                                      |
 | E03     | `progressive-clues` | **Implementado localmente.** Entregar la primera pista gratis y las siguientes mediante comando transaccional; persistir eventos privados, no enviar pistas futuras ni confiar en `revealedClues`, ajustar penalización con los puntos reales del item y recuperar tras recarga.                                                                                                                    |
 | E04     | `matching`          | **Implementado localmente.** Resolver asociaciones sin red, comprobar una única respuesta completa, aplicar scoring todo-o-nada, descontar una vida por fallo en Survival y mantener la solución fuera del payload público.                                                                                                                                          |
-| E05     | `queens`            | **Implementado localmente.** Persistir cada colocación/retirada como evento privado; calcular conflictos y penalización del 5% server-side, recuperar el tablero sin marcas X y cerrar automáticamente al resolver las cinco regiones. La solución solo aparece en la revisión autorizada.                                                                                                          |
+| E05     | `queens`            | **Implementado localmente.** Editar coronas localmente, guardar checkpoints server-side y validar automáticamente el tablero completo al alcanzar cinco coronas; registrar validaciones fallidas con penalización del 5%, recuperar coronas sin marcas X y cerrar automáticamente al resolver. La solución solo aparece en la revisión autorizada. |
 | S05     | `alphabet`          | **Implementado localmente.** Publicar desafíos Alphabet con referencias `short-text`, reloj global, vueltas y pases; persistir intervalos y respuestas mediante los comandos existentes, reconstruir progreso/timeout server-side y exponer soluciones solo en revisión terminal autorizada.                                                                                                        |
 | E06     | `word-search`       | **Implementado localmente.** Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos, recuperar desde eventos, cerrar al encontrar todos los objetivos y evaluar crédito parcial sin penalización. La solución solo aparece en revisión terminal autorizada.                                                                                                             |
 | E07     | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                                                                                                                                                   |
@@ -975,7 +975,7 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
 - **Estado 2026-09-27:** implementada y verificada sobre Supabase local. La revisión canónica es
-  `20260927103813_matching_timeout_validation`; el esquema reconstruye 52 archivos declarativos desde la migración
+  `20260927140000_queens_board_validation`; el esquema reconstruye 52 archivos declarativos desde la migración
   base consolidada. La CLI tiene staging vinculado, pero la aplicación y validación contra
   staging/producción siguen pendientes.
 - **Objetivo / CU:** CU-25.

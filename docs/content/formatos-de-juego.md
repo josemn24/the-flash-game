@@ -441,8 +441,8 @@ O también:
 
 El jugador coloca cinco coronas en una cuadrícula 5 × 5 con una corona por fila, columna y región, sin que dos coronas se toquen.
 
-- **Interacción actual:** herramientas explícitas para colocar coronas o marcas X, edición reversible, control táctil y por teclado, conflictos anunciados inmediatamente y envío automático al resolver.
-- **Puntuación actual:** resolución binaria ajustada por velocidad; cada colocación que crea un conflicto resta un 5 % de los puntos base hasta un mínimo de cero. Corregir coronas y editar marcas no penaliza.
+- **Interacción actual:** herramientas explícitas para colocar coronas o marcas X, edición reversible, control táctil y por teclado, conflictos anunciados inmediatamente y validación automática al colocar las cinco coronas. Las coronas se guardan localmente y mediante checkpoints no bloqueantes.
+- **Puntuación actual:** resolución binaria ajustada por velocidad; cada validación completa incorrecta resta un 5 % de los puntos base hasta un mínimo de cero. Los conflictos intermedios y editar marcas no penalizan.
 - **Accesibilidad:** las regiones combinan color, patrón y bordes; cada celda comunica fila, columna, región, estado y conflictos.
 - **Uso actual:** tipo nativo y ejemplo jugable curado en la biblioteca. Todavía no se publica en desafíos y no incluye generador ni pistas.
 

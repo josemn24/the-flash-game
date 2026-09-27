@@ -304,11 +304,12 @@
 
 - Queens usa un tablero de 5×5 con cinco regiones, solución válida y coronas precolocadas congeladas
   en la versión publicada.
-- Cada colocación o retirada es un evento privado idempotente. El servidor reconstruye el tablero,
-  calcula conflictos y aplica una penalización del 5% de los puntos del item cuando una colocación
-  conflictiva es aceptada; retirar una corona y usar marcas X no penaliza.
-- Las marcas X pertenecen únicamente al estado de interfaz y se pierden al recuperar la interacción.
-  El tablero y el número de penalizaciones se reconstruyen siempre desde eventos persistidos.
+- Las coronas se editan localmente y se guardan mediante checkpoints server-side sin bloquear la UI.
+  Al alcanzar cinco coronas se envía automáticamente el tablero completo a un comando idempotente de
+  validación; una respuesta incorrecta deja la interacción abierta y permite continuar editando.
+- Cada validación completa incorrecta registra un evento privado y aplica una penalización del 5% de
+  los puntos del item; las marcas X pertenecen únicamente al estado de interfaz y se pierden al
+  recuperar la interacción.
 - Completar el tablero válido crea la recepción terminal una sola vez. La solución no forma parte del
   payload de `prepare`, del progreso ni de los comandos del navegador y solo se expone en evaluación
   o revisión autorizada.

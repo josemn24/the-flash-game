@@ -201,7 +201,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado documentado a 2026-09-25:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260927103813_matching_timeout_validation`.
+  `20260927140000_queens_board_validation`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.
