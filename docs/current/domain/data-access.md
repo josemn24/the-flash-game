@@ -176,9 +176,9 @@ navegador y una sola recepción genérica valida todas las asociaciones contra l
 una respuesta completa con cualquier error es incorrecta y no existe puntuación parcial ni penalización
 por pareja. `correctMatchId` y la solución completa aparecen únicamente en la revisión autorizada.
 
-E05 entrega el tablero 5×5, las regiones, las coronas precolocadas y un progreso seguro. El navegador
+E05 entrega el tablero `N×N` (entre 4×4 y 8×8), las regiones, las coronas precolocadas y un progreso seguro. El navegador
 edita las coronas localmente y guarda checkpoints mediante `private.save_queens_draft(jsonb)` sin
-crear resultados ni penalizaciones. Al alcanzar cinco coronas, el tablero completo pasa por
+crear resultados ni penalizaciones. Al alcanzar `N` coronas, el tablero completo pasa por
 `private.submit_queens_answer(jsonb)`, que bloquea el intento, reconstruye las métricas, registra una
 validación completa y solo crea una recepción terminal si la solución es correcta. Cada validación
 incorrecta aplica un 5% de penalización; las marcas X siguen siendo estado local y se descartan al

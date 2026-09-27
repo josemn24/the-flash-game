@@ -1461,9 +1461,9 @@ export const QUESTION_FORMAT_CATALOG = {
     name: "Queens",
     shortName: "Queens",
     summary:
-      "Colocar cinco coronas sin repetir fila, columna o región y sin que dos coronas se toquen.",
+      "Colocar N coronas en tableros cuadrados de 4 × 4 a 8 × 8 sin repetir fila, columna o región y sin que dos coronas se toquen.",
     description: [
-      "El tablero se divide en cinco regiones. El jugador coloca exactamente una corona en cada fila, columna y región mientras descarta candidatos con marcas X opcionales.",
+      "El tablero se divide en N regiones. El jugador coloca exactamente una corona en cada fila, columna y región mientras descarta candidatos con marcas X opcionales.",
       "Las colocaciones conflictivas se permiten y se señalan al instante. Resolver envía el tablero automáticamente; corregir o editar marcas no tiene coste.",
     ],
     recommendations: [
@@ -1484,7 +1484,7 @@ export const QUESTION_FORMAT_CATALOG = {
       "Resolver el tablero lo envía automáticamente",
     ],
     authoringTips: [
-      "Usa una cuadrícula 5 × 5 con cinco regiones ortogonalmente conectadas",
+      "Usa una cuadrícula cuadrada de 4 × 4 a 8 × 8 con N regiones ortogonalmente conectadas",
       "Comprueba por software que la solución sea legal y única",
       "Empieza con tableros curados y mide tiempos reales antes de aumentar el tamaño",
       "Evita regiones o soluciones que conviertan el reto en ensayo y error",
@@ -1495,7 +1495,7 @@ export const QUESTION_FORMAT_CATALOG = {
       "Ofrece herramientas explícitas, foco móvil y control completo por teclado",
       "Anuncia cada colocación y conflicto sin mover el foco",
     ],
-    mediaSupport: ["Cuadrícula de regiones 5 × 5", "Coronas SVG y marcas X"],
+    mediaSupport: ["Cuadrícula de regiones N × N (4 × 4 a 8 × 8)", "Coronas SVG y marcas X"],
     timing: {
       recommendedSeconds: "45–75 s",
       notes:

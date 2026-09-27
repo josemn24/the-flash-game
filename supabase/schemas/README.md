@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 52 archivos y su revisión canónica es
-`20260927140000_queens_board_validation`. La migración incremental activa se ha generado desde esos archivos
+Estado: el esquema declarativo vigente se compone de 53 archivos y su revisión canónica es
+`20260927170000_queens_dynamic_grid`. La migración incremental activa se ha generado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -168,7 +168,8 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql)               | Validación interna de assets de preguntas listos para publicación/uso.                                                                                          |
 | [68_competitive_question_formats.sql](68_competitive_question_formats.sql)   | Allowlist y validadores de formatos competitivos compartidos entre Flash, Supervivencia y Pirámide.                              |
 | [98_question_asset_commands.sql](98_question_asset_commands.sql)             | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas.                                                                           |
-| [99_queens.sql](99_queens.sql)                                               | Eventos privados de Queens, reconstrucción segura del tablero y comando transaccional de colocación/retirada.                                                   |
+| [99_queens.sql](99_queens.sql)                                               | Eventos privados históricos de Queens, reconstrucción segura del tablero y comando transaccional legado 5×5.                                                   |
+| [99_queens_dynamic_grid.sql](99_queens_dynamic_grid.sql)                     | Validación, progreso y comandos de Queens para tableros cuadrados dinámicos de 4×4 a 8×8.                                                                       |
 | [99_word_search.sql](99_word_search.sql)                                     | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side.                                                              |
 | [99_escape.sql](99_escape.sql)                                               | Validación inmutable de configuración y solución privada de Escape para publicación editorial.                                                                  |
 | [99_zip.sql](99_zip.sql)                                                     | Validación inmutable del contenido de Zip usado al publicar preguntas.                                                                                          |
@@ -339,7 +340,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (Matching final, 2026-09-27): `check-supabase-schema` cargó **52 archivos declarativos**
+Última validación local completa registrada (Queens dinámico, 2026-09-27): `check-supabase-schema` cargó **53 archivos declarativos**
 y el inventario de seguridad; pasan las suites existentes y S20 (21 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,

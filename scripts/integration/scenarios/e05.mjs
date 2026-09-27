@@ -8,10 +8,10 @@ export const scenario = {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: fixture.data.publicationId,
     });
-    assert(playable.length === 2, "Alice recibe las dos preguntas de E05");
+    assert(playable.length === 3, "Alice recibe las tres preguntas de E05");
     assert(
-      playable.map((row) => row.question_type).join(",") === "multiple-choice,queens",
-      "E05 publica Queens en segunda posición",
+      playable.map((row) => row.question_type).join(",") === "multiple-choice,queens,queens",
+      "E05 publica Queens dinámico en segunda y tercera posición",
     );
     assert(
       !JSON.stringify(playable).includes('"solution"'),

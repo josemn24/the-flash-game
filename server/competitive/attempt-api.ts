@@ -125,8 +125,8 @@ export function requireQueens(body: JsonObject) {
   const value = body.queens;
   if (
     !Array.isArray(value) ||
-    value.length > 25 ||
-    !value.every((cell) => Number.isSafeInteger(cell) && cell >= 0 && cell < 25) ||
+    value.length > 64 ||
+    !value.every((cell) => Number.isSafeInteger(cell) && cell >= 0 && cell < 64) ||
     new Set(value).size !== value.length
   ) {
     throw new AttemptApiError("invalid_queens_answer", 400);

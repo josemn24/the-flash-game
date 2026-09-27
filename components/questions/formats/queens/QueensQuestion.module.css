@@ -107,6 +107,25 @@
   .region4::before {
     background-image: repeating-linear-gradient(90deg, transparent 0 8px, #765d18 8px 9px);
   }
+  .region5 {
+    background: #f3c6a8;
+  }
+  .region5::before {
+    background-image: repeating-linear-gradient(135deg, transparent 0 7px, #7a4422 7px 8px);
+  }
+  .region6 {
+    background: #b9b4ef;
+  }
+  .region6::before {
+    background-image: radial-gradient(circle, #443b8d 1px, transparent 1.5px);
+    background-size: 10px 10px;
+  }
+  .region7 {
+    background: #a7e3d6;
+  }
+  .region7::before {
+    background-image: repeating-linear-gradient(45deg, transparent 0 8px, #216b5c 8px 9px);
+  }
   .cell:hover:not(:disabled) {
     filter: brightness(1.08);
   }

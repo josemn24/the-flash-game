@@ -452,7 +452,7 @@ function QueensInput({
     <QueensQuestion
       key={question.id}
       question={question}
-      initialAnswer={isQueensAnswer(initialAnswer) ? initialAnswer : undefined}
+      initialAnswer={isQueensAnswer(initialAnswer, question.grid) ? initialAnswer : undefined}
       locked={locked}
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}

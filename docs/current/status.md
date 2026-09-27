@@ -104,9 +104,9 @@ rutas competitivas. Consulta
   contra pistas futuras.
   E04 añade mezclas `multiple-choice` + `matching`, resolución local de correspondencias, una única
   comprobación final server-side, scoring binario y rechazo de mapas inválidos.
-  E05 añade mezclas `multiple-choice` + `queens`, tablero 5×5, coronas precolocadas, eventos de
-  colocación/retirada, penalización del 5% por conflicto, recuperación sin marcas X y resolución
-  automática con evaluación server-side.
+  E05 añade mezclas `multiple-choice` + `queens`, tableros 4×4 a 8×8, coronas precolocadas, validaciones
+  completas persistidas, penalización del 5% por validación incorrecta, recuperación sin marcas X y resolución
+  automática con evaluación server-side; los eventos de colocación legacy 5×5 se conservan para histórico.
   S05 añade Alphabet competitivo persistido: referencias `short-text` publicadas, reloj global,
   vueltas, pases, recuperación de la letra activa y revisión terminal sin solución durante el juego.
   F01/F02/F06/F07/F08/F12 permiten publicar mezclas con `true-false`, `odd-one-out`, `ordering`,
@@ -201,7 +201,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado documentado a 2026-09-25:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260927140000_queens_board_validation`.
+  `20260927170000_queens_dynamic_grid`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.

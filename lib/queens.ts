@@ -1,9 +1,8 @@
-import type { QueensAnswer, QueensQuestion } from "@/types/game";
+import type { QueensAnswer, QueensBoardSize, QueensGrid, QueensQuestion } from "@/types/question";
 
-export const QUEENS_ROWS = 5;
-export const QUEENS_COLUMNS = 5;
-export const QUEENS_CELL_COUNT = QUEENS_ROWS * QUEENS_COLUMNS;
-export const QUEENS_REGION_COUNT = 5;
+export const QUEENS_MIN_SIZE = 4;
+export const QUEENS_MAX_SIZE = 8;
+export const QUEENS_MAX_CELL_COUNT = QUEENS_MAX_SIZE * QUEENS_MAX_SIZE;
 
 export type QueensConflictType = "row" | "column" | "region" | "contact";
 
@@ -19,20 +18,42 @@ export type QueensMetrics = {
 };
 
 export type QueensDraftQuestion = {
-  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly grid: QueensGrid;
   readonly regions: readonly number[];
   readonly prefilledQueens?: readonly number[];
 };
 
-function isCell(cell: number) {
-  return Number.isInteger(cell) && cell >= 0 && cell < QUEENS_CELL_COUNT;
+export function isQueensBoardSize(value: unknown): value is QueensGrid["rows"] {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= QUEENS_MIN_SIZE &&
+    value <= QUEENS_MAX_SIZE
+  );
 }
 
-function uniqueCells(cells: number[]) {
-  return cells.every(isCell) && new Set(cells).size === cells.length;
+export function queensGrid(size: QueensBoardSize): QueensGrid {
+  return { rows: size, columns: size } as QueensGrid;
 }
 
-function regionIsConnected(regions: number[], region: number) {
+export function queensCellCount(grid: QueensGrid) {
+  return grid.rows * grid.columns;
+}
+
+function isCell(cell: number, grid: QueensGrid) {
+  return Number.isInteger(cell) && cell >= 0 && cell < queensCellCount(grid);
+}
+
+function uniqueCells(cells: number[], grid?: QueensGrid) {
+  const effectiveGrid = grid ?? { rows: QUEENS_MAX_SIZE, columns: QUEENS_MAX_SIZE };
+  return cells.every((cell) => isCell(cell, effectiveGrid)) && new Set(cells).size === cells.length;
+}
+
+function isSquareGrid(grid: QueensGrid) {
+  return grid.rows === grid.columns && isQueensBoardSize(grid.rows);
+}
+
+function regionIsConnected(regions: readonly number[], region: number, size: number) {
   const cells = regions.flatMap((value, cell) => (value === region ? [cell] : []));
   if (cells.length === 0) return false;
 
@@ -40,13 +61,13 @@ function regionIsConnected(regions: number[], region: number) {
   const queue = [cells[0]];
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
     const cell = queue[cursor];
-    const row = Math.floor(cell / QUEENS_COLUMNS);
-    const column = cell % QUEENS_COLUMNS;
+    const row = Math.floor(cell / size);
+    const column = cell % size;
     const neighbors = [
-      row > 0 ? cell - QUEENS_COLUMNS : -1,
-      row < QUEENS_ROWS - 1 ? cell + QUEENS_COLUMNS : -1,
-      column > 0 ? cell - 1 : -1,
-      column < QUEENS_COLUMNS - 1 ? cell + 1 : -1,
+      row > 0 ? (row - 1) * size + column : -1,
+      row < size - 1 ? (row + 1) * size + column : -1,
+      column > 0 ? row * size + column - 1 : -1,
+      column < size - 1 ? row * size + column + 1 : -1,
     ];
     for (const neighbor of neighbors) {
       if (remaining.delete(neighbor)) queue.push(neighbor);
@@ -57,27 +78,28 @@ function regionIsConnected(regions: number[], region: number) {
 
 function hasValidShape(question: QueensQuestion) {
   const prefilledQueens = question.prefilledQueens ?? [];
+  const grid = question.grid;
+  if (!isSquareGrid(grid)) return false;
+  const size = grid.rows;
+  const cellCount = queensCellCount(grid);
   return (
-    question.grid.rows === QUEENS_ROWS &&
-    question.grid.columns === QUEENS_COLUMNS &&
-    question.regions.length === QUEENS_CELL_COUNT &&
-    question.regions.every(
-      (region) => Number.isInteger(region) && region >= 0 && region < QUEENS_REGION_COUNT,
-    ) &&
-    Array.from({ length: QUEENS_REGION_COUNT }, (_, region) =>
-      regionIsConnected(question.regions, region),
+    question.regions.length === cellCount &&
+    question.regions.every((region) => Number.isInteger(region) && region >= 0 && region < size) &&
+    Array.from({ length: size }, (_, region) =>
+      regionIsConnected(question.regions, region, size),
     ).every(Boolean) &&
-    uniqueCells(prefilledQueens) &&
+    uniqueCells(prefilledQueens, grid) &&
     prefilledQueens.every((cell) => question.solution.includes(cell)) &&
-    question.solution.length === QUEENS_ROWS &&
-    uniqueCells(question.solution)
+    question.solution.length === size &&
+    uniqueCells(question.solution, grid)
   );
 }
 
 export function getQueensConflicts(
-  question: { readonly regions: readonly number[] },
+  question: { readonly grid: QueensGrid; readonly regions: readonly number[] },
   queens: number[],
 ) {
+  const size = question.grid.rows;
   const conflicts = new Map<number, Set<QueensConflictType>>();
   const add = (cell: number, type: QueensConflictType) => {
     const types = conflicts.get(cell) ?? new Set<QueensConflictType>();
@@ -87,12 +109,12 @@ export function getQueensConflicts(
 
   for (let leftIndex = 0; leftIndex < queens.length; leftIndex += 1) {
     const left = queens[leftIndex];
-    const leftRow = Math.floor(left / QUEENS_COLUMNS);
-    const leftColumn = left % QUEENS_COLUMNS;
+    const leftRow = Math.floor(left / size);
+    const leftColumn = left % size;
     for (let rightIndex = leftIndex + 1; rightIndex < queens.length; rightIndex += 1) {
       const right = queens[rightIndex];
-      const rightRow = Math.floor(right / QUEENS_COLUMNS);
-      const rightColumn = right % QUEENS_COLUMNS;
+      const rightRow = Math.floor(right / size);
+      const rightColumn = right % size;
       if (leftRow === rightRow) {
         add(left, "row");
         add(right, "row");
@@ -114,89 +136,70 @@ export function getQueensConflicts(
   return conflicts;
 }
 
+function metricsFor(question: QueensDraftQuestion, queens: readonly number[], marksUsed: number) {
+  const size = question.grid.rows;
+  const conflicts = getQueensConflicts(question, [...queens]);
+  const countCompleted = (groupFor: (cell: number) => number) => {
+    const counts = new Map<number, number>();
+    queens.forEach((cell) => counts.set(groupFor(cell), (counts.get(groupFor(cell)) ?? 0) + 1));
+    return Array.from({ length: size }, (_, group) => counts.get(group) === 1).filter(Boolean)
+      .length;
+  };
+  const completedRows = countCompleted((cell) => Math.floor(cell / size));
+  const completedColumns = countCompleted((cell) => cell % size);
+  const completedRegions = countCompleted((cell) => question.regions[cell]);
+  return {
+    valid: uniqueCells([...queens], question.grid),
+    placedQueens: queens.length,
+    completedRows,
+    completedColumns,
+    completedRegions,
+    conflictingQueens: conflicts.size,
+    marksUsed,
+    solved:
+      queens.length === size &&
+      completedRows === size &&
+      completedColumns === size &&
+      completedRegions === size &&
+      conflicts.size === 0,
+  } satisfies QueensMetrics;
+}
+
 export function calculateQueensDraftMetrics(
   question: QueensDraftQuestion,
   queens: readonly number[],
 ): Omit<QueensMetrics, "marksUsed"> {
-  const answer = { queens: [...queens], marks: [] } satisfies QueensAnswer;
-  const conflicts = getQueensConflicts(question, answer.queens);
-  const countCompleted = (groupFor: (cell: number) => number) => {
-    const counts = new Map<number, number>();
-    answer.queens.forEach((cell) =>
-      counts.set(groupFor(cell), (counts.get(groupFor(cell)) ?? 0) + 1),
-    );
-    return Array.from(
-      { length: QUEENS_REGION_COUNT },
-      (_, group) => counts.get(group) === 1,
-    ).filter(Boolean).length;
-  };
-  const completedRows = countCompleted((cell) => Math.floor(cell / QUEENS_COLUMNS));
-  const completedColumns = countCompleted((cell) => cell % QUEENS_COLUMNS);
-  const completedRegions = countCompleted((cell) => question.regions[cell]);
+  const metrics = metricsFor(question, queens, 0);
   return {
-    valid: uniqueCells(answer.queens),
-    placedQueens: answer.queens.length,
-    completedRows,
-    completedColumns,
-    completedRegions,
-    conflictingQueens: conflicts.size,
-    solved:
-      answer.queens.length === QUEENS_ROWS &&
-      completedRows === QUEENS_ROWS &&
-      completedColumns === QUEENS_COLUMNS &&
-      completedRegions === QUEENS_REGION_COUNT &&
-      conflicts.size === 0,
+    valid: metrics.valid,
+    placedQueens: metrics.placedQueens,
+    completedRows: metrics.completedRows,
+    completedColumns: metrics.completedColumns,
+    completedRegions: metrics.completedRegions,
+    conflictingQueens: metrics.conflictingQueens,
+    solved: metrics.solved,
   };
 }
 
 function rawMetrics(question: QueensQuestion, answer: QueensAnswer): QueensMetrics {
-  const conflicts = getQueensConflicts(question, answer.queens);
-  const countCompleted = (groupFor: (cell: number) => number) => {
-    const counts = new Map<number, number>();
-    answer.queens.forEach((cell) =>
-      counts.set(groupFor(cell), (counts.get(groupFor(cell)) ?? 0) + 1),
-    );
-    return Array.from(
-      { length: QUEENS_REGION_COUNT },
-      (_, group) => counts.get(group) === 1,
-    ).filter(Boolean).length;
-  };
-  const completedRows = countCompleted((cell) => Math.floor(cell / QUEENS_COLUMNS));
-  const completedColumns = countCompleted((cell) => cell % QUEENS_COLUMNS);
-  const completedRegions = countCompleted((cell) => question.regions[cell]);
-  const solved =
-    answer.queens.length === QUEENS_ROWS &&
-    completedRows === QUEENS_ROWS &&
-    completedColumns === QUEENS_COLUMNS &&
-    completedRegions === QUEENS_REGION_COUNT &&
-    conflicts.size === 0;
-
-  return {
-    valid: true,
-    placedQueens: answer.queens.length,
-    completedRows,
-    completedColumns,
-    completedRegions,
-    conflictingQueens: conflicts.size,
-    marksUsed: answer.marks.length,
-    solved,
-  };
+  return metricsFor(question, answer.queens, answer.marks.length);
 }
 
 export function countQueensSolutions(question: QueensQuestion, limit = 2) {
   if (!hasValidShape(question) || limit <= 0) return 0;
+  const size = question.grid.rows;
   const usedColumns = new Set<number>();
   const usedRegions = new Set<number>();
   let solutions = 0;
 
   const search = (row: number, previousColumn: number | null) => {
     if (solutions >= limit) return;
-    if (row === QUEENS_ROWS) {
+    if (row === size) {
       solutions += 1;
       return;
     }
-    for (let column = 0; column < QUEENS_COLUMNS; column += 1) {
-      const cell = row * QUEENS_COLUMNS + column;
+    for (let column = 0; column < size; column += 1) {
+      const cell = row * size + column;
       const region = question.regions[cell];
       if (
         usedColumns.has(column) ||
@@ -224,20 +227,24 @@ export function isValidQueensConfiguration(question: QueensQuestion) {
   return solutionMetrics.solved && countQueensSolutions(question) === 1;
 }
 
-export function isQueensAnswer(answer: unknown): answer is QueensAnswer {
+export function isQueensAnswer(answer: unknown, grid?: QueensGrid): answer is QueensAnswer {
   if (typeof answer !== "object" || answer === null || Array.isArray(answer)) return false;
   const candidate = answer as { queens?: unknown; marks?: unknown };
   if (!Array.isArray(candidate.queens) || !Array.isArray(candidate.marks)) return false;
   const queens = candidate.queens;
   const marks = candidate.marks;
-  return uniqueCells(queens) && uniqueCells(marks) && queens.every((cell) => !marks.includes(cell));
+  return (
+    uniqueCells(queens, grid) &&
+    uniqueCells(marks, grid) &&
+    queens.every((cell) => !marks.includes(cell))
+  );
 }
 
 export function calculateQueensMetrics(
   question: QueensQuestion,
   answer: QueensAnswer,
 ): QueensMetrics {
-  if (!isValidQueensConfiguration(question) || !isQueensAnswer(answer)) {
+  if (!isValidQueensConfiguration(question) || !isQueensAnswer(answer, question.grid)) {
     return {
       valid: false,
       placedQueens: 0,

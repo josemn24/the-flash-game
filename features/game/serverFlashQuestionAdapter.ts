@@ -38,6 +38,7 @@ import type {
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
 import type { QuestionIllustration, QuestionMedia } from "@/types/question";
+import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 import {
   isValidEstimationAnswer,
   isValidEstimationConfiguration,
@@ -450,6 +451,11 @@ export function questionFromPayload(
     const grid = value.grid;
     const regions = value.regions;
     const prefilledQueens = value.prefilledQueens;
+    const gridRecord = grid && typeof grid === "object" && !Array.isArray(grid) ? grid : null;
+    const rows = gridRecord && (gridRecord as Record<string, unknown>).rows;
+    const columns = gridRecord && (gridRecord as Record<string, unknown>).columns;
+    const boardGrid = isQueensBoardSize(rows) && rows === columns ? queensGrid(rows) : null;
+    const cellCount = boardGrid ? queensCellCount(boardGrid) : 0;
     const rawProgress =
       progress && typeof progress === "object" && !Array.isArray(progress)
         ? (progress as Record<string, unknown>)
@@ -457,7 +463,7 @@ export function questionFromPayload(
     const validCells = (candidate: unknown): candidate is number[] =>
       Array.isArray(candidate) &&
       candidate.every(
-        (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < 25,
+        (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < cellCount,
       ) &&
       new Set(candidate).size === candidate.length;
     const queens = validCells(rawProgress.queens)
@@ -479,12 +485,12 @@ export function questionFromPayload(
       !grid ||
       typeof grid !== "object" ||
       Array.isArray(grid) ||
-      (grid as Record<string, unknown>).rows !== 5 ||
-      (grid as Record<string, unknown>).columns !== 5 ||
+      !boardGrid ||
       !Array.isArray(regions) ||
-      regions.length !== 25 ||
+      regions.length !== cellCount ||
       !regions.every(
-        (region) => Number.isSafeInteger(region) && Number(region) >= 0 && Number(region) < 5,
+        (region) =>
+          Number.isSafeInteger(region) && Number(region) >= 0 && Number(region) < boardGrid.rows,
       ) ||
       !validCells(prefilledQueens) ||
       !validCells(queens) ||
@@ -496,16 +502,16 @@ export function questionFromPayload(
         safeProgress.completedRegions,
         safeProgress.conflictingQueens,
       ].every((metric) => Number.isSafeInteger(metric) && metric >= 0) ||
-      safeProgress.completedRows > 5 ||
-      safeProgress.completedColumns > 5 ||
-      safeProgress.completedRegions > 5
+      safeProgress.completedRows > boardGrid.rows ||
+      safeProgress.completedColumns > boardGrid.columns ||
+      safeProgress.completedRegions > boardGrid.rows
     ) {
       throw new ServerFlashQuestionError();
     }
     return {
       ...base,
       type: "queens",
-      grid: { rows: 5, columns: 5 },
+      grid: boardGrid,
       regions,
       prefilledQueens,
       progress: safeProgress,
@@ -983,7 +989,9 @@ export function questionFromPayload(
           (item.color === undefined || typeof item.color === "string")
         );
       });
-    const pairIds = validPairs ? (pairs as Array<Record<string, unknown>>).map((pair) => pair.id) : [];
+    const pairIds = validPairs
+      ? (pairs as Array<Record<string, unknown>>).map((pair) => pair.id)
+      : [];
     const endpoints = validPairs
       ? (pairs as Array<Record<string, unknown>>).flatMap((pair) => pair.endpoints as number[])
       : [];
@@ -1316,9 +1324,11 @@ export function questionWithSolution(
   }
   if (question.type === "queens") {
     const solutionCells = solution.solution;
+    const cellCount = question.grid.rows * question.grid.columns;
     if (
       !Array.isArray(solutionCells) ||
-      !solutionCells.every((cell) => Number.isSafeInteger(cell) && cell >= 0 && cell < 25)
+      solutionCells.length !== question.grid.rows ||
+      !solutionCells.every((cell) => Number.isSafeInteger(cell) && cell >= 0 && cell < cellCount)
     ) {
       throw new ServerFlashQuestionError();
     }

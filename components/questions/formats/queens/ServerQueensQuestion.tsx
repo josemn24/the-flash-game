@@ -8,7 +8,7 @@ import type {
   ServerQueensProgress,
   ServerQueensQuestion as ServerQuestion,
 } from "@/types/gameplay/challenge";
-import { getQueensConflicts, QUEENS_COLUMNS, QUEENS_ROWS } from "@/lib/queens";
+import { getQueensConflicts } from "@/lib/queens";
 import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";
@@ -44,11 +44,13 @@ export function ServerQueensQuestion({
     [draftQueens, question],
   );
   const disabled = locked || validationState === "submitting";
+  const targetQueens = question.grid.rows;
 
   const publishQueens = (nextQueens: number[]) => {
     setDraftQueens(nextQueens);
     onDraft(nextQueens);
-    if (draftQueens.length < 5 && nextQueens.length === 5) onValidate(nextQueens);
+    if (draftQueens.length < targetQueens && nextQueens.length === targetQueens)
+      onValidate(nextQueens);
   };
 
   const applyAction = (cell: number) => {
@@ -78,16 +80,16 @@ export function ServerQueensQuestion({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, cell: number) => {
-    const row = Math.floor(cell / QUEENS_COLUMNS);
-    const column = cell % QUEENS_COLUMNS;
+    const row = Math.floor(cell / question.grid.columns);
+    const column = cell % question.grid.columns;
     const nextCell =
       event.key === "ArrowUp" && row > 0
-        ? cell - QUEENS_COLUMNS
-        : event.key === "ArrowDown" && row < QUEENS_ROWS - 1
-          ? cell + QUEENS_COLUMNS
+        ? cell - question.grid.columns
+        : event.key === "ArrowDown" && row < question.grid.rows - 1
+          ? cell + question.grid.columns
           : event.key === "ArrowLeft" && column > 0
             ? cell - 1
-            : event.key === "ArrowRight" && column < QUEENS_COLUMNS - 1
+            : event.key === "ArrowRight" && column < question.grid.columns - 1
               ? cell + 1
               : null;
     if (nextCell !== null) {
@@ -107,7 +109,7 @@ export function ServerQueensQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Queens, puzzle de cinco coronas">
+    <section className={styles.root} aria-label={`Queens, puzzle de ${targetQueens} coronas`}>
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button
           type="button"
@@ -131,7 +133,7 @@ export function ServerQueensQuestion({
       <QueensBoard
         question={question}
         answer={{ queens: [...draftQueens], marks }}
-        label="Tablero Queens de cinco por cinco"
+        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
         focusedCell={focusedCell}
         cellRefs={cellRefs}
         onCellAction={applyAction}
@@ -140,12 +142,14 @@ export function ServerQueensQuestion({
         disabled={disabled}
       />
       <div className={styles.progress} aria-live="polite">
-        <strong>{draftQueens.length}/5 coronas</strong>
+        <strong>
+          {draftQueens.length}/{targetQueens} coronas
+        </strong>
         <span>{conflicts.size ? `${conflicts.size} en conflicto` : "Sin conflictos"}</span>
       </div>
       <p className={styles.instructions}>
         La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
-        toquen. El tablero se valida automáticamente al colocar las cinco coronas.
+        toquen. El tablero se valida automáticamente al colocar las {targetQueens} coronas.
       </p>
       <ServerOperationStatus
         state={validationState}

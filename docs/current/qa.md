@@ -15,8 +15,8 @@ Transferencia de propiedad, bloqueo/desbloqueo e invitaciones completas siguen p
 Narrativa, E07–E09, abandono automático, takeover, `results_locked_at`, pruebas fantasma y anonimización
 siguen pendientes; S20 ya cubre las correcciones administrativas de resultados.
 
-El esquema declarativo vigente contiene 52 archivos y la revisión canónica es
-`20260927140000_queens_board_validation`. El historial local incluye además la revisión declarativa de S17;
+El esquema declarativo vigente contiene 53 archivos y la revisión canónica es
+`20260927170000_queens_dynamic_grid`. El historial local incluye además la revisión declarativa de S17;
 hay 30 tablas, una vista interna y un inventario de seguridad registrado. La CLI local tiene un proyecto
 de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 

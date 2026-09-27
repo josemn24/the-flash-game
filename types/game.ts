@@ -57,6 +57,8 @@ export type {
   MiniNonogramAnswer,
   MiniNonogramQuestion,
   QueensAnswer,
+  QueensBoardSize,
+  QueensGrid,
   QueensQuestion,
   PipesAnswer,
   PipesQuestion,

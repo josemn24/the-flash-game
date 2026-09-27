@@ -596,7 +596,9 @@ export function useServerFlashSession({
       setQueensStatusVisible(true);
       setQueensError(
         error instanceof CompetitiveCommandError && error.code === "queens_answer_incomplete"
-          ? "Completa las cinco coronas para validar el tablero."
+          ? question?.type === "queens"
+            ? `Completa las ${question.grid.rows} coronas para validar el tablero.`
+            : "Completa el tablero para validar la respuesta."
           : "No hemos podido validar el tablero. Puedes reintentarlo.",
       );
       setBusy(false);

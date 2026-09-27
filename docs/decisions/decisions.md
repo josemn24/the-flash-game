@@ -302,10 +302,10 @@
 
 ### 10.1 Queens competitivo
 
-- Queens usa un tablero de 5×5 con cinco regiones, solución válida y coronas precolocadas congeladas
+- Queens usa tableros cuadrados de 4×4 a 8×8, con `N` regiones, solución válida y coronas precolocadas congeladas
   en la versión publicada.
 - Las coronas se editan localmente y se guardan mediante checkpoints server-side sin bloquear la UI.
-  Al alcanzar cinco coronas se envía automáticamente el tablero completo a un comando idempotente de
+  Al alcanzar `N` coronas se envía automáticamente el tablero completo a un comando idempotente de
   validación; una respuesta incorrecta deja la interacción abierta y permite continuar editando.
 - Cada validación completa incorrecta registra un evento privado y aplica una penalización del 5% de
   los puntos del item; las marcas X pertenecen únicamente al estado de interfaz y se pierden al

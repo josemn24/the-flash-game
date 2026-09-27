@@ -7,6 +7,7 @@ import type {
   AnagramTile,
   Question,
   QuestionMedia,
+  QueensGrid,
   ZipCheckpoint,
 } from "@/types/question";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
@@ -497,7 +498,7 @@ export type ServerQueensProgress = {
 
 export type ServerQueensQuestion = ServerFlashQuestionBase & {
   readonly type: "queens";
-  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly grid: QueensGrid;
   readonly regions: readonly number[];
   readonly prefilledQueens: readonly number[];
   readonly progress: ServerQueensProgress;

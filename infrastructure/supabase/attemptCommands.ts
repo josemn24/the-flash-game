@@ -74,6 +74,7 @@ import {
   isValidWordHashtagPublicConfiguration,
 } from "@/lib/wordHashtag";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
+import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -892,25 +893,35 @@ function asQuestion(
     const regions = publicPayload.regions;
     const prefilledQueens = publicPayload.prefilledQueens;
     const solution = solutionPayload.solution;
+    const gridRecord = grid && typeof grid === "object" && !Array.isArray(grid) ? grid : null;
+    const rows = gridRecord && (gridRecord as Record<string, unknown>).rows;
+    const columns = gridRecord && (gridRecord as Record<string, unknown>).columns;
+    const boardGrid = isQueensBoardSize(rows) && rows === columns ? queensGrid(rows) : null;
+    const cellCount = boardGrid ? queensCellCount(boardGrid) : 0;
     if (
       !grid ||
       typeof grid !== "object" ||
       Array.isArray(grid) ||
-      (grid as Record<string, unknown>).rows !== 5 ||
-      (grid as Record<string, unknown>).columns !== 5 ||
+      !boardGrid ||
       !Array.isArray(regions) ||
-      regions.length !== 25 ||
+      regions.length !== cellCount ||
       !regions.every(
         (region) =>
-          typeof region === "number" && Number.isSafeInteger(region) && region >= 0 && region < 5,
+          typeof region === "number" &&
+          Number.isSafeInteger(region) &&
+          region >= 0 &&
+          region < boardGrid.rows,
       ) ||
       !Array.isArray(prefilledQueens) ||
       !prefilledQueens.every(
-        (cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25,
+        (cell) =>
+          typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < cellCount,
       ) ||
       !Array.isArray(solution) ||
+      solution.length !== boardGrid.rows ||
       !solution.every(
-        (cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25,
+        (cell) =>
+          typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < cellCount,
       ) ||
       new Set(solution).size !== solution.length
     ) {
@@ -919,7 +930,7 @@ function asQuestion(
     return {
       ...base,
       type: "queens",
-      grid: { rows: 5, columns: 5 },
+      grid: boardGrid,
       regions,
       prefilledQueens,
       solution,
