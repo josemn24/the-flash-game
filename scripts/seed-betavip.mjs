@@ -648,7 +648,7 @@ export async function setupBetaVipDataset({ dependencies = {} } = {}) {
     contentType: "image/png",
   };
   try {
-    await uploadAsset(config, { ...storageObject, upsert: true });
+    await uploadAsset(config, { ...storageObject, upsert: false });
     await runSql(
       buildBetaVipDomainSql({
         tabarniaFixture,

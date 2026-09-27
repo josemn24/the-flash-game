@@ -191,7 +191,7 @@ describe("Tabarnia seed", () => {
       loadDictionary.mock.invocationCallOrder[0],
     );
     expect(uploadStorageObject).toHaveBeenCalledTimes(11);
-    expect(uploadStorageObject.mock.calls.every(([, input]) => input.upsert)).toBe(true);
+    expect(uploadStorageObject.mock.calls.every(([, input]) => input.upsert === false)).toBe(true);
     expect(runSql).toHaveBeenCalledOnce();
     expect(saveFixture).toHaveBeenCalledWith(
       "tabarnia",

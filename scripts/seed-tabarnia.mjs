@@ -789,7 +789,7 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
     ];
     for (const storageObject of storageObjects) {
       seededStorageObjects.push(storageObject);
-      await uploadAsset(config, { ...storageObject, upsert: true });
+      await uploadAsset(config, { ...storageObject, upsert: false });
     }
     await runSql(
       buildTabarniaDomainSql({
