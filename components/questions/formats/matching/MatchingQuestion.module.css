@@ -185,42 +185,36 @@
     left: 0.45rem;
   }
   .card[data-pair-tone="violet"],
-  .pairSummary[data-pair-tone="violet"],
   .completedList > span[data-pair-tone="violet"] {
     --format-pair-border: var(--format-pair-violet-border);
     --format-pair-surface: var(--format-pair-violet-surface);
     --format-pair-ink: var(--format-pair-violet-ink);
   }
   .card[data-pair-tone="blue"],
-  .pairSummary[data-pair-tone="blue"],
   .completedList > span[data-pair-tone="blue"] {
     --format-pair-border: var(--format-pair-blue-border);
     --format-pair-surface: var(--format-pair-blue-surface);
     --format-pair-ink: var(--format-pair-blue-ink);
   }
   .card[data-pair-tone="amber"],
-  .pairSummary[data-pair-tone="amber"],
   .completedList > span[data-pair-tone="amber"] {
     --format-pair-border: var(--format-pair-amber-border);
     --format-pair-surface: var(--format-pair-amber-surface);
     --format-pair-ink: var(--format-pair-amber-ink);
   }
   .card[data-pair-tone="pink"],
-  .pairSummary[data-pair-tone="pink"],
   .completedList > span[data-pair-tone="pink"] {
     --format-pair-border: var(--format-pair-pink-border);
     --format-pair-surface: var(--format-pair-pink-surface);
     --format-pair-ink: var(--format-pair-pink-ink);
   }
   .card[data-pair-tone="teal"],
-  .pairSummary[data-pair-tone="teal"],
   .completedList > span[data-pair-tone="teal"] {
     --format-pair-border: var(--format-pair-teal-border);
     --format-pair-surface: var(--format-pair-teal-surface);
     --format-pair-ink: var(--format-pair-teal-ink);
   }
   .card[data-pair-tone="orange"],
-  .pairSummary[data-pair-tone="orange"],
   .completedList > span[data-pair-tone="orange"] {
     --format-pair-border: var(--format-pair-orange-border);
     --format-pair-surface: var(--format-pair-orange-surface);
@@ -228,31 +222,47 @@
   }
 
   .checkRow {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    display: grid;
+    gap: 0.5rem;
     margin-top: 1rem;
   }
 
   .checkButton {
-    min-height: 2.75rem;
-    border: 1px solid var(--color-social);
-    border-radius: 0.75rem;
-    padding: 0.7rem 1rem;
-    color: var(--color-surface);
-    background: var(--color-social);
+    display: flex;
+    width: 100%;
+    min-height: var(--control-height);
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 0.1rem;
+    border: var(--border-flash);
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 900;
     transition:
       opacity 150ms,
       transform 150ms,
+      box-shadow 150ms,
       background 150ms;
   }
 
   .checkButton:hover:not(:disabled) {
-    background: var(--color-brand);
+    background: var(--color-brand-hover);
     transform: translateY(-1px);
+    box-shadow: 0 5px 0 rgb(23 23 32 / 18%);
+  }
+
+  .checkButton:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 transparent;
+  }
+
+  .checkIcon {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   .checkButton:focus-visible {
@@ -266,6 +276,7 @@
   }
 
   .checkHint {
+    width: 100%;
     color: var(--format-muted);
     font-size: 0.72rem;
     line-height: 1.35;

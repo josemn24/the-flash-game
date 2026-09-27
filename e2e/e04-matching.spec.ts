@@ -86,9 +86,7 @@ test.describe("E04 — Matching competitivo", () => {
     await expect(page.locator('button[data-pair-number="3"][data-pair-tone="amber"]')).toHaveCount(
       2,
     );
-    await expect(page.getByLabel("Asociaciones pendientes de comprobación")).toContainText(
-      "3/3 asociaciones preparadas",
-    );
+    await expect(page.getByLabel("Asociaciones pendientes de comprobación")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Comprobar parejas" })).toBeEnabled();
 
     await page.getByRole("button", { name: "Comprobar parejas" }).click();

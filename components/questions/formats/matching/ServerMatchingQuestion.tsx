@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
+import { ArrowIcon } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import type { AnswerValue, MatchingAnswer } from "@/types/game";
@@ -182,42 +183,17 @@ export function ServerMatchingQuestion({
         </section>
       </div>
 
-      <div className={styles.completedList} aria-label="Asociaciones pendientes de comprobación">
-        <span>
-          <strong>
-            {Object.keys(draft).length}/{leftItems.length}
-          </strong>{" "}
-          asociaciones preparadas
-        </span>
-        {leftItems.map((left) => {
-          const pair = pairPresentation.byLeft[left.id];
-          const right = pair ? rightItems.find((item) => item.id === pair.rightId) : null;
-          return pair && right ? (
-            <span
-              key={`${pair.leftId}:${pair.rightId}`}
-              className={styles.pairSummary}
-              data-pair-state="pending"
-              data-pair-number={pair.pairNumber}
-              data-pair-tone={pair.pairTone}
-            >
-              <span className={styles.pairBadge} aria-hidden="true">
-                {pair.pairNumber}
-              </span>
-              {left.label} — {right.label}
-            </span>
-          ) : null;
-        })}
-      </div>
-
       <div className={styles.checkRow}>
-        <button
+        <motion.button
           type="button"
           className={styles.checkButton}
           disabled={disabled || !complete}
           onClick={() => onSubmit(draft)}
+          whileTap={disabled || !complete ? undefined : { scale: 0.97 }}
         >
-          Comprobar parejas
-        </button>
+          <span>Comprobar parejas</span>
+          <ArrowIcon className={styles.checkIcon} />
+        </motion.button>
         {!complete ? (
           <span className={styles.checkHint}>
             Completa todas las parejas para comprobar la respuesta.
