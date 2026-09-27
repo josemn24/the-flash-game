@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-25.
+Última actualización documental: 2026-09-27.
 
 # Estado actual del proyecto
 
@@ -197,20 +197,20 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación actual
 
-Estado documentado a 2026-09-25:
+Estado verificado a 2026-09-27:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260925130000_s20_attempt_inspection_projection`.
+  `20260926080239_initial_schema`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
-- `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
-  `scripts/integration/scenarios/s15.mjs`.
-- `npm test`: 132 archivos correctos y 1 fallido; 778 tests pasan de 779. El fallo pendiente está en
-  `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
+- `npm run type-architecture`: correcto.
+- `npm run lint`: correcto.
+- `npm run build`: correcto con Next.js 16.2.10.
+- `npm test`: 140 archivos correctos; 804 tests pasan.
 - `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera de esta actualización.
-- `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas declarativos,
-  verificó el inventario y todas las suites pgTAP, incluida S20 con 21 checks. La suite no acredita
-  staging o producción.
+- `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 51 schemas declarativos,
+  verificó el inventario, todas las suites pgTAP y las carreras con conexiones PostgreSQL
+  independientes. La suite no acredita staging o producción.
 - No hay proyecto remoto vinculado; ninguna de estas comprobaciones acredita staging o producción.
 
 ### Registros históricos de slices

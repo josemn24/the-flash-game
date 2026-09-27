@@ -3,8 +3,8 @@
 > Estado: backlog técnico vivo. S01–S15, S17a, S18b parcial, S20, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-25. El esquema actual contiene 48 archivos declarativos y la revisión canónica es
-> `20260925130000_s20_attempt_inspection_projection`; las 91 migraciones versionadas y las validaciones locales recientes
+> Fecha de análisis: 2026-09-27. El esquema actual contiene 51 archivos declarativos y la revisión canónica es
+> `20260926080239_initial_schema`; el historial activo está consolidado en una migración base y las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -34,7 +34,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                               | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                      | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                             | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 30 tablas, 48 archivos declarativos, 91 migraciones versionadas, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| SQL       | 30 tablas, 51 archivos declarativos, una migración base consolidada, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional.                                       |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                    | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                   | Verificación contra un entorno remoto.                                                                                                             |
@@ -963,9 +963,9 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
-- **Estado 2026-09-25:** implementada y verificada sobre Supabase local. La revisión canónica es
-  `20260925130000_s20_attempt_inspection_projection`; el esquema reconstruye 48 archivos declarativos
-  y 91 migraciones versionadas. No hay proyecto remoto vinculado, por lo que la aplicación y validación
+- **Estado 2026-09-27:** implementada y verificada sobre Supabase local. La revisión canónica es
+  `20260926080239_initial_schema`; el esquema reconstruye 51 archivos declarativos desde la migración
+  base consolidada. No hay proyecto remoto vinculado, por lo que la aplicación y validación
   contra staging/producción siguen pendientes.
 - **Objetivo / CU:** CU-25.
 - **Superficie:** `/admin/rooms/[roomId]/attempts`, `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`
