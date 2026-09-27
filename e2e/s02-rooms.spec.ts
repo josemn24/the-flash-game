@@ -24,6 +24,28 @@ async function signIn(page: Page, account: { email: string; password: string }) 
 }
 
 test.describe("S02 — salas e introducción autorizada", () => {
+  test("muestra feedback de navegación y el skeleton del ranking con una respuesta lenta", async ({
+    page,
+  }) => {
+    const data = await fixture();
+    await signIn(page, data.users.alice);
+    await page.getByRole("link", { name: /Abrir sala Sala principal/ }).click();
+    await expect(page.getByRole("link", { name: /Ver historial de Sala principal/ })).toBeVisible();
+
+    await page.route("**/salas/s02-main/ranking**", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      await route.continue();
+    });
+
+    const rankingLink = page.getByRole("link", { name: /Ver ranking de la sala/ });
+    const navigation = rankingLink.click();
+
+    await expect(page.locator('[data-pending="true"]')).toBeVisible();
+    await expect(page.getByRole("status")).toContainText("Cargando…");
+    await navigation;
+    await expect(page.getByRole("heading", { name: "Ranking global" })).toBeVisible();
+  });
+
   test("Alice solo ve sus salas y recibe una introducción segura", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.alice);

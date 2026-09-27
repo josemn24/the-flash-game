@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PendingLink } from "@/components/navigation";
 import { ArrowIcon, Canvas } from "@/components/ui";
 import type { RoomLeaderboardEntry } from "@/types/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
@@ -16,13 +16,13 @@ export function FlashPopRoomRanking({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <Link
+        <PendingLink
           href={`/salas/${roomId}`}
           className={styles.backLink}
           aria-label="Volver al detalle de la sala"
         >
           <ArrowIcon className={styles.backIcon} />
-        </Link>
+        </PendingLink>
       </header>
 
       <RoomLeaderboard
