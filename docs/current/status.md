@@ -175,7 +175,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   Flash mínimo; la gestión posterior de miembros es parcial en ajustes (S18b), mientras que
   transferencia, bloqueo/desbloqueo e invitaciones completas siguen pendientes y no forman parte de
   la UI pública. S12 ya opera
-  localmente el calendario de publicaciones.
+  localmente el calendario de publicaciones, incluida la cancelación lógica y auditada de
+  publicaciones futuras antes de su apertura. Las publicaciones canceladas permanecen visibles en
+  el historial y no ofrecen una acción de juego ni de reprogramación.
   D08a/S13 ya
   cubren avatares persistidos y assets privados de E10 y `multiple-choice`. La subida de imágenes de
   `multiple-choice` vive en la biblioteca de preguntas; el editor inline de Flash solo reutiliza
@@ -201,7 +203,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado documentado a 2026-09-25:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260927170000_queens_dynamic_grid`.
+  `20260927172602_cancel-scheduled-challenge`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.

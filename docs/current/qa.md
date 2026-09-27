@@ -16,7 +16,7 @@ Narrativa, E07–E09, abandono automático, takeover, `results_locked_at`, prueb
 siguen pendientes; S20 ya cubre las correcciones administrativas de resultados.
 
 El esquema declarativo vigente contiene 53 archivos y la revisión canónica es
-`20260927170000_queens_dynamic_grid`. El historial local incluye además la revisión declarativa de S17;
+`20260927172602_cancel-scheduled-challenge`. El historial local incluye además la revisión declarativa de S17;
 hay 30 tablas, una vista interna y un inventario de seguridad registrado. La CLI local tiene un proyecto
 de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 

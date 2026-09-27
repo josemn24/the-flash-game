@@ -24,6 +24,13 @@ export type UpdateScheduledChallengeInput = {
   readonly reason: string;
 };
 
+export type CancelScheduledChallengeInput = {
+  readonly idempotencyKey: string;
+  readonly scheduledChallengeId: string;
+  readonly expectedUpdatedAt: string;
+  readonly reason: string;
+};
+
 export type RunCalendarTickResult = {
   readonly runId: string;
   readonly evaluatedAt: string;
@@ -39,6 +46,9 @@ export interface SuperadminCalendarCommands {
   ): Promise<SuperadminCalendarCommandResult>;
   updateScheduledChallenge(
     input: UpdateScheduledChallengeInput,
+  ): Promise<SuperadminCalendarCommandResult>;
+  cancelScheduledChallenge(
+    input: CancelScheduledChallengeInput,
   ): Promise<SuperadminCalendarCommandResult>;
 }
 

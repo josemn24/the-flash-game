@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { CalendarEntryCard } from "./CalendarEntryCard.client";
+import { CalendarCancelDialog } from "./CalendarCancelDialog.client";
 import { CalendarScheduleDialog } from "./CalendarScheduleDialog.client";
 
 const room = {
@@ -94,6 +95,30 @@ describe("CalendarScheduleDialog", () => {
     expect(markup).toContain("Reprogramar");
     expect(markup).not.toContain("<details");
     expect(markup).not.toContain('name="expectedUpdatedAt"');
+  });
+
+  it("renders a cancellation trigger for a future publication", () => {
+    const markup = renderToStaticMarkup(<CalendarCancelDialog entry={entry} room={room} />);
+
+    expect(markup).toContain("Cancelar");
+    expect(markup).toContain("dialog");
+    expect(markup).not.toContain('name="reason"');
+  });
+
+  it("does not render edit controls for a cancelled publication", () => {
+    const markup = renderToStaticMarkup(
+      <CalendarEntryCard
+        entry={{ ...entry, status: "cancelled" }}
+        room={room}
+        content={content[0]}
+        publishedContent={content}
+        canEdit={false}
+      />,
+    );
+
+    expect(markup).toContain("Cancelado");
+    expect(markup).not.toContain("Reprogramar");
+    expect(markup).not.toContain("Cancelar");
   });
 
   it("renders a compact weekly card without the full date range", () => {

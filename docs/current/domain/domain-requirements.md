@@ -53,8 +53,10 @@ autenticados a una sala o reactivará su membresía con un rol permitido, sin fl
 aceptación de enlace.
 
 La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario se
-realizan desde ese portal interno para S11/S12, con el tick temporal local protegido. La cancelación,
-la automatización remota y las operaciones públicas siguen fuera de este alcance.
+realizan desde ese portal interno para S11/S12, con el tick temporal local protegido. S12 también
+permite cancelar de forma lógica y auditada publicaciones futuras antes de abrirlas; la cancelación
+de publicaciones abiertas o cerradas, de temporadas, la automatización remota y las operaciones
+públicas siguen fuera de este alcance.
 No son funciones de la UI pública.
 
 ## 3. Áreas funcionales

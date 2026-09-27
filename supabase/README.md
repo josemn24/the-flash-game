@@ -18,7 +18,8 @@ La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./s
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
 El historial activo está consolidado en las migraciones
-`20260927140000_queens_board_validation.sql` y `20260927170000_queens_dynamic_grid.sql`, generadas desde los 53 archivos declarativos. La rama de
+`20260927140000_queens_board_validation.sql`, `20260927170000_queens_dynamic_grid.sql` y
+`20260927172602_cancel-scheduled-challenge.sql`, generadas desde los 53 archivos declarativos. La rama de
 respaldo conserva el historial incremental anterior.
 
 ## Flujo para un cambio de esquema

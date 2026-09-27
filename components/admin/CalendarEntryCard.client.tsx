@@ -7,6 +7,7 @@ import type {
 } from "@/types/view-models";
 import Link from "next/link";
 import { Card, Chip } from "@/components/ui";
+import { CalendarCancelDialog } from "./CalendarCancelDialog.client";
 import { CalendarScheduleDialog } from "./CalendarScheduleDialog.client";
 import styles from "./CalendarManagement.module.css";
 
@@ -21,7 +22,9 @@ function statusTone(status: Entry["status"]) {
     ? ("success" as const)
     : status === "scheduled"
       ? ("info" as const)
-      : ("neutral" as const);
+      : status === "cancelled"
+        ? ("danger" as const)
+        : ("neutral" as const);
 }
 function timestamp(value: string, timeZone: string) {
   return new Intl.DateTimeFormat("es-ES", {
@@ -67,11 +70,7 @@ export function CalendarEntryCard({
       <Card as="article" surface="surface" density="compact" className={styles.entryWeek}>
         <div className={styles.weekEntryTopline}>
           <span className={styles.weekEntryNumber}>#{entry.number}</span>
-          <Chip
-            variant="status"
-            tone={statusTone(entry.status)}
-            className={styles.weekEntryStatus}
-          >
+          <Chip variant="status" tone={statusTone(entry.status)} className={styles.weekEntryStatus}>
             {statusLabel(entry.status)}
           </Chip>
         </div>
@@ -95,13 +94,16 @@ export function CalendarEntryCard({
           {time(entry.opensAt, entry.timeZone)} – {time(entry.closesAt, entry.timeZone)}
         </p>
         {canEdit && room ? (
-          <CalendarScheduleDialog
-            mode="update"
-            entry={entry}
-            room={room}
-            publishedContent={publishedContent}
-            compact
-          />
+          <div className={styles.entryActions}>
+            <CalendarScheduleDialog
+              mode="update"
+              entry={entry}
+              room={room}
+              publishedContent={publishedContent}
+              compact
+            />
+            <CalendarCancelDialog entry={entry} room={room} compact />
+          </div>
         ) : null}
       </Card>
     );
@@ -144,12 +146,15 @@ export function CalendarEntryCard({
         {entry.versionNumber}
       </p>
       {canEdit && room ? (
-        <CalendarScheduleDialog
-          mode="update"
-          entry={entry}
-          room={room}
-          publishedContent={publishedContent}
-        />
+        <div className={styles.entryActions}>
+          <CalendarScheduleDialog
+            mode="update"
+            entry={entry}
+            room={room}
+            publishedContent={publishedContent}
+          />
+          <CalendarCancelDialog entry={entry} room={room} />
+        </div>
       ) : null}
       {!isAgenda && content ? <span className={styles.helper}>{content.slug}</span> : null}
     </Card>

@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import type {
   CalendarTickRunner,
+  CancelScheduledChallengeInput,
   CreateScheduledChallengeInput,
   SuperadminCalendarCommands,
   SuperadminCalendarQueries,
@@ -136,6 +137,7 @@ function commandCode(error: { code?: string; message?: string }) {
     "unsupported_content",
     "invalid_schedule_dates",
     "schedule_not_found",
+    "schedule_not_cancellable",
     "schedule_not_editable",
     "schedule_already_open",
     "schedule_number_conflict",
@@ -149,8 +151,12 @@ function commandCode(error: { code?: string; message?: string }) {
 }
 
 async function callCommand<T>(
-  functionName: "create_superadmin_scheduled_challenge" | "update_superadmin_scheduled_challenge",
-  input: CreateScheduledChallengeInput | UpdateScheduledChallengeInput,
+  functionName:
+    | "create_superadmin_scheduled_challenge"
+    | "update_superadmin_scheduled_challenge"
+    | "cancel_superadmin_scheduled_challenge",
+  input:
+    CreateScheduledChallengeInput | UpdateScheduledChallengeInput | CancelScheduledChallengeInput,
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(functionName, { input });
@@ -193,6 +199,12 @@ export class SupabaseSuperadminCalendarQueries
     input: UpdateScheduledChallengeInput,
   ): Promise<SuperadminCalendarCommandResult> {
     return callCommand("update_superadmin_scheduled_challenge", input);
+  }
+
+  cancelScheduledChallenge(
+    input: CancelScheduledChallengeInput,
+  ): Promise<SuperadminCalendarCommandResult> {
+    return callCommand("cancel_superadmin_scheduled_challenge", input);
   }
 
   async runCalendarTick() {

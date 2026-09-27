@@ -4,7 +4,7 @@
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-27. El esquema actual contiene 53 archivos declarativos y la revisión canónica es
-> `20260927170000_queens_dynamic_grid`; la migración incremental activa y las validaciones locales recientes
+> `20260927172602_cancel-scheduled-challenge`; la migración incremental activa y las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -956,10 +956,16 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 
 ### S19 — Cancelar competición y cerrar temporadas de forma controlada
 
+- **Estado de la primera entrega:** S12 ya implementa la cancelación lógica y auditada de publicaciones
+  futuras en estado `scheduled`, antes de `opens_at`, conservando número, contenido, ventana y
+  referencias históricas. La cancelación de publicaciones `open`/`closed`, temporadas y cualquier
+  tratamiento especial de intentos permanece pendiente para completar S19.
 - **Objetivo / CU:** cancelación administrativa de CU-08/CU-09.
 - **Superficie:** calendario privado del portal de superadmin con motivo; la UI pública solo muestra
   estados de cancelación separados del historial ordinario.
-- **Mocks retirados:** estados cancelados solo representados por fixtures.
+- **Mocks retirados:** la cancelación futura de publicaciones ya es persistida; los estados de
+  temporadas canceladas y las cancelaciones de publicaciones abiertas siguen representados solo por
+  fixtures o fuera de la superficie operativa.
 - **Backend/dominio:** cancelar publicación o temporada según D05, conservar intentos y detener
   nuevos envíos/inicios según política. El cierre normal no es cancelación. Precisar cómo terminar
   intentos activos afectados y cómo una temporada cancelada afecta sus publicaciones/resultados.
@@ -975,7 +981,7 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
 - **Estado 2026-09-27:** implementada y verificada sobre Supabase local. La revisión canónica es
-  `20260927170000_queens_dynamic_grid`; el esquema reconstruye 53 archivos declarativos desde la migración
+  `20260927172602_cancel-scheduled-challenge`; el esquema reconstruye 53 archivos declarativos desde la migración
   base consolidada. La CLI tiene staging vinculado, pero la aplicación y validación contra
   staging/producción siguen pendientes.
 - **Objetivo / CU:** CU-25.

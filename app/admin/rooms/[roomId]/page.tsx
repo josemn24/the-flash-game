@@ -41,7 +41,9 @@ export default async function AdminRoomPage({ params, searchParams }: AdminRoomP
     calendar:
       query.calendar === "created"
         ? "Publicación programada correctamente."
-        : "Publicación reprogramada correctamente.",
+        : query.calendar === "cancelled"
+          ? "Publicación cancelada correctamente."
+          : "Publicación reprogramada correctamente.",
   };
   const notice =
     query.member === "added"

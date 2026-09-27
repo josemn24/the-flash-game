@@ -116,6 +116,21 @@ describe("SupabaseSuperadminCalendarQueries", () => {
     expect(mocks.rpc).toHaveBeenLastCalledWith("update_superadmin_scheduled_challenge", {
       input: updateInput,
     });
+
+    const cancelInput = {
+      idempotencyKey: "calendar-cancel-1",
+      scheduledChallengeId: entry.scheduledChallengeId,
+      expectedUpdatedAt: entry.updatedAt,
+      reason: "Retirar publicación",
+    };
+    mocks.rpc.mockResolvedValue({ data: { ...result, status: "cancelled" }, error: null });
+    await expect(queries.cancelScheduledChallenge(cancelInput)).resolves.toMatchObject({
+      status: "cancelled",
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("cancel_superadmin_scheduled_challenge", {
+      input: cancelInput,
+    });
   });
 
   it("maps authorization and domain errors without falling back", async () => {

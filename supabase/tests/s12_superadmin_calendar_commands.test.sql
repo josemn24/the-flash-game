@@ -11,12 +11,18 @@ select ok(has_function_privilege('authenticated', 'public.create_superadmin_sche
   'Authenticated can create scheduled challenges through the portal boundary');
 select ok(has_function_privilege('authenticated', 'public.update_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
   'Authenticated can update scheduled challenges through the portal boundary');
+select ok(has_function_privilege('authenticated', 'public.cancel_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
+  'Authenticated can cancel scheduled challenges through the portal boundary');
 select ok(has_function_privilege('service_role', 'private.run_calendar_tick_command(jsonb)', 'EXECUTE'),
   'Only the local service role can execute the calendar tick');
 select ok(not has_function_privilege('anon', 'public.create_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
   'Anonymous users cannot schedule challenges');
+select ok(not has_function_privilege('anon', 'public.cancel_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
+  'Anonymous users cannot cancel scheduled challenges');
 select ok(not has_function_privilege('service_role', 'public.create_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
   'service_role cannot use the application scheduling boundary');
+select ok(not has_function_privilege('service_role', 'public.cancel_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
+  'service_role cannot use the application cancellation boundary');
 select ok(not has_function_privilege('authenticated', 'private.run_calendar_tick_command(jsonb)', 'EXECUTE'),
   'Authenticated clients cannot execute the internal tick');
 
@@ -122,6 +128,39 @@ select throws_ok($$select public.update_superadmin_scheduled_challenge(jsonb_bui
   'opensAt', now() + interval '1 day 4 hours', 'closesAt', now() + interval '1 day 5 hours', 'reason', 'Stale'
 ))$$, '40001', 'schedule_conflict', 'A stale schedule update is rejected');
 
+select set_config('s12.future_cancel_updated_at', (select updated_at::text from public.scheduled_challenges where id = current_setting('s12.future_id')::uuid), true);
+select set_config('s12.cancel_opens_at', (select opens_at::text from public.scheduled_challenges where id = current_setting('s12.future_id')::uuid), true);
+select set_config('s12.cancel_closes_at', (select closes_at::text from public.scheduled_challenges where id = current_setting('s12.future_id')::uuid), true);
+select is((public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-cancel-03', 'scheduledChallengeId', current_setting('s12.future_id')::uuid,
+  'expectedUpdatedAt', current_setting('s12.future_cancel_updated_at')::timestamptz,
+  'reason', 'Retirar publicación futura'
+))->>'status'), 'cancelled', 'A future scheduled publication can be cancelled');
+select ok((select status = 'cancelled' and cancelled_at is not null and number = 3
+  and challenge_version_id = test_support.id('s12-cv')
+  and opens_at = current_setting('s12.cancel_opens_at')::timestamptz
+  and closes_at = current_setting('s12.cancel_closes_at')::timestamptz
+  from public.scheduled_challenges where id = current_setting('s12.future_id')::uuid),
+  'Cancellation persists status and timestamp while preserving content, number and window');
+select is((select count(*) from private.audit_log
+  where action = 'cancel_scheduled_challenge' and entity_id = current_setting('s12.future_id')::uuid), 1::bigint,
+  'Cancellation writes one audit event');
+select is((public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-cancel-03', 'scheduledChallengeId', current_setting('s12.future_id')::uuid,
+  'expectedUpdatedAt', current_setting('s12.future_cancel_updated_at')::timestamptz,
+  'reason', 'Retirar publicación futura'
+))->>'status'), 'cancelled', 'Identical cancellation retries return the original result');
+select throws_ok($$select public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-cancel-03', 'scheduledChallengeId', current_setting('s12.future_id')::uuid,
+  'expectedUpdatedAt', current_setting('s12.future_cancel_updated_at')::timestamptz,
+  'reason', 'Otro motivo'
+))$$, '40001', 'idempotency_conflict', 'A reused cancellation key with different data is rejected');
+select throws_ok($$select public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-cancel-03-retry', 'scheduledChallengeId', current_setting('s12.future_id')::uuid,
+  'expectedUpdatedAt', current_setting('s12.future_cancel_updated_at')::timestamptz,
+  'reason', 'Intento posterior'
+))$$, '55000', 'schedule_not_cancellable', 'A cancelled publication cannot be cancelled again');
+
 reset role;
 set local role service_role;
 select is((private.run_calendar_tick_command(jsonb_build_object('runId', 's12-tick-open-01'))->>'opened')::integer, 1,
@@ -144,6 +183,8 @@ select is((select availability_status from public.get_room_calendar('s12-room') 
   'Public availability is derived from the PostgreSQL clock');
 select is((select can_continue from public.get_room_calendar('s12-room') where publication_number = 1), false,
   'A member without an attempt cannot continue and receives a boolean false');
+select is((select availability_status from public.get_room_calendar('s12-room') where publication_number = 3), 'cancelled',
+  'A member sees a cancelled future publication as unavailable');
 select is((select count(*) from public.get_room_introduction('s12-room', current_setting('s12.schedule_id')::uuid)), 1::bigint,
   'A member can open the introduction for an available publication');
 select ok(not exists (
@@ -155,6 +196,23 @@ select throws_ok($$select public.create_superadmin_scheduled_challenge(jsonb_bui
   'challengeVersionId', test_support.id('s12-cv'), 'number', 4,
   'opensAt', now() + interval '1 day', 'closesAt', now() + interval '1 day 1 hour', 'reason', 'Forbidden'
 ))$$, '42501', 'not_authorized', 'A member cannot schedule a challenge');
+select throws_ok($$select public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-member-cancel', 'scheduledChallengeId', current_setting('s12.future_id')::uuid,
+  'expectedUpdatedAt', current_setting('s12.future_cancel_updated_at')::timestamptz,
+  'reason', 'Forbidden'
+))$$, '42501', 'not_authorized', 'A member cannot cancel a challenge');
+reset role;
+
+select set_config('s12.open_updated_at', (select updated_at::text from public.scheduled_challenges where id = current_setting('s12.schedule_id')::uuid), true);
+select set_config('request.jwt.claims', jsonb_build_object(
+  'sub', test_support.id('auth-superadmin'), 'role', 'authenticated', 'is_anonymous', false
+)::text, true);
+set local role authenticated;
+select throws_ok($$select public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-cancel-open', 'scheduledChallengeId', current_setting('s12.schedule_id')::uuid,
+  'expectedUpdatedAt', current_setting('s12.open_updated_at')::timestamptz,
+  'reason', 'Intento de cancelar abierta'
+))$$, '55000', 'schedule_already_open', 'An open publication cannot be cancelled in S12');
 reset role;
 
 select set_config('request.jwt.claims', jsonb_build_object('role', 'anon', 'is_anonymous', true)::text, true);
@@ -180,6 +238,18 @@ select is((select results_locked_at::text from public.scheduled_challenges where
   'The tick leaves results_locked_at unchanged');
 select is((private.run_calendar_tick_command(jsonb_build_object('runId', 's12-tick-close-02'))->>'closed')::integer, 0,
   'A repeated close tick is idempotent');
+reset role;
+
+select set_config('request.jwt.claims', jsonb_build_object(
+  'sub', test_support.id('auth-superadmin'), 'role', 'authenticated', 'is_anonymous', false
+)::text, true);
+select set_config('s12.closed_updated_at', (select updated_at::text from public.scheduled_challenges where id = test_support.id('s12-close-schedule')), true);
+set local role authenticated;
+select throws_ok($$select public.cancel_superadmin_scheduled_challenge(jsonb_build_object(
+  'idempotencyKey', 's12-cancel-closed', 'scheduledChallengeId', test_support.id('s12-close-schedule'),
+  'expectedUpdatedAt', current_setting('s12.closed_updated_at'),
+  'reason', 'Intento de cancelar cerrada'
+))$$, '55000', 'schedule_not_cancellable', 'A closed publication cannot be cancelled in S12');
 reset role;
 
 select * from finish();

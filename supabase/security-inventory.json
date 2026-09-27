@@ -274,6 +274,11 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.cancel_scheduled_challenge_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.complete_attempt": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -995,6 +1000,11 @@
       "executeRoles": ["authenticated"]
     },
     "public.create_superadmin_scheduled_challenge": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.cancel_superadmin_scheduled_challenge": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
