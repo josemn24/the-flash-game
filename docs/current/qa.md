@@ -60,15 +60,10 @@ No se debe interpretar la existencia de un test focal histórico como validació
 
 - La CLI local tiene staging vinculado, pero no se ha aplicado ni validado S17 en ese proyecto remoto.
 - La validación E2E persistida es local y reproducible; no cubre staging o producción.
-<<<<<<< Updated upstream
-- Prettier mantiene 151 archivos sin formato canónico.
-- ESLint mantiene dos warnings no bloqueantes.
-=======
 - Prettier mantiene 158 archivos sin formato canónico.
 - El gate global de Vitest pasa; el inventario de seguridad y las suites PgTAP también pasan en
   `supabase:schema:test`.
 - ESLint no presenta warnings en la comprobación actual.
->>>>>>> Stashed changes
 - Stylelint conserva un selector duplicado histórico en
   `app/flash-pop-concepts/FlashPopConcepts.module.css`.
 - No existe una ronda manual exhaustiva vigente para todos los formatos, viewports, VoiceOver y
