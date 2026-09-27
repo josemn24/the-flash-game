@@ -54,7 +54,9 @@ test.describe("E04 — Matching competitivo", () => {
         await route.fulfill({
           status: 503,
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ error: { code: "command_failed", requestId: "e04-lost-response" } }),
+          body: JSON.stringify({
+            error: { code: "command_failed", requestId: "e04-lost-response" },
+          }),
         });
         await response.body();
         return;
@@ -63,9 +65,30 @@ test.describe("E04 — Matching competitivo", () => {
     });
 
     await choose(page, "Uno", "Primero");
+    await page.getByRole("button", { name: /^Uno, asociación 1 con Primero/ }).click();
+    await page.getByRole("button", { name: "Segundo", exact: true }).click();
+    await expect(page.locator('button[data-pair-number="1"][data-pair-tone="violet"]')).toHaveCount(
+      2,
+    );
+    await page.getByRole("button", { name: /^Uno, asociación 1 con Segundo/ }).click();
+    await page.getByRole("button", { name: "Primero", exact: true }).click();
     await choose(page, "Dos", "Segundo");
     await choose(page, "Tres", "Tercero");
     expect(requestBodies).toHaveLength(0);
+    await expect(page.locator('button[data-pair-state="pending"]')).toHaveCount(6);
+    await expect(page.locator('button[data-pair-state="pending"] svg')).toHaveCount(0);
+    await expect(page.locator('button[data-pair-number="1"][data-pair-tone="violet"]')).toHaveCount(
+      2,
+    );
+    await expect(page.locator('button[data-pair-number="2"][data-pair-tone="blue"]')).toHaveCount(
+      2,
+    );
+    await expect(page.locator('button[data-pair-number="3"][data-pair-tone="amber"]')).toHaveCount(
+      2,
+    );
+    await expect(page.getByLabel("Asociaciones pendientes de comprobación")).toContainText(
+      "3/3 asociaciones preparadas",
+    );
     await expect(page.getByRole("button", { name: "Comprobar parejas" })).toBeEnabled();
 
     await page.getByRole("button", { name: "Comprobar parejas" }).click();

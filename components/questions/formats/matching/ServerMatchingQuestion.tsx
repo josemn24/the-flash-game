@@ -2,12 +2,15 @@
 
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { CheckIcon } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import type { AnswerValue, MatchingAnswer } from "@/types/game";
 import type { MatchingItem, MatchingLeftItem } from "@/types/question";
 import styles from "./MatchingQuestion.module.css";
+import {
+  getMatchingPairPresentation,
+  type MatchingPairPresentation,
+} from "./matchingPairPresentation";
 
 type PublicLeftItem = Omit<MatchingLeftItem, "correctMatchId">;
 
@@ -64,9 +67,13 @@ export function ServerMatchingQuestion({
   );
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [selectedRight, setSelectedRight] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("Selecciona una tarjeta de cada columna.");
   const disabled = locked || submissionState === "submitting";
 
-  const matchedRightIds = useMemo(() => new Set(Object.values(draft)), [draft]);
+  const pairPresentation = useMemo(
+    () => getMatchingPairPresentation(leftItems, draft),
+    [draft, leftItems],
+  );
   const complete = leftItems.length > 0 && Object.keys(draft).length === leftItems.length;
 
   const updateDraft = (nextDraft: MatchingAnswer) => {
@@ -85,6 +92,17 @@ export function ServerMatchingQuestion({
     updateDraft(nextDraft);
     setSelectedLeft(null);
     setSelectedRight(null);
+
+    const left = leftItems.find((item) => item.id === leftId);
+    const right = rightItems.find((item) => item.id === rightId);
+    const pairNumber = leftItems.findIndex((item) => item.id === leftId) + 1;
+    if (left && right) {
+      setAnnouncement(
+        Object.keys(nextDraft).length === leftItems.length
+          ? "Todas las asociaciones están preparadas. Puedes comprobarlas."
+          : `Asociación ${pairNumber} preparada: ${left.label} con ${right.label}. Pendiente de comprobación.`,
+      );
+    }
   };
 
   const chooseLeft = (leftId: string) => {
@@ -97,6 +115,7 @@ export function ServerMatchingQuestion({
       const nextDraft = { ...draft };
       delete nextDraft[leftId];
       updateDraft(nextDraft);
+      setAnnouncement("Asociación retirada. Selecciona otra tarjeta para volver a prepararla.");
     }
     setSelectedLeft(leftId);
     setSelectedRight(null);
@@ -114,6 +133,7 @@ export function ServerMatchingQuestion({
       delete nextDraft[existingLeftId];
       updateDraft(nextDraft);
       setSelectedLeft(existingLeftId);
+      setAnnouncement("Asociación retirada. Selecciona una nueva tarjeta para reemplazarla.");
     } else {
       setSelectedRight(rightId);
     }
@@ -125,13 +145,17 @@ export function ServerMatchingQuestion({
         <section className={styles.column} aria-labelledby="server-matching-left-heading">
           <h3 id="server-matching-left-heading">Conceptos</h3>
           {leftItems.map((item) => {
-            const matched = item.id in draft;
+            const pair = pairPresentation.byLeft[item.id];
+            const right = pair
+              ? rightItems.find((rightItem) => rightItem.id === pair.rightId)
+              : null;
             return (
               <MatchingCard
                 key={item.id}
                 item={item}
                 selected={selectedLeft === item.id}
-                matched={matched}
+                pair={pair}
+                pairLabel={right?.label}
                 disabled={disabled}
                 onClick={() => chooseLeft(item.id)}
               />
@@ -141,13 +165,15 @@ export function ServerMatchingQuestion({
         <section className={styles.column} aria-labelledby="server-matching-right-heading">
           <h3 id="server-matching-right-heading">Parejas</h3>
           {rightItems.map((item) => {
-            const matched = matchedRightIds.has(item.id);
+            const pair = pairPresentation.byRight[item.id];
+            const left = pair ? leftItems.find((leftItem) => leftItem.id === pair.leftId) : null;
             return (
               <MatchingCard
                 key={item.id}
                 item={item}
                 selected={selectedRight === item.id}
-                matched={matched}
+                pair={pair}
+                pairLabel={left?.label}
                 disabled={disabled}
                 onClick={() => chooseRight(item.id)}
               />
@@ -156,19 +182,27 @@ export function ServerMatchingQuestion({
         </section>
       </div>
 
-      <div className={styles.completedList} aria-label="Progreso de parejas">
+      <div className={styles.completedList} aria-label="Asociaciones pendientes de comprobación">
         <span>
           <strong>
             {Object.keys(draft).length}/{leftItems.length}
           </strong>{" "}
-          parejas seleccionadas
+          asociaciones preparadas
         </span>
-        {Object.entries(draft).map(([leftId, rightId]) => {
-          const left = leftItems.find((item) => item.id === leftId);
-          const right = rightItems.find((item) => item.id === rightId);
-          return left && right ? (
-            <span key={`${leftId}:${rightId}`}>
-              <CheckIcon aria-hidden="true" />
+        {leftItems.map((left) => {
+          const pair = pairPresentation.byLeft[left.id];
+          const right = pair ? rightItems.find((item) => item.id === pair.rightId) : null;
+          return pair && right ? (
+            <span
+              key={`${pair.leftId}:${pair.rightId}`}
+              className={styles.pairSummary}
+              data-pair-state="pending"
+              data-pair-number={pair.pairNumber}
+              data-pair-tone={pair.pairTone}
+            >
+              <span className={styles.pairBadge} aria-hidden="true">
+                {pair.pairNumber}
+              </span>
               {left.label} — {right.label}
             </span>
           ) : null;
@@ -192,9 +226,7 @@ export function ServerMatchingQuestion({
       </div>
 
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {complete
-          ? "Todas las tarjetas están asociadas. Puedes comprobar las parejas."
-          : `${Object.keys(draft).length} de ${leftItems.length} parejas seleccionadas.`}
+        {announcement}
       </p>
       <ServerOperationStatus
         state={submissionState}
@@ -211,23 +243,32 @@ export function ServerMatchingQuestion({
 function MatchingCard({
   item,
   selected,
-  matched,
+  pair,
+  pairLabel,
   disabled,
   onClick,
 }: {
   readonly item: PublicLeftItem | MatchingItem;
   readonly selected: boolean;
-  readonly matched: boolean;
+  readonly pair?: MatchingPairPresentation;
+  readonly pairLabel?: string;
   readonly disabled: boolean;
   readonly onClick: () => void;
 }) {
+  const pendingLabel = pair
+    ? `${item.label}, asociación ${pair.pairNumber}${pairLabel ? ` con ${pairLabel}` : ""}, pendiente de comprobación`
+    : item.label;
+
   return (
     <motion.button
       type="button"
-      className={`${styles.card} ${item.media ? styles.cardWithMedia : ""} ${selected ? styles.cardSelected : ""} ${matched ? styles.cardMatched : ""}`}
+      className={`${styles.card} ${item.media ? styles.cardWithMedia : ""} ${selected ? styles.cardSelected : ""} ${pair ? styles.cardPendingPair : ""}`}
       disabled={disabled}
-      aria-label={item.label}
+      aria-label={pendingLabel}
       aria-pressed={selected}
+      data-pair-state={pair ? "pending" : undefined}
+      data-pair-number={pair?.pairNumber}
+      data-pair-tone={pair?.pairTone}
       onClick={onClick}
       whileTap={disabled ? undefined : { scale: 0.98 }}
     >
@@ -240,7 +281,11 @@ function MatchingCard({
         ) : null}
         <span>{item.label}</span>
       </span>
-      {matched ? <CheckIcon className={styles.stateIcon} aria-hidden="true" /> : null}
+      {pair ? (
+        <span className={styles.pairBadge} aria-hidden="true">
+          {pair.pairNumber}
+        </span>
+      ) : null}
     </motion.button>
   );
 }

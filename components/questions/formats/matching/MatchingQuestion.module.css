@@ -69,6 +69,19 @@
     background: var(--format-matched-surface);
     opacity: 0.68;
   }
+  .cardPendingPair {
+    border-color: var(--format-pair-border);
+    background: var(--format-pair-surface);
+  }
+  .cardPendingPair:hover:not(:disabled) {
+    border-color: var(--format-pair-border);
+    background: var(--format-pair-surface);
+  }
+  .cardPendingPair.cardSelected {
+    border-color: var(--format-selected-border);
+    color: var(--format-hover-ink);
+    background: var(--format-selected-surface);
+  }
   .cardInvalid {
     border-color: var(--format-invalid-border);
     background: var(--format-invalid-surface);
@@ -135,7 +148,7 @@
     gap: 0.4rem;
     margin-top: 0.7rem;
   }
-  .completedList span {
+  .completedList > span {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -150,6 +163,68 @@
     width: 0.8rem;
     height: 0.8rem;
     color: var(--format-icon-ink);
+  }
+  .pairBadge {
+    display: inline-grid;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    place-items: center;
+    border: 1px solid var(--format-pair-border);
+    border-radius: 999px;
+    padding-inline: 0.25rem;
+    color: var(--format-pair-ink);
+    background: var(--format-pair-surface);
+    font-family: var(--type-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .card .pairBadge {
+    position: absolute;
+    top: 0.45rem;
+    left: 0.45rem;
+  }
+  .card[data-pair-tone="violet"],
+  .pairSummary[data-pair-tone="violet"],
+  .completedList > span[data-pair-tone="violet"] {
+    --format-pair-border: var(--format-pair-violet-border);
+    --format-pair-surface: var(--format-pair-violet-surface);
+    --format-pair-ink: var(--format-pair-violet-ink);
+  }
+  .card[data-pair-tone="blue"],
+  .pairSummary[data-pair-tone="blue"],
+  .completedList > span[data-pair-tone="blue"] {
+    --format-pair-border: var(--format-pair-blue-border);
+    --format-pair-surface: var(--format-pair-blue-surface);
+    --format-pair-ink: var(--format-pair-blue-ink);
+  }
+  .card[data-pair-tone="amber"],
+  .pairSummary[data-pair-tone="amber"],
+  .completedList > span[data-pair-tone="amber"] {
+    --format-pair-border: var(--format-pair-amber-border);
+    --format-pair-surface: var(--format-pair-amber-surface);
+    --format-pair-ink: var(--format-pair-amber-ink);
+  }
+  .card[data-pair-tone="pink"],
+  .pairSummary[data-pair-tone="pink"],
+  .completedList > span[data-pair-tone="pink"] {
+    --format-pair-border: var(--format-pair-pink-border);
+    --format-pair-surface: var(--format-pair-pink-surface);
+    --format-pair-ink: var(--format-pair-pink-ink);
+  }
+  .card[data-pair-tone="teal"],
+  .pairSummary[data-pair-tone="teal"],
+  .completedList > span[data-pair-tone="teal"] {
+    --format-pair-border: var(--format-pair-teal-border);
+    --format-pair-surface: var(--format-pair-teal-surface);
+    --format-pair-ink: var(--format-pair-teal-ink);
+  }
+  .card[data-pair-tone="orange"],
+  .pairSummary[data-pair-tone="orange"],
+  .completedList > span[data-pair-tone="orange"] {
+    --format-pair-border: var(--format-pair-orange-border);
+    --format-pair-surface: var(--format-pair-orange-surface);
+    --format-pair-ink: var(--format-pair-orange-ink);
   }
 
   .checkRow {
@@ -224,6 +299,27 @@
     --format-matched-state-surface: var(--color-success);
     --format-invalid-state-ink: var(--color-ink);
     --format-invalid-state-surface: var(--color-danger);
+    --format-pair-border: var(--format-pair-violet-border);
+    --format-pair-surface: var(--format-pair-violet-surface);
+    --format-pair-ink: var(--format-pair-violet-ink);
+    --format-pair-violet-border: #6957e8;
+    --format-pair-violet-surface: color-mix(in srgb, #6957e8 12%, var(--format-surface));
+    --format-pair-violet-ink: #5545c7;
+    --format-pair-blue-border: #3f76c7;
+    --format-pair-blue-surface: color-mix(in srgb, #3f76c7 12%, var(--format-surface));
+    --format-pair-blue-ink: #2f5fa9;
+    --format-pair-amber-border: #c47808;
+    --format-pair-amber-surface: color-mix(in srgb, #c47808 14%, var(--format-surface));
+    --format-pair-amber-ink: #8b5500;
+    --format-pair-pink-border: #b94f89;
+    --format-pair-pink-surface: color-mix(in srgb, #b94f89 12%, var(--format-surface));
+    --format-pair-pink-ink: #93406f;
+    --format-pair-teal-border: #168b8b;
+    --format-pair-teal-surface: color-mix(in srgb, #168b8b 12%, var(--format-surface));
+    --format-pair-teal-ink: #0d6f6f;
+    --format-pair-orange-border: #c95d2e;
+    --format-pair-orange-surface: color-mix(in srgb, #c95d2e 12%, var(--format-surface));
+    --format-pair-orange-ink: #a3451f;
     --format-focus: var(--color-focus);
     margin-top: var(--space-5);
   }
