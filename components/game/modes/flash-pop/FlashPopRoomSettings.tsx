@@ -1,5 +1,4 @@
-import { ArrowIcon, Avatar, Button, Canvas, UserPlusIcon } from "@/components/ui";
-import { PendingLink } from "@/components/navigation";
+import { Avatar, BackLink, Button, Canvas, UserPlusIcon } from "@/components/ui";
 import type { RoomSettingsModel } from "@/types/game";
 import { RoomMemberActions } from "./RoomMemberActions.client";
 import styles from "./FlashPopRoomSettings.module.css";
@@ -16,13 +15,10 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
     <Canvas as="div" contentClassName={styles.content}>
       <section className={styles.hero} aria-labelledby="room-settings-title">
         <header className={styles.heroToolbar}>
-          <PendingLink
+          <BackLink
             href={`/salas/${model.roomId}`}
-            className={styles.backButton}
-            aria-label="Volver al detalle de la sala"
-          >
-            <ArrowIcon className={styles.backIcon} />
-          </PendingLink>
+            label="Volver al detalle de la sala"
+          />
           <Button
             variant="secondary"
             size="sm"

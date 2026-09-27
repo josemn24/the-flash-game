@@ -1,8 +1,7 @@
 "use client";
 
-import { ArrowIcon, Avatar, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
+import { Avatar, BackLink, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
 import { ReviewAnswerList, reviewQuestionsFor } from "@/components/game/shared";
-import { PendingLink } from "@/components/navigation";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { applyRoomMemberChallengeResult } from "@/features/rooms/localResults";
 import type { AnswerReview, AnswerResult, Challenge, RoomMemberDetailModel } from "@/types/game";
@@ -107,13 +106,10 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <PendingLink
+        <BackLink
           href={model.returnHref}
-          className={styles.backLink}
-          aria-label="Volver al origen del resultado"
-        >
-          <ArrowIcon className={styles.backIcon} />
-        </PendingLink>
+          label="Volver al origen del resultado"
+        />
       </header>
 
       <div>

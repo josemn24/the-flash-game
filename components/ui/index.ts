@@ -14,6 +14,8 @@ export { Canvas } from "./Canvas";
 export type { CanvasProps } from "./Canvas";
 export { IconButton } from "./IconButton";
 export type { IconButtonProps } from "./IconButton";
+export { BackButton, BackLink } from "./BackControl";
+export type { BackButtonProps, BackLinkProps } from "./BackControl";
 export { Timer, TimerDisplay } from "./Timer";
 export type { CountdownUrgency, TimerDisplayProps, TimerProps } from "./Timer";
 export * from "./icons";

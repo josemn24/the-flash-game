@@ -6,6 +6,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { PendingLink } from "@/components/navigation";
 import {
   ArrowIcon,
+  BackLink,
   BoltIcon,
   ButtonLink,
   Canvas,
@@ -193,9 +194,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <PendingLink href="/" className={styles.toolbarIcon} aria-label="Volver a Tus salas">
-          <ArrowIcon className={styles.backIcon} />
-        </PendingLink>
+        <BackLink href="/" label="Volver a Tus salas" />
 
         <div className={styles.toolbarCenter}>
           <PendingLink

@@ -10,49 +10,6 @@
     background-size: 18px 18px;
   }
 
-  .backButton {
-    display: inline-flex;
-    width: 44px;
-    height: 44px;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--color-line);
-    border-radius: 50%;
-    background: rgb(255 255 255 / 76%);
-    color: var(--color-ink);
-    box-shadow: var(--shadow-control);
-    text-decoration: none;
-    transition:
-      transform var(--motion-press-out) var(--ease-out),
-      box-shadow var(--motion-press-out) var(--ease-out),
-      background var(--motion-press-out) ease;
-  }
-
-  .backButton:hover {
-    background: var(--color-surface);
-    transform: translateY(-1px);
-  }
-
-  .backButton:active {
-    transform: translateY(3px);
-    box-shadow: none;
-    transition-duration: var(--motion-press-in);
-  }
-
-  .backButton:focus-visible {
-    outline: 3px solid var(--color-brand);
-    outline-offset: 3px;
-  }
-
-  .backButton svg {
-    width: 21px;
-    height: 21px;
-  }
-
-  .backIcon {
-    transform: rotate(180deg);
-  }
-
   .content {
     display: flex;
     flex: 1;

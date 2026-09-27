@@ -1,6 +1,5 @@
 import Image from "next/image";
-import { PendingLink } from "@/components/navigation";
-import { ArrowIcon, Avatar, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
+import { Avatar, BackLink, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
 import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
 import styles from "./FlashPopRoomSecondary.module.css";
@@ -27,13 +26,10 @@ export function FlashPopRoomHistory({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <PendingLink
+        <BackLink
           href={`/salas/${roomId}`}
-          className={styles.backLink}
-          aria-label="Volver al detalle de la sala"
-        >
-          <ArrowIcon className={styles.backIcon} />
-        </PendingLink>
+          label="Volver al detalle de la sala"
+        />
       </header>
 
       <div className={styles.pageIntro}>
