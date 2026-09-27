@@ -67,7 +67,7 @@ language sql stable security definer set search_path = '' as $$
       and (private.publication_is_effectively_open(
         schedule.status, season.status, season.starts_at, season.ends_at,
         schedule.opens_at, schedule.closes_at, statement_timestamp()) or attempt.id is not null)
-      and version.status = 'published' and version.mode = 'survival'
+      and version.status in ('published', 'archived') and version.mode = 'survival'
       and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
       and jsonb_typeof(version.mode_config->'lives') = 'number'
       and (version.mode_config->>'lives')::integer between 1 and 20

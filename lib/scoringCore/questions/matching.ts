@@ -1,9 +1,5 @@
 import type { AnswerValue, MatchingAnswer, MatchingQuestion, Question } from "@/types/game";
-import {
-  applyAttemptPenalty,
-  calculateProportionalScore,
-  calculateSpeedMultiplier,
-} from "@/lib/scoringCore/shared";
+import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
   InternalEvaluation,
@@ -31,10 +27,24 @@ export function calculateMatchingMetrics(question: MatchingQuestion, answer: Mat
   return { correctPairs, totalPairs: question.leftItems.length };
 }
 
+function isCompleteMatchingAnswer(question: MatchingQuestion, answer: AnswerValue): answer is MatchingAnswer {
+  if (!isMatchingAnswer(answer)) return false;
+  const leftIds = question.leftItems.map((item) => item.id);
+  const rightIds = new Set(question.rightItems.map((item) => item.id));
+  const answerEntries = Object.entries(answer);
+  return (
+    leftIds.length > 0 &&
+    answerEntries.length === leftIds.length &&
+    leftIds.every((leftId) => Object.hasOwn(answer, leftId)) &&
+    answerEntries.every(([, rightId]) => rightIds.has(rightId)) &&
+    new Set(answerEntries.map(([, rightId]) => rightId)).size === answerEntries.length
+  );
+}
+
 function isCorrect(question: Question, answer: AnswerValue) {
   const matchingQuestion = asQuestion(question);
   return (
-    isMatchingAnswer(answer) &&
+    isCompleteMatchingAnswer(matchingQuestion, answer) &&
     calculateMatchingMetrics(matchingQuestion, answer).correctPairs ===
       matchingQuestion.leftItems.length
   );
@@ -44,7 +54,6 @@ export function evaluateMatching({
   question,
   answer,
   timeUsed,
-  incorrectAttempts,
 }: EvaluationContext): InternalEvaluation {
   const matchingQuestion = asQuestion(question);
   const correct = isCorrect(question, answer);
@@ -53,30 +62,26 @@ export function evaluateMatching({
   }
 
   const metrics = calculateMatchingMetrics(matchingQuestion, answer);
-  const partialScore = calculateProportionalScore(
-    matchingQuestion.points,
-    metrics.correctPairs,
-    metrics.totalPairs,
-    calculateSpeedMultiplier(timeUsed, matchingQuestion.timeLimit),
-  );
+  const points = correct
+    ? Math.round(
+        matchingQuestion.points * calculateSpeedMultiplier(timeUsed, matchingQuestion.timeLimit),
+      )
+    : 0;
   return {
     isCorrect: correct,
-    status: correct ? "correct" : metrics.correctPairs > 0 ? "partial" : "incorrect",
-    points: applyAttemptPenalty(partialScore, matchingQuestion.points, incorrectAttempts),
-    details: { type: "matching", ...metrics, incorrectAttempts },
+    status: correct ? "correct" : "incorrect",
+    points,
+    details: { type: "matching", ...metrics },
   };
 }
 
 export const scoring = {
   questionType: "matching",
-  policy: "partial-items",
+  policy: "binary-speed",
   timeoutPolicy: {
     answerSource: "draft",
-    preservePoints: true,
-    status: (evaluation) =>
-      evaluation.details?.type === "matching" && evaluation.details.correctPairs === 0
-        ? "unanswered"
-        : undefined,
+    preservePoints: false,
+    status: () => "unanswered",
   },
   isAnswer: isMatchingAnswer,
   isCorrect,

@@ -1140,7 +1140,7 @@ describe("question evaluation", () => {
     ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
-  it("awards matching credit per correct pair and adjusts it by speed", () => {
+  it("awards matching credit only when every pair is correct", () => {
     const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     const complete = {
       japon: "bandera-japon",
@@ -1155,10 +1155,14 @@ describe("question evaluation", () => {
     expect(
       evaluateAnswer({
         question,
-        answer: { japon: "bandera-japon", italia: "bandera-italia" },
+        answer: { japon: "bandera-japon", italia: "bandera-italia", francia: "bandera-japon" },
         timeUsed: 10,
       }),
-    ).toMatchObject({ status: "partial", points: 80 });
+    ).toMatchObject({
+      status: "incorrect",
+      points: 0,
+      details: { type: "matching", correctPairs: 2, totalPairs: 3 },
+    });
   });
 
   it("validates connect-pairs routes, endpoints, conflicts, and coverage", () => {
@@ -1569,7 +1573,7 @@ describe("question evaluation", () => {
     ).toBe(false);
   });
 
-  it("preserves matching progress on timeout without rewarding wrong pairs", () => {
+  it("marks every timed-out matching draft as unanswered", () => {
     const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     expect(
       evaluateAnswer({
@@ -1578,7 +1582,7 @@ describe("question evaluation", () => {
         timeUsed: 20,
         timedOut: true,
       }),
-    ).toMatchObject({ status: "partial", points: 30 });
+    ).toMatchObject({ status: "unanswered", points: 0 });
     expect(
       evaluateAnswer({ question, answer: { japon: "bandera-italia" }, timeUsed: 0 }),
     ).toMatchObject({ status: "incorrect", points: 0 });
@@ -1791,7 +1795,7 @@ describe("question evaluation", () => {
     ).toBe(false);
   });
 
-  it("penalizes matching mistakes by ten percent without going below zero", () => {
+  it("does not apply per-pair penalties to matching", () => {
     const question = QUESTION_FORMAT_CATALOG.matching.examples[0].question;
     const answer = { japon: "bandera-japon" };
     expect(
@@ -1802,14 +1806,9 @@ describe("question evaluation", () => {
         matchingIncorrectAttempts: 1,
       }),
     ).toMatchObject({
-      status: "partial",
-      points: 35,
-      details: {
-        type: "matching",
-        correctPairs: 1,
-        totalPairs: 3,
-        incorrectAttempts: 1,
-      },
+      status: "incorrect",
+      points: 0,
+      details: { type: "matching", correctPairs: 1, totalPairs: 3 },
     });
     expect(
       evaluateAnswer({
@@ -1818,7 +1817,7 @@ describe("question evaluation", () => {
         timeUsed: 0,
         matchingIncorrectAttempts: 4,
       }),
-    ).toMatchObject({ status: "partial", points: 0 });
+    ).toMatchObject({ status: "incorrect", points: 0 });
   });
 
   it("calculates estimation proximity", () => {
@@ -1906,9 +1905,9 @@ describe("question evaluation", () => {
         matchingIncorrectAttempts: 2,
       }),
     ).toMatchObject({
-      status: "partial",
-      points: 70,
-      details: { type: "matching", correctPairs: 2, incorrectAttempts: 2 },
+      status: "incorrect",
+      points: 0,
+      details: { type: "matching", correctPairs: 2, totalPairs: 3 },
     });
 
     expect(
@@ -2089,7 +2088,6 @@ describe("question evaluation", () => {
         "connect-pairs",
         "error-reconstruction",
         "flash-memory",
-        "matching",
         "memory-pairs",
         "mini-nonogram",
         "mini-sudoku",

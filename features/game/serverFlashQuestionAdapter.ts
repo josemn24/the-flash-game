@@ -659,10 +659,6 @@ export function questionFromPayload(
   if (questionType === "matching") {
     const leftItems = value.leftItems;
     const rightItems = value.rightItems;
-    const rawProgress =
-      progress && typeof progress === "object" && !Array.isArray(progress)
-        ? (progress as Record<string, unknown>)
-        : {};
     const isItem = (item: unknown) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) return false;
       const record = item as Record<string, unknown>;
@@ -692,44 +688,11 @@ export function questionFromPayload(
     const rightIds = validRightItems
       ? rightItems.map((item) => (item as Record<string, unknown>).id as string)
       : [];
-    const rawMatchedPairs = Array.isArray(rawProgress.matchedPairs) ? rawProgress.matchedPairs : [];
-    const matchedPairs = rawMatchedPairs.filter(
-      (pair): pair is { leftId: string; rightId: string } => {
-        if (!pair || typeof pair !== "object" || Array.isArray(pair)) return false;
-        const record = pair as Record<string, unknown>;
-        return typeof record.leftId === "string" && typeof record.rightId === "string";
-      },
-    );
-    const matchedLeftIds = new Set(matchedPairs.map((pair) => pair.leftId));
-    const matchedRightIds = new Set(matchedPairs.map((pair) => pair.rightId));
-    const totalPairs =
-      typeof rawProgress.totalPairs === "number"
-        ? rawProgress.totalPairs
-        : Array.isArray(leftItems)
-          ? leftItems.length
-          : 0;
-    const matchedCount =
-      typeof rawProgress.matchedCount === "number" ? rawProgress.matchedCount : matchedPairs.length;
-    const incorrectAttempts =
-      typeof rawProgress.incorrectAttempts === "number" ? rawProgress.incorrectAttempts : 0;
-    const penaltyPoints =
-      typeof rawProgress.penaltyPoints === "number" ? rawProgress.penaltyPoints : 0;
     if (
       !validLeftItems ||
       !validRightItems ||
       new Set(leftIds).size !== leftIds.length ||
-      new Set(rightIds).size !== rightIds.length ||
-      !matchedPairs.every(
-        (pair) => leftIds.includes(pair.leftId) && rightIds.includes(pair.rightId),
-      ) ||
-      matchedLeftIds.size !== matchedPairs.length ||
-      matchedRightIds.size !== matchedPairs.length ||
-      matchedCount !== matchedPairs.length ||
-      totalPairs !== leftIds.length ||
-      !Number.isSafeInteger(incorrectAttempts) ||
-      incorrectAttempts < 0 ||
-      !Number.isSafeInteger(penaltyPoints) ||
-      penaltyPoints < 0
+      new Set(rightIds).size !== rightIds.length
     ) {
       throw new ServerFlashQuestionError();
     }
@@ -740,14 +703,6 @@ export function questionFromPayload(
       type: "matching",
       leftItems: safeLeftItems,
       rightItems: safeRightItems,
-      progress: {
-        kind: "matching",
-        matchedPairs,
-        matchedCount,
-        totalPairs,
-        incorrectAttempts,
-        penaltyPoints,
-      },
     };
   }
   if (questionType === "word-search") {

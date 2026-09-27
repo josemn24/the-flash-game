@@ -182,6 +182,12 @@
 - Los estados editoriales son `draft`, `published` y `archived`.
 - Una versión en borrador es editable. Una versión publicada es inmutable.
 - Cualquier cambio posterior, incluida una corrección, crea una versión nueva.
+- Una corrección de Flash, Supervivencia o Pirámide clona una versión `published` o `archived` en
+  un nuevo borrador de la misma definición; puede haber varias ramas de borrador y cada una recibe
+  su propio número secuencial.
+- Archivar una versión publicada no invalida las publicaciones que ya la referencian ni recalcula
+  puntos, respuestas o revisiones históricas. Las nuevas publicaciones solo pueden seleccionar
+  versiones `published`; los calendarios e intentos históricos siguen resolviendo `archived`.
 - Una definición que ya haya sido utilizada se archiva en lugar de eliminarse.
 - Las preguntas son reutilizables y versionables.
 - Una versión de desafío referencia versiones concretas de preguntas para que una partida histórica

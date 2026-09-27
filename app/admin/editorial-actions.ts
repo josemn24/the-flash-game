@@ -13,7 +13,9 @@ import {
 } from "@/lib/editorial/flashDocument";
 import { requireSuperadmin } from "@/server/admin";
 import {
+  archiveSuperadminChallengeVersion,
   createSuperadminFlashDraft,
+  createSuperadminChallengeRevision,
   publishSuperadminFlash,
   updateSuperadminFlashDraft,
 } from "@/server/admin-editorial";
@@ -59,6 +61,8 @@ function commandMessage(code: string) {
       return "El contenido ya no existe. Recarga el portal.";
     case "content_not_draft":
       return "Solo se pueden editar borradores.";
+    case "content_not_published":
+      return "Solo se pueden archivar o versionar contenidos publicados.";
     case "content_already_published":
       return "El contenido ya está publicado.";
     case "content_conflict":
@@ -226,6 +230,87 @@ export async function publishFlash(
     revalidatePath("/admin/challenges");
     revalidatePath(`/admin/challenges/${result.challengeDefinitionId}`);
     redirect(`/admin/challenges/${result.challengeDefinitionId}?editorial=published`);
+  } catch (error) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
+      handlePortalBoundary(error);
+    }
+    throw error;
+  }
+}
+
+export async function createChallengeRevision(
+  _state: EditorialActionState,
+  formData: FormData,
+): Promise<EditorialActionState> {
+  try {
+    await requireSuperadmin();
+    const parsed = parseCommon(formData);
+    const sourceChallengeVersionId = textValue(formData, "sourceChallengeVersionId").trim();
+    if (!uuidPattern.test(sourceChallengeVersionId)) {
+      parsed.fieldErrors.sourceChallengeVersionId = "Selecciona una versión editorial válida.";
+    }
+    if (Object.keys(parsed.fieldErrors).length > 0) return validationState(parsed.fieldErrors);
+    let result: Awaited<ReturnType<typeof createSuperadminChallengeRevision>>;
+    try {
+      result = await createSuperadminChallengeRevision({
+        idempotencyKey: parsed.idempotencyKey,
+        sourceChallengeVersionId,
+        reason: parsed.reason,
+      });
+    } catch (error) {
+      return commandState(error);
+    }
+    revalidatePath("/admin");
+    revalidatePath("/admin/challenges");
+    revalidatePath(`/admin/challenges/${result.challengeDefinitionId}`);
+    redirect(
+      `/admin/challenges/${result.challengeDefinitionId}?editorial=revision-created&draftId=${result.challengeVersionId}`,
+    );
+  } catch (error) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
+      handlePortalBoundary(error);
+    }
+    throw error;
+  }
+}
+
+export async function archiveChallengeVersion(
+  _state: EditorialActionState,
+  formData: FormData,
+): Promise<EditorialActionState> {
+  try {
+    await requireSuperadmin();
+    const parsed = parseCommon(formData);
+    const challengeVersionId = textValue(formData, "challengeVersionId").trim();
+    const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt").trim();
+    if (!uuidPattern.test(challengeVersionId)) {
+      parsed.fieldErrors.challengeVersionId = "Selecciona una versión editorial válida.";
+    }
+    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) {
+      parsed.fieldErrors.expectedUpdatedAt = "La versión cambió. Recarga antes de archivarla.";
+    }
+    if (Object.keys(parsed.fieldErrors).length > 0) return validationState(parsed.fieldErrors);
+    let result: Awaited<ReturnType<typeof archiveSuperadminChallengeVersion>>;
+    try {
+      result = await archiveSuperadminChallengeVersion({
+        idempotencyKey: parsed.idempotencyKey,
+        challengeVersionId,
+        expectedUpdatedAt,
+        reason: parsed.reason,
+      });
+    } catch (error) {
+      return commandState(error);
+    }
+    revalidatePath("/admin");
+    revalidatePath("/admin/challenges");
+    revalidatePath(`/admin/challenges/${result.challengeDefinitionId}`);
+    redirect(`/admin/challenges/${result.challengeDefinitionId}?editorial=archived`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||

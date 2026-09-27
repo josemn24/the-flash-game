@@ -89,7 +89,6 @@ begin
     when 'receive_answer' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_mini_wordle_guess' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_logic_code_attempt' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
-    when 'submit_matching_pair' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_word_search_selection' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_word_hashtag_swap' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_queens_placement' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];

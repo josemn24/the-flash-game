@@ -7,18 +7,19 @@
 ## Resumen
 
 The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S15, S17a, S18b parcial, S20,
+migradas usan fixtures y un store mock normalizado. Las slices S01–S15, S17, S17a, S18b parcial, S20,
 D08a/D08b,
 S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, S15 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
 salas, un Flash competitivo persistido con evaluación server-side, recuperación/abandono, sus dos
 rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
 persistidos, E02 Logic-code con eventos privados y evaluación al acertar, E03 Progressive-clues
-con revelaciones privadas y penalización basada en eventos, E04 Matching con parejas privadas,
-feedback incremental y crédito parcial, y E05 Queens con colocaciones persistidas y penalización
+con revelaciones privadas y penalización basada en eventos, E04 Matching con asociaciones locales y
+una comprobación final binaria, y E05 Queens con colocaciones persistidas y penalización
 server-side, y E06 Word-search con selecciones privadas, recuperación e idempotencia, además del acceso seguro server-side para
 superadministración, la creación auditada de salas privadas y la preparación/activación auditada
-de temporadas y la publicación editorial auditada de Flash mínimo desde el portal. F01/F02/F06 añaden
+de temporadas, la publicación editorial auditada y el versionado/corrección de Flash, Supervivencia
+y Pirámide desde el portal. F01/F02/F06 añaden
 `true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
 F07/F08/F12 añaden `classification`, `logic-matrix` y `anagram` con validación de labels/categorías, consumo de fichas,
 asignaciones parciales y soluciones privadas en payloads v1.
@@ -47,11 +48,11 @@ persisten `assetId` y `prepare_interaction` emite una URL firmada solo tras auto
 La misma infraestructura ya está integrada en `multiple-choice`: su biblioteca usa `media.assetId`
 en payload v2 y el runtime entrega únicamente `media.src` al jugador autorizado.
 
-No hay un proyecto remoto de Supabase vinculado desde este entorno (`linked_project: null`). El
-estado verificado corresponde al stack local y no permite afirmar el estado de producción o staging.
-S14 habilita Supervivencia persistida y S15 habilita Pirámide competitiva; ambas están verificadas en
-Supabase local dentro del runtime `pilot`. No hay proyecto remoto enlazado. Las demos mock no son
-fallback de las rutas competitivas. Consulta
+La CLI local tiene un proyecto de staging vinculado, pero la migración S17 no se ha aplicado ni
+validado allí. El estado verificado corresponde al stack local y no permite afirmar el estado de
+producción o staging. S14 habilita Supervivencia persistida y S15 habilita Pirámide competitiva; ambas
+están verificadas en Supabase local dentro del runtime `pilot`. Las demos mock no son fallback de las
+rutas competitivas. Consulta
 [`s22-operacion.md`](s22-operacion.md).
 
 ## Capacidades actuales
@@ -69,8 +70,8 @@ fallback de las rutas competitivas. Consulta
 - Supervivencia competitiva persistida (S14): vidas configurables de 1 a preguntas, score,
   eliminación/supervivencia y cierre derivados de evaluaciones server-side; recuperación de una
   pregunta abierta como `unanswered`, resultado terminal y revisión propia sin exposición durante la
-  partida. Matching aplica el cierre inmediato por error con una vida; el abandono sigue siendo
-  explícito. Ranking y Flash Points reutilizan las proyecciones existentes.
+  partida. Matching comprueba el mapa completo al final y una comprobación incorrecta consume una vida;
+  el abandono sigue siendo explícito. Ranking y Flash Points reutilizan las proyecciones existentes.
 - Pirámide (S15, verificada localmente): el editor exige siete niveles
   con briefings y formatos evaluables; cada checkpoint entrega solo el nivel permitido, y el servidor
   deriva progreso, `summit`/`failed`, puntos y cierre desde evaluaciones guardadas. La recuperación
@@ -101,8 +102,8 @@ fallback de las rutas competitivas. Consulta
   E03 añade mezclas `multiple-choice` + `progressive-clues`, primera pista gratuita, revelaciones
   transaccionales, penalización escalada por puntos del item, evaluación desde eventos y protección
   contra pistas futuras.
-  E04 añade mezclas `multiple-choice` + `matching`, correspondencias uno a uno, eventos privados de
-  aciertos/fallos, penalización del 10%, progreso tras recarga y evaluación parcial en timeout.
+  E04 añade mezclas `multiple-choice` + `matching`, resolución local de correspondencias, una única
+  comprobación final server-side, scoring binario y rechazo de mapas inválidos.
   E05 añade mezclas `multiple-choice` + `queens`, tablero 5×5, coronas precolocadas, eventos de
   colocación/retirada, penalización del 5% por conflicto, recuperación sin marcas X y resolución
   automática con evaluación server-side.
@@ -172,8 +173,8 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - El portal privado de `/admin` permite crear salas activas, asignar un owner existente,
   provisionar un grupo inicial opcional y gestionar temporadas S10. S11 añade el editor local de
   Flash mínimo; la gestión posterior de miembros es parcial en ajustes (S18b), mientras que
-  transferencia, bloqueo/desbloqueo e invitaciones completas, además del reemplazo/archivado de
-  contenido publicado, siguen siendo local-first y no forman parte de la UI pública. S12 ya opera
+  transferencia, bloqueo/desbloqueo e invitaciones completas siguen pendientes y no forman parte de
+  la UI pública. S12 ya opera
   localmente el calendario de publicaciones.
   D08a/S13 ya
   cubren avatares persistidos y assets privados de E10 y `multiple-choice`. La subida de imágenes de
@@ -190,7 +191,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   siguen fuera de S07 y deshabilitados.
 - El historial de usuario solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
   `test`/`invalidated` y publicaciones `cancelled` quedan fuera de las proyecciones de usuario.
-- S20 ya permite corrección administrativa local; la aplicación de la migración y la validación de
+- S17 y S20 ya permiten corrección administrativa local; la aplicación de la migración y la validación de
   estas RPC contra un proyecto Supabase remoto siguen pendientes.
 - Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
   confundirse con el recorrido competitivo migrado.
@@ -200,18 +201,25 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado documentado a 2026-09-25:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260925130000_s20_attempt_inspection_projection`.
+  `20260927103813_matching_timeout_validation`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
-- `npm run lint`: correcto con dos warnings no bloqueantes en `FlashPopRoomRanking.tsx` y
-  `scripts/integration/scenarios/s15.mjs`.
-- `npm test`: 132 archivos correctos y 1 fallido; 778 tests pasan de 779. El fallo pendiente está en
-  `lib/challengeIntro.test.tsx`, por la discrepancia entre `España` y `Supervivencia: España`.
-- `npm run format:check`: informa 151 archivos sin formato canónico; queda fuera de esta actualización.
-- `npm run supabase:schema:test`: correcto sobre Supabase local; cargó 48 schemas declarativos,
-  verificó el inventario y todas las suites pgTAP, incluida S20 con 21 checks. La suite no acredita
-  staging o producción.
-- No hay proyecto remoto vinculado; ninguna de estas comprobaciones acredita staging o producción.
+- `npm run type-architecture`: correcto.
+- `npm run lint`: correcto.
+- `npm run build`: correcto con Next.js 16.2.10.
+- `npm test`: 140 archivos y 806 tests correctos.
+- Tests focales S17: 17 tests Vitest, integración Auth/PostgREST/RLS y E2E del portal (2/2) correctos.
+- `npm run format:check`: informa 158 archivos sin formato canónico; queda fuera de esta actualización.
+- `npm run supabase:schema:test`: correcto; cargó 52 schemas, verificó el inventario, todas las suites
+  PgTAP —incluidos los 45 checks de S17— y las carreras con conexiones PostgreSQL independientes.
+- `s17_editorial_versioning.test.sql`: 45 checks nuevos cubren Flash, Survival y Pyramid, clonación
+  secuencial, referencias de biblioteca, publicación, archivado, concurrencia, comparación segura,
+  calendarios y lecturas históricas.
+- `npm run test:integration:supabase -- --scenario s17` y `npm run test:e2e -- e2e/s17-editorial-versioning.spec.ts`:
+  recorrido S17 con dos publicaciones de versiones distintas, corrección, comparación, archivado y
+  autorización del portal.
+- Aunque la CLI tiene staging vinculado, no se ejecutó `supabase db push` ni una validación remota;
+  ninguna de estas comprobaciones acredita staging o producción.
 
 ### Registros históricos de slices
 
@@ -295,8 +303,8 @@ Estado documentado a 2026-09-25:
   `npm run test:e2e -- e2e/e03-progressive-clues.spec.ts`: correctos; cubren publicación mixta,
   proyección sin solución/pistas futuras, revelación idempotente, recarga, penalización y revisión.
 - `npm run test:integration:supabase -- --scenario e04` y
-  `npm run test:e2e -- e2e/e04-matching.spec.ts`: correctos; cubren correspondencias privadas,
-  penalización, recarga, reintento idempotente, cierre y revisión autorizada.
+  `npm run test:e2e -- e2e/e04-matching.spec.ts`: correctos sobre fixture limpio; cubren resolución
+  local, ausencia de peticiones durante los clics, reintento idempotente, cierre y revisión.
 - `npm run test:integration:supabase -- --scenario e05`: correcto con fixture mixto, lectura Queens
   sin solución y aislamiento del spectator; el fixture temporal se limpió tras la prueba.
 - `npm run test:e2e -- e2e/e05-queens.spec.ts`: correcto; cubre coronas persistidas, recarga,

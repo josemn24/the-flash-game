@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   createDraft: vi.fn(),
   updateDraft: vi.fn(),
   publish: vi.fn(),
+  createRevision: vi.fn(),
+  archiveVersion: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn((path: string) => {
     throw new Error(`REDIRECT:${path}`);
@@ -20,9 +22,17 @@ vi.mock("@/server/admin-editorial", () => ({
   createSuperadminFlashDraft: mocks.createDraft,
   updateSuperadminFlashDraft: mocks.updateDraft,
   publishSuperadminFlash: mocks.publish,
+  createSuperadminChallengeRevision: mocks.createRevision,
+  archiveSuperadminChallengeVersion: mocks.archiveVersion,
 }));
 
-import { createFlashDraft, publishFlash, updateFlashDraft } from "./editorial-actions";
+import {
+  archiveChallengeVersion,
+  createChallengeRevision,
+  createFlashDraft,
+  publishFlash,
+  updateFlashDraft,
+} from "./editorial-actions";
 
 const document = {
   challenge: {
@@ -66,6 +76,11 @@ describe("editorial admin actions", () => {
     mocks.createDraft.mockResolvedValue({ challengeDefinitionId });
     mocks.updateDraft.mockResolvedValue({ challengeDefinitionId });
     mocks.publish.mockResolvedValue({ challengeDefinitionId });
+    mocks.createRevision.mockResolvedValue({
+      challengeDefinitionId,
+      challengeVersionId: "00000000-0000-4000-8000-000000000003",
+    });
+    mocks.archiveVersion.mockResolvedValue({ challengeDefinitionId });
   });
 
   it("authorizes and sends a parsed document when creating a draft", async () => {
@@ -123,5 +138,33 @@ describe("editorial admin actions", () => {
     }));
 
     expect(result.fieldErrors?.form).toContain("otra pestaña");
+  });
+
+  it("creates a correction from a published version and selects its draft", async () => {
+    await expect(createChallengeRevision({}, formData({
+      idempotencyKey: "editorial-revision-1",
+      sourceChallengeVersionId: "00000000-0000-4000-8000-000000000001",
+      reason: "Corregir el piloto",
+    }))).rejects.toThrow(
+      "REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=revision-created&draftId=00000000-0000-4000-8000-000000000003",
+    );
+
+    expect(mocks.createRevision).toHaveBeenCalledWith({
+      idempotencyKey: "editorial-revision-1",
+      sourceChallengeVersionId: "00000000-0000-4000-8000-000000000001",
+      reason: "Corregir el piloto",
+    });
+  });
+
+  it("requires a valid optimistic timestamp when archiving", async () => {
+    const result = await archiveChallengeVersion({}, formData({
+      idempotencyKey: "editorial-archive-1",
+      challengeVersionId: "00000000-0000-4000-8000-000000000001",
+      expectedUpdatedAt: "not-a-date",
+      reason: "Retirar la versión anterior",
+    }));
+
+    expect(result.fieldErrors?.expectedUpdatedAt).toContain("cambió");
+    expect(mocks.archiveVersion).not.toHaveBeenCalled();
   });
 });

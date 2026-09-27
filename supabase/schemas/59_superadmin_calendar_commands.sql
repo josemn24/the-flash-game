@@ -539,7 +539,7 @@ begin
       join public.rooms room on room.id = season.room_id
       join private.challenge_versions version on version.id = schedule.challenge_version_id
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status = 'published' and version.mode in ('flash', 'survival', 'pyramid')
+      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
@@ -586,7 +586,7 @@ begin
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
       where room.id = target_room_id
         and room.status = 'active'
-        and version.status = 'published'
+        and version.status in ('published', 'archived')
         and version.mode in ('flash', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
@@ -672,7 +672,7 @@ language sql stable security definer set search_path = '' as $$
     and room.status = 'active'
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
     and version.mode in ('flash', 'survival', 'pyramid')
     and version.config_schema_version = 1
     and version.max_score = 100

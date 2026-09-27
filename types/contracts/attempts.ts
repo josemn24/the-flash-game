@@ -60,32 +60,6 @@ export type ReceiveAnswerResult = AttemptCommandResult & {
   readonly receivedAt: UtcIsoDateTime;
   readonly presentedAt: UtcIsoDateTime;
 };
-export type MatchingPair = {
-  readonly leftId: string;
-  readonly rightId: string;
-};
-export type SubmitMatchingPairInput = AttemptCommandInput & {
-  readonly challengeItemId: ChallengeItemId;
-  readonly leftItemId: string;
-  readonly rightItemId: string;
-  readonly clientTimeUsedMs?: DurationMs;
-};
-export type SubmitMatchingPairResult = AttemptCommandResult & {
-  readonly challengeItemId: ChallengeItemId;
-  readonly leftItemId: string;
-  readonly rightItemId: string;
-  readonly correct: boolean;
-  readonly terminal: boolean;
-  readonly matchedPairs: readonly MatchingPair[];
-  readonly matchedCount: number;
-  readonly totalPairs: number;
-  readonly incorrectAttempts: number;
-  readonly penaltyPoints: number;
-  readonly receiptId?: AnswerReceiptId;
-  readonly status?: AnswerStatus;
-  readonly points?: number;
-  readonly timeUsedMs?: DurationMs;
-};
 export type SubmitWordSearchSelectionInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly startCell: number;

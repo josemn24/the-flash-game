@@ -33,7 +33,7 @@ async function choose(page: Page, left: string, right: string) {
 }
 
 test.describe("E04 — Matching competitivo", () => {
-  test("valida parejas server-side, recupera progreso e idempotencia", async ({ page }) => {
+  test("resuelve localmente y comprueba el mapa completo con idempotencia", async ({ page }) => {
     test.setTimeout(90_000);
     const data = await fixture();
     await openFlash(page, data.users.alice);
@@ -44,44 +44,39 @@ test.describe("E04 — Matching competitivo", () => {
     expect(await page.content()).not.toContain("correctMatchId");
     await expect(page.getByText("0/3")).toBeVisible();
 
-    await choose(page, "Uno", "Segundo");
-    await expect(page.getByText("No forman una pareja. Puedes volver a intentarlo.")).toBeVisible();
-    await expect(page.getByText("1 error")).toBeVisible();
-
-    await page.reload();
-    await expect(page.getByRole("heading", { name: "Relaciona cada concepto" })).toBeVisible();
-    await expect(page.getByText("0/3")).toBeVisible();
-    await expect(page.getByText("1 error")).toBeVisible();
-
-    let firstResponse = true;
     const requestBodies: Array<Record<string, unknown>> = [];
-    await page.route("**/api/competitive/attempts/*/matching/pair", async (route) => {
+    const answerRequests: Promise<unknown>[] = [];
+    await page.route("**/api/competitive/attempts/*/answer", async (route) => {
       requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) {
-        await route.continue();
+      answerRequests.push(Promise.resolve());
+      if (requestBodies.length === 1) {
+        const response = await route.fetch();
+        await route.fulfill({
+          status: 503,
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ error: { code: "command_failed", requestId: "e04-lost-response" } }),
+        });
+        await response.body();
         return;
       }
-      firstResponse = false;
-      const response = await route.fetch();
-      await route.fulfill({
-        status: 503,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ error: { code: "command_failed", requestId: "e04-lost-response" } }),
-      });
-      await response.body();
+      await route.continue();
     });
 
     await choose(page, "Uno", "Primero");
-    await expect(page.getByRole("button", { name: "Reintentar pareja" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar pareja" }).click();
+    await choose(page, "Dos", "Segundo");
+    await choose(page, "Tres", "Tercero");
+    expect(requestBodies).toHaveLength(0);
+    await expect(page.getByRole("button", { name: "Comprobar parejas" })).toBeEnabled();
+
+    await page.getByRole("button", { name: "Comprobar parejas" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar" }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("1/3")).toBeVisible();
-
-    await choose(page, "Dos", "Segundo");
-    await expect(page.getByText("2/3")).toBeVisible();
-    await choose(page, "Tres", "Tercero");
+    expect(requestBodies[0]?.answer).toEqual({ l1: "r1", l2: "r2", l3: "r3" });
+    await Promise.all(answerRequests);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+
     await page.reload();
     await expect(page.getByText("Desafío completado")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();

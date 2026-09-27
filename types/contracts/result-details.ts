@@ -16,7 +16,8 @@ export type AnswerResultDetails =
       type: "matching";
       correctPairs: number;
       totalPairs: number;
-      incorrectAttempts: number;
+      /** Legacy field kept only when reading results produced by the old pair protocol. */
+      incorrectAttempts?: number;
     }
   | {
       type: "connect-pairs";

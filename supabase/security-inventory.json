@@ -85,9 +85,6 @@
     "private.progressive_clue_reveal_events": {
       "kind": "r"
     },
-    "private.matching_pair_events": {
-      "kind": "r"
-    },
     "private.word_search_selection_events": {
       "kind": "r"
     },
@@ -342,6 +339,21 @@
     "private.update_flash_draft_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.create_challenge_revision_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.archive_challenge_version_command": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.superadmin_challenge_version_snapshot": {
+      "arguments": "target_challenge_version_id uuid",
+      "securityDefiner": false,
       "executeRoles": []
     },
     "private.publish_flash_command": {
@@ -649,15 +661,10 @@
       "securityDefiner": true,
       "executeRoles": []
     },
-    "private.matching_progress": {
-      "arguments": "target_attempt uuid, target_item uuid",
+    "private.matching_answer_valid": {
+      "arguments": "target_payload jsonb, target_answer jsonb, require_complete boolean",
       "securityDefiner": true,
       "executeRoles": []
-    },
-    "private.submit_matching_pair": {
-      "arguments": "input jsonb",
-      "securityDefiner": true,
-      "executeRoles": ["service_role"]
     },
     "private.word_search_progress": {
       "arguments": "target_attempt uuid, target_item uuid",
@@ -926,6 +933,21 @@
     },
     "public.create_superadmin_flash_draft": {
       "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.create_superadmin_challenge_revision": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.archive_superadmin_challenge_version": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_superadmin_challenge_version_comparison": {
+      "arguments": "from_challenge_version_id uuid, to_challenge_version_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },

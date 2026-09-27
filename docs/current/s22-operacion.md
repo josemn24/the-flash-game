@@ -1,12 +1,12 @@
 # S22 — Operación del piloto
 
-> Estado: vigente. Alcance local/CI; no hay proyecto remoto enlazado.
+> Estado: vigente. Alcance local/CI; staging está vinculado en la CLI, pero no se ha desplegado ni validado esta revisión.
 
 S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
-El piloto incluye Flash y Supervivencia competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
+El piloto incluye Flash, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
-además de los formatos F habilitados. Pirámide, Narrativa, formatos no migrados, E07–E09, abandono
-automático, takeover y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y
+además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, abandono automático,
+takeover y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y
 D08b habilita assets privados de E10 y `multiple-choice` desde el editor y el recorrido competitivo.
 S14 limita el editor de Supervivencia a formatos con evaluación server-side.
 
@@ -25,7 +25,7 @@ falla al arrancar la composición server-only.
 | Superficie                                  | Pilot                                                                                   | Development/Test                           |
 | ------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
 | `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>`     | Supabase; Flash y Supervivencia admiten los formatos con evaluación competitiva migrada | Supabase                                   |
+| `/desafios/[challengeId]?roomId=<UUID>`     | Supabase; Flash, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                                   |
 | `/desafios/[challengeId]` sin sala          | 404                                                                                     | Preview mock explícito                     |
 | aliases como `tabarnia-room`                | 404                                                                                     | Demo mock                                  |
 | `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                           | Demo/práctica                              |
@@ -45,14 +45,14 @@ no contiene credenciales, JWT, cookies ni datos de dominio.
 
 ## Verificación reproducible
 
-Con Docker disponible y sin enlazar un proyecto remoto:
+Con Docker disponible y sin desplegar sobre un proyecto remoto:
 
 ```bash
 npm run verify:pilot
 ```
 
 El comando arranca Supabase local, comprueba el esquema desde una base limpia, ejecuta tests,
-typecheck, lint, build, escenarios de integración/E2E por fixture y una prueba de backup/restore.
+typecheck, lint, build, escenarios de integración/E2E por fixture —incluido S17— y una prueba de backup/restore.
 Los logs y artefactos temporales se escriben en `output/s22/`, ignorado por Git.
 
 Para una ejecución manual aislada:
@@ -63,6 +63,9 @@ npm run supabase:fixture -- --scenario s03
 npm run test:integration:supabase -- --scenario s03
 FLASH_RUNTIME_SCOPE=pilot APP_ORIGIN=http://127.0.0.1:3000 npm run test:e2e -- e2e/s03-flash.spec.ts
 ```
+
+Para S17, la verificación aislada cubre el historial editorial de Flash, Supervivencia y Pirámide;
+la corrección de una pregunta continúa pasando por `/admin/questions`.
 
 Para E01, el reset debe ir seguido de la carga del diccionario antes de crear el fixture:
 

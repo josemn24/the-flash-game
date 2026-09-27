@@ -453,25 +453,10 @@ export type ServerLogicMatrixQuestion = ServerFlashQuestionBase & {
   readonly showPieceLabels: boolean;
 };
 
-export type ServerMatchingPair = {
-  readonly leftId: string;
-  readonly rightId: string;
-};
-
-export type ServerMatchingProgress = {
-  readonly kind: "matching";
-  readonly matchedPairs: readonly ServerMatchingPair[];
-  readonly matchedCount: number;
-  readonly totalPairs: number;
-  readonly incorrectAttempts: number;
-  readonly penaltyPoints: number;
-};
-
 export type ServerMatchingQuestion = ServerFlashQuestionBase & {
   readonly type: "matching";
   readonly leftItems: readonly Omit<MatchingLeftItem, "correctMatchId">[];
   readonly rightItems: readonly MatchingItem[];
-  readonly progress: ServerMatchingProgress;
 };
 
 export type ServerProgressiveCluesProgress = {

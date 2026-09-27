@@ -19,7 +19,6 @@ import type {
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
-  SubmitMatchingPairResult,
   SubmitWordSearchSelectionResult,
   SubmitWordHashtagSwapResult,
   SubmitLogicCodeAttemptResult,
@@ -164,10 +163,7 @@ function commandCode(error: unknown) {
     "invalid_logic_code",
     "duplicate_logic_code",
     "logic_code_requires_attempt_command",
-    "invalid_matching_pair",
-    "matching_item_already_resolved",
-    "duplicate_matching_pair",
-    "matching_requires_pair_command",
+    "invalid_matching_answer",
     "invalid_word_search_selection",
     "word_search_target_already_found",
     "word_search_requires_selection_command",
@@ -1119,7 +1115,6 @@ export class SupabaseAttemptCommands implements Pick<
   | "prepare"
   | "receiveAnswer"
   | "pass"
-  | "submitMatchingPair"
   | "submitWordSearchSelection"
   | "submitWordHashtagSwap"
   | "submitMiniWordleGuess"
@@ -1168,28 +1163,6 @@ export class SupabaseAttemptCommands implements Pick<
     const accepted = await callAttemptCommand<SubmitMiniWordleGuessResult>(
       this.identity,
       "submit_mini_wordle_guess",
-      input,
-    );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-    };
-  }
-
-  async submitMatchingPair(input: Parameters<AttemptCommands["submitMatchingPair"]>[0]) {
-    const accepted = await callAttemptCommand<SubmitMatchingPairResult>(
-      this.identity,
-      "submit_matching_pair",
       input,
     );
     if (!accepted.terminal || !accepted.receiptId) return accepted;

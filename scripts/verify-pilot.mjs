@@ -27,6 +27,7 @@ const e2eByScenario = {
   s10: ["e2e/s10-season.spec.ts"],
   s11: ["e2e/s11-editorial.spec.ts"],
   s12: ["e2e/s12-calendar.spec.ts"],
+  s17: ["e2e/s17-editorial-versioning.spec.ts"],
 };
 
 const pilotEnv = {
@@ -36,7 +37,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260926080239_initial_schema",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260927103813_matching_timeout_validation",
 };
 
 async function run(label, command, args, options = {}) {

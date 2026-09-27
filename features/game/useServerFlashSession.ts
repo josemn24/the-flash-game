@@ -90,14 +90,6 @@ type PendingProgressiveClueReveal = {
   challengeItemId: string;
   idempotencyKey: string;
 };
-type PendingMatchingPair = {
-  attemptId: string;
-  lockVersion: number;
-  challengeItemId: string;
-  leftItemId: string;
-  rightItemId: string;
-  idempotencyKey: string;
-};
 type PendingWordSearchSelection = {
   attemptId: string;
   lockVersion: number;
@@ -205,18 +197,12 @@ export function useServerFlashSession({
   const [revealState, setRevealState] = useState<SubmissionState>("idle");
   const [revealStatusVisible, setRevealStatusVisible] = useState(false);
   const [revealError, setRevealError] = useState<string>();
-  const [matchingState, setMatchingState] = useState<SubmissionState>("idle");
-  const [matchingStatusVisible, setMatchingStatusVisible] = useState(false);
-  const [matchingError, setMatchingError] = useState<string>();
   const [queensState, setQueensState] = useState<SubmissionState>("idle");
   const [queensStatusVisible, setQueensStatusVisible] = useState(false);
   const [queensError, setQueensError] = useState<string>();
   const [wordSearchState, setWordSearchState] = useState<SubmissionState>("idle");
   const [wordSearchStatusVisible, setWordSearchStatusVisible] = useState(false);
   const [wordSearchError, setWordSearchError] = useState<string>();
-  const [lastMatchingPair, setLastMatchingPair] = useState<
-    { readonly leftId: string; readonly rightId: string; readonly correct: boolean } | undefined
-  >();
   const [lastWordSearchSelection, setLastWordSearchSelection] = useState<
     { readonly startCell: number; readonly endCell: number; readonly correct: boolean } | undefined
   >();
@@ -225,12 +211,10 @@ export function useServerFlashSession({
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const matchingStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queensStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wordSearchStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const pendingRevealRef = useRef<PendingProgressiveClueReveal | null>(null);
-  const pendingMatchingPairRef = useRef<PendingMatchingPair | null>(null);
   const pendingQueensPlacementRef = useRef<PendingQueensPlacement | null>(null);
   const pendingWordSearchSelectionRef = useRef<PendingWordSearchSelection | null>(null);
   const recoveryStarted = useRef(false);
@@ -306,24 +290,6 @@ export function useServerFlashSession({
     }, SUBMISSION_STATUS_DELAY_MS);
   };
 
-  const clearMatchingStatusTimer = () => {
-    if (matchingStatusTimerRef.current) {
-      clearTimeout(matchingStatusTimerRef.current);
-      matchingStatusTimerRef.current = undefined;
-    }
-  };
-
-  const startMatchingStatus = () => {
-    clearMatchingStatusTimer();
-    setMatchingState("submitting");
-    setMatchingStatusVisible(false);
-    setMatchingError(undefined);
-    matchingStatusTimerRef.current = setTimeout(() => {
-      setMatchingStatusVisible(true);
-      matchingStatusTimerRef.current = undefined;
-    }, SUBMISSION_STATUS_DELAY_MS);
-  };
-
   const clearQueensStatusTimer = () => {
     if (queensStatusTimerRef.current) {
       clearTimeout(queensStatusTimerRef.current);
@@ -365,7 +331,6 @@ export function useServerFlashSession({
       if (timerRef.current) clearTimeout(timerRef.current);
       clearSubmissionStatusTimer();
       clearRevealStatusTimer();
-      clearMatchingStatusTimer();
       clearQueensStatusTimer();
       clearWordSearchStatusTimer();
     },
@@ -403,11 +368,6 @@ export function useServerFlashSession({
     setRevealStatusVisible(false);
     setRevealError(undefined);
     pendingRevealRef.current = null;
-    setMatchingState("idle");
-    setMatchingStatusVisible(false);
-    setMatchingError(undefined);
-    setLastMatchingPair(undefined);
-    pendingMatchingPairRef.current = null;
     setQueensState("idle");
     setQueensStatusVisible(false);
     setQueensError(undefined);
@@ -674,11 +634,16 @@ export function useServerFlashSession({
         FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
           1800,
       );
-    } catch {
+    } catch (error) {
       clearSubmissionStatusTimer();
       setSubmissionState("error");
       setSubmissionStatusVisible(true);
-      setSubmissionError("No hemos podido confirmar tu respuesta.");
+      if (error instanceof CompetitiveCommandError && error.code === "invalid_matching_answer") {
+        setSubmissionError("La respuesta de parejas no es válida. Revisa todas las asociaciones.");
+        setLocked(false);
+      } else {
+        setSubmissionError("No hemos podido confirmar tu respuesta.");
+      }
       setBusy(false);
     }
   };
@@ -1096,123 +1061,6 @@ export function useServerFlashSession({
     }
   };
 
-  const submitMatchingPairToServer = async (submission: PendingMatchingPair) => {
-    startMatchingStatus();
-    setBusy(true);
-    setLocked(true);
-    try {
-      const response = await postJson(
-        `/api/competitive/attempts/${submission.attemptId}/matching/pair`,
-        {
-          lockVersion: submission.lockVersion,
-          idempotencyKey: submission.idempotencyKey,
-          challengeItemId: submission.challengeItemId,
-          leftItemId: submission.leftItemId,
-          rightItemId: submission.rightItemId,
-        },
-      );
-      const nextLockVersion = Number(response.lockVersion);
-      const matchedPairs = Array.isArray(response.matchedPairs)
-        ? response.matchedPairs.filter(
-            (pair): pair is { leftId: string; rightId: string } =>
-              Boolean(pair) &&
-              typeof pair === "object" &&
-              typeof (pair as Record<string, unknown>).leftId === "string" &&
-              typeof (pair as Record<string, unknown>).rightId === "string",
-          )
-        : [];
-      const correct = response.correct === true;
-      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
-      setLastMatchingPair({
-        leftId: submission.leftItemId,
-        rightId: submission.rightItemId,
-        correct,
-      });
-      setQuestion((current) =>
-        current?.type === "matching"
-          ? {
-              ...current,
-              progress: {
-                kind: "matching",
-                matchedPairs,
-                matchedCount: Number(response.matchedCount),
-                totalPairs: Number(response.totalPairs),
-                incorrectAttempts: Number(response.incorrectAttempts),
-                penaltyPoints: Number(response.penaltyPoints),
-              },
-            }
-          : current,
-      );
-      clearMatchingStatusTimer();
-      pendingMatchingPairRef.current = null;
-      setMatchingState("idle");
-      setMatchingStatusVisible(false);
-      setMatchingError(undefined);
-      if (response.terminal !== true) {
-        setLocked(false);
-        setBusy(false);
-        return;
-      }
-      const result: AnswerResult = {
-        questionId: submission.challengeItemId,
-        answer: Object.fromEntries(matchedPairs.map((pair) => [pair.leftId, pair.rightId])),
-        status: String(response.status) as AnswerResult["status"],
-        isCorrect: response.status === "correct" || response.status === "partial",
-        points: Number(response.points ?? 0),
-        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
-        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
-      };
-      const nextResults = [...results, result];
-      setResults(nextResults);
-      setLastResult(result);
-      setPhase("transition");
-      timerRef.current = setTimeout(
-        async () => {
-          if (isTerminalForMode(nextResults)) {
-            const completed = await postJson(
-              `/api/competitive/attempts/${submission.attemptId}/complete`,
-              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
-            );
-            const review = terminalReviewFromResponse(completed.review);
-            setScore(Number(completed.score ?? 0));
-            setReviewChallenge(terminalReviewChallenge(challenge, review));
-            setPhase("results");
-          } else {
-            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
-          }
-          setBusy(false);
-        },
-        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
-          1800,
-      );
-    } catch (error) {
-      clearMatchingStatusTimer();
-      const commandError = error instanceof CompetitiveCommandError ? error.code : "";
-      if (
-        commandError === "duplicate_matching_pair" ||
-        commandError === "matching_item_already_resolved" ||
-        commandError === "invalid_matching_pair"
-      ) {
-        pendingMatchingPairRef.current = null;
-        setMatchingState("idle");
-        setMatchingStatusVisible(true);
-        setMatchingError(
-          commandError === "matching_item_already_resolved"
-            ? "Una de las tarjetas ya está resuelta."
-            : commandError === "duplicate_matching_pair"
-              ? "Esa pareja ya ha sido enviada."
-              : "Esa pareja no está disponible.",
-        );
-        setLocked(false);
-      } else {
-        setMatchingState("error");
-        setMatchingStatusVisible(true);
-        setMatchingError("No hemos podido confirmar la pareja.");
-      }
-      setBusy(false);
-    }
-  };
-
   const submitWordSearchSelectionToServer = async (submission: PendingWordSearchSelection) => {
     startWordSearchStatus();
     setBusy(true);
@@ -1353,7 +1201,8 @@ export function useServerFlashSession({
         question.type !== "estimation" &&
         question.type !== "heat-map" &&
         question.type !== "zip" &&
-        question.type !== "escape") ||
+        question.type !== "escape" &&
+        question.type !== "matching") ||
       locked ||
       busy
     ) {
@@ -1417,20 +1266,6 @@ export function useServerFlashSession({
     await revealProgressiveClueToServer(reveal);
   };
 
-  const submitMatchingPair = async (leftId: string, rightId: string) => {
-    if (!attempt || !question || question.type !== "matching" || locked || busy) return;
-    const submission: PendingMatchingPair = {
-      attemptId: attempt.id,
-      lockVersion: attempt.lockVersion,
-      challengeItemId: question.id,
-      leftItemId: leftId,
-      rightItemId: rightId,
-      idempotencyKey: idempotencyKey("matching-pair"),
-    };
-    pendingMatchingPairRef.current = submission;
-    await submitMatchingPairToServer(submission);
-  };
-
   const submitQueensPlacement = async (cell: number, action: "place" | "remove") => {
     if (!attempt || !question || question.type !== "queens" || locked || busy) return;
     const submission: PendingQueensPlacement = {
@@ -1484,11 +1319,6 @@ export function useServerFlashSession({
     await revealProgressiveClueToServer(pendingRevealRef.current);
   };
 
-  const retryMatchingPair = async () => {
-    if (busy || !pendingMatchingPairRef.current) return;
-    await submitMatchingPairToServer(pendingMatchingPairRef.current);
-  };
-
   const retryQueensPlacement = async () => {
     if (busy || !pendingQueensPlacementRef.current) return;
     await submitQueensPlacementToServer(pendingQueensPlacementRef.current);
@@ -1532,10 +1362,6 @@ export function useServerFlashSession({
     revealState,
     revealStatusVisible,
     revealError,
-    matchingState,
-    matchingStatusVisible,
-    matchingError,
-    lastMatchingPair,
     queensState,
     queensStatusVisible,
     queensError,
@@ -1556,8 +1382,6 @@ export function useServerFlashSession({
     retrySubmit,
     revealProgressiveClue,
     retryReveal,
-    submitMatchingPair,
-    retryMatchingPair,
     submitQueensPlacement,
     retryQueensPlacement,
     submitWordSearchSelection,

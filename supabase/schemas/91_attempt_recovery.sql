@@ -9,11 +9,7 @@ language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'matching' then coalesce((
-      select jsonb_object_agg(e.left_item_id, e.right_item_id)
-      from private.matching_pair_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+    'receiptId', r.id, 'answer', case when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
@@ -38,10 +34,6 @@ begin
       order by e.clue_index desc
       limit 1
     ), i.points) else null end,
-    'matchingIncorrectAttempts', case when q.type = 'matching' then coalesce((
-      select count(*)::integer from private.matching_pair_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
-    ), 0) else null end,
     'incorrectAttempts', case when q.type = 'logic-code' then coalesce((
       select count(*)::integer
       from private.logic_code_attempt_events e
@@ -186,7 +178,7 @@ begin
     'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
       select sum(case
         when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-        when question.type in ('matching', 'queens')
+        when question.type = 'queens'
           and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
         else 0 end)::integer
       from private.attempt_answers answer
@@ -198,7 +190,7 @@ begin
       greatest((cv.mode_config->>'lives')::integer - coalesce((
         select sum(case
           when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-          when question.type in ('matching', 'queens')
+          when question.type = 'queens'
             and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
           else 0 end)::integer
         from private.attempt_answers answer

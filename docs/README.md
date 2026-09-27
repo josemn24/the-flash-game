@@ -62,4 +62,4 @@ decisiones y después los documentos afectados.
 - `npm run format:check` mantiene avisos en 151 archivos en la comprobación actual.
 - `npm run supabase:schema:test` pasa sobre Supabase local, incluida la suite S20; la validación remota
   sigue pendiente y sus límites están documentados en [`supabase/schemas/README.md`](../supabase/schemas/README.md).
-- No hay proyecto remoto de Supabase vinculado desde este entorno.
+- La CLI tiene un proyecto de staging vinculado; las validaciones remotas siguen pendientes.

@@ -17,8 +17,6 @@ import type {
   StartAttemptResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
-  SubmitMatchingPairInput,
-  SubmitMatchingPairResult,
   SubmitWordSearchSelectionInput,
   SubmitWordSearchSelectionResult,
   SubmitWordHashtagSwapInput,
@@ -103,7 +101,6 @@ export interface AttemptCommands {
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
-  submitMatchingPair(input: SubmitMatchingPairInput): Promise<SubmitMatchingPairResult>;
   submitWordSearchSelection(input: SubmitWordSearchSelectionInput): Promise<SubmitWordSearchSelectionResult>;
   submitWordHashtagSwap(input: SubmitWordHashtagSwapInput): Promise<SubmitWordHashtagSwapResult>;
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;

@@ -216,12 +216,6 @@ export function ServerFlashPopPyramidGame({
             onProgress={session.updateDraft}
             onMiniWordleGuess={session.submitMiniWordleGuess}
             onLogicCodeAttempt={session.submitLogicCodeAttempt}
-            matchingState={session.matchingState}
-            matchingStatusVisible={session.matchingStatusVisible}
-            matchingError={session.matchingError}
-            lastMatchingPair={session.lastMatchingPair}
-            onMatchingPair={(leftId, rightId) => void session.submitMatchingPair(leftId, rightId)}
-            onRetryMatching={() => void session.retryMatchingPair()}
             queensState={session.queensState}
             queensStatusVisible={session.queensStatusVisible}
             queensError={session.queensError}
@@ -249,7 +243,8 @@ export function ServerFlashPopPyramidGame({
                   session.question?.type === "estimation" ||
                   session.question?.type === "heat-map" ||
                   session.question?.type === "zip" ||
-                  session.question?.type === "escape"
+                  session.question?.type === "escape" ||
+                  session.question?.type === "matching"
                   ? session.pendingAnswer
                   : null,
               )

@@ -1,10 +1,10 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 51 archivos y su revisión canónica es
-`20260926080239_initial_schema`. La migración base activa se ha regenerado desde esos archivos
+Estado: el esquema declarativo vigente se compone de 52 archivos y su revisión canónica es
+`20260927103813_matching_timeout_validation`. La migración incremental activa se ha generado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
-local corresponde a PostgreSQL 17 de Supabase local; los archivos declarativos, el inventario y
-las suites pgTAP pasan en esa ejecución. No hay proyecto remoto vinculado.
+local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
+pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -26,6 +26,9 @@ S15 añade validación editorial de siete niveles, calendario, proyecciones segu
 recuperación/finalización para `pyramid`; pgTAP, integración Auth y E2E local pasan. Las cuatro
 slices competitivas de `true-false`, `ordering`, `classification` y `logic-matrix` amplían el gate
 compartido de Flash, Supervivencia y Pirámide mediante los validadores editoriales existentes.
+S17 añade clonación, comparación editorial y archivado optimista de versiones de Flash, Supervivencia
+y Pirámide; los borradores clonados mantienen referencias a preguntas publicadas y las publicaciones
+existentes siguen resolviendo versiones archivadas.
 S18b permite al owner conceder/quitar
 admin y eliminar lógicamente miembros mediante `public.manage_room_member(jsonb)`; transferencia,
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade preparación/edición de
@@ -36,12 +39,12 @@ adicionales específicas por pregunta sin modificar el diccionario global. E02 a
 mixto con intentos privados, duplicados rechazados sin penalización, progreso seguro y evaluación
 autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita, eventos de
 revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
-E04 añade Matching con eventos privados de aciertos/fallos, penalización del 10%, progreso seguro y
-evaluación parcial desde eventos. E05 añade Queens con eventos privados de colocación/retirada,
+E04 añade Matching con resolución local, una recepción final del mapa completo, validación server-side
+sin solución pública y evaluación binaria. E05 añade Queens con eventos privados de colocación/retirada,
 penalización del 5%, recuperación del tablero y resolución terminal server-side. E06 añade Word-search
 con soluciones privadas, selecciones server-side, errores persistidos, recuperación e idempotencia. S05 añade Alphabet
 con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
-no hay seed global ni proyecto remoto vinculado desde este entorno (`linked_project: null`).
+no hay seed global; la CLI local mantiene un enlace de staging sin que esta revisión se haya desplegado.
 
 ## Decisiones y supuestos
 
@@ -137,6 +140,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql)           | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal.                                                      |
 | [58_superadmin_user_commands.sql](58_superadmin_user_commands.sql)            | Provisioning auditado/idempotente de perfiles vinculados a Auth y membresías de sala para superadmins; no almacena credenciales.                               |
 | [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql) | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash/Supervivencia/Pirámide; delega la validación documental compartida.        |
+| [64_superadmin_editorial_versioning.sql](64_superadmin_editorial_versioning.sql) | Clonación de correcciones, archivado optimista y comparación editorial segura de versiones de Flash/Supervivencia/Pirámide. |
 | [59_superadmin_season_commands.sql](59_superadmin_season_commands.sql)       | Creación, actualización y activación auditadas de temporadas desde el portal de superadmin.                                                                     |
 | [61_question_library.sql](61_question_library.sql)                           | Biblioteca protegida de preguntas individuales, historial de versiones, publicación/archivo e índice anti-duplicados por desafío; usa el validador común.          |
 | [62_media_assets.sql](62_media_assets.sql)                                   | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |
@@ -157,7 +161,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [93_logic_code.sql](93_logic_code.sql)                                       | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code.                                                                               |
 | [89_progressive_clues.sql](89_progressive_clues.sql)                         | Eventos privados, metadatos/prefijo seguro y cálculo de penalización de Progressive-clues.                                                                      |
 | [94_progressive_clues.sql](94_progressive_clues.sql)                         | Comando transaccional de revelación, idempotencia y locks de Progressive-clues.                                                                                 |
-| [95_matching.sql](95_matching.sql)                                           | Eventos privados, proyección segura y comando transaccional de parejas Matching.                                                                                |
+| [95_matching.sql](95_matching.sql)                                           | Proyección pública segura y validación server-side del mapa completo de Matching.                                                                                |
 | [96_media_asset_commands.sql](96_media_asset_commands.sql)                   | Handshake idempotente de preparación, lectura, confirmación y aborto de avatar.                                                                                 |
 | [97_media_asset_acl.sql](97_media_asset_acl.sql)                             | ACL explícita de `media_assets` y comandos server-only.                                                                                                         |
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql)               | Validación interna de assets de preguntas listos para publicación/uso.                                                                                          |
@@ -325,6 +329,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `s14_survival_attempts.test.sql`          | Evaluación/puntos/vidas autoritativos, eliminación, recuperación, revisión propia y spectator sin acceso.                                                         |
 | `s15_pyramid_editorial.test.sql`          | Validación de siete niveles/briefings y rechazo de formatos sin evaluador competitivo.                                                                            |
 | `s15_pyramid_authoritative.test.sql`      | Avance, salto/cierre manipulado, recibos, timeout, recuperación, cima/fallo, revisión propia y acreditación única.                                                |
+| `s17_editorial_versioning.test.sql`      | Clonación/versionado de Flash, Survival y Pyramid, referencias de preguntas, idempotencia, archivado, comparación sin soluciones privadas, calendario y lecturas históricas. |
 | `s20_superadmin_attempt_inspection.test.sql` | ACL de lecturas, aislamiento por sala/publicación, exclusión de tests, detalle sin soluciones, ajustes idempotentes, invalidación, rollback y ranking efectivo. |
 | `test-supabase-concurrency.mjs`           | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación. |
 | Contratos y evaluador TS                  | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                          |
@@ -333,7 +338,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (refactor del motor, 2026-09-25): `check-supabase-schema` cargó **51 archivos declarativos**
+Última validación local completa registrada (Matching final, 2026-09-27): `check-supabase-schema` cargó **52 archivos declarativos**
 y el inventario de seguridad; pasan las suites existentes y S20 (21 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,

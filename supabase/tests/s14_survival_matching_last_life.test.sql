@@ -74,12 +74,10 @@ select test_support.run('start_attempt', jsonb_build_object(
 ));
 insert into s14_matching_attempt select (state->>'attemptId')::uuid from test_support.runtime;
 select test_support.run('prepare_interaction');
-select is(
-  test_support.run('submit_matching_pair', '{"leftItemId":"l1","rightItemId":"r2"}'::jsonb)->>'terminal',
-  'true', 'A wrong Matching pair closes the interaction immediately with the last life'
+select lives_ok(
+  $$select test_support.run('receive_answer', '{"answer":{"l1":"r2","l2":"r1"}}'::jsonb)$$,
+  'A complete wrong Matching map is received as one final answer'
 );
-select is((select last_result->>'correct' from test_support.runtime), 'false',
-  'The server identifies the failed Matching pair');
 select test_support.run('record_evaluation', '{"status":"incorrect","points":0}'::jsonb);
 select test_support.run('complete_attempt', '{"score":100,"outcome":"survived"}'::jsonb);
 reset role;

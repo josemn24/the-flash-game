@@ -213,11 +213,20 @@ export const getSuperadminNewChallengePageModel = cache(async () => {
 });
 
 export const getSuperadminChallengeDetailPageModel = cache(
-  async (challengeDefinitionId: string) => {
+  async (
+    challengeDefinitionId: string,
+    comparisonIds?: readonly [string, string],
+  ) => {
     const access = await requireSuperadmin();
-    const [detail, questionLibrary] = await Promise.all([
+    const [detail, questionLibrary, comparison] = await Promise.all([
       supabaseSuperadminEditorialQueries.getChallengeDetail(challengeDefinitionId),
       supabaseSuperadminEditorialQueries.getQuestionLibrary({ status: "all" }),
+      comparisonIds
+        ? supabaseSuperadminEditorialQueries.getChallengeVersionComparison(
+            comparisonIds[0],
+            comparisonIds[1],
+          )
+        : Promise.resolve(null),
     ]);
     if (!detail) return null;
     return {
@@ -225,6 +234,7 @@ export const getSuperadminChallengeDetailPageModel = cache(
       challenge: summarizeChallengeEntries(detail.entries),
       editorial: { entries: detail.entries, source: "supabase" as const },
       questionLibrary,
+      comparison,
       source: "supabase" as const,
     };
   },

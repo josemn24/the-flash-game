@@ -49,12 +49,6 @@ export function ServerFlashQuestionStage({
   onProgress,
   onMiniWordleGuess,
   onLogicCodeAttempt,
-  matchingState,
-  matchingStatusVisible,
-  matchingError,
-  lastMatchingPair,
-  onMatchingPair,
-  onRetryMatching,
   queensState,
   queensStatusVisible,
   queensError,
@@ -92,16 +86,6 @@ export function ServerFlashQuestionStage({
   readonly onProgress: (answer: AnswerValue) => void;
   readonly onMiniWordleGuess: (guess: string) => void;
   readonly onLogicCodeAttempt: (code: string) => void;
-  readonly matchingState: "idle" | "submitting" | "error";
-  readonly matchingStatusVisible: boolean;
-  readonly matchingError?: string;
-  readonly lastMatchingPair?: {
-    readonly leftId: string;
-    readonly rightId: string;
-    readonly correct: boolean;
-  };
-  readonly onMatchingPair: (leftId: string, rightId: string) => void;
-  readonly onRetryMatching?: () => void;
   readonly queensState: "idle" | "submitting" | "error";
   readonly queensStatusVisible: boolean;
   readonly queensError?: string;
@@ -251,16 +235,17 @@ export function ServerFlashQuestionStage({
           />
         ) : question.type === "matching" ? (
           <ServerMatchingQuestion
+            key={question.id}
             leftItems={question.leftItems}
             rightItems={question.rightItems}
-            progress={question.progress}
+            pendingAnswer={pendingAnswer}
             locked={locked}
-            matchingState={matchingState}
-            matchingStatusVisible={matchingStatusVisible}
-            matchingError={matchingError}
-            lastPair={lastMatchingPair}
-            onPair={onMatchingPair}
-            onRetry={onRetryMatching}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onSubmit={onSubmit}
+            onProgress={onProgress}
+            onRetry={onRetrySubmission}
           />
         ) : question.type === "progressive-image" ? (
           <ProgressiveImageQuestion
