@@ -1024,7 +1024,9 @@ export function useServerFlashSession({
           responseLetters[cell] !== null &&
           (index === 0 || responseCorrectCells[index - 1]! < cell),
       );
-      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      const nextAttempt = { id: submission.attemptId, lockVersion: nextLockVersion };
+      attemptRef.current = nextAttempt;
+      setAttempt(nextAttempt);
       setQuestion((current) =>
         current?.type === "word-hashtag"
           ? {

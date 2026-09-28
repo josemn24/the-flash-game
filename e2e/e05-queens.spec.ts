@@ -94,8 +94,11 @@ test.describe("E05 — Queens competitivo", () => {
     await expect.poll(() => validationBodies).toHaveLength(4);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
-    await page.locator("details").filter({ hasText: "Queens" }).locator("summary").click();
-    await expect(page.getByText("Una corona por fila, columna y región.")).toBeVisible();
+    const firstQueensReview = page.locator("details").filter({ hasText: /^02Queens/ });
+    await firstQueensReview.locator("summary").click();
+    await expect(
+      firstQueensReview.getByText("Una corona por fila, columna y región."),
+    ).toBeVisible();
   });
 
   test("el spectator no puede iniciar el Flash E05", async ({ page }) => {

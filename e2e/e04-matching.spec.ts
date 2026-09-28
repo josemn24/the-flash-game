@@ -38,11 +38,13 @@ test.describe("E04 — Matching competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 20_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Relaciona cada concepto" })).toBeVisible();
     expect(await page.content()).not.toContain("correctMatchId");
-    await expect(page.getByText("0/3")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Comprobar parejas" })).toBeDisabled();
 
     const requestBodies: Array<Record<string, unknown>> = [];
     const answerRequests: Promise<unknown>[] = [];

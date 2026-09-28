@@ -94,7 +94,8 @@ test.describe("S07 — historial y revisión Flash", () => {
       await spectatorContext.close();
     }
 
-    const invalid = await page.goto(`${historyPath}/not-a-uuid/${data.users.alice.playerId}`);
-    expect(invalid?.status()).toBe(404);
+    await page.goto(`${historyPath}/not-a-uuid/${data.users.alice.playerId}`);
+    await expect(page.getByText("Error 404")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ruta fuera de pista" })).toBeVisible();
   });
 });

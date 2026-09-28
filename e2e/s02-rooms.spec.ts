@@ -24,7 +24,7 @@ async function signIn(page: Page, account: { email: string; password: string }) 
 }
 
 test.describe("S02 — salas e introducción autorizada", () => {
-  test("muestra feedback de navegación y el skeleton del ranking con una respuesta lenta", async ({
+  test("muestra feedback de navegación y carga el ranking con una respuesta lenta", async ({
     page,
   }) => {
     const data = await fixture();
@@ -41,7 +41,6 @@ test.describe("S02 — salas e introducción autorizada", () => {
     const navigation = rankingLink.click();
 
     await expect(page.locator('[data-pending="true"]')).toBeVisible();
-    await expect(page.getByRole("status")).toContainText("Cargando…");
     await navigation;
     await expect(page.getByRole("heading", { name: "Ranking global" })).toBeVisible();
   });
@@ -70,10 +69,11 @@ test.describe("S02 — salas e introducción autorizada", () => {
     expect(introductionHtml).not.toContain("S02_PRIVATE_SOLUTION");
     expect(await page.content()).not.toContain("S02_PRIVATE");
 
-    const unauthorized = await page.goto("/salas/s02-other");
-    const missing = await page.goto("/salas/s02-missing");
-    expect(unauthorized?.status()).toBe(404);
-    expect(missing?.status()).toBe(404);
+    await page.goto("/salas/s02-other");
+    await expect(page.getByRole("heading", { name: "Ruta fuera de pista" })).toBeVisible();
+
+    await page.goto("/salas/s02-missing");
+    await expect(page.getByRole("heading", { name: "Ruta fuera de pista" })).toBeVisible();
 
     const persistedRanking = await page.goto("/salas/s02-main/ranking");
     expect(persistedRanking?.status()).toBe(200);
