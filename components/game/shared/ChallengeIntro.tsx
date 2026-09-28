@@ -2,8 +2,7 @@
 
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
-import Link from "next/link";
-import { ArrowIcon, Button, ButtonLink, Chip, GameHeader } from "@/components/ui";
+import { ArrowIcon, BackLink, Button, ButtonLink, Chip, GameHeader } from "@/components/ui";
 import {
   buildChallengeIntroModel,
   buildSafeChallengeIntroModel,
@@ -59,9 +58,7 @@ export function ChallengeIntro({
     >
       <GameHeader
         left={
-          <Link className={styles.backButton} href={returnTo} aria-label="Volver a desafíos">
-            <ArrowIcon className={styles.backIcon} />
-          </Link>
+          <BackLink href={returnTo} label="Volver a desafíos" />
         }
       />
 

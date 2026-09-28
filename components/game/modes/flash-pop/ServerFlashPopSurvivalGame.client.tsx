@@ -5,6 +5,7 @@ import {
   ReviewStage,
   Transition,
 } from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { ChallengeIntro, ChallengeResultScreen } from "@/components/game/shared";
 import { ServerFlashQuestionStage, StartCountdown } from "@/components/game/shared";
@@ -146,17 +147,12 @@ export function ServerFlashPopSurvivalGame({
             onProgress={session.updateDraft}
             onMiniWordleGuess={session.submitMiniWordleGuess}
             onLogicCodeAttempt={session.submitLogicCodeAttempt}
-            matchingState={session.matchingState}
-            matchingStatusVisible={session.matchingStatusVisible}
-            matchingError={session.matchingError}
-            lastMatchingPair={session.lastMatchingPair}
-            onMatchingPair={(leftId, rightId) => void session.submitMatchingPair(leftId, rightId)}
-            onRetryMatching={() => void session.retryMatchingPair()}
             queensState={session.queensState}
             queensStatusVisible={session.queensStatusVisible}
             queensError={session.queensError}
-            onQueensPlacement={(cell, action) => void session.submitQueensPlacement(cell, action)}
-            onRetryQueens={() => void session.retryQueensPlacement()}
+            onQueensDraft={session.updateQueensDraft}
+            onQueensValidate={(queens) => void session.validateQueensBoard(queens)}
+            onRetryQueensValidation={() => void session.retryQueensValidation()}
             wordSearchState={session.wordSearchState}
             wordSearchStatusVisible={session.wordSearchStatusVisible}
             wordSearchError={session.wordSearchError}
@@ -173,19 +169,27 @@ export function ServerFlashPopSurvivalGame({
             revealError={session.revealError}
             onRevealProgressiveClue={() => void session.revealProgressiveClue()}
             onRetryReveal={() => void session.retryReveal()}
-            onTimeUp={() =>
-              void session.submit(
-                session.question?.type === "classification" ||
-                  session.question?.type === "estimation" ||
-                  session.question?.type === "heat-map" ||
-                  session.question?.type === "zip" ||
-                  session.question?.type === "escape"
-                  ? session.pendingAnswer
-                  : null,
-              )
-            }
+            onTimeUp={() => void session.handleTimeUp()}
           />
         </motion.div>
+      ) : null}
+      {session.phase === "checking" ? (
+        session.answerVerificationState === "error" ? (
+          <AnswerFeedbackStage
+            key={`checking-error-${session.questionIndex}`}
+            state="error"
+            errorMessage={
+              session.answerVerificationError ?? "No hemos podido confirmar tu respuesta."
+            }
+            onRetry={session.retrySubmit}
+          />
+        ) : (
+          <AnswerFeedbackStage
+            key={`checking-${session.questionIndex}`}
+            state="checking"
+            indicatorVisible={session.answerVerificationStatusVisible}
+          />
+        )
       ) : null}
       {session.phase === "transition" ? (
         <motion.div

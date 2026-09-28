@@ -284,6 +284,7 @@ describe("BetaVIP seed", () => {
     const createAuthAccounts = vi.fn(async () => newAccounts);
     const dockerSql = vi.fn();
     const writeFixture = vi.fn();
+    const uploadStorageObject = vi.fn();
 
     await setupBetaVipDataset({
       dependencies: {
@@ -294,7 +295,7 @@ describe("BetaVIP seed", () => {
         dockerSql,
         writeFixture,
         prepareCassetteAsset,
-        uploadStorageObject: vi.fn(),
+        uploadStorageObject,
         removeStorageObject: vi.fn(),
       },
     });
@@ -309,6 +310,8 @@ describe("BetaVIP seed", () => {
       ],
     });
     expect(dockerSql).toHaveBeenCalledOnce();
+    expect(uploadStorageObject).toHaveBeenCalledOnce();
+    expect(uploadStorageObject.mock.calls[0][1].upsert).toBe(false);
     expect(writeFixture).toHaveBeenCalledWith(
       "betavip",
       expect.objectContaining({

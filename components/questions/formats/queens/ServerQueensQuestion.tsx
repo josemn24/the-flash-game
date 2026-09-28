@@ -8,7 +8,7 @@ import type {
   ServerQueensProgress,
   ServerQueensQuestion as ServerQuestion,
 } from "@/types/gameplay/challenge";
-import { getQueensConflicts, QUEENS_COLUMNS, QUEENS_ROWS } from "@/lib/queens";
+import { getQueensConflicts } from "@/lib/queens";
 import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";
@@ -17,63 +17,79 @@ export function ServerQueensQuestion({
   question,
   progress,
   locked,
-  placementState,
-  placementStatusVisible,
-  placementError,
-  onPlace,
+  validationState,
+  validationStatusVisible,
+  validationError,
+  onDraft,
+  onValidate,
   onRetry,
 }: {
   readonly question: ServerQuestion;
   readonly progress: ServerQueensProgress;
   readonly locked: boolean;
-  readonly placementState: "idle" | "submitting" | "error";
-  readonly placementStatusVisible: boolean;
-  readonly placementError?: string;
-  readonly onPlace: (cell: number, action: "place" | "remove") => void;
+  readonly validationState: "idle" | "submitting" | "error";
+  readonly validationStatusVisible: boolean;
+  readonly validationError?: string;
+  readonly onDraft: (queens: readonly number[]) => void;
+  readonly onValidate: (queens: readonly number[]) => void;
   readonly onRetry?: () => void;
 }) {
+  const [draftQueens, setDraftQueens] = useState<number[]>(() => [...progress.queens]);
   const [marks, setMarks] = useState<number[]>([]);
   const [tool, setTool] = useState<QueensTool>("queen");
   const [focusedCell, setFocusedCell] = useState(0);
   const cellRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const queens = progress.queens;
   const conflicts = useMemo(
-    () => getQueensConflicts(question, [...new Set([...question.prefilledQueens, ...queens])]),
-    [queens, question],
+    () => getQueensConflicts(question, [...new Set([...question.prefilledQueens, ...draftQueens])]),
+    [draftQueens, question],
   );
+  const disabled = locked || validationState === "submitting";
+  const targetQueens = question.grid.rows;
+
+  const publishQueens = (nextQueens: number[]) => {
+    setDraftQueens(nextQueens);
+    onDraft(nextQueens);
+    if (draftQueens.length < targetQueens && nextQueens.length === targetQueens)
+      onValidate(nextQueens);
+  };
 
   const applyAction = (cell: number) => {
-    if (locked || question.prefilledQueens.includes(cell)) return;
-    const hasQueen = queens.includes(cell);
+    if (disabled || question.prefilledQueens.includes(cell)) return;
+    const hasQueen = draftQueens.includes(cell);
     if (tool === "mark") {
       setMarks((current) =>
         current.includes(cell)
           ? current.filter((candidate) => candidate !== cell)
-          : [...current.filter((candidate) => candidate !== cell), cell].sort((a, b) => a - b),
+          : [...current, cell].sort((a, b) => a - b),
       );
       return;
     }
     setMarks((current) => current.filter((candidate) => candidate !== cell));
-    onPlace(cell, hasQueen ? "remove" : "place");
+    publishQueens(
+      hasQueen
+        ? draftQueens.filter((candidate) => candidate !== cell)
+        : [...draftQueens, cell].sort((a, b) => a - b),
+    );
   };
 
   const clearCell = (cell: number) => {
-    if (locked || question.prefilledQueens.includes(cell)) return;
-    if (queens.includes(cell)) applyAction(cell);
+    if (disabled || question.prefilledQueens.includes(cell)) return;
+    if (draftQueens.includes(cell))
+      publishQueens(draftQueens.filter((candidate) => candidate !== cell));
     else setMarks((current) => current.filter((candidate) => candidate !== cell));
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, cell: number) => {
-    const row = Math.floor(cell / QUEENS_COLUMNS);
-    const column = cell % QUEENS_COLUMNS;
+    const row = Math.floor(cell / question.grid.columns);
+    const column = cell % question.grid.columns;
     const nextCell =
       event.key === "ArrowUp" && row > 0
-        ? cell - QUEENS_COLUMNS
-        : event.key === "ArrowDown" && row < QUEENS_ROWS - 1
-          ? cell + QUEENS_COLUMNS
+        ? cell - question.grid.columns
+        : event.key === "ArrowDown" && row < question.grid.rows - 1
+          ? cell + question.grid.columns
           : event.key === "ArrowLeft" && column > 0
             ? cell - 1
-            : event.key === "ArrowRight" && column < QUEENS_COLUMNS - 1
+            : event.key === "ArrowRight" && column < question.grid.columns - 1
               ? cell + 1
               : null;
     if (nextCell !== null) {
@@ -93,14 +109,14 @@ export function ServerQueensQuestion({
   };
 
   return (
-    <section className={styles.root} aria-label="Queens, puzzle de cinco coronas">
+    <section className={styles.root} aria-label={`Queens, puzzle de ${targetQueens} coronas`}>
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button
           type="button"
           className={tool === "queen" ? styles.toolActive : ""}
           aria-pressed={tool === "queen"}
           onClick={() => setTool("queen")}
-          disabled={locked}
+          disabled={disabled}
         >
           <CrownIcon /> Corona <kbd>C</kbd>
         </button>
@@ -109,41 +125,43 @@ export function ServerQueensQuestion({
           className={tool === "mark" ? styles.toolActive : ""}
           aria-pressed={tool === "mark"}
           onClick={() => setTool("mark")}
-          disabled={locked}
+          disabled={disabled}
         >
           <CrossIcon /> Marcar X <kbd>X</kbd>
         </button>
       </div>
       <QueensBoard
         question={question}
-        answer={{ queens: [...queens], marks }}
-        label="Tablero Queens de cinco por cinco"
+        answer={{ queens: [...draftQueens], marks }}
+        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
         focusedCell={focusedCell}
         cellRefs={cellRefs}
         onCellAction={applyAction}
         onCellFocus={setFocusedCell}
         onCellKeyDown={handleKeyDown}
-        disabled={locked}
+        disabled={disabled}
       />
       <div className={styles.progress} aria-live="polite">
-        <strong>{progress.placedQueens}/5 coronas</strong>
+        <strong>
+          {draftQueens.length}/{targetQueens} coronas
+        </strong>
         <span>{conflicts.size ? `${conflicts.size} en conflicto` : "Sin conflictos"}</span>
       </div>
       <p className={styles.instructions}>
         La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
-        toquen.
+        toquen. El tablero se valida automáticamente al colocar las {targetQueens} coronas.
       </p>
       <ServerOperationStatus
-        state={placementState}
-        visible={placementStatusVisible}
-        pendingMessage="Guardando movimiento…"
-        errorMessage={placementError ?? "No hemos podido guardar el movimiento."}
-        retryLabel="Reintentar movimiento"
+        state={validationState}
+        visible={validationStatusVisible}
+        pendingMessage="Validando tablero…"
+        errorMessage={validationError ?? "No hemos podido validar el tablero."}
+        retryLabel="Reintentar validación"
         onRetry={onRetry}
       />
-      {placementState === "idle" && placementError ? (
+      {validationState === "idle" && validationError ? (
         <p className="mt-4" role="status" aria-live="polite">
-          {placementError}
+          {validationError}
         </p>
       ) : null}
     </section>

@@ -35,26 +35,20 @@ test.describe("E05 — Queens competitivo", () => {
 
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await page.getByRole("button", { name: "Lisboa" }).click();
-    await expect(page.getByRole("heading", { name: "Coloca las cinco coronas" })).toBeVisible();
-    await expect(page.getByText("1/5 coronas")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
+    await expect(page.getByText("1/6 coronas")).toBeVisible();
     expect(await page.content()).not.toContain('"solution"');
 
-    const board = page.getByRole("grid", { name: "Tablero Queens de cinco por cinco" });
-    await board.getByRole("gridcell", { name: /Fila 2, columna 5/ }).click();
-    await expect(page.getByText("2/5 coronas")).toBeVisible();
-    await page.reload();
-    await expect(page.getByRole("heading", { name: "Coloca las cinco coronas" })).toBeVisible();
-    await expect(page.getByText("2/5 coronas")).toBeVisible();
-
-    let firstResponse = true;
-    const requestBodies: Array<Record<string, unknown>> = [];
-    await page.route("**/api/competitive/attempts/*/queens/place", async (route) => {
-      requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) {
+    const board = page.getByRole("grid", { name: "Tablero Queens de 6 por 6" });
+    const validationBodies: Array<Record<string, unknown>> = [];
+    let loseNextValidation = false;
+    await page.route("**/api/competitive/attempts/*/queens/validate", async (route) => {
+      validationBodies.push(route.request().postDataJSON() as Record<string, unknown>);
+      if (!loseNextValidation) {
         await route.continue();
         return;
       }
-      firstResponse = false;
+      loseNextValidation = false;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -63,20 +57,48 @@ test.describe("E05 — Queens competitivo", () => {
       });
       await response.body();
     });
+    const draftResponse = page.waitForResponse(
+      (response) =>
+        response.url().includes("/queens/draft") && response.request().method() === "POST",
+    );
+    await board.getByRole("gridcell", { name: /Fila 2, columna 4/ }).click();
+    await expect(page.getByText("2/6 coronas")).toBeVisible();
+    expect((await draftResponse).ok()).toBe(true);
+    expect(validationBodies).toHaveLength(0);
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
+    await expect(page.getByText("2/6 coronas")).toBeVisible();
 
-    await board.getByRole("gridcell", { name: /Fila 3, columna 1/ }).click();
-    await expect(page.getByRole("button", { name: "Reintentar movimiento" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar movimiento" }).click();
-    expect(requestBodies).toHaveLength(2);
-    expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("3/5 coronas")).toBeVisible();
+    await board.getByRole("gridcell", { name: /Fila 3, columna 2/ }).click();
+    await board.getByRole("gridcell", { name: /Fila 4, columna 5/ }).click();
+    await board.getByRole("gridcell", { name: /Fila 5, columna 3/ }).click();
+    await board.getByRole("gridcell", { name: /Fila 5, columna 4/ }).click();
+    await expect(page.getByText("El tablero no es correcto.")).toBeVisible();
+    expect(validationBodies).toHaveLength(1);
 
-    await board.getByRole("gridcell", { name: /Fila 4, columna 4/ }).click();
-    await board.getByRole("gridcell", { name: /Fila 5, columna 2/ }).click();
+    await board.getByRole("gridcell", { name: /Fila 5, columna 4/ }).click();
+    loseNextValidation = true;
+    await board.getByRole("gridcell", { name: /Fila 6, columna 6/ }).click();
+    await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar validación" }).click();
+    expect(validationBodies).toHaveLength(3);
+    expect(validationBodies[1]?.idempotencyKey).toBe(validationBodies[2]?.idempotencyKey);
+
+    const miniBoard = page.getByRole("grid", { name: "Tablero Queens de 4 por 4" });
+    await expect(page.getByRole("heading", { name: "Coloca las cuatro coronas" })).toBeVisible();
+    await expect(page.getByText("1/4 coronas")).toBeVisible();
+    await miniBoard.getByRole("gridcell", { name: /Fila 2, columna 1/ }).click();
+    await miniBoard.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
+    await miniBoard.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
+    await expect(page.getByText("4/4 coronas")).toBeVisible();
+    await expect.poll(() => validationBodies).toHaveLength(4);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
-    await page.locator("details").filter({ hasText: "Queens" }).locator("summary").click();
-    await expect(page.getByText("Una corona por fila, columna y región.")).toBeVisible();
+    const firstQueensReview = page.locator("details").filter({ hasText: /^02Queens/ });
+    await firstQueensReview.locator("summary").click();
+    await expect(
+      firstQueensReview.getByText("Una corona por fila, columna y región."),
+    ).toBeVisible();
   });
 
   test("el spectator no puede iniciar el Flash E05", async ({ page }) => {

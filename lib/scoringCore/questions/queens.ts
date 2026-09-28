@@ -47,7 +47,7 @@ function unansweredDetails(
 
 function isCorrect(question: Question, answer: AnswerValue) {
   return (
-    isQueensAnswer(answer) &&
+    isQueensAnswer(answer, asQuestion(question).grid) &&
     isValidQueensConfiguration(asQuestion(question)) &&
     calculateQueensMetrics(asQuestion(question), answer).solved
   );
@@ -60,7 +60,7 @@ export function evaluateQueens({
   incorrectAttempts,
 }: EvaluationContext): InternalEvaluation {
   const queensQuestion = asQuestion(question);
-  if (!isQueensAnswer(answer) || !isValidQueensConfiguration(queensQuestion)) {
+  if (!isQueensAnswer(answer, queensQuestion.grid) || !isValidQueensConfiguration(queensQuestion)) {
     return { isCorrect: false, status: "incorrect", points: 0 };
   }
 

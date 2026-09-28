@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireSuperadmin: vi.fn(),
   createCommand: vi.fn(),
   updateCommand: vi.fn(),
+  cancelCommand: vi.fn(),
   getContext: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn((path: string) => {
@@ -17,10 +18,15 @@ vi.mock("@/server/admin", () => ({ requireSuperadmin: mocks.requireSuperadmin })
 vi.mock("@/server/admin-calendar", () => ({
   createScheduledChallenge: mocks.createCommand,
   updateScheduledChallenge: mocks.updateCommand,
+  cancelScheduledChallenge: mocks.cancelCommand,
   getSuperadminCalendarContext: mocks.getContext,
 }));
 
-import { createScheduledChallenge, updateScheduledChallenge } from "./calendar-actions";
+import {
+  cancelScheduledChallenge,
+  createScheduledChallenge,
+  updateScheduledChallenge,
+} from "./calendar-actions";
 
 const roomId = "00000000-0000-4000-8000-000000000001";
 const seasonId = "00000000-0000-4000-8000-000000000002";
@@ -64,6 +70,17 @@ function scheduleForm(overrides: Record<string, string> = {}) {
     closesAtLocal: "2030-09-20T13:30",
     reason: "Preparar calendario",
     idempotencyKey: "calendar-create-1",
+    ...overrides,
+  });
+}
+
+function cancellationForm(overrides: Record<string, string> = {}) {
+  return formData({
+    roomId,
+    scheduledChallengeId: scheduleId,
+    expectedUpdatedAt: "2030-09-20T09:30:00.000Z",
+    reason: "Retirar publicación",
+    idempotencyKey: "calendar-cancel-1",
     ...overrides,
   });
 }
@@ -127,5 +144,62 @@ describe("calendar admin actions", () => {
     expect(mocks.updateCommand).toHaveBeenCalledWith(
       expect.objectContaining({ scheduledChallengeId: scheduleId }),
     );
+  });
+
+  it("cancels only a future publication read from the submitted room", async () => {
+    mocks.getContext.mockResolvedValue({
+      entries: [
+        {
+          scheduledChallengeId: scheduleId,
+          roomId,
+          roomSlug: "beta",
+          roomTitle: "Sala beta",
+          timeZone: "Europe/Madrid",
+          seasonId,
+          seasonTitle: "Temporada activa",
+          seasonStatus: "active",
+          challengeVersionId: contentId,
+          challengeSlug: "flash",
+          versionNumber: 1,
+          challengeTitle: "Flash",
+          challengeSubtitle: "",
+          mode: "flash",
+          number: 1,
+          status: "scheduled",
+          opensAt: "2030-09-20T10:30:00.000Z",
+          closesAt: "2030-09-20T11:30:00.000Z",
+          updatedAt: "2030-09-20T09:30:00.000Z",
+        },
+      ],
+    });
+    mocks.cancelCommand.mockResolvedValue({});
+
+    await expect(cancelScheduledChallenge({}, cancellationForm())).rejects.toThrow(
+      `REDIRECT:/admin/rooms/${roomId}?tab=calendar&calendar=cancelled`,
+    );
+    expect(mocks.getContext).toHaveBeenCalledWith(roomId);
+    expect(mocks.cancelCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ scheduledChallengeId: scheduleId }),
+    );
+  });
+
+  it("rejects cancellation without an audit reason before calling Supabase", async () => {
+    mocks.getContext.mockResolvedValue({
+      entries: [
+        {
+          scheduledChallengeId: scheduleId,
+          roomId,
+          status: "scheduled",
+          opensAt: "2030-09-20T10:30:00.000Z",
+        },
+      ],
+    });
+
+    await expect(
+      cancelScheduledChallenge({}, cancellationForm({ reason: "" })),
+    ).resolves.toMatchObject({
+      fieldErrors: { reason: "Introduce un motivo de hasta 500 caracteres." },
+    });
+    expect(mocks.cancelCommand).not.toHaveBeenCalled();
   });
 });

@@ -194,7 +194,7 @@ begin
         where room.status = 'active'
           and season.status = 'active'
           and version.mode in ('flash', 'survival', 'pyramid')
-          and version.status = 'published'
+          and version.status in ('published', 'archived')
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
       )
@@ -265,7 +265,7 @@ begin
         where room.status = 'active'
           and season.status = 'active'
           and version.mode in ('flash', 'survival', 'pyramid')
-          and version.status = 'published'
+          and version.status in ('published', 'archived')
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
         order by schedule.opens_at, schedule.id

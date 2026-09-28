@@ -338,7 +338,16 @@ export async function uploadStorageObject(
     contentType,
     upsert,
   });
-  if (error) throw new Error(`No se pudo cargar ${bucket}/${objectPath}.`, { cause: error });
+  if (error) {
+    const details = [
+      error.message,
+      error.statusCode ? `statusCode=${error.statusCode}` : null,
+      error.cause?.message ? `cause=${error.cause.message}` : null,
+    ]
+      .filter(Boolean)
+      .join("; ");
+    throw new Error(`No se pudo cargar ${bucket}/${objectPath}: ${details}`, { cause: error });
+  }
 }
 
 export async function removeStorageObject(config, { bucket, objectPath }) {

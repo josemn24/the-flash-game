@@ -153,7 +153,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** sala activa y, para editar, permisos de gestión.
 - **Entrada relevante:** título, `startsAt`, `endsAt` y transición solicitada (`draft`, `scheduled`, `active`, `finished` o `cancelled`).
 - **Flujo principal:** desde el portal local de superadmin, validar fechas y estado; crear o modificar un borrador; activar explícitamente cuando corresponda; consultar total y ranking propios.
-- **Reglas de negocio:** S10 implementa `draft → active` y S12 añade la finalización `active → finished` desde el tick local; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. `scheduled` y cancelación siguen siendo responsabilidades posteriores (S19).
+- **Reglas de negocio:** S10 implementa `draft → active` y S12 añade la finalización `active → finished` desde el tick local; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. En temporadas, `scheduled` y la cancelación siguen siendo responsabilidades posteriores (S19).
 - **Resultado:** temporada en estado coherente y visible dentro de la sala.
 - **Efectos secundarios:** auditoría y actualización de disponibilidad; al finalizar se cierran nuevas entradas, pero intentos válidos pueden terminar dentro de su plazo.
 - **Errores o impedimentos:** fechas invertidas, solapamiento de temporada activa, transición no permitida o edición de temporada finalizada sin corrección auditada.
@@ -168,10 +168,10 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** temporada adecuada y `ChallengeVersion` publicada; número libre y fechas válidas.
 - **Entrada relevante:** versión, número, `opensAt`, `closesAt` y, si procede, zona horaria de edición.
 - **Flujo principal:** desde el calendario privado, comprobar que la versión Flash está publicada y es compatible; validar orden, fechas y ausencia de solapamiento; crear o reprogramar `ScheduledChallenge`; el tick local abre y cierra por la ventana efectiva.
-- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma antes de abrir; S12 no cancela, fija `results_locked_at` ni modifica intentos.
+- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma o cancela antes de abrir; la cancelación es lógica, auditada y conserva el número, contenido y ventana; S12 no cancela publicaciones abiertas o cerradas, fija `results_locked_at` ni modifica intentos.
 - **Resultado:** publicación `scheduled`, `open`, `closed` o `cancelled`.
 - **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; cada escritura administrativa y transición del tick queda auditada.
-- **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida o intento de modificar una publicación abierta sin cancelar.
+- **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida, motivo de auditoría ausente o intento de reprogramar/cancelar una publicación abierta, cerrada o ya cancelada.
 - **Permisos necesarios:** superadmin desde el portal privado durante la beta; responsable/editor
   autorizado cuando se habilite esa superficie. Miembros y espectadores solo consultan.
 

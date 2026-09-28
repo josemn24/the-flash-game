@@ -770,6 +770,44 @@ export type SuperadminChallengeDetailContext = {
   readonly source: "supabase";
 };
 
+export type SuperadminChallengeVersionSnapshotItem = {
+  readonly challengeItemId: string;
+  readonly position: number;
+  readonly questionVersionId: string;
+  readonly questionDefinitionId: string;
+  readonly questionVersionNumber: number;
+  readonly questionStatus: EditorialContentStatus;
+  readonly slug: string;
+  readonly type: string;
+  readonly payloadSchemaVersion: number;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly modeConfig: EditorialJsonObject;
+  readonly publicPayload: EditorialJsonObject;
+};
+
+export type SuperadminChallengeVersionSnapshot = {
+  readonly challengeVersionId: string;
+  readonly versionNumber: number;
+  readonly status: EditorialContentStatus;
+  readonly slug: string;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly description: string;
+  readonly mode: "flash" | "survival" | "pyramid";
+  readonly configSchemaVersion: number;
+  readonly modeConfig: EditorialJsonObject;
+  readonly globalTimeLimitMs: number | null;
+  readonly items: readonly SuperadminChallengeVersionSnapshotItem[];
+};
+
+export type SuperadminChallengeVersionComparison = {
+  readonly challengeDefinitionId: string;
+  readonly from: SuperadminChallengeVersionSnapshot;
+  readonly to: SuperadminChallengeVersionSnapshot;
+  readonly source: "supabase";
+};
+
 export type SuperadminEditorialCommandResult = Omit<SuperadminEditorialEntry, "document"> & {
   readonly document: FlashEditorialDocument | null;
   readonly source: "supabase";

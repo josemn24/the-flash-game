@@ -54,17 +54,16 @@ select is((select last_result->'progress'->'queens' from test_support.runtime), 
 select throws_ok($$select test_support.run('receive_answer', '{"answer":{"queens":[2],"marks":[]}}')$$, '22023', 'queens_requires_placement_command', 'El dispatcher genérico exige el comando de colocación');
 reset role;
 
-select lives_ok($$select test_support.run('submit_queens_placement', '{"cell":0,"action":"place"}')$$, 'Una colocación conflictiva crea un evento');
-select is((select (last_result->>'conflicting')::boolean from test_support.runtime), true, 'El conflicto procede del servidor');
-select is((select (last_result->>'penaltyApplied')::boolean from test_support.runtime), true, 'La colocación conflictiva aplica penalización');
-select is((select count(*) from private.queens_placement_events), 1::bigint, 'El evento conflictivo queda persistido');
-select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'La colocación es idempotente');
-select lives_ok($$select test_support.run('submit_queens_placement', '{"cell":0,"action":"remove"}')$$, 'Retirar una corona se acepta');
-select is((select (last_result->>'penaltyApplied')::boolean from test_support.runtime), false, 'Retirar no penaliza');
-select lives_ok($$select test_support.run('submit_queens_placement', '{"cell":9,"action":"place"}')$$, 'La primera corona correcta se acepta');
-select lives_ok($$select test_support.run('submit_queens_placement', '{"cell":10,"action":"place"}')$$, 'La segunda corona correcta se acepta');
-select lives_ok($$select test_support.run('submit_queens_placement', '{"cell":18,"action":"place"}')$$, 'La tercera corona correcta se acepta');
-select lives_ok($$select test_support.run('submit_queens_placement', '{"cell":21,"action":"place"}')$$, 'La última corona resuelve el tablero');
+select lives_ok($$select test_support.run('save_queens_draft', '{"queens":[0,2]}')$$, 'Guardar un borrador no valida el tablero');
+select is((select last_result->'queens' from test_support.runtime), '[0,2]'::jsonb, 'El borrador conserva las coronas');
+select is((select count(*) from private.queens_validation_events), 0::bigint, 'El borrador no crea validaciones');
+select lives_ok($$select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20]}')$$, 'Una validación completa incorrecta se acepta');
+select is((select (last_result->>'terminal')::boolean from test_support.runtime), false, 'La validación incorrecta no es terminal');
+select is((select (last_result->>'correct')::boolean from test_support.runtime), false, 'El servidor rechaza el tablero incorrecto');
+select is((select count(*) from private.queens_validation_events), 1::bigint, 'La validación fallida queda auditada');
+select is((select (last_result->>'incorrectAttempts')::integer from test_support.runtime), 1, 'La penalización cuenta validaciones completas');
+select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'La validación es idempotente');
+select lives_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18,21]}')$$, 'La solución completa se acepta');
 select is((select (last_result->>'terminal')::boolean from test_support.runtime), true, 'Completar Queens es terminal');
 select is((select count(*) from private.answer_receipts), 1::bigint, 'La resolución crea una recepción final');
 

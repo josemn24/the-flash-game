@@ -283,6 +283,13 @@ Constraints y reglas:
 
 - `unique (challenge_definition_id, version_number)` y `max_score = 100`.
 - Una versión publicada no se actualiza ni se borra; una corrección crea otra versión.
+- S17 crea la corrección bloqueando la definición para asignar el siguiente `version_number`,
+  copiando el snapshot y creando nuevos `challenge_items`; conserva las referencias exactas a
+  `question_versions` publicadas. La fuente puede estar `published` o `archived`, y el resultado
+  siempre es `draft`.
+- Archivar exige que la versión esté `published` y comprueba `updated_at` con concurrencia
+  optimista. Una versión `archived` sigue siendo resoluble por publicaciones existentes; no se
+  eliminan definiciones, items, preguntas, publicaciones, intentos ni revisiones.
 - `mode_config` se valida contra el contrato del modo en la aplicación. No se intenta duplicar en
   SQL el registry TypeScript de los 31 formatos.
 - La publicación de la versión exige que sus elementos sean válidos y sumen exactamente 100 puntos.

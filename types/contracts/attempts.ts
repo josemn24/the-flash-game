@@ -60,32 +60,6 @@ export type ReceiveAnswerResult = AttemptCommandResult & {
   readonly receivedAt: UtcIsoDateTime;
   readonly presentedAt: UtcIsoDateTime;
 };
-export type MatchingPair = {
-  readonly leftId: string;
-  readonly rightId: string;
-};
-export type SubmitMatchingPairInput = AttemptCommandInput & {
-  readonly challengeItemId: ChallengeItemId;
-  readonly leftItemId: string;
-  readonly rightItemId: string;
-  readonly clientTimeUsedMs?: DurationMs;
-};
-export type SubmitMatchingPairResult = AttemptCommandResult & {
-  readonly challengeItemId: ChallengeItemId;
-  readonly leftItemId: string;
-  readonly rightItemId: string;
-  readonly correct: boolean;
-  readonly terminal: boolean;
-  readonly matchedPairs: readonly MatchingPair[];
-  readonly matchedCount: number;
-  readonly totalPairs: number;
-  readonly incorrectAttempts: number;
-  readonly penaltyPoints: number;
-  readonly receiptId?: AnswerReceiptId;
-  readonly status?: AnswerStatus;
-  readonly points?: number;
-  readonly timeUsedMs?: DurationMs;
-};
 export type SubmitWordSearchSelectionInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly startCell: number;
@@ -190,6 +164,42 @@ export type SubmitQueensPlacementResult = AttemptCommandResult & {
   readonly receiptId?: AnswerReceiptId;
   readonly status?: AnswerStatus;
   readonly points?: number;
+  readonly timeUsedMs?: DurationMs;
+};
+export type SaveQueensDraftInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly queens: readonly number[];
+};
+export type SaveQueensDraftResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly queens: readonly number[];
+  readonly placedQueens: number;
+  readonly completedRows: number;
+  readonly completedColumns: number;
+  readonly completedRegions: number;
+  readonly conflictingQueens: number;
+  readonly solved: boolean;
+};
+export type ValidateQueensBoardInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly queens: readonly number[];
+};
+export type ValidateQueensBoardResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly correct: boolean;
+  readonly terminal: boolean;
+  readonly queens: readonly number[];
+  readonly placedQueens: number;
+  readonly completedRows: number;
+  readonly completedColumns: number;
+  readonly completedRegions: number;
+  readonly conflictingQueens: number;
+  readonly solved: boolean;
+  readonly incorrectAttempts: number;
+  readonly receiptId?: AnswerReceiptId;
+  readonly status?: AnswerStatus;
+  readonly points?: number;
+  readonly details?: AnswerResultDetails;
   readonly timeUsedMs?: DurationMs;
 };
 export type RevealProgressiveClueInput = AttemptCommandInput & {

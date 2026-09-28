@@ -1,0 +1,725 @@
+@layer app-components {
+  .status {
+    min-height: 100%;
+  }
+
+  .skeleton {
+    display: block;
+    background: linear-gradient(
+      100deg,
+      var(--color-surface-soft) 18%,
+      var(--color-surface-raised) 42%,
+      var(--color-surface-soft) 66%
+    );
+    background-size: 220% 100%;
+    animation: skeletonShimmer 1.4s ease-in-out infinite;
+  }
+
+  .visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .globalContent {
+    display: grid;
+    min-height: 100dvh;
+    place-items: center;
+  }
+
+  .globalLoading {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+  }
+
+  .globalMark {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+
+  .globalLabel {
+    width: 92px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .toolbar {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .detailToolbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .toolbarCenter {
+    display: flex;
+    justify-content: center;
+  }
+
+  .toolbarIcon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    border: var(--border-subtle);
+    border-radius: 50%;
+  }
+
+  .toolbarSpacer {
+    visibility: hidden;
+  }
+
+  .toolbarPill {
+    width: 140px;
+    height: 50px;
+    border-radius: var(--radius-control);
+  }
+
+  .collectionContent {
+    width: min(100%, 980px);
+  }
+
+  .collectionLayout,
+  .secondaryLayout,
+  .detailLayout,
+  .memberLayout,
+  .settingsLayout {
+    position: relative;
+  }
+
+  .collectionToolbar {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .collectionBrand {
+    width: 128px;
+    height: 24px;
+    border-radius: var(--radius-pill);
+  }
+
+  .collectionAction {
+    width: 108px;
+    height: 44px;
+    border-radius: var(--radius-control);
+  }
+
+  .collectionHeading {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-8) 0 var(--space-6);
+  }
+
+  .collectionEyebrow,
+  .pageEyebrow {
+    width: 88px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .collectionTitle {
+    width: min(260px, 70%);
+    height: 50px;
+    border-radius: var(--radius-control);
+  }
+
+  .collectionGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .collectionCard {
+    overflow: hidden;
+  }
+
+  .collectionCardArt {
+    aspect-ratio: 1.45;
+  }
+
+  .collectionCardBody {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-5);
+  }
+
+  .collectionCardTitle {
+    width: 72%;
+    height: 22px;
+    border-radius: var(--radius-pill);
+  }
+
+  .collectionCardMeta {
+    width: 42%;
+    height: 12px;
+    border-radius: var(--radius-pill);
+  }
+
+  .detailContent {
+    width: min(100%, 900px);
+  }
+
+  .statPill {
+    width: 228px;
+    height: 48px;
+    margin: var(--space-3) auto var(--space-6);
+    border-radius: var(--radius-pill);
+  }
+
+  .detailMain {
+    display: grid;
+    max-width: 760px;
+    margin: 0 auto;
+    gap: var(--space-5);
+  }
+
+  .todayLabel {
+    width: 34px;
+    height: 11px;
+    margin: 0 auto;
+    border-radius: var(--radius-pill);
+  }
+
+  .challengeCard {
+    overflow: hidden;
+    border-radius: 28px;
+  }
+
+  .challengeArt {
+    aspect-ratio: 1.45;
+  }
+
+  .challengeFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: 30px var(--space-5) var(--space-5);
+  }
+
+  .challengeFormat {
+    width: 42%;
+    height: 24px;
+    border-radius: var(--radius-pill);
+  }
+
+  .challengeAction {
+    width: 112px;
+    height: 44px;
+    border-radius: var(--radius-control);
+  }
+
+  .leaderboardSurface {
+    margin-top: 32px;
+  }
+
+  .leaderboardSection {
+    width: 100%;
+  }
+
+  .leaderboardHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .leaderboardTitle {
+    width: 190px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+  }
+
+  .leaderboardIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+
+  .leaderboardRows {
+    display: grid;
+    gap: 6px;
+    margin-top: var(--space-5);
+  }
+
+  .leaderboardCards {
+    gap: var(--space-3);
+  }
+
+  .leaderboardRow {
+    display: flex;
+    min-width: 0;
+    min-height: 42px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: var(--radius-control);
+  }
+
+  .leaderboardCardRow {
+    min-height: 64px;
+    gap: 12px;
+    padding: 12px 14px 12px 12px;
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-control);
+  }
+
+  .rank {
+    width: 18px;
+    height: 13px;
+    flex: 0 0 auto;
+    border-radius: var(--radius-pill);
+  }
+
+  .cardRank {
+    width: 48px;
+    height: 24px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+
+  .avatarMedium {
+    width: 42px;
+    height: 42px;
+  }
+
+  .avatarLarge {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+
+  .playerName {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 5px;
+  }
+
+  .nameLine {
+    width: 62%;
+    height: 13px;
+    border-radius: var(--radius-pill);
+  }
+
+  .cardNameLine {
+    height: 18px;
+  }
+
+  .nameMeta {
+    width: 38%;
+    height: 9px;
+    border-radius: var(--radius-pill);
+  }
+
+  .points {
+    width: 62px;
+    height: 28px;
+    flex: 0 0 auto;
+    border-radius: var(--radius-pill);
+  }
+
+  .cardPoints {
+    width: 70px;
+    height: 32px;
+  }
+
+  .cardArrow {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+
+  .secondaryContent,
+  .memberContent {
+    width: min(100%, 820px);
+  }
+
+  .pageIntro {
+    display: grid;
+    gap: 10px;
+    margin: var(--space-8) 0 var(--space-5);
+  }
+
+  .pageTitle {
+    width: 210px;
+    height: 58px;
+    border-radius: var(--radius-control);
+  }
+
+  .detailPageTitle {
+    width: min(80%, 420px);
+    height: 58px;
+    border-radius: var(--radius-control);
+  }
+
+  .badges {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  .badge {
+    width: 84px;
+    height: 30px;
+    border-radius: var(--radius-pill);
+  }
+
+  .historyList {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .historyCard {
+    overflow: hidden;
+  }
+
+  .historyArt {
+    aspect-ratio: 2.1;
+  }
+
+  .historyBody {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5) var(--space-5);
+  }
+
+  .historyTitle {
+    width: 64%;
+    height: 28px;
+    border-radius: var(--radius-pill);
+  }
+
+  .historyWinner {
+    width: 44%;
+    height: 14px;
+    border-radius: var(--radius-pill);
+  }
+
+  .historyAction {
+    width: 118px;
+    height: 44px;
+    margin-top: var(--space-1);
+    border-radius: var(--radius-control);
+  }
+
+  .memberLayout {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .memberProfile {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin: var(--space-6) 0 var(--space-4);
+  }
+
+  .memberProfileText {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .memberTitle {
+    width: min(260px, 55vw);
+    height: 54px;
+    border-radius: var(--radius-control);
+  }
+
+  .memberMeta {
+    width: 160px;
+    height: 12px;
+    border-radius: var(--radius-pill);
+  }
+
+  .memberSummary {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .memberSummaryHeading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .summaryEyebrow {
+    width: 96px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .summaryTitle {
+    width: 62%;
+    height: 34px;
+    border-radius: var(--radius-control);
+  }
+
+  .memberStats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .memberStat {
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border-radius: var(--radius-control);
+    background: var(--color-surface-soft);
+  }
+
+  .memberStatValue {
+    width: 62%;
+    height: 20px;
+    border-radius: var(--radius-pill);
+  }
+
+  .memberStatLabel {
+    width: 82%;
+    height: 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .answerHistory {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  .memberSectionTitle {
+    width: 140px;
+    height: 34px;
+    border-radius: var(--radius-control);
+  }
+
+  .answerRows {
+    display: grid;
+    gap: 8px;
+  }
+
+  .answerRow {
+    width: 100%;
+    height: 48px;
+    border-radius: var(--radius-control);
+  }
+
+  .settingsContent {
+    width: min(100%, 760px);
+    padding-top: 0;
+    padding-inline: 0;
+  }
+
+  .settingsHero {
+    min-height: 430px;
+    overflow: hidden;
+    border: var(--border-subtle);
+    border-radius: 0 0 32px 32px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hero);
+  }
+
+  .settingsToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--space-7) var(--space-5);
+  }
+
+  .settingsAction {
+    width: 98px;
+    height: 44px;
+    border-radius: var(--radius-control);
+  }
+
+  .settingsHeroContent {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6) var(--space-6);
+  }
+
+  .settingsAvatars {
+    display: flex;
+    min-height: 108px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .settingsAvatars .skeleton {
+    margin-left: -16px;
+    border: 3px solid var(--color-surface);
+    border-radius: 50%;
+  }
+
+  .settingsAvatars .skeleton:first-child {
+    margin-left: 0;
+  }
+
+  .settingsCount {
+    width: 110px;
+    height: 18px;
+    margin-top: var(--space-4);
+    border-radius: var(--radius-pill);
+  }
+
+  .settingsTitle {
+    width: min(280px, 70%);
+    height: 54px;
+    border-radius: var(--radius-pill);
+  }
+
+  .settingsBody {
+    width: min(100% - 2 * var(--space-6), 620px);
+    margin: var(--space-8) auto 0;
+    padding-bottom: var(--space-10);
+  }
+
+  .settingsHeading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .settingsSectionTitle {
+    width: 110px;
+    height: 28px;
+    border-radius: var(--radius-control);
+  }
+
+  .settingsSectionCount {
+    width: 28px;
+    height: 12px;
+    border-radius: var(--radius-pill);
+  }
+
+  .memberRows {
+    display: grid;
+    gap: 10px;
+  }
+
+  .memberRow {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px 12px 12px;
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-control);
+  }
+
+  .avatarSmall {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+
+  .memberRowName {
+    width: 42%;
+    height: 16px;
+    border-radius: var(--radius-pill);
+  }
+
+  .memberRowMeta {
+    width: 62px;
+    height: 24px;
+    margin-left: auto;
+    border-radius: var(--radius-pill);
+  }
+
+  @keyframes skeletonShimmer {
+    0% {
+      background-position: 100% 0;
+    }
+
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .collectionGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .collectionCardArt {
+      aspect-ratio: 1.9;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .toolbar,
+    .detailToolbar,
+    .collectionToolbar {
+      min-height: 64px;
+    }
+
+    .challengeArt {
+      aspect-ratio: 1.15;
+    }
+
+    .historyBody {
+      padding-inline: var(--space-4);
+    }
+
+    .memberProfile {
+      gap: var(--space-3);
+      margin: var(--space-4) 0;
+    }
+
+    .avatarLarge {
+      width: 60px;
+      height: 60px;
+    }
+
+    .memberTitle {
+      height: 42px;
+    }
+
+    .memberStats {
+      gap: var(--space-2);
+    }
+
+    .memberStat {
+      padding: 8px;
+    }
+
+    .settingsToolbar {
+      padding-inline: var(--space-5);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: none;
+    }
+  }
+}

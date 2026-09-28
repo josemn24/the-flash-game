@@ -2,7 +2,9 @@ import "server-only";
 
 import type {
   ArchiveQuestionInput,
+  ArchiveChallengeVersionInput,
   CreateFlashDraftInput,
+  CreateChallengeRevisionInput,
   CreateQuestionDraftInput,
   PublishFlashInput,
   PublishQuestionInput,
@@ -48,6 +50,22 @@ export function publishSuperadminFlash(
 ) {
   consumeAdminRateLimit("superadmin");
   return commands.publishFlash(input);
+}
+
+export function createSuperadminChallengeRevision(
+  input: CreateChallengeRevisionInput,
+  commands: SuperadminEditorialCommands = supabaseSuperadminEditorialCommands,
+) {
+  consumeAdminRateLimit("superadmin");
+  return commands.createChallengeRevision(input);
+}
+
+export function archiveSuperadminChallengeVersion(
+  input: ArchiveChallengeVersionInput,
+  commands: SuperadminEditorialCommands = supabaseSuperadminEditorialCommands,
+) {
+  consumeAdminRateLimit("superadmin");
+  return commands.archiveChallengeVersion(input);
 }
 
 export function createSuperadminQuestionDraft(

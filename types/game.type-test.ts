@@ -244,7 +244,10 @@ type ValidQueens = {
 type QueensWithoutRegions = Omit<ValidQueens, "regions">;
 type QueensWithoutSolution = Omit<ValidQueens, "solution">;
 type QueensWithUnsupportedGrid = Omit<ValidQueens, "grid"> & {
-  grid: { rows: 6; columns: 6 };
+  grid: { rows: 9; columns: 9 };
+};
+type QueensWithRectangularGrid = Omit<ValidQueens, "grid"> & {
+  grid: { rows: 4; columns: 5 };
 };
 
 type ValidHeatMap = {
@@ -555,6 +558,9 @@ export type RejectsQueensWithoutRegions = Assert<IsNotAssignable<QueensWithoutRe
 export type RejectsQueensWithoutSolution = Assert<IsNotAssignable<QueensWithoutSolution, Question>>;
 export type RejectsQueensWithUnsupportedGrid = Assert<
   IsNotAssignable<QueensWithUnsupportedGrid, Question>
+>;
+export type RejectsQueensWithRectangularGrid = Assert<
+  IsNotAssignable<QueensWithRectangularGrid, Question>
 >;
 export type AcceptsValidHeatMap = Assert<IsAssignable<ValidHeatMap, Question>>;
 export type RejectsHeatMapWithoutSurface = Assert<IsNotAssignable<HeatMapWithoutSurface, Question>>;

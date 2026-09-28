@@ -7,15 +7,23 @@ const domainIds = {
   challengeVersion: "e05-challenge-version",
   questionOne: "e05-question-one",
   questionTwo: "e05-question-two",
+  questionThree: "e05-question-three",
   questionVersionOne: "e05-question-version-one",
   questionVersionTwo: "e05-question-version-two",
+  questionVersionThree: "e05-question-version-three",
   challengeItemOne: "e05-challenge-item-one",
   challengeItemTwo: "e05-challenge-item-two",
+  challengeItemThree: "e05-challenge-item-three",
   publication: "e05-publication",
 };
 
-const regions = [0, 0, 0, 1, 1, 2, 0, 1, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 3, 3, 2, 4, 3, 3, 3];
-const solution = [2, 9, 10, 18, 21];
+const regions6 = [
+  0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5, 5, 5, 5,
+  5, 5, 5,
+];
+const solution6 = [0, 9, 13, 22, 26, 35];
+const regions4 = [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 2, 3, 3, 3, 2];
+const solution4 = [2, 4, 11, 13];
 
 export const scenario = {
   id: "e05",
@@ -36,9 +44,16 @@ export const scenario = {
     };
     const queens = {
       category: "Lógica",
-      question: "Coloca las cinco coronas.",
-      grid: { rows: 5, columns: 5 },
-      regions,
+      question: "Coloca las seis coronas.",
+      grid: { rows: 6, columns: 6 },
+      regions: regions6,
+      prefilledQueens: [0],
+    };
+    const queensMini = {
+      category: "Lógica",
+      question: "Coloca las cuatro coronas.",
+      grid: { rows: 4, columns: 4 },
+      regions: regions4,
       prefilledQueens: [2],
     };
     return `
@@ -52,20 +67,25 @@ insert into public.room_memberships (room_id, player_id, role, status, joined_at
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at) values (${sqlUuid(domainIds.season)}, ${sqlUuid(domainIds.room)}, 'Temporada E05', 'active', ${sqlString(dateStart)}, ${sqlString(dateEnd)});
 insert into private.question_definitions (id, slug, created_by_player_id) values
   (${sqlUuid(domainIds.questionOne)}, 'e05-question-one', ${sqlString(accounts.alice.playerId)}),
-  (${sqlUuid(domainIds.questionTwo)}, 'e05-question-two', ${sqlString(accounts.alice.playerId)});
+  (${sqlUuid(domainIds.questionTwo)}, 'e05-question-two', ${sqlString(accounts.alice.playerId)}),
+  (${sqlUuid(domainIds.questionThree)}, 'e05-question-three', ${sqlString(accounts.alice.playerId)});
 insert into private.question_versions (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id) values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 1, 'multiple-choice', 15000, ${sqlString(JSON.stringify(multipleChoice))}, ${sqlString(accounts.alice.playerId)}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 1, 'queens', 90000, ${sqlString(JSON.stringify(queens))}, ${sqlString(accounts.alice.playerId)});
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 1, 'queens', 90000, ${sqlString(JSON.stringify(queens))}, ${sqlString(accounts.alice.playerId)}),
+  (${sqlUuid(domainIds.questionVersionThree)}, ${sqlUuid(domainIds.questionThree)}, 1, 1, 'queens', 90000, ${sqlString(JSON.stringify(queensMini))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload) values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({ correctAnswer: "Lisboa", explanation: "Portugal." }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({ solution, explanation: "Una corona por fila, columna y región." }))});
-update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)};
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({ solution: solution6, explanation: "Una corona por fila, columna y región." }))}),
+  (${sqlUuid(domainIds.questionVersionThree)}, ${sqlString(JSON.stringify({ solution: solution4, explanation: "Una corona por fila, columna y región." }))});
+update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)}
+where id in (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionVersionThree)});
 insert into private.challenge_definitions (id, slug, created_by_player_id) values (${sqlUuid(domainIds.challenge)}, 'e05-flash-queens', ${sqlString(accounts.alice.playerId)});
 insert into private.challenge_versions (id, challenge_definition_id, version_number, config_schema_version, status, mode, title, subtitle, description, max_score, mode_config, created_by_player_id, published_at)
-values (${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.challenge)}, 1, 1, 'draft', 'flash', 'Flash E05 Queens', 'Elección múltiple + Queens', 'Tablero server-side con eventos persistidos.', 100, '{}', ${sqlString(accounts.alice.playerId)}, null);
+values (${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.challenge)}, 1, 1, 'draft', 'flash', 'Flash E05 Queens', 'Elección múltiple + Queens', 'Tableros server-side con eventos persistidos.', 100, '{}', ${sqlString(accounts.alice.playerId)}, null);
 insert into private.challenge_items (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config) values
-  (${sqlUuid(domainIds.challengeItemOne)}, ${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.questionVersionOne)}, 1, 50, 1, '{}'),
-  (${sqlUuid(domainIds.challengeItemTwo)}, ${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.questionVersionTwo)}, 2, 50, 1, '{}');
+  (${sqlUuid(domainIds.challengeItemOne)}, ${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.questionVersionOne)}, 1, 34, 1, '{}'),
+  (${sqlUuid(domainIds.challengeItemTwo)}, ${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.questionVersionTwo)}, 2, 33, 1, '{}'),
+  (${sqlUuid(domainIds.challengeItemThree)}, ${sqlUuid(domainIds.challengeVersion)}, ${sqlUuid(domainIds.questionVersionThree)}, 3, 33, 1, '{}');
 update private.challenge_versions set status = 'published', published_at = ${sqlString(dateStart)}
 where id = ${sqlUuid(domainIds.challengeVersion)};
 insert into public.scheduled_challenges (id, season_id, challenge_version_id, number, status, opens_at, closes_at) values
@@ -84,6 +104,7 @@ commit;
       challengeItemIds: [
         stableId(domainIds.challengeItemOne),
         stableId(domainIds.challengeItemTwo),
+        stableId(domainIds.challengeItemThree),
       ],
     };
   },

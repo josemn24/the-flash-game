@@ -2,6 +2,7 @@ import "server-only";
 
 import type {
   CalendarTickRunner,
+  CancelScheduledChallengeInput,
   CreateScheduledChallengeInput,
   SuperadminCalendarCommands,
   SuperadminCalendarQueries,
@@ -24,6 +25,14 @@ export function updateScheduledChallenge(
 ) {
   consumeAdminRateLimit("superadmin");
   return commands.updateScheduledChallenge(input);
+}
+
+export function cancelScheduledChallenge(
+  input: CancelScheduledChallengeInput,
+  commands: SuperadminCalendarCommands = supabaseSuperadminCalendarQueries,
+) {
+  consumeAdminRateLimit("superadmin");
+  return commands.cancelScheduledChallenge(input);
 }
 
 export function getSuperadminCalendarContext(

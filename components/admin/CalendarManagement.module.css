@@ -249,6 +249,16 @@
     font-size: 13px;
     font-weight: 700;
   }
+  .cancelWarning {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+    border-radius: var(--radius-control);
+    background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface-raised));
+    color: var(--color-danger);
+    font-size: 12px;
+    font-weight: 700;
+  }
   .list {
     display: grid;
     gap: var(--space-3);
@@ -334,6 +344,11 @@
   }
   .entryCompact > .helper {
     margin: 0;
+  }
+  .entryActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
   .entryTitleLink {
     color: inherit;

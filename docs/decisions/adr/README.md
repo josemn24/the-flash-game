@@ -6,3 +6,4 @@
 - [ADR-0002: Contenido publicado inmutable](0002-immutable-published-content.md)
 - [ADR-0003: Ciclo de vida y concurrencia de intentos](0003-attempt-lifecycle-and-concurrency.md)
 - [ADR-0004: Puntuación autoritativa en servidor](0004-server-authoritative-scoring.md)
+- [ADR-0005: Correcciones editoriales y versiones archivadas](0005-editorial-revisions-and-archived-versions.md)

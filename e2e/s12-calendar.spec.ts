@@ -31,6 +31,44 @@ function madridLocal(date: Date) {
 }
 
 test.describe("S12 — programar y ejecutar calendario", () => {
+  test("un superadmin cancela una publicación futura y deja de estar disponible para jugar", async ({
+    page,
+    browser,
+  }) => {
+    const data = await fixture();
+    await signIn(page, data.users.superadmin);
+    await page.goto("/admin/rooms");
+    await page.getByRole("link", { name: "Ver detalle de Sala S12" }).click();
+    await page.getByRole("link", { name: "Calendario", exact: true }).click();
+    await page.getByRole("button", { name: "Programar nuevo desafío" }).click();
+
+    const now = Date.now();
+    await page.getByLabel("Apertura").fill(madridLocal(new Date(now + 86_400_000)));
+    await page.getByLabel("Cierre").fill(madridLocal(new Date(now + 90_000_000)));
+    await page.getByLabel("Motivo de auditoría").fill("Programación que se retira en S12");
+    await page.getByRole("button", { name: "Programar desafío" }).click();
+    await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=calendar&calendar=created$/);
+
+    await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Cancelar programación" })).toBeVisible();
+    await page
+      .getByLabel("Motivo de cancelación")
+      .fill("La publicación se retira por revisión editorial");
+    await page.getByRole("button", { name: "Confirmar cancelación" }).click();
+    await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=calendar&calendar=cancelled$/);
+    await expect(page.getByText("Cancelado", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reprogramar", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Cancelar", exact: true })).toHaveCount(0);
+
+    const memberContext = await browser.newContext();
+    const member = await memberContext.newPage();
+    await signIn(member, data.users.member);
+    await member.goto("/salas/s12-room");
+    await expect(member.getByText("Sin reto hoy", { exact: true })).toBeVisible();
+    await expect(member.getByRole("link", { name: "Jugar" })).toHaveCount(0);
+    await memberContext.close();
+  });
+
   test("un superadmin programa y un miembro puede iniciar una publicación abierta", async ({
     page,
     browser,

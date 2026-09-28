@@ -24,6 +24,27 @@ async function signIn(page: Page, account: { email: string; password: string }) 
 }
 
 test.describe("S02 — salas e introducción autorizada", () => {
+  test("muestra feedback de navegación y carga el ranking con una respuesta lenta", async ({
+    page,
+  }) => {
+    const data = await fixture();
+    await signIn(page, data.users.alice);
+    await page.getByRole("link", { name: /Abrir sala Sala principal/ }).click();
+    await expect(page.getByRole("link", { name: /Ver historial de Sala principal/ })).toBeVisible();
+
+    await page.route("**/salas/s02-main/ranking**", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      await route.continue();
+    });
+
+    const rankingLink = page.getByRole("link", { name: /Ver ranking de la sala/ });
+    const navigation = rankingLink.click();
+
+    await expect(page.locator('[data-pending="true"]')).toBeVisible();
+    await navigation;
+    await expect(page.getByRole("heading", { name: "Ranking global" })).toBeVisible();
+  });
+
   test("Alice solo ve sus salas y recibe una introducción segura", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.alice);
@@ -48,10 +69,11 @@ test.describe("S02 — salas e introducción autorizada", () => {
     expect(introductionHtml).not.toContain("S02_PRIVATE_SOLUTION");
     expect(await page.content()).not.toContain("S02_PRIVATE");
 
-    const unauthorized = await page.goto("/salas/s02-other");
-    const missing = await page.goto("/salas/s02-missing");
-    expect(unauthorized?.status()).toBe(404);
-    expect(missing?.status()).toBe(404);
+    await page.goto("/salas/s02-other");
+    await expect(page.getByRole("heading", { name: "Ruta fuera de pista" })).toBeVisible();
+
+    await page.goto("/salas/s02-missing");
+    await expect(page.getByRole("heading", { name: "Ruta fuera de pista" })).toBeVisible();
 
     const persistedRanking = await page.goto("/salas/s02-main/ranking");
     expect(persistedRanking?.status()).toBe(200);

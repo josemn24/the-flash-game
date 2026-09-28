@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { BellIcon, BoltIcon, CheckIcon, QueensCrownIcon } from "@/components/ui";
 import {
   AvatarStack,
+  BackButton,
+  BackLink,
   Button,
   ButtonLink,
   Card,
@@ -63,6 +65,17 @@ describe("canonical UI primitives", () => {
 
     expect(markup).toContain('aria-label="Notificaciones"');
     expect(markup).toContain('type="button"');
+  });
+
+  it("keeps back links and buttons on the shared control contract", () => {
+    const link = renderToStaticMarkup(<BackLink href="/salas" label="Volver a salas" />);
+    const button = renderToStaticMarkup(<BackButton label="Volver al resultado" />);
+
+    expect(link).toContain('href="/salas"');
+    expect(link).toContain('aria-label="Volver a salas"');
+    expect(link).toContain("pendingLink");
+    expect(button).toContain('type="button"');
+    expect(button).toContain('aria-label="Volver al resultado"');
   });
 
   it("renders semantic chip variants", () => {
