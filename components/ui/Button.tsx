@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { LinkPendingIndicator } from "./LinkPendingIndicator.client";
 import { buttonClassName, type ButtonStyleProps } from "@/components/ui/buttonStyles";
+import pendingStyles from "./LinkPendingIndicator.module.css";
 
 type ButtonContentProps = {
   leadingIcon?: ReactNode;
@@ -82,12 +84,13 @@ export function ButtonLink({
         size,
         appearance: resolvedAppearance,
         fullWidth,
-        className,
+        className: `${pendingStyles.pendingLink} ${className ?? ""}`,
       })}
     >
       {leadingIcon}
       <span>{children}</span>
       {trailingIcon}
+      <LinkPendingIndicator />
     </Link>
   );
 }

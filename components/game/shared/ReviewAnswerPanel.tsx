@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowIcon, MotionButton, RotateIcon } from "@/components/ui";
+import { BackButton, MotionButton, RotateIcon } from "@/components/ui";
 import type { ReviewAnswerEntry } from "./ReviewAnswerList";
 import { ReviewAnswerList } from "./ReviewAnswerList";
 import styles from "./ReviewAnswers.module.css";
@@ -44,14 +44,7 @@ export function ReviewAnswerPanel({
   return (
     <section className={styles.reviewPanel} aria-labelledby="review-answers-title">
       {backAtTop && onBack ? (
-        <button
-          className={styles.reviewBackButton}
-          type="button"
-          onClick={onBack}
-          aria-label={backLabel}
-        >
-          <ArrowIcon />
-        </button>
+        <BackButton label={backLabel} onClick={onBack} />
       ) : null}
 
       <div

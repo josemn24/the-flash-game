@@ -27,6 +27,12 @@ export type BaseQuestion = {
   explanation: string;
 };
 
+export type QueensBoardSize = 4 | 5 | 6 | 7 | 8;
+
+export type QueensGrid = {
+  [Size in QueensBoardSize]: { rows: Size; columns: Size };
+}[QueensBoardSize];
+
 export type NumberSequencePromptVisual = {
   type: "number-sequence";
   eyebrow?: string;
@@ -304,7 +310,7 @@ export type MiniNonogramQuestion = BaseQuestion & {
 
 export type QueensQuestion = BaseQuestion & {
   type: "queens";
-  grid: { rows: 5; columns: 5 };
+  grid: QueensGrid;
   regions: number[];
   prefilledQueens?: number[];
   solution: number[];

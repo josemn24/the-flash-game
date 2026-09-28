@@ -9,10 +9,13 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import Link from "next/link";
 import { Button, Card, Chip } from "@/components/ui";
 import { AdminSectionHeader } from "./AdminSectionHeader";
 import { EditorialPreview } from "./EditorialPreview";
 import {
+  archiveChallengeVersion,
+  createChallengeRevision,
   createFlashDraft,
   publishFlash,
   updateFlashDraft,
@@ -29,6 +32,7 @@ import {
 import type {
   FlashEditorialDocument,
   FlashEditorialQuestionReference,
+  SuperadminChallengeVersionComparison,
   SuperadminEditorialContext,
   SuperadminQuestionLibraryContext,
 } from "@/types/view-models/editorial";
@@ -156,9 +160,89 @@ function ReasonField() {
   );
 }
 
+function jsonValue(value: unknown) {
+  if (value === null || value === undefined) return "—";
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
+}
+
+function changed(from: unknown, to: unknown) {
+  return JSON.stringify(from) !== JSON.stringify(to);
+}
+
+function ComparisonPanel({
+  comparison,
+}: {
+  readonly comparison: SuperadminChallengeVersionComparison;
+}) {
+  const fields = [
+    ["Título", comparison.from.title, comparison.to.title],
+    ["Subtítulo", comparison.from.subtitle, comparison.to.subtitle],
+    ["Descripción", comparison.from.description, comparison.to.description],
+    ["Modo", comparison.from.mode, comparison.to.mode],
+    ["Configuración del modo", comparison.from.modeConfig, comparison.to.modeConfig],
+  ] as const;
+  const fieldChanges = fields.filter(([, from, to]) => changed(from, to));
+  const maxItems = Math.max(comparison.from.items.length, comparison.to.items.length);
+  const itemChanges = Array.from({ length: maxItems }, (_, index) => {
+    const from = comparison.from.items[index];
+    const to = comparison.to.items[index];
+    if (!from || !to) return { position: index + 1, from, to, changes: ["elemento"] };
+    const changes = [
+      changed(from.questionVersionId, to.questionVersionId) && "referencia",
+      changed(from.slug, to.slug) && "slug",
+      changed(from.type, to.type) && "formato",
+      changed(from.timeLimitMs, to.timeLimitMs) && "tiempo",
+      changed(from.points, to.points) && "puntos",
+      changed(from.modeConfig, to.modeConfig) && "configuración",
+      changed(from.publicPayload, to.publicPayload) && "contenido público",
+    ].filter(Boolean) as string[];
+    return { position: index + 1, from, to, changes };
+  }).filter((item) => item.changes.length > 0);
+  const hasChanges = fieldChanges.length > 0 || itemChanges.length > 0;
+
+  return (
+    <Card as="section" surface="soft" aria-labelledby="editorial-comparison-title">
+      <div className={styles.formHeading}>
+        <div>
+          <p className={styles.eyebrow}>Comparación editorial</p>
+          <h3 id="editorial-comparison-title">
+            v{comparison.from.versionNumber} → v{comparison.to.versionNumber}
+          </h3>
+        </div>
+        <span className={styles.helper}>
+          Se comparan referencias y payloads públicos; las soluciones privadas no se muestran.
+        </span>
+      </div>
+      {hasChanges ? (
+        <div className={styles.comparisonList}>
+          {fieldChanges.map(([label, from, to]) => (
+            <div className={styles.comparisonRow} key={label}>
+              <strong>{label}</strong>
+              <span>{jsonValue(from)}</span>
+              <span>{jsonValue(to)}</span>
+            </div>
+          ))}
+          {itemChanges.map((item) => (
+            <div className={styles.comparisonRow} key={item.position}>
+              <strong>Pregunta #{item.position}</strong>
+              <span>{item.from ? item.changes.join(", ") : "Elemento añadido"}</span>
+              <span>{item.to ? item.changes.join(", ") : "Elemento eliminado"}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className={styles.helper}>No hay diferencias editoriales entre estas versiones.</p>
+      )}
+    </Card>
+  );
+}
+
 export function EditorialManagement({
   context,
   questionLibrary,
+  comparison,
+  initialDraftId,
   title = "Desafíos",
   eyebrow = "S11 · herramienta editorial",
   canCreate = true,
@@ -166,13 +250,19 @@ export function EditorialManagement({
 }: {
   readonly context: SuperadminEditorialContext;
   readonly questionLibrary?: SuperadminQuestionLibraryContext;
+  readonly comparison?: SuperadminChallengeVersionComparison | null;
+  readonly initialDraftId?: string;
   readonly title?: string;
   readonly eyebrow?: string;
   readonly canCreate?: boolean;
   readonly allowNewDraft?: boolean;
 }) {
   const drafts = context.entries.filter((entry) => entry.status === "draft");
-  const [selectedId, setSelectedId] = useState(drafts[0]?.challengeVersionId ?? "");
+  const [selectedId, setSelectedId] = useState(
+    initialDraftId && drafts.some((entry) => entry.challengeVersionId === initialDraftId)
+      ? initialDraftId
+      : (drafts[0]?.challengeVersionId ?? ""),
+  );
   const selected = drafts.find((entry) => entry.challengeVersionId === selectedId) ?? null;
   const [documentText, setDocumentText] = useState(
     selected?.document
@@ -182,6 +272,8 @@ export function EditorialManagement({
   const [previewError, setPreviewError] = useState("");
   const publishedLibraryEntries =
     questionLibrary?.entries.filter((entry) => entry.status === "published") ?? [];
+  const challengeDefinitionId = context.entries[0]?.challengeDefinitionId ?? "";
+  const historicalEntries = context.entries.filter((entry) => entry.status !== "draft");
   const [libraryQuestionId, setLibraryQuestionId] = useState(
     publishedLibraryEntries[0]?.questionVersionId ?? "",
   );
@@ -189,13 +281,25 @@ export function EditorialManagement({
   const [createState, createAction, createPending] = useActionState(createFlashDraft, initialState);
   const [updateState, updateAction, updatePending] = useActionState(updateFlashDraft, initialState);
   const [publishState, publishAction, publishPending] = useActionState(publishFlash, initialState);
+  const [revisionState, revisionAction, revisionPending] = useActionState(
+    createChallengeRevision,
+    initialState,
+  );
+  const [archiveState, archiveAction, archivePending] = useActionState(
+    archiveChallengeVersion,
+    initialState,
+  );
   const createKeyRef = useRef<string | null>(null);
   const updateKeyRef = useRef<string | null>(null);
   const publishKeyRef = useRef<string | null>(null);
+  const revisionKeyRef = useRef<string | null>(null);
+  const archiveKeyRef = useRef<string | null>(null);
   const hasEditableSurface = canCreate || Boolean(selected);
   useResetKeyWhenError(createState, createKeyRef);
   useResetKeyWhenError(updateState, updateKeyRef);
   useResetKeyWhenError(publishState, publishKeyRef);
+  useResetKeyWhenError(revisionState, revisionKeyRef);
+  useResetKeyWhenError(archiveState, archiveKeyRef);
 
   const parsedDocument = useMemo(() => {
     try {
@@ -383,37 +487,44 @@ export function EditorialManagement({
             ) : null}
 
             {publishedLibraryEntries.length > 0 ? (
-              <div className={styles.draftSelector}>
-                <label className={styles.field}>
-                  <span>Versión publicada de biblioteca</span>
-                  <select
-                    value={libraryQuestionId}
-                    onChange={(event) => setLibraryQuestionId(event.target.value)}
-                  >
-                    {publishedLibraryEntries.map((entry) => (
-                      <option key={entry.questionVersionId} value={entry.questionVersionId}>
-                        {entry.slug} · v{entry.versionNumber} · {entry.type}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className={styles.field}>
-                  <span>Sustituir pregunta</span>
-                  <select
-                    value={replaceIndex}
-                    onChange={(event) => setReplaceIndex(event.target.value)}
-                  >
-                    {parsedDocument?.questions.map((_, index) => (
-                      <option key={index} value={index}>
-                        #{index + 1}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <Button type="button" variant="secondary" onClick={selectLibraryQuestion}>
-                  Usar versión
-                </Button>
-              </div>
+              <>
+                <div className={styles.draftSelector}>
+                  <label className={styles.field}>
+                    <span>Versión publicada de biblioteca</span>
+                    <select
+                      value={libraryQuestionId}
+                      onChange={(event) => setLibraryQuestionId(event.target.value)}
+                    >
+                      {publishedLibraryEntries.map((entry) => (
+                        <option key={entry.questionVersionId} value={entry.questionVersionId}>
+                          {entry.slug} · v{entry.versionNumber} · {entry.type}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={styles.field}>
+                    <span>Sustituir pregunta</span>
+                    <select
+                      value={replaceIndex}
+                      onChange={(event) => setReplaceIndex(event.target.value)}
+                    >
+                      {parsedDocument?.questions.map((_, index) => (
+                        <option key={index} value={index}>
+                          #{index + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button type="button" variant="secondary" onClick={selectLibraryQuestion}>
+                    Usar versión
+                  </Button>
+                </div>
+                <p className={styles.helper}>
+                  Las preguntas publicadas son referencias inmutables. Para corregir el enunciado o
+                  la solución, crea una nueva versión desde <Link href="/admin/questions">la
+                  biblioteca de preguntas</Link> y selecciónala después en este desafío.
+                </p>
+              </>
             ) : null}
 
             {parsedDocument ? (
@@ -567,11 +678,51 @@ export function EditorialManagement({
             <h3>Versiones no editables</h3>
           </div>
         </div>
-        {context.entries.filter((entry) => entry.status !== "draft").length > 0 ? (
+        {historicalEntries.length > 0 ? (
+          <>
+            {historicalEntries.length > 1 ? (
+              <form method="get" className={styles.compareSelector}>
+                <label className={styles.field}>
+                  <span>Comparar versión base</span>
+                  <select
+                    name="compareFrom"
+                    defaultValue={comparison?.from.challengeVersionId ?? historicalEntries[0]?.challengeVersionId}
+                  >
+                    {context.entries.map((entry) => (
+                      <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
+                        v{entry.versionNumber} · {statusLabel(entry.status)} · {entry.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={styles.field}>
+                  <span>Comparar con</span>
+                  <select
+                    name="compareTo"
+                    defaultValue={comparison?.to.challengeVersionId ?? historicalEntries.at(-1)?.challengeVersionId}
+                  >
+                    {context.entries.map((entry) => (
+                      <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
+                        v{entry.versionNumber} · {statusLabel(entry.status)} · {entry.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Button type="submit" variant="secondary">
+                  Comparar versiones
+                </Button>
+                {comparison ? (
+                  <Link href={`/admin/challenges/${challengeDefinitionId}`} className={styles.inlineLink}>
+                    Limpiar comparación
+                  </Link>
+                ) : null}
+              </form>
+            ) : null}
+            <ErrorMessage state={revisionState} />
+            <ErrorMessage state={archiveState} />
+            {comparison ? <ComparisonPanel comparison={comparison} /> : null}
           <div className={styles.publishedList}>
-            {context.entries
-              .filter((entry) => entry.status !== "draft")
-              .map((entry) => (
+            {historicalEntries.map((entry) => (
                 <Card
                   as="article"
                   surface="soft"
@@ -593,9 +744,62 @@ export function EditorialManagement({
                   <Chip variant="status" tone={statusTone(entry.status)}>
                     {statusLabel(entry.status)}
                   </Chip>
+                  <div className={styles.versionActions}>
+                    <form
+                      action={revisionAction}
+                      onSubmit={(event) => prepareKey(event, revisionKeyRef)}
+                    >
+                      <input type="hidden" name="idempotencyKey" defaultValue="" />
+                      <input
+                        type="hidden"
+                        name="sourceChallengeVersionId"
+                        value={entry.challengeVersionId}
+                        readOnly
+                      />
+                      <ReasonField />
+                      <Button type="submit" variant="secondary" loading={revisionPending}>
+                        Crear corrección
+                      </Button>
+                    </form>
+                    {entry.status === "published" ? (
+                      <form
+                        action={archiveAction}
+                        onSubmit={(event) => {
+                          if (
+                            !window.confirm(
+                              `¿Archivar v${entry.versionNumber}? Las publicaciones y revisiones históricas seguirán usando esta versión.`,
+                            )
+                          ) {
+                            event.preventDefault();
+                            return;
+                          }
+                          prepareKey(event, archiveKeyRef);
+                        }}
+                      >
+                        <input type="hidden" name="idempotencyKey" defaultValue="" />
+                        <input
+                          type="hidden"
+                          name="challengeVersionId"
+                          value={entry.challengeVersionId}
+                          readOnly
+                        />
+                        <input
+                          type="hidden"
+                          name="expectedUpdatedAt"
+                          value={entry.updatedAt}
+                          readOnly
+                        />
+                        <ReasonField />
+                        <Button type="submit" variant="secondary" loading={archivePending}>
+                          Archivar versión
+                        </Button>
+                      </form>
+                    ) : null}
+                  </div>
                 </Card>
-              ))}
+            ))}
           </div>
+          </>
         ) : (
           <p className={styles.helper}>Todavía no hay versiones publicadas.</p>
         )}

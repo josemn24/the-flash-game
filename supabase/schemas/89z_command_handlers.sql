@@ -300,7 +300,6 @@ begin
             when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
             when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
             when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
-            when q.type = 'matching' then private.matching_progress(a.id, item.id)
             when q.type = 'queens' then private.queens_progress(a.id, item.id)
             when q.type = 'word-search' then private.word_search_progress(a.id, item.id)
             when q.type = 'word-hashtag' then private.word_hashtag_progress(a.id, item.id) - 'solved'
@@ -355,6 +354,25 @@ begin
           raise exception 'interaction_not_presented' using errcode = '55000';
         end if;
         select * into item from private.challenge_items where id = segment.challenge_item_id;
+        select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'matching'
+        ) and (
+          (instant < unit.deadline_at and not private.matching_answer_valid(
+            (select q.public_payload from private.question_versions q where q.id = item.question_version_id),
+            input->'answer',
+            true
+          ))
+          or (instant >= unit.deadline_at and jsonb_typeof(input->'answer') <> 'null'
+            and not private.matching_answer_valid(
+              (select q.public_payload from private.question_versions q where q.id = item.question_version_id),
+              input->'answer',
+              false
+            ))
+        ) then
+          raise exception 'invalid_matching_answer' using errcode = '22023';
+        end if;
         if op = 'receive' and exists (
           select 1 from private.question_versions q
           where q.id = item.question_version_id and q.type = 'mini-wordle'
@@ -375,12 +393,6 @@ begin
         end if;
         if op = 'receive' and exists (
           select 1 from private.question_versions q
-          where q.id = item.question_version_id and q.type = 'matching'
-        ) and jsonb_typeof(input->'answer') <> 'null' then
-          raise exception 'matching_requires_pair_command' using errcode = '22023';
-        end if;
-        if op = 'receive' and exists (
-          select 1 from private.question_versions q
           where q.id = item.question_version_id and q.type = 'word-search'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'word_search_requires_selection_command' using errcode = '22023';
@@ -391,7 +403,6 @@ begin
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'word_hashtag_requires_swap_command' using errcode = '22023';
         end if;
-        select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
         if received < segment.started_at then raise exception 'request_predates_presentation' using errcode = '40001'; end if;
         late := received >= unit.deadline_at;
@@ -453,7 +464,7 @@ begin
             select count(*)::integer,
               coalesce(sum(case
                 when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-                when answer_question.type in ('matching', 'queens')
+                when answer_question.type = 'queens'
                   and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
                 else 0
               end), 0)::integer
@@ -536,4 +547,3 @@ end;
 $$;
 alter function private.handle_attempt_command(text, jsonb, jsonb, uuid, jsonb, timestamptz) owner to postgres;
 revoke all on function private.handle_attempt_command(text, jsonb, jsonb, uuid, jsonb, timestamptz) from public, anon, authenticated, service_role;
-

@@ -4,6 +4,8 @@ import type {
   CreateFlashDraftInput,
   CreateQuestionDraftInput,
   ArchiveQuestionInput,
+  ArchiveChallengeVersionInput,
+  CreateChallengeRevisionInput,
   PublishFlashInput,
   PublishQuestionInput,
   QuestionLibraryFilters,
@@ -26,6 +28,7 @@ import type {
   SuperadminChallengeCatalogContext,
   SuperadminChallengeDetailContext,
   SuperadminChallengeSummary,
+  SuperadminChallengeVersionComparison,
   SuperadminEditorialContext,
   SuperadminEditorialEntry,
   SuperadminQuestionLibraryContext,
@@ -153,6 +156,78 @@ function isChallengeDetail(
   );
 }
 
+function isChallengeVersionSnapshot(value: unknown): value is SuperadminChallengeVersionComparison["from"] {
+  if (!isRecord(value) || !Array.isArray(value.items)) return false;
+  return (
+    typeof value.challengeVersionId === "string" &&
+    uuidPattern.test(value.challengeVersionId) &&
+    typeof value.versionNumber === "number" &&
+    Number.isSafeInteger(value.versionNumber) &&
+    value.versionNumber > 0 &&
+    typeof value.status === "string" &&
+    statuses.has(value.status) &&
+    typeof value.slug === "string" &&
+    value.slug.length > 0 &&
+    typeof value.title === "string" &&
+    typeof value.subtitle === "string" &&
+    typeof value.description === "string" &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
+    typeof value.configSchemaVersion === "number" &&
+    Number.isSafeInteger(value.configSchemaVersion) &&
+    isRecord(value.modeConfig) &&
+    (value.globalTimeLimitMs === null ||
+      (typeof value.globalTimeLimitMs === "number" &&
+        Number.isSafeInteger(value.globalTimeLimitMs) &&
+        value.globalTimeLimitMs > 0)) &&
+    value.items.every((item) => {
+      if (!isRecord(item)) return false;
+      return (
+        typeof item.challengeItemId === "string" &&
+        uuidPattern.test(item.challengeItemId) &&
+        typeof item.position === "number" &&
+        Number.isSafeInteger(item.position) &&
+        item.position > 0 &&
+        typeof item.questionVersionId === "string" &&
+        uuidPattern.test(item.questionVersionId) &&
+        typeof item.questionDefinitionId === "string" &&
+        uuidPattern.test(item.questionDefinitionId) &&
+        typeof item.questionVersionNumber === "number" &&
+        Number.isSafeInteger(item.questionVersionNumber) &&
+        item.questionVersionNumber > 0 &&
+        typeof item.questionStatus === "string" &&
+        statuses.has(item.questionStatus) &&
+        typeof item.slug === "string" &&
+        item.slug.length > 0 &&
+        typeof item.type === "string" &&
+        item.type.length > 0 &&
+        typeof item.payloadSchemaVersion === "number" &&
+        Number.isSafeInteger(item.payloadSchemaVersion) &&
+        item.payloadSchemaVersion > 0 &&
+        typeof item.timeLimitMs === "number" &&
+        Number.isSafeInteger(item.timeLimitMs) &&
+        item.timeLimitMs > 0 &&
+        typeof item.points === "number" &&
+        Number.isSafeInteger(item.points) &&
+        item.points >= 0 &&
+        isRecord(item.modeConfig) &&
+        isRecord(item.publicPayload)
+      );
+    })
+  );
+}
+
+function isChallengeVersionComparison(
+  value: unknown,
+): value is Omit<SuperadminChallengeVersionComparison, "source"> {
+  return (
+    isRecord(value) &&
+    typeof value.challengeDefinitionId === "string" &&
+    uuidPattern.test(value.challengeDefinitionId) &&
+    isChallengeVersionSnapshot(value.from) &&
+    isChallengeVersionSnapshot(value.to)
+  );
+}
+
 function isQuestionLibraryEntry(value: unknown): value is SuperadminQuestionLibraryEntry {
   return (
     isRecord(value) &&
@@ -254,6 +329,7 @@ function commandErrorCode(error: { code?: string; message?: string }) {
     "invalid_question_reference",
     "question_not_published",
     "idempotency_conflict",
+    "invalid_comparison",
   ];
   return (
     candidates.find((candidate) => message.includes(candidate)) ?? error.code ?? "command_failed"
@@ -288,8 +364,17 @@ async function callQuestionCommand<T>(
 
 async function callCommand<T>(
   functionName:
-    "create_superadmin_flash_draft" | "update_superadmin_flash_draft" | "publish_superadmin_flash",
-  input: CreateFlashDraftInput | UpdateFlashDraftInput | PublishFlashInput,
+    | "create_superadmin_flash_draft"
+    | "update_superadmin_flash_draft"
+    | "publish_superadmin_flash"
+    | "create_superadmin_challenge_revision"
+    | "archive_superadmin_challenge_version",
+  input:
+    | CreateFlashDraftInput
+    | UpdateFlashDraftInput
+    | PublishFlashInput
+    | CreateChallengeRevisionInput
+    | ArchiveChallengeVersionInput,
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(functionName, { input });
@@ -367,6 +452,44 @@ export class SupabaseSuperadminEditorialQueries
 
   publishFlash(input: PublishFlashInput): Promise<SuperadminEditorialCommandResult> {
     return callCommand("publish_superadmin_flash", input);
+  }
+
+  createChallengeRevision(
+    input: CreateChallengeRevisionInput,
+  ): Promise<SuperadminEditorialCommandResult> {
+    return callCommand("create_superadmin_challenge_revision", input);
+  }
+
+  archiveChallengeVersion(
+    input: ArchiveChallengeVersionInput,
+  ): Promise<SuperadminEditorialCommandResult> {
+    return callCommand("archive_superadmin_challenge_version", input);
+  }
+
+  async getChallengeVersionComparison(
+    fromChallengeVersionId: string,
+    toChallengeVersionId: string,
+  ): Promise<SuperadminChallengeVersionComparison | null> {
+    if (!uuidPattern.test(fromChallengeVersionId) || !uuidPattern.test(toChallengeVersionId)) {
+      return null;
+    }
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_superadmin_challenge_version_comparison", {
+      from_challenge_version_id: fromChallengeVersionId,
+      to_challenge_version_id: toChallengeVersionId,
+    });
+    if (error) {
+      if (error.code === "42501" || error.message.includes("not_authorized")) {
+        throw new SuperadminAccessDeniedError();
+      }
+      const code = commandErrorCode(error);
+      if (code === "content_not_found" || code === "invalid_comparison") return null;
+      throw new Error(`Supabase challenge comparison read failed: ${error.message}`);
+    }
+    if (!isChallengeVersionComparison(data)) {
+      throw new Error("Supabase challenge comparison returned an invalid payload.");
+    }
+    return { ...data, source: "supabase" };
   }
 
   async getQuestionLibrary(

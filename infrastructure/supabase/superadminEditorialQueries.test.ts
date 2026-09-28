@@ -107,6 +107,38 @@ const libraryEntry = {
   usageCount: 2,
 };
 
+const comparison = {
+  challengeDefinitionId: entry.challengeDefinitionId,
+  from: {
+    challengeVersionId: entry.challengeVersionId,
+    versionNumber: 1,
+    status: "published" as const,
+    slug: entry.slug,
+    title: entry.title,
+    subtitle: entry.subtitle,
+    description: entry.description,
+    mode: "flash" as const,
+    configSchemaVersion: 1,
+    modeConfig: {},
+    globalTimeLimitMs: null,
+    items: [],
+  },
+  to: {
+    challengeVersionId: "00000000-0000-4000-8000-000000000003",
+    versionNumber: 2,
+    status: "draft" as const,
+    slug: entry.slug,
+    title: "Flash editorial corregido",
+    subtitle: entry.subtitle,
+    description: entry.description,
+    mode: "flash" as const,
+    configSchemaVersion: 1,
+    modeConfig: {},
+    globalTimeLimitMs: null,
+    items: [],
+  },
+};
+
 describe("SupabaseSuperadminEditorialQueries", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -151,6 +183,21 @@ describe("SupabaseSuperadminEditorialQueries", () => {
     await expect(queries.getChallengeDetail("not-a-uuid")).resolves.toBeNull();
   });
 
+  it("reads an editorial comparison without exposing private solutions", async () => {
+    mocks.rpc.mockResolvedValue({ data: comparison, error: null });
+
+    await expect(
+      new SupabaseSuperadminEditorialQueries().getChallengeVersionComparison(
+        entry.challengeVersionId,
+        comparison.to.challengeVersionId,
+      ),
+    ).resolves.toEqual({ ...comparison, source: "supabase" });
+    expect(mocks.rpc).toHaveBeenCalledWith("get_superadmin_challenge_version_comparison", {
+      from_challenge_version_id: entry.challengeVersionId,
+      to_challenge_version_id: comparison.to.challengeVersionId,
+    });
+  });
+
   it("calls each narrow RPC and marks command results as Supabase sourced", async () => {
     mocks.rpc.mockResolvedValue({ data: entry, error: null });
     const queries = new SupabaseSuperadminEditorialQueries();
@@ -177,6 +224,23 @@ describe("SupabaseSuperadminEditorialQueries", () => {
     };
     await expect(queries.publishFlash(publishInput)).resolves.toMatchObject({ source: "supabase" });
     expect(mocks.rpc).toHaveBeenLastCalledWith("publish_superadmin_flash", { input: publishInput });
+
+    const revisionInput = {
+      idempotencyKey: "editorial-test-4",
+      sourceChallengeVersionId: entry.challengeVersionId,
+      reason: "Create revision",
+    };
+    await expect(queries.createChallengeRevision(revisionInput)).resolves.toMatchObject({ source: "supabase" });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_challenge_revision", { input: revisionInput });
+
+    const archiveInput = {
+      idempotencyKey: "editorial-test-5",
+      challengeVersionId: entry.challengeVersionId,
+      expectedUpdatedAt: entry.updatedAt,
+      reason: "Archive version",
+    };
+    await expect(queries.archiveChallengeVersion(archiveInput)).resolves.toMatchObject({ source: "supabase" });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("archive_superadmin_challenge_version", { input: archiveInput });
 
     mocks.rpc.mockResolvedValue({ data: { ...entry, document: null }, error: null });
     await expect(queries.createFlashDraft(input)).resolves.toMatchObject({

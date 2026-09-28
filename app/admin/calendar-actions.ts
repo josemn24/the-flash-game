@@ -10,6 +10,7 @@ import {
 import { localDateTimeToUtc } from "@/lib/zonedDateTime";
 import { requireSuperadmin } from "@/server/admin";
 import {
+  cancelScheduledChallenge as cancelScheduledChallengeCommand,
   createScheduledChallenge as createScheduledChallengeCommand,
   updateScheduledChallenge as updateScheduledChallengeCommand,
 } from "@/server/admin-calendar";
@@ -60,8 +61,10 @@ function commandMessage(code: string) {
       return "La ventana no es válida o queda fuera de la temporada.";
     case "schedule_not_found":
       return "La publicación ya no existe. Recarga el portal.";
+    case "schedule_not_cancellable":
+      return "Solo se pueden cancelar publicaciones futuras programadas.";
     case "schedule_already_open":
-      return "La publicación ya ha comenzado y no se puede reprogramar.";
+      return "La publicación ya ha comenzado y no se puede modificar.";
     case "schedule_not_editable":
       return "Solo se pueden reprogramar publicaciones futuras.";
     case "schedule_number_conflict":
@@ -135,6 +138,17 @@ function parseWindow(parsed: ReturnType<typeof parseCommon>, timeZone: string) {
     parsed.fieldErrors.opensAtLocal = "La fecha no existe en la zona horaria de la sala.";
     return null;
   }
+}
+
+function parseCancellation(formData: FormData) {
+  const idempotencyKey = textValue(formData, "idempotencyKey");
+  const reason = textValue(formData, "reason");
+  const fieldErrors: Record<string, string> = {};
+  if (idempotencyKey.length < 8 || idempotencyKey.length > 160)
+    fieldErrors.form = "Recarga el formulario para preparar la operación.";
+  if (reason.length === 0 || reason.length > 500)
+    fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
+  return { idempotencyKey, reason, fieldErrors };
 }
 
 export async function createScheduledChallenge(
@@ -227,6 +241,61 @@ export async function updateScheduledChallenge(
     revalidatePath("/admin/rooms");
     revalidatePath(`/admin/rooms/${room.roomId}`);
     redirect(`/admin/rooms/${room.roomId}?tab=calendar&calendar=updated`);
+  } catch (error) {
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    )
+      handlePortalBoundary(error);
+    throw error;
+  }
+}
+
+export async function cancelScheduledChallenge(
+  _state: CalendarActionState,
+  formData: FormData,
+): Promise<CalendarActionState> {
+  try {
+    const access = await requireSuperadmin();
+    const roomId = textValue(formData, "roomId");
+    const scheduledChallengeId = textValue(formData, "scheduledChallengeId");
+    const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt");
+    const context = uuidPattern.test(roomId) ? await getSuperadminCalendarContext(roomId) : null;
+    const entry = context?.entries.find(
+      (candidate) => candidate.scheduledChallengeId === scheduledChallengeId,
+    );
+    const parsed = parseCancellation(formData);
+    if (!uuidPattern.test(roomId)) parsed.fieldErrors.roomId = "La sala no es válida.";
+    if (
+      !uuidPattern.test(scheduledChallengeId) ||
+      !entry ||
+      entry.status !== "scheduled" ||
+      new Date(entry.opensAt).getTime() <= Date.now()
+    ) {
+      parsed.fieldErrors.scheduledChallengeId = "Selecciona una publicación futura programada.";
+    }
+    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt)))
+      parsed.fieldErrors.expectedUpdatedAt =
+        "La publicación está desactualizada. Recarga el portal.";
+    if (Object.keys(parsed.fieldErrors).length > 0) return validationState(parsed.fieldErrors);
+    const room = entry
+      ? access.context.rooms.find((candidate) => candidate.roomId === entry.roomId)
+      : null;
+    if (!room) return validationState({ roomId: "La sala ya no está disponible." });
+    try {
+      await cancelScheduledChallengeCommand({
+        idempotencyKey: parsed.idempotencyKey,
+        scheduledChallengeId,
+        expectedUpdatedAt,
+        reason: parsed.reason,
+      });
+    } catch (error) {
+      return commandState(error);
+    }
+    revalidatePath("/admin");
+    revalidatePath("/admin/rooms");
+    revalidatePath(`/admin/rooms/${room.roomId}`);
+    redirect(`/admin/rooms/${room.roomId}?tab=calendar&calendar=cancelled`);
   } catch (error) {
     if (
       error instanceof AuthenticationRequiredError ||

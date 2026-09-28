@@ -19,11 +19,12 @@ import type {
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
-  SubmitMatchingPairResult,
   SubmitWordSearchSelectionResult,
   SubmitWordHashtagSwapResult,
   SubmitLogicCodeAttemptResult,
   SubmitQueensPlacementResult,
+  SaveQueensDraftResult,
+  ValidateQueensBoardResult,
   RevealProgressiveClueResult,
   PassInteractionResult,
 } from "@/types/contracts/attempts";
@@ -73,6 +74,7 @@ import {
   isValidWordHashtagPublicConfiguration,
 } from "@/lib/wordHashtag";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
+import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -164,10 +166,7 @@ function commandCode(error: unknown) {
     "invalid_logic_code",
     "duplicate_logic_code",
     "logic_code_requires_attempt_command",
-    "invalid_matching_pair",
-    "matching_item_already_resolved",
-    "duplicate_matching_pair",
-    "matching_requires_pair_command",
+    "invalid_matching_answer",
     "invalid_word_search_selection",
     "word_search_target_already_found",
     "word_search_requires_selection_command",
@@ -175,6 +174,8 @@ function commandCode(error: unknown) {
     "word_hashtag_moves_exhausted",
     "word_hashtag_requires_swap_command",
     "invalid_queens_placement",
+    "invalid_queens_answer",
+    "queens_answer_incomplete",
     "queens_requires_placement_command",
     "prefilled_queen_locked",
     "all_clues_revealed",
@@ -892,25 +893,35 @@ function asQuestion(
     const regions = publicPayload.regions;
     const prefilledQueens = publicPayload.prefilledQueens;
     const solution = solutionPayload.solution;
+    const gridRecord = grid && typeof grid === "object" && !Array.isArray(grid) ? grid : null;
+    const rows = gridRecord && (gridRecord as Record<string, unknown>).rows;
+    const columns = gridRecord && (gridRecord as Record<string, unknown>).columns;
+    const boardGrid = isQueensBoardSize(rows) && rows === columns ? queensGrid(rows) : null;
+    const cellCount = boardGrid ? queensCellCount(boardGrid) : 0;
     if (
       !grid ||
       typeof grid !== "object" ||
       Array.isArray(grid) ||
-      (grid as Record<string, unknown>).rows !== 5 ||
-      (grid as Record<string, unknown>).columns !== 5 ||
+      !boardGrid ||
       !Array.isArray(regions) ||
-      regions.length !== 25 ||
+      regions.length !== cellCount ||
       !regions.every(
         (region) =>
-          typeof region === "number" && Number.isSafeInteger(region) && region >= 0 && region < 5,
+          typeof region === "number" &&
+          Number.isSafeInteger(region) &&
+          region >= 0 &&
+          region < boardGrid.rows,
       ) ||
       !Array.isArray(prefilledQueens) ||
       !prefilledQueens.every(
-        (cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25,
+        (cell) =>
+          typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < cellCount,
       ) ||
       !Array.isArray(solution) ||
+      solution.length !== boardGrid.rows ||
       !solution.every(
-        (cell) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < 25,
+        (cell) =>
+          typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0 && cell < cellCount,
       ) ||
       new Set(solution).size !== solution.length
     ) {
@@ -919,7 +930,7 @@ function asQuestion(
     return {
       ...base,
       type: "queens",
-      grid: { rows: 5, columns: 5 },
+      grid: boardGrid,
       regions,
       prefilledQueens,
       solution,
@@ -1119,12 +1130,13 @@ export class SupabaseAttemptCommands implements Pick<
   | "prepare"
   | "receiveAnswer"
   | "pass"
-  | "submitMatchingPair"
   | "submitWordSearchSelection"
   | "submitWordHashtagSwap"
   | "submitMiniWordleGuess"
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
+  | "saveQueensDraft"
+  | "validateQueensBoard"
   | "revealProgressiveClue"
   | "readEvaluationContext"
   | "recordEvaluation"
@@ -1168,28 +1180,6 @@ export class SupabaseAttemptCommands implements Pick<
     const accepted = await callAttemptCommand<SubmitMiniWordleGuessResult>(
       this.identity,
       "submit_mini_wordle_guess",
-      input,
-    );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-    };
-  }
-
-  async submitMatchingPair(input: Parameters<AttemptCommands["submitMatchingPair"]>[0]) {
-    const accepted = await callAttemptCommand<SubmitMatchingPairResult>(
-      this.identity,
-      "submit_matching_pair",
       input,
     );
     if (!accepted.terminal || !accepted.receiptId) return accepted;
@@ -1296,6 +1286,33 @@ export class SupabaseAttemptCommands implements Pick<
       lockVersion: evaluated.lockVersion,
       status: evaluated.status,
       points: evaluated.points,
+    };
+  }
+
+  saveQueensDraft(input: Parameters<AttemptCommands["saveQueensDraft"]>[0]) {
+    return callAttemptCommand<SaveQueensDraftResult>(this.identity, "save_queens_draft", input);
+  }
+
+  async validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {
+    const accepted = await callAttemptCommand<ValidateQueensBoardResult>(
+      this.identity,
+      "submit_queens_answer",
+      input,
+    );
+    if (!accepted.terminal || !accepted.receiptId) return accepted;
+    const evaluated = await this.evaluateReceipt({
+      attemptId: input.attemptId,
+      sessionToken: input.sessionToken,
+      lockVersion: accepted.lockVersion,
+      receiptId: accepted.receiptId,
+      idempotencyKey: `evaluation:${accepted.receiptId}`,
+    });
+    return {
+      ...accepted,
+      lockVersion: evaluated.lockVersion,
+      status: evaluated.status,
+      points: evaluated.points,
+      details: evaluated.details,
     };
   }
 

@@ -31,15 +31,14 @@ export type ServerFlashPhase =
   | "countdown"
   | "briefing"
   | "playing"
+  | "checking"
   | "answer-reveal"
   | "transition"
   | "results"
   | "review";
 
 type ServerPlayableChallenge =
-  | ServerFlashChallenge
-  | ServerSurvivalChallenge
-  | ServerPyramidChallenge;
+  ServerFlashChallenge | ServerSurvivalChallenge | ServerPyramidChallenge;
 
 function terminalReviewChallenge(
   challenge: ServerPlayableChallenge,
@@ -90,14 +89,6 @@ type PendingProgressiveClueReveal = {
   challengeItemId: string;
   idempotencyKey: string;
 };
-type PendingMatchingPair = {
-  attemptId: string;
-  lockVersion: number;
-  challengeItemId: string;
-  leftItemId: string;
-  rightItemId: string;
-  idempotencyKey: string;
-};
 type PendingWordSearchSelection = {
   attemptId: string;
   lockVersion: number;
@@ -106,13 +97,12 @@ type PendingWordSearchSelection = {
   endCell: number;
   idempotencyKey: string;
 };
-type PendingQueensPlacement = {
+type PendingQueensValidation = {
   kind: "queens";
   attemptId: string;
   lockVersion: number;
   challengeItemId: string;
-  cell: number;
-  action: "place" | "remove";
+  queens: readonly number[];
   idempotencyKey: string;
 };
 type PendingSubmission =
@@ -187,6 +177,7 @@ export function useServerFlashSession({
         : "intro",
   );
   const [attempt, setAttempt] = useState<AttemptState | null>(null);
+  const attemptRef = useRef<AttemptState | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [question, setQuestion] = useState<ServerFlashQuestion | null>(null);
   const [questionPresentedAt, setQuestionPresentedAt] = useState<number | null>(null);
@@ -202,21 +193,18 @@ export function useServerFlashSession({
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
   const [submissionStatusVisible, setSubmissionStatusVisible] = useState(false);
   const [submissionError, setSubmissionError] = useState<string>();
+  const [answerVerificationState, setAnswerVerificationState] = useState<SubmissionState>("idle");
+  const [answerVerificationStatusVisible, setAnswerVerificationStatusVisible] = useState(false);
+  const [answerVerificationError, setAnswerVerificationError] = useState<string>();
   const [revealState, setRevealState] = useState<SubmissionState>("idle");
   const [revealStatusVisible, setRevealStatusVisible] = useState(false);
   const [revealError, setRevealError] = useState<string>();
-  const [matchingState, setMatchingState] = useState<SubmissionState>("idle");
-  const [matchingStatusVisible, setMatchingStatusVisible] = useState(false);
-  const [matchingError, setMatchingError] = useState<string>();
   const [queensState, setQueensState] = useState<SubmissionState>("idle");
   const [queensStatusVisible, setQueensStatusVisible] = useState(false);
   const [queensError, setQueensError] = useState<string>();
   const [wordSearchState, setWordSearchState] = useState<SubmissionState>("idle");
   const [wordSearchStatusVisible, setWordSearchStatusVisible] = useState(false);
   const [wordSearchError, setWordSearchError] = useState<string>();
-  const [lastMatchingPair, setLastMatchingPair] = useState<
-    { readonly leftId: string; readonly rightId: string; readonly correct: boolean } | undefined
-  >();
   const [lastWordSearchSelection, setLastWordSearchSelection] = useState<
     { readonly startCell: number; readonly endCell: number; readonly correct: boolean } | undefined
   >();
@@ -224,27 +212,33 @@ export function useServerFlashSession({
   const [startNotice, setStartNotice] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const answerVerificationStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const revealStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const matchingStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queensStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wordSearchStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const pendingRevealRef = useRef<PendingProgressiveClueReveal | null>(null);
-  const pendingMatchingPairRef = useRef<PendingMatchingPair | null>(null);
-  const pendingQueensPlacementRef = useRef<PendingQueensPlacement | null>(null);
+  const pendingQueensValidationRef = useRef<PendingQueensValidation | null>(null);
+  const latestQueensDraftRef = useRef<readonly number[] | null>(null);
+  const queensDraftTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const queensDraftQueueRef = useRef<Promise<void>>(Promise.resolve());
   const pendingWordSearchSelectionRef = useRef<PendingWordSearchSelection | null>(null);
   const recoveryStarted = useRef(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
 
   const isTerminalForMode = (candidateResults: readonly AnswerResult[]) => {
     if (challenge.mode === "pyramid") {
-      return deriveCompetitivePyramidProgress(challenge.levels.length, candidateResults).outcome !==
-        "in_progress";
+      return (
+        deriveCompetitivePyramidProgress(challenge.levels.length, candidateResults).outcome !==
+        "in_progress"
+      );
     }
     if (challenge.mode === "survival") {
       return (
-        deriveSurvivalProgress(challenge.lives, challenge.slots.length, candidateResults).outcome !==
-        "in_progress"
+        deriveSurvivalProgress(challenge.lives, challenge.slots.length, candidateResults)
+          .outcome !== "in_progress"
       );
     }
     return questionIndex >= challenge.slots.length - 1;
@@ -258,7 +252,11 @@ export function useServerFlashSession({
       ? deriveCompetitivePyramidProgress(challenge.levels.length, results)
       : null;
 
-  const advanceToNextQuestion = async (attemptId: string, lockVersion: number, nextResults: AnswerResult[]) => {
+  const advanceToNextQuestion = async (
+    attemptId: string,
+    lockVersion: number,
+    nextResults: AnswerResult[],
+  ) => {
     if (challenge.mode === "pyramid") {
       setQuestionIndex(nextResults.length);
       setQuestion(null);
@@ -275,6 +273,29 @@ export function useServerFlashSession({
       clearTimeout(submissionStatusTimerRef.current);
       submissionStatusTimerRef.current = undefined;
     }
+  };
+
+  const clearAnswerVerificationStatusTimer = () => {
+    if (answerVerificationStatusTimerRef.current) {
+      clearTimeout(answerVerificationStatusTimerRef.current);
+      answerVerificationStatusTimerRef.current = undefined;
+    }
+  };
+
+  const startAnswerVerification = () => {
+    clearAnswerVerificationStatusTimer();
+    clearSubmissionStatusTimer();
+    setAnswerVerificationState("submitting");
+    setAnswerVerificationStatusVisible(false);
+    setAnswerVerificationError(undefined);
+    setSubmissionState("idle");
+    setSubmissionStatusVisible(false);
+    setSubmissionError(undefined);
+    setPhase("checking");
+    answerVerificationStatusTimerRef.current = setTimeout(() => {
+      setAnswerVerificationStatusVisible(true);
+      answerVerificationStatusTimerRef.current = undefined;
+    }, SUBMISSION_STATUS_DELAY_MS);
   };
 
   const startSubmissionStatus = () => {
@@ -306,24 +327,6 @@ export function useServerFlashSession({
     }, SUBMISSION_STATUS_DELAY_MS);
   };
 
-  const clearMatchingStatusTimer = () => {
-    if (matchingStatusTimerRef.current) {
-      clearTimeout(matchingStatusTimerRef.current);
-      matchingStatusTimerRef.current = undefined;
-    }
-  };
-
-  const startMatchingStatus = () => {
-    clearMatchingStatusTimer();
-    setMatchingState("submitting");
-    setMatchingStatusVisible(false);
-    setMatchingError(undefined);
-    matchingStatusTimerRef.current = setTimeout(() => {
-      setMatchingStatusVisible(true);
-      matchingStatusTimerRef.current = undefined;
-    }, SUBMISSION_STATUS_DELAY_MS);
-  };
-
   const clearQueensStatusTimer = () => {
     if (queensStatusTimerRef.current) {
       clearTimeout(queensStatusTimerRef.current);
@@ -340,6 +343,55 @@ export function useServerFlashSession({
       setQueensStatusVisible(true);
       queensStatusTimerRef.current = undefined;
     }, SUBMISSION_STATUS_DELAY_MS);
+  };
+
+  const persistQueensDraft = async (queens: readonly number[]) => {
+    const currentAttempt = attemptRef.current;
+    if (!currentAttempt || !question || question.type !== "queens") return;
+    try {
+      const response = await postJson(
+        `/api/competitive/attempts/${currentAttempt.id}/queens/draft`,
+        {
+          lockVersion: currentAttempt.lockVersion,
+          idempotencyKey: idempotencyKey("queens-draft"),
+          challengeItemId: question.id,
+          queens,
+        },
+      );
+      const nextLockVersion = Number(response.lockVersion);
+      const nextAttempt = { id: currentAttempt.id, lockVersion: nextLockVersion };
+      attemptRef.current = nextAttempt;
+      setAttempt((current) => (current?.id === currentAttempt.id ? nextAttempt : current));
+    } catch {
+      // Draft persistence is best effort. The authoritative validation still sends the full board.
+    }
+  };
+
+  const enqueueQueensDraft = () => {
+    const queens = latestQueensDraftRef.current;
+    if (!queens) return queensDraftQueueRef.current;
+    latestQueensDraftRef.current = null;
+    const next = queensDraftQueueRef.current.then(() => persistQueensDraft(queens));
+    queensDraftQueueRef.current = next.catch(() => undefined);
+    return next;
+  };
+
+  const scheduleQueensDraft = (queens: readonly number[]) => {
+    latestQueensDraftRef.current = [...queens];
+    if (queensDraftTimerRef.current) clearTimeout(queensDraftTimerRef.current);
+    queensDraftTimerRef.current = setTimeout(() => {
+      queensDraftTimerRef.current = undefined;
+      void enqueueQueensDraft();
+    }, 300);
+  };
+
+  const flushQueensDraft = async (queens: readonly number[]) => {
+    if (queensDraftTimerRef.current) {
+      clearTimeout(queensDraftTimerRef.current);
+      queensDraftTimerRef.current = undefined;
+    }
+    latestQueensDraftRef.current = [...queens];
+    await enqueueQueensDraft();
   };
 
   const clearWordSearchStatusTimer = () => {
@@ -364,10 +416,11 @@ export function useServerFlashSession({
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       clearSubmissionStatusTimer();
+      clearAnswerVerificationStatusTimer();
       clearRevealStatusTimer();
-      clearMatchingStatusTimer();
       clearQueensStatusTimer();
       clearWordSearchStatusTimer();
+      if (queensDraftTimerRef.current) clearTimeout(queensDraftTimerRef.current);
     },
     [],
   );
@@ -385,7 +438,9 @@ export function useServerFlashSession({
     const slot = challengeSlots[nextIndex]!;
     const presentedAt = serverTimestamp(prepared.presentedAt);
     const deadlineAt = serverTimestamp(prepared.deadlineAt);
-    setAttempt({ id: currentAttempt.id, lockVersion: nextLockVersion });
+    const nextAttempt = { id: currentAttempt.id, lockVersion: nextLockVersion };
+    attemptRef.current = nextAttempt;
+    setAttempt(nextAttempt);
     setQuestionIndex(nextIndex);
     setQuestion(
       questionFromPayload(
@@ -403,20 +458,25 @@ export function useServerFlashSession({
     setRevealStatusVisible(false);
     setRevealError(undefined);
     pendingRevealRef.current = null;
-    setMatchingState("idle");
-    setMatchingStatusVisible(false);
-    setMatchingError(undefined);
-    setLastMatchingPair(undefined);
-    pendingMatchingPairRef.current = null;
     setQueensState("idle");
     setQueensStatusVisible(false);
     setQueensError(undefined);
-    pendingQueensPlacementRef.current = null;
+    pendingQueensValidationRef.current = null;
+    latestQueensDraftRef.current = null;
+    if (queensDraftTimerRef.current) {
+      clearTimeout(queensDraftTimerRef.current);
+      queensDraftTimerRef.current = undefined;
+    }
+    queensDraftQueueRef.current = Promise.resolve();
     setWordSearchState("idle");
     setWordSearchStatusVisible(false);
     setWordSearchError(undefined);
     setLastWordSearchSelection(undefined);
     pendingWordSearchSelectionRef.current = null;
+    clearAnswerVerificationStatusTimer();
+    setAnswerVerificationState("idle");
+    setAnswerVerificationStatusVisible(false);
+    setAnswerVerificationError(undefined);
     setLocked(Boolean(prepared.timedOut));
     setPhase("playing");
     setBusy(false);
@@ -431,6 +491,7 @@ export function useServerFlashSession({
       id: String(started.attemptId),
       lockVersion: Number(started.lockVersion),
     };
+    attemptRef.current = currentAttempt;
     setAttempt(currentAttempt);
     const response = await postJson(`/api/competitive/attempts/${currentAttempt.id}/recover`, {
       lockVersion: currentAttempt.lockVersion,
@@ -452,7 +513,9 @@ export function useServerFlashSession({
         })
       : [];
     setResults(recoveredResults);
-    setAttempt({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
+    const recoveredAttempt = { id: currentAttempt.id, lockVersion: Number(response.lockVersion) };
+    attemptRef.current = recoveredAttempt;
+    setAttempt(recoveredAttempt);
     if (response.phase === "results") {
       const rows = terminalReviewFromResponse(response.review);
       setScore(Number(response.score ?? 0));
@@ -481,26 +544,27 @@ export function useServerFlashSession({
     }
   };
 
-  const submitQueensPlacementToServer = async (submission: PendingQueensPlacement) => {
+  const submitQueensBoardToServer = async (submission: PendingQueensValidation) => {
     startQueensStatus();
     setBusy(true);
     setLocked(true);
     try {
       const response = await postJson(
-        `/api/competitive/attempts/${submission.attemptId}/queens/place`,
+        `/api/competitive/attempts/${submission.attemptId}/queens/validate`,
         {
           lockVersion: submission.lockVersion,
           idempotencyKey: submission.idempotencyKey,
           challengeItemId: submission.challengeItemId,
-          cell: submission.cell,
-          action: submission.action,
+          queens: submission.queens,
         },
       );
       const nextLockVersion = Number(response.lockVersion);
       const queens = Array.isArray(response.queens)
         ? response.queens.filter((cell): cell is number => Number.isSafeInteger(cell))
         : [];
-      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      const nextAttempt = { id: submission.attemptId, lockVersion: nextLockVersion };
+      attemptRef.current = nextAttempt;
+      setAttempt(nextAttempt);
       setQuestion((current) =>
         current?.type === "queens"
           ? {
@@ -519,15 +583,16 @@ export function useServerFlashSession({
           : current,
       );
       clearQueensStatusTimer();
-      pendingQueensPlacementRef.current = null;
+      pendingQueensValidationRef.current = null;
       setQueensState("idle");
-      setQueensStatusVisible(false);
-      setQueensError(undefined);
+      setQueensStatusVisible(response.terminal === true ? false : true);
       if (response.terminal !== true) {
+        setQueensError("El tablero no es correcto. Revisa las coronas en conflicto y continúa.");
         setLocked(false);
         setBusy(false);
         return;
       }
+      setQueensError(undefined);
       const result: AnswerResult = {
         questionId: submission.challengeItemId,
         answer: { queens, marks: [] },
@@ -562,17 +627,15 @@ export function useServerFlashSession({
       );
     } catch (error) {
       clearQueensStatusTimer();
-      if (error instanceof CompetitiveCommandError && error.code === "prefilled_queen_locked") {
-        pendingQueensPlacementRef.current = null;
-        setQueensState("idle");
-        setQueensStatusVisible(true);
-        setQueensError("Esa corona es una pista fija.");
-        setLocked(false);
-      } else {
-        setQueensState("error");
-        setQueensStatusVisible(true);
-        setQueensError("No hemos podido guardar el movimiento.");
-      }
+      setQueensState("error");
+      setQueensStatusVisible(true);
+      setQueensError(
+        error instanceof CompetitiveCommandError && error.code === "queens_answer_incomplete"
+          ? question?.type === "queens"
+            ? `Completa las ${question.grid.rows} coronas para validar el tablero.`
+            : "Completa el tablero para validar la respuesta."
+          : "No hemos podido validar el tablero. Puedes reintentarlo.",
+      );
       setBusy(false);
     }
   };
@@ -621,7 +684,7 @@ export function useServerFlashSession({
   };
 
   const submitAnswerToServer = async (submission: PendingAnswerSubmission) => {
-    startSubmissionStatus();
+    startAnswerVerification();
     setBusy(true);
     setLocked(true);
     try {
@@ -642,12 +705,15 @@ export function useServerFlashSession({
       };
       const nextResults = [...results, result];
       const nextLockVersion = Number(response.lockVersion);
-      clearSubmissionStatusTimer();
+      clearAnswerVerificationStatusTimer();
       pendingSubmissionRef.current = null;
       setPendingAnswer(null);
       setSubmissionState("idle");
       setSubmissionStatusVisible(false);
       setSubmissionError(undefined);
+      setAnswerVerificationState("idle");
+      setAnswerVerificationStatusVisible(false);
+      setAnswerVerificationError(undefined);
       setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
       setResults(nextResults);
       setLastResult(result);
@@ -674,11 +740,22 @@ export function useServerFlashSession({
         FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
           1800,
       );
-    } catch {
-      clearSubmissionStatusTimer();
-      setSubmissionState("error");
-      setSubmissionStatusVisible(true);
-      setSubmissionError("No hemos podido confirmar tu respuesta.");
+    } catch (error) {
+      clearAnswerVerificationStatusTimer();
+      if (error instanceof CompetitiveCommandError && error.code === "invalid_matching_answer") {
+        setAnswerVerificationState("idle");
+        setAnswerVerificationStatusVisible(false);
+        setAnswerVerificationError(undefined);
+        setSubmissionState("error");
+        setSubmissionStatusVisible(true);
+        setSubmissionError("La respuesta de parejas no es válida. Revisa todas las asociaciones.");
+        setPhase("playing");
+        setLocked(false);
+      } else {
+        setAnswerVerificationState("error");
+        setAnswerVerificationStatusVisible(true);
+        setAnswerVerificationError("No hemos podido confirmar tu respuesta.");
+      }
       setBusy(false);
     }
   };
@@ -947,7 +1024,9 @@ export function useServerFlashSession({
           responseLetters[cell] !== null &&
           (index === 0 || responseCorrectCells[index - 1]! < cell),
       );
-      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
+      const nextAttempt = { id: submission.attemptId, lockVersion: nextLockVersion };
+      attemptRef.current = nextAttempt;
+      setAttempt(nextAttempt);
       setQuestion((current) =>
         current?.type === "word-hashtag"
           ? {
@@ -1053,7 +1132,9 @@ export function useServerFlashSession({
       const availablePoints = Number(response.availablePoints);
       const cluePenalty = Number(response.cluePenalty);
       const clue = String(response.clue);
-      setAttempt({ id: reveal.attemptId, lockVersion: nextLockVersion });
+      const nextAttempt = { id: reveal.attemptId, lockVersion: nextLockVersion };
+      attemptRef.current = nextAttempt;
+      setAttempt(nextAttempt);
       setQuestion((current) =>
         current?.type === "progressive-clues"
           ? {
@@ -1091,123 +1172,6 @@ export function useServerFlashSession({
         setRevealState("error");
         setRevealStatusVisible(true);
         setRevealError("No hemos podido revelar la siguiente pista.");
-      }
-      setBusy(false);
-    }
-  };
-
-  const submitMatchingPairToServer = async (submission: PendingMatchingPair) => {
-    startMatchingStatus();
-    setBusy(true);
-    setLocked(true);
-    try {
-      const response = await postJson(
-        `/api/competitive/attempts/${submission.attemptId}/matching/pair`,
-        {
-          lockVersion: submission.lockVersion,
-          idempotencyKey: submission.idempotencyKey,
-          challengeItemId: submission.challengeItemId,
-          leftItemId: submission.leftItemId,
-          rightItemId: submission.rightItemId,
-        },
-      );
-      const nextLockVersion = Number(response.lockVersion);
-      const matchedPairs = Array.isArray(response.matchedPairs)
-        ? response.matchedPairs.filter(
-            (pair): pair is { leftId: string; rightId: string } =>
-              Boolean(pair) &&
-              typeof pair === "object" &&
-              typeof (pair as Record<string, unknown>).leftId === "string" &&
-              typeof (pair as Record<string, unknown>).rightId === "string",
-          )
-        : [];
-      const correct = response.correct === true;
-      setAttempt({ id: submission.attemptId, lockVersion: nextLockVersion });
-      setLastMatchingPair({
-        leftId: submission.leftItemId,
-        rightId: submission.rightItemId,
-        correct,
-      });
-      setQuestion((current) =>
-        current?.type === "matching"
-          ? {
-              ...current,
-              progress: {
-                kind: "matching",
-                matchedPairs,
-                matchedCount: Number(response.matchedCount),
-                totalPairs: Number(response.totalPairs),
-                incorrectAttempts: Number(response.incorrectAttempts),
-                penaltyPoints: Number(response.penaltyPoints),
-              },
-            }
-          : current,
-      );
-      clearMatchingStatusTimer();
-      pendingMatchingPairRef.current = null;
-      setMatchingState("idle");
-      setMatchingStatusVisible(false);
-      setMatchingError(undefined);
-      if (response.terminal !== true) {
-        setLocked(false);
-        setBusy(false);
-        return;
-      }
-      const result: AnswerResult = {
-        questionId: submission.challengeItemId,
-        answer: Object.fromEntries(matchedPairs.map((pair) => [pair.leftId, pair.rightId])),
-        status: String(response.status) as AnswerResult["status"],
-        isCorrect: response.status === "correct" || response.status === "partial",
-        points: Number(response.points ?? 0),
-        timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
-        ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
-      };
-      const nextResults = [...results, result];
-      setResults(nextResults);
-      setLastResult(result);
-      setPhase("transition");
-      timerRef.current = setTimeout(
-        async () => {
-          if (isTerminalForMode(nextResults)) {
-            const completed = await postJson(
-              `/api/competitive/attempts/${submission.attemptId}/complete`,
-              { lockVersion: nextLockVersion, idempotencyKey: idempotencyKey("complete") },
-            );
-            const review = terminalReviewFromResponse(completed.review);
-            setScore(Number(completed.score ?? 0));
-            setReviewChallenge(terminalReviewChallenge(challenge, review));
-            setPhase("results");
-          } else {
-            await advanceToNextQuestion(submission.attemptId, nextLockVersion, nextResults);
-          }
-          setBusy(false);
-        },
-        FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
-          1800,
-      );
-    } catch (error) {
-      clearMatchingStatusTimer();
-      const commandError = error instanceof CompetitiveCommandError ? error.code : "";
-      if (
-        commandError === "duplicate_matching_pair" ||
-        commandError === "matching_item_already_resolved" ||
-        commandError === "invalid_matching_pair"
-      ) {
-        pendingMatchingPairRef.current = null;
-        setMatchingState("idle");
-        setMatchingStatusVisible(true);
-        setMatchingError(
-          commandError === "matching_item_already_resolved"
-            ? "Una de las tarjetas ya está resuelta."
-            : commandError === "duplicate_matching_pair"
-              ? "Esa pareja ya ha sido enviada."
-              : "Esa pareja no está disponible.",
-        );
-        setLocked(false);
-      } else {
-        setMatchingState("error");
-        setMatchingStatusVisible(true);
-        setMatchingError("No hemos podido confirmar la pareja.");
       }
       setBusy(false);
     }
@@ -1332,11 +1296,12 @@ export function useServerFlashSession({
   };
 
   const submit = async (answer: AnswerValue | null) => {
-    if (!attempt || !question || locked || busy) return;
+    const currentAttempt = attemptRef.current;
+    if (!currentAttempt || !question || locked || busy) return;
     const submission: PendingAnswerSubmission = {
       kind: "answer",
-      attemptId: attempt.id,
-      lockVersion: attempt.lockVersion,
+      attemptId: currentAttempt.id,
+      lockVersion: currentAttempt.lockVersion,
       challengeItemId: question.id,
       answer,
       idempotencyKey: idempotencyKey("answer"),
@@ -1353,7 +1318,8 @@ export function useServerFlashSession({
         question.type !== "estimation" &&
         question.type !== "heat-map" &&
         question.type !== "zip" &&
-        question.type !== "escape") ||
+        question.type !== "escape" &&
+        question.type !== "matching") ||
       locked ||
       busy
     ) {
@@ -1417,33 +1383,28 @@ export function useServerFlashSession({
     await revealProgressiveClueToServer(reveal);
   };
 
-  const submitMatchingPair = async (leftId: string, rightId: string) => {
-    if (!attempt || !question || question.type !== "matching" || locked || busy) return;
-    const submission: PendingMatchingPair = {
-      attemptId: attempt.id,
-      lockVersion: attempt.lockVersion,
-      challengeItemId: question.id,
-      leftItemId: leftId,
-      rightItemId: rightId,
-      idempotencyKey: idempotencyKey("matching-pair"),
-    };
-    pendingMatchingPairRef.current = submission;
-    await submitMatchingPairToServer(submission);
+  const updateQueensDraft = (queens: readonly number[]) => {
+    if (!question || question.type !== "queens" || locked || busy) return;
+    const answer = { queens: [...queens], marks: [] } satisfies AnswerValue;
+    setPendingAnswer(answer);
+    scheduleQueensDraft(queens);
   };
 
-  const submitQueensPlacement = async (cell: number, action: "place" | "remove") => {
-    if (!attempt || !question || question.type !== "queens" || locked || busy) return;
-    const submission: PendingQueensPlacement = {
+  const validateQueensBoard = async (queens: readonly number[]) => {
+    if (!question || question.type !== "queens" || locked || busy) return;
+    await flushQueensDraft(queens);
+    const currentAttempt = attemptRef.current;
+    if (!currentAttempt) return;
+    const submission: PendingQueensValidation = {
       kind: "queens",
-      attemptId: attempt.id,
-      lockVersion: attempt.lockVersion,
+      attemptId: currentAttempt.id,
+      lockVersion: currentAttempt.lockVersion,
       challengeItemId: question.id,
-      cell,
-      action,
-      idempotencyKey: idempotencyKey("queens-placement"),
+      queens: [...queens],
+      idempotencyKey: idempotencyKey("queens-validation"),
     };
-    pendingQueensPlacementRef.current = submission;
-    await submitQueensPlacementToServer(submission);
+    pendingQueensValidationRef.current = submission;
+    await submitQueensBoardToServer(submission);
   };
 
   const submitWordSearchSelection = async (startCell: number, endCell: number) => {
@@ -1484,14 +1445,25 @@ export function useServerFlashSession({
     await revealProgressiveClueToServer(pendingRevealRef.current);
   };
 
-  const retryMatchingPair = async () => {
-    if (busy || !pendingMatchingPairRef.current) return;
-    await submitMatchingPairToServer(pendingMatchingPairRef.current);
+  const retryQueensValidation = async () => {
+    if (busy || !pendingQueensValidationRef.current) return;
+    await submitQueensBoardToServer(pendingQueensValidationRef.current);
   };
 
-  const retryQueensPlacement = async () => {
-    if (busy || !pendingQueensPlacementRef.current) return;
-    await submitQueensPlacementToServer(pendingQueensPlacementRef.current);
+  const handleTimeUp = async () => {
+    if (question?.type === "queens") {
+      await flushQueensDraft(latestQueensDraftRef.current ?? question.progress.queens);
+    }
+    await submit(
+      question?.type === "classification" ||
+        question?.type === "estimation" ||
+        question?.type === "heat-map" ||
+        question?.type === "zip" ||
+        question?.type === "escape" ||
+        question?.type === "matching"
+        ? pendingAnswer
+        : null,
+    );
   };
 
   const abandon = async () => {
@@ -1529,13 +1501,12 @@ export function useServerFlashSession({
     submissionState,
     submissionStatusVisible,
     submissionError,
+    answerVerificationState,
+    answerVerificationStatusVisible,
+    answerVerificationError,
     revealState,
     revealStatusVisible,
     revealError,
-    matchingState,
-    matchingStatusVisible,
-    matchingError,
-    lastMatchingPair,
     queensState,
     queensStatusVisible,
     queensError,
@@ -1556,10 +1527,10 @@ export function useServerFlashSession({
     retrySubmit,
     revealProgressiveClue,
     retryReveal,
-    submitMatchingPair,
-    retryMatchingPair,
-    submitQueensPlacement,
-    retryQueensPlacement,
+    updateQueensDraft,
+    validateQueensBoard,
+    retryQueensValidation,
+    handleTimeUp,
     submitWordSearchSelection,
     retryWordSearchSelection,
     abandon,

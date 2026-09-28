@@ -1,0 +1,38 @@
+@layer app-components {
+  .pendingLink {
+    position: relative;
+  }
+
+  .indicator {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .indicator[data-pending="true"] {
+    opacity: 0.82;
+    animation: pendingLinkSpin 650ms linear infinite;
+  }
+
+  @keyframes pendingLinkSpin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .indicator[data-pending="true"] {
+      animation: none;
+      border-right-color: currentColor;
+      opacity: 0.55;
+    }
+  }
+}

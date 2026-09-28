@@ -93,8 +93,20 @@ Mutaciones editoriales del portal `/admin`
 → server/admin-editorial.ts
 → infrastructure/supabase/superadminEditorialQueries.ts
 → public.create_superadmin_flash_draft() / public.update_superadmin_flash_draft() /
-  public.publish_superadmin_flash()
+  public.publish_superadmin_flash() / public.create_superadmin_challenge_revision() /
+  public.archive_superadmin_challenge_version()
 → grafo versionado, idempotencia, concurrencia optimista, auditoría y publicación atómica
+
+Comparación editorial del historial
+→ `/admin/challenges/[challengeDefinitionId]?compareFrom=<id>&compareTo=<id>`
+→ `get_superadmin_challenge_version_comparison()`
+→ snapshot seguro de metadatos, referencias, orden, puntos y payload público; nunca `solutionPayload`
+
+Las correcciones de una pregunta no mutan una versión publicada del desafío: el editor representa
+las preguntas publicadas clonadas como referencias de biblioteca y remite a `/admin/questions` para
+crear/publicar una nueva `question_version` antes de seleccionarla. Las lecturas de salas, calendario,
+intentos e historial admiten `archived` cuando la publicación ya existente referencia esa versión;
+la creación o reprogramación de una publicación vuelve a exigir `published`.
 
 Eventos Mini-Wordle del Flash competitivo
 → `features/game/useServerFlashSession.ts`
@@ -159,17 +171,18 @@ evaluación ignora cualquier contador del navegador, reconstruye `progressiveClu
 máximo del último evento persistido, de modo que puntuación y revisión coinciden y los intentos
 abiertos conservan el máximo que ya se les había mostrado.
 
-E04 entrega las dos columnas públicas y solo el progreso de parejas correctas. Cada solicitud valida
-la correspondencia contra la versión congelada, registra como máximo un evento por clave, penaliza el
-10% de los puntos del item en fallos y reconstruye el mapa final desde eventos. `correctMatchId` y la
-solución completa aparecen únicamente en la revisión autorizada.
+E04 entrega únicamente las dos columnas públicas. La interacción construye el mapa completo en el
+navegador y una sola recepción genérica valida todas las asociaciones contra la versión congelada;
+una respuesta completa con cualquier error es incorrecta y no existe puntuación parcial ni penalización
+por pareja. `correctMatchId` y la solución completa aparecen únicamente en la revisión autorizada.
 
-E05 entrega el tablero 5×5, las regiones, las coronas precolocadas y un progreso seguro. Cada
-colocación o retirada pasa por `private.submit_queens_placement(jsonb)`, que bloquea el intento,
-reconstruye las coronas desde `private.queens_placement_events`, calcula conflictos y aplica el 5%
-de penalización sin confiar en contadores del navegador. Las marcas X son estado local y se descartan
-al recuperar. Al completar el tablero se crea una única recepción terminal; la solución solo se
-reconstruye en el contexto privado de evaluación y revisión autorizada.
+E05 entrega el tablero `N×N` (entre 4×4 y 8×8), las regiones, las coronas precolocadas y un progreso seguro. El navegador
+edita las coronas localmente y guarda checkpoints mediante `private.save_queens_draft(jsonb)` sin
+crear resultados ni penalizaciones. Al alcanzar `N` coronas, el tablero completo pasa por
+`private.submit_queens_answer(jsonb)`, que bloquea el intento, reconstruye las métricas, registra una
+validación completa y solo crea una recepción terminal si la solución es correcta. Cada validación
+incorrecta aplica un 5% de penalización; las marcas X siguen siendo estado local y se descartan al
+recuperar. La solución solo se reconstruye en el contexto privado de evaluación y revisión autorizada.
 
 S05 entrega `public.get_my_alphabet_challenge` con letras y payloads públicos `short-text`, y
 `public.get_my_alphabet_result` solo tras un intento completado. El cliente conserva únicamente el

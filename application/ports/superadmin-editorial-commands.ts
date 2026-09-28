@@ -6,6 +6,7 @@ import type {
   SuperadminEditorialCommandResult,
   SuperadminChallengeCatalogContext,
   SuperadminChallengeDetailContext,
+  SuperadminChallengeVersionComparison,
   SuperadminEditorialContext,
 } from "@/types/view-models/editorial";
 
@@ -68,10 +69,25 @@ export type PublishFlashInput = {
   readonly reason: string;
 };
 
+export type CreateChallengeRevisionInput = {
+  readonly idempotencyKey: string;
+  readonly sourceChallengeVersionId: string;
+  readonly reason: string;
+};
+
+export type ArchiveChallengeVersionInput = {
+  readonly idempotencyKey: string;
+  readonly challengeVersionId: string;
+  readonly expectedUpdatedAt: string;
+  readonly reason: string;
+};
+
 export interface SuperadminEditorialCommands {
   createFlashDraft(input: CreateFlashDraftInput): Promise<SuperadminEditorialCommandResult>;
   updateFlashDraft(input: UpdateFlashDraftInput): Promise<SuperadminEditorialCommandResult>;
   publishFlash(input: PublishFlashInput): Promise<SuperadminEditorialCommandResult>;
+  createChallengeRevision(input: CreateChallengeRevisionInput): Promise<SuperadminEditorialCommandResult>;
+  archiveChallengeVersion(input: ArchiveChallengeVersionInput): Promise<SuperadminEditorialCommandResult>;
   createQuestionDraft(input: CreateQuestionDraftInput): Promise<SuperadminQuestionVersionDetail>;
   updateQuestionDraft(input: UpdateQuestionDraftInput): Promise<SuperadminQuestionVersionDetail>;
   publishQuestion(input: PublishQuestionInput): Promise<SuperadminQuestionVersionDetail>;
@@ -82,6 +98,10 @@ export interface SuperadminEditorialQueries {
   getContext(): Promise<SuperadminEditorialContext>;
   getChallengeCatalog(): Promise<SuperadminChallengeCatalogContext>;
   getChallengeDetail(challengeDefinitionId: string): Promise<SuperadminChallengeDetailContext | null>;
+  getChallengeVersionComparison(
+    fromChallengeVersionId: string,
+    toChallengeVersionId: string,
+  ): Promise<SuperadminChallengeVersionComparison | null>;
   getQuestionLibrary(filters?: QuestionLibraryFilters): Promise<SuperadminQuestionLibraryContext>;
   getQuestionVersion(questionVersionId: string): Promise<SuperadminQuestionVersionDetail>;
 }

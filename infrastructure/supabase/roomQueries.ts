@@ -60,6 +60,7 @@ import type {
 } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 
 type RoomReadRow = {
   room_id: string;
@@ -1395,9 +1396,11 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       grid: { rows: 5, columns: 5 } as const,
       checkpoints: checkpoints as ZipQuestion["checkpoints"],
       solution: solution as number[],
-      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      instruction:
+        typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
       mapNote: typeof publicPayload.mapNote === "string" ? publicPayload.mapNote : undefined,
-      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      boardLabel:
+        typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
       timeLimit: (row.time_limit_ms ?? 0) / 1000,
       points: row.item_points,
       explanation:
@@ -1422,7 +1425,8 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       initialBlocks: publicPayload.initialBlocks as EscapeQuestion["initialBlocks"],
       referenceSolution: solutionPayload.referenceSolution as EscapeQuestion["referenceSolution"],
       optimalMoves: solutionPayload.optimalMoves as number,
-      instruction: typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
+      instruction:
+        typeof publicPayload.instruction === "string" ? publicPayload.instruction : undefined,
       hideInstruction: publicPayload.hideInstruction === true,
       objectiveLabel:
         typeof publicPayload.objectiveLabel === "string" ? publicPayload.objectiveLabel : undefined,
@@ -1431,7 +1435,8 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
         typeof publicPayload.completionMessage === "string"
           ? publicPayload.completionMessage
           : undefined,
-      boardLabel: typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
+      boardLabel:
+        typeof publicPayload.boardLabel === "string" ? publicPayload.boardLabel : undefined,
       timeLimit: (row.time_limit_ms ?? 0) / 1000,
       points: row.item_points,
       explanation:
@@ -1551,24 +1556,34 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
     const prefilledQueens = publicPayload.prefilledQueens;
     const solution = solutionPayload.solution;
     const prompt = publicPayload.question;
+    const gridRecord = isRecord(grid) ? grid : null;
+    const rows = gridRecord?.rows;
+    const columns = gridRecord?.columns;
+    const boardGrid = isQueensBoardSize(rows) && rows === columns ? queensGrid(rows) : null;
+    const cellCount = boardGrid ? queensCellCount(boardGrid) : 0;
     if (
       typeof prompt !== "string" ||
       !isRecord(grid) ||
-      grid.rows !== 5 ||
-      grid.columns !== 5 ||
+      !boardGrid ||
       !Array.isArray(regions) ||
-      regions.length !== 25 ||
+      regions.length !== cellCount ||
       !regions.every(
         (region) =>
-          typeof region === "number" && Number.isInteger(region) && region >= 0 && region < 5,
+          typeof region === "number" &&
+          Number.isInteger(region) &&
+          region >= 0 &&
+          region < boardGrid.rows,
       ) ||
       !Array.isArray(prefilledQueens) ||
       !prefilledQueens.every(
-        (cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25,
+        (cell) =>
+          typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < cellCount,
       ) ||
       !Array.isArray(solution) ||
+      solution.length !== boardGrid.rows ||
       !solution.every(
-        (cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 25,
+        (cell) =>
+          typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < cellCount,
       ) ||
       typeof solutionPayload.explanation !== "string"
     ) {
@@ -1579,7 +1594,7 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
       tags: tags as Question["tags"],
       question: prompt,
-      grid: { rows: 5, columns: 5 },
+      grid: boardGrid,
       regions,
       prefilledQueens,
       solution,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { AnswerOption, QuestionMedia, ServerOperationStatus } from "@/components/questions/shared";
+import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
@@ -49,17 +49,12 @@ export function ServerFlashQuestionStage({
   onProgress,
   onMiniWordleGuess,
   onLogicCodeAttempt,
-  matchingState,
-  matchingStatusVisible,
-  matchingError,
-  lastMatchingPair,
-  onMatchingPair,
-  onRetryMatching,
   queensState,
   queensStatusVisible,
   queensError,
-  onQueensPlacement,
-  onRetryQueens,
+  onQueensDraft,
+  onQueensValidate,
+  onRetryQueensValidation,
   wordSearchState,
   wordSearchStatusVisible,
   wordSearchError,
@@ -92,21 +87,12 @@ export function ServerFlashQuestionStage({
   readonly onProgress: (answer: AnswerValue) => void;
   readonly onMiniWordleGuess: (guess: string) => void;
   readonly onLogicCodeAttempt: (code: string) => void;
-  readonly matchingState: "idle" | "submitting" | "error";
-  readonly matchingStatusVisible: boolean;
-  readonly matchingError?: string;
-  readonly lastMatchingPair?: {
-    readonly leftId: string;
-    readonly rightId: string;
-    readonly correct: boolean;
-  };
-  readonly onMatchingPair: (leftId: string, rightId: string) => void;
-  readonly onRetryMatching?: () => void;
   readonly queensState: "idle" | "submitting" | "error";
   readonly queensStatusVisible: boolean;
   readonly queensError?: string;
-  readonly onQueensPlacement: (cell: number, action: "place" | "remove") => void;
-  readonly onRetryQueens?: () => void;
+  readonly onQueensDraft: (queens: readonly number[]) => void;
+  readonly onQueensValidate: (queens: readonly number[]) => void;
+  readonly onRetryQueensValidation?: () => void;
   readonly wordSearchState: "idle" | "submitting" | "error";
   readonly wordSearchStatusVisible: boolean;
   readonly wordSearchError?: string;
@@ -137,18 +123,6 @@ export function ServerFlashQuestionStage({
     : splitPrompt(question.question);
   const selected =
     question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
-  const showSubmissionStatus =
-    submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
-  const submissionStatus = (
-    <ServerOperationStatus
-      state={submissionState}
-      visible={submissionStatusVisible}
-      pendingMessage="Comprobando respuesta…"
-      errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
-      retryLabel="Reintentar"
-      onRetry={onRetrySubmission}
-    />
-  );
   const timer = (
     <Timer
       duration={question.timeLimit}
@@ -251,16 +225,17 @@ export function ServerFlashQuestionStage({
           />
         ) : question.type === "matching" ? (
           <ServerMatchingQuestion
+            key={question.id}
             leftItems={question.leftItems}
             rightItems={question.rightItems}
-            progress={question.progress}
+            pendingAnswer={pendingAnswer}
             locked={locked}
-            matchingState={matchingState}
-            matchingStatusVisible={matchingStatusVisible}
-            matchingError={matchingError}
-            lastPair={lastMatchingPair}
-            onPair={onMatchingPair}
-            onRetry={onRetryMatching}
+            submissionState={submissionState}
+            submissionStatusVisible={submissionStatusVisible}
+            submissionError={submissionError}
+            onSubmit={onSubmit}
+            onProgress={onProgress}
+            onRetry={onRetrySubmission}
           />
         ) : question.type === "progressive-image" ? (
           <ProgressiveImageQuestion
@@ -283,11 +258,12 @@ export function ServerFlashQuestionStage({
             question={question}
             progress={question.progress}
             locked={locked}
-            placementState={queensState}
-            placementStatusVisible={queensStatusVisible}
-            placementError={queensError}
-            onPlace={onQueensPlacement}
-            onRetry={onRetryQueens}
+            validationState={queensState}
+            validationStatusVisible={queensStatusVisible}
+            validationError={queensError}
+            onDraft={onQueensDraft}
+            onValidate={onQueensValidate}
+            onRetry={onRetryQueensValidation}
           />
         ) : question.type === "word-search" ? (
           <ServerWordSearchQuestion
@@ -322,7 +298,6 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "zip" ? (
           <ServerZipQuestion
@@ -391,12 +366,10 @@ export function ServerFlashQuestionStage({
         ) : question.type === "true-false" ? (
           <>
             <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "odd-one-out" ? (
           <>
             <OddOneOutQuestion items={[...question.items]} locked={locked} onSubmit={onSubmit} />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "ordering" ? (
           <>
@@ -406,7 +379,6 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "anagram" ? (
           <>
@@ -416,7 +388,6 @@ export function ServerFlashQuestionStage({
               locked={locked}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "classification" ? (
           <>
@@ -432,7 +403,6 @@ export function ServerFlashQuestionStage({
               onProgress={onProgress}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "estimation" ? (
           <>
@@ -451,7 +421,6 @@ export function ServerFlashQuestionStage({
               onChange={onProgress}
               onSubmit={onSubmit}
             />
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : question.type === "heat-map" ? (
           <>
@@ -475,7 +444,6 @@ export function ServerFlashQuestionStage({
                 />
               </div>
             ) : null}
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         ) : (
           <>
@@ -499,7 +467,6 @@ export function ServerFlashQuestionStage({
                   ))
                 : null}
             </div>
-            {showSubmissionStatus ? submissionStatus : null}
           </>
         )}
       </section>

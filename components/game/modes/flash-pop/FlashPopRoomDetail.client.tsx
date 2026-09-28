@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
+import { PendingLink } from "@/components/navigation";
 import {
   ArrowIcon,
+  BackLink,
   BoltIcon,
   ButtonLink,
   Canvas,
@@ -193,31 +194,29 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <Link href="/" className={styles.toolbarIcon} aria-label="Volver a Tus salas">
-          <ArrowIcon className={styles.backIcon} />
-        </Link>
+        <BackLink href="/" label="Volver a Tus salas" />
 
         <div className={styles.toolbarCenter}>
-          <Link
+          <PendingLink
             href={`/salas/${visibleModel.roomId}/ajustes`}
             className={styles.roomSettingsLink}
             aria-label={`Abrir ajustes de ${visibleModel.title}`}
           >
             <span className={styles.roomSettingsLabel}>{visibleModel.title}</span>
             <SettingsIcon />
-          </Link>
+          </PendingLink>
         </div>
 
-        <Link
+        <PendingLink
           href={historyHref}
           className={`${styles.toolbarIcon} ${styles.historyLink}`}
           aria-label={`Ver historial de ${model.title}`}
         >
           <RotateIcon />
-        </Link>
+        </PendingLink>
       </header>
 
-      <Link
+      <PendingLink
         href={rankingHref}
         className={styles.statPill}
         aria-label={`Ver ranking de la sala: ${visibleModel.currentUser.totalFlashPoints} Flash Points, ${positionLabel}`}
@@ -236,7 +235,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
           }
           icon={<TrophyIcon />}
         />
-      </Link>
+      </PendingLink>
 
       <div className={styles.roomMain}>
         <p className={styles.todayLabel}>HOY</p>

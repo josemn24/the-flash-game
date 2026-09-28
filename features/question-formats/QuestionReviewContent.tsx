@@ -907,7 +907,9 @@ function MiniNonogramReview({ question, result }: ReviewProps<QuestionOfType<"mi
 }
 
 function QueensReview({ question, result }: ReviewProps<QuestionOfType<"queens">>) {
-  const answer = isQueensAnswer(result.answer) ? result.answer : { queens: [], marks: [] };
+  const answer = isQueensAnswer(result.answer, question.grid)
+    ? result.answer
+    : { queens: [], marks: [] };
   const details = result.details?.type === "queens" ? result.details : undefined;
   return (
     <div className="grid gap-3">
@@ -928,7 +930,9 @@ function QueensReview({ question, result }: ReviewProps<QuestionOfType<"queens">
       <div className="grid gap-3 sm:grid-cols-4">
         <div className={styles.answerBox}>
           <span>Coronas</span>
-          <strong>{details?.placedQueens ?? answer.queens.length}/5</strong>
+          <strong>
+            {details?.placedQueens ?? answer.queens.length}/{question.grid.rows}
+          </strong>
         </div>
         <div className={styles.answerBox}>
           <span>En conflicto</span>

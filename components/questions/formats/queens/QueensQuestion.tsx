@@ -5,20 +5,16 @@ import { CrownIcon, CrossIcon, QueensCrownIcon, WarningIcon } from "@/components
 import {
   calculateQueensMetrics,
   getQueensConflicts,
-  QUEENS_CELL_COUNT,
-  QUEENS_COLUMNS,
-  QUEENS_ROWS,
+  queensCellCount,
   type QueensConflictType,
 } from "@/lib/queens";
-import type {
-  QueensAnswer,
-  QueensQuestion as QueensQuestionType,
-  } from "@/types/game";
+import type { QueensAnswer, QueensGrid, QueensQuestion as QueensQuestionType } from "@/types/game";
 import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";
 
 export type QueensBoardQuestion = {
+  grid: QueensGrid;
   regions: readonly number[];
   prefilledQueens?: readonly number[];
 };
@@ -57,12 +53,18 @@ export function QueensBoard({
   );
   const conflicts = getQueensConflicts(question, visibleQueens);
   const interactive = Boolean(onCellAction);
+  const columns = question.grid.columns;
 
   return (
-    <div className={styles.board} role="grid" aria-label={label}>
-      {Array.from({ length: QUEENS_CELL_COUNT }, (_, cell) => {
-        const row = Math.floor(cell / QUEENS_COLUMNS) + 1;
-        const column = (cell % QUEENS_COLUMNS) + 1;
+    <div
+      className={styles.board}
+      role="grid"
+      aria-label={label}
+      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+    >
+      {Array.from({ length: queensCellCount(question.grid) }, (_, cell) => {
+        const row = Math.floor(cell / columns) + 1;
+        const column = (cell % columns) + 1;
         const prefilled = prefilledQueens.includes(cell);
         const queen = prefilled || answer.queens.includes(cell);
         const mark = !prefilled && answer.marks.includes(cell);
@@ -229,13 +231,14 @@ export function QueensQuestion({
   };
 
   const handleCellKeyDown = (event: KeyboardEvent<HTMLButtonElement>, cell: number) => {
-    const row = Math.floor(cell / QUEENS_COLUMNS);
-    const column = cell % QUEENS_COLUMNS;
+    const row = Math.floor(cell / question.grid.columns);
+    const column = cell % question.grid.columns;
     let nextCell: number | null = null;
-    if (event.key === "ArrowUp" && row > 0) nextCell = cell - QUEENS_COLUMNS;
-    if (event.key === "ArrowDown" && row < QUEENS_ROWS - 1) nextCell = cell + QUEENS_COLUMNS;
+    if (event.key === "ArrowUp" && row > 0) nextCell = cell - question.grid.columns;
+    if (event.key === "ArrowDown" && row < question.grid.rows - 1)
+      nextCell = cell + question.grid.columns;
     if (event.key === "ArrowLeft" && column > 0) nextCell = cell - 1;
-    if (event.key === "ArrowRight" && column < QUEENS_COLUMNS - 1) nextCell = cell + 1;
+    if (event.key === "ArrowRight" && column < question.grid.columns - 1) nextCell = cell + 1;
     if (nextCell !== null) {
       event.preventDefault();
       setFocusedCell(nextCell);
@@ -257,7 +260,7 @@ export function QueensQuestion({
   return (
     <section
       className={`${styles.root}`}
-      aria-label="Queens, puzzle de cinco coronas"
+      aria-label={`Queens, puzzle de ${question.grid.rows} coronas`}
     >
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button
@@ -283,7 +286,7 @@ export function QueensQuestion({
       <QueensBoard
         question={question}
         answer={answer}
-        label="Tablero Queens de cinco por cinco"
+        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
         focusedCell={focusedCell}
         cellRefs={cellRefs}
         onCellAction={applyTool}
@@ -293,7 +296,9 @@ export function QueensQuestion({
       />
 
       <div className={styles.progress} aria-live="polite">
-        <strong>{metrics.placedQueens}/5 coronas</strong>
+        <strong>
+          {metrics.placedQueens}/{question.grid.rows} coronas
+        </strong>
         <span>
           {metrics.conflictingQueens
             ? `${metrics.conflictingQueens} en conflicto`

@@ -37,35 +37,6 @@
     padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--space-7) var(--space-5);
   }
 
-  .backButton {
-    display: inline-flex;
-    width: 44px;
-    height: 44px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 1px solid var(--color-line);
-    background: rgb(255 255 255 / 76%);
-    color: var(--color-ink);
-    box-shadow: var(--shadow-control);
-    transition: transform 160ms ease, background 160ms ease;
-  }
-
-  .backButton:hover {
-    background: var(--color-surface);
-    transform: translateY(-1px);
-  }
-
-  .backButton:focus-visible {
-    outline: 3px solid var(--color-brand);
-    outline-offset: 3px;
-  }
-
-  .backIcon {
-    width: 21px;
-    transform: rotate(180deg);
-  }
-
   .heroToolbar :global(.button) {
     border-color: var(--color-ink);
     background: var(--color-brand);

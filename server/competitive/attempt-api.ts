@@ -121,6 +121,19 @@ export function requireCell(
   return value;
 }
 
+export function requireQueens(body: JsonObject) {
+  const value = body.queens;
+  if (
+    !Array.isArray(value) ||
+    value.length > 64 ||
+    !value.every((cell) => Number.isSafeInteger(cell) && cell >= 0 && cell < 64) ||
+    new Set(value).size !== value.length
+  ) {
+    throw new AttemptApiError("invalid_queens_answer", 400);
+  }
+  return value as number[];
+}
+
 export function optionalClientTime(body: JsonObject) {
   if (body.clientTimeUsedMs === undefined) return undefined;
   if (
@@ -258,6 +271,8 @@ export function mapAttemptError(error: unknown): AttemptApiError {
       error.code === "mini_wordle_requires_guess_command" ||
       error.code === "invalid_logic_code" ||
       error.code === "logic_code_requires_attempt_command" ||
+      error.code === "invalid_queens_answer" ||
+      error.code === "queens_answer_incomplete" ||
       error.code === "invalid_word_hashtag_swap" ||
       error.code === "word_hashtag_requires_swap_command" ||
       error.code === "invalid_question_payload" ||

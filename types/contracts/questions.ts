@@ -238,7 +238,7 @@ export type QuestionContractMap = {
   };
   readonly queens: {
     readonly public: {
-      readonly grid: { readonly rows: 5; readonly columns: 5 };
+      readonly grid: Legacy.QueensGrid;
       readonly regions: readonly number[];
       readonly prefilledQueens: readonly number[];
     };

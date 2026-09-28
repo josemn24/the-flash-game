@@ -27,6 +27,7 @@ const e2eByScenario = {
   s10: ["e2e/s10-season.spec.ts"],
   s11: ["e2e/s11-editorial.spec.ts"],
   s12: ["e2e/s12-calendar.spec.ts"],
+  s17: ["e2e/s17-editorial-versioning.spec.ts"],
 };
 
 const pilotEnv = {
@@ -36,7 +37,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260926080239_initial_schema",
+    process.env.EXPECTED_SCHEMA_REVISION || "20260927172602_cancel-scheduled-challenge",
 };
 
 async function run(label, command, args, options = {}) {
@@ -48,7 +49,10 @@ async function run(label, command, args, options = {}) {
       maxBuffer: 32 * 1024 * 1024,
       ...options,
     });
-    await writeFile(logPath, redact(`${result.stdout}${result.stderr ? `\n${result.stderr}` : ""}`));
+    await writeFile(
+      logPath,
+      redact(`${result.stdout}${result.stderr ? `\n${result.stderr}` : ""}`),
+    );
     process.stdout.write(`✓ ${label}\n`);
     return result;
   } catch (error) {
@@ -63,7 +67,10 @@ async function run(label, command, args, options = {}) {
 
 function redact(value) {
   return String(value)
-    .replaceAll(/(SUPABASE_[A-Z0-9_]+|NEXT_PUBLIC_SUPABASE_[A-Z0-9_]+|CALENDAR_TICK_SECRET|HEALTHCHECK_SECRET|APP_ORIGIN)=\S+/g, "$1=REDACTED")
+    .replaceAll(
+      /(SUPABASE_[A-Z0-9_]+|NEXT_PUBLIC_SUPABASE_[A-Z0-9_]+|CALENDAR_TICK_SECRET|HEALTHCHECK_SECRET|APP_ORIGIN)=\S+/g,
+      "$1=REDACTED",
+    )
     .replaceAll(/sb_(?:publishable|secret)_[A-Za-z0-9_-]+/g, "SUPABASE_KEY_REDACTED")
     .replaceAll(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "JWT_REDACTED")
     .replaceAll(/postgres(?:ql)?:\/\/\S+/g, "postgresql://DB_URL_REDACTED");

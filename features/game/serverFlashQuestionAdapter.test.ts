@@ -694,7 +694,7 @@ describe("server flash question adapter", () => {
     });
   });
 
-  it("maps Matching progress without exposing a solution or future answer IDs", () => {
+  it("maps Matching without exposing a solution or future answer IDs", () => {
     const question = questionFromPayload(
       "item-matching",
       {
@@ -714,20 +714,10 @@ describe("server flash question adapter", () => {
       30_000,
       50,
       "matching",
-      {
-        kind: "matching",
-        matchedPairs: [{ leftId: "l1", rightId: "r1" }],
-        matchedCount: 1,
-        totalPairs: 3,
-        incorrectAttempts: 2,
-        penaltyPoints: 10,
-      },
     );
 
-    expect(question).toMatchObject({
-      type: "matching",
-      progress: { matchedCount: 1, incorrectAttempts: 2, penaltyPoints: 10 },
-    });
+    expect(question).toMatchObject({ type: "matching" });
+    expect(question).not.toHaveProperty("progress");
     expect(question).not.toHaveProperty("correctMatchId");
     expect(question).not.toHaveProperty("solutionPayload");
     expect(JSON.stringify(question)).not.toContain("correctMatchId");
@@ -753,14 +743,6 @@ describe("server flash question adapter", () => {
         30_000,
         50,
         "matching",
-        {
-          kind: "matching",
-          matchedPairs: [],
-          matchedCount: 0,
-          totalPairs: 3,
-          incorrectAttempts: 0,
-          penaltyPoints: 0,
-        },
       ),
     ).toThrow(ServerFlashQuestionError);
   });

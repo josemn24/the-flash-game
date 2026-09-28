@@ -62,10 +62,6 @@
     height: 21px;
   }
 
-  .backIcon {
-    transform: rotate(180deg);
-  }
-
   .historyLink {
     justify-self: end;
   }

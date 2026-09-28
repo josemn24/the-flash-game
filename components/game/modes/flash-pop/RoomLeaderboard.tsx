@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Avatar, BoltIcon, Card, ChevronIcon, TrophyIcon } from "@/components/ui";
+import { PendingLink } from "@/components/navigation";
 import type { RoomDailyLeaderboardEntry, RoomLeaderboardEntry } from "@/types/game";
 import styles from "./RoomLeaderboard.module.css";
 
@@ -60,14 +60,14 @@ export function RoomLeaderboard({
               return variant === "cards" ? (
                 <li className={styles.cardItem} key={entry.memberId}>
                   {memberHrefBase ? (
-                    <Link
+                    <PendingLink
                       href={`${memberHrefBase}/${entry.memberId}`}
                       className={styles.playerCard}
                       aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       data-rank={entry.rank}
                     >
                       {renderCardContent(entry, isCurrentUser, true)}
-                    </Link>
+                    </PendingLink>
                   ) : onEntrySelect ? (
                     <button
                       type="button"
@@ -108,12 +108,12 @@ export function RoomLeaderboard({
                   />
                   <span className={styles.name}>
                     {memberHrefBase ? (
-                      <Link
+                      <PendingLink
                         href={`${memberHrefBase}/${entry.memberId}`}
                         aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       >
                         <strong>{entry.name}</strong>
-                      </Link>
+                      </PendingLink>
                     ) : (
                       <strong>{entry.name}</strong>
                     )}

@@ -21,10 +21,7 @@ export function isSurvivalMistake(result: SurvivalMistakeResult) {
     return true;
   }
 
-  return (
-    (result.details?.type === "matching" || result.details?.type === "queens") &&
-    result.details.incorrectAttempts > 0
-  );
+  return result.details?.type === "queens" && result.details.incorrectAttempts > 0;
 }
 
 export function getSurvivalLivesAfterResult(livesRemaining: number, result: SurvivalMistakeResult) {

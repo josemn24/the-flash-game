@@ -72,7 +72,7 @@ language sql stable security definer set search_path = '' as $$
       and (private.publication_is_effectively_open(
         schedule.status, season.status, season.starts_at, season.ends_at,
         schedule.opens_at, schedule.closes_at, statement_timestamp()) or attempt.id is not null)
-      and version.status = 'published' and version.mode = 'pyramid'
+      and version.status in ('published', 'archived') and version.mode = 'pyramid'
       and version.config_schema_version = 1 and version.mode_config = '{}'::jsonb
       and version.max_score = 100
       and (select count(*) from private.challenge_items item where item.challenge_version_id = version.id) = 7

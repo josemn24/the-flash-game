@@ -82,7 +82,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await page.getByRole("button", { name: "Oporto" }).click();
     await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Oporto" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Oporto" })).toHaveCount(0);
     await page.getByRole("button", { name: "Reintentar" }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);

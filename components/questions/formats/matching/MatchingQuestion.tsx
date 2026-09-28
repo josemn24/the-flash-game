@@ -6,6 +6,10 @@ import { CheckIcon, CrossIcon } from "@/components/ui";
 import styles from "./MatchingQuestion.module.css";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import type { MatchingAnswer, MatchingItem, MatchingLeftItem } from "@/types/game";
+import {
+  getMatchingPairPresentation,
+  type MatchingPairPresentation,
+} from "./matchingPairPresentation";
 
 type MatchingQuestionProps = {
   leftItems: MatchingLeftItem[];
@@ -89,6 +93,7 @@ export function MatchingQuestion({
   };
 
   const matchedCount = Object.keys(matches).length;
+  const pairPresentation = getMatchingPairPresentation(leftItems, matches);
 
   return (
     <div className={`${styles.root}`}>
@@ -99,12 +104,18 @@ export function MatchingQuestion({
             const matched = Boolean(matches[item.id]);
             const selected = selectedLeft === item.id;
             const invalid = invalidPair?.leftId === item.id;
+            const pair = pairPresentation.byLeft[item.id];
+            const right = pair
+              ? rightItems.find((rightItem) => rightItem.id === pair.rightId)
+              : null;
             return (
               <MatchingCard
                 key={item.id}
                 item={item}
                 selected={selected}
                 matched={matched}
+                pair={pair}
+                pairLabel={right?.label}
                 invalid={invalid}
                 disabled={locked || matched || Boolean(invalidPair)}
                 onClick={() => chooseLeft(item.id)}
@@ -119,12 +130,16 @@ export function MatchingQuestion({
             const matched = Object.values(matches).includes(item.id);
             const selected = selectedRight === item.id;
             const invalid = invalidPair?.rightId === item.id;
+            const pair = pairPresentation.byRight[item.id];
+            const left = pair ? leftItems.find((leftItem) => leftItem.id === pair.leftId) : null;
             return (
               <MatchingCard
                 key={item.id}
                 item={item}
                 selected={selected}
                 matched={matched}
+                pair={pair}
+                pairLabel={left?.label}
                 invalid={invalid}
                 disabled={locked || matched || Boolean(invalidPair)}
                 onClick={() => chooseRight(item.id)}
@@ -135,11 +150,21 @@ export function MatchingQuestion({
       </div>
 
       {matchedCount > 0 && (
-        <div className={styles.completedList} aria-label="Parejas completadas">
+        <div className={styles.completedList} aria-label="Parejas confirmadas">
           {leftItems
             .filter((item) => matches[item.id])
             .map((item) => (
-              <span key={item.id}>
+              <span
+                key={item.id}
+                data-pair-state="confirmed"
+                data-pair-number={pairPresentation.byLeft[item.id]?.pairNumber}
+                data-pair-tone={pairPresentation.byLeft[item.id]?.pairTone}
+              >
+                {pairPresentation.byLeft[item.id] ? (
+                  <span className={styles.pairBadge} aria-hidden="true">
+                    {pairPresentation.byLeft[item.id].pairNumber}
+                  </span>
+                ) : null}
                 <CheckIcon aria-hidden="true" />
                 {item.label} — {rightItems.find((right) => right.id === matches[item.id])?.label}
               </span>
@@ -158,6 +183,8 @@ function MatchingCard({
   item,
   selected,
   matched,
+  pair,
+  pairLabel,
   invalid,
   disabled,
   onClick,
@@ -165,17 +192,26 @@ function MatchingCard({
   item: MatchingItem;
   selected: boolean;
   matched: boolean;
+  pair?: MatchingPairPresentation;
+  pairLabel?: string;
   invalid: boolean;
   disabled: boolean;
   onClick: () => void;
 }) {
+  const stateLabel = pair
+    ? `${item.label}, asociación ${pair.pairNumber} confirmada con ${pairLabel ?? ""}`
+    : item.label;
+
   return (
     <motion.button
       type="button"
       className={`${styles.card} ${item.media ? styles.cardWithMedia : ""} ${selected ? styles.cardSelected : ""} ${matched ? styles.cardMatched : ""} ${invalid ? styles.cardInvalid : ""}`}
       disabled={disabled}
-      aria-label={item.label}
+      aria-label={stateLabel}
       aria-pressed={selected}
+      data-pair-state={pair ? "confirmed" : invalid ? "invalid" : undefined}
+      data-pair-number={pair?.pairNumber}
+      data-pair-tone={pair?.pairTone}
       onClick={onClick}
       whileTap={disabled ? undefined : { scale: 0.98 }}
     >
@@ -188,6 +224,11 @@ function MatchingCard({
         )}
         <span>{item.label}</span>
       </span>
+      {pair ? (
+        <span className={styles.pairBadge} aria-hidden="true">
+          {pair.pairNumber}
+        </span>
+      ) : null}
       {matched && <CheckIcon className={styles.stateIcon} aria-hidden="true" />}
       {invalid && <CrossIcon className={styles.stateIcon} aria-hidden="true" />}
     </motion.button>

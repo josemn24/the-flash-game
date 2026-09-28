@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20260926080239_initial_schema";
+const canonicalSchemaRevision = "20260927172602_cancel-scheduled-challenge";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -45,8 +45,10 @@ async function checkDatabase() {
         to_regprocedure('private.submit_mini_wordle_guess(jsonb)') is not null
           and to_regprocedure('private.submit_logic_code_attempt(jsonb)') is not null
           and to_regprocedure('private.reveal_progressive_clue(jsonb)') is not null
-          and to_regprocedure('private.submit_matching_pair(jsonb)') is not null
+          and to_regprocedure('private.matching_answer_valid(jsonb,jsonb,boolean)') is not null
         and to_regprocedure('private.submit_queens_placement(jsonb)') is not null
+        and to_regprocedure('private.save_queens_draft(jsonb)') is not null
+        and to_regprocedure('private.submit_queens_answer(jsonb)') is not null
         and to_regprocedure('private.submit_word_search_selection(jsonb)') is not null
         and pg_get_functiondef(to_regprocedure('private.read_evaluation_context(uuid,text)'))
           like '%jsonb_build_object(''foundWordIds''%'
@@ -69,7 +71,8 @@ async function checkDatabase() {
     await client.query("COMMIT");
     return {
       ok: Boolean(row?.database_ok && row.schema_ready),
-      schemaRevisionOk: expected === canonicalSchemaRevision && Boolean(row?.schema_revision_marker),
+      schemaRevisionOk:
+        expected === canonicalSchemaRevision && Boolean(row?.schema_revision_marker),
     };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);

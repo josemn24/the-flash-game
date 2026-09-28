@@ -1,10 +1,10 @@
 # Plan de implementación mediante vertical slices
 
-> Estado: backlog técnico vivo. S01–S15, S17a, S18b parcial, S20, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
+> Estado: backlog técnico vivo. S01–S15, S17, S17a, S18b parcial, S20, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis: 2026-09-25. El esquema actual contiene 48 archivos declarativos y la revisión canónica es
-> `20260925130000_s20_attempt_inspection_projection`; las 91 migraciones versionadas y las validaciones locales recientes
+> Fecha de análisis: 2026-09-27. El esquema actual contiene 53 archivos declarativos y la revisión canónica es
+> `20260927172602_cancel-scheduled-challenge`; la migración incremental activa y las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -34,7 +34,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                               | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                      | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                             | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 30 tablas, 48 archivos declarativos, 91 migraciones versionadas, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
+| SQL       | 30 tablas, 53 archivos declarativos, migración versionada, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings. | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado. |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado. | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional.                                       |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                    | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                   | Verificación contra un entorno remoto.                                                                                                             |
@@ -77,7 +77,7 @@ Archivos de entrada útiles: [fachada de lecturas](../server/data-access.ts),
   véase D04 y S21.
 - La verificación actual se registra en `docs/current/status.md`; el stack local de Supabase pasa
   esquema/RLS, provisioning, S02–S04, S06–S08 y S10–S12, además de sus integraciones y carreras.
-  No hay proyecto remoto vinculado.
+  La CLI tiene staging vinculado, pero no se ha ejecutado despliegue ni validación remota.
 
 ## 2. Forma de trabajar y límites
 
@@ -638,23 +638,20 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   primera pista gratuita, escalado por puntos reales, recarga, idempotencia, versión obsoleta,
   spectator, cierre y revisión final.
 
-### E04 — Matching competitivo y persistido ✅ Implementada localmente
+### E04 — Matching competitivo con comprobación final ✅ Implementada localmente
 
-- **Objetivo / CU:** validar una pareja por comando, devolver feedback inmediato y conservar crédito
-  parcial aunque el tiempo termine.
+- **Objetivo / CU:** resolver todas las parejas localmente, enviar un único mapa final y evitar latencia
+  durante la interacción.
 - **Contrato:** el contenido admite 3–6 parejas con IDs y labels únicos, correspondencia uno a uno y
   solución exclusiva en `solutionPayload.matches`; el payload jugable nunca contiene `correctMatchId`.
-- **Persistencia:** `private.matching_pair_events` guarda aciertos y fallos, secuencia, penalización,
-  tiempos e idempotencia. `private.submit_matching_pair(jsonb)` serializa el intento, aplica locks y
-  calcula el 10% de los puntos reales del item por fallo.
-- **Recuperación/UI:** `prepare` entrega columnas públicas y progreso seguro; las parejas resueltas
-  sobreviven a recargas, las tarjetas se bloquean y la UI ofrece feedback `aria-live` y reintento de
-  solicitudes cuya respuesta se perdió.
-- **Evaluación:** el contexto server-side reconstruye únicamente las parejas correctas y el contador
-  de fallos persistidos; `evaluateMatching` conserva crédito parcial, aplica penalización acumulada
-  y conserva ese progreso en timeout.
-- **Tests:** pgTAP, unidad, integración y E2E cubren publicación mixta, secreto, fallos, duplicados,
-  tarjetas resueltas, idempotencia, versión obsoleta, recarga, timeout, spectator y revisión final.
+- **Persistencia:** `receive_answer` registra una única recepción idempotente con el mapa completo;
+  el servidor valida claves, valores, cardinalidad y unicidad sin confiar en el cliente.
+- **Recuperación/UI:** `prepare` entrega solo columnas públicas; el borrador vive en memoria y se
+  pierde al recargar antes de comprobar. El botón final usa el estado genérico de envío y reintento.
+- **Evaluación:** `evaluateMatching` es binario: todas correctas puntúan con velocidad, cualquier
+  error puntúa cero y el timeout es `unanswered`. Survival descuenta una sola vida por resultado.
+- **Tests:** pgTAP, unidad, integración y E2E cubren secreto, mapa completo, rechazo de mapas inválidos,
+  ausencia de peticiones durante los clics, idempotencia, timeout, spectator y revisión final.
 
 ### S13 — Subir y sustituir el avatar global — implementada localmente
 
@@ -757,8 +754,8 @@ Ficha común, obligatoria para **cada** E*:
 | E01     | `mini-wordle`       | **Implementado localmente.** Primer patrón de eventos: registrar cada palabra válida y devolver colores sin solución; cada palabra procede del diccionario general o de `additionalGuesses` privados de la pregunta, con solución temática implícita permitida. Longitud 4–5 y máximo de intentos verificados en servidor. No aceptar una historia final fabricada ni consumir intentos duplicados. |
 | E02     | `logic-code`        | **Implementado localmente.** Registrar cada código y su penalización; validar secreto privado, formato, plazo, secuencia e idempotencia; rechazar duplicados sin penalización, conservar intentos tras recarga y cerrar al acertar con evaluación server-side.                                                                                                                                      |
 | E03     | `progressive-clues` | **Implementado localmente.** Entregar la primera pista gratis y las siguientes mediante comando transaccional; persistir eventos privados, no enviar pistas futuras ni confiar en `revealedClues`, ajustar penalización con los puntos reales del item y recuperar tras recarga.                                                                                                                    |
-| E04     | `matching`          | **Implementado localmente.** Comprobar cada asociación con feedback inmediato; conservar fallos y parejas correctas en eventos privados, aplicar 10% por error, recuperar tras recarga y evaluar timeout con crédito parcial sin `correctMatchId` público.                                                                                                                                          |
-| E05     | `queens`            | **Implementado localmente.** Persistir cada colocación/retirada como evento privado; calcular conflictos y penalización del 5% server-side, recuperar el tablero sin marcas X y cerrar automáticamente al resolver las cinco regiones. La solución solo aparece en la revisión autorizada.                                                                                                          |
+| E04     | `matching`          | **Implementado localmente.** Resolver asociaciones sin red, comprobar una única respuesta completa, aplicar scoring todo-o-nada, descontar una vida por fallo en Survival y mantener la solución fuera del payload público.                                                                                                                                          |
+| E05     | `queens`            | **Implementado localmente.** Editar coronas localmente en tableros de 4×4 a 8×8, guardar checkpoints server-side y validar automáticamente el tablero completo al alcanzar `N` coronas; registrar validaciones fallidas con penalización del 5%, recuperar coronas sin marcas X y cerrar automáticamente al resolver. La solución solo aparece en la revisión autorizada. |
 | S05     | `alphabet`          | **Implementado localmente.** Publicar desafíos Alphabet con referencias `short-text`, reloj global, vueltas y pases; persistir intervalos y respuestas mediante los comandos existentes, reconstruir progreso/timeout server-side y exponer soluciones solo en revisión terminal autorizada.                                                                                                        |
 | E06     | `word-search`       | **Implementado localmente.** Validar selecciones contra celdas/objetivos privados; registrar fallos y hallazgos, recuperar desde eventos, cerrar al encontrar todos los objetivos y evaluar crédito parcial sin penalización. La solución solo aparece en revisión terminal autorizada.                                                                                                             |
 | E07     | `memory-pairs`      | Revelar solo losetas solicitadas, registrar selecciones/parejas/fallos y plazos; no entregar `pairId`, asociaciones ni contenido oculto completo.                                                                                                                                                                                                                                                   |
@@ -873,21 +870,35 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 - **Verificación:** typecheck, Vitest, reset local, migración incremental, PgTAP y concurrencia están
   ejecutados sobre el stack Supabase/Docker local.
 
-### S17 — Corregir contenido creando otra versión y archivar
+### S17 — Corregir contenido creando otra versión y archivar ✅ Implementada y verificada localmente
 
 - **Objetivo / CU:** CU-11 y ampliación editorial de CU-10.
 - **Superficie:** herramienta privada del portal de superadmin, integrada con S11, para duplicar
   versión, comparar, publicar y archivar.
-- **Mocks retirados:** edición directa del fixture como única vía para corregir contenido real.
-- **Backend/dominio:** conservar versión usada, crear borrador nuevo, validar y publicar; archivo
-  autorizado sin permitir borrar referencias históricas. Responder con nueva versión seleccionable.
-- **Persistencia:** comandos sobre definiciones/versiones existentes; no mutar items/soluciones
-  publicados. Archivado permitido por guards actuales, auditoría y nuevas publicaciones separadas.
-- **Tests:** mismo desafío en dos salas, corrección posterior y revisión anterior intacta; edición
-  in situ rechazada; versión archivada usada sigue resolviéndose; publicación concurrente.
+- **Mocks retirados:** el portal usa Supabase como fuente de verdad; no hay fallback a fixtures para
+  corregir, comparar, publicar o archivar.
+- **Backend/dominio:** `create_superadmin_challenge_revision`,
+  `archive_superadmin_challenge_version` y `get_superadmin_challenge_version_comparison` son RPCs
+  auditadas, idempotentes y protegidas por superadmin. La clonación conserva la definición, calcula
+  el siguiente `version_number`, copia configuración/puntos/orden y crea `challenge_items` nuevos;
+  el archivado exige `published` y `expectedUpdatedAt`.
+- **Persistencia:** los borradores clonados mantienen referencias a `question_versions` publicadas;
+  el lector del editor las representa como referencias de biblioteca. Las publicaciones existentes
+  siguen resolviendo versiones `archived`; la creación de nuevas programaciones solo admite
+  `published`. No se mutan ni se borran items, preguntas, publicaciones, intentos o auditoría.
+- **Portal:** `/admin/challenges/[challengeDefinitionId]` permite crear correcciones desde versiones
+  publicadas/archivadas, seleccionar automáticamente el borrador, publicar, archivar con motivo y
+  comparar dos versiones por posición. La corrección de una pregunta remite a `/admin/questions`.
+- **Tests:** PgTAP cubre los tres modos, referencias y nuevos IDs, idempotencia, conflictos,
+  concurrencia, publicación, archivado, programación rechazada, resolución histórica y comparación
+  sin soluciones. Vitest cubre RPCs, DTOs y Server Actions; integración y E2E S17 cubren dos
+  publicaciones de versiones distintas. La evidencia focal actual es 17 tests Vitest, integración
+  Auth/PostgREST/RLS correcta y E2E 2/2 correcto.
 - **Dependencias:** S11, S07 y D05.
-- **Terminada:** una corrección afecta solo a publicaciones que eligen la nueva versión; los puntos
-  y respuestas históricos no se recalculan.
+- **Terminada:** verificada en local el 2026-09-27. Una corrección afecta solo a publicaciones que
+  eligen la nueva versión; archivar una versión no invalida publicaciones existentes ni recalcula
+  puntos, respuestas o revisiones históricas. Staging sigue pendiente de validación explícita. El gate
+  completo de esquema, inventario, PgTAP, concurrencia local y Vitest pasa.
 
 ### S18a — Salir de la sala y transferir propiedad
 
@@ -945,10 +956,16 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 
 ### S19 — Cancelar competición y cerrar temporadas de forma controlada
 
+- **Estado de la primera entrega:** S12 ya implementa la cancelación lógica y auditada de publicaciones
+  futuras en estado `scheduled`, antes de `opens_at`, conservando número, contenido, ventana y
+  referencias históricas. La cancelación de publicaciones `open`/`closed`, temporadas y cualquier
+  tratamiento especial de intentos permanece pendiente para completar S19.
 - **Objetivo / CU:** cancelación administrativa de CU-08/CU-09.
 - **Superficie:** calendario privado del portal de superadmin con motivo; la UI pública solo muestra
   estados de cancelación separados del historial ordinario.
-- **Mocks retirados:** estados cancelados solo representados por fixtures.
+- **Mocks retirados:** la cancelación futura de publicaciones ya es persistida; los estados de
+  temporadas canceladas y las cancelaciones de publicaciones abiertas siguen representados solo por
+  fixtures o fuera de la superficie operativa.
 - **Backend/dominio:** cancelar publicación o temporada según D05, conservar intentos y detener
   nuevos envíos/inicios según política. El cierre normal no es cancelación. Precisar cómo terminar
   intentos activos afectados y cómo una temporada cancelada afecta sus publicaciones/resultados.
@@ -963,10 +980,10 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 
 ### S20 — Inspeccionar y corregir un resultado con auditoría
 
-- **Estado 2026-09-25:** implementada y verificada sobre Supabase local. La revisión canónica es
-  `20260925130000_s20_attempt_inspection_projection`; el esquema reconstruye 48 archivos declarativos
-  y 91 migraciones versionadas. No hay proyecto remoto vinculado, por lo que la aplicación y validación
-  contra staging/producción siguen pendientes.
+- **Estado 2026-09-27:** implementada y verificada sobre Supabase local. La revisión canónica es
+  `20260927172602_cancel-scheduled-challenge`; el esquema reconstruye 53 archivos declarativos desde la migración
+  base consolidada. La CLI tiene staging vinculado, pero la aplicación y validación contra
+  staging/producción siguen pendientes.
 - **Objetivo / CU:** CU-25.
 - **Superficie:** `/admin/rooms/[roomId]/attempts`, `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`
   y `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]`; la última permite inspección
@@ -1036,11 +1053,15 @@ calcula resultado parcial para Flash. No se agregan tablas ni RPCs.
 mutaciones competitivas tienen request IDs, errores estables, límite de cuerpo, Origin obligatorio,
 rate limit y respuestas `no-store`. Existe health privado en `/api/internal/health`, logs JSON
 redactados y `npm run verify:pilot` para reconstruir Supabase local, probar escenarios por separado,
-ejecutar E2E y ensayar backup/restore. El alcance sigue siendo local/CI: no declara staging o
-producción remota, integración de `question-assets` en otros formatos, otros modos, abandono automático,
+ejecutar E2E y ensayar backup/restore; el mapa de escenarios incluye S17 para Flash, Supervivencia y
+Pirámide. El alcance sigue siendo local/CI: no declara staging o producción remota, integración de
+`question-assets` en otros formatos, otros modos, abandono automático,
 takeover ni `results_locked_at`. El 2026-09-22, `npm run verify:pilot` completó correctamente
 la matriz local de portal, S02, S03, E01–E06, F08, S04, S06, S07 y S10–S12, incluidos sus fixtures,
 integraciones y E2E, además de layout, diccionario y backup/restore.
+S17 ya forma parte de `scripts/verify-pilot.mjs` y su integración/E2E focal pasan; la ejecución completa
+del piloto posterior a S17 queda para cuando el gate global de Vitest deje de fallar por la refactorización
+de Matching ajena a esta slice.
 
 ### S23 — Ejecutar una prueba fantasma interna
 
@@ -1146,7 +1167,7 @@ una necesidad y decisión posteriores. No son prerrequisitos implícitos para cr
 
 Al crear un ticket desde este documento, copiar su identificador y ficha completa. Para F*/E*,
 incluir tanto la ficha común como la fila; registrar el modo y desafío de prueba concretos. S01–S15,
-S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 y E01–E06/E10 están
+S17, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 y E01–E06/E10 están
 **implementadas localmente**; el estado inicial de las slices restantes es **pendiente**. D* pendientes
 bloquean solo los recorridos que los citan.
 
@@ -1173,7 +1194,7 @@ El formato previo y el selector CSS duplicado documentados en QA no se arreglan 
 de todo el repositorio. Cada PR mantiene limpios sus archivos y registra cualquier impedimento
 preexistente, sin usarlo para omitir pruebas nuevas.
 
-S01–S15, D08a/D08b, E01–E06, E10, F08, F16, F18, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
+S01–S15, S17, D08a/D08b, E01–E06, E10, F08, F16, F18, S05-Alphabet y la integración D08b-MC están cerradas localmente: su entrega cubre login, perfil persistido, lecturas de
 sala, Flash y Supervivencia competitivos persistidos, recuperación, rankings, historial Flash y
 revisión propia de Survival, además de la creación auditada de salas, la activación de temporadas,
 la publicación editorial mixta, Pirámide competitiva y la programación/ejecución temporal local del calendario. E07–E09

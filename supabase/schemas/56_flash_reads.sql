@@ -84,7 +84,7 @@ language sql stable security definer set search_path = '' as $$
         )
         or a.id is not null
       )
-      and cv.status = 'published'
+      and cv.status in ('published', 'archived')
       and cv.mode = 'flash'
   )
   select

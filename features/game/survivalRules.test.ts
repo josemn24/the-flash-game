@@ -63,15 +63,10 @@ describe("survival rules", () => {
     expect(getSurvivalLivesAfterResult(2, result("correct", matchingDetails(0)))).toBe(2);
   });
 
-  it("subtracts one life for matching answers with incorrect attempts", () => {
-    expect(isSurvivalMistake(result("correct", matchingDetails(1)))).toBe(true);
-    expect(getSurvivalLivesAfterResult(3, result("correct", matchingDetails(1)))).toBe(2);
-    expect(getSurvivalLivesAfterResult(3, result("correct", matchingDetails(4)))).toBe(2);
-  });
-
-  it("subtracts one life for partial matching answers with incorrect attempts", () => {
-    expect(getSurvivalLivesAfterResult(2, result("partial", matchingDetails(1)))).toBe(1);
-    expect(getSurvivalLivesAfterResult(1, result("partial", matchingDetails(1)))).toBe(0);
+  it("subtracts one life for any failed final matching check", () => {
+    expect(isSurvivalMistake(result("incorrect", matchingDetails(3)))).toBe(true);
+    expect(getSurvivalLivesAfterResult(3, result("incorrect", matchingDetails(3)))).toBe(2);
+    expect(getSurvivalLivesAfterResult(1, result("incorrect", matchingDetails(3)))).toBe(0);
   });
 
   it("eliminates immediately only for matching mistakes on the last life", () => {

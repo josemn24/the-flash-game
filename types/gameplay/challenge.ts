@@ -7,6 +7,7 @@ import type {
   AnagramTile,
   Question,
   QuestionMedia,
+  QueensGrid,
   ZipCheckpoint,
 } from "@/types/question";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
@@ -453,25 +454,10 @@ export type ServerLogicMatrixQuestion = ServerFlashQuestionBase & {
   readonly showPieceLabels: boolean;
 };
 
-export type ServerMatchingPair = {
-  readonly leftId: string;
-  readonly rightId: string;
-};
-
-export type ServerMatchingProgress = {
-  readonly kind: "matching";
-  readonly matchedPairs: readonly ServerMatchingPair[];
-  readonly matchedCount: number;
-  readonly totalPairs: number;
-  readonly incorrectAttempts: number;
-  readonly penaltyPoints: number;
-};
-
 export type ServerMatchingQuestion = ServerFlashQuestionBase & {
   readonly type: "matching";
   readonly leftItems: readonly Omit<MatchingLeftItem, "correctMatchId">[];
   readonly rightItems: readonly MatchingItem[];
-  readonly progress: ServerMatchingProgress;
 };
 
 export type ServerProgressiveCluesProgress = {
@@ -512,7 +498,7 @@ export type ServerQueensProgress = {
 
 export type ServerQueensQuestion = ServerFlashQuestionBase & {
   readonly type: "queens";
-  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly grid: QueensGrid;
   readonly regions: readonly number[];
   readonly prefilledQueens: readonly number[];
   readonly progress: ServerQueensProgress;

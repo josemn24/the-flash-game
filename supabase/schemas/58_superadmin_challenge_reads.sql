@@ -105,7 +105,13 @@ begin
             ),
             'questions', coalesce((
               select jsonb_agg(
-                jsonb_build_object(
+                case when question.status <> 'draft' then jsonb_build_object(
+                  'source', 'library',
+                  'questionVersionId', question.id,
+                  'points', item.points,
+                  'modeConfig', item.mode_config,
+                  'challengeItemId', item.id
+                ) else jsonb_build_object(
                   'slug', question_definition.slug,
                   'type', question.type,
                   'payloadSchemaVersion', question.payload_schema_version,
@@ -114,7 +120,7 @@ begin
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload
                 ) || case when version.mode = 'pyramid'
-                  then jsonb_build_object('modeConfig', item.mode_config) else '{}'::jsonb end
+                  then jsonb_build_object('modeConfig', item.mode_config) else '{}'::jsonb end end
                 order by item.position
               )
               from private.challenge_items item

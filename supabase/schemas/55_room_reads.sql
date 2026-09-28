@@ -140,7 +140,7 @@ language sql stable security definer set search_path = '' as $$
         sc.status, season.status, season.starts_at, season.ends_at,
         sc.opens_at, sc.closes_at, statement_timestamp()
       )
-      and cv.status = 'published'
+      and cv.status in ('published', 'archived')
     order by sc.number
     limit 1
   ) publication on true
@@ -251,7 +251,7 @@ language sql stable security definer set search_path = '' as $$
     and room.status = 'active'
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
   order by season.starts_at desc, schedule.number
 $$;
 

@@ -54,7 +54,7 @@ begin
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
       where room.id = target_room_id
         and room.status = 'active'
-        and version.status = 'published'
+        and version.status in ('published', 'archived')
         and version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
@@ -115,7 +115,7 @@ begin
   where schedule.id = target_scheduled_challenge_id
     and room.id = target_room_id
     and room.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
     and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
 
   if publication_payload is null then return null; end if;
@@ -321,7 +321,7 @@ begin
     and attempt.kind = 'competitive'
     and room.id = target_room_id
     and room.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
     and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
 
   return inspection_payload;
