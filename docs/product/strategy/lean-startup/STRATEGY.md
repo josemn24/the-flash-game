@@ -30,7 +30,11 @@ Desafíos mentales breves, variados y comparables que permiten competir con amis
 
 Una alpha técnica con una sala privada, una temporada de nueve desafíos, una publicación cada dos días durante 24 horas, un intento por participante, puntuaciones comparables y ranking acumulado.
 
-La PoC individual existente es reutilizable. La identidad sencilla, el acceso privado, la programación y el registro de datos son necesidades planteadas para el vehículo experimental, no funcionalidades ya presentes en el repositorio.
+El repositorio ya aporta Auth, salas, temporadas, publicaciones, intentos, rankings, programación
+local, portal privado y varios recorridos server-side sobre Supabase. La selección de los nueve
+desafíos, la preparación concreta de la cohorte, la captura de la métrica recurrente y la validación
+de un entorno operativo para la alpha siguen siendo trabajo experimental pendiente; disponer de esas
+capacidades no constituye evidencia de demanda.
 
 **Fuente:** `cycles/CYCLE-001.md`; `../../../../README.md` y `../../../current/status.md` para los
 límites actuales de la aplicación.

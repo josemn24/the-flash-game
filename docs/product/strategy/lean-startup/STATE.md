@@ -26,9 +26,11 @@ Seleccionar y registrar en CYCLE-001 los nueve desafíos candidatos para la alph
 
 ### Hechos observados
 
-- La aplicación es frontend y local: representa una sala, miembros, temporada, publicaciones y
-  rankings mock, pero no tiene autenticación real, persistencia remota ni ranking compartido real.
-  Fuente: `../../../current/status.md`.
+- El repositorio combina recorridos mock/práctica con un vehículo técnico persistido localmente sobre
+  Supabase: dispone de Auth, salas, temporadas, publicaciones, intentos, rankings, portal privado y
+  varios formatos competitivos server-side. Fuente: `../../../current/status.md`.
+- La disponibilidad de este vehículo técnico no constituye evidencia de que Tabarnia participe de
+  forma recurrente ni de que el loop social aporte valor.
 
 ### Evidencia disponible
 

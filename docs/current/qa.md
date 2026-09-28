@@ -1,4 +1,4 @@
-> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-25;
+> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-28;
 > no sustituye una auditoría manual de accesibilidad o interacción.
 
 # QA actual
@@ -28,16 +28,18 @@ de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 - `npm run type-architecture`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto con Next.js 16.2.10.
-- `npm test`: 140 archivos y 806 tests correctos.
-- Tests focales S17: 17 tests Vitest pasan; la integración Auth/PostgREST/RLS pasa y el E2E del portal
-  pasa 2/2.
-- `npm run format:check`: informa 158 archivos sin formato canónico; queda fuera del alcance de
-  esta actualización documental.
-- `npm run supabase:schema:test`: correcto; cargó 52 schemas, verificó el inventario, todas las suites
-  PgTAP y las carreras con conexiones PostgreSQL independientes.
-- S17: 45 checks PgTAP, integración Auth/PostgREST/RLS y E2E del portal cubren clonar una versión
-  publicada, editar/publicar la corrección, comparar por posición, archivar la versión anterior y
-  resolver dos publicaciones históricas sin exponer soluciones privadas.
+- `npm test`: 143 archivos y 833 tests correctos.
+- `npm run format:check`: informa 156 archivos sin formato canónico; queda pendiente como deuda de
+  formato y no bloquea la verificación funcional.
+- `npm run stylelint`: informa 6 errores de selectores duplicados en 5 módulos CSS.
+- `npm run test:pwa:worker`: correcto; el service worker es JavaScript válido.
+- `npm run dictionary:check`: correcto; los diccionarios de 4 y 5 letras están actualizados.
+- `npm run supabase:schema:test`: no verificado en esta ejecución porque el daemon de Docker no estaba
+  disponible; no debe interpretarse como un fallo funcional del esquema ni como una validación pasada.
+
+Las validaciones focales de S17, la integración Auth/PostgREST/RLS y los E2E descritos en los registros
+históricos siguen siendo evidencia de ejecuciones anteriores. No se repiten ni se presentan como una
+ejecución completa del piloto en esta fotografía.
 
 La validación local no equivale a
 validación de staging o producción.
@@ -60,12 +62,17 @@ No se debe interpretar la existencia de un test focal histórico como validació
 
 - La CLI local tiene staging vinculado, pero no se ha aplicado ni validado S17 en ese proyecto remoto.
 - La validación E2E persistida es local y reproducible; no cubre staging o producción.
-- Prettier mantiene 158 archivos sin formato canónico.
-- El gate global de Vitest pasa; el inventario de seguridad y las suites PgTAP también pasan en
-  `supabase:schema:test`.
+- Prettier mantiene 156 archivos sin formato canónico.
+- El gate global de Vitest pasa con 833 tests; el inventario de seguridad y las suites PgTAP requieren
+  Docker y no se verificaron en esta ejecución.
 - ESLint no presenta warnings en la comprobación actual.
-- Stylelint conserva un selector duplicado histórico en
-  `app/flash-pop-concepts/FlashPopConcepts.module.css`.
+- Stylelint informa seis selectores duplicados en
+  `app/flash-pop-concepts/FlashPopConcepts.module.css`, `components/auth/AuthPanel.module.css`,
+  `components/game/shared/ChallengeIntro.module.css`,
+  `components/game/modes/alphabet/AlphabetGameApp.module.css` y
+  `components/game/modes/flash-pop/RoomLeaderboard.module.css`.
+- La verificación SQL local, la integración Supabase y los E2E persistidos no forman parte de esta
+  ejecución porque el stack local depende de Docker; la validación remota/staging sigue pendiente.
 - No existe una ronda manual exhaustiva vigente para todos los formatos, viewports, VoiceOver y
   `prefers-reduced-motion`.
 

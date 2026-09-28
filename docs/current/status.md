@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-25.
+Última actualización documental: 2026-09-28.
 
 # Estado actual del proyecto
 
@@ -140,30 +140,30 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Rutas principales
 
-| Ruta                                                 | Estado                                                                                                                               |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                                                  | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                                 |
-| `/salas/[roomId]`                                    | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                                 |
-| `/salas/[roomId]/ranking`                            | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
-| `/salas/[roomId]/historial`                          | Historial Flash real para salas persistidas; otros modos siguen mock.                                                                |
-| `/salas/[roomId]/historial/[challengeId]`            | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                           |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]` | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                                        |
-| `/salas/[roomId]/ajustes`                            | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
-| `/admin`                                             | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
-| `/admin/rooms`                                       | Gestión protegida de salas activas y creación de salas.                                                                              |
-| `/admin/rooms/[roomId]`                              | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.                                         |
-| `/admin/rooms/[roomId]/attempts`                     | Publicaciones competitivas de la sala para inspección administrativa.                                                               |
-| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]` | Intentos competitivos de una publicación, con paginación por cursor.                                                              |
-| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]` | Detalle protegido del intento y acciones de ajuste/invalidación según estado.                              |
-| `/admin/challenges`                                  | Catálogo protegido de desafíos Flash, Supervivencia y Pirámide definidos.                                                            |
-| `/admin/challenges/new`                              | Preparación protegida de un nuevo desafío Flash, Supervivencia o Pirámide.                                                           |
-| `/admin/challenges/[challengeDefinitionId]`          | Detalle protegido, edición de borradores e historial de versiones Flash/Supervivencia/Pirámide.                                      |
-| `/admin/questions`                                   | Biblioteca de preguntas funcional con navegación común.                                                                              |
-| `/admin/questions/new`                               | Editor protegido para crear una versión de pregunta, dentro del shell común.                                                         |
-| `/admin/questions/[questionVersionId]`               | Editor protegido de una versión existente, dentro del shell común.                                                                   |
-| `/desafios/[challengeId]`                            | Desafío Flash, Supervivencia o Pirámide competitivo. En `pilot`, sin sala o con alias devuelve 404.                                  |
-| `/formatos`                                          | Biblioteca estática de formatos y práctica local.                                                                                    |
-| `/flash-pop`                                         | Lobby/demo de Flash Pop.                                                                                                             |
+| Ruta                                                                | Estado                                                                                                                               |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                                                                 | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                                 |
+| `/salas/[roomId]`                                                   | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                                 |
+| `/salas/[roomId]/ranking`                                           | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
+| `/salas/[roomId]/historial`                                         | Historial Flash real para salas persistidas; otros modos siguen mock.                                                                |
+| `/salas/[roomId]/historial/[challengeId]`                           | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                           |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]`                | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                                        |
+| `/salas/[roomId]/ajustes`                                           | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
+| `/admin`                                                            | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
+| `/admin/rooms`                                                      | Gestión protegida de salas activas y creación de salas.                                                                              |
+| `/admin/rooms/[roomId]`                                             | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.                                         |
+| `/admin/rooms/[roomId]/attempts`                                    | Publicaciones competitivas de la sala para inspección administrativa.                                                                |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`             | Intentos competitivos de una publicación, con paginación por cursor.                                                                 |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]` | Detalle protegido del intento y acciones de ajuste/invalidación según estado.                                                        |
+| `/admin/challenges`                                                 | Catálogo protegido de desafíos Flash, Supervivencia y Pirámide definidos.                                                            |
+| `/admin/challenges/new`                                             | Preparación protegida de un nuevo desafío Flash, Supervivencia o Pirámide.                                                           |
+| `/admin/challenges/[challengeDefinitionId]`                         | Detalle protegido, edición de borradores e historial de versiones Flash/Supervivencia/Pirámide.                                      |
+| `/admin/questions`                                                  | Biblioteca de preguntas funcional con navegación común.                                                                              |
+| `/admin/questions/new`                                              | Editor protegido para crear una versión de pregunta, dentro del shell común.                                                         |
+| `/admin/questions/[questionVersionId]`                              | Editor protegido de una versión existente, dentro del shell común.                                                                   |
+| `/desafios/[challengeId]`                                           | Desafío Flash, Supervivencia o Pirámide competitivo. En `pilot`, sin sala o con alias devuelve 404.                                  |
+| `/formatos`                                                         | Biblioteca estática de formatos y práctica local.                                                                                    |
+| `/flash-pop`                                                        | Lobby/demo de Flash Pop.                                                                                                             |
 
 ## Límites actuales
 
@@ -200,7 +200,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación actual
 
-Estado documentado a 2026-09-25:
+Estado verificado a 2026-09-28:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
   `20260927172602_cancel-scheduled-challenge`.
@@ -209,19 +209,16 @@ Estado documentado a 2026-09-25:
 - `npm run type-architecture`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto con Next.js 16.2.10.
-- `npm test`: 140 archivos y 806 tests correctos.
-- Tests focales S17: 17 tests Vitest, integración Auth/PostgREST/RLS y E2E del portal (2/2) correctos.
-- `npm run format:check`: informa 158 archivos sin formato canónico; queda fuera de esta actualización.
-- `npm run supabase:schema:test`: correcto; cargó 52 schemas, verificó el inventario, todas las suites
-  PgTAP —incluidos los 45 checks de S17— y las carreras con conexiones PostgreSQL independientes.
-- `s17_editorial_versioning.test.sql`: 45 checks nuevos cubren Flash, Survival y Pyramid, clonación
-  secuencial, referencias de biblioteca, publicación, archivado, concurrencia, comparación segura,
-  calendarios y lecturas históricas.
-- `npm run test:integration:supabase -- --scenario s17` y `npm run test:e2e -- e2e/s17-editorial-versioning.spec.ts`:
-  recorrido S17 con dos publicaciones de versiones distintas, corrección, comparación, archivado y
-  autorización del portal.
+- `npm test`: 143 archivos y 833 tests correctos.
+- `npm run format:check`: informa 156 archivos sin formato canónico.
+- `npm run stylelint`: informa 6 errores de selectores duplicados en 5 módulos CSS.
+- `npm run test:pwa:worker` y `npm run dictionary:check`: correctos.
+- `npm run supabase:schema:test`: no verificado porque el daemon de Docker no estaba disponible.
+- Las validaciones focales S17, la integración Auth/PostgREST/RLS y el E2E del portal que aparecen en
+  los registros históricos no se presentan como repetidas en esta comprobación.
 - Aunque la CLI tiene staging vinculado, no se ejecutó `supabase db push` ni una validación remota;
-  ninguna de estas comprobaciones acredita staging o producción.
+  ninguna de estas comprobaciones acredita staging o producción. La ejecución actual tampoco pudo
+  repetir la validación SQL local porque el stack de Supabase requiere Docker.
 
 ### Registros históricos de slices
 
