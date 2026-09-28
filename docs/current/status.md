@@ -39,7 +39,8 @@ cuatro palabras permanecen privadas, los swaps aceptados viven en `attempts.prog
 servidor decide validez, terminalidad, timeout, evaluación y scoring. La review solo revela solución y
 métricas después del cierre; no se añade tabla de eventos.
 S12 añade
-programación/reprogramación de publicaciones Flash, calendario efectivo con tick local protegido y
+programación/reprogramación de publicaciones Flash y calendario efectivo con tick protegido; la
+verificación local usa el CLI y la integración de producción usa Vercel Cron, con
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
 reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
 `media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. D08b
@@ -134,8 +135,11 @@ La UI pública no permite crear salas privadas ni gestionar invitaciones. Un por
 superadmin prepara y activa temporadas, publica Flash/Supervivencia/Pirámide y provisiona directamente a los
 usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
 invitaciones. La superficie `/admin` permite programar y reprogramar publicaciones Flash/Supervivencia/Pirámide futuras;
-el calendario se ejecuta localmente con `POST /api/internal/calendar/tick` y
-`npm run calendar:tick`. La superficie ya permite al superadmin crear salas activas y provisionar
+el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 00:05 UTC en
+producción y conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` para operación
+local o recuperación manual. La configuración remota y sus logs aún requieren validación en el
+proyecto Vercel; Vercel no ejecuta esta tarea en previews ni reintenta automáticamente fallos.
+La superficie ya permite al superadmin crear salas activas y provisionar
 directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capacidad administrativa.
 
 ## Rutas principales

@@ -63,10 +63,13 @@ En la beta, el superadmin provisiona directamente a usuarios autenticados en una
 simula la aceptación de una invitación y no consume un token. La emisión, aceptación y revocación de
 invitaciones siguen siendo capacidades del producto para una fase posterior, sin UI pública en esta
 versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-calendario ya están habilitadas localmente en el mismo portal interno para Flash de S11/S12 y
+calendario ya están verificadas localmente en el mismo portal interno para Flash de S11/S12 y
 Supervivencia de S14.
-La ejecución temporal se realiza mediante un Route Handler protegido y CLI local; no hay scheduler
-remoto, cola ni worker propio.
+La ejecución temporal se realiza mediante un Route Handler protegido: Vercel Cron invoca `GET
+/api/internal/calendar/tick` en producción diariamente a las 00:05 UTC con `CRON_SECRET`, mientras
+que el CLI local conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` con
+`CALENDAR_TICK_SECRET`. No hay cola ni worker propio; Vercel Cron no ejecuta previews ni reintenta
+automáticamente una invocación fallida.
 
 Cada operación administrativa debe comprobar el privilegio global en servidor, aplicar las
 invariantes de dominio y usar un comando acotado. Las acciones que afecten directamente a una sala

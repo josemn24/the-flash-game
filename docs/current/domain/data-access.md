@@ -75,8 +75,9 @@ Calendario temporal del detalle de sala `/admin/rooms/[roomId]?tab=calendar`
 → `public.create_superadmin_scheduled_challenge()` / `public.update_superadmin_scheduled_challenge()`
 → publicación `scheduled` con ventana UTC, locks, conflictos optimistas, idempotencia y auditoría
 
-Tick local protegido
-→ `POST /api/internal/calendar/tick` o `npm run calendar:tick`
+Calendar tick protegido
+→ Vercel Cron: `GET /api/internal/calendar/tick` a las 00:05 UTC en producción con `CRON_SECRET`
+→ operación local: `POST /api/internal/calendar/tick` o `npm run calendar:tick` con `CALENDAR_TICK_SECRET`
 → conexión PostgreSQL server-only con `SET LOCAL ROLE service_role`
 → `private.run_calendar_tick_command()`
 → estados efectivos, auditoría de sistema y finalización de temporadas sin DML de cliente

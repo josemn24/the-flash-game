@@ -1,8 +1,11 @@
 # S22 — Operación del piloto
 
-> Estado: vigente. Alcance local/CI; staging está vinculado en la CLI, pero no se ha desplegado ni validado esta revisión.
+> Estado: vigente. La verificación funcional reproducible sigue siendo local/CI; el repositorio declara
+> la integración de producción con Vercel Cron, pero el despliegue y sus logs deben validarse en el
+> proyecto remoto.
 
-S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
+S22 fija un alcance cerrado para operar localmente y en CI, y deja documentado el scheduler de
+producción sin convertir el entorno remoto en requisito para la verificación reproducible.
 El piloto incluye Flash, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
 además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, abandono automático,
@@ -22,14 +25,14 @@ El servidor lee `FLASH_RUNTIME_SCOPE`:
 Un build con `NODE_ENV=production` usa `pilot` si la variable no está definida. Un valor desconocido
 falla al arrancar la composición server-only.
 
-| Superficie                                  | Pilot                                                                                   | Development/Test                           |
-| ------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                | Supabase; mocks solo en aliases explícitos |
+| Superficie                                  | Pilot                                                                                             | Development/Test                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                          | Supabase; mocks solo en aliases explícitos |
 | `/desafios/[challengeId]?roomId=<UUID>`     | Supabase; Flash, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                                   |
-| `/desafios/[challengeId]` sin sala          | 404                                                                                     | Preview mock explícito                     |
-| aliases como `tabarnia-room`                | 404                                                                                     | Demo mock                                  |
-| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                           | Demo/práctica                              |
-| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                 | Supabase + autorización                    |
+| `/desafios/[challengeId]` sin sala          | 404                                                                                               | Preview mock explícito                     |
+| aliases como `tabarnia-room`                | 404                                                                                               | Demo mock                                  |
+| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                                     | Demo/práctica                              |
+| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                           | Supabase + autorización                    |
 
 ## Contrato HTTP
 
@@ -42,6 +45,14 @@ administrativos durante el piloto; no es una garantía de escalado multiinstanci
 `GET /api/internal/health` exige `Authorization: Bearer <HEALTHCHECK_SECRET>` y comprueba Auth,
 PostgreSQL y la revisión indicada por `EXPECTED_SCHEMA_REVISION`. Solo devuelve estado agregado y
 no contiene credenciales, JWT, cookies ni datos de dominio.
+
+El calendar tick de producción se ejecuta mediante Vercel Cron con `GET
+/api/internal/calendar/tick` a las 00:05 UTC y `Authorization: Bearer <CRON_SECRET>`. Vercel solo
+programa cron para despliegues de producción: no se ejecuta en previews y no reintenta una
+invocación fallida. La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
+que conserva el `POST` del endpoint. Una cadencia diaria implica que una transición puede quedar
+pendiente hasta la siguiente ejecución; el tick sigue siendo idempotente y `start_attempt` revalida
+la ventana temporal.
 
 ## Verificación reproducible
 

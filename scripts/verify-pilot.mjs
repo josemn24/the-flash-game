@@ -68,7 +68,7 @@ async function run(label, command, args, options = {}) {
 function redact(value) {
   return String(value)
     .replaceAll(
-      /(SUPABASE_[A-Z0-9_]+|NEXT_PUBLIC_SUPABASE_[A-Z0-9_]+|CALENDAR_TICK_SECRET|HEALTHCHECK_SECRET|APP_ORIGIN)=\S+/g,
+      /(SUPABASE_[A-Z0-9_]+|NEXT_PUBLIC_SUPABASE_[A-Z0-9_]+|CALENDAR_TICK_SECRET|CRON_SECRET|HEALTHCHECK_SECRET|APP_ORIGIN)=\S+/g,
       "$1=REDACTED",
     )
     .replaceAll(/sb_(?:publishable|secret)_[A-Za-z0-9_-]+/g, "SUPABASE_KEY_REDACTED")

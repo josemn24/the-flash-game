@@ -399,3 +399,18 @@
 - Las operaciones concurrentes usan escrituras atómicas y control de versión.
 - Los fixtures y seeds tienen IDs y fechas deterministas.
 - La aplicación usa privilegios mínimos y nunca expone credenciales administrativas al navegador.
+
+## 15. Scheduler del calendar tick en producción
+
+- **Decisión vigente (2026-09-28):** Vercel Cron es el scheduler oficial del calendar tick para el
+  despliegue de producción.
+- Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 00:05 UTC mediante
+  `CRON_SECRET`. La tarea no se ejecuta en previews y Vercel no reintenta automáticamente una
+  invocación fallida.
+- `POST /api/internal/calendar/tick` y `npm run calendar:tick` se conservan para ejecución local,
+  CI y recuperación manual, autenticados con `CALENDAR_TICK_SECRET`.
+- La cadencia diaria es una decisión operativa aceptada: una apertura, cierre o finalización puede
+  retrasarse hasta la siguiente ejecución. El tick sigue siendo idempotente y `start_attempt`
+  revalida la ventana temporal antes de iniciar una partida.
+- Esta decisión concreta la automatización remota que S12 dejó pendiente sin introducir una cola ni
+  un worker propio; la validación efectiva del despliegue y sus logs pertenece al entorno Vercel.
