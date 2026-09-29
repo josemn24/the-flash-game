@@ -168,7 +168,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** temporada adecuada y `ChallengeVersion` publicada; número libre y fechas válidas.
 - **Entrada relevante:** versión, número, `opensAt`, `closesAt` y, si procede, zona horaria de edición.
 - **Flujo principal:** desde el calendario privado, comprobar que la versión Flash está publicada y es compatible; validar orden, fechas y ausencia de solapamiento; crear o reprogramar `ScheduledChallenge`; el calendar tick abre y cierra por la ventana efectiva.
-- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma o cancela antes de abrir; la cancelación es lógica, auditada y conserva el número, contenido y ventana; S12 no cancela publicaciones abiertas o cerradas, fija `results_locked_at` ni modifica intentos.
+- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma o cancela antes de abrir; la cancelación es lógica, auditada y conserva el número, contenido y ventana. Al cerrar la publicación o vencer su deadline, una reconciliación puede abandonar intentos competitivos inactivos durante al menos 15 minutos.
 - **Resultado:** publicación `scheduled`, `open`, `closed` o `cancelled`.
 - **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; cada escritura administrativa y transición del tick queda auditada.
 - **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida, motivo de auditoría ausente o intento de reprogramar/cancelar una publicación abierta, cerrada o ya cancelada.
@@ -333,18 +333,18 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Errores o impedimentos:** intentar cerrar dos veces, puntuación negativa, respuestas de otra versión, finalización fuera de plazo sin autorización o estado inconsistente.
 - **Permisos necesarios:** sistema; el jugador solo puede provocar la transición mediante acciones válidas.
 
-### CU-19 — Abandonar un intento [V1]
+### CU-19 — Abandonar o expirar un intento [V1]
 
-- **Actor:** jugador; sistema de actividad para abandono automático posterior.
+- **Actor:** jugador o sistema de reconciliación.
 - **Objetivo:** terminar explícitamente un intento iniciado que no se va a completar.
 - **Precondiciones:** intento `in_progress` y jugador autorizado.
 - **Entrada relevante:** intento, sesión y confirmación de abandono.
 - **Flujo principal:** comprobar idempotencia; conservar respuestas ya aceptadas; cambiar a `abandoned`; eliminar el checkpoint recuperable; bloquear reanudación y replay competitivo.
-- **Reglas de negocio:** abandono no es timeout de pregunta ni expiración de publicación; se proyecta como `notCompleted`; no concede ranking ordinario; heartbeat, lease y periodo de gracia aún son decisiones operativas abiertas.
+- **Reglas de negocio:** abandono no es timeout de pregunta ni expiración de publicación; se proyecta como `notCompleted` y no concede ranking ordinario. El sistema puede usar `inactivity_timeout` tras 15 minutos sin actividad cuando la publicación está cerrada o su deadline ha vencido; mientras siga vigente, el intento permanece reanudable.
 - **Resultado:** intento terminal `abandoned`.
 - **Efectos secundarios:** `AttemptAbandoned`, auditoría y actualización del estado visible del desafío.
 - **Errores o impedimentos:** intento inexistente, ya terminal, sesión no autorizada o doble abandono no idempotente.
-- **Permisos necesarios:** jugador propietario; cierre automático futuro: sistema con reglas de actividad aprobadas.
+- **Permisos necesarios:** jugador propietario para abandono explícito; sistema con `service_role` para reconciliación.
 
 ### CU-20 — Consultar resultado y revisar respuestas [V1]
 
@@ -451,9 +451,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   repetición de petición pueda producir duplicados.
 - La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-08, CU-12, CU-13,
   CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. S12 cubre la
-  programación y ejecución local del calendario Flash, pero la automatización temporal remota sigue
-  pendiente. S11 cubre la publicación editorial mínima de Flash y su preview protegido; reemplazar/
+  programación y ejecución local del calendario Flash; Vercel Cron ejecuta el tick en producción y
+  la expiración también se reconcilia bajo demanda. S11 cubre la publicación editorial mínima de Flash y su preview protegido; reemplazar/
   archivar versiones publicadas y la prueba fantasma interactiva siguen pendientes.
-- Las decisiones sobre heartbeat, lease, gracia de desconexión, alcance del editor y revisión de
-  intentos invalidados deben cerrarse antes de convertir los casos correspondientes en contratos
-  técnicos. La matriz de permisos de sala y las reglas de invitaciones ya están fijadas.
+- La expiración usa un umbral fijo de 15 minutos y no requiere heartbeat, lease ni periodo de gracia
+  del navegador. Siguen pendientes el alcance del editor y la revisión de intentos invalidados. La
+  matriz de permisos de sala y las reglas de invitaciones ya están fijadas.

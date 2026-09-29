@@ -10,6 +10,7 @@ import type {
   StartAttemptCommand,
 } from "@/application/ports/attempt-commands";
 import type {
+  ActivateInteractionResult,
   PrepareInteractionResult,
   ReceiveAnswerResult,
   StartAttemptResult,
@@ -159,6 +160,7 @@ function commandCode(error: unknown) {
     "receipt_not_found",
     "already_evaluated",
     "takeover_disabled",
+    "attempt_inactivity_expired",
     "recovery_required",
     "invalid_mini_wordle_guess",
     "duplicate_mini_wordle_guess",
@@ -214,12 +216,25 @@ export async function callAttemptCommand<T>(
   input: object,
 ): Promise<T> {
   return transaction(identity, async (client) => {
+    if ("attemptId" in input && typeof input.attemptId === "string" && input.attemptId.length > 0) {
+      await expireStaleAttempt(client, input.attemptId);
+    }
     const result = await client.query<{ result: T }>(
       `select private.${functionName}($1::jsonb) as result`,
       [JSON.stringify(input)],
     );
     return result.rows[0]?.result as T;
   });
+}
+
+async function expireStaleAttempt(client: PoolClient, attemptId: string) {
+  const result = await client.query<{ result: { abandonedAttempts?: number } }>(
+    "select private.expire_stale_attempts($1::jsonb) as result",
+    [JSON.stringify({ runId: `recovery-${attemptId}`, attemptId })],
+  );
+  if (result.rows[0]?.result?.abandonedAttempts && result.rows[0].result.abandonedAttempts > 0) {
+    throw new AttemptCommandError("attempt_inactivity_expired");
+  }
 }
 
 function asQuestion(
@@ -1128,6 +1143,7 @@ export class SupabaseAttemptCommands implements Pick<
   AttemptCommands,
   | "start"
   | "prepare"
+  | "activate"
   | "receiveAnswer"
   | "pass"
   | "submitWordSearchSelection"
@@ -1166,6 +1182,14 @@ export class SupabaseAttemptCommands implements Pick<
         publicPayload: prepared.publicPayload,
       })) as PrepareInteractionResult["publicPayload"],
     };
+  }
+
+  activate(input: Parameters<AttemptCommands["activate"]>[0]) {
+    return callAttemptCommand<ActivateInteractionResult>(
+      this.identity,
+      "activate_interaction",
+      input,
+    );
   }
 
   receiveAnswer(input: SubmitAnswerInput) {
@@ -1352,6 +1376,7 @@ export class SupabaseAttemptCommands implements Pick<
 
   readRecovery(attemptId: string, sessionToken: string) {
     return transaction<AttemptRecoverySnapshot>(this.identity, async (client) => {
+      await expireStaleAttempt(client, attemptId);
       const result = await client.query<{ read_attempt_recovery: AttemptRecoverySnapshot }>(
         "select private.read_attempt_recovery($1::uuid, $2::text)",
         [attemptId, sessionToken],
@@ -1460,6 +1485,7 @@ export class SupabaseAttemptCommands implements Pick<
     readonly idempotencyKey: string;
   }) {
     return transaction<FinishAttemptResult>(this.identity, async (client) => {
+      await expireStaleAttempt(client, input.attemptId);
       const scoreResult = await client.query<{ score: number }>(
         "select coalesce(sum(points), 0)::integer as score from private.attempt_answers where attempt_id = $1::uuid",
         [input.attemptId],

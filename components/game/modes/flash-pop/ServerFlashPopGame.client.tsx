@@ -155,7 +155,8 @@ export function ServerFlashPopGame({
         >
           <ChallengeResultScreen
             model={buildResultModel(session.results, session.score)}
-            onReview={() => session.reviewChallenge && session.showReview()}
+            onReview={session.reviewChallenge ? session.showReview : undefined}
+            expired={session.attemptExpired}
             returnTo={roomContext.returnTo}
           />
         </motion.div>

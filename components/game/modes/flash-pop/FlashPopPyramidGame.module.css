@@ -265,6 +265,138 @@
     margin-top: var(--space-6);
   }
 
+  .levelNotice {
+    margin: var(--space-4) 0 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: 3px solid var(--color-social);
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    color: var(--color-ink);
+    background: rgb(105 87 232 / 9%);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .preparing,
+  .preparingQuestion {
+    display: grid;
+    width: min(100%, 680px);
+    gap: var(--space-6);
+    margin: auto 0;
+  }
+
+  .preparingQuestion {
+    position: relative;
+  }
+
+  .preparingOverlay {
+    position: absolute;
+    inset: 50% var(--space-4) auto;
+    z-index: 2;
+    transform: translateY(-50%);
+  }
+
+  .preparingCard {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    padding: clamp(24px, 6vw, 48px);
+    border-radius: var(--radius-card);
+    border: var(--border-subtle);
+    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    box-shadow: var(--shadow-hero);
+    text-align: center;
+    backdrop-filter: blur(12px);
+  }
+
+  .preparingCard h1 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(32px, 8vw, 50px);
+    letter-spacing: -0.05em;
+    line-height: 0.98;
+  }
+
+  .preparingEyebrow {
+    margin: 0;
+    color: var(--color-social);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .preparingCopy {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 15px;
+    font-weight: 650;
+  }
+
+  .preparingGlyph {
+    display: grid;
+    width: min(100%, 360px);
+    justify-items: center;
+    gap: 5px;
+    margin-bottom: var(--space-2);
+  }
+
+  .preparingGlyph span {
+    display: block;
+    height: 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
+    opacity: 0.7;
+  }
+
+  .preparingGlyph span:nth-child(odd) {
+    animation: pyramidPreparingPulse 1.6s ease-in-out infinite;
+  }
+
+  .preparingGlyphActive {
+    background: var(--color-brand);
+    box-shadow: var(--shadow-control);
+  }
+
+  .questionSkeleton {
+    display: grid;
+    width: min(100%, 360px);
+    gap: 8px;
+    margin-top: var(--space-3);
+  }
+
+  .questionSkeleton span {
+    display: block;
+    height: 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-soft);
+    animation: pyramidPreparingPulse 1.6s ease-in-out infinite;
+  }
+
+  .questionSkeleton span:nth-child(2) {
+    width: 82%;
+    justify-self: center;
+    animation-delay: 120ms;
+  }
+
+  .questionSkeleton span:nth-child(3) {
+    width: 64%;
+    justify-self: center;
+    animation-delay: 240ms;
+  }
+
+  @keyframes pyramidPreparingPulse {
+    0%,
+    100% {
+      opacity: 0.42;
+    }
+
+    50% {
+      opacity: 1;
+    }
+  }
+
   .questionCard {
     align-self: center;
     display: block;
@@ -424,6 +556,11 @@
   @media (prefers-reduced-motion: reduce) {
     .answerTile {
       transition: none;
+    }
+
+    .preparingGlyph span,
+    .questionSkeleton span {
+      animation: none;
     }
 
     .answerTile:hover:not(:disabled),

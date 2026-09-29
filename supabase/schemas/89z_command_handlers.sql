@@ -147,6 +147,7 @@ declare
   sc public.scheduled_challenges%rowtype;
   unit private.attempt_timing_units%rowtype;
   segment private.interaction_intervals%rowtype;
+  prepared private.prepared_interactions%rowtype;
   receipt private.answer_receipts%rowtype;
   session_row private.attempt_sessions%rowtype;
   item private.challenge_items%rowtype;
@@ -267,35 +268,55 @@ begin
         if exists (select 1 from private.answer_receipts r where r.attempt_id = a.id and not exists (
           select 1 from private.attempt_answers aa where aa.receipt_id = r.id
         )) then raise exception 'evaluation_pending' using errcode = '55000'; end if;
-        select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
-        if found then
-          select * into item from private.challenge_items where id = segment.challenge_item_id;
-          select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
-        else
-          select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
-          if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
-          select * into unit from private.attempt_timing_units where attempt_id = a.id and challenge_item_id = item.id;
-          if not found then
-            insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
-            select a.id, a.challenge_version_id, item.id,
-              case cv.mode when 'alphabet' then 'attempt' when 'pyramid' then 'level' else 'question' end,
-              case when cv.mode = 'alphabet' then a.started_at else instant end,
-              case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
-            from private.question_versions q where q.id = item.question_version_id returning * into unit;
+        if cv.mode = 'pyramid' then
+          select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+          if found then
+            select * into item from private.challenge_items where id = segment.challenge_item_id;
+            select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+          else
+            select * into prepared from private.prepared_interactions where attempt_id = a.id for update;
+            if found then
+              select * into item from private.challenge_items where id = prepared.challenge_item_id;
+            else
+              select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
+              if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
+              insert into private.prepared_interactions(attempt_id, challenge_version_id, challenge_item_id)
+                values(a.id, a.challenge_version_id, item.id);
+            end if;
           end if;
-          insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
-            values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
+        else
+          select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
+          if found then
+            select * into item from private.challenge_items where id = segment.challenge_item_id;
+            select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+          else
+            select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
+            if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
+            select * into unit from private.attempt_timing_units where attempt_id = a.id and challenge_item_id = item.id;
+            if not found then
+              insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
+              select a.id, a.challenge_version_id, item.id,
+                case cv.mode when 'alphabet' then 'attempt' else 'question' end,
+                case when cv.mode = 'alphabet' then a.started_at else instant end,
+                case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
+              from private.question_versions q where q.id = item.question_version_id returning * into unit;
+            end if;
+            insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
+              values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
+          end if;
         end if;
         perform private.ensure_progressive_clue_initial(a.id, item.id, a.challenge_version_id);
         select jsonb_build_object('challengeItemId', item.id, 'questionType', q.type,
           'payloadSchemaVersion', q.payload_schema_version,
           'publicPayload', case
-            when instant >= unit.deadline_at then null
+            when (cv.mode <> 'pyramid' or segment.id is not null) and instant >= unit.deadline_at then null
             when q.type = 'progressive-clues' then private.progressive_clues_public_payload(item.id)
             when q.type = 'matching' then private.matching_public_payload(item.id)
             else q.public_payload
           end,
-          'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
+          'presentedAt', case when segment.id is null then null else segment.started_at end,
+          'deadlineAt', case when segment.id is null then null else unit.deadline_at end,
+          'timedOut', case when segment.id is null then false else instant >= unit.deadline_at end,
           'progress', case
             when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
             when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
@@ -348,6 +369,35 @@ begin
             )
             else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
+      when 'activate' then
+        if cv.mode <> 'pyramid' then raise exception 'invalid_command' using errcode = '22023'; end if;
+        select * into segment from private.interaction_intervals
+          where attempt_id = a.id and ended_at is null for update;
+        if found then
+          if segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+            raise exception 'interaction_not_presented' using errcode = '55000';
+          end if;
+          select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+        else
+          select * into prepared from private.prepared_interactions
+            where attempt_id = a.id and challenge_item_id = (input->>'challengeItemId')::uuid for update;
+          if not found then raise exception 'interaction_not_presented' using errcode = '55000'; end if;
+          select * into item from private.challenge_items where id = prepared.challenge_item_id;
+          insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id,
+            scope, started_at, deadline_at)
+          select a.id, a.challenge_version_id, item.id, 'level', instant,
+            instant + q.time_limit_ms * interval '1 millisecond'
+          from private.question_versions q where q.id = item.question_version_id
+          returning * into unit;
+          insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
+            values(a.id, item.id, unit.id, instant) returning * into segment;
+          delete from private.prepared_interactions where attempt_id = a.id;
+        end if;
+        result := jsonb_build_object(
+          'challengeItemId', segment.challenge_item_id,
+          'presentedAt', segment.started_at,
+          'deadlineAt', unit.deadline_at,
+          'timedOut', instant >= unit.deadline_at);
       when 'receive', 'pass' then
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
         if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
@@ -512,6 +562,7 @@ begin
           update private.interaction_intervals x set ended_at = greatest(x.started_at, least(instant, u.deadline_at)), end_reason = 'abandon'
             from private.attempt_timing_units u where x.attempt_id = a.id and x.ended_at is null and u.id = x.timing_unit_id;
         end if;
+        delete from private.prepared_interactions where attempt_id = a.id;
         update public.attempts set status = target_status, score = points, completed_at = instant,
           outcome = completion_outcome, progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
         update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;

@@ -4,11 +4,17 @@ import { SupabaseRoomQueries } from "./roomQueries";
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
   getCurrentViewerProfile: vi.fn(),
+  expireStaleAttemptsForRoom: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
 vi.mock("@/server/profile", () => ({
   getCurrentViewerProfile: mocks.getCurrentViewerProfile,
+}));
+vi.mock("@/infrastructure/supabase/attemptExpiration", () => ({
+  supabaseAttemptExpiration: {
+    expireStaleAttemptsForRoom: mocks.expireStaleAttemptsForRoom,
+  },
 }));
 
 const viewer = {
@@ -571,6 +577,11 @@ describe("SupabaseRoomQueries S07 history and review", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+    mocks.expireStaleAttemptsForRoom.mockResolvedValue({
+      runId: "history-test",
+      evaluatedAt: "2026-09-28T10:00:00.000Z",
+      abandonedAttempts: 0,
+    });
   });
 
   it("groups historical rows and keeps empty publications", async () => {

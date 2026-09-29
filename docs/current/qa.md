@@ -1,4 +1,4 @@
-> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-28;
+> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-29;
 > no sustituye una auditoría manual de accesibilidad o interacción.
 
 # QA actual
@@ -12,11 +12,12 @@ revisión autorizada, portal de superadmin, biblioteca editorial y assets privad
 
 S18b solo habilita actualmente concesión/revocación de admin y eliminación lógica de miembros.
 Transferencia de propiedad, bloqueo/desbloqueo e invitaciones completas siguen pendientes.
-Narrativa, E07–E09, abandono automático, takeover, `results_locked_at`, pruebas fantasma y anonimización
-siguen pendientes; S20 ya cubre las correcciones administrativas de resultados.
+Narrativa, E07–E09, takeover, `results_locked_at`, pruebas fantasma y anonimización siguen pendientes;
+la expiración por inactividad de intentos competitivos ya está implementada mediante tick y
+reconciliación bajo demanda; S20 ya cubre las correcciones administrativas de resultados.
 
-El esquema declarativo vigente contiene 53 archivos y la revisión canónica es
-`20260927172602_cancel-scheduled-challenge`. El historial local incluye además la revisión declarativa de S17;
+El esquema declarativo vigente contiene 54 archivos y la revisión canónica es
+`20260929175548_attempt-inactivity-expiration`. El historial local incluye además las revisiones declarativas de S17 y S15;
 hay 30 tablas, una vista interna y un inventario de seguridad registrado. La CLI local tiene un proyecto
 de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 
@@ -28,14 +29,14 @@ de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 - `npm run type-architecture`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto con Next.js 16.2.10.
-- `npm test`: 143 archivos y 833 tests correctos.
+- `npm test`: 145 archivos y 840 tests correctos.
 - `npm run format:check`: informa 156 archivos sin formato canónico; queda pendiente como deuda de
   formato y no bloquea la verificación funcional.
 - `npm run stylelint`: informa 6 errores de selectores duplicados en 5 módulos CSS.
 - `npm run test:pwa:worker`: correcto; el service worker es JavaScript válido.
 - `npm run dictionary:check`: correcto; los diccionarios de 4 y 5 letras están actualizados.
-- `npm run supabase:schema:test`: no verificado en esta ejecución porque el daemon de Docker no estaba
-  disponible; no debe interpretarse como un fallo funcional del esquema ni como una validación pasada.
+- `npm run supabase:schema:test`: correcto; 54 archivos declarativos, inventario de seguridad y la
+  suite nueva `s21_attempt_expiration.test.sql` pasan, incluidas las pruebas concurrentes.
 
 Las validaciones focales de S17, la integración Auth/PostgREST/RLS y los E2E descritos en los registros
 históricos siguen siendo evidencia de ejecuciones anteriores. No se repiten ni se presentan como una
@@ -63,16 +64,16 @@ No se debe interpretar la existencia de un test focal histórico como validació
 - La CLI local tiene staging vinculado, pero no se ha aplicado ni validado S17 en ese proyecto remoto.
 - La validación E2E persistida es local y reproducible; no cubre staging o producción.
 - Prettier mantiene 156 archivos sin formato canónico.
-- El gate global de Vitest pasa con 833 tests; el inventario de seguridad y las suites PgTAP requieren
-  Docker y no se verificaron en esta ejecución.
-- ESLint no presenta warnings en la comprobación actual.
+- El gate global de Vitest pasa con 840 tests; la suite SQL también pasa con Supabase local.
+- ESLint no presenta errores; mantiene una advertencia preexistente de dependencia de hook en
+  `features/game/useServerFlashSession.ts`.
 - Stylelint informa seis selectores duplicados en
   `app/flash-pop-concepts/FlashPopConcepts.module.css`, `components/auth/AuthPanel.module.css`,
   `components/game/shared/ChallengeIntro.module.css`,
   `components/game/modes/alphabet/AlphabetGameApp.module.css` y
   `components/game/modes/flash-pop/RoomLeaderboard.module.css`.
-- La verificación SQL local, la integración Supabase y los E2E persistidos no forman parte de esta
-  ejecución porque el stack local depende de Docker; la validación remota/staging sigue pendiente.
+- La integración Supabase y los E2E persistidos no forman parte de esta fotografía; la validación
+  remota/staging sigue pendiente.
 - No existe una ronda manual exhaustiva vigente para todos los formatos, viewports, VoiceOver y
   `prefers-reduced-motion`.
 

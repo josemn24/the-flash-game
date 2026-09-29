@@ -98,6 +98,54 @@ function PyramidLevelMap({
   );
 }
 
+export function PyramidPreparingStage({
+  challenge,
+  currentIndex,
+  compact = false,
+}: {
+  challenge: ServerPyramidChallenge;
+  currentIndex: number;
+  compact?: boolean;
+}) {
+  const title = `Preparando el nivel ${currentIndex + 1}…`;
+  return (
+    <motion.div
+      className={compact ? styles.preparingOverlay : styles.preparing}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {!compact ? <PyramidLevelMap challenge={challenge} currentIndex={currentIndex} /> : null}
+      <Card
+        as="section"
+        className={styles.preparingCard}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-labelledby="pyramid-preparing-title"
+      >
+        <div className={styles.preparingGlyph} aria-hidden="true">
+          {challenge.levels.map((level, index) => (
+            <span
+              key={level.id}
+              className={index <= currentIndex ? styles.preparingGlyphActive : undefined}
+              style={{ width: `${45 + ((challenge.levels.length - index - 1) / 6) * 55}%` }}
+            />
+          ))}
+        </div>
+        <p className={styles.preparingEyebrow}>La Pirámide · Nivel {currentIndex + 1}</p>
+        <h1 id="pyramid-preparing-title">{title}</h1>
+        <p className={styles.preparingCopy}>Cargando tu prueba</p>
+        <div className={styles.questionSkeleton} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
 export function ServerFlashPopPyramidGame({
   challenge,
   roomContext,
@@ -172,6 +220,11 @@ export function ServerFlashPopPyramidGame({
             <p className={styles.briefingFormat}>{currentLevel.briefing.format}</p>
             <h1 id="pyramid-briefing-title">{currentLevel.briefing.title}</h1>
             <p className={styles.briefingDescription}>{currentLevel.briefing.description}</p>
+            {session.levelNotice ? (
+              <p className={styles.levelNotice} role="alert">
+                {session.levelNotice}
+              </p>
+            ) : null}
             <div className={styles.briefingStats} aria-label="Condiciones del nivel">
               <div className={styles.briefingStat}>
                 <strong>{formatTime(currentLevel.timeLimitMs / 1000)}</strong>
@@ -187,10 +240,61 @@ export function ServerFlashPopPyramidGame({
               fullWidth
               trailingIcon={<ArrowIcon />}
               onClick={session.startQuestions}
+              loading={session.busy}
             >
-              Empezar nivel
+              {session.levelNotice ? "Reintentar carga" : "Empezar nivel"}
             </Button>
           </Card>
+        </motion.div>
+      ) : null}
+
+      {session.phase === "preparing" && !session.question ? (
+        <PyramidPreparingStage challenge={challenge} currentIndex={session.questionIndex} />
+      ) : null}
+
+      {session.phase === "preparing" && session.question ? (
+        <motion.div
+          className={styles.preparingQuestion}
+          key={`preparing-question-${session.question.id}`}
+          aria-busy="true"
+        >
+          <ServerFlashQuestionStage
+            presentation="pyramid"
+            question={session.question}
+            questionNumber={session.questionIndex + 1}
+            totalQuestions={challenge.levels.length}
+            locked
+            deadlineAt={null}
+            presentedAt={null}
+            showTimer={false}
+            pendingAnswer={session.pendingAnswer}
+            submissionState={session.submissionState}
+            submissionStatusVisible={false}
+            submissionError={undefined}
+            onRetrySubmission={session.retrySubmit}
+            onSubmit={() => undefined}
+            onProgress={() => undefined}
+            onMiniWordleGuess={() => undefined}
+            onLogicCodeAttempt={() => undefined}
+            queensState="idle"
+            queensStatusVisible={false}
+            onQueensDraft={() => undefined}
+            onQueensValidate={() => undefined}
+            wordSearchState="idle"
+            wordSearchStatusVisible={false}
+            lastWordSearchSelection={undefined}
+            onWordSearchSelection={() => undefined}
+            onWordHashtagSwap={() => undefined}
+            revealState="idle"
+            revealStatusVisible={false}
+            onRevealProgressiveClue={() => undefined}
+            onTimeUp={() => undefined}
+          />
+          <PyramidPreparingStage
+            challenge={challenge}
+            currentIndex={session.questionIndex}
+            compact
+          />
         </motion.div>
       ) : null}
 
@@ -300,7 +404,8 @@ export function ServerFlashPopPyramidGame({
               },
             ],
           }}
-          onReview={session.showReview}
+          onReview={session.reviewChallenge ? session.showReview : undefined}
+          expired={session.attemptExpired}
           returnTo={roomContext.returnTo}
         />
       ) : null}

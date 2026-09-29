@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-28.
+Última actualización documental: 2026-09-29.
 
 # Estado actual del proyecto
 
@@ -193,8 +193,11 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   lógica por el owner; transferencia, bloqueo/desbloqueo y el flujo completo de invitaciones permanecen
   pendientes.
 - Narrativa todavía no tiene gameplay competitivo real.
-- `results_locked_at`, el abandono automático por inactividad y el takeover entre dispositivos
-  siguen fuera de S07 y deshabilitados.
+- `results_locked_at` y el takeover entre dispositivos siguen fuera de alcance. La expiración por
+  inactividad está implementada: tras 15 minutos sin actividad, una publicación cerrada o con deadline
+  vencido puede cerrar el intento como `abandoned` sin puntos; el tick diario y las lecturas/comandos
+  aplican la reconciliación, mientras que un intento completamente inactivo puede esperar al siguiente
+  tick.
 - El historial de usuario solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
   `test`/`invalidated` y publicaciones `cancelled` quedan fuera de las proyecciones de usuario.
 - S17 y S20 ya permiten corrección administrativa local; la aplicación de la migración y la validación de
@@ -204,25 +207,25 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Verificación actual
 
-Estado verificado a 2026-09-28:
+Estado verificado a 2026-09-29:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260927172602_cancel-scheduled-challenge`.
+  `20260929175548_attempt-inactivity-expiration`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.
 - `npm run lint`: correcto.
 - `npm run build`: correcto con Next.js 16.2.10.
-- `npm test`: 143 archivos y 833 tests correctos.
+- `npm test`: 145 archivos y 840 tests correctos.
 - `npm run format:check`: informa 156 archivos sin formato canónico.
 - `npm run stylelint`: informa 6 errores de selectores duplicados en 5 módulos CSS.
 - `npm run test:pwa:worker` y `npm run dictionary:check`: correctos.
-- `npm run supabase:schema:test`: no verificado porque el daemon de Docker no estaba disponible.
+- `npm run supabase:schema:test`: correcto; 54 esquemas declarativos, inventario de seguridad,
+  expiración por inactividad y carreras de comandos pasan contra Supabase local.
 - Las validaciones focales S17, la integración Auth/PostgREST/RLS y el E2E del portal que aparecen en
   los registros históricos no se presentan como repetidas en esta comprobación.
 - Aunque la CLI tiene staging vinculado, no se ejecutó `supabase db push` ni una validación remota;
-  ninguna de estas comprobaciones acredita staging o producción. La ejecución actual tampoco pudo
-  repetir la validación SQL local porque el stack de Supabase requiere Docker.
+  ninguna de estas comprobaciones acredita staging o producción.
 
 ### Registros históricos de slices
 
@@ -325,7 +328,7 @@ Estado verificado a 2026-09-28:
 - `npm run test:integration:supabase -- --scenario s07` y
   `npm run test:e2e -- e2e/s07-history-review.spec.ts`: correctos con Auth, PostgREST y sesiones
   de navegador contra Supabase local. S06 continúa cubierto por su escenario y E2E propios.
-- `npm run format:check`: avisos de formato en 141 archivos en la última comprobación global; queda fuera del alcance de esta
-  actualización documental.
-- `npm run stylelint`: mantiene un selector duplicado preexistente en
-  `app/flash-pop-concepts/FlashPopConcepts.module.css`; no pertenece al portal.
+- `npm run format:check`: avisos de formato en 156 archivos en la última comprobación global; queda
+  fuera del alcance de esta actualización documental.
+- `npm run stylelint`: informa 6 selectores duplicados en 5 módulos CSS; no pertenece al cambio de
+  expiración.

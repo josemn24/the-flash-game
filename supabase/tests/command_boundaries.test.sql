@@ -85,6 +85,22 @@ set local role service_role;
 select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-pyramid'),'sessionToken',repeat('p',40)));
 select test_support.run('prepare_interaction');
 reset role;
+select is((select count(*) from private.attempt_timing_units
+  where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),0::bigint,
+  'Pyramid preparation does not start timing');
+select throws_ok($$select test_support.run('receive_answer','{"answer":true}')$$,
+  '55000', 'interaction_not_presented',
+  'A Pyramid answer is rejected before activation');
+set local role service_role;
+select test_support.run('activate_interaction');
+select is((test_support.repeat_last())->>'deadlineAt',
+  (select state->>'deadlineAt' from test_support.runtime),
+  'Activation retries return the cached result');
+reset role;
+select is((select count(*) from private.interaction_intervals
+  where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),1::bigint,
+  'Activation retries do not create another interval');
+reset role;
 select is((select scope from private.attempt_timing_units where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),'level','Pyramid uses a level timing unit');
 select is((select extract(epoch from deadline_at-started_at)*1000 from private.attempt_timing_units where scope='level'),60000::numeric,'Pyramid limit comes from published configuration');
 create table test_support.saved as select state from test_support.runtime;

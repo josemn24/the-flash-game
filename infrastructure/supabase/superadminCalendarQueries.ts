@@ -117,7 +117,10 @@ function isTickResult(
     value.closed >= 0 &&
     typeof value.finishedSeasons === "number" &&
     Number.isSafeInteger(value.finishedSeasons) &&
-    value.finishedSeasons >= 0
+    value.finishedSeasons >= 0 &&
+    typeof value.abandonedAttempts === "number" &&
+    Number.isSafeInteger(value.abandonedAttempts) &&
+    value.abandonedAttempts >= 0
   );
 }
 

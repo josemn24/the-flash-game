@@ -73,6 +73,7 @@ export function ServerFlashQuestionStage({
   livesRemaining,
   totalLives,
   presentation,
+  showTimer = true,
 }: {
   readonly question: ServerFlashQuestion;
   readonly questionNumber: number;
@@ -115,6 +116,7 @@ export function ServerFlashQuestionStage({
   readonly livesRemaining?: number;
   readonly totalLives?: number;
   readonly presentation?: "default" | "pyramid";
+  readonly showTimer?: boolean;
 }) {
   const titleId = useId();
   const pyramidPresentation = presentation === "pyramid";
@@ -142,7 +144,7 @@ export function ServerFlashQuestionStage({
         <>
           <GameHeader
             title="La Pirámide"
-            timer={timer}
+            timer={showTimer ? timer : undefined}
             mobileLabel={
               <>
                 Nivel {questionNumber} <span>de {totalQuestions}</span>

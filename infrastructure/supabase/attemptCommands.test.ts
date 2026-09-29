@@ -51,12 +51,37 @@ describe("Supabase attempt database connection", () => {
       });
 
       await expect(
-        callAttemptCommand({ authUserId: "00000000-0000-4000-8000-000000000001" }, "start_attempt", {
-          scheduledChallengeId: "00000000-0000-4000-8000-000000000002",
-        }),
+        callAttemptCommand(
+          { authUserId: "00000000-0000-4000-8000-000000000001" },
+          "start_attempt",
+          {
+            scheduledChallengeId: "00000000-0000-4000-8000-000000000002",
+          },
+        ),
       ).rejects.toMatchObject({
         code: "database_unavailable",
       } satisfies Partial<AttemptCommandError>);
     },
   );
+
+  it("reconciles a stale attempt before accepting an action", async () => {
+    const queries: string[] = [];
+    client.query.mockImplementation(async (query: string) => {
+      queries.push(query);
+      if (query.includes("private.expire_stale_attempts")) {
+        return { rows: [{ result: { abandonedAttempts: 1 } }] };
+      }
+      return {};
+    });
+
+    await expect(
+      callAttemptCommand(
+        { authUserId: "00000000-0000-4000-8000-000000000001" },
+        "prepare_interaction",
+        { attemptId: "00000000-0000-4000-8000-000000000003" },
+      ),
+    ).rejects.toMatchObject({ code: "attempt_inactivity_expired" });
+    expect(queries.some((query) => query.includes("private.expire_stale_attempts"))).toBe(true);
+    expect(queries.some((query) => query.includes("private.prepare_interaction"))).toBe(false);
+  });
 });

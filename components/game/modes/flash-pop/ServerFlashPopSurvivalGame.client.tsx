@@ -215,7 +215,8 @@ export function ServerFlashPopSurvivalGame({
         >
           <ChallengeResultScreen
             model={resultModel}
-            onReview={() => session.reviewChallenge && session.showReview()}
+            onReview={session.reviewChallenge ? session.showReview : undefined}
+            expired={session.attemptExpired}
             returnTo={roomContext.returnTo}
             returnLabel="Volver a la sala"
           />

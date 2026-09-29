@@ -113,7 +113,8 @@ export function ServerFlashPopAlphabetGame({
               { label: "Letras", value: challenge.entries.length },
             ],
           }}
-          onReview={session.showReview}
+          onReview={session.reviewChallenge ? session.showReview : undefined}
+          expired={session.attemptExpired}
           returnTo={roomContext.returnTo}
         />
       </motion.div>

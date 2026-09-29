@@ -41,11 +41,21 @@ export type PrepareInteractionResult = AttemptCommandResult & {
   readonly questionType: QuestionType;
   readonly payloadSchemaVersion: number;
   readonly publicPayload: JsonValue | null;
-  readonly presentedAt: UtcIsoDateTime;
-  readonly deadlineAt: UtcIsoDateTime;
+  /** Pyramid preparation only selects/releases the payload; timing starts on activate. */
+  readonly presentedAt: UtcIsoDateTime | null;
+  readonly deadlineAt: UtcIsoDateTime | null;
   readonly timedOut: boolean;
   /** Safe progress only; never contains a solution payload. */
   readonly progress?: JsonValue | null;
+};
+export type ActivateInteractionInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+};
+export type ActivateInteractionResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly presentedAt: UtcIsoDateTime;
+  readonly deadlineAt: UtcIsoDateTime;
+  readonly timedOut: boolean;
 };
 export type SubmitAnswerInput<Type extends QuestionType = QuestionType> = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;

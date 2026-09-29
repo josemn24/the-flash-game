@@ -206,6 +206,7 @@ describe("SupabaseSuperadminCalendarQueries", () => {
                 opened: 1,
                 closed: 0,
                 finishedSeasons: 0,
+                abandonedAttempts: 2,
               },
             },
           ],
@@ -230,6 +231,7 @@ describe("SupabaseSuperadminCalendarQueries", () => {
         opened: 1,
         closed: 0,
         finishedSeasons: 0,
+        abandonedAttempts: 2,
         source: "supabase",
       });
     } finally {

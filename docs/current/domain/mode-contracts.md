@@ -30,9 +30,12 @@ Estas reglas se aplican a cualquier modo cuando se juega dentro de una sala:
 - `inProgress` significa reanudar el mismo intento, no empezar una nueva partida.
 - En el MVP solo la sesión que inició el intento puede reanudarlo. Un segundo navegador o dispositivo
   se bloquea; no existe transferencia de control entre dispositivos.
-- Cerrar una pestaña, perder conectividad u observar `offline` no demuestra que el jugador haya
-  abandonado. Solo la acción explícita e idempotente de abandonar termina el intento como
-  `abandoned`; el abandono automático queda para una política posterior de actividad.
+- Cerrar una pestaña, perder conectividad u observar `offline` no demuestra por sí solo que el jugador
+  haya abandonado. La acción explícita e idempotente de abandonar sigue terminando el intento como
+  `abandoned`; además, una reconciliación server-side puede aplicar `inactivity_timeout` cuando han
+  pasado 15 minutos desde `last_activity_at` (o `started_at`) y la publicación está cerrada o su
+  `deadline_at` ha vencido. Mientras el desafío siga abierto y vigente, la inactividad no termina el
+  intento.
 - `invalidated` queda fuera del ranking y de la acreditación competitiva. La revisión visible de un
   intento invalidado requiere una decisión administrativa específica y nunca es la consecuencia de
   recuperar una interrupción.
@@ -51,8 +54,9 @@ Cada contrato debe distinguir tres relojes:
    producir `unanswered`.
 2. **Ventana de publicación:** determina si el desafío está disponible o `expired` antes de crear
    un intento.
-3. **Actividad del intento:** checkpoints y heartbeat que permiten detectar abandono. El abandono
-   automático todavía no está implementado; los eventos del navegador son solo avisos auxiliares.
+3. **Actividad del intento:** los comandos server-side actualizan `last_activity_at`. La reconciliación
+   de inactividad se ejecuta en el tick diario y bajo demanda al leer historial o procesar un comando;
+   no depende de un heartbeat del navegador.
 
 No se recomienda añadir un tiempo total común a todos los modos sin que el contenido del modo lo
 requiera. Si existe, debe documentarse aparte del tiempo de respuesta.
@@ -197,8 +201,9 @@ seguir aplicando la política de `roomContext`.
 `ServerFlashPopSurvivalGame` reutiliza la pantalla de supervivencia y conecta el intento persistido
 mediante `useServerFlashSession`; `survivalRules.ts` reconstruye vidas, outcome y preguntas
 alcanzadas a partir de evaluaciones persistidas. El servidor cierra el intento y acredita el score.
-La recuperación evalúa como `unanswered` una interacción abierta sin respuesta. El abandono sigue
-siendo explícito; su automatización continúa pendiente.
+La recuperación evalúa como `unanswered` una interacción abierta sin respuesta. El abandono explícito
+sigue disponible; la reconciliación adicional cierra como `abandoned` los intentos inactivos elegibles,
+sin puntos, con `terminal_reason = inactivity_timeout`.
 
 ## 4. Narrativa (`narrative`)
 
@@ -291,7 +296,8 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
 
 ## Pendientes que no debe resolver este documento
 
-- Definir el intervalo de heartbeat, lease y periodo de gracia para abandono automático.
+- La UI puede mejorar la señalización previa a la expiración, pero no necesita heartbeat ni lease para
+  aplicar la política server-side de 15 minutos después del cierre o deadline.
 - Implementar persistencia y validación autoritativa de checkpoints, deadlines, respuestas y puntos,
   incluida la resolución transaccional de recuperación aquí definida.
 - Resolver la política de consulta para intentos `invalidated`.

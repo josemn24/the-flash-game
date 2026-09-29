@@ -100,6 +100,9 @@
         "table": ["SELECT"]
       }
     },
+    "private.prepared_interactions": {
+      "kind": "r"
+    },
     "private.question_definitions": {
       "kind": "r",
       "service_role": {
@@ -215,6 +218,11 @@
       "executeRoles": ["service_role"]
     },
     "private.accept_invitation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.activate_interaction": {
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
@@ -373,6 +381,11 @@
       "arguments": "",
       "securityDefiner": true,
       "executeRoles": []
+    },
+    "private.expire_stale_attempts": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
     },
     "private.execute_command": {
       "arguments": "op text, input jsonb",

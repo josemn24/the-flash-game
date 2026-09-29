@@ -30,6 +30,7 @@ export type ServerFlashPhase =
   | "recovering"
   | "countdown"
   | "briefing"
+  | "preparing"
   | "playing"
   | "checking"
   | "answer-reveal"
@@ -110,6 +111,13 @@ type PendingSubmission =
   | PendingMiniWordleSubmission
   | PendingLogicCodeSubmission
   | PendingWordHashtagSubmission;
+
+type PyramidPreparation = {
+  readonly attemptId: string;
+  readonly challengeItemId: string;
+  readonly prepareKey: string;
+  readonly activateKey: string;
+};
 
 const SUBMISSION_STATUS_DELAY_MS = 250;
 
@@ -210,6 +218,7 @@ export function useServerFlashSession({
   >();
   const [pendingAnswer, setPendingAnswer] = useState<AnswerValue | null>(null);
   const [startNotice, setStartNotice] = useState<string>();
+  const [levelNotice, setLevelNotice] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const submissionStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const answerVerificationStatusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -225,8 +234,43 @@ export function useServerFlashSession({
   const queensDraftTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queensDraftQueueRef = useRef<Promise<void>>(Promise.resolve());
   const pendingWordSearchSelectionRef = useRef<PendingWordSearchSelection | null>(null);
+  const pyramidPreparationRef = useRef<PyramidPreparation | null>(null);
+  const [pyramidPreparation, setPyramidPreparation] = useState<PyramidPreparation | null>(null);
+  const pyramidActivationInFlight = useRef(false);
+  const pyramidStartInFlight = useRef(false);
   const recoveryStarted = useRef(false);
+  const [attemptExpired, setAttemptExpired] = useState(false);
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
+
+  const markAttemptExpired = (error: unknown) => {
+    if (
+      !(error instanceof CompetitiveCommandError) ||
+      error.code !== "attempt_inactivity_expired"
+    ) {
+      return false;
+    }
+    clearSubmissionStatusTimer();
+    clearAnswerVerificationStatusTimer();
+    clearRevealStatusTimer();
+    clearQueensStatusTimer();
+    clearWordSearchStatusTimer();
+    attemptRef.current = null;
+    setAttempt(null);
+    setAttemptExpired(true);
+    setQuestion(null);
+    setQuestionPresentedAt(null);
+    setQuestionDeadlineAt(null);
+    setReviewChallenge(null);
+    setScore(0);
+    setLocked(true);
+    setBusy(false);
+    setPhase("results");
+    pendingSubmissionRef.current = null;
+    pendingRevealRef.current = null;
+    pendingQueensValidationRef.current = null;
+    pendingWordSearchSelectionRef.current = null;
+    return true;
+  };
 
   const isTerminalForMode = (candidateResults: readonly AnswerResult[]) => {
     if (challenge.mode === "pyramid") {
@@ -262,6 +306,8 @@ export function useServerFlashSession({
       setQuestion(null);
       setQuestionPresentedAt(null);
       setQuestionDeadlineAt(null);
+      pyramidPreparationRef.current = null;
+      setPyramidPreparation(null);
       setPhase("briefing");
       return;
     }
@@ -362,7 +408,8 @@ export function useServerFlashSession({
       const nextAttempt = { id: currentAttempt.id, lockVersion: nextLockVersion };
       attemptRef.current = nextAttempt;
       setAttempt((current) => (current?.id === currentAttempt.id ? nextAttempt : current));
-    } catch {
+    } catch (error) {
+      markAttemptExpired(error);
       // Draft persistence is best effort. The authoritative validation still sends the full board.
     }
   };
@@ -425,10 +472,14 @@ export function useServerFlashSession({
     [],
   );
 
-  const prepare = async (currentAttempt: AttemptState) => {
+  const prepare = async (
+    currentAttempt: AttemptState,
+    prepareKey = idempotencyKey("prepare"),
+    activateKey = idempotencyKey("activate"),
+  ) => {
     const prepared = await postJson(`/api/competitive/attempts/${currentAttempt.id}/prepare`, {
       lockVersion: currentAttempt.lockVersion,
-      idempotencyKey: idempotencyKey("prepare"),
+      idempotencyKey: prepareKey,
     });
     const nextLockVersion = Number(prepared.lockVersion);
     const itemId = String(prepared.challengeItemId);
@@ -436,8 +487,8 @@ export function useServerFlashSession({
     const nextIndex = challengeSlots.findIndex((item) => item.id === itemId);
     if (nextIndex < 0) throw new Error("competitive_question_not_found");
     const slot = challengeSlots[nextIndex]!;
-    const presentedAt = serverTimestamp(prepared.presentedAt);
-    const deadlineAt = serverTimestamp(prepared.deadlineAt);
+    const presentedAt = prepared.presentedAt ? serverTimestamp(prepared.presentedAt) : null;
+    const deadlineAt = prepared.deadlineAt ? serverTimestamp(prepared.deadlineAt) : null;
     const nextAttempt = { id: currentAttempt.id, lockVersion: nextLockVersion };
     attemptRef.current = nextAttempt;
     setAttempt(nextAttempt);
@@ -477,10 +528,79 @@ export function useServerFlashSession({
     setAnswerVerificationState("idle");
     setAnswerVerificationStatusVisible(false);
     setAnswerVerificationError(undefined);
-    setLocked(Boolean(prepared.timedOut));
-    setPhase("playing");
-    setBusy(false);
+    setLocked(deadlineAt === null ? true : Boolean(prepared.timedOut));
+    if (challenge.mode === "pyramid" && deadlineAt === null) {
+      const nextPreparation = {
+        attemptId: currentAttempt.id,
+        challengeItemId: itemId,
+        prepareKey,
+        activateKey,
+      } satisfies PyramidPreparation;
+      pyramidPreparationRef.current = nextPreparation;
+      setPyramidPreparation(nextPreparation);
+      setPhase("preparing");
+    } else {
+      setPhase("playing");
+      setBusy(false);
+    }
   };
+
+  const activatePreparedPyramid = async (preparation: PyramidPreparation) => {
+    if (pyramidActivationInFlight.current || !attemptRef.current) return;
+    pyramidActivationInFlight.current = true;
+    try {
+      const activated = await postJson(
+        `/api/competitive/attempts/${preparation.attemptId}/activate`,
+        {
+          lockVersion: attemptRef.current.lockVersion,
+          challengeItemId: preparation.challengeItemId,
+          idempotencyKey: preparation.activateKey,
+        },
+      );
+      const nextAttempt = {
+        id: preparation.attemptId,
+        lockVersion: Number(activated.lockVersion),
+      };
+      attemptRef.current = nextAttempt;
+      setAttempt(nextAttempt);
+      setQuestionPresentedAt(serverTimestamp(activated.presentedAt));
+      setQuestionDeadlineAt(serverTimestamp(activated.deadlineAt));
+      setLocked(Boolean(activated.timedOut));
+      setLevelNotice(undefined);
+      pyramidPreparationRef.current = null;
+      setPyramidPreparation(null);
+      setPhase("playing");
+      setBusy(false);
+    } catch (error) {
+      if (markAttemptExpired(error)) return;
+      setQuestion(null);
+      setQuestionPresentedAt(null);
+      setQuestionDeadlineAt(null);
+      setLocked(false);
+      setLevelNotice("No hemos podido activar la prueba. Puedes reintentar la carga.");
+      setPhase("briefing");
+      setBusy(false);
+    } finally {
+      pyramidActivationInFlight.current = false;
+      pyramidStartInFlight.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (
+      challenge.mode !== "pyramid" ||
+      phase !== "preparing" ||
+      !question ||
+      !pyramidPreparation ||
+      pyramidActivationInFlight.current
+    ) {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      void activatePreparedPyramid(pyramidPreparation);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [challenge.mode, phase, question, pyramidPreparation]);
 
   const recover = async () => {
     const started = await postJson("/api/competitive/attempts/start", {
@@ -626,6 +746,7 @@ export function useServerFlashSession({
           1800,
       );
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearQueensStatusTimer();
       setQueensState("error");
       setQueensStatusVisible(true);
@@ -643,9 +764,11 @@ export function useServerFlashSession({
   useEffect(() => {
     if (roomContext.attemptStatus !== "inProgress" || recoveryStarted.current) return;
     recoveryStarted.current = true;
-    void recover().catch(() =>
-      setStartNotice("No se ha podido recuperar la partida. Vuelve a intentarlo."),
-    );
+    void recover().catch((error) => {
+      if (!markAttemptExpired(error)) {
+        setStartNotice("No se ha podido recuperar la partida. Vuelve a intentarlo.");
+      }
+    });
     // Recovery is single-shot per controller session; the ref also protects
     // this action from React Strict Mode effect replay in development.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -674,12 +797,33 @@ export function useServerFlashSession({
   };
 
   const startQuestions = async () => {
-    if (!attempt || busy) return;
+    if (!attempt || busy || pyramidStartInFlight.current) return;
+    if (challenge.mode === "pyramid") pyramidStartInFlight.current = true;
     setBusy(true);
+    setLevelNotice(undefined);
+    if (challenge.mode === "pyramid") setPhase("preparing");
+    const currentPreparation = pyramidPreparationRef.current;
+    const prepareKey =
+      currentPreparation?.attemptId === attempt.id
+        ? currentPreparation.prepareKey
+        : idempotencyKey("prepare");
+    const activateKey =
+      currentPreparation?.attemptId === attempt.id
+        ? currentPreparation.activateKey
+        : idempotencyKey("activate");
+    let waitingForActivation = false;
     try {
-      await prepare(attempt);
-    } finally {
+      await prepare(attempt, prepareKey, activateKey);
+      waitingForActivation =
+        challenge.mode === "pyramid" && pyramidPreparationRef.current?.attemptId === attempt.id;
+    } catch (error) {
+      if (markAttemptExpired(error)) return;
+      setLevelNotice("No hemos podido cargar la prueba. Puedes reintentarlo.");
+      setPhase("briefing");
       setBusy(false);
+    } finally {
+      if (!waitingForActivation) pyramidStartInFlight.current = false;
+      if (challenge.mode !== "pyramid") setBusy(false);
     }
   };
 
@@ -741,6 +885,7 @@ export function useServerFlashSession({
           1800,
       );
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearAnswerVerificationStatusTimer();
       if (error instanceof CompetitiveCommandError && error.code === "invalid_matching_answer") {
         setAnswerVerificationState("idle");
@@ -867,6 +1012,7 @@ export function useServerFlashSession({
         showTransition();
       }
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearSubmissionStatusTimer();
       if (
         error instanceof CompetitiveCommandError &&
@@ -966,6 +1112,7 @@ export function useServerFlashSession({
           1800,
       );
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearSubmissionStatusTimer();
       if (
         error instanceof CompetitiveCommandError &&
@@ -1097,6 +1244,7 @@ export function useServerFlashSession({
           1800,
       );
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearSubmissionStatusTimer();
       if (error instanceof CompetitiveCommandError && error.code === "invalid_word_hashtag_swap") {
         pendingSubmissionRef.current = null;
@@ -1161,6 +1309,7 @@ export function useServerFlashSession({
       setLocked(false);
       setBusy(false);
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearRevealStatusTimer();
       if (error instanceof CompetitiveCommandError && error.code === "all_clues_revealed") {
         pendingRevealRef.current = null;
@@ -1271,6 +1420,7 @@ export function useServerFlashSession({
           1800,
       );
     } catch (error) {
+      if (markAttemptExpired(error)) return;
       clearWordSearchStatusTimer();
       const commandError = error instanceof CompetitiveCommandError ? error.code : "";
       if (
@@ -1484,6 +1634,7 @@ export function useServerFlashSession({
 
   return {
     phase,
+    attemptExpired,
     attempt,
     questionIndex,
     isTerminalQuestion: isTerminalForMode(results),
@@ -1516,6 +1667,7 @@ export function useServerFlashSession({
     lastWordSearchSelection,
     pendingAnswer,
     startNotice,
+    levelNotice,
     displayChallenge: display,
     begin,
     startQuestions,

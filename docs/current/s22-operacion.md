@@ -8,8 +8,10 @@ S22 fija un alcance cerrado para operar localmente y en CI, y deja documentado e
 producción sin convertir el entorno remoto en requisito para la verificación reproducible.
 El piloto incluye Flash, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
-además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, abandono automático,
-takeover y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y
+además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, takeover y
+`results_locked_at` siguen fuera de alcance. La expiración por inactividad de intentos competitivos
+sí está activa: 15 minutos sin actividad tras cierre/deadline, estado `abandoned`, sin puntos.
+D08a/S13 habilita avatares y
 D08b habilita assets privados de E10 y `multiple-choice` desde el editor y el recorrido competitivo.
 S14 limita el editor de Supervivencia a formatos con evaluación server-side.
 
@@ -50,9 +52,11 @@ El calendar tick de producción se ejecuta mediante Vercel Cron con `GET
 /api/internal/calendar/tick` a las 00:05 UTC y `Authorization: Bearer <CRON_SECRET>`. Vercel solo
 programa cron para despliegues de producción: no se ejecuta en previews y no reintenta una
 invocación fallida. La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
-que conserva el `POST` del endpoint. Una cadencia diaria implica que una transición puede quedar
-pendiente hasta la siguiente ejecución; el tick sigue siendo idempotente y `start_attempt` revalida
-la ventana temporal.
+que conserva el `POST` del endpoint. El tick incluye la limpieza global de intentos inactivos y
+devuelve `abandonedAttempts`. La lectura de historial y los comandos de partida ejecutan además una
+reconciliación limitada a la sala o al intento; una partida sin nuevas lecturas ni acciones puede
+permanecer pendiente hasta la siguiente ejecución diaria. El tick sigue siendo idempotente y
+`start_attempt` revalida la ventana temporal.
 
 ## Verificación reproducible
 

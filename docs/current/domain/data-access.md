@@ -80,7 +80,15 @@ Calendar tick protegido
 → operación local: `POST /api/internal/calendar/tick` o `npm run calendar:tick` con `CALENDAR_TICK_SECRET`
 → conexión PostgreSQL server-only con `SET LOCAL ROLE service_role`
 → `private.run_calendar_tick_command()`
-→ estados efectivos, auditoría de sistema y finalización de temporadas sin DML de cliente
+→ estados efectivos, expiración global de intentos inactivos, auditoría de sistema y finalización de temporadas sin DML de cliente
+
+Reconciliación bajo demanda de intentos
+→ `infrastructure/supabase/attemptExpiration.ts` (server-only)
+→ `private.expire_stale_attempts(jsonb)` con `service_role`
+→ antes de `get_flash_history`, limitada al `roomSlug`
+→ antes de un comando de intento, limitada al `attemptId`
+→ 15 minutos de inactividad + publicación cerrada/deadline vencido
+→ `abandoned` sin puntos; una acción que encuentra el cierre recibe `attempt_inactivity_expired`
 
 Lectura editorial protegida del portal `/admin`
 → server/data-access.ts
@@ -229,7 +237,9 @@ La home, el detalle S02, los rankings S06 y el historial/revisión S07 delegan e
 `getRanking`, `listHistory`, `getHistoryDetail` y `getMemberDetail`. Para una sala real resuelve la
 temporada desde `get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
 `get_challenge_ranking`. S07 usa `get_flash_history` para agrupar publicaciones cerradas y
-`get_flash_member_review` para reconstruir el resultado desde la versión histórica enlazada; carga
+`get_flash_member_review` para reconstruir el resultado desde la versión histórica enlazada; antes de
+esas lecturas ejecuta la reconciliación acotada a la sala para que los intentos que ya cumplen la
+política no oculten indefinidamente la publicación. Carga
 en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de
 convertirse a view models; los UUID de jugador son el `memberId` canónico y un error RPC o una fila
 inválida se propaga. Las consultas todavía mock se limitan a los aliases explícitos del demo, por lo

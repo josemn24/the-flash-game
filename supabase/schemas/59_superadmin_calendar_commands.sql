@@ -503,6 +503,128 @@ begin
 end;
 $$;
 
+create function private.expire_stale_attempts(input jsonb) returns jsonb
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  run_id_value text;
+  attempt_id_value uuid;
+  room_slug_value text;
+  now_value timestamptz;
+  attempt_row public.attempts%rowtype;
+  abandoned_count integer := 0;
+  before_payload jsonb;
+begin
+  if coalesce(current_setting('role', true), '') <> 'service_role' then
+    raise exception 'attempt_expiration_unauthorized' using errcode = '42501';
+  end if;
+  if input is null or jsonb_typeof(input) is distinct from 'object'
+    or not input ? 'runId'
+    or exists (
+      select 1 from jsonb_object_keys(input) key_name
+      where key_name <> all(array['runId','attemptId','roomSlug'])
+    )
+    or jsonb_typeof(input->'runId') is distinct from 'string'
+    or (input ? 'attemptId' and jsonb_typeof(input->'attemptId') is distinct from 'string')
+    or (input ? 'roomSlug' and jsonb_typeof(input->'roomSlug') is distinct from 'string')
+    or (input ? 'attemptId' and input ? 'roomSlug') then
+    raise exception 'attempt_expiration_invalid' using errcode = '22023';
+  end if;
+
+  run_id_value := btrim(input->>'runId');
+  if char_length(run_id_value) not between 8 and 160 then
+    raise exception 'attempt_expiration_invalid' using errcode = '22023';
+  end if;
+  if input ? 'attemptId' then
+    begin
+      attempt_id_value := (input->>'attemptId')::uuid;
+    exception when others then
+      raise exception 'attempt_expiration_invalid' using errcode = '22023';
+    end;
+  end if;
+  if input ? 'roomSlug' then
+    room_slug_value := btrim(input->>'roomSlug');
+    if char_length(room_slug_value) = 0 or char_length(room_slug_value) > 160 then
+      raise exception 'attempt_expiration_invalid' using errcode = '22023';
+    end if;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended('calendar-tick-global', 0));
+  now_value := clock_timestamp();
+
+  for attempt_row in
+    select attempt.*
+    from public.attempts attempt
+    join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
+    join public.seasons season on season.id = schedule.season_id
+    join public.rooms room on room.id = season.room_id
+    where attempt.kind = 'competitive'
+      and attempt.status = 'in_progress'
+      and coalesce(attempt.last_activity_at, attempt.started_at) <= now_value - interval '15 minutes'
+      and (schedule.status = 'closed' or attempt.deadline_at <= now_value)
+      and (attempt_id_value is null or attempt.id = attempt_id_value)
+      and (room_slug_value is null or room.slug = room_slug_value)
+    order by attempt.id
+    for update of attempt skip locked
+  loop
+    before_payload := jsonb_build_object(
+      'status', attempt_row.status,
+      'lockVersion', attempt_row.lock_version,
+      'score', attempt_row.score,
+      'lastActivityAt', attempt_row.last_activity_at,
+      'deadlineAt', attempt_row.deadline_at
+    );
+
+    update private.interaction_intervals interval_row
+    set ended_at = greatest(interval_row.started_at, least(now_value, timing_unit.deadline_at)),
+        end_reason = 'abandon'
+    from private.attempt_timing_units timing_unit
+    where interval_row.attempt_id = attempt_row.id
+      and interval_row.ended_at is null
+      and timing_unit.id = interval_row.timing_unit_id;
+
+    delete from private.prepared_interactions where attempt_id = attempt_row.id;
+    update public.attempts
+    set status = 'abandoned',
+        score = null,
+        outcome = null,
+        completed_at = now_value,
+        progress_payload = null,
+        terminal_reason = 'inactivity_timeout',
+        lock_version = lock_version + 1
+    where id = attempt_row.id
+      and status = 'in_progress';
+    if found then
+      update private.attempt_sessions
+      set revoked_at = now_value
+      where attempt_id = attempt_row.id and revoked_at is null;
+
+      insert into private.audit_log(
+        actor_player_id, action, entity_type, entity_id, reason, request_id,
+        before_payload, after_payload
+      ) values (
+        null, 'expire_stale_attempt', 'attempt', attempt_row.id,
+        '15 minutes without activity after challenge closure or deadline', run_id_value,
+        before_payload,
+        jsonb_build_object(
+          'status', 'abandoned',
+          'lockVersion', attempt_row.lock_version + 1,
+          'score', null,
+          'completedAt', now_value,
+          'terminalReason', 'inactivity_timeout'
+        )
+      );
+      abandoned_count := abandoned_count + 1;
+    end if;
+  end loop;
+
+  return jsonb_build_object(
+    'runId', run_id_value,
+    'evaluatedAt', now_value,
+    'abandonedAttempts', abandoned_count
+  );
+end;
+$$;
+
 create function private.run_calendar_tick_command(input jsonb) returns jsonb
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -514,6 +636,8 @@ declare
   opened_count integer := 0;
   closed_count integer := 0;
   finished_count integer := 0;
+  abandoned_count integer := 0;
+  expiration_result jsonb;
 begin
   if coalesce(current_setting('role', true), '') <> 'service_role' then
     raise exception 'calendar_tick_unauthorized' using errcode = '42501';
@@ -628,9 +752,14 @@ begin
     end if;
   end loop;
 
+  select private.expire_stale_attempts(jsonb_build_object('runId', run_id_value))
+    into expiration_result;
+  abandoned_count := (expiration_result->>'abandonedAttempts')::integer;
+
   return jsonb_build_object(
     'runId', run_id_value, 'evaluatedAt', now_value,
-    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count
+    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count,
+    'abandonedAttempts', abandoned_count
   );
 end;
 $$;
@@ -833,6 +962,7 @@ alter function private.assert_supported_calendar_content(uuid) owner to postgres
 alter function private.create_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.update_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.cancel_scheduled_challenge_command(jsonb) owner to postgres;
+alter function private.expire_stale_attempts(jsonb) owner to postgres;
 alter function private.run_calendar_tick_command(jsonb) owner to postgres;
 alter function public.get_superadmin_calendar_context() owner to postgres;
 alter function public.get_superadmin_room_calendar_context(uuid) owner to postgres;
@@ -844,6 +974,7 @@ alter function public.cancel_superadmin_scheduled_challenge(jsonb) owner to post
 revoke all on function private.assert_supported_calendar_content(uuid),
   private.create_scheduled_challenge_command(jsonb), private.update_scheduled_challenge_command(jsonb),
   private.cancel_scheduled_challenge_command(jsonb),
+  private.expire_stale_attempts(jsonb),
   private.run_calendar_tick_command(jsonb) from public, anon, authenticated, service_role;
 revoke all on function public.get_superadmin_calendar_context(), public.get_superadmin_room_calendar_context(uuid), public.get_room_calendar(text),
   public.create_superadmin_scheduled_challenge(jsonb), public.update_superadmin_scheduled_challenge(jsonb),

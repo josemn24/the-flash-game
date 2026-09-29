@@ -61,6 +61,10 @@ import type {
 import { getCurrentViewerProfile } from "@/server/profile";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
+import {
+  supabaseAttemptExpiration,
+  type AttemptExpirationQueries,
+} from "@/infrastructure/supabase/attemptExpiration";
 
 type RoomReadRow = {
   room_id: string;
@@ -763,7 +767,9 @@ async function callHistoryRead<T>(
   functionName: "get_flash_history" | "get_flash_member_review",
   args: Record<string, string | null>,
   guard: (value: unknown) => value is T,
+  attemptExpiration: AttemptExpirationQueries,
 ): Promise<T[]> {
+  await attemptExpiration.expireStaleAttemptsForRoom(String(args.target_room_slug));
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(functionName, args);
   if (error) throw new Error(`Supabase history read failed (${functionName}): ${error.message}`);
@@ -1808,6 +1814,10 @@ export class SupabaseRoomQueries
     RoomRankingQueries,
     RoomSettingsQueries
 {
+  constructor(
+    private readonly attemptExpiration: AttemptExpirationQueries = supabaseAttemptExpiration,
+  ) {}
+
   async listCards() {
     return (await callRoomRead("get_my_room_cards")).map(toCard);
   }
@@ -1927,6 +1937,7 @@ export class SupabaseRoomQueries
       "get_flash_history",
       { target_room_slug: roomKey },
       isFlashHistoryReadRow,
+      this.attemptExpiration,
     );
     const first = rows[0];
     if (!first) {
@@ -1977,6 +1988,7 @@ export class SupabaseRoomQueries
       "get_flash_history",
       { target_room_slug: roomKey, target_publication_id: publicationKey },
       isFlashHistoryReadRow,
+      this.attemptExpiration,
     );
     const first = rows[0];
     if (!first) return null;
@@ -2012,6 +2024,7 @@ export class SupabaseRoomQueries
         "get_flash_history",
         { target_room_slug: roomKey, target_publication_id: publicationKey },
         isFlashHistoryReadRow,
+        this.attemptExpiration,
       );
       historyRow = rows[0];
       if (!historyRow) return null;
@@ -2038,6 +2051,7 @@ export class SupabaseRoomQueries
           target_player_id: memberKey,
         },
         isFlashMemberReviewReadRow,
+        this.attemptExpiration,
       ),
       callRankingRead("get_season_ranking", { target_season_id: seasonId }, isSeasonRankingReadRow),
       historyRow

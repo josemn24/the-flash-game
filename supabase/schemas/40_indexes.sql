@@ -25,6 +25,9 @@ create unique index attempts_one_competitive_idx on public.attempts (player_id, 
   where kind = 'competitive';
 create index attempts_publication_status_idx on public.attempts (scheduled_challenge_id, status);
 create index attempts_publication_version_idx on public.attempts (scheduled_challenge_id, challenge_version_id);
+create index attempts_inactivity_candidates_idx
+  on public.attempts (last_activity_at, started_at, scheduled_challenge_id)
+  where kind = 'competitive' and status = 'in_progress';
 create unique index sessions_one_unrevoked_idx on private.attempt_sessions (attempt_id)
   where revoked_at is null;
 create index sessions_attempt_idx on private.attempt_sessions (attempt_id);
@@ -42,4 +45,3 @@ create index entries_creator_idx on private.flash_point_entries (created_by_play
 create index audit_entity_time_idx on private.audit_log (entity_type, entity_id, created_at);
 create index audit_actor_time_idx on private.audit_log (actor_player_id, created_at);
 -- No speculative JSONB GIN indexes: the initial queries use structured columns.
-

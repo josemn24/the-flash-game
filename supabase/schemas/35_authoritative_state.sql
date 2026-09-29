@@ -42,6 +42,20 @@ create index intervals_item_idx on private.interaction_intervals(attempt_id, cha
 create index intervals_unit_idx on private.interaction_intervals(timing_unit_id, attempt_id, challenge_item_id);
 create index timing_item_version_idx on private.attempt_timing_units(challenge_item_id, challenge_version_id);
 
+-- Pyramid payloads can be prepared before the level clock starts. The row is
+-- consumed atomically by activate_interaction once the client has mounted the
+-- question shell.
+create table private.prepared_interactions (
+  attempt_id uuid primary key,
+  challenge_version_id uuid not null,
+  challenge_item_id uuid not null,
+  prepared_at timestamptz not null default clock_timestamp(),
+  foreign key (attempt_id, challenge_version_id) references public.attempts(id, challenge_version_id),
+  foreign key (challenge_item_id, challenge_version_id) references private.challenge_items(id, challenge_version_id),
+  unique (attempt_id, challenge_item_id)
+);
+create index prepared_item_idx on private.prepared_interactions(challenge_item_id, challenge_version_id);
+
 create table private.answer_receipts (
   id uuid primary key default gen_random_uuid(),
   attempt_id uuid not null,
@@ -71,6 +85,8 @@ create unique index answers_receipt_idx on private.attempt_answers(receipt_id);
 alter table private.command_requests enable row level security;
 alter table private.attempt_timing_units enable row level security;
 alter table private.interaction_intervals enable row level security;
+alter table private.prepared_interactions enable row level security;
 alter table private.answer_receipts enable row level security;
 revoke all on private.command_requests, private.attempt_timing_units,
-  private.interaction_intervals, private.answer_receipts from public, anon, authenticated, service_role;
+  private.interaction_intervals, private.prepared_interactions, private.answer_receipts
+  from public, anon, authenticated, service_role;

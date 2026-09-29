@@ -1,6 +1,8 @@
 import type {
   AcceptInvitationInput,
   AcceptInvitationResult,
+  ActivateInteractionInput,
+  ActivateInteractionResult,
   AttemptCommandInput,
   AttemptCommandResult,
   CompleteAttemptInput,
@@ -103,6 +105,7 @@ export interface AttemptCommands {
   /** Reserved for a post-MVP multi-device policy; the database rejects it in the MVP. */
   takeOver(input: TakeOverAttemptCommand): Promise<TakeOverAttemptResult>;
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
+  activate(input: ActivateInteractionInput): Promise<ActivateInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
   submitWordSearchSelection(

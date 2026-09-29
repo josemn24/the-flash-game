@@ -22,6 +22,9 @@ begin
       allowed := array['idempotencyKey','attemptId','lockVersion','newSessionToken']; required := allowed;
     when 'prepare' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'activate' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId'];
+      allowed := required;
     when 'receive' then
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','answer'];
       allowed := required || array['clientTimeUsedMs'];
@@ -97,9 +100,9 @@ grant execute on function private.take_over_attempt(jsonb) to service_role;
 create function private.prepare_interaction(input jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 begin
-  -- A lost prepare response or a countdown race may leave the interval open.
-  -- Re-reading is safe: execute_command exposes only public payload/progress,
-  -- and an already received answer is still blocked as evaluation_pending.
+  -- A lost prepare response is safe: the command cache and the prepared row
+  -- allow the client to re-read public payloads before activation. Pyramid
+  -- timing starts only in activate_interaction.
   if exists (
     select 1 from private.command_requests
     where actor_id = private.command_actor() and idempotency_key = prepare_interaction.input->>'idempotencyKey'
@@ -113,6 +116,14 @@ $$;
 alter function private.prepare_interaction(jsonb) owner to postgres;
 revoke all on function private.prepare_interaction(jsonb) from public, anon, authenticated, service_role;
 grant execute on function private.prepare_interaction(jsonb) to service_role;
+
+create function private.activate_interaction(input jsonb) returns jsonb
+language sql security definer set search_path = '' as $$
+  select private.execute_command('activate', input)
+$$;
+alter function private.activate_interaction(jsonb) owner to postgres;
+revoke all on function private.activate_interaction(jsonb) from public, anon, authenticated, service_role;
+grant execute on function private.activate_interaction(jsonb) to service_role;
 
 create function private.receive_answer(input jsonb) returns jsonb
 language sql security definer set search_path = '' as $$

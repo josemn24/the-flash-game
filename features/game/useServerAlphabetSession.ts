@@ -118,6 +118,27 @@ export function useServerAlphabetSession({
   const recoveryInFlight = useRef(false);
   const commandInFlight = useRef(false);
   const timeoutGuard = useRef(createAlphabetTimeoutGuard());
+  const [attemptExpired, setAttemptExpired] = useState(false);
+
+  const markAttemptExpired = (error: unknown) => {
+    if (
+      !(error instanceof CompetitiveCommandError) ||
+      error.code !== "attempt_inactivity_expired"
+    ) {
+      return false;
+    }
+    setAttemptExpired(true);
+    setAttempt(null);
+    setQuestion(null);
+    setProgress(null);
+    setReviewChallenge(null);
+    setScore(0);
+    setLocked(true);
+    setError(undefined);
+    setStartNotice(undefined);
+    setPhase("results");
+    return true;
+  };
 
   const replaceResults = (nextResults: AnswerResult[]) => {
     resultsRef.current = nextResults;
@@ -231,6 +252,7 @@ export function useServerAlphabetSession({
       }
       await prepare({ id: currentAttempt.id, lockVersion: Number(response.lockVersion) });
     } catch (cause) {
+      if (markAttemptExpired(cause)) return;
       setStartNotice("No se ha podido recuperar la partida. Puedes reintentarlo.");
       throw cause;
     } finally {
@@ -275,6 +297,7 @@ export function useServerAlphabetSession({
     try {
       await prepare(attempt);
     } catch (cause) {
+      if (markAttemptExpired(cause)) return;
       setLocked(true);
       setStartNotice(
         rateLimitMessage(cause) ??
@@ -317,6 +340,7 @@ export function useServerAlphabetSession({
       if (nextResults.length >= challenge.entries.length) await complete(nextAttempt, nextResults);
       else await prepare(nextAttempt);
     } catch (cause) {
+      if (markAttemptExpired(cause)) return;
       if (answer === null) {
         setPhase("recovering");
         const rateLimitNotice = rateLimitMessage(cause);
@@ -362,6 +386,7 @@ export function useServerAlphabetSession({
       passAccepted = true;
       await prepare({ id: attempt.id, lockVersion: Number(response.lockVersion) });
     } catch (cause) {
+      if (markAttemptExpired(cause)) return;
       if (passAccepted) {
         setPhase("recovering");
         setStartNotice(
@@ -389,6 +414,7 @@ export function useServerAlphabetSession({
 
   return {
     phase,
+    attemptExpired,
     question,
     progress,
     results,

@@ -314,7 +314,7 @@ aún aparecen en tipos y lógica de algunos modos son internos y no representan 
 del producto. La disponibilidad de la publicación (`available`, `locked`, `expired`) se mantiene
 separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`, `invalidated`).
 
-### Comportamiento recomendado pendiente de implementación
+### Comportamiento de intentos y expiración por inactividad
 
 - Al iniciar un desafío competitivo se debe crear o recuperar un único intento autoritativo en
   `in_progress`.
@@ -327,10 +327,17 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 - Al recuperar, el servidor debe reconciliar una recepción ya persistida y, si no existe, cerrar
   atómicamente la interacción preparada como consumida con la consecuencia definida por el modo.
   Nunca debe volver a entregar esa unidad ni concederle un nuevo reloj.
-- Una política posterior podrá cerrar por inactividad tras el límite acordado; hasta entonces la
-  falta de actividad no cambia por sí sola el intento a `abandoned`.
-- La duración del heartbeat, el lease y el posible periodo de gracia aún deben concretarse antes de
-  implementar este comportamiento.
+- La reconciliación server-side cierra como `abandoned` un intento competitivo `in_progress` cuando
+  han pasado al menos 15 minutos desde `last_activity_at` (o desde `started_at` si no existe), y la
+  publicación está cerrada o su `deadline_at` ha vencido. El cierre limpia el progreso recuperable,
+  revoca la sesión, cierra intervalos abiertos, no concede puntos y registra
+  `terminal_reason = inactivity_timeout`.
+- Mientras la publicación siga abierta y su deadline no haya vencido, la falta de actividad no cambia
+  el intento a `abandoned`. El tick diario realiza la limpieza global; la consulta de historial y los
+  comandos de partida la reconcilian bajo demanda. Un intento sin nuevas lecturas ni acciones puede
+  permanecer pendiente hasta el siguiente tick.
+- No se requiere heartbeat ni lease del navegador para esta política; los eventos de ciclo de vida
+  siguen siendo avisos auxiliares.
 
 ## 8. Permisos y restricciones conocidas
 
@@ -408,9 +415,10 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   validarse en servidor cuando exista backend.
 - **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
   llegó al final del flujo y se incluye en el ranking del desafío.
-- **Resuelta (2026-09-13, precisada 2026-09-15):** `abandoned` se reserva para un intento iniciado
-  que el jugador abandona explícitamente; `expired` se reserva para una publicación que termina
-  antes de que el jugador empiece. Una interrupción se recupera por modo y no equivale a ninguno.
+- **Resuelta (2026-09-13, precisada 2026-09-15 y ampliada 2026-09-29):** `abandoned` se reserva
+  para un intento iniciado, por abandono explícito o por `inactivity_timeout`; `expired` se reserva
+  para una publicación que termina antes de que el jugador empiece. Una interrupción abierta mientras
+  el desafío sigue vigente se recupera por modo y no equivale a abandono automático.
 - **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la
   expiración a partir de la ventana de la publicación cuando no existe un intento; la interfaz la
   muestra como desafío cerrado sin resultado ni revisión propios.
@@ -421,10 +429,10 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   desafío: más Flash Points, menor duración efectiva —suma de `AttemptAnswer.timeUsedMs`— y
   `startedAt` más antiguo, con posiciones compartidas. El ranking de temporada solo usa Flash
   Points acumulados.
-- **Pendiente de implementar:** el abandono automático de intentos. El comportamiento objetivo
-  requiere abandono explícito idempotente, checkpoints/heartbeat y cierre autoritativo tras perder
-  actividad; los eventos del navegador solo deben actuar como avisos auxiliares. El intervalo y el
-  periodo de gracia aún no están definidos.
+- **Resuelta (2026-09-29):** la expiración por inactividad usa 15 minutos desde la última actividad,
+  o desde el inicio si no existe, y exige publicación cerrada o deadline vencido. Se aplica mediante
+  Vercel Cron diario y reconciliación bajo demanda; devuelve `attempt_inactivity_expired` a una acción
+  que encuentra su intento recién cerrado.
 - **Resuelta (2026-09-13):** La Pirámide conserva `summit` y `failed` como resultado interno del
   modo. Ambos se proyectan como `completed` cuando la partida llega a su final reglamentario;
   `failed` indica únicamente que terminó antes de alcanzar la cima y no equivale a `notCompleted`.

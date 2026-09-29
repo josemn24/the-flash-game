@@ -293,7 +293,8 @@ Los servicios externos se incorporan detrás de adaptadores solo cuando el caso 
   la aplicación persiste referencias estables y resuelve URLs firmadas únicamente en runtime;
 - **correo/notificaciones:** invitaciones y avisos, si se activan;
 - **observabilidad:** errores, auditoría y métricas, sin convertir logs en fuente de verdad;
-- **scheduler:** cierre de intentos inactivos y tareas temporales, si se aprueba el abandono automático.
+- **scheduler:** Vercel Cron ejecuta el calendar tick diario en producción; el tick cierra temporadas,
+  actualiza publicaciones y reconcilia intentos inactivos elegibles.
 
 La lógica de The Flash no debe depender de la forma concreta de una respuesta externa. Cada
 integración debe tener timeouts, reintentos idempotentes y un comportamiento definido si está
@@ -312,14 +313,16 @@ respuesta, finalización y acreditación deben ser síncronas y transaccionales.
 
 Un proceso asíncrono será necesario solo para tareas que no deben bloquear la respuesta de la UI:
 
-- detectar abandono automático solo si se aprueba posteriormente una política de heartbeat/lease;
+- reconciliar intentos inactivos después del cierre o deadline; la ejecución global es diaria y las
+  lecturas de historial/comandos también pueden ejecutar una reconciliación acotada;
 - enviar correos o notificaciones;
 - limpiar assets o datos después de anonimización/purga;
 - recalcular proyecciones materializadas si el volumen lo exige;
 - procesar webhooks externos.
 
-Para S12, un scheduler externo opcional invoca el Route Handler protegido y es suficiente. No se
-debe introducir event sourcing, una cola propia ni microservicios solo por anticipar estas tareas.
+Para S12, Vercel Cron invoca el Route Handler protegido en producción y es suficiente. El CLI local
+conserva la recuperación manual. No se debe introducir event sourcing, una cola propia ni
+microservicios solo por anticipar estas tareas.
 
 ## 3. Reglas de dependencia
 
@@ -537,8 +540,9 @@ deben vivir en el servidor.
 - La matriz de permisos de `owner` frente a `admin` está cerrada: `admin` no gestiona `owner`,
   solo `owner` concede `admin` y `superadmin` audita sus acciones directas sobre salas. El alcance
   editorial del rol `editor` aún no está cerrado.
-- La transferencia de control entre dispositivos está deshabilitada durante el MVP. Heartbeat, lease
-  y abandono automático quedan fuera de la fase actual, pendientes de una política posterior.
+- La transferencia de control entre dispositivos está deshabilitada durante el MVP. La expiración por
+  inactividad ya está definida: 15 minutos sin actividad, solo tras cierre o deadline, con `abandoned`
+  sin puntos; no requiere heartbeat ni lease del navegador.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,
   conflicto obsoleto y validación inválida sin filtrar información.
 - Supabase RLS debe diseñarse junto con las políticas de aplicación; no conviene asumir que una capa
@@ -551,8 +555,8 @@ deben vivir en el servidor.
   histórico y la revisión propia/ajena autorizada sin tablas materializadas ni recalcular puntos.
 - La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` conserva el acceso a
   historial/rankings, pero no recibe respuestas ni soluciones ajenas.
-- `results_locked_at`, el abandono automático, el takeover y la revisión administrativa de
-  invalidados quedan fuera de S07.
+- `results_locked_at`, el takeover y la revisión administrativa de invalidados quedan fuera de S07.
+  La expiración por inactividad se implementa en la reconciliación del calendario y bajo demanda.
 - Invalidación y corrección exigen superadmin, motivo y auditoría. La revisión de intentos
   `invalidated`, inspección global y moderación siguen pendientes de política administrativa.
 - La anonimización debe coordinar identidad, avatar, actividad social y retención histórica.
@@ -573,5 +577,5 @@ resolverse antes de declarar competitiva la persistencia real.
    gradualmente `demoIdentity` por la sesión real.
 4. Implementar el adaptador Supabase con transacciones, unicidad, RLS y control de concurrencia.
 5. Separar soluciones del DTO competitivo y trasladar evaluación, tiempo y acreditación al servidor.
-6. Incorporar scheduler o procesos asíncronos únicamente para abandono automático, notificaciones y
-   limpieza cuando los requisitos estén cerrados.
+6. Mantener Vercel Cron y la reconciliación bajo demanda para expiración de inactividad, notificaciones
+   y limpieza cuando los requisitos estén cerrados.

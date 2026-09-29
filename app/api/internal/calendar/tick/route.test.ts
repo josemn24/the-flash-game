@@ -25,6 +25,7 @@ describe("calendar tick route", () => {
       opened: 1,
       closed: 2,
       finishedSeasons: 0,
+      abandonedAttempts: 0,
     });
 
     const response = await GET(
@@ -70,6 +71,7 @@ describe("calendar tick route", () => {
       opened: 0,
       closed: 0,
       finishedSeasons: 1,
+      abandonedAttempts: 0,
     });
 
     const response = await POST(

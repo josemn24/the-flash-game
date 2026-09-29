@@ -86,6 +86,7 @@ begin
     when 'start_attempt' then keys:=array['scheduledChallengeId','sessionToken'];
     when 'take_over_attempt' then keys:=array['attemptId','lockVersion','newSessionToken'];
     when 'prepare_interaction' then keys:=array['attemptId','lockVersion','sessionToken'];
+    when 'activate_interaction' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'receive_answer' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_mini_wordle_guess' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_logic_code_attempt' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];

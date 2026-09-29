@@ -344,15 +344,15 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
 
 ## 8. Permisos y ownership
 
-| Actor o contexto          | Puede leer sala/rankings                                | Puede competir               | Puede gestionar                                            |
-| ------------------------- | ------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------- |
-| Persona sin cuenta        | No tiene acceso competitivo; sí puede explorar previews | No                           | No                                                         |
+| Actor o contexto          | Puede leer sala/rankings                                | Puede competir               | Puede gestionar                                                                                      |
+| ------------------------- | ------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Persona sin cuenta        | No tiene acceso competitivo; sí puede explorar previews | No                           | No                                                                                                   |
 | `owner`                   | Sí, con membresía activa                                | Sí                           | Gestión de sala, invitaciones, temporadas, publicaciones y membresías; no invalida ni corrige puntos |
-| `admin`                   | Sí, con membresía activa                                | Sí                           | Sala, invitaciones y membresías salvo `owner`; no concede `admin` ni transfiere propiedad |
-| `member`                  | Sí, con membresía activa                                | Sí                           | No se presupone gestión administrativa                     |
-| `spectator`               | Sí, incluidos rankings e historial                      | No                           | No                                                         |
-| Superadministrador        | Inspección global según privilegio                      | Solo en modo fantasma/prueba | Inspección, contenido y pruebas, con auditoría             |
-| Editor/autor de contenido | Según el contexto autorizado                            | No por ese rol               | Preparar contenido; el alcance exacto está abierto         |
+| `admin`                   | Sí, con membresía activa                                | Sí                           | Sala, invitaciones y membresías salvo `owner`; no concede `admin` ni transfiere propiedad            |
+| `member`                  | Sí, con membresía activa                                | Sí                           | No se presupone gestión administrativa                                                               |
+| `spectator`               | Sí, incluidos rankings e historial                      | No                           | No                                                                                                   |
+| Superadministrador        | Inspección global según privilegio                      | Solo en modo fantasma/prueba | Inspección, contenido y pruebas, con auditoría                                                       |
+| Editor/autor de contenido | Según el contexto autorizado                            | No por ese rol               | Preparar contenido; el alcance exacto está abierto                                                   |
 
 Reglas adicionales de ownership:
 
@@ -401,8 +401,9 @@ rankings. La lista no prescribe un mecanismo de almacenamiento ni event sourcing
 - `TestAttemptExecuted` para pruebas fantasma, siempre fuera de las proyecciones competitivas.
 
 Los eventos del navegador (`pagehide`, `visibilitychange`, `offline`) son señales auxiliares, no
-eventos de dominio suficientes para confirmar abandono. El abandono automático requiere reglas de
-actividad aún abiertas.
+eventos de dominio suficientes para confirmar abandono. La expiración server-side aplica 15 minutos
+sin actividad solo después del cierre de la publicación o del deadline; no depende de heartbeat ni de
+un evento del navegador.
 
 ## 10. Decisiones de modelado y justificación
 
@@ -448,7 +449,7 @@ El modelo no decide todavía:
 - detalles de interfaz, límites de frecuencia y notificaciones de invitaciones, sin reabrir las
   reglas vigentes de roles, TTL, usos y revocación;
 - alcance exacto del editor/autor de contenido, que no es un rol de sala en esta fase;
-- duración del heartbeat, lease y periodo de gracia para detectar abandono automático;
+- señalización de UI previa a la expiración y observabilidad de cierres automáticos;
 - qué checkpoints y borradores adicionales se conservan para cada modo; la recuperación consume la
   interacción ya preparada y la toma de control en otro dispositivo queda aplazada tras el MVP;
 - política de consulta y revisión de intentos `invalidated`;
