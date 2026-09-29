@@ -18,6 +18,8 @@ type Fixture = {
       inProgress: string;
       cancelled: string;
       archived: string;
+      survival: string;
+      pyramid: string;
     };
   };
 };
@@ -34,7 +36,7 @@ async function signIn(page: Page, account: FixtureAccount) {
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
 }
 
-test.describe("S07 — historial y revisión Flash", () => {
+test.describe("S07 — historial y revisión competitiva", () => {
   test("carga historial y revisión persistidos después de refrescar", async ({ page, browser }) => {
     test.setTimeout(90_000);
     const data = await fixture();
@@ -48,11 +50,19 @@ test.describe("S07 — historial y revisión Flash", () => {
     await expect(page.getByRole("heading", { name: "Historial" })).toBeVisible();
     await expect(page.getByText("Flash histórico S07")).toHaveCount(4);
     await expect(page.getByText("3 jugadores")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Ver ranking" })).toHaveCount(4);
+    await expect(page.getByRole("link", { name: "Ver ranking" })).toHaveCount(6);
     await expect(page.getByText(data.data.publicationIds.inProgress)).toHaveCount(0);
 
     await page.reload();
-    await expect(page.getByRole("link", { name: "Ver ranking" })).toHaveCount(4);
+    await expect(page.getByRole("link", { name: "Ver ranking" })).toHaveCount(6);
+
+    await page.goto(`${historyPath}/${data.data.publicationIds.survival}`);
+    await expect(page.getByRole("heading", { name: "Ranking del desafío" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Supervivencia histórica S07" })).toBeVisible();
+
+    await page.goto(`${historyPath}/${data.data.publicationIds.pyramid}`);
+    await expect(page.getByRole("heading", { name: "Ranking del desafío" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Pirámide histórica S07" })).toBeVisible();
 
     await page.goto(completedPath);
     await expect(page.getByRole("heading", { name: "Ranking del desafío" })).toBeVisible();
@@ -68,9 +78,7 @@ test.describe("S07 — historial y revisión Flash", () => {
     await expect(page.getByText("Respuesta correcta").first()).toBeVisible();
     await expect(page.getByText("Partida abandonada")).toHaveCount(0);
 
-    await page.goto(
-      `${abandonedPath}/${data.users.carol.playerId}`,
-    );
+    await page.goto(`${abandonedPath}/${data.users.carol.playerId}`);
     await expect(page.getByRole("heading", { name: "Carol" })).toBeVisible();
     await expect(page.getByText("Partida abandonada")).toBeVisible();
     await expect(page.getByText("Sin responder", { exact: true })).toBeVisible();
@@ -84,12 +92,11 @@ test.describe("S07 — historial y revisión Flash", () => {
       await spectatorPage.goto(completedPath);
       await expect(spectatorPage.getByText("Alice")).toBeVisible();
       await expect(spectatorPage.getByRole("link", { name: /Ver detalle de/ })).toHaveCount(0);
-      await spectatorPage.goto(
-        `${completedPath}/${data.users.alice.playerId}`,
-      );
-      await expect(spectatorPage.getByRole("heading", { name: "Alice" })).toBeVisible();
-      await expect(spectatorPage.getByText("Respuestas")).toHaveCount(0);
-      await expect(spectatorPage.getByText("Respuesta correcta")).toHaveCount(0);
+      await spectatorPage.goto(`${completedPath}/${data.users.alice.playerId}`);
+      await expect(spectatorPage.getByText("Error 404")).toBeVisible();
+      await expect(
+        spectatorPage.getByRole("heading", { name: "Ruta fuera de pista" }),
+      ).toBeVisible();
     } finally {
       await spectatorContext.close();
     }

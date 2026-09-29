@@ -6,6 +6,7 @@ import {
   getRoomRouteKey,
   getScheduledChallengeRouteKey,
   resolvePlayerRouteKey,
+  resolveScheduledChallengeRouteKey,
   resolveRoomRouteKey,
   selectChallengeRanking,
   selectOpenScheduledChallenge,
@@ -21,6 +22,7 @@ import {
 } from "@/application/presentation/room";
 import type {
   DomainStore,
+  Attempt,
   Player,
   PlayerId,
   RoomId,
@@ -29,11 +31,17 @@ import type {
 } from "@/types/domain";
 import type {
   QueryContext,
+  RoomMemberReviewItem,
+  RoomMemberReviewProgress,
   RoomCardModel,
   RoomDailyLeaderboardEntry,
   RoomLeaderboardEntry,
   RoomMemberViewModel,
 } from "@/types/view-models";
+import type { AnswerReview, AnswerResult, Challenge, Question } from "@/types/game";
+import { deriveSurvivalProgress } from "@/features/game/survivalRules";
+import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
+import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 
 const historyImages: Readonly<Record<string, string>> = {
   "tabarnia-flash-01": "/flash-pop/concepts/room-ready.webp",
@@ -56,6 +64,187 @@ function rankByFlashPoints<Entry extends { flashPoints: number }>(entries: Entry
     ...entry,
     rank: ordered.findIndex((candidate) => candidate.flashPoints === entry.flashPoints) + 1,
   }));
+}
+
+function mockAnswerReview(
+  question: Question,
+  answer?: DomainStore["attemptAnswers"][number],
+): AnswerReview {
+  const status = answer?.status === "timeout" ? "unanswered" : (answer?.status ?? "unanswered");
+  return {
+    questionId: question.id,
+    answer: (answer?.answer as AnswerReview["answer"]) ?? null,
+    status,
+    isCorrect: status === "correct" || status === "partial",
+    points: answer?.points ?? 0,
+    timeUsed: (answer?.timeUsedMs ?? 0) / 1_000,
+    ...(answer?.resultDetails ? { details: answer.resultDetails as AnswerReview["details"] } : {}),
+  };
+}
+
+function mockAnswerResult(review: AnswerReview): AnswerResult {
+  return {
+    questionId: review.questionId,
+    answer: review.answer,
+    status: review.status,
+    isCorrect: review.isCorrect,
+    points: review.points ?? 0,
+    timeUsed: review.timeUsed ?? 0,
+    details: review.details,
+  };
+}
+
+function historicalReviewProjection(
+  schedule: ScheduledChallenge,
+  attempt: Attempt | undefined,
+  store: DomainStore,
+) {
+  if (!attempt) {
+    return {
+      challenge: null as Challenge | null,
+      result: null,
+      reviewItems: [] as RoomMemberReviewItem[],
+      reviewProgress: null as RoomMemberReviewProgress | null,
+    };
+  }
+  const challenge = legacyChallenges.find(
+    (candidate) => candidate.id === getScheduledChallengeRouteKey(schedule.id),
+  );
+  if (!challenge) throw new Error(`Missing legacy challenge for "${schedule.id}".`);
+  const items = store.challengeItems
+    .filter((item) => item.challengeVersionId === schedule.challengeVersionId)
+    .sort((left, right) => left.position - right.position);
+  const answersByItem = new Map(
+    store.attemptAnswers
+      .filter((answer) => answer.attemptId === attempt.id)
+      .map((answer) => [answer.challengeItemId, answer]),
+  );
+  const questionByItem = new Map<string, Question>();
+  if (challenge.mode === "pyramid") {
+    challenge.levels.forEach((level, index) =>
+      questionByItem.set(items[index]!.id, level.question),
+    );
+  } else if (challenge.mode === "flash" || challenge.mode === "survival") {
+    challenge.questions.forEach((question, index) =>
+      questionByItem.set(items[index]!.id, question),
+    );
+  }
+
+  const resultFor = (item: (typeof items)[number]) => {
+    const question = questionByItem.get(item.id);
+    if (!question) throw new Error(`Missing historical question for "${item.id}".`);
+    return mockAnswerReview(question, answersByItem.get(item.id));
+  };
+  const reachedItems = items.filter((item) => answersByItem.has(item.id));
+  const reviewItems: RoomMemberReviewItem[] = (
+    challenge.mode === "survival" ? reachedItems : items
+  ).flatMap((item, index): RoomMemberReviewItem[] => {
+    const question = questionByItem.get(item.id);
+    if (!question) return [];
+    const answer = answersByItem.get(item.id);
+    if (challenge.mode === "pyramid" && !answer) {
+      const level = challenge.levels[index];
+      return [
+        {
+          id: item.id,
+          title: level?.label ?? `Nivel ${index + 1}`,
+          subtitle: level?.briefing.title ?? `Nivel ${index + 1}`,
+          question: null,
+          result: null,
+          status: "locked",
+          metadata: level
+            ? { levelId: level.id, label: level.label, briefing: level.briefing }
+            : undefined,
+        },
+      ];
+    }
+    const result = resultFor(item);
+    const level = challenge.mode === "pyramid" ? challenge.levels[index] : undefined;
+    return [
+      {
+        id: item.id,
+        title: level?.label ?? question.type,
+        subtitle: level?.briefing.title ?? question.category,
+        question,
+        result,
+        status: result.status,
+        metadata: level
+          ? { levelId: level.id, label: level.label, briefing: level.briefing }
+          : undefined,
+      },
+    ];
+  });
+  const answers = reviewItems.flatMap((item) => (item.result ? [item.result] : []));
+  const roomResult = {
+    flashPoints: attempt.score ?? 0,
+    completed: attempt.status === "completed",
+    attempt: {
+      challengeId: getScheduledChallengeRouteKey(schedule.id) ?? schedule.id,
+      startedAt: attempt.startedAt,
+      playedAt: attempt.completedAt ?? attempt.startedAt,
+      durationMs: sumEffectiveDurationMs(
+        store.attemptAnswers.filter(({ attemptId }) => attemptId === attempt.id),
+      ),
+      flashPoints: attempt.score ?? 0,
+      completed: attempt.status === "completed",
+      answers,
+    },
+  };
+  const progress =
+    challenge.mode === "survival"
+      ? (() => {
+          const config = challenge as Extract<Challenge, { mode: "survival" }>;
+          const progress = deriveSurvivalProgress(
+            config.lives,
+            config.questions.length,
+            answers.map(mockAnswerResult),
+          );
+          return {
+            mode: "survival" as const,
+            totalQuestionCount: config.questions.length,
+            initialLives: config.lives,
+            ...progress,
+            outcome:
+              attempt.outcome === "passed"
+                ? "survived"
+                : attempt.outcome === "failed"
+                  ? "eliminated"
+                  : progress.outcome,
+          };
+        })()
+      : challenge.mode === "pyramid"
+        ? (() => {
+            const config = challenge as Extract<Challenge, { mode: "pyramid" }>;
+            return {
+              mode: "pyramid" as const,
+              totalLevelCount: config.levels.length,
+              ...deriveCompetitivePyramidProgress(
+                config.levels.length,
+                answers.map(mockAnswerResult),
+              ),
+            };
+          })()
+        : {
+            mode: "flash" as const,
+            answeredCount: reachedItems.length,
+            totalQuestionCount: items.length,
+          };
+  const reviewChallenge =
+    challenge.mode === "survival"
+      ? {
+          ...challenge,
+          questions: challenge.questions.filter((_, index) => {
+            const item = items[index];
+            return item ? answersByItem.has(item.id) : false;
+          }),
+        }
+      : challenge;
+  return {
+    challenge: challenge.mode === "pyramid" ? null : reviewChallenge,
+    result: roomResult,
+    reviewItems,
+    reviewProgress: progress,
+  };
 }
 
 export class MockRoomQueries implements RoomQueries {
@@ -361,9 +550,7 @@ export class MockRoomQueries implements RoomQueries {
           ...member,
           role,
           canManage:
-            access.membership.role === "owner" &&
-            member.id !== currentKey &&
-            role !== "owner",
+            access.membership.role === "owner" && member.id !== currentKey && role !== "owner",
         };
       }),
     };
@@ -382,9 +569,13 @@ export class MockRoomQueries implements RoomQueries {
     };
   }
 
-  async getMemberDetail(roomKey: string, memberKey: string, context: QueryContext) {
+  async getMemberDetail(
+    roomKey: string,
+    memberKey: string,
+    context: QueryContext,
+    publicationKey?: string,
+  ) {
     const access = this.roomAccess(roomKey, context.viewerId);
-    const season = access ? this.activeSeason(access.room.id) : null;
     const memberId = resolvePlayerRouteKey(memberKey);
     const memberMembership =
       access && memberId
@@ -393,22 +584,58 @@ export class MockRoomQueries implements RoomQueries {
           )
         : undefined;
     const player = memberId ? this.store.players.find(({ id }) => id === memberId) : undefined;
-    if (!access || !season || !memberMembership || !player) return null;
-    const detail = await this.getDetail(roomKey, context);
-    if (!detail) return null;
-    const member = this.memberModel(player, access.room.id, season);
-    const dailyKey = detail.dailyChallenge?.id;
-    const result = dailyKey ? (member.challengeResults[dailyKey] ?? null) : null;
-    const challenge = dailyKey
-      ? (legacyChallenges.find((candidate) => candidate.id === dailyKey) ?? null)
+    if (!access || !memberMembership || !player || access.membership.role === "spectator")
+      return null;
+
+    const historicalSchedule = publicationKey
+      ? (() => {
+          const scheduleId = resolveScheduledChallengeRouteKey(publicationKey);
+          return scheduleId
+            ? (this.store.scheduledChallenges.find(({ id }) => id === scheduleId) ?? null)
+            : null;
+        })()
       : null;
-    return {
-      roomId: roomKey,
-      roomTitle: access.room.title,
-      member,
-      challengeSummary: detail.dailyChallenge
+    const season = historicalSchedule
+      ? (this.store.seasons.find(({ id }) => id === historicalSchedule.seasonId) ?? null)
+      : this.activeSeason(access.room.id);
+    if (!season) return null;
+    const detail = historicalSchedule ? null : await this.getDetail(roomKey, context);
+    const history = historicalSchedule ? await this.listHistory(roomKey, context) : null;
+    const historicalEntry = historicalSchedule
+      ? history?.entries.find(({ challengeId }) => challengeId === publicationKey)
+      : null;
+    if (historicalSchedule && !historicalEntry) return null;
+    const member = this.memberModel(player, access.room.id, season);
+    const dailyKey = detail?.dailyChallenge?.id;
+    const scheduleId =
+      historicalSchedule?.id ?? (dailyKey ? resolveScheduledChallengeRouteKey(dailyKey) : null);
+    const activeSchedule = scheduleId
+      ? (this.store.scheduledChallenges.find(({ id }) => id === scheduleId) ?? null)
+      : null;
+    const attempt = activeSchedule
+      ? this.store.attempts
+          .filter(
+            (candidate) =>
+              candidate.playerId === memberId &&
+              candidate.scheduledChallengeId === activeSchedule.id &&
+              candidate.kind === "competitive" &&
+              (candidate.status === "completed" || candidate.status === "abandoned"),
+          )
+          .sort((left, right) =>
+            (right.completedAt ?? right.startedAt).localeCompare(
+              left.completedAt ?? left.startedAt,
+            ),
+          )[0]
+      : undefined;
+    const projection = activeSchedule
+      ? historicalReviewProjection(activeSchedule, attempt, this.store)
+      : { challenge: null, result: null, reviewItems: [], reviewProgress: null };
+    const entry = historicalEntry
+      ? historicalEntry
+      : detail?.dailyChallenge
         ? {
-            id: detail.dailyChallenge.id,
+            challengeId: detail.dailyChallenge.id,
+            mode: activeSchedule ? this.challengeVersion(activeSchedule).mode : "flash",
             title: detail.dailyChallenge.title,
             formatLabel: detail.dailyChallenge.formatLabel,
             subtitle: detail.dailyChallenge.subtitle,
@@ -416,16 +643,40 @@ export class MockRoomQueries implements RoomQueries {
             questionCount: detail.dailyChallenge.questionCount,
             playedAt: detail.dailyChallenge.endsAt,
           }
+        : null;
+    const roomLeaderboard = this.seasonLeaderboard(access.room.id, season);
+    const challengeLeaderboard = historicalSchedule
+      ? (history?.rankings[publicationKey!] ?? [])
+      : (detail?.dailyLeaderboard ?? []);
+    return {
+      roomId: roomKey,
+      roomTitle: access.room.title,
+      member,
+      challengeSummary: entry
+        ? {
+            id: entry.challengeId,
+            mode: entry.mode,
+            title: entry.title,
+            formatLabel: entry.formatLabel,
+            subtitle: entry.subtitle,
+            imageSrc: entry.imageSrc,
+            questionCount: entry.questionCount,
+            playedAt: historicalEntry?.playedAt ?? detail?.dailyChallenge?.endsAt ?? entry.playedAt,
+          }
         : null,
-      challenge,
-      result,
-      roomRank: detail.roomLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? 0,
+      challenge: projection.challenge,
+      result: projection.result,
+      reviewItems: projection.reviewItems,
+      reviewProgress: projection.reviewProgress,
+      roomRank: roomLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? 0,
       challengeRank:
-        detail.dailyLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? null,
-      roomLeaderboard: detail.roomLeaderboard,
-      challengeLeaderboard: detail.dailyLeaderboard,
-      returnHref: `/salas/${roomKey}/ranking`,
-      canReviewMembers: access.membership.role !== "spectator",
+        challengeLeaderboard.find(({ memberId: id }) => id === memberKey)?.rank ?? null,
+      roomLeaderboard,
+      challengeLeaderboard,
+      returnHref: historicalSchedule
+        ? `/salas/${roomKey}/historial/${publicationKey}`
+        : `/salas/${roomKey}/ranking`,
+      canReviewMembers: true,
     };
   }
 
@@ -439,19 +690,31 @@ export class MockRoomQueries implements RoomQueries {
     const access = this.roomAccess(roomKey, context.viewerId);
     if (!access) return null;
     const history = selectRoomHistory(access.room.id, this.store);
-    const entries = history.map(({ scheduledChallenge, playedAt, participantCount }) => {
+    const entries = history.flatMap(({ scheduledChallenge, playedAt, participantCount }) => {
       const challengeKey = getScheduledChallengeRouteKey(scheduledChallenge.id);
       if (!challengeKey)
         throw new Error(`Missing route alias for schedule "${scheduledChallenge.id}".`);
       const version = this.challengeVersion(scheduledChallenge);
-      return {
-        id: `tabarnia-history-${String(scheduledChallenge.number).padStart(2, "0")}`,
-        challengeId: challengeKey,
-        title: version.title,
-        playedAt,
-        imageSrc: historyImages[challengeKey] ?? getChallengeImage(version.mode),
-        playerCount: participantCount,
-      };
+      if (version.mode !== "flash" && version.mode !== "survival" && version.mode !== "pyramid") {
+        return [];
+      }
+      return [
+        {
+          id: `tabarnia-history-${String(scheduledChallenge.number).padStart(2, "0")}`,
+          challengeId: challengeKey,
+          mode: version.mode,
+          title: version.title,
+          formatLabel: getChallengeFormatLabel(version.mode),
+          subtitle: version.subtitle,
+          questionCount: this.store.challengeItems.filter(
+            ({ challengeVersionId }) => challengeVersionId === version.id,
+          ).length,
+          maxScore: version.maxScore,
+          playedAt,
+          imageSrc: historyImages[challengeKey] ?? getChallengeImage(version.mode),
+          playerCount: participantCount,
+        },
+      ];
     });
     return {
       roomId: roomKey,

@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 54 archivos y su revisión canónica es
-`20260929175548_attempt-inactivity-expiration`. La migración incremental activa se ha generado desde esos archivos
+`20260929200000_room_member_review_modes`. La migración incremental activa se ha generado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -16,7 +16,7 @@ competitivos; S15 está validada sobre el stack local,
 además del editor Flash mínimo de S11. S17a añade biblioteca editorial y reutilización exacta de
 `question_version` sin nuevas tablas.
 S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
-S07 consulta el historial Flash cerrado y la revisión autorizada desde versiones y resultados
+S07 consulta el historial cerrado de Flash, Supervivencia y Pirámide, y la revisión común autorizada desde versiones y resultados
 persistidos, sin materializar tablas adicionales. El portal consulta el contexto global de
 superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
 comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
@@ -153,7 +153,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [70_rls.sql](70_rls.sql)                                                         | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                                                           |
 | [71_storage_acl.sql](71_storage_acl.sql)                                         | Lectura pública de `avatars` y ausencia de lectura de `question-assets` para roles de navegador.                                                                |
 | [80_rankings.sql](80_rankings.sql)                                               | Vista privada invoker y funciones públicas autorizadas por membresía.                                                                                           |
-| [85_flash_history_reads.sql](85_flash_history_reads.sql)                         | Historial Flash y revisión de resultados con autorización por sala, publicación y jugador.                                                                      |
+| [85_flash_history_reads.sql](85_flash_history_reads.sql)                         | Historial común y revisión persistida de Flash/Supervivencia/Pirámide, con payloads anulables y autorización por sala, publicación y jugador.                   |
 | [88_command_support.sql](88_command_support.sql)                                 | Resolución del actor, hash de secretos y bloqueo idempotente compartido.                                                                                        |
 | [89z_command_handlers.sql](89z_command_handlers.sql)                             | Operaciones privadas de intentos, invitaciones y administración, llamadas dentro de la transacción común.                                                       |
 | [90_commands.sql](90_commands.sql)                                               | Validación de comandos, idempotencia, despacho, auditoría y wrappers server-only.                                                                               |
@@ -284,11 +284,15 @@ son ejecutables por `authenticated` y comprueban membresía, devolviendo datos s
 mínimos. `anon` no puede ejecutarlos. `get_challenge_ranking` ordena por puntos, duración efectiva
 y `started_at` en servidor, aunque mantiene `started_at` fuera de su retorno público; el adaptador
 S06 consume el orden y los campos expuestos sin inventar esa fecha. S07 añade
-`get_flash_history(text, uuid)` y `get_flash_member_review(text, uuid, uuid)`: ambos son
+`get_room_history(text, uuid)`, `get_room_member_review(text, uuid, uuid)` y
+`get_flash_member_review(text, uuid, uuid)` son
 `SECURITY DEFINER`, fijan `search_path = ''`, no exponen tablas `private` directamente y solo tienen
 `EXECUTE` para `authenticated`. El historial no contiene payloads de pregunta ni soluciones; la
-revisión solo entrega soluciones al propio jugador terminal o a un `owner`, `admin` o `member` que
-revise un resultado ajeno elegible.
+proyección histórica cubre `flash`, `survival` y `pyramid`. La revisión común entrega solo preguntas
+alcanzadas en `survival`, mantiene los huecos de Flash y devuelve los siete niveles de Pirámide con
+payload y solución nulos para los niveles no alcanzados. Solo `owner`, `admin` y `member` pueden
+revisar; `spectator` conserva historial/ranking pero nunca recibe respuestas ni soluciones, tampoco
+por URL directa. `get_flash_history` y `get_flash_member_review` se conservan como wrappers compatibles.
 
 ## Denegación futura e inventario
 
@@ -324,7 +328,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `initial_schema_rls.test.sql`                | Aislamiento de salas, columnas privadas, Auth anónimo, ownership, catálogo congelado, pruebas fantasma, cero puntos, empates e histórico.                                    |
 | `commands.test.sql`                          | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, bloqueo de segunda sesión, Alfabeto, timeout, evaluación lenta e invitación atómica.                     |
 | `command_boundaries.test.sql`                | Identidad/actor, acceso privado al evaluador, rollback de inicio/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre.                       |
-| `s07_flash_history.test.sql`                 | Historial Flash cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, versión archivada, abandonos parciales y revisión propia/ajena.                        |
+| `s07_flash_history.test.sql`                 | Historial común cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, abandonos parciales y revisión autorizada mixta de Flash/Supervivencia/Pirámide. |
 | `admin_portal_reads.test.sql`                | Contexto global del superadmin, salas activas, ACL del RPC, claims falsos y ausencia de acceso privado directo.                                                              |
 | `s08_superadmin_room_commands.test.sql`      | Creación transaccional de sala, owner y grupo inicial; validaciones, slug, colisiones, ACL, rollback, idempotencia y auditoría agregada.                                     |
 | `s13_flash_variable_questions.test.sql`      | Flash de 2, 5 y 20 preguntas, puntos por item, suma de 100, publicación, crecimiento y reducción del grafo editorial.                                                        |

@@ -29,14 +29,14 @@ export function FlashPopRoomHistoryDetail({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <BackLink
-          href={`/salas/${roomId}/historial`}
-          label="Volver al historial de la sala"
-        />
+        <BackLink href={`/salas/${roomId}/historial`} label="Volver al historial de la sala" />
       </header>
 
       <div className={styles.pageIntro}>
         <p className={styles.eyebrow}>{roomTitle.toUpperCase()}</p>
+        <p className={styles.historyMeta}>
+          {entry.formatLabel} · {entry.subtitle}
+        </p>
         <h1>{entry.title}</h1>
         <div className={styles.detailBadges}>
           <Chip variant="data">{formatHistoryDate(entry.playedAt)}</Chip>

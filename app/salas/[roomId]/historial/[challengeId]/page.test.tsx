@@ -30,6 +30,7 @@ describe("room history detail route", () => {
     expect(markup).toContain("Jackobo");
     expect(markup).toContain("44");
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
+    expect(model.canReviewMembers).toBe(true);
   });
 
   it("renders an empty state when the challenge has no completed results", async () => {

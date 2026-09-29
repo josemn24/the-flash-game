@@ -17,6 +17,7 @@ import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/que
 import type { GameMode } from "@/types/gameplay/challenge";
 import type {
   AnswerReview,
+  AnswerResult,
   Challenge,
   ImageSurface,
   MultipleChoicePromptVisual,
@@ -51,15 +52,21 @@ import type {
   RoomHistoryDetailModel,
   RoomHistoryEntry,
   RoomHistoryListModel,
+  CompetitiveHistoryMode,
   RoomIntroductionModel,
   RoomLeaderboardEntry,
   RoomMemberDetailModel,
+  RoomMemberReviewItem,
+  RoomMemberReviewProgress,
   RoomMembershipRole,
   RoomRankingModel,
   RoomSettingsModel,
 } from "@/types/view-models";
+import { deriveSurvivalProgress } from "@/features/game/survivalRules";
+import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 import {
   supabaseAttemptExpiration,
@@ -154,7 +161,7 @@ type SeasonRankingReadRow = {
   position: number;
 };
 
-type FlashHistoryReadRow = {
+type RoomHistoryReadRow = {
   room_id: string;
   room_slug: string;
   room_title: string;
@@ -172,7 +179,7 @@ type FlashHistoryReadRow = {
   challenge_title: string;
   challenge_subtitle: string;
   challenge_description: string;
-  challenge_mode: "flash";
+  challenge_mode: CompetitiveHistoryMode;
   challenge_max_score: number;
   question_count: number;
   played_at: string;
@@ -186,11 +193,13 @@ type FlashHistoryReadRow = {
   position: number | null;
 };
 
-type FlashMemberReviewReadRow = {
+type RoomMemberReviewReadRow = {
   room_id: string;
   room_slug: string;
   room_title: string;
   viewer_role: RoomMembershipRole;
+  season_id: string;
+  season_title: string;
   publication_id: string;
   publication_status: "open" | "closed";
   publication_closes_at: string;
@@ -200,16 +209,20 @@ type FlashMemberReviewReadRow = {
   challenge_title: string;
   challenge_subtitle: string;
   challenge_description: string;
-  challenge_mode: "flash";
+  challenge_mode: CompetitiveHistoryMode;
   challenge_max_score: number;
+  question_count: number;
+  initial_lives: number | null;
   player_id: string;
   display_name: string;
   avatar_path: string | null;
   attempt_id: string;
   attempt_status: "completed" | "abandoned";
   attempt_score: number | null;
+  attempt_outcome: string | null;
   attempt_started_at: string;
-  attempt_completed_at: string;
+  attempt_completed_at: string | null;
+  attempt_duration_ms: number;
   attempt_lock_version: number;
   challenge_item_id: string;
   item_position: number;
@@ -236,8 +249,8 @@ type FlashMemberReviewReadRow = {
     | "escape";
   payload_schema_version: number;
   time_limit_ms?: number;
-  public_payload: unknown;
-  solution_payload: unknown;
+  public_payload: unknown | null;
+  solution_payload: unknown | null;
   answer: unknown;
   answer_status: "correct" | "partial" | "incorrect" | "unanswered" | "timeout" | null;
   points: number | null;
@@ -246,6 +259,12 @@ type FlashMemberReviewReadRow = {
   submitted_at: string | null;
   time_used_ms: number | null;
   item_points: number;
+  has_persisted_answer: boolean;
+  level_id: string | null;
+  level_label: string | null;
+  briefing_title: string | null;
+  briefing_format: string | null;
+  briefing_description: string | null;
 };
 
 const roomRoles = new Set<RoomMembershipRole>(["owner", "admin", "member", "spectator"]);
@@ -389,7 +408,7 @@ function isNullableNumber(value: unknown): value is number | null {
   return value === null || (typeof value === "number" && Number.isFinite(value));
 }
 
-function isFlashHistoryReadRow(value: unknown): value is FlashHistoryReadRow {
+function isRoomHistoryReadRow(value: unknown): value is RoomHistoryReadRow {
   if (!value || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return (
@@ -413,8 +432,13 @@ function isFlashHistoryReadRow(value: unknown): value is FlashHistoryReadRow {
     typeof row.challenge_title === "string" &&
     typeof row.challenge_subtitle === "string" &&
     typeof row.challenge_description === "string" &&
-    row.challenge_mode === "flash" &&
+    (row.challenge_mode === "flash" ||
+      row.challenge_mode === "survival" ||
+      row.challenge_mode === "pyramid") &&
     row.challenge_max_score === 100 &&
+    typeof row.question_count === "number" &&
+    Number.isInteger(row.question_count) &&
+    row.question_count >= 0 &&
     typeof row.question_count === "number" &&
     Number.isInteger(row.question_count) &&
     row.question_count >= 0 &&
@@ -432,7 +456,7 @@ function isFlashHistoryReadRow(value: unknown): value is FlashHistoryReadRow {
   );
 }
 
-function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewReadRow {
+function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberReviewReadRow {
   if (!value || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return (
@@ -441,6 +465,8 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     typeof row.room_title === "string" &&
     typeof row.viewer_role === "string" &&
     roomRoles.has(row.viewer_role as RoomMembershipRole) &&
+    typeof row.season_id === "string" &&
+    typeof row.season_title === "string" &&
     typeof row.publication_id === "string" &&
     (row.publication_status === "open" || row.publication_status === "closed") &&
     typeof row.publication_closes_at === "string" &&
@@ -450,7 +476,9 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     typeof row.challenge_title === "string" &&
     typeof row.challenge_subtitle === "string" &&
     typeof row.challenge_description === "string" &&
-    row.challenge_mode === "flash" &&
+    (row.challenge_mode === "flash" ||
+      row.challenge_mode === "survival" ||
+      row.challenge_mode === "pyramid") &&
     row.challenge_max_score === 100 &&
     typeof row.player_id === "string" &&
     typeof row.display_name === "string" &&
@@ -458,8 +486,10 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     typeof row.attempt_id === "string" &&
     (row.attempt_status === "completed" || row.attempt_status === "abandoned") &&
     isNullableNumber(row.attempt_score) &&
+    isNullableString(row.attempt_outcome) &&
     typeof row.attempt_started_at === "string" &&
-    typeof row.attempt_completed_at === "string" &&
+    isNullableString(row.attempt_completed_at) &&
+    typeof row.attempt_duration_ms === "number" &&
     typeof row.attempt_lock_version === "number" &&
     typeof row.challenge_item_id === "string" &&
     typeof row.item_position === "number" &&
@@ -490,8 +520,8 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
       (row.question_type === "heat-map" && row.payload_schema_version === 2)) &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
-    isRecord(row.public_payload) &&
-    isRecord(row.solution_payload) &&
+    (row.public_payload === null || isRecord(row.public_payload)) &&
+    (row.solution_payload === null || isRecord(row.solution_payload)) &&
     (row.answer === null ||
       typeof row.answer === "string" ||
       typeof row.answer === "boolean" ||
@@ -508,7 +538,15 @@ function isFlashMemberReviewReadRow(value: unknown): value is FlashMemberReviewR
     isNullableNumber(row.time_used_ms) &&
     typeof row.item_points === "number" &&
     Number.isFinite(row.item_points) &&
-    row.item_points >= 0
+    row.item_points >= 0 &&
+    (row.initial_lives === null ||
+      (typeof row.initial_lives === "number" && Number.isInteger(row.initial_lives))) &&
+    typeof row.has_persisted_answer === "boolean" &&
+    isNullableString(row.level_id) &&
+    isNullableString(row.level_label) &&
+    isNullableString(row.briefing_title) &&
+    isNullableString(row.briefing_format) &&
+    isNullableString(row.briefing_description)
   );
 }
 
@@ -764,7 +802,7 @@ async function callRankingRead<T>(
 }
 
 async function callHistoryRead<T>(
-  functionName: "get_flash_history" | "get_flash_member_review",
+  functionName: "get_room_history" | "get_room_member_review" | "get_flash_member_review",
   args: Record<string, string | null>,
   guard: (value: unknown) => value is T,
   attemptExpiration: AttemptExpirationQueries,
@@ -784,18 +822,23 @@ async function callHistoryRead<T>(
   });
 }
 
-function toHistoryEntry(row: FlashHistoryReadRow): RoomHistoryEntry {
+function toHistoryEntry(row: RoomHistoryReadRow): RoomHistoryEntry {
   return {
     id: row.publication_id,
     challengeId: row.publication_id,
-    title: getChallengeDisplayTitle(row.challenge_title, "flash"),
+    mode: row.challenge_mode,
+    title: getChallengeDisplayTitle(row.challenge_title, row.challenge_mode),
+    formatLabel: getChallengeFormatLabel(row.challenge_mode),
+    subtitle: row.challenge_subtitle,
+    questionCount: row.question_count,
+    maxScore: row.challenge_max_score,
     playedAt: row.played_at,
-    imageSrc: getChallengeImage("flash"),
+    imageSrc: getChallengeImage(row.challenge_mode),
     playerCount: row.player_count,
   };
 }
 
-function toHistoricalLeaderboard(rows: FlashHistoryReadRow[]): RoomDailyLeaderboardEntry[] {
+function toHistoricalLeaderboard(rows: RoomHistoryReadRow[]): RoomDailyLeaderboardEntry[] {
   return rows.flatMap((row) =>
     row.player_id &&
     row.display_name &&
@@ -820,13 +863,14 @@ function toHistoricalLeaderboard(rows: FlashHistoryReadRow[]): RoomDailyLeaderbo
   );
 }
 
-function historicalChallengeSummary(row: FlashHistoryReadRow) {
+function historicalChallengeSummary(row: RoomHistoryReadRow) {
   return {
     id: row.publication_id,
-    title: getChallengeDisplayTitle(row.challenge_title, "flash"),
-    formatLabel: getChallengeFormatLabel("flash"),
+    mode: row.challenge_mode,
+    title: getChallengeDisplayTitle(row.challenge_title, row.challenge_mode),
+    formatLabel: getChallengeFormatLabel(row.challenge_mode),
     subtitle: row.challenge_subtitle,
-    imageSrc: getChallengeImage("flash"),
+    imageSrc: getChallengeImage(row.challenge_mode),
     questionCount: row.question_count,
     playedAt: row.played_at,
   };
@@ -840,6 +884,7 @@ function currentMemberChallengeSummary(row: RoomReadRow) {
   return summary
     ? {
         id: summary.id,
+        mode: asMode(row.challenge_mode) ?? "flash",
         title: summary.title,
         formatLabel: summary.formatLabel,
         subtitle: summary.subtitle,
@@ -862,8 +907,11 @@ function requiredStringField(record: Record<string, unknown>, key: string, label
   return value;
 }
 
-function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
+function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
   assertSupportedQuestionPayloadSchemaVersion(row.payload_schema_version);
+  if (!isRecord(row.public_payload) || !isRecord(row.solution_payload)) {
+    throw new Error(`Missing historical question payload (${row.challenge_item_id})`);
+  }
   const publicPayload = row.public_payload as Record<string, unknown>;
   const solutionPayload = row.solution_payload as Record<string, unknown>;
   if (row.question_type === "mini-wordle") {
@@ -1731,13 +1779,33 @@ function toHistoricalFlashQuestion(row: FlashMemberReviewReadRow): Question {
   } as Question;
 }
 
-function toHistoricalChallenge(rows: FlashMemberReviewReadRow[]): Challenge {
+function toHistoricalChallenge(rows: RoomMemberReviewReadRow[]): Challenge {
   const first = rows[0];
   if (!first) throw new Error("Cannot build a historical Flash without rows");
   const questions = rows
     .slice()
     .sort((left, right) => left.item_position - right.item_position)
     .map(toHistoricalFlashQuestion);
+  const questionPoints = Object.fromEntries(
+    rows.map((row) => [row.challenge_item_id, row.item_points]),
+  );
+  if (first.challenge_mode === "survival") {
+    return {
+      id: first.publication_id,
+      definitionId: first.challenge_slug,
+      number: 1,
+      title: first.challenge_title,
+      subtitle: first.challenge_subtitle,
+      description: first.challenge_description,
+      mode: "survival",
+      lives: first.initial_lives ?? 0,
+      questions,
+      questionPoints,
+    };
+  }
+  if (first.challenge_mode !== "flash") {
+    throw new Error(`Cannot build a historical ${first.challenge_mode} Challenge`);
+  }
   return {
     id: first.publication_id,
     definitionId: first.challenge_slug,
@@ -1747,31 +1815,45 @@ function toHistoricalChallenge(rows: FlashMemberReviewReadRow[]): Challenge {
     description: first.challenge_description,
     mode: "flash",
     questions,
-    questionPoints: Object.fromEntries(rows.map((row) => [row.challenge_item_id, row.item_points])),
+    questionPoints,
   };
 }
 
-function toHistoricalResult(rows: FlashMemberReviewReadRow[]) {
+function toHistoricalAnswerReview(row: RoomMemberReviewReadRow): AnswerReview {
+  const status =
+    row.answer_status === "timeout" || row.answer_status === null
+      ? "unanswered"
+      : row.answer_status;
+  return {
+    questionId: row.challenge_item_id,
+    answer: row.answer as AnswerReview["answer"],
+    status,
+    isCorrect: status === "correct" || status === "partial",
+    points: row.points ?? 0,
+    timeUsed: (row.time_used_ms ?? 0) / 1_000,
+    ...(row.result_details ? { details: row.result_details as AnswerReview["details"] } : {}),
+  };
+}
+
+function toAnswerResult(review: AnswerReview): AnswerResult {
+  return {
+    questionId: review.questionId,
+    answer: review.answer,
+    status: review.status,
+    isCorrect: review.isCorrect,
+    points: review.points ?? 0,
+    timeUsed: review.timeUsed ?? 0,
+    details: review.details,
+  };
+}
+
+function toHistoricalResult(rows: RoomMemberReviewReadRow[]) {
   const first = rows[0];
   if (!first) return null;
   const answers: AnswerReview[] = rows
     .slice()
     .sort((left, right) => left.item_position - right.item_position)
-    .map((row) => {
-      const status =
-        row.answer_status === "timeout" || row.answer_status === null
-          ? "unanswered"
-          : row.answer_status;
-      return {
-        questionId: row.challenge_item_id,
-        answer: row.answer as AnswerReview["answer"],
-        status,
-        isCorrect: status === "correct" || status === "partial",
-        points: row.points ?? 0,
-        timeUsed: (row.time_used_ms ?? 0) / 1_000,
-        ...(row.result_details ? { details: row.result_details as AnswerReview["details"] } : {}),
-      };
-    });
+    .map(toHistoricalAnswerReview);
   const durationMs = rows.reduce((total, row) => total + (row.time_used_ms ?? 0), 0);
   const completed = first.attempt_status === "completed";
   return {
@@ -1780,8 +1862,8 @@ function toHistoricalResult(rows: FlashMemberReviewReadRow[]) {
     attempt: {
       challengeId: first.publication_id,
       startedAt: first.attempt_started_at,
-      playedAt: first.attempt_completed_at,
-      durationMs,
+      playedAt: first.attempt_completed_at ?? first.attempt_started_at,
+      durationMs: first.attempt_duration_ms ?? durationMs,
       flashPoints: first.attempt_score ?? 0,
       completed,
       answers,
@@ -1789,8 +1871,93 @@ function toHistoricalResult(rows: FlashMemberReviewReadRow[]) {
   };
 }
 
+function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMemberReviewItem[] {
+  return rows
+    .slice()
+    .sort((left, right) => left.item_position - right.item_position)
+    .map((row) => {
+      const locked = row.challenge_mode === "pyramid" && !row.has_persisted_answer;
+      const question = locked ? null : toHistoricalFlashQuestion(row);
+      const result = locked ? null : toHistoricalAnswerReview(row);
+      const status = locked ? "locked" : (result?.status ?? "unanswered");
+      const metadata =
+        row.challenge_mode === "pyramid"
+          ? {
+              levelId: row.level_id ?? undefined,
+              label: row.level_label ?? undefined,
+              briefing:
+                row.briefing_title && row.briefing_format && row.briefing_description
+                  ? {
+                      title: row.briefing_title,
+                      format: row.briefing_format,
+                      description: row.briefing_description,
+                    }
+                  : undefined,
+            }
+          : undefined;
+      return {
+        id: row.challenge_item_id,
+        title:
+          row.challenge_mode === "pyramid"
+            ? (row.level_label ?? `Nivel ${row.item_position}`)
+            : question
+              ? QUESTION_FORMAT_LABELS[question.type]
+              : row.question_type,
+        subtitle:
+          row.challenge_mode === "pyramid"
+            ? (row.briefing_title ?? `Nivel ${row.item_position}`)
+            : (question?.category ?? ""),
+        question,
+        result,
+        status,
+        ...(metadata ? { metadata } : {}),
+      };
+    });
+}
+
+function toRoomMemberReviewProgress(
+  rows: RoomMemberReviewReadRow[],
+): RoomMemberReviewProgress | null {
+  const first = rows[0];
+  if (!first) return null;
+  const orderedRows = rows.slice().sort((left, right) => left.item_position - right.item_position);
+  const reviews = orderedRows
+    .filter((row) => row.has_persisted_answer || row.challenge_mode === "flash")
+    .map(toHistoricalAnswerReview)
+    .map(toAnswerResult);
+  if (first.challenge_mode === "survival") {
+    const progress = deriveSurvivalProgress(
+      first.initial_lives ?? 0,
+      first.question_count,
+      reviews,
+    );
+    const persistedOutcome =
+      first.attempt_outcome === "passed"
+        ? "survived"
+        : first.attempt_outcome === "failed"
+          ? "eliminated"
+          : progress.outcome;
+    return {
+      mode: "survival",
+      totalQuestionCount: first.question_count,
+      initialLives: first.initial_lives ?? 0,
+      ...progress,
+      outcome: persistedOutcome,
+    };
+  }
+  if (first.challenge_mode === "pyramid") {
+    const progress = deriveCompetitivePyramidProgress(first.question_count, reviews);
+    return { mode: "pyramid", totalLevelCount: first.question_count, ...progress };
+  }
+  return {
+    mode: "flash",
+    answeredCount: orderedRows.filter((row) => row.has_persisted_answer).length,
+    totalQuestionCount: first.question_count,
+  };
+}
+
 function toHistoricalMember(
-  rows: FlashMemberReviewReadRow[],
+  rows: RoomMemberReviewReadRow[],
   fallback: { id: string; name: string; avatarSrc?: string },
 ): RoomMemberDetailModel["member"] {
   const first = rows[0];
@@ -1934,9 +2101,9 @@ export class SupabaseRoomQueries
 
   async listHistory(roomKey: string): Promise<RoomHistoryListModel | null> {
     const rows = await callHistoryRead(
-      "get_flash_history",
+      "get_room_history",
       { target_room_slug: roomKey },
-      isFlashHistoryReadRow,
+      isRoomHistoryReadRow,
       this.attemptExpiration,
     );
     const first = rows[0];
@@ -1957,7 +2124,7 @@ export class SupabaseRoomQueries
       };
     }
 
-    const byPublication = new Map<string, FlashHistoryReadRow[]>();
+    const byPublication = new Map<string, RoomHistoryReadRow[]>();
     for (const row of rows) {
       const group = byPublication.get(row.publication_id) ?? [];
       group.push(row);
@@ -1985,9 +2152,9 @@ export class SupabaseRoomQueries
   ): Promise<RoomHistoryDetailModel | null> {
     if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(publicationKey)) return null;
     const rows = await callHistoryRead(
-      "get_flash_history",
+      "get_room_history",
       { target_room_slug: roomKey, target_publication_id: publicationKey },
-      isFlashHistoryReadRow,
+      isRoomHistoryReadRow,
       this.attemptExpiration,
     );
     const first = rows[0];
@@ -2011,7 +2178,7 @@ export class SupabaseRoomQueries
     const viewer = await getCurrentViewerProfile();
     if (!viewer || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(memberKey)) return null;
 
-    let historyRow: FlashHistoryReadRow | undefined;
+    let historyRow: RoomHistoryReadRow | undefined;
     let currentRoomRow: RoomReadRow | undefined;
     let challengeLeaderboard: RoomDailyLeaderboardEntry[] = [];
     let challengeSummary: RoomMemberDetailModel["challengeSummary"] = null;
@@ -2021,9 +2188,9 @@ export class SupabaseRoomQueries
     if (publicationKey) {
       if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(publicationKey)) return null;
       const rows = await callHistoryRead(
-        "get_flash_history",
+        "get_room_history",
         { target_room_slug: roomKey, target_publication_id: publicationKey },
-        isFlashHistoryReadRow,
+        isRoomHistoryReadRow,
         this.attemptExpiration,
       );
       historyRow = rows[0];
@@ -2042,15 +2209,17 @@ export class SupabaseRoomQueries
     }
 
     if (!resolvedPublicationId || !seasonId) return null;
+    const viewerRole = historyRow?.viewer_role ?? currentRoomRow?.membership_role;
+    if (viewerRole === "spectator") return null;
     const [initialReviewRows, seasonRows, rankingRows] = await Promise.all([
       callHistoryRead(
-        "get_flash_member_review",
+        "get_room_member_review",
         {
           target_room_slug: roomKey,
           target_publication_id: resolvedPublicationId,
           target_player_id: memberKey,
         },
-        isFlashMemberReviewReadRow,
+        isRoomMemberReviewReadRow,
         this.attemptExpiration,
       ),
       callRankingRead("get_season_ranking", { target_season_id: seasonId }, isSeasonRankingReadRow),
@@ -2100,9 +2269,12 @@ export class SupabaseRoomQueries
     });
     member.totalFlashPoints = seasonEntry?.flash_points ?? 0;
     const roomLeaderboard = toSeasonLeaderboard(seasonRows);
-    const challenge = reviewRows.length ? toHistoricalChallenge(reviewRows) : null;
+    const challenge =
+      reviewRows.length && reviewRows[0]?.challenge_mode !== "pyramid"
+        ? toHistoricalChallenge(reviewRows)
+        : null;
     const result = reviewRows.length ? toHistoricalResult(reviewRows) : null;
-    const viewerRole = reviewMember?.viewer_role ?? currentRoomRow?.membership_role;
+    const resolvedViewerRole = reviewMember?.viewer_role ?? viewerRole;
     return {
       roomId: roomKey,
       roomTitle:
@@ -2111,6 +2283,8 @@ export class SupabaseRoomQueries
       challengeSummary,
       challenge,
       result,
+      reviewItems: reviewRows.length ? toRoomMemberReviewItems(reviewRows) : [],
+      reviewProgress: reviewRows.length ? toRoomMemberReviewProgress(reviewRows) : null,
       roomRank: seasonEntry?.position ?? 0,
       challengeRank:
         challengeLeaderboard.find(({ memberId }) => memberId === memberKey)?.rank ?? null,
@@ -2120,7 +2294,7 @@ export class SupabaseRoomQueries
         ? `/salas/${roomKey}/historial/${resolvedPublicationId}`
         : `/salas/${roomKey}/ranking`,
       source: "supabase",
-      canReviewMembers: viewerRole !== "spectator",
+      canReviewMembers: resolvedViewerRole !== "spectator",
     };
   }
 }

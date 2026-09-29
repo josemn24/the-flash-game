@@ -279,7 +279,8 @@ nivel obtiene solo su pregunta preparada. Las unidades temporales usan scope `le
 guarda recibos y evaluaciones, deriva los niveles superados, `summit`/`failed`, el score y el cierre,
 y no permite preparar después de una respuesta no correcta. La recuperación en briefing reanuda sin
 iniciar reloj; si se interrumpe un nivel temporizado lo resuelve como `unanswered` y finaliza el
-intento. El propietario puede leer el resultado terminal y la revisión de niveles alcanzados. El
+intento. Los roles autorizados pueden leer el resultado terminal y la revisión; la revisión histórica
+muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
 

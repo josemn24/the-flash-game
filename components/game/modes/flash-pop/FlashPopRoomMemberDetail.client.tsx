@@ -1,10 +1,10 @@
 "use client";
 
 import { Avatar, BackLink, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
-import { ReviewAnswerList, reviewQuestionsFor } from "@/components/game/shared";
+import { ReviewAnswerList } from "@/components/game/shared";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { applyRoomMemberChallengeResult } from "@/features/rooms/localResults";
-import type { AnswerReview, AnswerResult, Challenge, RoomMemberDetailModel } from "@/types/game";
+import type { AnswerReview, AnswerResult, RoomMemberDetailModel } from "@/types/game";
 import styles from "./FlashPopRoomMemberDetail.module.css";
 
 function toAnswerResult(answer: AnswerReview): AnswerResult {
@@ -43,29 +43,32 @@ function formatPlayedAtCompact(value?: string) {
 }
 
 function AnswerHistory({
-  challenge,
-  attempt,
+  items,
+  progress,
 }: {
-  challenge: Challenge;
-  attempt: NonNullable<RoomMemberDetailModel["result"]>["attempt"];
+  items: RoomMemberDetailModel["reviewItems"];
+  progress: RoomMemberDetailModel["reviewProgress"];
 }) {
-  if (!attempt) return null;
-  const answers = new Map(attempt.answers.map((answer) => [answer.questionId, answer]));
-  const entries = reviewQuestionsFor(challenge).map((question, index) => {
-    const answer = answers.get(question.id) ?? {
-      questionId: question.id,
-      answer: null,
-      status: "unanswered" as const,
-      isCorrect: false,
-    };
-
-    return {
-      id: question.id,
-      question,
-      result: toAnswerResult(answer),
-      marker: String(index + 1).padStart(2, "0"),
-    };
-  });
+  if (!items.length) return null;
+  const entries = items.map((item, index) => ({
+    id: item.id,
+    question: item.question ?? undefined,
+    result: item.result ? toAnswerResult(item.result) : undefined,
+    marker: String(index + 1).padStart(2, "0"),
+    title: item.title,
+    subtitle: item.subtitle,
+    status: item.status,
+    lockedMessage:
+      item.status === "locked"
+        ? "No alcanzado: el ascenso terminó en un nivel anterior."
+        : undefined,
+  }));
+  const countLabel =
+    progress?.mode === "pyramid"
+      ? `${progress.levelsCleared} de ${progress.totalLevelCount} niveles superados`
+      : progress?.mode === "survival"
+        ? `${progress.reachedQuestionCount} preguntas alcanzadas`
+        : `${progress?.answeredCount ?? items.length} respuestas`;
 
   return (
     <section className={styles.history} aria-labelledby="answer-history-title">
@@ -73,7 +76,7 @@ function AnswerHistory({
         <div>
           <h2 id="answer-history-title">Respuestas</h2>
         </div>
-        <Chip variant="data">{attempt.answers.length} respuestas</Chip>
+        <Chip variant="data">{countLabel}</Chip>
       </div>
       <ReviewAnswerList entries={entries} />
     </section>
@@ -82,9 +85,10 @@ function AnswerHistory({
 
 export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailModel }) {
   const { getCompletion } = useRoomSession();
-  const completion = model.source === "supabase" || !model.challengeSummary
-    ? undefined
-    : getCompletion(model.roomId, model.challengeSummary.id);
+  const completion =
+    model.source === "supabase" || !model.challengeSummary
+      ? undefined
+      : getCompletion(model.roomId, model.challengeSummary.id);
   const visibleModel = completion?.attempt
     ? applyRoomMemberChallengeResult(model, {
         roomId: model.roomId,
@@ -102,14 +106,25 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   const attempt = result?.attempt;
   const hasAttempt = Boolean(attempt);
   const isComplete = Boolean(result?.completed && attempt);
+  const mode =
+    resolvedModel.challengeSummary?.mode ?? resolvedModel.reviewProgress?.mode ?? "flash";
+  const modeLabel =
+    mode === "survival" ? "Supervivencia" : mode === "pyramid" ? "Pirámide" : "Flash";
+  const outcomeLabel =
+    resolvedModel.reviewProgress?.mode === "survival"
+      ? resolvedModel.reviewProgress.outcome === "survived"
+        ? "Superado"
+        : "Eliminado"
+      : resolvedModel.reviewProgress?.mode === "pyramid"
+        ? resolvedModel.reviewProgress.outcome === "summit"
+          ? "Cumbre"
+          : "Fallido"
+        : null;
 
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <BackLink
-          href={model.returnHref}
-          label="Volver al origen del resultado"
-        />
+        <BackLink href={model.returnHref} label="Volver al origen del resultado" />
       </header>
 
       <div>
@@ -136,7 +151,9 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
         <Card as="section" className={styles.summary} aria-labelledby="attempt-summary-title">
           <div className={styles.summaryHeader}>
             <div>
-              <p className={styles.eyebrow}>{model.source === "supabase" ? "Resultado Flash" : "Reto de hoy"}</p>
+              <p className={styles.eyebrow}>
+                {model.source === "supabase" ? `Resultado ${modeLabel}` : "Reto de hoy"}
+              </p>
               <h2 id="attempt-summary-title">
                 {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}
               </h2>
@@ -149,7 +166,7 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
                 <BoltIcon aria-hidden="true" />
                 <strong>{result?.flashPoints ?? 0}</strong>
               </div>
-              <span>Flash Points del reto</span>
+              <span>Puntos del reto</span>
             </div>
             <div>
               <div className={styles.statValue}>
@@ -172,6 +189,24 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
             </div>
           </div>
 
+          {resolvedModel.reviewProgress?.mode === "survival" ? (
+            <div className={styles.detailBadges}>
+              <Chip variant="data">
+                {resolvedModel.reviewProgress.livesRemaining} de{" "}
+                {resolvedModel.reviewProgress.initialLives} vidas
+              </Chip>
+              <Chip variant="data">{outcomeLabel}</Chip>
+            </div>
+          ) : resolvedModel.reviewProgress?.mode === "pyramid" ? (
+            <div className={styles.detailBadges}>
+              <Chip variant="data">
+                {resolvedModel.reviewProgress.levelsCleared} de{" "}
+                {resolvedModel.reviewProgress.totalLevelCount} niveles
+              </Chip>
+              <Chip variant="data">{outcomeLabel}</Chip>
+            </div>
+          ) : null}
+
           {!hasAttempt ? (
             <div className={styles.emptyState}>
               <p>Todavía no ha jugado</p>
@@ -185,8 +220,11 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           ) : null}
         </Card>
 
-        {hasAttempt && resolvedModel.challenge && attempt ? (
-          <AnswerHistory challenge={resolvedModel.challenge} attempt={attempt} />
+        {hasAttempt && resolvedModel.reviewItems.length ? (
+          <AnswerHistory
+            items={resolvedModel.reviewItems}
+            progress={resolvedModel.reviewProgress}
+          />
         ) : null}
       </div>
     </Canvas>

@@ -787,12 +787,22 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_room_history": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_flash_history": {
       "arguments": "target_room_slug text, target_publication_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
     "public.get_flash_member_review": {
+      "arguments": "target_room_slug text, target_publication_id uuid, target_player_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_room_member_review": {
       "arguments": "target_room_slug text, target_publication_id uuid, target_player_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]

@@ -25,7 +25,7 @@ describe("FlashPopRoomMemberDetail", () => {
     expect(markup).toContain("#1 en la sala");
     expect(markup).toContain("54");
     expect(markup).toContain("Flash Points");
-    expect(markup).toContain("Flash Points del reto");
+    expect(markup).toContain("Puntos del reto");
     expect(markup).toContain("ranking del reto");
     expect(markup).not.toContain("Completado");
     expect(markup).toContain("Respuestas");

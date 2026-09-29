@@ -80,7 +80,12 @@ export const getRoomRankingPageModel = cache(async (roomKey: string) =>
 export const getRoomMemberDetailPageModel = cache(
   async (roomKey: string, memberKey: string, publicationKey?: string) =>
     isMockRoomRouteEnabled(roomKey)
-      ? mockRoomQueries.getMemberDetail(roomKey, memberKey, await getQueryContext())
+      ? mockRoomQueries.getMemberDetail(
+          roomKey,
+          memberKey,
+          await getQueryContext(),
+          publicationKey,
+        )
       : isMockRoomRoute(roomKey)
         ? null
         : supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),

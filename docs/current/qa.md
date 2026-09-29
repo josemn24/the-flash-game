@@ -7,7 +7,7 @@
 
 La integración local cubre S01–S15, S17, S17a, S18b parcial, S20, D08a/D08b, S05-Alphabet,
 F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19 y E01–E06/E10. Incluye Auth, perfil, salas,
-temporadas, calendario, Flash, Alphabet, Supervivencia, Pirámide, rankings, historial Flash,
+temporadas, calendario, Flash, Alphabet, Supervivencia, Pirámide, rankings, historial común,
 revisión autorizada, portal de superadmin, biblioteca editorial y assets privados.
 
 S18b solo habilita actualmente concesión/revocación de admin y eliminación lógica de miembros.
@@ -17,7 +17,7 @@ la expiración por inactividad de intentos competitivos ya está implementada me
 reconciliación bajo demanda; S20 ya cubre las correcciones administrativas de resultados.
 
 El esquema declarativo vigente contiene 54 archivos y la revisión canónica es
-`20260929175548_attempt-inactivity-expiration`. El historial local incluye además las revisiones declarativas de S17 y S15;
+`20260929200000_room_member_review_modes`. El historial local incluye además las revisiones declarativas de S17 y S15;
 hay 30 tablas, una vista interna y un inventario de seguridad registrado. La CLI local tiene un proyecto
 de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 

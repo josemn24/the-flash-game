@@ -26,10 +26,7 @@ export function FlashPopRoomHistory({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <BackLink
-          href={`/salas/${roomId}`}
-          label="Volver al detalle de la sala"
-        />
+        <BackLink href={`/salas/${roomId}`} label="Volver al detalle de la sala" />
       </header>
 
       <div className={styles.pageIntro}>
@@ -57,6 +54,9 @@ export function FlashPopRoomHistory({
                   </div>
                 </div>
                 <div className={styles.historyBody}>
+                  <p className={styles.historyMeta}>
+                    {entry.formatLabel} · {entry.subtitle}
+                  </p>
                   <h2>{entry.title}</h2>
                   {winner ? (
                     <p className={styles.winner}>

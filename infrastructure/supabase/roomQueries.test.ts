@@ -421,6 +421,7 @@ const historyRows = [
     challenge_mode: "flash",
     challenge_max_score: 100,
     question_count: 2,
+    initial_lives: null,
     played_at: "2026-01-02T00:00:00Z",
     player_count: 1,
     player_id: viewer.id,
@@ -444,12 +445,12 @@ const historyRows = [
     publication_opens_at: "2026-01-03T00:00:00Z",
     publication_closes_at: "2026-01-04T00:00:00Z",
     challenge_id: "00000000-0000-0000-0000-000000000013",
-    challenge_slug: "s07-flash-history",
-    challenge_version_id: "00000000-0000-0000-0000-000000000014",
-    challenge_title: "Flash histórico",
-    challenge_subtitle: "Dos preguntas",
-    challenge_description: "Revisión",
-    challenge_mode: "flash",
+    challenge_slug: "s07-survival-history",
+    challenge_version_id: "00000000-0000-0000-0000-000000000024",
+    challenge_title: "Supervivencia histórica",
+    challenge_subtitle: "Dos preguntas y vidas",
+    challenge_description: "Ranking histórico",
+    challenge_mode: "survival",
     challenge_max_score: 100,
     question_count: 2,
     played_at: "2026-01-04T00:00:00Z",
@@ -470,6 +471,8 @@ const reviewRows = [
     room_slug: roomRow.room_slug,
     room_title: roomRow.room_title,
     viewer_role: "member",
+    season_id: roomRow.season_id,
+    season_title: "Temporada S06",
     publication_id: historyRows[0].publication_id,
     publication_status: "closed",
     publication_closes_at: historyRows[0].publication_closes_at,
@@ -481,14 +484,18 @@ const reviewRows = [
     challenge_description: historyRows[0].challenge_description,
     challenge_mode: "flash",
     challenge_max_score: 100,
+    question_count: 2,
+    initial_lives: null,
     player_id: viewer.id,
     display_name: viewer.name,
     avatar_path: viewer.avatarSrc,
     attempt_id: "00000000-0000-0000-0000-000000000016",
     attempt_status: "completed",
     attempt_score: 80,
+    attempt_outcome: null,
     attempt_started_at: "2026-01-01T10:00:00Z",
     attempt_completed_at: "2026-01-01T10:01:00Z",
+    attempt_duration_ms: 60000,
     attempt_lock_version: 4,
     challenge_item_id: "00000000-0000-0000-0000-000000000017",
     item_position: 1,
@@ -521,6 +528,12 @@ const reviewRows = [
     submitted_at: "2026-01-01T10:00:01Z",
     time_used_ms: 900,
     item_points: 50,
+    has_persisted_answer: true,
+    level_id: null,
+    level_label: null,
+    briefing_title: null,
+    briefing_format: null,
+    briefing_description: null,
   },
   {
     ...historyRows[0],
@@ -536,8 +549,10 @@ const reviewRows = [
     attempt_id: "00000000-0000-0000-0000-000000000016",
     attempt_status: "completed",
     attempt_score: 80,
+    attempt_outcome: null,
     attempt_started_at: "2026-01-01T10:00:00Z",
     attempt_completed_at: "2026-01-01T10:01:00Z",
+    attempt_duration_ms: 60000,
     attempt_lock_version: 4,
     challenge_item_id: "00000000-0000-0000-0000-000000000019",
     item_position: 2,
@@ -570,6 +585,12 @@ const reviewRows = [
     submitted_at: null,
     time_used_ms: null,
     item_points: 50,
+    has_persisted_answer: false,
+    level_id: null,
+    level_label: null,
+    briefing_title: null,
+    briefing_format: null,
+    briefing_description: null,
   },
 ];
 
@@ -587,7 +608,7 @@ describe("SupabaseRoomQueries S07 history and review", () => {
   it("groups historical rows and keeps empty publications", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) =>
-        functionName === "get_flash_history"
+        functionName === "get_room_history"
           ? { data: historyRows, error: null }
           : { data: [], error: null },
       ),
@@ -598,14 +619,21 @@ describe("SupabaseRoomQueries S07 history and review", () => {
       expect.objectContaining({ memberId: viewer.id, startedAt: historyRows[0].started_at }),
     ]);
     expect(model?.rankings[historyRows[1].publication_id]).toEqual([]);
+    expect(model?.entries[1]).toMatchObject({
+      mode: "survival",
+      formatLabel: "Supervivencia",
+      subtitle: "Dos preguntas y vidas",
+      questionCount: 2,
+      maxScore: 100,
+    });
     expect(model?.source).toBe("supabase");
   });
 
   it("reconstructs a persisted completed review without local session data", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) => {
-        if (functionName === "get_flash_history") return { data: historyRows, error: null };
-        if (functionName === "get_flash_member_review") return { data: reviewRows, error: null };
+        if (functionName === "get_room_history") return { data: historyRows, error: null };
+        if (functionName === "get_room_member_review") return { data: reviewRows, error: null };
         if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
         return { data: challengeRows, error: null };
       }),
@@ -629,6 +657,29 @@ describe("SupabaseRoomQueries S07 history and review", () => {
     expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
   });
 
+  it("keeps historical ranking visible and enables non-Flash review", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) =>
+        functionName === "get_room_history"
+          ? { data: [historyRows[1]], error: null }
+          : { data: [], error: null },
+      ),
+    });
+    const model = await new SupabaseRoomQueries().getHistoryDetail(
+      "s06-main",
+      historyRows[1].publication_id,
+    );
+    expect(model?.ranking).toEqual([]);
+    expect(model?.canReviewMembers).toBe(true);
+    await expect(
+      new SupabaseRoomQueries().getMemberDetail(
+        "s06-main",
+        viewer.id,
+        historyRows[1].publication_id,
+      ),
+    ).resolves.toBeNull();
+  });
+
   it("propagates malformed history rows and RPC errors", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async () => ({ data: [{ ...historyRows[0], player_count: "1" }], error: null })),
@@ -640,7 +691,7 @@ describe("SupabaseRoomQueries S07 history and review", () => {
       rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
     });
     await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
-      "Supabase history read failed (get_flash_history): permission denied",
+      "Supabase history read failed (get_room_history): permission denied",
     );
   });
 });

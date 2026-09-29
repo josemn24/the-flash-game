@@ -551,7 +551,7 @@ deben vivir en el servidor.
   estrategia para reintentos de red.
 - Finalización/acreditación atómica y lecturas de los dos rankings están implementadas y probadas en
   SQL/adapter; S06 lee rankings bajo demanda y no materializa tablas adicionales.
-- S07 implementa el historial Flash de publicaciones cerradas sin intentos `in_progress`, el ranking
+- S07 implementa el historial común de Flash, Supervivencia y Pirámide de publicaciones cerradas sin intentos `in_progress`, el ranking
   histórico y la revisión propia/ajena autorizada sin tablas materializadas ni recalcular puntos.
 - La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` conserva el acceso a
   historial/rankings, pero no recibe respuestas ni soluciones ajenas.

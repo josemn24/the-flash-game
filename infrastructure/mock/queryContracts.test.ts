@@ -52,7 +52,7 @@ function roomContract(queries: RoomQueries) {
     expect(settings?.currentUserId).toBe("player");
     expect(ranking?.entries[0]?.name).toBe("Dark");
     expect(member?.member.name).toBe("Dark");
-    expect(history?.entries).toHaveLength(5);
+    expect(history?.entries).toHaveLength(3);
   });
 
   it("serializes room DTOs without authentication or canonical private payloads", async () => {
@@ -125,6 +125,38 @@ describe("MockRoomQueries contract", () => {
         ownerContext,
       ),
     ).resolves.toBeNull();
+    await expect(
+      new MockRoomQueries(store).getMemberDetail(
+        "tabarnia-room",
+        "ches",
+        ownerContext,
+        "tabarnia-challenge-05",
+      ),
+    ).resolves.toBeNull();
+  });
+
+  it("projects historical Survival progress and seven Pyramid levels with locked metadata", async () => {
+    const pyramidScheduleId = scheduledChallengeRouteAliases["tabarnia-challenge-05"];
+    const pyramidItemIds = new Set(
+      mockDomainStore.challengeItems
+        .filter((item) => item.challengeVersionId === mockDomainStore.scheduledChallenges.find(({ id }) => id === pyramidScheduleId)?.challengeVersionId)
+        .filter((item) => item.position > 2)
+        .map(({ id }) => id),
+    );
+    const partialAnswers = mockDomainStore.attemptAnswers.filter(
+      (answer) => !pyramidItemIds.has(answer.challengeItemId),
+    );
+    const model = await new MockRoomQueries(withStore({ attemptAnswers: partialAnswers })).getMemberDetail(
+      "tabarnia-room",
+      "ches",
+      ownerContext,
+      "tabarnia-challenge-05",
+    );
+
+    expect(model?.reviewItems).toHaveLength(7);
+    expect(model?.reviewItems.filter(({ status }) => status === "locked")).toHaveLength(5);
+    expect(model?.reviewItems[6]?.question).toBeNull();
+    expect(model?.reviewProgress).toMatchObject({ mode: "pyramid", levelsCleared: 2 });
   });
 
   it("grants the same read contract to owners and room admins", async () => {

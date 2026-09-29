@@ -77,17 +77,19 @@ rutas competitivas. Consulta
   con briefings y formatos evaluables; cada checkpoint entrega solo el nivel permitido, y el servidor
   deriva progreso, `summit`/`failed`, puntos y cierre desde evaluaciones guardadas. La recuperación
   conserva un briefing sin iniciar el reloj y finaliza como `failed` un nivel temporizado interrumpido.
-  Resultado y revisión terminal propios exponen solo niveles alcanzados.
+  Resultado terminal propio expone niveles alcanzados; la revisión histórica común muestra los siete niveles
+  y bloquea los no alcanzados sin payload.
   `true-false`, `ordering`, `classification`, `logic-matrix`, `zip`, `escape` y `word-hashtag` pasan por
   la misma admisión editorial, ejecución server-backed y revisión protegida; la allowlist se comparte
   también con Flash y Supervivencia.
   En Pirámide solo `correct` avanza y acredita puntos; timeout, incorrecta o parcial terminan el nivel con cero.
 - Ranking de temporada y de la publicación abierta actual desde los RPCs reales, con posición
   persistida en las tarjetas de sala y lectura autorizada para spectators (S06).
-- Historial Flash de publicaciones cerradas, ranking histórico y detalle de resultados reconstruidos
+- Historial común de Flash, Supervivencia y Pirámide para publicaciones cerradas, con ranking histórico por publicación
   desde versiones persistidas (S07).
 - Revisión propia y revisión ajena completa para `owner`, `admin` y `member`; `spectator` puede leer
-  historial/rankings, pero no respuestas ni soluciones ajenas (S07).
+  historial/rankings, pero nunca recibe respuestas ni soluciones, tampoco por URL directa. Survival
+  limita la revisión a preguntas alcanzadas y Pyramid muestra siete niveles con los no alcanzados bloqueados.
 - Portal privado en `/admin`: contexto del operador superadmin, listado de salas activas y creación
   de salas activas con owner explícito y grupo inicial opcional. La creación usa resolución exacta de
   usuarios, slug server-side, transacción, idempotencia y una auditoría agregada. S18b ya permite al
@@ -149,9 +151,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 | `/`                                                                 | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                                 |
 | `/salas/[roomId]`                                                   | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                                 |
 | `/salas/[roomId]/ranking`                                           | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
-| `/salas/[roomId]/historial`                                         | Historial Flash real para salas persistidas; otros modos siguen mock.                                                                |
-| `/salas/[roomId]/historial/[challengeId]`                           | Ranking histórico Flash real; 404 si la publicación no es accesible o no está consolidada.                                           |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]`                | Revisión histórica Flash autorizada; sin enlaces de revisión para spectators.                                                        |
+| `/salas/[roomId]/historial`                                         | Historial real de Flash, Supervivencia y Pirámide para salas persistidas.                                                            |
+| `/salas/[roomId]/historial/[challengeId]`                           | Ranking histórico por publicación; 404 si no es accesible o no está consolidada.                                                     |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]`                | Revisión histórica de Flash, Supervivencia y Pirámide; sin acceso para spectators.                                                  |
 | `/salas/[roomId]/ajustes`                                           | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
 | `/admin`                                                            | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
 | `/admin/rooms`                                                      | Gestión protegida de salas activas y creación de salas.                                                                              |
@@ -198,8 +200,8 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   vencido puede cerrar el intento como `abandoned` sin puntos; el tick diario y las lecturas/comandos
   aplican la reconciliación, mientras que un intento completamente inactivo puede esperar al siguiente
   tick.
-- El historial de usuario solo consolida publicaciones Flash `closed` sin intentos `in_progress`; intentos
-  `test`/`invalidated` y publicaciones `cancelled` quedan fuera de las proyecciones de usuario.
+- El historial de sala consolida publicaciones `flash`, `survival` y `pyramid` `closed` sin intentos `in_progress`; intentos
+  `test`/`invalidated` y publicaciones `cancelled` quedan fuera de la proyección histórica.
 - S17 y S20 ya permiten corrección administrativa local; la aplicación de la migración y la validación de
   estas RPC contra un proyecto Supabase remoto siguen pendientes.
 - Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
@@ -210,7 +212,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado verificado a 2026-09-29:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260929175548_attempt-inactivity-expiration`.
+  `20260929200000_room_member_review_modes`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.

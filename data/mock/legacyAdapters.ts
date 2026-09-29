@@ -8,6 +8,7 @@ import {
   selectSeasonRanking,
 } from "@/data/mock/selectors";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
+import { getChallengeFormatLabel } from "@/application/presentation/room";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
 import type { PlayerId, RoomId } from "@/types/domain";
 import type { AnswerReview, RoomChallengeAttempt } from "@/types/gameplay";
@@ -182,12 +183,24 @@ export function toLegacyRoomHistory(
     const version = store.challengeVersions.find(
       ({ id }) => id === entry.scheduledChallenge.challengeVersionId,
     );
-    if (!challengeId || !version) return [];
+    if (
+      !challengeId ||
+      !version ||
+      (version.mode !== "flash" && version.mode !== "survival" && version.mode !== "pyramid")
+    )
+      return [];
     return [
       {
         id: `tabarnia-history-${String(entry.scheduledChallenge.number).padStart(2, "0")}`,
         challengeId,
+        mode: version.mode,
         title: version.title,
+        formatLabel: getChallengeFormatLabel(version.mode),
+        subtitle: version.subtitle,
+        questionCount: store.challengeItems.filter(
+          ({ challengeVersionId }) => challengeVersionId === version.id,
+        ).length,
+        maxScore: version.maxScore,
         playedAt: entry.playedAt,
         imageSrc: historyImages[challengeId] ?? "/flash-pop/concepts/room-ready.webp",
         playerCount: entry.participantCount,

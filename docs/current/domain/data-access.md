@@ -6,7 +6,7 @@ La fase 4 está cerrada para las slices verificadas. S01–S15, S17a, S18b parci
 E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
 recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Supervivencia/Pirámide competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
-introducción, el gameplay Flash/Supervivencia/Pirámide, los rankings, el historial Flash cerrado y la revisión consultan o
+introducción, el gameplay Flash/Supervivencia/Pirámide, los rankings, el historial común cerrado y la revisión completa consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
@@ -85,7 +85,7 @@ Calendar tick protegido
 Reconciliación bajo demanda de intentos
 → `infrastructure/supabase/attemptExpiration.ts` (server-only)
 → `private.expire_stale_attempts(jsonb)` con `service_role`
-→ antes de `get_flash_history`, limitada al `roomSlug`
+→ antes de `get_room_history`, limitada al `roomSlug`
 → antes de un comando de intento, limitada al `attemptId`
 → 15 minutos de inactividad + publicación cerrada/deadline vencido
 → `abandoned` sin puntos; una acción que encuentra el cierre recibe `attempt_inactivity_expired`
@@ -236,8 +236,8 @@ La home, el detalle S02, los rankings S06 y el historial/revisión S07 delegan e
 `SupabaseRoomQueries`. El adaptador implementa `listCards`, `getDetail`, `getIntroduction`,
 `getRanking`, `listHistory`, `getHistoryDetail` y `getMemberDetail`. Para una sala real resuelve la
 temporada desde `get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
-`get_challenge_ranking`. S07 usa `get_flash_history` para agrupar publicaciones cerradas y
-`get_flash_member_review` para reconstruir el resultado desde la versión histórica enlazada; antes de
+`get_challenge_ranking`. S07 usa `get_room_history` para agrupar publicaciones cerradas y
+`get_room_member_review` para reconstruir la revisión desde la versión histórica enlazada; `get_flash_member_review` permanece como wrapper compatible. Antes de
 esas lecturas ejecuta la reconciliación acotada a la sala para que los intentos que ya cumplen la
 política no oculten indefinidamente la publicación. Carga
 en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de
@@ -335,12 +335,13 @@ salas, temporadas, contenido y calendario.
   contextualizado en una sala.
 - Los miembros antiguos pueden figurar en resultados históricos si eran competitivos cuando
   iniciaron el intento, pero ya no pueden leer la sala.
-- El historial exige una membresía activa del lector, incluye publicaciones Flash `closed` sin
+- El historial exige una membresía activa del lector, incluye publicaciones `flash`, `survival` y `pyramid` `closed` sin
   intentos `in_progress` y conserva publicaciones sin participantes. Las filas competitivas excluyen
   `test`, `invalidated` y `cancelled`; los espectadores no aparecen como jugadores.
-- La revisión propia terminal está disponible aunque el rol actual sea `spectator`. La revisión de
-  otra persona exige `owner`, `admin` o `member`, y solo expone intentos `completed` o `abandoned`.
-  Los abandonos conservan respuestas parciales y proyectan los huecos como `unanswered`.
+- La revisión propia y ajena exige `owner`, `admin` o `member`; `spectator` puede consultar historial y
+  ranking, pero no recibe respuestas ni soluciones, tampoco por URL directa. Solo se exponen intentos
+  `completed` o `abandoned`; Survival limita las filas a preguntas alcanzadas y Pyramid mantiene sus
+  siete metadatos con payload/solución nulos en niveles no alcanzados.
 - Un recurso inexistente y uno inaccesible devuelven igualmente `null`.
 - Las relaciones canónicas imposibles provocan un error de integridad; no se sustituyen por datos
   inventados.

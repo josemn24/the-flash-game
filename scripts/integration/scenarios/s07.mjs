@@ -6,13 +6,21 @@ export const scenario = {
   async run({ fixture, clients, assert }) {
     const room = fixture.data.room.slug;
     const publications = fixture.data.publicationIds;
-    const history = await rpc(clients.alice, "get_flash_history", {
+    const history = await rpc(clients.alice, "get_room_history", {
       target_room_slug: room,
     });
     const publicationIds = [...new Set(history.map((row) => row.publication_id))];
-    assert(publicationIds.length === 4, "El historial incluye solo publicaciones Flash cerradas elegibles");
     assert(
-      !publicationIds.includes(publications.inProgress) && !publicationIds.includes(publications.cancelled),
+      publicationIds.length === 6,
+      "El historial mixto incluye publicaciones cerradas elegibles",
+    );
+    assert(
+      new Set(history.map((row) => row.challenge_mode)).size === 3,
+      "El historial mixto incluye Flash, Supervivencia y Pirámide",
+    );
+    assert(
+      !publicationIds.includes(publications.inProgress) &&
+        !publicationIds.includes(publications.cancelled),
       "Las publicaciones en curso o canceladas no aparecen",
     );
     assert(
@@ -21,7 +29,10 @@ export const scenario = {
     );
     const completed = history.filter((row) => row.publication_id === publications.completed);
     assert(
-      completed.map((row) => row.position).filter(Boolean).join(",") === "1,1,3",
+      completed
+        .map((row) => row.position)
+        .filter(Boolean)
+        .join(",") === "1,1,3",
       "El ranking histórico conserva los empates 1, 1, 3",
     );
     assert(
@@ -36,7 +47,9 @@ export const scenario = {
     );
     assert(
       history.some(
-        (row) => row.publication_id === publications.archived && row.challenge_version_id === fixture.data.challengeVersionId,
+        (row) =>
+          row.publication_id === publications.archived &&
+          row.challenge_version_id === fixture.data.challengeVersionId,
       ),
       "La versión archivada sigue reconstruyendo el historial",
     );
@@ -50,6 +63,34 @@ export const scenario = {
     assert(
       JSON.stringify(selfCompleted).includes("S07_EXPLANATION_ONE"),
       "La revisión autorizada recibe las soluciones versionadas",
+    );
+
+    const survivalReview = await rpc(clients.alice, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.survival,
+      target_player_id: fixture.users.carol.playerId,
+    });
+    assert(survivalReview.length === 1, "Supervivencia solo expone las preguntas alcanzadas");
+    assert(
+      survivalReview[0].attempt_outcome === "passed",
+      "La revisión de Supervivencia conserva el outcome persistido",
+    );
+
+    const pyramidReview = await rpc(clients.alice, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.pyramid,
+      target_player_id: fixture.users.carol.playerId,
+    });
+    assert(pyramidReview.length === 7, "Pirámide conserva sus siete niveles históricos");
+    assert(
+      pyramidReview.filter((row) => row.has_persisted_answer === false).length === 5,
+      "Los niveles de Pirámide no alcanzados permanecen bloqueados",
+    );
+    assert(
+      pyramidReview.filter(
+        (row) => row.public_payload === null && row.has_persisted_answer === false,
+      ).length === 5,
+      "Los niveles bloqueados no exponen payload público",
     );
 
     const peerAbandoned = await rpc(clients.alice, "get_flash_member_review", {
@@ -69,8 +110,17 @@ export const scenario = {
       target_player_id: fixture.users.alice.playerId,
     });
     assert(spectatorPeer.length === 0, "El spectator no puede revisar respuestas ajenas");
+    const spectatorPyramid = await rpc(clients.bob, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.pyramid,
+      target_player_id: fixture.users.carol.playerId,
+    });
+    assert(
+      spectatorPyramid.length === 0,
+      "El spectator tampoco puede revisar Pirámide por URL directa",
+    );
 
-    const spectatorHistory = await rpc(clients.bob, "get_flash_history", {
+    const spectatorHistory = await rpc(clients.bob, "get_room_history", {
       target_room_slug: room,
     });
     assert(
@@ -78,7 +128,7 @@ export const scenario = {
       "El spectator sí puede consultar el historial",
     );
 
-    const missingRoom = await rpc(clients.alice, "get_flash_history", {
+    const missingRoom = await rpc(clients.alice, "get_room_history", {
       target_room_slug: "s07-missing",
     });
     assert(missingRoom.length === 0, "Una sala inexistente no filtra historial");
