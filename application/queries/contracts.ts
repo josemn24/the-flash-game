@@ -63,13 +63,13 @@ export interface RoomSettingsQueries {
 
 export type { RoomMembershipCommands };
 
-/** Narrow read surface for the authenticated S07 Flash history slice. */
+/** Narrow read surface for the authenticated S07 room history slice. */
 export interface RoomHistoryQueries {
   listHistory(roomKey: string): Promise<RoomHistoryListModel | null>;
   getHistoryDetail(roomKey: string, publicationKey: string): Promise<RoomHistoryDetailModel | null>;
 }
 
-/** Narrow read surface for the authenticated S07 member review slice. */
+/** Narrow read surface for the authenticated S07 room member review slice. */
 export interface RoomMemberDetailQueries {
   getMemberDetail(
     roomKey: string,

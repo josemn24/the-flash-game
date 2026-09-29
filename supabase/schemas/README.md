@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 54 archivos y su revisión canónica es
-`20260929200000_room_member_review_modes`. La migración incremental activa se ha generado desde esos archivos
+`20260929210000_remove_legacy_flash_history_wrappers`. La migración incremental activa se ha generado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -284,15 +284,14 @@ son ejecutables por `authenticated` y comprueban membresía, devolviendo datos s
 mínimos. `anon` no puede ejecutarlos. `get_challenge_ranking` ordena por puntos, duración efectiva
 y `started_at` en servidor, aunque mantiene `started_at` fuera de su retorno público; el adaptador
 S06 consume el orden y los campos expuestos sin inventar esa fecha. S07 añade
-`get_room_history(text, uuid)`, `get_room_member_review(text, uuid, uuid)` y
-`get_flash_member_review(text, uuid, uuid)` son
+`get_room_history(text, uuid)` y `get_room_member_review(text, uuid, uuid)` son
 `SECURITY DEFINER`, fijan `search_path = ''`, no exponen tablas `private` directamente y solo tienen
 `EXECUTE` para `authenticated`. El historial no contiene payloads de pregunta ni soluciones; la
 proyección histórica cubre `flash`, `survival` y `pyramid`. La revisión común entrega solo preguntas
 alcanzadas en `survival`, mantiene los huecos de Flash y devuelve los siete niveles de Pirámide con
 payload y solución nulos para los niveles no alcanzados. Solo `owner`, `admin` y `member` pueden
 revisar; `spectator` conserva historial/ranking pero nunca recibe respuestas ni soluciones, tampoco
-por URL directa. `get_flash_history` y `get_flash_member_review` se conservan como wrappers compatibles.
+por URL directa. Las RPC históricas se exponen únicamente mediante estas proyecciones comunes.
 
 ## Denegación futura e inventario
 

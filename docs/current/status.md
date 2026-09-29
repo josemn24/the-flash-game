@@ -212,7 +212,7 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 Estado verificado a 2026-09-29:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
-  `20260929200000_room_member_review_modes`.
+  `20260929210000_remove_legacy_flash_history_wrappers`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.

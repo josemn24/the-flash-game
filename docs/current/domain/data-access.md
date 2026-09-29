@@ -237,7 +237,7 @@ La home, el detalle S02, los rankings S06 y el historial/revisión S07 delegan e
 `getRanking`, `listHistory`, `getHistoryDetail` y `getMemberDetail`. Para una sala real resuelve la
 temporada desde `get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
 `get_challenge_ranking`. S07 usa `get_room_history` para agrupar publicaciones cerradas y
-`get_room_member_review` para reconstruir la revisión desde la versión histórica enlazada; `get_flash_member_review` permanece como wrapper compatible. Antes de
+`get_room_member_review` para reconstruir la revisión desde la versión histórica enlazada. Antes de
 esas lecturas ejecuta la reconciliación acotada a la sala para que los intentos que ya cumplen la
 política no oculten indefinidamente la publicación. Carga
 en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de

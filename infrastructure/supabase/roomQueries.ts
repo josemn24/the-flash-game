@@ -802,7 +802,7 @@ async function callRankingRead<T>(
 }
 
 async function callHistoryRead<T>(
-  functionName: "get_room_history" | "get_room_member_review" | "get_flash_member_review",
+  functionName: "get_room_history" | "get_room_member_review",
   args: Record<string, string | null>,
   guard: (value: unknown) => value is T,
   attemptExpiration: AttemptExpirationQueries,

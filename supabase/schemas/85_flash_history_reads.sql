@@ -1,4 +1,4 @@
--- S07 room history and Flash terminal review.
+-- S07 room history and terminal member review.
 -- These projections keep the private content tables outside the Data API. The
 -- historical version is deliberately read by its persisted foreign key, so an
 -- archived version remains available to an authorized room member.
@@ -132,50 +132,6 @@ language sql stable security definer set search_path = '' as $$
   left join ranked_results r on r.publication_id = h.publication_id
   order by h.played_at desc, h.publication_number desc, h.publication_id,
     r."position" nulls last, r.player_id
-$$;
-
--- Backwards-compatible Flash-only projection for existing consumers. The room
--- history projection above is the canonical read for supported competitive
--- modes; this wrapper preserves the original RPC contract and semantics.
-create function public.get_flash_history(
-  target_room_slug text,
-  target_publication_id uuid default null
-)
-returns table (
-  room_id                 uuid,
-  room_slug               text,
-  room_title              text,
-  viewer_role             text,
-  season_id               uuid,
-  season_title            text,
-  publication_id          uuid,
-  publication_number      integer,
-  publication_status      text,
-  publication_opens_at    timestamptz,
-  publication_closes_at   timestamptz,
-  challenge_id            uuid,
-  challenge_slug          text,
-  challenge_version_id    uuid,
-  challenge_title         text,
-  challenge_subtitle      text,
-  challenge_description   text,
-  challenge_mode          text,
-  challenge_max_score     integer,
-  question_count          bigint,
-  played_at               timestamptz,
-  player_count            bigint,
-  player_id               uuid,
-  display_name            text,
-  avatar_path             text,
-  flash_points            bigint,
-  duration_ms             bigint,
-  started_at              timestamptz,
-  "position"              bigint
-)
-language sql stable security definer set search_path = '' as $$
-  select history.*
-  from public.get_room_history(target_room_slug, target_publication_id) history
-  where history.challenge_mode = 'flash'
 $$;
 
 -- Common historical member review. Payloads are deliberately nullable for
@@ -349,86 +305,11 @@ language sql stable security definer set search_path = '' as $$
   order by i.position
 $$;
 
--- Backwards-compatible Flash-only projection. Keep the legacy return shape
--- explicit so adding fields to the common RPC cannot silently change clients.
-create function public.get_flash_member_review(
-  target_room_slug text,
-  target_publication_id uuid,
-  target_player_id uuid
-)
-returns table (
-  room_id                 uuid,
-  room_slug               text,
-  room_title              text,
-  viewer_role             text,
-  publication_id          uuid,
-  publication_status      text,
-  publication_closes_at   timestamptz,
-  challenge_id            uuid,
-  challenge_slug          text,
-  challenge_version_id    uuid,
-  challenge_title         text,
-  challenge_subtitle      text,
-  challenge_description   text,
-  challenge_mode          text,
-  challenge_max_score     integer,
-  player_id               uuid,
-  display_name            text,
-  avatar_path             text,
-  attempt_id              uuid,
-  attempt_status          text,
-  attempt_score           integer,
-  attempt_started_at      timestamptz,
-  attempt_completed_at    timestamptz,
-  attempt_lock_version    bigint,
-  challenge_item_id       uuid,
-  item_position           integer,
-  question_version_id     uuid,
-  question_type           text,
-  payload_schema_version  integer,
-  time_limit_ms           integer,
-  public_payload          jsonb,
-  solution_payload        jsonb,
-  answer                  jsonb,
-  answer_status           text,
-  points                  integer,
-  result_details          jsonb,
-  presented_at            timestamptz,
-  submitted_at            timestamptz,
-  time_used_ms            bigint,
-  item_points             integer
-)
-language sql stable security definer set search_path = '' as $$
-  select
-    review.room_id, review.room_slug, review.room_title, review.viewer_role,
-    review.publication_id, review.publication_status, review.publication_closes_at,
-    review.challenge_id, review.challenge_slug, review.challenge_version_id,
-    review.challenge_title, review.challenge_subtitle, review.challenge_description,
-    review.challenge_mode, review.challenge_max_score, review.player_id,
-    review.display_name, review.avatar_path, review.attempt_id, review.attempt_status,
-    review.attempt_score, review.attempt_started_at, review.attempt_completed_at,
-    review.attempt_lock_version, review.challenge_item_id, review.item_position,
-    review.question_version_id, review.question_type, review.payload_schema_version,
-    review.time_limit_ms, review.public_payload, review.solution_payload, review.answer,
-    review.answer_status, review.points, review.result_details, review.presented_at,
-    review.submitted_at, review.time_used_ms, review.item_points
-  from public.get_room_member_review(
-    target_room_slug, target_publication_id, target_player_id
-  ) review
-  where review.challenge_mode = 'flash'
-$$;
-
 alter function public.get_room_history(text, uuid) owner to postgres;
-alter function public.get_flash_history(text, uuid) owner to postgres;
 alter function public.get_room_member_review(text, uuid, uuid) owner to postgres;
-alter function public.get_flash_member_review(text, uuid, uuid) owner to postgres;
 revoke all on function public.get_room_history(text, uuid),
-  public.get_flash_history(text, uuid),
-  public.get_room_member_review(text, uuid, uuid),
-  public.get_flash_member_review(text, uuid, uuid)
+  public.get_room_member_review(text, uuid, uuid)
   from public, anon, service_role;
 grant execute on function public.get_room_history(text, uuid),
-  public.get_flash_history(text, uuid),
-  public.get_room_member_review(text, uuid, uuid),
-  public.get_flash_member_review(text, uuid, uuid)
+  public.get_room_member_review(text, uuid, uuid)
   to authenticated;

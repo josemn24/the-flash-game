@@ -54,7 +54,7 @@ export const scenario = {
       "La versión archivada sigue reconstruyendo el historial",
     );
 
-    const selfCompleted = await rpc(clients.alice, "get_flash_member_review", {
+    const selfCompleted = await rpc(clients.alice, "get_room_member_review", {
       target_room_slug: room,
       target_publication_id: publications.completed,
       target_player_id: fixture.users.alice.playerId,
@@ -93,7 +93,7 @@ export const scenario = {
       "Los niveles bloqueados no exponen payload público",
     );
 
-    const peerAbandoned = await rpc(clients.alice, "get_flash_member_review", {
+    const peerAbandoned = await rpc(clients.alice, "get_room_member_review", {
       target_room_slug: room,
       target_publication_id: publications.abandoned,
       target_player_id: fixture.users.carol.playerId,
@@ -104,7 +104,7 @@ export const scenario = {
       "Los huecos no respondidos se mantienen como ausencia persistida",
     );
 
-    const spectatorPeer = await rpc(clients.bob, "get_flash_member_review", {
+    const spectatorPeer = await rpc(clients.bob, "get_room_member_review", {
       target_room_slug: room,
       target_publication_id: publications.completed,
       target_player_id: fixture.users.alice.playerId,

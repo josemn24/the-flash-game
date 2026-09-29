@@ -4,7 +4,7 @@
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
 > Fecha de análisis: 2026-09-29. El esquema actual contiene 54 archivos declarativos y la revisión canónica es
-> `20260929200000_room_member_review_modes`; la migración incremental activa y las validaciones locales recientes
+> `20260929210000_remove_legacy_flash_history_wrappers`; la migración incremental activa y las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -426,8 +426,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   fixtures y mezcla local de resultados para esos recorridos. La competición de Supervivencia y
   Pirámide usa persistencia S14/S15; Narrativa continúa mock.
 - **Backend/dominio:** `RoomHistoryQueries` y `RoomMemberDetailQueries` delegan en
-  `get_room_history` y `get_room_member_review`; `get_flash_history` y
-  `get_flash_member_review` se conservan como wrappers compatibles. El historial consolida
+  `get_room_history` y `get_room_member_review`. El historial consolida
   publicaciones `closed` de Flash, Supervivencia y Pirámide sin intentos `in_progress`; conserva
   publicaciones sin participantes y excluye `test`, `invalidated` y `cancelled`. La revisión usa
   puntos y respuestas persistidos, sin recalcular resultados con el algoritmo actual.

@@ -17,7 +17,7 @@ la expiración por inactividad de intentos competitivos ya está implementada me
 reconciliación bajo demanda; S20 ya cubre las correcciones administrativas de resultados.
 
 El esquema declarativo vigente contiene 54 archivos y la revisión canónica es
-`20260929200000_room_member_review_modes`. El historial local incluye además las revisiones declarativas de S17 y S15;
+`20260929210000_remove_legacy_flash_history_wrappers`. El historial local incluye además las revisiones declarativas de S17 y S15;
 hay 30 tablas, una vista interna y un inventario de seguridad registrado. La CLI local tiene un proyecto
 de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 

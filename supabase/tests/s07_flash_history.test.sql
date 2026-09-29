@@ -170,17 +170,16 @@ values
   (pg_temp.test_id('attempt-pyramid'), pg_temp.test_id('pyramid-item-two'), pg_temp.test_id('pyramid-challenge-version'), pg_temp.test_id('receipt-pyramid-two'), 'incorrect', '"B"', '{}', 0, now() - interval '12 hours', now() - interval '12 hours', 800, 's07-answer-pyramid-two');
 set local session_replication_role = origin;
 
-select ok(has_function_privilege('authenticated', 'public.get_flash_history(text,uuid)', 'EXECUTE'),
-  'Authenticated can query Flash history');
 select ok(has_function_privilege('authenticated', 'public.get_room_history(text,uuid)', 'EXECUTE'),
   'Authenticated can query common room history');
-select ok(not has_function_privilege('anon', 'public.get_flash_history(text,uuid)', 'EXECUTE'),
-  'Anonymous cannot query Flash history');
-select ok(not has_function_privilege('service_role', 'public.get_flash_member_review(text,uuid,uuid)', 'EXECUTE'),
+select ok(not has_function_privilege('anon', 'public.get_room_history(text,uuid)', 'EXECUTE'),
+  'Anonymous cannot query room history');
+select ok(not has_function_privilege('service_role', 'public.get_room_member_review(text,uuid,uuid)', 'EXECUTE'),
   'service_role cannot use the application review boundary');
-select ok(position('public_payload' in pg_get_function_result(
-  'public.get_flash_history(text,uuid)'::regprocedure)) = 0,
-  'History metadata has no question payload');
+select ok(to_regprocedure('public.get_flash_history(text,uuid)') is null,
+  'Legacy Flash history RPC is removed');
+select ok(to_regprocedure('public.get_flash_member_review(text,uuid,uuid)') is null,
+  'Legacy Flash member review RPC is removed');
 select ok(position('public_payload' in pg_get_function_result(
   'public.get_room_history(text,uuid)'::regprocedure)) = 0,
   'Common history metadata has no question payload');
@@ -189,7 +188,7 @@ select set_config('request.jwt.claims', jsonb_build_object(
   'sub', pg_temp.test_id('auth-alice'), 'role', 'authenticated', 'is_anonymous', false
 )::text, true);
 set local role authenticated;
-select is((select count(distinct publication_id) from public.get_flash_history('s07-test-room')), 2::bigint,
+select is((select count(distinct publication_id) from public.get_room_history('s07-test-room') where challenge_mode = 'flash'), 2::bigint,
   'Alice sees only closed publications without in-progress attempts');
 select is((select count(distinct publication_id) from public.get_room_history('s07-test-room')), 5::bigint,
   'Common history includes Flash, Survival and Pyramid publications');
@@ -199,17 +198,17 @@ select is((select count(*) from public.get_room_history('s07-test-room')
 select is((select string_agg(distinct challenge_mode, ',' order by challenge_mode)
   from public.get_room_history('s07-test-room')), 'flash,pyramid,survival',
   'Common history exposes the persisted competitive mode');
-select is((select count(*) from public.get_flash_history('s07-test-room') where publication_id = pg_temp.test_id('publication-empty')), 1::bigint,
+select is((select count(*) from public.get_room_history('s07-test-room') where challenge_mode = 'flash' and publication_id = pg_temp.test_id('publication-empty')), 1::bigint,
   'A closed publication without ranked results remains visible');
-select is((select player_count from public.get_flash_history('s07-test-room') where publication_id = pg_temp.test_id('publication-empty')), 1::bigint,
+select is((select player_count from public.get_room_history('s07-test-room') where challenge_mode = 'flash' and publication_id = pg_temp.test_id('publication-empty')), 1::bigint,
   'Abandoned competitive attempts count as distinct participation');
-select is((select string_agg(position::text, ',' order by position, player_id) from public.get_flash_history('s07-test-room') where publication_id = pg_temp.test_id('publication-completed')), '1,1,3,4',
+select is((select string_agg(position::text, ',' order by position, player_id) from public.get_room_history('s07-test-room') where challenge_mode = 'flash' and publication_id = pg_temp.test_id('publication-completed')), '1,1,3,4',
   'Historical ranking applies points, duration and started_at ordering');
-select is((select count(*) from public.get_flash_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('carol'))), 2::bigint,
+select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('carol'))), 2::bigint,
   'A member can review an abandoned attempt');
-select is((select count(*) from public.get_flash_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('carol')) where answer_status is null), 1::bigint,
+select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('carol')) where answer_status is null), 1::bigint,
   'Missing abandoned answers are returned as empty answer slots');
-select ok(exists (select 1 from public.get_flash_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('carol')) where solution_payload::text like '%S07 solution two%'),
+select ok(exists (select 1 from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('carol')) where solution_payload::text like '%S07 solution two%'),
   'Authorized review receives the immutable solution payload');
 select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-survival'), pg_temp.test_id('carol'))), 1::bigint,
   'Survival review returns only reached persisted questions');
@@ -224,11 +223,11 @@ select ok(exists (select 1 from public.get_room_member_review('s07-test-room', p
   where item_position = 7 and public_payload is null and solution_payload is null and not has_persisted_answer
     and level_label = 'Nivel 7' and briefing_title = 'Briefing 7'),
   'Unreached Pyramid levels expose metadata but no payload or solution');
-select is((select count(*) from public.get_flash_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('alice'))), 0::bigint,
+select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('alice'))), 0::bigint,
   'A player without a result has no review rows');
-select is((select count(*) from public.get_flash_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('dave'))), 0::bigint,
+select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-empty'), pg_temp.test_id('dave'))), 0::bigint,
   'Invalidated attempts are absent from review');
-select is((select count(*) from public.get_flash_history('s07-other-room')), 0::bigint,
+select is((select count(*) from public.get_room_history('s07-other-room')), 0::bigint,
   'A room member cannot cross into another room without history');
 reset role;
 
@@ -236,9 +235,9 @@ select set_config('request.jwt.claims', jsonb_build_object(
   'sub', pg_temp.test_id('auth-bob'), 'role', 'authenticated', 'is_anonymous', false
 )::text, true);
 set local role authenticated;
-select is((select count(distinct publication_id) from public.get_flash_history('s07-test-room')), 2::bigint,
+select is((select count(distinct publication_id) from public.get_room_history('s07-test-room')), 5::bigint,
   'Spectator can read history metadata');
-select is((select count(*) from public.get_flash_member_review('s07-test-room', pg_temp.test_id('publication-completed'), pg_temp.test_id('alice'))), 0::bigint,
+select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-completed'), pg_temp.test_id('alice'))), 0::bigint,
   'Spectator cannot review another member');
 select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-pyramid'), pg_temp.test_id('carol'))), 0::bigint,
   'Spectator cannot review through the common RPC');
@@ -248,7 +247,7 @@ select set_config('request.jwt.claims', jsonb_build_object(
   'sub', pg_temp.test_id('auth-alice'), 'role', 'authenticated', 'is_anonymous', false
 )::text, true);
 set local role authenticated;
-select is((select count(*) from public.get_flash_history('s07-missing-room')), 0::bigint,
+select is((select count(*) from public.get_room_history('s07-missing-room')), 0::bigint,
   'Unknown room has the same absence as an unauthorized scope');
 select * from finish();
 rollback;

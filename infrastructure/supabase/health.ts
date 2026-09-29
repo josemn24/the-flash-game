@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20260929200000_room_member_review_modes";
+const canonicalSchemaRevision = "20260929210000_remove_legacy_flash_history_wrappers";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -57,15 +57,11 @@ async function checkDatabase() {
         and to_regprocedure('private.zip_content_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.escape_content_valid(jsonb,jsonb)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null
-          and to_regprocedure('public.get_flash_member_review(text,uuid,uuid)') is not null
           and to_regprocedure('public.get_room_member_review(text,uuid,uuid)') is not null
           and to_regprocedure('public.get_superadmin_challenge_catalog()') is not null
           and to_regprocedure('public.get_superadmin_challenge_detail(uuid)') is not null
           and to_regprocedure('public.manage_room_member(jsonb)') is not null
-          and pg_get_function_result(
-            to_regprocedure('public.get_flash_member_review(text,uuid,uuid)')
-          ) like '%item_points integer%'
-          and pg_get_function_result(
+        and pg_get_function_result(
             to_regprocedure('public.get_room_member_review(text,uuid,uuid)')
           ) like '%has_persisted_answer boolean%'
           and pg_get_function_result(to_regprocedure('public.get_my_room_cards()')) like '%member_previews jsonb%'
