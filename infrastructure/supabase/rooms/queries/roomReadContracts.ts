@@ -1,10 +1,8 @@
 import type { GameMode } from "@/types/gameplay/challenge";
 import type { CompetitiveHistoryMode, RoomMembershipRole } from "@/types/view-models";
+import type { PublicFunctionRow } from "@/lib/supabase/rpcTypes";
 
-export type RoomReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
+type RoomReadOverrides = {
   room_description: string | null;
   membership_role: RoomMembershipRole;
   season_id: string | null;
@@ -22,96 +20,69 @@ export type RoomReadRow = {
   challenge_max_score: number | null;
   question_count: number | null;
   competitive_playable: boolean | null;
-  current_flash_points: number;
   current_position: number | null;
-  member_previews: unknown;
-  member_count: number;
 };
 
-export type RoomIntroductionReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
+type RoomReadRpcRow = PublicFunctionRow<"get_my_room_cards"> & PublicFunctionRow<"get_room_detail">;
+
+export type RoomReadRow = Omit<RoomReadRpcRow, keyof RoomReadOverrides> & RoomReadOverrides;
+
+type RoomIntroductionOverrides = {
   membership_role: RoomMembershipRole;
-  publication_id: string;
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
-  opens_at: string;
-  closes_at: string;
-  challenge_title: string;
   challenge_subtitle: string | null;
   challenge_mode: GameMode;
-  challenge_max_score: number;
-  question_count: number;
-  competitive_playable: boolean;
   availability_status: "upcoming" | "available" | "closed" | "cancelled";
-  can_start: boolean;
 };
 
-export type RoomCalendarReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
-  time_zone: string;
+type RoomIntroductionRpcRow = PublicFunctionRow<"get_room_introduction">;
+
+export type RoomIntroductionReadRow = Omit<
+  RoomIntroductionRpcRow,
+  keyof RoomIntroductionOverrides
+> &
+  RoomIntroductionOverrides;
+
+type RoomCalendarOverrides = {
   membership_role: RoomMembershipRole;
-  season_id: string;
-  season_title: string;
   season_status: "active" | "finished";
-  publication_id: string;
-  publication_number: number;
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
   availability_status: "upcoming" | "available" | "closed" | "cancelled";
-  opens_at: string;
-  closes_at: string;
-  challenge_title: string;
   challenge_subtitle: string | null;
   challenge_mode: GameMode;
-  question_count: number;
   own_attempt_status: "in_progress" | "completed" | "abandoned" | "invalidated" | null;
-  can_start: boolean;
-  can_continue: boolean;
 };
 
-export type ChallengeRankingReadRow = {
-  player_id: string;
-  display_name: string;
+type RoomCalendarRpcRow = PublicFunctionRow<"get_room_calendar">;
+
+export type RoomCalendarReadRow = Omit<RoomCalendarRpcRow, keyof RoomCalendarOverrides> &
+  RoomCalendarOverrides;
+
+type ChallengeRankingOverrides = {
   avatar_path: string | null;
-  flash_points: number;
-  duration_ms: number;
-  position: number;
 };
 
-export type SeasonRankingReadRow = {
-  player_id: string;
-  display_name: string;
+type ChallengeRankingRpcRow = PublicFunctionRow<"get_challenge_ranking">;
+
+export type ChallengeRankingReadRow = Omit<
+  ChallengeRankingRpcRow,
+  keyof ChallengeRankingOverrides
+> &
+  ChallengeRankingOverrides;
+
+type SeasonRankingOverrides = {
   avatar_path: string | null;
-  flash_points: number;
-  is_former_member: boolean;
-  position: number;
 };
 
-export type RoomHistoryReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
+type SeasonRankingRpcRow = PublicFunctionRow<"get_season_ranking">;
+
+export type SeasonRankingReadRow = Omit<SeasonRankingRpcRow, keyof SeasonRankingOverrides> &
+  SeasonRankingOverrides;
+
+type RoomHistoryOverrides = {
   viewer_role: RoomMembershipRole;
-  season_id: string;
-  season_title: string;
-  publication_id: string;
-  publication_number: number;
   publication_status: "closed";
-  publication_opens_at: string;
-  publication_closes_at: string;
-  challenge_id: string;
-  challenge_slug: string;
-  challenge_version_id: string;
-  challenge_title: string;
-  challenge_subtitle: string;
-  challenge_description: string;
   challenge_mode: CompetitiveHistoryMode;
-  challenge_max_score: number;
-  question_count: number;
-  played_at: string;
-  player_count: number;
   player_id: string | null;
   display_name: string | null;
   avatar_path: string | null;
@@ -121,40 +92,21 @@ export type RoomHistoryReadRow = {
   position: number | null;
 };
 
-export type RoomMemberReviewReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
+type RoomHistoryRpcRow = PublicFunctionRow<"get_room_history">;
+
+export type RoomHistoryReadRow = Omit<RoomHistoryRpcRow, keyof RoomHistoryOverrides> &
+  RoomHistoryOverrides;
+
+type RoomMemberReviewOverrides = {
   viewer_role: RoomMembershipRole;
-  season_id: string;
-  season_title: string;
-  publication_id: string;
   publication_status: "open" | "closed";
-  publication_closes_at: string;
-  challenge_id: string;
-  challenge_slug: string;
-  challenge_version_id: string;
-  challenge_title: string;
-  challenge_subtitle: string;
-  challenge_description: string;
   challenge_mode: CompetitiveHistoryMode;
-  challenge_max_score: number;
-  question_count: number;
   initial_lives: number | null;
-  player_id: string;
-  display_name: string;
   avatar_path: string | null;
-  attempt_id: string;
   attempt_status: "completed" | "abandoned";
   attempt_score: number | null;
   attempt_outcome: string | null;
-  attempt_started_at: string;
   attempt_completed_at: string | null;
-  attempt_duration_ms: number;
-  attempt_lock_version: number;
-  challenge_item_id: string;
-  item_position: number;
-  question_version_id: string;
   question_type:
     | "multiple-choice"
     | "mini-wordle"
@@ -175,7 +127,6 @@ export type RoomMemberReviewReadRow = {
     | "word-hashtag"
     | "zip"
     | "escape";
-  payload_schema_version: number;
   time_limit_ms?: number;
   public_payload: unknown | null;
   solution_payload: unknown | null;
@@ -194,6 +145,14 @@ export type RoomMemberReviewReadRow = {
   briefing_format: string | null;
   briefing_description: string | null;
 };
+
+type RoomMemberReviewRpcRow = PublicFunctionRow<"get_room_member_review">;
+
+export type RoomMemberReviewReadRow = Omit<
+  RoomMemberReviewRpcRow,
+  keyof RoomMemberReviewOverrides
+> &
+  RoomMemberReviewOverrides;
 
 export const roomRoles = new Set<RoomMembershipRole>(["owner", "admin", "member", "spectator"]);
 export const gameModes = new Set<GameMode>([

@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { validateProfileName } from "@/lib/userProfile";
+import type { RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import {
   getProvisionedCurrentPlayer,
@@ -56,8 +57,10 @@ export async function updateCurrentPlayerName(name: string): Promise<ProfileSave
   // PostgREST's representation response requires relation-level SELECT. The
   // schema intentionally grants only column-level profile reads, so refresh
   // through the narrow Auth-backed RPC instead of widening table privileges.
-  const { data: refreshedData, error: refreshedError } =
-    await current.supabase.rpc("provision_player");
+  const refreshedResponse = await current.supabase.rpc("provision_player");
+  const { data: refreshedData, error: refreshedError } = refreshedResponse as RawRpcResponse<
+    typeof refreshedResponse
+  >;
   const refreshedRow = Array.isArray(refreshedData) ? refreshedData[0] : refreshedData;
   if (refreshedError || !isProvisionedPlayerRow(refreshedRow) || refreshedRow.status !== "active") {
     return {

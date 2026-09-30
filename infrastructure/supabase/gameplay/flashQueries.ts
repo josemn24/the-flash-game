@@ -1,5 +1,10 @@
 import "server-only";
 
+import type {
+  PublicFunctionArgs,
+  PublicFunctionRow,
+  RawRpcResponse,
+} from "@/lib/supabase/rpcTypes";
 import { createClient } from "@/lib/supabase/server";
 import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashDocument";
 import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
@@ -8,23 +13,10 @@ import type { GameRoomContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 
-export type FlashReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
-  publication_id: string;
+type FlashReadOverrides = {
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
-  publication_opens_at: string;
-  publication_closes_at: string;
-  challenge_id: string;
-  challenge_slug: string;
-  challenge_version_id: string;
-  challenge_title: string;
   challenge_subtitle: string;
-  challenge_description: string;
   challenge_mode: "flash" | "survival" | "pyramid";
-  challenge_max_score: number;
-  question_count: number;
   own_attempt_id: string | null;
   own_attempt_status: "in_progress" | "completed" | "abandoned" | "invalidated" | null;
   own_attempt_score: number | null;
@@ -32,9 +24,6 @@ export type FlashReadRow = {
   own_attempt_completed_at: string | null;
   own_attempt_deadline_at: string | null;
   own_attempt_lock_version: number | null;
-  challenge_item_id: string;
-  item_position: number;
-  question_version_id: string;
   question_type:
     | "multiple-choice"
     | "mini-wordle"
@@ -56,17 +45,20 @@ export type FlashReadRow = {
     | "word-hashtag"
     | "zip"
     | "escape";
-  payload_schema_version: number;
-  time_limit_ms: number;
-  item_points: number;
 };
 
-export type FlashResultRow = {
-  attempt_id: string;
-  scheduled_challenge_id: string;
-  challenge_item_id: string;
-  item_position: number;
-  question_version_id: string;
+type CompetitiveReadFunctionName =
+  "get_my_flash_challenge" | "get_my_survival_challenge" | "get_my_pyramid_challenge";
+
+export type GeneratedCompetitiveReadRow<Name extends CompetitiveReadFunctionName> = Omit<
+  PublicFunctionRow<Name>,
+  keyof FlashReadOverrides
+> &
+  FlashReadOverrides;
+
+export type FlashReadRow = GeneratedCompetitiveReadRow<"get_my_flash_challenge">;
+
+type FlashResultOverrides = {
   question_type:
     | "multiple-choice"
     | "mini-wordle"
@@ -88,7 +80,6 @@ export type FlashResultRow = {
     | "word-hashtag"
     | "zip"
     | "escape";
-  payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
   answer: unknown;
@@ -101,20 +92,26 @@ export type FlashResultRow = {
   attempt_status: "completed";
   attempt_score: number;
   attempt_outcome?: string | null;
-  attempt_started_at: string;
-  attempt_completed_at: string;
-  attempt_lock_version: number;
-  challenge_title: string;
-  challenge_subtitle: string;
-  challenge_description: string;
-  challenge_max_score: number;
 };
+
+type CompetitiveResultFunctionName =
+  "get_my_flash_result" | "get_my_survival_result" | "get_my_pyramid_result";
+
+export type GeneratedCompetitiveResultRow<Name extends CompetitiveResultFunctionName> = Omit<
+  PublicFunctionRow<Name>,
+  keyof FlashResultOverrides
+> &
+  FlashResultOverrides;
+
+export type FlashResultRow = GeneratedCompetitiveResultRow<"get_my_flash_result">;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-export function isFlashReadRow(value: unknown): value is FlashReadRow {
+export function isFlashReadRow<Name extends CompetitiveReadFunctionName = "get_my_flash_challenge">(
+  value: unknown,
+): value is GeneratedCompetitiveReadRow<Name> {
   if (!isRecord(value)) return false;
   return (
     typeof value.room_id === "string" &&
@@ -137,7 +134,8 @@ export function isFlashReadRow(value: unknown): value is FlashReadRow {
     Number.isSafeInteger(value.question_count) &&
     (value.challenge_mode === "pyramid"
       ? value.question_count === 7
-      : value.question_count >= FLASH_MIN_QUESTIONS && value.question_count <= FLASH_MAX_QUESTIONS) &&
+      : value.question_count >= FLASH_MIN_QUESTIONS &&
+        value.question_count <= FLASH_MAX_QUESTIONS) &&
     (value.own_attempt_id === null || typeof value.own_attempt_id === "string") &&
     (value.own_attempt_status === null || typeof value.own_attempt_status === "string") &&
     (value.own_attempt_score === null || typeof value.own_attempt_score === "number") &&
@@ -179,7 +177,9 @@ export function isFlashReadRow(value: unknown): value is FlashReadRow {
   );
 }
 
-export function isFlashResultRow(value: unknown): value is FlashResultRow {
+export function isFlashResultRow<
+  Name extends CompetitiveResultFunctionName = "get_my_flash_result",
+>(value: unknown): value is GeneratedCompetitiveResultRow<Name> {
   if (!isRecord(value)) return false;
   return (
     typeof value.attempt_id === "string" &&
@@ -244,10 +244,11 @@ export async function callFlashRead(
     | "get_my_survival_result"
     | "get_my_pyramid_challenge"
     | "get_my_pyramid_result",
-  args: Record<string, string>,
+  args: PublicFunctionArgs<typeof functionName>,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(functionName, args);
+  const response = await supabase.rpc(functionName, args);
+  const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase flash read failed (${functionName}): ${error.message}`);
   return Array.isArray(data) ? data : [];
 }

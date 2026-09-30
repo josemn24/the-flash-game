@@ -3,16 +3,20 @@ import "server-only";
 import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import { createClient } from "@/lib/supabase/server";
+import type { PublicFunctionRow, RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import type { PlayerId } from "@/types/domain";
 import type { ViewerProfile } from "@/types/view-models";
 import type { UserProfile } from "@/types/view-models/user";
 
-export type ProvisionedPlayerRow = {
-  player_id: string;
-  display_name: string;
+type ProvisionedPlayerOverrides = {
   avatar_path: string | null;
   status: "active" | "anonymized";
 };
+
+type ProvisionedPlayerRpcRow = PublicFunctionRow<"provision_player">;
+
+export type ProvisionedPlayerRow = Omit<ProvisionedPlayerRpcRow, keyof ProvisionedPlayerOverrides> &
+  ProvisionedPlayerOverrides;
 
 export function isProvisionedPlayerRow(value: unknown): value is ProvisionedPlayerRow {
   if (!value || typeof value !== "object") return false;
@@ -38,7 +42,8 @@ export async function getProvisionedCurrentPlayer() {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) return null;
 
-  const { data, error } = await supabase.rpc("provision_player");
+  const response = await supabase.rpc("provision_player");
+  const { data, error } = response as RawRpcResponse<typeof response>;
   const row = Array.isArray(data) ? data[0] : data;
   if (error || !isProvisionedPlayerRow(row) || row.status !== "active") {
     throw new Error("The authenticated Player could not be provisioned.");

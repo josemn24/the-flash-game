@@ -8,6 +8,7 @@ import type {
 } from "@/application/ports/room-membership-commands";
 import { RoomMembershipCommandError } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import type { RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import type { RoomMembershipRole } from "@/types/view-models";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -72,7 +73,7 @@ export class SupabaseRoomMembershipCommands implements RoomMembershipCommands {
   async manageMember(input: ManageRoomMemberInput): Promise<ManageRoomMemberResult> {
     assertInput(input);
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("manage_room_member", {
+    const response = await supabase.rpc("manage_room_member", {
       input: {
         idempotencyKey: input.idempotencyKey,
         roomKey: input.roomKey,
@@ -80,6 +81,7 @@ export class SupabaseRoomMembershipCommands implements RoomMembershipCommands {
         action: input.action,
       },
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) throw new RoomMembershipCommandError(commandCode(error), error);
     if (!isResult(data)) throw new RoomMembershipCommandError("invalid_response");
     return { ...data, targetMemberKey: data.targetPlayerId };

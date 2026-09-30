@@ -3,11 +3,12 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import {
   callFlashRead,
+  type GeneratedCompetitiveReadRow,
+  type GeneratedCompetitiveResultRow,
   isFlashReadRow,
   isFlashResultRow,
   supabaseFlashQueries,
   toRoomContext,
-  type FlashReadRow,
   type FlashResultRow,
 } from "@/infrastructure/supabase/gameplay/flashQueries";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
@@ -17,14 +18,16 @@ import type {
 } from "@/types/gameplay/challenge";
 import { getCurrentViewerProfile } from "@/server/profile";
 
-type SurvivalReadRow = FlashReadRow & {
+type SurvivalReadRow = GeneratedCompetitiveReadRow<"get_my_survival_challenge"> & {
   challenge_mode: "survival";
   initial_lives: number;
 };
 
+type SurvivalResultRow = GeneratedCompetitiveResultRow<"get_my_survival_result">;
+
 function isSurvivalReadRow(value: unknown): value is SurvivalReadRow {
   return (
-    isFlashReadRow(value) &&
+    isFlashReadRow<"get_my_survival_challenge">(value) &&
     value.challenge_mode === "survival" &&
     typeof (value as Record<string, unknown>).initial_lives === "number" &&
     Number.isSafeInteger((value as Record<string, unknown>).initial_lives) &&
@@ -44,7 +47,7 @@ export class SupabaseSurvivalQueries {
   async getTerminalReview(attemptId: string): Promise<ServerFlashTerminalReview[]> {
     const rows = (
       await callFlashRead("get_my_survival_result", { target_attempt_id: attemptId })
-    ).filter(isFlashResultRow);
+    ).filter(isFlashResultRow<"get_my_survival_result">);
     if (!rows.length) return [];
     const client = await createClient();
     const { data } = await client.auth.getUser();
@@ -83,13 +86,13 @@ export class SupabaseSurvivalQueries {
       return null;
     }
 
-    let resultRows: FlashResultRow[] = [];
+    let resultRows: SurvivalResultRow[] = [];
     if (first.own_attempt_status === "completed" && first.own_attempt_id) {
       resultRows = (
         await callFlashRead("get_my_survival_result", {
           target_attempt_id: first.own_attempt_id,
         })
-      ).filter(isFlashResultRow);
+      ).filter(isFlashResultRow<"get_my_survival_result">);
     }
     const result = resultRows.length ? supabaseFlashQueries.toResult(resultRows) : undefined;
     const terminalReview =

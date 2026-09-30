@@ -11,6 +11,7 @@ import {
   SuperadminSeasonCommandError,
 } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import type { PublicFunctionArgs } from "@/lib/supabase/rpcTypes";
 import type { SuperadminSeasonCommandResult } from "@/types/view-models";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -69,7 +70,8 @@ async function callSeasonCommand<
   input: T,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(functionName, { input });
+  const args = { input } as PublicFunctionArgs<typeof functionName>;
+  const { data, error } = await supabase.rpc(functionName, args);
 
   if (error) {
     if (error.code === "42501" || error.message.includes("not_authorized")) {

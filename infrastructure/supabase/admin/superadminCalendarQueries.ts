@@ -16,6 +16,7 @@ import {
 } from "@/application/administration/errors";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { createClient } from "@/lib/supabase/server";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
   SuperadminCalendarCommandResult,
@@ -162,7 +163,8 @@ async function callCommand<T>(
     CreateScheduledChallengeInput | UpdateScheduledChallengeInput | CancelScheduledChallengeInput,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(functionName, { input });
+  const args = { input } as PublicFunctionArgs<typeof functionName>;
+  const { data, error } = await supabase.rpc(functionName, args);
   if (error) {
     if (error.code === "42501" || error.message.includes("not_authorized")) {
       throw new SuperadminAccessDeniedError();
@@ -178,9 +180,10 @@ export class SupabaseSuperadminCalendarQueries
 {
   async getContext(roomId?: string): Promise<SuperadminCalendarContext> {
     const supabase = await createClient();
-    const { data, error } = roomId
+    const response = roomId
       ? await supabase.rpc("get_superadmin_room_calendar_context", { target_room_id: roomId })
       : await supabase.rpc("get_superadmin_calendar_context");
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();

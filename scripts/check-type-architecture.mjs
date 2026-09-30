@@ -199,6 +199,10 @@ function isRoomSupabaseAdapter(relative) {
   return relative.startsWith(`infrastructure${path.sep}supabase${path.sep}rooms${path.sep}`);
 }
 
+function isSupabaseGeneratedType(specifier) {
+  return specifier === "@/lib/supabase/database.types";
+}
+
 for (const file of productionFiles) {
   const source = await readFile(file, "utf8");
   const relative = path.relative(process.cwd(), file);
@@ -234,6 +238,16 @@ for (const file of productionFiles) {
     ) {
       violations.push(
         `${relative} imports forbidden room adapter dependency ${imported.specifier}`,
+      );
+    }
+
+    if (
+      isSupabaseGeneratedType(imported.specifier) &&
+      !relative.startsWith(`lib${path.sep}supabase${path.sep}`) &&
+      !relative.startsWith(`infrastructure${path.sep}supabase${path.sep}`)
+    ) {
+      violations.push(
+        `${relative} imports Supabase generated types outside the persistence boundary`,
       );
     }
 

@@ -270,6 +270,14 @@ assets privadas solo se resuelven para el miembro autorizado. Sus funciones usan
 para compartir una misma promesa dentro de la petición, incluida la lectura repetida por
 `generateMetadata` y por la página. No hay caché persistente ni compartida entre usuarios.
 
+Los clientes Supabase se tipan con `lib/supabase/database.types.ts`, generado desde el schema
+`public` de la base local mediante `npm run supabase:types`. Estos tipos describen el contrato de
+persistencia y RPC. Los adaptadores derivan de ellos los tipos de transporte y conservan aliases
+locales más estrictos para los datos después de pasar por guards; no sustituyen los guards, los
+mappers ni los view models de aplicación. Las respuestas `Json` siguen siendo datos no confiables
+hasta su validación explícita.
+El schema `private` no forma parte del contrato TypeScript compartido ni de la Data API.
+
 ### Separación del portal de superadministración
 
 `SuperadminPortalContext` conserva el contexto amplio que necesitan las operaciones actuales de

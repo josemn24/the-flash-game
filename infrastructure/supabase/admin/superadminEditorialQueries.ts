@@ -23,6 +23,7 @@ import {
   parseFlashEditorialQuestionDocument,
 } from "@/lib/editorial/flashDocument";
 import { createClient } from "@/lib/supabase/server";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import type {
   SuperadminEditorialCommandResult,
   SuperadminChallengeCatalogContext,
@@ -156,7 +157,9 @@ function isChallengeDetail(
   );
 }
 
-function isChallengeVersionSnapshot(value: unknown): value is SuperadminChallengeVersionComparison["from"] {
+function isChallengeVersionSnapshot(
+  value: unknown,
+): value is SuperadminChallengeVersionComparison["from"] {
   if (!isRecord(value) || !Array.isArray(value.items)) return false;
   return (
     typeof value.challengeVersionId === "string" &&
@@ -349,7 +352,9 @@ async function callQuestionCommand<T>(
     | ArchiveQuestionInput,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(functionName, { input });
+  const args = { input } as PublicFunctionArgs<typeof functionName>;
+  const response = await supabase.rpc(functionName, args);
+  const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) {
     if (error.code === "42501" || error.message.includes("not_authorized")) {
       throw new SuperadminAccessDeniedError();
@@ -377,7 +382,9 @@ async function callCommand<T>(
     | ArchiveChallengeVersionInput,
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(functionName, { input });
+  const args = { input } as PublicFunctionArgs<typeof functionName>;
+  const response = await supabase.rpc(functionName, args);
+  const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) {
     if (error.code === "42501" || error.message.includes("not_authorized")) {
       throw new SuperadminAccessDeniedError();
@@ -395,7 +402,8 @@ export class SupabaseSuperadminEditorialQueries
 {
   async getContext(): Promise<SuperadminEditorialContext> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_editorial_context");
+    const response = await supabase.rpc("get_superadmin_editorial_context");
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();
@@ -410,7 +418,8 @@ export class SupabaseSuperadminEditorialQueries
 
   async getChallengeCatalog(): Promise<SuperadminChallengeCatalogContext> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_challenge_catalog");
+    const response = await supabase.rpc("get_superadmin_challenge_catalog");
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();
@@ -427,9 +436,10 @@ export class SupabaseSuperadminEditorialQueries
   ): Promise<SuperadminChallengeDetailContext | null> {
     if (!uuidPattern.test(challengeDefinitionId)) return null;
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_challenge_detail", {
+    const response = await supabase.rpc("get_superadmin_challenge_detail", {
       target_challenge_definition_id: challengeDefinitionId,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();
@@ -474,10 +484,11 @@ export class SupabaseSuperadminEditorialQueries
       return null;
     }
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_challenge_version_comparison", {
+    const response = await supabase.rpc("get_superadmin_challenge_version_comparison", {
       from_challenge_version_id: fromChallengeVersionId,
       to_challenge_version_id: toChallengeVersionId,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();
@@ -496,9 +507,10 @@ export class SupabaseSuperadminEditorialQueries
     filters: QuestionLibraryFilters = {},
   ): Promise<SuperadminQuestionLibraryContext> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_question_library", {
+    const response = await supabase.rpc("get_superadmin_question_library", {
       input: filters,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();
@@ -515,9 +527,10 @@ export class SupabaseSuperadminEditorialQueries
       throw new SuperadminEditorialCommandError("invalid_command");
     }
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_question_version", {
+    const response = await supabase.rpc("get_superadmin_question_version", {
       question_version_id: questionVersionId,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
         throw new SuperadminAccessDeniedError();

@@ -12,6 +12,7 @@ import {
   SuperadminUserCommandError,
 } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import type { PublicFunctionInput, RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -39,7 +40,10 @@ function commandCode(error: { code?: string; message?: string }) {
 export class SupabaseSuperadminUserCommands implements SuperadminUserCommands {
   async createPlayer(input: CreateSuperadminPlayerInput): Promise<SuperadminUserCommandResult> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("create_superadmin_player", { input });
+    const response = await supabase.rpc("create_superadmin_player", {
+      input: input as unknown as PublicFunctionInput<"create_superadmin_player">,
+    });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
       throw new SuperadminUserCommandError(commandCode(error), error);
@@ -59,7 +63,10 @@ export class SupabaseSuperadminUserCommands implements SuperadminUserCommands {
     input: AddSuperadminRoomMemberInput,
   ): Promise<SuperadminRoomMemberCommandResult> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("add_superadmin_room_member", { input });
+    const response = await supabase.rpc("add_superadmin_room_member", {
+      input: input as unknown as PublicFunctionInput<"add_superadmin_room_member">,
+    });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
       throw new SuperadminUserCommandError(commandCode(error), error);

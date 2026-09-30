@@ -3,6 +3,7 @@ import "server-only";
 import type { SuperadminAttemptQueries } from "@/application/queries";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import type {
   SuperadminAttemptAuditEntry,
@@ -212,9 +213,10 @@ function isDetailPayload(value: unknown): value is {
 export class SupabaseSuperadminAttemptQueries implements SuperadminAttemptQueries {
   async listPublications(roomId: string) {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_attempt_publications", {
+    const response = await supabase.rpc("get_superadmin_attempt_publications", {
       target_room_id: roomId,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
       throw new Error(`Supabase attempt publications read failed: ${error.message}`);
@@ -232,13 +234,15 @@ export class SupabaseSuperadminAttemptQueries implements SuperadminAttemptQuerie
     cursor: { readonly startedAt: string; readonly attemptId: string } | null = null,
   ) {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_room_attempts", {
+    const args = {
       target_room_id: roomId,
       target_scheduled_challenge_id: scheduledChallengeId,
       cursor_started_at: cursor?.startedAt ?? null,
       cursor_attempt_id: cursor?.attemptId ?? null,
       page_size: 50,
-    });
+    } as PublicFunctionArgs<"get_superadmin_room_attempts">;
+    const response = await supabase.rpc("get_superadmin_room_attempts", args);
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
       throw new Error(`Supabase attempt list read failed: ${error.message}`);
@@ -258,11 +262,12 @@ export class SupabaseSuperadminAttemptQueries implements SuperadminAttemptQuerie
 
   async getInspection(roomId: string, scheduledChallengeId: string, attemptId: string) {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_attempt_inspection", {
+    const response = await supabase.rpc("get_superadmin_attempt_inspection", {
       target_room_id: roomId,
       target_scheduled_challenge_id: scheduledChallengeId,
       target_attempt_id: attemptId,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
       throw new Error(`Supabase attempt inspection read failed: ${error.message}`);

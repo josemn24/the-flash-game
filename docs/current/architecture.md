@@ -359,6 +359,11 @@ Reglas concretas:
    `lib`, tipos y otros módulos de infraestructura: no importan `server/*`, `features/*` ni
    `application/presentation/*`. Las reglas puras de gameplay y la presentación compartida viven
    en `lib`.
+   El contrato de persistencia generado en `lib/supabase/database.types.ts` solo puede ser
+   consumido por el boundary de clientes Supabase y por `infrastructure/supabase`; no se expone a
+   `application`, `server`, `features`, `components` ni `app`. En los adaptadores, el flujo es
+   `Database` para transporte → guard runtime para datos externos → mapper para DTO/view model;
+   los retornos `Json` no se consideran modelos de dominio sin validación explícita.
 8. Un Client Component no importa un Server Component. Un Server Component puede renderizar un
    Client Component y pasarle props serializables o contenido por slots.
 9. Los barrels (`index.ts`) no mezclan exports cliente y servidor de forma indiscriminada.

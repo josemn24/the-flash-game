@@ -10,6 +10,11 @@ import {
   SuperadminRoomCommandError,
 } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import type {
+  PublicFunctionInput,
+  PublicFunctionRow,
+  RawRpcResponse,
+} from "@/lib/supabase/rpcTypes";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
@@ -108,11 +113,7 @@ function isRoomDetailData(value: unknown): value is SuperadminRoomDetailWire {
   );
 }
 
-type SuperadminPlayerCandidateRow = {
-  readonly email: string;
-  readonly player_id: string;
-  readonly display_name: string;
-};
+type SuperadminPlayerCandidateRow = PublicFunctionRow<"lookup_superadmin_players">;
 
 function isPlayerCandidateRow(value: unknown): value is SuperadminPlayerCandidateRow {
   if (!isRecord(value)) return false;
@@ -169,7 +170,8 @@ function commandErrorCode(error: { code?: string; message?: string }) {
 export class SupabaseSuperadminPortalQueries implements SuperadminPortalQueries {
   async getContext(): Promise<SuperadminPortalContext> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_portal_context");
+    const response = await supabase.rpc("get_superadmin_portal_context");
+    const { data, error } = response as RawRpcResponse<typeof response>;
 
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
@@ -189,9 +191,10 @@ export class SupabaseSuperadminPortalQueries implements SuperadminPortalQueries 
     if (normalizedEmails.length === 0) return [];
 
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("lookup_superadmin_players", {
+    const response = await supabase.rpc("lookup_superadmin_players", {
       target_emails: normalizedEmails,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
 
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
@@ -213,9 +216,10 @@ export const supabaseSuperadminPortalQueries = new SupabaseSuperadminPortalQueri
 export class SupabaseSuperadminRoomQueries implements SuperadminRoomQueries {
   async getDetail(roomId: string): Promise<SuperadminRoomDetailData | null> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_room_detail", {
+    const response = await supabase.rpc("get_superadmin_room_detail", {
       target_room_id: roomId,
     });
+    const { data, error } = response as RawRpcResponse<typeof response>;
 
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();
@@ -245,7 +249,10 @@ export const supabaseSuperadminRoomQueries = new SupabaseSuperadminRoomQueries()
 export class SupabaseSuperadminRoomCommands implements SuperadminRoomCommands {
   async createRoom(input: CreateRoomInput): Promise<SuperadminRoomCreationResult> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("create_superadmin_room", { input });
+    const response = await supabase.rpc("create_superadmin_room", {
+      input: input as unknown as PublicFunctionInput<"create_superadmin_room">,
+    });
+    const { data, error } = response as RawRpcResponse<typeof response>;
 
     if (error) {
       if (error.code === "42501") throw new SuperadminAccessDeniedError();

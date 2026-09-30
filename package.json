@@ -30,6 +30,8 @@
     "mock-data:check": "vitest run data/mock/store.test.ts data/mock/validate.test.ts",
     "typecheck": "tsc --noEmit",
     "type-architecture": "node scripts/check-type-architecture.mjs",
+    "supabase:types": "node scripts/generate-supabase-types.mjs",
+    "supabase:types:check": "node scripts/generate-supabase-types.mjs --check",
     "lint": "eslint",
     "stylelint": "stylelint \"**/*.{css,module.css}\"",
     "style-architecture": "node scripts/check-style-architecture.mjs",

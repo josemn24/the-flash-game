@@ -3,18 +3,22 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import {
   callFlashRead,
+  type GeneratedCompetitiveReadRow,
+  type GeneratedCompetitiveResultRow,
   isFlashReadRow,
   isFlashResultRow,
   supabaseFlashQueries,
   toRoomContext,
-  type FlashReadRow,
   type FlashResultRow,
 } from "@/infrastructure/supabase/gameplay/flashQueries";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 import type { ServerFlashTerminalReview, ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import { getCurrentViewerProfile } from "@/server/profile";
 
-type PyramidReadRow = Omit<FlashReadRow, "challenge_mode" | "question_count"> & {
+type PyramidReadRow = Omit<
+  GeneratedCompetitiveReadRow<"get_my_pyramid_challenge">,
+  "challenge_mode" | "question_count"
+> & {
   challenge_mode: "pyramid";
   challenge_version_number: number;
   question_count: number;
@@ -25,8 +29,12 @@ type PyramidReadRow = Omit<FlashReadRow, "challenge_mode" | "question_count"> & 
   briefing_description: string;
 };
 
+type PyramidResultRow = GeneratedCompetitiveResultRow<"get_my_pyramid_result">;
+
 function isPyramidReadRow(value: unknown): value is PyramidReadRow {
-  if (!isFlashReadRow(value) || value.challenge_mode !== "pyramid") return false;
+  if (!isFlashReadRow<"get_my_pyramid_challenge">(value) || value.challenge_mode !== "pyramid") {
+    return false;
+  }
   const row = value as Record<string, unknown>;
   return (
     typeof row.challenge_version_number === "number" &&
@@ -57,7 +65,7 @@ export class SupabasePyramidQueries {
   async getTerminalReview(attemptId: string): Promise<ServerFlashTerminalReview[]> {
     const rows = (
       await callFlashRead("get_my_pyramid_result", { target_attempt_id: attemptId })
-    ).filter(isFlashResultRow);
+    ).filter(isFlashResultRow<"get_my_pyramid_result">);
     if (!rows.length) return [];
     const client = await createClient();
     const { data } = await client.auth.getUser();
@@ -98,13 +106,13 @@ export class SupabasePyramidQueries {
       return null;
     }
 
-    let resultRows: FlashResultRow[] = [];
+    let resultRows: PyramidResultRow[] = [];
     if (first.own_attempt_status === "completed" && first.own_attempt_id) {
       resultRows = (
         await callFlashRead("get_my_pyramid_result", {
           target_attempt_id: first.own_attempt_id,
         })
-      ).filter(isFlashResultRow);
+      ).filter(isFlashResultRow<"get_my_pyramid_result">);
     }
     const result = resultRows.length ? supabaseFlashQueries.toResult(resultRows) : undefined;
     const terminalReview =

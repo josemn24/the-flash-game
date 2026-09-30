@@ -1,5 +1,10 @@
 import "server-only";
 
+import type {
+  PublicFunctionArgs,
+  PublicFunctionRow,
+  RawRpcResponse,
+} from "@/lib/supabase/rpcTypes";
 import { createClient } from "@/lib/supabase/server";
 import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type {
@@ -9,21 +14,9 @@ import type {
 import type { GameRoomContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 
-type AlphabetReadRow = {
-  room_id: string;
-  room_slug: string;
-  room_title: string;
-  publication_id: string;
+type AlphabetReadOverrides = {
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
-  publication_opens_at: string;
-  publication_closes_at: string;
-  challenge_slug: string;
-  challenge_title: string;
   challenge_subtitle: string;
-  challenge_description: string;
-  challenge_max_score: number;
-  global_time_limit_ms: number;
-  question_count: number;
   own_attempt_id: string | null;
   own_attempt_status: "in_progress" | "completed" | "abandoned" | "invalidated" | null;
   own_attempt_score: number | null;
@@ -31,24 +24,16 @@ type AlphabetReadRow = {
   own_attempt_completed_at: string | null;
   own_attempt_deadline_at: string | null;
   own_attempt_lock_version: number | null;
-  challenge_item_id: string;
-  item_position: number;
-  question_version_id: string;
   question_type: "short-text";
-  payload_schema_version: number;
-  time_limit_ms: number;
-  item_points: number;
-  alphabet_letter: string;
 };
 
-type AlphabetResultRow = {
-  attempt_id: string;
-  scheduled_challenge_id: string;
-  challenge_item_id: string;
-  item_position: number;
-  question_version_id: string;
+type AlphabetReadRpcRow = PublicFunctionRow<"get_my_alphabet_challenge">;
+
+type AlphabetReadRow = Omit<AlphabetReadRpcRow, keyof AlphabetReadOverrides> &
+  AlphabetReadOverrides;
+
+type AlphabetResultOverrides = {
   question_type: "short-text";
-  payload_schema_version: number;
   public_payload: unknown;
   solution_payload: unknown;
   answer: unknown;
@@ -60,15 +45,12 @@ type AlphabetResultRow = {
   time_used_ms: number;
   attempt_status: "completed";
   attempt_score: number;
-  attempt_started_at: string;
-  attempt_completed_at: string;
-  attempt_lock_version: number;
-  challenge_title: string;
-  challenge_subtitle: string;
-  challenge_description: string;
-  challenge_max_score: number;
-  alphabet_letter: string;
 };
+
+type AlphabetResultRpcRow = PublicFunctionRow<"get_my_alphabet_result">;
+
+type AlphabetResultRow = Omit<AlphabetResultRpcRow, keyof AlphabetResultOverrides> &
+  AlphabetResultOverrides;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -128,7 +110,11 @@ function isAlphabetResultRow(value: unknown): value is AlphabetResultRow {
   );
 }
 
-function toRoomContext(row: AlphabetReadRow, viewerId: string, result?: RoomChallengeResult): GameRoomContext {
+function toRoomContext(
+  row: AlphabetReadRow,
+  viewerId: string,
+  result?: RoomChallengeResult,
+): GameRoomContext {
   return {
     roomId: row.room_slug,
     roomTitle: row.room_title,
@@ -148,9 +134,13 @@ function toRoomContext(row: AlphabetReadRow, viewerId: string, result?: RoomChal
   };
 }
 
-async function callAlphabetRead(functionName: "get_my_alphabet_challenge" | "get_my_alphabet_result", args: Record<string, string>) {
+async function callAlphabetRead(
+  functionName: "get_my_alphabet_challenge" | "get_my_alphabet_result",
+  args: PublicFunctionArgs<typeof functionName>,
+) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(functionName, args);
+  const response = await supabase.rpc(functionName, args);
+  const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase alphabet read failed (${functionName}): ${error.message}`);
   return Array.isArray(data) ? data : [];
 }
@@ -185,18 +175,22 @@ export class SupabaseAlphabetQueries {
   async getPlayable(roomKey: string, publicationId: string) {
     const viewer = await getCurrentViewerProfile();
     if (!viewer) return null;
-    const rows = (await callAlphabetRead("get_my_alphabet_challenge", {
-      target_room_slug: roomKey,
-      target_publication_id: publicationId,
-    })).filter(isAlphabetReadRow);
+    const rows = (
+      await callAlphabetRead("get_my_alphabet_challenge", {
+        target_room_slug: roomKey,
+        target_publication_id: publicationId,
+      })
+    ).filter(isAlphabetReadRow);
     const first = rows[0];
     if (!first || rows.length !== first.question_count) return null;
 
     let resultRows: AlphabetResultRow[] = [];
     if (first.own_attempt_status === "completed" && first.own_attempt_id) {
-      resultRows = (await callAlphabetRead("get_my_alphabet_result", {
-        target_attempt_id: first.own_attempt_id,
-      })).filter(isAlphabetResultRow);
+      resultRows = (
+        await callAlphabetRead("get_my_alphabet_result", {
+          target_attempt_id: first.own_attempt_id,
+        })
+      ).filter(isAlphabetResultRow);
     }
     const result = resultRows.length ? toResult(resultRows) : undefined;
     const terminalReview: ServerFlashTerminalReview[] | undefined = resultRows.length
@@ -245,9 +239,11 @@ export class SupabaseAlphabetQueries {
   }
 
   async getTerminalReview(attemptId: string) {
-    return (await callAlphabetRead("get_my_alphabet_result", {
-      target_attempt_id: attemptId,
-    })).filter(isAlphabetResultRow);
+    return (
+      await callAlphabetRead("get_my_alphabet_result", {
+        target_attempt_id: attemptId,
+      })
+    ).filter(isAlphabetResultRow);
   }
 }
 

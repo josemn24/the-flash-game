@@ -3,6 +3,7 @@ import "server-only";
 import type { SuperadminDashboardQueries } from "@/application/queries";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
+import type { RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import type {
   SuperadminDashboardAlert,
   SuperadminDashboardModel,
@@ -165,7 +166,8 @@ function dashboardActions() {
 export class SupabaseSuperadminDashboardQueries implements SuperadminDashboardQueries {
   async getDashboard(): Promise<SuperadminDashboardModel> {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_superadmin_dashboard_context");
+    const response = await supabase.rpc("get_superadmin_dashboard_context");
+    const { data, error } = response as RawRpcResponse<typeof response>;
 
     if (error) {
       if (error.code === "42501" || error.message.includes("not_authorized")) {
