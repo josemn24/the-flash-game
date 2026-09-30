@@ -1,12 +1,13 @@
-export type { EvaluationInput, ScoringPolicyId } from "@/lib/scoringCore/types";
+export type { ScoringPolicyId } from "@/lib/scoringCore/types";
 export {
   calculateAnswerScore,
-  calculateTotalScore,
   evaluatePracticeAnswer,
   evaluateAnswer,
   getTimedOutAnswer,
   isAnswerCorrect,
-} from "@/lib/scoringCore/engine";
+} from "@/lib/scoringPractice";
+export type { PracticeEvaluationInput } from "@/lib/scoringPractice";
+export { calculateTotalScore } from "@/lib/scoringCore/engine";
 export { QUESTION_SCORING_POLICY, SCORING } from "@/lib/scoringCore/registry";
 export { calculateQuestionScore } from "@/lib/scoringCore/shared";
 export { isValidAnagramConfiguration } from "@/lib/scoringCore/questions/anagram";

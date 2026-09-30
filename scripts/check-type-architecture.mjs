@@ -211,6 +211,15 @@ for (const file of productionFiles) {
     }
 
     if (
+      isScoringBoundary &&
+      (imported.specifier === "@/types/gameplay/practice" ||
+        imported.specifier === "@/lib/scoringPractice" ||
+        imported.specifier === "@/lib/scoring")
+    ) {
+      violations.push(`${relative} imports practice scoring through ${imported.specifier}`);
+    }
+
+    if (
       relative.startsWith(`infrastructure${path.sep}mock${path.sep}`) &&
       LEGACY_DATA_SOURCES.has(imported.specifier)
     ) {

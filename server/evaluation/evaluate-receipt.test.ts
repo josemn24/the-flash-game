@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
-import { evaluatePracticeAnswer } from "@/lib/scoringCore/engine";
+import { evaluatePracticeAnswer } from "@/lib/scoring";
 import type { DurationMs } from "@/types/domain/values";
 import { evaluateCompetitiveReceipt } from "./evaluate-receipt";
 

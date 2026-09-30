@@ -32,11 +32,14 @@ function buildDefaultUnansweredDetailsContext(
   };
 }
 
-export function isAnswerCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue): boolean {
+export function isResolvedAnswerCorrect(
+  question: ResolvedQuestion,
+  answer: ResolvedAnswerValue,
+): boolean {
   return SCORING[question.type].isCorrect(question, answer);
 }
 
-export function calculateAnswerScore(
+export function calculateResolvedAnswerScore(
   question: ResolvedQuestion,
   answer: ResolvedAnswerValue,
   timeUsed: number,
@@ -133,7 +136,7 @@ export function evaluateResolvedAnswer({
     };
   }
 
-  const isCorrect = isAnswerCorrect(question, answer);
+  const isCorrect = isResolvedAnswerCorrect(question, answer);
   const normalizedInput: NormalizedEvaluationInput = {
     question,
     answer,
@@ -165,14 +168,6 @@ export function evaluateResolvedAnswer({
   };
 }
 
-/** Evaluate a local practice or preview answer. */
-export function evaluatePracticeAnswer(input: EvaluationInput): AnswerResult {
-  return evaluateResolvedAnswer(input);
-}
-
-/** @deprecated Use `evaluatePracticeAnswer` for local practice and previews. */
-export const evaluateAnswer = evaluatePracticeAnswer;
-
 export function calculateTotalScore(scores: number[]) {
   return Math.max(
     0,
@@ -180,7 +175,7 @@ export function calculateTotalScore(scores: number[]) {
   );
 }
 
-export function getTimedOutAnswer(
+export function getResolvedTimedOutAnswer(
   question: ResolvedQuestion,
   {
     draftAnswer,
