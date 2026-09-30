@@ -12,7 +12,7 @@ import {
   verifiedIdentity,
 } from "@/server/competitive/attempt-api";
 import { readTerminalFlashReview } from "@/server/competitive/flashResult";
-import type { AttemptId, AnswerReceiptId } from "@/types/domain/identifiers";
+import type { AttemptId } from "@/types/domain/identifiers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,56 +31,34 @@ export async function POST(
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
     const commands = commandsFor(identity);
-    const recovery = await commands.recover({
+    const recovered = await commands.recover({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),
       idempotencyKey: `recovery:${attemptId}:${requireLockVersion(body)}`,
     });
-    let resolved: unknown;
-    let lockVersion = recovery.lockVersion;
-    if (recovery.receiptId) {
-      resolved = await commands.evaluateReceipt({
-        attemptId,
-        sessionToken,
-        lockVersion,
-        receiptId: recovery.receiptId as AnswerReceiptId,
-        idempotencyKey: `recovery:evaluation:${recovery.receiptId}`,
-      });
-      lockVersion = (resolved as { lockVersion: number }).lockVersion;
-    }
-    const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    if (
-      snapshot.allItemsResolved ||
-      snapshot.terminalOutcome === "eliminated" ||
-      snapshot.terminalOutcome === "failed"
-    ) {
-      const completed = await commands.completeFromPersistedAnswers({
-        attemptId,
-        sessionToken,
-        lockVersion: snapshot.lockVersion,
-        idempotencyKey: `recovery:complete:${attemptId}`,
-      });
+    const snapshot = recovered.snapshot;
+    if (recovered.completed) {
       const review = await readTerminalFlashReview(attemptId);
       await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
       return responseFor(
         {
-          status: completed.status,
-          lockVersion: completed.lockVersion,
+          status: recovered.completed.status,
+          lockVersion: recovered.completed.lockVersion,
           answers: snapshot.answers,
           phase: "results",
-          ...(resolved ? { resolved } : {}),
+          ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
           review,
-          score: completed.score,
+          score: recovered.completed.score,
           ...(snapshot.challengeMode === "survival"
             ? {
-                livesRemaining: completed.livesRemaining ?? snapshot.livesRemaining,
+                livesRemaining: recovered.completed.livesRemaining ?? snapshot.livesRemaining,
                 initialLives: snapshot.initialLives,
-                outcome: completed.outcome ?? snapshot.terminalOutcome,
+                outcome: recovered.completed.outcome ?? snapshot.terminalOutcome,
               }
             : {}),
           ...(snapshot.challengeMode === "pyramid"
-            ? { outcome: completed.outcome ?? snapshot.terminalOutcome }
+            ? { outcome: recovered.completed.outcome ?? snapshot.terminalOutcome }
             : {}),
         },
         200,
@@ -107,7 +85,7 @@ export async function POST(
               outcome: snapshot.terminalOutcome,
             }
           : {}),
-        ...(resolved ? { resolved } : {}),
+        ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
       },
       200,
       requestId,

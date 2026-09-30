@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type {
   PublicFunctionArgs,
   PublicFunctionRow,
@@ -12,7 +13,7 @@ import type {
   ServerFlashTerminalReview,
 } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
-import { getCurrentViewerProfile } from "@/server/profile";
+import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
 
 type AlphabetReadOverrides = {
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
@@ -172,8 +173,12 @@ function toResult(rows: AlphabetResultRow[]): RoomChallengeResult {
 }
 
 export class SupabaseAlphabetQueries {
+  constructor(
+    private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader,
+  ) {}
+
   async getPlayable(roomKey: string, publicationId: string) {
-    const viewer = await getCurrentViewerProfile();
+    const viewer = await this.currentViewer.getCurrentViewer();
     if (!viewer) return null;
     const rows = (
       await callAlphabetRead("get_my_alphabet_challenge", {

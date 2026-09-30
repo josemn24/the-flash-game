@@ -3,7 +3,6 @@ import {
   AttemptApiError,
   commandsFor,
   errorResponse,
-  newAttemptToken,
   readStartAttemptToken,
   readJson,
   requireKey,
@@ -26,29 +25,28 @@ export async function POST(request: Request) {
     const body = await readJson(request);
     const identity = await verifiedIdentity();
     const scheduledChallengeId = requireUuid(body, "scheduledChallengeId") as ScheduledChallengeId;
-    const sessionToken =
-      (await readStartAttemptToken(identity.authUserId, scheduledChallengeId)) ?? newAttemptToken();
-    const result = await commandsFor(identity).start({
+    const sessionToken = await readStartAttemptToken(identity.authUserId, scheduledChallengeId);
+    const started = await commandsFor(identity).start({
       scheduledChallengeId,
       idempotencyKey: requireKey(body),
       sessionToken,
     });
-    if (result.controlRequired) {
+    if (started.result.controlRequired) {
       throw new AttemptApiError("attempt_control_required", 409);
     }
     // The token is intentionally absent from the JSON response and the HTML/RSC tree.
     await setAttemptToken(
-      result.attemptId,
+      started.result.attemptId,
       identity.authUserId,
       scheduledChallengeId,
-      sessionToken,
+      started.sessionToken,
     );
     return responseFor(
       {
-        attemptId: result.attemptId,
-        resumed: result.resumed,
-        deadlineAt: result.deadlineAt,
-        lockVersion: result.lockVersion,
+        attemptId: started.result.attemptId,
+        resumed: started.result.resumed,
+        deadlineAt: started.result.deadlineAt,
+        lockVersion: started.result.lockVersion,
       },
       200,
       requestId,

@@ -32,17 +32,16 @@ export async function POST(
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
     const commands = commandsFor(identity);
-    const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    const result = await commands.completeFromPersistedAnswers({
+    const completed = await commands.complete({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),
       idempotencyKey: requireKey(body),
     });
     const review = await readTerminalFlashReview(attemptId);
-    await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
+    await clearAttemptToken(attemptId, identity.authUserId, completed.scheduledChallengeId);
     return responseFor(
-      { ...result, review },
+      { ...completed.result, review },
       200,
       requestId,
       "competitive.attempt.complete",

@@ -5,7 +5,6 @@ import type {
   ActivateInteractionResult,
   AttemptCommandInput,
   AttemptCommandResult,
-  CompleteAttemptInput,
   RecoverAttemptInput,
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
@@ -54,11 +53,6 @@ export type RecordEvaluationCommand = AttemptCommandInput & {
   readonly status: AnswerStatus;
   readonly points: number;
   readonly resultDetails?: JsonValue;
-};
-/** The existing mode evaluator supplies the authoritative termination/normalization decision. */
-export type CompleteAttemptCommand = CompleteAttemptInput & {
-  readonly score: number;
-  readonly outcome?: string;
 };
 export type RecoverAttemptCommand = RecoverAttemptInput;
 export type InvalidateAttemptCommand = TakeOverAttemptInput & { readonly reason: string };
@@ -124,7 +118,12 @@ export interface AttemptCommands {
   ): Promise<EvaluationContext>;
   pass(input: PassInteractionInput): Promise<PassInteractionResult>;
   recordEvaluation(input: RecordEvaluationCommand): Promise<SubmitAnswerResult>;
-  complete(input: CompleteAttemptCommand): Promise<FinishAttemptResult>;
+  completeFromPersistedAnswers(input: {
+    readonly attemptId: AttemptCommandInput["attemptId"];
+    readonly sessionToken: string;
+    readonly lockVersion: number;
+    readonly idempotencyKey: string;
+  }): Promise<FinishAttemptResult>;
   recover(input: RecoverAttemptCommand): Promise<RecoverAttemptResult>;
   readRecovery(attemptId: string, sessionToken: string): Promise<AttemptRecoverySnapshot>;
   abandon(input: AttemptCommandInput): Promise<FinishAttemptResult>;

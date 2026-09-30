@@ -5,15 +5,20 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getRuntimeScope } from "@/server/runtime-scope";
 import { logHttpEvent, requestIdFor, safePath } from "@/server/observability";
+import type { AuthenticatedActor, AttemptSessionTokenGenerator } from "@/application/ports/actors";
+import type { AttemptUseCases } from "@/application/ports/attempt-use-cases";
+import { ApplicationAttemptUseCases } from "@/application/use-cases/attempts";
 import {
   consumeCompetitiveRateLimit,
+  consumeAlphabetActionRateLimit,
   CompetitiveRateLimitError,
 } from "@/server/competitive/rate-limit";
 import {
   AttemptCommandError,
   SupabaseAttemptCommands,
-  type VerifiedAuthIdentity,
 } from "@/infrastructure/supabase/attempts/attemptCommands";
+import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
+import { supabaseCompetitiveEvaluator } from "@/server/evaluation/competitive-evaluator";
 
 const attemptCookiePrefix = "flash-attempt-";
 const attemptTokenMaxAgeSeconds = 60 * 60;
@@ -146,7 +151,7 @@ export function optionalClientTime(body: JsonObject) {
   return body.clientTimeUsedMs;
 }
 
-export async function verifiedIdentity(): Promise<VerifiedAuthIdentity> {
+export async function verifiedIdentity(): Promise<AuthenticatedActor> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error) {
@@ -257,10 +262,22 @@ export async function clearAttemptToken(
   }
 }
 
-export function commandsFor(identity: VerifiedAuthIdentity) {
+export function commandsFor(identity: AuthenticatedActor) {
   const limit = consumeCompetitiveRateLimit(identity.authUserId);
   void limit;
-  return new SupabaseAttemptCommands(identity);
+  const tokenGenerator: AttemptSessionTokenGenerator = { generate: newAttemptToken };
+  return new ApplicationAttemptUseCases({
+    actor: identity,
+    commands: new SupabaseAttemptCommands(identity),
+    evaluator: supabaseCompetitiveEvaluator,
+    privateQuestionAssets: supabasePrivateQuestionAssetResolver,
+    sessionTokens: tokenGenerator,
+    beforeInteractiveAction: ({ attemptId, challengeMode }) => {
+      if (challengeMode === "alphabet") {
+        consumeAlphabetActionRateLimit(identity.authUserId, attemptId);
+      }
+    },
+  }) satisfies AttemptUseCases;
 }
 
 export function mapAttemptError(error: unknown): AttemptApiError {

@@ -2,6 +2,7 @@ import "server-only";
 
 import { Pool, type PoolClient } from "pg";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
+import type { MediaAssetCommands } from "@/application/ports/media-asset-commands";
 
 const poolKey = Symbol.for("the-flash-game.supabase.media-asset-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -101,4 +102,13 @@ export function archiveQuestionAsset(authUserId: string, input: object) {
 
 export function readCompetitiveQuestionAsset(authUserId: string, input: { attemptId: string; assetId: string }) {
   return call<QuestionAssetRecord>(authUserId, "read_competitive_question_asset", input);
+}
+
+export function supabaseMediaAssetCommandsFor(authUserId: string): MediaAssetCommands {
+  return {
+    prepareAvatar: (input) => prepareAvatarAsset(authUserId, input),
+    readAvatar: (assetId) => readAvatarAsset(authUserId, assetId),
+    confirmAvatar: (input) => confirmAvatarAsset(authUserId, input),
+    abortAvatar: (input) => abortAvatarAsset(authUserId, input),
+  };
 }

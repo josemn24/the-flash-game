@@ -203,6 +203,19 @@ function isSupabaseGeneratedType(specifier) {
   return specifier === "@/lib/supabase/database.types";
 }
 
+function isApplicationForbiddenImport(specifier) {
+  return (
+    specifier === "server-only" ||
+    specifier.startsWith("next/") ||
+    specifier === "next" ||
+    specifier === "react" ||
+    specifier.startsWith("@supabase/") ||
+    specifier.startsWith("@/lib/supabase/") ||
+    specifier.startsWith("@/server/") ||
+    specifier.startsWith("@/infrastructure/")
+  );
+}
+
 for (const file of productionFiles) {
   const source = await readFile(file, "utf8");
   const relative = path.relative(process.cwd(), file);
@@ -279,6 +292,10 @@ for (const file of productionFiles) {
       violations.push(`${relative} makes application depend on ${imported.specifier}`);
     }
 
+    if (layer === "application" && isApplicationForbiddenImport(imported.specifier)) {
+      violations.push(`${relative} imports framework or infrastructure dependency ${imported.specifier}`);
+    }
+
     if (layer === "app" && ["data", "infrastructure", "test-utils"].includes(area)) {
       violations.push(`${relative} bypasses the server facade via ${imported.specifier}`);
     }
@@ -308,6 +325,22 @@ for (const file of productionFiles) {
       !imported.specifier.startsWith("@/data/mock/")
     ) {
       violations.push(`${relative} imports a legacy data projection ${imported.specifier}`);
+    }
+
+    if (
+      layer === "infrastructure" &&
+      imported.specifier.startsWith("@/server/") &&
+      !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`)
+    ) {
+      violations.push(`${relative} imports server business logic ${imported.specifier}`);
+    }
+
+    if (
+      (relative.startsWith(`app${path.sep}api${path.sep}`) ||
+        relative.startsWith(`app${path.sep}actions${path.sep}`)) &&
+      imported.specifier === "@/infrastructure/supabase/attempts/attemptCommands"
+    ) {
+      violations.push(`${relative} depends on concrete SupabaseAttemptCommands`);
     }
   }
 }

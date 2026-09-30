@@ -70,6 +70,11 @@ El comando arranca Supabase local, comprueba el esquema desde una base limpia, e
 typecheck, lint, build, escenarios de integración/E2E por fixture —incluido S17— y una prueba de backup/restore.
 Los logs y artefactos temporales se escriben en `output/s22/`, ignorado por Git.
 
+`npm run test:e2e -- e2e/<escenario>.spec.ts` es autocontenido para los escenarios registrados: arranca
+Supabase, reinicia la base, recrea las cuentas Auth y el fixture, ejecuta Playwright y limpia al terminar.
+Cuando otro comando ya ha preparado deliberadamente el fixture, `test:e2e:raw` permite ejecutar Playwright
+sin repetir ese bootstrap; es el modo usado internamente por `verify:pilot`.
+
 Para una ejecución manual aislada:
 
 ```bash

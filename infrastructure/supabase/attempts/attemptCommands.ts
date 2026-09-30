@@ -3,7 +3,6 @@ import "server-only";
 import { Pool, type PoolClient } from "pg";
 import type {
   AttemptCommands,
-  CompleteAttemptCommand,
   EvaluationContext,
   RecordEvaluationCommand,
   RecoverAttemptCommand,
@@ -29,14 +28,9 @@ import type {
   RevealProgressiveClueResult,
   PassInteractionResult,
 } from "@/types/contracts/attempts";
-import type { AnswerValue } from "@/types/contracts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
-import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
-import { resolveCompetitiveQuestion } from "@/server/evaluation/resolve-competitive-question";
-import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
-import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
 
 export { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
 
@@ -190,10 +184,6 @@ async function expireStaleAttempt(client: PoolClient, attemptId: string) {
   }
 }
 
-function resolveCompetitiveEvaluationQuestion(context: EvaluationContext) {
-  return resolveCompetitiveQuestion(normalizeCompetitiveEvaluationContext(context));
-}
-
 export class SupabaseAttemptCommands implements Pick<
   AttemptCommands,
   | "start"
@@ -211,7 +201,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "revealProgressiveClue"
   | "readEvaluationContext"
   | "recordEvaluation"
-  | "complete"
+  | "completeFromPersistedAnswers"
   | "abandon"
   | "recover"
   | "readRecovery"
@@ -223,20 +213,11 @@ export class SupabaseAttemptCommands implements Pick<
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    const prepared = await callAttemptCommand<PrepareInteractionResult>(
+    return callAttemptCommand<PrepareInteractionResult>(
       this.identity,
       "prepare_interaction",
       input,
     );
-    if (!prepared.publicPayload) return prepared;
-    return {
-      ...prepared,
-      publicPayload: (await resolveCompetitiveQuestionPayload({
-        authUserId: this.identity.authUserId,
-        attemptId: input.attemptId,
-        publicPayload: prepared.publicPayload,
-      })) as PrepareInteractionResult["publicPayload"],
-    };
   }
 
   activate(input: Parameters<AttemptCommands["activate"]>[0]) {
@@ -255,144 +236,58 @@ export class SupabaseAttemptCommands implements Pick<
     return callAttemptCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
   }
 
-  async submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
-    const accepted = await callAttemptCommand<SubmitMiniWordleGuessResult>(
+  submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
+    return callAttemptCommand<SubmitMiniWordleGuessResult>(
       this.identity,
       "submit_mini_wordle_guess",
       input,
     );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-    };
   }
 
-  async submitWordSearchSelection(
+  submitWordSearchSelection(
     input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0],
   ) {
-    const accepted = await callAttemptCommand<SubmitWordSearchSelectionResult>(
+    return callAttemptCommand<SubmitWordSearchSelectionResult>(
       this.identity,
       "submit_word_search_selection",
       input,
     );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-    };
   }
 
-  async submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
-    const accepted = await callAttemptCommand<SubmitWordHashtagSwapResult>(
+  submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
+    return callAttemptCommand<SubmitWordHashtagSwapResult>(
       this.identity,
       "submit_word_hashtag_swap",
       input,
     );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-      details: evaluated.details,
-    };
   }
 
-  async submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
-    const accepted = await callAttemptCommand<SubmitLogicCodeAttemptResult>(
+  submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
+    return callAttemptCommand<SubmitLogicCodeAttemptResult>(
       this.identity,
       "submit_logic_code_attempt",
       input,
     );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-    };
   }
 
-  async submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
-    const accepted = await callAttemptCommand<SubmitQueensPlacementResult>(
+  submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
+    return callAttemptCommand<SubmitQueensPlacementResult>(
       this.identity,
       "submit_queens_placement",
       input,
     );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-    };
   }
 
   saveQueensDraft(input: Parameters<AttemptCommands["saveQueensDraft"]>[0]) {
     return callAttemptCommand<SaveQueensDraftResult>(this.identity, "save_queens_draft", input);
   }
 
-  async validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {
-    const accepted = await callAttemptCommand<ValidateQueensBoardResult>(
+  validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {
+    return callAttemptCommand<ValidateQueensBoardResult>(
       this.identity,
       "submit_queens_answer",
       input,
     );
-    if (!accepted.terminal || !accepted.receiptId) return accepted;
-    const evaluated = await this.evaluateReceipt({
-      attemptId: input.attemptId,
-      sessionToken: input.sessionToken,
-      lockVersion: accepted.lockVersion,
-      receiptId: accepted.receiptId,
-      idempotencyKey: `evaluation:${accepted.receiptId}`,
-    });
-    return {
-      ...accepted,
-      lockVersion: evaluated.lockVersion,
-      status: evaluated.status,
-      points: evaluated.points,
-      details: evaluated.details,
-    };
   }
 
   revealProgressiveClue(input: Parameters<AttemptCommands["revealProgressiveClue"]>[0]) {
@@ -417,10 +312,6 @@ export class SupabaseAttemptCommands implements Pick<
     return callAttemptCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
   }
 
-  complete(input: CompleteAttemptCommand) {
-    return callAttemptCommand<FinishAttemptResult>(this.identity, "complete_attempt", input);
-  }
-
   abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
     return callAttemptCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
   }
@@ -438,99 +329,6 @@ export class SupabaseAttemptCommands implements Pick<
       );
       return result.rows[0]?.read_attempt_recovery as AttemptRecoverySnapshot;
     });
-  }
-
-  async evaluateAndRecord(input: { readonly receive: SubmitAnswerInput }) {
-    const received = await this.receiveAnswer(input.receive);
-    const context = await this.readEvaluationContext(
-      received.receiptId,
-      input.receive.sessionToken,
-    );
-    const resolvedContext = {
-      ...context,
-      publicPayload: (await resolveCompetitiveQuestionPayload({
-        authUserId: this.identity.authUserId,
-        attemptId: input.receive.attemptId,
-        publicPayload: context.publicPayload,
-      })) as EvaluationContext["publicPayload"],
-    };
-    const result: Pick<
-      ReturnType<typeof evaluateCompetitiveReceipt>,
-      "status" | "points" | "details"
-    > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
-      ? { status: "unanswered" as const, points: 0 }
-      : evaluateCompetitiveReceipt({
-          receipt: {
-            timeUsedMs: resolvedContext.timeUsedMs,
-            timedOut: resolvedContext.timedOut,
-          },
-          question: resolveCompetitiveEvaluationQuestion(resolvedContext),
-          answer: (resolvedContext.answer as AnswerValue | null) ?? null,
-          progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
-          progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
-          matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
-          incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
-        });
-    const evaluated = await this.recordEvaluation({
-      attemptId: input.receive.attemptId,
-      sessionToken: input.receive.sessionToken,
-      lockVersion: received.lockVersion,
-      idempotencyKey: `evaluation:${received.receiptId}`,
-      receiptId: received.receiptId,
-      status: result.status,
-      points: result.points,
-      ...(result.details ? { resultDetails: result.details } : {}),
-    });
-    return {
-      received,
-      evaluated: {
-        ...evaluated,
-        ...(result.details ? { details: result.details } : {}),
-      },
-    };
-  }
-
-  async evaluateReceipt(input: {
-    readonly attemptId: string;
-    readonly sessionToken: string;
-    readonly lockVersion: number;
-    readonly receiptId: AnswerReceiptId;
-    readonly idempotencyKey: string;
-  }) {
-    const context = await this.readEvaluationContext(input.receiptId, input.sessionToken);
-    const resolvedContext = {
-      ...context,
-      publicPayload: (await resolveCompetitiveQuestionPayload({
-        authUserId: this.identity.authUserId,
-        attemptId: input.attemptId,
-        publicPayload: context.publicPayload,
-      })) as EvaluationContext["publicPayload"],
-    };
-    const result: Pick<
-      ReturnType<typeof evaluateCompetitiveReceipt>,
-      "status" | "points" | "details"
-    > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
-      ? { status: "unanswered" as const, points: 0 }
-      : evaluateCompetitiveReceipt({
-          receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
-          question: resolveCompetitiveEvaluationQuestion(resolvedContext),
-          answer: (resolvedContext.answer as AnswerValue | null) ?? null,
-          progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
-          progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
-          matchingIncorrectAttempts: resolvedContext.matchingIncorrectAttempts ?? 0,
-          incorrectAttempts: resolvedContext.incorrectAttempts ?? 0,
-        });
-    const evaluated = await this.recordEvaluation({
-      attemptId: input.attemptId as Parameters<AttemptCommands["recordEvaluation"]>[0]["attemptId"],
-      sessionToken: input.sessionToken,
-      lockVersion: input.lockVersion,
-      idempotencyKey: input.idempotencyKey,
-      receiptId: input.receiptId,
-      status: result.status,
-      points: result.points,
-      ...(result.details ? { resultDetails: result.details } : {}),
-    });
-    return { ...evaluated, ...(result.details ? { details: result.details } : {}) };
   }
 
   completeFromPersistedAnswers(input: {

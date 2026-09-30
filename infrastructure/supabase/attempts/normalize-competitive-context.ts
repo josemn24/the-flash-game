@@ -1,7 +1,7 @@
 import type { EvaluationContext } from "@/application/ports/attempt-commands";
 import type { PublicQuestion, QuestionReveal, QuestionSolution } from "@/types/contracts";
 import type { QuestionTagSet } from "@/types/domain/content";
-import type { CompetitiveQuestionResolutionInput } from "@/server/evaluation/resolve-competitive-question";
+import type { CompetitiveQuestionResolutionInput } from "@/application/ports/competitive-evaluator";
 import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
 import type {
   ConnectPairsQuestion,

@@ -32,15 +32,14 @@ export async function POST(
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
     const commands = commandsFor(identity);
-    const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    const result = await commands.abandon({
+    const abandoned = await commands.abandon({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),
       idempotencyKey: `abandon:${attemptId}`,
     });
-    await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
-    return responseFor(result, 200, requestId, "competitive.attempt.abandon", startedAt);
+    await clearAttemptToken(attemptId, identity.authUserId, abandoned.scheduledChallengeId);
+    return responseFor(abandoned.result, 200, requestId, "competitive.attempt.abandon", startedAt);
   } catch (error) {
     return errorResponse(error, requestId, "competitive.attempt.abandon", startedAt);
   }

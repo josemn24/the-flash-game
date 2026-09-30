@@ -11,7 +11,10 @@ const latestMigration = readdirSync(migrationDirectory)
   ?.replace(/\.sql$/, "");
 
 const envExample = readFileSync(path.join(root, ".env.example"), "utf8");
-const healthSource = readFileSync(path.join(root, "infrastructure", "supabase", "health.ts"), "utf8");
+const healthSource = readFileSync(
+  path.join(root, "infrastructure", "supabase", "platform", "health.ts"),
+  "utf8",
+);
 const pilotSource = readFileSync(path.join(root, "scripts", "verify-pilot.mjs"), "utf8");
 
 function requiredValue(source, pattern, label) {

@@ -1,0 +1,75 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_TELEMETRY: "false"
+      FLASH_RUNTIME_SCOPE: pilot
+      APP_ORIGIN: http://127.0.0.1:3000
+      HEALTHCHECK_SECRET: ci-s22-health-secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Type architecture
+        run: npm run type-architecture
+
+      - name: Style architecture
+        run: npm run style-architecture
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start Supabase
+        run: npm run supabase:start
+
+      - name: Schema revision
+        run: npm run schema:revision:check
+
+      - name: Schema tests
+        run: npm run supabase:schema:test
+
+      - name: Browser smoke scenarios
+        run: >-
+          npm run test:e2e --
+          e2e/admin-portal.spec.ts
+          e2e/s03-flash.spec.ts
+          e2e/s04-recovery.spec.ts
+          e2e/e01-mini-wordle.spec.ts
+          e2e/e02-logic-code.spec.ts
+          e2e/e03-progressive-clues.spec.ts
+          e2e/e04-matching.spec.ts
+          e2e/e05-queens.spec.ts
+          e2e/e06-word-search.spec.ts
+          e2e/f08-logic-matrix.spec.ts
+          e2e/f16-zip.spec.ts
+          e2e/f18-escape.spec.ts
+          e2e/f19-word-hashtag.spec.ts
