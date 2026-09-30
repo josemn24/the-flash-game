@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { AnswerResult, AnswerValue, FlashChallenge, GameRoomContext } from "@/types/compat/game";
+import type { AnswerValue } from "@/types/contracts";
+import type { AnswerResult } from "@/types/gameplay/result";
+import type { FlashChallenge, PyramidChallenge } from "@/types/gameplay/challenge";
+import type { GameRoomContext } from "@/types/view-models/room";
 import { deriveSurvivalProgress } from "@/features/game/survivalRules";
 import type {
   ServerFlashChallenge,
@@ -11,7 +14,6 @@ import type {
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
-import type { PyramidChallenge } from "@/types/compat/game";
 import { WORD_HASHTAG_ACTIVE_CELLS } from "@/lib/wordHashtag";
 import {
   FLASH_POP_FEEDBACK_DURATION,

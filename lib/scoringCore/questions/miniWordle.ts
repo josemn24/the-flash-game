@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   MiniWordleAnswer,
   MiniWordleQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import {
   getMiniWordleMaxAttempts,
   getMiniWordleWordLength,
@@ -19,11 +19,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): MiniWordleQuestion {
+function asQuestion(question: ResolvedQuestion): MiniWordleQuestion {
   return question as MiniWordleQuestion;
 }
 
-export function isMiniWordleAnswer(answer: AnswerValue | null): answer is MiniWordleAnswer {
+export function isMiniWordleAnswer(answer: ResolvedAnswerValue | null): answer is MiniWordleAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -56,7 +56,7 @@ export function calculateMiniWordleMetrics(question: MiniWordleQuestion, answer:
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return (
     isMiniWordleAnswer(answer) && calculateMiniWordleMetrics(asQuestion(question), answer).solved
   );

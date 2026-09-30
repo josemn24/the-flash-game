@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   PipesAnswer,
   PipesQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculatePipesMetrics, isPipesAnswer, isValidPipesConfiguration } from "@/lib/pipes";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
@@ -13,7 +13,7 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question) {
+function asQuestion(question: ResolvedQuestion) {
   return question as PipesQuestion;
 }
 
@@ -30,7 +30,7 @@ function detailsFor(question: PipesQuestion, answer: PipesAnswer): AnswerResultD
   };
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   const pipesQuestion = asQuestion(question);
   return {
     type: "pipes",
@@ -43,7 +43,7 @@ function unansweredDetails(question: Question): AnswerResultDetails {
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return (
     isPipesAnswer(answer) &&
     isValidPipesConfiguration(asQuestion(question)) &&

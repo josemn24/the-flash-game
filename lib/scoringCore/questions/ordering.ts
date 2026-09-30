@@ -1,4 +1,8 @@
-import type { AnswerValue, OrderingQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  OrderingQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,13 +10,13 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): OrderingQuestion {
+function asQuestion(question: ResolvedQuestion): OrderingQuestion {
   return question as OrderingQuestion;
 }
 
 function isOrderingAnswer(
   question: OrderingQuestion,
-  answer: AnswerValue | null,
+  answer: ResolvedAnswerValue | null,
 ): answer is string[] {
   return (
     Array.isArray(answer) &&
@@ -21,7 +25,7 @@ function isOrderingAnswer(
   );
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const orderingQuestion = asQuestion(question);
   return (
     Array.isArray(answer) &&

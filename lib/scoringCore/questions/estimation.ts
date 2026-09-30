@@ -1,4 +1,8 @@
-import type { AnswerValue, EstimationQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  EstimationQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import { isValidEstimationAnswer } from "@/lib/estimation";
 import type {
@@ -7,7 +11,7 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): EstimationQuestion {
+function asQuestion(question: ResolvedQuestion): EstimationQuestion {
   return question as EstimationQuestion;
 }
 
@@ -20,9 +24,12 @@ export function calculateEstimationMetrics(question: EstimationQuestion, answer:
   return { difference, proximity };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const estimationQuestion = asQuestion(question);
-  return isValidEstimationAnswer(answer, estimationQuestion) && answer === estimationQuestion.correctAnswer;
+  return (
+    isValidEstimationAnswer(answer, estimationQuestion) &&
+    answer === estimationQuestion.correctAnswer
+  );
 }
 
 export function evaluateEstimation({

@@ -2,6 +2,7 @@ export type { EvaluationInput, ScoringPolicyId } from "@/lib/scoringCore/types";
 export {
   calculateAnswerScore,
   calculateTotalScore,
+  evaluatePracticeAnswer,
   evaluateAnswer,
   getTimedOutAnswer,
   isAnswerCorrect,

@@ -3,14 +3,13 @@ import type {
   EstimationQuestion,
   HeatMapQuestion,
   ConnectPairsQuestion,
-  FlashChallenge,
-  PyramidChallenge,
-  Question,
   LogicMatrixQuestion,
   QuestionOfType,
   WordHashtagQuestion,
   ZipQuestion,
-} from "@/types/compat/game";
+  PracticeQuestion as Question,
+} from "@/types/gameplay/practice";
+import type { FlashChallenge, PyramidChallenge } from "@/types/gameplay/challenge";
 import type {
   ServerFlashChallenge,
   ServerSurvivalChallenge,
@@ -37,7 +36,7 @@ import type {
   ServerConnectPairsQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
-import type { QuestionIllustration, QuestionMedia } from "@/types/compat/question";
+import type { QuestionIllustrationId, QuestionMedia } from "@/types/contracts";
 import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 import {
   isValidEstimationAnswer,
@@ -108,20 +107,20 @@ function questionMedia(payload: Record<string, unknown>): QuestionMedia | undefi
   }
   const value = media as Record<string, unknown>;
   if (value.type === "illustration") {
-    const illustrations: readonly QuestionIllustration[] = [
+    const illustrations: readonly QuestionIllustrationId[] = [
       "japan-flag",
       "saturn",
       "italy-flag",
       "france-flag",
     ];
     if (
-      !illustrations.includes(value.id as QuestionIllustration) ||
+      !illustrations.includes(value.id as QuestionIllustrationId) ||
       typeof value.alt !== "string" ||
       value.alt.trim().length === 0
     ) {
       throw new ServerFlashQuestionError();
     }
-    return { type: "illustration", id: value.id as QuestionIllustration, alt: value.alt };
+    return { type: "illustration", id: value.id as QuestionIllustrationId, alt: value.alt };
   }
   if (
     value.type !== "image" ||

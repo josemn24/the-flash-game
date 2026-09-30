@@ -1,4 +1,8 @@
-import type { AnswerValue, ProgressiveImageQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  ProgressiveImageQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
@@ -8,11 +12,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ProgressiveImageQuestion {
+function asQuestion(question: ResolvedQuestion): ProgressiveImageQuestion {
   return question as ProgressiveImageQuestion;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const imageQuestion = asQuestion(question);
   if (typeof answer !== "string" || !isValidProgressiveImageConfiguration(imageQuestion)) {
     return false;

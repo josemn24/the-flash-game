@@ -29,9 +29,9 @@ import type {
   RevealProgressiveClueResult,
   PassInteractionResult,
 } from "@/types/contracts/attempts";
+import type { AnswerValue } from "@/types/contracts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import type {
-  AnswerValue,
   ConnectPairsQuestion,
   LogicCodeQuestion,
   LogicMatrixQuestion,
@@ -40,7 +40,6 @@ import type {
   MultipleChoiceQuestion,
   ProgressiveCluesQuestion,
   ProgressiveImageQuestion,
-  Question,
   QueensQuestion,
   TrueFalseQuestion,
   OddOneOutQuestion,
@@ -54,14 +53,15 @@ import type {
   WordSearchQuestion,
   WordHashtagQuestion,
   ZipQuestion,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,
   isValidMiniWordleWord,
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
-import { evaluateReceipt } from "@/server/evaluation/evaluate-receipt";
+import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
@@ -237,7 +237,7 @@ async function expireStaleAttempt(client: PoolClient, attemptId: string) {
   }
 }
 
-function asQuestion(
+function resolveCompetitiveScoringQuestion(
   context: EvaluationContext,
 ):
   | MultipleChoiceQuestion
@@ -335,7 +335,7 @@ function asQuestion(
     category: typeof publicPayload.category === "string" ? publicPayload.category : "",
     tags:
       tags && typeof tags === "object" && !Array.isArray(tags)
-        ? (tags as Question["tags"])
+        ? (tags as ResolvedQuestion["tags"])
         : { domains: [], topics: [], cognitiveSkills: [], formatSkills: [], lifeSkills: [] },
     question: prompt,
     timeLimit: context.timeLimitMs / 1000,
@@ -1400,16 +1400,16 @@ export class SupabaseAttemptCommands implements Pick<
       })) as EvaluationContext["publicPayload"],
     };
     const result: Pick<
-      ReturnType<typeof evaluateReceipt>,
+      ReturnType<typeof evaluateCompetitiveReceipt>,
       "status" | "points" | "details"
     > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
       ? { status: "unanswered" as const, points: 0 }
-      : evaluateReceipt({
+      : evaluateCompetitiveReceipt({
           receipt: {
             timeUsedMs: resolvedContext.timeUsedMs,
             timedOut: resolvedContext.timedOut,
           },
-          question: asQuestion(resolvedContext),
+          question: resolveCompetitiveScoringQuestion(resolvedContext),
           answer: (resolvedContext.answer as AnswerValue | null) ?? null,
           progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
           progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,
@@ -1452,13 +1452,13 @@ export class SupabaseAttemptCommands implements Pick<
       })) as EvaluationContext["publicPayload"],
     };
     const result: Pick<
-      ReturnType<typeof evaluateReceipt>,
+      ReturnType<typeof evaluateCompetitiveReceipt>,
       "status" | "points" | "details"
     > = resolvedContext.mode === "pyramid" && resolvedContext.answer === null
       ? { status: "unanswered" as const, points: 0 }
-      : evaluateReceipt({
+      : evaluateCompetitiveReceipt({
           receipt: { timeUsedMs: resolvedContext.timeUsedMs, timedOut: resolvedContext.timedOut },
-          question: asQuestion(resolvedContext),
+          question: resolveCompetitiveScoringQuestion(resolvedContext),
           answer: (resolvedContext.answer as AnswerValue | null) ?? null,
           progressiveCluesRevealed: resolvedContext.progressiveCluesRevealed ?? 1,
           progressiveClueAvailablePoints: resolvedContext.progressiveClueAvailablePoints,

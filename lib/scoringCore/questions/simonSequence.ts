@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   SimonSequenceAnswer,
   SimonSequenceQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -12,11 +12,13 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): SimonSequenceQuestion {
+function asQuestion(question: ResolvedQuestion): SimonSequenceQuestion {
   return question as SimonSequenceQuestion;
 }
 
-export function isSimonSequenceAnswer(answer: AnswerValue | null): answer is SimonSequenceAnswer {
+export function isSimonSequenceAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is SimonSequenceAnswer {
   return Array.isArray(answer) && answer.every((step) => typeof step === "string");
 }
 
@@ -41,7 +43,7 @@ export function findSimonSequenceMismatch(sequence: string[], answer: SimonSeque
   return null;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const simonQuestion = asQuestion(question);
   return (
     isSimonSequenceAnswer(answer) &&

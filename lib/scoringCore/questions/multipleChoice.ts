@@ -1,4 +1,8 @@
-import type { AnswerValue, MultipleChoiceQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  MultipleChoiceQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateQuestionScore, CHOICE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +10,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): MultipleChoiceQuestion {
+function asQuestion(question: ResolvedQuestion): MultipleChoiceQuestion {
   return question as MultipleChoiceQuestion;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return typeof answer === "string" && answer === asQuestion(question).correctAnswer;
 }
 

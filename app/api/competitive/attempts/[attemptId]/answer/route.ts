@@ -17,7 +17,7 @@ import { AttemptApiError } from "@/server/competitive/attempt-api";
 import { consumeAlphabetActionRateLimit } from "@/server/competitive/rate-limit";
 import type { AttemptId, ChallengeItemId } from "@/types/domain/identifiers";
 import type { DurationMs } from "@/types/domain/values";
-import type { AnswerValue } from "@/types/compat/game";
+import type { AnswerValue } from "@/types/contracts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

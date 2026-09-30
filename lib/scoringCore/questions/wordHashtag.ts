@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   WordHashtagAnswer,
   WordHashtagQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 import {
   calculateWordHashtagMetrics,
   isValidWordHashtagConfiguration,
@@ -19,7 +19,7 @@ import type {
 
 const EXTRA_MOVE_PENALTY_RATIO = 0.1;
 
-function asQuestion(question: Question) {
+function asQuestion(question: ResolvedQuestion) {
   return question as WordHashtagQuestion;
 }
 
@@ -38,7 +38,7 @@ function detailsFor(question: WordHashtagQuestion, answer: WordHashtagAnswer): A
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const hashtagQuestion = asQuestion(question);
   return (
     isWordHashtagAnswer(answer) &&

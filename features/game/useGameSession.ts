@@ -3,17 +3,14 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import {
   calculateTotalScore,
-  evaluateAnswer,
+  evaluatePracticeAnswer,
   getTimedOutAnswer,
   isAnswerCorrect,
 } from "@/lib/scoring";
-import type {
-  AnswerResult,
-  AnswerStatus,
-  AnswerValue,
-  FlashChallenge,
-  GamePhase,
-} from "@/types/compat/game";
+import type { AnswerResult, AnswerStatus } from "@/types/gameplay/result";
+import type { PracticeAnswerValue } from "@/types/gameplay/practice";
+import type { FlashChallenge } from "@/types/gameplay/challenge";
+import type { GamePhase } from "@/types/gameplay/session";
 
 const TRANSITION_DURATION = 650;
 
@@ -102,7 +99,7 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
-  const draftAnswerRef = useRef<AnswerValue | null>(null);
+  const draftAnswerRef = useRef<PracticeAnswerValue | null>(null);
   const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -163,14 +160,14 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
   }, [clearAdvanceTimeout]);
 
   const submitAnswer = useCallback(
-    (answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
+    (answer: PracticeAnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
       if (answerLock.current || !question) return;
       answerLock.current = true;
 
       const rawTime = timedOut
         ? question.timeLimit
         : (performance.now() - questionStartedAt.current) / 1000;
-      const result = evaluateAnswer({
+      const result = evaluatePracticeAnswer({
         question,
         answer,
         timeUsed: rawTime,
@@ -243,7 +240,7 @@ export function useGameSession(challenge: FlashChallenge, options: GameSessionOp
     );
   }, [question, submitAnswer]);
 
-  const handleAnswerProgress = useCallback((answer: AnswerValue) => {
+  const handleAnswerProgress = useCallback((answer: PracticeAnswerValue) => {
     draftAnswerRef.current = answer;
   }, []);
 

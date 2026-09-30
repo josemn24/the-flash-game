@@ -129,8 +129,7 @@ for (const file of files) {
 
     if (
       layer === "view-models" &&
-      (imported.specifier === "@/types/legacy" ||
-        imported.specifier.startsWith("@/types/compat/"))
+      (imported.specifier === "@/types/legacy" || imported.specifier.startsWith("@/types/compat/"))
     ) {
       violations.push(
         `${path.relative(process.cwd(), file)} exposes a legacy model through view-models`,
@@ -142,9 +141,9 @@ for (const file of files) {
 const mockFiles = await collectTypeScriptFiles(MOCK_ROOT);
 for (const file of mockFiles) {
   const source = await readFile(file, "utf8");
-    const relativeFile = path.relative(MOCK_ROOT, file);
-    const allowsLegacyDependencies =
-      relativeFile.startsWith(`compat${path.sep}`) || LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
+  const relativeFile = path.relative(MOCK_ROOT, file);
+  const allowsLegacyDependencies =
+    relativeFile.startsWith(`compat${path.sep}`) || LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
   const isCanonicalFixture =
     relativeFile.startsWith(`catalog${path.sep}`) || CANONICAL_MOCK_FILES.has(path.basename(file));
   for (const imported of importsIn(source)) {
@@ -196,10 +195,19 @@ for (const file of productionFiles) {
   const source = await readFile(file, "utf8");
   const relative = path.relative(process.cwd(), file);
   const layer = relative.split(path.sep)[0];
+  const isScoringBoundary =
+    relative.startsWith(`lib${path.sep}scoringCore${path.sep}`) ||
+    relative.startsWith(`server${path.sep}evaluation${path.sep}`) ||
+    relative ===
+      path.join("app", "api", "competitive", "attempts", "[attemptId]", "answer", "route.ts");
 
   for (const imported of importsIn(source)) {
     if (LEGACY_TYPE_IMPORTS.has(imported.specifier)) {
       violations.push(`${relative} imports legacy type barrel ${imported.specifier}`);
+    }
+
+    if (isScoringBoundary && imported.specifier.startsWith("@/types/compat/")) {
+      violations.push(`${relative} imports compatibility scoring types ${imported.specifier}`);
     }
 
     if (

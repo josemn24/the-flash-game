@@ -1,4 +1,8 @@
-import type { AnswerValue, LogicMatrixQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  LogicMatrixQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateQuestionScore, CHOICE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -11,7 +15,7 @@ export type LogicMatrixPublicPayload = Pick<
   "pieces" | "cells" | "optionIds" | "showPieceLabels"
 >;
 
-function asQuestion(question: Question): LogicMatrixQuestion {
+function asQuestion(question: ResolvedQuestion): LogicMatrixQuestion {
   return question as LogicMatrixQuestion;
 }
 
@@ -94,7 +98,7 @@ export function isValidLogicMatrixPublicPayload(value: unknown): value is LogicM
   return validPieces && validCells && validOptions && validLabels;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const logicQuestion = asQuestion(question);
   return (
     typeof answer === "string" &&

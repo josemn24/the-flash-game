@@ -1,9 +1,9 @@
 import type {
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   SlidingPuzzleAnswer,
   SlidingPuzzleQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -11,11 +11,13 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): SlidingPuzzleQuestion {
+function asQuestion(question: ResolvedQuestion): SlidingPuzzleQuestion {
   return question as SlidingPuzzleQuestion;
 }
 
-export function isSlidingPuzzleAnswer(answer: AnswerValue | null): answer is SlidingPuzzleAnswer {
+export function isSlidingPuzzleAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is SlidingPuzzleAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -62,7 +64,7 @@ export function isValidSlidingPuzzleConfiguration(question: SlidingPuzzleQuestio
   );
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const puzzleQuestion = asQuestion(question);
   return (
     isSlidingPuzzleAnswer(answer) &&

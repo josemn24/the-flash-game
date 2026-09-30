@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
   AnswerStatus,
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   QuestionType,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 
 export type ScoringPolicyId =
   | "binary-speed"
@@ -25,8 +25,8 @@ export type InternalEvaluation = {
 };
 
 export type EvaluationContext = {
-  question: Question;
-  answer: AnswerValue;
+  question: ResolvedQuestion;
+  answer: ResolvedAnswerValue;
   timeUsed: number;
   submittedCodes: string[];
   incorrectAttempts: number;
@@ -35,8 +35,8 @@ export type EvaluationContext = {
 };
 
 export type EvaluationInput = {
-  question: Question;
-  answer: AnswerValue | null;
+  question: ResolvedQuestion;
+  answer: ResolvedAnswerValue | null;
   timeUsed: number;
   timedOut?: boolean;
   submittedCodes?: string[];
@@ -47,8 +47,8 @@ export type EvaluationInput = {
 };
 
 export type NormalizedEvaluationInput = {
-  question: Question;
-  answer: AnswerValue;
+  question: ResolvedQuestion;
+  answer: ResolvedAnswerValue;
   timeUsed: number;
   timedOut: boolean;
   submittedCodes: string[];
@@ -60,7 +60,7 @@ export type NormalizedEvaluationInput = {
 };
 
 export type NormalizedUnansweredInput = {
-  question: Question;
+  question: ResolvedQuestion;
   answer: null;
   timeUsed: number;
   timedOut: boolean;
@@ -85,10 +85,10 @@ export type TimeoutPolicy = {
   readonly preservePoints?: boolean;
   buildUnansweredDetailsContext?(input: NormalizedUnansweredInput): UnansweredDetailsContext;
   unansweredDetails?(
-    question: Question,
+    question: ResolvedQuestion,
     context: UnansweredDetailsContext,
   ): AnswerResultDetails | undefined;
-  status?(evaluation: InternalEvaluation, question: Question): AnswerStatus | undefined;
+  status?(evaluation: InternalEvaluation, question: ResolvedQuestion): AnswerStatus | undefined;
 };
 
 export type QuestionScoring = {
@@ -96,9 +96,9 @@ export type QuestionScoring = {
   readonly policy: ScoringPolicyId;
   readonly timeoutPolicy?: TimeoutPolicy;
   // Shape guard only: validate that the scorer can process this answer.
-  // Question-specific correctness and configuration checks stay in the scorer.
-  isAnswer(answer: AnswerValue | null): boolean;
-  isCorrect(question: Question, answer: AnswerValue): boolean;
+  // ResolvedQuestion-specific correctness and configuration checks stay in the scorer.
+  isAnswer(answer: ResolvedAnswerValue | null): boolean;
+  isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue): boolean;
   buildEvaluationContext?(input: NormalizedEvaluationInput): EvaluationContext;
   evaluate(context: EvaluationContext): InternalEvaluation;
 };

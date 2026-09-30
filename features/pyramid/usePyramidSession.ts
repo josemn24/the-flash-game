@@ -13,7 +13,7 @@ import {
   parsePyramidAttempt,
   type PyramidAttemptRecord,
 } from "@/features/pyramid/pyramidAttempt";
-import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
+import { evaluatePracticeAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
 import { MINI_WORDLE_ANSWER_REVEAL_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerValue, PyramidChallenge } from "@/types/compat/game";
 
@@ -108,7 +108,7 @@ export function usePyramidSession(
         ? level.question.timeLimit
         : Math.min(level.question.timeLimit, Math.max(0, (now - current.levelStartedAt) / 1000));
       const result = normalizePyramidResult(
-        evaluateAnswer({
+        evaluatePracticeAnswer({
           question: level.question,
           answer,
           timeUsed,
@@ -121,8 +121,7 @@ export function usePyramidSession(
       );
       const passed = isPyramidLevelPassed(result);
       const lastLevel = current.currentLevelIndex === challenge.levels.length - 1;
-      const revealMiniWordleAnswer =
-        passed && level.question.type === "mini-wordle";
+      const revealMiniWordleAnswer = passed && level.question.type === "mini-wordle";
 
       if (!passed || lastLevel) {
         persist(completePyramidAttempt(current, result, passed ? "summit" : "failed", now));

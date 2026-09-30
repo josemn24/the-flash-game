@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   MemoryPairsAnswer,
   MemoryPairsQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import {
   applyAttemptPenalty,
   calculateProportionalScore,
@@ -16,11 +16,13 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): MemoryPairsQuestion {
+function asQuestion(question: ResolvedQuestion): MemoryPairsQuestion {
   return question as MemoryPairsQuestion;
 }
 
-export function isMemoryPairsAnswer(answer: AnswerValue | null): answer is MemoryPairsAnswer {
+export function isMemoryPairsAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is MemoryPairsAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -104,13 +106,13 @@ export function calculateMemoryPairsMetrics(
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (!isMemoryPairsAnswer(answer)) return false;
   const metrics = calculateMemoryPairsMetrics(asQuestion(question), answer);
   return metrics.valid && metrics.matchedPairs === metrics.totalPairs;
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   const memoryQuestion = asQuestion(question);
   return {
     type: "memory-pairs",

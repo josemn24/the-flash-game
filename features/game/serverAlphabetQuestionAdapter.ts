@@ -1,4 +1,5 @@
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/compat/game";
+import type { ShortTextQuestion } from "@/types/gameplay/practice";
+import type { AlphabetChallenge } from "@/types/gameplay/challenge";
 import type {
   ServerAlphabetChallenge,
   ServerAlphabetQuestion,
@@ -50,8 +51,7 @@ export function questionFromAlphabetPayload(
     question: prompt,
     timeLimit: timeLimitMs / 1000,
     points,
-    answerPlaceholder:
-      typeof value.answerPlaceholder === "string" ? value.answerPlaceholder : null,
+    answerPlaceholder: typeof value.answerPlaceholder === "string" ? value.answerPlaceholder : null,
   };
 }
 

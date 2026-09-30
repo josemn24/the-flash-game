@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   ZipAnswer,
   ZipQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 import { calculateZipMetrics, isValidZipAnswer, isValidZipConfiguration } from "@/lib/zip";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
@@ -13,11 +13,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ZipQuestion {
+function asQuestion(question: ResolvedQuestion): ZipQuestion {
   return question as ZipQuestion;
 }
 
-export function isZipAnswer(answer: AnswerValue | null): answer is ZipAnswer {
+export function isZipAnswer(answer: ResolvedAnswerValue | null): answer is ZipAnswer {
   return isValidZipAnswer(answer);
 }
 
@@ -33,7 +33,7 @@ function detailsFor(question: ZipQuestion, answer: ZipAnswer): AnswerResultDetai
   };
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   const zipQuestion = asQuestion(question);
   return {
     type: "zip",
@@ -45,7 +45,7 @@ function unansweredDetails(question: Question): AnswerResultDetails {
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (!isZipAnswer(answer)) return false;
   const zipQuestion = asQuestion(question);
   return isValidZipConfiguration(zipQuestion) && calculateZipMetrics(zipQuestion, answer).completed;

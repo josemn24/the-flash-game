@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   ErrorReconstructionAnswer,
   ErrorReconstructionQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
@@ -15,12 +15,12 @@ import type {
 
 const LOCATION_ONLY_FRACTION = 0.6;
 
-function asQuestion(question: Question): ErrorReconstructionQuestion {
+function asQuestion(question: ResolvedQuestion): ErrorReconstructionQuestion {
   return question as ErrorReconstructionQuestion;
 }
 
 export function isErrorReconstructionAnswer(
-  answer: AnswerValue | null,
+  answer: ResolvedAnswerValue | null,
 ): answer is ErrorReconstructionAnswer {
   return (
     answer !== null &&
@@ -76,14 +76,14 @@ export function calculateErrorReconstructionMetrics(
   return { selectedStepId, locationCorrect, correctionRequired, correctionCorrect, valid };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return (
     isErrorReconstructionAnswer(answer) &&
     calculateErrorReconstructionMetrics(asQuestion(question), answer).correctionCorrect
   );
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   return {
     type: "error-reconstruction",
     selectedStepId: null,

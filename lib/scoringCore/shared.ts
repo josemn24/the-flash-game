@@ -1,4 +1,4 @@
-import type { Question } from "@/types/compat/game";
+import type { ResolvedQuestion } from "@/types/gameplay/scoring";
 
 export const MIN_SPEED_MULTIPLIER = 0.6;
 export const TRUE_FALSE_PENALTY_RATIO = 0.4;
@@ -35,7 +35,7 @@ export function applyAttemptPenalty(score: number, points: number, incorrectAtte
 }
 
 export function calculateQuestionScore(
-  question: Question,
+  question: ResolvedQuestion,
   correct: boolean,
   timeUsed: number,
   { incorrectPenaltyRatio = 0 } = {},

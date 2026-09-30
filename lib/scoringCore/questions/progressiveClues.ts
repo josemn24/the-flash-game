@@ -1,9 +1,9 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   ProgressiveCluesQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
@@ -12,7 +12,7 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ProgressiveCluesQuestion {
+function asQuestion(question: ResolvedQuestion): ProgressiveCluesQuestion {
   return question as ProgressiveCluesQuestion;
 }
 
@@ -47,7 +47,7 @@ export function calculateProgressiveCluesMetrics(
   return { revealedClues: safeRevealedClues, totalClues, availablePoints };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const cluesQuestion = asQuestion(question);
   if (typeof answer !== "string") return false;
   const accepted = cluesQuestion.acceptedAnswers ?? [cluesQuestion.correctAnswer];
@@ -56,7 +56,7 @@ function isCorrect(question: Question, answer: AnswerValue) {
 }
 
 function unansweredDetails(
-  question: Question,
+  question: ResolvedQuestion,
   context: { revealedClues: number; availablePoints?: number },
 ): AnswerResultDetails {
   return {

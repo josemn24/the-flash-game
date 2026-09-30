@@ -1,4 +1,9 @@
-import type { AnswerValue, MiniNonogramAnswer, MiniNonogramQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  MiniNonogramAnswer,
+  MiniNonogramQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +11,13 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): MiniNonogramQuestion {
+function asQuestion(question: ResolvedQuestion): MiniNonogramQuestion {
   return question as MiniNonogramQuestion;
 }
 
-export function isMiniNonogramAnswer(answer: AnswerValue | null): answer is MiniNonogramAnswer {
+export function isMiniNonogramAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is MiniNonogramAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -90,7 +97,7 @@ export function calculateMiniNonogramMetrics(
   return { correctFilled, incorrectFilled, totalFilled, exact, valid };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return (
     isMiniNonogramAnswer(answer) && calculateMiniNonogramMetrics(asQuestion(question), answer).exact
   );

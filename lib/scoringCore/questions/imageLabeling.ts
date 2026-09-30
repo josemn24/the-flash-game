@@ -1,10 +1,10 @@
 import type {
-  AnswerValue,
+  ResolvedAnswerValue,
   AssignAllImageLabelingQuestion,
   ImageLabelingAnswer,
   ImageLabelingQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import {
   CHOICE_PENALTY_RATIO,
@@ -18,11 +18,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ImageLabelingQuestion {
+function asQuestion(question: ResolvedQuestion): ImageLabelingQuestion {
   return question as ImageLabelingQuestion;
 }
 
-function isRecordAnswer(answer: AnswerValue | null): answer is ImageLabelingAnswer {
+function isRecordAnswer(answer: ResolvedAnswerValue | null): answer is ImageLabelingAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -32,7 +32,9 @@ function isRecordAnswer(answer: AnswerValue | null): answer is ImageLabelingAnsw
   );
 }
 
-export function isImageLabelingAnswer(answer: AnswerValue | null): answer is ImageLabelingAnswer {
+export function isImageLabelingAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is ImageLabelingAnswer {
   return isRecordAnswer(answer);
 }
 
@@ -126,7 +128,7 @@ function identifyOneIsCorrect(question: ImageLabelingQuestion, answer: string) {
   return accepted.some((candidate) => normalizeAnswer(candidate) === normalizeAnswer(answer));
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const imageQuestion = asQuestion(question);
   if (!isValidImageLabelingConfiguration(imageQuestion)) return false;
   if (imageQuestion.task === "assign-all") {

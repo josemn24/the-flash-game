@@ -1,4 +1,4 @@
-import type { AnswerResult, AnswerValue, Question } from "@/types/compat/game";
+import type { AnswerResult, ResolvedAnswerValue, ResolvedQuestion } from "@/types/gameplay/scoring";
 import { SCORING } from "@/lib/scoringCore/registry";
 import { clampTime, normalizeScore } from "@/lib/scoringCore/shared";
 import type {
@@ -32,13 +32,13 @@ function buildDefaultUnansweredDetailsContext(
   };
 }
 
-export function isAnswerCorrect(question: Question, answer: AnswerValue): boolean {
+export function isAnswerCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue): boolean {
   return SCORING[question.type].isCorrect(question, answer);
 }
 
 export function calculateAnswerScore(
-  question: Question,
-  answer: AnswerValue,
+  question: ResolvedQuestion,
+  answer: ResolvedAnswerValue,
   timeUsed: number,
   incorrectAttempts = 0,
   revealedClues = 1,
@@ -70,7 +70,14 @@ export function calculateAnswerScore(
   return normalizeScore(scoring.evaluate(context).points);
 }
 
-export function evaluateAnswer({
+/**
+ * Shared scoring kernel for a fully resolved private question.
+ *
+ * Adapters at the practice and competitive boundaries are responsible for
+ * deciding where that private projection came from. This function must not be
+ * used directly by browser-facing code.
+ */
+export function evaluateResolvedAnswer({
   question,
   answer,
   timeUsed,
@@ -158,6 +165,14 @@ export function evaluateAnswer({
   };
 }
 
+/** Evaluate a local practice or preview answer. */
+export function evaluatePracticeAnswer(input: EvaluationInput): AnswerResult {
+  return evaluateResolvedAnswer(input);
+}
+
+/** @deprecated Use `evaluatePracticeAnswer` for local practice and previews. */
+export const evaluateAnswer = evaluatePracticeAnswer;
+
 export function calculateTotalScore(scores: number[]) {
   return Math.max(
     0,
@@ -166,15 +181,15 @@ export function calculateTotalScore(scores: number[]) {
 }
 
 export function getTimedOutAnswer(
-  question: Question,
+  question: ResolvedQuestion,
   {
     draftAnswer,
     submittedCodes,
   }: {
-    draftAnswer: AnswerValue | null;
+    draftAnswer: ResolvedAnswerValue | null;
     submittedCodes: string[];
   },
-): AnswerValue | null {
+): ResolvedAnswerValue | null {
   const source = SCORING[question.type].timeoutPolicy?.answerSource ?? "none";
   if (source === "draft") return draftAnswer;
   if (source === "last-submitted-code") return submittedCodes.at(-1) ?? null;

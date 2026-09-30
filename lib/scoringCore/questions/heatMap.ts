@@ -1,4 +1,9 @@
-import type { AnswerValue, HeatMapAnswer, HeatMapQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  HeatMapAnswer,
+  HeatMapQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +11,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): HeatMapQuestion {
+function asQuestion(question: ResolvedQuestion): HeatMapQuestion {
   return question as HeatMapQuestion;
 }
 
-export function isHeatMapAnswer(answer: AnswerValue | null): answer is HeatMapAnswer {
+export function isHeatMapAnswer(answer: ResolvedAnswerValue | null): answer is HeatMapAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -61,7 +66,7 @@ export function calculateHeatMapMetrics(question: HeatMapQuestion, answer: HeatM
   return { selectedPoint, targetPoint, distance, accuracy };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return (
     isHeatMapAnswer(answer) && calculateHeatMapMetrics(asQuestion(question), answer).accuracy === 1
   );

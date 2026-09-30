@@ -1,9 +1,9 @@
 import type {
-  AnswerValue,
+  ResolvedAnswerValue,
   ClassificationAnswer,
   ClassificationQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -11,11 +11,13 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ClassificationQuestion {
+function asQuestion(question: ResolvedQuestion): ClassificationQuestion {
   return question as ClassificationQuestion;
 }
 
-export function isClassificationAnswer(answer: AnswerValue | null): answer is ClassificationAnswer {
+export function isClassificationAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is ClassificationAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -27,7 +29,7 @@ export function isClassificationAnswer(answer: AnswerValue | null): answer is Cl
 
 export function isValidClassificationAnswer(
   question: ClassificationQuestion,
-  answer: AnswerValue | null,
+  answer: ResolvedAnswerValue | null,
 ): answer is ClassificationAnswer {
   if (!isClassificationAnswer(answer)) return false;
   const labels = new Set(question.items.map((item) => item.label));
@@ -38,7 +40,7 @@ export function isValidClassificationAnswer(
   );
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const classificationQuestion = asQuestion(question);
   return (
     isValidClassificationAnswer(classificationQuestion, answer) &&

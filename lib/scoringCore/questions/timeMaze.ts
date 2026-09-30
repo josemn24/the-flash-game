@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   TimeMazeAnswer,
   TimeMazeQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 import {
   findShortestTimeMazePath,
   getTimeMazeExitIndex,
@@ -17,11 +17,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): TimeMazeQuestion {
+function asQuestion(question: ResolvedQuestion): TimeMazeQuestion {
   return question as TimeMazeQuestion;
 }
 
-export function isTimeMazeAnswer(answer: AnswerValue | null): answer is TimeMazeAnswer {
+export function isTimeMazeAnswer(answer: ResolvedAnswerValue | null): answer is TimeMazeAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -33,7 +33,7 @@ export function isTimeMazeAnswer(answer: AnswerValue | null): answer is TimeMaze
   );
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const mazeQuestion = asQuestion(question);
   return (
     isTimeMazeAnswer(answer) &&
@@ -42,7 +42,7 @@ function isCorrect(question: Question, answer: AnswerValue) {
   );
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   const mazeQuestion = asQuestion(question);
   return {
     type: "time-maze",

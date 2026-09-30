@@ -1,4 +1,9 @@
-import type { AnswerValue, MiniSudokuAnswer, MiniSudokuQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  MiniSudokuAnswer,
+  MiniSudokuQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +11,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): MiniSudokuQuestion {
+function asQuestion(question: ResolvedQuestion): MiniSudokuQuestion {
   return question as MiniSudokuQuestion;
 }
 
-export function isMiniSudokuAnswer(answer: AnswerValue | null): answer is MiniSudokuAnswer {
+export function isMiniSudokuAnswer(answer: ResolvedAnswerValue | null): answer is MiniSudokuAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -85,7 +90,7 @@ export function calculateMiniSudokuMetrics(question: MiniSudokuQuestion, answer:
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (!isMiniSudokuAnswer(answer)) return false;
   const metrics = calculateMiniSudokuMetrics(asQuestion(question), answer);
   return metrics.valid && metrics.complete && metrics.correctCells === metrics.totalCells;

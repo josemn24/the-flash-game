@@ -23,7 +23,8 @@ import { ConnectPairsQuestion } from "@/components/questions/formats/connect-pai
 import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
 import { Timer, GameHeader } from "@/components/ui";
 import { LifeHearts } from "./LifeHearts";
-import type { AnswerValue, ConnectPairsQuestion as ClientConnectPairsQuestion } from "@/types/compat/game";
+import type { AnswerValue } from "@/types/contracts";
+import type { ConnectPairsQuestion as ClientConnectPairsQuestion } from "@/types/gameplay/practice";
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
 import styles from "./QuestionStage.module.css";
 import variantStyles from "./QuestionStageVariants.module.css";

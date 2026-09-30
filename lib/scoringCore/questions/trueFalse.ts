@@ -1,4 +1,8 @@
-import type { AnswerValue, TrueFalseQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  TrueFalseQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateQuestionScore, TRUE_FALSE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +10,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): TrueFalseQuestion {
+function asQuestion(question: ResolvedQuestion): TrueFalseQuestion {
   return question as TrueFalseQuestion;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return answer === asQuestion(question).correctAnswer;
 }
 

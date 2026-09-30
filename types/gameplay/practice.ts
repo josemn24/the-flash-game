@@ -579,6 +579,7 @@ export type PracticeAnswerValueMap = {
 };
 
 export type PracticeAnswerValueOfType<T extends QuestionType> = PracticeAnswerValueMap[T];
+export type PracticeAnswerValue = PracticeAnswerValueMap[QuestionType];
 /** @deprecated Usa `AnswerValue` o `AnswerValueOfType<T>` desde `@/types/contracts`. */
 export type AnswerValue = PracticeAnswerValueMap[QuestionType];
 

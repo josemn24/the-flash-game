@@ -1,4 +1,8 @@
-import type { AnswerValue, OddOneOutQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  OddOneOutQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateQuestionScore, CHOICE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +10,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): OddOneOutQuestion {
+function asQuestion(question: ResolvedQuestion): OddOneOutQuestion {
   return question as OddOneOutQuestion;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return typeof answer === "string" && answer === asQuestion(question).correctAnswer;
 }
 

@@ -1,4 +1,9 @@
-import type { AnswerResultDetails, AnswerValue, LogicCodeQuestion, Question } from "@/types/compat/game";
+import type {
+  AnswerResultDetails,
+  ResolvedAnswerValue,
+  LogicCodeQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { applyAttemptPenalty, calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,16 +11,16 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): LogicCodeQuestion {
+function asQuestion(question: ResolvedQuestion): LogicCodeQuestion {
   return question as LogicCodeQuestion;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return typeof answer === "string" && answer === asQuestion(question).correctAnswer;
 }
 
 function unansweredDetails(
-  _question: Question,
+  _question: ResolvedQuestion,
   context: { submittedCodes: string[] },
 ): AnswerResultDetails {
   return {

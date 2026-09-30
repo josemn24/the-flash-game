@@ -8,7 +8,7 @@ import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { Chip, MotionButton, Timer } from "@/components/ui";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
-import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
+import { evaluatePracticeAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
 import type { AnswerResult, AnswerValue, Question } from "@/types/compat/game";
 
 type ExamplePhase = "ready" | "playing" | "feedback";
@@ -118,7 +118,7 @@ export function PlayableFormatExample({
         : (performance.now() - startedAtRef.current) / 1000;
 
       setResult(
-        evaluateAnswer({
+        evaluatePracticeAnswer({
           question,
           answer,
           timeUsed,

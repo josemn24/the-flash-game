@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   ConnectPairsAnswer,
   ConnectPairsQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import {
   calculateConnectPairsMetrics,
   isValidConnectPairsAnswer,
@@ -17,21 +17,23 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ConnectPairsQuestion {
+function asQuestion(question: ResolvedQuestion): ConnectPairsQuestion {
   return question as ConnectPairsQuestion;
 }
 
-export function isConnectPairsAnswer(answer: AnswerValue | null): answer is ConnectPairsAnswer {
+export function isConnectPairsAnswer(
+  answer: ResolvedAnswerValue | null,
+): answer is ConnectPairsAnswer {
   return isValidConnectPairsAnswer(answer);
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (!isConnectPairsAnswer(answer)) return false;
   const metrics = calculateConnectPairsMetrics(asQuestion(question), answer);
   return metrics.valid && metrics.exact;
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   const connectQuestion = asQuestion(question);
   return {
     type: "connect-pairs",

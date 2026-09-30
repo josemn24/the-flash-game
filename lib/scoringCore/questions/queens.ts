@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   QueensAnswer,
   QueensQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateQueensMetrics, isQueensAnswer, isValidQueensConfiguration } from "@/lib/queens";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
@@ -15,7 +15,7 @@ import type {
 
 export const QUEENS_MISTAKE_PENALTY_RATIO = 0.05;
 
-function asQuestion(question: Question): QueensQuestion {
+function asQuestion(question: ResolvedQuestion): QueensQuestion {
   return question as QueensQuestion;
 }
 
@@ -39,13 +39,13 @@ function detailsFor(
 }
 
 function unansweredDetails(
-  question: Question,
+  question: ResolvedQuestion,
   context: { incorrectAttempts: number },
 ): AnswerResultDetails {
   return detailsFor(asQuestion(question), { queens: [], marks: [] }, context.incorrectAttempts);
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   return (
     isQueensAnswer(answer, asQuestion(question).grid) &&
     isValidQueensConfiguration(asQuestion(question)) &&

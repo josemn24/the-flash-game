@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
-  Question,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
   WordSearchAnswer,
   WordSearchQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/scoring";
 import {
   calculateWordSearchMetrics,
   isValidWordSearchConfiguration,
@@ -18,7 +18,7 @@ import type {
   UnansweredDetailsContext,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question) {
+function asQuestion(question: ResolvedQuestion) {
   return question as WordSearchQuestion;
 }
 
@@ -38,7 +38,7 @@ function detailsFor(
 }
 
 function unansweredDetails(
-  question: Question,
+  question: ResolvedQuestion,
   context: UnansweredDetailsContext,
 ): AnswerResultDetails {
   const wordSearchQuestion = asQuestion(question);
@@ -51,7 +51,7 @@ function unansweredDetails(
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (!isWordSearchAnswer(answer)) return false;
   const wordSearchQuestion = asQuestion(question);
   return (

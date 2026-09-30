@@ -1,4 +1,9 @@
-import type { AnswerValue, MatchingAnswer, MatchingQuestion, Question } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  MatchingAnswer,
+  MatchingQuestion,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,
@@ -6,11 +11,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): MatchingQuestion {
+function asQuestion(question: ResolvedQuestion): MatchingQuestion {
   return question as MatchingQuestion;
 }
 
-export function isMatchingAnswer(answer: AnswerValue | null): answer is MatchingAnswer {
+export function isMatchingAnswer(answer: ResolvedAnswerValue | null): answer is MatchingAnswer {
   return (
     answer !== null &&
     typeof answer === "object" &&
@@ -27,7 +32,10 @@ export function calculateMatchingMetrics(question: MatchingQuestion, answer: Mat
   return { correctPairs, totalPairs: question.leftItems.length };
 }
 
-function isCompleteMatchingAnswer(question: MatchingQuestion, answer: AnswerValue): answer is MatchingAnswer {
+function isCompleteMatchingAnswer(
+  question: MatchingQuestion,
+  answer: ResolvedAnswerValue,
+): answer is MatchingAnswer {
   if (!isMatchingAnswer(answer)) return false;
   const leftIds = question.leftItems.map((item) => item.id);
   const rightIds = new Set(question.rightItems.map((item) => item.id));
@@ -41,7 +49,7 @@ function isCompleteMatchingAnswer(question: MatchingQuestion, answer: AnswerValu
   );
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const matchingQuestion = asQuestion(question);
   return (
     isCompleteMatchingAnswer(matchingQuestion, answer) &&

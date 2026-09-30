@@ -1,10 +1,10 @@
 import type {
   AnswerResultDetails,
-  AnswerValue,
+  ResolvedAnswerValue,
   EscapeAnswer,
   EscapeQuestion,
-  Question,
-} from "@/types/compat/game";
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { isEscapeAnswer, isValidEscapeConfiguration, replayEscapeMoves } from "@/lib/escape";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
@@ -13,7 +13,7 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question) {
+function asQuestion(question: ResolvedQuestion) {
   return question as EscapeQuestion;
 }
 
@@ -27,7 +27,7 @@ function detailsFor(question: EscapeQuestion, answer: EscapeAnswer): AnswerResul
   };
 }
 
-function unansweredDetails(question: Question): AnswerResultDetails {
+function unansweredDetails(question: ResolvedQuestion): AnswerResultDetails {
   return {
     type: "escape",
     moves: 0,
@@ -36,7 +36,7 @@ function unansweredDetails(question: Question): AnswerResultDetails {
   };
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (!isEscapeAnswer(answer)) return false;
   const escapeQuestion = asQuestion(question);
   if (!isValidEscapeConfiguration(escapeQuestion)) return false;

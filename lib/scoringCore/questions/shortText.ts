@@ -1,4 +1,8 @@
-import type { AnswerValue, Question, ShortTextQuestion } from "@/types/compat/game";
+import type {
+  ResolvedAnswerValue,
+  ResolvedQuestion,
+  ShortTextQuestion,
+} from "@/types/gameplay/scoring";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
@@ -7,11 +11,11 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): ShortTextQuestion {
+function asQuestion(question: ResolvedQuestion): ShortTextQuestion {
   return question as ShortTextQuestion;
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   if (typeof answer !== "string") return false;
   const shortTextQuestion = asQuestion(question);
   const accepted = shortTextQuestion.acceptedAnswers ?? [shortTextQuestion.correctAnswer];

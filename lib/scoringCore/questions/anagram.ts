@@ -1,4 +1,8 @@
-import type { AnagramQuestion, AnswerValue, Question } from "@/types/compat/game";
+import type {
+  AnagramQuestion,
+  ResolvedAnswerValue,
+  ResolvedQuestion,
+} from "@/types/gameplay/scoring";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
@@ -7,7 +11,7 @@ import type {
   QuestionScoring,
 } from "@/lib/scoringCore/types";
 
-function asQuestion(question: Question): AnagramQuestion {
+function asQuestion(question: ResolvedQuestion): AnagramQuestion {
   return question as AnagramQuestion;
 }
 
@@ -35,7 +39,7 @@ export function isValidAnagramConfiguration(question: AnagramQuestion) {
   );
 }
 
-function isCorrect(question: Question, answer: AnswerValue) {
+function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const anagramQuestion = asQuestion(question);
   return (
     typeof answer === "string" &&
