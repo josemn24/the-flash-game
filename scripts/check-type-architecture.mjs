@@ -354,6 +354,22 @@ if (!/import\s+\{\s*cache\s*\}\s+from\s+["']react["']/.test(serverFacadeSource))
   violations.push("server/data-access.ts does not use React request memoization");
 }
 
+const attemptCommandsPort = path.join(process.cwd(), "application", "ports", "attempt-commands.ts");
+const attemptCommandsSource = await readFile(attemptCommandsPort, "utf8");
+for (const forbidden of [
+  "invalidate(",
+  "adjust(",
+  "AdministrativeResult",
+  "InvalidateAttemptCommand",
+  "AdjustResultCommand",
+]) {
+  if (attemptCommandsSource.includes(forbidden)) {
+    violations.push(
+      `application/ports/attempt-commands.ts contains administrative contract ${forbidden}; use SuperadminAttemptCommands`,
+    );
+  }
+}
+
 if (violations.length > 0) {
   console.error(
     "Type architecture violations:\n" + violations.map((item) => `- ${item}`).join("\n"),

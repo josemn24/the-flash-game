@@ -4,7 +4,6 @@ import type {
   ActivateInteractionInput,
   ActivateInteractionResult,
   AttemptCommandInput,
-  AttemptCommandResult,
   RecoverAttemptInput,
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
@@ -55,12 +54,6 @@ export type RecordEvaluationCommand = AttemptCommandInput & {
   readonly resultDetails?: JsonValue;
 };
 export type RecoverAttemptCommand = RecoverAttemptInput;
-export type InvalidateAttemptCommand = TakeOverAttemptInput & { readonly reason: string };
-export type AdjustResultCommand = InvalidateAttemptCommand & { readonly score: number };
-export type AdministrativeResult = AttemptCommandResult & {
-  readonly status: "completed" | "invalidated";
-  readonly effectiveScore: number;
-};
 export type EvaluationReceipt = {
   readonly receiptId: AnswerReceiptId;
   readonly answer: JsonValue;
@@ -128,8 +121,6 @@ export interface AttemptCommands {
   readRecovery(attemptId: string, sessionToken: string): Promise<AttemptRecoverySnapshot>;
   abandon(input: AttemptCommandInput): Promise<FinishAttemptResult>;
   acceptInvitation(input: AcceptInvitationInput): Promise<AcceptInvitationResult>;
-  invalidate(input: InvalidateAttemptCommand): Promise<AdministrativeResult>;
-  adjust(input: AdjustResultCommand): Promise<AdministrativeResult>;
 }
 export type CommandErrorCode =
   | "not_authorized"
