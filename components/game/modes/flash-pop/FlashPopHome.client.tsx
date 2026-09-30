@@ -22,7 +22,7 @@ import {
   updateProfileName,
 } from "@/app/actions/profile";
 import { createClient } from "@/lib/supabase/client";
-import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
+import { ROOM_ART_FALLBACK } from "@/lib/roomPresentation";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/view-models/room";
 import type { UserProfile } from "@/types/view-models/user";
@@ -70,51 +70,54 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
     }
   }, [profileOpen]);
 
-  const handleProfileSave = useCallback(async ({ name, file }: { name: string; file: File | null }) => {
-    const nameResult = await updateProfileName(name);
-    if (!nameResult.ok) return nameResult;
-    if (!file) {
-      setProfile(nameResult.profile);
-      setProfileOpen(false);
-      setStatusMessage("Cambios guardados.");
-      return nameResult;
-    }
+  const handleProfileSave = useCallback(
+    async ({ name, file }: { name: string; file: File | null }) => {
+      const nameResult = await updateProfileName(name);
+      if (!nameResult.ok) return nameResult;
+      if (!file) {
+        setProfile(nameResult.profile);
+        setProfileOpen(false);
+        setStatusMessage("Cambios guardados.");
+        return nameResult;
+      }
 
-    const idempotencyKey = crypto.randomUUID();
-    const prepared = await prepareProfileAvatar({
-      mimeType: file.type,
-      byteSize: file.size,
-      idempotencyKey,
-    });
-    if (!prepared.ok) return prepared;
-
-    const uploadClient = createClient();
-    const { error: uploadError } = await uploadClient.storage
-      .from("avatars")
-      .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
-        contentType: file.type,
-        upsert: false,
+      const idempotencyKey = crypto.randomUUID();
+      const prepared = await prepareProfileAvatar({
+        mimeType: file.type,
+        byteSize: file.size,
+        idempotencyKey,
       });
-    if (uploadError) {
-      await abortProfileAvatar(prepared.assetId);
-      return {
-        ok: false as const,
-        code: "storage_unavailable" as const,
-        message: "No se ha podido subir la imagen. Inténtalo de nuevo.",
-      };
-    }
+      if (!prepared.ok) return prepared;
 
-    const confirmed = await confirmProfileAvatar({
-      assetId: prepared.assetId,
-      idempotencyKey: prepared.confirmIdempotencyKey,
-    });
-    if (confirmed.ok) {
-      setProfile(confirmed.profile);
-      setProfileOpen(false);
-      setStatusMessage("Cambios guardados.");
-    }
-    return confirmed;
-  }, []);
+      const uploadClient = createClient();
+      const { error: uploadError } = await uploadClient.storage
+        .from("avatars")
+        .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+      if (uploadError) {
+        await abortProfileAvatar(prepared.assetId);
+        return {
+          ok: false as const,
+          code: "storage_unavailable" as const,
+          message: "No se ha podido subir la imagen. Inténtalo de nuevo.",
+        };
+      }
+
+      const confirmed = await confirmProfileAvatar({
+        assetId: prepared.assetId,
+        idempotencyKey: prepared.confirmIdempotencyKey,
+      });
+      if (confirmed.ok) {
+        setProfile(confirmed.profile);
+        setProfileOpen(false);
+        setStatusMessage("Cambios guardados.");
+      }
+      return confirmed;
+    },
+    [],
+  );
 
   return (
     <Canvas contentClassName={styles.content}>

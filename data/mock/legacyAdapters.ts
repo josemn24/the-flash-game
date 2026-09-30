@@ -8,7 +8,7 @@ import {
   selectSeasonRanking,
 } from "@/data/mock/selectors";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
-import { getChallengeFormatLabel } from "@/application/presentation/room";
+import { getChallengeFormatLabel, initials } from "@/lib/roomPresentation";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
 import type { PlayerId, RoomId } from "@/types/domain";
 import type { AnswerReview, RoomChallengeAttempt } from "@/types/gameplay";
@@ -22,13 +22,6 @@ const historyImages: Readonly<Record<string, string>> = {
   "tabarnia-challenge-04": "/flash-pop/concepts/narrative-story-trail.webp",
   "tabarnia-challenge-05": "/flash-pop/concepts/pyramid-soft-diorama.webp",
 };
-
-function initials(displayName: string) {
-  const parts = displayName.trim().split(/\s+/);
-  return (parts.length > 1 ? parts.map((part) => part[0]).join("") : displayName.slice(0, 2))
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 export function projectLegacyAttempt(
   attemptId: string,

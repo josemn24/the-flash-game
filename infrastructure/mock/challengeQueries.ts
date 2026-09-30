@@ -1,6 +1,7 @@
 import type { ChallengeQueries } from "@/application/queries";
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
-import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
+import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
+import { initials } from "@/lib/roomPresentation";
 import { legacyChallenges } from "@/data/mock/compat/legacyChallengeAdapter";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import {
@@ -19,15 +20,6 @@ import type {
 const PRIMARY_CHALLENGE_KEY = "tabarnia-challenge-05";
 const SECONDARY_CHALLENGE_KEY = "tabarnia-challenge-06";
 const tones = ["social", "coral", "blue", "aqua", "ink", "reward"] as const;
-
-function initials(displayName: string) {
-  return displayName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 export class MockChallengeQueries implements ChallengeQueries {
   constructor(private readonly store: DomainStore) {}

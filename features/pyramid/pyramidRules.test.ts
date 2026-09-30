@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
+import { deriveCompetitivePyramidProgress } from "@/lib/gameplay/pyramidProgress";
 import type { AnswerResult } from "@/types/gameplay";
 
 function answer(index: number, status: AnswerResult["status"], points = 10): AnswerResult {

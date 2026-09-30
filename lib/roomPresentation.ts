@@ -29,3 +29,10 @@ export function getChallengeDisplayTitle(title: string, mode: GameMode) {
   const prefix = `${getChallengeFormatLabel(mode)}:`;
   return title.startsWith(prefix) ? title.slice(prefix.length).trim() : title;
 }
+
+export function initials(displayName: string) {
+  const parts = displayName.trim().split(/\s+/);
+  return (parts.length > 1 ? parts.map((part) => part[0]).join("") : displayName.slice(0, 2))
+    .toUpperCase()
+    .slice(0, 2);
+}

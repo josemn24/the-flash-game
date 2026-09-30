@@ -22,7 +22,7 @@ import type {
   ServerFlashTerminalReview,
   ServerSurvivalChallenge,
 } from "@/types/gameplay/challenge";
-import type { SurvivalProgress } from "@/features/game/survivalRules";
+import type { SurvivalProgress } from "@/lib/gameplay/survivalProgress";
 import styles from "./FlashPopFlashGame.module.css";
 
 function getSurvivalResultModel(

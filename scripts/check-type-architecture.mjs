@@ -195,6 +195,10 @@ function projectArea(specifier) {
   return specifier.match(/^@\/([^/]+)/)?.[1] ?? null;
 }
 
+function isRoomSupabaseAdapter(relative) {
+  return relative.startsWith(`infrastructure${path.sep}supabase${path.sep}room`);
+}
+
 for (const file of productionFiles) {
   const source = await readFile(file, "utf8");
   const relative = path.relative(process.cwd(), file);
@@ -204,6 +208,7 @@ for (const file of productionFiles) {
     relative.startsWith(`server${path.sep}evaluation${path.sep}`) ||
     relative ===
       path.join("app", "api", "competitive", "attempts", "[attemptId]", "answer", "route.ts");
+  const isRoomAdapter = isRoomSupabaseAdapter(relative);
 
   for (const imported of importsIn(source)) {
     if (LEGACY_TYPE_IMPORTS.has(imported.specifier)) {
@@ -219,6 +224,17 @@ for (const file of productionFiles) {
 
     if (isScoringBoundary && imported.specifier.startsWith("@/types/compat/")) {
       violations.push(`${relative} imports compatibility scoring types ${imported.specifier}`);
+    }
+
+    if (
+      isRoomAdapter &&
+      (imported.specifier.startsWith("@/server/") ||
+        imported.specifier.startsWith("@/features/") ||
+        imported.specifier.startsWith("@/application/presentation/"))
+    ) {
+      violations.push(
+        `${relative} imports forbidden room adapter dependency ${imported.specifier}`,
+      );
     }
 
     if (

@@ -1,5 +1,5 @@
 import type { RoomQueries } from "@/application/queries";
-import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
+import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import {
   getPlayerRouteKey,
@@ -15,11 +15,6 @@ import {
 } from "@/data/mock/selectors";
 import { legacyChallenges } from "@/data/mock/compat/legacyChallengeAdapter";
 import { getMockMembershipOverride } from "@/infrastructure/mock/roomMembershipCommands";
-import {
-  getChallengeDisplayTitle,
-  getChallengeFormatLabel,
-  getChallengeImage,
-} from "@/application/presentation/room";
 import type {
   DomainStore,
   Attempt,
@@ -40,8 +35,14 @@ import type {
 } from "@/types/view-models";
 import type { AnswerReview, AnswerResult } from "@/types/gameplay";
 import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
-import { deriveSurvivalProgress } from "@/features/game/survivalRules";
-import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
+import {
+  getChallengeDisplayTitle,
+  getChallengeFormatLabel,
+  getChallengeImage,
+  initials,
+} from "@/lib/roomPresentation";
+import { deriveCompetitivePyramidProgress } from "@/lib/gameplay/pyramidProgress";
+import { deriveSurvivalProgress } from "@/lib/gameplay/survivalProgress";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 
 const historyImages: Readonly<Record<string, string>> = {
@@ -51,13 +52,6 @@ const historyImages: Readonly<Record<string, string>> = {
   "tabarnia-challenge-04": "/flash-pop/concepts/narrative-story-trail.webp",
   "tabarnia-challenge-05": "/flash-pop/concepts/pyramid-soft-diorama.webp",
 };
-
-function initials(displayName: string) {
-  const parts = displayName.trim().split(/\s+/);
-  return (parts.length > 1 ? parts.map((part) => part[0]).join("") : displayName.slice(0, 2))
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 function rankByFlashPoints<Entry extends { flashPoints: number }>(entries: Entry[]) {
   const ordered = [...entries].sort((left, right) => right.flashPoints - left.flashPoints);

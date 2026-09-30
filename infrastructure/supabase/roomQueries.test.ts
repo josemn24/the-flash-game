@@ -8,8 +8,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
-vi.mock("@/server/profile", () => ({
-  getCurrentViewerProfile: mocks.getCurrentViewerProfile,
+vi.mock("@/infrastructure/supabase/currentViewer", () => ({
+  supabaseCurrentViewerReader: {
+    getCurrentViewer: mocks.getCurrentViewerProfile,
+  },
+  getProvisionedCurrentPlayer: vi.fn(),
 }));
 vi.mock("@/infrastructure/supabase/attemptExpiration", () => ({
   supabaseAttemptExpiration: {
@@ -693,5 +696,18 @@ describe("SupabaseRoomQueries S07 history and review", () => {
     await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
       "Supabase history read failed (get_room_history): permission denied",
     );
+  });
+
+  it("keeps the public constructor compatible while accepting the new ports", async () => {
+    const currentViewer = { getCurrentViewer: vi.fn().mockResolvedValue(null) };
+    const privateQuestionAssets = { resolve: vi.fn() };
+
+    await expect(
+      new SupabaseRoomQueries(undefined, currentViewer, privateQuestionAssets).getRanking(
+        "s06-main",
+      ),
+    ).resolves.toBeNull();
+    expect(currentViewer.getCurrentViewer).toHaveBeenCalledOnce();
+    expect(privateQuestionAssets.resolve).not.toHaveBeenCalled();
   });
 });

@@ -354,6 +354,11 @@ Reglas concretas:
 5. `app` usa la fachada server-only o entradas de backend; no lee `data/mock` directamente.
 6. `components` y `features` cliente no importan `server`, `infrastructure` ni `data`.
 7. `infrastructure` implementa puertos; no es importada desde el dominio.
+   En concreto, los adaptadores Supabase de sala (`roomQueries` y sus capacidades, RPCs,
+   contratos, guards y mappers) solo consumen tipos/puertos de `application`, módulos puros de
+   `lib`, tipos y otros módulos de infraestructura: no importan `server/*`, `features/*` ni
+   `application/presentation/*`. Las reglas puras de gameplay y la presentación compartida viven
+   en `lib`.
 8. Un Client Component no importa un Server Component. Un Server Component puede renderizar un
    Client Component y pasarle props serializables o contenido por slots.
 9. Los barrels (`index.ts`) no mezclan exports cliente y servidor de forma indiscriminada.

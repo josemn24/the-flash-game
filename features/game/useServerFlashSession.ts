@@ -6,7 +6,7 @@ import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type { FlashChallenge, PyramidChallenge } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models/room";
-import { deriveSurvivalProgress } from "@/features/game/survivalRules";
+import { deriveSurvivalProgress } from "@/lib/gameplay/survivalProgress";
 import type {
   ServerFlashChallenge,
   ServerFlashQuestion,
@@ -19,7 +19,7 @@ import {
   FLASH_POP_FEEDBACK_DURATION,
   MINI_WORDLE_ANSWER_REVEAL_DURATION,
 } from "@/features/game/transitionTiming";
-import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
+import { deriveCompetitivePyramidProgress } from "@/lib/gameplay/pyramidProgress";
 import {
   challengeWithReview,
   displayChallenge,

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { challenges } from "@/test-utils/mockGameplay";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { buildChallengeIntroModel } from "@/lib/challengeIntro";
-import { getChallengeDisplayTitle } from "@/application/presentation/room";
+import { getChallengeDisplayTitle } from "@/lib/roomPresentation";
 
 describe("challenge intro model", () => {
   it("builds the same three-metric contract for every challenge mode", () => {

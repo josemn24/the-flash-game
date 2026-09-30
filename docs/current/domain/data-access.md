@@ -30,6 +30,9 @@ Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 Server Components
 → server/data-access.ts
 → infrastructure/supabase/roomQueries.ts
+→ capacidades de sala (lobby, ranking, settings, history y member detail)
+→ puertos CurrentViewerReader y PrivateQuestionAssetResolver
+→ infraestructura Supabase compartida
 → RPCs públicas de lectura estrecha
 → PostgreSQL privado/RLS
 
@@ -213,9 +216,11 @@ invitación.
 `RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
 `SuperadminDashboardQueries`,
 `SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
-`SuperadminRoomCommands`, `SuperadminEditorialCommands`, `SuperadminCalendarCommands` y
-`SuperadminCalendarQueries` para separar las mutaciones administrativas de las consultas. Esta capa
-solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
+`CurrentViewerReader`, `PrivateQuestionAssetResolver`, `SuperadminRoomCommands`,
+`SuperadminEditorialCommands`, `SuperadminCalendarCommands` y `SuperadminCalendarQueries` para
+separar las dependencias de lectura de sala y las mutaciones administrativas de las consultas. Esta
+capa solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni
+adaptadores.
 
 Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
 la petición. Las entradas usan aliases de ruta legibles. Los UUID canónicos se resuelven y quedan
@@ -256,10 +261,14 @@ de PostgreSQL; `can_start` requiere una publicación compatible y `can_continue`
 un intento propio en curso incluso después del cierre o de finalizar la temporada. El portal usa una
 lectura separada de calendario y comandos de programación/reprogramación exclusivos de superadmin.
 
-La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del cliente puede elegir
-la identidad de consulta. Sus funciones usan `cache` de React para compartir una misma promesa
-dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página. No hay
-caché persistente ni compartida entre usuarios.
+`SupabaseRoomQueries` es el composition root público de las lecturas de sala. Delega en las
+capacidades de lobby, ranking, settings, history y member detail, que reciben explícitamente los
+puertos `CurrentViewerReader` y, cuando corresponde, `PrivateQuestionAssetResolver`. La
+implementación Supabase de esos puertos concentra Auth, `provision_player` y la resolución de URLs
+firmadas. Ningún parámetro de URL ni dato del cliente puede elegir la identidad de consulta, y las
+assets privadas solo se resuelven para el miembro autorizado. Sus funciones usan `cache` de React
+para compartir una misma promesa dentro de la petición, incluida la lectura repetida por
+`generateMetadata` y por la página. No hay caché persistente ni compartida entre usuarios.
 
 ### Separación del portal de superadministración
 

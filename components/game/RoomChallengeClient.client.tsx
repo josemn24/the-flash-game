@@ -5,7 +5,7 @@ import { GameApp } from "@/components/game/shells/GameApp";
 import { CompetitiveResultScreen } from "@/components/game/shared";
 import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import { isTerminalCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
+import { isTerminalCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
 import type { Challenge, ChallengeCompletionResult } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import type {

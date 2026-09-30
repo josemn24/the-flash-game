@@ -1,4 +1,4 @@
-import { getChallengeDisplayTitle } from "@/application/presentation/room";
+import { getChallengeDisplayTitle } from "@/lib/roomPresentation";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/gameplay";

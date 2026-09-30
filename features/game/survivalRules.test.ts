@@ -5,7 +5,7 @@ import {
   deriveSurvivalProgress,
   isSurvivalMistake,
   shouldEliminateAfterIncorrectAttempt,
-} from "@/features/game/survivalRules";
+} from "@/lib/gameplay/survivalProgress";
 import type { AnswerResultDetails, AnswerStatus } from "@/types/gameplay";
 
 function result(status: AnswerStatus | "timeout", details?: AnswerResultDetails) {

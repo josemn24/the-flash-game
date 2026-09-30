@@ -12,7 +12,7 @@ import {
   getSurvivalReachedQuestionCount,
   isSurvivalMistake,
   shouldEliminateAfterIncorrectAttempt,
-} from "@/features/game/survivalRules";
+} from "@/lib/gameplay/survivalProgress";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type { PracticeAnswerValue } from "@/types/gameplay/practice";

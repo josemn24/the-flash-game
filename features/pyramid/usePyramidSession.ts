@@ -8,11 +8,10 @@ import {
   completePyramidAttempt,
   createPyramidAttempt,
   getPyramidAttemptStorageKey,
-  isPyramidLevelPassed,
-  normalizePyramidResult,
   parsePyramidAttempt,
   type PyramidAttemptRecord,
 } from "@/features/pyramid/pyramidAttempt";
+import { isPyramidLevelPassed, normalizePyramidResult } from "@/lib/gameplay/pyramidProgress";
 import { evaluatePracticeAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
 import { MINI_WORDLE_ANSWER_REVEAL_DURATION } from "@/features/game/transitionTiming";
 import type { AnswerValue, PyramidChallenge } from "@/types/gameplay";

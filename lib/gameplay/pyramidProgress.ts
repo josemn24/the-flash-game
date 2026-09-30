@@ -1,5 +1,4 @@
 import type { AnswerResult } from "@/types/gameplay";
-import { isPyramidLevelPassed, normalizePyramidResult } from "@/features/pyramid/pyramidAttempt";
 
 export type CompetitivePyramidOutcome = "in_progress" | "failed" | "summit";
 
@@ -9,6 +8,14 @@ export type CompetitivePyramidProgress = {
   readonly score: number;
   readonly outcome: CompetitivePyramidOutcome;
 };
+
+export function isPyramidLevelPassed(result: Pick<AnswerResult, "status" | "isCorrect">) {
+  return result.status === "correct" && result.isCorrect;
+}
+
+export function normalizePyramidResult(result: AnswerResult): AnswerResult {
+  return isPyramidLevelPassed(result) ? result : { ...result, points: 0 };
+}
 
 /** Rebuilds official Pyramid progress from ordered, server-evaluated answers. */
 export function deriveCompetitivePyramidProgress(

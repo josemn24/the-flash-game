@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCompetitiveAttemptStatus } from "./competitiveAttempt";
+import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
 
 describe("competitive attempt status", () => {
   it("maps the lifecycle to the visible room states", () => {

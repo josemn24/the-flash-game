@@ -1,10 +1,8 @@
 "use client";
 
 import { ReviewAnswerPanel } from "@/components/game/shared";
-import {
-  isPyramidLevelPassed,
-  type PyramidAttemptSummary,
-} from "@/features/pyramid/pyramidAttempt";
+import { type PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
+import { isPyramidLevelPassed } from "@/lib/gameplay/pyramidProgress";
 import type { AnswerResult, PyramidChallenge } from "@/types/gameplay";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 
