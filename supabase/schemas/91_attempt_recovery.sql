@@ -15,7 +15,7 @@ begin
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
     ), '[]'::jsonb)) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
-    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
+    'questionVersionId', q.id, 'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
     'submittedCodes', case when q.type = 'logic-code' then coalesce((
       select jsonb_agg(e.code order by e.sequence)

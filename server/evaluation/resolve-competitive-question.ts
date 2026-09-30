@@ -37,10 +37,6 @@ function baseQuestion(publicQuestion: PublicQuestion, solution: QuestionSolution
   };
 }
 
-function acceptedAnswers(value: readonly string[]) {
-  return value.length > 0 ? [...value] : undefined;
-}
-
 function memoryPairReveals(reveals: readonly QuestionReveal[] | undefined) {
   return new Map(
     (reveals ?? [])
@@ -133,9 +129,7 @@ export function resolveCompetitiveQuestion({
         ...base,
         type: publicQuestion.type,
         correctAnswer: shortTextSolution.payload.correctAnswer,
-        ...(acceptedAnswers(shortTextSolution.payload.acceptedAnswers)
-          ? { acceptedAnswers: acceptedAnswers(shortTextSolution.payload.acceptedAnswers) }
-          : {}),
+        acceptedAnswers: [...shortTextSolution.payload.acceptedAnswers],
       } as ResolvedQuestion;
     case "progressive-clues":
       const progressiveCluesSolution = solutionFor(solution, publicQuestion.type);
@@ -380,11 +374,11 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.instruction === null
           ? {}
           : { instruction: publicQuestion.payload.instruction }),
-        ...(publicQuestion.payload.hideInstruction ? { hideInstruction: true } : {}),
+        hideInstruction: publicQuestion.payload.hideInstruction,
         ...(publicQuestion.payload.objectiveLabel === null
           ? {}
           : { objectiveLabel: publicQuestion.payload.objectiveLabel }),
-        ...(publicQuestion.payload.hideObjectiveLabel ? { hideObjectiveLabel: true } : {}),
+        hideObjectiveLabel: publicQuestion.payload.hideObjectiveLabel,
         ...(publicQuestion.payload.completionMessage === null
           ? {}
           : { completionMessage: publicQuestion.payload.completionMessage }),
@@ -472,10 +466,12 @@ export function resolveCompetitiveQuestion({
       } as ResolvedQuestion;
     case "estimation":
       const estimationSolution = solutionFor(solution, publicQuestion.type);
+      const { media, ...estimationPayload } = publicQuestion.payload;
       return {
         ...base,
         type: publicQuestion.type,
-        ...publicQuestion.payload,
+        ...estimationPayload,
+        ...(media === null ? {} : { media }),
         correctAnswer: estimationSolution.payload.correctAnswer,
         tolerance: estimationSolution.payload.tolerance,
       } as ResolvedQuestion;
@@ -486,4 +482,4 @@ export function resolveCompetitiveQuestion({
   }
 }
 
-export type { ResolvedQuestionInput as CompetitiveQuestionResolutionInput };
+export type { CanonicalQuestionResolutionInput as CompetitiveQuestionResolutionInput };

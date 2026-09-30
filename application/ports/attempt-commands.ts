@@ -39,7 +39,7 @@ import type {
   RevealProgressiveClueResult,
 } from "@/types/contracts/attempts";
 import type { AnswerStatus } from "@/types/domain/attempt";
-import type { AnswerReceiptId } from "@/types/domain/identifiers";
+import type { AnswerReceiptId, QuestionVersionId } from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { QuestionType } from "@/types/contracts/questions";
 import type { GameMode } from "@/types/domain/content";
@@ -74,8 +74,9 @@ export type EvaluationReceipt = {
   readonly timeUsedMs: DurationMs;
   readonly timedOut: boolean;
 };
-/** Private content; the adapter validates each format before assembling the legacy evaluator input. */
+/** Private content; the adapter validates storage payloads before building canonical contracts. */
 export type EvaluationContext = EvaluationReceipt & {
+  readonly questionVersionId: QuestionVersionId;
   readonly questionType: QuestionType;
   readonly payloadSchemaVersion: number;
   readonly itemConfigSchemaVersion: number;

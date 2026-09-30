@@ -39,6 +39,8 @@ select throws_ok($$select test_support.run('receive_answer','{"answer":true,"sub
 select throws_ok($$select test_support.run('receive_answer','{"answer":true,"playerId":"00000000-0000-0000-0000-000000000001"}')$$,'22023',null,'Command does not accept an actor identity');
 select test_support.run('receive_answer','{"answer":true}');
 select is((select private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->'answer' from test_support.runtime),'true'::jsonb,'Evaluator reads persisted raw answer');
+select is((select private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->>'questionVersionId' from test_support.runtime), test_support.id('qv-normal')::text,
+  'Evaluator returns the frozen question version identity');
 select is((select (private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->>'payloadSchemaVersion')::integer from test_support.runtime),1,
   'Evaluator context includes the question payload schema version');
 select is((select (private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->>'itemConfigSchemaVersion')::integer from test_support.runtime),1,
