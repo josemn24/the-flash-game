@@ -7,14 +7,23 @@
  * scoring registry does not depend on either boundary.
  */
 import type * as ContractShapes from "@/types/contracts/question-shapes";
-import type { AnswerValue, AnswerValueOfType, QuestionType } from "@/types/contracts";
+import type {
+  AnswerValue,
+  AnswerValueOfType,
+  QuestionContractMap,
+  QuestionType,
+} from "@/types/contracts";
 import type { QuestionTags } from "@/types/domain/tags";
 
 export type { AnswerResult, AnswerResultDetails, AnswerStatus } from "@/types/gameplay/result";
 export type { QuestionType } from "@/types/contracts";
 
-export type QuestionMedia = ContractShapes.QuestionMedia;
+export type QuestionMedia = Exclude<
+  QuestionContractMap["multiple-choice"]["public"]["media"],
+  null
+>;
 export type ImageSurface = ContractShapes.ImageSurface;
+type ResolvedHeatMapSurface = QuestionContractMap["heat-map"]["public"]["surface"];
 export type NormalizedPoint = ContractShapes.NormalizedPoint;
 export type QueensGrid = ContractShapes.QueensGrid;
 export type MazeCell = ContractShapes.MazeCell;
@@ -133,7 +142,7 @@ export type ProgressiveImageQuestion = ResolvedBaseQuestion & {
 
 export type HeatMapQuestion = ResolvedBaseQuestion & {
   type: "heat-map";
-  surface: ImageSurface;
+  surface: ResolvedHeatMapSurface;
   target: NormalizedPoint;
   targetLabel: string;
   fullCreditRadius: number;
@@ -343,40 +352,48 @@ export type EstimationQuestion = ResolvedBaseQuestion & {
   media?: QuestionMedia;
 };
 
-export type ResolvedQuestion =
-  | MultipleChoiceQuestion
-  | OddOneOutQuestion
-  | MatchingQuestion
-  | ConnectPairsQuestion
-  | TrueFalseQuestion
-  | ShortTextQuestion
-  | ProgressiveCluesQuestion
-  | ProgressiveImageQuestion
-  | HeatMapQuestion
-  | ImageLabelingQuestion
-  | OrderingQuestion
-  | ClassificationQuestion
-  | FlashMemoryQuestion
-  | MemoryPairsQuestion
-  | SimonSequenceQuestion
-  | LogicMatrixQuestion
-  | MiniSudokuQuestion
-  | MiniNonogramQuestion
-  | QueensQuestion
-  | TimeMazeQuestion
-  | ZipQuestion
-  | PipesQuestion
-  | SlidingPuzzleQuestion
-  | EscapeQuestion
-  | ErrorReconstructionQuestion
-  | AnagramQuestion
-  | WordHashtagQuestion
-  | WordSearchQuestion
-  | MiniWordleQuestion
-  | LogicCodeQuestion
-  | EstimationQuestion;
+/**
+ * The server-only projection produced after composing a public question with
+ * its private solution. The map deliberately describes the resolved shape,
+ * rather than mechanically intersecting public and solution payloads: several
+ * formats enrich or reshape public values while they are resolved.
+ */
+export type ResolvedQuestionContractMap = {
+  readonly "multiple-choice": MultipleChoiceQuestion;
+  readonly "odd-one-out": OddOneOutQuestion;
+  readonly matching: MatchingQuestion;
+  readonly "connect-pairs": ConnectPairsQuestion;
+  readonly "true-false": TrueFalseQuestion;
+  readonly "short-text": ShortTextQuestion;
+  readonly "progressive-clues": ProgressiveCluesQuestion;
+  readonly "progressive-image": ProgressiveImageQuestion;
+  readonly "heat-map": HeatMapQuestion;
+  readonly "image-labeling": ImageLabelingQuestion;
+  readonly ordering: OrderingQuestion;
+  readonly classification: ClassificationQuestion;
+  readonly "flash-memory": FlashMemoryQuestion;
+  readonly "memory-pairs": MemoryPairsQuestion;
+  readonly "simon-sequence": SimonSequenceQuestion;
+  readonly "logic-matrix": LogicMatrixQuestion;
+  readonly "mini-sudoku": MiniSudokuQuestion;
+  readonly "mini-nonogram": MiniNonogramQuestion;
+  readonly queens: QueensQuestion;
+  readonly "time-maze": TimeMazeQuestion;
+  readonly zip: ZipQuestion;
+  readonly pipes: PipesQuestion;
+  readonly "sliding-puzzle": SlidingPuzzleQuestion;
+  readonly escape: EscapeQuestion;
+  readonly "error-reconstruction": ErrorReconstructionQuestion;
+  readonly anagram: AnagramQuestion;
+  readonly "word-hashtag": WordHashtagQuestion;
+  readonly "word-search": WordSearchQuestion;
+  readonly "mini-wordle": MiniWordleQuestion;
+  readonly "logic-code": LogicCodeQuestion;
+  readonly estimation: EstimationQuestion;
+};
 
-export type ResolvedQuestionOfType<Type extends QuestionType> = Extract<
-  ResolvedQuestion,
-  { type: Type }
->;
+export type ResolvedQuestionOfType<Type extends QuestionType> = ResolvedQuestionContractMap[Type];
+
+export type ResolvedQuestion = {
+  [Type in QuestionType]: ResolvedQuestionContractMap[Type];
+}[QuestionType];

@@ -8,7 +8,11 @@ import type {
   QuestionSolutionOfType,
   QuestionType,
 } from "@/types/contracts";
-import type { ResolvedQuestion, ResolvedQuestionOfType } from "@/types/gameplay/scoring";
+import type {
+  ResolvedBaseQuestion,
+  ResolvedQuestion,
+  ResolvedQuestionOfType,
+} from "@/types/gameplay/scoring";
 
 type ResolvedQuestionInput<Type extends QuestionType = QuestionType> = {
   readonly publicQuestion: PublicQuestionOfType<Type>;
@@ -24,7 +28,11 @@ type CanonicalQuestionResolutionInput = {
   readonly reveals?: readonly QuestionReveal[];
 };
 
-function baseQuestion(publicQuestion: PublicQuestion, solution: QuestionSolution, points: number) {
+function baseQuestion<Type extends QuestionType>(
+  publicQuestion: PublicQuestionOfType<Type>,
+  solution: QuestionSolutionOfType<Type>,
+  points: number,
+): ResolvedBaseQuestion {
   return {
     id: publicQuestion.id,
     category: publicQuestion.category,
@@ -45,15 +53,22 @@ function memoryPairReveals(reveals: readonly QuestionReveal[] | undefined) {
   );
 }
 
+function isSolutionOfType<Type extends QuestionType>(
+  solution: QuestionSolution,
+  type: Type,
+): solution is QuestionSolution & QuestionSolutionOfType<Type> {
+  return solution.type === type;
+}
+
 function solutionFor<Type extends QuestionType>(
   solution: QuestionSolution,
   type: Type,
 ): QuestionSolutionOfType<Type> {
-  if (solution.type !== type) {
+  if (!isSolutionOfType(solution, type)) {
     throw new Error(`Mismatched public and solution contracts for ${type}`);
   }
 
-  return solution as QuestionSolutionOfType<Type>;
+  return solution;
 }
 
 /**
@@ -70,13 +85,11 @@ export function resolveCompetitiveQuestion({
   points,
   reveals,
 }: CanonicalQuestionResolutionInput): ResolvedQuestion {
-  const base = baseQuestion(publicQuestion, solution, points);
-
   switch (publicQuestion.type) {
     case "multiple-choice":
       const multipleChoiceSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, multipleChoiceSolution, points),
         type: publicQuestion.type,
         options: [...publicQuestion.payload.options],
         ...(publicQuestion.payload.media ? { media: publicQuestion.payload.media } : {}),
@@ -84,30 +97,30 @@ export function resolveCompetitiveQuestion({
           ? { promptVisual: publicQuestion.payload.promptVisual }
           : {}),
         correctAnswer: multipleChoiceSolution.payload.correctAnswer,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"multiple-choice">;
     case "odd-one-out":
       const oddOneOutSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, oddOneOutSolution, points),
         type: publicQuestion.type,
         items: [...publicQuestion.payload.items],
         correctAnswer: oddOneOutSolution.payload.correctAnswer,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"odd-one-out">;
     case "matching":
       const matchingSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, matchingSolution, points),
         type: publicQuestion.type,
         leftItems: publicQuestion.payload.leftItems.map((item) => ({
           ...item,
           correctMatchId: matchingSolution.payload.matches[item.id],
         })),
         rightItems: [...publicQuestion.payload.rightItems],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"matching">;
     case "connect-pairs":
       const connectPairsSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, connectPairsSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         pairs: [...publicQuestion.payload.pairs],
@@ -115,22 +128,22 @@ export function resolveCompetitiveQuestion({
           Object.entries(connectPairsSolution.payload.paths).map(([id, path]) => [id, [...path]]),
         ),
         requireFullCoverage: publicQuestion.payload.requireFullCoverage,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"connect-pairs">;
     case "true-false":
       const trueFalseSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, trueFalseSolution, points),
         type: publicQuestion.type,
         correctAnswer: trueFalseSolution.payload.correctAnswer,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"true-false">;
     case "short-text":
       const shortTextSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, shortTextSolution, points),
         type: publicQuestion.type,
         correctAnswer: shortTextSolution.payload.correctAnswer,
         acceptedAnswers: [...shortTextSolution.payload.acceptedAnswers],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"short-text">;
     case "progressive-clues":
       const progressiveCluesSolution = solutionFor(solution, publicQuestion.type);
       const cluesByIndex = new Map(
@@ -139,7 +152,7 @@ export function resolveCompetitiveQuestion({
           .map((reveal) => [reveal.payload.clueIndex, reveal.payload.clue] as const),
       );
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, progressiveCluesSolution, points),
         type: publicQuestion.type,
         clues: Array.from(
           { length: publicQuestion.payload.clueCount },
@@ -148,11 +161,11 @@ export function resolveCompetitiveQuestion({
         cluePenalty: publicQuestion.payload.cluePenalty,
         correctAnswer: progressiveCluesSolution.payload.correctAnswer,
         acceptedAnswers: [...progressiveCluesSolution.payload.acceptedAnswers],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"progressive-clues">;
     case "progressive-image":
       const progressiveImageSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, progressiveImageSolution, points),
         type: publicQuestion.type,
         surface: publicQuestion.payload.surface,
         solutionAlt: progressiveImageSolution.payload.solutionAlt,
@@ -165,24 +178,25 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.answerPlaceholder === null
           ? {}
           : { answerPlaceholder: publicQuestion.payload.answerPlaceholder }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"progressive-image">;
     case "heat-map":
       const heatMapSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, heatMapSolution, points),
         type: publicQuestion.type,
         surface: publicQuestion.payload.surface,
         targetLabel: publicQuestion.payload.targetLabel,
         target: heatMapSolution.payload.target,
         fullCreditRadius: heatMapSolution.payload.fullCreditRadius,
         toleranceRadius: heatMapSolution.payload.toleranceRadius,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"heat-map">;
     case "image-labeling": {
       const payload = publicQuestion.payload;
-      const imageSolution = solutionFor(solution, publicQuestion.type).payload;
+      const imageLabelingSolution = solutionFor(solution, publicQuestion.type);
+      const imageSolution = imageLabelingSolution.payload;
       if (payload.task === "assign-all" && imageSolution.task === "assign-all") {
         return {
-          ...base,
+          ...baseQuestion(publicQuestion, imageLabelingSolution, points),
           type: publicQuestion.type,
           task: "assign-all",
           surface: payload.surface,
@@ -191,11 +205,11 @@ export function resolveCompetitiveQuestion({
             correctLabelId: imageSolution.labelsByAnchorId[anchor.id],
           })),
           labels: [...payload.labels],
-        } as ResolvedQuestion;
+        } satisfies ResolvedQuestionOfType<"image-labeling">;
       }
       if (payload.task === "identify-one" && imageSolution.task === "identify-one") {
         return {
-          ...base,
+          ...baseQuestion(publicQuestion, imageLabelingSolution, points),
           type: publicQuestion.type,
           task: "identify-one",
           surface: payload.surface,
@@ -212,36 +226,36 @@ export function resolveCompetitiveQuestion({
                   correctAnswer: imageSolution.correctAnswer,
                   acceptedAnswers: [...imageSolution.acceptedAnswers],
                 },
-        } as ResolvedQuestion;
+        } satisfies ResolvedQuestionOfType<"image-labeling">;
       }
       throw new Error("Mismatched image-labeling public and solution contracts");
     }
     case "ordering":
       const orderingSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, orderingSolution, points),
         type: publicQuestion.type,
         items: [...publicQuestion.payload.items],
         correctOrder: [...orderingSolution.payload.correctOrder],
         ...(publicQuestion.payload.directionLabels
           ? { directionLabels: publicQuestion.payload.directionLabels }
           : {}),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"ordering">;
     case "classification":
       const classificationSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, classificationSolution, points),
         type: publicQuestion.type,
         categories: [...publicQuestion.payload.categories],
         items: publicQuestion.payload.items.map((item) => ({
           ...item,
           correctCategory: classificationSolution.payload.categoriesByItem[item.label],
         })),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"classification">;
     case "flash-memory":
       const flashMemorySolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, flashMemorySolution, points),
         type: publicQuestion.type,
         revealDuration: publicQuestion.payload.revealDurationMs / 1_000,
         grid: publicQuestion.payload.grid,
@@ -249,12 +263,12 @@ export function resolveCompetitiveQuestion({
           ...item,
           correctPosition: flashMemorySolution.payload.positionsByItemId[item.id],
         })),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"flash-memory">;
     case "memory-pairs": {
       const tileReveals = memoryPairReveals(reveals);
       const memoryPairsSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, memoryPairsSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         tiles: publicQuestion.payload.tiles.map((tile) => ({
@@ -265,20 +279,20 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.mismatchRevealDurationMs === null
           ? {}
           : { mismatchRevealDuration: publicQuestion.payload.mismatchRevealDurationMs / 1_000 }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"memory-pairs">;
     }
     case "simon-sequence":
       const simonSequenceSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, simonSequenceSolution, points),
         type: publicQuestion.type,
         pads: [...publicQuestion.payload.pads],
         sequence: [...simonSequenceSolution.payload.sequence],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"simon-sequence">;
     case "logic-matrix":
       const logicMatrixSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, logicMatrixSolution, points),
         type: publicQuestion.type,
         pieces: [...publicQuestion.payload.pieces],
         cells: [...publicQuestion.payload.cells],
@@ -287,28 +301,28 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.showPieceLabels === null
           ? {}
           : { showPieceLabels: publicQuestion.payload.showPieceLabels }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"logic-matrix">;
     case "mini-sudoku":
       const miniSudokuSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, miniSudokuSolution, points),
         type: publicQuestion.type,
         grid: [...publicQuestion.payload.grid],
         solution: [...miniSudokuSolution.payload.solution],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"mini-sudoku">;
     case "mini-nonogram":
       const miniNonogramSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, miniNonogramSolution, points),
         type: publicQuestion.type,
         rowClues: publicQuestion.payload.rowClues.map((row) => [...row]),
         columnClues: publicQuestion.payload.columnClues.map((column) => [...column]),
         solution: [...miniNonogramSolution.payload.solution],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"mini-nonogram">;
     case "queens":
       const queensSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, queensSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         regions: [...publicQuestion.payload.regions],
@@ -316,19 +330,19 @@ export function resolveCompetitiveQuestion({
           ? { prefilledQueens: [...publicQuestion.payload.prefilledQueens] }
           : {}),
         solution: [...queensSolution.payload.solution],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"queens">;
     case "time-maze":
-      solutionFor(solution, publicQuestion.type);
+      const timeMazeSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, timeMazeSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         cells: [...publicQuestion.payload.cells],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"time-maze">;
     case "zip":
       const zipSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, zipSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         checkpoints: [...publicQuestion.payload.checkpoints],
@@ -342,30 +356,30 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.boardLabel === null
           ? {}
           : { boardLabel: publicQuestion.payload.boardLabel }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"zip">;
     case "pipes":
       const pipesSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, pipesSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         tiles: [...publicQuestion.payload.tiles],
         initialRotations: [...publicQuestion.payload.initialRotations],
         source: publicQuestion.payload.source,
         solutionRotations: [...pipesSolution.payload.solutionRotations],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"pipes">;
     case "sliding-puzzle":
       const slidingPuzzleSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, slidingPuzzleSolution, points),
         type: publicQuestion.type,
         initialTiles: [...publicQuestion.payload.initialTiles],
         solution: [...slidingPuzzleSolution.payload.solution],
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"sliding-puzzle">;
     case "escape":
       const escapeSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, escapeSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         initialBlocks: [...publicQuestion.payload.initialBlocks],
@@ -385,11 +399,11 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.boardLabel === null
           ? {}
           : { boardLabel: publicQuestion.payload.boardLabel }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"escape">;
     case "error-reconstruction":
       const errorReconstructionSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, errorReconstructionSolution, points),
         type: publicQuestion.type,
         steps: [...publicQuestion.payload.steps],
         firstErrorStepId: errorReconstructionSolution.payload.firstErrorStepId,
@@ -411,30 +425,30 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.submitLabel === null
           ? {}
           : { submitLabel: publicQuestion.payload.submitLabel }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"error-reconstruction">;
     case "anagram":
       const anagramSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, anagramSolution, points),
         type: publicQuestion.type,
         tiles: [...publicQuestion.payload.tiles],
         correctAnswer: anagramSolution.payload.correctAnswer,
         ...(publicQuestion.payload.hint === null ? {} : { hint: publicQuestion.payload.hint }),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"anagram">;
     case "word-hashtag":
       const wordHashtagSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, wordHashtagSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         initialLetters: [...publicQuestion.payload.initialLetters],
         maxMoves: publicQuestion.payload.maxMoves,
         words: wordHashtagSolution.payload.words,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"word-hashtag">;
     case "word-search":
       const wordSearchSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, wordSearchSolution, points),
         type: publicQuestion.type,
         grid: publicQuestion.payload.grid,
         letters: [...publicQuestion.payload.letters],
@@ -442,11 +456,11 @@ export function resolveCompetitiveQuestion({
           ...target,
           ...wordSearchSolution.payload.positionsByTargetId[target.id],
         })),
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"word-search">;
     case "mini-wordle":
       const miniWordleSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, miniWordleSolution, points),
         type: publicQuestion.type,
         correctAnswer: miniWordleSolution.payload.correctAnswer,
         additionalGuesses: [...miniWordleSolution.payload.additionalGuesses],
@@ -454,27 +468,27 @@ export function resolveCompetitiveQuestion({
         ...(publicQuestion.payload.hint === null ? {} : { hint: publicQuestion.payload.hint }),
         wordLength: publicQuestion.payload.wordLength,
         maxAttempts: publicQuestion.payload.maxAttempts,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"mini-wordle">;
     case "logic-code":
       const logicCodeSolution = solutionFor(solution, publicQuestion.type);
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, logicCodeSolution, points),
         type: publicQuestion.type,
         clues: [...publicQuestion.payload.clues],
         codeLength: publicQuestion.payload.codeLength,
         correctAnswer: logicCodeSolution.payload.correctAnswer,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"logic-code">;
     case "estimation":
       const estimationSolution = solutionFor(solution, publicQuestion.type);
       const { media, ...estimationPayload } = publicQuestion.payload;
       return {
-        ...base,
+        ...baseQuestion(publicQuestion, estimationSolution, points),
         type: publicQuestion.type,
         ...estimationPayload,
         ...(media === null ? {} : { media }),
         correctAnswer: estimationSolution.payload.correctAnswer,
         tolerance: estimationSolution.payload.tolerance,
-      } as ResolvedQuestion;
+      } satisfies ResolvedQuestionOfType<"estimation">;
     default: {
       const exhaustive: never = publicQuestion;
       throw new Error(`Unsupported competitive question: ${String(exhaustive)}`);
