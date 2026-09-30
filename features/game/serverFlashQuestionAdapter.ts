@@ -4,10 +4,10 @@ import type {
   HeatMapQuestion,
   ConnectPairsQuestion,
   LogicMatrixQuestion,
-  QuestionOfType,
+  PracticeQuestionOfType,
   WordHashtagQuestion,
   ZipQuestion,
-  PracticeQuestion as Question,
+  PracticeQuestion,
 } from "@/types/gameplay/practice";
 import type { FlashChallenge, PyramidChallenge } from "@/types/gameplay/challenge";
 import type {
@@ -154,7 +154,7 @@ export function questionFromPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
-): QuestionOfType<"multiple-choice">;
+): PracticeQuestionOfType<"multiple-choice">;
 export function questionFromPayload(
   id: string,
   payload: unknown,
@@ -212,7 +212,7 @@ export function questionFromPayload(
     | "connect-pairs",
   progress?: unknown,
   allowCompleteProgress = false,
-): ServerFlashQuestion | QuestionOfType<"multiple-choice"> {
+): ServerFlashQuestion | PracticeQuestionOfType<"multiple-choice"> {
   const value = payloadRecord(payload);
   const prompt = value.question ?? value.prompt;
   if (typeof prompt !== "string") throw new ServerFlashQuestionError();
@@ -1046,7 +1046,7 @@ export function questionFromPayload(
 export function questionWithSolution(
   question: ServerFlashQuestion,
   row?: ServerFlashTerminalReview,
-): Question {
+): PracticeQuestion {
   const solution =
     row?.solutionPayload && typeof row.solutionPayload === "object"
       ? (row.solutionPayload as Record<string, unknown>)

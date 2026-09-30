@@ -1,7 +1,7 @@
 import { getChallengeDisplayTitle } from "@/application/presentation/room";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/compat/game";
+import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/gameplay";
 
 export type ChallengeIntroMetric = {
   value: string | number;

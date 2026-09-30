@@ -1,4 +1,4 @@
-import type { AnswerResult } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
 import { isPyramidLevelPassed, normalizePyramidResult } from "@/features/pyramid/pyramidAttempt";
 
 export type CompetitivePyramidOutcome = "in_progress" | "failed" | "summit";

@@ -1,4 +1,5 @@
-import type { FlashChallenge, PyramidChallenge, Question, SurvivalChallenge } from "@/types/compat/game";
+import type { FlashChallenge, PyramidChallenge, SurvivalChallenge } from "@/types/gameplay/challenge";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 
 export const CHALLENGE_MAX_SCORE = 100;
@@ -61,7 +62,10 @@ export function getConfiguredChallengeQuestionPointValues(
   return pointValues as number[];
 }
 
-export function withChallengeQuestionPoints(question: Question, challengePoints: number): Question {
+export function withChallengeQuestionPoints(
+  question: PracticeQuestion,
+  challengePoints: number,
+): PracticeQuestion {
   if (question.type === "progressive-clues") {
     return {
       ...question,

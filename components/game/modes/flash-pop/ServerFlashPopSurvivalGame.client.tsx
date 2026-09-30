@@ -16,7 +16,8 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
-import type { AnswerResult, GameRoomContext } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type {
   ServerFlashTerminalReview,
   ServerSurvivalChallenge,

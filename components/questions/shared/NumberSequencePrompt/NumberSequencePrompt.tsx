@@ -1,5 +1,5 @@
 import styles from "./NumberSequencePrompt.module.css";
-import type { NumberSequencePromptVisual } from "@/types/compat/game";
+import type { NumberSequencePromptVisual } from "@/types/gameplay/practice";
 
 type NumberSequencePromptProps = {
   prompt: NumberSequencePromptVisual;

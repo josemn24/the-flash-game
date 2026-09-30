@@ -9,7 +9,8 @@ import { Chip, MotionButton, Timer } from "@/components/ui";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { evaluatePracticeAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
-import type { AnswerResult, AnswerValue, Question } from "@/types/compat/game";
+import type { AnswerResult, AnswerValue } from "@/types/gameplay";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 
 type ExamplePhase = "ready" | "playing" | "feedback";
 
@@ -20,12 +21,12 @@ const RESULT_LABELS = {
   unanswered: "Tiempo agotado",
 } as const;
 
-function resultLabel(question: Question, result: AnswerResult) {
+function resultLabel(question: PracticeQuestion, result: AnswerResult) {
   if (question.type === "pipes" && result.status === "partial") return "Red incompleta";
   return RESULT_LABELS[result.status];
 }
 
-function hasDelayedTimedResponse(question: Question) {
+function hasDelayedTimedResponse(question: PracticeQuestion) {
   return (
     question.type === "flash-memory" ||
     question.type === "simon-sequence" ||
@@ -40,7 +41,7 @@ export function PlayableFormatExample({
   rules,
 }: {
   title: string;
-  question: Question;
+  question: PracticeQuestion;
   rules: string[];
 }) {
   const titleId = useId();

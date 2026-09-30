@@ -8,7 +8,7 @@ import {
   isAlphabetAnswerCorrect,
 } from "@/features/alphabet/alphabetGame";
 import type { AlphabetState } from "@/features/alphabet/alphabetGame";
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/compat/game";
+import type { AlphabetChallenge, ShortTextQuestion } from "@/types/gameplay";
 
 const FEEDBACK_DURATION = 500;
 

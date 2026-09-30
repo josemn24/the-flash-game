@@ -97,7 +97,7 @@ import type {
   MiniNonogramAnswer,
   MiniWordleQuestion,
   QuestionType,
-} from "@/types/compat/game";
+} from "@/types/gameplay";
 
 const formatCases = Object.values(QUESTION_FORMAT_CATALOG).map(({ examples }) => {
   const example = examples[0].question;

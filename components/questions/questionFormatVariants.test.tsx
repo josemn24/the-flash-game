@@ -4,7 +4,7 @@ import { AnswerOption } from "@/components/questions/shared/AnswerOption";
 import { TrueFalseQuestion } from "@/components/questions/formats/true-false/TrueFalseQuestion";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
-import type { AnswerValue, Question } from "@/types/compat/game";
+import type { AnswerValue, PracticeQuestion } from "@/types/gameplay/practice";
 
 const migratedTypes = new Set([
   "multiple-choice",
@@ -45,7 +45,7 @@ const migratedExamples = [...migratedTypes].map(
     QUESTION_FORMAT_CATALOG[type as keyof typeof QUESTION_FORMAT_CATALOG].examples[0].question,
 );
 
-function renderQuestion(question: Question) {
+function renderQuestion(question: PracticeQuestion) {
   return renderToStaticMarkup(
     <QuestionInput
       question={question}

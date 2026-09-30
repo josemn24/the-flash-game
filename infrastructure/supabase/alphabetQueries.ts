@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { AnswerResult, RoomChallengeResult } from "@/types/compat/game";
+import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type {
   ServerAlphabetChallenge,
   ServerFlashTerminalReview,

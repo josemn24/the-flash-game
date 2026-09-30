@@ -178,6 +178,7 @@ export type EscapeQuestion = {
   };
   readonly initialBlocks: readonly EscapeBlock[];
 };
+export type EscapeQuestionConfiguration = Pick<EscapeQuestion, "grid" | "initialBlocks">;
 export type EscapeAnswer = { readonly moves: EscapeMove[] };
 
 export type ErrorReconstructionStep = { readonly id: string; readonly text: string };

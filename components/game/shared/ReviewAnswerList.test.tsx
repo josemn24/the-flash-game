@@ -6,7 +6,7 @@ import {
   ReviewAnswerList,
   reviewQuestionsFor,
 } from "@/components/game/shared/ReviewAnswerList";
-import type { AnswerResult } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
 
 describe("ReviewAnswerList", () => {
   it("normalizes every challenge question and marks unreachable pyramid levels as locked", () => {

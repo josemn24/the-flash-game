@@ -16,7 +16,7 @@ import {
 } from "@/components/game/shared";
 import { Card } from "@/components/ui";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
-import type { GameRoomContext } from "@/types/compat/game";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import styles from "./FlashPopFlashGame.module.css";
 

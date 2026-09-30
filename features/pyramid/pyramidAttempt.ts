@@ -1,4 +1,5 @@
-import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/compat/game";
+import type { AnswerResult, AnswerValue, PyramidChallenge } from "@/types/gameplay";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 import { compareChallengeRankingMetrics } from "@/lib/challengeRanking";
 
 export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 3;
@@ -120,7 +121,7 @@ export function advancePyramidToNextBriefing(
 
 export function armPyramidLevel(
   record: PyramidAttemptRecord,
-  question: Question,
+  question: PracticeQuestion,
   availableUntil: string | null,
   now: number,
 ): PyramidAttemptRecord {

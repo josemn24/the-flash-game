@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { FlashPopFlashGame } from "@/components/game";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { getPlayableChallengePageModel } from "@/server/data-access";
+import type { FlashChallenge } from "@/types/gameplay/challenge";
 
 export const dynamic = "force-dynamic";
 
@@ -30,5 +31,5 @@ export default async function FlashPopFlashPage({
   const { challengeId } = await params;
   const model = await getPlayableChallengePageModel(challengeId);
   if (challengeId !== FLASH_POP_FLASH_PILOT_ID || model?.challenge.mode !== "flash") notFound();
-  return <FlashPopFlashGame challenge={model.challenge as import("@/types/compat/game").FlashChallenge} />;
+  return <FlashPopFlashGame challenge={model.challenge as FlashChallenge} />;
 }

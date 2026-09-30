@@ -3,9 +3,9 @@ import type {
   EscapeAnswer,
   EscapeBlock,
   EscapeMove,
-  EscapeQuestion,
   EscapeQuestionConfiguration,
-} from "@/types/compat/game";
+} from "@/types/contracts";
+import type { EscapeQuestion } from "@/types/gameplay/practice";
 
 export type EscapeReplayResult = {
   valid: boolean;
@@ -34,7 +34,7 @@ function cellKey(row: number, column: number) {
   return `${row}:${column}`;
 }
 
-function occupiedCells(blocks: EscapeBlock[], excludedBlockId?: string) {
+function occupiedCells(blocks: readonly EscapeBlock[], excludedBlockId?: string) {
   const occupied = new Set<string>();
   for (const block of blocks) {
     if (block.id === excludedBlockId) continue;
@@ -185,7 +185,10 @@ export function reverseEscapeMove(
   });
 }
 
-export function isEscapeSolved(question: EscapeQuestionConfiguration, blocks: EscapeBlock[]) {
+export function isEscapeSolved(
+  question: EscapeQuestionConfiguration,
+  blocks: readonly EscapeBlock[],
+) {
   const target = blocks.find((block) => block.kind === "target");
   return Boolean(
     target &&

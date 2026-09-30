@@ -1,5 +1,5 @@
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
-import type { ProgressiveImageQuestion } from "@/types/compat/game";
+import type { ProgressiveImageQuestion } from "@/types/gameplay";
 
 export const PROGRESSIVE_IMAGE_INITIAL_BLUR = 32;
 export const PROGRESSIVE_IMAGE_INITIAL_SCALE = 1.08;

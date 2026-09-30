@@ -41,12 +41,12 @@ import type {
   AnswerResult,
   AnswerValue,
   ChallengeCompletionResult,
-  GameRoomContext,
   NarrativeChallenge,
   NarrativeScene,
   NarrativeTextBlock,
-  Question,
-} from "@/types/compat/game";
+} from "@/types/gameplay";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
+import type { GameRoomContext } from "@/types/view-models/room";
 
 function NarrativeSceneProgress({
   pageNumber,
@@ -197,7 +197,7 @@ function NarrativeQuestionScreen({
   onIncorrectAttempt,
   onTimedResponseStart,
 }: {
-  question: Question;
+  question: PracticeQuestion;
   questionNumber: number;
   totalQuestions: number;
   locked: boolean;

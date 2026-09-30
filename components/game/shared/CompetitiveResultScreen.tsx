@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
 import { calculateResultAccuracy, getAnswerResultAccuracyUnit } from "@/features/game/resultSummary";
-import type { AnswerResult, Challenge, RoomChallengeResult } from "@/types/compat/game";
+import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
+import type { PracticeChallenge } from "@/types/gameplay/practice";
 import {
   ChallengeResultScreen,
   type ChallengeResultModel,
@@ -27,7 +28,7 @@ export function CompetitiveResultScreen({
   result,
   returnTo,
 }: {
-  challenge: Challenge;
+  challenge: PracticeChallenge;
   result: RoomChallengeResult;
   returnTo: string;
 }) {

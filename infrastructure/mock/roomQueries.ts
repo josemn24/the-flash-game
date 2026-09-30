@@ -38,7 +38,8 @@ import type {
   RoomLeaderboardEntry,
   RoomMemberViewModel,
 } from "@/types/view-models";
-import type { AnswerReview, AnswerResult, Challenge, Question } from "@/types/compat/game";
+import type { AnswerReview, AnswerResult } from "@/types/gameplay";
+import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
 import { deriveSurvivalProgress } from "@/features/game/survivalRules";
 import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
@@ -67,7 +68,7 @@ function rankByFlashPoints<Entry extends { flashPoints: number }>(entries: Entry
 }
 
 function mockAnswerReview(
-  question: Question,
+  question: PracticeQuestion,
   answer?: DomainStore["attemptAnswers"][number],
 ): AnswerReview {
   const status = answer?.status === "timeout" ? "unanswered" : (answer?.status ?? "unanswered");
@@ -101,7 +102,7 @@ function historicalReviewProjection(
 ) {
   if (!attempt) {
     return {
-      challenge: null as Challenge | null,
+      challenge: null as PracticeChallenge | null,
       result: null,
       reviewItems: [] as RoomMemberReviewItem[],
       reviewProgress: null as RoomMemberReviewProgress | null,
@@ -119,7 +120,7 @@ function historicalReviewProjection(
       .filter((answer) => answer.attemptId === attempt.id)
       .map((answer) => [answer.challengeItemId, answer]),
   );
-  const questionByItem = new Map<string, Question>();
+  const questionByItem = new Map<string, PracticeQuestion>();
   if (challenge.mode === "pyramid") {
     challenge.levels.forEach((level, index) =>
       questionByItem.set(items[index]!.id, level.question),
@@ -193,7 +194,7 @@ function historicalReviewProjection(
   const progress =
     challenge.mode === "survival"
       ? (() => {
-          const config = challenge as Extract<Challenge, { mode: "survival" }>;
+          const config = challenge as Extract<PracticeChallenge, { mode: "survival" }>;
           const progress = deriveSurvivalProgress(
             config.lives,
             config.questions.length,
@@ -214,7 +215,7 @@ function historicalReviewProjection(
         })()
       : challenge.mode === "pyramid"
         ? (() => {
-            const config = challenge as Extract<Challenge, { mode: "pyramid" }>;
+            const config = challenge as Extract<PracticeChallenge, { mode: "pyramid" }>;
             return {
               mode: "pyramid" as const,
               totalLevelCount: config.levels.length,

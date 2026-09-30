@@ -1,4 +1,4 @@
-import type { AnswerStatus } from "@/types/compat/game";
+import type { AnswerStatus } from "@/types/gameplay";
 
 export const FLASH_POP_FEEDBACK_DURATION: Record<AnswerStatus, number> = {
   correct: 1100,

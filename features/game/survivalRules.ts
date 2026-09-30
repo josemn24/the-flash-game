@@ -1,4 +1,5 @@
-import type { AnswerResult, QuestionType } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
+import type { PracticeQuestionType } from "@/types/gameplay/practice";
 
 type SurvivalMistakeResult = Pick<AnswerResult, "details"> & {
   readonly status: AnswerResult["status"] | "timeout";
@@ -29,7 +30,7 @@ export function getSurvivalLivesAfterResult(livesRemaining: number, result: Surv
 }
 
 export function shouldEliminateAfterIncorrectAttempt(
-  questionType: QuestionType | undefined,
+  questionType: PracticeQuestionType | undefined,
   livesRemaining: number,
 ) {
   return questionType === "matching" && livesRemaining === 1;

@@ -15,13 +15,12 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
 import type { GameMode } from "@/types/gameplay/challenge";
+import type { AnswerReview, AnswerResult } from "@/types/gameplay";
 import type {
-  AnswerReview,
-  AnswerResult,
-  Challenge,
+  PracticeChallenge,
   ImageSurface,
   MultipleChoicePromptVisual,
-  Question,
+  PracticeQuestion,
   QuestionMedia,
   EstimationQuestion,
   HeatMapQuestion,
@@ -30,7 +29,7 @@ import type {
   WordSearchQuestion,
   WordHashtagQuestion,
   ZipQuestion,
-} from "@/types/compat/game";
+} from "@/types/gameplay/practice";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
@@ -907,7 +906,7 @@ function requiredStringField(record: Record<string, unknown>, key: string, label
   return value;
 }
 
-function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
+function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): PracticeQuestion {
   assertSupportedQuestionPayloadSchemaVersion(row.payload_schema_version);
   if (!isRecord(row.public_payload) || !isRecord(row.solution_payload)) {
     throw new Error(`Missing historical question payload (${row.challenge_item_id})`);
@@ -942,7 +941,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       ...(typeof publicData.hint === "string" ? { hint: publicData.hint } : {}),
       wordLength,
@@ -985,7 +984,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       clues: clues as { code: string; hint: string }[],
       codeLength,
@@ -1030,7 +1029,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "logic-matrix",
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       pieces: pieces as LogicMatrixQuestion["pieces"],
       cells: cells as LogicMatrixQuestion["cells"],
@@ -1071,7 +1070,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       clues,
       cluePenalty,
@@ -1116,7 +1115,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       leftItems: leftItems.map((item) => ({
         id: (item as Record<string, unknown>).id as string,
@@ -1128,8 +1127,8 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
           ? { media: (item as Record<string, unknown>).media as QuestionMedia }
           : {}),
         correctMatchId: matches[(item as Record<string, unknown>).id as string] as string,
-      })) as Extract<Question, { type: "matching" }>["leftItems"],
-      rightItems: rightItems as Extract<Question, { type: "matching" }>["rightItems"],
+      })) as Extract<PracticeQuestion, { type: "matching" }>["leftItems"],
+      rightItems: rightItems as Extract<PracticeQuestion, { type: "matching" }>["rightItems"],
       timeLimit:
         (row.time_limit_ms ??
           (typeof publicPayload.timeLimitMs === "number" ? publicPayload.timeLimitMs : 0)) / 1_000,
@@ -1148,7 +1147,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       correctAnswer,
       timeLimit:
@@ -1183,9 +1182,9 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
-      items: items as Extract<Question, { type: "odd-one-out" }>["items"],
+      items: items as Extract<PracticeQuestion, { type: "odd-one-out" }>["items"],
       correctAnswer,
       timeLimit:
         (row.time_limit_ms ??
@@ -1218,7 +1217,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       items,
       correctOrder,
@@ -1269,7 +1268,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "estimation",
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       min: configuration.min as number,
       max: configuration.max as number,
@@ -1319,7 +1318,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "heat-map",
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       surface: resolvedSurface as ImageSurface,
       target,
@@ -1375,7 +1374,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "word-search" as const,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: typeof publicPayload.question === "string" ? publicPayload.question : "",
       grid: { rows: grid.rows as number, columns: grid.columns as number },
       letters: letters as string[],
@@ -1410,7 +1409,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "word-hashtag" as const,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: publicPayload.question,
       grid: { rows: 5, columns: 5 } as const,
       initialLetters: initialLetters as Array<string | null>,
@@ -1445,7 +1444,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "zip" as const,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: publicPayload.question,
       grid: { rows: 5, columns: 5 } as const,
       checkpoints: checkpoints as ZipQuestion["checkpoints"],
@@ -1473,7 +1472,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "escape" as const,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: typeof publicPayload.question === "string" ? publicPayload.question : "",
       grid: publicPayload.grid as EscapeQuestion["grid"],
       initialBlocks: publicPayload.initialBlocks as EscapeQuestion["initialBlocks"],
@@ -1541,9 +1540,9 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "anagram",
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
-      tiles: tiles as Extract<Question, { type: "anagram" }>["tiles"],
+      tiles: tiles as Extract<PracticeQuestion, { type: "anagram" }>["tiles"],
       hint: typeof publicPayload.hint === "string" ? publicPayload.hint : undefined,
       correctAnswer,
       timeLimit: (row.time_limit_ms ?? 0) / 1000,
@@ -1590,7 +1589,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
       id: row.challenge_item_id,
       type: "classification",
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       items: items.map((item) => ({
         label: item.label as string,
@@ -1646,7 +1645,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       grid: boardGrid,
       regions,
@@ -1697,7 +1696,7 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     return {
       id: row.challenge_item_id,
       category: typeof publicPayload.category === "string" ? publicPayload.category : "",
-      tags: tags as Question["tags"],
+      tags: tags as PracticeQuestion["tags"],
       question: prompt,
       surface: surface as ImageSurface,
       revealDuration: revealDurationMs / 1_000,
@@ -1776,10 +1775,10 @@ function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Question {
     ...(payload.promptVisual
       ? { promptVisual: payload.promptVisual as MultipleChoicePromptVisual }
       : {}),
-  } as Question;
+  } as PracticeQuestion;
 }
 
-function toHistoricalChallenge(rows: RoomMemberReviewReadRow[]): Challenge {
+function toHistoricalChallenge(rows: RoomMemberReviewReadRow[]): PracticeChallenge {
   const first = rows[0];
   if (!first) throw new Error("Cannot build a historical Flash without rows");
   const questions = rows

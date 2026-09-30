@@ -1,4 +1,4 @@
-import type { PipesAnswer, PipesQuestion, PipesTileKind } from "@/types/compat/game";
+import type { PipesAnswer, PipesQuestion, PipesTileKind } from "@/types/gameplay";
 
 export const PIPES_ROWS = 5;
 export const PIPES_COLUMNS = 5;

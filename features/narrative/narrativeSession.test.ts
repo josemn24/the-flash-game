@@ -6,7 +6,7 @@ import {
   initialNarrativeSessionState,
   narrativeSessionReducer,
 } from "@/features/narrative/narrativeSession";
-import type { AnswerResult } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
 
 const correctResult: AnswerResult = {
   questionId: "ross-sea-transantarctic-range",

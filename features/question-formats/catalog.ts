@@ -1,7 +1,10 @@
 import { SCORING_POLICIES, type ScoringPolicy } from "@/features/question-formats/scoringPolicies";
-import type { QuestionOfType, QuestionType } from "@/types/compat/game";
+import type {
+  PracticeQuestionOfType,
+  PracticeQuestionType,
+} from "@/types/gameplay/practice";
 
-export type QuestionFormatGuide<T extends QuestionType = QuestionType> = {
+export type QuestionFormatGuide<T extends PracticeQuestionType = PracticeQuestionType> = {
   id: T;
   slug: string;
   name: string;
@@ -16,11 +19,11 @@ export type QuestionFormatGuide<T extends QuestionType = QuestionType> = {
   mediaSupport: string[];
   timing: { recommendedSeconds: string; notes: string };
   scoring: ScoringPolicy;
-  examples: Array<{ title: string; question: QuestionOfType<T> }>;
+  examples: Array<{ title: string; question: PracticeQuestionOfType<T> }>;
 };
 
 export type QuestionFormatCatalog = {
-  [T in QuestionType]: QuestionFormatGuide<T>;
+  [T in PracticeQuestionType]: QuestionFormatGuide<T>;
 };
 
 export const QUESTION_FORMAT_CATALOG = {

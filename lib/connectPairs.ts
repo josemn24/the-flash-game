@@ -1,4 +1,4 @@
-import type { ConnectPairsAnswer, ConnectPairsQuestion } from "@/types/compat/game";
+import type { ConnectPairsAnswer, ConnectPairsQuestion } from "@/types/gameplay";
 
 export const CONNECT_PAIRS_ROWS = 5;
 export const CONNECT_PAIRS_COLUMNS = 5;

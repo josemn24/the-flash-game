@@ -9,7 +9,7 @@ import {
   queensGrid,
 } from "@/lib/queens";
 import { evaluateAnswer } from "@/lib/scoring";
-import type { QueensBoardSize, QueensQuestion } from "@/types/compat/game";
+import type { QueensBoardSize, QueensQuestion } from "@/types/gameplay";
 
 const question: QueensQuestion = {
   id: "queens-test",

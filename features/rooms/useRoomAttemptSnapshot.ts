@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { GameRoomContext } from "@/types/compat/game";
+import type { GameRoomContext } from "@/types/view-models/room";
 import {
   useRoomSession,
   type RoomSessionSnapshot,

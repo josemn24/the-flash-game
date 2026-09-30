@@ -8,7 +8,7 @@ import {
 } from "@/features/game/resultSummary";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import type { FlashPopSurvivalResult } from "@/features/flash-pop/survivalSocial";
-import type { AnswerResult, SurvivalChallenge } from "@/types/compat/game";
+import type { AnswerResult, SurvivalChallenge } from "@/types/gameplay";
 
 export function FlashPopSurvivalResult({
   challenge,

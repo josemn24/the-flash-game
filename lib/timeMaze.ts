@@ -1,4 +1,4 @@
-import type { TimeMazeQuestion } from "@/types/compat/game";
+import type { TimeMazeQuestion } from "@/types/gameplay";
 
 export const TIME_MAZE_MIN_SIZE = 5;
 export const TIME_MAZE_MAX_SIZE = 9;

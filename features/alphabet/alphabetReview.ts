@@ -1,4 +1,4 @@
-import type { AlphabetChallenge, AlphabetAnswerReview } from "@/types/compat/game";
+import type { AlphabetChallenge, AlphabetAnswerReview } from "@/types/gameplay";
 import type { AlphabetLetterState } from "@/features/alphabet/alphabetGame";
 
 function reviewStatus(letter: AlphabetLetterState | undefined): AlphabetAnswerReview["status"] {

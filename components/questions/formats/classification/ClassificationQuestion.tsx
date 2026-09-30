@@ -6,7 +6,7 @@ import { useState } from "react";
 import { CheckIcon } from "@/components/ui";
 import styles from "./ClassificationQuestion.module.css";
 import { MotionButton } from "@/components/ui";
-import type { ClassificationAnswer, ClassificationItem } from "@/types/compat/game";
+import type { ClassificationAnswer, ClassificationItem } from "@/types/gameplay/practice";
 
 type ClassificationQuestionProps = {
   items: Array<Pick<ClassificationItem, "label">>;

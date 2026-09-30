@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import styles from "./MiniNonogramQuestion.module.css";
-import type { MiniNonogramAnswer } from "@/types/compat/game";
+import type { MiniNonogramAnswer } from "@/types/gameplay/practice";
 
 type MiniNonogramQuestionProps = {
   rowClues: number[][];

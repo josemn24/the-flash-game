@@ -6,7 +6,7 @@ import {
   isSurvivalMistake,
   shouldEliminateAfterIncorrectAttempt,
 } from "@/features/game/survivalRules";
-import type { AnswerResultDetails, AnswerStatus } from "@/types/compat/game";
+import type { AnswerResultDetails, AnswerStatus } from "@/types/gameplay";
 
 function result(status: AnswerStatus | "timeout", details?: AnswerResultDetails) {
   return { status, details };

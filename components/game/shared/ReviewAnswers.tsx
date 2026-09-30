@@ -3,7 +3,8 @@
 import { motion } from "motion/react";
 import { NotebookIcon, GameHeader } from "@/components/ui";
 import { Logo } from "@/components/navigation/Logo";
-import type { AnswerResult, Challenge } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
+import type { PracticeChallenge } from "@/types/gameplay/practice";
 import { buildReviewAnswerEntries } from "./ReviewAnswerList";
 import { ReviewAnswerPanel } from "./ReviewAnswerPanel";
 import styles from "./ReviewAnswers.module.css";
@@ -15,7 +16,7 @@ export function ReviewAnswers({
   onReplay,
   notebook,
 }: {
-  challenge: Challenge;
+  challenge: PracticeChallenge;
   results: AnswerResult[];
   onBack: () => void;
   onReplay?: () => void;

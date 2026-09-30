@@ -1,8 +1,8 @@
 /**
  * @deprecated Compatibility aggregate for the prototype. New code must use
  * `@/types/domain`, `@/types/contracts`, `@/types/gameplay` or
- * `@/types/view-models`, and transitional consumers should import
- * `@/types/compat/game` explicitly.
+ * `@/types/view-models`. This aggregate remains only for historical fixtures
+ * and legacy adapters that have not yet been rewritten.
  */
 export type {
   CognitiveSkillTagId,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { ChallengeCompletionInput, ChallengeCompletionResult } from "@/types/compat/game";
+import type { ChallengeCompletionInput, ChallengeCompletionResult } from "@/types/gameplay";
 
 export function useChallengeCompletionReporter(
   result: ChallengeCompletionInput | null,

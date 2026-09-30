@@ -8,7 +8,7 @@ import {
   withChallengeQuestionPoints,
   withChallengeScoring,
 } from "@/lib/challengeScoring";
-import type { FlashChallenge, ProgressiveCluesQuestion, SurvivalChallenge } from "@/types/compat/game";
+import type { FlashChallenge, ProgressiveCluesQuestion, SurvivalChallenge } from "@/types/gameplay";
 
 describe("challenge scoring", () => {
   it("distributes the challenge maximum as integer points", () => {

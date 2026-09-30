@@ -3,7 +3,7 @@ import type {
   WordSearchAnswer,
   WordSearchQuestion,
   WordSearchTarget,
-} from "@/types/compat/game";
+} from "@/types/gameplay";
 
 const MIN_GRID_SIZE = 6;
 const MAX_GRID_SIZE = 10;

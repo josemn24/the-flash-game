@@ -8,7 +8,7 @@ import {
   replayEscapeMoves,
   reverseEscapeMove,
 } from "@/lib/escape";
-import type { EscapeQuestion } from "@/types/compat/game";
+import type { EscapeQuestion } from "@/types/gameplay";
 
 const question: EscapeQuestion = {
   id: "escape-test",

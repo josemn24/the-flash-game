@@ -1,6 +1,7 @@
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { AnswerResult, AnswerStatus, Challenge, Question } from "@/types/compat/game";
+import type { AnswerResult, AnswerStatus } from "@/types/gameplay";
+import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import styles from "./ReviewAnswers.module.css";
 
@@ -8,7 +9,7 @@ export type ReviewAnswerVisualStatus = AnswerStatus | "locked";
 
 export type ReviewAnswerEntry = {
   id: string;
-  question?: Question;
+  question?: PracticeQuestion;
   result?: AnswerResult;
   marker: string;
   title?: string;
@@ -132,7 +133,7 @@ export function ReviewAnswerList({
   );
 }
 
-function questionsFor(challenge: Challenge): Question[] {
+function questionsFor(challenge: PracticeChallenge): PracticeQuestion[] {
   switch (challenge.mode) {
     case "alphabet":
       return challenge.entries.map((entry) => entry.question);
@@ -147,12 +148,12 @@ function questionsFor(challenge: Challenge): Question[] {
   }
 }
 
-export function reviewQuestionsFor(challenge: Challenge) {
+export function reviewQuestionsFor(challenge: PracticeChallenge) {
   return questionsFor(challenge);
 }
 
 export function buildReviewAnswerEntries(
-  challenge: Challenge,
+  challenge: PracticeChallenge,
   results: AnswerResult[],
 ): ReviewAnswerEntry[] {
   const resultByQuestionId = new Map(results.map((result) => [result.questionId, result]));

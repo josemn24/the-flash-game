@@ -22,8 +22,8 @@ import type {
   AlphabetChallenge,
   AnswerStatus,
   ChallengeCompletionResult,
-  GameRoomContext,
-} from "@/types/compat/game";
+} from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopAlphabetGame.module.css";
 
 function Intro({

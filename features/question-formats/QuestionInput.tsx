@@ -51,32 +51,34 @@ import {
   isWordSearchAnswer,
 } from "@/lib/scoring";
 import type {
-  AnswerValue,
   ClassificationAnswer,
-  Question,
-  QuestionOfType,
-  QuestionType,
-} from "@/types/compat/game";
+  PracticeAnswerValueOfType,
+  PracticeQuestion,
+  PracticeQuestionOfType,
+  PracticeQuestionType,
+} from "@/types/gameplay/practice";
 
-type CommonProps = {
+type CommonProps<T extends PracticeQuestionType> = {
   locked: boolean;
-  onSubmit: (answer: AnswerValue) => void;
-  pendingAnswer?: AnswerValue | null;
+  onSubmit: (answer: PracticeAnswerValueOfType<T>) => void;
+  pendingAnswer?: PracticeAnswerValueOfType<T> | null;
   submissionState?: "idle" | "submitting" | "error";
   submissionStatusVisible?: boolean;
   submissionError?: string;
   onRetrySubmission?: () => void;
   codeAttemptCount?: number;
   onCodeAttempt: (code: string) => boolean;
-  onProgress: (answer: AnswerValue) => void;
+  onProgress: (answer: PracticeAnswerValueOfType<T>) => void;
   onIncorrectAttempt: () => void;
   onProgressiveClueReveal: (revealedClues: number) => void;
   onTimedResponseStart: () => void;
-  initialAnswer?: AnswerValue | null;
+  initialAnswer?: PracticeAnswerValueOfType<T> | null;
   progressiveCluesRevealed?: number;
 };
 
-type QuestionInputProps<T extends Question = Question> = CommonProps & { question: T };
+type QuestionInputProps<T extends PracticeQuestion = PracticeQuestion> = CommonProps<T["type"]> & {
+  question: T;
+};
 
 function MultipleChoiceInput({
   question,
@@ -87,7 +89,7 @@ function MultipleChoiceInput({
   submissionStatusVisible = false,
   submissionError,
   onRetrySubmission,
-}: QuestionInputProps<QuestionOfType<"multiple-choice">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"multiple-choice">>) {
   const selectedAnswer = typeof pendingAnswer === "string" ? pendingAnswer : null;
   const resolvedSubmissionState = submissionState ?? "idle";
   const submissionFeedbackEnabled = submissionState !== undefined;
@@ -126,7 +128,7 @@ function MultipleChoiceInput({
   );
 }
 
-function TrueFalseInput({ locked, onSubmit }: QuestionInputProps<QuestionOfType<"true-false">>) {
+function TrueFalseInput({ locked, onSubmit }: QuestionInputProps<PracticeQuestionOfType<"true-false">>) {
   return <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />;
 }
 
@@ -134,7 +136,7 @@ function OddOneOutInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"odd-one-out">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"odd-one-out">>) {
   return <OddOneOutQuestion items={question.items} locked={locked} onSubmit={onSubmit} />;
 }
 
@@ -145,7 +147,7 @@ function MatchingInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"matching">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"matching">>) {
   return (
     <MatchingQuestion
       leftItems={question.leftItems}
@@ -167,7 +169,7 @@ function ConnectPairsInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"connect-pairs">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"connect-pairs">>) {
   return (
     <ConnectPairsQuestion
       key={question.id}
@@ -188,7 +190,7 @@ function ShortTextInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"short-text">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"short-text">>) {
   const [answer, setAnswer] = useState("");
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -234,7 +236,7 @@ function OrderingInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"ordering">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"ordering">>) {
   return (
     <OrderingQuestion
       items={question.items}
@@ -259,7 +261,7 @@ function ProgressiveCluesInput({
   onProgressiveClueReveal,
   onSubmit,
   progressiveCluesRevealed,
-}: QuestionInputProps<QuestionOfType<"progressive-clues">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"progressive-clues">>) {
   return (
     <ProgressiveCluesQuestion
       questionId={question.id}
@@ -281,7 +283,7 @@ function ProgressiveImageInput({
   locked,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<QuestionOfType<"progressive-image">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"progressive-image">>) {
   return (
     <ProgressiveImageQuestion
       key={question.id}
@@ -300,7 +302,7 @@ function HeatMapInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"heat-map">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"heat-map">>) {
   return <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />;
 }
 
@@ -308,7 +310,7 @@ function ImageLabelingInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"image-labeling">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"image-labeling">>) {
   return <ImageLabelingQuestion question={question} locked={locked} onSubmit={onSubmit} />;
 }
 
@@ -318,7 +320,7 @@ function ClassificationInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"classification">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"classification">>) {
   return (
     <ClassificationQuestion
       items={question.items}
@@ -341,7 +343,7 @@ function FlashMemoryInput({
   onProgress,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<QuestionOfType<"flash-memory">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"flash-memory">>) {
   return (
     <FlashMemoryQuestion
       items={question.items}
@@ -360,7 +362,7 @@ function MemoryPairsInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"memory-pairs">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"memory-pairs">>) {
   return (
     <MemoryPairsQuestion
       grid={question.grid}
@@ -378,7 +380,7 @@ function SimonSequenceInput({
   locked,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<QuestionOfType<"simon-sequence">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"simon-sequence">>) {
   return (
     <SimonSequenceQuestion
       pads={question.pads}
@@ -394,7 +396,7 @@ function LogicMatrixInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"logic-matrix">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"logic-matrix">>) {
   return (
     <LogicMatrixQuestion
       pieces={question.pieces}
@@ -412,7 +414,7 @@ function MiniSudokuInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"mini-sudoku">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"mini-sudoku">>) {
   return (
     <MiniSudokuQuestion
       grid={question.grid}
@@ -428,7 +430,7 @@ function MiniNonogramInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"mini-nonogram">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"mini-nonogram">>) {
   return (
     <MiniNonogramQuestion
       rowClues={question.rowClues}
@@ -447,7 +449,7 @@ function QueensInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"queens">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"queens">>) {
   return (
     <QueensQuestion
       key={question.id}
@@ -465,7 +467,7 @@ function SlidingPuzzleInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"sliding-puzzle">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"sliding-puzzle">>) {
   return (
     <SlidingPuzzleQuestion
       initialTiles={question.initialTiles}
@@ -481,7 +483,7 @@ function EscapeInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"escape">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"escape">>) {
   return (
     <EscapeQuestion
       key={question.id}
@@ -498,7 +500,7 @@ function TimeMazeInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"time-maze">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"time-maze">>) {
   return (
     <TimeMazeQuestion
       key={question.id}
@@ -515,7 +517,7 @@ function ZipInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"zip">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"zip">>) {
   return (
     <ZipQuestion
       key={question.id}
@@ -532,7 +534,7 @@ function PipesInput({
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"pipes">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"pipes">>) {
   return (
     <PipesQuestion
       key={question.id}
@@ -551,7 +553,7 @@ function LogicCodeInput({
   codeAttemptCount = 0,
   onProgress,
   onCodeAttempt,
-}: QuestionInputProps<QuestionOfType<"logic-code">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"logic-code">>) {
   return (
     <LogicCodeQuestion
       clues={question.clues}
@@ -569,7 +571,7 @@ function EstimationInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"estimation">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"estimation">>) {
   return (
     <LocalEstimationInput
       key={question.id}
@@ -584,7 +586,7 @@ function LocalEstimationInput({
   question,
   locked,
   onSubmit,
-}: Pick<QuestionInputProps<QuestionOfType<"estimation">>, "question" | "locked" | "onSubmit">) {
+}: Pick<QuestionInputProps<PracticeQuestionOfType<"estimation">>, "question" | "locked" | "onSubmit">) {
   const [value, setValue] = useState(question.initialValue);
 
   return (
@@ -607,7 +609,7 @@ function ErrorReconstructionInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"error-reconstruction">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"error-reconstruction">>) {
   return (
     <ErrorReconstructionQuestionInput
       question={question}
@@ -627,7 +629,7 @@ function AnagramInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"anagram">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"anagram">>) {
   return (
     <AnagramQuestion
       tiles={question.tiles}
@@ -644,7 +646,7 @@ function WordHashtagInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"word-hashtag">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"word-hashtag">>) {
   return (
     <WordHashtagQuestion
       key={question.id}
@@ -664,7 +666,7 @@ function WordSearchInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-}: QuestionInputProps<QuestionOfType<"word-search">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"word-search">>) {
   return (
     <WordSearchQuestion
       key={question.id}
@@ -687,7 +689,7 @@ function MiniWordleInput({
   onProgress,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<QuestionOfType<"mini-wordle">>) {
+}: QuestionInputProps<PracticeQuestionOfType<"mini-wordle">>) {
   return (
     <MiniWordleQuestion
       correctAnswer={question.correctAnswer}
@@ -739,7 +741,7 @@ export const QUESTION_INPUT_RENDERERS = {
   zip: ZipInput,
   pipes: PipesInput,
 } satisfies {
-  [T in QuestionType]: ComponentType<QuestionInputProps<QuestionOfType<T>>>;
+  [T in PracticeQuestionType]: ComponentType<QuestionInputProps<PracticeQuestionOfType<T>>>;
 };
 
 export function QuestionInput(props: QuestionInputProps) {

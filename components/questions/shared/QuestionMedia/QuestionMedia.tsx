@@ -1,6 +1,6 @@
 import Image from "next/image";
 import styles from "./QuestionMedia.module.css";
-import type { QuestionIllustration, QuestionMedia as QuestionMediaType } from "@/types/compat/game";
+import type { QuestionIllustration, QuestionMedia as QuestionMediaType } from "@/types/gameplay/practice";
 
 function Illustration({ id }: { id: QuestionIllustration }) {
   if (id === "japan-flag") {

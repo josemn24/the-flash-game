@@ -11,7 +11,7 @@ import {
 import type {
   WordSearchAnswer,
   WordSearchQuestion as WordSearchQuestionType,
-} from "@/types/compat/game";
+} from "@/types/gameplay/practice";
 import styles from "./WordSearchQuestion.module.css";
 
 type BoardProps = {

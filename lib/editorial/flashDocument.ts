@@ -24,7 +24,7 @@ import type {
   EditorialJsonObject,
   EditorialJsonValue,
 } from "@/types/view-models/editorial";
-import type { EscapeQuestion, WordHashtagQuestion, ZipQuestion } from "@/types/compat/game";
+import type { EscapeQuestion, WordHashtagQuestion, ZipQuestion } from "@/types/gameplay";
 import { isValidEstimationConfiguration, isValidEstimationSolution } from "@/lib/estimation";
 import { isNormalizedPoint, isValidHeatMapRadii } from "@/lib/heatMap";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";

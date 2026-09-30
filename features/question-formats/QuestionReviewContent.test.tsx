@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { questionsById } from "@/test-utils/mockGameplay";
-import type { AnswerResult } from "@/types/compat/result";
+import type { AnswerResult } from "@/types/gameplay/result";
 
 const question = questionsById["pyramid-connect-pairs-trap"];
 

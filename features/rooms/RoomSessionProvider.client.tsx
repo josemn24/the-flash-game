@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import type { ChallengeCompletion, RoomChallengeResult } from "@/types/compat/game";
+import type { ChallengeCompletion, RoomChallengeResult } from "@/types/gameplay";
 
 type RoomSessionResults = Record<string, Record<string, RoomChallengeResult>>;
 export type RoomSessionSnapshot = {

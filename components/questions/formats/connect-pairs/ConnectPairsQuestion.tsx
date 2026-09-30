@@ -22,8 +22,8 @@ import {
 import type {
   ConnectPairsAnswer,
   ConnectPairsPair,
-  ConnectPairsQuestion as Question,
-} from "@/types/compat/game";
+  ConnectPairsQuestion as ConnectPairsQuestionType,
+} from "@/types/gameplay/practice";
 import styles from "./ConnectPairsQuestion.module.css";
 
 type CellOwner = {
@@ -75,7 +75,7 @@ export function ConnectPairsQuestion({
   onProgress,
   onSubmit,
 }: {
-  question: Question;
+  question: ConnectPairsQuestionType;
   initialAnswer?: ConnectPairsAnswer;
   locked: boolean;
   onProgress: (answer: ConnectPairsAnswer) => void;

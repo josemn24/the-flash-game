@@ -1,4 +1,4 @@
-import type { MiniWordleQuestion } from "@/types/compat/game";
+import type { MiniWordleQuestion } from "@/types/gameplay";
 import type {
   MiniWordleLetterFeedback,
   MiniWordleWordLength,

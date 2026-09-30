@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } 
 import { Avatar, Button, CrossIcon } from "@/components/ui";
 import { validateProfileName } from "@/lib/userProfile";
 import { validateAvatarSelection } from "@/lib/media/avatarValidation";
-import type { UserProfile } from "@/types/compat/user";
+import type { UserProfile } from "@/types/view-models/user";
 import type { ProfileSaveResult } from "@/types/view-models/user-actions";
 import styles from "./FlashPopProfileDialog.module.css";
 

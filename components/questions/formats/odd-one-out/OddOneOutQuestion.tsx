@@ -5,7 +5,7 @@ import { useState } from "react";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { CheckIcon } from "@/components/ui";
 import styles from "./OddOneOutQuestion.module.css";
-import type { OddOneOutItem } from "@/types/compat/game";
+import type { OddOneOutItem } from "@/types/gameplay/practice";
 
 type OddOneOutQuestionProps = {
   items: OddOneOutItem[];

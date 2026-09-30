@@ -1,21 +1,21 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { Question } from "@/types/compat/game";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 
-const DELAYED_TIMER_TYPES = new Set<Question["type"]>([
+const DELAYED_TIMER_TYPES = new Set<PracticeQuestion["type"]>([
   "flash-memory",
   "simon-sequence",
   "mini-wordle",
   "progressive-image",
 ]);
 
-export function isDelayedQuestionTimer(question: Pick<Question, "type">) {
+export function isDelayedQuestionTimer(question: Pick<PracticeQuestion, "type">) {
   return DELAYED_TIMER_TYPES.has(question.type);
 }
 
 type UseQuestionStageTimerOptions = {
-  question: Question;
+  question: PracticeQuestion;
   locked: boolean;
   deadlineAt?: number | null;
   onTimeUp: () => void;

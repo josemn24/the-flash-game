@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Avatar, BoltIcon, Card, ChevronIcon, TrophyIcon } from "@/components/ui";
 import { PendingLink } from "@/components/navigation";
-import type { RoomDailyLeaderboardEntry, RoomLeaderboardEntry } from "@/types/compat/game";
+import type { RoomDailyLeaderboardEntry, RoomLeaderboardEntry } from "@/types/view-models/room";
 import styles from "./RoomLeaderboard.module.css";
 
 export type RoomLeaderboardProps = {

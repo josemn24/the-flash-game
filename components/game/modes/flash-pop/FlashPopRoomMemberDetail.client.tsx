@@ -4,7 +4,8 @@ import { Avatar, BackLink, BoltIcon, Card, Canvas, Chip } from "@/components/ui"
 import { ReviewAnswerList } from "@/components/game/shared";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { applyRoomMemberChallengeResult } from "@/features/rooms/localResults";
-import type { AnswerReview, AnswerResult, RoomMemberDetailModel } from "@/types/compat/game";
+import type { AnswerReview, AnswerResult } from "@/types/gameplay";
+import type { RoomMemberDetailModel } from "@/types/view-models/room";
 import styles from "./FlashPopRoomMemberDetail.module.css";
 
 function toAnswerResult(answer: AnswerReview): AnswerResult {

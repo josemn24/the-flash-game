@@ -12,7 +12,7 @@ import type {
   PipesAnswer,
   PipesQuestion as PipesQuestionType,
   PipesTileKind,
-  } from "@/types/compat/game";
+  } from "@/types/gameplay/practice";
 import styles from "./PipesQuestion.module.css";
 
 const KIND_LABEL: Record<PipesTileKind, string> = {

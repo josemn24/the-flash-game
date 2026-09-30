@@ -1,5 +1,5 @@
 import { Avatar, BackLink, Button, Canvas, UserPlusIcon } from "@/components/ui";
-import type { RoomSettingsModel } from "@/types/compat/game";
+import type { RoomSettingsModel } from "@/types/view-models/room";
 import { RoomMemberActions } from "./RoomMemberActions.client";
 import styles from "./FlashPopRoomSettings.module.css";
 

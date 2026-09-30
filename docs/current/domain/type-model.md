@@ -55,11 +55,13 @@ El cliente competitivo solo deberá recibir `PublicQuestion` y las revelaciones 
 respuestas correctas, tolerancias, rutas, tableros resueltos y métricas óptimas pertenecen a
 `QuestionSolution`. Los puntos de una pregunta dentro de un desafío pertenecen a `ChallengeItem`.
 
-## Compatibilidad temporal
+## Compatibilidad histórica
 
-`@/types/compat/*` y los entrypoints históricos (`@/types/game`, `@/types/room`,
-`@/types/challenge`, `@/types/question`, etc.) continúan disponibles solo durante la migración. Sus
-nombres anidados se conservan mediante aliases marcados como obsoletos:
+La UI y el código de producción ya no importan `@/types/compat/*`; esas fachadas se eliminaron al
+completar la migración. Los entrypoints históricos (`@/types/game`, `@/types/room`,
+`@/types/challenge`, `@/types/question`, etc.) se conservan únicamente para fixtures y adaptadores
+legacy que todavía necesitan una transición independiente. Sus nombres anidados se mantienen como
+aliases marcados como obsoletos:
 
 - `Room` equivale a `LegacyRoomSnapshot`.
 - `Season` equivale a `LegacySeasonSnapshot`.

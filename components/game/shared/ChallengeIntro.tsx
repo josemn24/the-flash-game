@@ -8,11 +8,11 @@ import {
   buildSafeChallengeIntroModel,
   type SafeChallengeIntroduction,
 } from "@/lib/challengeIntro";
-import type { Challenge } from "@/types/compat/game";
+import type { PracticeChallenge } from "@/types/gameplay/practice";
 import styles from "./ChallengeIntro.module.css";
 
 type FullChallengeIntroProps = {
-  challenge: Challenge;
+  challenge: PracticeChallenge;
   introduction?: never;
   onStart: () => void;
   note?: ReactNode;

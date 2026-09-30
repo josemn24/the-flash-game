@@ -19,7 +19,7 @@ import {
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
 import { loadMiniWordleDictionary } from "@/lib/miniWordleDictionary";
-import type { MiniWordleAnswer } from "@/types/compat/game";
+import type { MiniWordleAnswer } from "@/types/gameplay/practice";
 
 type Props = {
   correctAnswer: string;

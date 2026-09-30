@@ -22,6 +22,10 @@ const LEGACY_DATA_SOURCES = new Set([
   "@/data/mock/legacyChallengeDefinitionAdapter",
   "@/data/mock/legacyQuestionAdapter",
 ]);
+// Empty after the UI migration. If a short-lived adapter is ever unavoidable,
+// add its production-relative path here and remove it as part of the same
+// migration phase that introduced it.
+const COMPATIBILITY_IMPORT_ALLOWLIST = new Set();
 const LEGACY_TYPE_IMPORTS = new Set([
   "@/types/game",
   "@/types/question",
@@ -204,6 +208,13 @@ for (const file of productionFiles) {
   for (const imported of importsIn(source)) {
     if (LEGACY_TYPE_IMPORTS.has(imported.specifier)) {
       violations.push(`${relative} imports legacy type barrel ${imported.specifier}`);
+    }
+
+    if (
+      imported.specifier.startsWith("@/types/compat/") &&
+      !COMPATIBILITY_IMPORT_ALLOWLIST.has(relative)
+    ) {
+      violations.push(`${relative} imports compatibility type ${imported.specifier}`);
     }
 
     if (isScoringBoundary && imported.specifier.startsWith("@/types/compat/")) {

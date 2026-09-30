@@ -1,4 +1,4 @@
-import type { QuestionType } from "@/types/compat/game";
+import type { PracticeQuestionType } from "@/types/gameplay/practice";
 
 export const QUESTION_FORMAT_LABELS = {
   "multiple-choice": "Elección",
@@ -32,4 +32,4 @@ export const QUESTION_FORMAT_LABELS = {
   estimation: "Estimación",
   zip: "Zip",
   pipes: "Tuberías",
-} satisfies Record<QuestionType, string>;
+} satisfies Record<PracticeQuestionType, string>;

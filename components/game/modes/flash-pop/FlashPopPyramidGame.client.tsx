@@ -26,11 +26,11 @@ import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import type {
   AnswerValue,
   ChallengeCompletionResult,
-  GameRoomContext,
   PyramidChallenge,
   PyramidLevel,
   AnswerResult,
-} from "@/types/compat/game";
+} from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import styles from "./FlashPopPyramidGame.module.css";
 

@@ -6,7 +6,7 @@ import { useState } from "react";
 import styles from "./AnagramQuestion.module.css";
 import { RotateIcon, UndoIcon } from "@/components/ui";
 import { MotionButton } from "@/components/ui";
-import type { AnagramTile } from "@/types/compat/game";
+import type { AnagramTile } from "@/types/gameplay/practice";
 
 type Props = {
   tiles: AnagramTile[];

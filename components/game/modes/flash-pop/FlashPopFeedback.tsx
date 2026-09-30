@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
 import { Card } from "@/components/ui";
-import type { AnswerStatus } from "@/types/compat/game";
+import type { AnswerStatus } from "@/types/gameplay";
 import styles from "./FlashPopFeedback.module.css";
 
 type Props = {

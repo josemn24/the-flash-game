@@ -1,4 +1,4 @@
-import type { AnswerResult, AnswerStatus } from "@/types/compat/game";
+import type { AnswerResult, AnswerStatus } from "@/types/gameplay";
 
 export type ResultAccuracyUnit = {
   status: AnswerStatus;

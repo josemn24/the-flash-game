@@ -12,7 +12,7 @@ import {
   type PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
 import { getChallengeById } from "@/test-utils/mockGameplay";
-import type { AnswerResult } from "@/types/compat/game";
+import type { AnswerResult } from "@/types/gameplay";
 
 function getChallenge() {
   const challenge = getChallengeById("tabarnia-challenge-05");

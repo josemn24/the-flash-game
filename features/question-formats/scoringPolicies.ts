@@ -1,5 +1,5 @@
 import { QUESTION_SCORING_POLICY, type ScoringPolicyId } from "@/lib/scoring";
-import type { QuestionType } from "@/types/compat/game";
+import type { PracticeQuestionType } from "@/types/gameplay/practice";
 
 export type ScoringPolicy = {
   id: ScoringPolicyId;
@@ -301,4 +301,4 @@ export const SCORING_POLICIES = {
     incorrectPenalty: false,
     speedBonus: true,
   },
-} satisfies Record<QuestionType, ScoringPolicy>;
+} satisfies Record<PracticeQuestionType, ScoringPolicy>;

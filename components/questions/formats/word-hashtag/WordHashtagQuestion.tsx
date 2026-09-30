@@ -13,7 +13,7 @@ import {
 import type {
   WordHashtagAnswer,
   WordHashtagQuestion as WordHashtagQuestionType,
-  } from "@/types/compat/game";
+  } from "@/types/gameplay/practice";
 
 type Props = {
   question: WordHashtagQuestionType;

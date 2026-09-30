@@ -12,7 +12,7 @@ import {
   normalizeWordHashtagWord,
   replayWordHashtagSwaps,
 } from "@/lib/wordHashtag";
-import type { WordHashtagQuestion } from "@/types/compat/game";
+import type { WordHashtagQuestion } from "@/types/gameplay";
 
 export const wordHashtagQuestion: WordHashtagQuestion = {
   id: "word-hashtag-test",

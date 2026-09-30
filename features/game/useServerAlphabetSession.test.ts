@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GameRoomContext } from "@/types/compat/game";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerAlphabetChallenge } from "@/types/gameplay/challenge";
 
 type TestHookSlot = {

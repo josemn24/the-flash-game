@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import styles from "./MiniSudokuQuestion.module.css";
-import type { MiniSudokuAnswer } from "@/types/compat/game";
+import type { MiniSudokuAnswer } from "@/types/gameplay/practice";
 
 type MiniSudokuQuestionProps = {
   grid: Array<number | null>;

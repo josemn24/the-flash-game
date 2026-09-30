@@ -405,7 +405,8 @@ export type EscapeQuestion = BaseQuestion & {
   boardLabel?: string;
 };
 
-export type EscapeQuestionConfiguration = Pick<EscapeQuestion, "grid" | "initialBlocks">;
+/** @deprecated Use the public contract configuration from `@/types/contracts`. */
+export type { EscapeQuestionConfiguration } from "@/types/contracts/question-shapes";
 
 export type ErrorReconstructionStep = {
   id: string;
@@ -519,11 +520,19 @@ export type PracticeQuestion =
   | LogicCodeQuestion
   | EstimationQuestion;
 
+export type PracticeQuestionType = PracticeQuestion["type"];
+export type PracticeQuestionOfType<T extends PracticeQuestionType> = Extract<
+  PracticeQuestion,
+  { type: T }
+>;
+
 /** @deprecated Use PracticeQuestion for practice or PublicQuestion for competition. */
 export type Question = PracticeQuestion;
 
-export type QuestionType = PracticeQuestion["type"];
-export type QuestionOfType<T extends QuestionType> = Extract<PracticeQuestion, { type: T }>;
+/** @deprecated Use PracticeQuestionType for practice format registries. */
+export type QuestionType = PracticeQuestionType;
+/** @deprecated Use PracticeQuestionOfType for practice format registries. */
+export type QuestionOfType<T extends QuestionType> = PracticeQuestionOfType<T>;
 
 export type ClassificationAnswer = Record<string, string>;
 export type MatchingAnswer = Record<string, string>;

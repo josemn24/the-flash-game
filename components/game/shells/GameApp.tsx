@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import type { Challenge, GameRoomContext } from "@/types/compat/game";
+import type { Challenge } from "@/types/gameplay";
 import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
@@ -7,9 +7,10 @@ import type {
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
-import type { ChallengeCompletionResult } from "@/types/compat/game";
+import type { ChallengeCompletionResult } from "@/types/gameplay";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import type { GameplayPersistence } from "@/types/view-models";
+import type { GameRoomContext } from "@/types/view-models/room";
 
 type GameAppProps = {
   challenge:
