@@ -278,6 +278,9 @@ mappers ni los view models de aplicación. Las respuestas `Json` siguen siendo d
 hasta su validación explícita.
 El schema `private` no forma parte del contrato TypeScript compartido ni de la Data API.
 
+El procedimiento operativo para regenerar y verificar estos tipos está documentado en el
+[workflow de tipos TypeScript generados](../../../supabase/README.md#workflow-de-tipos-typescript-generados).
+
 ### Separación del portal de superadministración
 
 `SuperadminPortalContext` conserva el contexto amplio que necesitan las operaciones actuales de
