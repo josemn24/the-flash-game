@@ -8,9 +8,9 @@ import type {
 } from "@/application/ports/profile-use-cases";
 import {
   getProvisionedCurrentPlayer,
-  supabaseCurrentViewerReader,
+  supabaseCurrentViewerReaderFor,
 } from "@/infrastructure/supabase/identity/currentViewer";
-import { supabaseProfileCommands } from "@/infrastructure/supabase/identity/profileCommands";
+import { supabaseProfileCommandsFor } from "@/infrastructure/supabase/identity/profileCommands";
 import { supabaseMediaAssetCommandsFor } from "@/infrastructure/supabase/assets/mediaAssetCommands";
 import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import type { ProfileSaveResult } from "@/types/view-models/user-actions";
@@ -23,8 +23,8 @@ async function createProfileUseCases() {
   if (!current) return null;
   return new ApplicationProfileUseCases({
     actor: { authUserId: current.authUserId, playerId: current.row.player_id as PlayerId },
-    currentViewer: supabaseCurrentViewerReader,
-    profileCommands: supabaseProfileCommands,
+    currentViewer: supabaseCurrentViewerReaderFor(current),
+    profileCommands: supabaseProfileCommandsFor(current),
     mediaAssetCommands: supabaseMediaAssetCommandsFor(current.authUserId),
     mediaStorage: supabaseMediaStorage,
   });

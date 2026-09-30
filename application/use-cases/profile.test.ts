@@ -117,13 +117,15 @@ describe("ApplicationProfileUseCases", () => {
 
   it("confirms real inspected bytes, commits the profile association, then removes the old object", async () => {
     const { currentViewer, mediaAssetCommands, mediaStorage, useCases } = createUseCases();
+    const updatedProfile = { ...profile, avatarSrc: "/avatars/new.png" };
+    vi.mocked(currentViewer.getCurrentViewer).mockResolvedValue(updatedProfile);
 
     const result = await useCases.confirmAvatar({
       assetId: "asset-1",
       idempotencyKey: "confirm-key",
     });
 
-    expect(result).toEqual({ ok: true, profile });
+    expect(result).toEqual({ ok: true, profile: updatedProfile });
     expect(mediaAssetCommands.confirmAvatar).toHaveBeenCalledWith(
       expect.objectContaining({
         assetId: "asset-1",
