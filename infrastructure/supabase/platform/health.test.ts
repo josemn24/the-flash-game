@@ -39,7 +39,7 @@ describe("readPrivateHealth", () => {
   });
 
   it("recognizes the current revision and required capabilities", async () => {
-    const { readPrivateHealth } = await import("@/infrastructure/supabase/health");
+    const { readPrivateHealth } = await import("@/infrastructure/supabase/platform/health");
 
     await expect(readPrivateHealth()).resolves.toEqual({
       ok: true,
@@ -63,7 +63,7 @@ describe("readPrivateHealth", () => {
   it("rejects an old expected revision", async () => {
     const legacySchemaRevision = ["20260919", "090805_declarative_sync"].join("");
     process.env.EXPECTED_SCHEMA_REVISION = legacySchemaRevision;
-    const { readPrivateHealth } = await import("@/infrastructure/supabase/health");
+    const { readPrivateHealth } = await import("@/infrastructure/supabase/platform/health");
 
     await expect(readPrivateHealth()).resolves.toMatchObject({
       ok: false,
@@ -80,7 +80,7 @@ describe("readPrivateHealth", () => {
       }
       return {};
     });
-    const { readPrivateHealth } = await import("@/infrastructure/supabase/health");
+    const { readPrivateHealth } = await import("@/infrastructure/supabase/platform/health");
 
     await expect(readPrivateHealth()).resolves.toMatchObject({
       ok: false,

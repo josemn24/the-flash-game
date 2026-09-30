@@ -6,7 +6,7 @@ import type {
   SuperadminSeasonCommands,
   UpdateSeasonInput,
 } from "@/application/ports/superadmin-season-commands";
-import { supabaseSuperadminSeasonCommands } from "@/infrastructure/supabase/superadminSeasonQueries";
+import { supabaseSuperadminSeasonCommands } from "@/infrastructure/supabase/admin/superadminSeasonQueries";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
 
 export function createSuperadminSeason(

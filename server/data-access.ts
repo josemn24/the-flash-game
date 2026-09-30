@@ -8,20 +8,20 @@ import {
   mockCurrentViewerProvider,
   mockRoomQueries,
 } from "@/infrastructure/mock/composition";
-import { supabaseRoomQueries } from "@/infrastructure/supabase/roomQueries";
-import { supabaseFlashQueries } from "@/infrastructure/supabase/flashQueries";
-import { supabaseAlphabetQueries } from "@/infrastructure/supabase/alphabetQueries";
-import { supabaseSurvivalQueries } from "@/infrastructure/supabase/survivalQueries";
-import { supabasePyramidQueries } from "@/infrastructure/supabase/pyramidQueries";
+import { supabaseRoomQueries } from "@/infrastructure/supabase/rooms/queries/roomQueries";
+import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQueries";
+import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
+import { supabaseSurvivalQueries } from "@/infrastructure/supabase/gameplay/survivalQueries";
+import { supabasePyramidQueries } from "@/infrastructure/supabase/gameplay/pyramidQueries";
 import type { UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
-import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/superadminEditorialQueries";
-import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
-import { supabaseSuperadminRoomQueries } from "@/infrastructure/supabase/superadminQueries";
-import { supabaseSuperadminAttemptQueries } from "@/infrastructure/supabase/superadminAttemptQueries";
-import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/superadminDashboardQueries";
+import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/admin/superadminEditorialQueries";
+import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/admin/superadminCalendarQueries";
+import { supabaseSuperadminRoomQueries } from "@/infrastructure/supabase/admin/superadminQueries";
+import { supabaseSuperadminAttemptQueries } from "@/infrastructure/supabase/admin/superadminAttemptQueries";
+import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/admin/superadminDashboardQueries";
 import { mocksEnabled } from "@/server/runtime-scope";
 import type {
   EditorialContentStatus,

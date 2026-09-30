@@ -414,7 +414,7 @@ El repositorio ya tiene una base compatible con esta propuesta:
 | `app/formatos/**`                                 | Biblioteca editorial estática con ejemplos cliente              | Mantener Server Components y una isla por ejemplo                             |
 | `server/data-access.ts`                           | Fachada `server-only`, contexto demo y memoización por petición | Conservar como composición; añadir fachadas de comandos si crecen             |
 | `application/queries/`                            | Contratos de lectura independientes de Next.js                  | Añadir contratos de comandos y puertos mínimos                                |
-| `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`                 | Mantener como adaptador de pruebas; añadir `infrastructure/supabase/` después |
+| `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`                 | Mantener como adaptador de pruebas; Supabase se organiza por capacidades en `rooms`, `attempts`, `gameplay`, `assets`, `identity`, `admin` y `platform` |
 | `data/mock/`                                      | Fixtures canónicos, store normalizado y validación              | Fuente del adaptador mock, nunca dependencia de UI productiva                 |
 | `components/game/**`                              | Shell cliente, modos, resultados y revisión                     | Conservar estado inmediato; sustituir reporter local por comandos de servidor |
 | `features/rooms/**`                               | Resultados y snapshots locales en memoria                       | Convertirlos en caché de UI; el intento oficial vivirá en servidor            |

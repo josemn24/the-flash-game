@@ -7,11 +7,11 @@ import type {
   SuperadminAttemptCommands,
 } from "@/application/ports/superadmin-attempt-commands";
 import { SuperadminAttemptCommandError } from "@/application/administration/errors";
-import { SupabaseSuperadminAttemptCommands } from "@/infrastructure/supabase/superadminAttemptCommands";
+import { SupabaseSuperadminAttemptCommands } from "@/infrastructure/supabase/admin/superadminAttemptCommands";
 import {
   AttemptCommandError,
   type VerifiedAuthIdentity,
-} from "@/infrastructure/supabase/attemptCommands";
+} from "@/infrastructure/supabase/attempts/attemptCommands";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
 
 function commandFor(authUserId: string, commands?: SuperadminAttemptCommands) {

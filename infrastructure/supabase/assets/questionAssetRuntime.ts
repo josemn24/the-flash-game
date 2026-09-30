@@ -1,7 +1,7 @@
 import "server-only";
 
-import { readCompetitiveQuestionAsset } from "@/infrastructure/supabase/mediaAssetCommands";
-import { supabaseMediaStorage } from "@/infrastructure/supabase/mediaStorage";
+import { readCompetitiveQuestionAsset } from "@/infrastructure/supabase/assets/mediaAssetCommands";
+import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);

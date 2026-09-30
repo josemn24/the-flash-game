@@ -29,7 +29,7 @@ Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 
 Server Components
 → server/data-access.ts
-→ infrastructure/supabase/roomQueries.ts
+→ infrastructure/supabase/rooms/queries/roomQueries.ts
 → capacidades de sala (lobby, ranking, settings, history y member detail)
 → puertos CurrentViewerReader y PrivateQuestionAssetResolver
 → infraestructura Supabase compartida
@@ -39,14 +39,14 @@ Server Components
 Portal privado `/admin`
 → server/data-access.ts
 → server/admin.ts
-→ infrastructure/supabase/superadminQueries.ts
+→ infrastructure/supabase/admin/superadminQueries.ts
 → public.get_superadmin_portal_context() con temporadas y zona horaria
 → asignación privada de plataforma y salas activas
 
 Dashboard del portal `/admin`
 → server/data-access.ts
 → server/admin.ts
-→ infrastructure/supabase/superadminDashboardQueries.ts
+→ infrastructure/supabase/admin/superadminDashboardQueries.ts
 → public.get_superadmin_dashboard_context()
 → métricas, resúmenes de salas, próximos desafíos y alertas derivadas
 → `components/admin/AdminDashboard` sin formularios ni contexto editorial completo
@@ -59,14 +59,14 @@ Dashboard del portal `/admin`
 Mutaciones del portal `/admin`
 → app/admin/actions.ts
 → server/admin.ts + server/admin-room.ts
-→ infrastructure/supabase/superadminQueries.ts
+→ infrastructure/supabase/admin/superadminQueries.ts
 → public.lookup_superadmin_players() / public.create_superadmin_room()
 → comando privado transaccional + private.audit_log
 
 Mutaciones de temporadas del portal `/admin`
 → app/admin/season-actions.ts
 → server/admin.ts + server/admin-season.ts
-→ infrastructure/supabase/superadminSeasonQueries.ts
+→ infrastructure/supabase/admin/superadminSeasonQueries.ts
 → public.create_superadmin_season() / public.update_superadmin_season() /
   public.activate_superadmin_season()
 → comando privado transaccional, idempotencia y private.audit_log
@@ -74,7 +74,7 @@ Mutaciones de temporadas del portal `/admin`
 Calendario temporal del detalle de sala `/admin/rooms/[roomId]?tab=calendar`
 → `app/admin/calendar-actions.ts`
 → `server/admin-calendar.ts`
-→ `infrastructure/supabase/superadminCalendarQueries.ts`
+→ `infrastructure/supabase/admin/superadminCalendarQueries.ts`
 → `public.create_superadmin_scheduled_challenge()` / `public.update_superadmin_scheduled_challenge()`
 → publicación `scheduled` con ventana UTC, locks, conflictos optimistas, idempotencia y auditoría
 
@@ -86,7 +86,7 @@ Calendar tick protegido
 → estados efectivos, expiración global de intentos inactivos, auditoría de sistema y finalización de temporadas sin DML de cliente
 
 Reconciliación bajo demanda de intentos
-→ `infrastructure/supabase/attemptExpiration.ts` (server-only)
+→ `infrastructure/supabase/attempts/attemptExpiration.ts` (server-only)
 → `private.expire_stale_attempts(jsonb)` con `service_role`
 → antes de `get_room_history`, limitada al `roomSlug`
 → antes de un comando de intento, limitada al `attemptId`
@@ -96,14 +96,14 @@ Reconciliación bajo demanda de intentos
 Lectura editorial protegida del portal `/admin`
 → server/data-access.ts
 → server/admin-editorial.ts
-→ infrastructure/supabase/superadminEditorialQueries.ts
+→ infrastructure/supabase/admin/superadminEditorialQueries.ts
 → public.get_superadmin_editorial_context()
 → borradores completos solo para superadmin; publicados/archivados como metadatos
 
 Mutaciones editoriales del portal `/admin`
 → app/admin/editorial-actions.ts
 → server/admin-editorial.ts
-→ infrastructure/supabase/superadminEditorialQueries.ts
+→ infrastructure/supabase/admin/superadminEditorialQueries.ts
 → public.create_superadmin_flash_draft() / public.update_superadmin_flash_draft() /
   public.publish_superadmin_flash() / public.create_superadmin_challenge_revision() /
   public.archive_superadmin_challenge_version()
@@ -124,7 +124,7 @@ Eventos Mini-Wordle del Flash competitivo
 → `features/game/useServerFlashSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/mini-wordle/guess`
 → `server/competitive/attempt-api.ts`
-→ `infrastructure/supabase/attemptCommands.ts`
+→ `infrastructure/supabase/attempts/attemptCommands.ts`
 → `private.submit_mini_wordle_guess(jsonb)`
 → `private.mini_wordle_guess_events` + `private.answer_receipts`
 → evaluador confiable desde la respuesta final construida por PostgreSQL
@@ -133,7 +133,7 @@ Eventos Logic-code del Flash competitivo
 → `features/game/useServerFlashSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/logic-code/attempt`
 → `server/competitive/attempt-api.ts`
-→ `infrastructure/supabase/attemptCommands.ts`
+→ `infrastructure/supabase/attempts/attemptCommands.ts`
 → `private.submit_logic_code_attempt(jsonb)`
 → `private.logic_code_attempt_events` + `private.answer_receipts`
 → evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
@@ -142,7 +142,7 @@ Eventos Progressive-clues del Flash competitivo
 → `features/game/useServerFlashSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`
 → `server/competitive/attempt-api.ts`
-→ `infrastructure/supabase/attemptCommands.ts`
+→ `infrastructure/supabase/attempts/attemptCommands.ts`
 → `private.reveal_progressive_clue(jsonb)`
 → `private.progressive_clue_reveal_events` + `private.answer_receipts`
 → evaluador confiable desde `progressiveCluesRevealed` reconstruido por PostgreSQL

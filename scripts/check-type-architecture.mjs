@@ -196,7 +196,7 @@ function projectArea(specifier) {
 }
 
 function isRoomSupabaseAdapter(relative) {
-  return relative.startsWith(`infrastructure${path.sep}supabase${path.sep}room`);
+  return relative.startsWith(`infrastructure${path.sep}supabase${path.sep}rooms${path.sep}`);
 }
 
 for (const file of productionFiles) {

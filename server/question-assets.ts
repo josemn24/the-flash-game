@@ -10,8 +10,8 @@ import {
   confirmQuestionAsset,
   prepareQuestionAsset,
   readQuestionAssetUpload,
-} from "@/infrastructure/supabase/mediaAssetCommands";
-import { supabaseMediaStorage } from "@/infrastructure/supabase/mediaStorage";
+} from "@/infrastructure/supabase/assets/mediaAssetCommands";
+import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import {
   QUESTION_ASSET_MAX_BYTES,
   QUESTION_ASSET_MAX_DIMENSION,

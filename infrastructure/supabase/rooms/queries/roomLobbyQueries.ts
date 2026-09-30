@@ -2,7 +2,7 @@ import "server-only";
 
 import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { RoomLobbyQueries } from "@/application/queries";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/currentViewer";
+import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
 import type { RoomCalendarReadRow } from "./roomReadContracts";
 import {
   isChallengeRankingReadRow,

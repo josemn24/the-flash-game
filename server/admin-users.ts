@@ -5,11 +5,11 @@ import type {
   CreateSuperadminPlayerInput,
 } from "@/application/ports/superadmin-user-commands";
 import { SuperadminUserCommandError } from "@/application/administration/errors";
-import { supabaseSuperadminUserCommands } from "@/infrastructure/supabase/superadminUserCommands";
+import { supabaseSuperadminUserCommands } from "@/infrastructure/supabase/admin/superadminUserCommands";
 import {
   SuperadminAuthAdminError,
   createOrRecoverSuperadminAuthUser,
-} from "@/infrastructure/supabase/superadminAuthAdmin";
+} from "@/infrastructure/supabase/admin/superadminAuthAdmin";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
 
 export async function lookupSuperadminPlayers(emails: readonly string[]) {

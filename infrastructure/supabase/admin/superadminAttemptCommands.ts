@@ -9,7 +9,7 @@ import type {
 import {
   callAttemptCommand,
   type VerifiedAuthIdentity,
-} from "@/infrastructure/supabase/attemptCommands";
+} from "@/infrastructure/supabase/attempts/attemptCommands";
 
 export class SupabaseSuperadminAttemptCommands implements SuperadminAttemptCommands {
   constructor(private readonly identity: VerifiedAuthIdentity) {}

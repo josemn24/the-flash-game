@@ -2,7 +2,7 @@ import "server-only";
 
 import { Pool } from "pg";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };

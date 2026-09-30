@@ -12,7 +12,7 @@ vi.mock("@/infrastructure/mock/composition", () => ({
   isMockRoomRouteEnabled: mocks.isMockRoomRouteEnabled,
   mockRoomMembershipCommands: { manageMember: mocks.mockCommand },
 }));
-vi.mock("@/infrastructure/supabase/roomMembershipCommands", () => ({
+vi.mock("@/infrastructure/supabase/rooms/commands/roomMembershipCommands", () => ({
   supabaseRoomMembershipCommands: { manageMember: mocks.supabaseCommand },
 }));
 

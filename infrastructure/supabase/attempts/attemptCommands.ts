@@ -33,12 +33,12 @@ import type { AnswerValue } from "@/types/contracts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestion } from "@/server/evaluation/resolve-competitive-question";
-import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
-import { AttemptCommandError } from "@/infrastructure/supabase/attemptCommandError";
-import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/normalize-competitive-context";
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
+import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
+import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
 
-export { AttemptCommandError } from "@/infrastructure/supabase/attemptCommandError";
+export { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
 
 const poolKey = Symbol.for("the-flash-game.supabase.attempt-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };

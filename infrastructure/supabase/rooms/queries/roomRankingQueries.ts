@@ -3,7 +3,7 @@ import "server-only";
 import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { RoomRankingQueries } from "@/application/queries";
 import type { RoomRankingModel } from "@/types/view-models";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/currentViewer";
+import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
 import { isSeasonRankingReadRow } from "./roomReadGuards";
 import { callRankingRead, callRoomRead } from "./roomReadRpc";
 import { toSeasonLeaderboard } from "./roomViewMappers";

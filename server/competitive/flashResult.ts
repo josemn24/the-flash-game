@@ -1,9 +1,9 @@
 import "server-only";
 
-import { supabaseFlashQueries } from "@/infrastructure/supabase/flashQueries";
-import { supabaseAlphabetQueries } from "@/infrastructure/supabase/alphabetQueries";
-import { supabaseSurvivalQueries } from "@/infrastructure/supabase/survivalQueries";
-import { supabasePyramidQueries } from "@/infrastructure/supabase/pyramidQueries";
+import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQueries";
+import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
+import { supabaseSurvivalQueries } from "@/infrastructure/supabase/gameplay/survivalQueries";
+import { supabasePyramidQueries } from "@/infrastructure/supabase/gameplay/pyramidQueries";
 
 export async function readTerminalFlashReview(attemptId: string) {
   const flashReview = await supabaseFlashQueries.getTerminalReview(attemptId);

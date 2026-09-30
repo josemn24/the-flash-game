@@ -3,19 +3,19 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { validateProfileName } from "@/lib/userProfile";
-import { supabaseMediaStorage } from "@/infrastructure/supabase/mediaStorage";
+import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import {
   getProvisionedCurrentPlayer,
   isProvisionedPlayerRow,
   supabaseCurrentViewerReader,
   toUserProfile,
-} from "@/infrastructure/supabase/currentViewer";
+} from "@/infrastructure/supabase/identity/currentViewer";
 import {
   abortAvatarAsset,
   confirmAvatarAsset,
   prepareAvatarAsset,
   readAvatarAsset,
-} from "@/infrastructure/supabase/mediaAssetCommands";
+} from "@/infrastructure/supabase/assets/mediaAssetCommands";
 import { AVATAR_ALLOWED_MIME_TYPES, AVATAR_MAX_BYTES } from "@/lib/media/avatarValidation";
 import type { ProfileSaveResult } from "@/types/view-models/user-actions";
 import type { UserProfile } from "@/types/view-models/user";

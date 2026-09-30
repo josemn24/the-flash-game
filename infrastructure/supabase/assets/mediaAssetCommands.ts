@@ -1,7 +1,7 @@
 import "server-only";
 
 import { Pool, type PoolClient } from "pg";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 
 const poolKey = Symbol.for("the-flash-game.supabase.media-asset-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };

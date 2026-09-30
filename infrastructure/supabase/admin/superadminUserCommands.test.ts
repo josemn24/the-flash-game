@@ -4,7 +4,7 @@ import { SupabaseSuperadminUserCommands } from "./superadminUserCommands";
 
 const mocks = vi.hoisted(() => ({ createClient: vi.fn(), rpc: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
-vi.mock("@/infrastructure/supabase/superadminQueries", () => ({
+vi.mock("@/infrastructure/supabase/admin/superadminQueries", () => ({
   supabaseSuperadminPortalQueries: { lookupPlayersByEmail: vi.fn() },
 }));
 

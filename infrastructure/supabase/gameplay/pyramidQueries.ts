@@ -9,8 +9,8 @@ import {
   toRoomContext,
   type FlashReadRow,
   type FlashResultRow,
-} from "@/infrastructure/supabase/flashQueries";
-import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
+} from "@/infrastructure/supabase/gameplay/flashQueries";
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 import type { ServerFlashTerminalReview, ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import { getCurrentViewerProfile } from "@/server/profile";
 

@@ -10,7 +10,7 @@ import {
   readJson,
   setAttemptToken,
 } from "@/server/competitive/attempt-api";
-import { AttemptCommandError } from "@/infrastructure/supabase/attemptCommands";
+import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommands";
 import { isJsonAnswer } from "@/app/api/competitive/attempts/[attemptId]/answer/route";
 import { CompetitiveRateLimitError } from "@/server/competitive/rate-limit";
 

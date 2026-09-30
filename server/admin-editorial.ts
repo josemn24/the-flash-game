@@ -16,7 +16,7 @@ import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-
 import {
   supabaseSuperadminEditorialCommands,
   supabaseSuperadminEditorialQueries,
-} from "@/infrastructure/supabase/superadminEditorialQueries";
+} from "@/infrastructure/supabase/admin/superadminEditorialQueries";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
 import { requireSuperadmin } from "@/server/admin";
 

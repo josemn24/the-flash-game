@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { AuthenticationRequiredError } from "@/application/administration/errors";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
-import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/superadminQueries";
+import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";
 import { createClient } from "@/lib/supabase/server";
 import type { SuperadminPortalContext } from "@/types/view-models";
 

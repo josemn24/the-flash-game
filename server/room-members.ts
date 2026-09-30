@@ -6,7 +6,7 @@ import {
   isMockRoomRouteEnabled,
   mockRoomMembershipCommands,
 } from "@/infrastructure/mock/composition";
-import { supabaseRoomMembershipCommands } from "@/infrastructure/supabase/roomMembershipCommands";
+import { supabaseRoomMembershipCommands } from "@/infrastructure/supabase/rooms/commands/roomMembershipCommands";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const mockMemberPattern = /^[a-z][a-z0-9-]*$/;

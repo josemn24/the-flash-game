@@ -13,7 +13,7 @@ import {
   AttemptCommandError,
   SupabaseAttemptCommands,
   type VerifiedAuthIdentity,
-} from "@/infrastructure/supabase/attemptCommands";
+} from "@/infrastructure/supabase/attempts/attemptCommands";
 
 const attemptCookiePrefix = "flash-attempt-";
 const attemptTokenMaxAgeSeconds = 60 * 60;

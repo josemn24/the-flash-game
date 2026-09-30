@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attemptExpiration";
+import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import { isRoomCalendarReadRow, isRoomReadRow } from "./roomReadGuards";
 
 export async function callRoomRead(

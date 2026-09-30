@@ -8,7 +8,7 @@ import type {
   SuperadminCalendarQueries,
   UpdateScheduledChallengeInput,
 } from "@/application/ports/superadmin-calendar-commands";
-import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/superadminCalendarQueries";
+import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/admin/superadminCalendarQueries";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
 
 export function createScheduledChallenge(

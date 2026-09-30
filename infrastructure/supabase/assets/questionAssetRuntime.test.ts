@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { readCompetitiveQuestionAsset } from "@/infrastructure/supabase/mediaAssetCommands";
-import { supabaseMediaStorage } from "@/infrastructure/supabase/mediaStorage";
+import { readCompetitiveQuestionAsset } from "@/infrastructure/supabase/assets/mediaAssetCommands";
+import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import { resolveCompetitiveQuestionPayload } from "./questionAssetRuntime";
 
-vi.mock("@/infrastructure/supabase/mediaAssetCommands", () => ({
+vi.mock("@/infrastructure/supabase/assets/mediaAssetCommands", () => ({
   readCompetitiveQuestionAsset: vi.fn(),
 }));
-vi.mock("@/infrastructure/supabase/mediaStorage", () => ({
+vi.mock("@/infrastructure/supabase/assets/mediaStorage", () => ({
   supabaseMediaStorage: { createSignedReadUrl: vi.fn() },
 }));
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 
 export type AttemptExpirationResult = {
   readonly runId: string;

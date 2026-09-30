@@ -6,7 +6,7 @@ import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
-import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/questionAssetRuntime";
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 
 export type FlashReadRow = {
   room_id: string;

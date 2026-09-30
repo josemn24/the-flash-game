@@ -7,7 +7,7 @@ import type {
 import {
   supabaseSuperadminPortalQueries,
   supabaseSuperadminRoomCommands,
-} from "@/infrastructure/supabase/superadminQueries";
+} from "@/infrastructure/supabase/admin/superadminQueries";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
 
 export async function lookupSuperadminPlayers(emails: readonly string[]) {

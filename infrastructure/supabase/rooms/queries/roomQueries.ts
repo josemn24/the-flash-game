@@ -10,9 +10,9 @@ import type {
 import {
   supabaseAttemptExpiration,
   type AttemptExpirationQueries,
-} from "@/infrastructure/supabase/attemptExpiration";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/currentViewer";
-import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/privateQuestionAssetResolver";
+} from "@/infrastructure/supabase/attempts/attemptExpiration";
+import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
 import { SupabaseRoomHistoryQueries } from "./roomHistoryQueries";
 import { SupabaseRoomLobbyQueries } from "./roomLobbyQueries";
 import { SupabaseRoomMemberDetailQueries } from "./roomMemberDetailQueries";

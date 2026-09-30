@@ -14,7 +14,7 @@ import {
   SuperadminAccessDeniedError,
   SuperadminCalendarCommandError,
 } from "@/application/administration/errors";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/databaseUrl";
+import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { createClient } from "@/lib/supabase/server";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {

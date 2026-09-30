@@ -8,13 +8,13 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
-vi.mock("@/infrastructure/supabase/currentViewer", () => ({
+vi.mock("@/infrastructure/supabase/identity/currentViewer", () => ({
   supabaseCurrentViewerReader: {
     getCurrentViewer: mocks.getCurrentViewerProfile,
   },
   getProvisionedCurrentPlayer: vi.fn(),
 }));
-vi.mock("@/infrastructure/supabase/attemptExpiration", () => ({
+vi.mock("@/infrastructure/supabase/attempts/attemptExpiration", () => ({
   supabaseAttemptExpiration: {
     expireStaleAttemptsForRoom: mocks.expireStaleAttemptsForRoom,
   },

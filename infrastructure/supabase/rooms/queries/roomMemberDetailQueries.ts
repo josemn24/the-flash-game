@@ -3,8 +3,8 @@ import "server-only";
 import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { PrivateQuestionAssetResolver } from "@/application/ports/private-question-assets";
 import type { RoomMemberDetailQueries } from "@/application/queries";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/currentViewer";
-import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/privateQuestionAssetResolver";
+import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
 import { createClient } from "@/lib/supabase/server";
 import type {
   RoomDailyLeaderboardEntry,
@@ -12,7 +12,7 @@ import type {
   RoomMemberDetailModel,
 } from "@/types/view-models";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
-import type { AttemptExpirationQueries } from "./attemptExpiration";
+import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import type { RoomHistoryReadRow, RoomReadRow } from "./roomReadContracts";
 import {
   isChallengeRankingReadRow,

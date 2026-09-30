@@ -12,7 +12,7 @@ import {
   SuperadminUserCommandError,
 } from "@/application/administration/errors";
 import { createClient } from "@/lib/supabase/server";
-import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/superadminQueries";
+import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
