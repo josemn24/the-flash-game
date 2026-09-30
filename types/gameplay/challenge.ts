@@ -5,11 +5,12 @@ import type {
   MatchingLeftItem,
   OddOneOutItem,
   AnagramTile,
-  Question,
   QuestionMedia,
   QueensGrid,
   ZipCheckpoint,
-} from "@/types/question";
+  EscapeBlock,
+} from "@/types/contracts";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
@@ -173,7 +174,7 @@ type ChallengeBase = {
 
 export type FlashChallenge = ChallengeBase & {
   mode: "flash";
-  questions: Question[];
+  questions: PracticeQuestion[];
   questionPoints?: ChallengeQuestionPoints;
 };
 
@@ -286,7 +287,7 @@ export type ServerAlphabetChallenge = ChallengeBase & {
 type ServerFlashQuestionBase = {
   readonly id: string;
   readonly category: string;
-  readonly tags: Question["tags"];
+  readonly tags: PracticeQuestion["tags"];
   readonly question: string;
   readonly timeLimit: number;
   readonly points: number;
@@ -397,7 +398,7 @@ export type ServerEscapeQuestion = ServerFlashQuestionBase & {
     readonly columns: 6;
     readonly exit: { readonly side: "right"; readonly row: number };
   };
-  readonly initialBlocks: readonly import("@/types/question").EscapeBlock[];
+  readonly initialBlocks: readonly EscapeBlock[];
   readonly instruction: string | null;
   readonly hideInstruction: boolean;
   readonly objectiveLabel: string | null;
@@ -539,13 +540,13 @@ export type ServerFlashTerminalReview = {
 export type SurvivalChallenge = ChallengeBase & {
   mode: "survival";
   lives: number;
-  questions: Question[];
+  questions: PracticeQuestion[];
   questionPoints?: ChallengeQuestionPoints;
 };
 
 export type AlphabetChallengeEntry = {
   letter: string;
-  question: Question;
+  question: PracticeQuestion;
 };
 
 export type AlphabetChallenge = ChallengeBase & {
@@ -557,7 +558,7 @@ export type AlphabetChallenge = ChallengeBase & {
 export type PyramidLevel = {
   id: string;
   label: string;
-  question: Question;
+  question: PracticeQuestion;
   briefing: PyramidLevelBriefing;
 };
 
@@ -574,7 +575,7 @@ export type NarrativeSceneStep = NarrativeSceneStepDefinition;
 
 export type NarrativeQuestionStep = {
   type: "question";
-  question: Question;
+  question: PracticeQuestion;
   reactions?: NarrativeReactionMap;
 };
 

@@ -1,4 +1,4 @@
-import type { AnswerValue, MultipleChoiceQuestion, Question } from "@/types/game";
+import type { AnswerValue, MultipleChoiceQuestion, Question } from "@/types/compat/game";
 import { calculateQuestionScore, CHOICE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

@@ -4,7 +4,7 @@ import type {
   Question,
   WordHashtagAnswer,
   WordHashtagQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   calculateWordHashtagMetrics,
   isValidWordHashtagConfiguration,

@@ -12,7 +12,7 @@ import type {
   WordSearchQuestion as LegacyWordSearchQuestion,
   ZipQuestion as LegacyZipQuestion,
   EscapeQuestion as LegacyEscapeQuestion,
-} from "@/types/question";
+} from "@/types/compat/question";
 import type { ReactNode } from "react";
 import type {
   FlashEditorialDocument,

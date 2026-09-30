@@ -1,5 +1,5 @@
 import { SCORING_POLICIES, type ScoringPolicy } from "@/features/question-formats/scoringPolicies";
-import type { QuestionOfType, QuestionType } from "@/types/game";
+import type { QuestionOfType, QuestionType } from "@/types/compat/game";
 
 export type QuestionFormatGuide<T extends QuestionType = QuestionType> = {
   id: T;

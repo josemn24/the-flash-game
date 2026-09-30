@@ -4,7 +4,7 @@ import type {
   ErrorReconstructionAnswer,
   ErrorReconstructionQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {

@@ -4,7 +4,7 @@ import type {
   Question,
   TimeMazeAnswer,
   TimeMazeQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   findShortestTimeMazePath,
   getTimeMazeExitIndex,

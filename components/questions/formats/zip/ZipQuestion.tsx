@@ -17,7 +17,7 @@ import {
   ZIP_COLUMNS,
   ZIP_ROWS,
 } from "@/lib/zip";
-import type { ZipAnswer, ZipPublicQuestion, ZipQuestion as ZipQuestionType } from "@/types/game";
+import type { ZipAnswer, ZipPublicQuestion, ZipQuestion as ZipQuestionType } from "@/types/compat/game";
 import styles from "./ZipQuestion.module.css";
 
 type Point = { x: number; y: number };

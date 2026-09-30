@@ -1,4 +1,4 @@
-import type { AnswerValue, HeatMapAnswer, HeatMapQuestion, Question } from "@/types/game";
+import type { AnswerValue, HeatMapAnswer, HeatMapQuestion, Question } from "@/types/compat/game";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

@@ -1,4 +1,4 @@
-import type { Question } from "@/types/game";
+import type { Question } from "@/types/compat/game";
 
 export const MIN_SPEED_MULTIPLIER = 0.6;
 export const TRUE_FALSE_PENALTY_RATIO = 0.4;

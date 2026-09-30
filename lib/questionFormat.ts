@@ -1,4 +1,4 @@
-import type { QuestionType } from "@/types/game";
+import type { QuestionType } from "@/types/compat/game";
 
 export const QUESTION_FORMAT_LABELS = {
   "multiple-choice": "Elección",

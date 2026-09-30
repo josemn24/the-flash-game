@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FlashPopHome } from "@/components/game/modes/flash-pop/FlashPopHome.client";
-import type { RoomCardModel } from "@/types/game";
-import type { UserProfile } from "@/types/user";
+import type { RoomCardModel } from "@/types/compat/game";
+import type { UserProfile } from "@/types/compat/user";
 
 const tabarnia: RoomCardModel = {
   roomId: "tabarnia-room",

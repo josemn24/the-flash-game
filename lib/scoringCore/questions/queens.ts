@@ -4,7 +4,7 @@ import type {
   QueensAnswer,
   QueensQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { calculateQueensMetrics, isQueensAnswer, isValidQueensConfiguration } from "@/lib/queens";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {

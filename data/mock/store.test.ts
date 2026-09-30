@@ -15,7 +15,7 @@ import {
   normalizeLegacyQuestionFixture,
   projectLegacyQuestion,
   reconstructLegacyQuestion,
-} from "@/data/mock/legacyQuestionAdapter";
+} from "@/data/mock/compat/legacyQuestionAdapter";
 import {
   resolvePlayerRouteKey,
   resolveRoomRouteKey,

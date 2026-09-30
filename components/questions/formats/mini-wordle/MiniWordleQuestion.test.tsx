@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { MiniWordleQuestion } from "@/components/questions/formats/mini-wordle/MiniWordleQuestion";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import { questionsById } from "@/test-utils/mockGameplay";
-import type { AnswerResult } from "@/types/result";
+import type { AnswerResult } from "@/types/compat/result";
 
 const callbacks = {
   onProgress: vi.fn(),

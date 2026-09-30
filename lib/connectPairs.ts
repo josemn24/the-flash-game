@@ -1,4 +1,4 @@
-import type { ConnectPairsAnswer, ConnectPairsQuestion } from "@/types/game";
+import type { ConnectPairsAnswer, ConnectPairsQuestion } from "@/types/compat/game";
 
 export const CONNECT_PAIRS_ROWS = 5;
 export const CONNECT_PAIRS_COLUMNS = 5;
@@ -61,7 +61,7 @@ function areOrthogonalNeighbors(left: number, right: number) {
   return Math.abs(leftRow - rightRow) + Math.abs(leftColumn - rightColumn) === 1;
 }
 
-function pathConnectsEndpoints(path: number[], endpoints: [number, number]) {
+function pathConnectsEndpoints(path: number[], endpoints: readonly [number, number]) {
   const first = path[0];
   const last = path.at(-1);
   return (

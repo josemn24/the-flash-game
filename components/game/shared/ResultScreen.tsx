@@ -7,7 +7,7 @@ import { Logo } from "@/components/navigation/Logo";
 import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import styles from "./ResultScreen.module.css";
-import type { AnswerResult, FlashChallenge } from "@/types/game";
+import type { AnswerResult, FlashChallenge } from "@/types/compat/game";
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);

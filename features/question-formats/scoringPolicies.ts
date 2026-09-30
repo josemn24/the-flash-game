@@ -1,5 +1,5 @@
 import { QUESTION_SCORING_POLICY, type ScoringPolicyId } from "@/lib/scoring";
-import type { QuestionType } from "@/types/game";
+import type { QuestionType } from "@/types/compat/game";
 
 export type ScoringPolicy = {
   id: ScoringPolicyId;

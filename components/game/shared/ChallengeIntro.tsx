@@ -8,7 +8,7 @@ import {
   buildSafeChallengeIntroModel,
   type SafeChallengeIntroduction,
 } from "@/lib/challengeIntro";
-import type { Challenge } from "@/types/game";
+import type { Challenge } from "@/types/compat/game";
 import styles from "./ChallengeIntro.module.css";
 
 type FullChallengeIntroProps = {

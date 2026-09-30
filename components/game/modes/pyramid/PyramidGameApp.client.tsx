@@ -13,7 +13,7 @@ import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import type { PyramidAttemptOutcome } from "@/features/pyramid/pyramidAttempt";
-import type { PyramidChallenge, PyramidLevel } from "@/types/game";
+import type { PyramidChallenge, PyramidLevel } from "@/types/compat/game";
 import styles from "./PyramidGame.module.css";
 
 function formatTime(seconds: number) {

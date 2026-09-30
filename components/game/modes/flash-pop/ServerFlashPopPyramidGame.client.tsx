@@ -15,7 +15,7 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import type { PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
-import type { AnswerResult, GameRoomContext } from "@/types/game";
+import type { AnswerResult, GameRoomContext } from "@/types/compat/game";
 import type { ServerFlashTerminalReview, ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import styles from "./FlashPopPyramidGame.module.css";
 

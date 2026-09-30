@@ -16,7 +16,7 @@ import {
   ZIP_COLUMNS,
   ZIP_ROWS,
 } from "@/lib/zip";
-import type { ZipAnswer } from "@/types/game";
+import type { ZipAnswer } from "@/types/compat/game";
 import type { ServerZipQuestion as ServerQuestion } from "@/types/gameplay/challenge";
 import { ZipBoard } from "./ZipQuestion";
 import styles from "./ZipQuestion.module.css";

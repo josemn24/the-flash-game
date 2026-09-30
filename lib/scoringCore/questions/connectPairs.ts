@@ -4,7 +4,7 @@ import type {
   ConnectPairsAnswer,
   ConnectPairsQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   calculateConnectPairsMetrics,
   isValidConnectPairsAnswer,

@@ -4,7 +4,7 @@ import type {
   Question,
   WordSearchAnswer,
   WordSearchQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   calculateWordSearchMetrics,
   isValidWordSearchConfiguration,

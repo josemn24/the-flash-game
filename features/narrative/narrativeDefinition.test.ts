@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { mockChallengeDefinitions as challengeDefinitions } from "@/test-utils/mockGameplay";
 import { validateNarrativeChallengeDefinition } from "@/test-utils/mockGameplay";
 import type { MockQuestionId as QuestionId } from "@/test-utils/mockGameplay";
-import type { NarrativeChallengeDefinition, NarrativeReactionMap } from "@/types/game";
+import type { NarrativeChallengeDefinition, NarrativeReactionMap } from "@/types/compat/game";
 
 function cloneDefinition() {
   return structuredClone(

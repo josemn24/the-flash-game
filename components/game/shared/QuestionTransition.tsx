@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { BoltIcon, CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
 import styles from "./QuestionTransition.module.css";
-import type { AnswerStatus } from "@/types/game";
+import type { AnswerStatus } from "@/types/compat/game";
 
 function getTransitionCopy({
   timedOut,

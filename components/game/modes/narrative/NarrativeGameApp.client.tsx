@@ -46,7 +46,7 @@ import type {
   NarrativeScene,
   NarrativeTextBlock,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 function NarrativeSceneProgress({
   pageNumber,

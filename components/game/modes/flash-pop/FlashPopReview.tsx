@@ -5,7 +5,7 @@ import {
   isPyramidLevelPassed,
   type PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
-import type { AnswerResult, PyramidChallenge, Question } from "@/types/game";
+import type { AnswerResult, PyramidChallenge, Question } from "@/types/compat/game";
 
 export type PyramidReviewLevel = {
   id: string;

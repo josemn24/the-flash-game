@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashDocument";
-import type { AnswerResult, RoomChallengeResult } from "@/types/game";
+import type { AnswerResult, RoomChallengeResult } from "@/types/compat/game";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";

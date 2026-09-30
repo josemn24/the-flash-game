@@ -9,7 +9,7 @@ import {
   AlphabetReviewPresentation,
 } from "@/components/game/modes/flash-pop/AlphabetPresentation";
 import { useServerAlphabetSession } from "@/features/game/useServerAlphabetSession";
-import type { GameRoomContext } from "@/types/game";
+import type { GameRoomContext } from "@/types/compat/game";
 import type {
   ServerAlphabetChallenge,
   ServerFlashTerminalReview,

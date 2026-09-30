@@ -4,7 +4,7 @@ import { AnswerOption } from "@/components/questions/shared/AnswerOption";
 import { TrueFalseQuestion } from "@/components/questions/formats/true-false/TrueFalseQuestion";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
-import type { AnswerValue, Question } from "@/types/game";
+import type { AnswerValue, Question } from "@/types/compat/game";
 
 const migratedTypes = new Set([
   "multiple-choice",

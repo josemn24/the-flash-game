@@ -4,7 +4,7 @@ import type {
   Question,
   ZipAnswer,
   ZipQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { calculateZipMetrics, isValidZipAnswer, isValidZipConfiguration } from "@/lib/zip";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {

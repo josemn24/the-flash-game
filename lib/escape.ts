@@ -5,7 +5,7 @@ import type {
   EscapeMove,
   EscapeQuestion,
   EscapeQuestionConfiguration,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 export type EscapeReplayResult = {
   valid: boolean;

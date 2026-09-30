@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { ChangeEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
 import styles from "./LogicCodeQuestion.module.css";
-import type { LogicCodeClue } from "@/types/game";
+import type { LogicCodeClue } from "@/types/compat/game";
 
 type LogicCodeQuestionProps = {
   clues: LogicCodeClue[];

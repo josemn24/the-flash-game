@@ -13,7 +13,7 @@ import type {
   ImageLabelingAnswer,
   ImageLabelingQuestion as ImageLabelingQuestionType,
   IdentifyOneImageLabelingQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 type Props = {
   question: ImageLabelingQuestionType;

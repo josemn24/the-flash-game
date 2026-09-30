@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
 import styles from "./MatchingQuestion.module.css";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
-import type { MatchingAnswer, MatchingItem, MatchingLeftItem } from "@/types/game";
+import type { MatchingAnswer, MatchingItem, MatchingLeftItem } from "@/types/compat/game";
 import {
   getMatchingPairPresentation,
   type MatchingPairPresentation,

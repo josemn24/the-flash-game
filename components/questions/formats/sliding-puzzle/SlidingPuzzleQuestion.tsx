@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import styles from "./SlidingPuzzleQuestion.module.css";
-import type { SlidingPuzzleAnswer } from "@/types/game";
+import type { SlidingPuzzleAnswer } from "@/types/compat/game";
 
 type SlidingPuzzleQuestionProps = {
   initialTiles: Array<number | null>;

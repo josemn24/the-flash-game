@@ -30,7 +30,7 @@ import type {
   WordSearchQuestion,
   WordHashtagQuestion,
   ZipQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";

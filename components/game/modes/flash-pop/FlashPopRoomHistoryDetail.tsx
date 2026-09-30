@@ -1,5 +1,5 @@
 import { BackLink, Card, Canvas, Chip } from "@/components/ui";
-import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
+import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/compat/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomSecondary.module.css";
 

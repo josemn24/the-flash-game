@@ -31,7 +31,7 @@ import {
 } from "@/lib/wordHashtag";
 import { isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { evaluateAnswer, isValidMemoryPairsConfiguration } from "@/lib/scoring";
-import type { PlayableScheduledChallenge, ScheduledChallenge } from "@/types/game";
+import type { PlayableScheduledChallenge, ScheduledChallenge } from "@/types/compat/game";
 
 function isPlayableScheduledChallenge(
   challenge: ScheduledChallenge,

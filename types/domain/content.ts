@@ -9,18 +9,11 @@ import type {
   SeasonId,
 } from "@/types/domain/identifiers";
 import type { EntityTimestamps, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
+export type { QuestionTagSet } from "@/types/domain/tags";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
 export type ContentStatus = "draft" | "published" | "archived";
 export type PublicationStatus = "scheduled" | "open" | "closed" | "cancelled";
-
-export type QuestionTagSet = {
-  readonly domains: readonly string[];
-  readonly topics: readonly string[];
-  readonly cognitiveSkills: readonly string[];
-  readonly formatSkills: readonly string[];
-  readonly lifeSkills: readonly string[];
-};
 
 export type ChallengeDefinition = EntityTimestamps & {
   readonly id: ChallengeDefinitionId;

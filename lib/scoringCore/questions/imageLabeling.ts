@@ -4,7 +4,7 @@ import type {
   ImageLabelingAnswer,
   ImageLabelingQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import {
   CHOICE_PENALTY_RATIO,

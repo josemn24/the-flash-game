@@ -1,6 +1,6 @@
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { AnswerResult, AnswerStatus, Challenge, Question } from "@/types/game";
+import type { AnswerResult, AnswerStatus, Challenge, Question } from "@/types/compat/game";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
 import styles from "./ReviewAnswers.module.css";
 

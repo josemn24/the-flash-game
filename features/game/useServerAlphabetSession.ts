@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { AnswerResult, GameRoomContext } from "@/types/game";
+import type { AnswerResult, GameRoomContext } from "@/types/compat/game";
 import type {
   ServerAlphabetChallenge,
   ServerAlphabetProgress,

@@ -1,4 +1,4 @@
-import type { AnswerValue, ProgressiveImageQuestion, Question } from "@/types/game";
+import type { AnswerValue, ProgressiveImageQuestion, Question } from "@/types/compat/game";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { isValidProgressiveImageConfiguration } from "@/lib/progressiveImage";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";

@@ -68,7 +68,7 @@ import type {
   QuestionType,
   WordHashtagAnswer,
   WordSearchAnswer,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 type ReviewProps<T extends Question = Question> = { question: T; result: AnswerResult };
 

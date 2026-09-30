@@ -7,7 +7,7 @@ import { MotionButton } from "@/components/ui";
 import type {
   ErrorReconstructionAnswer,
   ErrorReconstructionQuestion,
-  } from "@/types/game";
+  } from "@/types/compat/game";
 
 type Props = {
   question: ErrorReconstructionQuestion;

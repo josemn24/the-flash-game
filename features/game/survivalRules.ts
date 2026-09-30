@@ -1,4 +1,4 @@
-import type { AnswerResult, QuestionType } from "@/types/game";
+import type { AnswerResult, QuestionType } from "@/types/compat/game";
 
 type SurvivalMistakeResult = Pick<AnswerResult, "details"> & {
   readonly status: AnswerResult["status"] | "timeout";

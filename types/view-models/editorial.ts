@@ -4,7 +4,8 @@ import type {
   ImageSurface,
   MultipleChoicePromptVisual,
   QuestionMedia,
-} from "@/types/question";
+  WordHashtagWords,
+} from "@/types/contracts";
 
 export type FlashEditorialImageAssetReference = {
   readonly assetId: string;
@@ -541,7 +542,7 @@ export type FlashEditorialWordHashtagPublicPayload = {
 };
 
 export type FlashEditorialWordHashtagSolutionPayload = {
-  readonly words: import("@/types/question").WordHashtagWords;
+  readonly words: WordHashtagWords;
   readonly explanation?: string;
 };
 

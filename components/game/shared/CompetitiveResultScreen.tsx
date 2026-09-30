@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
 import { calculateResultAccuracy, getAnswerResultAccuracyUnit } from "@/features/game/resultSummary";
-import type { AnswerResult, Challenge, RoomChallengeResult } from "@/types/game";
+import type { AnswerResult, Challenge, RoomChallengeResult } from "@/types/compat/game";
 import {
   ChallengeResultScreen,
   type ChallengeResultModel,

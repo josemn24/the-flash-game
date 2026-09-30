@@ -3,7 +3,7 @@ import type {
   WordHashtagQuestion,
   WordHashtagSwap,
   WordHashtagWords,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 export const WORD_HASHTAG_SIZE = 5;
 export const WORD_HASHTAG_ACTIVE_CELLS = Array.from(

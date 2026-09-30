@@ -1,4 +1,4 @@
-import type { AnswerResult, AnswerValue, Question } from "@/types/game";
+import type { AnswerResult, AnswerValue, Question } from "@/types/compat/game";
 import { SCORING } from "@/lib/scoringCore/registry";
 import { clampTime, normalizeScore } from "@/lib/scoringCore/shared";
 import type {

@@ -1,4 +1,4 @@
-import type { AnagramQuestion, AnswerValue, Question } from "@/types/game";
+import type { AnagramQuestion, AnswerValue, Question } from "@/types/compat/game";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {

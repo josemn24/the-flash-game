@@ -1,4 +1,4 @@
-import type * as Legacy from "@/types/question";
+import type * as ContractShapes from "@/types/contracts/question-shapes";
 import type { QuestionTagSet, QuestionVersion } from "@/types/domain/content";
 import type { QuestionDefinitionId, QuestionVersionId } from "@/types/domain/identifiers";
 import type { DurationMs } from "@/types/domain/values";
@@ -13,7 +13,7 @@ type PrivateQuestionImageReference = {
   readonly position?: string;
 };
 
-export type QuestionType = Legacy.QuestionType;
+export type QuestionType = ContractShapes.QuestionType;
 
 type PublicQuestionBase<Type extends QuestionType> = {
   readonly id: QuestionVersionId;
@@ -36,26 +36,26 @@ type QuestionRevealBase<Type extends QuestionType> = {
   readonly type: Type;
 };
 
-type PublicMatchingItem = Legacy.MatchingItem;
-type PublicMatchingLeftItem = Omit<Legacy.MatchingLeftItem, "correctMatchId">;
-type PublicClassificationItem = Omit<Legacy.ClassificationItem, "correctCategory">;
-type PublicFlashMemoryItem = Omit<Legacy.FlashMemoryItem, "correctPosition">;
-type PublicMemoryTile = Pick<Legacy.MemoryPairsTile, "id">;
-type RevealedMemoryTile = Omit<Legacy.MemoryPairsTile, "pairId">;
-type PublicImageLabelAnchor = Omit<Legacy.ImageLabelAnchor, "correctLabelId">;
-type PublicWordSearchTarget = Pick<Legacy.WordSearchTarget, "id" | "word">;
+type PublicMatchingItem = ContractShapes.MatchingItem;
+type PublicMatchingLeftItem = Omit<ContractShapes.MatchingLeftItem, "correctMatchId">;
+type PublicClassificationItem = Omit<ContractShapes.ClassificationItem, "correctCategory">;
+type PublicFlashMemoryItem = Omit<ContractShapes.FlashMemoryItem, "correctPosition">;
+type PublicMemoryTile = Pick<ContractShapes.MemoryPairsTile, "id">;
+type RevealedMemoryTile = Omit<ContractShapes.MemoryPairsTile, "pairId">;
+type PublicImageLabelAnchor = Omit<ContractShapes.ImageLabelAnchor, "correctLabelId">;
+type PublicWordSearchTarget = Pick<ContractShapes.WordSearchTarget, "id" | "word">;
 
 type PublicImageLabelingPayload =
   | {
       readonly task: "assign-all";
-      readonly surface: Legacy.ImageSurface;
+      readonly surface: ContractShapes.ImageSurface;
       readonly anchors: readonly PublicImageLabelAnchor[];
-      readonly labels: readonly Legacy.ImageLabelOption[];
+      readonly labels: readonly ContractShapes.ImageLabelOption[];
     }
   | {
       readonly task: "identify-one";
-      readonly surface: Legacy.ImageSurface;
-      readonly target: Legacy.NormalizedPoint;
+      readonly surface: ContractShapes.ImageSurface;
+      readonly target: ContractShapes.NormalizedPoint;
       readonly response:
         | { readonly kind: "choice"; readonly options: readonly string[] }
         | { readonly kind: "text" };
@@ -76,15 +76,15 @@ export type QuestionContractMap = {
   readonly "multiple-choice": {
     readonly public: {
       readonly options: readonly string[];
-      readonly media: Legacy.QuestionMedia | PrivateQuestionImageReference | null;
-      readonly promptVisual: Legacy.MultipleChoicePromptVisual | null;
+      readonly media: ContractShapes.QuestionMedia | PrivateQuestionImageReference | null;
+      readonly promptVisual: ContractShapes.MultipleChoicePromptVisual | null;
     };
     readonly solution: { readonly correctAnswer: string };
     readonly answer: string;
     readonly reveal: never;
   };
   readonly "odd-one-out": {
-    readonly public: { readonly items: readonly Legacy.OddOneOutItem[] };
+    readonly public: { readonly items: readonly ContractShapes.OddOneOutItem[] };
     readonly solution: { readonly correctAnswer: string };
     readonly answer: string;
     readonly reveal: never;
@@ -95,17 +95,17 @@ export type QuestionContractMap = {
       readonly rightItems: readonly PublicMatchingItem[];
     };
     readonly solution: { readonly matches: Readonly<Record<string, string>> };
-    readonly answer: Legacy.MatchingAnswer;
+    readonly answer: ContractShapes.MatchingAnswer;
     readonly reveal: never;
   };
   readonly "connect-pairs": {
     readonly public: {
       readonly grid: { readonly rows: 5; readonly columns: 5 };
-      readonly pairs: readonly Legacy.ConnectPairsPair[];
+      readonly pairs: readonly ContractShapes.ConnectPairsPair[];
       readonly requireFullCoverage: true;
     };
     readonly solution: { readonly paths: Readonly<Record<string, readonly number[]>> };
-    readonly answer: Legacy.ConnectPairsAnswer;
+    readonly answer: ContractShapes.ConnectPairsAnswer;
     readonly reveal: never;
   };
   readonly "true-false": {
@@ -134,7 +134,7 @@ export type QuestionContractMap = {
   };
   readonly "progressive-image": {
     readonly public: {
-      readonly surface: Legacy.ImageSurface;
+      readonly surface: ContractShapes.ImageSurface;
       readonly revealDurationMs: DurationMs;
       readonly answerLabel: string | null;
       readonly answerPlaceholder: string | null;
@@ -149,21 +149,21 @@ export type QuestionContractMap = {
   };
   readonly "heat-map": {
     readonly public: {
-      readonly surface: Legacy.ImageSurface | PrivateQuestionImageReference;
+      readonly surface: ContractShapes.ImageSurface | PrivateQuestionImageReference;
       readonly targetLabel: string;
     };
     readonly solution: {
-      readonly target: Legacy.NormalizedPoint;
+      readonly target: ContractShapes.NormalizedPoint;
       readonly fullCreditRadius: number;
       readonly toleranceRadius: number;
     };
-    readonly answer: Legacy.HeatMapAnswer;
+    readonly answer: ContractShapes.HeatMapAnswer;
     readonly reveal: never;
   };
   readonly "image-labeling": {
     readonly public: PublicImageLabelingPayload;
     readonly solution: ImageLabelingSolutionPayload;
-    readonly answer: Legacy.ImageLabelingAnswer | string;
+    readonly answer: ContractShapes.ImageLabelingAnswer | string;
     readonly reveal: never;
   };
   readonly ordering: {
@@ -172,7 +172,7 @@ export type QuestionContractMap = {
       readonly directionLabels: { readonly start: string; readonly end: string } | null;
     };
     readonly solution: { readonly correctOrder: readonly string[] };
-    readonly answer: readonly string[];
+    readonly answer: string[];
     readonly reveal: never;
   };
   readonly classification: {
@@ -181,7 +181,7 @@ export type QuestionContractMap = {
       readonly categories: readonly string[];
     };
     readonly solution: { readonly categoriesByItem: Readonly<Record<string, string>> };
-    readonly answer: Legacy.ClassificationAnswer;
+    readonly answer: ContractShapes.ClassificationAnswer;
     readonly reveal: never;
   };
   readonly "flash-memory": {
@@ -191,8 +191,8 @@ export type QuestionContractMap = {
       readonly items: readonly PublicFlashMemoryItem[];
     };
     readonly solution: { readonly positionsByItemId: Readonly<Record<string, number>> };
-    readonly answer: Legacy.FlashMemoryAnswer;
-    readonly reveal: { readonly items: readonly Legacy.FlashMemoryItem[] };
+    readonly answer: ContractShapes.FlashMemoryAnswer;
+    readonly reveal: { readonly items: readonly ContractShapes.FlashMemoryItem[] };
   };
   readonly "memory-pairs": {
     readonly public: {
@@ -201,18 +201,18 @@ export type QuestionContractMap = {
       readonly mismatchRevealDurationMs: DurationMs | null;
     };
     readonly solution: { readonly pairByTileId: Readonly<Record<string, string>> };
-    readonly answer: Legacy.MemoryPairsAnswer;
+    readonly answer: ContractShapes.MemoryPairsAnswer;
     readonly reveal: { readonly tile: RevealedMemoryTile };
   };
   readonly "simon-sequence": {
-    readonly public: { readonly pads: readonly Legacy.SimonSequencePad[] };
+    readonly public: { readonly pads: readonly ContractShapes.SimonSequencePad[] };
     readonly solution: { readonly sequence: readonly string[] };
-    readonly answer: readonly string[];
+    readonly answer: string[];
     readonly reveal: { readonly sequence: readonly string[] };
   };
   readonly "logic-matrix": {
     readonly public: {
-      readonly pieces: readonly Legacy.LogicMatrixPiece[];
+      readonly pieces: readonly ContractShapes.LogicMatrixPiece[];
       readonly cells: readonly (string | null)[];
       readonly optionIds: readonly string[];
       readonly showPieceLabels: boolean | null;
@@ -224,7 +224,7 @@ export type QuestionContractMap = {
   readonly "mini-sudoku": {
     readonly public: { readonly grid: readonly (number | null)[] };
     readonly solution: { readonly solution: readonly number[] };
-    readonly answer: Legacy.MiniSudokuAnswer;
+    readonly answer: ContractShapes.MiniSudokuAnswer;
     readonly reveal: never;
   };
   readonly "mini-nonogram": {
@@ -233,61 +233,61 @@ export type QuestionContractMap = {
       readonly columnClues: readonly (readonly number[])[];
     };
     readonly solution: { readonly solution: readonly boolean[] };
-    readonly answer: Legacy.MiniNonogramAnswer;
+    readonly answer: ContractShapes.MiniNonogramAnswer;
     readonly reveal: never;
   };
   readonly queens: {
     readonly public: {
-      readonly grid: Legacy.QueensGrid;
+      readonly grid: ContractShapes.QueensGrid;
       readonly regions: readonly number[];
       readonly prefilledQueens: readonly number[];
     };
     readonly solution: { readonly solution: readonly number[] };
-    readonly answer: Legacy.QueensAnswer;
+    readonly answer: ContractShapes.QueensAnswer;
     readonly reveal: never;
   };
   readonly "time-maze": {
     readonly public: {
       readonly grid: { readonly rows: number; readonly columns: number };
-      readonly cells: readonly Legacy.MazeCell[];
+      readonly cells: readonly ContractShapes.MazeCell[];
     };
     readonly solution: null;
-    readonly answer: Legacy.TimeMazeAnswer;
+    readonly answer: ContractShapes.TimeMazeAnswer;
     readonly reveal: never;
   };
   readonly zip: {
     readonly public: {
       readonly grid: { readonly rows: 5; readonly columns: 5 };
-      readonly checkpoints: readonly Legacy.ZipCheckpoint[];
+      readonly checkpoints: readonly ContractShapes.ZipCheckpoint[];
       readonly instruction: string | null;
       readonly mapNote: string | null;
       readonly boardLabel: string | null;
     };
     readonly solution: { readonly solution: readonly number[] };
-    readonly answer: Legacy.ZipAnswer;
+    readonly answer: ContractShapes.ZipAnswer;
     readonly reveal: never;
   };
   readonly pipes: {
     readonly public: {
       readonly grid: { readonly rows: 5; readonly columns: 5 };
-      readonly tiles: readonly Legacy.PipesTileKind[];
+      readonly tiles: readonly ContractShapes.PipesTileKind[];
       readonly initialRotations: readonly number[];
       readonly source: number;
     };
     readonly solution: { readonly solutionRotations: readonly number[] };
-    readonly answer: Legacy.PipesAnswer;
+    readonly answer: ContractShapes.PipesAnswer;
     readonly reveal: never;
   };
   readonly "sliding-puzzle": {
     readonly public: { readonly initialTiles: readonly (number | null)[] };
     readonly solution: { readonly solution: readonly (number | null)[] };
-    readonly answer: Legacy.SlidingPuzzleAnswer;
+    readonly answer: ContractShapes.SlidingPuzzleAnswer;
     readonly reveal: never;
   };
   readonly escape: {
     readonly public: {
-      readonly grid: Legacy.EscapeQuestion["grid"];
-      readonly initialBlocks: readonly Legacy.EscapeBlock[];
+      readonly grid: ContractShapes.EscapeQuestion["grid"];
+      readonly initialBlocks: readonly ContractShapes.EscapeBlock[];
       readonly instruction: string | null;
       readonly hideInstruction: boolean;
       readonly objectiveLabel: string | null;
@@ -296,15 +296,15 @@ export type QuestionContractMap = {
       readonly boardLabel: string | null;
     };
     readonly solution: {
-      readonly referenceSolution: readonly Legacy.EscapeMove[];
+      readonly referenceSolution: readonly ContractShapes.EscapeMove[];
       readonly optimalMoves: number;
     };
-    readonly answer: Legacy.EscapeAnswer;
+    readonly answer: ContractShapes.EscapeAnswer;
     readonly reveal: never;
   };
   readonly "error-reconstruction": {
     readonly public: {
-      readonly steps: readonly Legacy.ErrorReconstructionStep[];
+      readonly steps: readonly ContractShapes.ErrorReconstructionStep[];
       readonly correctionOptions: readonly string[];
       readonly instruction: string | null;
       readonly correctionLabel: string | null;
@@ -315,12 +315,12 @@ export type QuestionContractMap = {
       readonly firstErrorStepId: string;
       readonly correctCorrection: string | null;
     };
-    readonly answer: Legacy.ErrorReconstructionAnswer;
+    readonly answer: ContractShapes.ErrorReconstructionAnswer;
     readonly reveal: never;
   };
   readonly anagram: {
     readonly public: {
-      readonly tiles: readonly Legacy.AnagramTile[];
+      readonly tiles: readonly ContractShapes.AnagramTile[];
       readonly hint: string | null;
     };
     readonly solution: { readonly correctAnswer: string };
@@ -333,8 +333,8 @@ export type QuestionContractMap = {
       readonly initialLetters: readonly (string | null)[];
       readonly maxMoves: number;
     };
-    readonly solution: { readonly words: Legacy.WordHashtagWords; readonly explanation?: string };
-    readonly answer: Legacy.WordHashtagAnswer;
+    readonly solution: { readonly words: ContractShapes.WordHashtagWords; readonly explanation?: string };
+    readonly answer: ContractShapes.WordHashtagAnswer;
     readonly reveal: never;
   };
   readonly "word-search": {
@@ -348,7 +348,7 @@ export type QuestionContractMap = {
         Record<string, { readonly startCell: number; readonly endCell: number }>
       >;
     };
-    readonly answer: Legacy.WordSearchAnswer;
+    readonly answer: ContractShapes.WordSearchAnswer;
     readonly reveal: never;
   };
   readonly "mini-wordle": {
@@ -367,12 +367,12 @@ export type QuestionContractMap = {
       readonly dictionaryId: "es-general-4.v1" | "es-general-5.v1";
       readonly explanation?: string;
     };
-    readonly answer: Legacy.MiniWordleAnswer;
+    readonly answer: ContractShapes.MiniWordleAnswer;
     readonly reveal: never;
   };
   readonly "logic-code": {
     readonly public: {
-      readonly clues: readonly Legacy.LogicCodeClue[];
+      readonly clues: readonly ContractShapes.LogicCodeClue[];
       readonly codeLength: number;
     };
     readonly solution: { readonly correctAnswer: string };
@@ -386,7 +386,7 @@ export type QuestionContractMap = {
       readonly step: number;
       readonly initialValue: number;
       readonly unit: string;
-      readonly media: Legacy.QuestionMedia | PrivateQuestionImageReference | null;
+      readonly media: ContractShapes.QuestionMedia | PrivateQuestionImageReference | null;
     };
     readonly solution: { readonly correctAnswer: number; readonly tolerance: number };
     readonly answer: number;

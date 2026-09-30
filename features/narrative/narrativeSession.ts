@@ -4,7 +4,7 @@ import type {
   NarrativeOutcome,
   NarrativeStep,
   NarrativeTextBlock,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 export type NarrativePhase = "intro" | "scene" | "playing" | "transition" | "results" | "review";
 

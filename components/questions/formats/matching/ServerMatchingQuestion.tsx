@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
-import type { AnswerValue, MatchingAnswer } from "@/types/game";
-import type { MatchingItem, MatchingLeftItem } from "@/types/question";
+import type { AnswerValue, MatchingAnswer } from "@/types/compat/game";
+import type { MatchingItem, MatchingLeftItem } from "@/types/compat/question";
 import styles from "./MatchingQuestion.module.css";
 import {
   getMatchingPairPresentation,

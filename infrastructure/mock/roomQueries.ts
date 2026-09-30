@@ -1,6 +1,6 @@
 import type { RoomQueries } from "@/application/queries";
 import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
-import { projectLegacyAttempt } from "@/data/mock/legacyAdapters";
+import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import {
   getPlayerRouteKey,
   getRoomRouteKey,
@@ -13,7 +13,7 @@ import {
   selectRoomHistory,
   selectSeasonRanking,
 } from "@/data/mock/selectors";
-import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
+import { legacyChallenges } from "@/data/mock/compat/legacyChallengeAdapter";
 import { getMockMembershipOverride } from "@/infrastructure/mock/roomMembershipCommands";
 import {
   getChallengeDisplayTitle,
@@ -38,7 +38,7 @@ import type {
   RoomLeaderboardEntry,
   RoomMemberViewModel,
 } from "@/types/view-models";
-import type { AnswerReview, AnswerResult, Challenge, Question } from "@/types/game";
+import type { AnswerReview, AnswerResult, Challenge, Question } from "@/types/compat/game";
 import { deriveSurvivalProgress } from "@/features/game/survivalRules";
 import { deriveCompetitivePyramidProgress } from "@/features/pyramid/pyramidRules";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";

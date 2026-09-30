@@ -16,9 +16,10 @@ jugador de la sesión demo se declara aparte; no existe `currentUserId` en `Room
 
 - Las 105 preguntas se editan en `data/mock/catalog/questions`, divididas por catálogo temático.
   Cada fixture declara `publicPayload`, `privatePayload` y `practicePoints`; este último solo
-  reconstruye el contrato de práctica legacy y no interviene en la puntuación competitiva.
+  reconstruye `PracticeQuestion` y no interviene en la puntuación competitiva.
 - `data/mock/questionFixtures.ts` genera directamente una definición estable y una versión
-  publicada por pregunta. El adaptador exhaustivo canónico → legacy cubre los 31 formatos.
+  publicada por pregunta. El adaptador exhaustivo canónico → práctica vive en
+  `data/mock/compat` y cubre los 31 formatos.
 - Los siete desafíos se editan en `data/mock/catalog/challenges.ts` y generan directamente sus
   definiciones, versiones e items. Seis están programados y Conexiones rápidas permanece sin
   programar.
@@ -29,10 +30,10 @@ jugador de la sesión demo se declara aparte; no existe `currentUserId` en `Room
   generan registros persistibles.
 
 Las preguntas y los desafíos canónicos se convierten a contratos de gameplay únicamente a través de
-los adaptadores internos de `data/mock` que todavía necesita la infraestructura mock. La conversión
-legacy → canónico solo existe en tests para verificar round trips; no participa en la creación del
-store. La lectura legacy todavía recompone preguntas y desafíos completos, incluidos datos privados,
-por lo que no es una frontera de seguridad.
+los adaptadores explícitos de `data/mock/compat` que todavía necesita la infraestructura mock. La
+conversión legacy → canónico solo existe en tests para verificar round trips; no participa en la
+creación del store. La lectura de práctica todavía recompone preguntas y desafíos completos,
+incluidos datos privados, por lo que no es una frontera de seguridad.
 
 ## Calendario y actividad
 
@@ -65,7 +66,7 @@ han retirado. Los tests que necesitan contratos de gameplay usan helpers exclusi
 `test-utils/mockGameplay.ts` y `test-utils/mockRoom.ts`, respaldados por fixtures canónicos y por
 los adaptadores internos necesarios para materializar la UI. No queda código de apoyo en
 `test-utils/legacy`; los adaptadores de compatibilidad que aún necesita la infraestructura viven en
-`data/mock`.
+`data/mock/compat` y son la única entrada permitida a las proyecciones antiguas.
 
 La integridad se valida sin modificar archivos:
 

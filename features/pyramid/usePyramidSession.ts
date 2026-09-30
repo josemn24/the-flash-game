@@ -15,7 +15,7 @@ import {
 } from "@/features/pyramid/pyramidAttempt";
 import { evaluateAnswer, getTimedOutAnswer, isAnswerCorrect } from "@/lib/scoring";
 import { MINI_WORDLE_ANSWER_REVEAL_DURATION } from "@/features/game/transitionTiming";
-import type { AnswerValue, PyramidChallenge } from "@/types/game";
+import type { AnswerValue, PyramidChallenge } from "@/types/compat/game";
 
 const DEFAULT_TRANSITION_DURATION = 900;
 const DEFAULT_FEEDBACK_DURATIONS = {

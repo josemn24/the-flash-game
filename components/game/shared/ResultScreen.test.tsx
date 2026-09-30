@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
-import type { FlashChallenge } from "@/types/game";
+import type { FlashChallenge } from "@/types/compat/game";
 import { ResultScreen } from "./ResultScreen";
 
 const challenge = legacyChallenges.find(({ mode }) => mode === "flash") as FlashChallenge;

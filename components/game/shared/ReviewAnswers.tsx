@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { NotebookIcon, GameHeader } from "@/components/ui";
 import { Logo } from "@/components/navigation/Logo";
-import type { AnswerResult, Challenge } from "@/types/game";
+import type { AnswerResult, Challenge } from "@/types/compat/game";
 import { buildReviewAnswerEntries } from "./ReviewAnswerList";
 import { ReviewAnswerPanel } from "./ReviewAnswerPanel";
 import styles from "./ReviewAnswers.module.css";

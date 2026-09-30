@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evaluateAnswer } from "@/lib/scoring";
-import type { EscapeQuestion } from "@/types/game";
+import type { EscapeQuestion } from "@/types/compat/game";
 
 const question: EscapeQuestion = {
   id: "escape-scoring",

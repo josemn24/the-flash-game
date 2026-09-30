@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Avatar, BackLink, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
 import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
-import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
+import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/compat/game";
 import styles from "./FlashPopRoomSecondary.module.css";
 
 function formatHistoryDate(value: string) {

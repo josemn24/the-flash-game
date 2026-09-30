@@ -10,7 +10,7 @@ import {
   PROGRESSIVE_IMAGE_INITIAL_BLUR,
   PROGRESSIVE_IMAGE_INITIAL_SCALE,
 } from "@/lib/progressiveImage";
-import type { ImageSurface } from "@/types/game";
+import type { ImageSurface } from "@/types/compat/game";
 import styles from "./ProgressiveImageQuestion.module.css";
 
 type ProgressiveImageQuestionProps = {

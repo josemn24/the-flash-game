@@ -23,7 +23,7 @@ import type {
   AnswerStatus,
   ChallengeCompletionResult,
   GameRoomContext,
-} from "@/types/game";
+} from "@/types/compat/game";
 import styles from "./FlashPopAlphabetGame.module.css";
 
 function Intro({

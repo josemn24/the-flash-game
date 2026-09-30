@@ -13,7 +13,7 @@ import type {
   AnswerValue,
   FlashChallenge,
   GamePhase,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 const TRANSITION_DURATION = 650;
 

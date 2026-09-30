@@ -1,4 +1,4 @@
-import type { NormalizedPoint } from "@/types/question";
+import type { NormalizedPoint } from "@/types/contracts/question-shapes";
 
 /** Public, serializable details returned with an evaluated answer. */
 export type AnswerResultDetails =

@@ -24,8 +24,8 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import { getProfileInitials } from "@/lib/userProfile";
-import type { RoomCardModel } from "@/types/game";
-import type { UserProfile } from "@/types/user";
+import type { RoomCardModel } from "@/types/compat/game";
+import type { UserProfile } from "@/types/compat/user";
 import { FlashPopProfileDialog } from "./FlashPopProfileDialog.client";
 import styles from "./FlashPopHome.module.css";
 

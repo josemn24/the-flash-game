@@ -22,6 +22,16 @@ const LEGACY_DATA_SOURCES = new Set([
   "@/data/mock/legacyChallengeDefinitionAdapter",
   "@/data/mock/legacyQuestionAdapter",
 ]);
+const LEGACY_TYPE_IMPORTS = new Set([
+  "@/types/game",
+  "@/types/question",
+  "@/types/room",
+  "@/types/challenge",
+  "@/types/result",
+  "@/types/session",
+  "@/types/user",
+  "@/types/legacy",
+]);
 const LAYERS = ["domain", "contracts", "gameplay", "view-models", "legacy"];
 const FORBIDDEN_PROJECT_AREAS = [
   "application",
@@ -36,10 +46,10 @@ const FORBIDDEN_PROJECT_AREAS = [
 ];
 const ALLOWED_TYPE_DEPENDENCIES = {
   domain: ["domain"],
-  contracts: ["contracts", "domain", "question"],
-  gameplay: ["contracts", "domain", "gameplay", "question"],
+  contracts: ["contracts", "domain"],
+  gameplay: ["contracts", "domain", "gameplay"],
   legacy: ["gameplay", "legacy", "question"],
-  "view-models": ["contracts", "domain", "gameplay", "legacy", "question", "view-models"],
+  "view-models": ["contracts", "domain", "gameplay", "view-models"],
 };
 
 async function collectTypeScriptFiles(directory) {
@@ -100,14 +110,41 @@ for (const file of files) {
         `${path.relative(process.cwd(), file)} makes ${layer} depend on ${imported.specifier}`,
       );
     }
+
+    if (LEGACY_TYPE_IMPORTS.has(imported.specifier) && layer !== "legacy") {
+      violations.push(
+        `${path.relative(process.cwd(), file)} imports legacy type barrel ${imported.specifier}`,
+      );
+    }
+
+    if (
+      layer === "contracts" &&
+      (LEGACY_TYPE_IMPORTS.has(imported.specifier) ||
+        imported.specifier.startsWith("@/types/compat/"))
+    ) {
+      violations.push(
+        `${path.relative(process.cwd(), file)} makes contracts depend on a compatibility type`,
+      );
+    }
+
+    if (
+      layer === "view-models" &&
+      (imported.specifier === "@/types/legacy" ||
+        imported.specifier.startsWith("@/types/compat/"))
+    ) {
+      violations.push(
+        `${path.relative(process.cwd(), file)} exposes a legacy model through view-models`,
+      );
+    }
   }
 }
 
 const mockFiles = await collectTypeScriptFiles(MOCK_ROOT);
 for (const file of mockFiles) {
   const source = await readFile(file, "utf8");
-  const allowsLegacyDependencies = LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
-  const relativeFile = path.relative(MOCK_ROOT, file);
+    const relativeFile = path.relative(MOCK_ROOT, file);
+    const allowsLegacyDependencies =
+      relativeFile.startsWith(`compat${path.sep}`) || LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
   const isCanonicalFixture =
     relativeFile.startsWith(`catalog${path.sep}`) || CANONICAL_MOCK_FILES.has(path.basename(file));
   for (const imported of importsIn(source)) {
@@ -119,6 +156,7 @@ for (const file of mockFiles) {
     if (
       (!allowsLegacyDependencies &&
         (imported.specifier === "@/types/game" ||
+          LEGACY_TYPE_IMPORTS.has(imported.specifier) ||
           imported.specifier.startsWith("@/types/gameplay") ||
           imported.specifier.startsWith("@/types/legacy") ||
           imported.specifier.startsWith("@/types/question") ||
@@ -160,6 +198,17 @@ for (const file of productionFiles) {
   const layer = relative.split(path.sep)[0];
 
   for (const imported of importsIn(source)) {
+    if (LEGACY_TYPE_IMPORTS.has(imported.specifier)) {
+      violations.push(`${relative} imports legacy type barrel ${imported.specifier}`);
+    }
+
+    if (
+      relative.startsWith(`infrastructure${path.sep}mock${path.sep}`) &&
+      LEGACY_DATA_SOURCES.has(imported.specifier)
+    ) {
+      violations.push(`${relative} imports a legacy mock adapter directly`);
+    }
+
     const area = projectArea(imported.specifier);
 
     if (

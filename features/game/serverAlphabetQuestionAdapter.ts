@@ -1,4 +1,4 @@
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
+import type { AlphabetChallenge, ShortTextQuestion } from "@/types/compat/game";
 import type {
   ServerAlphabetChallenge,
   ServerAlphabetQuestion,

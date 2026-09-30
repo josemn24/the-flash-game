@@ -1,4 +1,4 @@
-import type { QueensAnswer, QueensBoardSize, QueensGrid, QueensQuestion } from "@/types/question";
+import type { QueensAnswer, QueensBoardSize, QueensGrid, QueensQuestion } from "@/types/compat/question";
 
 export const QUEENS_MIN_SIZE = 4;
 export const QUEENS_MAX_SIZE = 8;

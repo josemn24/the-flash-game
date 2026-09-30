@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import type { Challenge, GameRoomContext } from "@/types/game";
+import type { Challenge, GameRoomContext } from "@/types/compat/game";
 import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
@@ -7,7 +7,7 @@ import type {
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
-import type { ChallengeCompletionResult } from "@/types/game";
+import type { ChallengeCompletionResult } from "@/types/compat/game";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import type { GameplayPersistence } from "@/types/view-models";
 

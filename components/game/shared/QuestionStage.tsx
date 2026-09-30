@@ -6,7 +6,7 @@ import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { Timer } from "@/components/ui";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { useQuestionStageTimer } from "@/features/game/useQuestionStageTimer";
-import type { AnswerValue, Question } from "@/types/game";
+import type { AnswerValue, Question } from "@/types/compat/game";
 import styles from "./QuestionStage.module.css";
 
 export type QuestionStageHeaderRenderParams = {

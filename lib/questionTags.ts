@@ -1,3 +1,18 @@
+import type {
+  DomainTagId,
+  QuestionTags,
+  TopicTagId,
+} from "@/types/domain/tags";
+
+export type {
+  CognitiveSkillTagId,
+  DomainTagId,
+  FormatSkillTagId,
+  LifeSkillTagId,
+  QuestionTags,
+  TopicTagId,
+} from "@/types/domain/tags";
+
 export const DOMAIN_TAGS = [
   { id: "mathematics", label: "Matematicas" },
   { id: "natural_sciences", label: "Ciencias naturales" },
@@ -15,8 +30,6 @@ export const DOMAIN_TAGS = [
   { id: "sports", label: "Deportes y actividad fisica" },
   { id: "culture", label: "Cultura y diversidad humana" },
 ] as const;
-
-export type DomainTagId = (typeof DOMAIN_TAGS)[number]["id"];
 
 export type TopicDefinition = {
   id: string;
@@ -143,8 +156,6 @@ export const TOPIC_TAGS = [
   },
 ] as const satisfies readonly TopicDefinition[];
 
-export type TopicTagId = (typeof TOPIC_TAGS)[number]["id"];
-
 export const COGNITIVE_SKILL_TAGS = [
   "memory",
   "comprehension",
@@ -159,8 +170,6 @@ export const COGNITIVE_SKILL_TAGS = [
   "metacognition",
 ] as const;
 
-export type CognitiveSkillTagId = (typeof COGNITIVE_SKILL_TAGS)[number];
-
 export const FORMAT_SKILL_TAGS = [
   "recall",
   "classification",
@@ -173,8 +182,6 @@ export const FORMAT_SKILL_TAGS = [
   "error_detection",
   "planning",
 ] as const;
-
-export type FormatSkillTagId = (typeof FORMAT_SKILL_TAGS)[number];
 
 export const LIFE_SKILL_TAGS = [
   "personal_finance",
@@ -189,16 +196,6 @@ export const LIFE_SKILL_TAGS = [
   "environmental_awareness",
   "entrepreneurship",
 ] as const;
-
-export type LifeSkillTagId = (typeof LIFE_SKILL_TAGS)[number];
-
-export type QuestionTags = {
-  domains: readonly DomainTagId[];
-  topics: readonly TopicTagId[];
-  cognitiveSkills: readonly CognitiveSkillTagId[];
-  formatSkills: readonly FormatSkillTagId[];
-  lifeSkills?: readonly LifeSkillTagId[];
-};
 
 export type DomainDefinition = (typeof DOMAIN_TAGS)[number];
 

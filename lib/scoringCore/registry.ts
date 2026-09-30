@@ -1,4 +1,4 @@
-import type { QuestionType } from "@/types/game";
+import type { QuestionType } from "@/types/compat/game";
 import { scoring as anagramScoring } from "@/lib/scoringCore/questions/anagram";
 import { scoring as classificationScoring } from "@/lib/scoringCore/questions/classification";
 import { scoring as connectPairsScoring } from "@/lib/scoringCore/questions/connectPairs";

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { MotionButton } from "@/components/ui";
 import styles from "./FlashMemoryQuestion.module.css";
-import type { FlashMemoryAnswer, FlashMemoryItem } from "@/types/game";
+import type { FlashMemoryAnswer, FlashMemoryItem } from "@/types/compat/game";
 
 type FlashMemoryQuestionProps = {
   items: FlashMemoryItem[];

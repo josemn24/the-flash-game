@@ -1,5 +1,5 @@
 import { BackLink, Canvas } from "@/components/ui";
-import type { RoomLeaderboardEntry } from "@/types/game";
+import type { RoomLeaderboardEntry } from "@/types/compat/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomSecondary.module.css";
 

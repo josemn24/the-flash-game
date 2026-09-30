@@ -1,4 +1,4 @@
-import type { AnswerValue, MiniSudokuAnswer, MiniSudokuQuestion, Question } from "@/types/game";
+import type { AnswerValue, MiniSudokuAnswer, MiniSudokuQuestion, Question } from "@/types/compat/game";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

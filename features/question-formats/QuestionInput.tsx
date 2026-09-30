@@ -56,7 +56,7 @@ import type {
   Question,
   QuestionOfType,
   QuestionType,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 type CommonProps = {
   locked: boolean;

@@ -1,4 +1,4 @@
-import type { FlashChallenge, PyramidChallenge, Question, SurvivalChallenge } from "@/types/game";
+import type { FlashChallenge, PyramidChallenge, Question, SurvivalChallenge } from "@/types/compat/game";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 
 export const CHALLENGE_MAX_SCORE = 100;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { Question } from "@/types/game";
+import type { Question } from "@/types/compat/game";
 
 const DELAYED_TIMER_TYPES = new Set<Question["type"]>([
   "flash-memory",

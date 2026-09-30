@@ -4,7 +4,7 @@ import type {
   MiniWordleAnswer,
   MiniWordleQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   getMiniWordleMaxAttempts,
   getMiniWordleWordLength,

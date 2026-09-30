@@ -1,4 +1,4 @@
-import type { NormalizedPoint } from "@/types/question";
+import type { NormalizedPoint } from "@/types/compat/question";
 
 export const HEAT_MAP_MAX_POSITION_LENGTH = 100;
 

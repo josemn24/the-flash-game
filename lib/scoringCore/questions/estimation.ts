@@ -1,4 +1,4 @@
-import type { AnswerValue, EstimationQuestion, Question } from "@/types/game";
+import type { AnswerValue, EstimationQuestion, Question } from "@/types/compat/game";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import { isValidEstimationAnswer } from "@/lib/estimation";
 import type {

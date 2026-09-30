@@ -14,7 +14,7 @@ import {
   shouldEliminateAfterIncorrectAttempt,
 } from "@/features/game/survivalRules";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
-import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
+import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/compat/game";
 
 export type SurvivalSessionSnapshot = {
   startedAt?: string;

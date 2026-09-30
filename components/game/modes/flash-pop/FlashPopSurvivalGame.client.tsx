@@ -24,7 +24,7 @@ import type {
   ChallengeCompletionResult,
   GameRoomContext,
   SurvivalChallenge,
-} from "@/types/game";
+} from "@/types/compat/game";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";

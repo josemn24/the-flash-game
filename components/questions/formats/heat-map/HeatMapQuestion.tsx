@@ -10,7 +10,7 @@ import type {
   HeatMapQuestion as HeatMapQuestionType,
   ImageSurface,
   NormalizedPoint,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 type HeatMapSurfaceProps = {
   surface: ImageSurface;

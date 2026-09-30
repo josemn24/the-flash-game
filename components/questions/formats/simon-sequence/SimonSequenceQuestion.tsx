@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./SimonSequenceQuestion.module.css";
-import type { SimonSequencePad } from "@/types/game";
+import type { SimonSequencePad } from "@/types/compat/game";
 
 const STEP_DURATION_MS = 560;
 const STEP_GAP_MS = 180;

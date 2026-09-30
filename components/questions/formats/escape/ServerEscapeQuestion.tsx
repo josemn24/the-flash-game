@@ -15,7 +15,7 @@ import {
   isEscapeSolved,
   replayEscapeMoves,
 } from "@/lib/escape";
-import type { EscapeAnswer, EscapeBlock, EscapeMove, EscapeQuestionConfiguration } from "@/types/game";
+import type { EscapeAnswer, EscapeBlock, EscapeMove, EscapeQuestionConfiguration } from "@/types/compat/game";
 import type { ServerEscapeQuestion as ServerQuestion } from "@/types/gameplay/challenge";
 import { UndoIcon, RotateIcon } from "@/components/ui";
 import styles from "./EscapeQuestion.module.css";

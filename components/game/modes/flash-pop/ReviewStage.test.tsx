@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ReviewStage } from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
 import { getChallengeById } from "@/test-utils/mockGameplay";
-import type { AnswerResult, GameRoomContext } from "@/types/game";
+import type { AnswerResult, GameRoomContext } from "@/types/compat/game";
 
 const challenge = getChallengeById("tabarnia-flash-01");
 if (challenge?.mode !== "flash") throw new Error("Expected flash challenge");

@@ -4,7 +4,7 @@ import type {
   AnswerValue,
   Question,
   QuestionType,
-} from "@/types/game";
+} from "@/types/compat/game";
 
 export type ScoringPolicyId =
   | "binary-speed"

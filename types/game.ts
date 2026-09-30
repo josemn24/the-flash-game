@@ -1,3 +1,9 @@
+/**
+ * @deprecated Compatibility aggregate for the prototype. New code must use
+ * `@/types/domain`, `@/types/contracts`, `@/types/gameplay` or
+ * `@/types/view-models`, and transitional consumers should import
+ * `@/types/compat/game` explicitly.
+ */
 export type {
   CognitiveSkillTagId,
   DomainTagId,

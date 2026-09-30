@@ -1,4 +1,4 @@
-import type { AnswerResultDetails, AnswerValue, LogicCodeQuestion, Question } from "@/types/game";
+import type { AnswerResultDetails, AnswerValue, LogicCodeQuestion, Question } from "@/types/compat/game";
 import { applyAttemptPenalty, calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

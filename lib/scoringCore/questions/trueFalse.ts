@@ -1,4 +1,4 @@
-import type { AnswerValue, TrueFalseQuestion, Question } from "@/types/game";
+import type { AnswerValue, TrueFalseQuestion, Question } from "@/types/compat/game";
 import { calculateQuestionScore, TRUE_FALSE_PENALTY_RATIO } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

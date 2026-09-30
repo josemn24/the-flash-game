@@ -1,4 +1,4 @@
-import type { AnswerValue, MiniNonogramAnswer, MiniNonogramQuestion, Question } from "@/types/game";
+import type { AnswerValue, MiniNonogramAnswer, MiniNonogramQuestion, Question } from "@/types/compat/game";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

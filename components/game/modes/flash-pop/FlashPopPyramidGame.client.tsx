@@ -30,7 +30,7 @@ import type {
   PyramidChallenge,
   PyramidLevel,
   AnswerResult,
-} from "@/types/game";
+} from "@/types/compat/game";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import styles from "./FlashPopPyramidGame.module.css";
 

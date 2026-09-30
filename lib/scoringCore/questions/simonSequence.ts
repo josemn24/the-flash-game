@@ -4,7 +4,7 @@ import type {
   Question,
   SimonSequenceAnswer,
   SimonSequenceQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

@@ -1,7 +1,7 @@
 import type { ChallengeQueries } from "@/application/queries";
-import { projectLegacyAttempt } from "@/data/mock/legacyAdapters";
+import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import { getCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
-import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
+import { legacyChallenges } from "@/data/mock/compat/legacyChallengeAdapter";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import {
   getPlayerRouteKey,

@@ -3,7 +3,7 @@ import type {
   RoomDailyLeaderboardEntry,
   RoomDetailModel,
   RoomMemberDetailModel,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { rankChallengeEntries } from "@/lib/challengeRanking";
 
 function rankSeasonEntries<T extends { memberId: string; flashPoints: number }>(entries: T[]) {

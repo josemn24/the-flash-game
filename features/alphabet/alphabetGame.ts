@@ -1,5 +1,5 @@
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
+import type { AlphabetChallenge, ShortTextQuestion } from "@/types/compat/game";
 
 export type AlphabetLetterStatus =
   "unvisited" | "active" | "passed" | "correct" | "incorrect" | "unanswered";

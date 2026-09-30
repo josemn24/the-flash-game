@@ -20,7 +20,7 @@ import { formatDailyCountdown, getDailyCountdownSeconds } from "@/lib/dailyCount
 import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
 import { applyRoomChallengeResult } from "@/features/rooms/localResults";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import type { RoomDetailModel } from "@/types/game";
+import type { RoomDetailModel } from "@/types/compat/game";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomDetail.module.css";
 

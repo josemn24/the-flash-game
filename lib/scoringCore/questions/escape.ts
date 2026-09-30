@@ -4,7 +4,7 @@ import type {
   EscapeAnswer,
   EscapeQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { isEscapeAnswer, isValidEscapeConfiguration, replayEscapeMoves } from "@/lib/escape";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {

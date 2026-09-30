@@ -1,4 +1,4 @@
-import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/game";
+import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/compat/game";
 import { compareChallengeRankingMetrics } from "@/lib/challengeRanking";
 
 export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 3;

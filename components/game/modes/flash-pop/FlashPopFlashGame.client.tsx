@@ -36,7 +36,7 @@ import type {
   ChallengeCompletionResult,
   FlashChallenge,
   GameRoomContext,
-} from "@/types/game";
+} from "@/types/compat/game";
 import styles from "./FlashPopFlashGame.module.css";
 
 function Intro({

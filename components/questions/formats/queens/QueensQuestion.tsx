@@ -8,7 +8,7 @@ import {
   queensCellCount,
   type QueensConflictType,
 } from "@/lib/queens";
-import type { QueensAnswer, QueensGrid, QueensQuestion as QueensQuestionType } from "@/types/game";
+import type { QueensAnswer, QueensGrid, QueensQuestion as QueensQuestionType } from "@/types/compat/game";
 import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";

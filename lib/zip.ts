@@ -1,4 +1,4 @@
-import type { ZipAnswer, ZipPublicQuestion, ZipQuestion } from "@/types/game";
+import type { ZipAnswer, ZipPublicQuestion, ZipQuestion } from "@/types/compat/game";
 
 export const ZIP_ROWS = 5;
 export const ZIP_COLUMNS = 5;

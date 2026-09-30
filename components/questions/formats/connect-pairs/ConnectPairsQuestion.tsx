@@ -23,7 +23,7 @@ import type {
   ConnectPairsAnswer,
   ConnectPairsPair,
   ConnectPairsQuestion as Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import styles from "./ConnectPairsQuestion.module.css";
 
 type CellOwner = {

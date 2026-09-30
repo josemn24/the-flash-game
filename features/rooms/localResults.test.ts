@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
-import type { ChallengeCompletion } from "@/types/game";
+import type { ChallengeCompletion } from "@/types/compat/game";
 import { applyRoomChallengeResult } from "./localResults";
 
 const completion = (flashPoints: number): ChallengeCompletion => ({

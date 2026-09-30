@@ -4,7 +4,7 @@ import type {
   PipesAnswer,
   PipesQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { calculatePipesMetrics, isPipesAnswer, isValidPipesConfiguration } from "@/lib/pipes";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {

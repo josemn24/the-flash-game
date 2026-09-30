@@ -4,7 +4,7 @@ import type {
   MemoryPairsAnswer,
   MemoryPairsQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   applyAttemptPenalty,
   calculateProportionalScore,

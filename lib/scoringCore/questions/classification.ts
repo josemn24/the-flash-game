@@ -3,7 +3,7 @@ import type {
   ClassificationAnswer,
   ClassificationQuestion,
   Question,
-} from "@/types/game";
+} from "@/types/compat/game";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

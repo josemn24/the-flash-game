@@ -1,4 +1,4 @@
-import type { MatchingAnswer } from "@/types/game";
+import type { MatchingAnswer } from "@/types/compat/game";
 
 export const MATCHING_PAIR_TONES = ["violet", "blue", "amber", "pink", "teal", "orange"] as const;
 

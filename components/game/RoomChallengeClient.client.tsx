@@ -6,7 +6,7 @@ import { CompetitiveResultScreen } from "@/components/game/shared";
 import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { isTerminalCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
-import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/game";
+import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/compat/game";
 import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,

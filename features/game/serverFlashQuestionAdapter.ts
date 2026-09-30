@@ -10,7 +10,7 @@ import type {
   QuestionOfType,
   WordHashtagQuestion,
   ZipQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import type {
   ServerFlashChallenge,
   ServerSurvivalChallenge,
@@ -37,7 +37,7 @@ import type {
   ServerConnectPairsQuestion,
 } from "@/types/gameplay/challenge";
 import type { MiniWordleLetterFeedback } from "@/lib/miniWordle";
-import type { QuestionIllustration, QuestionMedia } from "@/types/question";
+import type { QuestionIllustration, QuestionMedia } from "@/types/compat/question";
 import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 import {
   isValidEstimationAnswer,

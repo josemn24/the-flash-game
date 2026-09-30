@@ -10,7 +10,7 @@ import { SpeedBackground } from "@/components/effects/SpeedBackground";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import type { FlashChallenge, GameRoomContext } from "@/types/game";
+import type { FlashChallenge, GameRoomContext } from "@/types/compat/game";
 
 export function FlashGameApp({
   challenge,

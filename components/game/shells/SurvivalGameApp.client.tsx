@@ -10,7 +10,7 @@ import { SpeedBackground } from "@/components/effects/SpeedBackground";
 import { SurvivalResultScreen } from "@/components/game/shared/SurvivalResultScreen/SurvivalResultScreen";
 import { useSurvivalSession } from "@/features/game/useSurvivalSession";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import type { SurvivalChallenge } from "@/types/game";
+import type { SurvivalChallenge } from "@/types/compat/game";
 
 export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);

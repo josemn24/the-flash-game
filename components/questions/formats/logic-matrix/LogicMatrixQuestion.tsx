@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import styles from "./LogicMatrixQuestion.module.css";
-import type { LogicMatrixPiece } from "@/types/game";
+import type { LogicMatrixPiece } from "@/types/compat/game";
 
 type LogicMatrixQuestionProps = {
   pieces: LogicMatrixPiece[];

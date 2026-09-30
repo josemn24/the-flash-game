@@ -54,7 +54,7 @@ import type {
   WordSearchQuestion,
   WordHashtagQuestion,
   ZipQuestion,
-} from "@/types/game";
+} from "@/types/compat/game";
 import {
   isMiniWordleMaxAttempts,
   isMiniWordleWordLength,

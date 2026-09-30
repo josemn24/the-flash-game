@@ -9,7 +9,7 @@ import {
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { isAnswerCorrect } from "@/lib/scoring";
 import { compareChallengeRankingMetrics, rankChallengeEntries } from "@/lib/challengeRanking";
-import type { AlphabetChallenge, ShortTextQuestion } from "@/types/game";
+import type { AlphabetChallenge, ShortTextQuestion } from "@/types/compat/game";
 
 function getAlphabetChallenge() {
   return getChallengeById("tabarnia-challenge-02") as AlphabetChallenge;

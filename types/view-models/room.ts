@@ -1,8 +1,10 @@
 import type { Challenge, ChallengeAvailabilityStatus, GameMode } from "@/types/gameplay/challenge";
 import type { AnswerReview, RoomChallengeResult } from "@/types/gameplay/completion";
-import type { Question } from "@/types/question";
-import type { LegacySeasonStatus } from "@/types/legacy/room";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
+import type { SeasonStatus } from "@/types/domain/season";
 import type { RoomCalendarEntry } from "@/types/view-models/calendar";
+
+export type RoomSeasonStatus = Extract<SeasonStatus, "active" | "finished">;
 
 export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
 
@@ -18,7 +20,7 @@ export type RoomMemberReviewItem = {
   id: string;
   title: string;
   subtitle: string;
-  question: Question | null;
+  question: PracticeQuestion | null;
   result: AnswerReview | null;
   status: RoomMemberReviewItemStatus;
   metadata?: {
@@ -93,7 +95,7 @@ export type RoomCardModel = {
   roomId: string;
   title: string;
   seasonTitle: string | null;
-  seasonStatus: LegacySeasonStatus | null;
+  seasonStatus: RoomSeasonStatus | null;
   dailyChallenge: {
     id: string;
     title: string;
@@ -124,7 +126,7 @@ export type RoomDetailModel = {
   roomId: string;
   title: string;
   seasonTitle: string | null;
-  seasonStatus: LegacySeasonStatus | null;
+  seasonStatus: RoomSeasonStatus | null;
   currentUser: {
     id: string;
     name: string;

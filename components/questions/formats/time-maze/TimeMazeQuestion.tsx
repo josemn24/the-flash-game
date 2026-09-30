@@ -12,7 +12,7 @@ import {
 import type {
   TimeMazeAnswer,
   TimeMazeQuestion as TimeMazeQuestionType,
-} from "@/types/game";
+} from "@/types/compat/game";
 import styles from "./TimeMazeQuestion.module.css";
 
 const DIRECTION_LABELS: Record<MazeDirection, string> = {

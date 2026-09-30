@@ -3,7 +3,7 @@ import { ArrowIcon, ClockIcon } from "@/components/ui";
 import { Logo } from "@/components/navigation/Logo";
 import styles from "./StartScreen.module.css";
 import { GameHeader, Chip } from "@/components/ui";
-import type { ChallengeSummary, SeasonStatus } from "@/types/game";
+import type { ChallengeSummary, SeasonStatus } from "@/types/compat/game";
 
 type StartScreenProps = {
   roomTitle: string;

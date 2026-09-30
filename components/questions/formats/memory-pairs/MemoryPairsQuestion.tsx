@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import styles from "./MemoryPairsQuestion.module.css";
-import type { MemoryPairsAnswer, MemoryPairsTile } from "@/types/game";
+import type { MemoryPairsAnswer, MemoryPairsTile } from "@/types/compat/game";
 
 type MemoryPairsQuestionProps = {
   grid: { rows: number; columns: number };

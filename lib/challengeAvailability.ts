@@ -1,4 +1,4 @@
-import type { ChallengeAvailabilityStatus } from "@/types/game";
+import type { ChallengeAvailabilityStatus } from "@/types/compat/game";
 
 export function getChallengeAvailabilityStatus(
   availableFrom: string,

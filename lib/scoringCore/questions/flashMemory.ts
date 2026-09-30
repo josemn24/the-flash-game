@@ -1,4 +1,4 @@
-import type { AnswerValue, FlashMemoryAnswer, FlashMemoryQuestion, Question } from "@/types/game";
+import type { AnswerValue, FlashMemoryAnswer, FlashMemoryQuestion, Question } from "@/types/compat/game";
 import { calculateProportionalScore, calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
   EvaluationContext,

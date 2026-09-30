@@ -9,7 +9,7 @@ import {
 import type { NarrativeSessionState } from "@/features/narrative/narrativeSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
-import type { AnswerValue, NarrativeChallenge } from "@/types/game";
+import type { AnswerValue, NarrativeChallenge } from "@/types/compat/game";
 
 export function useNarrativeSession(
   challenge: NarrativeChallenge,

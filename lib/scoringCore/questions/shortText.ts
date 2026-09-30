@@ -1,4 +1,4 @@
-import type { AnswerValue, Question, ShortTextQuestion } from "@/types/game";
+import type { AnswerValue, Question, ShortTextQuestion } from "@/types/compat/game";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import { calculateQuestionScore } from "@/lib/scoringCore/shared";
 import type {

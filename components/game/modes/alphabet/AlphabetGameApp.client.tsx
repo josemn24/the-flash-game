@@ -17,7 +17,7 @@ import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { Button, Timer } from "@/components/ui";
 import type { AlphabetLetterState, AlphabetLetterStatus } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
-import type { AlphabetChallenge, AnswerStatus, ShortTextQuestion } from "@/types/game";
+import type { AlphabetChallenge, AnswerStatus, ShortTextQuestion } from "@/types/compat/game";
 import styles from "./AlphabetGameApp.module.css";
 
 const STATUS_LABELS: Record<AlphabetLetterStatus, string> = {
