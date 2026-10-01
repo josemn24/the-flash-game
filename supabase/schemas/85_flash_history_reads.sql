@@ -95,7 +95,7 @@ language sql stable security definer set search_path = '' as $$
     where r.slug = target_room_slug
       and sc.id = coalesce(target_publication_id, sc.id)
       and sc.status = 'closed'
-      and cv.mode in ('flash', 'survival', 'pyramid')
+      and cv.mode in ('flash', 'survival', 'narrative', 'pyramid')
       and cv.status in ('published', 'archived')
       and not exists (
         select 1 from public.attempts in_progress
@@ -248,7 +248,7 @@ language sql stable security definer set search_path = '' as $$
       and a.player_id = target_player_id
       and a.kind = 'competitive'
       and a.status in ('completed', 'abandoned')
-    where cv.mode in ('flash', 'survival', 'pyramid')
+    where cv.mode in ('flash', 'survival', 'narrative', 'pyramid')
       and v.viewer_role in ('owner', 'admin', 'member')
       and cv.status in ('published', 'archived')
       and exists (

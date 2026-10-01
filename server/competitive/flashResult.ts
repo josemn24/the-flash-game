@@ -4,6 +4,7 @@ import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQu
 import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
 import { supabaseSurvivalQueries } from "@/infrastructure/supabase/gameplay/survivalQueries";
 import { supabasePyramidQueries } from "@/infrastructure/supabase/gameplay/pyramidQueries";
+import { supabaseNarrativeQueries } from "@/infrastructure/supabase/gameplay/narrativeQueries";
 
 export async function readTerminalFlashReview(attemptId: string) {
   const flashReview = await supabaseFlashQueries.getTerminalReview(attemptId);
@@ -17,5 +18,7 @@ export async function readTerminalFlashReview(attemptId: string) {
     }));
   const survivalReview = await supabaseSurvivalQueries.getTerminalReview(attemptId);
   if (survivalReview.length) return survivalReview;
-  return supabasePyramidQueries.getTerminalReview(attemptId);
+  const pyramidReview = await supabasePyramidQueries.getTerminalReview(attemptId);
+  if (pyramidReview.length) return pyramidReview;
+  return supabaseNarrativeQueries.getTerminalReview(attemptId);
 }

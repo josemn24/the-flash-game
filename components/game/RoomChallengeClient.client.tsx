@@ -12,6 +12,7 @@ import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
   ServerFlashTerminalReview,
+  ServerNarrativeChallenge,
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
 } from "@/types/gameplay/challenge";
@@ -96,13 +97,15 @@ export function RoomChallengeClient({
     | ServerFlashChallenge
     | ServerAlphabetChallenge
     | ServerSurvivalChallenge
-    | ServerPyramidChallenge;
+    | ServerPyramidChallenge
+    | ServerNarrativeChallenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
-  const persistence = persistenceProp ?? roomContext?.gameplayPersistence ?? "mock";
+  const persistence =
+    persistenceProp ?? roomContext?.gameplayPersistence ?? (roomContext ? "server" : "mock");
   const { recordCompletion, getCompletion } = useRoomSession();
   // Server-backed competitive sessions must never be shadowed by the
   // client-only demo store. The provider remains available for explicit
@@ -130,6 +133,15 @@ export function RoomChallengeClient({
   );
 
   if (
+    roomContext &&
+    !localCompletion &&
+    attemptStatus === "available" &&
+    roomContext.availabilityStatus !== "available"
+  ) {
+    return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
+  }
+
+  if (
     persistence === "server" &&
     roomContext &&
     (!attemptStatus || !isTerminalCompetitiveAttemptStatus(attemptStatus))
@@ -142,15 +154,6 @@ export function RoomChallengeClient({
         persistence="server"
       />
     );
-  }
-
-  if (
-    roomContext &&
-    !localCompletion &&
-    attemptStatus === "available" &&
-    roomContext.availabilityStatus !== "available"
-  ) {
-    return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
   }
 
   if (

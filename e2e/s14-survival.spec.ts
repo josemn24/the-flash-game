@@ -176,6 +176,7 @@ test.describe("S14 — supervivencia competitiva", () => {
       await member.reload();
       await expect(member.getByText("Sin vidas", { exact: true })).toBeVisible();
       await member.getByRole("button", { name: "Ver respuestas" }).click();
+      await member.locator("details").first().locator("summary").click();
       await expect(member.getByText("Lisboa es la capital de Portugal.")).toBeVisible();
       await member.locator("details").nth(1).locator("summary").click();
       await expect(member.getByText("Marte es conocido como el planeta rojo.")).toBeVisible();

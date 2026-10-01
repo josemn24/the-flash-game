@@ -1533,6 +1533,7 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     (challenge.mode !== "flash" &&
       challenge.mode !== "alphabet" &&
       challenge.mode !== "survival" &&
+      challenge.mode !== "narrative" &&
       challenge.mode !== "pyramid") ||
     challenge.configSchemaVersion !== 1 ||
     !isRecord(challenge.modeConfig) ||
@@ -1546,6 +1547,10 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
         !Number.isSafeInteger(challenge.modeConfig.lives) ||
         (challenge.modeConfig.lives as number) < 1 ||
         (challenge.modeConfig.lives as number) > FLASH_MAX_QUESTIONS)) ||
+    (challenge.mode === "narrative" &&
+      (Object.keys(challenge.modeConfig).length < 2 ||
+        !isRecord(challenge.modeConfig.prologue) ||
+        !Array.isArray(challenge.modeConfig.beats))) ||
     (challenge.mode === "pyramid" && Object.keys(challenge.modeConfig).length !== 0)
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
@@ -1558,8 +1563,8 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
   if (!validQuestionCount) {
     throw new FlashEditorialValidationError([
       challenge.mode === "pyramid"
-        ? "La Pirámide requiere exactamente siete niveles."
-        : `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
+      ? "La Pirámide requiere exactamente siete niveles."
+      : `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
     ]);
   }
 

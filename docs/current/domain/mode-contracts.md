@@ -233,12 +233,18 @@ sin puntos, con `terminal_reason = inactivity_timeout`.
 - **Ranking:** aplica el comparador común de ranking por desafío.
 - **Replay:** permitido en preview; oculto en competición con `roomContext`.
 
-### Observación de implementación
+### Implementación competitiva actual
 
-`useNarrativeSession` ya conserva la secuencia, escenas, respuestas, timeout y fases de resultado y
-revisión. El snapshot actual no conserva todos los borradores y referencias temporales del formato;
-la siguiente implementación de checkpoints debe completarlo antes de prometer recuperación completa
-con la sesión original.
+La práctica y el preview siguen usando `useNarrativeSession` y el modelo completo local. En una sala
+competitiva, `SupabaseNarrativeQueries` devuelve únicamente la proyección pública de escenas, beats y
+metadatos de preguntas. `useServerNarrativeSession` libera cada payload con `prepare`, envía respuestas
+al comando genérico y completa el intento con el mismo contrato que Flash. Las soluciones solo llegan
+en la revisión terminal autorizada.
+
+La recuperación devuelve un cursor narrativo con la pregunta abierta o la siguiente pregunta no
+resuelta. Si la recarga ocurre durante una escena, el cliente reconstruye la última escena pública
+anterior a esa pregunta; no se crea un endpoint específico para avanzar escenas ni se persiste un
+segundo log narrativo.
 
 ## 5. La Pirámide (`pyramid`)
 

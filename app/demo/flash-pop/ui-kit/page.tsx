@@ -164,7 +164,7 @@ export default function FlashPopUiKitPage() {
             </div>
             <div>
               <small>Hero link</small>
-              <ButtonLink href="/flash-pop" size="hero" trailingIcon={<ArrowIcon />}>
+              <ButtonLink href="/demo/flash-pop" size="hero" trailingIcon={<ArrowIcon />}>
                 Volver al lobby
               </ButtonLink>
             </div>

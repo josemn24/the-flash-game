@@ -6,9 +6,13 @@ import { AdminShell } from "./AdminShell";
 import styles from "./AdminAttemptInspection.module.css";
 
 function modeLabel(mode: SuperadminAttemptPublication["mode"]) {
-  return { flash: "Flash", alphabet: "Alphabet", survival: "Supervivencia", pyramid: "Pirámide" }[
-    mode
-  ];
+  return {
+    flash: "Flash",
+    alphabet: "Alphabet",
+    survival: "Supervivencia",
+    narrative: "Narrativa",
+    pyramid: "Pirámide",
+  }[mode];
 }
 
 function statusLabel(status: SuperadminAttemptPublication["status"]) {

@@ -402,20 +402,85 @@ for (const file of productionFiles) {
   }
 }
 
+for (const relative of [
+  "server/production-home-data-access.ts",
+  "server/production-room-data-access.ts",
+  "server/production-challenge-data-access.ts",
+  "server/production-admin-data-access.ts",
+  "server/production-room-members.ts",
+]) {
+  const source = await readFile(path.join(process.cwd(), relative), "utf8");
+  if (/@\/(?:data\/mock|infrastructure\/mock)\//.test(source)) {
+    violations.push(`${relative} imports mock data or infrastructure`);
+  }
+}
+
 for (const file of productionFiles) {
   const relative = path.relative(process.cwd(), file);
   const source = await readFile(file, "utf8");
-  const isProductionRoute =
-    relative.startsWith(`app${path.sep}salas${path.sep}`) ||
-    relative.startsWith(`app${path.sep}desafios${path.sep}`) ||
-    relative.startsWith(`app${path.sep}admin${path.sep}`);
-  const isDemoRoute = relative.startsWith(`app${path.sep}flash-pop${path.sep}`);
-  if (isProductionRoute && source.includes("@/server/demo-data-access")) {
-    violations.push(`${relative} imports the demo server facade`);
+  const importedSpecifiers = importsIn(source).map(({ specifier }) => specifier);
+  const isAppRoute = relative.startsWith(`app${path.sep}`);
+  const isDemoRoute = relative.startsWith(`app${path.sep}demo${path.sep}`);
+  const isProductionRoute = isAppRoute && !isDemoRoute;
+  if (
+    relative.startsWith(`app${path.sep}flash-pop`) ||
+    relative.startsWith(`app${path.sep}flash-pop-concepts`) ||
+    relative.startsWith(`app${path.sep}flash-pop-typography`)
+  ) {
+    violations.push(`${relative} uses a retired demo route; use app/demo instead`);
   }
-  if (isDemoRoute && /@\/server\/production-[^"']+-data-access/.test(source)) {
+  if (importedSpecifiers.includes("@/server/demo-data-access") && !isDemoRoute) {
+    violations.push(`${relative} imports the demo server facade outside app/demo`);
+  }
+  if (
+    isProductionRoute &&
+    importedSpecifiers.some(
+      (specifier) =>
+        specifier.startsWith("@/data/mock/") || specifier.startsWith("@/infrastructure/mock/"),
+    )
+  ) {
+    violations.push(`${relative} imports mock data or infrastructure from a production route`);
+  }
+  if (
+    isDemoRoute &&
+    importedSpecifiers.some((specifier) =>
+      /^@\/server\/production-[^/]+-data-access$/.test(specifier),
+    )
+  ) {
     violations.push(`${relative} imports the production server facade`);
   }
+  if (
+    isAppRoute &&
+    importedSpecifiers.some(
+      (specifier) => specifier === "@/components/game" || specifier === "@/components/game/index",
+    )
+  ) {
+    violations.push(`${relative} imports the mixed game barrel; use demo, production or practice`);
+  }
+  if (
+    (relative.startsWith(`app${path.sep}salas${path.sep}`) ||
+      relative.startsWith(`app${path.sep}desafios${path.sep}`)) &&
+    /(?:persistence|gameplayPersistence)\s*[:=][^\n]*["']mock["']/.test(source)
+  ) {
+    violations.push(`${relative} enables mock persistence in a competitive route`);
+  }
+}
+
+const competitiveReaderSource = await readFile(
+  path.join(process.cwd(), "infrastructure", "supabase", "gameplay", "competitiveChallengeQueries.ts"),
+  "utf8",
+);
+for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid"]) {
+  if (!new RegExp(`\\b${mode}:`).test(competitiveReaderSource)) {
+    violations.push(`competitive challenge mode ${mode} has no Supabase reader`);
+  }
+}
+const productionBarrelSource = await readFile(
+  path.join(process.cwd(), "components", "game", "production.ts"),
+  "utf8",
+);
+if (!productionBarrelSource.includes("ServerNarrativeGame")) {
+  violations.push("components/game/production.ts does not expose ServerNarrativeGame");
 }
 
 const attemptCommandsPort = path.join(process.cwd(), "application", "ports", "attempt-commands.ts");

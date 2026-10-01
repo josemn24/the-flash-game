@@ -70,7 +70,7 @@ function isEditorialEntry(
     value.title.trim().length > 0 &&
     typeof value.subtitle === "string" &&
     typeof value.description === "string" &&
-    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "narrative" || value.mode === "pyramid") &&
     typeof value.questionCount === "number" &&
     Number.isSafeInteger(value.questionCount) &&
     value.questionCount >= 0 &&
@@ -106,7 +106,7 @@ function isChallengeSummary(value: unknown): value is SuperadminChallengeSummary
     value.title.trim().length > 0 &&
     typeof value.subtitle === "string" &&
     typeof value.description === "string" &&
-    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "narrative" || value.mode === "pyramid") &&
     typeof value.questionCount === "number" &&
     Number.isSafeInteger(value.questionCount) &&
     value.questionCount >= 0 &&
@@ -174,7 +174,7 @@ function isChallengeVersionSnapshot(
     typeof value.title === "string" &&
     typeof value.subtitle === "string" &&
     typeof value.description === "string" &&
-    (value.mode === "flash" || value.mode === "survival" || value.mode === "pyramid") &&
+    (value.mode === "flash" || value.mode === "survival" || value.mode === "narrative" || value.mode === "pyramid") &&
     typeof value.configSchemaVersion === "number" &&
     Number.isSafeInteger(value.configSchemaVersion) &&
     isRecord(value.modeConfig) &&

@@ -5,7 +5,7 @@ import {
   buildResultModel,
   ReviewStage,
   Transition,
-} from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+} from "@/components/game/modes/flash-pop/FlashPopCompetitiveHelpers";
 import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";

@@ -18,7 +18,7 @@ export type SuperadminCalendarEntry = {
   readonly versionNumber: number;
   readonly challengeTitle: string;
   readonly challengeSubtitle: string;
-  readonly mode: "flash" | "survival" | "pyramid";
+  readonly mode: "flash" | "survival" | "narrative" | "pyramid";
   readonly number: number;
   readonly status: "scheduled" | "open" | "closed" | "cancelled";
   readonly opensAt: string;

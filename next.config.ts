@@ -17,6 +17,30 @@ const nextConfig: NextConfig = {
         ]
       : [],
   },
+  async redirects() {
+    return [
+      {
+        source: "/flash-pop-concepts",
+        destination: "/demo/flash-pop-concepts",
+        permanent: true,
+      },
+      {
+        source: "/flash-pop-typography",
+        destination: "/demo/flash-pop-typography",
+        permanent: true,
+      },
+      {
+        source: "/flash-pop",
+        destination: "/demo/flash-pop",
+        permanent: true,
+      },
+      {
+        source: "/flash-pop/:path*",
+        destination: "/demo/flash-pop/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ReviewStage } from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+import { ReviewStage } from "@/components/game/modes/flash-pop/FlashPopCompetitiveHelpers";
 import { getChallengeById } from "@/test-utils/mockGameplay";
 import type { AnswerResult } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";

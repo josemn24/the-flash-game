@@ -812,6 +812,16 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "public.get_my_narrative_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_narrative_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
     "public.get_my_survival_challenge": {
       "arguments": "target_room_slug text, target_publication_id uuid",
       "securityDefiner": true,

@@ -154,7 +154,7 @@ describe("SupabaseSuperadminAttemptQueries", () => {
     });
   });
 
-  it("maps authorization failures and rejects malformed RPC payloads", async () => {
+  it("maps authorization failures and accepts Narrative publications", async () => {
     mocks.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501", message: "denied" } });
     await expect(
       new SupabaseSuperadminAttemptQueries().listPublications(publication.roomId),
@@ -166,6 +166,6 @@ describe("SupabaseSuperadminAttemptQueries", () => {
     });
     await expect(
       new SupabaseSuperadminAttemptQueries().listPublications(publication.roomId),
-    ).rejects.toThrow("invalid payload");
+    ).resolves.toEqual([{ ...publication, mode: "narrative" }]);
   });
 });

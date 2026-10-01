@@ -4,6 +4,7 @@ import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
   ServerFlashTerminalReview,
+  ServerNarrativeChallenge,
   ServerPyramidChallenge,
   ServerSurvivalChallenge,
 } from "@/types/gameplay";
@@ -98,7 +99,8 @@ export type CompetitiveChallengePageModel = {
     | ServerFlashChallenge
     | ServerAlphabetChallenge
     | ServerSurvivalChallenge
-    | ServerPyramidChallenge;
+    | ServerPyramidChallenge
+    | ServerNarrativeChallenge;
   readonly roomContext?: GameRoomContext;
   readonly socialSnapshot: FlashPopSocialSnapshot;
   readonly gameplayPersistence?: "mock" | "server";

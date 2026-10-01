@@ -310,7 +310,7 @@ export function EditorialManagement({
   }, [documentText]);
 
   const documentSummary = parsedDocument
-    ? `${parsedDocument.challenge.mode === "survival" ? "Supervivencia" : parsedDocument.challenge.mode === "alphabet" ? "Alphabet" : parsedDocument.challenge.mode === "pyramid" ? "La Pirámide" : "Flash"} · ${parsedDocument.challenge.mode === "pyramid" ? `${parsedDocument.questions.length}/7 niveles` : `${parsedDocument.questions.length} preguntas`} · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
+    ? `${parsedDocument.challenge.mode === "survival" ? "Supervivencia" : parsedDocument.challenge.mode === "alphabet" ? "Alphabet" : parsedDocument.challenge.mode === "narrative" ? "Narrativa" : parsedDocument.challenge.mode === "pyramid" ? "La Pirámide" : "Flash"} · ${parsedDocument.challenge.mode === "pyramid" ? `${parsedDocument.questions.length}/7 niveles` : `${parsedDocument.questions.length} preguntas`} · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
     : `Flash · ${FLASH_MIN_QUESTIONS}–${FLASH_MAX_QUESTIONS} preguntas · ${FLASH_TOTAL_POINTS} puntos`;
 
   function pyramidLevelModeConfig(index: number, format: string) {
@@ -542,6 +542,9 @@ export function EditorialManagement({
                     <option value="flash">Flash</option>
                     <option value="alphabet">Alphabet</option>
                     <option value="survival">Supervivencia</option>
+                    {parsedDocument.challenge.mode === "narrative" ? (
+                      <option value="narrative">Narrativa</option>
+                    ) : null}
                     <option value="pyramid">La Pirámide</option>
                   </select>
                 </label>

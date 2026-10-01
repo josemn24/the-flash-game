@@ -48,6 +48,9 @@ export async function POST(
           answers: snapshot.answers,
           phase: "results",
           ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
+          ...(snapshot.challengeMode === "narrative" && snapshot.narrativeCursor
+            ? { narrativeCursor: snapshot.narrativeCursor }
+            : {}),
           review,
           score: recovered.completed.score,
           ...(snapshot.challengeMode === "survival"
@@ -86,6 +89,9 @@ export async function POST(
             }
           : {}),
         ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
+        ...(snapshot.challengeMode === "narrative" && snapshot.narrativeCursor
+          ? { narrativeCursor: snapshot.narrativeCursor }
+          : {}),
       },
       200,
       requestId,

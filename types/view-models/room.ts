@@ -11,7 +11,10 @@ export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" 
 export type RoomMembershipRole = "owner" | "admin" | "member" | "spectator";
 export type RoomDataSource = "mock" | "supabase";
 export type GameplayPersistence = "mock" | "server";
-export type CompetitiveHistoryMode = Extract<GameMode, "flash" | "survival" | "pyramid">;
+export type CompetitiveHistoryMode = Extract<
+  GameMode,
+  "flash" | "survival" | "narrative" | "pyramid"
+>;
 
 export type RoomMemberReviewItemStatus =
   "correct" | "partial" | "incorrect" | "unanswered" | "locked";
@@ -54,6 +57,11 @@ export type RoomMemberReviewProgress =
       levelsCleared: number;
       totalLevelCount: number;
       outcome: "in_progress" | "failed" | "summit";
+    }
+  | {
+      mode: "narrative";
+      answeredCount: number;
+      totalQuestionCount: number;
     };
 
 export type GameRoomContext = {

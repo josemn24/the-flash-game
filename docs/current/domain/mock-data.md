@@ -100,7 +100,7 @@ Consulta
 S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;
 S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
 abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
-historial común de Flash, Supervivencia y Pirámide, ranking histórico y revisión autorizada de los tres modos después de volver. S08–S12 añaden portal
+historial común de Flash, Narrative, Supervivencia y Pirámide, ranking histórico y revisión autorizada de los cuatro modos después de volver. S08–S12 añaden portal
 privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y los demás modos
 siguen usando mock o están pendientes de sus propias slices. La beta provisionará miembros
 directamente desde ese portal, sin flujo público de invitaciones.

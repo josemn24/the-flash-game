@@ -1579,7 +1579,7 @@ begin
     or char_length(challenge->>'subtitle') > 300
     or jsonb_typeof(challenge->'description') is distinct from 'string'
     or char_length(challenge->>'description') > 2000
-    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'pyramid')
+    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     or challenge->'configSchemaVersion' <> '1'::jsonb
     or jsonb_typeof(challenge->'modeConfig') is distinct from 'object'
     or (challenge->>'mode' = 'alphabet' and (
@@ -1661,7 +1661,7 @@ begin
         where key_name <> all(array['slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'points', 'publicPayload', 'solutionPayload', 'modeConfig'])
       )
       or (challenge->>'mode' = 'pyramid' and not private.is_valid_pyramid_level_config(question->'modeConfig'))
-      or (challenge->>'mode' <> 'pyramid' and question ? 'modeConfig') then
+      or (challenge->>'mode' not in ('pyramid', 'narrative') and question ? 'modeConfig') then
       raise exception 'invalid_content' using errcode = '22023';
     end if;
 

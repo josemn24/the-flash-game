@@ -28,13 +28,13 @@ begin
           'versionCount', (
             select count(*)
             from private.challenge_versions version_count
-            where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid')
+            where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'narrative', 'pyramid')
           ),
           'status', latest.status,
           'statusCounts', jsonb_build_object(
-            'draft', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid') and version_count.status = 'draft'),
-            'published', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid') and version_count.status = 'published'),
-            'archived', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid') and version_count.status = 'archived')
+            'draft', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'narrative', 'pyramid') and version_count.status = 'draft'),
+            'published', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'narrative', 'pyramid') and version_count.status = 'published'),
+            'archived', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'narrative', 'pyramid') and version_count.status = 'archived')
           ),
           'updatedAt', latest.updated_at,
           'latestVersion', jsonb_build_object(
@@ -51,7 +51,7 @@ begin
       join lateral (
         select version.*
         from private.challenge_versions version
-        where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'pyramid')
+        where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'narrative', 'pyramid')
         order by version.updated_at desc, version.id
         limit 1
       ) latest on true
@@ -133,7 +133,7 @@ begin
         ) order by version.updated_at desc, version.id
       )
       from private.challenge_versions version
-      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'pyramid')
+      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'narrative', 'pyramid')
     ), '[]'::jsonb)
   )
   into challenge_payload
@@ -142,7 +142,7 @@ begin
     and exists (
       select 1
       from private.challenge_versions version
-      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'pyramid')
+      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'narrative', 'pyramid')
     );
 
   return challenge_payload;

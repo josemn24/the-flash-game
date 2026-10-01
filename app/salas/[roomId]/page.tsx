@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FlashPopRoomDetail } from "@/components/game";
+import { FlashPopRoomDetail } from "@/components/game/production";
 import { getRoomDetailPageModel } from "@/server/production-room-data-access";
 
 type Props = {

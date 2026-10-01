@@ -284,6 +284,40 @@ export type ServerAlphabetChallenge = ChallengeBase & {
   maxScore: number;
 };
 
+export type ServerNarrativeQuestionStep = {
+  readonly type: "question";
+  /** Challenge item id; the question payload is released only by prepare. */
+  readonly questionId: string;
+  readonly reactions?: NarrativeReactionMap;
+};
+
+export type ServerNarrativeStep = NarrativeSceneStepDefinition | ServerNarrativeQuestionStep;
+
+export type ServerNarrativeBeat = {
+  readonly id: string;
+  readonly title: string;
+  readonly steps: readonly ServerNarrativeStep[];
+};
+
+/**
+ * Competitive narrative projection. Scene content is public, while question
+ * payloads and solutions are delivered progressively by the attempt API.
+ */
+export type ServerNarrativeChallenge = ChallengeBase & {
+  readonly mode: "narrative";
+  readonly maxScore: number;
+  readonly prologue: NarrativeScene;
+  readonly beats: readonly ServerNarrativeBeat[];
+  readonly slots: readonly {
+    readonly id: string;
+    readonly position: number;
+    readonly questionType: ServerFlashChallenge["slots"][number]["questionType"];
+    readonly payloadSchemaVersion: number;
+    readonly timeLimitMs: number;
+    readonly points: number;
+  }[];
+};
+
 type ServerFlashQuestionBase = {
   readonly id: string;
   readonly category: string;

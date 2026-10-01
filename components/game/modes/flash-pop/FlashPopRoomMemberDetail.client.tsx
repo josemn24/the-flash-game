@@ -110,7 +110,13 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   const mode =
     resolvedModel.challengeSummary?.mode ?? resolvedModel.reviewProgress?.mode ?? "flash";
   const modeLabel =
-    mode === "survival" ? "Supervivencia" : mode === "pyramid" ? "Pirámide" : "Flash";
+    mode === "survival"
+      ? "Supervivencia"
+      : mode === "pyramid"
+        ? "Pirámide"
+        : mode === "narrative"
+          ? "Narrativa"
+          : "Flash";
   const outcomeLabel =
     resolvedModel.reviewProgress?.mode === "survival"
       ? resolvedModel.reviewProgress.outcome === "survived"

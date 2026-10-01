@@ -6,7 +6,7 @@
 
 S22 fija un alcance cerrado para operar localmente y en CI, y deja documentado el scheduler de
 producción sin convertir el entorno remoto en requisito para la verificación reproducible.
-El piloto incluye Flash, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
+El piloto incluye Flash, Narrative, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
 además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, takeover y
 `results_locked_at` siguen fuera de alcance. La expiración por inactividad de intentos competitivos
@@ -31,10 +31,10 @@ falla al arrancar la composición server-only.
 | Superficie                                  | Pilot                                                                                             | Development/Test             |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
 | `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                          | Supabase                     |
-| `/desafios/[challengeId]?roomId=<slug>`     | Supabase; Flash, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                     |
+| `/desafios/[challengeId]?roomId=<slug>`     | Supabase; Flash, Narrative, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                     |
 | `/desafios/[challengeId]` sin sala          | 404                                                                                               | 404                          |
 | aliases como `tabarnia-room`                | Supabase; 404 si no existe como sala persistida                                                   | Supabase; nunca fixture mock |
-| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                                     | Demo/práctica                |
+| `/formatos`, `/demo/**`                     | Demo/práctica; `/flash-pop/**` redirige permanentemente a `/demo/**`                              | Demo/práctica                |
 | `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                           | Supabase + autorización      |
 
 ## Contrato HTTP
@@ -85,7 +85,7 @@ npm run test:integration:supabase -- --scenario s03
 FLASH_RUNTIME_SCOPE=pilot APP_ORIGIN=http://127.0.0.1:3000 npm run test:e2e -- e2e/s03-flash.spec.ts
 ```
 
-Para S17, la verificación aislada cubre el historial editorial de Flash, Supervivencia y Pirámide;
+Para S17, la verificación aislada cubre el historial editorial de Flash, Narrative, Supervivencia y Pirámide;
 la corrección de una pregunta continúa pasando por `/admin/questions`.
 
 Para E01, el reset debe ir seguido de la carga del diccionario antes de crear el fixture:

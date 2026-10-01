@@ -648,7 +648,7 @@ export type FlashEditorialDocument = {
     readonly title: string;
     readonly subtitle: string;
     readonly description: string;
-    readonly mode: "flash" | "alphabet" | "survival" | "pyramid";
+    readonly mode: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
     readonly configSchemaVersion: 1;
     readonly modeConfig: EditorialJsonObject;
     readonly globalTimeLimitMs?: number;
@@ -723,7 +723,7 @@ export type SuperadminEditorialEntry = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash" | "survival" | "pyramid";
+  readonly mode: "flash" | "survival" | "narrative" | "pyramid";
   readonly questionCount: number;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -744,7 +744,7 @@ export type SuperadminChallengeSummary = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash" | "survival" | "pyramid";
+  readonly mode: "flash" | "survival" | "narrative" | "pyramid";
   readonly questionCount: number;
   readonly versionCount: number;
   readonly status: EditorialContentStatus;
@@ -795,7 +795,7 @@ export type SuperadminChallengeVersionSnapshot = {
   readonly title: string;
   readonly subtitle: string;
   readonly description: string;
-  readonly mode: "flash" | "survival" | "pyramid";
+  readonly mode: "flash" | "survival" | "narrative" | "pyramid";
   readonly configSchemaVersion: number;
   readonly modeConfig: EditorialJsonObject;
   readonly globalTimeLimitMs: number | null;

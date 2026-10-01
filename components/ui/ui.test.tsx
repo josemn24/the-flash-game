@@ -46,12 +46,12 @@ describe("canonical UI primitives", () => {
 
   it("renders button links with their destination and trailing icon", () => {
     const markup = renderToStaticMarkup(
-      <ButtonLink href="/flash-pop" trailingIcon={<BoltIcon />}>
+      <ButtonLink href="/demo/flash-pop" trailingIcon={<BoltIcon />}>
         Abrir
       </ButtonLink>,
     );
 
-    expect(markup).toContain('href="/flash-pop"');
+    expect(markup).toContain('href="/demo/flash-pop"');
     expect(markup).toContain("Abrir");
     expect(markup).toContain("<svg");
   });

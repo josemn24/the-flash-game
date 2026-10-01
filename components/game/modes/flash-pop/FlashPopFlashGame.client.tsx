@@ -2,18 +2,11 @@
 
 import { useMemo } from "react";
 import { motion, MotionConfig } from "motion/react";
-import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
+import { ButtonLink, Card, Canvas } from "@/components/ui";
 import {
-  FlashPopFeedback,
-  getFlashPopFeedbackCopy,
-} from "@/components/game/modes/flash-pop/FlashPopFeedback";
-import { ButtonLink, Card, Canvas, GameHeader } from "@/components/ui";
-import {
-  ChallengeResultScreen,
   FlashQuestionStage,
-  ReviewAnswerPanel,
   StartCountdown,
-  type ChallengeResultModel,
+  ChallengeResultScreen,
 } from "@/components/game/shared";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession, type GameSessionSnapshot } from "@/features/game/useGameSession";
@@ -25,15 +18,13 @@ import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
-import { CHALLENGE_MAX_SCORE, withChallengeScoring } from "@/lib/challengeScoring";
+import { withChallengeScoring } from "@/lib/challengeScoring";
 import { FlashPopGameShell } from "./FlashPopGameShell";
-import {
-  calculateResultAccuracy,
-  getAnswerResultAccuracyUnit,
-} from "@/features/game/resultSummary";
-import type { AnswerResult, ChallengeCompletionResult, FlashChallenge } from "@/types/gameplay";
+import type { ChallengeCompletionResult, FlashChallenge } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopFlashGame.module.css";
+export { buildResultModel, ReviewStage, Transition } from "./FlashPopCompetitiveHelpers";
+import { buildResultModel, ReviewStage, Transition } from "./FlashPopCompetitiveHelpers";
 
 function Intro({
   challenge,
@@ -45,119 +36,6 @@ function Intro({
   returnTo?: string;
 }) {
   return <ChallengeIntro challenge={challenge} onStart={onStart} returnTo={returnTo} />;
-}
-
-export function Transition({
-  result,
-  timedOut,
-  isLast,
-}: {
-  result?: AnswerResult;
-  timedOut: boolean;
-  isLast: boolean;
-}) {
-  const status = result?.status ?? (timedOut ? "unanswered" : "incorrect");
-  const { title, body } = getFlashPopFeedbackCopy({ status, timedOut, isLast });
-
-  return (
-    <FlashPopFeedback
-      status={status}
-      title={title}
-      body={body}
-      points={status === "correct" || status === "partial" ? result?.points : undefined}
-    />
-  );
-}
-
-export function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
-  const correct = results.filter((result) => result.status === "correct").length;
-  const incorrect = results.filter((result) => result.status === "incorrect").length;
-  const unanswered = results.filter((result) => result.status === "unanswered").length;
-  const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
-  const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
-  const message =
-    accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío duro.";
-
-  return {
-    gameTitle: "Flash",
-    statusLabel: "Completado",
-    eyebrow: "Desafío completado",
-    title: message,
-    score,
-    maxScore: CHALLENGE_MAX_SCORE,
-    scoreUnit: "flashPoints",
-    accuracy,
-    totalTime,
-    metrics: [
-      { icon: <CheckIcon />, label: "Correctas", value: correct, tone: "success" },
-      { icon: <CrossIcon />, label: "Falladas", value: incorrect, tone: "danger" },
-      { icon: <ClockIcon />, label: "Sin contestar", value: unanswered },
-    ],
-  };
-}
-
-export function ReviewStage({
-  challenge,
-  results,
-  onBack,
-  onReplay,
-  returnTo,
-  roomContext,
-  presentation = "default",
-}: {
-  challenge: FlashChallenge;
-  results: AnswerResult[];
-  onBack: () => void;
-  onReplay?: () => void;
-  returnTo: string;
-  roomContext?: GameRoomContext;
-  presentation?: "default" | "survival";
-}) {
-  const resultByQuestionId = new Map(results.map((result) => [result.questionId, result]));
-  const entries = challenge.questions.map((question, index) => ({
-    id: question.id,
-    question,
-    result: resultByQuestionId.get(question.id),
-    marker: String(index + 1).padStart(2, "0"),
-  }));
-  const reached = Math.min(results.length, challenge.questions.length);
-
-  if (presentation === "survival") {
-    return (
-      <ReviewAnswerPanel
-        entries={entries}
-        countLabel={`${reached} de ${challenge.questions.length} superados`}
-        title="Historial de respuestas"
-        description="Consulta tu respuesta, la solución aceptada y la explicación de cada desafío."
-        progress={{ value: reached, max: challenge.questions.length }}
-        progressLabel="Retos superados"
-        backAtTop
-        onBack={onBack}
-        onReplay={onReplay}
-      />
-    );
-  }
-
-  return (
-    <div className={styles.stage}>
-      <GameHeader
-        title="Revisión"
-        action={
-          <ButtonLink href={returnTo} variant="secondary">
-            {roomContext ? "Tabarnia" : "Lobby"}
-          </ButtonLink>
-        }
-      />
-      <ReviewAnswerPanel
-        entries={entries}
-        countLabel={`${results.length} respuestas`}
-        title="Historial de respuestas"
-        description="Consulta tu respuesta, la solución aceptada y la explicación de cada desafío."
-        onBack={onBack}
-        onReplay={onReplay}
-      />
-    </div>
-  );
 }
 
 export function FlashPopFlashGame({
@@ -202,7 +80,9 @@ export function FlashPopFlashGame({
           <Card>
             <h1>Preview no disponible</h1>
             <p>Este piloto está limitado a tabarnia-flash-01.</p>
-            <ButtonLink href={roomContext?.returnTo ?? "/flash-pop"}>&quot;Volver&quot;</ButtonLink>
+            <ButtonLink href={roomContext?.returnTo ?? "/demo/flash-pop"}>
+              &quot;Volver&quot;
+            </ButtonLink>
           </Card>
         </Canvas>
       </MotionConfig>
@@ -277,7 +157,7 @@ export function FlashPopFlashGame({
           <ChallengeResultScreen
             model={buildResultModel(session.results, session.score)}
             onReview={session.showReview}
-            returnTo={roomContext?.returnTo ?? "/flash-pop"}
+            returnTo={roomContext?.returnTo ?? "/demo/flash-pop"}
           />
         </motion.div>
       ) : null}
@@ -293,7 +173,7 @@ export function FlashPopFlashGame({
             results={session.results}
             onBack={session.showResults}
             onReplay={roomContext ? undefined : session.replay}
-            returnTo={roomContext?.returnTo ?? "/flash-pop"}
+            returnTo={roomContext?.returnTo ?? "/demo/flash-pop"}
             roomContext={roomContext}
           />
         </motion.div>

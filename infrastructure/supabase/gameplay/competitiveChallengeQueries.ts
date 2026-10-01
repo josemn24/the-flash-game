@@ -6,6 +6,7 @@ import { supabaseAlphabetQueries } from "./alphabetQueries";
 import { supabaseFlashQueries } from "./flashQueries";
 import { supabasePyramidQueries } from "./pyramidQueries";
 import { supabaseSurvivalQueries } from "./survivalQueries";
+import { supabaseNarrativeQueries } from "./narrativeQueries";
 
 const publicationKeyPattern = /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i;
 
@@ -22,6 +23,7 @@ export type SupabaseCompetitiveChallengeReaders = {
   readonly alphabet: CompetitiveChallengeModeReader;
   readonly survival: CompetitiveChallengeModeReader;
   readonly pyramid: CompetitiveChallengeModeReader;
+  readonly narrative: CompetitiveChallengeModeReader;
 };
 
 export class SupabaseCompetitiveChallengeQueries implements CompetitiveChallengeQueries {
@@ -35,6 +37,7 @@ export class SupabaseCompetitiveChallengeQueries implements CompetitiveChallenge
       this.readers.alphabet,
       this.readers.survival,
       this.readers.pyramid,
+      this.readers.narrative,
     ]) {
       const model = await reader.getPlayable(roomKey, challengeKey, context);
       if (model) return model;
@@ -49,4 +52,5 @@ export const supabaseCompetitiveChallengeQueries = new SupabaseCompetitiveChalle
   alphabet: supabaseAlphabetQueries,
   survival: supabaseSurvivalQueries,
   pyramid: supabasePyramidQueries,
+  narrative: supabaseNarrativeQueries,
 });

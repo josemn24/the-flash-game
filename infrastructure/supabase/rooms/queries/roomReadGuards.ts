@@ -177,6 +177,7 @@ export function isRoomHistoryReadRow(value: unknown): value is RoomHistoryReadRo
     typeof row.challenge_description === "string" &&
     (row.challenge_mode === "flash" ||
       row.challenge_mode === "survival" ||
+      row.challenge_mode === "narrative" ||
       row.challenge_mode === "pyramid") &&
     row.challenge_max_score === 100 &&
     typeof row.question_count === "number" &&
@@ -221,6 +222,7 @@ export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberRe
     typeof row.challenge_description === "string" &&
     (row.challenge_mode === "flash" ||
       row.challenge_mode === "survival" ||
+      row.challenge_mode === "narrative" ||
       row.challenge_mode === "pyramid") &&
     row.challenge_max_score === 100 &&
     typeof row.player_id === "string" &&

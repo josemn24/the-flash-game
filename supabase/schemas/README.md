@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 54 archivos y su revisión canónica es
-`20260929210000_remove_legacy_flash_history_wrappers`. La migración incremental activa se ha generado desde esos archivos
+`20261001104420_narrative-recovery-history`. La migración incremental activa se ha generado desde esos archivos
 mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.

@@ -1,6 +1,6 @@
 import type { JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 
-export type SuperadminCompetitiveMode = "flash" | "alphabet" | "survival" | "pyramid";
+export type SuperadminCompetitiveMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
 export type SuperadminAttemptStatus = "in_progress" | "completed" | "abandoned" | "invalidated";
 
 export type SuperadminAttemptPublication = {

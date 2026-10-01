@@ -1,7 +1,7 @@
 # The Flash
 
 The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
-combina una experiencia de práctica mock con un recorrido competitivo real de Flash sobre Supabase,
+combina una experiencia de práctica mock con recorridos competitivos persistidos de Flash y Narrative sobre Supabase,
 además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
 de 31 formatos.
 
@@ -29,10 +29,10 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
+recorridos competitivos persistidos en Supabase. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
 F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
-los rankings de temporada/publicación actual, el historial común de Flash/Supervivencia/Pirámide y la revisión completa después de volver. El
+los rankings de temporada/publicación actual, el historial común de Flash/Supervivencia/Narrative/Pirámide y la revisión completa después de volver. El
 portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
 owner explícito y un grupo inicial opcional, y preparar/editar/activar temporadas. Estas operaciones
 son transaccionales, idempotentes y auditadas.
@@ -41,8 +41,9 @@ gestiona invitaciones ni prepara temporadas. El superadmin añadirá directament
 autenticados a las salas; la publicación mínima de contenido, la programación y la ejecución del
 calendario podrán formar parte de ese portal. La gestión posterior de miembros es parcial: el owner
 puede conceder/quitar admin y eliminar lógicamente miembros; transferencia, bloqueo/desbloqueo e
-invitaciones completas siguen pendientes. Los demás modos competitivos y parte del ciclo de Storage
-siguen pendientes.
+invitaciones completas siguen pendientes. Narrative reutiliza el ciclo genérico de intentos y mantiene
+las escenas públicas en `challenge_versions.mode_config`; parte del ciclo de Storage y la edición
+narrativa avanzada siguen pendientes.
 
 El historial de cambios por versión está disponible en [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -168,6 +169,12 @@ app/ → server/ → application/ → infrastructure/mock/ → data/mock/
 entidades del dominio, contratos públicos, estado de gameplay y modelos preparados para la UI.
 `data/` conserva el store y los fixtures del prototipo; parte de sus archivos antiguos es
 transitoria y no debe tomarse como el destino final de la persistencia.
+
+Las superficies de demo y práctica viven bajo `/demo/**`. `/demo/flash-pop` es el lobby mock, y
+`/demo/flash-pop/ui-kit`, `/demo/flash-pop-concepts` y `/demo/flash-pop-typography` son laboratorios
+visuales. Las URLs históricas `/flash-pop/**`, `/flash-pop-concepts` y `/flash-pop-typography`
+redirigen permanentemente a sus equivalentes bajo `/demo/**`. Las rutas competitivas `/salas/**`,
+`/desafios/**` y `/admin/**` no usan la fachada demo ni los fixtures mock.
 
 La estructura actual es deliberadamente una arquitectura de transición: las slices se migran por
 recorridos completos y el mock se conserva solo donde aún no existe una slice real o para práctica.

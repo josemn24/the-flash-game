@@ -105,6 +105,24 @@ describe("Flash editorial document", () => {
     });
   });
 
+  it("accepts a published Narrative document with public scene configuration", () => {
+    const document = documentFixture();
+    document.challenge.mode = "narrative";
+    document.challenge.modeConfig = {
+      prologue: {
+        id: "prologue",
+        title: "Inicio",
+        blocks: [{ type: "narration", text: "La expedición comienza." }],
+      },
+      beats: [],
+    };
+
+    expect(parseFlashEditorialDocument(document).challenge).toMatchObject({
+      mode: "narrative",
+      modeConfig: { prologue: { id: "prologue" }, beats: [] },
+    });
+  });
+
   it("rejects invalid Survival lives and the unsupported short-text format", () => {
     for (const modeConfig of [{ lives: 0 }, { lives: 3 }, { lives: 1, extra: true }]) {
       const document = documentFixture();

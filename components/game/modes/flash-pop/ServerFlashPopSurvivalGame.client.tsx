@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import {
   ReviewStage,
   Transition,
-} from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+} from "@/components/game/modes/flash-pop/FlashPopCompetitiveHelpers";
 import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { ChallengeIntro, ChallengeResultScreen } from "@/components/game/shared";

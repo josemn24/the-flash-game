@@ -267,6 +267,10 @@ export type AttemptRecoverySnapshot = {
   readonly lockVersion: number;
   readonly hasStartedInteraction: boolean;
   readonly hasOpenInteraction?: boolean;
+  readonly narrativeCursor?: {
+    readonly currentChallengeItemId: ChallengeItemId | null;
+    readonly nextChallengeItemId: ChallengeItemId | null;
+  } | null;
   readonly allItemsResolved: boolean;
   readonly challengeMode?: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
   readonly initialLives?: number | null;

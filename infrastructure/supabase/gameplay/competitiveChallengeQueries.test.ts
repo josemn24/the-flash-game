@@ -40,16 +40,18 @@ const defaultReaders = {
   alphabet: reader(null),
   survival: reader(null),
   pyramid: reader(null),
+  narrative: reader(null),
 };
 
 describe("SupabaseCompetitiveChallengeQueries", () => {
-  it("tries Flash, Alphabet, Survival and Pyramid in order until one matches", async () => {
+  it("tries Flash, Alphabet, Survival, Pyramid and Narrative in order until one matches", async () => {
     const flash = reader(null);
     const alphabet = reader(null);
     const survival = reader(model("survival"));
     const pyramid = reader(model("pyramid"));
+    const narrative = reader(model("narrative"));
     const queries = new SupabaseCompetitiveChallengeQueries(
-      readers({ flash, alphabet, survival, pyramid }),
+      readers({ flash, alphabet, survival, pyramid, narrative }),
     );
 
     await expect(queries.getPlayable("room", challengeKey, context)).resolves.toMatchObject({
@@ -91,8 +93,9 @@ describe("SupabaseCompetitiveChallengeQueries", () => {
     const alphabet = reader(null);
     const survival = reader(null);
     const pyramid = reader(null);
+    const narrative = reader(null);
     const queries = new SupabaseCompetitiveChallengeQueries(
-      readers({ flash, alphabet, survival, pyramid }),
+      readers({ flash, alphabet, survival, pyramid, narrative }),
     );
 
     await expect(queries.getPlayable("room", challengeKey, context)).resolves.toBeNull();
@@ -100,6 +103,7 @@ describe("SupabaseCompetitiveChallengeQueries", () => {
     expect(alphabet.getPlayable).toHaveBeenCalledTimes(1);
     expect(survival.getPlayable).toHaveBeenCalledTimes(1);
     expect(pyramid.getPlayable).toHaveBeenCalledTimes(1);
+    expect(narrative.getPlayable).toHaveBeenCalledTimes(1);
   });
 
   it("does not query any mode for an invalid route key", async () => {

@@ -4,7 +4,7 @@ import {
   getChallengeImage,
   initials,
 } from "@/lib/roomPresentation";
-import type { AnswerReview, AnswerResult } from "@/types/gameplay";
+import type { AnswerReview, AnswerResult, NarrativeChallenge } from "@/types/gameplay";
 import type {
   PracticeChallenge,
   ImageSurface,
@@ -1028,6 +1028,27 @@ export function toHistoricalChallenge(rows: RoomMemberReviewReadRow[]): Practice
       questionPoints,
     };
   }
+  if (first.challenge_mode === "narrative") {
+    return {
+      id: first.publication_id,
+      definitionId: first.challenge_slug,
+      number: 1,
+      title: first.challenge_title,
+      subtitle: first.challenge_subtitle,
+      description: first.challenge_description,
+      mode: "narrative",
+      implementationStatus: "complete",
+      maxScore: first.challenge_max_score,
+      prologue: { id: "historical-prologue", blocks: [] },
+      beats: [
+        {
+          id: "historical-questions",
+          title: "Preguntas",
+          steps: questions.map((question) => ({ type: "question", question })),
+        },
+      ],
+    } satisfies NarrativeChallenge;
+  }
   if (first.challenge_mode !== "flash") {
     throw new Error(`Cannot build a historical ${first.challenge_mode} Challenge`);
   }
@@ -1173,6 +1194,13 @@ export function toRoomMemberReviewProgress(
   if (first.challenge_mode === "pyramid") {
     const progress = deriveCompetitivePyramidProgress(first.question_count, reviews);
     return { mode: "pyramid", totalLevelCount: first.question_count, ...progress };
+  }
+  if (first.challenge_mode === "narrative") {
+    return {
+      mode: "narrative",
+      answeredCount: orderedRows.filter((row) => row.has_persisted_answer).length,
+      totalQuestionCount: first.question_count,
+    };
   }
   return {
     mode: "flash",

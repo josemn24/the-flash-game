@@ -171,6 +171,18 @@ begin
     'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
     'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
       where interval_row.attempt_id = a.id and interval_row.ended_at is null),
+    'narrativeCursor', case when cv.mode = 'narrative' then jsonb_build_object(
+      'currentChallengeItemId', (select interval_row.challenge_item_id
+        from private.interaction_intervals interval_row
+        where interval_row.attempt_id = a.id and interval_row.ended_at is null
+        order by interval_row.started_at desc limit 1),
+      'nextChallengeItemId', (select item.id
+        from private.challenge_items item
+        where item.challenge_version_id = a.challenge_version_id
+          and not exists (select 1 from private.attempt_answers answer
+            where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+        order by item.position limit 1)
+    ) else null end,
     'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
       and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
     'challengeMode', cv.mode,

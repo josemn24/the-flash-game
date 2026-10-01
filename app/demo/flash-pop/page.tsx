@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FlashPopLobby } from "@/components/game";
+import { FlashPopLobby } from "@/components/game/demo";
 import { getFlashPopLobbyPageModel } from "@/server/demo-data-access";
 
 export const metadata: Metadata = {

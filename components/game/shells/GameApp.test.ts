@@ -14,6 +14,7 @@ describe("GameApp routing", () => {
   it("keeps Narrative on its dedicated Flash Pop-compatible app", () => {
     expect(source).toContain("NarrativeGameApp.client");
     expect(source).toContain('if (challenge.mode === "narrative")');
-    expect(source).toContain("NarrativeGameApp challenge={challenge}");
+    expect(source).toContain("ServerNarrativeGame");
+    expect(source).toContain("challenge={challenge}");
   });
 });

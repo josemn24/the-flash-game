@@ -17,7 +17,13 @@ import type {
 import type { JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const modes = new Set<SuperadminCompetitiveMode>(["flash", "alphabet", "survival", "pyramid"]);
+const modes = new Set<SuperadminCompetitiveMode>([
+  "flash",
+  "alphabet",
+  "survival",
+  "narrative",
+  "pyramid",
+]);
 const statuses = new Set<SuperadminAttemptStatus>([
   "in_progress",
   "completed",

@@ -241,8 +241,17 @@ PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 Preparar confirma el reloj antes de entregar contenido; recibir confirma payload e instante antes
 de evaluar. [evaluateReceipt](../../server/evaluation/evaluate-receipt.ts) adapta el tiempo persistido
 al evaluador existente en una frontera `server-only`. Corrección, puntos, identidad y marcas
-autoritativas no son inputs públicos. El recorrido Flash de S03/S04 ya está conectado a estas
-operaciones; la UI conserva mocks únicamente para práctica, previews y slices aún no migradas.
+autoritativas no son inputs públicos. Los recorridos Flash, Alphabet, Supervivencia, Pirámide y
+Narrative están conectados a estas operaciones. Narrative comparte las tablas/RPCs genéricas de
+intentos: `mode_config` contiene solo escenas y configuración pública, `challenge_items` aporta el
+orden y metadatos, y `prepare` entrega el payload de una pregunta. La UI conserva mocks únicamente
+para práctica y demos.
+
+La frontera de composición también es explícita: `server/composition/demo.ts` es el único composition
+root mock; `server/composition/production.ts` conecta las lecturas Supabase. Las rutas bajo
+`app/demo/**` pueden importar la fachada demo, mientras que `/salas`, `/desafios` y `/admin` no pueden
+importar `data/mock`, `infrastructure/mock` ni el barrel mixto de gameplay. `npm run type-architecture`
+comprueba estas reglas y verifica que cada modo competitivo tenga lector Supabase registrado.
 
 Adaptadores previstos:
 
@@ -430,13 +439,13 @@ El repositorio ya tiene una base compatible con esta propuesta:
 | `server/production-room-data-access.ts`           | Fachada `server-only` de salas, rankings e historial        | Mantenerla sin dependencias mock y limitada a consultas de sala                                                                                         |
 | `server/production-challenge-data-access.ts`      | Fachada `server-only` de desafíos jugables reales           | Mantenerla sin dependencias mock y limitada a la selección de gameplay persistido                                                                       |
 | `server/production-admin-data-access.ts`          | Fachada `server-only` del portal de administración          | Mantener autorización superadmin y consultas administrativas separadas de las rutas públicas                                                            |
-| `server/demo-data-access.ts`                      | Fachada `server-only` exclusiva de Flash Pop mock           | Mantenerla limitada a rutas demo explícitas                                                                                                             |
+| `server/demo-data-access.ts`                      | Fachada `server-only` exclusiva de Flash Pop mock           | Mantenerla limitada a rutas `/demo/**`; las URLs antiguas solo redirigen                                                                                |
 | `server/composition/production.ts`                | Conecta capacidades Supabase con casos de uso de lectura    | Único composition root de las lecturas públicas reales; no capturar sesión en estado global                                                             |
 | `server/composition/demo.ts`                      | Conecta adaptadores mock con casos de uso demo              | Único composition root de Flash Pop mock                                                                                                                |
 | `application/queries/`                            | Contratos de lectura independientes de Next.js              | Mantener capacidades pequeñas; no reintroducir agregadores por tabla                                                                                    |
 | `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`             | Mantener como adaptador de pruebas; Supabase se organiza por capacidades en `rooms`, `attempts`, `gameplay`, `assets`, `identity`, `admin` y `platform` |
 | `data/mock/`                                      | Fixtures canónicos, store normalizado y validación          | Fuente del adaptador mock, nunca dependencia de UI productiva                                                                                           |
-| `components/game/**`                              | Shell cliente, modos, resultados y revisión                 | Conservar estado inmediato; sustituir reporter local por comandos de servidor                                                                           |
+| `components/game/**`                              | Shell cliente, modos, resultados y revisión                 | Usar barrels explícitos `demo`, `production` y `practice`; conservar estado inmediato y sustituir reporter local por comandos de servidor               |
 | `features/rooms/**`                               | Resultados y snapshots locales en memoria                   | Convertirlos en caché de UI; el intento oficial vivirá en servidor                                                                                      |
 | `lib/**`                                          | Scoring, ranking, disponibilidad y algoritmos puros         | Reutilizar en dominio/servidor y cubrir con tests de contrato                                                                                           |
 | `types/contracts/**`                              | Separación de payload público, solución y respuesta         | Usar el payload público en competición y mantener solución privada                                                                                      |
@@ -487,9 +496,10 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 ### Contenido y seguridad
 
 - La publicación referencia versiones inmutables de desafío y pregunta.
-- El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia, pero
-  persiste sus campos públicos y soluciones en las tablas versionadas existentes; no crea una
-  representación paralela del runtime.
+- El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia. Narrative
+  reutiliza la proyección de contenido para lectura y ejecución, pero su edición avanzada queda fuera
+  de esta fase. Todos persisten sus campos públicos y soluciones en las tablas versionadas existentes;
+  no se crea una representación paralela del runtime.
 - En competición se entrega `PublicQuestion`; solución, tolerancias, rutas y métricas permanecen en
   servidor.
 - Los payloads editoriales usan referencias de asset (`assetId`, alt, dimensiones y configuración
@@ -578,7 +588,7 @@ deben vivir en el servidor.
   estrategia para reintentos de red.
 - Finalización/acreditación atómica y lecturas de los dos rankings están implementadas y probadas en
   SQL/adapter; S06 lee rankings bajo demanda y no materializa tablas adicionales.
-- S07 implementa el historial común de Flash, Supervivencia y Pirámide de publicaciones cerradas sin intentos `in_progress`, el ranking
+- S07 implementa el historial común de Flash, Supervivencia, Narrative y Pirámide de publicaciones cerradas sin intentos `in_progress`, el ranking
   histórico y la revisión propia/ajena autorizada sin tablas materializadas ni recalcular puntos.
 - La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` conserva el acceso a
   historial/rankings, pero no recibe respuestas ni soluciones ajenas.

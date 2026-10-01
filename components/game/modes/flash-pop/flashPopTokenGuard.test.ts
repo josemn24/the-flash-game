@@ -15,9 +15,9 @@ function collect(directory: string, files: string[]) {
   for (const entry of readdirSync(directory)) {
     const path = join(directory, entry);
     if (
-      path.includes("/flash-pop-concepts/") ||
-      path.includes("/flash-pop-typography/") ||
-      path.includes("/flash-pop/ui-kit/")
+      path.includes("/app/demo/flash-pop-concepts/") ||
+      path.includes("/app/demo/flash-pop-typography/") ||
+      path.includes("/app/demo/flash-pop/ui-kit/")
     ) {
       continue;
     }
@@ -91,6 +91,15 @@ describe("product design-system boundaries", () => {
     );
     expect(readFileSync(join(componentsRoot, "game/index.ts"), "utf8")).toContain(
       'export * from "./shared"',
+    );
+    expect(readFileSync(join(componentsRoot, "game/demo.ts"), "utf8")).toContain(
+      'from "./modes/flash-pop/FlashPopLobby.client"',
+    );
+    expect(readFileSync(join(componentsRoot, "game/production.ts"), "utf8")).toContain(
+      'from "./modes/flash-pop/FlashPopHome.client"',
+    );
+    expect(readFileSync(join(componentsRoot, "game/practice.ts"), "utf8")).toContain(
+      'from "./shells/PlayableFormatExample.client"',
     );
     expect(readFileSync(join(componentsRoot, "navigation/index.ts"), "utf8")).toContain(
       "export { Logo }",
